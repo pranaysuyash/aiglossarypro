@@ -70,16 +70,11 @@ class ExcelProcessor:
             logger.error(f"Error downloading {key} from {bucket_name}: {e}")
             raise
     
-    def process_excel_file(self, file_path: str, output_path: str) -> Dict[str, Any]:
-        """Process the Excel file and extract structured data"""
-        logger.info(f"Processing Excel file: {file_path}")
+    def process_excel_file(self, file_path: str, output_path: str, is_csv: bool = False) -> Dict[str, Any]:
+        """Process the Excel or CSV file and extract structured data"""
+        logger.info(f"Processing {'CSV' if is_csv else 'Excel'} file: {file_path}")
         
         try:
-            # Read the Excel file
-            logger.info(f"Opening Excel file with pandas, size: {os.path.getsize(file_path)} bytes")
-            excel_data = pd.ExcelFile(file_path)
-            logger.info(f"Excel file loaded, found sheets: {excel_data.sheet_names}")
-            
             # Store results
             result = {
                 "categories": [],
@@ -87,34 +82,69 @@ class ExcelProcessor:
                 "terms": []
             }
             
-            # Debug: print some information about the file before processing
-            logger.info(f"Excel information: {excel_data.engine} engine, sheets: {len(excel_data.sheet_names)}")
-            
-            # Process each sheet
-            for sheet_name in excel_data.sheet_names:
-                logger.info(f"Processing sheet: {sheet_name}")
+            if is_csv:
+                # Process CSV file
+                logger.info(f"Opening CSV file with pandas, size: {os.path.getsize(file_path)} bytes")
+                # Read with explicit encoding and handle potential errors
+                try:
+                    df = pd.read_csv(file_path, encoding='utf-8', low_memory=False)
+                except UnicodeDecodeError:
+                    logger.info("UTF-8 encoding failed, trying with ISO-8859-1")
+                    df = pd.read_csv(file_path, encoding='ISO-8859-1', low_memory=False)
                 
-                # Read the sheet
-                df = pd.read_excel(excel_data, sheet_name=sheet_name)
-                logger.info(f"Sheet loaded, shape: {df.shape}")
+                logger.info(f"CSV file loaded, shape: {df.shape}")
                 
                 # Debug: Check column names to understand structure
                 logger.info(f"First 10 column names: {list(df.columns[:10])}")
                 
                 # Debug: Check the first few rows
-                logger.info(f"First 5 rows of first column: {df.iloc[:5, 0].tolist()}")
+                logger.info(f"First 5 rows of first column: {df.iloc[:5, 0].tolist() if not df.empty else []}")
                 
-                # Process the sheet data
-                sheet_data = self._process_sheet(df, sheet_name)
+                # Process the dataframe directly
+                sheet_data = self._process_sheet(df, "CSV Data")
                 
-                # Log the results from this sheet
-                logger.info(f"Sheet {sheet_name} yielded {len(sheet_data['categories'])} categories, " +
+                # Log the results
+                logger.info(f"CSV processing yielded {len(sheet_data['categories'])} categories, " +
                            f"{len(sheet_data['subcategories'])} subcategories, and {len(sheet_data['terms'])} terms")
                 
-                # Merge results
+                # Add results
                 result["categories"].extend(sheet_data["categories"])
                 result["subcategories"].extend(sheet_data["subcategories"])
                 result["terms"].extend(sheet_data["terms"])
+            else:
+                # Process Excel file
+                logger.info(f"Opening Excel file with pandas, size: {os.path.getsize(file_path)} bytes")
+                excel_data = pd.ExcelFile(file_path)
+                logger.info(f"Excel file loaded, found sheets: {excel_data.sheet_names}")
+                
+                # Debug: print some information about the file before processing
+                logger.info(f"Excel information: {excel_data.engine} engine, sheets: {len(excel_data.sheet_names)}")
+                
+                # Process each sheet
+                for sheet_name in excel_data.sheet_names:
+                    logger.info(f"Processing sheet: {sheet_name}")
+                    
+                    # Read the sheet
+                    df = pd.read_excel(excel_data, sheet_name=sheet_name)
+                    logger.info(f"Sheet loaded, shape: {df.shape}")
+                    
+                    # Debug: Check column names to understand structure
+                    logger.info(f"First 10 column names: {list(df.columns[:10])}")
+                    
+                    # Debug: Check the first few rows
+                    logger.info(f"First 5 rows of first column: {df.iloc[:5, 0].tolist() if not df.empty else []}")
+                    
+                    # Process the sheet data
+                    sheet_data = self._process_sheet(df, sheet_name)
+                    
+                    # Log the results from this sheet
+                    logger.info(f"Sheet {sheet_name} yielded {len(sheet_data['categories'])} categories, " +
+                               f"{len(sheet_data['subcategories'])} subcategories, and {len(sheet_data['terms'])} terms")
+                    
+                    # Merge results
+                    result["categories"].extend(sheet_data["categories"])
+                    result["subcategories"].extend(sheet_data["subcategories"])
+                    result["terms"].extend(sheet_data["terms"])
             
             # Write the results to JSON
             with open(output_path, 'w') as f:

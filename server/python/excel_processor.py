@@ -20,9 +20,25 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-def process_excel_file(excel_path: str, output_path: str, max_chunks: int = None) -> Dict[str, Any]:
+def process_excel_file(excel_path: str, output_path: str, max_chunks: Optional[int] = None) -> Dict[str, Any]:
     """Process an Excel file with chunking for memory efficiency"""
     logger.info(f"Processing Excel file: {excel_path}")
+    
+    # Initialize variables
+    terms = []
+    categories = {}
+    subcategories = {}
+    chunks_processed = 0
+    chunk_size = 100
+    
+    # Convert max_chunks to integer if it's not None
+    if max_chunks is not None:
+        try:
+            max_chunks = int(max_chunks)
+            logger.info(f"Will process a maximum of {max_chunks} chunks")
+        except (ValueError, TypeError):
+            logger.warning(f"Invalid max_chunks value: {max_chunks}, using default")
+            max_chunks = None
     
     try:
         # First, just extract the column headers to create our section mapping
@@ -130,14 +146,33 @@ def process_excel_file(excel_path: str, output_path: str, max_chunks: int = None
         if subcat_col:
             needed_columns.append(subcat_col)
         
-        # Read only the columns we need
-        for chunk_df in pd.read_excel(
+        # Read the Excel file (pandas read_excel doesn't support chunking)
+        # So we'll read the whole file and then process it in memory chunks
+        df = pd.read_excel(
             excel,
             sheet_name=sheet_name,
-            usecols=needed_columns,
-            chunksize=chunk_size
-        ):
+            usecols=needed_columns
+        )
+        
+        # Get total number of rows
+        total_rows = len(df)
+        chunks = []
+        
+        # Create chunks manually
+        for i in range(0, total_rows, chunk_size):
+            chunk_df = df.iloc[i:i+chunk_size]
+            chunks.append(chunk_df)
+        
+        # Limit chunks based on max_chunks parameter
+        if max_chunks is not None and max_chunks > 0 and max_chunks < len(chunks):
+            logger.info(f"Limiting to {max_chunks} chunks out of {len(chunks)} total chunks")
+            chunks = chunks[:max_chunks]
+        
+        # Process each chunk
+        total_chunks = len(chunks)
+        for chunk_df in chunks:
             chunks_processed += 1
+            logger.info(f"Processing chunk {chunks_processed} of {total_chunks}")
             
             for idx, row in chunk_df.iterrows():
                 # Skip rows with empty term names

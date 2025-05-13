@@ -25,11 +25,18 @@ export async function runPythonExcelProcessor(
     
     const outputPath = path.join(tempDir, `excel_output_${Date.now()}.json`);
     
+    // Check if we're dealing with a CSV file
+    const isCSV = fileKey?.toLowerCase().endsWith('.csv');
+    
     // Build the command
     let command = `python server/python/excel_processor.py --bucket "${bucketName}" --output "${outputPath}" --region "${region}"`;
     
     if (fileKey) {
       command += ` --file-key "${fileKey}"`;
+    }
+    
+    if (isCSV) {
+      command += ' --csv';
     }
     
     console.log(`Executing Python script: ${command}`);
@@ -51,7 +58,7 @@ export async function runPythonExcelProcessor(
         const result = JSON.parse(stdout);
         
         if (!result.success) {
-          return reject(new Error(result.error || 'Unknown error processing Excel file'));
+          return reject(new Error(result.error || 'Unknown error processing file'));
         }
         
         // Check if the output file exists

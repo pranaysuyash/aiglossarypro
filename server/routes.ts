@@ -4,6 +4,11 @@ import { storage } from "./storage";
 import { setupAuth, isAuthenticated } from "./replitAuth";
 import multer from "multer";
 import { parseExcelFile, importToDatabase } from "./excelParser";
+import { 
+  listExcelFiles, 
+  processExcelFromS3, 
+  initS3Client
+} from "./s3Service";
 
 // Set up multer for file uploads
 const upload = multer({

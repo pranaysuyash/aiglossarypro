@@ -33,8 +33,7 @@ export default function CategoryCard({ category, termCount }: CategoryCardProps)
   const colorClass = categoryColors[category.name] || "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300";
 
   return (
-    <Link href={`/category/${category.id}`}>
-      <a className="block group">
+    <div onClick={() => window.location.href=`/category/${category.id}`} className="cursor-pointer">
         <Card className="h-full transition-shadow hover:shadow-md border border-gray-100 dark:border-gray-800">
           <CardContent className="p-4">
             <div className="flex items-start">
@@ -50,7 +49,6 @@ export default function CategoryCard({ category, termCount }: CategoryCardProps)
             </div>
           </CardContent>
         </Card>
-      </a>
-    </Link>
+    </div>
   );
 }

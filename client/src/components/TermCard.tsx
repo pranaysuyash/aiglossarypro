@@ -121,14 +121,15 @@ export default function TermCard({ term, isFavorite = false }: TermCardProps) {
       </CardContent>
       
       <CardFooter className="border-t border-gray-100 dark:border-gray-800 p-3 flex justify-between items-center">
-        <Link href={`/term/${term.id}`}>
-          <a 
-            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium"
-            onClick={handleTermClick}
-          >
-            Read more
-          </a>
-        </Link>
+        <div
+          className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium cursor-pointer"
+          onClick={() => {
+            handleTermClick();
+            window.location.href = `/term/${term.id}`;
+          }}
+        >
+          Read more
+        </div>
         
         <div className="flex space-x-2">
           <TooltipProvider>

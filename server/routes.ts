@@ -9,7 +9,7 @@ import { parseExcelFile, importToDatabase } from "./excelParser";
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB max file size
+    fileSize: 50 * 1024 * 1024, // 50MB max file size
   },
   fileFilter: (_req, file, cb) => {
     // Accept only Excel files

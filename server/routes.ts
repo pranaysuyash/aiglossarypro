@@ -454,8 +454,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/s3/python-import', async (req, res) => {
     try {
       const bucketName = process.env.S3_BUCKET_NAME;
-      const fileKey = req.query.fileKey as string | undefined;
-      const maxChunks = req.query.maxChunks ? parseInt(req.query.maxChunks as string) : undefined;
+      const fileKey = req.query.key as string; // Changed from fileKey to key to match client
+      const maxChunks = req.query.maxChunks ? parseInt(req.query.maxChunks as string) : 
+                        (process.env.NODE_ENV === 'development' ? 5 : undefined);
+      
+      console.log(`Processing S3 file request: bucket=${bucketName}, key=${fileKey}, maxChunks=${maxChunks}`);
       
       if (!bucketName) {
         return res.status(400).json({
@@ -464,6 +467,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      if (!fileKey) {
+        return res.status(400).json({
+          success: false,
+          message: 'File key is required'
+        });
+      }
+      
+      // Process the file
       const result = await processAndImportFromS3(bucketName, fileKey, 'ap-south-1', maxChunks);
       return res.json(result);
     } catch (error) {

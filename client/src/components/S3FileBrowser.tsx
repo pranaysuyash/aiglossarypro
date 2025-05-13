@@ -28,19 +28,14 @@ export default function S3FileBrowser() {
         setLoading(true);
         setError(null);
         
-        // First check if we have AWS credentials configured
-        const credResponse = await fetch('/api/s3/setup');
-        const credData = await credResponse.json();
-        
-        if (!credData.initialized) {
-          setError('AWS S3 credentials are not properly configured. Please check your environment variables.');
-          setFiles([]);
-          setLoading(false);
-          return;
-        }
-        
-        // If credentials are configured, try to list files
+        // Make direct request to the S3 files endpoint
+        // No need for separate credentials check
         const response = await fetch('/api/s3/files');
+        
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`API error (${response.status}): ${errorText || response.statusText}`);
+        }
         
         // Check if we got HTML instead of JSON (error)
         const contentType = response.headers.get('content-type');
@@ -52,14 +47,14 @@ export default function S3FileBrowser() {
         console.log('Files API response:', data);
         
         if (Array.isArray(data)) {
-          // Original endpoint format
+          // Original endpoint format (/api/s3/files)
           setFiles(data.map(file => ({
             key: file.key,
             size: file.size,
             lastModified: file.lastModified
           })));
         } else if (data.success && Array.isArray(data.files)) {
-          // New endpoint format
+          // New endpoint format (/api/s3/list-files)
           setFiles(data.files);
         } else {
           setError(data.message || 'Failed to fetch files');

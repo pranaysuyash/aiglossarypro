@@ -38,8 +38,8 @@ export default function Home() {
   
   // Favorites map for O(1) lookup
   const [favoritesMap] = useState<Record<string, boolean>>(() => {
-    if (!favorites) return {};
-    return favorites.reduce((acc: Record<string, boolean>, term: ITerm) => {
+    if (!favorites || !Array.isArray(favorites)) return {};
+    return (favorites as ITerm[]).reduce((acc: Record<string, boolean>, term: ITerm) => {
       acc[term.id] = true;
       return acc;
     }, {});

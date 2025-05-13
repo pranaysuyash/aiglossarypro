@@ -10,6 +10,7 @@ import {
   initS3Client
 } from "./s3Service";
 import { importFromS3 } from "./manualImport";
+import { processAndImportFromS3 } from "./pythonProcessor";
 
 // Set up multer for file uploads
 const upload = multer({
@@ -450,7 +451,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Python-based Excel processing
   app.get('/api/s3/python-import', async (req, res) => {
     try {
-      const { processAndImportFromS3 } = require('./pythonProcessor');
       const bucketName = process.env.S3_BUCKET_NAME;
       const fileKey = req.query.fileKey as string | undefined;
       

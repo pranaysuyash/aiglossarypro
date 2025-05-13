@@ -76,7 +76,9 @@ class ExcelProcessor:
         
         try:
             # Read the Excel file
+            logger.info(f"Opening Excel file with pandas, size: {os.path.getsize(file_path)} bytes")
             excel_data = pd.ExcelFile(file_path)
+            logger.info(f"Excel file loaded, found sheets: {excel_data.sheet_names}")
             
             # Store results
             result = {
@@ -85,15 +87,29 @@ class ExcelProcessor:
                 "terms": []
             }
             
+            # Debug: print some information about the file before processing
+            logger.info(f"Excel information: {excel_data.engine} engine, sheets: {len(excel_data.sheet_names)}")
+            
             # Process each sheet
             for sheet_name in excel_data.sheet_names:
                 logger.info(f"Processing sheet: {sheet_name}")
                 
                 # Read the sheet
                 df = pd.read_excel(excel_data, sheet_name=sheet_name)
+                logger.info(f"Sheet loaded, shape: {df.shape}")
+                
+                # Debug: Check column names to understand structure
+                logger.info(f"First 10 column names: {list(df.columns[:10])}")
+                
+                # Debug: Check the first few rows
+                logger.info(f"First 5 rows of first column: {df.iloc[:5, 0].tolist()}")
                 
                 # Process the sheet data
                 sheet_data = self._process_sheet(df, sheet_name)
+                
+                # Log the results from this sheet
+                logger.info(f"Sheet {sheet_name} yielded {len(sheet_data['categories'])} categories, " +
+                           f"{len(sheet_data['subcategories'])} subcategories, and {len(sheet_data['terms'])} terms")
                 
                 # Merge results
                 result["categories"].extend(sheet_data["categories"])
@@ -142,23 +158,64 @@ class ExcelProcessor:
     
     def _is_hierarchical_structure(self, df: pd.DataFrame) -> bool:
         """Determine if the Excel sheet has a hierarchical structure"""
-        # Check column names for hierarchical indicators
+        logger.info("Checking if sheet has hierarchical structure")
+        
+        # Check column names for hierarchical indicators or numbered sections
         hierarchical_indicators = ['-', '.', '/', '\\', '>']
+        section_pattern = r'^\d+(\.\d+)*\s'  # E.g., "1. " or "1.1. " or "1.1.1. "
         
+        # Count column names with hierarchical patterns
+        hierarchical_columns = 0
         for col in df.columns:
-            if isinstance(col, str):
-                for indicator in hierarchical_indicators:
-                    if indicator in col:
-                        return True
+            col_str = str(col)
+            # Check for hierarchical separators
+            for indicator in hierarchical_indicators:
+                if indicator in col_str:
+                    hierarchical_columns += 1
+                    logger.info(f"Found hierarchical indicator '{indicator}' in column: {col_str}")
+                    break
+            
+            # Check for numbered sections (like "1. Introduction")
+            import re
+            if re.match(section_pattern, col_str):
+                hierarchical_columns += 1
+                logger.info(f"Found numbered section pattern in column: {col_str}")
         
-        # Look for markdown-style headers (# Header)
+        logger.info(f"Found {hierarchical_columns} hierarchical column names out of {len(df.columns)}")
+        
+        # If we have a significant number of hierarchical columns, consider it a hierarchical structure
+        if hierarchical_columns > 5 or (hierarchical_columns > 0 and hierarchical_columns / len(df.columns) > 0.1):
+            return True
+        
+        # Look for markdown-style headers (# Header) in the first column
         if not df.empty:
             first_col = df.iloc[:, 0]
             header_pattern = r'^#+\s'
-            if first_col.astype(str).str.match(header_pattern).any():
+            header_count = first_col.astype(str).str.match(header_pattern).sum()
+            logger.info(f"Found {header_count} markdown-style headers in first column")
+            if header_count > 0:
                 return True
         
-        return False
+        # Check first few columns for structured content that might indicate a hierarchical format
+        try:
+            # Check if we have numeric columns followed by category or term columns
+            if len(df.columns) > 3:
+                first_values = df.iloc[:5, 0].astype(str).tolist()
+                second_values = df.iloc[:5, 1].astype(str).tolist()
+                logger.info(f"First column values: {first_values}")
+                logger.info(f"Second column values: {second_values}")
+                
+                # Check if first column has terms and second has definitions
+                non_empty_values = [v for v in first_values if v and v.strip() and v.strip().lower() != 'nan']
+                if len(non_empty_values) > 2:
+                    logger.info("First column has several non-empty values, might be term names")
+                    return False  # This is more likely a tabular structure with terms
+        except Exception as e:
+            logger.warning(f"Error checking column structure: {e}")
+        
+        # If we couldn't clearly determine, default behavior based on your content structure
+        # Given the hierarchical structure in the content guide, let's assume hierarchical unless clearly tabular
+        return True
     
     def _process_hierarchical_structure(self, df: pd.DataFrame, sheet_name: str) -> Tuple[List[Dict], List[Dict], List[Dict]]:
         """Process a sheet with hierarchical structure"""

@@ -1,320 +1,203 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { FileInput } from "@/components/ui/file-input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { AlertCircle, FileSpreadsheet, CheckCircle, UploadCloud } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/useAuth";
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "../hooks/useAuth";
 import { queryClient } from "@/lib/queryClient";
-import { IImportResult } from "@/interfaces/interfaces";
 
-export default function Admin() {
+export default function AdminPage() {
   const { user, isAuthenticated } = useAuth();
-  const { toast } = useToast();
   const [file, setFile] = useState<File | null>(null);
-  const [importing, setImporting] = useState(false);
-  const [importResult, setImportResult] = useState<IImportResult | null>(null);
-
-  // Check if user is admin
-  const isAdmin = user?.email === "admin@example.com";
-
-  // Get stats about the glossary
-  const { data: stats, isLoading: statsLoading } = useQuery({
-    queryKey: ["/api/admin/stats"],
-    enabled: isAuthenticated && isAdmin,
+  const [processing, setProcessing] = useState(false);
+  const [result, setResult] = useState<any>(null);
+  const [maxChunks, setMaxChunks] = useState<number | undefined>(undefined);
+  
+  // Make a test query for categories to check admin status
+  const { data: adminData, isLoading: isAdminLoading } = useQuery({
+    queryKey: ['/api/admin/stats'],
+    enabled: !!isAuthenticated,
+    retry: false
   });
-
-  // Handle file selection
-  const handleFileSelect = (files: FileList | null) => {
-    if (files && files.length > 0) {
-      setFile(files[0]);
-      setImportResult(null);
-    } else {
-      setFile(null);
+  
+  const isAdmin = !isAdminLoading && adminData && !adminData.error;
+  
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = e.target.files?.[0];
+    if (selectedFile) {
+      setFile(selectedFile);
     }
   };
-
-  // Handle Excel import
-  const handleImport = async () => {
-    if (!file) {
-      toast({
-        title: "No file selected",
-        description: "Please select an Excel file to import",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setImporting(true);
-    setImportResult(null);
-
-    const formData = new FormData();
-    formData.append("file", file);
-
+  
+  const handleProcessFile = async () => {
+    if (!file) return;
+    
+    setProcessing(true);
+    setResult(null);
+    
     try {
-      const response = await fetch("/api/admin/import", {
-        method: "POST",
-        body: formData,
-        credentials: "include",
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const queryParams = new URLSearchParams();
+      if (maxChunks) {
+        queryParams.append('maxChunks', maxChunks.toString());
+      }
+      
+      const response = await fetch(`/api/process/local-file?${queryParams.toString()}`, {
+        method: 'POST',
+        body: formData
       });
-
-      if (!response.ok) {
-        throw new Error(`Import failed: ${response.status} ${response.statusText}`);
-      }
-
-      const result = await response.json();
-      setImportResult(result);
-
-      if (result.success) {
-        toast({
-          title: "Import successful",
-          description: `Imported ${result.termsImported} terms and ${result.categoriesImported} categories`,
-        });
-        // Invalidate relevant queries
-        queryClient.invalidateQueries({ queryKey: ["/api/categories"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/terms"] });
-        queryClient.invalidateQueries({ queryKey: ["/api/admin/stats"] });
-      } else {
-        toast({
-          title: "Import failed",
-          description: result.errors?.[0] || "Unknown error occurred",
-          variant: "destructive",
-        });
-      }
+      
+      const data = await response.json();
+      setResult(data);
     } catch (error) {
-      console.error("Import error:", error);
-      toast({
-        title: "Import failed",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
-      });
+      console.error('Error processing file:', error);
+      setResult({ success: false, error: String(error) });
     } finally {
-      setImporting(false);
+      setProcessing(false);
     }
   };
-
-  // Handle clearing all data (with confirmation)
-  const handleClearData = async () => {
-    if (!window.confirm("Are you sure you want to clear ALL glossary data? This cannot be undone.")) {
-      return;
-    }
-
+  
+  const handleImportData = async () => {
+    if (!file) return;
+    
+    setProcessing(true);
+    setResult(null);
+    
     try {
-      await apiRequest("DELETE", "/api/admin/clear-data", null);
-      toast({
-        title: "Data cleared",
-        description: "All glossary data has been cleared successfully",
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const queryParams = new URLSearchParams();
+      if (maxChunks) {
+        queryParams.append('maxChunks', maxChunks.toString());
+      }
+      queryParams.append('import', 'true');
+      
+      const response = await fetch(`/api/process/local-file?${queryParams.toString()}`, {
+        method: 'POST',
+        body: formData
       });
-      // Invalidate relevant queries
-      queryClient.invalidateQueries();
-      setImportResult(null);
+      
+      const data = await response.json();
+      setResult(data);
+      
+      // Invalidate queries
+      await queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
+      await queryClient.invalidateQueries({ queryKey: ['/api/terms/featured'] });
     } catch (error) {
-      toast({
-        title: "Error clearing data",
-        description: error instanceof Error ? error.message : "An unknown error occurred",
-        variant: "destructive",
-      });
+      console.error('Error importing data:', error);
+      setResult({ success: false, error: String(error) });
+    } finally {
+      setProcessing(false);
     }
   };
-
+  
   if (!isAuthenticated) {
     return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Card className="max-w-md mx-auto">
-          <CardHeader>
-            <CardTitle className="text-center">Authentication Required</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-center mb-4">
-              Please sign in to access this page.
-            </p>
-            <div className="flex justify-center">
-              <Button onClick={() => window.location.href = "/api/login"}>
-                Sign In
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
+        <p>Please log in to access admin features.</p>
       </div>
     );
   }
-
+  
+  if (isAdminLoading) {
+    return (
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
+        <p>Loading...</p>
+      </div>
+    );
+  }
+  
   if (!isAdmin) {
     return (
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Access Denied</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Unauthorized</AlertTitle>
-              <AlertDescription>
-                You don't have permission to access the admin area.
-              </AlertDescription>
-            </Alert>
-          </CardContent>
-        </Card>
+      <div className="container mx-auto p-4">
+        <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
+        <p>You don't have permission to access this page.</p>
       </div>
     );
   }
-
+  
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <h1 className="text-3xl font-bold mb-6">Admin Dashboard</h1>
-
-      <Tabs defaultValue="import">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="import">Data Import</TabsTrigger>
-          <TabsTrigger value="stats">Glossary Statistics</TabsTrigger>
-        </TabsList>
-        
-        <TabsContent value="import" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Import Excel Data</CardTitle>
-              <CardDescription>
-                Upload an Excel file containing AI/ML terminology. 
-                The file should have columns for term names, definitions, categories, and subcategories.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <FileInput
-                label="Excel File"
-                accept=".xlsx,.xls"
-                icon={<FileSpreadsheet className="h-5 w-5 text-primary-600" />}
-                helperText="Select an Excel file (.xlsx or .xls) up to 10MB"
-                onFilesSelected={handleFileSelect}
-              />
-              
-              <div className="flex space-x-2">
-                <Button 
-                  onClick={handleImport}
-                  disabled={!file || importing}
-                  className="flex-1"
-                >
-                  {importing ? (
-                    <>
-                      <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-primary-600 border-r-transparent"></span>
-                      Importing...
-                    </>
-                  ) : (
-                    <>
-                      <UploadCloud className="mr-2 h-4 w-4" />
-                      Import Excel Data
-                    </>
-                  )}
-                </Button>
-                
-                <Button 
-                  variant="destructive" 
-                  onClick={handleClearData}
-                  disabled={importing || statsLoading || (stats && stats.totalTerms === 0)}
-                >
-                  Clear All Data
-                </Button>
+    <div className="container mx-auto p-4">
+      <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
+      
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card>
+          <CardHeader>
+            <CardTitle>Process Excel/CSV File</CardTitle>
+            <CardDescription>Upload a file to process with Python</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="file">Select Excel or CSV File</Label>
+                <Input
+                  id="file"
+                  type="file"
+                  accept=".xlsx,.xls,.csv"
+                  onChange={handleFileChange}
+                />
               </div>
-              
-              {importResult && (
-                <Alert variant={importResult.success ? "default" : "destructive"}>
-                  {importResult.success ? (
-                    <CheckCircle className="h-4 w-4" />
-                  ) : (
-                    <AlertCircle className="h-4 w-4" />
-                  )}
-                  <AlertTitle>
-                    {importResult.success ? "Import Successful" : "Import Failed"}
-                  </AlertTitle>
-                  <AlertDescription>
-                    {importResult.success ? (
-                      <>
-                        Successfully imported {importResult.termsImported} terms and {importResult.categoriesImported} categories.
-                      </>
-                    ) : (
-                      <ul className="list-disc pl-5 mt-2">
-                        {importResult.errors?.map((error, index) => (
-                          <li key={index}>{error}</li>
-                        ))}
-                      </ul>
-                    )}
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
+              <div className="grid gap-2">
+                <Label htmlFor="max-chunks">Max Chunks (optional)</Label>
+                <Input
+                  id="max-chunks"
+                  type="number"
+                  placeholder="Leave empty to process all"
+                  value={maxChunks || ''}
+                  onChange={(e) => setMaxChunks(e.target.value ? parseInt(e.target.value) : undefined)}
+                />
+                <p className="text-xs text-gray-500">
+                  Limit the number of chunks to process. Each chunk is 100 rows.
+                </p>
+              </div>
+            </div>
+          </CardContent>
+          <CardFooter className="flex justify-between">
+            <Button
+              onClick={handleProcessFile}
+              disabled={!file || processing}
+              className="mr-2"
+            >
+              {processing ? 'Processing...' : 'Process File'}
+            </Button>
+            <Button 
+              onClick={handleImportData}
+              disabled={!file || processing}
+              variant="secondary"
+            >
+              {processing ? 'Importing...' : 'Process & Import'}
+            </Button>
+          </CardFooter>
+        </Card>
         
-        <TabsContent value="stats" className="mt-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Glossary Statistics</CardTitle>
-              <CardDescription>
-                Overview of the current glossary data
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {statsLoading ? (
-                <div className="space-y-2 animate-pulse">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="h-6 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  ))}
-                </div>
-              ) : stats ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Total Terms</div>
-                    <div className="text-2xl font-bold">{stats.totalTerms}</div>
-                  </div>
-                  
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Total Categories</div>
-                    <div className="text-2xl font-bold">{stats.totalCategories}</div>
-                  </div>
-                  
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Total Term Views</div>
-                    <div className="text-2xl font-bold">{stats.totalViews}</div>
-                  </div>
-                  
-                  <div className="p-4 border rounded-lg">
-                    <div className="text-sm text-gray-500 dark:text-gray-400">Total Users</div>
-                    <div className="text-2xl font-bold">{stats.totalUsers}</div>
-                  </div>
-                  
-                  <div className="p-4 border rounded-lg sm:col-span-2">
-                    <div className="text-sm text-gray-500 dark:text-gray-400 mb-2">Database Last Updated</div>
-                    <div className="text-lg">{stats.lastUpdated || "Never"}</div>
-                  </div>
-                </div>
-              ) : (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertTitle>No Data</AlertTitle>
-                  <AlertDescription>
-                    There is no glossary data available. Upload an Excel file to get started.
-                  </AlertDescription>
-                </Alert>
-              )}
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+        <Card>
+          <CardHeader>
+            <CardTitle>Results</CardTitle>
+            <CardDescription>Processing results will appear here</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {result && (
+              <div className="overflow-auto max-h-[400px]">
+                <pre className="text-xs whitespace-pre-wrap bg-slate-50 p-4 rounded">
+                  {JSON.stringify(result, null, 2)}
+                </pre>
+              </div>
+            )}
+            
+            {!result && (
+              <div className="text-center p-6 text-gray-400">
+                No results yet
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

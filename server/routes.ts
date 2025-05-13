@@ -10,7 +10,10 @@ import {
   initS3Client
 } from "./s3Service";
 import { importFromS3 } from "./manualImport";
-import { processAndImportFromS3 } from "./pythonProcessor";
+import { processAndImportFromS3, importProcessedData } from "./pythonProcessor";
+import * as path from 'path';
+import * as fs from 'fs';
+import { exec } from 'child_process';
 
 // Set up multer for file uploads
 const upload = multer({
@@ -453,6 +456,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const bucketName = process.env.S3_BUCKET_NAME;
       const fileKey = req.query.fileKey as string | undefined;
+      const maxChunks = req.query.maxChunks ? parseInt(req.query.maxChunks as string) : undefined;
       
       if (!bucketName) {
         return res.status(400).json({
@@ -461,13 +465,141 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      const result = await processAndImportFromS3(bucketName, fileKey);
+      const result = await processAndImportFromS3(bucketName, fileKey, 'ap-south-1', maxChunks);
       return res.json(result);
     } catch (error) {
       console.error('Error in Python Excel processing:', error);
       return res.status(500).json({
         success: false,
         message: 'Error during Python Excel processing',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
+  // Process local file (for testing during development)
+  app.post('/api/process/local-file', upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ 
+          success: false, 
+          errors: ["No file uploaded"] 
+        });
+      }
+      
+      const tempDir = path.join(process.cwd(), 'temp');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
+      }
+      
+      // Save uploaded file to temp directory
+      const fileExt = req.file.originalname.split('.').pop() || 'xlsx';
+      const tempFilePath = path.join(tempDir, `uploaded_${Date.now()}.${fileExt}`);
+      fs.writeFileSync(tempFilePath, req.file.buffer);
+      
+      // Determine max chunks from query parameter
+      const maxChunks = req.query.maxChunks ? parseInt(req.query.maxChunks as string) : undefined;
+      
+      // Determine if CSV or Excel
+      const isCSV = tempFilePath.toLowerCase().endsWith('.csv');
+      const scriptPath = isCSV ? 'server/python/csv_processor.py' : 'server/python/excel_processor.py';
+      
+      // Process with Python script
+      const outputPath = path.join(tempDir, `processed_${Date.now()}.json`);
+      let command = `python ${scriptPath} --input "${tempFilePath}" --output "${outputPath}"`;
+      
+      if (maxChunks) {
+        command += ` --max-chunks ${maxChunks}`;
+      }
+      
+      console.log(`Executing command: ${command}`);
+      
+      // Execute the Python script
+      exec(command, async (error, stdout, stderr) => {
+        // Clean up the uploaded file
+        try {
+          fs.unlinkSync(tempFilePath);
+        } catch (e) {
+          console.warn(`Error removing temp file: ${e}`);
+        }
+        
+        if (error) {
+          console.error(`Error executing Python script: ${error.message}`);
+          console.error(`stderr: ${stderr}`);
+          return res.status(500).json({
+            success: false,
+            error: error.message
+          });
+        }
+        
+        try {
+          const result = JSON.parse(stdout);
+          
+          if (!result.success) {
+            return res.status(500).json({
+              success: false,
+              error: result.error || 'Unknown error'
+            });
+          }
+          
+          // Check if output file exists
+          if (!fs.existsSync(outputPath)) {
+            return res.status(500).json({
+              success: false,
+              error: 'Output file not created'
+            });
+          }
+          
+          // Read output data
+          const outputData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+          
+          // Clean up output file
+          try {
+            fs.unlinkSync(outputPath);
+          } catch (e) {
+            console.warn(`Error removing output file: ${e}`);
+          }
+          
+          // Import to database if requested
+          if (req.query.import === 'true') {
+            const importResult = await importProcessedData(outputData);
+            return res.json({
+              success: true,
+              processing: result,
+              import: importResult,
+              categories: outputData.categories.length,
+              subcategories: outputData.subcategories.length,
+              terms: outputData.terms.length
+            });
+          } else {
+            // Return just a summary of the processed data
+            return res.json({
+              success: true,
+              categories: outputData.categories.length,
+              subcategories: outputData.subcategories.length,
+              terms: outputData.terms.length,
+              sample: {
+                categories: outputData.categories.slice(0, 3),
+                subcategories: outputData.subcategories.slice(0, 3),
+                terms: outputData.terms.slice(0, 3)
+              }
+            });
+          }
+        } catch (parseError) {
+          console.error(`Error parsing Python output: ${parseError}`);
+          console.log('Raw output:', stdout);
+          return res.status(500).json({
+            success: false,
+            error: parseError instanceof Error ? parseError.message : String(parseError),
+            stdout: stdout
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error processing local file:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error processing local file',
         error: error instanceof Error ? error.message : String(error)
       });
     }

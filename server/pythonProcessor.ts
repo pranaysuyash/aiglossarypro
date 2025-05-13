@@ -235,13 +235,14 @@ export async function importProcessedData(data: any): Promise<any> {
 export async function processAndImportFromS3(
   bucketName: string = process.env.S3_BUCKET_NAME || '',
   fileKey?: string,
-  region: string = 'ap-south-1'
+  region: string = 'ap-south-1',
+  maxChunks?: number
 ): Promise<any> {
   try {
     console.log(`Processing Excel file from S3: ${bucketName}/${fileKey || 'latest'}`);
     
     // Run the Python processor
-    const processingResult = await runPythonExcelProcessor(bucketName, fileKey, region);
+    const processingResult = await runPythonExcelProcessor(bucketName, fileKey, region, maxChunks);
     
     if (!processingResult.success) {
       return processingResult;

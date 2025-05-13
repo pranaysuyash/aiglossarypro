@@ -1,4 +1,4 @@
-import * as ExcelJS from 'exceljs';
+import ExcelJS from 'exceljs';
 import fs from 'fs';
 import path from 'path';
 import { db } from './db';

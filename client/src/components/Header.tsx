@@ -64,10 +64,10 @@ export default function Header() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
                     <Avatar className="h-8 w-8">
-                      {user?.profileImageUrl && (
+                      {userObj?.profileImageUrl && (
                         <AvatarImage 
-                          src={user.profileImageUrl} 
-                          alt={user.firstName || "User"}
+                          src={userObj.profileImageUrl} 
+                          alt={userObj.firstName || "User"}
                           className="object-cover"
                         />
                       )}
@@ -88,7 +88,7 @@ export default function Header() {
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     Settings
                   </DropdownMenuItem>
-                  {user?.email === "admin@example.com" && (
+                  {userObj?.email === "admin@example.com" && (
                     <DropdownMenuItem onClick={() => navigate("/admin")}>
                       Admin
                     </DropdownMenuItem>

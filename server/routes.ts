@@ -447,6 +447,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Python-based Excel processing
+  app.get('/api/s3/python-import', async (req, res) => {
+    try {
+      const { processAndImportFromS3 } = require('./pythonProcessor');
+      const bucketName = process.env.S3_BUCKET_NAME;
+      const fileKey = req.query.fileKey as string | undefined;
+      
+      if (!bucketName) {
+        return res.status(400).json({
+          success: false,
+          message: 'S3 bucket name not configured'
+        });
+      }
+      
+      const result = await processAndImportFromS3(bucketName, fileKey);
+      return res.json(result);
+    } catch (error) {
+      console.error('Error in Python Excel processing:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error during Python Excel processing',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
   // Temporary setup route for initial data import (will be removed in production)
   app.get('/api/s3/setup', async (req, res) => {
     try {

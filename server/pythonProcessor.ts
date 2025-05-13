@@ -7,6 +7,7 @@ import * as path from 'path';
 import { db } from './db';
 import { categories, subcategories, terms, termSubcategories } from '@shared/schema';
 import { eq } from 'drizzle-orm';
+import { downloadFileFromS3 } from './s3Service';
 
 /**
  * Run the Python Excel processor script with the given parameters
@@ -14,78 +15,106 @@ import { eq } from 'drizzle-orm';
 export async function runPythonExcelProcessor(
   bucketName: string,
   fileKey?: string,
-  region: string = 'ap-south-1'
+  region: string = 'ap-south-1',
+  maxChunks?: number
 ): Promise<any> {
-  return new Promise((resolve, reject) => {
-    // Create output directory if it doesn't exist
-    const tempDir = path.join(process.cwd(), 'temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-    
-    const outputPath = path.join(tempDir, `excel_output_${Date.now()}.json`);
-    
-    // Check if we're dealing with a CSV file
-    const isCSV = fileKey?.toLowerCase().endsWith('.csv');
-    
-    // Build the command
-    let command = `python server/python/excel_processor.py --bucket "${bucketName}" --output "${outputPath}" --region "${region}"`;
-    
-    if (fileKey) {
-      command += ` --file-key "${fileKey}"`;
-    }
-    
-    if (isCSV) {
-      command += ' --csv';
-    }
-    
-    console.log(`Executing Python script: ${command}`);
-    
-    // Execute the Python script
-    exec(command, (error, stdout, stderr) => {
-      if (error) {
-        console.error(`Error executing Python script: ${error.message}`);
-        console.error(`stderr: ${stderr}`);
-        return reject(error);
+  return new Promise(async (resolve, reject) => {
+    try {
+      // Create output and temp directories if they don't exist
+      const tempDir = path.join(process.cwd(), 'temp');
+      if (!fs.existsSync(tempDir)) {
+        fs.mkdirSync(tempDir, { recursive: true });
       }
       
-      if (stderr) {
-        console.warn(`Python script warnings: ${stderr}`);
+      const outputPath = path.join(tempDir, `excel_output_${Date.now()}.json`);
+      
+      // If we have a fileKey, download the file from S3 first
+      let localFilePath = '';
+      if (fileKey) {
+        console.log(`Downloading file from S3: ${bucketName}/${fileKey}`);
+        const fileName = fileKey.split('/').pop() || `s3_${Date.now()}_${fileKey.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        localFilePath = path.join(tempDir, fileName);
+        
+        await downloadFileFromS3(bucketName, fileKey, localFilePath);
+        console.log(`File downloaded to ${localFilePath}`);
+      } else {
+        return reject(new Error('No file key provided'));
       }
       
-      // Parse the output
-      try {
-        const result = JSON.parse(stdout);
-        
-        if (!result.success) {
-          return reject(new Error(result.error || 'Unknown error processing file'));
+      // Check if we're dealing with a CSV file
+      const isCSV = fileKey.toLowerCase().endsWith('.csv');
+      
+      // Build the Python command based on file type
+      let scriptPath = '';
+      if (isCSV) {
+        scriptPath = 'server/python/csv_processor.py';
+      } else {
+        scriptPath = 'server/python/excel_processor.py';
+      }
+      
+      // Build the command
+      let command = `python ${scriptPath} --input "${localFilePath}" --output "${outputPath}"`;
+      
+      // Add max chunks if specified for testing or limiting processing
+      if (maxChunks) {
+        command += ` --max-chunks ${maxChunks}`;
+      }
+      
+      console.log(`Executing Python script: ${command}`);
+      
+      // Execute the Python script
+      exec(command, (error, stdout, stderr) => {
+        if (error) {
+          console.error(`Error executing Python script: ${error.message}`);
+          console.error(`stderr: ${stderr}`);
+          return reject(error);
         }
         
-        // Check if the output file exists
-        if (!fs.existsSync(outputPath)) {
-          return reject(new Error('Output file not created'));
+        if (stderr) {
+          console.warn(`Python script warnings: ${stderr}`);
         }
         
-        // Read the output file
-        const outputData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
-        
-        // Clean up
+        // Parse the output
         try {
-          fs.unlinkSync(outputPath);
-        } catch (e) {
-          console.warn(`Error removing temp file: ${e}`);
+          const result = JSON.parse(stdout);
+          
+          if (!result.success) {
+            return reject(new Error(result.error || 'Unknown error processing file'));
+          }
+          
+          // Check if the output file exists
+          if (!fs.existsSync(outputPath)) {
+            return reject(new Error('Output file not created'));
+          }
+          
+          // Read the output file
+          const outputData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+          
+          // Clean up
+          try {
+            fs.unlinkSync(outputPath);
+            // Optionally clean up the downloaded file as well
+            if (fs.existsSync(localFilePath)) {
+              fs.unlinkSync(localFilePath);
+            }
+          } catch (e) {
+            console.warn(`Error removing temp files: ${e}`);
+          }
+          
+          resolve({
+            ...result,
+            data: outputData
+          });
+        } catch (parseError) {
+          console.error(`Error parsing Python script output: ${parseError}`);
+          console.log('Raw output:', stdout);
+          reject(parseError);
         }
-        
-        resolve({
-          ...result,
-          data: outputData
-        });
-      } catch (parseError) {
-        console.error(`Error parsing Python script output: ${parseError}`);
-        console.log('Raw output:', stdout);
-        reject(parseError);
-      }
-    });
+      });
+    } catch (e) {
+      console.error(`Error in Python processor setup: ${e}`);
+      reject(e);
+    }
   });
 }
 

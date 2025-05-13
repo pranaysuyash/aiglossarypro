@@ -88,11 +88,9 @@ export default function Header() {
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     Settings
                   </DropdownMenuItem>
-                  {userObj?.email === "admin@example.com" && (
-                    <DropdownMenuItem onClick={() => navigate("/admin")}>
-                      Admin
-                    </DropdownMenuItem>
-                  )}
+                  <DropdownMenuItem onClick={() => navigate("/admin")}>
+                    Admin
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>
                     Sign out

@@ -9,6 +9,7 @@ import {
   processExcelFromS3, 
   initS3Client
 } from "./s3Service";
+import { importFromS3 } from "./manualImport";
 
 // Set up multer for file uploads
 const upload = multer({
@@ -430,6 +431,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
   
   // S3 Integration Routes
+  
+  // Simple manual import endpoint
+  app.get('/api/s3/manual-import', async (req, res) => {
+    try {
+      const result = await importFromS3();
+      return res.json(result);
+    } catch (error) {
+      console.error('Error in manual import:', error);
+      return res.status(500).json({
+        success: false,
+        message: 'Error during manual import',
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
   
   // Temporary setup route for initial data import (will be removed in production)
   app.get('/api/s3/setup', async (req, res) => {

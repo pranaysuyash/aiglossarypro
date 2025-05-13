@@ -145,7 +145,14 @@ export async function uploadFileToS3(
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: key,
-      Body: fileContent
+      Body: fileContent,
+      // Enable server-side encryption
+      ServerSideEncryption: 'AES256',
+      // Set metadata to track versions in application
+      Metadata: {
+        'x-amz-meta-version-date': new Date().toISOString(),
+        'x-amz-meta-version-info': 'Uploaded via AI/ML Glossary App'
+      }
     });
     
     const response = await s3.send(command);

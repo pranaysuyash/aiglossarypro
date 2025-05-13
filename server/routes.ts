@@ -32,6 +32,9 @@ const upload = multer({
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication
   await setupAuth(app);
+  
+  // Initialize S3 client if credentials are present
+  initS3Client();
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -423,6 +426,67 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error clearing data:", error);
       res.status(500).json({ message: "Failed to clear data" });
+    }
+  });
+  
+  // S3 Integration Routes
+  
+  // List Excel files in S3 bucket
+  app.get('/api/s3/files', isAuthenticated, async (req: any, res) => {
+    try {
+      // Only allow admin or authorized users
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.email !== "admin@example.com") {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const bucketName = process.env.S3_BUCKET_NAME;
+      if (!bucketName) {
+        return res.status(400).json({ message: "S3 bucket name not configured" });
+      }
+      
+      const prefix = req.query.prefix || '';
+      const files = await listExcelFiles(bucketName, prefix as string);
+      res.json(files);
+    } catch (error) {
+      console.error("Error listing S3 files:", error);
+      res.status(500).json({ message: "Failed to list files from S3" });
+    }
+  });
+  
+  // Process Excel file from S3
+  app.post('/api/s3/process', isAuthenticated, async (req: any, res) => {
+    try {
+      // Only allow admin or authorized users
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (user?.email !== "admin@example.com") {
+        return res.status(403).json({ message: "Unauthorized" });
+      }
+      
+      const { key, useStreaming = false } = req.body;
+      
+      if (!key) {
+        return res.status(400).json({ message: "File key is required" });
+      }
+      
+      const bucketName = process.env.S3_BUCKET_NAME;
+      if (!bucketName) {
+        return res.status(400).json({ message: "S3 bucket name not configured" });
+      }
+      
+      // Process the file from S3
+      const result = await processExcelFromS3(bucketName, key, useStreaming);
+      res.json(result);
+    } catch (error) {
+      console.error("Error processing S3 file:", error);
+      res.status(500).json({ 
+        message: "Failed to process file from S3",
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   });
 

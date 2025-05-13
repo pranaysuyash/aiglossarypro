@@ -37,12 +37,12 @@ export default function Header() {
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-2">
             <Link href="/">
-              <a className="flex items-center space-x-2">
+              <div className="flex items-center space-x-2 cursor-pointer">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 <span className="text-xl font-semibold">AI/ML Glossary</span>
-              </a>
+              </div>
             </Link>
           </div>
 
@@ -135,19 +135,19 @@ export default function Header() {
           <div className="md:hidden py-4 border-t border-gray-100 dark:border-gray-700">
             <nav className="flex flex-col space-y-2">
               <Link href="/">
-                <a className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                   Home
-                </a>
+                </div>
               </Link>
               <Link href="/dashboard">
-                <a className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                   Dashboard
-                </a>
+                </div>
               </Link>
               <Link href="/favorites">
-                <a className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700">
+                <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                   Favorites
-                </a>
+                </div>
               </Link>
               {!isAuthenticated && (
                 <Button 

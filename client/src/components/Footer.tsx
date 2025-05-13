@@ -62,17 +62,17 @@ export default function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link href="/">
-                  <a className="text-gray-400 hover:text-white transition">Home</a>
+                  <div className="text-gray-400 hover:text-white transition cursor-pointer">Home</div>
                 </Link>
               </li>
               <li>
                 <Link href="/dashboard">
-                  <a className="text-gray-400 hover:text-white transition">Dashboard</a>
+                  <div className="text-gray-400 hover:text-white transition cursor-pointer">Dashboard</div>
                 </Link>
               </li>
               <li>
                 <Link href="/favorites">
-                  <a className="text-gray-400 hover:text-white transition">Favorites</a>
+                  <div className="text-gray-400 hover:text-white transition cursor-pointer">Favorites</div>
                 </Link>
               </li>
               <li>
@@ -103,13 +103,13 @@ export default function Footer() {
             <p>&copy; {new Date().getFullYear()} AI/ML Glossary. All rights reserved.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">
               <Link href="/privacy">
-                <a className="hover:text-white transition">Privacy Policy</a>
+                <div className="hover:text-white transition cursor-pointer">Privacy Policy</div>
               </Link>
               <Link href="/terms">
-                <a className="hover:text-white transition">Terms of Service</a>
+                <div className="hover:text-white transition cursor-pointer">Terms of Service</div>
               </Link>
               <Link href="/cookies">
-                <a className="hover:text-white transition">Cookie Policy</a>
+                <div className="hover:text-white transition cursor-pointer">Cookie Policy</div>
               </Link>
             </div>
           </div>

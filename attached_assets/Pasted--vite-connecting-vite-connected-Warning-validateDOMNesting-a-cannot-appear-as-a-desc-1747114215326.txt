@@ -1,0 +1,45 @@
+[vite] connecting...
+[vite] connected.
+Warning: validateDOMNesting(...): <a> cannot appear as a descendant of &lt;a&gt;.
+    at a
+    at a
+    at https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=74c276cb:337:18
+    at div
+    at div
+    at main
+    at div
+    at div
+    at Home (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/src/pages/Home.tsx:29:31)
+    at Route (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=74c276cb:323:16)
+    at Switch (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=74c276cb:379:17)
+    at div
+    at div
+    at Router (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/src/App.tsx?t=1747114168533&v=AHrMORTi7zHjtS1iPiHxH:37:42)
+    at Provider (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PLT6GTVM.js?v=027363a0:38:15)
+    at TooltipProvider (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=e89816aa:62:5)
+    at ThemeProvider (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/src/components/ThemeProvider.tsx:25:3)
+    at QueryClientProvider (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=3b8bf834:2805:3)
+    at App
+at a
+at a
+at https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=74c276cb:337:18
+at div
+at div
+at main
+at div
+at div
+at Home (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/src/pages/Home.tsx:29:31)
+at Route (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=74c276cb:323:16)
+at Switch (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=74c276cb:379:17)
+at div
+at div
+at Router (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/src/App.tsx?t=1747114168533&amp;v=AHrMORTi7zHjtS1iPiHxH:37:42)
+at Provider (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-PLT6GTVM.js?v=027363a0:38:15)
+at TooltipProvider (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=e89816aa:62:5)
+at ThemeProvider (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/src/components/ThemeProvider.tsx:25:3)
+at QueryClientProvider (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=3b8bf834:2805:3)
+at App
+at t.value (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:17465)
+at new t (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:12630)
+at t.value (https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:32766)
+at https://b3d0b036-3db4-4aec-8233-35cf2c3dbe02-00-24vaqfj86gnhp.kirk.replit.dev/__replco/static/devtools/eruda/3.2.3/eruda.js:2:34400

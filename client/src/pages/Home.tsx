@@ -85,9 +85,9 @@ export default function Home() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Browse by Category</h2>
               <Link href="/categories">
-                <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
+                <div className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium cursor-pointer">
                   View all
-                </a>
+                </div>
               </Link>
             </div>
             
@@ -122,9 +122,9 @@ export default function Home() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Featured Terms</h2>
               <Link href="/terms">
-                <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
+                <div className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium cursor-pointer">
                   Browse all terms
-                </a>
+                </div>
               </Link>
             </div>
             
@@ -166,9 +166,9 @@ export default function Home() {
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">Recently Viewed</h2>
                 <Link href="/history">
-                  <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
+                  <div className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium cursor-pointer">
                     View all history
-                  </a>
+                  </div>
                 </Link>
               </div>
               
@@ -199,9 +199,9 @@ export default function Home() {
                           </div>
                         </div>
                         <Link href={`/term/${term.id}`}>
-                          <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
+                          <div className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium cursor-pointer">
                             View
-                          </a>
+                          </div>
                         </Link>
                       </div>
                     ))}

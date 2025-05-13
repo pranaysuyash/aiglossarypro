@@ -24,7 +24,10 @@ export async function importFromS3() {
   const bucketName = process.env.S3_BUCKET_NAME;
   if (!bucketName) {
     console.error('S3 bucket name not configured');
-    return;
+    return {
+      success: false,
+      message: 'S3 bucket name not configured'
+    };
   }
   
   try {
@@ -40,7 +43,10 @@ export async function importFromS3() {
     
     if (!files || files.length === 0) {
       console.log('No Excel files found in bucket');
-      return;
+      return {
+        success: false,
+        message: 'No Excel files found in bucket'
+      };
     }
     
     console.log(`Found ${files.length} Excel files in bucket`);
@@ -49,7 +55,10 @@ export async function importFromS3() {
     const firstFile = files[0];
     if (!firstFile.Key) {
       console.error('No valid key for file');
-      return;
+      return {
+        success: false,
+        message: 'No valid key for file'
+      };
     }
     
     console.log(`Processing file: ${firstFile.Key}`);
@@ -72,7 +81,10 @@ export async function importFromS3() {
     
     if (!response.Body) {
       console.error('No data received from S3');
-      return;
+      return {
+        success: false,
+        message: 'No data received from S3'
+      };
     }
     
     // Create write stream for file
@@ -95,83 +107,133 @@ export async function importFromS3() {
     
     console.log('Processing Excel file...');
     
-    // Process as CSV for simplicity
-    const csvPath = tempFilePath.replace('.xlsx', '.csv');
+    // Let's try a different approach - directly analyze the Excel file
+    const ExcelJS = await import('exceljs');
+    const workbook = new ExcelJS.default.Workbook();
     
-    // Convert to CSV using a shell command
-    await new Promise((resolve, reject) => {
-      exec(`npx xlsx-cli "${tempFilePath}" -o "${csvPath}"`, (error: Error | null) => {
-        if (error) {
-          console.error('Error converting Excel to CSV:', error);
-          reject(error);
-          return;
-        }
-        console.log(`Converted to CSV: ${csvPath}`);
-        resolve(true);
-      });
-    });
-    
-    // Process CSV file
-    if (fs.existsSync(csvPath)) {
-      const csvContent = fs.readFileSync(csvPath, 'utf8');
-      const lines = csvContent.split('\n');
+    try {
+      await workbook.xlsx.readFile(tempFilePath);
       
-      // Determine headers from first line
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      // Define our main categories
+      const mainCategories = [
+        'Machine Learning',
+        'Deep Learning',
+        'Natural Language Processing',
+        'Computer Vision',
+        'Reinforcement Learning',
+        'Statistics & Probability'
+      ];
       
-      // Map indices
-      const nameIndex = headers.indexOf('name');
-      const definitionIndex = headers.indexOf('definition');
-      const categoryIndex = headers.indexOf('category');
-      
-      if (nameIndex === -1 || definitionIndex === -1) {
-        console.error('Required columns not found in CSV');
-        return;
-      }
-      
+      // For storing categories and subcategories
       const categorySet = new Set<string>();
       const subcatMap = new Map<string, Set<string>>();
       
-      // Process data rows
-      for (let i = 1; i < lines.length; i++) {
-        if (!lines[i].trim()) continue;
+      // Process each worksheet
+      for (const worksheet of workbook.worksheets) {
+        console.log(`Processing worksheet: ${worksheet.name}`);
         
-        const row = lines[i].split(',');
+        // For storing terms
+        const terms = [];
         
-        const name = row[nameIndex]?.trim();
-        const definition = row[definitionIndex]?.trim();
+        // Track the current category context
+        let currentCategory = '';
         
-        if (!name || !definition) continue;
-        
-        // Process category
-        let categoryName = '';
-        let subcats: string[] = [];
-        
-        if (categoryIndex !== -1 && row[categoryIndex]) {
-          const categoryPath = row[categoryIndex].trim();
-          if (categoryPath) {
-            const parts = categoryPath.split('-').map(p => p.trim());
-            categoryName = parts[0];
-            categorySet.add(categoryName);
+        // Process each row
+        worksheet.eachRow((row, rowNumber) => {
+          const cellValues = row.values;
+          if (!cellValues || typeof cellValues === 'string') return;
+          
+          // Convert values to string array
+          const rowData = Array.from(cellValues).map(val => 
+            val !== null && val !== undefined ? String(val).trim() : ''
+          ).filter(Boolean);
+          
+          if (rowData.length === 0) return;
+          
+          // Check if this is a category header
+          const headerMatch = rowData[0].match(/^(#+)\s+(.+)$/);
+          if (headerMatch) {
+            const level = headerMatch[1].length;
+            const headerText = headerMatch[2].trim();
             
-            if (parts.length > 1) {
-              subcats = parts.slice(1);
+            // If level 1, this is a main category
+            if (level === 1) {
+              // Find the closest main category this might belong to
+              const matchedCategory = mainCategories.find(cat => 
+                headerText.includes(cat) || cat.includes(headerText)
+              );
               
-              if (!subcatMap.has(categoryName)) {
-                subcatMap.set(categoryName, new Set<string>());
+              currentCategory = matchedCategory || headerText;
+              categorySet.add(currentCategory);
+              console.log(`Found category: ${currentCategory}`);
+            } 
+            // Otherwise, it's a subcategory
+            else if (currentCategory) {
+              if (!subcatMap.has(currentCategory)) {
+                subcatMap.set(currentCategory, new Set<string>());
               }
-              
-              for (const subcat of subcats) {
-                subcatMap.get(categoryName)?.add(subcat);
-              }
+              subcatMap.get(currentCategory)?.add(headerText);
+              console.log(`Found subcategory: ${headerText} under ${currentCategory}`);
+            }
+            
+            return;
+          }
+          
+          // Check if this is a term with definition
+          if (rowData.length >= 2) {
+            const termName = rowData[0];
+            const definition = rowData[1];
+            
+            if (termName && definition && !termName.startsWith('#')) {
+              terms.push({
+                name: termName,
+                definition: definition,
+                category: currentCategory
+              });
+              console.log(`Found term: ${termName}`);
             }
           }
-        }
+        });
         
-        console.log(`Processed row ${i}: ${name}`);
+        console.log(`Extracted ${terms.length} terms from worksheet ${worksheet.name}`);
+        
+        // Save the terms to database
+        for (const term of terms) {
+          if (!term.category) continue;
+          
+          // Get the category ID
+          const [category] = await db.select().from(categories)
+            .where(eq(categories.name, term.category))
+            .limit(1);
+          
+          if (!category) {
+            // Create the category if it doesn't exist
+            const [newCategory] = await db.insert(categories)
+              .values({ name: term.category })
+              .returning();
+              
+            // Create the term with the new category
+            if (newCategory) {
+              await db.insert(terms).values({
+                name: term.name,
+                definition: term.definition,
+                shortDefinition: term.definition.slice(0, 150) + (term.definition.length > 150 ? '...' : ''),
+                categoryId: newCategory.id
+              });
+            }
+          } else {
+            // Create the term with existing category
+            await db.insert(terms).values({
+              name: term.name,
+              definition: term.definition,
+              shortDefinition: term.definition.slice(0, 150) + (term.definition.length > 150 ? '...' : ''),
+              categoryId: category.id
+            });
+          }
+        }
       }
       
-      // Store categories
+      // Store categories if they don't already exist
       console.log(`Found ${categorySet.size} categories`);
       for (const catName of categorySet) {
         const existingCat = await db.select().from(categories).where(eq(categories.name, catName)).limit(1);
@@ -189,8 +251,10 @@ export async function importFromS3() {
         
         if (!category) continue;
         
-        for (const subcatName of subcatSet) {
-          const existingSubcat = await db.select().from(subcategories).where(eq(subcategories.name, subcatName)).limit(1);
+        for (const subcatName of Array.from(subcatSet)) {
+          const existingSubcat = await db.select().from(subcategories)
+            .where(eq(subcategories.name, subcatName))
+            .limit(1);
           
           if (existingSubcat.length === 0) {
             await db.insert(subcategories).values({
@@ -203,16 +267,20 @@ export async function importFromS3() {
       }
       console.log(`Added ${subcatCount} subcategories`);
       
+    } catch (excelError) {
+      console.error('Error processing Excel file:', excelError);
+      return {
+        success: false,
+        error: excelError instanceof Error ? excelError.message : String(excelError)
+      };
+    } finally {
       // Clean up
       try {
         fs.unlinkSync(tempFilePath);
-        fs.unlinkSync(csvPath);
         console.log('Removed temporary files');
       } catch (err) {
         console.error('Error cleaning up temp files:', err);
       }
-    } else {
-      console.error('CSV file not created successfully');
     }
     
     return {

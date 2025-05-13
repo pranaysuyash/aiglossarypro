@@ -431,6 +431,57 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // S3 Integration Routes
   
+  // Temporary setup route for initial data import (will be removed in production)
+  app.get('/api/s3/setup', async (req, res) => {
+    try {
+      const bucketName = process.env.S3_BUCKET_NAME;
+      if (!bucketName) {
+        return res.status(400).json({ message: "S3 bucket name not configured" });
+      }
+      
+      // Attempt to list files to check connectivity
+      const files = await listExcelFiles(bucketName, '');
+      
+      if (files && files.length > 0) {
+        // Process the first Excel file if it exists
+        const firstExcelFile = files.find(file => 
+          file.key?.toLowerCase().endsWith('.xlsx') || 
+          file.key?.toLowerCase().endsWith('.xls')
+        );
+        
+        if (firstExcelFile && firstExcelFile.key) {
+          console.log(`Processing file: ${firstExcelFile.key}`);
+          const result = await processExcelFromS3(bucketName, firstExcelFile.key, true);
+          return res.json({ 
+            success: true, 
+            message: "Excel file processed successfully", 
+            file: firstExcelFile.key,
+            result
+          });
+        } else {
+          return res.json({ 
+            success: false, 
+            message: "No Excel files found in bucket", 
+            files 
+          });
+        }
+      } else {
+        return res.json({ 
+          success: false, 
+          message: "No files found in bucket", 
+          files 
+        });
+      }
+    } catch (error) {
+      console.error("Error in S3 setup:", error);
+      return res.status(500).json({ 
+        success: false, 
+        message: "Error processing S3 data",
+        error: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+  
   // List Excel files in S3 bucket
   app.get('/api/s3/files', isAuthenticated, async (req: any, res) => {
     try {

@@ -29,13 +29,13 @@ export function initS3Client() {
 
   if (!s3Client) {
     s3Client = new S3Client({
-      region: process.env.AWS_REGION || 'us-east-1',
+      region: process.env.AWS_REGION || 'ap-south-1', // Use ap-south-1 based on the error message
       credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
       }
     });
-    console.log('S3 client initialized');
+    console.log('S3 client initialized with region: ap-south-1');
   }
   
   return s3Client;

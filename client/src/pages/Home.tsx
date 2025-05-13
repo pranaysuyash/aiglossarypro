@@ -105,14 +105,18 @@ export default function Home() {
                     </div>
                   </div>
                 ))
-              ) : (
-                categories?.slice(0, 6).map((category: ICategory) => (
+              ) : Array.isArray(categories) && categories.length > 0 ? (
+                categories.slice(0, 6).map((category: ICategory) => (
                   <CategoryCard 
                     key={category.id} 
                     category={category} 
                     termCount={category.termCount || 0}
                   />
                 ))
+              ) : (
+                <div className="col-span-3 text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+                  <p className="text-gray-500 dark:text-gray-400">No categories found. Check back later!</p>
+                </div>
               )}
             </div>
           </div>
@@ -148,14 +152,18 @@ export default function Home() {
                     </div>
                   </div>
                 ))
-              ) : (
-                featuredTerms?.map((term: ITerm) => (
+              ) : Array.isArray(featuredTerms) && featuredTerms.length > 0 ? (
+                featuredTerms.map((term: ITerm) => (
                   <TermCard 
                     key={term.id} 
                     term={term}
                     isFavorite={isAuthenticated ? !!favoritesMap[term.id] : false}
                   />
                 ))
+              ) : (
+                <div className="col-span-3 text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+                  <p className="text-gray-500 dark:text-gray-400">No featured terms available at the moment.</p>
+                </div>
               )}
             </div>
           </div>
@@ -188,7 +196,7 @@ export default function Home() {
                       </div>
                     ))}
                   </div>
-                ) : recentlyViewed?.length > 0 ? (
+                ) : Array.isArray(recentlyViewed) && recentlyViewed.length > 0 ? (
                   <div className="divide-y divide-gray-100 dark:divide-gray-700">
                     {recentlyViewed.map((term: any) => (
                       <div key={term.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition flex justify-between items-center">

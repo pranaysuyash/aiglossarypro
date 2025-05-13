@@ -27,9 +27,10 @@ export default function Header() {
     window.location.href = "/api/login";
   };
 
-  const initials = user?.firstName && user?.lastName 
-    ? `${user.firstName[0]}${user.lastName[0]}`
-    : user?.email?.substring(0, 2).toUpperCase() || "ML";
+  const userObj = user as any;
+  const initials = userObj?.firstName && userObj?.lastName 
+    ? `${userObj.firstName[0]}${userObj.lastName[0]}`
+    : userObj?.email?.substring(0, 2).toUpperCase() || "ML";
 
   return (
     <header className="bg-white shadow-sm sticky top-0 z-10 dark:bg-gray-800">

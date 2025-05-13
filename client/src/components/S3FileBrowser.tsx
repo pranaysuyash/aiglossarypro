@@ -28,18 +28,46 @@ export default function S3FileBrowser() {
         setLoading(true);
         setError(null);
         
-        const response = await fetch('/api/s3/list-files');
-        const data = await response.json();
+        // First check if we have AWS credentials configured
+        const credResponse = await fetch('/api/s3/setup');
+        const credData = await credResponse.json();
         
-        if (data.success) {
-          setFiles(data.files || []);
+        if (!credData.initialized) {
+          setError('AWS S3 credentials are not properly configured. Please check your environment variables.');
+          setFiles([]);
+          setLoading(false);
+          return;
+        }
+        
+        // If credentials are configured, try to list files
+        const response = await fetch('/api/s3/files');
+        
+        // Check if we got HTML instead of JSON (error)
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('text/html')) {
+          throw new Error('Received HTML instead of JSON. API endpoint may be misconfigured.');
+        }
+        
+        const data = await response.json();
+        console.log('Files API response:', data);
+        
+        if (Array.isArray(data)) {
+          // Original endpoint format
+          setFiles(data.map(file => ({
+            key: file.key,
+            size: file.size,
+            lastModified: file.lastModified
+          })));
+        } else if (data.success && Array.isArray(data.files)) {
+          // New endpoint format
+          setFiles(data.files);
         } else {
           setError(data.message || 'Failed to fetch files');
           setFiles([]);
         }
       } catch (err) {
         console.error('Error fetching S3 files:', err);
-        setError('Network error while fetching files');
+        setError(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
         setFiles([]);
       } finally {
         setLoading(false);
@@ -88,7 +116,15 @@ export default function S3FileBrowser() {
       
       // Make the API request
       const response = await fetch(`/api/s3/python-import?${params.toString()}`);
+      
+      // Check if we got HTML instead of JSON (error)
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('text/html')) {
+        throw new Error('Received HTML instead of JSON. API endpoint may be misconfigured.');
+      }
+      
       const data = await response.json();
+      console.log('Processing response:', data);
       
       setResult(data);
       
@@ -99,7 +135,7 @@ export default function S3FileBrowser() {
       }
     } catch (err) {
       console.error('Error processing file:', err);
-      setError('Network error while processing file');
+      setError(`Error: ${err instanceof Error ? err.message : 'Unknown error while processing file'}`);
     } finally {
       setProcessing(false);
     }

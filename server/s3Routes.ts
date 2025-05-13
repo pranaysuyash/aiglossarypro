@@ -1,9 +1,43 @@
 import { Router } from 'express';
-import { listExcelFiles, processExcelFromS3 } from './s3Service';
+import { 
+  listExcelFiles, 
+  processExcelFromS3,
+  getS3Client,
+  initS3Client
+} from './s3Service';
 import { processAndImportFromS3 } from './pythonProcessor';
 import { isAuthenticated } from './replitAuth';
 
 const router = Router();
+
+// Check S3 setup status
+router.get('/setup', async (req, res) => {
+  try {
+    const hasAccessKey = !!process.env.AWS_ACCESS_KEY_ID;
+    const hasSecretKey = !!process.env.AWS_SECRET_ACCESS_KEY;
+    const hasBucketName = !!process.env.S3_BUCKET_NAME;
+    
+    // Initialize S3 client
+    const s3Client = initS3Client();
+    
+    res.json({
+      initialized: !!s3Client,
+      credentials: {
+        hasAccessKey,
+        hasSecretKey,
+        hasBucketName
+      },
+      bucketName: process.env.S3_BUCKET_NAME,
+      region: process.env.AWS_REGION || 'ap-south-1'
+    });
+  } catch (error) {
+    console.error("Error checking S3 setup:", error);
+    res.status(500).json({
+      initialized: false,
+      error: error instanceof Error ? error.message : String(error)
+    });
+  }
+});
 
 // List Excel files in S3 bucket
 router.get('/list-files', async (req, res) => {

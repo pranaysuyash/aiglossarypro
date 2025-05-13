@@ -17,17 +17,28 @@ router.get('/setup', async (req, res) => {
     const hasSecretKey = !!process.env.AWS_SECRET_ACCESS_KEY;
     const hasBucketName = !!process.env.S3_BUCKET_NAME;
     
-    // Initialize S3 client
-    const s3Client = initS3Client();
+    // Initialize S3 client if not already initialized
+    let s3Client;
+    try {
+      s3Client = getS3Client();
+    } catch (e) {
+      // If getS3Client fails, try to initialize a new one
+      s3Client = initS3Client();
+    }
+    
+    if (!s3Client || !hasAccessKey || !hasSecretKey || !hasBucketName) {
+      console.log('S3 credentials missing or incomplete:',
+        { hasAccessKey, hasSecretKey, hasBucketName, hasS3Client: !!s3Client });
+    }
     
     res.json({
-      initialized: !!s3Client,
+      initialized: !!s3Client && hasAccessKey && hasSecretKey && hasBucketName,
       credentials: {
         hasAccessKey,
         hasSecretKey,
         hasBucketName
       },
-      bucketName: process.env.S3_BUCKET_NAME,
+      bucketName: hasBucketName ? process.env.S3_BUCKET_NAME : null,
       region: process.env.AWS_REGION || 'ap-south-1'
     });
   } catch (error) {

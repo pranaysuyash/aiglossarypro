@@ -14,6 +14,7 @@ import { processAndImportFromS3, importProcessedData } from "./pythonProcessor";
 import * as path from 'path';
 import * as fs from 'fs';
 import { exec } from 'child_process';
+import s3Routes from './s3Routes';
 
 // Set up multer for file uploads
 const upload = multer({
@@ -40,6 +41,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Initialize S3 client if credentials are present
   initS3Client();
+  
+  // Mount S3 routes
+  app.use('/api/s3', s3Routes);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {

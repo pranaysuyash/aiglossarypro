@@ -15,6 +15,12 @@ let s3Client: S3Client | null = null;
 
 // Initialize S3 client with credentials
 export function initS3Client() {
+  // Log environment variables (excluding sensitive values)
+  console.log('Initializing S3 client with credentials');
+  console.log('AWS_ACCESS_KEY_ID exists:', !!process.env.AWS_ACCESS_KEY_ID);
+  console.log('AWS_SECRET_ACCESS_KEY exists:', !!process.env.AWS_SECRET_ACCESS_KEY);
+  console.log('S3_BUCKET_NAME:', process.env.S3_BUCKET_NAME);
+  
   // Check if required environment variables are set
   if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
     console.warn('AWS credentials not found. S3 functionality will not work.');

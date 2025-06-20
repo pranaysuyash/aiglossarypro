@@ -7,6 +7,9 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import TermDetail from "@/pages/TermDetail";
+import Terms from "@/pages/Terms";
+import Categories from "@/pages/Categories";
+import Trending from "@/pages/Trending";
 import Dashboard from "@/pages/Dashboard";
 import Favorites from "@/pages/Favorites";
 import Admin from "@/pages/Admin";
@@ -35,6 +38,9 @@ function Router() {
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/term/:id" component={TermDetail} />
+          <Route path="/terms" component={Terms} />
+          <Route path="/categories" component={Categories} />
+          <Route path="/trending" component={Trending} />
           <Route path="/dashboard">
             {isAuthenticated ? <Dashboard /> : <Home />}
           </Route>

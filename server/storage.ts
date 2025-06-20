@@ -1275,29 +1275,6 @@ export class DatabaseStorage implements IStorage {
     return result.count;
   }
 
-  async getRecentTerms(limit: number = 10): Promise<any[]> {
-    const results = await db.select({
-      id: terms.id,
-      name: terms.name,
-      shortDefinition: terms.shortDefinition,
-      definition: terms.definition,
-      category: categories.name,
-      updatedAt: terms.updatedAt
-    })
-    .from(terms)
-    .leftJoin(categories, eq(terms.categoryId, categories.id))
-    .orderBy(desc(terms.updatedAt))
-    .limit(limit);
-    
-    return results.map(term => ({
-      id: term.id,
-      name: term.name,
-      shortDefinition: term.shortDefinition || '',
-      definition: term.definition,
-      category: term.category || 'Uncategorized',
-      updatedAt: term.updatedAt
-    }));
-  }
 
   async updateTerm(termId: string, updates: any): Promise<any> {
     const [updatedTerm] = await db.update(terms)
@@ -1309,6 +1286,132 @@ export class DatabaseStorage implements IStorage {
       .returning();
     
     return updatedTerm;
+  }
+
+  async getAllTerms(options: {
+    limit?: number;
+    offset?: number;
+    categoryId?: string;
+    searchTerm?: string;
+  } = {}): Promise<any[]> {
+    const { limit = 50, offset = 0, categoryId, searchTerm } = options;
+    
+    try {
+      let whereConditions = [];
+      
+      if (categoryId) {
+        whereConditions.push(eq(terms.categoryId, categoryId));
+      }
+      
+      if (searchTerm) {
+        whereConditions.push(
+          sql`(${terms.name} ILIKE ${'%' + searchTerm + '%'} OR ${terms.definition} ILIKE ${'%' + searchTerm + '%'})`
+        );
+      }
+      
+      const result = await db.select({
+        id: terms.id,
+        name: terms.name,
+        shortDefinition: terms.shortDefinition,
+        definition: terms.definition,
+        keyCharacteristics: terms.keyCharacteristics,
+        viewCount: terms.viewCount,
+        categoryId: categories.id,
+        category: categories.name,
+        createdAt: terms.createdAt,
+        updatedAt: terms.updatedAt
+      })
+      .from(terms)
+      .leftJoin(categories, eq(terms.categoryId, categories.id))
+      .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
+      .orderBy(asc(terms.name))
+      .limit(limit)
+      .offset(offset);
+
+      return result.map(term => ({
+        ...term,
+        subcategories: [] // Simplified for now
+      }));
+    } catch (error) {
+      console.error("Error in getAllTerms:", error);
+      throw error;
+    }
+  }
+
+  async getTrendingTerms(limit: number = 10): Promise<any[]> {
+    const result = await db.select({
+      id: terms.id,
+      name: terms.name,
+      shortDefinition: terms.shortDefinition,
+      definition: terms.definition,
+      viewCount: terms.viewCount,
+      categoryId: categories.id,
+      category: categories.name,
+      createdAt: terms.createdAt,
+      updatedAt: terms.updatedAt
+    })
+    .from(terms)
+    .leftJoin(categories, eq(terms.categoryId, categories.id))
+    .orderBy(desc(terms.viewCount), desc(terms.updatedAt))
+    .limit(limit);
+
+    // Get subcategories for each term
+    const enrichedTerms = [];
+    for (const term of result) {
+      const subcats = await db.select({
+        id: subcategories.id,
+        name: subcategories.name,
+        categoryId: subcategories.categoryId
+      })
+      .from(subcategories)
+      .innerJoin(termSubcategories, eq(subcategories.id, termSubcategories.subcategoryId))
+      .where(eq(termSubcategories.termId, term.id));
+      
+      enrichedTerms.push({
+        ...term,
+        subcategories: subcats
+      });
+    }
+    
+    return enrichedTerms;
+  }
+
+  async getRecentTerms(limit: number = 10): Promise<any[]> {
+    const result = await db.select({
+      id: terms.id,
+      name: terms.name,
+      shortDefinition: terms.shortDefinition,
+      definition: terms.definition,
+      viewCount: terms.viewCount,
+      categoryId: categories.id,
+      category: categories.name,
+      createdAt: terms.createdAt,
+      updatedAt: terms.updatedAt
+    })
+    .from(terms)
+    .leftJoin(categories, eq(terms.categoryId, categories.id))
+    .orderBy(desc(terms.createdAt))
+    .limit(limit);
+
+    // Get subcategories for each term
+    const enrichedTerms = [];
+    for (const term of result) {
+      const subcats = await db.select({
+        id: subcategories.id,
+        name: subcategories.name,
+        categoryId: subcategories.categoryId
+      })
+      .from(subcategories)
+      .innerJoin(termSubcategories, eq(subcategories.id, termSubcategories.subcategoryId))
+      .where(eq(termSubcategories.termId, term.id));
+      
+      enrichedTerms.push({
+        ...term,
+        subcategories: subcats
+      });
+    }
+    
+    return enrichedTerms;
   }
 }
 

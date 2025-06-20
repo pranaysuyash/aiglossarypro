@@ -147,6 +147,50 @@ export async function registerRoutes(app: Express): Promise<void> {
     }
   });
 
+  // Get all terms with pagination and filtering
+  app.get('/api/terms', async (req, res) => {
+    try {
+      const { page = 1, limit = 50, category, search } = req.query;
+      const offset = (parseInt(page as string) - 1) * parseInt(limit as string);
+      
+      const result = await storage.getAllTerms({
+        limit: parseInt(limit as string),
+        offset,
+        categoryId: category as string,
+        searchTerm: search as string
+      });
+      
+      res.json(result);
+    } catch (error) {
+      console.error("Error fetching all terms:", error);
+      res.status(500).json({ message: "Failed to fetch terms" });
+    }
+  });
+
+  // Get trending terms (most viewed)
+  app.get('/api/terms/trending', async (req, res) => {
+    try {
+      const { limit = 10 } = req.query;
+      const trendingTerms = await storage.getTrendingTerms(parseInt(limit as string));
+      res.json(trendingTerms);
+    } catch (error) {
+      console.error("Error fetching trending terms:", error);
+      res.status(500).json({ message: "Failed to fetch trending terms" });
+    }
+  });
+
+  // Get recently added terms
+  app.get('/api/terms/recent', async (req, res) => {
+    try {
+      const { limit = 10 } = req.query;
+      const recentTerms = await storage.getRecentTerms(parseInt(limit as string));
+      res.json(recentTerms);
+    } catch (error) {
+      console.error("Error fetching recent terms:", error);
+      res.status(500).json({ message: "Failed to fetch recent terms" });
+    }
+  });
+
   app.get('/api/search', async (req, res) => {
     try {
       const query = req.query.q as string;

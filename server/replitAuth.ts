@@ -16,6 +16,9 @@ if (!features.replitAuthEnabled) {
 
 const getOidcConfig = memoize(
   async () => {
+    if (!features.replitAuthEnabled) {
+      throw new Error('Replit authentication is not configured');
+    }
     const authConfig = getAuthConfig();
     return await client.discovery(
       new URL(authConfig.issuerUrl),
@@ -77,6 +80,11 @@ export async function setupAuth(app: Express) {
   app.use(getSession());
   app.use(passport.initialize());
   app.use(passport.session());
+
+  if (!features.replitAuthEnabled) {
+    console.log('⚠️  Skipping OIDC setup: Replit authentication disabled');
+    return;
+  }
 
   const config = await getOidcConfig();
 

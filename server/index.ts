@@ -1,10 +1,15 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import express, { type Request, Response, NextFunction } from "express";
+import expressWs from "express-ws";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { checkAndLoadExcelData } from "./autoLoadExcel";
 import { getServerConfig, logConfigStatus } from "./config";
 
 const app = express();
+const wsInstance = expressWs(app);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -66,11 +71,7 @@ app.use((req, res, next) => {
 
   // Use configurable port (fallback to 5000 for Replit compatibility)
   const port = process.env.REPLIT_ENVIRONMENT ? 5000 : serverConfig.port;
-  server.listen({
-    port,
-    host: serverConfig.host,
-    reusePort: true,
-  }, () => {
+  server.listen(port, () => {
     log(`🚀 Server running on port ${port} in ${serverConfig.nodeEnv} mode`);
     
     // Auto-load Excel data if available

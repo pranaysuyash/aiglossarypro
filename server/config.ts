@@ -188,7 +188,7 @@ export function getSessionConfig() {
 export function getServerConfig() {
   return {
     port: parseInt(config.PORT, 10),
-    host: '0.0.0.0',
+    host: process.env.NODE_ENV === 'development' ? '127.0.0.1' : '0.0.0.0',
     nodeEnv: config.NODE_ENV
   };
 }

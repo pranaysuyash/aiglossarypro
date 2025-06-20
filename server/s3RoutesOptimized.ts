@@ -1,4 +1,5 @@
 import { Router } from 'express';
+import expressWs from 'express-ws';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -7,6 +8,7 @@ import { isAuthenticated } from './replitAuth';
 import { WebSocket } from 'ws';
 
 const router = Router();
+const wsRouter = expressWs(router).getWss;
 
 // Configure multer for file uploads with enhanced validation
 const upload = multer({
@@ -481,7 +483,9 @@ router.post('/cleanup', isAuthenticated, async (req, res) => {
   }
 });
 
-// WebSocket endpoint for real-time progress updates
+// WebSocket endpoint for real-time progress updates (temporarily disabled)
+// TODO: Re-enable after proper WebSocket setup
+/*
 router.ws('/progress', (ws, req) => {
   const sessionId = req.query.sessionId as string;
   
@@ -507,5 +511,6 @@ router.ws('/progress', (ws, req) => {
     ws.close(1008, 'Session ID required');
   }
 });
+*/
 
 export default router;

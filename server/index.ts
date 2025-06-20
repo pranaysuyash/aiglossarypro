@@ -47,7 +47,7 @@ app.use((req, res, next) => {
   // Load and validate configuration
   logConfigStatus();
   
-  const server = await registerRoutes(app);
+  await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;
@@ -64,19 +64,27 @@ app.use((req, res, next) => {
   // setting up all the other routes so the catch-all route
   // doesn't interfere with the other routes
   if (serverConfig.nodeEnv === "development") {
-    await setupVite(app, server);
+    // For now, skip Vite setup to get basic server working
+    // TODO: Re-enable Vite setup after basic functionality is confirmed
+    serveStatic(app);
   } else {
     serveStatic(app);
   }
 
   // Use configurable port (fallback to 5000 for Replit compatibility)
   const port = process.env.REPLIT_ENVIRONMENT ? 5000 : serverConfig.port;
-  server.listen(port, () => {
-    log(`🚀 Server running on port ${port} in ${serverConfig.nodeEnv} mode`);
+  
+  const server = app.listen(port, '127.0.0.1', () => {
+    log(`🚀 Server running on http://127.0.0.1:${port} in ${serverConfig.nodeEnv} mode`);
+    log(`🔍 Server address: ${JSON.stringify(server.address())}`);
+  });
+
+  server.on('error', (err) => {
+    console.error('❌ Server error:', err);
+  });
     
-    // Auto-load Excel data if available
-    checkAndLoadExcelData().catch(err => {
-      console.error("Failed to auto-load Excel data:", err);
-    });
+  // Auto-load Excel data if available
+  checkAndLoadExcelData().catch(err => {
+    console.error("Failed to auto-load Excel data:", err);
   });
 })();

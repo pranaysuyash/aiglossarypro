@@ -83,8 +83,6 @@ app.use((req, res, next) => {
     console.error('❌ Server error:', err);
   });
     
-  // Auto-load Excel data if available
-  checkAndLoadExcelData().catch(err => {
-    console.error("Failed to auto-load Excel data:", err);
-  });
+  // Temporarily disable auto-loading to fix SQL issues first
+  console.log("⚠️  Excel auto-loading temporarily disabled - fixing SQL issues first");
 })();

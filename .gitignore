@@ -12,6 +12,11 @@ temp/*.xls
 *.log
 *.tmp
 
+# Data files (too large for git)
+data/*.xlsx
+data/*.csv
+data/*.xls
+
 # Python cache
 __pycache__/
 *.pyc

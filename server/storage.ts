@@ -10,9 +10,9 @@ import {
   userProgress,
   termViews,
   userSettings
-} from "@shared/schema";
+} from "@shared/enhancedSchema";
 import { db } from "./db";
-import { eq, desc, sql, and, like, ilike, asc, gte, lte, not, isNull } from "drizzle-orm";
+import { eq, desc, sql, and, like, ilike, asc, gte, lte, not, isNull, inArray, or } from "drizzle-orm";
 import { 
   createInsertSchema, 
   createSelectSchema
@@ -235,32 +235,24 @@ export class DatabaseStorage implements IStorage {
     .innerJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
     .where(eq(termSubcategories.termId, id));
     
-    // Get related terms (terms with the same category or subcategories)
-    const relatedTermIds = await db.select({
-      termId: termSubcategories.termId
-    })
-    .from(termSubcategories)
-    .where(
-      and(
-        not(eq(termSubcategories.termId, id)),
-        eq(termSubcategories.subcategoryId, sql.raw("ANY(SELECT subcategory_id FROM term_subcategories WHERE term_id = $1)", [id]))
-      )
-    );
-    
-    const relatedTerms = await db.select({
+    // Get related terms (simpler approach - terms in the same category)
+    const relatedTerms = term.categoryId ? await db.select({
       id: terms.id,
       name: terms.name
     })
     .from(terms)
     .where(
-      sql`${terms.id} IN (${relatedTermIds.map(rt => rt.termId)})`
+      and(
+        eq(terms.categoryId, term.categoryId),
+        not(eq(terms.id, id))
+      )
     )
-    .limit(6);
+    .limit(6) : [];
     
     // Format the date
     const formattedDate = term.updatedAt ? 
-      format(new Date(term.updatedAt), 'MMMM d, yyyy') : 
-      format(new Date(term.createdAt), 'MMMM d, yyyy');
+      format(term.updatedAt, 'MMMM d, yyyy') : 
+      (term.createdAt ? format(term.createdAt, 'MMMM d, yyyy') : 'Unknown date');
     
     return {
       ...term,
@@ -333,26 +325,40 @@ export class DatabaseStorage implements IStorage {
   }
 
   async searchTerms(query: string): Promise<any[]> {
-    // Search for terms matching the query
+    // Search for terms matching the query - simplified version
     const results = await db.select({
       id: terms.id,
       name: terms.name,
       shortDefinition: terms.shortDefinition,
       category: categories.name,
+      categoryId: categories.id,
+      viewCount: terms.viewCount,
     })
     .from(terms)
     .leftJoin(categories, eq(terms.categoryId, categories.id))
-    .where(
-      or(
-        ilike(terms.name, `%${query}%`),
-        ilike(terms.shortDefinition, `%${query}%`),
-        ilike(terms.definition, `%${query}%`)
-      )
-    )
-    .orderBy(sql`similarity(${terms.name}, ${query}) DESC`)
-    .limit(10);
+    .where(ilike(terms.name, `%${query}%`))
+    .orderBy(terms.name)
+    .limit(20);
     
-    return results;
+    // For each term, get its subcategories
+    const resultWithSubcats = [];
+    
+    for (const term of results) {
+      // Get subcategories for this term
+      const termSubcats = await db.select({
+        name: subcategories.name
+      })
+      .from(termSubcategories)
+      .innerJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
+      .where(eq(termSubcategories.termId, term.id));
+      
+      resultWithSubcats.push({
+        ...term,
+        subcategories: termSubcats.map(sc => sc.name)
+      });
+    }
+    
+    return resultWithSubcats;
   }
   
   // Favorites operations
@@ -872,9 +878,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRecommendedTermsForTerm(termId: string, userId: string | null): Promise<any[]> {
-    // Strategy: 
-    // 1. Find terms that share categories/subcategories
-    // 2. Find terms that are often viewed together
+    // Simplified approach: Find terms in the same category
     
     // First check if the term exists
     const [term] = await db.select({
@@ -887,16 +891,14 @@ export class DatabaseStorage implements IStorage {
       throw new Error("Term not found");
     }
     
-    // Get subcategories for this term
-    const termSubcatIds = await db.select({
-      subcategoryId: termSubcategories.subcategoryId
-    })
-    .from(termSubcategories)
-    .where(eq(termSubcategories.termId, termId));
+    // Build WHERE conditions based on whether term has a category
+    let whereConditions = [not(eq(terms.id, termId))];
     
-    const subcatIds = termSubcatIds.map(s => s.subcategoryId);
+    if (term.categoryId) {
+      whereConditions.push(eq(terms.categoryId, term.categoryId));
+    }
     
-    // Find terms with same category or subcategories
+    // Find terms with same category, excluding the current term
     const relatedTerms = await db.select({
       id: terms.id,
       name: terms.name,
@@ -904,38 +906,11 @@ export class DatabaseStorage implements IStorage {
       viewCount: terms.viewCount,
       category: categories.name,
       categoryId: categories.id,
-      score: sql<number>`
-        CASE 
-          WHEN ${terms.categoryId} = ${term.categoryId} THEN 1
-          ELSE 0
-        END +
-        CASE 
-          WHEN EXISTS (
-            SELECT 1 FROM term_subcategories ts
-            WHERE ts.term_id = ${terms.id}
-            AND ts.subcategory_id IN (${subcatIds.length > 0 ? subcatIds : ['00000000-0000-0000-0000-000000000000']})
-          )
-          THEN 2
-          ELSE 0
-        END
-      `
     })
     .from(terms)
     .leftJoin(categories, eq(terms.categoryId, categories.id))
-    .where(
-      and(
-        not(eq(terms.id, termId)),
-        or(
-          eq(terms.categoryId, term.categoryId),
-          subcatIds.length > 0 ? sql`EXISTS (
-            SELECT 1 FROM term_subcategories ts
-            WHERE ts.term_id = ${terms.id}
-            AND ts.subcategory_id IN (${subcatIds})
-          )` : sql`1=0`
-        )
-      )
-    )
-    .orderBy(desc(sql`score`), desc(terms.viewCount))
+    .where(and(...whereConditions))
+    .orderBy(desc(terms.viewCount))
     .limit(3);
     
     // Get subcategories and favorite status for each term
@@ -1297,36 +1272,39 @@ export class DatabaseStorage implements IStorage {
     const { limit = 50, offset = 0, categoryId, searchTerm } = options;
     
     try {
-      let whereConditions = [];
-      
-      if (categoryId) {
-        whereConditions.push(eq(terms.categoryId, categoryId));
-      }
-      
-      if (searchTerm) {
-        whereConditions.push(
-          sql`(${terms.name} ILIKE ${'%' + searchTerm + '%'} OR ${terms.definition} ILIKE ${'%' + searchTerm + '%'})`
-        );
-      }
-      
-      const result = await db.select({
+      // Build query conditionally
+      let query = db.select({
         id: terms.id,
         name: terms.name,
         shortDefinition: terms.shortDefinition,
         definition: terms.definition,
-        keyCharacteristics: terms.keyCharacteristics,
         viewCount: terms.viewCount,
-        categoryId: categories.id,
-        category: categories.name,
-        createdAt: terms.createdAt,
-        updatedAt: terms.updatedAt
+        categoryId: terms.categoryId,
+        category: categories.name
       })
       .from(terms)
-      .leftJoin(categories, eq(terms.categoryId, categories.id))
-      .where(whereConditions.length > 0 ? and(...whereConditions) : undefined)
-      .orderBy(asc(terms.name))
-      .limit(limit)
-      .offset(offset);
+      .leftJoin(categories, eq(terms.categoryId, categories.id));
+      
+      // Add WHERE conditions if any
+      if (categoryId && searchTerm) {
+        query = query.where(
+          and(
+            eq(terms.categoryId, categoryId),
+            sql`(${terms.name} ILIKE ${'%' + searchTerm + '%'} OR ${terms.definition} ILIKE ${'%' + searchTerm + '%'})`
+          )
+        );
+      } else if (categoryId) {
+        query = query.where(eq(terms.categoryId, categoryId));
+      } else if (searchTerm) {
+        query = query.where(
+          sql`(${terms.name} ILIKE ${'%' + searchTerm + '%'} OR ${terms.definition} ILIKE ${'%' + searchTerm + '%'})`
+        );
+      }
+      
+      const result = await query
+        .orderBy(asc(terms.name))
+        .limit(limit)
+        .offset(offset);
 
       return result.map(term => ({
         ...term,
@@ -1413,17 +1391,6 @@ export class DatabaseStorage implements IStorage {
     
     return enrichedTerms;
   }
-}
-
-// Helper function for OR condition
-function or(...conditions: any[]) {
-  if (conditions.length === 0) return sql`1=1`;
-  if (conditions.length === 1) return conditions[0];
-  
-  return sql.raw(
-    `(${conditions.map(() => `(?)`).join(' OR ')})`,
-    conditions.map(c => c.getSQL())
-  );
 }
 
 export const storage = new DatabaseStorage();

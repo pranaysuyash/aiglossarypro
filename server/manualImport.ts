@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { db } from './db';
-import { categories, terms, subcategories, termSubcategories } from '@shared/schema';
+import { categories, terms, subcategories, termSubcategories } from '@shared/enhancedSchema';
 import { eq } from 'drizzle-orm';
 import { S3Client, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { exec } from 'child_process';

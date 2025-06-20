@@ -18,6 +18,9 @@ import { exec } from 'child_process';
 import s3Routes from './s3Routes';
 import s3RoutesOptimized from './s3RoutesOptimized';
 import s3MonitoringRoutes from './s3MonitoringRoutes';
+import { registerEnhancedRoutes } from './enhancedRoutes';
+import { registerEnhancedDemoRoutes } from './enhancedDemoRoutes';
+import { features } from './config';
 
 // Set up multer for file uploads
 const upload = multer({
@@ -49,6 +52,12 @@ export async function registerRoutes(app: Express): Promise<void> {
   app.use('/api/s3', s3Routes);
   app.use('/api/s3-optimized', s3RoutesOptimized);
   app.use('/api/s3-monitoring', s3MonitoringRoutes);
+  
+  // Register enhanced routes for the new parsing system
+  registerEnhancedRoutes(app);
+  
+  // Register demo routes to showcase enhanced features
+  registerEnhancedDemoRoutes(app);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {

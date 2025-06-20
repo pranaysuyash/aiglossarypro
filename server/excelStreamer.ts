@@ -2,7 +2,7 @@ import ExcelJS from 'exceljs';
 import fs from 'fs';
 import path from 'path';
 import { db } from './db';
-import { categories, subcategories, terms, termSubcategories } from '@shared/schema';
+import { categories, subcategories, terms, termSubcategories } from '@shared/enhancedSchema';
 import { eq } from 'drizzle-orm';
 
 interface ProcessResult {

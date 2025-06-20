@@ -1,0 +1,519 @@
+import { useState } from "react";
+import { Link } from "wouter";
+import { 
+  Heart, 
+  Copy, 
+  Share2, 
+  Code, 
+  Play, 
+  TestTube, 
+  Brain,
+  Eye,
+  Clock,
+  TrendingUp,
+  ChevronRight,
+  Star,
+  Bookmark,
+  ExternalLink
+} from "lucide-react";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Progress } from "@/components/ui/progress";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest } from "@/lib/queryClient";
+import { queryClient } from "@/lib/queryClient";
+import { useAuth } from "@/hooks/useAuth";
+import { IEnhancedTerm, ITerm, ITermCardProps } from "@/interfaces/interfaces";
+import ShareMenu from "./ShareMenu";
+
+// Type guard to check if term is enhanced
+const isEnhancedTerm = (term: IEnhancedTerm | ITerm): term is IEnhancedTerm => {
+  return 'mainCategories' in term && 'difficultyLevel' in term;
+};
+
+export default function EnhancedTermCard({ 
+  term, 
+  displayMode = 'default',
+  showInteractive = true,
+  userSettings,
+  isFavorite = false 
+}: ITermCardProps) {
+  const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
+  const [favorite, setFavorite] = useState(isFavorite);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
+
+  const enhanced = isEnhancedTerm(term);
+
+  const handleToggleFavorite = async () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to save favorites",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await apiRequest(
+        favorite ? "DELETE" : "POST", 
+        `/api/favorites/${term.id}`, 
+      );
+      
+      setFavorite(!favorite);
+      queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
+      
+      toast({
+        title: favorite ? "Removed from favorites" : "Added to favorites",
+        description: favorite 
+          ? `${term.name} has been removed from your favorites` 
+          : `${term.name} has been added to your favorites`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update favorites. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCopyLink = async () => {
+    const url = `${window.location.origin}/term/${enhanced ? term.slug : term.id}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast({
+        title: "Link copied",
+        description: "Link has been copied to clipboard",
+      });
+    } catch (error) {
+      toast({
+        title: "Failed to copy",
+        description: "Please try again or copy manually",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleTermClick = async () => {
+    try {
+      await apiRequest("POST", `/api/terms/${term.id}/view`, null);
+    } catch (error) {
+      console.error("Failed to log term view", error);
+    }
+  };
+
+  const getDifficultyColor = (level?: string) => {
+    switch (level?.toLowerCase()) {
+      case 'beginner': return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
+      case 'intermediate': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'advanced': return 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300';
+      case 'expert': return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
+      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300';
+    }
+  };
+
+  const getFeatureIcons = () => {
+    if (!enhanced) return [];
+    
+    const features = [];
+    if (term.hasCodeExamples) features.push({ icon: Code, label: "Code Examples", color: "text-blue-500" });
+    if (term.hasInteractiveElements) features.push({ icon: Play, label: "Interactive", color: "text-purple-500" });
+    if (term.hasCaseStudies) features.push({ icon: TestTube, label: "Case Studies", color: "text-green-500" });
+    if (term.hasImplementation) features.push({ icon: Brain, label: "Implementation", color: "text-orange-500" });
+    
+    return features;
+  };
+
+  const getProgressPercentage = () => {
+    if (!enhanced || !userSettings) return 0;
+    
+    // Calculate based on user's experience level and term difficulty
+    const userLevel = userSettings.experienceLevel || 'intermediate';
+    const termLevel = term.difficultyLevel?.toLowerCase() || 'intermediate';
+    
+    const levels = ['beginner', 'intermediate', 'advanced', 'expert'];
+    const userIndex = levels.indexOf(userLevel);
+    const termIndex = levels.indexOf(termLevel);
+    
+    if (userIndex >= termIndex) return 100;
+    if (userIndex === termIndex - 1) return 75;
+    if (userIndex === termIndex - 2) return 50;
+    return 25;
+  };
+
+  const renderCompactCard = () => (
+    <Card className="h-full transition-all duration-200 hover:shadow-md hover:-translate-y-1">
+      <CardContent className="p-3">
+        <div className="flex items-start justify-between mb-2">
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-sm mb-1 truncate">{term.name}</h3>
+            {enhanced && term.mainCategories.length > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {term.mainCategories[0]}
+              </Badge>
+            )}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className={`h-6 w-6 flex-shrink-0 ml-2 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
+            onClick={handleToggleFavorite}
+            disabled={isSubmitting}
+          >
+            <Heart className={favorite ? 'fill-current' : ''} size={14} />
+          </Button>
+        </div>
+        
+        <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
+          {enhanced ? term.shortDefinition || term.fullDefinition : term.shortDefinition}
+        </p>
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-1">
+            {getFeatureIcons().slice(0, 2).map((feature, index) => (
+              <TooltipProvider key={index}>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <feature.icon className={`h-3 w-3 ${feature.color}`} />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">{feature.label}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ))}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="text-xs h-6 px-2"
+            onClick={() => {
+              handleTermClick();
+              window.location.href = `/term/${enhanced ? term.slug : term.id}`;
+            }}
+          >
+            View
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  const renderDetailedCard = () => (
+    <Card className="h-full transition-all duration-200 hover:shadow-lg">
+      <CardHeader className="pb-3">
+        <div className="flex items-start justify-between">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center space-x-2 mb-2">
+              {enhanced && term.difficultyLevel && (
+                <Badge className={`text-xs ${getDifficultyColor(term.difficultyLevel)}`}>
+                  {term.difficultyLevel}
+                </Badge>
+              )}
+              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
+                <Eye className="h-3 w-3 mr-1" />
+                {term.viewCount}
+              </div>
+            </div>
+            <h3 className="font-bold text-lg mb-1 leading-tight">{term.name}</h3>
+            {enhanced && term.mainCategories.length > 0 && (
+              <div className="flex flex-wrap gap-1 mb-2">
+                {term.mainCategories.slice(0, 3).map((category, index) => (
+                  <Badge key={index} variant="outline" className="text-xs">
+                    {category}
+                  </Badge>
+                ))}
+                {term.mainCategories.length > 3 && (
+                  <Badge variant="outline" className="text-xs">
+                    +{term.mainCategories.length - 3}
+                  </Badge>
+                )}
+              </div>
+            )}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className={`h-8 w-8 flex-shrink-0 ml-2 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
+            onClick={handleToggleFavorite}
+            disabled={isSubmitting}
+          >
+            <Heart className={favorite ? 'fill-current' : ''} size={18} />
+          </Button>
+        </div>
+      </CardHeader>
+
+      <CardContent className="pb-4">
+        <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 leading-relaxed">
+          {enhanced ? 
+            (isExpanded ? term.fullDefinition : (term.shortDefinition || term.fullDefinition.substring(0, 150) + '...')) :
+            term.shortDefinition
+          }
+        </p>
+
+        {enhanced && term.fullDefinition.length > 150 && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsExpanded(!isExpanded)}
+            className="text-xs mb-3 h-6 px-2"
+          >
+            {isExpanded ? 'Show Less' : 'Show More'}
+          </Button>
+        )}
+
+        {enhanced && term.applicationDomains && term.applicationDomains.length > 0 && (
+          <div className="mb-4">
+            <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Applications:
+            </div>
+            <div className="flex flex-wrap gap-1">
+              {term.applicationDomains.slice(0, 4).map((domain, index) => (
+                <Badge key={index} variant="secondary" className="text-xs">
+                  {domain}
+                </Badge>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Feature Icons */}
+        {showInteractive && getFeatureIcons().length > 0 && (
+          <div className="flex items-center space-x-3 mb-4">
+            {getFeatureIcons().map((feature, index) => (
+              <TooltipProvider key={index}>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <div className="flex items-center space-x-1">
+                      <feature.icon className={`h-4 w-4 ${feature.color}`} />
+                      <span className="text-xs text-gray-600 dark:text-gray-400">
+                        {feature.label}
+                      </span>
+                    </div>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">{feature.label}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ))}
+          </div>
+        )}
+
+        {/* Progress Bar for User Level */}
+        {userSettings && enhanced && (
+          <div className="mb-4">
+            <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+              <span>Difficulty Match</span>
+              <span>{getProgressPercentage()}%</span>
+            </div>
+            <Progress value={getProgressPercentage()} className="h-2" />
+          </div>
+        )}
+
+        {/* Keywords */}
+        {enhanced && term.keywords && term.keywords.length > 0 && (
+          <div className="text-xs text-gray-500 dark:text-gray-400">
+            <span className="font-medium">Keywords: </span>
+            <span>{term.keywords.slice(0, 5).join(', ')}</span>
+            {term.keywords.length > 5 && '...'}
+          </div>
+        )}
+      </CardContent>
+      
+      <CardFooter className="border-t border-gray-100 dark:border-gray-800 pt-3 pb-3 flex justify-between items-center">
+        <Button
+          variant="default"
+          size="sm"
+          onClick={() => {
+            handleTermClick();
+            window.location.href = `/term/${enhanced ? term.slug : term.id}`;
+          }}
+          className="flex items-center space-x-1"
+        >
+          <span>Learn More</span>
+          <ChevronRight size={14} />
+        </Button>
+        
+        <div className="flex space-x-1">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCopyLink}>
+                  <Copy size={14} className="text-gray-500 dark:text-gray-400" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy link</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8" 
+                  onClick={() => setIsShareMenuOpen(true)}
+                >
+                  <Share2 size={14} className="text-gray-500 dark:text-gray-400" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Share</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <ShareMenu 
+            isOpen={isShareMenuOpen} 
+            onClose={() => setIsShareMenuOpen(false)}
+            title={term.name}
+            url={`${window.location.origin}/term/${enhanced ? term.slug : term.id}`}
+          />
+        </div>
+      </CardFooter>
+    </Card>
+  );
+
+  const renderDefaultCard = () => (
+    <Card className="h-full flex flex-col transition-shadow hover:shadow-md">
+      <CardContent className="p-4 flex-1">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center space-x-2">
+            {enhanced && term.mainCategories.length > 0 ? (
+              <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300">
+                {term.mainCategories[0]}
+              </Badge>
+            ) : (
+              <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300">
+                {(term as ITerm).category}
+              </Badge>
+            )}
+            {enhanced && term.difficultyLevel && (
+              <Badge className={`text-xs ${getDifficultyColor(term.difficultyLevel)}`}>
+                {term.difficultyLevel}
+              </Badge>
+            )}
+          </div>
+          <Button 
+            variant="ghost" 
+            size="icon" 
+            className={`h-8 w-8 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
+            onClick={handleToggleFavorite}
+            disabled={isSubmitting}
+          >
+            <Heart className={favorite ? 'fill-current' : ''} size={20} />
+          </Button>
+        </div>
+        
+        <h3 className="font-semibold text-lg mb-1">{term.name}</h3>
+        
+        <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-3">
+          {enhanced ? (term.shortDefinition || term.fullDefinition) : term.shortDefinition}
+        </p>
+        
+        {/* Feature indicators */}
+        {showInteractive && getFeatureIcons().length > 0 && (
+          <div className="flex items-center space-x-2 mb-3">
+            {getFeatureIcons().slice(0, 4).map((feature, index) => (
+              <TooltipProvider key={index}>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <feature.icon className={`h-4 w-4 ${feature.color}`} />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="text-xs">{feature.label}</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            ))}
+          </div>
+        )}
+
+        {/* Application domains */}
+        {enhanced && term.applicationDomains && term.applicationDomains.length > 0 && (
+          <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+            <span className="font-medium">Applications: </span>
+            <span>{term.applicationDomains.slice(0, 3).join(', ')}</span>
+            {term.applicationDomains.length > 3 && '...'}
+          </div>
+        )}
+      </CardContent>
+      
+      <CardFooter className="border-t border-gray-100 dark:border-gray-800 p-3 flex justify-between items-center">
+        <div
+          className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium cursor-pointer"
+          onClick={() => {
+            handleTermClick();
+            window.location.href = `/term/${enhanced ? term.slug : term.id}`;
+          }}
+        >
+          Read more
+        </div>
+        
+        <div className="flex space-x-2">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCopyLink}>
+                  <Copy size={16} className="text-gray-500 dark:text-gray-400" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Copy link</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  className="h-8 w-8" 
+                  onClick={() => setIsShareMenuOpen(true)}
+                >
+                  <Share2 size={16} className="text-gray-500 dark:text-gray-400" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Share</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+
+          <ShareMenu 
+            isOpen={isShareMenuOpen} 
+            onClose={() => setIsShareMenuOpen(false)}
+            title={term.name}
+            url={`${window.location.origin}/term/${enhanced ? term.slug : term.id}`}
+          />
+        </div>
+      </CardFooter>
+    </Card>
+  );
+
+  // Return appropriate card based on display mode
+  switch (displayMode) {
+    case 'compact':
+      return renderCompactCard();
+    case 'detailed':
+      return renderDetailedCard();
+    case 'default':
+    default:
+      return renderDefaultCard();
+  }
+}

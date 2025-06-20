@@ -5,7 +5,7 @@ import { exec } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { db } from './db';
-import { categories, subcategories, terms, termSubcategories } from '@shared/schema';
+import { categories, subcategories, terms, termSubcategories } from '@shared/enhancedSchema';
 import { eq } from 'drizzle-orm';
 import { downloadFileFromS3 } from './s3Service';
 
@@ -52,8 +52,9 @@ export async function runPythonExcelProcessor(
         scriptPath = 'server/python/excel_processor.py';
       }
       
-      // Build the command
-      let command = `python ${scriptPath} --input "${localFilePath}" --output "${outputPath}"`;
+      // Build the command using virtual environment
+      const venvPath = path.join(process.cwd(), 'venv', 'bin', 'python');
+      let command = `${venvPath} ${scriptPath} --input "${localFilePath}" --output "${outputPath}"`;
       
       // Add max chunks if specified for testing or limiting processing
       if (maxChunks) {

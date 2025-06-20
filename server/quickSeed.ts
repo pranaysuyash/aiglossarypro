@@ -1,5 +1,5 @@
 import { db } from "./db";
-import { terms, categories, subcategories, termSubcategories } from "@shared/schema";
+import { terms, categories, subcategories, termSubcategories } from "@shared/enhancedSchema";
 import { eq } from "drizzle-orm";
 
 async function quickSeed() {

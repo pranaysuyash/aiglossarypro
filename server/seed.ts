@@ -1,5 +1,5 @@
 import { db } from './db';
-import { categories, subcategories, terms, termSubcategories } from '../shared/schema';
+import { categories, subcategories, terms, termSubcategories } from '../shared/enhancedSchema';
 
 async function seed() {
   console.log('Starting database seeding...');

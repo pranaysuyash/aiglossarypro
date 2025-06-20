@@ -1,7 +1,6 @@
-import * as ExcelJS from 'exceljs';
-import { ITerm, ICategory } from '../shared/interfaces';
+import ExcelJS from 'exceljs';
 import { db } from './db';
-import { terms, categories, subcategories, termSubcategories } from '@shared/schema';
+import { terms, categories, subcategories, termSubcategories } from '../shared/enhancedSchema';
 import { eq } from 'drizzle-orm';
 
 interface ExcelTerm {

@@ -27,6 +27,13 @@ __pycache__/
 .env.test.local
 .env.production.local
 
+# AWS credentials and sensitive files
+*aws*.csv
+*credentials*.csv
+*keys*.csv
+*.pem
+*.key
+
 # IDE files
 .vscode/
 .idea/

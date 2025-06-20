@@ -8,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "../hooks/useAuth";
 import { queryClient } from "@/lib/queryClient";
 import S3FileBrowser from "@/components/S3FileBrowser";
+import { AIAdminDashboard } from "@/components/AIAdminDashboard";
 
 export default function AdminPage() {
   const { user, isAuthenticated } = useAuth();
@@ -126,6 +127,7 @@ export default function AdminPage() {
         <TabsList className="mb-4">
           <TabsTrigger value="s3">Import from S3</TabsTrigger>
           <TabsTrigger value="upload">Upload File</TabsTrigger>
+          <TabsTrigger value="ai">AI Management</TabsTrigger>
         </TabsList>
         
         <TabsContent value="s3" className="mt-4">
@@ -205,6 +207,10 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="ai" className="mt-4">
+          <AIAdminDashboard />
         </TabsContent>
       </Tabs>
     </div>

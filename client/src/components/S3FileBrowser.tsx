@@ -28,9 +28,8 @@ export default function S3FileBrowser() {
         setLoading(true);
         setError(null);
         
-        // Make direct request to the S3 files endpoint
-        // No need for separate credentials check
-        const response = await fetch('/api/s3/files');
+        // Use the optimized S3 endpoint with enhanced features
+        const response = await fetch('/api/s3-optimized/files?sortBy=lastModified&sortOrder=desc&maxKeys=50');
         
         if (!response.ok) {
           const errorText = await response.text();

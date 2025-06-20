@@ -7,7 +7,8 @@ import { parseExcelFile, importToDatabase } from "./excelParser";
 import { 
   listExcelFiles, 
   processExcelFromS3, 
-  initS3Client
+  initS3Client,
+  getS3BucketName
 } from "./s3Service";
 import { importFromS3 } from "./manualImport";
 import { processAndImportFromS3, importProcessedData } from "./pythonProcessor";
@@ -15,6 +16,8 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { exec } from 'child_process';
 import s3Routes from './s3Routes';
+import s3RoutesOptimized from './s3RoutesOptimized';
+import s3MonitoringRoutes from './s3MonitoringRoutes';
 
 // Set up multer for file uploads
 const upload = multer({
@@ -44,6 +47,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   
   // Mount S3 routes
   app.use('/api/s3', s3Routes);
+  app.use('/api/s3-optimized', s3RoutesOptimized);
+  app.use('/api/s3-monitoring', s3MonitoringRoutes);
 
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
@@ -453,19 +458,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Python-based Excel processing
   app.get('/api/s3/python-import', async (req, res) => {
     try {
-      const bucketName = process.env.S3_BUCKET_NAME;
-      const fileKey = req.query.key as string; // Changed from fileKey to key to match client
-      const maxChunks = req.query.maxChunks ? parseInt(req.query.maxChunks as string) : 
-                        (process.env.NODE_ENV === 'development' ? 5 : undefined);
-      
-      console.log(`Processing S3 file request: bucket=${bucketName}, key=${fileKey}, maxChunks=${maxChunks}`);
-      
-      if (!bucketName) {
+      if (!features.s3Enabled) {
         return res.status(400).json({
           success: false,
-          message: 'S3 bucket name not configured'
+          message: 'S3 functionality is not enabled'
         });
       }
+
+      const bucketName = getS3BucketName();
+      const fileKey = req.query.key as string; // Changed from fileKey to key to match client
+      const maxChunks = req.query.maxChunks ? parseInt(req.query.maxChunks as string) : 
+                        (features.isDevelopment ? 5 : undefined);
+      
+      console.log(`Processing S3 file request: bucket=${bucketName}, key=${fileKey}, maxChunks=${maxChunks}`);
       
       if (!fileKey) {
         return res.status(400).json({
@@ -618,10 +623,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Temporary setup route for initial data import (will be removed in production)
   app.get('/api/s3/setup', async (req, res) => {
     try {
-      const bucketName = process.env.S3_BUCKET_NAME;
-      if (!bucketName) {
-        return res.status(400).json({ message: "S3 bucket name not configured" });
+      if (!features.s3Enabled) {
+        return res.status(400).json({ message: "S3 functionality is not enabled" });
       }
+      
+      const bucketName = getS3BucketName();
       
       // Attempt to list files to check connectivity
       const files = await listExcelFiles(bucketName, '');
@@ -672,10 +678,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // During development, allow anyone to access the S3 files list
       // In production, we would check authentication
       
-      const bucketName = process.env.S3_BUCKET_NAME;
-      if (!bucketName) {
-        return res.status(400).json({ message: "S3 bucket name not configured" });
+      if (!features.s3Enabled) {
+        return res.status(400).json({ message: "S3 functionality is not enabled" });
       }
+      
+      const bucketName = getS3BucketName();
       
       const prefix = req.query.prefix || '';
       const files = await listExcelFiles(bucketName, prefix as string);
@@ -703,10 +710,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "File key is required" });
       }
       
-      const bucketName = process.env.S3_BUCKET_NAME;
-      if (!bucketName) {
-        return res.status(400).json({ message: "S3 bucket name not configured" });
+      if (!features.s3Enabled) {
+        return res.status(400).json({ message: "S3 functionality is not enabled" });
       }
+      
+      const bucketName = getS3BucketName();
       
       // Process the file from S3
       const result = await processExcelFromS3(bucketName, key, useStreaming);

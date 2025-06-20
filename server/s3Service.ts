@@ -9,33 +9,32 @@ import fs from 'fs';
 import path from 'path';
 import { parseExcelFile, importToDatabase } from './excelParser';
 import { streamExcelFile } from './excelStreamer';
+import { getS3MonitoringService } from './s3MonitoringService';
+import { getS3Config, features } from './config';
 
 // S3 client configuration
 let s3Client: S3Client | null = null;
 
 // Initialize S3 client with credentials
 export function initS3Client() {
-  // Log environment variables (excluding sensitive values)
-  console.log('Initializing S3 client with credentials');
-  console.log('AWS_ACCESS_KEY_ID exists:', !!process.env.AWS_ACCESS_KEY_ID);
-  console.log('AWS_SECRET_ACCESS_KEY exists:', !!process.env.AWS_SECRET_ACCESS_KEY);
-  console.log('S3_BUCKET_NAME:', process.env.S3_BUCKET_NAME);
-  
-  // Check if required environment variables are set
-  if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
-    console.warn('AWS credentials not found. S3 functionality will not work.');
-    return;
+  // Check if S3 is enabled
+  if (!features.s3Enabled) {
+    console.warn('⚠️  S3 functionality disabled: Missing AWS credentials or bucket configuration');
+    return null;
   }
 
   if (!s3Client) {
-    s3Client = new S3Client({
-      region: process.env.AWS_REGION || 'ap-south-1', // Use ap-south-1 based on the error message
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
-      }
-    });
-    console.log('S3 client initialized with region: ap-south-1');
+    try {
+      const s3Config = getS3Config();
+      s3Client = new S3Client({
+        region: s3Config.region,
+        credentials: s3Config.credentials
+      });
+      console.log(`✅ S3 client initialized with region: ${s3Config.region}`);
+    } catch (error) {
+      console.error('❌ Failed to initialize S3 client:', error);
+      return null;
+    }
   }
   
   return s3Client;
@@ -46,17 +45,29 @@ export function getS3Client(): S3Client {
   if (!s3Client) {
     const client = initS3Client();
     if (!client) {
-      throw new Error('Failed to initialize S3 client. Check your AWS credentials.');
+      throw new Error('S3 client not available. Check your AWS credentials and configuration.');
     }
     s3Client = client;
   }
   return s3Client;
 }
 
+// Get S3 bucket name from configuration
+export function getS3BucketName(): string {
+  if (!features.s3Enabled) {
+    throw new Error('S3 is not enabled. Check your S3 configuration.');
+  }
+  return getS3Config().bucketName;
+}
+
 /**
  * List Excel files in S3 bucket
  */
 export async function listExcelFiles(bucketName: string, prefix: string = '') {
+  const monitoringService = getS3MonitoringService();
+  const logId = monitoringService.logOperationStart('list', prefix || 'root');
+  const startTime = Date.now();
+  
   try {
     const s3 = getS3Client();
     
@@ -76,8 +87,16 @@ export async function listExcelFiles(bucketName: string, prefix: string = '') {
       lastModified: item.LastModified
     })) || [];
     
+    const duration = Date.now() - startTime;
+    monitoringService.logOperationComplete(logId, 'success', duration, undefined, undefined, {
+      filesFound: excelFiles.length
+    });
+    
     return excelFiles;
   } catch (error) {
+    const duration = Date.now() - startTime;
+    monitoringService.logOperationComplete(logId, 'error', duration, undefined, 
+      error instanceof Error ? error.message : 'Unknown error');
     console.error('Error listing files from S3:', error);
     throw error;
   }
@@ -91,6 +110,10 @@ export async function downloadFileFromS3(
   key: string, 
   destinationPath: string
 ) {
+  const monitoringService = getS3MonitoringService();
+  const logId = monitoringService.logOperationStart('download', key);
+  const startTime = Date.now();
+  
   try {
     const s3 = getS3Client();
     
@@ -120,15 +143,23 @@ export async function downloadFileFromS3(
       // @ts-ignore - Body should have pipe method as a readable stream
       response.Body.pipe(writeStream)
         .on('error', (err: Error) => {
+          const duration = Date.now() - startTime;
+          monitoringService.logOperationComplete(logId, 'error', duration, undefined, err.message);
           console.error('Error writing file:', err);
           reject(err);
         })
         .on('close', () => {
+          const duration = Date.now() - startTime;
+          const stats = fs.statSync(destinationPath);
+          monitoringService.logOperationComplete(logId, 'success', duration, stats.size);
           console.log(`File downloaded successfully to ${destinationPath}`);
           resolve(destinationPath);
         });
     });
   } catch (error) {
+    const duration = Date.now() - startTime;
+    monitoringService.logOperationComplete(logId, 'error', duration, undefined, 
+      error instanceof Error ? error.message : 'Unknown error');
     console.error('Error downloading file from S3:', error);
     throw error;
   }
@@ -142,6 +173,10 @@ export async function uploadFileToS3(
   key: string, 
   filePath: string
 ) {
+  const monitoringService = getS3MonitoringService();
+  const logId = monitoringService.logOperationStart('upload', key);
+  const startTime = Date.now();
+  
   try {
     const s3 = getS3Client();
     
@@ -162,10 +197,15 @@ export async function uploadFileToS3(
     });
     
     const response = await s3.send(command);
+    const duration = Date.now() - startTime;
+    monitoringService.logOperationComplete(logId, 'success', duration, fileContent.length);
     console.log(`File uploaded successfully to s3://${bucketName}/${key}`);
     
     return response;
   } catch (error) {
+    const duration = Date.now() - startTime;
+    monitoringService.logOperationComplete(logId, 'error', duration, undefined, 
+      error instanceof Error ? error.message : 'Unknown error');
     console.error('Error uploading file to S3:', error);
     throw error;
   }
@@ -175,6 +215,10 @@ export async function uploadFileToS3(
  * Delete file from S3
  */
 export async function deleteFileFromS3(bucketName: string, key: string) {
+  const monitoringService = getS3MonitoringService();
+  const logId = monitoringService.logOperationStart('delete', key);
+  const startTime = Date.now();
+  
   try {
     const s3 = getS3Client();
     
@@ -184,10 +228,15 @@ export async function deleteFileFromS3(bucketName: string, key: string) {
     });
     
     const response = await s3.send(command);
+    const duration = Date.now() - startTime;
+    monitoringService.logOperationComplete(logId, 'success', duration);
     console.log(`File deleted successfully: s3://${bucketName}/${key}`);
     
     return response;
   } catch (error) {
+    const duration = Date.now() - startTime;
+    monitoringService.logOperationComplete(logId, 'error', duration, undefined, 
+      error instanceof Error ? error.message : 'Unknown error');
     console.error('Error deleting file from S3:', error);
     throw error;
   }

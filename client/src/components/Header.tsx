@@ -85,6 +85,9 @@ export default function Header() {
                   <DropdownMenuItem onClick={() => navigate("/favorites")}>
                     My Favorites
                   </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/ai-tools")}>
+                    AI Tools
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/settings")}>
                     Settings
                   </DropdownMenuItem>
@@ -146,6 +149,11 @@ export default function Header() {
               <Link href="/favorites">
                 <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                   Favorites
+                </div>
+              </Link>
+              <Link href="/ai-tools">
+                <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                  AI Tools
                 </div>
               </Link>
               {!isAuthenticated && (

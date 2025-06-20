@@ -5,6 +5,7 @@ import { categories, terms, subcategories, termSubcategories } from '@shared/sch
 import { eq } from 'drizzle-orm';
 import { S3Client, GetObjectCommand, ListObjectsV2Command } from '@aws-sdk/client-s3';
 import { exec } from 'child_process';
+import { getS3Config, features } from './config';
 
 /**
  * Simple and direct import function for Excel data
@@ -12,23 +13,22 @@ import { exec } from 'child_process';
 export async function importFromS3() {
   console.log('Starting S3 import...');
   
-  // Initialize S3 client
-  const s3 = new S3Client({
-    region: 'ap-south-1',
-    credentials: {
-      accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
-    }
-  });
-  
-  const bucketName = process.env.S3_BUCKET_NAME;
-  if (!bucketName) {
-    console.error('S3 bucket name not configured');
+  if (!features.s3Enabled) {
+    console.error('S3 functionality is not enabled');
     return {
       success: false,
-      message: 'S3 bucket name not configured'
+      message: 'S3 functionality is not enabled'
     };
   }
+
+  // Initialize S3 client
+  const s3Config = getS3Config();
+  const s3 = new S3Client({
+    region: s3Config.region,
+    credentials: s3Config.credentials
+  });
+  
+  const bucketName = s3Config.bucketName;
   
   try {
     // List Excel files in bucket

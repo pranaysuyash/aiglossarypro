@@ -7,16 +7,19 @@ import type { Express, RequestHandler } from "express";
 import memoize from "memoizee";
 import connectPg from "connect-pg-simple";
 import { storage } from "./storage";
+import { getSessionConfig, getAuthConfig, features } from "./config";
 
-if (!process.env.REPLIT_DOMAINS) {
-  throw new Error("Environment variable REPLIT_DOMAINS not provided");
+// Check if Replit authentication is enabled
+if (!features.replitAuthEnabled) {
+  console.warn('⚠️  Replit authentication disabled: Missing required environment variables');
 }
 
 const getOidcConfig = memoize(
   async () => {
+    const authConfig = getAuthConfig();
     return await client.discovery(
-      new URL(process.env.ISSUER_URL ?? "https://replit.com/oidc"),
-      process.env.REPL_ID!
+      new URL(authConfig.issuerUrl),
+      authConfig.replId!
     );
   },
   { maxAge: 3600 * 1000 }
@@ -25,20 +28,23 @@ const getOidcConfig = memoize(
 export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   const pgStore = connectPg(session);
+  const sessionConfig = getSessionConfig();
+  
   const sessionStore = new pgStore({
-    conString: process.env.DATABASE_URL,
+    conString: sessionConfig.databaseUrl,
     createTableIfMissing: false,
     ttl: sessionTtl,
     tableName: "sessions",
   });
+  
   return session({
-    secret: process.env.SESSION_SECRET!,
+    secret: sessionConfig.secret,
     store: sessionStore,
     resave: false,
     saveUninitialized: false,
     cookie: {
       httpOnly: true,
-      secure: true,
+      secure: features.isProduction,
       maxAge: sessionTtl,
     },
   });
@@ -84,8 +90,8 @@ export async function setupAuth(app: Express) {
     verified(null, user);
   };
 
-  for (const domain of process.env
-    .REPLIT_DOMAINS!.split(",")) {
+  const authConfig = getAuthConfig();
+  for (const domain of authConfig.replitDomains) {
     const strategy = new Strategy(
       {
         name: `replitauth:${domain}`,
@@ -116,10 +122,11 @@ export async function setupAuth(app: Express) {
   });
 
   app.get("/api/logout", (req, res) => {
+    const authConfig = getAuthConfig();
     req.logout(() => {
       res.redirect(
         client.buildEndSessionUrl(config, {
-          client_id: process.env.REPL_ID!,
+          client_id: authConfig.replId!,
           post_logout_redirect_uri: `${req.protocol}://${req.hostname}`,
         }).href
       );

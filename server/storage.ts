@@ -1231,6 +1231,85 @@ export class DatabaseStorage implements IStorage {
     await db.delete(subcategories);
     await db.delete(categories);
   }
+
+  // Additional methods needed for AI integration
+  async getAllTermNames(): Promise<string[]> {
+    const results = await db.select({
+      name: terms.name
+    })
+    .from(terms)
+    .orderBy(terms.name);
+    
+    return results.map(r => r.name);
+  }
+
+  async getAllTermsForSearch(): Promise<any[]> {
+    const results = await db.select({
+      id: terms.id,
+      name: terms.name,
+      shortDefinition: terms.shortDefinition,
+      definition: terms.definition,
+      category: categories.name,
+      categoryId: terms.categoryId
+    })
+    .from(terms)
+    .leftJoin(categories, eq(terms.categoryId, categories.id))
+    .orderBy(terms.updatedAt);
+    
+    return results.map(term => ({
+      id: term.id,
+      name: term.name,
+      shortDefinition: term.shortDefinition || '',
+      definition: term.definition,
+      category: term.category || 'Uncategorized',
+      categoryId: term.categoryId || ''
+    }));
+  }
+
+  async getTermCount(): Promise<number> {
+    const [result] = await db.select({
+      count: sql<number>`count(${terms.id})`
+    })
+    .from(terms);
+    
+    return result.count;
+  }
+
+  async getRecentTerms(limit: number = 10): Promise<any[]> {
+    const results = await db.select({
+      id: terms.id,
+      name: terms.name,
+      shortDefinition: terms.shortDefinition,
+      definition: terms.definition,
+      category: categories.name,
+      updatedAt: terms.updatedAt
+    })
+    .from(terms)
+    .leftJoin(categories, eq(terms.categoryId, categories.id))
+    .orderBy(desc(terms.updatedAt))
+    .limit(limit);
+    
+    return results.map(term => ({
+      id: term.id,
+      name: term.name,
+      shortDefinition: term.shortDefinition || '',
+      definition: term.definition,
+      category: term.category || 'Uncategorized',
+      updatedAt: term.updatedAt
+    }));
+  }
+
+  async updateTerm(termId: string, updates: any): Promise<any> {
+    const [updatedTerm] = await db.update(terms)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(terms.id, termId))
+      .returning();
+    
+    return updatedTerm;
+  }
 }
 
 // Helper function for OR condition

@@ -11,6 +11,7 @@ import Sidebar from "@/components/Sidebar";
 import ProgressTracker from "@/components/ProgressTracker";
 import ShareMenu from "@/components/ShareMenu";
 import TermCard from "@/components/TermCard";
+import { AIDefinitionImprover } from "@/components/AIDefinitionImprover";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function TermDetail() {
@@ -356,6 +357,19 @@ export default function TermDetail() {
               <ProgressTracker termId={id} isLearned={!!learned} />
             )}
           </div>
+          
+          {/* AI Definition Improver - Only for authenticated users */}
+          {isAuthenticated && (
+            <div className="mb-8">
+              <AIDefinitionImprover 
+                term={term}
+                onImprovementApplied={(improvedTerm) => {
+                  // Optionally refresh the term data or update local state
+                  window.location.reload();
+                }}
+              />
+            </div>
+          )}
           
           {/* Recommended Section */}
           {recommended && recommended.length > 0 && (

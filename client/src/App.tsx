@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
 import TermDetail from "@/pages/TermDetail";
+import EnhancedTermDetail from "@/pages/EnhancedTermDetail";
 import Terms from "@/pages/Terms";
 import Categories from "@/pages/Categories";
 import Trending from "@/pages/Trending";
@@ -19,6 +20,11 @@ import AITools from "@/pages/AITools";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
+
+// Smart Term Detail component that chooses between enhanced and regular view
+function SmartTermDetail() {
+  return <EnhancedTermDetail />;
+}
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
@@ -37,7 +43,7 @@ function Router() {
       <div className="flex-grow">
         <Switch>
           <Route path="/" component={Home} />
-          <Route path="/term/:id" component={TermDetail} />
+          <Route path="/term/:id" component={SmartTermDetail} />
           <Route path="/terms" component={Terms} />
           <Route path="/categories" component={Categories} />
           <Route path="/trending" component={Trending} />

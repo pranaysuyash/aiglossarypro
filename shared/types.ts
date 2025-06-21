@@ -143,7 +143,9 @@ export interface FileUploadMetadata {
 }
 
 // Authentication types
-export interface AuthenticatedRequest {
+import type { Request } from 'express';
+
+export interface AuthenticatedRequest extends Omit<Request, 'user'> {
   user: {
     claims: {
       sub: string;
@@ -151,7 +153,6 @@ export interface AuthenticatedRequest {
       name: string;
     };
   };
-  isAuthenticated(): boolean;
 }
 
 // Admin types

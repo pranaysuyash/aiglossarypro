@@ -3,6 +3,7 @@ import multer from "multer";
 import { processExcelUpload } from "./dataTransformationPipeline";
 import { enhancedStorage } from "./enhancedStorage";
 import { isAuthenticated } from "./replitAuth";
+import { isUserAdmin } from "./utils/authUtils";
 import { z } from "zod";
 
 // File upload configuration
@@ -81,13 +82,13 @@ export function registerEnhancedRoutes(app: Express): void {
   app.post('/api/enhanced/upload', isAuthenticated, upload.single('file'), async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await enhancedStorage.getUser(userId);
+      const isAdmin = await isUserAdmin(userId);
       
-      // Check admin permissions (in production, implement proper role-based access)
-      if (user?.email !== "admin@example.com") {
+      // Check admin permissions
+      if (!isAdmin) {
         return res.status(403).json({ 
           success: false, 
-          message: "Unauthorized. Admin access required." 
+          message: "Admin privileges required." 
         });
       }
       
@@ -129,10 +130,10 @@ export function registerEnhancedRoutes(app: Express): void {
   app.get('/api/enhanced/upload/status', isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await enhancedStorage.getUser(userId);
+      const isAdmin = await isUserAdmin(userId);
       
-      if (user?.email !== "admin@example.com") {
-        return res.status(403).json({ message: "Unauthorized" });
+      if (!isAdmin) {
+        return res.status(403).json({ message: "Admin privileges required" });
       }
       
       const stats = await enhancedStorage.getProcessingStats();
@@ -398,11 +399,11 @@ export function registerEnhancedRoutes(app: Express): void {
   app.get('/api/enhanced/analytics/terms/:id', isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await enhancedStorage.getUser(userId);
+      const isAdmin = await isUserAdmin(userId);
       
       // Check admin permissions
-      if (user?.email !== "admin@example.com") {
-        return res.status(403).json({ message: "Unauthorized" });
+      if (!isAdmin) {
+        return res.status(403).json({ message: "Admin privileges required" });
       }
       
       const termId = req.params.id;
@@ -422,10 +423,10 @@ export function registerEnhancedRoutes(app: Express): void {
   app.get('/api/enhanced/analytics/overview', isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await enhancedStorage.getUser(userId);
+      const isAdmin = await isUserAdmin(userId);
       
-      if (user?.email !== "admin@example.com") {
-        return res.status(403).json({ message: "Unauthorized" });
+      if (!isAdmin) {
+        return res.status(403).json({ message: "Admin privileges required" });
       }
       
       const overview = await enhancedStorage.getAnalyticsOverview();
@@ -488,10 +489,10 @@ export function registerEnhancedRoutes(app: Express): void {
   app.get('/api/enhanced/quality-report', isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await enhancedStorage.getUser(userId);
+      const isAdmin = await isUserAdmin(userId);
       
-      if (user?.email !== "admin@example.com") {
-        return res.status(403).json({ message: "Unauthorized" });
+      if (!isAdmin) {
+        return res.status(403).json({ message: "Admin privileges required" });
       }
       
       const report = await enhancedStorage.getQualityReport();
@@ -552,10 +553,10 @@ export function registerEnhancedRoutes(app: Express): void {
   app.get('/api/enhanced/schema-info', isAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const user = await enhancedStorage.getUser(userId);
+      const isAdmin = await isUserAdmin(userId);
       
-      if (user?.email !== "admin@example.com") {
-        return res.status(403).json({ message: "Unauthorized" });
+      if (!isAdmin) {
+        return res.status(403).json({ message: "Admin privileges required" });
       }
       
       const schemaInfo = await enhancedStorage.getSchemaInfo();

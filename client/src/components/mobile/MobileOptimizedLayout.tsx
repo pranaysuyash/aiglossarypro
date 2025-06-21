@@ -12,7 +12,7 @@ import {
   ChevronUp,
   X
 } from 'lucide-react';
-import { useMediaQuery } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MobileOptimizedLayoutProps {
   children: React.ReactNode;
@@ -31,7 +31,7 @@ export default function MobileOptimizedLayout({
   title,
   className = ''
 }: MobileOptimizedLayoutProps) {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [filterOpen, setFilterOpen] = useState(false);
@@ -163,8 +163,18 @@ export default function MobileOptimizedLayout({
 
 // Hook for responsive card layouts
 export const useResponsiveCardLayout = () => {
-  const isMobile = useMediaQuery("(max-width: 768px)");
-  const isTablet = useMediaQuery("(max-width: 1024px)");
+  const isMobile = useIsMobile();
+  const [isTablet, setIsTablet] = useState(false);
+
+  useEffect(() => {
+    const checkTablet = () => {
+      setIsTablet(window.innerWidth <= 1024 && window.innerWidth > 768);
+    };
+    
+    checkTablet();
+    window.addEventListener('resize', checkTablet);
+    return () => window.removeEventListener('resize', checkTablet);
+  }, []);
 
   const getGridCols = (itemCount: number) => {
     if (isMobile) return "grid-cols-1";
@@ -201,7 +211,7 @@ export const ResponsiveText = ({
   mobileSize?: string;
   desktopSize?: string;
 }) => {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   
   return (
     <span className={`${isMobile ? mobileSize : desktopSize} ${className}`}>
@@ -222,7 +232,7 @@ export const ResponsiveContainer = ({
   mobilePadding?: string;
   desktopPadding?: string;
 }) => {
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
   
   return (
     <div className={`${isMobile ? mobilePadding : desktopPadding} ${className}`}>
@@ -244,7 +254,7 @@ export const MobileExpandableSection = ({
   badge?: string;
 }) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
-  const isMobile = useMediaQuery("(max-width: 768px)");
+  const isMobile = useIsMobile();
 
   if (!isMobile) {
     return <div>{children}</div>;

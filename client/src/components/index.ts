@@ -36,4 +36,4 @@ export { default as Sidebar } from './Sidebar';
 export { default as CategoryCard } from './CategoryCard';
 export { default as ProgressTracker } from './ProgressTracker';
 export { default as ShareMenu } from './ShareMenu';
-export { default as ThemeProvider } from './ThemeProvider';
+export { ThemeProvider } from './ThemeProvider';

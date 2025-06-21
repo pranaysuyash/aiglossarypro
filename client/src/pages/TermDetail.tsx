@@ -342,9 +342,15 @@ export default function TermDetail() {
                   <h2 className="text-xl font-semibold mb-3">References</h2>
                   <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     {term.references.map((reference: string, index: number) => {
-                      // Extract URL from reference if it contains a link
-                      const urlMatch = reference.match(/https?:\/\/[^\s)]+/);
-                      const hasUrl = urlMatch && urlMatch[0];
+                      // Clean up the reference by removing href="#" stubs and extracting actual URLs
+                      const cleanReference = reference.replace(/href="#"/g, '').replace(/<a[^>]*href="#"[^>]*>/g, '').replace(/<\/a>/g, '');
+                      
+                      // Extract URL from reference if it contains a valid link
+                      const urlMatch = cleanReference.match(/https?:\/\/[^\s<>"']+/);
+                      const hasUrl = urlMatch?.[0];
+                      
+                      // Extract text content, removing HTML tags for display
+                      const textContent = cleanReference.replace(/<[^>]*>/g, '').trim();
                       
                       return (
                         <li key={index}>
@@ -354,13 +360,13 @@ export default function TermDetail() {
                               target="_blank"
                               rel="noopener noreferrer"
                               className="text-primary-600 hover:underline dark:text-primary-400"
-                              dangerouslySetInnerHTML={{ __html: reference }}
-                            />
+                            >
+                              {textContent}
+                            </a>
                           ) : (
-                            <span 
-                              className="text-gray-700 dark:text-gray-300"
-                              dangerouslySetInnerHTML={{ __html: reference }}
-                            />
+                            <span className="text-gray-700 dark:text-gray-300">
+                              {textContent}
+                            </span>
                           )}
                         </li>
                       );

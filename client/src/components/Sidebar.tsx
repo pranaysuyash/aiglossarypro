@@ -3,7 +3,7 @@ import { Link, useLocation } from "wouter";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { useQuery } from "@tanstack/react-query";
-import { ICategoryWithSubcategories } from "@/interfaces/interfaces";
+import { ICategoryWithSubcategories, IUserProgress } from "@/interfaces/interfaces";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function Sidebar() {
@@ -11,7 +11,7 @@ export default function Sidebar() {
   const { isAuthenticated } = useAuth();
   
   // Fetch categories
-  const { data: categories, isLoading } = useQuery({
+  const { data: categories = [], isLoading } = useQuery<ICategoryWithSubcategories[]>({
     queryKey: ["/api/categories"],
     refetchOnWindowFocus: false,
   });
@@ -27,7 +27,7 @@ export default function Sidebar() {
   };
 
   // Fetch user progress if authenticated
-  const { data: userProgress } = useQuery({
+  const { data: userProgress } = useQuery<IUserProgress>({
     queryKey: ["/api/user/progress"],
     enabled: isAuthenticated,
   });
@@ -55,7 +55,7 @@ export default function Sidebar() {
         {/* Navigation Tree */}
         <nav>
           <ul className="space-y-1">
-            {categories?.map((category: ICategoryWithSubcategories) => (
+            {Array.isArray(categories) && categories.map((category: ICategoryWithSubcategories) => (
               <li key={category.id}>
                 <div 
                   className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
@@ -96,19 +96,19 @@ export default function Sidebar() {
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600 dark:text-gray-400">Terms learned</span>
                   <span className="text-gray-800 dark:text-gray-200 font-medium">
-                    {userProgress.termsLearned}/{userProgress.totalTerms}
+                    {userProgress?.termsLearned || 0}/{userProgress?.totalTerms || 0}
                   </span>
                 </div>
-                <Progress value={(userProgress.termsLearned / userProgress.totalTerms) * 100} className="h-2" />
+                <Progress value={userProgress ? (userProgress.termsLearned / userProgress.totalTerms) * 100 : 0} className="h-2" />
               </div>
               
               <div>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="text-gray-600 dark:text-gray-400">Daily streak</span>
-                  <span className="text-gray-800 dark:text-gray-200 font-medium">{userProgress.streak} days</span>
+                  <span className="text-gray-800 dark:text-gray-200 font-medium">{userProgress?.streak || 0} days</span>
                 </div>
                 <div className="flex space-x-1">
-                  {userProgress.lastWeekActivity.map((activity, i) => (
+                  {userProgress?.lastWeekActivity?.map((activity: number, i: number) => (
                     <div 
                       key={i}
                       className={`w-full ${

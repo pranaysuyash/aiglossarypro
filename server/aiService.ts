@@ -224,7 +224,7 @@ class AIService {
   }
 
   // Categorize a term automatically
-  async categorizeterm(term: string, definition: string, availableCategories: ICategory[]): Promise<AICategoryResponse> {
+  async categorizeTerm(term: string, definition: string, availableCategories: ICategory[]): Promise<AICategoryResponse> {
     const cacheKey = `categorize:${term}:${definition.substring(0, 50)}`;
     
     const cached = this.cache.get<AICategoryResponse>(cacheKey);
@@ -452,7 +452,7 @@ Choose the category that best represents the primary focus of this term.
   }
 
   private buildSemanticSearchPrompt(query: string, terms: ITerm[], limit: number): string {
-    const termSummaries = terms.slice(0, 50).map(t => 
+    const termSummaries = terms.map(t => 
       `${t.id}: ${t.name} - ${t.shortDefinition || t.definition.substring(0, 100)}`
     ).join('\n');
     

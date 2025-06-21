@@ -2,11 +2,14 @@
 export * from '../../../shared/types';
 
 // Client-specific enhanced interfaces that extend the shared types
-import { ITerm, ICategory, UserPreferences } from '../../../shared/types';
+import { ITerm, ICategory, ISubcategory, UserPreferences } from '../../../shared/types';
 
 // Enhanced term interface for the new data structure
 export interface IEnhancedTerm extends ITerm {
   slug: string;
+  
+  // Enhanced content
+  fullDefinition?: string;
   
   // Enhanced categorization
   mainCategories: string[];
@@ -42,7 +45,7 @@ export interface IEnhancedTerm extends ITerm {
 
 // Define the interface for a Category with subcategories
 export interface ICategoryWithSubcategories extends ICategory {
-  subcategories?: ICategory[];
+  subcategories?: ISubcategory[];
 }
 
 // Define the interface for user progress
@@ -109,14 +112,19 @@ export interface IInteractiveElement {
   sectionName: string;
   elementType: 'mermaid' | 'quiz' | 'demo' | 'code' | 'simulation';
   elementData: {
+    // Common properties (moved to top to avoid duplicates)
+    title?: string;
+    description?: string;
+    difficulty?: string;
+    
     // For mermaid diagrams
     diagram?: string;
-    title?: string;
     
     // For code examples
     code?: string;
     language?: string;
-    description?: string;
+    executable?: boolean;
+    highlightLines?: number[];
     
     // For quizzes
     questions?: {
@@ -127,15 +135,13 @@ export interface IInteractiveElement {
       correctAnswer: string | number;
       explanation?: string;
     }[];
+    timeLimit?: number;
+    showExplanations?: boolean;
+    allowRetry?: boolean;
     
     // For demos/simulations
     demoUrl?: string;
     simulationConfig?: any;
-    
-    // Common properties
-    title?: string;
-    description?: string;
-    difficulty?: string;
   };
   displayOrder: number;
   isActive: boolean;

@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Sparkles, Lightbulb, Brain, Search } from 'lucide-react';
+import { Sparkles, Lightbulb, Brain, Search, Clock } from 'lucide-react';
+import { Button } from "@/components/ui/button";
 import Sidebar from "@/components/Sidebar";
 import { AIDefinitionGenerator } from "@/components/AIDefinitionGenerator";
 import { AITermSuggestions } from "@/components/AITermSuggestions";
@@ -227,24 +228,71 @@ export default function AIToolsPage() {
                 </CardHeader>
                 <CardContent>
                   {(user as any)?.email === 'admin@example.com' ? (
-                    <div className="space-y-4">
-                      <div className="p-4 border border-purple-200 rounded-lg">
-                        <h3 className="font-medium mb-2">Batch Categorization</h3>
-                        <p className="text-sm text-gray-600 mb-3">
-                          Automatically categorize multiple terms using AI analysis.
+                    <div className="space-y-6">
+                      {/* Batch Categorization */}
+                      <div className="p-6 border border-purple-200 rounded-lg">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Brain className="h-5 w-5 text-purple-500" />
+                          <h3 className="font-medium">Batch Categorization</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Automatically categorize multiple terms using AI analysis. Select up to 50 terms for AI-powered categorization.
                         </p>
-                        <p className="text-sm text-purple-600">
-                          Available in Admin panel under AI Management tab.
-                        </p>
+                        <div className="space-y-3">
+                          <Button 
+                            onClick={() => {
+                              // Navigate to admin panel with batch categorization
+                              window.location.href = '/admin?tab=batch-categorize';
+                            }}
+                            className="w-full bg-purple-600 hover:bg-purple-700"
+                          >
+                            <Brain className="h-4 w-4 mr-2" />
+                            Start Batch Categorization
+                          </Button>
+                          <div className="text-xs text-gray-500">
+                            • Analyzes term definitions and suggests appropriate categories<br/>
+                            • Processes up to 50 terms at once<br/>
+                            • Uses GPT-4o-mini for intelligent categorization
+                          </div>
+                        </div>
                       </div>
                       
-                      <div className="p-4 border border-purple-200 rounded-lg">
-                        <h3 className="font-medium mb-2">Definition Enhancement</h3>
-                        <p className="text-sm text-gray-600 mb-3">
-                          Improve multiple term definitions simultaneously.
+                      {/* Definition Enhancement */}
+                      <div className="p-6 border border-green-200 rounded-lg">
+                        <div className="flex items-center gap-2 mb-3">
+                          <Sparkles className="h-5 w-5 text-green-500" />
+                          <h3 className="font-medium">Definition Enhancement</h3>
+                        </div>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Improve multiple term definitions simultaneously with AI assistance. Choose enhancement type and target audience.
                         </p>
-                        <p className="text-sm text-purple-600">
-                          Feature coming soon...
+                        <div className="space-y-3">
+                          <Button 
+                            onClick={() => {
+                              // Navigate to admin panel with definition enhancement
+                              window.location.href = '/admin?tab=batch-enhance';
+                            }}
+                            className="w-full bg-green-600 hover:bg-green-700"
+                          >
+                            <Sparkles className="h-4 w-4 mr-2" />
+                            Start Definition Enhancement
+                          </Button>
+                          <div className="text-xs text-gray-500">
+                            • Improves clarity and technical depth<br/>
+                            • Processes up to 20 terms at once<br/>
+                            • Customizable enhancement options
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Batch Status */}
+                      <div className="p-4 border border-blue-200 rounded-lg bg-blue-50">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Clock className="h-4 w-4 text-blue-500" />
+                          <h4 className="font-medium text-blue-800">Processing Info</h4>
+                        </div>
+                        <p className="text-sm text-blue-700">
+                          Batch operations are processed immediately. Large batches may take several minutes due to AI API rate limits.
                         </p>
                       </div>
                     </div>

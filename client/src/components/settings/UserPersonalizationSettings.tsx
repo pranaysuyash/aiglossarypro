@@ -302,7 +302,6 @@ export default function UserPersonalizationSettings({
                     id={`preferred-${section}`}
                     checked={(settings.preferredSections || []).includes(section)}
                     onCheckedChange={() => toggleArrayItem('preferredSections', section)}
-                    size="sm"
                   />
                   <Label htmlFor={`preferred-${section}`} className="text-sm capitalize">
                     {section.replace(/-/g, ' ')}
@@ -331,7 +330,6 @@ export default function UserPersonalizationSettings({
                     id={`hidden-${section}`}
                     checked={(settings.hiddenSections || []).includes(section)}
                     onCheckedChange={() => toggleArrayItem('hiddenSections', section)}
-                    size="sm"
                   />
                   <Label htmlFor={`hidden-${section}`} className="text-sm capitalize">
                     {section.replace(/-/g, ' ')}
@@ -365,7 +363,6 @@ export default function UserPersonalizationSettings({
                   id={`fav-cat-${category}`}
                   checked={(settings.favoriteCategories || []).includes(category)}
                   onCheckedChange={() => toggleArrayItem('favoriteCategories', category)}
-                  size="sm"
                 />
                 <Label htmlFor={`fav-cat-${category}`} className="text-sm">
                   {category}
@@ -394,7 +391,6 @@ export default function UserPersonalizationSettings({
                   id={`fav-app-${application}`}
                   checked={(settings.favoriteApplications || []).includes(application)}
                   onCheckedChange={() => toggleArrayItem('favoriteApplications', application)}
-                  size="sm"
                 />
                 <Label htmlFor={`fav-app-${application}`} className="text-sm">
                   {application}

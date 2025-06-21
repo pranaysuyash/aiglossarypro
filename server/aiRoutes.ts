@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { aiService } from "./aiService";
 import { storage } from "./storage";
 import { isAuthenticated } from "./replitAuth";
+import { isUserAdmin } from "./utils/authUtils";
 
 export function registerAIRoutes(app: Express): void {
   // Generate definition for a new term
@@ -73,7 +74,7 @@ export function registerAIRoutes(app: Express): void {
       }
 
       const categories = await storage.getCategories();
-      const result = await aiService.categorizeterm(term, definition, categories);
+              const result = await aiService.categorizeTerm(term, definition, categories);
       
       res.json({
         success: true,
@@ -101,8 +102,9 @@ export function registerAIRoutes(app: Express): void {
         });
       }
 
-      // Get all terms for semantic analysis
-      const allTerms = await storage.getAllTermsForSearch();
+      // Get only the terms we need for semantic analysis (much more efficient!)
+      const searchLimit = Math.min(100, limit * 10); // Get 10x the requested results for better selection
+      const allTerms = await storage.getAllTermsForSearch(searchLimit);
       
       if (allTerms.length === 0) {
         return res.json({
@@ -176,12 +178,12 @@ export function registerAIRoutes(app: Express): void {
       
       // Only allow admin to apply improvements
       const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const isAdmin = await isUserAdmin(userId);
       
-      if (user?.email !== "admin@example.com") {
+      if (!isAdmin) {
         return res.status(403).json({ 
           success: false, 
-          error: "Unauthorized" 
+          error: "Admin privileges required" 
         });
       }
 
@@ -215,79 +217,7 @@ export function registerAIRoutes(app: Express): void {
     }
   });
 
-  // Batch categorize terms
-  app.post('/api/ai/batch-categorize', isAuthenticated, async (req: any, res) => {
-    try {
-      // Only allow admin
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (user?.email !== "admin@example.com") {
-        return res.status(403).json({ 
-          success: false, 
-          error: "Unauthorized" 
-        });
-      }
-
-      const { termIds } = req.body;
-      
-      if (!Array.isArray(termIds) || termIds.length === 0) {
-        return res.status(400).json({ 
-          success: false, 
-          error: 'termIds array is required' 
-        });
-      }
-
-      const categories = await storage.getCategories();
-      const results = [];
-
-      // Process terms in batches to avoid rate limiting
-      for (const termId of termIds) {
-        try {
-          const term = await storage.getTermById(termId);
-          if (!term) continue;
-
-          const categorization = await aiService.categorizeterm(
-            term.name, 
-            term.definition, 
-            categories
-          );
-
-          results.push({
-            termId: term.id,
-            termName: term.name,
-            currentCategory: term.category,
-            suggestedCategory: categorization.category,
-            confidence: categorization.confidence,
-            explanation: categorization.explanation
-          });
-
-          // Small delay to respect rate limits
-          await new Promise(resolve => setTimeout(resolve, 100));
-        } catch (error) {
-          console.error(`Error categorizing term ${termId}:`, error);
-          results.push({
-            termId,
-            error: error instanceof Error ? error.message : 'Unknown error'
-          });
-        }
-      }
-
-      res.json({
-        success: true,
-        data: {
-          processed: results.length,
-          results
-        }
-      });
-    } catch (error) {
-      console.error('Error in batch categorization:', error);
-      res.status(500).json({ 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Failed to batch categorize'
-      });
-    }
-  });
+  // Note: Batch categorize functionality moved to /api/admin/batch/categorize
 
   // Get AI service status and stats
   app.get('/api/ai/status', isAuthenticated, async (req: any, res) => {
@@ -318,12 +248,12 @@ export function registerAIRoutes(app: Express): void {
     try {
       // Only allow admin
       const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const isAdmin = await isUserAdmin(userId);
       
-      if (user?.email !== "admin@example.com") {
+      if (!isAdmin) {
         return res.status(403).json({ 
           success: false, 
-          error: "Unauthorized" 
+          error: "Admin privileges required" 
         });
       }
 

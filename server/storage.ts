@@ -1247,7 +1247,7 @@ export class DatabaseStorage implements IStorage {
     return results.map(r => r.name);
   }
 
-  async getAllTermsForSearch(): Promise<any[]> {
+  async getAllTermsForSearch(limit: number = 50): Promise<any[]> {
     const results = await db.select({
       id: terms.id,
       name: terms.name,
@@ -1258,7 +1258,8 @@ export class DatabaseStorage implements IStorage {
     })
     .from(terms)
     .leftJoin(categories, eq(terms.categoryId, categories.id))
-    .orderBy(terms.updatedAt);
+    .orderBy(terms.updatedAt)
+    .limit(limit); // Only fetch what we actually need!
     
     return results.map(term => ({
       id: term.id,

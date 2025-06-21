@@ -255,12 +255,15 @@ export default function EnhancedTermCard({
       <CardContent className="pb-4">
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 leading-relaxed">
           {enhanced ? 
-            (isExpanded ? term.fullDefinition : (term.shortDefinition || term.fullDefinition.substring(0, 150) + '...')) :
+            (isExpanded ? 
+              (term.fullDefinition || term.shortDefinition) : 
+              (term.shortDefinition || (term.fullDefinition ? term.fullDefinition.substring(0, 150) + '...' : ''))
+            ) :
             term.shortDefinition
           }
         </p>
 
-        {enhanced && term.fullDefinition.length > 150 && (
+        {enhanced && term.fullDefinition && term.fullDefinition.length > 150 && (
           <Button
             variant="ghost"
             size="sm"

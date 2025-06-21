@@ -1,91 +1,99 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "wouter";
-import { 
-  ChevronRight, 
-  Heart, 
-  Copy, 
-  Share2, 
-  Clock,
-  Eye,
-  Star,
-  Settings,
-  BookOpen,
-  Brain,
-  Code,
-  TestTube,
-  Lightbulb,
-  Zap,
-  ArrowLeft
-} from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Badge } from "@/components/ui/badge";
+import { useRoute, Link } from "wouter";
+import { ArrowLeft, Share2, Heart, BookOpen, ChevronRight, ExternalLink, Clock, Users, Lightbulb, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { useToast } from "@/hooks/use-toast";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Sidebar from "@/components/Sidebar";
-import ProgressTracker from "@/components/ProgressTracker";
-import ShareMenu from "@/components/ShareMenu";
-import EnhancedTermCard from "@/components/EnhancedTermCard";
-import { AIDefinitionImprover } from "@/components/AIDefinitionImprover";
-import InteractiveElementsManager from "@/components/interactive/InteractiveElementsManager";
-import SectionLayoutManager from "@/components/sections/SectionLayoutManager";
+import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { useQuery } from "@tanstack/react-query";
+import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
-import { IEnhancedTerm, IEnhancedUserSettings, ITermSection, IInteractiveElement } from "@/interfaces/interfaces";
+import { apiRequest } from "@/lib/queryClient";
+import Sidebar from "@/components/Sidebar";
+import ShareMenu from "@/components/ShareMenu";
+import SectionLayoutManager from "@/components/sections/SectionLayoutManager";
+import InteractiveElementsManager from "@/components/interactive/InteractiveElementsManager";
+import TermCard from "@/components/TermCard";
+import { AIDefinitionImprover } from "@/components/AIDefinitionImprover";
+import ProgressTracker from "@/components/ProgressTracker";
+import { 
+  IEnhancedTerm, 
+  ITerm, 
+  ITermSection, 
+  IInteractiveElement, 
+  IEnhancedUserSettings,
+  IUser
+} from "@/interfaces/interfaces";
 
 export default function EnhancedTermDetail() {
-  const { id } = useParams();
+  const [, params] = useRoute("/enhanced/terms/:id");
+  const id = params?.id;
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [useEnhanced, setUseEnhanced] = useState(true);
   
-  // Fetch enhanced term details
-  const { data: enhancedTerm, isLoading: termLoading } = useQuery({
+  // Try enhanced term first
+  const { data: enhancedTerm, isLoading: termLoading, error: enhancedError } = useQuery<IEnhancedTerm>({
     queryKey: [`/api/enhanced/terms/${id}`],
     refetchOnWindowFocus: false,
+    retry: false,
   });
   
-  // Fetch term sections
-  const { data: sections, isLoading: sectionsLoading } = useQuery({
+  // Fallback to regular term if enhanced fails
+  const { data: regularTerm, isLoading: regularLoading } = useQuery<ITerm>({
+    queryKey: [`/api/terms/${id}`],
+    refetchOnWindowFocus: false,
+    enabled: !enhancedTerm && !termLoading,
+  });
+  
+  // Use enhanced data if available, otherwise regular term data
+  const term = enhancedTerm || regularTerm;
+  const isEnhanced = !!enhancedTerm;
+  
+  // Fetch term sections (only if enhanced)
+  const { data: sections = [], isLoading: sectionsLoading } = useQuery<ITermSection[]>({
     queryKey: [`/api/enhanced/terms/${id}/sections`],
     refetchOnWindowFocus: false,
+    enabled: isEnhanced,
   });
   
-  // Fetch interactive elements
-  const { data: interactiveElements, isLoading: elementsLoading } = useQuery({
+  // Fetch interactive elements (only if enhanced)
+  const { data: interactiveElements = [], isLoading: elementsLoading } = useQuery<IInteractiveElement[]>({
     queryKey: [`/api/enhanced/terms/${id}/interactive`],
     refetchOnWindowFocus: false,
+    enabled: isEnhanced,
   });
   
-  // Fetch term relationships
-  const { data: relationships } = useQuery({
+  // Fetch term relationships (only if enhanced)
+  const { data: relationships = [] } = useQuery<ITerm[]>({
     queryKey: [`/api/enhanced/terms/${id}/relationships`],
     refetchOnWindowFocus: false,
+    enabled: isEnhanced,
   });
   
-  // Fetch recommended terms
-  const { data: recommended } = useQuery({
-    queryKey: [`/api/enhanced/terms/${id}/recommended`],
+  // Fetch recommended terms (try enhanced first, fallback to regular)
+  const { data: recommended = [] } = useQuery<ITerm[]>({
+    queryKey: isEnhanced ? [`/api/enhanced/terms/${id}/recommended`] : [`/api/terms/${id}/recommended`],
     refetchOnWindowFocus: false,
   });
   
   // Fetch user settings
-  const { data: userSettings } = useQuery({
+  const { data: userSettings } = useQuery<IEnhancedUserSettings>({
     queryKey: [`/api/user/enhanced-settings`],
     enabled: isAuthenticated,
   });
   
   // Check if term is in user's favorites
-  const { data: favorite, isLoading: favoriteLoading } = useQuery({
+  const { data: favorite, isLoading: favoriteLoading } = useQuery<boolean>({
     queryKey: [`/api/favorites/${id}`],
     enabled: isAuthenticated,
   });
   
   // Check if term is marked as learned
-  const { data: learned, isLoading: learnedLoading } = useQuery({
+  const { data: learned, isLoading: learnedLoading } = useQuery<boolean>({
     queryKey: [`/api/progress/${id}`],
     enabled: isAuthenticated,
   });
@@ -124,8 +132,8 @@ export default function EnhancedTermDetail() {
       toast({
         title: favorite ? "Removed from favorites" : "Added to favorites",
         description: favorite 
-          ? `${enhancedTerm?.name} has been removed from your favorites` 
-          : `${enhancedTerm?.name} has been added to your favorites`,
+          ? `${term?.name} has been removed from your favorites` 
+          : `${term?.name} has been added to your favorites`,
       });
     } catch (error) {
       toast({
@@ -172,10 +180,10 @@ export default function EnhancedTermDetail() {
   };
 
   const getProgressPercentage = () => {
-    if (!userSettings || !enhancedTerm) return 0;
+    if (!userSettings || !term) return 0;
     
-    const userLevel = userSettings.experienceLevel || 'intermediate';
-    const termLevel = enhancedTerm.difficultyLevel?.toLowerCase() || 'intermediate';
+    const userLevel = (userSettings as any)?.experienceLevel || 'intermediate';
+    const termLevel = (term as any)?.difficultyLevel?.toLowerCase() || 'intermediate';
     
     const levels = ['beginner', 'intermediate', 'advanced', 'expert'];
     const userIndex = levels.indexOf(userLevel);
@@ -187,7 +195,7 @@ export default function EnhancedTermDetail() {
     return 25;
   };
 
-  if (termLoading || sectionsLoading || elementsLoading) {
+  if (termLoading || regularLoading || (isEnhanced && (sectionsLoading || elementsLoading))) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
@@ -216,7 +224,7 @@ export default function EnhancedTermDetail() {
     );
   }
 
-  if (!enhancedTerm) {
+  if (!term) {
     return (
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
         <div className="flex flex-col lg:flex-row gap-6">
@@ -575,7 +583,7 @@ export default function EnhancedTermDetail() {
               
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {recommended.map((recTerm: any) => (
-                  <EnhancedTermCard
+                  <TermCard
                     key={recTerm.id}
                     term={recTerm}
                     displayMode="compact"

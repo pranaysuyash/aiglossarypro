@@ -27,6 +27,11 @@ export default function Header() {
     window.location.href = "/api/login";
   };
 
+  const handleSearch = (query: string) => {
+    navigate(`/terms?search=${encodeURIComponent(query)}`);
+    setMobileSearchOpen(false);
+  };
+
   const userObj = user as any;
   const initials = userObj?.firstName && userObj?.lastName 
     ? `${userObj.firstName[0]}${userObj.lastName[0]}`
@@ -48,7 +53,7 @@ export default function Header() {
           </div>
 
           <div className="hidden md:flex flex-1 max-w-xl mx-8">
-            <SearchBar />
+            <SearchBar onSearch={handleSearch} />
           </div>
 
           <div className="flex items-center space-x-4">
@@ -136,7 +141,7 @@ export default function Header() {
         {/* Mobile search (hidden by default) */}
         {mobileSearchOpen && (
           <div className="md:hidden pb-4">
-            <SearchBar />
+            <SearchBar onSearch={handleSearch} />
           </div>
         )}
         

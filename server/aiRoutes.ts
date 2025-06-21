@@ -226,43 +226,37 @@ export function registerAIRoutes(app: Express): void {
   // AI Content Feedback System
   // ========================
 
-  // Submit feedback on AI-generated content
+  // Submit feedback for AI-generated content
   app.post('/api/ai/feedback', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
-      const { 
-        termId, 
-        feedbackType, 
-        section, 
-        description, 
-        severity = 'medium' 
-      } = req.body;
+      const { termId, sectionName, feedbackType, rating, comment } = req.body;
 
-      if (!termId || !feedbackType || !description) {
+      if (!termId || !feedbackType) {
         return res.status(400).json({
           success: false,
-          error: 'Term ID, feedback type, and description are required'
+          error: 'Term ID and feedback type are required'
         });
       }
 
-      const validFeedbackTypes = ['incorrect', 'incomplete', 'misleading', 'outdated', 'other'];
-      if (!validFeedbackTypes.includes(feedbackType)) {
-        return res.status(400).json({
-          success: false,
-          error: 'Invalid feedback type'
-        });
-      }
+      // Import db and schema
+      const { db } = await import('./db');
+      const { aiContentFeedback } = await import('../shared/enhancedSchema');
 
-      // TODO: Implement database insertion for ai_content_feedback table
-      // This would be implemented with the enhanced storage layer
-      
+      // Insert feedback into database
+      const [feedback] = await db.insert(aiContentFeedback).values({
+        termId,
+        userId,
+        section: sectionName || null,
+        feedbackType,
+        description: comment || 'User feedback',
+        status: 'pending'
+      }).returning();
+
       res.json({
         success: true,
         message: 'Feedback submitted successfully',
-        data: {
-          feedbackId: 'temp-id', // Would be actual ID from database
-          status: 'pending'
-        }
+        data: feedback
       });
     } catch (error) {
       console.error('Error submitting feedback:', error);
@@ -273,8 +267,8 @@ export function registerAIRoutes(app: Express): void {
     }
   });
 
-  // Get feedback for a term (admin only)
-  app.get('/api/ai/feedback/:termId', isAuthenticated, async (req: any, res) => {
+  // Get feedback list (admin only)
+  app.get('/api/ai/feedback', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -286,19 +280,46 @@ export function registerAIRoutes(app: Express): void {
         });
       }
 
-      const termId = req.params.termId;
-      
-      // TODO: Implement database query for feedback
+      const { status = 'all', limit = 50, offset = 0 } = req.query;
+
+      // Import db and schema
+      const { db } = await import('./db');
+      const { aiContentFeedback, enhancedTerms, users } = await import('../shared/enhancedSchema');
+      const { eq, desc, and } = await import('drizzle-orm');
+
+      // Build query conditions
+      const conditions = [];
+      if (status !== 'all') {
+        conditions.push(eq(aiContentFeedback.status, status));
+      }
+
+             // Query feedback with joins
+       const feedbackList = await db
+         .select({
+           id: aiContentFeedback.id,
+           termId: aiContentFeedback.termId,
+           termName: enhancedTerms.name,
+           userId: aiContentFeedback.userId,
+           userEmail: users.email,
+           section: aiContentFeedback.section,
+           feedbackType: aiContentFeedback.feedbackType,
+           description: aiContentFeedback.description,
+           severity: aiContentFeedback.severity,
+           status: aiContentFeedback.status,
+           createdAt: aiContentFeedback.createdAt,
+           updatedAt: aiContentFeedback.updatedAt
+         })
+        .from(aiContentFeedback)
+        .leftJoin(enhancedTerms, eq(aiContentFeedback.termId, enhancedTerms.id))
+        .leftJoin(users, eq(aiContentFeedback.userId, users.id))
+        .where(conditions.length > 0 ? and(...conditions) : undefined)
+        .orderBy(desc(aiContentFeedback.createdAt))
+        .limit(parseInt(limit as string))
+        .offset(parseInt(offset as string));
+
       res.json({
         success: true,
-        data: {
-          feedback: [], // Would be actual feedback from database
-          summary: {
-            total: 0,
-            pending: 0,
-            resolved: 0
-          }
-        }
+        data: feedbackList
       });
     } catch (error) {
       console.error('Error fetching feedback:', error);
@@ -310,7 +331,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Update feedback status (admin only)
-  app.put('/api/ai/feedback/:feedbackId', isAuthenticated, async (req: any, res) => {
+  app.put('/api/ai/feedback/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -322,28 +343,49 @@ export function registerAIRoutes(app: Express): void {
         });
       }
 
-      const feedbackId = req.params.feedbackId;
-      const { status, reviewNotes } = req.body;
+      const { id } = req.params;
+      const { status, adminNotes } = req.body;
 
-      const validStatuses = ['pending', 'reviewing', 'resolved', 'dismissed'];
-      if (!validStatuses.includes(status)) {
+      if (!status) {
         return res.status(400).json({
           success: false,
-          error: 'Invalid status'
+          error: 'Status is required'
         });
       }
 
-      // TODO: Implement database update for feedback status
-      
+      // Import db and schema
+      const { db } = await import('./db');
+      const { aiContentFeedback } = await import('../shared/enhancedSchema');
+      const { eq } = await import('drizzle-orm');
+
+             // Update feedback status
+       const [updatedFeedback] = await db
+         .update(aiContentFeedback)
+         .set({
+           status,
+           reviewNotes: adminNotes || null,
+           updatedAt: new Date()
+         })
+        .where(eq(aiContentFeedback.id, id))
+        .returning();
+
+      if (!updatedFeedback) {
+        return res.status(404).json({
+          success: false,
+          error: 'Feedback not found'
+        });
+      }
+
       res.json({
         success: true,
-        message: 'Feedback status updated successfully'
+        message: 'Feedback status updated successfully',
+        data: updatedFeedback
       });
     } catch (error) {
-      console.error('Error updating feedback:', error);
+      console.error('Error updating feedback status:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to update feedback'
+        error: 'Failed to update feedback status'
       });
     }
   });
@@ -352,20 +394,55 @@ export function registerAIRoutes(app: Express): void {
   // AI Content Verification
   // ========================
 
-  // Get verification status for a term
-  app.get('/api/ai/verification/:termId', async (req: any, res) => {
+  // Get content verification status (admin only)
+  app.get('/api/ai/verification', isAuthenticated, async (req: any, res) => {
     try {
-      const termId = req.params.termId;
+      const userId = req.user.claims.sub;
+      const isAdmin = await isUserAdmin(userId);
       
-      // TODO: Implement database query for verification status
+      if (!isAdmin) {
+        return res.status(403).json({
+          success: false,
+          error: 'Admin privileges required'
+        });
+      }
+
+      // Import db and schema
+      const { db } = await import('./db');
+      const { aiContentVerification, enhancedTerms } = await import('../shared/enhancedSchema');
+      const { eq, count, sql } = await import('drizzle-orm');
+
+             // Get verification statistics
+       const [stats] = await db
+         .select({
+           total: count(),
+           verified: sql<number>`count(*) filter (where ${aiContentVerification.verificationStatus} = 'verified')`,
+           unverified: sql<number>`count(*) filter (where ${aiContentVerification.verificationStatus} = 'unverified')`,
+           flagged: sql<number>`count(*) filter (where ${aiContentVerification.verificationStatus} = 'flagged')`
+         })
+         .from(aiContentVerification);
+
+       // Get recent unverified content
+       const recentUnverified = await db
+         .select({
+           id: aiContentVerification.id,
+           termId: aiContentVerification.termId,
+           termName: enhancedTerms.name,
+           verificationStatus: aiContentVerification.verificationStatus,
+           accuracyScore: aiContentVerification.accuracyScore,
+           createdAt: aiContentVerification.createdAt
+         })
+         .from(aiContentVerification)
+         .leftJoin(enhancedTerms, eq(aiContentVerification.termId, enhancedTerms.id))
+         .where(eq(aiContentVerification.verificationStatus, 'unverified'))
+        .orderBy(aiContentVerification.createdAt)
+        .limit(10);
+
       res.json({
         success: true,
         data: {
-          isAiGenerated: false,
-          verificationStatus: 'unverified',
-          confidenceLevel: 'medium',
-          lastReviewed: null,
-          expertReviewRequired: false
+          stats,
+          recentUnverified
         }
       });
     } catch (error) {
@@ -377,8 +454,8 @@ export function registerAIRoutes(app: Express): void {
     }
   });
 
-  // Update verification status (admin only)
-  app.put('/api/ai/verification/:termId', isAuthenticated, async (req: any, res) => {
+  // Update content verification (admin only)
+  app.put('/api/ai/verification/:id', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -390,28 +467,45 @@ export function registerAIRoutes(app: Express): void {
         });
       }
 
-      const termId = req.params.termId;
-      const { verificationStatus, expertReviewNotes } = req.body;
+      const { id } = req.params;
+      const { isVerified, qualityScore, verificationNotes } = req.body;
 
-      const validStatuses = ['unverified', 'verified', 'flagged', 'needs_review', 'expert_reviewed'];
-      if (!validStatuses.includes(verificationStatus)) {
-        return res.status(400).json({
+      // Import db and schema
+      const { db } = await import('./db');
+      const { aiContentVerification } = await import('../shared/enhancedSchema');
+      const { eq } = await import('drizzle-orm');
+
+             // Update verification status
+       const [updatedVerification] = await db
+         .update(aiContentVerification)
+         .set({
+           verificationStatus: isVerified ? 'verified' : 'unverified',
+           accuracyScore: qualityScore !== undefined ? qualityScore : undefined,
+           expertReviewNotes: verificationNotes || null,
+           verifiedBy: userId,
+           verifiedAt: isVerified ? new Date() : null,
+           updatedAt: new Date()
+         })
+        .where(eq(aiContentVerification.id, id))
+        .returning();
+
+      if (!updatedVerification) {
+        return res.status(404).json({
           success: false,
-          error: 'Invalid verification status'
+          error: 'Verification record not found'
         });
       }
 
-      // TODO: Implement database update for verification status
-      
       res.json({
         success: true,
-        message: 'Verification status updated successfully'
+        message: 'Verification updated successfully',
+        data: updatedVerification
       });
     } catch (error) {
-      console.error('Error updating verification status:', error);
+      console.error('Error updating verification:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to update verification status'
+        error: 'Failed to update verification'
       });
     }
   });

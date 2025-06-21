@@ -37,7 +37,8 @@ private async parseWithAICached(content: string, context: string): Promise<any> 
 }
 ```
 
-**Cost Impact**: 
+**Cost Impact**:
+
 - **First upload**: Full AI processing cost (~$2-5 per 100 terms)
 - **Subsequent uploads**: Near-zero cost if content unchanged
 - **Estimated savings**: 85-95% reduction in AI costs for repeat uploads
@@ -57,6 +58,7 @@ if (parsedTerm.parseHash === cachedData.parseHash) {
 ```
 
 **Cost Impact**:
+
 - Process only changed terms instead of entire dataset
 - **Typical savings**: 70-90% cost reduction on updates
 
@@ -86,6 +88,7 @@ Each array should contain clean, normalized category names.
 ```
 
 **Cost Impact**:
+
 - **Reduced token usage**: 30-50% fewer tokens per request
 - **Improved accuracy**: More targeted responses reduce re-processing
 - **Model selection**: Use GPT-4o-mini instead of GPT-4 for 10x cost savings
@@ -114,6 +117,7 @@ const aiParsedCategories = await this.parseWithAICached(
 ```
 
 **Cost Impact**:
+
 - **Reduced API calls**: 5-10x fewer calls per term
 - **Bulk discount**: More tokens per call = better per-token pricing
 
@@ -151,25 +155,29 @@ private async initializeCache(): Promise<void> {
 ```
 
 **Cost Impact**:
+
 - **Persistent savings**: Cache survives server restarts and deployments
 - **Team benefits**: Shared cache across team members
 
 ## 📊 Cost Analysis & Metrics
 
 ### **Before Optimization**
+
 - **Per term processing**: ~$0.05-0.15 per term with complex content
 - **100 terms**: $5-15 per processing session
 - **Re-uploads**: Full cost every time
 - **Monthly estimate**: $150-500 for active development
 
 ### **After Optimization**
+
 - **First processing**: ~$0.03-0.08 per term (optimized prompts)
 - **Cache hits**: <$0.001 per term (near-zero cost)
 - **Re-uploads**: 90-95% cost reduction
 - **Monthly estimate**: $30-100 for active development
 
 ### **Real-World Savings Example**
-```
+
+```text
 Scenario: 500-term glossary, updated weekly
 
 Before Optimization:
@@ -188,7 +196,8 @@ Total Savings: 75-85% cost reduction
 ## 🔧 Implementation Details
 
 ### **Cache Directory Structure**
-```
+
+```text
 temp/parsed_cache/
 ├── ai_parse_cache.json         # AI processing results
 ├── characteristic_function.json # Individual term cache
@@ -197,11 +206,13 @@ temp/parsed_cache/
 ```
 
 ### **Cache Invalidation Strategy**
+
 - **Content-based**: Hash comparison detects any changes
 - **Version-based**: Parse version tracking for system updates
 - **Manual**: Clear cache endpoint for forced refresh
 
 ### **Monitoring & Analytics**
+
 ```typescript
 // Track cache performance
 console.log(`Cache hit rate: ${cacheHits / totalRequests * 100}%`);
@@ -212,21 +223,25 @@ console.log(`Processing time saved: ${timeSaved}ms`);
 ## 🚀 Best Practices for Cost Control
 
 ### **1. Development Workflow**
+
 - **Local caching**: Always use cached results during development
 - **Staging environment**: Test with subset of data first
 - **Production deployment**: Full cache from staging
 
 ### **2. Content Management**
+
 - **Incremental updates**: Only upload changed terms
 - **Batch processing**: Group related updates together
 - **Version control**: Track content changes to optimize processing
 
 ### **3. Monitoring**
+
 - **Cost alerts**: Set up budget alerts in OpenAI console
 - **Usage tracking**: Monitor token consumption patterns
 - **Performance metrics**: Track cache hit rates and processing times
 
 ### **4. Team Coordination**
+
 - **Shared cache**: Use centralized cache for team development
 - **Clear processes**: Document when to clear cache vs. use existing
 - **Cost attribution**: Track costs by feature/developer when needed
@@ -234,6 +249,7 @@ console.log(`Processing time saved: ${timeSaved}ms`);
 ## 💡 Advanced Optimization Techniques
 
 ### **1. Semantic Deduplication**
+
 ```typescript
 // Detect semantically similar content to avoid re-processing
 private async isSemanticallySimilar(content1: string, content2: string): Promise<boolean> {
@@ -246,6 +262,7 @@ private async isSemanticallySimilar(content1: string, content2: string): Promise
 ```
 
 ### **2. Progressive Processing**
+
 ```typescript
 // Process high-priority sections first
 const prioritySections = ['Introduction', 'Implementation', 'Applications'];
@@ -255,6 +272,7 @@ for (const section of prioritySections) {
 ```
 
 ### **3. Quality Gating**
+
 ```typescript
 // Only use AI for complex content
 private requiresAIProcessing(content: string): boolean {
@@ -266,16 +284,19 @@ private requiresAIProcessing(content: string): boolean {
 ## 📈 Future Optimization Opportunities
 
 ### **1. Local AI Models**
+
 - **Open-source models**: Reduce external API dependency
 - **Cost comparison**: Hosting vs. API costs
 - **Quality assessment**: Accuracy vs. cost trade-offs
 
 ### **2. Content Pre-processing**
+
 - **Format standardization**: Reduce AI processing complexity
 - **Template matching**: Use patterns to avoid AI calls
 - **User feedback**: Improve parsing accuracy over time
 
 ### **3. Collaborative Caching**
+
 - **Community cache**: Share results across organizations
 - **Standard content**: Pre-process common AI/ML terms
 - **Incremental learning**: Improve AI prompts based on patterns
@@ -285,16 +306,19 @@ private requiresAIProcessing(content: string): boolean {
 ### **Common Problems & Solutions**
 
 **High AI costs despite caching:**
+
 - Check cache hit rates
 - Verify hash generation consistency
 - Review prompt efficiency
 
 **Cache not persisting:**
+
 - Check file permissions in temp directory
 - Verify disk space availability
 - Review error logs for cache operations
 
 **Slow processing despite optimization:**
+
 - Monitor API rate limits
 - Check network latency
 - Review batch processing efficiency

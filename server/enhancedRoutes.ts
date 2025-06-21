@@ -591,5 +591,54 @@ export function registerEnhancedRoutes(app: Express): void {
     }
   });
   
+  // Get trending terms
+  app.get('/api/terms/trending', async (req, res) => {
+    try {
+      const { timeframe = '7d', limit = 10 } = req.query;
+      
+      // Parse timeframe
+      const days = timeframe === '24h' ? 1 : timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 7;
+      const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+      
+      const { db } = await import('./db');
+      const { enhancedTerms, termViews } = await import('../shared/enhancedSchema');
+      const { sql, gte, desc, eq } = await import('drizzle-orm');
+      
+      // Get trending terms based on recent view growth
+      const trendingTerms = await db
+                 .select({
+           id: enhancedTerms.id,
+           name: enhancedTerms.name,
+           mainCategories: enhancedTerms.mainCategories,
+           shortDefinition: enhancedTerms.shortDefinition,
+           totalViews: enhancedTerms.viewCount,
+           recentViews: sql<number>`count(${termViews.id})`,
+           trendScore: sql<number>`count(${termViews.id})::float / GREATEST(${enhancedTerms.viewCount}, 1) * 100`
+         })
+        .from(enhancedTerms)
+        .leftJoin(termViews, eq(termViews.termId, enhancedTerms.id))
+        .where(gte(termViews.viewedAt, startDate))
+        .groupBy(enhancedTerms.id)
+        .having(sql`count(${termViews.id}) > 0`)
+        .orderBy(desc(sql`count(${termViews.id})`))
+        .limit(parseInt(limit as string));
+      
+      res.json({
+        success: true,
+        data: {
+          timeframe,
+          trending: trendingTerms,
+          generatedAt: new Date().toISOString()
+        }
+      });
+    } catch (error) {
+      console.error("Error fetching trending terms:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to fetch trending terms" 
+      });
+    }
+  });
+  
   console.log("✅ Enhanced API routes registered successfully");
 }

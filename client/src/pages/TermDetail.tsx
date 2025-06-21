@@ -24,7 +24,7 @@ export default function TermDetail() {
   const { data: term, isLoading } = useQuery({
     queryKey: [`/api/terms/${id}`],
     refetchOnWindowFocus: false,
-  });
+  }) as { data: any, isLoading: boolean };
   
   // Fetch recommended terms
   const { data: recommended } = useQuery({
@@ -210,6 +210,7 @@ export default function TermDetail() {
                     onClick={toggleFavorite}
                     disabled={favoriteLoading}
                     className={favorite ? "text-accent-500" : "text-gray-400 hover:text-accent-500"}
+                    aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
                   >
                     <Heart className={favorite ? "fill-current" : ""} />
                   </Button>
@@ -218,6 +219,7 @@ export default function TermDetail() {
                     variant="ghost" 
                     size="icon"
                     onClick={copyLink}
+                    aria-label="Copy link to clipboard"
                   >
                     <Copy />
                   </Button>
@@ -226,6 +228,7 @@ export default function TermDetail() {
                     variant="ghost" 
                     size="icon"
                     onClick={() => setShareMenuOpen(true)}
+                    aria-label="Share this term"
                   >
                     <Share2 />
                   </Button>
@@ -338,15 +341,30 @@ export default function TermDetail() {
                 <div>
                   <h2 className="text-xl font-semibold mb-3">References</h2>
                   <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
-                    {term.references.map((reference: string, index: number) => (
-                      <li key={index}>
-                        <a 
-                          href="#" 
-                          className="text-primary-600 hover:underline dark:text-primary-400"
-                          dangerouslySetInnerHTML={{ __html: reference }}
-                        />
-                      </li>
-                    ))}
+                    {term.references.map((reference: string, index: number) => {
+                      // Extract URL from reference if it contains a link
+                      const urlMatch = reference.match(/https?:\/\/[^\s)]+/);
+                      const hasUrl = urlMatch && urlMatch[0];
+                      
+                      return (
+                        <li key={index}>
+                          {hasUrl ? (
+                            <a 
+                              href={hasUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-primary-600 hover:underline dark:text-primary-400"
+                              dangerouslySetInnerHTML={{ __html: reference }}
+                            />
+                          ) : (
+                            <span 
+                              className="text-gray-700 dark:text-gray-300"
+                              dangerouslySetInnerHTML={{ __html: reference }}
+                            />
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               )}

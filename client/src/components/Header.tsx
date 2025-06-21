@@ -55,6 +55,7 @@ export default function Header() {
             <button 
               className="md:hidden bg-gray-100 p-2 rounded-lg dark:bg-gray-700" 
               onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
+              aria-label={mobileSearchOpen ? "Close search" : "Open search"}
             >
               <Search className="h-5 w-5 text-gray-500 dark:text-gray-300" />
             </button>
@@ -81,6 +82,12 @@ export default function Header() {
                 <DropdownMenuContent align="end" className="w-48">
                   <DropdownMenuItem onClick={() => navigate("/dashboard")}>
                     Dashboard
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/categories")}>
+                    Categories
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/trending")}>
+                    Trending
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={() => navigate("/favorites")}>
                     My Favorites
@@ -115,6 +122,7 @@ export default function Header() {
             <button 
               className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
             >
               {mobileMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -144,6 +152,16 @@ export default function Header() {
               <Link href="/dashboard">
                 <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                   Dashboard
+                </div>
+              </Link>
+              <Link href="/categories">
+                <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                  Categories
+                </div>
+              </Link>
+              <Link href="/trending">
+                <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+                  Trending
                 </div>
               </Link>
               <Link href="/favorites">

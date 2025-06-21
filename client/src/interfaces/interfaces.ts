@@ -25,6 +25,14 @@ export interface IEnhancedTerm extends ITerm {
   hasCaseStudies: boolean;
   hasCodeExamples: boolean;
   
+  // AI Content Management
+  isAiGenerated?: boolean;
+  verificationStatus?: 'unverified' | 'verified' | 'flagged' | 'needs_review' | 'expert_reviewed';
+  aiModel?: string; // Which AI model generated the content
+  confidenceLevel?: 'low' | 'medium' | 'high';
+  lastReviewed?: string;
+  expertReviewRequired?: boolean;
+  
   // Search and filtering
   searchText?: string;
   keywords: string[];

@@ -37,3 +37,4 @@ export { default as CategoryCard } from './CategoryCard';
 export { default as ProgressTracker } from './ProgressTracker';
 export { default as ShareMenu } from './ShareMenu';
 export { ThemeProvider } from './ThemeProvider';
+export { default as AIContentFeedback } from './AIContentFeedback';

@@ -41,6 +41,13 @@ export interface ITerm {
   visualCaption?: string;
   mathFormulation?: string;
   relatedTerms?: ITerm[];
+  // AI Content Management
+  isAiGenerated?: boolean;
+  verificationStatus?: 'unverified' | 'verified' | 'flagged' | 'needs_review' | 'expert_reviewed';
+  aiModel?: string;
+  confidenceLevel?: 'low' | 'medium' | 'high';
+  lastReviewed?: string;
+  expertReviewRequired?: boolean;
 }
 
 // Category related types

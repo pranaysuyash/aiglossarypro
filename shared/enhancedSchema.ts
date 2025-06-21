@@ -9,6 +9,7 @@ import {
   integer,
   boolean,
   primaryKey,
+  decimal,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -179,6 +180,115 @@ export const contentAnalytics = pgTable("content_analytics", {
 }, (table) => ({
   termAnalyticsIdx: index("content_analytics_term_idx").on(table.termId),
   sectionAnalyticsIdx: index("content_analytics_section_idx").on(table.sectionName),
+}));
+
+// AI Content Feedback and Verification System
+export const aiContentFeedback = pgTable("ai_content_feedback", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  termId: uuid("term_id").notNull().references(() => enhancedTerms.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
+  
+  // Feedback details
+  feedbackType: varchar("feedback_type", { length: 50 }).notNull(), // 'incorrect', 'incomplete', 'misleading', 'outdated', 'other'
+  section: varchar("section", { length: 100 }), // Which part of the content (definition, characteristics, etc.)
+  description: text("description").notNull(), // User's description of the issue
+  severity: varchar("severity", { length: 20 }).default("medium"), // 'low', 'medium', 'high', 'critical'
+  
+  // Status tracking
+  status: varchar("status", { length: 20 }).default("pending"), // 'pending', 'reviewing', 'resolved', 'dismissed'
+  reviewedBy: varchar("reviewed_by").references(() => users.id),
+  reviewedAt: timestamp("reviewed_at"),
+  reviewNotes: text("review_notes"),
+  
+  // Metadata
+  userAgent: text("user_agent"),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  termFeedbackIdx: index("ai_feedback_term_idx").on(table.termId),
+  statusIdx: index("ai_feedback_status_idx").on(table.status),
+  userFeedbackIdx: index("ai_feedback_user_idx").on(table.userId),
+}));
+
+// AI Content Verification Status
+export const aiContentVerification = pgTable("ai_content_verification", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  termId: uuid("term_id").notNull().references(() => enhancedTerms.id, { onDelete: "cascade" }),
+  
+  // AI Generation tracking
+  isAiGenerated: boolean("is_ai_generated").default(false),
+  aiModel: varchar("ai_model", { length: 50 }), // 'gpt-4o-mini', 'gpt-3.5-turbo', etc.
+  generatedAt: timestamp("generated_at"),
+  generatedBy: varchar("generated_by").references(() => users.id),
+  
+  // Verification status
+  verificationStatus: varchar("verification_status", { length: 20 }).default("unverified"), 
+  // 'unverified', 'verified', 'flagged', 'needs_review', 'expert_reviewed'
+  verifiedBy: varchar("verified_by").references(() => users.id),
+  verifiedAt: timestamp("verified_at"),
+  
+  // Quality metrics
+  accuracyScore: integer("accuracy_score"), // 1-100 if assessed
+  completenessScore: integer("completeness_score"), // 1-100 if assessed
+  clarityScore: integer("clarity_score"), // 1-100 if assessed
+  
+  // Expert review
+  expertReviewRequired: boolean("expert_review_required").default(false),
+  expertReviewer: varchar("expert_reviewer").references(() => users.id),
+  expertReviewNotes: text("expert_review_notes"),
+  expertReviewedAt: timestamp("expert_reviewed_at"),
+  
+  // Confidence and reliability
+  confidenceLevel: varchar("confidence_level", { length: 20 }).default("medium"), // 'low', 'medium', 'high'
+  lastReviewedAt: timestamp("last_reviewed_at").defaultNow(),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  termVerificationIdx: index("ai_verification_term_idx").on(table.termId),
+  statusVerificationIdx: index("ai_verification_status_idx").on(table.verificationStatus),
+  aiGeneratedIdx: index("ai_verification_generated_idx").on(table.isAiGenerated),
+}));
+
+// AI Usage Analytics
+export const aiUsageAnalytics = pgTable("ai_usage_analytics", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  
+  // Operation details
+  operation: varchar("operation", { length: 50 }).notNull(), // 'generate_definition', 'improve_definition', 'semantic_search', 'suggest_terms'
+  model: varchar("model", { length: 50 }).notNull(), // 'gpt-4o-mini', 'gpt-3.5-turbo'
+  
+  // Request details
+  userId: varchar("user_id").references(() => users.id),
+  termId: uuid("term_id").references(() => enhancedTerms.id),
+  inputTokens: integer("input_tokens"),
+  outputTokens: integer("output_tokens"),
+  
+  // Performance metrics
+  latency: integer("latency_ms"), // Response time in milliseconds
+  cost: decimal("cost", { precision: 10, scale: 6 }), // Cost in USD
+  
+  // Quality metrics
+  success: boolean("success").default(true),
+  errorType: varchar("error_type", { length: 100 }),
+  errorMessage: text("error_message"),
+  
+  // User feedback
+  userAccepted: boolean("user_accepted"), // Did user accept the AI output?
+  userRating: integer("user_rating"), // 1-5 if user rated the output
+  
+  // Metadata
+  sessionId: varchar("session_id", { length: 100 }),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  operationIdx: index("ai_usage_operation_idx").on(table.operation),
+  modelIdx: index("ai_usage_model_idx").on(table.model),
+  userUsageIdx: index("ai_usage_user_idx").on(table.userId),
+  dateIdx: index("ai_usage_date_idx").on(table.createdAt),
 }));
 
 // Re-export original tables to maintain compatibility

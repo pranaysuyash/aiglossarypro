@@ -39,7 +39,19 @@ export interface AISearchResponse {
   }[];
 }
 
-// Rate limiting configuration
+// Enhanced interfaces for analytics and feedback
+export interface AIUsageMetrics {
+  operation: string;
+  model: string;
+  inputTokens?: number;
+  outputTokens?: number;
+  latency: number;
+  cost?: number;
+  success: boolean;
+  errorType?: string;
+  errorMessage?: string;
+}
+
 interface RateLimitConfig {
   maxRequestsPerMinute: number;
   maxRequestsPerHour: number;
@@ -51,9 +63,19 @@ class AIService {
   private cache: NodeCache;
   private rateLimiter: Map<string, number[]> = new Map();
   private readonly rateLimitConfig: RateLimitConfig = {
-    maxRequestsPerMinute: 20,
-    maxRequestsPerHour: 100,
-    maxRequestsPerDay: 500
+    maxRequestsPerMinute: 60,
+    maxRequestsPerHour: 1000,
+    maxRequestsPerDay: 5000
+  };
+
+  // Model configurations for different operations
+  private readonly modelConfig = {
+    primary: 'gpt-4.1-nano', // Primary model for high-accuracy tasks
+    secondary: 'gpt-3.5-turbo', // Secondary model for less critical tasks
+    costs: {
+      'gpt-4.1-nano': { input: 0.00015, output: 0.0006 }, // Per 1K tokens (estimated)
+      'gpt-3.5-turbo': { input: 0.0005, output: 0.0015 }  // Per 1K tokens
+    }
   };
 
   constructor() {
@@ -65,70 +87,98 @@ class AIService {
       apiKey: process.env.OPENAI_API_KEY,
     });
 
-    // Cache for 1 hour by default, 24 hours for definitions
+    // Cache for 1 hour by default, with 100MB limit
     this.cache = new NodeCache({ 
-      stdTTL: 3600, // 1 hour default
-      checkperiod: 600 // Check for expired keys every 10 minutes
+      stdTTL: 3600, 
+      checkperiod: 600,
+      maxKeys: 10000
     });
 
-    // Clean up rate limiter every hour
+    // Cleanup rate limiter every hour
     setInterval(() => this.cleanupRateLimiter(), 60 * 60 * 1000);
   }
 
-  // Rate limiting logic
   private checkRateLimit(identifier: string = 'default'): boolean {
     const now = Date.now();
     const requests = this.rateLimiter.get(identifier) || [];
     
     // Clean old requests
-    const validRequests = requests.filter(timestamp => {
-      const age = now - timestamp;
-      return age < 24 * 60 * 60 * 1000; // Keep requests from last 24 hours
-    });
-
+    const recentRequests = requests.filter(timestamp => 
+      now - timestamp < 24 * 60 * 60 * 1000 // Keep last 24 hours
+    );
+    
     // Check limits
-    const lastMinute = validRequests.filter(ts => now - ts < 60 * 1000).length;
-    const lastHour = validRequests.filter(ts => now - ts < 60 * 60 * 1000).length;
-    const lastDay = validRequests.length;
-
+    const lastMinute = recentRequests.filter(ts => now - ts < 60 * 1000).length;
+    const lastHour = recentRequests.filter(ts => now - ts < 60 * 60 * 1000).length;
+    const lastDay = recentRequests.length;
+    
     if (lastMinute >= this.rateLimitConfig.maxRequestsPerMinute ||
         lastHour >= this.rateLimitConfig.maxRequestsPerHour ||
         lastDay >= this.rateLimitConfig.maxRequestsPerDay) {
       return false;
     }
-
+    
     // Add current request
-    validRequests.push(now);
-    this.rateLimiter.set(identifier, validRequests);
+    recentRequests.push(now);
+    this.rateLimiter.set(identifier, recentRequests);
+    
     return true;
   }
 
   private cleanupRateLimiter(): void {
     const now = Date.now();
-    for (const [key, requests] of this.rateLimiter.entries()) {
-      const validRequests = requests.filter(timestamp => 
+    for (const [key, requests] of Array.from(this.rateLimiter.entries())) {
+      const recentRequests = requests.filter((timestamp: number) => 
         now - timestamp < 24 * 60 * 60 * 1000
       );
-      if (validRequests.length === 0) {
+      if (recentRequests.length === 0) {
         this.rateLimiter.delete(key);
       } else {
-        this.rateLimiter.set(key, validRequests);
+        this.rateLimiter.set(key, recentRequests);
       }
     }
   }
 
-  // Generate comprehensive definition for a term
-  async generateDefinition(term: string, category?: string, context?: string): Promise<AIDefinitionResponse> {
+  private calculateCost(model: string, inputTokens: number, outputTokens: number): number {
+    const costs = this.modelConfig.costs[model as keyof typeof this.modelConfig.costs];
+    if (!costs) return 0;
+    
+    return (inputTokens / 1000 * costs.input) + (outputTokens / 1000 * costs.output);
+  }
+
+  private async logUsage(metrics: AIUsageMetrics, userId?: string, termId?: string): Promise<void> {
+    try {
+      // In a real implementation, this would write to the ai_usage_analytics table
+      console.log('AI Usage:', {
+        ...metrics,
+        userId,
+        termId,
+        timestamp: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Failed to log AI usage:', error);
+    }
+  }
+
+  // Generate comprehensive definition for a term using primary model
+  async generateDefinition(term: string, category?: string, context?: string, userId?: string): Promise<AIDefinitionResponse> {
     const cacheKey = `definition:${term}:${category || 'none'}`;
+    const startTime = Date.now();
     
     // Check cache first
     const cached = this.cache.get<AIDefinitionResponse>(cacheKey);
     if (cached) {
+      await this.logUsage({
+        operation: 'generate_definition',
+        model: this.modelConfig.primary,
+        latency: Date.now() - startTime,
+        success: true
+      }, userId);
       return cached;
     }
 
     // Check rate limit
-    if (!this.checkRateLimit()) {
+    if (!this.checkRateLimit(userId)) {
       throw new Error('Rate limit exceeded. Please try again later.');
     }
 
@@ -136,11 +186,20 @@ class AIService {
       const prompt = this.buildDefinitionPrompt(term, category, context);
       
       const completion = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: this.modelConfig.primary,
         messages: [
           {
             role: 'system',
-            content: 'You are an expert in AI/ML terminology. Provide comprehensive, accurate definitions for technical terms. Return your response as valid JSON.'
+            content: `You are an expert in AI/ML terminology with deep technical knowledge. Your role is to provide comprehensive, accurate definitions for technical terms.
+
+IMPORTANT GUIDELINES:
+- Focus on technical accuracy and clarity
+- Do NOT fabricate or invent references, citations, or sources
+- If mathematical formulations are included, ensure they are correct
+- Keep explanations accessible but technically precise
+- Return response as valid JSON only
+
+Your definitions will be marked as AI-generated and subject to expert review. Prioritize accuracy over completeness.`
           },
           {
             role: 'user',
@@ -159,11 +218,38 @@ class AIService {
 
       const result = JSON.parse(content) as AIDefinitionResponse;
       
+      // Calculate metrics
+      const latency = Date.now() - startTime;
+      const inputTokens = completion.usage?.prompt_tokens || 0;
+      const outputTokens = completion.usage?.completion_tokens || 0;
+      const cost = this.calculateCost(this.modelConfig.primary, inputTokens, outputTokens);
+
+      // Log usage
+      await this.logUsage({
+        operation: 'generate_definition',
+        model: this.modelConfig.primary,
+        inputTokens,
+        outputTokens,
+        latency,
+        cost,
+        success: true
+      }, userId);
+      
       // Cache for 24 hours
       this.cache.set(cacheKey, result, 24 * 3600);
       
       return result;
     } catch (error) {
+      const latency = Date.now() - startTime;
+      await this.logUsage({
+        operation: 'generate_definition',
+        model: this.modelConfig.primary,
+        latency,
+        success: false,
+        errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      }, userId);
+
       console.error('Error generating definition:', error);
       throw new Error('Failed to generate definition');
     }
@@ -273,36 +359,44 @@ class AIService {
     }
   }
 
-  // Semantic search for terms
-  async semanticSearch(query: string, terms: ITerm[], limit: number = 10): Promise<AISearchResponse> {
-    const cacheKey = `search:${query}:${terms.length}:${limit}`;
+  // Semantic search using secondary model for cost optimization
+  async semanticSearch(query: string, terms: ITerm[], limit: number = 10, userId?: string): Promise<AISearchResponse> {
+    const cacheKey = `search:${query}:${limit}:${terms.length}`;
+    const startTime = Date.now();
     
     const cached = this.cache.get<AISearchResponse>(cacheKey);
     if (cached) {
+      await this.logUsage({
+        operation: 'semantic_search',
+        model: this.modelConfig.secondary,
+        latency: Date.now() - startTime,
+        success: true
+      }, userId);
       return cached;
     }
 
-    if (!this.checkRateLimit()) {
+    if (!this.checkRateLimit(userId)) {
       throw new Error('Rate limit exceeded. Please try again later.');
     }
 
     try {
       const prompt = this.buildSemanticSearchPrompt(query, terms, limit);
       
+      // Use secondary model for semantic search (cost optimization)
       const completion = await this.openai.chat.completions.create({
-        model: 'gpt-4o-mini',
+        model: this.modelConfig.secondary,
         messages: [
           {
             role: 'system',
-            content: 'You are a semantic search expert. Analyze queries and find the most relevant terms based on meaning, not just keyword matching. Return your response as valid JSON.'
+            content: 'You are an AI/ML expert specializing in semantic search. Find conceptually relevant terms based on meaning, applications, and technical relationships. Return valid JSON only.'
           },
           {
             role: 'user',
             content: prompt
           }
         ],
-        temperature: 0.1,
-        max_tokens: 800,
+        temperature: 0.4,
+        max_tokens: 1000,
         response_format: { type: 'json_object' }
       });
 
@@ -313,12 +407,38 @@ class AIService {
 
       const result = JSON.parse(content) as AISearchResponse;
       
-      // Cache for 30 minutes
-      this.cache.set(cacheKey, result, 30 * 60);
+      // Calculate metrics
+      const latency = Date.now() - startTime;
+      const inputTokens = completion.usage?.prompt_tokens || 0;
+      const outputTokens = completion.usage?.completion_tokens || 0;
+      const cost = this.calculateCost(this.modelConfig.secondary, inputTokens, outputTokens);
+
+      await this.logUsage({
+        operation: 'semantic_search',
+        model: this.modelConfig.secondary,
+        inputTokens,
+        outputTokens,
+        latency,
+        cost,
+        success: true
+      }, userId);
+      
+      // Cache for 1 hour (shorter for search results)
+      this.cache.set(cacheKey, result, 3600);
       
       return result;
     } catch (error) {
-      console.error('Error performing semantic search:', error);
+      const latency = Date.now() - startTime;
+      await this.logUsage({
+        operation: 'semantic_search',
+        model: this.modelConfig.secondary,
+        latency,
+        success: false,
+        errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      }, userId);
+
+      console.error('Error in semantic search:', error);
       throw new Error('Failed to perform semantic search');
     }
   }
@@ -393,7 +513,14 @@ Return a JSON object with the following structure:
   "mathFormulation": "Mathematical representation if applicable"
 }
 
-Focus on accuracy, clarity, and practical understanding. Include mathematical formulations only if they are essential to understanding the concept.
+CRITICAL INSTRUCTIONS:
+- Focus on technical accuracy and clarity
+- Do NOT include references, citations, or sources (these will be added separately by experts)
+- Include mathematical formulations only if they are essential and you are confident they are correct
+- Prioritize factual accuracy over completeness
+- This content will be marked as AI-generated and reviewed by experts
+
+Focus on accuracy, clarity, and practical understanding.
     `.trim();
   }
 
@@ -491,7 +618,7 @@ Term: ${term.name}
 Current short definition: ${term.shortDefinition || 'None'}
 Current definition: ${term.definition}
 Category: ${term.category}
-Current characteristics: ${term.characteristics?.join(', ') || 'None'}
+Current characteristics: ${Array.isArray(term.characteristics) ? term.characteristics.join(', ') : term.characteristics || 'None'}
 
 Suggest improvements for:
 1. Clarity and readability

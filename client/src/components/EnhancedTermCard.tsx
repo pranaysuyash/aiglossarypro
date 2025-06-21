@@ -27,6 +27,7 @@ import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { IEnhancedTerm, ITerm, ITermCardProps } from "@/interfaces/interfaces";
 import ShareMenu from "./ShareMenu";
+import AIContentFeedback from './AIContentFeedback';
 
 // Type guard to check if term is enhanced
 const isEnhancedTerm = (term: IEnhancedTerm | ITerm): term is IEnhancedTerm => {
@@ -253,84 +254,93 @@ export default function EnhancedTermCard({
       </CardHeader>
 
       <CardContent className="pb-4">
-        <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 leading-relaxed">
-          {enhanced ? 
-            (isExpanded ? 
-              (term.fullDefinition || term.shortDefinition) : 
-              (term.shortDefinition || (term.fullDefinition ? term.fullDefinition.substring(0, 150) + '...' : ''))
-            ) :
-            term.shortDefinition
-          }
-        </p>
+        <div className="space-y-6">
+          {/* AI Content Feedback - Show at top for AI-generated content */}
+          {term.isAiGenerated && (
+            <AIContentFeedback
+              termId={term.id}
+              termName={term.name}
+              isAiGenerated={true}
+              verificationStatus={term.verificationStatus || 'unverified'}
+              onFeedbackSubmitted={() => {
+                // Optionally refresh term data or show updated status
+                console.log('Feedback submitted for term:', term.name);
+              }}
+            />
+          )}
 
-        {enhanced && term.fullDefinition && term.fullDefinition.length > 150 && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setIsExpanded(!isExpanded)}
-            className="text-xs mb-3 h-6 px-2"
-          >
-            {isExpanded ? 'Show Less' : 'Show More'}
-          </Button>
-        )}
-
-        {enhanced && term.applicationDomains && term.applicationDomains.length > 0 && (
-          <div className="mb-4">
-            <div className="text-xs font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Applications:
+          {/* Short Definition */}
+          {term.shortDefinition && (
+            <div className="bg-blue-50 p-4 rounded-lg border-l-4 border-blue-400">
+              <h3 className="font-semibold text-blue-900 mb-2">Quick Definition</h3>
+              <p className="text-blue-800">{term.shortDefinition}</p>
             </div>
-            <div className="flex flex-wrap gap-1">
-              {term.applicationDomains.slice(0, 4).map((domain, index) => (
-                <Badge key={index} variant="secondary" className="text-xs">
-                  {domain}
-                </Badge>
+          )}
+
+          {/* Main Definition */}
+          <div>
+            <h3 className="text-lg font-semibold mb-3 text-gray-900">Definition</h3>
+            <div className="prose prose-gray max-w-none">
+              <p className="text-gray-700 leading-relaxed">{term.definition}</p>
+            </div>
+            {/* Section-specific feedback for definition */}
+            {term.isAiGenerated && (
+              <div className="mt-3">
+                <AIContentFeedback
+                  termId={term.id}
+                  termName={term.name}
+                  isAiGenerated={true}
+                  verificationStatus={term.verificationStatus || 'unverified'}
+                  section="definition"
+                  className="text-sm"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Feature Icons */}
+          {showInteractive && getFeatureIcons().length > 0 && (
+            <div className="flex items-center space-x-3 mb-4">
+              {getFeatureIcons().map((feature, index) => (
+                <TooltipProvider key={index}>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <div className="flex items-center space-x-1">
+                        <feature.icon className={`h-4 w-4 ${feature.color}`} />
+                        <span className="text-xs text-gray-600 dark:text-gray-400">
+                          {feature.label}
+                        </span>
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p className="text-xs">{feature.label}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               ))}
             </div>
-          </div>
-        )}
+          )}
 
-        {/* Feature Icons */}
-        {showInteractive && getFeatureIcons().length > 0 && (
-          <div className="flex items-center space-x-3 mb-4">
-            {getFeatureIcons().map((feature, index) => (
-              <TooltipProvider key={index}>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <div className="flex items-center space-x-1">
-                      <feature.icon className={`h-4 w-4 ${feature.color}`} />
-                      <span className="text-xs text-gray-600 dark:text-gray-400">
-                        {feature.label}
-                      </span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="text-xs">{feature.label}</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            ))}
-          </div>
-        )}
-
-        {/* Progress Bar for User Level */}
-        {userSettings && enhanced && (
-          <div className="mb-4">
-            <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
-              <span>Difficulty Match</span>
-              <span>{getProgressPercentage()}%</span>
+          {/* Progress Bar for User Level */}
+          {userSettings && enhanced && (
+            <div className="mb-4">
+              <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
+                <span>Difficulty Match</span>
+                <span>{getProgressPercentage()}%</span>
+              </div>
+              <Progress value={getProgressPercentage()} className="h-2" />
             </div>
-            <Progress value={getProgressPercentage()} className="h-2" />
-          </div>
-        )}
+          )}
 
-        {/* Keywords */}
-        {enhanced && term.keywords && term.keywords.length > 0 && (
-          <div className="text-xs text-gray-500 dark:text-gray-400">
-            <span className="font-medium">Keywords: </span>
-            <span>{term.keywords.slice(0, 5).join(', ')}</span>
-            {term.keywords.length > 5 && '...'}
-          </div>
-        )}
+          {/* Keywords */}
+          {enhanced && term.keywords && term.keywords.length > 0 && (
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              <span className="font-medium">Keywords: </span>
+              <span>{term.keywords.slice(0, 5).join(', ')}</span>
+              {term.keywords.length > 5 && '...'}
+            </div>
+          )}
+        </div>
       </CardContent>
       
       <CardFooter className="border-t border-gray-100 dark:border-gray-800 pt-3 pb-3 flex justify-between items-center">

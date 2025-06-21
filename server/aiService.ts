@@ -148,16 +148,90 @@ class AIService {
 
   private async logUsage(metrics: AIUsageMetrics, userId?: string, termId?: string): Promise<void> {
     try {
-      // In a real implementation, this would write to the ai_usage_analytics table
-      console.log('AI Usage:', {
+      // Import db and schema at the top of the file if not already imported
+      const { db } = await import('./db');
+      const { aiUsageAnalytics } = await import('../shared/enhancedSchema');
+      
+      // Insert into database
+      await db.insert(aiUsageAnalytics).values({
+        operation: metrics.operation,
+        model: metrics.model,
+        userId: userId || null,
+        termId: termId || null,
+        inputTokens: metrics.inputTokens || null,
+        outputTokens: metrics.outputTokens || null,
+        latency: metrics.latency,
+        cost: metrics.cost ? metrics.cost.toString() : null,
+        success: metrics.success,
+        errorType: metrics.errorType || null,
+        errorMessage: metrics.errorMessage || null,
+        sessionId: null, // Could be passed in future
+        ipAddress: null, // Could be passed in future
+        userAgent: null, // Could be passed in future
+      });
+      
+      // Also log to console for debugging
+      console.log('AI Usage Logged:', {
         ...metrics,
         userId,
         termId,
         timestamp: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Failed to log AI usage:', error);
+      console.error('Failed to log AI usage to database:', error);
+      // Fallback to console only
+      console.log('AI Usage (fallback):', {
+        ...metrics,
+        userId,
+        termId,
+        timestamp: new Date().toISOString()
+      });
     }
+  }
+
+  // Enhanced fail-safe for API outages
+  private async executeWithFailsafe<T>(operation: () => Promise<T>, fallback?: T): Promise<T> {
+    const maxRetries = 3;
+    const baseDelay = 1000;
+    
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        return await operation();
+             } catch (error: unknown) {
+         const isLastAttempt = attempt === maxRetries;
+         const errorMessage = error instanceof Error ? error.message : String(error);
+         const isRateLimitError = errorMessage.includes('rate limit');
+         const isAPIError = errorMessage.includes('API') || 
+           errorMessage.includes('network') ||
+           errorMessage.includes('timeout');
+        
+                 if (isLastAttempt) {
+           console.error(`AI operation failed after ${maxRetries} attempts:`, error instanceof Error ? error : new Error(String(error)));
+          
+          // If we have a fallback, use it
+          if (fallback !== undefined) {
+            console.log('Using fallback response due to API failure');
+            return fallback;
+          }
+          
+          // Provide user-friendly error messages
+          if (isRateLimitError) {
+            throw new Error('AI service is temporarily busy. Please try again in a few minutes.');
+          } else if (isAPIError) {
+            throw new Error('AI service is temporarily unavailable. Please try again later.');
+          } else {
+            throw new Error('Unable to process AI request at this time.');
+          }
+        }
+        
+                 // Exponential backoff with jitter
+         const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
+         console.log(`AI operation attempt ${attempt} failed, retrying in ${delay}ms:`, errorMessage);
+         await new Promise(resolve => setTimeout(resolve, delay));
+      }
+    }
+    
+    throw new Error('Maximum retries exceeded');
   }
 
   // Generate comprehensive definition for a term using primary model

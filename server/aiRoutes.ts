@@ -434,20 +434,102 @@ export function registerAIRoutes(app: Express): void {
       }
 
       const { timeframe = '7d', operation } = req.query;
+      
+      // Parse timeframe
+      const days = timeframe === '24h' ? 1 : timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 7;
+      const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+      
+      const { db } = await import('./db');
+      const { aiUsageAnalytics } = await import('../shared/enhancedSchema');
+      const { sql, gte, eq, and, desc } = await import('drizzle-orm');
+      
+      // Base query conditions
+      const conditions = [gte(aiUsageAnalytics.createdAt, startDate)];
+      if (operation) {
+        conditions.push(eq(aiUsageAnalytics.operation, operation as string));
+      }
+      
+      // Get summary statistics
+      const [summaryResult] = await db.select({
+        totalRequests: sql<number>`count(*)`,
+        totalCost: sql<number>`sum(${aiUsageAnalytics.cost}::numeric)`,
+        averageLatency: sql<number>`avg(${aiUsageAnalytics.latency})`,
+        successRate: sql<number>`(count(*) filter (where ${aiUsageAnalytics.success} = true) * 100.0 / count(*))`,
+        totalInputTokens: sql<number>`sum(${aiUsageAnalytics.inputTokens})`,
+        totalOutputTokens: sql<number>`sum(${aiUsageAnalytics.outputTokens})`
+      })
+      .from(aiUsageAnalytics)
+      .where(and(...conditions));
+      
+      // Get breakdown by operation
+      const byOperation = await db.select({
+        operation: aiUsageAnalytics.operation,
+        count: sql<number>`count(*)`,
+        totalCost: sql<number>`sum(${aiUsageAnalytics.cost}::numeric)`,
+        avgLatency: sql<number>`avg(${aiUsageAnalytics.latency})`
+      })
+      .from(aiUsageAnalytics)
+      .where(and(...conditions))
+      .groupBy(aiUsageAnalytics.operation)
+      .orderBy(desc(sql`count(*)`));
+      
+      // Get breakdown by model
+      const byModel = await db.select({
+        model: aiUsageAnalytics.model,
+        count: sql<number>`count(*)`,
+        totalCost: sql<number>`sum(${aiUsageAnalytics.cost}::numeric)`,
+        avgLatency: sql<number>`avg(${aiUsageAnalytics.latency})`
+      })
+      .from(aiUsageAnalytics)
+      .where(and(...conditions))
+      .groupBy(aiUsageAnalytics.model)
+      .orderBy(desc(sql`count(*)`));
+      
+      // Get timeline data (daily breakdown)
+      const timeline = await db.select({
+        date: sql<string>`date(${aiUsageAnalytics.createdAt})`,
+        requests: sql<number>`count(*)`,
+        cost: sql<number>`sum(${aiUsageAnalytics.cost}::numeric)`,
+        errors: sql<number>`count(*) filter (where ${aiUsageAnalytics.success} = false)`
+      })
+      .from(aiUsageAnalytics)
+      .where(and(...conditions))
+      .groupBy(sql`date(${aiUsageAnalytics.createdAt})`)
+      .orderBy(sql`date(${aiUsageAnalytics.createdAt})`);
 
-      // TODO: Implement database query for AI usage analytics
       res.json({
         success: true,
         data: {
           summary: {
-            totalRequests: 0,
-            totalCost: 0,
-            averageLatency: 0,
-            successRate: 0
+            totalRequests: Number(summaryResult?.totalRequests || 0),
+            totalCost: Number(summaryResult?.totalCost || 0),
+            averageLatency: Math.round(Number(summaryResult?.averageLatency || 0)),
+            successRate: Math.round(Number(summaryResult?.successRate || 0) * 100) / 100,
+            totalInputTokens: Number(summaryResult?.totalInputTokens || 0),
+            totalOutputTokens: Number(summaryResult?.totalOutputTokens || 0)
           },
-          byOperation: {},
-          byModel: {},
-          timeline: []
+          byOperation: byOperation.reduce((acc, item) => {
+            acc[item.operation] = {
+              count: Number(item.count),
+              totalCost: Number(item.totalCost || 0),
+              avgLatency: Math.round(Number(item.avgLatency || 0))
+            };
+            return acc;
+          }, {} as Record<string, any>),
+          byModel: byModel.reduce((acc, item) => {
+            acc[item.model] = {
+              count: Number(item.count),
+              totalCost: Number(item.totalCost || 0),
+              avgLatency: Math.round(Number(item.avgLatency || 0))
+            };
+            return acc;
+          }, {} as Record<string, any>),
+          timeline: timeline.map(item => ({
+            date: item.date,
+            requests: Number(item.requests),
+            cost: Number(item.cost || 0),
+            errors: Number(item.errors)
+          }))
         }
       });
     } catch (error) {

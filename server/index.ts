@@ -83,9 +83,13 @@ app.use((req, res, next) => {
     console.error('❌ Server error:', err);
   });
     
-  // Use smart Excel loader that handles large files with Python processor
-  console.log("🚀 Starting smart Excel data loading...");
-  checkAndSmartLoadExcelData().catch(err => {
+  // Use enhanced chunked Excel processing for large files
+  console.log("🚀 Starting enhanced chunked Excel data loading...");
+  checkAndSmartLoadExcelData({
+    chunkSize: 500,
+    enableProgress: true,
+    resumeProcessing: false
+  }).catch(err => {
     console.error('❌ Error loading Excel data:', err);
   });
 })();

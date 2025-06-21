@@ -266,3 +266,95 @@ export function sanitizeLogData(data: any): any {
   
   return sanitized;
 }
+
+export const appConfig = {
+  // Server Configuration
+  port: process.env.PORT || 3001,
+  nodeEnv: process.env.NODE_ENV || 'development',
+  
+  // Database Configuration
+  database: {
+    url: process.env.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production'
+  },
+  
+  // Session Configuration
+  session: {
+    secret: process.env.SESSION_SECRET || 'your-session-secret-here',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  },
+  
+  // S3 Configuration
+  s3: {
+    enabled: !!(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY),
+    region: process.env.AWS_REGION || 'ap-south-1',
+    bucket: process.env.S3_BUCKET_NAME || 'aimlglossary',
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY
+  },
+  
+  // OpenAI Configuration
+  openai: {
+    enabled: !!process.env.OPENAI_API_KEY,
+    apiKey: process.env.OPENAI_API_KEY
+  },
+  
+  // Google Drive Configuration
+  googleDrive: {
+    enabled: !!(process.env.GOOGLE_DRIVE_CLIENT_ID && process.env.GOOGLE_DRIVE_CLIENT_SECRET),
+    clientId: process.env.GOOGLE_DRIVE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_DRIVE_CLIENT_SECRET,
+    redirectUri: process.env.GOOGLE_DRIVE_REDIRECT_URI
+  },
+  
+  // Replit Authentication Configuration
+  replit: {
+    enabled: !!(process.env.REPLIT_DB_URL && process.env.REPLIT_APP_NAME),
+    dbUrl: process.env.REPLIT_DB_URL,
+    appName: process.env.REPLIT_APP_NAME
+  },
+  
+  // Feature Flags
+  features: {
+    authRoutes: true,
+    categoriesRoutes: true,
+    termsRoutes: true,
+    searchRoutes: true,
+    userRoutes: true,
+    adminRoutes: true,
+    analyticsRoutes: true,
+    excelAutoLoad: false, // Disabled due to memory issues
+    apiDocumentation: true
+  },
+  
+  // Performance Configuration
+  performance: {
+    // Request caching (in milliseconds)
+    cache: {
+      categories: 5 * 60 * 1000, // 5 minutes
+      featuredTerms: 10 * 60 * 1000, // 10 minutes
+      terms: 2 * 60 * 1000, // 2 minutes
+      search: 1 * 60 * 1000, // 1 minute
+      analytics: 15 * 60 * 1000 // 15 minutes
+    },
+    
+    // Request deduplication
+    deduplication: {
+      enabled: true,
+      windowMs: 5000 // 5 seconds
+    },
+    
+    // Database connection pooling
+    database: {
+      maxConnections: 20,
+      idleTimeoutMs: 30000,
+      connectionTimeoutMs: 10000
+    }
+  },
+  
+  // Logging Configuration
+  logging: {
+    level: process.env.LOG_LEVEL || 'info',
+    enableRequestLogging: process.env.NODE_ENV === 'development'
+  }
+};

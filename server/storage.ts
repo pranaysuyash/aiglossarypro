@@ -878,11 +878,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getRecommendedTermsForTerm(termId: string, userId: string | null): Promise<any[]> {
-    // Simplified approach: Find terms in the same category
-    
     try {
-      // First check if the term exists
+      // Get the term to find its category
       const [term] = await db.select({
+        id: terms.id,
         categoryId: terms.categoryId
       })
       .from(terms)
@@ -900,6 +899,11 @@ export class DatabaseStorage implements IStorage {
         whereConditions.push(eq(terms.categoryId, term.categoryId));
       }
       
+      // Only proceed if we have valid WHERE conditions
+      if (whereConditions.length === 0) {
+        return [];
+      }
+      
       // Find terms with same category, excluding the current term
       const relatedTerms = await db.select({
         id: terms.id,
@@ -911,7 +915,7 @@ export class DatabaseStorage implements IStorage {
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
-      .where(and(...whereConditions))
+      .where(whereConditions.length === 1 ? whereConditions[0] : and(...whereConditions))
       .orderBy(desc(terms.viewCount))
       .limit(3);
       
@@ -923,25 +927,36 @@ export class DatabaseStorage implements IStorage {
         let isFavorite = false;
         
         if (userId) {
-          const [favorite] = await db.select()
-            .from(favorites)
-            .where(
-              and(
-                eq(favorites.userId, userId),
-                eq(favorites.termId, relTerm.id)
-              )
-            );
-          
-          isFavorite = !!favorite;
+          try {
+            const [favorite] = await db.select()
+              .from(favorites)
+              .where(
+                and(
+                  eq(favorites.userId, userId),
+                  eq(favorites.termId, relTerm.id)
+                )
+              );
+            
+            isFavorite = !!favorite;
+          } catch (favoriteError) {
+            console.warn(`Could not check favorite status for term ${relTerm.id}:`, favoriteError);
+            isFavorite = false;
+          }
         }
         
         // Get subcategories for this term
-        const termSubcats = await db.select({
-          name: subcategories.name
-        })
-        .from(termSubcategories)
-        .innerJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
-        .where(eq(termSubcategories.termId, relTerm.id));
+        let termSubcats = [];
+        try {
+          termSubcats = await db.select({
+            name: subcategories.name
+          })
+          .from(termSubcategories)
+          .innerJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
+          .where(eq(termSubcategories.termId, relTerm.id));
+        } catch (subcatError) {
+          console.warn(`Could not fetch subcategories for term ${relTerm.id}:`, subcatError);
+          termSubcats = [];
+        }
         
         result.push({
           ...relTerm,
@@ -1274,23 +1289,19 @@ export class DatabaseStorage implements IStorage {
     offset?: number;
     categoryId?: string;
     searchTerm?: string;
-  } = {}): Promise<any[]> {
-    const { limit = 50, offset = 0, categoryId, searchTerm } = options;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+  } = {}): Promise<{ terms: any[], total: number, hasMore: boolean }> {
+    const { 
+      limit = 50, 
+      offset = 0, 
+      categoryId, 
+      searchTerm,
+      sortBy = 'name',
+      sortOrder = 'asc'
+    } = options;
     
     try {
-      // Build the base query
-      let query = db.select({
-        id: terms.id,
-        name: terms.name,
-        shortDefinition: terms.shortDefinition,
-        definition: terms.definition,
-        viewCount: terms.viewCount,
-        categoryId: terms.categoryId,
-        category: categories.name
-      })
-      .from(terms)
-      .leftJoin(categories, eq(terms.categoryId, categories.id));
-      
       // Build WHERE conditions
       const whereConditions = [];
       
@@ -1307,22 +1318,69 @@ export class DatabaseStorage implements IStorage {
         );
       }
       
+      // Build the base query with proper null handling
+      const baseQuery = db.select({
+        id: terms.id,
+        name: terms.name,
+        shortDefinition: terms.shortDefinition,
+        definition: terms.definition,
+        viewCount: terms.viewCount,
+        categoryId: terms.categoryId,
+        category: categories.name,
+        createdAt: terms.createdAt,
+        updatedAt: terms.updatedAt
+      })
+      .from(terms)
+      .leftJoin(categories, eq(terms.categoryId, categories.id));
+      
       // Apply WHERE conditions if any exist
+      let query = baseQuery;
       if (whereConditions.length === 1) {
         query = query.where(whereConditions[0]);
       } else if (whereConditions.length > 1) {
         query = query.where(and(...whereConditions));
       }
       
+      // Apply sorting
+      const sortColumn = sortBy === 'viewCount' ? terms.viewCount : terms.name;
+      const sortDirection = sortOrder === 'desc' ? desc(sortColumn) : asc(sortColumn);
+      
+      // Get paginated results
       const result = await query
-        .orderBy(asc(terms.name))
-        .limit(limit)
+        .orderBy(sortDirection)
+        .limit(limit + 1) // Get one extra to check if there are more
         .offset(offset);
 
-      return result.map(term => ({
-        ...term,
-        subcategories: [] // Simplified for now
-      }));
+      // Check if there are more results
+      const hasMore = result.length > limit;
+      const terms_data = hasMore ? result.slice(0, limit) : result;
+      
+      // Get total count for pagination info
+      let totalQuery = db.select({ count: sql<number>`count(*)` }).from(terms);
+      if (whereConditions.length === 1) {
+        totalQuery = totalQuery.where(whereConditions[0]);
+      } else if (whereConditions.length > 1) {
+        totalQuery = totalQuery.where(and(...whereConditions));
+      }
+      
+      const [{ count: total }] = await totalQuery;
+
+      return {
+        terms: terms_data.map(term => ({
+          id: term.id,
+          name: term.name || '',
+          shortDefinition: term.shortDefinition || '',
+          definition: term.definition || '',
+          viewCount: term.viewCount || 0,
+          categoryId: term.categoryId || null,
+          category: term.category || 'Uncategorized',
+          createdAt: term.createdAt,
+          updatedAt: term.updatedAt,
+          subcategories: [] // Will be populated separately if needed
+        })),
+        total,
+        hasMore
+      };
     } catch (error) {
       console.error("Error in getAllTerms:", error);
       throw error;

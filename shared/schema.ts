@@ -45,7 +45,9 @@ export const categories = pgTable("categories", {
   description: text("description"),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  nameIdx: index("categories_name_idx").on(table.name),
+}));
 
 export const insertCategorySchema = createInsertSchema(categories).omit({ 
   id: true,
@@ -94,7 +96,15 @@ export const terms = pgTable("terms", {
   viewCount: integer("view_count").default(0),
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
-});
+}, (table) => ({
+  nameIdx: index("terms_name_idx").on(table.name),
+  categoryIdx: index("terms_category_idx").on(table.categoryId),
+  viewCountIdx: index("terms_view_count_idx").on(table.viewCount),
+  createdAtIdx: index("terms_created_at_idx").on(table.createdAt),
+  updatedAtIdx: index("terms_updated_at_idx").on(table.updatedAt),
+  nameSearchIdx: index("terms_name_search_idx").on(table.name),
+  definitionSearchIdx: index("terms_definition_search_idx").on(table.definition),
+}));
 
 export const insertTermSchema = createInsertSchema(terms).omit({ 
   id: true, 
@@ -112,6 +122,8 @@ export const termSubcategories = pgTable("term_subcategories", {
   subcategoryId: uuid("subcategory_id").notNull().references(() => subcategories.id, { onDelete: "cascade" }),
 }, (table) => ({
   pk: primaryKey(table.termId, table.subcategoryId),
+  termIdx: index("term_subcategories_term_idx").on(table.termId),
+  subcategoryIdx: index("term_subcategories_subcategory_idx").on(table.subcategoryId),
 }));
 
 // User favorites table

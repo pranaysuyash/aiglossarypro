@@ -6,7 +6,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { db } from './db';
 import { categories, subcategories, terms, termSubcategories } from '@shared/enhancedSchema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 import { downloadFileFromS3 } from './s3Service';
 
 /**
@@ -133,7 +133,10 @@ export async function importProcessedData(data: any): Promise<any> {
       terms: 0
     };
     
-    // Import categories
+    // Create a map to track imported category IDs
+    const categoryIdMap = new Map<string, string>();
+    
+    // Import categories first
     for (const category of data.categories) {
       try {
         const existing = await db.select()
@@ -142,30 +145,47 @@ export async function importProcessedData(data: any): Promise<any> {
           .limit(1);
         
         if (existing.length === 0) {
-          await db.insert(categories).values({
+          const [inserted] = await db.insert(categories).values({
             id: category.id,
             name: category.name
-          });
+          }).returning({ id: categories.id });
+          
+          categoryIdMap.set(category.id, inserted.id);
           imported.categories++;
+        } else {
+          // Map existing category ID
+          categoryIdMap.set(category.id, existing[0].id);
         }
       } catch (e) {
         console.warn(`Error importing category ${category.name}: ${e}`);
       }
     }
     
-    // Import subcategories
+    // Import subcategories with proper category ID references
     for (const subcategory of data.subcategories) {
       try {
+        // Check if the category exists
+        const mappedCategoryId = categoryIdMap.get(subcategory.categoryId);
+        if (!mappedCategoryId) {
+          console.warn(`Skipping subcategory ${subcategory.name}: category ID ${subcategory.categoryId} not found`);
+          continue;
+        }
+        
         const existing = await db.select()
           .from(subcategories)
-          .where(eq(subcategories.name, subcategory.name))
+          .where(
+            and(
+              eq(subcategories.name, subcategory.name),
+              eq(subcategories.categoryId, mappedCategoryId)
+            )
+          )
           .limit(1);
         
         if (existing.length === 0) {
           await db.insert(subcategories).values({
             id: subcategory.id,
             name: subcategory.name,
-            categoryId: subcategory.categoryId
+            categoryId: mappedCategoryId
           });
           imported.subcategories++;
         }

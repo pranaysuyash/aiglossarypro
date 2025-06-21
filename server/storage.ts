@@ -1,7 +1,5 @@
 import {
   users,
-  type User,
-  type UpsertUser,
   terms,
   categories,
   subcategories,
@@ -11,6 +9,7 @@ import {
   termViews,
   userSettings
 } from "@shared/enhancedSchema";
+import type { User, UpsertUser } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, and, like, ilike, asc, gte, lte, not, isNull, inArray, or } from "drizzle-orm";
 import { 
@@ -97,31 +96,40 @@ export class DatabaseStorage implements IStorage {
   
   // Category operations
   async getCategories(): Promise<any[]> {
-    // Get all categories with term counts
+    // Get all categories with term counts in a single optimized query
     const categoriesWithCount = await db.select({
       id: categories.id,
       name: categories.name,
-      termCount: sql<number>`count(${terms.id})`,
+      termCount: sql<number>`count(DISTINCT ${terms.id})`,
     })
     .from(categories)
     .leftJoin(terms, eq(categories.id, terms.categoryId))
-    .groupBy(categories.id)
+    .groupBy(categories.id, categories.name)
     .orderBy(categories.name);
     
-    // For each category, get its subcategories
-    const result = [];
+    // Get all subcategories in a single query
+    const allSubcategories = await db.select({
+      id: subcategories.id,
+      name: subcategories.name,
+      categoryId: subcategories.categoryId,
+    })
+    .from(subcategories)
+    .orderBy(subcategories.name);
     
-    for (const category of categoriesWithCount) {
-      const subcats = await db.select()
-        .from(subcategories)
-        .where(eq(subcategories.categoryId, category.id))
-        .orderBy(subcategories.name);
-      
-      result.push({
-        ...category,
-        subcategories: subcats
-      });
+    // Group subcategories by category ID for efficient lookup
+    const subcategoriesByCategory = new Map<string, any[]>();
+    for (const subcat of allSubcategories) {
+      if (!subcategoriesByCategory.has(subcat.categoryId)) {
+        subcategoriesByCategory.set(subcat.categoryId, []);
+      }
+      subcategoriesByCategory.get(subcat.categoryId)!.push(subcat);
     }
+    
+    // Combine categories with their subcategories
+    const result = categoriesWithCount.map(category => ({
+      ...category,
+      subcategories: subcategoriesByCategory.get(category.id) || []
+    }));
     
     return result;
   }

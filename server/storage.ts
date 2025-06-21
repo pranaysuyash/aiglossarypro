@@ -880,75 +880,81 @@ export class DatabaseStorage implements IStorage {
   async getRecommendedTermsForTerm(termId: string, userId: string | null): Promise<any[]> {
     // Simplified approach: Find terms in the same category
     
-    // First check if the term exists
-    const [term] = await db.select({
-      categoryId: terms.categoryId
-    })
-    .from(terms)
-    .where(eq(terms.id, termId));
-    
-    if (!term) {
-      throw new Error("Term not found");
-    }
-    
-    // Build WHERE conditions based on whether term has a category
-    let whereConditions = [not(eq(terms.id, termId))];
-    
-    if (term.categoryId) {
-      whereConditions.push(eq(terms.categoryId, term.categoryId));
-    }
-    
-    // Find terms with same category, excluding the current term
-    const relatedTerms = await db.select({
-      id: terms.id,
-      name: terms.name,
-      shortDefinition: terms.shortDefinition,
-      viewCount: terms.viewCount,
-      category: categories.name,
-      categoryId: categories.id,
-    })
-    .from(terms)
-    .leftJoin(categories, eq(terms.categoryId, categories.id))
-    .where(and(...whereConditions))
-    .orderBy(desc(terms.viewCount))
-    .limit(3);
-    
-    // Get subcategories and favorite status for each term
-    const result = [];
-    
-    for (const relTerm of relatedTerms) {
-      // Check if this term is a favorite (if user is authenticated)
-      let isFavorite = false;
+    try {
+      // First check if the term exists
+      const [term] = await db.select({
+        categoryId: terms.categoryId
+      })
+      .from(terms)
+      .where(eq(terms.id, termId));
       
-      if (userId) {
-        const [favorite] = await db.select()
-          .from(favorites)
-          .where(
-            and(
-              eq(favorites.userId, userId),
-              eq(favorites.termId, relTerm.id)
-            )
-          );
-        
-        isFavorite = !!favorite;
+      if (!term) {
+        throw new Error("Term not found");
       }
       
-      // Get subcategories for this term
-      const termSubcats = await db.select({
-        name: subcategories.name
-      })
-      .from(termSubcategories)
-      .innerJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
-      .where(eq(termSubcategories.termId, relTerm.id));
+      // Build WHERE conditions - always exclude the current term
+      const whereConditions = [not(eq(terms.id, termId))];
       
-      result.push({
-        ...relTerm,
-        isFavorite,
-        subcategories: termSubcats.map(sc => sc.name)
-      });
+      // If term has a category, add category filter
+      if (term.categoryId) {
+        whereConditions.push(eq(terms.categoryId, term.categoryId));
+      }
+      
+      // Find terms with same category, excluding the current term
+      const relatedTerms = await db.select({
+        id: terms.id,
+        name: terms.name,
+        shortDefinition: terms.shortDefinition,
+        viewCount: terms.viewCount,
+        category: categories.name,
+        categoryId: categories.id,
+      })
+      .from(terms)
+      .leftJoin(categories, eq(terms.categoryId, categories.id))
+      .where(and(...whereConditions))
+      .orderBy(desc(terms.viewCount))
+      .limit(3);
+      
+      // Get subcategories and favorite status for each term
+      const result = [];
+      
+      for (const relTerm of relatedTerms) {
+        // Check if this term is a favorite (if user is authenticated)
+        let isFavorite = false;
+        
+        if (userId) {
+          const [favorite] = await db.select()
+            .from(favorites)
+            .where(
+              and(
+                eq(favorites.userId, userId),
+                eq(favorites.termId, relTerm.id)
+              )
+            );
+          
+          isFavorite = !!favorite;
+        }
+        
+        // Get subcategories for this term
+        const termSubcats = await db.select({
+          name: subcategories.name
+        })
+        .from(termSubcategories)
+        .innerJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
+        .where(eq(termSubcategories.termId, relTerm.id));
+        
+        result.push({
+          ...relTerm,
+          isFavorite,
+          subcategories: termSubcats.map(sc => sc.name)
+        });
+      }
+      
+      return result;
+    } catch (error) {
+      console.error("Error in getRecommendedTermsForTerm:", error);
+      throw error;
     }
-    
-    return result;
   }
   
   // Settings
@@ -1272,7 +1278,7 @@ export class DatabaseStorage implements IStorage {
     const { limit = 50, offset = 0, categoryId, searchTerm } = options;
     
     try {
-      // Build query conditionally
+      // Build the base query
       let query = db.select({
         id: terms.id,
         name: terms.name,
@@ -1285,20 +1291,27 @@ export class DatabaseStorage implements IStorage {
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id));
       
-      // Add WHERE conditions if any
-      if (categoryId && searchTerm) {
-        query = query.where(
-          and(
-            eq(terms.categoryId, categoryId),
-            sql`(${terms.name} ILIKE ${'%' + searchTerm + '%'} OR ${terms.definition} ILIKE ${'%' + searchTerm + '%'})`
+      // Build WHERE conditions
+      const whereConditions = [];
+      
+      if (categoryId) {
+        whereConditions.push(eq(terms.categoryId, categoryId));
+      }
+      
+      if (searchTerm) {
+        whereConditions.push(
+          or(
+            ilike(terms.name, `%${searchTerm}%`),
+            ilike(terms.definition, `%${searchTerm}%`)
           )
         );
-      } else if (categoryId) {
-        query = query.where(eq(terms.categoryId, categoryId));
-      } else if (searchTerm) {
-        query = query.where(
-          sql`(${terms.name} ILIKE ${'%' + searchTerm + '%'} OR ${terms.definition} ILIKE ${'%' + searchTerm + '%'})`
-        );
+      }
+      
+      // Apply WHERE conditions if any exist
+      if (whereConditions.length === 1) {
+        query = query.where(whereConditions[0]);
+      } else if (whereConditions.length > 1) {
+        query = query.where(and(...whereConditions));
       }
       
       const result = await query

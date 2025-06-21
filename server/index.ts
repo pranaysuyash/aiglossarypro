@@ -3,9 +3,9 @@ dotenv.config();
 
 import express, { type Request, Response, NextFunction } from "express";
 import expressWs from "express-ws";
-import { registerRoutes } from "./routes";
+import { registerRoutes } from "./routes/index";
 import { setupVite, serveStatic, log } from "./vite";
-import { checkAndLoadExcelData } from "./autoLoadExcel";
+import { checkAndSmartLoadExcelData } from "./smartExcelLoader";
 import { getServerConfig, logConfigStatus } from "./config";
 
 const app = express();
@@ -83,6 +83,9 @@ app.use((req, res, next) => {
     console.error('❌ Server error:', err);
   });
     
-  // Temporarily disable auto-loading to fix SQL issues first
-  console.log("⚠️  Excel auto-loading temporarily disabled - fixing SQL issues first");
+  // Use smart Excel loader that handles large files with Python processor
+  console.log("🚀 Starting smart Excel data loading...");
+  checkAndSmartLoadExcelData().catch(err => {
+    console.error('❌ Error loading Excel data:', err);
+  });
 })();

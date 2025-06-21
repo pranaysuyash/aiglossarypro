@@ -121,6 +121,7 @@ export const features = {
   openaiEnabled: !!config.OPENAI_API_KEY,
   googleDriveEnabled: !!config.GOOGLE_DRIVE_API_KEY,
   replitAuthEnabled: !!(config.REPLIT_DOMAINS && config.REPL_ID),
+  analyticsEnabled: true, // Analytics is always enabled for now
   isDevelopment: config.NODE_ENV === 'development',
   isProduction: config.NODE_ENV === 'production'
 };

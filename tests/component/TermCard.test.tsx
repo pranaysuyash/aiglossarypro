@@ -1,6 +1,7 @@
 import React from 'react';
 import { describe, it, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import TermCard from '../../client/src/components/TermCard';
 
 // Mock term data
@@ -16,29 +17,62 @@ const mockTerm = {
   isLearned: false,
 };
 
+// Test wrapper with QueryClient
+const TestWrapper = ({ children }: { children: React.ReactNode }) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  
+  return (
+    <QueryClientProvider client={queryClient}>
+      {children}
+    </QueryClientProvider>
+  );
+};
+
 describe('TermCard Component', () => {
   it('renders term card with basic information', () => {
-    render(<TermCard term={mockTerm} />);
+    render(
+      <TestWrapper>
+        <TermCard term={mockTerm} />
+      </TestWrapper>
+    );
     
     expect(screen.getByText('Machine Learning')).toBeInTheDocument();
     expect(screen.getByText(/A method of data analysis/)).toBeInTheDocument();
   });
 
   it('displays view count correctly', () => {
-    render(<TermCard term={mockTerm} />);
+    render(
+      <TestWrapper>
+        <TermCard term={mockTerm} />
+      </TestWrapper>
+    );
     
     expect(screen.getByText(/142/)).toBeInTheDocument();
   });
 
   it('shows category information', () => {
-    render(<TermCard term={mockTerm} />);
+    render(
+      <TestWrapper>
+        <TermCard term={mockTerm} />
+      </TestWrapper>
+    );
     
     expect(screen.getByText('AI/ML')).toBeInTheDocument();
   });
 
   it('renders favorite state correctly', () => {
     const favoriteTerm = { ...mockTerm, isFavorite: true };
-    render(<TermCard term={favoriteTerm} />);
+    render(
+      <TestWrapper>
+        <TermCard term={favoriteTerm} />
+      </TestWrapper>
+    );
     
     // Check for favorite indicator (star icon or similar)
     const favoriteIndicator = screen.getByRole('button', { name: /favorite/i });
@@ -47,7 +81,11 @@ describe('TermCard Component', () => {
 
   it('renders learned state correctly', () => {
     const learnedTerm = { ...mockTerm, isLearned: true };
-    render(<TermCard term={learnedTerm} />);
+    render(
+      <TestWrapper>
+        <TermCard term={learnedTerm} />
+      </TestWrapper>
+    );
     
     // Check for learned indicator
     const learnedIndicator = screen.getByRole('button', { name: /learned/i });
@@ -55,13 +93,21 @@ describe('TermCard Component', () => {
   });
 
   it('matches visual snapshot', () => {
-    const { container } = render(<TermCard term={mockTerm} />);
+    const { container } = render(
+      <TestWrapper>
+        <TermCard term={mockTerm} />
+      </TestWrapper>
+    );
     expect(container.firstChild).toMatchSnapshot();
   });
 
   it('matches visual snapshot with favorite and learned states', () => {
     const stateTerm = { ...mockTerm, isFavorite: true, isLearned: true };
-    const { container } = render(<TermCard term={stateTerm} />);
+    const { container } = render(
+      <TestWrapper>
+        <TermCard term={stateTerm} />
+      </TestWrapper>
+    );
     expect(container.firstChild).toMatchSnapshot();
   });
 }); 

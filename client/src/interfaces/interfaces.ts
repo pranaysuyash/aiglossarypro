@@ -1,42 +1,43 @@
-// Define the interface for a Term
-export interface ITerm {
-  id: string;
-  name: string;
-  shortDefinition: string;
-  definition: string;
-  category: string;
-  categoryId: string;
-  subcategories?: string[];
-  characteristics?: string[];
-  types?: {
-    name: string;
-    description: string;
-  }[];
-  visualUrl?: string;
-  visualCaption?: string;
-  mathFormulation?: string;
-  applications?: {
-    name: string;
-    description: string;
-    icon?: string;
-  }[];
-  relatedTerms?: {
-    id: string;
-    name: string;
-  }[];
-  references?: string[];
-  createdAt: string;
-  updatedAt: string;
-  viewCount: number;
-  isFavorite?: boolean;
-  favoriteDate?: string;
-}
+// Re-export shared types for backward compatibility
+export * from '../../../shared/types';
 
-// Define the interface for a Category
-export interface ICategory {
-  id: string;
-  name: string;
-  termCount?: number;
+// Client-specific enhanced interfaces that extend the shared types
+import { ITerm, ICategory, UserPreferences } from '../../../shared/types';
+
+// Enhanced term interface for the new data structure
+export interface IEnhancedTerm extends ITerm {
+  slug: string;
+  
+  // Enhanced categorization
+  mainCategories: string[];
+  subCategories: string[];
+  relatedConcepts: string[];
+  applicationDomains: string[];
+  techniques: string[];
+  
+  // Metadata
+  difficultyLevel?: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
+  hasImplementation: boolean;
+  hasInteractiveElements: boolean;
+  hasCaseStudies: boolean;
+  hasCodeExamples: boolean;
+  
+  // Search and filtering
+  searchText?: string;
+  keywords: string[];
+  
+  // Analytics
+  lastViewed?: string;
+  
+  // Metadata
+  parseHash?: string;
+  parseVersion?: string;
+  
+  // Relations
+  sections?: ITermSection[];
+  interactiveElements?: IInteractiveElement[];
+  relationships?: ITermRelationship[];
+  displayConfig?: IDisplayConfig;
 }
 
 // Define the interface for a Category with subcategories
@@ -86,53 +87,6 @@ export interface IAnalyticsData {
     date: string;
     count: number;
   }[];
-}
-
-// Enhanced term interface for the new data structure
-export interface IEnhancedTerm {
-  id: string;
-  name: string;
-  slug: string;
-  shortDefinition?: string;
-  fullDefinition: string;
-  
-  // Enhanced categorization
-  mainCategories: string[];
-  subCategories: string[];
-  relatedConcepts: string[];
-  applicationDomains: string[];
-  techniques: string[];
-  
-  // Metadata
-  difficultyLevel?: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
-  hasImplementation: boolean;
-  hasInteractiveElements: boolean;
-  hasCaseStudies: boolean;
-  hasCodeExamples: boolean;
-  
-  // Search and filtering
-  searchText?: string;
-  keywords: string[];
-  
-  // Analytics
-  viewCount: number;
-  lastViewed?: string;
-  
-  // Metadata
-  parseHash?: string;
-  parseVersion?: string;
-  createdAt: string;
-  updatedAt: string;
-  
-  // Relations
-  sections?: ITermSection[];
-  interactiveElements?: IInteractiveElement[];
-  relationships?: ITermRelationship[];
-  displayConfig?: IDisplayConfig;
-  
-  // Compatibility
-  isFavorite?: boolean;
-  favoriteDate?: string;
 }
 
 // Term section interface for 42 structured content sections
@@ -230,7 +184,7 @@ export interface IDisplayConfig {
 }
 
 // Enhanced user settings interface
-export interface IEnhancedUserSettings {
+export interface IEnhancedUserSettings extends UserPreferences {
   userId: string;
   
   // Display preferences
@@ -255,7 +209,7 @@ export interface IEnhancedUserSettings {
   updatedAt: string;
 }
 
-// Search filter interface for advanced search
+// Search filters interface
 export interface ISearchFilters {
   query?: string;
   categories?: string[];

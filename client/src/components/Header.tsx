@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Search, ChevronDown, User } from "lucide-react";
+import { Menu, X, Search, ChevronDown, User, Heart, Sun, Moon, Settings } from "lucide-react";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 

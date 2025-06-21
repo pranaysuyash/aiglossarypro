@@ -19,50 +19,56 @@ interface AuthenticatedRequest extends Request {
  */
 export function registerTermRoutes(app: Express): void {
   
-  // Get terms with proper server-side pagination, search, and filtering
-  app.get('/api/terms', async (req: Request, res: Response) => {
+  // Get all terms with pagination
+  app.get('/api/terms', async (req, res) => {
     try {
-      const {
-        page = 1,
-        limit = 12,
-        search = '',
-        category = '',
-        sort = 'name',
-        order = 'asc'
-      } = req.query;
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const search = req.query.search as string;
+      const category = req.query.category as string;
+      const sortBy = req.query.sortBy as string || 'name';
+      const sortOrder = req.query.sortOrder as string || 'asc';
 
-      const pageNum = Math.max(1, parseInt(page as string));
-      const limitNum = Math.min(100, Math.max(1, parseInt(limit as string))); // Cap at 100
-      const offset = (pageNum - 1) * limitNum;
+      // Calculate offset
+      const offset = (page - 1) * limit;
 
       // Use existing storage method with proper parameters
       const result = await storage.getAllTerms({
-        limit: limitNum,
+        limit,
         offset,
-        categoryId: category as string || undefined,
-        searchTerm: search as string || undefined,
-        sortBy: sort as string,
-        sortOrder: order as 'asc' | 'desc'
+        categoryId: category || undefined,
+        searchTerm: search || undefined,
+        sortBy,
+        sortOrder: (sortOrder === 'desc') ? 'desc' : 'asc'
       });
 
-      const response: PaginatedResponse<ITerm> = {
-        data: result.terms,
-        total: result.total,
-        page: pageNum,
-        limit: limitNum,
-        hasMore: result.hasMore
-      };
+      // Calculate pagination metadata
+      const totalPages = Math.ceil(result.total / limit);
+      const hasMore = page < totalPages;
+      const hasPrevious = page > 1;
 
       res.json({
         success: true,
-        ...response
+        data: {
+          terms: result.terms,
+          pagination: {
+            currentPage: page,
+            totalPages,
+            totalItems: result.total,
+            itemsPerPage: limit,
+            hasMore,
+            hasPrevious,
+            startItem: offset + 1,
+            endItem: Math.min(offset + limit, result.total)
+          }
+        }
       });
-
     } catch (error) {
       console.error('Error fetching terms:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch terms'
+      res.status(500).json({ 
+        success: false, 
+        error: 'Failed to fetch terms',
+        details: error instanceof Error ? error.message : 'Unknown error'
       });
     }
   });

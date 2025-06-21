@@ -83,8 +83,8 @@ app.use((req, res, next) => {
     console.error('❌ Server error:', err);
   });
     
-  // Use enhanced chunked Excel processing for large files
-  console.log("🚀 Starting enhanced chunked Excel data loading...");
+  // Use smart caching system for Excel processing
+  console.log("🚀 Starting smart Excel data loading with caching...");
   checkAndSmartLoadExcelData({
     chunkSize: 500,
     enableProgress: true,

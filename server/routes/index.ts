@@ -13,6 +13,7 @@ import { registerAdminRoutes } from "./admin";
 import { registerAnalyticsRoutes } from "./analytics";
 
 // Import existing specialized route modules
+import cacheRoutes from "./cache";
 import s3Routes from "../s3Routes";
 import s3RoutesOptimized from "../s3RoutesOptimized";
 import s3MonitoringRoutes from "../s3MonitoringRoutes";
@@ -65,6 +66,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   registerEnhancedRoutes(app);
   registerEnhancedDemoRoutes(app);
   console.log("✅ Enhanced routes registered");
+  
+  // Register cache management routes
+  app.use('/api/cache', cacheRoutes);
+  console.log("✅ Cache management routes registered");
   
   // Health check endpoint
   app.get('/api/health', (req, res) => {

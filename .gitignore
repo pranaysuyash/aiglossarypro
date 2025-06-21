@@ -46,4 +46,5 @@ __pycache__/
 *.swo
 
 # OS files
-Thumbs.db
+Thumbs.dbtemp/processed_*.json
+cache/

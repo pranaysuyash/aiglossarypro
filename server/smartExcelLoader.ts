@@ -1,6 +1,8 @@
 import fs from 'fs';
 import path from 'path';
 import { runPythonExcelProcessor, importProcessedData } from './pythonProcessor';
+import { cacheManager } from './cacheManager';
+import { aiChangeDetector } from './aiChangeDetector';
 
 /**
  * Smart Excel loader that chooses the appropriate processing method based on file size
@@ -18,7 +20,7 @@ interface ProcessingOptions {
   resumeProcessing?: boolean;
 }
 
-export async function smartLoadExcelData(filePath: string, options: ProcessingOptions = {}): Promise<void> {
+export async function smartLoadExcelData(filePath: string, options: ProcessingOptions = {}, forceReprocess: boolean = false): Promise<void> {
   try {
     console.log(`🔍 Analyzing Excel file: ${filePath}`);
     
@@ -35,23 +37,146 @@ export async function smartLoadExcelData(filePath: string, options: ProcessingOp
     
     console.log(`📊 File size: ${fileSizeMB.toFixed(2)} MB`);
     
+    // Check cache validity first (unless force reprocess)
+    if (!forceReprocess) {
+      const isCacheValid = await cacheManager.isCacheValid(filePath);
+      
+      if (isCacheValid) {
+        const cachedData = await cacheManager.loadFromCache(filePath);
+        if (cachedData) {
+          console.log('⚡ Loading from cache - skipping processing');
+          const importResult = await importProcessedData(cachedData);
+          if (importResult.success) {
+            console.log(`✅ Cache data loaded successfully:`);
+            console.log(`   📂 ${importResult.imported.categories} categories`);
+            console.log(`   📋 ${importResult.imported.subcategories} subcategories`);
+            console.log(`   📊 ${importResult.imported.terms} terms`);
+            return;
+          } else {
+            console.warn('⚠️  Cache data import failed, proceeding with fresh processing');
+          }
+        }
+      }
+      
+      // Perform AI-powered change detection for smarter processing decisions
+      try {
+        // Get a quick sample of the current data for comparison
+        let dataSample = null;
+        if (fileSizeBytes > MAX_JS_FILE_SIZE) {
+          // For large files, get a small sample using Python
+          dataSample = await getDataSample(filePath);
+        } else {
+          // For small files, parse a portion with JavaScript
+          const { parseExcelFile } = await import('./excelParser');
+          const buffer = fs.readFileSync(filePath);
+          const fullData = await parseExcelFile(buffer);
+          dataSample = {
+            terms: fullData.terms?.slice(0, 100) || [],
+            categories: fullData.categories || [],
+            subcategories: [] // JavaScript parser doesn't extract subcategories separately
+          };
+        }
+        
+        const changeAnalysis = await aiChangeDetector.analyzeContentChanges(filePath, dataSample, forceReprocess);
+        const strategy = aiChangeDetector.getProcessingStrategy(changeAnalysis);
+        
+        console.log(`🤖 AI Analysis: ${changeAnalysis.changeDescription}`);
+        console.log(`📋 Strategy: ${strategy.strategy} - ${strategy.reason}`);
+        
+        if (!strategy.shouldProcess) {
+          console.log('✅ No processing needed - using cached data');
+          const cachedData = await cacheManager.loadFromCache(filePath);
+          if (cachedData) {
+            await importProcessedData(cachedData);
+          }
+          return;
+        }
+      } catch (error) {
+        console.warn('⚠️  AI analysis failed, proceeding with normal processing:', error);
+      }
+    }
+    
+    // Process the file
+    const startTime = Date.now();
+    let processedData;
+    
     if (fileSizeBytes > MAX_JS_FILE_SIZE) {
       console.log(`🐍 Using chunked Python processor for large file (${fileSizeMB.toFixed(2)} MB)`);
-      await processWithChunkedPython(filePath, options);
+      processedData = await processWithChunkedPython(filePath, options);
     } else {
       console.log(`📄 Using JavaScript parser for small file (${fileSizeMB.toFixed(2)} MB)`);
-      // Import the existing JavaScript parser
       const { parseExcelFile, importToDatabase } = await import('./excelParser');
       const buffer = fs.readFileSync(filePath);
-      const parsedData = await parseExcelFile(buffer);
-      await importToDatabase(parsedData);
+      processedData = await parseExcelFile(buffer);
+      await importToDatabase(processedData);
     }
+    
+    // Save to cache if processing was successful
+    if (processedData) {
+      const processingTime = Date.now() - startTime;
+      await cacheManager.saveToCache(filePath, processedData, processingTime);
+      console.log(`💾 Results cached for future use`);
+    }
+    
   } catch (error) {
     console.error('❌ Error in smart Excel loading:', error);
   }
 }
 
-async function processWithChunkedPython(filePath: string, options: ProcessingOptions): Promise<void> {
+/**
+ * Get a small sample of data from large Excel files for change detection
+ */
+async function getDataSample(filePath: string): Promise<any> {
+  try {
+    const tempDir = path.join(process.cwd(), 'temp');
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+    
+    const outputPath = path.join(tempDir, `sample_${Date.now()}.json`);
+    const scriptPath = 'server/python/excel_processor_enhanced.py';
+    
+    const { exec } = await import('child_process');
+    const venvPath = path.join(process.cwd(), 'venv', 'bin', 'python');
+    
+    // Get just a small sample (50 rows) for change detection
+    const command = [
+      venvPath,
+      scriptPath,
+      `--input "${filePath}"`,
+      `--output "${outputPath}"`,
+      `--chunk-size 50`,
+      `--sample-only`
+    ].join(' ');
+    
+    return new Promise((resolve, reject) => {
+      exec(command, { maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
+        if (error) {
+          console.warn('Sample extraction failed, using basic analysis');
+          resolve(null);
+          return;
+        }
+        
+        try {
+          if (fs.existsSync(outputPath)) {
+            const sampleData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+            fs.unlinkSync(outputPath); // Clean up
+            resolve(sampleData);
+          } else {
+            resolve(null);
+          }
+        } catch (e) {
+          resolve(null);
+        }
+      });
+    });
+  } catch (error) {
+    console.warn('Error getting data sample:', error);
+    return null;
+  }
+}
+
+async function processWithChunkedPython(filePath: string, options: ProcessingOptions): Promise<any> {
   try {
     console.log('🚀 Starting chunked Excel processing...');
     
@@ -142,9 +267,11 @@ async function processWithChunkedPython(filePath: string, options: ProcessingOpt
             } catch (e) {
               console.warn(`⚠️  Could not remove temp file: ${e}`);
             }
+            
+            resolve(processedData);
+          } else {
+            resolve(null);
           }
-          
-          resolve();
         } catch (parseError) {
           console.error(`❌ Error parsing Python output: ${parseError}`);
           console.log('Raw output:', stdout);

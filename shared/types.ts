@@ -214,3 +214,137 @@ export interface AppConfig {
     googleDrive: boolean;
   };
 }
+
+// New types for section-based architecture
+export interface ISection {
+  id: number;
+  termId: number;
+  name: string;
+  displayOrder: number;
+  isCompleted: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+  items?: ISectionItem[];
+}
+
+export interface ISectionItem {
+  id: number;
+  sectionId: number;
+  label: string;
+  content: string;
+  contentType: 'markdown' | 'mermaid' | 'image' | 'json' | 'interactive' | 'code';
+  displayOrder: number;
+  metadata?: Record<string, any>;
+  isAiGenerated: boolean;
+  verificationStatus: 'unverified' | 'verified' | 'flagged' | 'expert_reviewed';
+  createdAt: Date;
+  updatedAt: Date;
+  media?: IMedia[];
+}
+
+export interface IMedia {
+  id: number;
+  sectionItemId: number;
+  url: string;
+  mediaType: 'image' | 'video' | 'audio' | 'document' | 'notebook';
+  filename?: string;
+  fileSize?: number;
+  mimeType?: string;
+  altText?: string;
+  createdAt: Date;
+}
+
+export interface IUserProgress {
+  id: number;
+  userId: string;
+  termId: number;
+  sectionId: number;
+  status: 'not_started' | 'in_progress' | 'completed' | 'mastered';
+  completionPercentage: number;
+  timeSpentMinutes: number;
+  lastAccessedAt?: Date;
+  completedAt?: Date;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+// Enhanced term interface with section support
+export interface IEnhancedTerm extends ITerm {
+  sections?: ISection[];
+  userProgress?: IUserProgress[];
+  completionPercentage?: number;
+  totalSections?: number;
+  completedSections?: number;
+}
+
+// Content-driven site section types
+export interface IContentGallery {
+  sectionName: string;
+  items: ISectionItem[];
+  termCount: number;
+}
+
+export interface IQuizQuestion {
+  id: string;
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  termId: number;
+  sectionName: string;
+}
+
+export interface ILearningPath {
+  id: number;
+  name: string;
+  description: string;
+  termIds: number[];
+  sectionFocus: string[];
+  estimatedHours: number;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+}
+
+// API response types for section-based endpoints
+export interface ISectionResponse {
+  section: ISection;
+  items: ISectionItem[];
+  userProgress?: IUserProgress;
+}
+
+export interface ITermSectionsResponse {
+  term: IEnhancedTerm;
+  sections: ISection[];
+  userProgress: IUserProgress[];
+}
+
+export interface IContentGalleryResponse {
+  galleries: IContentGallery[];
+  totalItems: number;
+  page: number;
+  limit: number;
+}
+
+// Progress tracking types
+export interface IProgressUpdate {
+  sectionId: number;
+  status: IUserProgress['status'];
+  completionPercentage?: number;
+  timeSpentMinutes?: number;
+}
+
+export interface IProgressSummary {
+  userId: string;
+  totalTerms: number;
+  completedTerms: number;
+  totalSections: number;
+  completedSections: number;
+  totalTimeMinutes: number;
+  streak: number;
+  recentActivity: {
+    termId: number;
+    termName: string;
+    sectionName: string;
+    completedAt: Date;
+  }[];
+}

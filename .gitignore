@@ -48,3 +48,4 @@ __pycache__/
 # OS files
 Thumbs.dbtemp/processed_*.json
 cache/
+temp/*.json

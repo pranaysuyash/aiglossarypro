@@ -59,8 +59,8 @@ export async function migrateSectionData() {
 
     // For each term, create all 42 sections
     for (const term of terms.rows) {
-      const termId = term.id;
-      const termName = term.name;
+      const termId = term.id as string;
+      const termName = term.name as string;
 
       console.log(`Creating sections for term: ${termName} (ID: ${termId})`);
 
@@ -91,7 +91,7 @@ export async function migrateSectionData() {
   }
 }
 
-async function createBasicSectionItems(termId: number, term: any) {
+async function createBasicSectionItems(termId: string, term: any) {
   try {
     // Get the term's full data
     const termData = await db.execute(sql`
@@ -195,7 +195,7 @@ async function createBasicSectionItems(termId: number, term: any) {
 }
 
 // Run migration if called directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   migrateSectionData()
     .then(() => {
       console.log('Migration completed successfully');

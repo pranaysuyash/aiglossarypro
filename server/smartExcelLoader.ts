@@ -20,13 +20,16 @@ interface ProcessingOptions {
   resumeProcessing?: boolean;
 }
 
+/**
+ * Enhanced smart Excel loader with chunking and caching support
+ */
 export async function smartLoadExcelData(filePath: string, options: ProcessingOptions = {}, forceReprocess: boolean = false): Promise<void> {
   try {
-    console.log(`🔍 Analyzing Excel file: ${filePath}`);
+    console.log(`🎯 Smart Excel loading: ${filePath}`);
     
     // Check if file exists
     if (!fs.existsSync(filePath)) {
-      console.error(`❌ Excel file not found at: ${filePath}`);
+      console.error(`❌ File not found: ${filePath}`);
       return;
     }
     
@@ -45,7 +48,25 @@ export async function smartLoadExcelData(filePath: string, options: ProcessingOp
         const cachedData = await cacheManager.loadFromCache(filePath);
         if (cachedData) {
           console.log('⚡ Loading from cache - skipping processing');
-          const importResult = await importProcessedData(cachedData);
+          // Use batched import for cached data too
+          const { batchedImportProcessedData } = await import('./batchedImporter');
+          
+          // Save cached data to temp file for batched import
+          const tempDir = path.join(process.cwd(), 'temp');
+          if (!fs.existsSync(tempDir)) {
+            fs.mkdirSync(tempDir, { recursive: true });
+          }
+          const tempCacheFile = path.join(tempDir, `cached_${Date.now()}.json`);
+          fs.writeFileSync(tempCacheFile, JSON.stringify(cachedData));
+          
+          const importResult = await batchedImportProcessedData(tempCacheFile, {
+            batchSize: 500,
+            skipExisting: true
+          });
+          
+          // Clean up temp file
+          fs.unlinkSync(tempCacheFile);
+          
           if (importResult.success) {
             console.log(`✅ Cache data loaded successfully:`);
             console.log(`   📂 ${importResult.imported.categories} categories`);
@@ -87,7 +108,22 @@ export async function smartLoadExcelData(filePath: string, options: ProcessingOp
           console.log('✅ No processing needed - using cached data');
           const cachedData = await cacheManager.loadFromCache(filePath);
           if (cachedData) {
-            await importProcessedData(cachedData);
+            // Use batched import for cached data
+            const { batchedImportProcessedData } = await import('./batchedImporter');
+            
+            const tempDir = path.join(process.cwd(), 'temp');
+            if (!fs.existsSync(tempDir)) {
+              fs.mkdirSync(tempDir, { recursive: true });
+            }
+            const tempCacheFile = path.join(tempDir, `cached_${Date.now()}.json`);
+            fs.writeFileSync(tempCacheFile, JSON.stringify(cachedData));
+            
+            await batchedImportProcessedData(tempCacheFile, {
+              batchSize: 500,
+              skipExisting: true
+            });
+            
+            fs.unlinkSync(tempCacheFile);
           }
           return;
         }
@@ -245,19 +281,30 @@ async function processWithChunkedPython(filePath: string, options: ProcessingOpt
           console.log(`   📋 ${result.subcategories} subcategories created`);
           console.log(`   🔄 ${result.chunks_processed} chunks processed`);
           
-          // Read and import the processed data
+          // Use batched import instead of reading the large file directly
           if (fs.existsSync(outputPath)) {
-            console.log('🔄 Importing processed data to database...');
-            const processedData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
-            const importResult = await importProcessedData(processedData);
+            console.log('🔄 Starting batched database import...');
+            
+            const { batchedImportProcessedData } = await import('./batchedImporter');
+            const importResult = await batchedImportProcessedData(outputPath, {
+              batchSize: 100, // Smaller batches for large datasets
+              skipExisting: true,
+              enableProgress: true
+            });
             
             if (importResult.success) {
-              console.log(`✅ Database import complete:`);
+              console.log(`✅ Batched database import complete:`);
               console.log(`   📂 ${importResult.imported.categories} categories imported`);
               console.log(`   📋 ${importResult.imported.subcategories} subcategories imported`);
               console.log(`   📊 ${importResult.imported.terms} terms imported`);
+              console.log(`   ⏱️  Import duration: ${(importResult.duration / 1000).toFixed(2)}s`);
+              
+              if (importResult.errors.length > 0) {
+                console.warn(`⚠️  ${importResult.errors.length} import errors occurred`);
+                console.log('Sample errors:', importResult.errors.slice(0, 3));
+              }
             } else {
-              console.error(`❌ Database import failed: ${importResult.error}`);
+              console.error(`❌ Batched database import failed: ${importResult.errors.join(', ')}`);
             }
             
             // Clean up temp file
@@ -268,7 +315,14 @@ async function processWithChunkedPython(filePath: string, options: ProcessingOpt
               console.warn(`⚠️  Could not remove temp file: ${e}`);
             }
             
-            resolve(processedData);
+            // Return the import result for caching
+            resolve({
+              terms: result.terms,
+              categories: result.categories,
+              subcategories: result.subcategories,
+              chunks_processed: result.chunks_processed,
+              importResult
+            });
           } else {
             resolve(null);
           }

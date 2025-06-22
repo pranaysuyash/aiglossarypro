@@ -240,29 +240,18 @@ export function Terms() {
           <Loader2 className="h-8 w-8 animate-spin" />
           <span className="ml-2">Loading terms...</span>
         </div>
-      ) : terms.length === 0 ? (
-        <Card>
-          <CardContent className="p-8 text-center">
-            <p className="text-gray-500 mb-4">
-              {searchQuery || selectedCategory
-                ? 'No terms found matching your criteria.'
-                : 'No terms available.'}
-            </p>
-            {(searchQuery || selectedCategory) && (
-              <Button onClick={clearFilters}>
-                Clear Filters
-              </Button>
-            )}
-          </CardContent>
-        </Card>
-      ) : (
+      ) : Array.isArray(terms) && terms.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {terms.map((term) => (
+          {terms.map((term: ITerm) => (
             <TermCard
               key={term.id}
               term={term}
             />
           ))}
+        </div>
+      ) : (
+        <div className="col-span-3 text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+          <p className="text-gray-500 dark:text-gray-400">No terms found.</p>
         </div>
       )}
 

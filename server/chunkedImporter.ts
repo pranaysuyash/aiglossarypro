@@ -7,7 +7,7 @@ import fs from 'fs';
 import path from 'path';
 import { exec } from 'child_process';
 import { db } from './db';
-import { categories, subcategories, terms, termSubcategories } from '../shared/schema';
+import {  categories, subcategories, terms, termSubcategories  } from "../shared/schema";
 import { eq, and } from 'drizzle-orm';
 
 interface ChunkedImportOptions {

@@ -12,11 +12,7 @@ export function registerCategoryRoutes(app: Express): void {
     try {
       const { page = 1, limit = 50, search } = req.query;
       
-      const categories = await storage.getCategories({
-        page: parseInt(page as string),
-        limit: parseInt(limit as string),
-        search: search as string
-      });
+      const categories = await storage.getCategories();
       
       const response: ApiResponse<ICategory[]> = {
         success: true,
@@ -40,9 +36,7 @@ export function registerCategoryRoutes(app: Express): void {
       const { id } = req.params;
       const { includeTerms = false } = req.query;
       
-      const category = await storage.getCategoryById(id, {
-        includeTerms: includeTerms === 'true'
-      });
+      const category = await storage.getCategoryById(id);
       
       if (!category) {
         return res.status(404).json({ 

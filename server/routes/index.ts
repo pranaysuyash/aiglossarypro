@@ -2,6 +2,8 @@ import type { Express } from "express";
 import { setupAuth } from "../replitAuth";
 import { initS3Client } from "../s3Service";
 import { features } from "../config";
+import { setupMockAuth } from "../middleware/dev/mockAuth";
+import { performanceMiddleware } from "../middleware/performanceMonitor";
 
 // Import modular route handlers
 import { registerAuthRoutes } from "./auth";
@@ -9,7 +11,7 @@ import { registerCategoryRoutes } from "./categories";
 import { registerTermRoutes } from "./terms";
 import { registerSearchRoutes } from "./search";
 import { registerUserRoutes } from "./user";
-import { registerAdminRoutes } from "./admin";
+import { registerAdminRoutes } from "./admin/index";
 import { registerAnalyticsRoutes } from "./analytics";
 
 // Import existing specialized route modules
@@ -27,9 +29,18 @@ import { registerEnhancedDemoRoutes } from "../enhancedDemoRoutes";
 export async function registerRoutes(app: Express): Promise<void> {
   console.log("🔧 Setting up application routes...");
   
+  // Add performance monitoring middleware
+  app.use(performanceMiddleware);
+  console.log("📊 Performance monitoring enabled");
+  
   // Set up authentication first
-  await setupAuth(app);
-  console.log("✅ Authentication setup complete");
+  if (features.replitAuthEnabled) {
+    await setupAuth(app);
+    console.log("✅ Replit authentication setup complete");
+  } else {
+    setupMockAuth(app);
+    console.log("✅ Mock authentication setup complete (development mode)");
+  }
   
   // Initialize S3 client if credentials are present
   if (features.s3Enabled) {

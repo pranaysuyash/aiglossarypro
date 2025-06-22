@@ -35,6 +35,7 @@ export interface ITerm {
   isLearned?: boolean;
   createdAt?: Date;
   updatedAt?: Date;
+  relativeTime?: string; // For recently viewed items ("2 hours ago", "yesterday", etc.)
   // Enhanced fields
   characteristics?: string;
   visualUrl?: string;
@@ -152,7 +153,20 @@ export interface FileUploadMetadata {
 // Authentication types
 import type { Request } from 'express';
 
-export interface AuthenticatedRequest extends Omit<Request, 'user'> {
+// Extend Express Request interface
+declare global {
+  namespace Express {
+    interface User {
+      claims: {
+        sub: string;
+        email: string;
+        name: string;
+      };
+    }
+  }
+}
+
+export interface AuthenticatedRequest extends Request {
   user: {
     claims: {
       sub: string;

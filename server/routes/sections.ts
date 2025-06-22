@@ -9,23 +9,13 @@ import type {
   IContentGalleryResponse 
 } from '@shared/types';
 
-interface AuthenticatedRequest extends Request {
-  user?: {
-    claims: {
-      sub: string;
-      email: string;
-      name: string;
-    };
-  };
-}
-
 export function registerSectionRoutes(app: Express): void {
 
   // Get all sections for a term
   app.get('/api/terms/:termId/sections', async (req: Request, res: Response) => {
     try {
       const { termId } = req.params;
-      const userId = (req as AuthenticatedRequest).user?.claims?.sub;
+      const userId = req.user?.claims?.sub;
 
       const sections = await storage.getTermSections(parseInt(termId));
       const userProgress = userId ? await storage.getUserProgressForTerm(userId, parseInt(termId)) : [];
@@ -53,7 +43,7 @@ export function registerSectionRoutes(app: Express): void {
   app.get('/api/sections/:sectionId', async (req: Request, res: Response) => {
     try {
       const { sectionId } = req.params;
-      const userId = (req as AuthenticatedRequest).user?.claims?.sub;
+      const userId = req.user?.claims?.sub;
 
       const section = await storage.getSectionById(parseInt(sectionId));
       const items = await storage.getSectionItems(parseInt(sectionId));
@@ -79,7 +69,7 @@ export function registerSectionRoutes(app: Express): void {
   });
 
   // Update user progress for a section
-  app.patch('/api/progress/:termId/:sectionId', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  app.patch('/api/progress/:termId/:sectionId', authenticateToken, async (req: Request, res: Response) => {
     try {
       const { termId, sectionId } = req.params;
       const userId = req.user!.claims.sub;
@@ -106,7 +96,7 @@ export function registerSectionRoutes(app: Express): void {
   });
 
   // Get user's overall progress summary
-  app.get('/api/progress/summary', authenticateToken, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/progress/summary', authenticateToken, async (req: Request, res: Response) => {
     try {
       const userId = req.user!.claims.sub;
       const summary = await storage.getUserProgressSummary(userId);

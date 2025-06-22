@@ -1,6 +1,8 @@
 import type { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../replitAuth";
+import { mockIsAuthenticated } from "../middleware/dev/mockAuth";
+import { features } from "../config";
 import type { ITerm, ApiResponse, PaginatedResponse } from "../../shared/types";
 
 // Define authenticated request type properly
@@ -18,6 +20,8 @@ interface AuthenticatedRequest extends Request {
  * Term management routes with proper pagination and search
  */
 export function registerTermRoutes(app: Express): void {
+  // Choose authentication middleware based on environment
+  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
   
   // Get all terms with pagination
   app.get('/api/terms', async (req, res) => {
@@ -49,18 +53,20 @@ export function registerTermRoutes(app: Express): void {
 
       res.json({
         success: true,
-        data: {
-          terms: result.terms,
-          pagination: {
-            currentPage: page,
-            totalPages,
-            totalItems: result.total,
-            itemsPerPage: limit,
-            hasMore,
-            hasPrevious,
-            startItem: offset + 1,
-            endItem: Math.min(offset + limit, result.total)
-          }
+        data: result.terms,
+        total: result.total,
+        page: page,
+        limit: limit,
+        hasMore: hasMore,
+        pagination: {
+          currentPage: page,
+          totalPages,
+          totalItems: result.total,
+          itemsPerPage: limit,
+          hasMore,
+          hasPrevious,
+          startItem: offset + 1,
+          endItem: Math.min(offset + limit, result.total)
         }
       });
     } catch (error) {
@@ -115,61 +121,69 @@ export function registerTermRoutes(app: Express): void {
     }
   });
 
-  // Get single term by ID
-  app.get('/api/terms/:id', async (req: Request, res: Response) => {
+  // Get recently viewed terms (user-specific)
+  app.get('/api/terms/recently-viewed', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
     try {
-      const { id } = req.params;
-      const term = await storage.getTermById(id);
+      const userId = req.user?.claims?.sub;
+      const { limit = 10 } = req.query;
       
-      if (!term) {
-        return res.status(404).json({
+      if (!userId) {
+        return res.status(401).json({
           success: false,
-          error: 'Term not found'
+          error: 'Authentication required'
         });
       }
-
-      // Record view if method exists
+      
+      // For now, return empty array since we may not have this method implemented
+      // You can implement storage.getRecentlyViewedTerms later
+      const recentlyViewed: ITerm[] = [];
+      
       try {
-        await storage.recordTermView(id, null);
+        // Try to get recently viewed terms if method exists
+        // const recentlyViewed = await storage.getRecentlyViewedTerms(userId, parseInt(limit as string));
       } catch (error) {
-        // If method doesn't exist, continue without recording view
-        console.log('View recording not available');
+        console.log('Recently viewed terms method not implemented yet');
       }
       
-      const response: ApiResponse<ITerm> = {
+      const response: ApiResponse<ITerm[]> = {
         success: true,
-        data: term
+        data: recentlyViewed
       };
       
       res.json(response);
     } catch (error) {
-      console.error('Error fetching term:', error);
+      console.error('Error fetching recently viewed terms:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch term'
+        error: 'Failed to fetch recently viewed terms'
       });
     }
   });
 
-  // Get term recommendations
-  app.get('/api/terms/:id/recommendations', async (req: Request, res: Response) => {
+  // Get recent terms (general recent terms, not user-specific)
+  app.get('/api/terms/recent', async (req: Request, res: Response) => {
     try {
-      const { id } = req.params;
-      const { limit = 5 } = req.query;
+      const { limit = 10 } = req.query;
       
-      const recommendations = await storage.getRecommendedTermsForTerm(id, null);
+      // For now, get the most recently created terms
+      const result = await storage.getAllTerms({
+        limit: parseInt(limit as string),
+        offset: 0,
+        sortBy: 'createdAt',
+        sortOrder: 'desc'
+      });
       
       const response: ApiResponse<ITerm[]> = {
         success: true,
-        data: recommendations.slice(0, parseInt(limit as string))
+        data: result.terms
       };
       
       res.json(response);
     } catch (error) {
-      console.error('Error fetching recommendations:', error);
+      console.error('Error fetching recent terms:', error);
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch recommendations'
+        error: 'Failed to fetch recent terms'
       });
     }
   });
@@ -226,6 +240,65 @@ export function registerTermRoutes(app: Express): void {
       res.status(500).json({
         success: false,
         error: 'Failed to search terms'
+      });
+    }
+  });
+
+  // Get single term by ID (must be last to avoid conflicts with named routes)
+  app.get('/api/terms/:id', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const term = await storage.getTermById(id);
+      
+      if (!term) {
+        return res.status(404).json({
+          success: false,
+          error: 'Term not found'
+        });
+      }
+
+      // Record view if method exists
+      try {
+        await storage.recordTermView(id, null);
+      } catch (error) {
+        // If method doesn't exist, continue without recording view
+        console.log('View recording not available');
+      }
+      
+      const response: ApiResponse<ITerm> = {
+        success: true,
+        data: term
+      };
+      
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching term:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch term'
+      });
+    }
+  });
+
+  // Get term recommendations
+  app.get('/api/terms/:id/recommendations', async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const { limit = 5 } = req.query;
+      
+      const recommendations = await storage.getRecommendedTermsForTerm(id, null);
+      
+      const response: ApiResponse<ITerm[]> = {
+        success: true,
+        data: recommendations.slice(0, parseInt(limit as string))
+      };
+      
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching recommendations:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch recommendations'
       });
     }
   });

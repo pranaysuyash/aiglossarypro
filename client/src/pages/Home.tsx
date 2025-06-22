@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/Sidebar";
 import TermCard from "@/components/TermCard";
@@ -36,14 +36,21 @@ export default function Home() {
     enabled: isAuthenticated,
   });
   
-  // Favorites map for O(1) lookup
-  const [favoritesMap] = useState<Record<string, boolean>>(() => {
-    if (!favorites || !Array.isArray(favorites)) return {};
-    return (favorites as ITerm[]).reduce((acc: Record<string, boolean>, term: ITerm) => {
-      acc[term.id] = true;
-      return acc;
-    }, {});
-  });
+  // Update favorites map when favorites data changes
+  const [currentFavoritesMap, setCurrentFavoritesMap] = useState<Record<string, boolean>>({});
+  
+  // Update the favorites map when favorites data changes
+  useEffect(() => {
+    if (favorites && Array.isArray(favorites)) {
+      const newMap = (favorites as ITerm[]).reduce((acc: Record<string, boolean>, term: ITerm) => {
+        acc[term.id] = true;
+        return acc;
+      }, {});
+      setCurrentFavoritesMap(newMap);
+    } else {
+      setCurrentFavoritesMap({});
+    }
+  }, [favorites]);
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -157,7 +164,7 @@ export default function Home() {
                   <TermCard 
                     key={term.id} 
                     term={term}
-                    isFavorite={isAuthenticated ? !!favoritesMap[term.id] : false}
+                    isFavorite={isAuthenticated ? !!currentFavoritesMap[term.id] : false}
                   />
                 ))
               ) : (
@@ -198,12 +205,12 @@ export default function Home() {
                   </div>
                 ) : Array.isArray(recentlyViewed) && recentlyViewed.length > 0 ? (
                   <div className="divide-y divide-gray-100 dark:divide-gray-700">
-                    {recentlyViewed.map((term: any) => (
+                    {recentlyViewed.map((term: ITerm) => (
                       <div key={term.id} className="p-4 hover:bg-gray-50 dark:hover:bg-gray-900/50 transition flex justify-between items-center">
                         <div>
                           <h4 className="font-medium text-gray-800 dark:text-gray-200">{term.name}</h4>
                           <div className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                            Viewed {term.relativeTime}
+                            Viewed {term.relativeTime || 'recently'}
                           </div>
                         </div>
                         <Link href={`/term/${term.id}`}>

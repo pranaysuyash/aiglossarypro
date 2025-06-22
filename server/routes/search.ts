@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import type { SearchResult, SearchFilters, ApiResponse } from "../../shared/types";
 import { db } from "../db";
-import { terms, categories } from "../../shared/schema";
+import { enhancedTerms as terms, categories } from "../../shared/enhancedSchema";
 import { eq, ilike, or, sql } from "drizzle-orm";
 
 /**
@@ -38,13 +38,16 @@ export function registerSearchRoutes(app: Express): void {
         tags: tags ? (tags as string).split(',') : undefined
       };
       
-      const searchResult = await storage.searchTerms({
-        query: q.trim(),
+      const searchTerms = await storage.searchTerms(q.trim());
+      
+      // Transform to SearchResult format
+      const searchResult: SearchResult = {
+        terms: searchTerms,
+        total: searchTerms.length,
         page: parseInt(page as string),
         limit: parseInt(limit as string),
-        filters,
-        sortBy: sort as string
-      });
+        hasMore: false // Simplified for now
+      };
       
       const response: ApiResponse<SearchResult> = {
         success: true,
@@ -84,11 +87,12 @@ export function registerSearchRoutes(app: Express): void {
           type: sql<string>`'term'`,
         })
         .from(terms)
-        .leftJoin(categories, eq(terms.categoryId, categories.id))
+        .leftJoin(categories, sql`${categories.id} = ANY(${terms.mainCategories})`)
         .where(
           or(
             ilike(terms.name, `%${query}%`),
-            ilike(terms.definition, `%${query}%`)
+            ilike(terms.fullDefinition, `%${query}%`),
+            ilike(terms.searchText, `%${query}%`)
           )
         )
         .orderBy(

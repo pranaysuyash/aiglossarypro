@@ -1,31 +1,40 @@
 import type { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../replitAuth";
+import { authenticateToken } from "../middleware/adminAuth";
+import { mockIsAuthenticated } from "../middleware/dev/mockAuth";
+import { features } from "../config";
 import type { AuthenticatedRequest, UserProgress, UserActivity, ApiResponse } from "../../shared/types";
 
 /**
  * User-specific routes (favorites, progress, activity)
  */
 export function registerUserRoutes(app: Express): void {
+  // Choose authentication middleware based on environment
+  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
   
   // Favorites management
-  app.get('/api/favorites', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/favorites', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const { page = 1, limit = 50 } = req.query;
       
-      const favorites = await storage.getUserFavorites(userId, {
-        page: parseInt(page as string),
-        limit: parseInt(limit as string)
-      });
+            const favorites = await storage.getUserFavorites(userId);
       
+      // Apply pagination on client side for now
+      const pageNum = parseInt(page as string);
+      const limitNum = parseInt(limit as string);
+      const startIndex = (pageNum - 1) * limitNum;
+      const endIndex = startIndex + limitNum;
+      const paginatedFavorites = favorites.slice(startIndex, endIndex);
+
       res.json({
         success: true,
-        data: favorites.items,
-        total: favorites.total,
-        page: parseInt(page as string),
-        limit: parseInt(limit as string),
-        hasMore: favorites.hasMore
+        data: paginatedFavorites,
+        total: favorites.length,
+        page: pageNum,
+        limit: limitNum,
+        hasMore: endIndex < favorites.length
       });
     } catch (error) {
       console.error("Error fetching user favorites:", error);
@@ -36,12 +45,12 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.get('/api/favorites/:id', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/favorites/:id', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.params.id;
       
-      const isFavorite = await storage.isTermFavorited(userId, termId);
+      const isFavorite = await storage.isTermFavorite(userId, termId);
       
       res.json({
         success: true,
@@ -56,7 +65,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.post('/api/favorites/:id', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.post('/api/favorites/:id', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.params.id;
@@ -76,7 +85,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.delete('/api/favorites/:id', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.delete('/api/favorites/:id', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.params.id;
@@ -97,7 +106,7 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // Progress tracking
-  app.get('/api/user/progress', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/progress', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const { page = 1, limit = 50, status } = req.query;
@@ -125,7 +134,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.get('/api/progress/:id', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/progress/:id', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.params.id;
@@ -145,7 +154,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.post('/api/progress/:id', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.post('/api/progress/:id', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.params.id;
@@ -169,7 +178,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.delete('/api/progress/:id', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.delete('/api/progress/:id', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.params.id;
@@ -190,7 +199,7 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // User activity and analytics
-  app.get('/api/user/activity', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/activity', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const { page = 1, limit = 50, type, days = 30 } = req.query;
@@ -219,7 +228,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.get('/api/user/streak', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/streak', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const streak = await storage.getUserStreak(userId);
@@ -238,7 +247,7 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // User statistics
-  app.get('/api/user/stats', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/stats', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const stats = await storage.getUserStats(userId);

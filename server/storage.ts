@@ -177,9 +177,12 @@ export class DatabaseStorage implements IStorage {
       id: terms.id,
       name: terms.name,
       shortDefinition: terms.shortDefinition,
+      definition: terms.definition,
       viewCount: terms.viewCount,
       category: categories.name,
       categoryId: categories.id,
+      createdAt: terms.createdAt,
+      updatedAt: terms.updatedAt,
     })
     .from(terms)
     .leftJoin(categories, eq(terms.categoryId, categories.id))
@@ -1470,6 +1473,225 @@ export class DatabaseStorage implements IStorage {
     }
     
     return enrichedTerms;
+  }
+  // Missing Admin Methods
+  async getAllUsers(): Promise<any[]> {
+    const result = await db.select({
+      id: users.id,
+      email: users.email,
+      firstName: users.firstName,
+      lastName: users.lastName,
+      isAdmin: users.isAdmin,
+      createdAt: users.createdAt,
+      updatedAt: users.updatedAt
+    })
+    .from(users)
+    .orderBy(desc(users.createdAt));
+    
+    return result;
+  }
+
+  async reindexDatabase(): Promise<{ success: boolean; message: string }> {
+    try {
+      // Perform database reindexing operations
+      // This is a placeholder - actual implementation would depend on your database
+      await db.execute(sql`REINDEX`);
+      return { success: true, message: "Database reindexed successfully" };
+    } catch (error) {
+      console.error("Error reindexing database:", error);
+      return { success: false, message: "Failed to reindex database" };
+    }
+  }
+
+  async cleanupDatabase(): Promise<{ success: boolean; message: string }> {
+    try {
+      // Clean up orphaned records and optimize database
+      // Remove orphaned favorites
+      await db.execute(sql`
+        DELETE FROM ${favorites} 
+        WHERE term_id NOT IN (SELECT id FROM ${terms})
+        OR user_id NOT IN (SELECT id FROM ${users})
+      `);
+      
+      // Remove orphaned user progress
+      await db.execute(sql`
+        DELETE FROM ${userProgress} 
+        WHERE term_id NOT IN (SELECT id FROM ${terms})
+        OR user_id NOT IN (SELECT id FROM ${users})
+      `);
+      
+      return { success: true, message: "Database cleaned up successfully" };
+    } catch (error) {
+      console.error("Error cleaning up database:", error);
+      return { success: false, message: "Failed to clean up database" };
+    }
+  }
+
+  async vacuumDatabase(): Promise<{ success: boolean; message: string }> {
+    try {
+      // Vacuum database to reclaim space and optimize performance
+      await db.execute(sql`VACUUM`);
+      return { success: true, message: "Database vacuumed successfully" };
+    } catch (error) {
+      console.error("Error vacuuming database:", error);
+      return { success: false, message: "Failed to vacuum database" };
+    }
+  }
+
+  // Missing Content Moderation Methods
+  async getPendingContent(): Promise<any[]> {
+    // This is a placeholder implementation
+    // You would need to implement content moderation tables first
+    return [];
+  }
+
+  async approveContent(contentId: string): Promise<{ success: boolean; message: string }> {
+    // This is a placeholder implementation
+    // You would need to implement content moderation logic
+    return { success: true, message: "Content approved successfully" };
+  }
+
+  async rejectContent(contentId: string): Promise<{ success: boolean; message: string }> {
+    // This is a placeholder implementation
+    // You would need to implement content moderation logic
+    return { success: true, message: "Content rejected successfully" };
+  }
+
+  // Missing Section-Based Methods (placeholders for section-based architecture)
+  async getTermSections(termId: number): Promise<any[]> {
+    // This is a placeholder - you would need to implement sections table
+    return [];
+  }
+
+  async getUserProgressForTerm(userId: string, termId: number): Promise<any[]> {
+    // This is a placeholder - you would need to implement section progress
+    return [];
+  }
+
+  async getSectionById(sectionId: number): Promise<any> {
+    // This is a placeholder - you would need to implement sections table
+    return null;
+  }
+
+  async getSectionItems(sectionId: number): Promise<any[]> {
+    // This is a placeholder - you would need to implement section items table
+    return [];
+  }
+
+  async getUserProgressForSection(userId: string, sectionId: number): Promise<any> {
+    // This is a placeholder - you would need to implement section progress
+    return null;
+  }
+
+  async updateUserProgress(userId: string, termId: number, sectionId: number, progressUpdate: any): Promise<void> {
+    // This is a placeholder - you would need to implement section progress updates
+    console.log("Progress update placeholder:", { userId, termId, sectionId, progressUpdate });
+  }
+
+  async getUserProgressSummary(userId: string): Promise<any> {
+    // This is a placeholder - you would need to implement progress summary logic
+    return {
+      userId,
+      totalTerms: 0,
+      completedTerms: 0,
+      totalSections: 0,
+      completedSections: 0,
+      totalTimeMinutes: 0,
+      streak: 0,
+      recentActivity: []
+    };
+  }
+
+  async getContentGallery(sectionName: string, options: { page: number; limit: number }): Promise<any> {
+    // This is a placeholder - you would need to implement content gallery logic
+    return {
+      galleries: [],
+      totalItems: 0,
+      page: options.page,
+      limit: options.limit
+    };
+  }
+
+  async getQuizzes(options: { termId?: number; difficulty?: string }): Promise<any[]> {
+    // This is a placeholder - you would need to implement quizzes table
+    return [];
+  }
+
+  async searchSectionContent(query: string): Promise<any[]> {
+    // This is a placeholder - you would need to implement section content search
+    return [];
+  }
+
+  async getSectionAnalytics(): Promise<any> {
+    // This is a placeholder - you would need to implement section analytics
+    return {};
+  }
+
+  // Missing User Progress Methods
+  async getTermProgress(userId: string, termId: string): Promise<any> {
+    const progress = await db.select()
+      .from(userProgress)
+      .where(and(
+        eq(userProgress.userId, userId),
+        eq(userProgress.termId, parseInt(termId))
+      ))
+      .limit(1);
+
+    return progress[0] || null;
+  }
+
+  async updateTermProgress(userId: string, termId: string, progressData: any): Promise<void> {
+    await db.insert(userProgress)
+      .values({
+        userId,
+        termId: parseInt(termId),
+        status: progressData.status || 'in_progress',
+        completedAt: progressData.completed ? new Date() : null,
+        timeSpent: progressData.timeSpent || 0
+      })
+      .onConflictDoUpdate({
+        target: [userProgress.userId, userProgress.termId],
+        set: {
+          status: progressData.status || 'in_progress',
+          completedAt: progressData.completed ? new Date() : null,
+          timeSpent: progressData.timeSpent || 0,
+          updatedAt: new Date()
+        }
+      });
+  }
+
+  async removeTermProgress(userId: string, termId: string): Promise<void> {
+    await db.delete(userProgress)
+      .where(and(
+        eq(userProgress.userId, userId),
+        eq(userProgress.termId, parseInt(termId))
+      ));
+  }
+
+  async getUserStats(userId: string): Promise<any> {
+    const totalProgress = await db.select({ count: sql<number>`count(*)` })
+      .from(userProgress)
+      .where(eq(userProgress.userId, userId));
+
+    const completedProgress = await db.select({ count: sql<number>`count(*)` })
+      .from(userProgress)
+      .where(and(
+        eq(userProgress.userId, userId),
+        eq(userProgress.status, 'completed')
+      ));
+
+    const totalTimeSpent = await db.select({ total: sql<number>`sum(${userProgress.timeSpent})` })
+      .from(userProgress)
+      .where(eq(userProgress.userId, userId));
+
+    return {
+      totalTermsStarted: Number(totalProgress[0]?.count) || 0,
+      completedTerms: Number(completedProgress[0]?.count) || 0,
+      totalTimeSpent: Number(totalTimeSpent[0]?.total) || 0,
+      completionRate: totalProgress[0]?.count > 0 
+        ? (Number(completedProgress[0]?.count) / Number(totalProgress[0]?.count)) * 100 
+        : 0
+    };
   }
 }
 

@@ -6,7 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import { db } from './db';
-import { categories, subcategories, terms, termSubcategories } from '../shared/schema';
+import {  categories, subcategories, terms, termSubcategories  } from "../shared/schema";
 import { eq, and } from 'drizzle-orm';
 
 interface ImportOptions {

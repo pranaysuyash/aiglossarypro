@@ -1,6 +1,9 @@
 import type { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../replitAuth";
+import { authenticateToken } from "../middleware/adminAuth";
+import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mockAuth";
+import { features } from "../config";
 import type { AuthenticatedRequest, IUser, ApiResponse } from "../../shared/types";
 
 /**
@@ -8,11 +11,26 @@ import type { AuthenticatedRequest, IUser, ApiResponse } from "../../shared/type
  */
 export function registerAuthRoutes(app: Express): void {
   
+  // Choose authentication middleware based on environment
+  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
+  const tokenMiddleware = features.replitAuthEnabled ? authenticateToken : mockAuthenticateToken;
+  
   // Get current authenticated user
-  app.get('/api/auth/user', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/auth/user', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
+      const userId = req.user!.claims.sub;
+      const dbUser = await storage.getUser(userId);
+      
+      // Transform database user to IUser format
+      const user: IUser | undefined = dbUser ? {
+        id: dbUser.id,
+        email: dbUser.email || '',
+        name: dbUser.firstName && dbUser.lastName 
+          ? `${dbUser.firstName} ${dbUser.lastName}`
+          : dbUser.email || 'Unknown User',
+        avatar: dbUser.profileImageUrl || undefined,
+        createdAt: dbUser.createdAt || new Date()
+      } : undefined;
       
       const response: ApiResponse<IUser> = {
         success: true,
@@ -31,9 +49,9 @@ export function registerAuthRoutes(app: Express): void {
   });
 
   // User settings routes
-  app.get('/api/settings', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/settings', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user!.claims.sub;
       const settings = await storage.getUserSettings(userId);
       
       res.json({
@@ -49,7 +67,7 @@ export function registerAuthRoutes(app: Express): void {
     }
   });
 
-  app.put('/api/settings', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.put('/api/settings', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const settings = req.body;
@@ -70,7 +88,7 @@ export function registerAuthRoutes(app: Express): void {
   });
 
   // User data export
-  app.get('/api/user/export', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/export', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const userData = await storage.exportUserData(userId);
@@ -88,7 +106,7 @@ export function registerAuthRoutes(app: Express): void {
   });
 
   // Delete user data (GDPR compliance)
-  app.delete('/api/user/data', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.delete('/api/user/data', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       await storage.deleteUserData(userId);

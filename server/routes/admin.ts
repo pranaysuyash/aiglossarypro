@@ -1,7 +1,9 @@
 import type { Express, Request, Response } from "express";
 import { storage } from "../storage";
 import { isAuthenticated } from "../replitAuth";
-import { requireAdmin } from "../middleware/adminAuth";
+import { requireAdmin, authenticateToken } from "../middleware/adminAuth";
+import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mockAuth";
+import { features } from "../config";
 import { parseExcelFile, importToDatabase } from "../excelParser";
 import { processAndImportFromS3, importProcessedData } from "../pythonProcessor";
 import multer from "multer";
@@ -13,7 +15,7 @@ import path from 'path';
 import fs from 'fs';
 import { inArray, eq } from 'drizzle-orm';
 import { db } from '../db';
-import { terms, categories } from '../../shared/schema';
+import { enhancedTerms, categories } from '../../shared/enhancedSchema';
 
 // Set up multer for file uploads
 const upload = multer({
@@ -41,9 +43,12 @@ const router = express.Router();
  * Note: These routes should include proper admin role checking in production
  */
 export function registerAdminRoutes(app: Express): void {
+  // Choose authentication middleware based on environment
+  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
+  const tokenMiddleware = features.replitAuthEnabled ? authenticateToken : mockAuthenticateToken;
   
   // Admin dashboard statistics
-  app.get('/api/admin/stats', isAuthenticated, requireAdmin, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/stats', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
       // TODO: Add admin role verification
       // if (!req.user.roles?.includes('admin')) {
@@ -68,7 +73,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Import Excel file
-  app.post('/api/admin/import', isAuthenticated, upload.single('file'), async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/import', authMiddleware, tokenMiddleware, upload.single('file'), async (req: Request, res: Response) => {
     try {
       // TODO: Add admin role verification
       
@@ -85,17 +90,25 @@ export function registerAdminRoutes(app: Express): void {
       // Parse the Excel file
       const parsedData = await parseExcelFile(req.file.buffer);
       
-      if (!parsedData || parsedData.length === 0) {
+      if (!parsedData || parsedData.terms.length === 0) {
         return res.status(400).json({
           success: false,
           message: "No valid data found in the Excel file"
         });
       }
 
-      console.log(`✅ Parsed ${parsedData.length} terms from Excel file`);
+      console.log(`✅ Parsed ${parsedData.terms.length} terms from Excel file`);
 
       // Import to database
-      const importResult = await importToDatabase(parsedData);
+      const dbResult = await importToDatabase(parsedData);
+
+      const importResult: ImportResult = {
+        success: true,
+        termsImported: dbResult.termsImported,
+        categoriesImported: dbResult.categoriesImported,
+        errors: [],
+        warnings: []
+      };
 
       const response: ApiResponse<ImportResult> = {
         success: true,
@@ -115,7 +128,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Clear all data (dangerous operation)
-  app.delete('/api/admin/clear-data', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.delete('/api/admin/clear-data', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
       // TODO: Add admin role verification and additional confirmation
       
@@ -174,7 +187,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Database maintenance operations
-  app.post('/api/admin/maintenance', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/maintenance', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
       // TODO: Add admin role verification
       
@@ -213,25 +226,39 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // User management
-  app.get('/api/admin/users', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/users', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
       // TODO: Add admin role verification
       
       const { page = 1, limit = 50, search } = req.query;
       
-      const users = await storage.getAllUsers({
-        page: parseInt(page as string),
-        limit: parseInt(limit as string),
-        search: search as string
-      });
+      const users = await storage.getAllUsers();
+      
+      // Apply pagination and search on the client side for now
+      const pageNum = parseInt(page as string);
+      const limitNum = parseInt(limit as string);
+      const searchTerm = search as string;
+      
+      let filteredUsers = users;
+      if (searchTerm) {
+        filteredUsers = users.filter(user => 
+          user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+      }
+      
+      const startIndex = (pageNum - 1) * limitNum;
+      const endIndex = startIndex + limitNum;
+      const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
       
       res.json({
         success: true,
-        data: users.items,
-        total: users.total,
-        page: parseInt(page as string),
-        limit: parseInt(limit as string),
-        hasMore: users.hasMore
+        data: paginatedUsers,
+        total: filteredUsers.length,
+        page: pageNum,
+        limit: limitNum,
+        hasMore: endIndex < filteredUsers.length
       });
     } catch (error) {
       console.error("Error fetching users:", error);
@@ -243,7 +270,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Content moderation
-  app.get('/api/admin/content/pending', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/admin/content/pending', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
       // TODO: Add admin role verification
       
@@ -262,7 +289,7 @@ export function registerAdminRoutes(app: Express): void {
     }
   });
 
-  app.post('/api/admin/content/:id/approve', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/content/:id/approve', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
       // TODO: Add admin role verification
       
@@ -283,7 +310,7 @@ export function registerAdminRoutes(app: Express): void {
     }
   });
 
-  app.post('/api/admin/content/:id/reject', isAuthenticated, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.post('/api/admin/content/:id/reject', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
       // TODO: Add admin role verification
       
@@ -564,7 +591,7 @@ export function registerAdminRoutes(app: Express): void {
    * Batch categorize multiple terms using AI
    * POST /api/admin/batch/categorize
    */
-  app.post('/api/admin/batch/categorize', isAuthenticated, async (req: any, res: Response) => {
+  app.post('/api/admin/batch/categorize', authMiddleware, async (req: any, res: Response) => {
     try {
       const { termIds, options = {} } = req.body;
       
@@ -585,13 +612,13 @@ export function registerAdminRoutes(app: Express): void {
         
         try {
           // Fetch terms for this batch
-          const terms = await db
-            .select()
-            .from(schema.terms)
-            .where(inArray(schema.terms.id, batch));
+                      const termsBatch = await db
+              .select()
+              .from(terms)
+              .where(inArray(terms.id, batch));
           
-          // Process each term with AI categorization
-          for (const term of terms) {
+                      // Process each term with AI categorization
+            for (const term of termsBatch) {
             try {
               const aiResponse = await fetch(`${process.env.OPENAI_API_URL || 'https://api.openai.com/v1'}/chat/completions`, {
                 method: 'POST',
@@ -700,7 +727,7 @@ Respond with JSON only.`
       res.json({
         success: true,
         processed: results.length,
-        errors: errors.length,
+        errorCount: errors.length,
         results,
         errors
       });
@@ -718,7 +745,7 @@ Respond with JSON only.`
    * Batch enhance definitions using AI
    * POST /api/admin/batch/enhance-definitions
    */
-  app.post('/api/admin/batch/enhance-definitions', isAuthenticated, async (req: any, res: Response) => {
+  app.post('/api/admin/batch/enhance-definitions', authMiddleware, async (req: any, res: Response) => {
     try {
       const { termIds, options = {} } = req.body;
       const { 
@@ -745,8 +772,8 @@ Respond with JSON only.`
           // Fetch term
           const [term] = await db
             .select()
-            .from(schema.terms)
-            .where(eq(schema.terms.id, termId));
+            .from(enhancedTerms)
+                          .where(eq(enhancedTerms.id, termId));
           
           if (!term) {
             errors.push({
@@ -830,7 +857,7 @@ Provide an enhanced definition following the guidelines above.`
       res.json({
         success: true,
         processed: results.length,
-        errors: errors.length,
+        errorCount: errors.length,
         results,
         errors,
         options: {
@@ -854,7 +881,7 @@ Provide an enhanced definition following the guidelines above.`
    * Get batch operation status
    * GET /api/admin/batch/status/:operationId
    */
-  app.get('/api/admin/batch/status/:operationId', isAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/admin/batch/status/:operationId', authMiddleware, async (req: any, res: Response) => {
     try {
       const { operationId } = req.params;
       

@@ -63,31 +63,35 @@ app.use((req, res, next) => {
   // Use configurable port (fallback to 5000 for Replit compatibility)
   const port = process.env.REPLIT_ENVIRONMENT ? 5000 : serverConfig.port;
   
-  const server = app.listen(port, '127.0.0.1', async () => {
+  // Create HTTP server instance
+  const { createServer } = await import('http');
+  const server = createServer(app);
+  
+  // Setup Vite dev server in development, static files in production
+  if (serverConfig.nodeEnv === "development") {
+    log("🔧 Setting up Vite dev server for development...");
+    try {
+      await setupVite(app, server);
+      log("✅ Vite dev server setup complete");
+    } catch (error) {
+      console.error("❌ Error setting up Vite dev server:", error);
+      process.exit(1);
+    }
+  } else {
+    log("📦 Setting up static file serving for production...");
+    try {
+      serveStatic(app);
+      log("✅ Static file serving setup complete");
+    } catch (error) {
+      console.error("❌ Error setting up static file serving:", error);
+      process.exit(1);
+    }
+  }
+  
+  // Start listening
+  server.listen(port, '127.0.0.1', () => {
     log(`🚀 Server running on http://127.0.0.1:${port} in ${serverConfig.nodeEnv} mode`);
     log(`🔍 Server address: ${JSON.stringify(server.address())}`);
-    
-    // Setup Vite dev server in development, static files in production
-    // This must happen after the server is created
-    if (serverConfig.nodeEnv === "development") {
-      log("🔧 Setting up Vite dev server for development...");
-      try {
-        await setupVite(app, server);
-        log("✅ Vite dev server setup complete");
-      } catch (error) {
-        console.error("❌ Error setting up Vite dev server:", error);
-        process.exit(1);
-      }
-    } else {
-      log("📦 Setting up static file serving for production...");
-      try {
-        serveStatic(app);
-        log("✅ Static file serving setup complete");
-      } catch (error) {
-        console.error("❌ Error setting up static file serving:", error);
-        process.exit(1);
-      }
-    }
   });
 
   server.on('error', (err) => {

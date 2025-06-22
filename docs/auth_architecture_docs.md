@@ -13,10 +13,11 @@ This document details the dual authentication system implemented for the AI Glos
 
 ### Technical Details
 ```javascript
-// Original auth flow (production only)
-GET /api/auth/user → 401 Unauthorized (no Replit auth in local)
-Frontend: useAuth() → error → tries to call .map() on error response
-Result: Application crash and blank page
+// Original issue chain
+Vite dev server disabled → No React frontend served → Blank page
+Replit auth in local dev → 401 errors → Frontend crashes
+API returns {success, data} → Frontend expects arrays → "t.map is not a function"
+Result: Complete application failure
 ```
 
 ## Solution Architecture

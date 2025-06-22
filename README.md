@@ -78,7 +78,17 @@ npm run start        # Start production server
 npm run check        # TypeScript type checking
 npm run db:push      # Push database schema changes
 npm run db:studio    # Open database studio
-npm test             # Run tests
+
+# Testing
+npm test             # Run all tests
+npm run test:unit    # Unit tests only
+npm run test:component # Component tests only
+npm run test:visual  # Playwright visual tests
+npm run test:all     # All test suites
+
+# Visual Development
+npm run storybook    # Start Storybook (component development)
+npm run build-storybook # Build static Storybook
 ```
 
 ### Development Features
@@ -87,6 +97,9 @@ npm test             # Run tests
 - 📊 **Admin panel** access (dev user has admin rights)
 - 🗂️ **Database seeding** with sample data
 - 🔄 **Mock authentication** (no OAuth required)
+- 🎨 **Storybook integration** for component development
+- 🧪 **Visual testing** with Playwright
+- ♿ **Accessibility testing** with automated checks
 
 ## 🚨 Troubleshooting
 
@@ -96,6 +109,7 @@ npm test             # Run tests
 |-------|-----------|
 | Blank page / 401 errors | Check [AUTH_QUICK_REFERENCE.md](./AUTH_QUICK_REFERENCE.md) |
 | "t.map is not a function" | Clear browser cache, restart server |
+| **No React app loading** | **Verify Vite dev server is running** |
 | Database connection | Verify `DATABASE_URL` in .env |
 | Port conflicts | Check if port 3001 is available |
 
@@ -249,11 +263,12 @@ curl https://your-app.replit.app/api/admin/stats
 ### June 22, 2025 - Authentication System Overhaul
 - ✅ **Fixed**: Blank page and 401 errors in local development
 - ✅ **Added**: Dual authentication system (mock + real)
+- ✅ **CRITICAL**: Fixed Vite dev server setup in development mode
 - ✅ **Created**: Comprehensive documentation suite
 - ✅ **Implemented**: Incident response procedures
 - ✅ **Enhanced**: Developer experience for local setup
 
-**Impact**: Developers can now run the application locally without Replit authentication setup.
+**Impact**: Developers can now run the application locally without Replit authentication setup, and the React frontend properly loads.
 
 ---
 

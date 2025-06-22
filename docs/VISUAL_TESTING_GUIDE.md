@@ -4,11 +4,12 @@ This guide covers the comprehensive visual testing setup for the AI Glossary Pro
 
 ## 🎯 **Overview**
 
-Our visual testing strategy includes:
+Our comprehensive visual testing strategy includes:
 1. **Playwright** - End-to-end visual testing with screenshot comparisons
 2. **Vitest** - Component-level testing with snapshots
-3. **Cross-browser Testing** - Chrome, Firefox, Safari, Mobile devices
-4. **Responsive Testing** - Desktop, tablet, and mobile viewports
+3. **Storybook** - Component development and visual testing (Added June 22, 2025)
+4. **Cross-browser Testing** - Chrome, Firefox, Safari, Mobile devices
+5. **Responsive Testing** - Desktop, tablet, and mobile viewports
 
 ## 🚀 **Getting Started**
 
@@ -39,6 +40,10 @@ npm run test:unit                   # Unit tests
 # Interactive testing
 npm run test:ui                     # Vitest UI
 npm run test:coverage               # Coverage report
+
+# Storybook (Component Development & Visual Testing)
+npm run storybook                   # Start Storybook development server
+npm run build-storybook             # Build static Storybook
 ```
 
 ## 📸 **Visual Testing with Playwright**
@@ -65,6 +70,59 @@ test('Homepage displays correctly', async ({ page }) => {
   await expect(page).toHaveScreenshot('homepage-full.png');
 });
 ```
+
+## 🎨 **Component Development with Storybook**
+
+### Overview
+Storybook provides an isolated environment for developing and testing React components with visual feedback.
+
+### Features
+- **Component Isolation**: Develop components without full application context
+- **Interactive Props**: Real-time prop manipulation with controls
+- **Theme Testing**: Switch between light/dark themes
+- **Responsive Testing**: Test different viewport sizes
+- **Accessibility Testing**: Automated a11y checks with violations reporting
+- **Auto Documentation**: Generated docs from component props and stories
+
+### Available Stories
+```
+client/src/components/
+├── ui/
+│   ├── button.stories.tsx      # Button component variants
+│   └── card.stories.tsx        # Card component layouts
+└── TermCard.stories.tsx        # Custom TermCard component
+```
+
+### Storybook URL
+- **Development**: `http://localhost:6006` or `http://localhost:6007`
+- **Features**: Interactive controls, theme switching, responsive testing
+
+### Creating New Stories
+```typescript
+import type { Meta, StoryObj } from '@storybook/react';
+import { YourComponent } from './YourComponent';
+
+const meta: Meta<typeof YourComponent> = {
+  title: 'Components/YourComponent',
+  component: YourComponent,
+  parameters: { layout: 'centered' },
+  tags: ['autodocs'],
+};
+
+export default meta;
+type Story = StoryObj<typeof meta>;
+
+export const Default: Story = {
+  args: { prop1: 'value1' },
+};
+```
+
+### Best Practices
+1. **Mock Data**: Use realistic mock data for complex components
+2. **Multiple Variants**: Show different states and configurations
+3. **Edge Cases**: Include loading states, errors, empty states
+4. **Accessibility**: Test with a11y addon for compliance
+5. **Documentation**: Use JSDoc comments for auto-generated docs
 
 ## 🧩 **Component Testing with Vitest**
 

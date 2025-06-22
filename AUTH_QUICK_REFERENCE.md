@@ -8,10 +8,18 @@
 curl http://127.0.0.1:3001/api/auth/user
 curl http://127.0.0.1:3001/api/health
 
+# Check server logs for Vite setup
+# Look for: "✅ Vite dev server setup complete"
+
 # If 401 errors:
 1. Check .env has NODE_ENV=development
 2. Restart server: pkill -f "node.*server" && npm run dev
 3. Clear browser cache/cookies
+
+# If React app not loading:
+1. Verify Vite dev server is running
+2. Check for "setupVite" in server logs
+3. Ensure development mode is properly detected
 ```
 
 ### Switch Between Auth Modes
@@ -75,6 +83,7 @@ psql $DATABASE_URL -c "UPDATE users SET is_admin = true WHERE email = 'admin@ema
 ✅ Mock authentication setup complete (development mode)
 🔓 Development user ensured in database: dev@example.com
 🔓 Mock authentication: User logged in as dev@example.com
+✅ Vite dev server setup complete
 ```
 
 **✅ Good (Production)**:

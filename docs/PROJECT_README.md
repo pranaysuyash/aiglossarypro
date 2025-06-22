@@ -116,13 +116,37 @@ python aimlv2.py --workers 10 --batch-size 30
 - **Backup validation**: ZIP integrity checks
 - **Timestamped backups**: Historical versions preserved
 
-## 🎨 Web Interface
+## 🎨 Web Interface & Development Tools
 
-Located in `/website/`:
-- Interactive term browser
-- Search functionality
-- Responsive design
-- JSON data integration
+### Main Application
+Located in `/client/` and `/server/`:
+- Modern React frontend with TypeScript
+- Express.js backend with database integration
+- Interactive term browser and search
+- User authentication and favorites
+- Responsive design with Tailwind CSS
+
+### Visual Component Development
+**Storybook Integration** (Added June 22, 2025):
+- Component isolation and testing
+- Interactive props exploration
+- Responsive viewport testing
+- Light/dark theme switching
+- Accessibility testing with a11y addon
+- Auto-generated component documentation
+
+**Available Commands:**
+```bash
+npm run storybook        # Start Storybook on port 6006/6007
+npm run build-storybook  # Build static Storybook
+```
+
+**Features:**
+- Visual regression testing capabilities
+- Component development in isolation
+- Real-time prop manipulation
+- Theme and responsive testing
+- Accessibility compliance checking
 
 ## 📈 Future Enhancements
 
@@ -138,6 +162,8 @@ See individual component documentation for specific improvement plans:
 - `docs/EXCEL_STRUCTURE.md` - Data schema and organization
 - `docs/PROJECT_ORGANIZATION.md` - Proposed file structure improvements
 - `docs/OUTPUT_PROCESSING.md` - Post-processing and improvement plans
+- `docs/STORYBOOK_GUIDE.md` - Visual testing and component development guide
+- `docs/VISUAL_TESTING_GUIDE.md` - Playwright visual testing documentation
 
 ## 🚨 Important Notes
 

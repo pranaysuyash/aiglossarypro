@@ -40,12 +40,15 @@ This creates a static build of Storybook in the `storybook-static` directory.
   - `@storybook/addon-backgrounds` - Background color testing
   - `@storybook/addon-themes` - Light/dark theme switching
 
-### Preview Configuration (`.storybook/preview.ts`)
+### Preview Configuration (`.storybook/preview.tsx`)
 
 - **Tailwind CSS Integration**: Automatically imports your project's CSS
 - **Theme Support**: Light/dark theme switching with `withThemeByClassName`
 - **Responsive Viewports**: Mobile, tablet, and desktop viewports
 - **Accessibility Testing**: Enabled with 'todo' mode
+- **React Query Support**: QueryClientProvider with mock data for components using useQuery
+- **Router Support**: Router provider for components using wouter routing
+- **Toast Support**: Toaster component for toast notifications
 
 ## Available Components
 
@@ -157,9 +160,19 @@ Storybook complements your existing testing setup:
 ### Common Issues
 
 1. **Import Errors**: Ensure all imports use correct paths relative to the story file
-2. **CSS Not Loading**: Check that `../client/src/index.css` is correctly imported in preview.ts
+2. **CSS Not Loading**: Check that `../client/src/index.css` is correctly imported in preview.tsx
 3. **TypeScript Errors**: Verify component prop types match story args
 4. **Theme Not Working**: Ensure className-based theming is properly configured
+5. **QueryClient Errors**: Components using React Query require QueryClientProvider (already configured)
+6. **Router Errors**: Components using wouter routing require Router provider (already configured)
+7. **Toast Errors**: Components using toast notifications require Toaster component (already configured)
+
+### Fixed Issues
+
+- **"No QueryClient set" error**: Fixed by adding QueryClientProvider with mock data in `.storybook/preview.tsx`
+- **Router dependencies**: Added Router provider to support components using wouter routing
+- **Toast functionality**: Added Toaster component to support toast notifications in stories
+- **JSX Support**: Converted preview.ts to preview.tsx to support React components in configuration
 
 ### Getting Help
 

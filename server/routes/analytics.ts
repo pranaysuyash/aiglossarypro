@@ -1,12 +1,18 @@
 import type { Express, Request, Response } from "express";
 import { isAuthenticated } from "../replitAuth";
+import { requireAdmin, authenticateToken } from "../middleware/adminAuth";
+import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mockAuth";
+import { features } from "../config";
 
 /**
  * Analytics and reporting routes
  */
 export function registerAnalyticsRoutes(app: Express): void {
+  // Choose authentication middleware based on environment
+  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
+  const tokenMiddleware = features.replitAuthEnabled ? authenticateToken : mockAuthenticateToken;
   
-  // General analytics (public)
+  // General analytics (public - basic metrics only)
   app.get('/api/analytics', async (req: Request, res: Response) => {
     try {
       const { 
@@ -53,7 +59,7 @@ export function registerAnalyticsRoutes(app: Express): void {
   });
 
   // User-specific analytics (authenticated)
-  app.get('/api/analytics/user', isAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/analytics/user', authMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const { timeframe = '30d' } = req.query;
@@ -93,8 +99,8 @@ export function registerAnalyticsRoutes(app: Express): void {
     }
   });
 
-  // Content performance analytics
-  app.get('/api/analytics/content', async (req: Request, res: Response) => {
+  // Content performance analytics (admin only)
+  app.get('/api/analytics/content', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
       const { 
         timeframe = '30d',
@@ -144,8 +150,8 @@ export function registerAnalyticsRoutes(app: Express): void {
     }
   });
 
-  // Category performance analytics
-  app.get('/api/analytics/categories', async (req: Request, res: Response) => {
+  // Category performance analytics (admin only)
+  app.get('/api/analytics/categories', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
       const { timeframe = '30d' } = req.query;
       
@@ -188,8 +194,8 @@ export function registerAnalyticsRoutes(app: Express): void {
     }
   });
 
-  // Real-time analytics
-  app.get('/api/analytics/realtime', async (req: Request, res: Response) => {
+  // Real-time analytics (admin only)
+  app.get('/api/analytics/realtime', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
       const { db } = await import('../db');
       const { termViews, enhancedTerms } = await import('../../shared/enhancedSchema');
@@ -224,8 +230,8 @@ export function registerAnalyticsRoutes(app: Express): void {
     }
   });
 
-  // Export analytics data (admin only)
-  app.get('/api/analytics/export', isAuthenticated, async (req: any, res: Response) => {
+  // Export analytics data (admin only) - already has admin verification
+  app.get('/api/analytics/export', authMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const { isUserAdmin } = await import('../utils/authUtils');

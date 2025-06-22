@@ -13,7 +13,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { BarChart, LineChart, PieChart } from "@/components/ui/chart";
+import { BarChart, LineChart, PieChart, ChartConfig } from "@/components/ui/chart";
 import { ArrowRight, Users, Eye, Star, BookOpen, TrendingUp, AlertCircle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { useAuth } from "@/hooks/useAuth";
@@ -28,60 +28,51 @@ export default function AnalyticsDashboard() {
     enabled: isAuthenticated,
   });
 
+  // Chart configurations
+  const userActivityConfig: ChartConfig = {
+    count: {
+      label: "Daily Activity",
+      color: "hsl(var(--chart-1))",
+    },
+  };
+
+  const topTermsConfig: ChartConfig = {
+    views: {
+      label: "Views",
+      color: "hsl(var(--chart-2))",
+    },
+  };
+
+  const categoryConfig: ChartConfig = {
+    count: {
+      label: "Terms",
+      color: "hsl(var(--chart-3))",
+    },
+  };
+
   // Prepare chart data
   const prepareUserActivityData = () => {
-    if (!analytics?.userActivity) return { labels: [], datasets: [] };
-
-    return {
-      labels: analytics.userActivity.map(item => item.date),
-      datasets: [
-        {
-          label: "User Activity",
-          data: analytics.userActivity.map(item => item.count),
-          borderColor: "hsl(var(--chart-1))",
-          backgroundColor: "hsl(var(--chart-1) / 0.2)",
-          tension: 0.3,
-          fill: true,
-        }
-      ]
-    };
+    if (!analytics?.userActivity) return [];
+    return analytics.userActivity.map(item => ({
+      date: item.date,
+      count: item.count,
+    }));
   };
 
   const prepareTopTermsData = () => {
-    if (!analytics?.topTerms) return { labels: [], datasets: [] };
-
-    return {
-      labels: analytics.topTerms.map(term => term.name),
-      datasets: [
-        {
-          label: "Views",
-          data: analytics.topTerms.map(term => term.views),
-          backgroundColor: "hsl(var(--chart-2))",
-        }
-      ]
-    };
+    if (!analytics?.topTerms) return [];
+    return analytics.topTerms.map(term => ({
+      name: term.name,
+      views: term.views,
+    }));
   };
 
   const prepareCategoryDistributionData = () => {
-    if (!analytics?.categoriesDistribution) return { labels: [], datasets: [] };
-
-    return {
-      labels: analytics.categoriesDistribution.map(cat => cat.name),
-      datasets: [
-        {
-          label: "Terms",
-          data: analytics.categoriesDistribution.map(cat => cat.count),
-          backgroundColor: [
-            "hsl(var(--chart-1))",
-            "hsl(var(--chart-2))",
-            "hsl(var(--chart-3))",
-            "hsl(var(--chart-4))",
-            "hsl(var(--chart-5))"
-          ],
-          borderWidth: 1,
-        }
-      ]
-    };
+    if (!analytics?.categoriesDistribution) return [];
+    return analytics.categoriesDistribution.map(cat => ({
+      name: cat.name,
+      count: cat.count,
+    }));
   };
 
   if (!isAuthenticated) {
@@ -225,7 +216,12 @@ export default function AnalyticsDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="h-80">
-                    <LineChart data={prepareUserActivityData()} />
+                    <LineChart 
+                      config={userActivityConfig}
+                      data={prepareUserActivityData()}
+                      xAxisKey="date"
+                      yAxisKey="count"
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -241,7 +237,12 @@ export default function AnalyticsDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="h-80">
-                    <BarChart data={prepareTopTermsData()} />
+                    <BarChart 
+                      config={topTermsConfig}
+                      data={prepareTopTermsData()}
+                      xAxisKey="name"
+                      yAxisKey="views"
+                    />
                   </div>
                 </CardContent>
               </Card>
@@ -257,7 +258,12 @@ export default function AnalyticsDashboard() {
                 </CardHeader>
                 <CardContent className="flex justify-center">
                   <div className="h-80 w-full max-w-lg">
-                    <PieChart data={prepareCategoryDistributionData()} />
+                    <PieChart 
+                      config={categoryConfig}
+                      data={prepareCategoryDistributionData()}
+                      nameKey="name"
+                      valueKey="count"
+                    />
                   </div>
                 </CardContent>
               </Card>

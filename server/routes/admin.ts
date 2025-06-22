@@ -50,11 +50,6 @@ export function registerAdminRoutes(app: Express): void {
   // Admin dashboard statistics
   app.get('/api/admin/stats', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      // TODO: Add admin role verification
-      // if (!req.user.roles?.includes('admin')) {
-      //   return res.status(403).json({ success: false, message: "Admin access required" });
-      // }
-      
       const stats = await storage.getAdminStats();
       
       const response: ApiResponse<AdminStats> = {
@@ -73,10 +68,8 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Import Excel file
-  app.post('/api/admin/import', authMiddleware, tokenMiddleware, upload.single('file'), async (req: Request, res: Response) => {
+  app.post('/api/admin/import', authMiddleware, tokenMiddleware, requireAdmin, upload.single('file'), async (req: Request, res: Response) => {
     try {
-      // TODO: Add admin role verification
-      
       if (!req.file) {
         return res.status(400).json({
           success: false,
@@ -128,10 +121,8 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Clear all data (dangerous operation)
-  app.delete('/api/admin/clear-data', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
+  app.delete('/api/admin/clear-data', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      // TODO: Add admin role verification and additional confirmation
-      
       const { confirm } = req.body;
       
       if (confirm !== 'DELETE_ALL_DATA') {
@@ -162,7 +153,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // System health check
-  app.get('/api/admin/health', async (req: Request, res: Response) => {
+  app.get('/api/admin/health', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
       // Provide basic health check since getSystemHealth doesn't exist
       const termCount = await storage.getTermCount();
@@ -187,10 +178,8 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Database maintenance operations
-  app.post('/api/admin/maintenance', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
+  app.post('/api/admin/maintenance', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      // TODO: Add admin role verification
-      
       const { operation } = req.body;
       
       let result;
@@ -226,10 +215,8 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // User management
-  app.get('/api/admin/users', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
+  app.get('/api/admin/users', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      // TODO: Add admin role verification
-      
       const { page = 1, limit = 50, search } = req.query;
       
       const users = await storage.getAllUsers();
@@ -270,10 +257,8 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Content moderation
-  app.get('/api/admin/content/pending', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
+  app.get('/api/admin/content/pending', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      // TODO: Add admin role verification
-      
       const pendingContent = await storage.getPendingContent();
       
       res.json({
@@ -289,10 +274,8 @@ export function registerAdminRoutes(app: Express): void {
     }
   });
 
-  app.post('/api/admin/content/:id/approve', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
+  app.post('/api/admin/content/:id/approve', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      // TODO: Add admin role verification
-      
       const { id } = req.params;
       const result = await storage.approveContent(id);
       
@@ -310,10 +293,8 @@ export function registerAdminRoutes(app: Express): void {
     }
   });
 
-  app.post('/api/admin/content/:id/reject', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
+  app.post('/api/admin/content/:id/reject', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      // TODO: Add admin role verification
-      
       const { id } = req.params;
       const { reason } = req.body;
       
@@ -433,7 +414,7 @@ export function registerAdminRoutes(app: Express): void {
       await smartLoadExcelData(filePath, {
         chunkSize: 500,
         enableProgress: true
-      }, true); // Force reprocess = true
+      }, true);
       
       const processingTime = Date.now() - startTime;
       
@@ -447,7 +428,7 @@ export function registerAdminRoutes(app: Express): void {
       console.error('Error reprocessing file:', error);
       res.status(500).json({
         success: false,
-        error: `Failed to reprocess file: ${error.message}`
+        error: `Failed to reprocess file: ${error instanceof Error ? error.message : 'Unknown error'}`
       });
     }
   });
@@ -612,10 +593,10 @@ export function registerAdminRoutes(app: Express): void {
         
         try {
           // Fetch terms for this batch
-                      const termsBatch = await db
-              .select()
-              .from(terms)
-              .where(inArray(terms.id, batch));
+          const termsBatch = await db
+            .select()
+            .from(enhancedTerms)
+            .where(inArray(enhancedTerms.id, batch));
           
                       // Process each term with AI categorization
             for (const term of termsBatch) {
@@ -898,6 +879,8 @@ Provide an enhanced definition following the guidelines above.`
       res.status(500).json({ message: 'Failed to fetch operation status' });
     }
   });
+
+  console.log("✅ Admin routes registered successfully");
 }
 
 export default router;

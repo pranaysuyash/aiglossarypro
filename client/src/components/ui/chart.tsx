@@ -363,7 +363,7 @@ export const BarChart = ({
   xAxisKey = "name",
   yAxisKey = "value",
   ...props
-}: React.ComponentProps<typeof ChartContainer> & {
+}: Omit<React.ComponentProps<typeof ChartContainer>, 'children'> & {
   data: Record<string, any>[];
   xAxisKey?: string;
   yAxisKey?: string;
@@ -404,7 +404,7 @@ export const LineChart = ({
   xAxisKey = "name",
   yAxisKey = "value",
   ...props
-}: React.ComponentProps<typeof ChartContainer> & {
+}: Omit<React.ComponentProps<typeof ChartContainer>, 'children'> & {
   data: Record<string, any>[];
   xAxisKey?: string;
   yAxisKey?: string;
@@ -445,7 +445,7 @@ export const PieChart = ({
   nameKey = "name",
   valueKey = "value",
   ...props
-}: React.ComponentProps<typeof ChartContainer> & {
+}: Omit<React.ComponentProps<typeof ChartContainer>, 'children'> & {
   data: Record<string, any>[];
   nameKey?: string;
   valueKey?: string;

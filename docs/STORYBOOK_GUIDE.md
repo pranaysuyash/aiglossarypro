@@ -34,11 +34,9 @@ This creates a static build of Storybook in the `storybook-static` directory.
 - **Addons Enabled**:
   - `@storybook/addon-docs` - Auto-generated documentation
   - `@storybook/addon-a11y` - Accessibility testing
-  - `@storybook/addon-controls` - Interactive component controls
-  - `@storybook/addon-actions` - Action logging
-  - `@storybook/addon-viewport` - Responsive testing
-  - `@storybook/addon-backgrounds` - Background color testing
   - `@storybook/addon-themes` - Light/dark theme switching
+  - `@storybook/addon-vitest` - Testing integration
+  - Built-in essential addons (controls, actions, viewport, backgrounds) - Now part of Storybook 9.0 core
 
 ### Preview Configuration (`.storybook/preview.tsx`)
 
@@ -166,6 +164,7 @@ Storybook complements your existing testing setup:
 5. **QueryClient Errors**: Components using React Query require QueryClientProvider (already configured)
 6. **Router Errors**: Components using wouter routing require Router provider (already configured)
 7. **Toast Errors**: Components using toast notifications require Toaster component (already configured)
+8. **Deprecated Addon Errors**: Storybook 9.0 consolidated many addons into core - remove old addon references from main.ts
 
 ### Fixed Issues
 
@@ -173,6 +172,7 @@ Storybook complements your existing testing setup:
 - **Router dependencies**: Added Router provider to support components using wouter routing
 - **Toast functionality**: Added Toaster component to support toast notifications in stories
 - **JSX Support**: Converted preview.ts to preview.tsx to support React components in configuration
+- **Storybook 9.0 addon compatibility**: Removed deprecated addons that are now built into core (controls, actions, viewport, backgrounds)
 
 ### Getting Help
 

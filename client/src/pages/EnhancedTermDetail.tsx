@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
-import { ArrowLeft, Share2, Heart, BookOpen, ChevronRight, ExternalLink, Clock, Users, Lightbulb, Eye } from "lucide-react";
+import { ArrowLeft, Share2, Heart, BookOpen, ChevronRight, ExternalLink, Clock, Users, Lightbulb, Eye, Code, Zap, TestTube, Brain, Settings, Star, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { useQuery } from "@tanstack/react-query";
@@ -55,7 +56,7 @@ export default function EnhancedTermDetail() {
   
   // Fetch term sections (only if enhanced)
   const { data: sections = [], isLoading: sectionsLoading } = useQuery<ITermSection[]>({
-    queryKey: [`/api/enhanced/terms/${id}/sections`],
+    queryKey: [`/api/terms/${id}/sections`],
     refetchOnWindowFocus: false,
     enabled: isEnhanced,
   });
@@ -305,33 +306,33 @@ export default function EnhancedTermDetail() {
                 <div className="flex-1 min-w-0">
                   {/* Badges and metadata */}
                   <div className="flex flex-wrap items-center gap-2 mb-4">
-                    {enhancedTerm.difficultyLevel && (
-                      <Badge className={getDifficultyColor(enhancedTerm.difficultyLevel)}>
-                        {enhancedTerm.difficultyLevel}
+                    {isEnhanced && (term as any).difficultyLevel && (
+                      <Badge className={getDifficultyColor((term as any).difficultyLevel)}>
+                        {(term as any).difficultyLevel}
                       </Badge>
                     )}
-                    {enhancedTerm.mainCategories.slice(0, 3).map((category, index) => (
+                    {isEnhanced && (term as any).mainCategories && (term as any).mainCategories.slice(0, 3).map((category: string, index: number) => (
                       <Badge key={index} variant="secondary">
                         {category}
                       </Badge>
                     ))}
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                       <Eye className="h-4 w-4 mr-1" />
-                      {enhancedTerm.viewCount}
+                      {term?.viewCount || 0}
                     </div>
                     <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                       <Clock className="h-4 w-4 mr-1" />
-                      {new Date(enhancedTerm.updatedAt).toLocaleDateString()}
+                      {term?.updatedAt ? new Date(term.updatedAt).toLocaleDateString() : 'N/A'}
                     </div>
                   </div>
 
                   <h1 className="text-3xl lg:text-4xl font-bold mb-4 leading-tight">
-                    {enhancedTerm.name}
+                    {term?.name}
                   </h1>
 
-                  {enhancedTerm.shortDefinition && (
+                  {isEnhanced && (term as any).shortDefinition && (
                     <p className="text-lg text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
-                      {enhancedTerm.shortDefinition}
+                      {(term as any).shortDefinition}
                     </p>
                   )}
 

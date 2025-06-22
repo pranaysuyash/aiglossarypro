@@ -11,6 +11,7 @@ import { registerCategoryRoutes } from "./categories";
 import { registerTermRoutes } from "./terms";
 import { registerSearchRoutes } from "./search";
 import { registerUserRoutes } from "./user";
+import { registerUserProgressRoutes } from "./user/progress";
 import { registerAdminRoutes } from "./admin/index";
 import { registerAnalyticsRoutes } from "./analytics";
 
@@ -55,6 +56,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   registerTermRoutes(app);
   registerSearchRoutes(app);
   registerUserRoutes(app);
+  registerUserProgressRoutes(app);
   
   // Register admin routes (with proper role checking in production)
   registerAdminRoutes(app);

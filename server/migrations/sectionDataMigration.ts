@@ -79,7 +79,7 @@ export async function migrateSectionData() {
       }
 
       // Create basic section items for key sections using existing term data
-      await createBasicSectionItems(termId, term);
+      await createBasicSectionItems(termId as number, term);
     }
 
     console.log(`Migration completed! Created ${totalSectionsCreated} sections total.`);
@@ -194,15 +194,4 @@ async function createBasicSectionItems(termId: number, term: any) {
   }
 }
 
-// Run migration if called directly
-if (require.main === module) {
-  migrateSectionData()
-    .then(() => {
-      console.log('Migration completed successfully');
-      process.exit(0);
-    })
-    .catch((error) => {
-      console.error('Migration failed:', error);
-      process.exit(1);
-    });
-} 
+// ES module version - no need for require.main check 

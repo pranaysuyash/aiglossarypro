@@ -17,6 +17,7 @@ import Admin from "@/pages/Admin";
 import AnalyticsDashboard from "@/pages/AnalyticsDashboard";
 import Settings from "@/pages/Settings";
 import AITools from "@/pages/AITools";
+import UserProgressDashboard from "@/pages/UserProgressDashboard";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/hooks/useAuth";
@@ -78,6 +79,9 @@ function Router() {
           </Route>
           <Route path="/ai-tools">
             <AITools />
+          </Route>
+          <Route path="/progress">
+            {isAuthenticated ? <UserProgressDashboard /> : <Home />}
           </Route>
           <Route component={NotFound} />
         </Switch>

@@ -165,6 +165,7 @@ Storybook complements your existing testing setup:
 6. **Router Errors**: Components using wouter routing require Router provider (already configured)
 7. **Toast Errors**: Components using toast notifications require Toaster component (already configured)
 8. **Deprecated Addon Errors**: Storybook 9.0 consolidated many addons into core - remove old addon references from main.ts
+9. **Browser Test Errors**: Use 'globalThis' instead of 'global' in test setup files for browser compatibility
 
 ### Fixed Issues
 
@@ -173,6 +174,7 @@ Storybook complements your existing testing setup:
 - **Toast functionality**: Added Toaster component to support toast notifications in stories
 - **JSX Support**: Converted preview.ts to preview.tsx to support React components in configuration
 - **Storybook 9.0 addon compatibility**: Removed deprecated addons that are now built into core (controls, actions, viewport, backgrounds)
+- **Browser test compatibility**: Fixed 'global is not defined' error by using 'globalThis' in test setup for browser environment
 
 ### Getting Help
 

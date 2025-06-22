@@ -1,8 +1,14 @@
 # Storybook Next Steps & TODOs (as of June 22, 2025)
 
+## Scope Clarification & Plan
+
+This document provides a list of next actionable TODOs based on the recent Storybook setup, migration, and visual testing improvements. The focus is on concrete, high-leverage next steps that logically follow from the current state, and that would further strengthen visual testing, documentation, and component quality. This also flags assumptions and open questions for consideration.
+
 This document outlines the next actionable TODOs and recommendations following the successful setup, migration, and stabilization of Storybook for visual testing in the AIMLGlossary/AIGlossaryPro project.
 
 ---
+
+## Next TODOs After Storybook Setup & Migration
 
 ## 1. Expand Story Coverage
 - [ ] **Write Stories for All Key Components**
@@ -65,6 +71,14 @@ This document outlines the next actionable TODOs and recommendations following t
 - `docs/STORYBOOK_GUIDE.md` (expand with new workflows)
 - `CONTRIBUTING.md` (add Storybook/testing section)
 - CI config files (e.g., `.github/workflows/`, if integrating Storybook build/test)
+
+---
+
+## Summary
+
+The next TODOs are to expand story coverage, add visual regression and accessibility checks, enrich documentation, integrate with CI/CD, and ensure ongoing maintenance. This will maximize the value of your new Storybook setup and ensure robust, production-grade UI quality.
+
+These tasks should be prioritized based on project needs and can be implemented incrementally to build a comprehensive visual testing and component documentation system.
 
 ---
 

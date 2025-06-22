@@ -180,3 +180,6 @@ data/processed_*.json
 *.backup
 *.bak
 *~
+
+*storybook.log
+storybook-static

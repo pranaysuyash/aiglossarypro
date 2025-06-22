@@ -39,6 +39,12 @@
   --sidebar-border: 20 5.9% 90%;
   --sidebar-ring: 20 14.3% 4.1%;
 
+  /* High contrast mode variables */
+  --high-contrast-background: 0 0% 100%;
+  --high-contrast-foreground: 0 0% 0%;
+  --high-contrast-border: 0 0% 0%;
+  --high-contrast-primary: 240 100% 50%;
+
   font-family: 'Inter', sans-serif;
 }
 
@@ -77,6 +83,24 @@
   --sidebar-accent-foreground: 0 0% 98%;
   --sidebar-border: 240 3.7% 15.9%;
   --sidebar-ring: 240 4.9% 83.9%;
+
+  /* High contrast mode variables for dark theme */
+  --high-contrast-background: 0 0% 0%;
+  --high-contrast-foreground: 0 0% 100%;
+  --high-contrast-border: 0 0% 100%;
+  --high-contrast-primary: 60 100% 50%;
+}
+
+/* High contrast mode */
+.high-contrast {
+  --background: var(--high-contrast-background);
+  --foreground: var(--high-contrast-foreground);
+  --border: var(--high-contrast-border);
+  --primary: var(--high-contrast-primary);
+  --muted: var(--high-contrast-background);
+  --muted-foreground: var(--high-contrast-foreground);
+  --card: var(--high-contrast-background);
+  --card-foreground: var(--high-contrast-foreground);
 }
 
 @layer base {
@@ -90,6 +114,40 @@
   
   .font-mono {
     font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* Enhanced focus styles for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+
+  /* Specific focus styles for interactive elements */
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  a:focus-visible,
+  input:focus-visible,
+  textarea:focus-visible,
+  select:focus-visible,
+  [tabindex]:focus-visible {
+    @apply outline-none ring-2 ring-primary ring-offset-2 ring-offset-background;
+  }
+
+  /* High contrast focus styles */
+  .high-contrast *:focus-visible,
+  .high-contrast button:focus-visible,
+  .high-contrast [role="button"]:focus-visible,
+  .high-contrast a:focus-visible,
+  .high-contrast input:focus-visible,
+  .high-contrast textarea:focus-visible,
+  .high-contrast select:focus-visible,
+  .high-contrast [tabindex]:focus-visible {
+    @apply ring-4 ring-yellow-400 ring-offset-4;
+  }
+
+  /* Ensure skip links are visible when focused */
+  .sr-only:focus,
+  .sr-only:focus-visible {
+    @apply not-sr-only;
   }
 }
 

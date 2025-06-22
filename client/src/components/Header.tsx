@@ -38,7 +38,7 @@ export default function Header() {
     : userObj?.email?.substring(0, 2).toUpperCase() || "ML";
 
   return (
-    <header className="bg-white shadow-sm sticky top-0 z-10 dark:bg-gray-800">
+    <header id="navigation" className="bg-white shadow-sm sticky top-0 z-10 dark:bg-gray-800">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-2">

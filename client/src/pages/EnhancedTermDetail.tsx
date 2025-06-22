@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -265,35 +265,39 @@ export default function EnhancedTermDetail() {
                 </Button>
               </div>
 
-              {/* Breadcrumb */}
-              <Breadcrumb className="mb-6 text-sm">
-                <BreadcrumbItem>
-                  <BreadcrumbLink asChild>
-                    <Link href="/">Home</Link>
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator>
-                  <ChevronRight className="h-4 w-4" />
-                </BreadcrumbSeparator>
-                {enhancedTerm.mainCategories.length > 0 && (
-                  <>
-                    <BreadcrumbItem>
-                      <BreadcrumbLink asChild>
-                        <Link href={`/category/${enhancedTerm.mainCategories[0]}`}>
-                          {enhancedTerm.mainCategories[0]}
-                        </Link>
-                      </BreadcrumbLink>
-                    </BreadcrumbItem>
-                    <BreadcrumbSeparator>
-                      <ChevronRight className="h-4 w-4" />
-                    </BreadcrumbSeparator>
-                  </>
-                )}
-                <BreadcrumbItem>
-                  <span className="text-gray-800 dark:text-gray-200 font-medium">
-                    {enhancedTerm.name}
-                  </span>
-                </BreadcrumbItem>
+              {/* Breadcrumb Navigation */}
+              <Breadcrumb className="mb-6">
+                <BreadcrumbList>
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link href="/">Home</Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbLink asChild>
+                      <Link href="/categories">Categories</Link>
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  {term && (term as any).mainCategories && (term as any).mainCategories.length > 0 && (
+                    <>
+                      <BreadcrumbSeparator />
+                      <BreadcrumbItem>
+                        <BreadcrumbLink asChild>
+                          <Link href={`/categories?filter=${encodeURIComponent((term as any).mainCategories[0])}`}>
+                            {(term as any).mainCategories[0]}
+                          </Link>
+                        </BreadcrumbLink>
+                      </BreadcrumbItem>
+                    </>
+                  )}
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>
+                      {term?.name}
+                    </BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
               </Breadcrumb>
 
               {/* Term Header */}

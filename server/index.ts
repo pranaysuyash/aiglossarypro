@@ -60,23 +60,34 @@ app.use((req, res, next) => {
   // Get server configuration
   const serverConfig = getServerConfig();
 
-  // importantly only setup vite in development and after
-  // setting up all the other routes so the catch-all route
-  // doesn't interfere with the other routes
-  if (serverConfig.nodeEnv === "development") {
-    // For now, skip Vite setup to get basic server working
-    // TODO: Re-enable Vite setup after basic functionality is confirmed
-    serveStatic(app);
-  } else {
-    serveStatic(app);
-  }
-
   // Use configurable port (fallback to 5000 for Replit compatibility)
   const port = process.env.REPLIT_ENVIRONMENT ? 5000 : serverConfig.port;
   
-  const server = app.listen(port, '127.0.0.1', () => {
+  const server = app.listen(port, '127.0.0.1', async () => {
     log(`🚀 Server running on http://127.0.0.1:${port} in ${serverConfig.nodeEnv} mode`);
     log(`🔍 Server address: ${JSON.stringify(server.address())}`);
+    
+    // Setup Vite dev server in development, static files in production
+    // This must happen after the server is created
+    if (serverConfig.nodeEnv === "development") {
+      log("🔧 Setting up Vite dev server for development...");
+      try {
+        await setupVite(app, server);
+        log("✅ Vite dev server setup complete");
+      } catch (error) {
+        console.error("❌ Error setting up Vite dev server:", error);
+        process.exit(1);
+      }
+    } else {
+      log("📦 Setting up static file serving for production...");
+      try {
+        serveStatic(app);
+        log("✅ Static file serving setup complete");
+      } catch (error) {
+        console.error("❌ Error setting up static file serving:", error);
+        process.exit(1);
+      }
+    }
   });
 
   server.on('error', (err) => {

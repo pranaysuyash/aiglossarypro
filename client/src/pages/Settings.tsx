@@ -334,7 +334,7 @@ export default function Settings() {
                   <p className="text-sm text-gray-500 dark:text-gray-400 mb-3">
                     Select your preferred theme mode
                   </p>
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <Button 
                       variant={theme === "light" ? "default" : "outline"}
                       className="flex flex-col items-center justify-center h-24"
@@ -360,6 +360,15 @@ export default function Settings() {
                     >
                       <Laptop className="h-8 w-8 mb-2" />
                       <span>System</span>
+                    </Button>
+
+                    <Button 
+                      variant={theme === "high-contrast" ? "default" : "outline"}
+                      className="flex flex-col items-center justify-center h-24"
+                      onClick={() => setTheme("high-contrast")}
+                    >
+                      <Settings className="h-8 w-8 mb-2" />
+                      <span>High Contrast</span>
                     </Button>
                   </div>
                 </div>

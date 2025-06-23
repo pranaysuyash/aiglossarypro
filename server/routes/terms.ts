@@ -4,6 +4,7 @@ import { isAuthenticated } from "../replitAuth";
 import { mockIsAuthenticated } from "../middleware/dev/mockAuth";
 import { features } from "../config";
 import type { ITerm, ApiResponse, PaginatedResponse } from "../../shared/types";
+import { validateInput, termIdSchema, paginationSchema } from "../middleware/security";
 
 // Define authenticated request type properly
 interface AuthenticatedRequest extends Request {
@@ -269,7 +270,14 @@ export function registerTermRoutes(app: Express): void {
   });
 
   // Get single term by ID (must be last to avoid conflicts with named routes)
-  app.get('/api/terms/:id', async (req: Request, res: Response) => {
+  app.get('/api/terms/:id', (req, res, next) => {
+    try {
+      termIdSchema.parse(req.params.id);
+      next();
+    } catch (error) {
+      return res.status(400).json({ error: 'Invalid term ID format' });
+    }
+  }, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const term = await storage.getTermById(id);
@@ -305,7 +313,14 @@ export function registerTermRoutes(app: Express): void {
   });
 
   // Get term recommendations
-  app.get('/api/terms/:id/recommendations', async (req: Request, res: Response) => {
+  app.get('/api/terms/:id/recommendations', (req, res, next) => {
+    try {
+      termIdSchema.parse(req.params.id);
+      next();
+    } catch (error) {
+      return res.status(400).json({ error: 'Invalid term ID format' });
+    }
+  }, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const { limit = 5 } = req.query;

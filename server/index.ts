@@ -7,11 +7,16 @@ import { registerRoutes } from "./routes/index";
 import { setupVite, serveStatic, log } from "./vite";
 import { checkAndSmartLoadExcelData } from "./smartExcelLoader";
 import { getServerConfig, logConfigStatus } from "./config";
+import { securityHeaders, sanitizeRequest } from "./middleware/security";
 
 const app = express();
 const wsInstance = expressWs(app);
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Apply security middleware
+app.use(securityHeaders);
+app.use(sanitizeRequest);
 
 app.use((req, res, next) => {
   const start = Date.now();

@@ -4,6 +4,7 @@ import type { SearchResult, SearchFilters, ApiResponse } from "../../shared/type
 import { db } from "../db";
 import { enhancedTerms as terms, categories } from "../../shared/enhancedSchema";
 import { eq, ilike, or, sql } from "drizzle-orm";
+import { searchQuerySchema, paginationSchema } from "../middleware/security";
 
 /**
  * Search and discovery routes
@@ -11,7 +12,16 @@ import { eq, ilike, or, sql } from "drizzle-orm";
 export function registerSearchRoutes(app: Express): void {
   
   // Main search endpoint
-  app.get('/api/search', async (req: Request, res: Response) => {
+  app.get('/api/search', (req, res, next) => {
+    try {
+      // Validate search query and pagination
+      searchQuerySchema.parse(req.query.q);
+      paginationSchema.parse(req.query);
+      next();
+    } catch (error) {
+      return res.status(400).json({ error: 'Invalid search parameters' });
+    }
+  }, async (req: Request, res: Response) => {
     try {
       const { 
         q, 

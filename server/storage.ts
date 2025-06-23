@@ -280,8 +280,8 @@ export class DatabaseStorage implements IStorage {
       id: view.termId,
       name: view.name,
       category: view.category,
-      viewedAt: view.viewedAt.toISOString(),
-      relativeTime: formatDistanceToNow(new Date(view.viewedAt), { addSuffix: true })
+      viewedAt: view.viewedAt?.toISOString() || new Date().toISOString(),
+      relativeTime: view.viewedAt ? formatDistanceToNow(new Date(view.viewedAt), { addSuffix: true }) : 'Never'
     }));
   }
 
@@ -301,7 +301,7 @@ export class DatabaseStorage implements IStorage {
     // Update view count on the term
     await db.update(terms)
       .set({ 
-        viewCount: term.viewCount + 1,
+        viewCount: (term.viewCount || 0) + 1,
         updatedAt: new Date()
       })
       .where(eq(terms.id, termId));
@@ -396,7 +396,7 @@ export class DatabaseStorage implements IStorage {
         viewCount: fav.viewCount,
         category: fav.category,
         categoryId: fav.categoryId,
-        favoriteDate: fav.createdAt.toISOString(),
+        favoriteDate: fav.createdAt?.toISOString() || new Date().toISOString(),
         subcategories: termSubcats.map(sc => sc.name)
       });
     }
@@ -658,7 +658,7 @@ export class DatabaseStorage implements IStorage {
     .orderBy(desc(termViews.viewedAt))
     .limit(1);
     
-    const lastActivity = lastView ? 
+    const lastActivity = lastView && lastView.viewedAt ? 
       formatDistanceToNow(new Date(lastView.viewedAt), { addSuffix: true }) : 
       'Never';
     
@@ -943,7 +943,7 @@ export class DatabaseStorage implements IStorage {
         }
         
         // Get subcategories for this term
-        let termSubcats = [];
+        let termSubcats: Array<{ name: string }> = [];
         try {
           termSubcats = await db.select({
             name: subcategories.name
@@ -1144,12 +1144,12 @@ export class DatabaseStorage implements IStorage {
       learned: learned.map(item => ({
         termId: item.termId,
         name: item.name,
-        learnedAt: item.learnedAt.toISOString()
+        learnedAt: item.learnedAt?.toISOString() || new Date().toISOString()
       })),
       views: views.map(item => ({
         termId: item.termId,
         name: item.name,
-        viewedAt: item.viewedAt.toISOString()
+        viewedAt: item.viewedAt?.toISOString() || new Date().toISOString()
       })),
       settings
     };
@@ -1204,7 +1204,7 @@ export class DatabaseStorage implements IStorage {
     .orderBy(desc(terms.updatedAt))
     .limit(1);
     
-    const lastUpdated = lastTerm ? format(new Date(lastTerm.updatedAt), 'MMMM d, yyyy h:mm a') : null;
+    const lastUpdated = lastTerm && lastTerm.updatedAt ? format(new Date(lastTerm.updatedAt), 'MMMM d, yyyy h:mm a') : null;
     
     return {
       totalTerms,
@@ -1317,8 +1317,8 @@ export class DatabaseStorage implements IStorage {
         );
       }
       
-      // Build the base query with proper null handling
-      const baseQuery = db.select({
+      // Build the complete query with conditions
+      let query = db.select({
         id: terms.id,
         name: terms.name,
         shortDefinition: terms.shortDefinition,
@@ -1333,11 +1333,10 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(categories, eq(terms.categoryId, categories.id));
       
       // Apply WHERE conditions if any exist
-      let query = baseQuery;
       if (whereConditions.length === 1) {
-        query = query.where(whereConditions[0]);
+        query = query.where(whereConditions[0]) as any;
       } else if (whereConditions.length > 1) {
-        query = query.where(and(...whereConditions));
+        query = query.where(and(...whereConditions)) as any;
       }
       
       // Apply sorting
@@ -1357,9 +1356,9 @@ export class DatabaseStorage implements IStorage {
       // Get total count for pagination info
       let totalQuery = db.select({ count: sql<number>`count(*)` }).from(terms);
       if (whereConditions.length === 1) {
-        totalQuery = totalQuery.where(whereConditions[0]);
+        totalQuery = totalQuery.where(whereConditions[0]) as any;
       } else if (whereConditions.length > 1) {
-        totalQuery = totalQuery.where(and(...whereConditions));
+        totalQuery = totalQuery.where(and(...whereConditions)) as any;
       }
       
       const [{ count: total }] = await totalQuery;
@@ -1592,7 +1591,7 @@ export class DatabaseStorage implements IStorage {
       .from(userProgress)
       .where(and(
         eq(userProgress.userId, userId),
-        eq(userProgress.termId, parseInt(termId))
+        eq(userProgress.termId, termId)
       ))
       .limit(1);
 
@@ -1603,18 +1602,13 @@ export class DatabaseStorage implements IStorage {
     await db.insert(userProgress)
       .values({
         userId,
-        termId: parseInt(termId),
-        status: progressData.status || 'in_progress',
-        completedAt: progressData.completed ? new Date() : null,
-        timeSpent: progressData.timeSpent || 0
+        termId: termId, // Keep as string UUID, not parseInt
+        learnedAt: progressData.completed ? new Date() : null
       })
       .onConflictDoUpdate({
         target: [userProgress.userId, userProgress.termId],
         set: {
-          status: progressData.status || 'in_progress',
-          completedAt: progressData.completed ? new Date() : null,
-          timeSpent: progressData.timeSpent || 0,
-          updatedAt: new Date()
+          learnedAt: progressData.completed ? new Date() : null
         }
       });
   }
@@ -1623,7 +1617,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(userProgress)
       .where(and(
         eq(userProgress.userId, userId),
-        eq(userProgress.termId, parseInt(termId))
+        eq(userProgress.termId, termId)
       ));
   }
 
@@ -1636,17 +1630,13 @@ export class DatabaseStorage implements IStorage {
       .from(userProgress)
       .where(and(
         eq(userProgress.userId, userId),
-        eq(userProgress.status, 'completed')
+        sql`${userProgress.learnedAt} IS NOT NULL`
       ));
-
-    const totalTimeSpent = await db.select({ total: sql<number>`sum(${userProgress.timeSpent})` })
-      .from(userProgress)
-      .where(eq(userProgress.userId, userId));
 
     return {
       totalTermsStarted: Number(totalProgress[0]?.count) || 0,
       completedTerms: Number(completedProgress[0]?.count) || 0,
-      totalTimeSpent: Number(totalTimeSpent[0]?.total) || 0,
+      totalTimeSpent: 0, // Time tracking not implemented yet
       completionRate: totalProgress[0]?.count > 0 
         ? (Number(completedProgress[0]?.count) / Number(totalProgress[0]?.count)) * 100 
         : 0

@@ -460,8 +460,8 @@ export class ContentOrganizer {
           text += ' ' + value;
         } else if (Array.isArray(value)) {
           text += ' ' + value.join(' ');
-        } else if (typeof value === 'object' && value?.content) {
-          text += ' ' + value.content;
+        } else if (typeof value === 'object' && (value as any)?.content) {
+          text += ' ' + (value as any).content;
         }
       });
     }

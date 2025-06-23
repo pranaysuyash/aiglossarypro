@@ -1,6 +1,6 @@
 // Dashboard metrics endpoint
 import { Request, Response } from 'express'
-import { getDB } from './db'
+import { db } from './db'
 import { sql } from 'drizzle-orm'
 
 interface DashboardMetrics {
@@ -65,7 +65,7 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
       totalSearches,
       totalFavorites: Number(totalFavoritesResult[0]?.count || 0),
       systemHealth,
-      recentActivity: recentActivityResult.map(row => ({
+      recentActivity: recentActivityResult.map((row: any) => ({
         action: row.action,
         details: row.details,
         timestamp: row.timestamp

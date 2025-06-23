@@ -17,6 +17,8 @@ import { registerMonitoringRoutes } from "./monitoring";
 import { registerFeedbackRoutes } from "./feedback";
 import { registerCrossReferenceRoutes } from "./crossReference";
 import { registerAnalyticsRoutes } from "./analytics";
+import { registerMediaRoutes } from "./media";
+import { registerSeoRoutes } from "./seo";
 
 // Import existing specialized route modules
 import cacheRoutes from "./cache";
@@ -81,6 +83,14 @@ export async function registerRoutes(app: Express): Promise<void> {
     registerAnalyticsRoutes(app);
     console.log("✅ Analytics routes registered");
   }
+  
+  // Register media routes (for rich content support)
+  registerMediaRoutes(app);
+  console.log("✅ Media routes registered");
+  
+  // Register SEO routes (for search engine optimization)
+  registerSeoRoutes(app);
+  console.log("✅ SEO routes registered");
   
   // Mount S3 routes if enabled
   if (features.s3Enabled) {

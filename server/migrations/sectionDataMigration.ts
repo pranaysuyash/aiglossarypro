@@ -79,7 +79,7 @@ export async function migrateSectionData() {
       }
 
       // Create basic section items for key sections using existing term data
-      await createBasicSectionItems(termId as number, term);
+      await createBasicSectionItems(termId as number);
     }
 
     console.log(`Migration completed! Created ${totalSectionsCreated} sections total.`);
@@ -91,7 +91,7 @@ export async function migrateSectionData() {
   }
 }
 
-async function createBasicSectionItems(termId: number, term: any) {
+async function createBasicSectionItems(termId: number) {
   try {
     // Get the term's full data
     const termData = await db.execute(sql`

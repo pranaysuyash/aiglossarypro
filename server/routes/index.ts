@@ -85,7 +85,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   console.log("✅ Cache management routes registered");
   
   // Health check endpoint
-  app.get('/api/health', (req, res) => {
+  app.get('/api/health', (_, res) => {
     res.json({
       success: true,
       status: 'healthy',
@@ -96,7 +96,7 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
   
   // API documentation endpoint
-  app.get('/api', (req, res) => {
+  app.get('/api', (_, res) => {
     res.json({
       success: true,
       message: "AI Glossary Pro API",

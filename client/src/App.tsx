@@ -6,7 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
-import TermDetail from "@/pages/TermDetail";
+
 import EnhancedTermDetail from "@/pages/EnhancedTermDetail";
 import Terms from "@/pages/Terms";
 import Categories from "@/pages/Categories";

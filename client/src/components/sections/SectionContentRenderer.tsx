@@ -5,21 +5,16 @@ import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { 
-  ChevronDown, 
-  ChevronRight, 
   BookOpen, 
   Code, 
   Play, 
   FileText,
-  Lightbulb,
   Target,
   TestTube,
-  AlertTriangle,
-  ExternalLink
+  AlertTriangle
 } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
+
 import InteractiveQuiz from '../interactive/InteractiveQuiz';
 import CodeBlock from '../interactive/CodeBlock';
 import MermaidDiagram from '../interactive/MermaidDiagram';
@@ -45,9 +40,6 @@ interface Section {
 
 interface SectionContentRendererProps {
   sections: Section[];
-  termId: string;
-  termName: string;
-  onSectionProgress?: (sectionId: number, progress: number) => void;
   onInteraction?: (type: string, data: any) => void;
   displayMode?: 'accordion' | 'tabs' | 'cards';
   className?: string;
@@ -55,15 +47,11 @@ interface SectionContentRendererProps {
 
 export default function SectionContentRenderer({
   sections,
-  termId,
-  termName,
-  onSectionProgress,
   onInteraction,
   displayMode = 'accordion',
   className = ''
 }: SectionContentRendererProps) {
   const [activeSection, setActiveSection] = useState<string>(sections[0]?.id.toString() || '');
-  const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
 
   // Section type configurations for icons and styling
   const getSectionConfig = (sectionName: string) => {

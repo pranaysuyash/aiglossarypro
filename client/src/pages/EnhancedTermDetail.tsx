@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useRoute, Link } from "wouter";
-import { ArrowLeft, Share2, Heart, BookOpen, ChevronRight, ExternalLink, Clock, Users, Lightbulb, Eye, Code, Zap, TestTube, Brain, Settings, Star, Copy } from "lucide-react";
+import { ArrowLeft, Share2, Heart, BookOpen, Clock, Lightbulb, Eye, Code, Zap, TestTube, Brain, Settings, Star, Copy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,8 +23,7 @@ import {
   ITerm, 
   ITermSection, 
   IInteractiveElement, 
-  IEnhancedUserSettings,
-  IUser
+  IEnhancedUserSettings
 } from "@/interfaces/interfaces";
 
 export default function EnhancedTermDetail() {
@@ -34,10 +33,9 @@ export default function EnhancedTermDetail() {
   const { isAuthenticated } = useAuth();
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  const [useEnhanced, setUseEnhanced] = useState(true);
   
   // Try enhanced term first
-  const { data: enhancedTerm, isLoading: termLoading, error: enhancedError } = useQuery<IEnhancedTerm>({
+  const { data: enhancedTerm, isLoading: termLoading } = useQuery<IEnhancedTerm>({
     queryKey: [`/api/enhanced/terms/${id}`],
     refetchOnWindowFocus: false,
     retry: false,
@@ -338,25 +336,25 @@ export default function EnhancedTermDetail() {
 
                   {/* Feature indicators */}
                   <div className="flex flex-wrap items-center gap-3 mb-4">
-                    {enhancedTerm.hasCodeExamples && (
+                    {enhancedTerm?.hasCodeExamples && (
                       <div className="flex items-center text-sm text-blue-600 dark:text-blue-400">
                         <Code className="h-4 w-4 mr-1" />
                         Code Examples
                       </div>
                     )}
-                    {enhancedTerm.hasInteractiveElements && (
+                    {enhancedTerm?.hasInteractiveElements && (
                       <div className="flex items-center text-sm text-purple-600 dark:text-purple-400">
                         <Zap className="h-4 w-4 mr-1" />
                         Interactive
                       </div>
                     )}
-                    {enhancedTerm.hasCaseStudies && (
+                    {enhancedTerm?.hasCaseStudies && (
                       <div className="flex items-center text-sm text-green-600 dark:text-green-400">
                         <TestTube className="h-4 w-4 mr-1" />
                         Case Studies
                       </div>
                     )}
-                    {enhancedTerm.hasImplementation && (
+                    {enhancedTerm?.hasImplementation && (
                       <div className="flex items-center text-sm text-orange-600 dark:text-orange-400">
                         <Brain className="h-4 w-4 mr-1" />
                         Implementation
@@ -407,14 +405,14 @@ export default function EnhancedTermDetail() {
                   <ShareMenu 
                     isOpen={shareMenuOpen} 
                     onClose={() => setShareMenuOpen(false)}
-                    title={enhancedTerm.name}
+                    title={enhancedTerm?.name || term?.name || 'AI/ML Term'}
                     url={window.location.href}
                   />
                 </div>
               </div>
 
               {/* Keywords */}
-              {enhancedTerm.keywords && enhancedTerm.keywords.length > 0 && (
+              {enhancedTerm?.keywords && enhancedTerm.keywords.length > 0 && (
                 <div className="border-t pt-4 mt-6">
                   <div className="text-sm text-gray-500 dark:text-gray-400">
                     <span className="font-medium">Keywords: </span>
@@ -462,12 +460,12 @@ export default function EnhancedTermDetail() {
                 <h2 className="text-xl font-semibold mb-4">Definition</h2>
                 <div className="prose dark:prose-invert max-w-none">
                   <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                    {enhancedTerm.fullDefinition}
+                    {enhancedTerm?.fullDefinition || term?.definition}
                   </p>
                 </div>
 
                 {/* Application domains */}
-                {enhancedTerm.applicationDomains && enhancedTerm.applicationDomains.length > 0 && (
+                {enhancedTerm?.applicationDomains && enhancedTerm.applicationDomains.length > 0 && (
                   <div className="mt-6">
                     <h3 className="text-lg font-medium mb-3">Application Domains</h3>
                     <div className="flex flex-wrap gap-2">
@@ -481,7 +479,7 @@ export default function EnhancedTermDetail() {
                 )}
 
                 {/* Techniques */}
-                {enhancedTerm.techniques && enhancedTerm.techniques.length > 0 && (
+                {enhancedTerm?.techniques && enhancedTerm.techniques.length > 0 && (
                   <div className="mt-6">
                     <h3 className="text-lg font-medium mb-3">Related Techniques</h3>
                     <div className="flex flex-wrap gap-2">
@@ -520,7 +518,7 @@ export default function EnhancedTermDetail() {
               {relationships && relationships.length > 0 ? (
                 <div className="space-y-6">
                   {['prerequisite', 'related', 'extends', 'alternative'].map(relType => {
-                    const relatedTerms = relationships.filter(rel => rel.relationshipType === relType);
+                    const relatedTerms = relationships.filter((rel: any) => rel.relationshipType === relType);
                     if (relatedTerms.length === 0) return null;
 
                     return (
@@ -531,16 +529,18 @@ export default function EnhancedTermDetail() {
                            relType === 'alternative' ? 'Alternatives' : 'Related Terms'}
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                          {relatedTerms.map(rel => (
+                          {relatedTerms.map((rel: any) => (
                             <div key={rel.id} className="p-4 border rounded-lg">
-                              <Link href={`/term/${rel.toTerm?.id || rel.toTermId}`}>
+                              <Link href={`/term/${rel.toTerm?.id || rel.toTermId || rel.id}`}>
                                 <a className="text-blue-600 hover:text-blue-700 dark:text-blue-400 font-medium">
-                                  {rel.toTerm?.name || 'Unknown Term'}
+                                  {rel.toTerm?.name || rel.name || 'Unknown Term'}
                                 </a>
                               </Link>
-                              <div className="text-sm text-gray-500 mt-1">
-                                Strength: {rel.strength}/10
-                              </div>
+                              {rel.strength && (
+                                <div className="text-sm text-gray-500 mt-1">
+                                  Strength: {rel.strength}/10
+                                </div>
+                              )}
                             </div>
                           ))}
                         </div>
@@ -559,8 +559,8 @@ export default function EnhancedTermDetail() {
             {isAuthenticated && (
               <TabsContent value="ai-tools" className="mt-6">
                 <AIDefinitionImprover 
-                  term={enhancedTerm}
-                  onImprovementApplied={(improvedTerm) => {
+                  term={enhancedTerm || term}
+                  onImprovementApplied={() => {
                     window.location.reload();
                   }}
                 />
@@ -568,7 +568,7 @@ export default function EnhancedTermDetail() {
             )}
 
             <TabsContent value="progress" className="mt-6">
-              {!learnedLoading && (
+              {!learnedLoading && id && (
                 <ProgressTracker termId={id} isLearned={!!learned} />
               )}
             </TabsContent>
@@ -591,8 +591,7 @@ export default function EnhancedTermDetail() {
                   <TermCard
                     key={recTerm.id}
                     term={recTerm}
-                    displayMode="compact"
-                    userSettings={userSettings}
+                    variant="compact"
                     isFavorite={recTerm.isFavorite}
                   />
                 ))}

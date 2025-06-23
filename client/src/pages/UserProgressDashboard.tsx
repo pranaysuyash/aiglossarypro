@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
@@ -6,7 +6,6 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
-  TrendingUp, 
   BookOpen, 
   Clock, 
   Star, 
@@ -14,17 +13,14 @@ import {
   Award,
   Calendar,
   BarChart3,
-  PieChart,
   Activity,
-  Zap,
-  Brain,
   Trophy,
   Flame,
   Eye
 } from 'lucide-react';
 import { Link } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
-import { apiRequest } from '@/lib/queryClient';
+
 
 interface UserProgressStats {
   totalTermsViewed: number;
@@ -77,7 +73,7 @@ interface SectionProgress {
 }
 
 export default function UserProgressDashboard() {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState('overview');
 
   // Fetch user progress statistics
@@ -92,11 +88,7 @@ export default function UserProgressDashboard() {
     enabled: isAuthenticated,
   });
 
-  // Fetch learning recommendations
-  const { data: recommendations = [] } = useQuery({
-    queryKey: ['/api/user/recommendations'],
-    enabled: isAuthenticated,
-  });
+
 
   if (!isAuthenticated) {
     return (

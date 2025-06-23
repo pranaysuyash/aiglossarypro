@@ -5,6 +5,7 @@ import { db } from "../db";
 import { enhancedTerms as terms, categories } from "../../shared/enhancedSchema";
 import { eq, ilike, or, sql } from "drizzle-orm";
 import { searchQuerySchema, paginationSchema } from "../middleware/security";
+import { enhancedSearchService } from "../enhancedSearchService";
 
 /**
  * Search and discovery routes
@@ -41,22 +42,28 @@ export function registerSearchRoutes(app: Express): void {
         });
       }
       
-      const filters: SearchFilters = {
+      // Use enhanced search service for better performance and features
+      const searchOptions = {
+        query: q.trim(),
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
         category: category as string,
         subcategory: subcategory as string,
         difficulty: difficulty as 'beginner' | 'intermediate' | 'advanced',
-        tags: tags ? (tags as string).split(',') : undefined
+        tags: tags ? (tags as string).split(',') : undefined,
+        sort: sort as 'relevance' | 'name' | 'popularity' | 'recent',
+        fuzzy: false // Use full-text search by default
       };
       
-      const searchTerms = await storage.searchTerms(q.trim());
+      const searchResponse = await enhancedSearchService.search(searchOptions);
       
-      // Transform to SearchResult format
+      // Transform to legacy SearchResult format for compatibility
       const searchResult: SearchResult = {
-        terms: searchTerms,
-        total: searchTerms.length,
-        page: parseInt(page as string),
-        limit: parseInt(limit as string),
-        hasMore: false // Simplified for now
+        terms: searchResponse.results,
+        total: searchResponse.total,
+        page: searchResponse.page,
+        limit: searchResponse.limit,
+        hasMore: searchResponse.page < searchResponse.totalPages
       };
       
       const response: ApiResponse<SearchResult> = {
@@ -88,54 +95,94 @@ export function registerSearchRoutes(app: Express): void {
         return res.json([]);
       }
       
-      // Search for terms that match the query
-      const suggestions = await db
-        .select({
-          id: terms.id,
-          name: terms.name,
-          category: categories.name,
-          type: sql<string>`'term'`,
-        })
-        .from(terms)
-        .leftJoin(categories, sql`${categories.id} = ANY(${terms.mainCategories})`)
-        .where(
-          or(
-            ilike(terms.name, `%${query}%`),
-            ilike(terms.fullDefinition, `%${query}%`),
-            ilike(terms.searchText, `%${query}%`)
-          )
-        )
-        .orderBy(
-          // Prioritize exact matches at the beginning
-          sql`CASE WHEN LOWER(${terms.name}) LIKE LOWER(${query + '%'}) THEN 1 ELSE 2 END`,
-          terms.name
-        )
-        .limit(Math.min(limit, 20));
+      // Use enhanced search service for better suggestions
+      const termSuggestions = await enhancedSearchService.getSuggestions(query, Math.min(limit - 3, 15));
       
-      // Also search categories for broader suggestions
-      const categorySuggestions = await db
-        .select({
-          id: categories.id,
-          name: categories.name,
-          category: sql<string>`NULL`,
-          type: sql<string>`'category'`,
-        })
-        .from(categories)
-        .where(ilike(categories.name, `%${query}%`))
-        .orderBy(categories.name)
-        .limit(Math.min(5, limit));
+      // Also get category suggestions for broader context
+      const categorySuggestions = await enhancedSearchService.searchCategories(query, 3);
       
-      // Combine and sort results
+      // Combine suggestions in a more structured format
       const allSuggestions = [
-        ...suggestions,
-        ...categorySuggestions
-      ].slice(0, limit);
+        ...termSuggestions.map(name => ({ 
+          id: `term-${name}`, 
+          name, 
+          type: 'term',
+          category: null 
+        })),
+        ...categorySuggestions.map(cat => ({ 
+          id: `category-${cat.id}`, 
+          name: cat.name, 
+          type: 'category',
+          category: null 
+        }))
+      ];
       
-      res.json(allSuggestions);
+      res.json(allSuggestions.slice(0, limit));
       
     } catch (error) {
       console.error('Error fetching search suggestions:', error);
       res.status(500).json({ message: 'Failed to fetch suggestions' });
+    }
+  });
+
+  /**
+   * Fuzzy search endpoint for handling typos and partial matches
+   * GET /api/search/fuzzy?q=query&threshold=0.3&limit=20
+   */
+  app.get('/api/search/fuzzy', async (req: Request, res: Response) => {
+    try {
+      const { 
+        q, 
+        threshold = 0.3,
+        limit = 20,
+        page = 1,
+        category,
+        difficulty,
+        sort = 'relevance'
+      } = req.query;
+      
+      if (!q || typeof q !== 'string' || q.trim().length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "Search query is required"
+        });
+      }
+      
+      const searchOptions = {
+        query: q.trim(),
+        page: parseInt(page as string),
+        limit: parseInt(limit as string),
+        category: category as string,
+        difficulty: difficulty as 'beginner' | 'intermediate' | 'advanced',
+        sort: sort as 'relevance' | 'name' | 'popularity' | 'recent',
+        fuzzy: true,
+        threshold: parseFloat(threshold as string)
+      };
+      
+      const searchResponse = await enhancedSearchService.search(searchOptions);
+      
+      res.json({
+        success: true,
+        data: {
+          results: searchResponse.results,
+          total: searchResponse.total,
+          page: searchResponse.page,
+          limit: searchResponse.limit,
+          totalPages: searchResponse.totalPages,
+          searchTime: searchResponse.searchTime,
+          suggestions: searchResponse.suggestions,
+          searchType: 'fuzzy',
+          threshold: parseFloat(threshold as string)
+        }
+      });
+      
+    } catch (error) {
+      console.error('Error in fuzzy search:', error);
+      res.status(500).json({ 
+        success: false,
+        message: "Fuzzy search failed",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
     }
   });
 

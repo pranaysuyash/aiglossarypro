@@ -12,6 +12,7 @@
     "db:studio": "drizzle-kit studio",
     "db:indexes": "tsx server/scripts/applyIndexes.ts",
     "import:optimized": "tsx server/scripts/optimizedImport.ts",
+    "db:search-indexes": "tsx server/scripts/applySearchIndexes.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",

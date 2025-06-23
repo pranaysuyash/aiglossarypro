@@ -20,55 +20,66 @@ import TermCard from "@/components/TermCard";
 import { useAuth } from "@/hooks/useAuth";
 import { ITerm } from "@/interfaces/interfaces";
 
+interface ProgressData {
+  termsLearned: number;
+  totalTerms: number;
+}
+
+interface ActivityData {
+  labels: string[];
+  views: number[];
+  learned: number[];
+  totalViews: number;
+  categoriesExplored: number;
+  lastActivity: string;
+}
+
+interface StreakData {
+  currentStreak: number;
+  bestStreak: number;
+  lastWeek: boolean[];
+}
+
 export default function Dashboard() {
   const { user } = useAuth();
   
   // Fetch user progress data
-  const { data: progressData, isLoading: progressLoading } = useQuery({
+  const { data: progressData, isLoading: progressLoading } = useQuery<ProgressData>({
     queryKey: ["/api/user/progress"],
   });
   
   // Fetch user activity data
-  const { data: activityData, isLoading: activityLoading } = useQuery({
+  const { data: activityData, isLoading: activityLoading } = useQuery<ActivityData>({
     queryKey: ["/api/user/activity"],
   });
   
   // Fetch user's learning streak data
-  const { data: streakData, isLoading: streakLoading } = useQuery({
+  const { data: streakData, isLoading: streakLoading } = useQuery<StreakData>({
     queryKey: ["/api/user/streak"],
   });
   
   // Fetch user's recently viewed terms
-  const { data: recentlyViewed, isLoading: recentlyViewedLoading } = useQuery({
+  const { data: recentlyViewed, isLoading: recentlyViewedLoading } = useQuery<ITerm[]>({
     queryKey: ["/api/terms/recently-viewed"],
   });
   
   // Fetch user's favorite terms
-  const { data: favorites, isLoading: favoritesLoading } = useQuery({
+  const { data: favorites, isLoading: favoritesLoading } = useQuery<ITerm[]>({
     queryKey: ["/api/favorites"],
   });
   
   // Fetch recommended terms for the user
-  const { data: recommended, isLoading: recommendedLoading } = useQuery({
+  const { data: recommended, isLoading: recommendedLoading } = useQuery<ITerm[]>({
     queryKey: ["/api/terms/recommended"],
   });
 
-  // Create chart data
-  const chartData = activityData ? {
-    labels: activityData.labels,
-    datasets: [
-      {
-        label: "Terms Viewed",
-        data: activityData.views,
-        backgroundColor: "hsl(var(--chart-1))",
-      },
-      {
-        label: "Terms Learned",
-        data: activityData.learned,
-        backgroundColor: "hsl(var(--chart-2))",
-      },
-    ],
-  } : { labels: [], datasets: [] };
+  // Create chart data with safe property access - transform for BarChart component
+  const chartData = activityData?.labels ? 
+    activityData.labels.map((label, index) => ({
+      name: label,
+      viewed: activityData.views?.[index] || 0,
+      learned: activityData.learned?.[index] || 0,
+    })) : [];
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -95,16 +106,18 @@ export default function Dashboard() {
                 <div className="flex justify-between mb-1 text-sm">
                   <span>Progress</span>
                   <span className="font-medium">
-                    {progressData?.termsLearned}/{progressData?.totalTerms} terms
+                    {progressData?.termsLearned || 0}/{progressData?.totalTerms || 0} terms
                   </span>
                 </div>
                 <Progress 
-                  value={(progressData?.termsLearned / progressData?.totalTerms) * 100} 
+                  value={progressData?.termsLearned && progressData?.totalTerms 
+                    ? (progressData.termsLearned / progressData.totalTerms) * 100 
+                    : 0} 
                   className="h-2 mb-4" 
                 />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
-                  {progressData?.termsLearned > 0 
-                    ? `You've learned ${Math.round((progressData?.termsLearned / progressData?.totalTerms) * 100)}% of all terms`
+                  {progressData?.termsLearned && progressData?.totalTerms && progressData.termsLearned > 0 
+                    ? `You've learned ${Math.round((progressData.termsLearned / progressData.totalTerms) * 100)}% of all terms`
                     : "Start learning terms to track your progress"}
                 </p>
               </>
@@ -130,21 +143,26 @@ export default function Dashboard() {
               <>
                 <div className="flex justify-center">
                   <div className="text-4xl font-bold text-center text-accent">
-                    {streakData?.currentStreak} 
+                    {streakData?.currentStreak || 0} 
                     <span className="text-lg font-normal ml-1">days</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-center space-x-1 mt-2">
-                  {streakData?.lastWeek.map((active: boolean, i: number) => (
+                  {streakData?.lastWeek?.map((active: boolean, i: number) => (
                     <div 
                       key={i}
                       className={`w-6 h-${active ? '8' : '4'} rounded ${active ? 'bg-accent' : 'bg-gray-200 dark:bg-gray-700'}`}
                     ></div>
+                  )) || Array.from({ length: 7 }, (_, i) => (
+                    <div 
+                      key={i}
+                      className="w-6 h-4 rounded bg-gray-200 dark:bg-gray-700"
+                    ></div>
                   ))}
                 </div>
                 <p className="text-sm text-gray-500 dark:text-gray-400 text-center mt-2">
-                  {streakData?.currentStreak > 0 
-                    ? `Keep learning daily! Best streak: ${streakData?.bestStreak} days`
+                  {streakData?.currentStreak && streakData.currentStreak > 0 
+                    ? `Keep learning daily! Best streak: ${streakData?.bestStreak || 0} days`
                     : "Visit daily to build your learning streak"}
                 </p>
               </>
@@ -202,7 +220,13 @@ export default function Dashboard() {
             <div className="h-80 animate-pulse bg-gray-200 dark:bg-gray-700 rounded"></div>
           ) : (
             <div className="h-80">
-              <BarChart data={chartData} />
+              <BarChart 
+                data={chartData} 
+                config={{
+                  viewed: { label: "Terms Viewed", color: "hsl(var(--chart-1))" },
+                  learned: { label: "Terms Learned", color: "hsl(var(--chart-2))" }
+                }}
+              />
             </div>
           )}
         </CardContent>
@@ -229,7 +253,7 @@ export default function Dashboard() {
                 <Card key={`skeleton-${i}`} className="h-40 animate-pulse bg-gray-200 dark:bg-gray-700"></Card>
               ))}
             </div>
-          ) : recentlyViewed?.length > 0 ? (
+          ) : recentlyViewed && recentlyViewed.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {recentlyViewed.slice(0, 6).map((term: ITerm) => (
                 <TermCard key={term.id} term={term} isFavorite={favorites?.some(f => f.id === term.id)} />
@@ -248,7 +272,7 @@ export default function Dashboard() {
             </Card>
           )}
           
-          {recentlyViewed?.length > 6 && (
+          {recentlyViewed && recentlyViewed.length > 6 && (
             <div className="mt-4 text-center">
               <Link href="/history">
                 <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
@@ -266,7 +290,7 @@ export default function Dashboard() {
                 <Card key={`skeleton-${i}`} className="h-40 animate-pulse bg-gray-200 dark:bg-gray-700"></Card>
               ))}
             </div>
-          ) : favorites?.length > 0 ? (
+          ) : favorites && favorites.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {favorites.slice(0, 6).map((term: ITerm) => (
                 <TermCard key={term.id} term={term} isFavorite={true} />
@@ -285,7 +309,7 @@ export default function Dashboard() {
             </Card>
           )}
           
-          {favorites?.length > 6 && (
+          {favorites && favorites.length > 6 && (
             <div className="mt-4 text-center">
               <Link href="/favorites">
                 <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">
@@ -303,7 +327,7 @@ export default function Dashboard() {
                 <Card key={`skeleton-${i}`} className="h-40 animate-pulse bg-gray-200 dark:bg-gray-700"></Card>
               ))}
             </div>
-          ) : recommended?.length > 0 ? (
+          ) : recommended && recommended.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {recommended.slice(0, 6).map((term: ITerm) => (
                 <TermCard key={term.id} term={term} isFavorite={favorites?.some(f => f.id === term.id)} />
@@ -322,7 +346,7 @@ export default function Dashboard() {
             </Card>
           )}
           
-          {recommended?.length > 6 && (
+          {recommended && recommended.length > 6 && (
             <div className="mt-4 text-center">
               <Link href="/recommendations">
                 <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 inline-flex items-center">

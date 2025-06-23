@@ -20,17 +20,19 @@ const MermaidSkeleton = ({ height = 200 }: { height?: number }) => (
 );
 
 interface LazyMermaidProps {
-  chart: string;
-  height?: number;
+  diagram: string;
+  title?: string;
+  description?: string;
   className?: string;
 }
 
-export function LazyMermaid({ chart, height = 200, className }: LazyMermaidProps) {
+export function LazyMermaid({ diagram, title, description, className }: LazyMermaidProps) {
   return (
-    <Suspense fallback={<MermaidSkeleton height={height} />}>
+    <Suspense fallback={<MermaidSkeleton height={200} />}>
       <MermaidDiagram 
-        chart={chart} 
-        height={height}
+        diagram={diagram}
+        title={title}
+        description={description}
         className={className}
       />
     </Suspense>

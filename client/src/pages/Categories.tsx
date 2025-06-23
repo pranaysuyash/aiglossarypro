@@ -23,8 +23,8 @@ export default function Categories() {
 
   // Sort categories by term count (descending) and then by name
   const sortedCategories = filteredCategories.sort((a, b) => {
-    const countA = parseInt(a.termCount) || 0;
-    const countB = parseInt(b.termCount) || 0;
+    const countA = a.termCount || 0;
+    const countB = b.termCount || 0;
     if (countA !== countB) {
       return countB - countA; // Higher count first
     }
@@ -145,7 +145,7 @@ export default function Categories() {
             </div>
             <div>
               <div className="text-2xl font-bold text-primary">
-                {sortedCategories.reduce((sum, cat) => sum + (parseInt(cat.termCount) || 0), 0)}
+                {sortedCategories.reduce((sum, cat) => sum + (cat.termCount || 0), 0)}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 Total Terms
@@ -153,7 +153,7 @@ export default function Categories() {
             </div>
             <div>
               <div className="text-2xl font-bold text-primary">
-                {sortedCategories.filter(cat => parseInt(cat.termCount) > 0).length}
+                {sortedCategories.filter(cat => (cat.termCount || 0) > 0).length}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">
                 Active Categories

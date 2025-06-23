@@ -5,7 +5,7 @@ import { ICategory } from "@/interfaces/interfaces";
 
 interface CategoryCardProps {
   category: ICategory;
-  termCount: number;
+  termCount?: number;
 }
 
 // Map category names to icons
@@ -31,6 +31,7 @@ const categoryColors: Record<string, string> = {
 export default function CategoryCard({ category, termCount }: CategoryCardProps) {
   const icon = categoryIcons[category.name] || <Brain className="h-6 w-6" />;
   const colorClass = categoryColors[category.name] || "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300";
+  const displayTermCount = termCount ?? category.termCount ?? 0;
 
   return (
     <div onClick={() => window.location.href=`/category/${category.id}`} className="cursor-pointer">
@@ -44,7 +45,7 @@ export default function CategoryCard({ category, termCount }: CategoryCardProps)
                 <h3 className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition">
                   {category.name}
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{termCount} terms</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{displayTermCount} terms</p>
               </div>
             </div>
           </CardContent>

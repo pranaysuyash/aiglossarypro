@@ -133,7 +133,7 @@ export function AIContentFeedback({
   };
 
   // Don't show feedback option for verified content unless it's flagged
-  if (!isAiGenerated || (verificationStatus === 'verified' && verificationStatus !== 'flagged')) {
+  if (!isAiGenerated || (verificationStatus === 'verified' || verificationStatus === 'expert_reviewed')) {
     return null;
   }
 

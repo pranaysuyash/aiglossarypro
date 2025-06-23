@@ -68,14 +68,21 @@ export default function CodeBlock({
   const displayLanguage = languageLabels[language.toLowerCase()] || language.toUpperCase();
 
   // Custom style for line highlighting
+  const baseStyle = isDark ? oneDark : oneLight;
   const customStyle = {
-    ...( isDark ? oneDark : oneLight ),
-    lineHeight: '1.5',
-    fontSize: '14px',
-    padding: '1rem',
-    margin: '0',
-    borderRadius: '0.5rem',
-    backgroundColor: isDark ? '#1e1e1e' : '#fafafa',
+    ...baseStyle,
+    'code[class*="language-"]': {
+      ...(baseStyle as any)['code[class*="language-"]'],
+      lineHeight: '1.5',
+      fontSize: '14px',
+    },
+    'pre[class*="language-"]': {
+      ...(baseStyle as any)['pre[class*="language-"]'],
+      padding: '1rem',
+      margin: '0',
+      borderRadius: '0.5rem',
+      backgroundColor: isDark ? '#1e1e1e' : '#fafafa',
+    }
   };
 
   const handleCopyCode = async () => {

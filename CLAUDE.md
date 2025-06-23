@@ -9,6 +9,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm run dev              # Start development server with auto-login as dev@example.com
 npm run db:push          # Push database schema changes to PostgreSQL
 npm run db:studio        # Open Drizzle Studio for database management
+npm run db:indexes       # Apply performance indexes for optimized queries
+npm run import:optimized # Import large datasets with optimized batch processing
 ```
 
 ### Testing
@@ -88,6 +90,26 @@ Recent performance improvements reduced API response times from 170+ seconds to 
 - Implementing smart caching with memoization
 - Adding database indexes on frequently queried fields
 - Optimizing React component re-renders
+
+#### Large Dataset Import Optimizations
+For handling large datasets (10k+ terms), the application includes optimized import tools:
+- **Bulk Inserts**: Insert 100+ records in single SQL operations instead of individual inserts
+- **Transaction Batching**: Group operations in transactions to reduce database overhead
+- **Memory Management**: Stream processing and garbage collection for large files
+- **Concurrent Processing**: Parallel operation processing with configurable limits
+- **Progress Monitoring**: Real-time progress tracking and performance metrics
+
+Usage examples:
+```bash
+# Standard optimized import
+npm run import:optimized data/large-glossary.json
+
+# High-performance import for massive datasets
+npm run import:optimized data/huge-dataset.json --batch-size 2000 --bulk-insert-size 200
+
+# Memory-conscious import for constrained environments
+npm run import:optimized data/terms.json --no-transactions --max-concurrent 2
+```
 
 ### File Storage and Processing
 - **Excel/CSV Processing**: Python scripts in `server/python/` for data import

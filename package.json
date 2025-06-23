@@ -11,6 +11,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:indexes": "tsx server/scripts/applyIndexes.ts",
+    "import:optimized": "tsx server/scripts/optimizedImport.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:coverage": "vitest --coverage",

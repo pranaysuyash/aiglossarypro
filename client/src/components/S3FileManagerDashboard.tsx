@@ -736,7 +736,7 @@ export default function S3FileManagerDashboard() {
                     <Checkbox
                       id="compression"
                       checked={compressionEnabled}
-                      onCheckedChange={setCompressionEnabled}
+                      onCheckedChange={(checked) => setCompressionEnabled(checked === true)}
                     />
                     <Label htmlFor="compression">Enable compression</Label>
                   </div>

@@ -124,9 +124,10 @@ export default function UserPersonalizationSettings({
     setIsSaving(true);
     try {
       const response = await apiRequest('PUT', '/api/user/settings', settings);
+      const updatedSettings = await response.json();
       
       if (onSettingsChange) {
-        onSettingsChange(response);
+        onSettingsChange(updatedSettings);
       }
       
       setHasChanges(false);

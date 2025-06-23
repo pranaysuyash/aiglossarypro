@@ -20,6 +20,8 @@ const exampleTerm: IEnhancedTerm = {
   id: "1",
   name: "Neural Networks",
   slug: "neural-networks",
+  definition: "Neural networks are computing systems vaguely inspired by the biological neural networks that constitute animal brains. They consist of interconnected nodes (neurons) that process information using connectionist approaches to computation.",
+  category: "Deep Learning",
   shortDefinition: "Computational models inspired by biological neural networks",
   fullDefinition: "Neural networks are computing systems vaguely inspired by the biological neural networks that constitute animal brains. They consist of interconnected nodes (neurons) that process information using connectionist approaches to computation.",
   mainCategories: ["Machine Learning", "Deep Learning"],
@@ -35,8 +37,8 @@ const exampleTerm: IEnhancedTerm = {
   searchText: "neural networks machine learning deep learning artificial intelligence",
   keywords: ["neural", "network", "artificial", "intelligence", "machine", "learning"],
   viewCount: 1250,
-  createdAt: "2024-01-01T00:00:00Z",
-  updatedAt: "2024-01-15T00:00:00Z"
+  createdAt: new Date("2024-01-01T00:00:00Z"),
+  updatedAt: new Date("2024-01-15T00:00:00Z")
 };
 
 const exampleSections: ITermSection[] = [

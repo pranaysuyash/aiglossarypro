@@ -27,7 +27,7 @@ import { Button } from "@/components/ui/button";
 import { Search, SlidersHorizontal, Star, ArrowRight } from "lucide-react";
 import TermCard from "@/components/TermCard";
 import { useAuth } from "@/hooks/useAuth";
-import { ITerm } from "@/interfaces/interfaces";
+import { ITerm, ICategory } from "@/interfaces/interfaces";
 
 export default function Favorites() {
   const { isAuthenticated } = useAuth();
@@ -36,13 +36,13 @@ export default function Favorites() {
   const [sortOrder, setSortOrder] = useState<"alphabetical" | "recent" | "views">("recent");
   
   // Fetch user's favorite terms
-  const { data: favorites, isLoading } = useQuery({
+  const { data: favorites, isLoading } = useQuery<ITerm[]>({
     queryKey: ["/api/favorites"],
     enabled: isAuthenticated,
   });
   
   // Fetch categories for filtering
-  const { data: categories } = useQuery({
+  const { data: categories } = useQuery<ICategory[]>({
     queryKey: ["/api/categories"],
     enabled: isAuthenticated,
   });
@@ -50,7 +50,7 @@ export default function Favorites() {
   // Apply filters and search
   const filteredFavorites = favorites?.filter((term: ITerm) => {
     const matchesSearch = term.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          term.shortDefinition.toLowerCase().includes(searchQuery.toLowerCase());
+                          (term.shortDefinition?.toLowerCase().includes(searchQuery.toLowerCase()) ?? false);
     const matchesCategory = !categoryFilter || term.categoryId === categoryFilter;
     return matchesSearch && matchesCategory;
   });
@@ -60,7 +60,11 @@ export default function Favorites() {
   if (sortOrder === "alphabetical") {
     sortedFavorites.sort((a, b) => a.name.localeCompare(b.name));
   } else if (sortOrder === "recent") {
-    sortedFavorites.sort((a, b) => new Date(b.favoriteDate).getTime() - new Date(a.favoriteDate).getTime());
+    sortedFavorites.sort((a, b) => {
+      const dateA = a.updatedAt ? new Date(a.updatedAt).getTime() : 0;
+      const dateB = b.updatedAt ? new Date(b.updatedAt).getTime() : 0;
+      return dateB - dateA;
+    });
   } else if (sortOrder === "views") {
     sortedFavorites.sort((a, b) => b.viewCount - a.viewCount);
   }

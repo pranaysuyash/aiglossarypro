@@ -34,6 +34,16 @@ import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { queryClient } from "@/lib/queryClient";
 
+interface UserSettings {
+  preferences?: {
+    emailNotifications?: boolean;
+    progressTracking?: boolean;
+    shareActivity?: boolean;
+  };
+  firstName?: string;
+  lastName?: string;
+}
+
 export default function Settings() {
   const { theme, setTheme } = useTheme();
   const { toast } = useToast();
@@ -41,7 +51,7 @@ export default function Settings() {
   const [saveSuccess, setSaveSuccess] = useState(false);
   
   // Get user settings from the server
-  const { data: settings, isLoading: settingsLoading } = useQuery({
+  const { data: settings, isLoading: settingsLoading } = useQuery<UserSettings>({
     queryKey: ["/api/settings"],
     enabled: isAuthenticated,
   });
@@ -56,7 +66,7 @@ export default function Settings() {
   
   // Function to handle preference changes
   const handlePreferenceChange = (key: keyof typeof preferences) => {
-    setPreferences(prev => ({
+    setPreferences((prev: typeof preferences) => ({
       ...prev,
       [key]: !prev[key]
     }));
@@ -145,9 +155,9 @@ export default function Settings() {
   };
   
   // Calculate user initials for avatar
-  const initials = user?.firstName && user?.lastName
-    ? `${user.firstName[0]}${user.lastName[0]}`
-    : user?.email?.substring(0, 2).toUpperCase() || "U";
+  const initials = (user as any)?.firstName && (user as any)?.lastName
+    ? `${(user as any).firstName[0]}${(user as any).lastName[0]}`
+    : (user as any)?.email?.substring(0, 2).toUpperCase() || "U";
 
   if (!isAuthenticated) {
     return (
@@ -202,10 +212,10 @@ export default function Settings() {
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-20 w-20">
-                  {user?.profileImageUrl && (
+                  {(user as any)?.profileImageUrl && (
                     <AvatarImage 
-                      src={user.profileImageUrl} 
-                      alt={user.firstName || "User"}
+                      src={(user as any).profileImageUrl} 
+                      alt={(user as any).firstName || "User"}
                       className="object-cover"
                     />
                   )}

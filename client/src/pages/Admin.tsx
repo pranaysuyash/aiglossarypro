@@ -24,7 +24,7 @@ export default function AdminPage() {
     retry: false
   });
   
-  const isAdmin = !isAdminLoading && adminData && !adminData.error;
+  const isAdmin = !isAdminLoading && adminData && !(adminData as any)?.error;
   
   // For simplicity during development, allow all authenticated users to access the admin panel
   const hasAccess = isAuthenticated;

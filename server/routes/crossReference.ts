@@ -1,0 +1,186 @@
+/**
+ * Cross-Reference and Term Linking Routes
+ * Provides endpoints for managing automatic term links and references
+ */
+
+import type { Express, Request, Response } from 'express';
+import { crossReferenceService } from '../services/crossReferenceService';
+import { asyncHandler, handleDatabaseError } from '../middleware/errorHandler';
+
+export function registerCrossReferenceRoutes(app: Express): void {
+
+  /**
+   * Process text for automatic term linking
+   * POST /api/cross-reference/process
+   */
+  app.post('/api/cross-reference/process', asyncHandler(async (req: Request, res: Response) => {
+    const { text, excludeTermId } = req.body;
+
+    if (!text || typeof text !== 'string') {
+      return res.status(400).json({
+        success: false,
+        message: 'Text content is required'
+      });
+    }
+
+    try {
+      const result = await crossReferenceService.processTextForLinks(text, excludeTermId);
+
+      res.json({
+        success: true,
+        data: result,
+        message: `Added ${result.linksAdded} automatic links`
+      });
+
+    } catch (error) {
+      const errorId = await handleDatabaseError(error, req);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to process text for links',
+        errorId
+      });
+    }
+  }));
+
+  /**
+   * Get cross-references for a specific term
+   * GET /api/cross-reference/term/:termId
+   */
+  app.get('/api/cross-reference/term/:termId', asyncHandler(async (req: Request, res: Response) => {
+    const { termId } = req.params;
+
+    try {
+      const crossReferences = await crossReferenceService.findCrossReferences(termId);
+
+      res.json({
+        success: true,
+        data: {
+          termId,
+          crossReferences,
+          total: crossReferences.length
+        }
+      });
+
+    } catch (error) {
+      const errorId = await handleDatabaseError(error, req);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to find cross-references',
+        errorId
+      });
+    }
+  }));
+
+  /**
+   * Update a term's definition with automatic links (admin only)
+   * PUT /api/cross-reference/term/:termId/update-links
+   */
+  app.put('/api/cross-reference/term/:termId/update-links', asyncHandler(async (req: Request, res: Response) => {
+    // TODO: Add admin authentication check
+    // if (!req.user || req.user.role !== 'admin') {
+    //   return res.status(403).json({ success: false, message: 'Admin access required' });
+    // }
+
+    const { termId } = req.params;
+
+    try {
+      const updated = await crossReferenceService.updateTermWithLinks(termId);
+
+      if (updated) {
+        res.json({
+          success: true,
+          message: 'Term definition updated with automatic links'
+        });
+      } else {
+        res.json({
+          success: true,
+          message: 'No links were added (term may already have links or no references found)'
+        });
+      }
+
+    } catch (error) {
+      const errorId = await handleDatabaseError(error, req);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update term with links',
+        errorId
+      });
+    }
+  }));
+
+  /**
+   * Bulk process multiple terms (admin only)
+   * POST /api/cross-reference/bulk-process
+   */
+  app.post('/api/cross-reference/bulk-process', asyncHandler(async (req: Request, res: Response) => {
+    // TODO: Add admin authentication check
+    
+    const { termIds } = req.body;
+
+    if (!Array.isArray(termIds) || termIds.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Array of term IDs is required'
+      });
+    }
+
+    if (termIds.length > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Maximum 100 terms can be processed at once'
+      });
+    }
+
+    try {
+      const results = await crossReferenceService.bulkProcessTerms(termIds);
+      
+      const summary = {
+        totalProcessed: results.size,
+        totalLinksAdded: Array.from(results.values()).reduce((sum, result) => sum + result.linksAdded, 0),
+        termsWithLinks: Array.from(results.values()).filter(result => result.linksAdded > 0).length
+      };
+
+      res.json({
+        success: true,
+        data: {
+          summary,
+          results: Object.fromEntries(results)
+        },
+        message: `Processed ${summary.totalProcessed} terms, added ${summary.totalLinksAdded} links`
+      });
+
+    } catch (error) {
+      const errorId = await handleDatabaseError(error, req);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to bulk process terms',
+        errorId
+      });
+    }
+  }));
+
+  /**
+   * Initialize term cache (admin only)
+   * POST /api/cross-reference/initialize-cache
+   */
+  app.post('/api/cross-reference/initialize-cache', asyncHandler(async (req: Request, res: Response) => {
+    // TODO: Add admin authentication check
+
+    try {
+      await crossReferenceService.initializeTermCache();
+
+      res.json({
+        success: true,
+        message: 'Term cache initialized successfully'
+      });
+
+    } catch (error) {
+      const errorId = await handleDatabaseError(error, req);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to initialize term cache',
+        errorId
+      });
+    }
+  }));
+}

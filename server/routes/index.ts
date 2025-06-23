@@ -13,6 +13,9 @@ import { registerSearchRoutes } from "./search";
 import { registerUserRoutes } from "./user";
 import { registerUserProgressRoutes } from "./user/progress";
 import { registerAdminRoutes } from "./admin/index";
+import { registerMonitoringRoutes } from "./monitoring";
+import { registerFeedbackRoutes } from "./feedback";
+import { registerCrossReferenceRoutes } from "./crossReference";
 import { registerAnalyticsRoutes } from "./analytics";
 
 // Import existing specialized route modules
@@ -60,6 +63,18 @@ export async function registerRoutes(app: Express): Promise<void> {
   
   // Register admin routes (with proper role checking in production)
   registerAdminRoutes(app);
+  
+  // Register monitoring routes (for error tracking and system health)
+  registerMonitoringRoutes(app);
+  console.log("✅ Monitoring routes registered");
+  
+  // Register feedback routes (for user feedback and suggestions)
+  registerFeedbackRoutes(app);
+  console.log("✅ Feedback routes registered");
+  
+  // Register cross-reference routes (for automatic term linking)
+  registerCrossReferenceRoutes(app);
+  console.log("✅ Cross-reference routes registered");
   
   // Register analytics routes
   if (features.analyticsEnabled) {

@@ -11,6 +11,24 @@ npm run db:push          # Push database schema changes to PostgreSQL
 npm run db:studio        # Open Drizzle Studio for database management
 npm run db:indexes       # Apply performance indexes for optimized queries
 npm run import:optimized # Import large datasets with optimized batch processing
+
+### Error Handling and Monitoring
+```bash
+# Monitor application health and errors
+GET /api/monitoring/health        # System health check
+GET /api/monitoring/errors        # Recent error logs (admin)
+GET /api/monitoring/database      # Database performance metrics
+GET /api/monitoring/metrics       # Application metrics
+
+# User feedback and suggestions
+POST /api/feedback/term/:termId   # Submit feedback for specific term
+POST /api/feedback/general        # Submit general feedback or term requests
+GET /api/feedback                 # Get feedback for admin review
+
+# Automatic cross-references and term linking  
+POST /api/cross-reference/process # Process text for automatic term links
+GET /api/cross-reference/term/:id # Get cross-references for a term
+PUT /api/cross-reference/term/:id/update-links # Update term with automatic links
 ```
 
 ### Testing

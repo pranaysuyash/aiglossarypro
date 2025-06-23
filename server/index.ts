@@ -8,6 +8,14 @@ import { setupVite, serveStatic, log } from "./vite";
 import { checkAndSmartLoadExcelData } from "./smartExcelLoader";
 import { getServerConfig, logConfigStatus } from "./config";
 import { securityHeaders, sanitizeRequest } from "./middleware/security";
+import { errorHandler, notFoundHandler, gracefulShutdown } from "./middleware/errorHandler";
+import { 
+  performanceTrackingMiddleware, 
+  pageViewTrackingMiddleware, 
+  searchTrackingMiddleware,
+  systemHealthMiddleware,
+  initializeAnalytics 
+} from "./middleware/analyticsMiddleware";
 
 const app = express();
 const wsInstance = expressWs(app);
@@ -17,6 +25,12 @@ app.use(express.urlencoded({ extended: false }));
 // Apply security middleware
 app.use(securityHeaders);
 app.use(sanitizeRequest);
+
+// Apply analytics middleware
+app.use(performanceTrackingMiddleware());
+app.use(pageViewTrackingMiddleware());
+app.use(searchTrackingMiddleware());
+app.use(systemHealthMiddleware());
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -54,13 +68,11 @@ app.use((req, res, next) => {
   
   await registerRoutes(app);
 
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    const status = err.status || err.statusCode || 500;
-    const message = err.message || "Internal Server Error";
+  // Add 404 handler for unmatched routes
+  app.use(notFoundHandler);
 
-    res.status(status).json({ message });
-    throw err;
-  });
+  // Add comprehensive error handling middleware
+  app.use(errorHandler);
 
   // Get server configuration
   const serverConfig = getServerConfig();
@@ -93,11 +105,18 @@ app.use((req, res, next) => {
     }
   }
   
+  // Initialize analytics system
+  await initializeAnalytics();
+  
   // Start listening
   server.listen(port, '127.0.0.1', () => {
     log(`🚀 Server running on http://127.0.0.1:${port} in ${serverConfig.nodeEnv} mode`);
     log(`🔍 Server address: ${JSON.stringify(server.address())}`);
+    log(`🛡️  Error handling and monitoring enabled`);
   });
+
+  // Setup graceful shutdown
+  gracefulShutdown(server);
 
   server.on('error', (err) => {
     console.error('❌ Server error:', err);

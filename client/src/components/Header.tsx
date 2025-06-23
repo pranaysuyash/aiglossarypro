@@ -38,13 +38,13 @@ export default function Header() {
     : userObj?.email?.substring(0, 2).toUpperCase() || "ML";
 
   return (
-    <header id="navigation" className="bg-white shadow-sm sticky top-0 z-10 dark:bg-gray-800">
+    <header id="navigation" className="bg-white shadow-sm sticky top-0 z-10 dark:bg-gray-800" role="banner">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
           <div className="flex items-center space-x-2">
             <Link href="/">
-              <div className="flex items-center space-x-2 cursor-pointer">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="flex items-center space-x-2 cursor-pointer" role="link" aria-label="AI/ML Glossary - Go to homepage">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 <span className="text-xl font-semibold">AI/ML Glossary</span>

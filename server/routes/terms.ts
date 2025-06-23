@@ -122,7 +122,7 @@ export function registerTermRoutes(app: Express): void {
   });
 
   // Get recently viewed terms (user-specific)
-  app.get('/api/terms/recently-viewed', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/terms/recently-viewed', authMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user?.claims?.sub;
       const { limit = 10 } = req.query;
@@ -184,6 +184,30 @@ export function registerTermRoutes(app: Express): void {
       res.status(500).json({
         success: false,
         error: 'Failed to fetch recent terms'
+      });
+    }
+  });
+
+  // Get recommended terms (general recommendations)
+  app.get('/api/terms/recommended', async (req: Request, res: Response) => {
+    try {
+      const { limit = 10 } = req.query;
+      
+      // For now, return featured terms as recommended
+      // You can implement more sophisticated recommendation logic later
+      const recommendedTerms = await storage.getFeaturedTerms();
+      
+      const response: ApiResponse<ITerm[]> = {
+        success: true,
+        data: recommendedTerms.slice(0, parseInt(limit as string))
+      };
+      
+      res.json(response);
+    } catch (error) {
+      console.error('Error fetching recommended terms:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to fetch recommended terms'
       });
     }
   });

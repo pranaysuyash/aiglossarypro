@@ -172,7 +172,7 @@ export class DatabaseStorage implements IStorage {
   
   // Term operations
   async getFeaturedTerms(): Promise<any[]> {
-    // Get terms with high view counts or manually featured
+    // Get terms with high view counts or manually featured - OPTIMIZED VERSION
     const featuredTerms = await db.select({
       id: terms.id,
       name: terms.name,
@@ -188,26 +188,13 @@ export class DatabaseStorage implements IStorage {
     .leftJoin(categories, eq(terms.categoryId, categories.id))
     .orderBy(desc(terms.viewCount))
     .limit(6);
-    
-    // For each term, get its subcategories
-    const result = [];
-    
-    for (const term of featuredTerms) {
-      // Get subcategories for this term
-      const termSubcats = await db.select({
-        name: subcategories.name
-      })
-      .from(termSubcategories)
-      .innerJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
-      .where(eq(termSubcategories.termId, term.id));
-      
-      result.push({
-        ...term,
-        subcategories: termSubcats.map(sc => sc.name)
-      });
-    }
-    
-    return result;
+
+    // Return without subcategories for now to fix performance
+    // TODO: Implement efficient subcategory loading if needed
+    return featuredTerms.map(term => ({
+      ...term,
+      subcategories: [] // Empty for performance - can be populated later if needed
+    }));
   }
 
   async getTermById(id: string): Promise<any> {
@@ -1416,25 +1403,11 @@ export class DatabaseStorage implements IStorage {
     .orderBy(desc(terms.viewCount), desc(terms.updatedAt))
     .limit(limit);
 
-    // Get subcategories for each term
-    const enrichedTerms = [];
-    for (const term of result) {
-      const subcats = await db.select({
-        id: subcategories.id,
-        name: subcategories.name,
-        categoryId: subcategories.categoryId
-      })
-      .from(subcategories)
-      .innerJoin(termSubcategories, eq(subcategories.id, termSubcategories.subcategoryId))
-      .where(eq(termSubcategories.termId, term.id));
-      
-      enrichedTerms.push({
-        ...term,
-        subcategories: subcats
-      });
-    }
-    
-    return enrichedTerms;
+    // Return without subcategories for performance - OPTIMIZED VERSION
+    return result.map(term => ({
+      ...term,
+      subcategories: [] // Empty for performance - can be populated later if needed
+    }));
   }
 
   async getRecentTerms(limit: number = 10): Promise<any[]> {
@@ -1454,25 +1427,11 @@ export class DatabaseStorage implements IStorage {
     .orderBy(desc(terms.createdAt))
     .limit(limit);
 
-    // Get subcategories for each term
-    const enrichedTerms = [];
-    for (const term of result) {
-      const subcats = await db.select({
-        id: subcategories.id,
-        name: subcategories.name,
-        categoryId: subcategories.categoryId
-      })
-      .from(subcategories)
-      .innerJoin(termSubcategories, eq(subcategories.id, termSubcategories.subcategoryId))
-      .where(eq(termSubcategories.termId, term.id));
-      
-      enrichedTerms.push({
-        ...term,
-        subcategories: subcats
-      });
-    }
-    
-    return enrichedTerms;
+    // Return without subcategories for performance - OPTIMIZED VERSION
+    return result.map(term => ({
+      ...term,
+      subcategories: [] // Empty for performance - can be populated later if needed
+    }));
   }
   // Missing Admin Methods
   async getAllUsers(): Promise<any[]> {

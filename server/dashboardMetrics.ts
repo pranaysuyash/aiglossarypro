@@ -15,7 +15,6 @@ interface DashboardMetrics {
 }
 
 export async function getDashboardMetrics(): Promise<DashboardMetrics> {
-  const db = await getDB()
   
   try {
     // Get basic counts

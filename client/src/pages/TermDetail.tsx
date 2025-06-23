@@ -378,15 +378,15 @@ export default function TermDetail() {
             
             {/* Progress Tracker */}
             {!learnedLoading && (
-              <ProgressTracker termId={id} isLearned={!!learned} />
+              <ProgressTracker termId={id!} isLearned={!!learned} />
             )}
           </div>
           
           {/* AI Definition Improver - Only for authenticated users */}
-          {isAuthenticated && (
+          {isAuthenticated && term && (
             <div className="mb-8">
               <AIDefinitionImprover 
-                term={term}
+                term={term as any}
                 onImprovementApplied={(improvedTerm) => {
                   // Optionally refresh the term data or update local state
                   window.location.reload();
@@ -396,7 +396,7 @@ export default function TermDetail() {
           )}
           
           {/* Recommended Section */}
-          {recommended && recommended.length > 0 && (
+          {recommended && Array.isArray(recommended) && recommended.length > 0 && (
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">Recommended for You</h2>
@@ -408,7 +408,7 @@ export default function TermDetail() {
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                {recommended.map((recTerm: any) => (
+                {(recommended as any[]).map((recTerm: any) => (
                   <TermCard
                     key={recTerm.id}
                     term={recTerm}

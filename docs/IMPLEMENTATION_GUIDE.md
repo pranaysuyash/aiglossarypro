@@ -267,10 +267,10 @@ app.post('/api/terms',
 
 ### 3. Database Indexes
 ```bash
-# Apply performance indexes
-npm run db:migrate-indexes
+# Apply performance indexes with automated script
+npm run db:indexes
 
-# Or manually
+# Or manually using psql
 psql $DATABASE_URL -f server/migrations/performanceIndexes.sql
 ```
 

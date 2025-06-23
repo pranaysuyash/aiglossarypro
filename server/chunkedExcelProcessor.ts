@@ -243,7 +243,7 @@ export class ChunkedExcelProcessor {
       console.log('🔄 Merging processed chunks...');
       
       const mergedData = {
-        terms: [],
+        terms: [] as any[],
         categories: {},
         subcategories: {},
         metadata: {

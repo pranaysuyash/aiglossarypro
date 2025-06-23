@@ -27,7 +27,8 @@ import {
   AlertCircle,
   HardDriveDownload,
   Trash2,
-  CheckCircle
+  CheckCircle,
+  Settings as SettingsIcon
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { apiRequest } from "@/lib/queryClient";
@@ -155,9 +156,9 @@ export default function Settings() {
   };
   
   // Calculate user initials for avatar
-  const initials = (user as any)?.firstName && (user as any)?.lastName
-    ? `${(user as any).firstName[0]}${(user as any).lastName[0]}`
-    : (user as any)?.email?.substring(0, 2).toUpperCase() || "U";
+  const initials = user?.name
+    ? user.name.split(' ').map((part: string) => part[0]).join('').toUpperCase().slice(0, 2)
+    : user?.email?.substring(0, 2).toUpperCase() || "U";
 
   if (!isAuthenticated) {
     return (
@@ -225,7 +226,7 @@ export default function Settings() {
                 </Avatar>
                 <div>
                   <h3 className="text-lg font-medium">
-                    {user?.firstName} {user?.lastName}
+                    {user?.name}
                   </h3>
                   <p className="text-sm text-gray-500 dark:text-gray-400">
                     {user?.email}
@@ -377,7 +378,7 @@ export default function Settings() {
                       className="flex flex-col items-center justify-center h-24"
                       onClick={() => setTheme("high-contrast")}
                     >
-                      <Settings className="h-8 w-8 mb-2" />
+                      <SettingsIcon className="h-8 w-8 mb-2" />
                       <span>High Contrast</span>
                     </Button>
                   </div>

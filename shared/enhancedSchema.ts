@@ -55,9 +55,6 @@ export const enhancedTerms = pgTable("enhanced_terms", {
   // Core content
   shortDefinition: text("short_definition"),
   fullDefinition: text("full_definition").notNull(),
-  // Backward compatibility with original schema
-  definition: text("definition").notNull(), // Alias for fullDefinition
-  categoryId: uuid("category_id").references(() => categories.id, { onDelete: "set null" }), // Backward compatibility
   
   // Categorization
   mainCategories: text("main_categories").array().default([]), // AI-parsed main categories

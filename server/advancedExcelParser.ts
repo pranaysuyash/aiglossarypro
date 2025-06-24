@@ -20,110 +20,11 @@ interface ContentSection {
   parseType: 'simple' | 'list' | 'structured' | 'ai_parse';
 }
 
-// Define the 42 sections and their properties
-const CONTENT_SECTIONS: ContentSection[] = [
-  {
-    sectionName: 'Introduction',
-    columns: [
-      'Introduction – Definition and Overview',
-      'Introduction – Key Concepts and Principles',
-      'Introduction – Importance and Relevance in AI/ML',
-      'Introduction – Brief History or Background',
-      'Introduction – Category and Sub-category of the Term – Main Category',
-      'Introduction – Category and Sub-category of the Term – Sub-category',
-      'Introduction – Category and Sub-category of the Term – Relationship to Other Categories or Domains',
-      'Introduction – Limitations and Assumptions of the Concept',
-      'Introduction – Technological Trends and Future Predictions',
-      'Introduction – Interactive Element: Mermaid Diagram'
-    ],
-    displayType: 'main',
-    parseType: 'structured'
-  },
-  {
-    sectionName: 'Categories',
-    columns: [
-      'Introduction – Category and Sub-category of the Term – Main Category',
-      'Introduction – Category and Sub-category of the Term – Sub-category',
-      'Tags and Keywords – Main Category Tags',
-      'Tags and Keywords – Sub-category Tags',
-      'Tags and Keywords – Related Concept Tags',
-      'Tags and Keywords – Application Domain Tags',
-      'Tags and Keywords – Technique or Algorithm Tags'
-    ],
-    displayType: 'filter',
-    parseType: 'ai_parse'
-  },
-  {
-    sectionName: 'Prerequisites',
-    columns: [
-      'Prerequisites – Prior Knowledge or Skills Required',
-      'Prerequisites – Recommended Background or Experience',
-      'Prerequisites – Suggested Introductory Topics or Courses',
-      'Prerequisites – Recommended Learning Resources',
-      'Prerequisites – Connections to Other Prerequisite Topics or Skills',
-      'Prerequisites – Interactive Element: Links to Introductory Tutorials or Courses'
-    ],
-    displayType: 'sidebar',
-    parseType: 'list'
-  },
-  {
-    sectionName: 'Theoretical Concepts',
-    columns: [
-      'Theoretical Concepts – Key Mathematical and Statistical Foundations',
-      'Theoretical Concepts – Underlying Algorithms or Techniques',
-      'Theoretical Concepts – Assumptions and Limitations',
-      'Theoretical Concepts – Mathematical Derivations or Proofs',
-      'Theoretical Concepts – Interpretability and Explainability of the Underlying Concepts',
-      'Theoretical Concepts – Theoretical Critiques and Counterarguments',
-      'Theoretical Concepts – Interactive Element: Mathematical Visualizations or Interactive Proofs'
-    ],
-    displayType: 'main',
-    parseType: 'structured'
-  },
-  {
-    sectionName: 'Implementation',
-    columns: [
-      'Implementation – Popular Programming Languages and Libraries',
-      'Implementation – Code Snippets or Pseudocode',
-      'Implementation – Practical Challenges – Common Errors or Misconfigurations',
-      'Implementation – Practical Challenges – Debugging Tips and Preventive Measures',
-      'Implementation – Hyperparameters and Tuning – Key Hyperparameters and Their Effects',
-      'Implementation – Tips for Effective Implementation',
-      'Implementation – Security Best Practices',
-      'Implementation – Interactive Element: Live Code Examples or Embedded Notebooks'
-    ],
-    displayType: 'main',
-    parseType: 'structured'
-  },
-  {
-    sectionName: 'Applications',
-    columns: [
-      'Applications – Real-world Use Cases and Examples',
-      'Applications – Industries or Domains of Application',
-      'Applications – Benefits and Impact',
-      'Applications – Limitations or Challenges in Real-world Applications',
-      'Applications – Economic Impact',
-      'Applications – Interactive Element: Case Study Walkthroughs or Interactive Use Cases'
-    ],
-    displayType: 'main',
-    parseType: 'list'
-  },
-  {
-    sectionName: 'Metadata',
-    columns: [
-      'Metadata – Term Validation and Basic Information – Recognition',
-      'Metadata – Term Validation and Basic Information – Abbreviations and Variations',
-      'Metadata – Technical Classification – Categories and Sub-Categories',
-      'Metadata – Quality and Testing Context – Testing Methodologies',
-      'Metadata – Academic and Research Context – Research Classification',
-      'Metadata – Usage Context – Application Domains',
-      'Metadata – Performance and Optimization – Performance Metrics'
-    ],
-    displayType: 'metadata',
-    parseType: 'structured'
-  }
-  // More sections can be added as needed...
-];
+// Import the complete 42-section configuration
+import COMPLETE_CONTENT_SECTIONS from '../complete_42_sections_config';
+
+// Use the complete 42 sections
+const CONTENT_SECTIONS = COMPLETE_CONTENT_SECTIONS;
 
 interface ParsedTerm {
   name: string;
@@ -530,6 +431,10 @@ Return clean, structured data that can be easily used in a web application.
 
 // Enhanced database import for complex structure
 export async function importComplexTerms(parsedTerms: ParsedTerm[]): Promise<void> {
+  const { db } = await import('./db');
+  const { enhancedTerms, termSections } = await import('../shared/enhancedSchema');
+  const { eq } = await import('drizzle-orm');
+  
   console.log(`Importing ${parsedTerms.length} complex terms...`);
   
   for (const term of parsedTerms) {
@@ -537,9 +442,111 @@ export async function importComplexTerms(parsedTerms: ParsedTerm[]): Promise<voi
     console.log(`Sections: ${Array.from(term.sections.keys()).join(', ')}`);
     console.log(`Categories: Main=${term.categories.main.length}, Sub=${term.categories.sub.length}`);
     
-    // Here you would save to your database
-    // await saveTermToDatabase(term);
+    try {
+      // Create slug from name
+      const slug = term.name.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '');
+
+      // Prepare enhanced term data (only using fields that exist in database)
+      const enhancedTermData = {
+        name: term.name,
+        slug: slug,
+        fullDefinition: term.sections.get('Introduction')?.definition_and_overview?.content || 
+                       term.sections.get('Introduction')?.content || 
+                       'Definition not available',
+        shortDefinition: term.sections.get('Introduction')?.definition_and_overview?.summary || null,
+        
+        // AI-parsed categories
+        mainCategories: term.categories.main || [],
+        subCategories: term.categories.sub || [],
+        relatedConcepts: term.categories.related || [],
+        applicationDomains: term.categories.domains || [],
+        techniques: term.categories.techniques || [],
+        
+        // Metadata flags
+        hasImplementation: term.sections.has('Implementation'),
+        hasInteractiveElements: Array.from(term.sections.values()).some(section => 
+          JSON.stringify(section).includes('mermaid') || 
+          JSON.stringify(section).includes('interactive')
+        ),
+        hasCaseStudies: term.sections.has('Applications') || term.sections.has('Case Studies'),
+        hasCodeExamples: Array.from(term.sections.values()).some(section => 
+          JSON.stringify(section).includes('code') || 
+          JSON.stringify(section).includes('example')
+        ),
+        
+        // Search text (combine all section content, truncated for index limits)
+        searchText: Array.from(term.sections.values())
+          .map(section => JSON.stringify(section))
+          .join(' ')
+          .replace(/[{}"]/g, ' ')
+          .toLowerCase()
+          .substring(0, 2000), // Truncate to avoid index size limits
+          
+        // Parse metadata
+        parseHash: term.parseHash,
+        parseVersion: '2.0'
+      };
+
+      // Insert or update enhanced term
+      const [enhancedTerm] = await db
+        .insert(enhancedTerms)
+        .values(enhancedTermData)
+        .onConflictDoUpdate({
+          target: enhancedTerms.name,
+          set: {
+            ...enhancedTermData,
+            updatedAt: new Date()
+          }
+        })
+        .returning();
+
+      console.log(`✅ Enhanced term saved: ${enhancedTerm.id}`);
+
+      // Delete existing sections for this term (for updates)
+      await db.delete(termSections).where(eq(termSections.termId, enhancedTerm.id));
+
+      // Insert all sections
+      const sectionInserts = [];
+      let priority = 1;
+      
+      for (const [sectionName, sectionData] of term.sections) {
+        // Determine display type based on section name
+        let displayType = 'main';
+        if (sectionName.includes('Metadata') || sectionName.includes('Tags')) {
+          displayType = 'metadata';
+        } else if (sectionName.includes('Prerequisites') || sectionName.includes('Related')) {
+          displayType = 'sidebar';
+        } else if (sectionName.includes('Interactive') || sectionName.includes('Quiz')) {
+          displayType = 'interactive';
+        }
+
+        sectionInserts.push({
+          termId: enhancedTerm.id,
+          sectionName,
+          sectionData: sectionData as any, // JSONB field
+          displayType,
+          priority,
+          isInteractive: sectionName.toLowerCase().includes('interactive') || 
+                        JSON.stringify(sectionData).includes('mermaid')
+        });
+        
+        priority++;
+      }
+
+      if (sectionInserts.length > 0) {
+        await db.insert(termSections).values(sectionInserts);
+        console.log(`✅ Inserted ${sectionInserts.length} sections`);
+      }
+
+    } catch (error) {
+      console.error(`❌ Error importing term ${term.name}:`, error);
+      throw error;
+    }
   }
+  
+  console.log(`✅ Successfully imported ${parsedTerms.length} complex terms with 42-section structure`);
 }
 
 export { AdvancedExcelParser, type ParsedTerm };

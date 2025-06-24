@@ -21,6 +21,7 @@ import AITools from "@/pages/AITools";
 import UserProgressDashboard from "@/pages/UserProgressDashboard";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import LoginPage from "@/components/LoginPage";
 import { useAuth } from "@/hooks/useAuth";
 
 // Smart Term Detail component that chooses between enhanced and regular view
@@ -59,31 +60,32 @@ function Router() {
       <main id="main-content" className="flex-grow" tabIndex={-1}>
         <Switch>
           <Route path="/" component={Home} />
+          <Route path="/login" component={LoginPage} />
           <Route path="/lifetime" component={Lifetime} />
           <Route path="/term/:id" component={SmartTermDetail} />
           <Route path="/terms" component={Terms} />
           <Route path="/categories" component={Categories} />
           <Route path="/trending" component={Trending} />
           <Route path="/dashboard">
-            {isAuthenticated ? <Dashboard /> : <Home />}
+            {isAuthenticated ? <Dashboard /> : <LoginPage />}
           </Route>
           <Route path="/favorites">
-            {isAuthenticated ? <Favorites /> : <Home />}
+            {isAuthenticated ? <Favorites /> : <LoginPage />}
           </Route>
           <Route path="/admin">
-            {isAuthenticated ? <Admin /> : <Home />}
+            {isAuthenticated ? <Admin /> : <LoginPage />}
           </Route>
           <Route path="/analytics">
-            {isAuthenticated ? <AnalyticsDashboard /> : <Home />}
+            {isAuthenticated ? <AnalyticsDashboard /> : <LoginPage />}
           </Route>
           <Route path="/settings">
-            {isAuthenticated ? <Settings /> : <Home />}
+            {isAuthenticated ? <Settings /> : <LoginPage />}
           </Route>
           <Route path="/ai-tools">
             <AITools />
           </Route>
           <Route path="/progress">
-            {isAuthenticated ? <UserProgressDashboard /> : <Home />}
+            {isAuthenticated ? <UserProgressDashboard /> : <LoginPage />}
           </Route>
           <Route component={NotFound} />
         </Switch>

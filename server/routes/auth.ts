@@ -3,6 +3,7 @@ import { storage } from "../storage";
 import { isAuthenticated } from "../replitAuth";
 import { authenticateToken } from "../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mockAuth";
+import { multiAuthMiddleware, getUserInfo } from "../middleware/multiAuth";
 import { features } from "../config";
 import type { AuthenticatedRequest, IUser, ApiResponse } from "../../shared/types";
 
@@ -12,22 +13,29 @@ import type { AuthenticatedRequest, IUser, ApiResponse } from "../../shared/type
 export function registerAuthRoutes(app: Express): void {
   
   // Choose authentication middleware based on environment
-  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
+  const authMiddleware = features.replitAuthEnabled ? multiAuthMiddleware : mockIsAuthenticated;
   const tokenMiddleware = features.replitAuthEnabled ? authenticateToken : mockAuthenticateToken;
   
   // Get current authenticated user
   app.get('/api/auth/user', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
-      const userId = req.user!.claims.sub;
-      const dbUser = await storage.getUser(userId);
+      const userInfo = getUserInfo(req);
+      if (!userInfo) {
+        return res.status(401).json({
+          success: false,
+          message: "User not authenticated"
+        });
+      }
+      
+      const dbUser = await storage.getUser(userInfo.id);
       
       // Transform database user to IUser format
       const user: IUser | undefined = dbUser ? {
         id: dbUser.id,
-        email: dbUser.email || '',
+        email: dbUser.email || userInfo.email,
         name: dbUser.firstName && dbUser.lastName 
           ? `${dbUser.firstName} ${dbUser.lastName}`
-          : dbUser.email || 'Unknown User',
+          : userInfo.name || 'Unknown User',
         avatar: dbUser.profileImageUrl || undefined,
         createdAt: dbUser.createdAt || new Date()
       } : undefined;
@@ -51,8 +59,15 @@ export function registerAuthRoutes(app: Express): void {
   // User settings routes
   app.get('/api/settings', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
-      const userId = req.user!.claims.sub;
-      const settings = await storage.getUserSettings(userId);
+      const userInfo = getUserInfo(req);
+      if (!userInfo) {
+        return res.status(401).json({
+          success: false,
+          message: "User not authenticated"
+        });
+      }
+      
+      const settings = await storage.getUserSettings(userInfo.id);
       
       res.json({
         success: true,
@@ -69,10 +84,17 @@ export function registerAuthRoutes(app: Express): void {
 
   app.put('/api/settings', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
+      const userInfo = getUserInfo(req);
+      if (!userInfo) {
+        return res.status(401).json({
+          success: false,
+          message: "User not authenticated"
+        });
+      }
+      
       const settings = req.body;
       
-      await storage.updateUserSettings(userId, settings);
+      await storage.updateUserSettings(userInfo.id, settings);
       
       res.json({
         success: true,
@@ -90,11 +112,17 @@ export function registerAuthRoutes(app: Express): void {
   // User data export
   app.get('/api/user/export', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
-      const userData = await storage.exportUserData(userId);
+      const userInfo = getUserInfo(req);
+      if (!userInfo) {
+        return res.status(401).json({
+          success: false,
+          message: "User not authenticated"
+        });
+      }
+      const userData = await storage.exportUserData(userInfo.id);
       
       res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Content-Disposition', `attachment; filename="user-data-${userId}.json"`);
+      res.setHeader('Content-Disposition', `attachment; filename="user-data-${userInfo.id}.json"`);
       res.json(userData);
     } catch (error) {
       console.error("Error exporting user data:", error);
@@ -108,8 +136,14 @@ export function registerAuthRoutes(app: Express): void {
   // Delete user data (GDPR compliance)
   app.delete('/api/user/data', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
     try {
-      const userId = req.user.claims.sub;
-      await storage.deleteUserData(userId);
+      const userInfo = getUserInfo(req);
+      if (!userInfo) {
+        return res.status(401).json({
+          success: false,
+          message: "User not authenticated"
+        });
+      }
+      await storage.deleteUserData(userInfo.id);
       
       res.json({
         success: true,

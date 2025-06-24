@@ -1,5 +1,9 @@
 import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import { log } from '../utils/logger';
+import { addBreadcrumb } from '../utils/sentry';
 
 // Input validation schemas
 export const termIdSchema = z.string().uuid('Invalid term ID format');
@@ -10,51 +14,162 @@ export const paginationSchema = z.object({
   limit: z.coerce.number().min(1).max(100).default(20),
 });
 
-// Rate limiting configuration
-export const rateLimitConfig = {
-  // API endpoints
-  api: {
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-  },
-  // Search endpoints (more restrictive)
-  search: {
-    windowMs: 1 * 60 * 1000, // 1 minute
-    max: 30, // 30 searches per minute
-  },
-  // Authentication endpoints
-  auth: {
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // 5 login attempts per 15 minutes
-  },
+// Enhanced rate limiting with different tiers
+export const createRateLimit = (options: {
+  windowMs: number;
+  max: number;
+  message: string;
+  keyGenerator?: (req: Request) => string;
+  skipSuccessfulRequests?: boolean;
+}) => {
+  return rateLimit({
+    windowMs: options.windowMs,
+    max: options.max,
+    message: {
+      error: 'Too many requests',
+      message: options.message,
+      retryAfter: Math.ceil(options.windowMs / 1000)
+    },
+    keyGenerator: options.keyGenerator || ((req) => {
+      // Use user ID if authenticated, otherwise IP
+      const user = req.user as any;
+      return user?.id || user?.claims?.sub || req.ip;
+    }),
+    skipSuccessfulRequests: options.skipSuccessfulRequests || false,
+    handler: (req, res) => {
+      const user = req.user as any;
+      const identifier = user?.id || user?.claims?.sub || req.ip;
+      
+      log.warn('Rate limit exceeded', {
+        identifier,
+        path: req.path,
+        method: req.method,
+        userAgent: req.headers['user-agent']
+      });
+      
+      addBreadcrumb('Rate limit exceeded', 'security', 'warning', {
+        identifier,
+        path: req.path,
+        method: req.method
+      });
+      
+      res.status(429).json({
+        error: 'Too many requests',
+        message: options.message,
+        retryAfter: Math.ceil(options.windowMs / 1000)
+      });
+    }
+  });
 };
 
-// Security headers middleware
-export function securityHeaders(req: Request, res: Response, next: NextFunction) {
-  // Prevent XSS attacks
-  res.setHeader('X-Content-Type-Options', 'nosniff');
-  res.setHeader('X-Frame-Options', 'DENY');
-  res.setHeader('X-XSS-Protection', '1; mode=block');
-  
-  // HTTPS enforcement in production
-  if (process.env.NODE_ENV === 'production') {
-    res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
-  }
-  
+// Different rate limits for different endpoints
+export const authRateLimit = createRateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 5, // 5 login attempts per 15 minutes
+  message: 'Too many authentication attempts, please try again later'
+});
+
+export const apiRateLimit = createRateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1000, // 1000 requests per 15 minutes
+  message: 'Too many API requests, please slow down'
+});
+
+export const searchRateLimit = createRateLimit({
+  windowMs: 1 * 60 * 1000, // 1 minute
+  max: 30, // 30 searches per minute
+  message: 'Too many search requests, please wait before searching again',
+  skipSuccessfulRequests: true
+});
+
+export const uploadRateLimit = createRateLimit({
+  windowMs: 60 * 60 * 1000, // 1 hour
+  max: 10, // 10 uploads per hour
+  message: 'Too many file uploads, please wait before uploading again'
+});
+
+// Legacy rate limit config for backward compatibility
+export const rateLimitConfig = {
+  api: { windowMs: 15 * 60 * 1000, max: 1000 },
+  search: { windowMs: 1 * 60 * 1000, max: 30 },
+  auth: { windowMs: 15 * 60 * 1000, max: 5 },
+};
+
+// Enhanced security headers with Helmet
+export const securityHeaders = helmet({
   // Content Security Policy
-  const csp = [
-    "default-src 'self'",
-    "script-src 'self' 'unsafe-inline' 'unsafe-eval'", // Note: Review for production
-    "style-src 'self' 'unsafe-inline' fonts.googleapis.com",
-    "font-src 'self' fonts.gstatic.com",
-    "img-src 'self' data: https:",
-    "connect-src 'self' https://api.openai.com https://fonts.googleapis.com",
-  ].join('; ');
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'", // Required for Vite dev server
+        "'unsafe-eval'", // Required for Vite dev server
+        "https://js.sentry-cdn.com",
+        "https://browser.sentry-cdn.com",
+        "https://cdn.jsdelivr.net", // For charts/components
+        "https://unpkg.com" // For mermaid diagrams
+      ],
+      styleSrc: [
+        "'self'",
+        "'unsafe-inline'", // Required for dynamic styles
+        "https://fonts.googleapis.com",
+        "https://cdn.jsdelivr.net"
+      ],
+      imgSrc: [
+        "'self'",
+        "data:", // For base64 images
+        "https:", // Allow HTTPS images
+        "blob:" // For generated images
+      ],
+      fontSrc: [
+        "'self'",
+        "https://fonts.gstatic.com",
+        "data:"
+      ],
+      connectSrc: [
+        "'self'",
+        "https://api.openai.com", // For AI features
+        "https://o4506996519346176.ingest.sentry.io", // Sentry
+        "wss://localhost:*", // WebSocket for dev
+        "ws://localhost:*" // WebSocket for dev
+      ],
+      mediaSrc: ["'self'", "blob:", "data:"],
+      objectSrc: ["'none'"],
+      frameSrc: ["'none'"],
+      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : undefined
+    }
+  },
   
-  res.setHeader('Content-Security-Policy', csp);
+  // Prevent clickjacking
+  frameguard: {
+    action: 'deny'
+  },
   
-  next();
-}
+  // Hide X-Powered-By header
+  hidePoweredBy: true,
+  
+  // Prevent MIME type sniffing
+  noSniff: true,
+  
+  // Enable HSTS in production
+  hsts: process.env.NODE_ENV === 'production' ? {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  } : false,
+  
+  // Referrer policy
+  referrerPolicy: {
+    policy: 'strict-origin-when-cross-origin'
+  },
+  
+  // Cross-Origin policies
+  crossOriginEmbedderPolicy: false, // Disabled for external resources
+  crossOriginResourcePolicy: {
+    policy: 'cross-origin'
+  }
+});
 
 // Input sanitization
 export function sanitizeInput(input: any): any {
@@ -191,7 +306,49 @@ export function preventSqlInjection(req: Request, res: Response, next: NextFunct
   next();
 }
 
-// Request logging for security audit
+// Enhanced security monitoring middleware
+export const securityMonitoring = (req: Request, res: Response, next: NextFunction) => {
+  const suspiciousPatterns = [
+    /(\/\/|\*|;|\||&|`|\$\(|\$\{)/, // Command injection patterns
+    /(union|select|insert|delete|update|drop|create|alter)\s/i, // SQL injection patterns
+    /<script|javascript:|vbscript:|onload=|onerror=/i, // XSS patterns
+    /\.\.\/|\.\.\\/i, // Path traversal patterns
+    /(eval|exec|system|shell_exec|passthru)\s*\(/i // Code execution patterns
+  ];
+  
+  const checkForSuspiciousActivity = (data: any, source: string) => {
+    const dataStr = JSON.stringify(data).toLowerCase();
+    
+    for (const pattern of suspiciousPatterns) {
+      if (pattern.test(dataStr)) {
+        log.warn('Suspicious activity detected', {
+          source,
+          pattern: pattern.toString(),
+          data: dataStr.substring(0, 200),
+          ip: req.ip,
+          userAgent: req.headers['user-agent'],
+          user: (req.user as any)?.id || 'anonymous'
+        });
+        
+        addBreadcrumb('Suspicious activity detected', 'security', 'warning', {
+          source,
+          pattern: pattern.toString()
+        });
+        
+        break;
+      }
+    }
+  };
+  
+  // Check request body, query, and params for suspicious patterns
+  if (req.body) checkForSuspiciousActivity(req.body, 'body');
+  if (req.query) checkForSuspiciousActivity(req.query, 'query');
+  if (req.params) checkForSuspiciousActivity(req.params, 'params');
+  
+  next();
+};
+
+// Legacy security audit log function
 export function securityAuditLog(req: Request, res: Response, next: NextFunction) {
   const logData = {
     timestamp: new Date().toISOString(),
@@ -199,17 +356,83 @@ export function securityAuditLog(req: Request, res: Response, next: NextFunction
     userAgent: req.get('User-Agent'),
     method: req.method,
     path: req.path,
-    userId: req.user?.claims?.sub,
+    userId: (req.user as any)?.claims?.sub || (req.user as any)?.id,
     suspicious: false,
   };
   
-  // Log to console in development, use proper logging service in production
-  if (process.env.NODE_ENV === 'development') {
-    console.log('Security Audit:', logData);
-  }
-  
+  log.info('Security audit log', logData);
   next();
 }
+
+// File upload security validation
+export const validateFileUpload = (file: Express.Multer.File): { valid: boolean; error?: string } => {
+  const allowedMimeTypes = [
+    'image/jpeg',
+    'image/png', 
+    'image/gif',
+    'image/webp',
+    'application/pdf',
+    'text/plain',
+    'application/json'
+  ];
+  
+  const maxFileSize = 10 * 1024 * 1024; // 10MB
+  
+  if (!allowedMimeTypes.includes(file.mimetype)) {
+    return {
+      valid: false,
+      error: `File type ${file.mimetype} is not allowed`
+    };
+  }
+  
+  if (file.size > maxFileSize) {
+    return {
+      valid: false,
+      error: `File size ${file.size} exceeds maximum allowed size of ${maxFileSize} bytes`
+    };
+  }
+  
+  // Check for malicious file extensions
+  const maliciousExtensions = ['.exe', '.bat', '.cmd', '.scr', '.pif', '.com', '.jar'];
+  const fileExt = file.originalname.toLowerCase().substring(file.originalname.lastIndexOf('.'));
+  
+  if (maliciousExtensions.includes(fileExt)) {
+    return {
+      valid: false,
+      error: `File extension ${fileExt} is not allowed`
+    };
+  }
+  
+  return { valid: true };
+};
+
+// Environment variable validation
+export const validateEnvironmentVariables = (): { valid: boolean; errors: string[] } => {
+  const required = ['DATABASE_URL', 'SESSION_SECRET'];
+  const errors: string[] = [];
+  
+  for (const envVar of required) {
+    if (!process.env[envVar]) {
+      errors.push(`Missing required environment variable: ${envVar}`);
+    }
+  }
+  
+  // Check for insecure configurations
+  if (process.env.NODE_ENV === 'production') {
+    if (process.env.SESSION_SECRET && process.env.SESSION_SECRET.length < 32) {
+      errors.push('SESSION_SECRET should be at least 32 characters in production');
+    }
+    
+    if (!process.env.HTTPS && !process.env.SSL_CERT) {
+      errors.push('HTTPS should be enabled in production');
+    }
+  }
+  
+  return {
+    valid: errors.length === 0,
+    errors
+  };
+};
 
 export default {
   securityHeaders,
@@ -219,5 +442,12 @@ export default {
   csrfProtection,
   preventSqlInjection,
   securityAuditLog,
+  securityMonitoring,
   rateLimitConfig,
+  authRateLimit,
+  apiRateLimit,
+  searchRateLimit,
+  uploadRateLimit,
+  validateFileUpload,
+  validateEnvironmentVariables
 };

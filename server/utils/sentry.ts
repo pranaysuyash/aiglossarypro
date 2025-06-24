@@ -133,6 +133,25 @@ export const captureAuthError = (error: Error, context: {
   });
 };
 
+export const captureAuthEvent = (action: string, context: {
+  userId?: string;
+  email?: string;
+  provider?: string;
+  error?: string;
+}) => {
+  Sentry.addBreadcrumb({
+    message: `Auth event: ${action}`,
+    category: 'auth',
+    level: context.error ? 'error' : 'info',
+    data: {
+      userId: context.userId,
+      email: context.email,
+      provider: context.provider,
+      error: context.error
+    }
+  });
+};
+
 export const captureDatabaseError = (error: Error, context: {
   query?: string;
   operation: string;

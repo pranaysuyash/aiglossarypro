@@ -20,6 +20,7 @@ import { registerCrossReferenceRoutes } from "./crossReference";
 import { registerAnalyticsRoutes } from "./analytics";
 import { registerMediaRoutes } from "./media";
 import { registerSeoRoutes } from "./seo";
+import { registerContentRoutes } from "./content";
 
 // Import existing specialized route modules
 import cacheRoutes from "./cache";
@@ -94,6 +95,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Register SEO routes (for search engine optimization)
   registerSeoRoutes(app);
   console.log("✅ SEO routes registered");
+  
+  // Register content accessibility routes
+  registerContentRoutes(app);
+  console.log("✅ Content accessibility routes registered");
   
   // Mount S3 routes if enabled
   if (features.s3Enabled) {

@@ -11,7 +11,8 @@ import { registerRoutes } from "./routes/index";
 import { setupVite, serveStatic, log } from "./vite";
 import { checkAndSmartLoadExcelData } from "./smartExcelLoader";
 import { getServerConfig, logConfigStatus } from "./config";
-import { securityHeaders, sanitizeRequest } from "./middleware/security";
+import { setupMultiAuth } from "./middleware/multiAuth";
+import { securityHeaders, sanitizeRequest, securityMonitoring, apiRateLimit } from "./middleware/security";
 import { errorHandler, notFoundHandler, gracefulShutdown } from "./middleware/errorHandler";
 import { 
   performanceTrackingMiddleware, 
@@ -44,6 +45,8 @@ app.use(loggingMiddleware.performance);
 // Apply security middleware
 app.use(securityHeaders);
 app.use(sanitizeRequest);
+app.use(securityMonitoring);
+app.use('/api/', apiRateLimit);
 
 // Apply analytics middleware
 app.use(performanceTrackingMiddleware());
@@ -84,6 +87,9 @@ app.use((req, res, next) => {
 (async () => {
   // Load and validate configuration
   logConfigStatus();
+  
+  // Setup multi-provider authentication
+  await setupMultiAuth(app);
   
   await registerRoutes(app);
 

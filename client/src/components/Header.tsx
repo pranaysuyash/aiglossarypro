@@ -20,11 +20,11 @@ export default function Header() {
   const { user, isAuthenticated } = useAuth();
 
   const handleLogout = () => {
-    window.location.href = "/api/logout";
+    window.location.href = "/api/auth/logout";
   };
 
   const handleLogin = () => {
-    window.location.href = "/api/login";
+    navigate("/login");
   };
 
   const handleSearch = (query: string) => {

@@ -5,7 +5,7 @@ import { eq, desc, sql, and, gte, or, like } from "drizzle-orm";
 import { requireAdmin } from "../../middleware/adminAuth";
 import { ZodError } from "zod";
 import type { ApiResponse } from "../../../shared/types";
-import { errorLogger } from "../../middleware/errorHandler";
+import { errorLogger, ErrorCategory } from "../../middleware/errorHandler";
 
 const adminContentRouter = Router();
 
@@ -32,9 +32,10 @@ adminContentRouter.get("/dashboard", async (req: Request, res: Response<ApiRespo
       .select({ count: sql<number>`count(*)` })
       .from(users);
     
-    const [feedbackCount] = await db.execute(
+    const feedbackResult = await db.execute(
       sql`SELECT COUNT(*) as count FROM user_feedback WHERE status = 'pending'`
     );
+    const feedbackCount = feedbackResult.rows[0] || { count: 0 };
 
     // Recent activity
     const recentTerms = await db
@@ -78,7 +79,7 @@ adminContentRouter.get("/dashboard", async (req: Request, res: Response<ApiRespo
           totalTerms: Number(termCount.count),
           totalCategories: Number(categoryCount.count),
           totalUsers: Number(userCount.count),
-          pendingFeedback: Number((feedbackCount[0] as any)?.count || 0),
+          pendingFeedback: Number((feedbackCount as any)?.count || 0),
           weeklyNewTerms: Number(weeklyGrowth.count),
           monthlyNewTerms: Number(monthlyGrowth.count)
         },
@@ -89,7 +90,7 @@ adminContentRouter.get("/dashboard", async (req: Request, res: Response<ApiRespo
       }
     });
   } catch (error) {
-    errorLogger.error('Admin dashboard error:', error);
+    await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
       error: 'Failed to fetch dashboard data'
@@ -112,20 +113,6 @@ adminContentRouter.get("/terms", async (req: Request, res: Response<ApiResponse<
 
     const offset = (Number(page) - 1) * Number(limit);
 
-    let query = db.select({
-      id: terms.id,
-      name: terms.name,
-      definition: terms.definition,
-      shortDefinition: terms.shortDefinition,
-      categoryId: terms.categoryId,
-      category: categories.name,
-      viewCount: terms.viewCount,
-      createdAt: terms.createdAt,
-      updatedAt: terms.updatedAt
-    })
-    .from(terms)
-    .leftJoin(categories, eq(terms.categoryId, categories.id));
-
     // Apply filters
     const conditions = [];
     if (search) {
@@ -140,22 +127,37 @@ adminContentRouter.get("/terms", async (req: Request, res: Response<ApiResponse<
       conditions.push(eq(terms.categoryId, String(categoryId)));
     }
 
-    if (conditions.length > 0) {
-      query = query.where(and(...conditions));
-    }
-
     // Apply sorting
     const sortColumn = sortBy === 'name' ? terms.name : 
                       sortBy === 'viewCount' ? terms.viewCount :
                       sortBy === 'createdAt' ? terms.createdAt :
                       terms.updatedAt;
-    
-    query = query.orderBy(
-      sortOrder === 'asc' ? sql`${sortColumn} ASC` : desc(sortColumn)
-    );
+
+    // Build query with all conditions at once  
+    const baseQuery = db.select({
+      id: terms.id,
+      name: terms.name,
+      definition: terms.definition,
+      shortDefinition: terms.shortDefinition,
+      categoryId: terms.categoryId,
+      category: categories.name,
+      viewCount: terms.viewCount,
+      createdAt: terms.createdAt,
+      updatedAt: terms.updatedAt
+    })
+    .from(terms)
+    .leftJoin(categories, eq(terms.categoryId, categories.id));
+
+    // Build final query with all parts
+    const finalQuery = baseQuery
+      .$dynamic()
+      .where(conditions.length > 0 ? and(...conditions) : undefined)
+      .orderBy(sortOrder === 'asc' ? sql`${sortColumn} ASC` : desc(sortColumn))
+      .limit(Number(limit))
+      .offset(offset);
 
     // Execute paginated query
-    const results = await query.limit(Number(limit)).offset(offset);
+    const results = await finalQuery;
 
     // Get total count
     const [countResult] = await db
@@ -176,7 +178,7 @@ adminContentRouter.get("/terms", async (req: Request, res: Response<ApiResponse<
       }
     });
   } catch (error) {
-    errorLogger.error('Content list error:', error);
+    await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
       error: 'Failed to fetch terms'
@@ -223,10 +225,10 @@ adminContentRouter.post("/terms/:id?", async (req: Request, res: Response<ApiRes
       });
     }
   } catch (error) {
-    errorLogger.error('Term save error:', error);
+    await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
-      error: error instanceof ZodError ? error.errors : 'Failed to save term'
+      error: error instanceof ZodError ? JSON.stringify(error.errors) : 'Failed to save term'
     });
   }
 });
@@ -243,7 +245,7 @@ adminContentRouter.delete("/terms/:id", async (req: Request, res: Response<ApiRe
       data: { message: 'Term deleted successfully' }
     });
   } catch (error) {
-    errorLogger.error('Term delete error:', error);
+    await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
       error: 'Failed to delete term'
@@ -278,7 +280,7 @@ adminContentRouter.post("/terms/bulk", async (req: Request, res: Response<ApiRes
       data: { message: `Bulk ${action} completed successfully` }
     });
   } catch (error) {
-    errorLogger.error('Bulk operation error:', error);
+    await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
       error: 'Failed to perform bulk operation'
@@ -306,24 +308,25 @@ adminContentRouter.get("/feedback", async (req: Request, res: Response<ApiRespon
       `
     );
 
-    const [countResult] = await db.execute(
+    const countQuery = await db.execute(
       sql`SELECT COUNT(*) as count FROM user_feedback WHERE status = ${status}`
     );
+    const countResult = countQuery.rows[0] || { count: 0 };
 
     res.json({
       success: true,
       data: {
         feedback: feedbackItems,
         pagination: {
-          total: Number((countResult[0] as any)?.count || 0),
+          total: Number((countResult as any)?.count || 0),
           page: Number(page),
           limit: Number(limit),
-          totalPages: Math.ceil(Number((countResult[0] as any)?.count || 0) / Number(limit))
+          totalPages: Math.ceil(Number((countResult as any)?.count || 0) / Number(limit))
         }
       }
     });
   } catch (error) {
-    errorLogger.error('Feedback list error:', error);
+    await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
       error: 'Failed to fetch feedback'
@@ -348,10 +351,10 @@ adminContentRouter.patch("/feedback/:id", async (req: Request, res: Response<Api
 
     res.json({
       success: true,
-      data: updatedFeedback[0]
+      data: updatedFeedback.rows[0]
     });
   } catch (error) {
-    errorLogger.error('Feedback update error:', error);
+    await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
       error: 'Failed to update feedback'
@@ -380,7 +383,7 @@ adminContentRouter.get("/categories", async (req: Request, res: Response<ApiResp
       data: categoryList
     });
   } catch (error) {
-    errorLogger.error('Category list error:', error);
+    await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
       error: 'Failed to fetch categories'
@@ -420,7 +423,7 @@ adminContentRouter.post("/categories/:id?", async (req: Request, res: Response<A
       });
     }
   } catch (error) {
-    errorLogger.error('Category save error:', error);
+    await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
       error: 'Failed to save category'
@@ -453,7 +456,7 @@ adminContentRouter.delete("/categories/:id", async (req: Request, res: Response<
       data: { message: 'Category deleted successfully' }
     });
   } catch (error) {
-    errorLogger.error('Category delete error:', error);
+    await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
       error: 'Failed to delete category'

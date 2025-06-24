@@ -4,22 +4,8 @@ import { Search, X, Brain, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  Command, 
-  CommandEmpty, 
-  CommandGroup, 
-  CommandInput, 
-  CommandItem, 
-  CommandList 
-} from "@/components/ui/command";
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
-} from "@/components/ui/popover";
 import { useQuery } from "@tanstack/react-query";
 import { debounce } from "@/lib/utils";
-import { apiRequest } from "@/lib/queryClient";
 import { cn } from "@/lib/utils";
 
 interface SearchBarProps {
@@ -49,6 +35,7 @@ export default function SearchBar({
   const [, navigate] = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
+  const listboxId = "search-suggestions-listbox";
 
   // Fetch suggestions when query changes
   const { data: suggestions = [], isLoading } = useQuery<SearchSuggestion[]>({
@@ -115,10 +102,8 @@ export default function SearchBar({
 
   const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
     if (suggestion.type === 'term') {
-      // Navigate to term detail page
       navigate(`/term/${suggestion.id}`);
     } else if (suggestion.type === 'category') {
-      // Search for terms in this category
       setQuery(suggestion.name);
       onSearch(suggestion.name);
     }
@@ -147,30 +132,6 @@ export default function SearchBar({
     }, 150);
   };
 
-  // Regular search results
-  const { data: searchResults } = useQuery({
-    queryKey: ['/api/search', query],
-    enabled: query.length > 1 && !useAISearch,
-  });
-
-  // AI search results
-  const { data: aiSearchResults } = useQuery({
-    queryKey: ['/api/ai/semantic-search', query],
-    queryFn: async () => {
-      const response = await fetch(`/api/ai/semantic-search?q=${encodeURIComponent(query)}&limit=8`);
-      if (!response.ok) throw new Error('AI search failed');
-      const result = await response.json();
-      return result.success ? result.data.matches : [];
-    },
-    enabled: query.length > 1 && useAISearch,
-  });
-
-  const currentResults = useAISearch ? aiSearchResults : searchResults;
-
-  const handleSelectTerm = (termId: string) => {
-    navigate(`/term/${termId}`);
-  };
-
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
@@ -189,7 +150,10 @@ export default function SearchBar({
   return (
     <div className={cn("relative w-full max-w-md", className)}>
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+        <Search 
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" 
+          aria-hidden="true"
+        />
         <Input
           ref={inputRef}
           type="text"
@@ -200,6 +164,17 @@ export default function SearchBar({
           onFocus={handleFocus}
           onBlur={handleBlur}
           className="pl-10 pr-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+          aria-label="Search AI/ML terms and definitions"
+          aria-expanded={showSuggestions}
+          aria-haspopup="listbox"
+          aria-controls={showSuggestions ? listboxId : undefined}
+          aria-activedescendant={
+            selectedIndex >= 0 && suggestions?.[selectedIndex] 
+              ? `suggestion-${suggestions[selectedIndex].type}-${suggestions[selectedIndex].id}`
+              : undefined
+          }
+          role="combobox"
+          autoComplete="off"
         />
         {query && (
           <Button
@@ -207,6 +182,7 @@ export default function SearchBar({
             size="sm"
             onClick={clearSearch}
             className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0 hover:bg-gray-100 dark:hover:bg-gray-700"
+            aria-label="Clear search query"
           >
             <X className="h-3 w-3" />
           </Button>
@@ -217,19 +193,29 @@ export default function SearchBar({
       {showSuggestions && (
         <div
           ref={suggestionsRef}
+          id={listboxId}
+          role="listbox"
+          aria-label="Search suggestions"
           className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-64 overflow-y-auto"
         >
           {isLoading ? (
-            <div className="p-3 text-center text-gray-500">
-              <div className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-primary mx-auto"></div>
+            <div className="p-3 text-center text-gray-500" role="status" aria-live="polite">
+              <div 
+                className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-primary mx-auto"
+                aria-hidden="true"
+              ></div>
+              <span className="sr-only">Loading search suggestions...</span>
             </div>
           ) : (
             Array.isArray(suggestions) && suggestions.map((suggestion: SearchSuggestion, index: number) => (
               <button
                 key={`${suggestion.type}-${suggestion.id}`}
+                id={`suggestion-${suggestion.type}-${suggestion.id}`}
+                role="option"
+                aria-selected={selectedIndex === index}
                 onClick={() => handleSuggestionSelect(suggestion)}
                 className={cn(
-                  "w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0",
+                  "w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-700",
                   selectedIndex === index && "bg-gray-50 dark:bg-gray-700"
                 )}
               >
@@ -262,123 +248,29 @@ export default function SearchBar({
         </div>
       )}
 
-      <Popover open={showSuggestions} onOpenChange={setShowSuggestions}>
-        <PopoverTrigger asChild>
-          <div className="relative w-full">
-            <Input
-              ref={inputRef}
-              type="text"
-              placeholder={useAISearch ? "AI-powered semantic search..." : "Search terms, definitions..."}
-              className={`w-full pl-10 ${useAISearch ? 'pr-20' : 'pr-10'}`}
-              onClick={() => setShowSuggestions(true)}
-              onChange={handleInputChange}
-            />
-            {useAISearch ? (
-              <Brain className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-blue-500" />
-            ) : (
-              <Search className="h-5 w-5 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            )}
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex items-center gap-1">
-              {useAISearch && (
-                <Badge variant="secondary" className="text-xs">
-                  AI
-                </Badge>
-              )}
-              {query && (
-                <button 
-                  onClick={() => {
-                    setQuery("");
-                    if (inputRef.current) {
-                      inputRef.current.value = "";
-                    }
-                  }}
-                  className="text-gray-400 hover:text-gray-600"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-          </div>
-        </PopoverTrigger>
-        <PopoverContent className="p-0 w-[calc(100vw-2rem)] md:w-[500px]" align="start">
-          <Command>
-            <div className="flex items-center border-b px-3 py-2">
-              <CommandInput 
-                placeholder={useAISearch ? "AI-powered semantic search..." : "Search terms, definitions..."} 
-                value={query} 
-                onValueChange={setQuery}
-                className="flex-1"
-              />
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setUseAISearch(!useAISearch)}
-                className="ml-2 flex items-center gap-1"
-              >
-                {useAISearch ? (
-                  <>
-                    <Brain className="h-4 w-4 text-blue-500" />
-                    <span className="text-xs">AI</span>
-                  </>
-                ) : (
-                  <>
-                    <Zap className="h-4 w-4" />
-                    <span className="text-xs">Enable AI</span>
-                  </>
-                )}
-              </Button>
-            </div>
-            <CommandList>
-              <CommandEmpty>No results found</CommandEmpty>
-              {currentResults && (
-                <CommandGroup heading={useAISearch ? "AI Semantic Results" : "Terms"}>
-                  {useAISearch ? (
-                    // AI search results
-                    currentResults.map((result: any) => (
-                      <CommandItem 
-                        key={result.termId} 
-                        value={result.term.name}
-                        onSelect={() => handleSelectTerm(result.termId)}
-                      >
-                        <div className="flex flex-col w-full">
-                          <div className="flex items-center justify-between">
-                            <span className="font-medium">{result.term.name}</span>
-                            <Badge variant="outline" className="text-xs">
-                              {Math.round(result.relevanceScore * 100)}% match
-                            </Badge>
-                          </div>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 mt-1">
-                            {result.term.shortDefinition || result.term.definition.substring(0, 80) + '...'}
-                          </span>
-                          <span className="text-xs text-blue-600 mt-1 italic">
-                            {result.explanation}
-                          </span>
-                        </div>
-                      </CommandItem>
-                    ))
-                  ) : (
-                    // Regular search results
-                    currentResults.map((result: any) => (
-                      <CommandItem 
-                        key={result.id} 
-                        value={result.name}
-                        onSelect={() => handleSelectTerm(result.id)}
-                      >
-                        <div className="flex flex-col">
-                          <span>{result.name}</span>
-                          <span className="text-xs text-gray-500 dark:text-gray-400 truncate">
-                            {result.shortDefinition}
-                          </span>
-                        </div>
-                      </CommandItem>
-                    ))
-                  )}
-                </CommandGroup>
-              )}
-            </CommandList>
-          </Command>
-        </PopoverContent>
-      </Popover>
+      {/* AI Search Toggle */}
+      <div className="mt-2 flex items-center justify-end">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setUseAISearch(!useAISearch)}
+          className="flex items-center gap-1 text-xs"
+          aria-pressed={useAISearch}
+          aria-label={`${useAISearch ? 'Disable' : 'Enable'} AI-powered semantic search`}
+        >
+          {useAISearch ? (
+            <>
+              <Brain className="h-3 w-3 text-blue-500" />
+              <span>AI Search On</span>
+            </>
+          ) : (
+            <>
+              <Zap className="h-3 w-3" />
+              <span>Enable AI Search</span>
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   );
 }

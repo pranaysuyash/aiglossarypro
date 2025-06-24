@@ -1,6 +1,10 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+// Initialize error monitoring first
+import { initSentry, sentryRequestHandler, sentryTracingHandler, sentryErrorHandler } from "./utils/sentry";
+initSentry();
+
 import express, { type Request, Response, NextFunction } from "express";
 import expressWs from "express-ws";
 import { registerRoutes } from "./routes/index";
@@ -16,11 +20,26 @@ import {
   systemHealthMiddleware,
   initializeAnalytics 
 } from "./middleware/analyticsMiddleware";
+import loggingMiddleware from "./middleware/loggingMiddleware";
+import { log as logger } from "./utils/logger";
 
 const app = express();
 const wsInstance = expressWs(app);
+
+// Sentry request handling (must be first)
+app.use(sentryRequestHandler());
+app.use(sentryTracingHandler());
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Apply logging middleware early
+app.use(loggingMiddleware.requestId);
+app.use(loggingMiddleware.userContext);
+app.use(loggingMiddleware.healthCheckLogging);
+app.use(loggingMiddleware.requestLogging);
+app.use(loggingMiddleware.securityLogging);
+app.use(loggingMiddleware.performance);
 
 // Apply security middleware
 app.use(securityHeaders);
@@ -67,6 +86,12 @@ app.use((req, res, next) => {
   logConfigStatus();
   
   await registerRoutes(app);
+
+  // Add logging error handler
+  app.use(loggingMiddleware.errorLogging);
+
+  // Add Sentry error handler
+  app.use(sentryErrorHandler());
 
   // Add 404 handler for unmatched routes
   app.use(notFoundHandler);

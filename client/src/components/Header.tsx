@@ -44,7 +44,8 @@ export default function Header() {
           <div className="flex items-center space-x-2">
             <Link href="/">
               <div className="flex items-center space-x-2 cursor-pointer" role="link" aria-label="AI/ML Glossary - Go to homepage">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <title>AI/ML Glossary Logo</title>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 <span className="text-xl font-semibold">AI/ML Glossary</span>
@@ -136,9 +137,11 @@ export default function Header() {
             )}
             
             <button 
-              className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              aria-label={mobileMenuOpen ? "Close menu" : "Open menu"}
+              aria-label={mobileMenuOpen ? "Close navigation menu" : "Open navigation menu"}
+              aria-expanded={mobileMenuOpen}
+              aria-controls="mobile-navigation-menu"
             >
               {mobileMenuOpen ? (
                 <X className="h-6 w-6" />
@@ -158,54 +161,73 @@ export default function Header() {
         
         {/* Mobile menu (hidden by default) */}
         {mobileMenuOpen && (
-          <div className="md:hidden py-4 border-t border-gray-100 dark:border-gray-700">
-            <nav className="flex flex-col space-y-2">
-              <Link href="/">
-                <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                  Home
-                </div>
-              </Link>
-              <Link href="/dashboard">
-                <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                  Dashboard
-                </div>
-              </Link>
-              <Link href="/categories">
-                <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                  Categories
-                </div>
-              </Link>
-              <Link href="/trending">
-                <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                  Trending
-                </div>
-              </Link>
-              <Link href="/favorites">
-                <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                  Favorites
-                </div>
-              </Link>
-              <Link href="/ai-tools">
-                <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-                  AI Tools
-                </div>
-              </Link>
-              <Link href="/lifetime">
-                <div className="px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 cursor-pointer font-medium">
-                  Get Lifetime Access
-                </div>
-              </Link>
-              {!isAuthenticated && (
-                <Button 
-                  variant="default" 
-                  size="sm" 
-                  onClick={handleLogin}
-                  className="mx-3 mt-2"
-                >
-                  <User className="mr-2 h-4 w-4" />
-                  Sign In
-                </Button>
-              )}
+          <div id="mobile-navigation-menu" className="md:hidden py-4 border-t border-gray-100 dark:border-gray-700">
+            <nav aria-label="Mobile navigation menu" role="navigation">
+              <ul className="flex flex-col space-y-2">
+                <li>
+                  <Link href="/">
+                    <a className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
+                      Home
+                    </a>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/dashboard">
+                    <a className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
+                      Dashboard
+                    </a>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/categories">
+                    <a className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
+                      Categories
+                    </a>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/trending">
+                    <a className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
+                      Trending
+                    </a>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/favorites">
+                    <a className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
+                      Favorites
+                    </a>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/ai-tools">
+                    <a className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary">
+                      AI Tools
+                    </a>
+                  </Link>
+                </li>
+                <li>
+                  <Link href="/lifetime">
+                    <a className="block px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+                      Get Lifetime Access
+                    </a>
+                  </Link>
+                </li>
+                {!isAuthenticated && (
+                  <li>
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      onClick={handleLogin}
+                      className="mx-3 mt-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      aria-label="Sign in to your account"
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      Sign In
+                    </Button>
+                  </li>
+                )}
+              </ul>
             </nav>
           </div>
         )}

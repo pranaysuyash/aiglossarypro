@@ -17,13 +17,19 @@ interface TermCardProps {
   isFavorite?: boolean;
   variant?: 'default' | 'compact' | 'minimal';
   showActions?: boolean;
+  compact?: boolean;
+  onTermClick?: (termId: string) => void;
+  onFavoriteToggle?: (termId: string, isFavorite: boolean) => void;
 }
 
 const TermCard = memo(function TermCard({ 
   term, 
   isFavorite = false, 
   variant = 'default',
-  showActions = true 
+  showActions = true,
+  compact = false,
+  onTermClick,
+  onFavoriteToggle
 }: TermCardProps) {
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [favorite, setFavorite] = useState(isFavorite);

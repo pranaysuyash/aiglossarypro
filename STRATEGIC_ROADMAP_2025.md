@@ -15,10 +15,17 @@ AIGlossaryPro is positioned to become the definitive interactive AI/ML reference
 - **Rate Limiting**: 50 terms/day for new users (7-day grace period)
 - **Testing**: Playwright visual tests + Storybook component library
 
-### Critical Issues (January 2025)
+### 🚨 CRITICAL BUSINESS ISSUE (January 2025)
+- **❌ CONTENT DELIVERY GAP**: Only serving 5% of available content value
+- **❌ DATA PIPELINE BROKEN**: 295 Excel columns → 10 API fields (285 columns lost)
+- **❌ REVENUE AT RISK**: Users pay $129 for comprehensive content, receive basic glossary
+- **❌ COMPETITIVE DISADVANTAGE**: Missing unique 42-section educational platform differentiator
+
+### Additional Critical Issues (January 2025)
 - ❌ 561 TypeScript compilation errors blocking deployment
 - ✅ Search functionality restored (fixed enhancedSearchService)
 - ✅ Storybook duplicate stories resolved
+- ⚠️ Section routes exist but not registered in main router
 - ⚠️ No revenue tracking or analytics dashboard
 - ⚠️ Limited marketing and user acquisition strategy
 

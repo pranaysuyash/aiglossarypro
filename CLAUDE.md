@@ -2,6 +2,36 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🚨 CRITICAL ISSUE: Content Delivery Gap
+
+**STATUS**: Business-Critical Issue Identified (January 2025)
+
+### Problem
+The platform is only serving ~5% of available content value. Excel files contain 295 columns representing 42 comprehensive sections per term, but the API only returns basic term information.
+
+### Impact
+- Users pay $129 for "comprehensive AI/ML reference" but receive basic glossary
+- 95% of rich content (code examples, tutorials, research papers) is missing
+- High refund risk and competitive disadvantage
+
+### Immediate Fix Required
+```bash
+# 1. Register missing section routes (5 minutes)
+# In server/routes/index.ts, add:
+import { registerSectionRoutes } from "./sections";
+registerSectionRoutes(app);
+
+# 2. Test section API
+curl "http://localhost:3001/api/terms/{termId}/sections"
+
+# 3. Check database for existing section data
+npm run db:studio
+# Query: SELECT COUNT(*) FROM term_sections;
+```
+
+### Full Analysis
+See `EXCEL_CONTENT_ANALYSIS_REPORT.md` for complete analysis and recovery plan.
+
 ## Build and Development Commands
 
 ### Development

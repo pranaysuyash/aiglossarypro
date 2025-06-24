@@ -14,9 +14,10 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **API Endpoints**: ✅ Section routes serving rich structured content
 
 ### 🔄 CURRENT PRIORITY: Production Dataset Processing
-- **Challenge**: Memory constraints for 286MB aiml.xlsx (10,372 terms)
-- **Status**: Testing 8GB Node.js allocation for complete dataset
-- **Processing Time**: 2-6 hours estimated for full import
+- **Challenge**: 286MB Excel file exceeds JavaScript library limits
+- **Solution**: ✅ CSV streaming processor implemented and ready
+- **Required**: Convert aiml.xlsx to CSV format (one-time manual step)
+- **Processing Time**: 1-2 hours for 10,372 terms via CSV streaming
 - **Content Impact**: 5% → 100% coverage with 42-section architecture
 
 ### Active Fixes This Session
@@ -60,6 +61,39 @@ npm run db:push          # Push database schema changes to PostgreSQL
 npm run db:studio        # Open Drizzle Studio for database management
 npm run db:indexes       # Apply performance indexes for optimized queries
 npm run import:optimized # Import large datasets with optimized batch processing
+```
+
+### Production Dataset Processing
+
+#### Processing Large Excel Files (>100MB)
+Due to JavaScript Excel library limitations, files larger than ~100MB require CSV conversion:
+
+```bash
+# Step 1: Convert Excel to CSV (one-time manual process)
+# Option A: Using command line tools
+brew install gnumeric               # Mac
+ssconvert data/aiml.xlsx data/aiml.csv
+
+# Option B: Using Excel/LibreOffice
+# Open aiml.xlsx → Save As → CSV (UTF-8)
+
+# Step 2: Process CSV with streaming processor
+npx tsx csv_streaming_processor.ts  # Handles unlimited file size
+
+# Features:
+# - Line-by-line streaming (no memory limits)
+# - 42-section extraction maintained
+# - Batch processing (25 terms at a time)
+# - Progress monitoring and error recovery
+# - AI parse result caching
+```
+
+#### Small Excel Files (<100MB)
+```bash
+# Direct processing with AdvancedExcelParser
+npx tsx test_advanced_parser.ts     # For testing with row1.xlsx
+npx tsx process_production_dataset.ts # For production (if file <100MB)
+```
 
 ### Advanced Features and API Endpoints
 

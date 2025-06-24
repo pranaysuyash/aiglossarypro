@@ -57,14 +57,14 @@ export async function getDashboardMetrics(): Promise<DashboardMetrics> {
     const systemHealth = 'healthy' // Will implement proper health checks
 
     return {
-      totalUsers: Number(totalUsersResult[0]?.count || 0),
-      activeUsers: Number(activeUsersResult[0]?.count || 0),
-      totalTerms: Number(totalTermsResult[0]?.count || 0),
-      totalViews: Number(totalViewsResult[0]?.count || 0),
+      totalUsers: Number((totalUsersResult.rows[0] as any)?.count || 0),
+      activeUsers: Number((activeUsersResult.rows[0] as any)?.count || 0),
+      totalTerms: Number((totalTermsResult.rows[0] as any)?.count || 0),
+      totalViews: Number((totalViewsResult.rows[0] as any)?.count || 0),
       totalSearches,
-      totalFavorites: Number(totalFavoritesResult[0]?.count || 0),
+      totalFavorites: Number((totalFavoritesResult.rows[0] as any)?.count || 0),
       systemHealth,
-      recentActivity: recentActivityResult.map((row: any) => ({
+      recentActivity: (recentActivityResult.rows as any[]).map((row: any) => ({
         action: row.action,
         details: row.details,
         timestamp: row.timestamp

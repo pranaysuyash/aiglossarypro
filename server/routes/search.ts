@@ -5,7 +5,7 @@ import { db } from "../db";
 import { enhancedTerms as terms, categories } from "../../shared/enhancedSchema";
 import { eq, ilike, or, sql } from "drizzle-orm";
 import { searchQuerySchema, paginationSchema } from "../middleware/security";
-import { enhancedSearchService } from "../enhancedSearchService";
+import { enhancedSearch, getSearchSuggestions } from "../enhancedSearchService";
 
 /**
  * Search and discovery routes
@@ -55,7 +55,7 @@ export function registerSearchRoutes(app: Express): void {
         fuzzy: false // Use full-text search by default
       };
       
-      const searchResponse = await enhancedSearchService.search(searchOptions);
+      const searchResponse = await enhancedSearch(searchOptions);
       
       // Transform to legacy SearchResult format for compatibility
       const searchResult: SearchResult = {
@@ -96,10 +96,14 @@ export function registerSearchRoutes(app: Express): void {
       }
       
       // Use enhanced search service for better suggestions
-      const termSuggestions = await enhancedSearchService.getSuggestions(query, Math.min(limit - 3, 15));
+      const termSuggestions = await getSearchSuggestions(query, Math.min(limit - 3, 15));
       
-      // Also get category suggestions for broader context
-      const categorySuggestions = await enhancedSearchService.searchCategories(query, 3);
+      // Get category suggestions (simple implementation)
+      const categorySuggestions = await db
+        .select({ name: categories.name })
+        .from(categories)
+        .where(ilike(categories.name, `%${query}%`))
+        .limit(3);
       
       // Combine suggestions in a more structured format
       const allSuggestions = [
@@ -109,8 +113,8 @@ export function registerSearchRoutes(app: Express): void {
           type: 'term',
           category: null 
         })),
-        ...categorySuggestions.map(cat => ({ 
-          id: `category-${cat.id}`, 
+        ...categorySuggestions.map((cat: any) => ({ 
+          id: `category-${cat.name}`, 
           name: cat.name, 
           type: 'category',
           category: null 
@@ -159,7 +163,7 @@ export function registerSearchRoutes(app: Express): void {
         threshold: parseFloat(threshold as string)
       };
       
-      const searchResponse = await enhancedSearchService.search(searchOptions);
+      const searchResponse = await enhancedSearch(searchOptions);
       
       res.json({
         success: true,

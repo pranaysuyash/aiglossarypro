@@ -5,7 +5,7 @@ import { eq, desc, sql, and, gte, or, like } from "drizzle-orm";
 import { requireAdmin } from "../../middleware/adminAuth";
 import { ZodError } from "zod";
 import type { ApiResponse } from "../../../shared/types";
-import { logger } from "../../middleware/errorHandler";
+import { errorLogger } from "../../middleware/errorHandler";
 
 const adminContentRouter = Router();
 
@@ -89,7 +89,7 @@ adminContentRouter.get("/dashboard", async (req: Request, res: Response<ApiRespo
       }
     });
   } catch (error) {
-    logger.error('Admin dashboard error:', error);
+    errorLogger.error('Admin dashboard error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch dashboard data'
@@ -176,7 +176,7 @@ adminContentRouter.get("/terms", async (req: Request, res: Response<ApiResponse<
       }
     });
   } catch (error) {
-    logger.error('Content list error:', error);
+    errorLogger.error('Content list error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch terms'
@@ -223,7 +223,7 @@ adminContentRouter.post("/terms/:id?", async (req: Request, res: Response<ApiRes
       });
     }
   } catch (error) {
-    logger.error('Term save error:', error);
+    errorLogger.error('Term save error:', error);
     res.status(500).json({
       success: false,
       error: error instanceof ZodError ? error.errors : 'Failed to save term'
@@ -243,7 +243,7 @@ adminContentRouter.delete("/terms/:id", async (req: Request, res: Response<ApiRe
       data: { message: 'Term deleted successfully' }
     });
   } catch (error) {
-    logger.error('Term delete error:', error);
+    errorLogger.error('Term delete error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to delete term'
@@ -278,7 +278,7 @@ adminContentRouter.post("/terms/bulk", async (req: Request, res: Response<ApiRes
       data: { message: `Bulk ${action} completed successfully` }
     });
   } catch (error) {
-    logger.error('Bulk operation error:', error);
+    errorLogger.error('Bulk operation error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to perform bulk operation'
@@ -323,7 +323,7 @@ adminContentRouter.get("/feedback", async (req: Request, res: Response<ApiRespon
       }
     });
   } catch (error) {
-    logger.error('Feedback list error:', error);
+    errorLogger.error('Feedback list error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch feedback'
@@ -351,7 +351,7 @@ adminContentRouter.patch("/feedback/:id", async (req: Request, res: Response<Api
       data: updatedFeedback[0]
     });
   } catch (error) {
-    logger.error('Feedback update error:', error);
+    errorLogger.error('Feedback update error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to update feedback'
@@ -380,7 +380,7 @@ adminContentRouter.get("/categories", async (req: Request, res: Response<ApiResp
       data: categoryList
     });
   } catch (error) {
-    logger.error('Category list error:', error);
+    errorLogger.error('Category list error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch categories'
@@ -420,7 +420,7 @@ adminContentRouter.post("/categories/:id?", async (req: Request, res: Response<A
       });
     }
   } catch (error) {
-    logger.error('Category save error:', error);
+    errorLogger.error('Category save error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to save category'
@@ -453,7 +453,7 @@ adminContentRouter.delete("/categories/:id", async (req: Request, res: Response<
       data: { message: 'Category deleted successfully' }
     });
   } catch (error) {
-    logger.error('Category delete error:', error);
+    errorLogger.error('Category delete error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to delete category'

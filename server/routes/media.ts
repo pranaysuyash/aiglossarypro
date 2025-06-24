@@ -10,7 +10,7 @@ import fs from 'fs/promises';
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
 import { requireAdmin } from '../middleware/adminAuth';
-import { logger } from '../middleware/errorHandler';
+import { errorLogger } from '../middleware/errorHandler';
 import type { ApiResponse } from '../../shared/types';
 
 const mediaRouter = Router();
@@ -143,7 +143,7 @@ mediaRouter.post('/upload', requireAdmin, upload.single('file'), async (req: Req
       data: mediaFile[0]
     });
   } catch (error) {
-    logger.error('Media upload error:', error);
+    errorLogger.error('Media upload error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to upload media file'
@@ -199,7 +199,7 @@ mediaRouter.get('/', async (req: Request, res: Response<ApiResponse<any>>) => {
       }
     });
   } catch (error) {
-    logger.error('Media list error:', error);
+    errorLogger.error('Media list error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch media files'
@@ -225,7 +225,7 @@ mediaRouter.patch('/:id', requireAdmin, async (req: Request, res: Response<ApiRe
       data: updatedFile[0]
     });
   } catch (error) {
-    logger.error('Media update error:', error);
+    errorLogger.error('Media update error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to update media file'
@@ -248,7 +248,7 @@ mediaRouter.delete('/:id', requireAdmin, async (req: Request, res: Response<ApiR
       try {
         await fs.unlink((fileInfo[0] as any).upload_path);
       } catch (error) {
-        logger.warn('Could not delete physical file:', error);
+        errorLogger.warn('Could not delete physical file:', error);
       }
     }
 
@@ -262,7 +262,7 @@ mediaRouter.delete('/:id', requireAdmin, async (req: Request, res: Response<ApiR
       data: { message: 'Media file deleted successfully' }
     });
   } catch (error) {
-    logger.error('Media delete error:', error);
+    errorLogger.error('Media delete error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to delete media file'
@@ -303,7 +303,7 @@ mediaRouter.get('/serve/:filename', async (req: Request, res: Response) => {
     res.setHeader('Content-Disposition', `inline; filename="${file.original_name}"`);
     res.sendFile(filePath);
   } catch (error) {
-    logger.error('Media serve error:', error);
+    errorLogger.error('Media serve error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to serve media file'

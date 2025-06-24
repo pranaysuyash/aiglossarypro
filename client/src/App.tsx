@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
+import Lifetime from "@/pages/Lifetime";
 
 import EnhancedTermDetail from "@/pages/EnhancedTermDetail";
 import Terms from "@/pages/Terms";
@@ -58,6 +59,7 @@ function Router() {
       <main id="main-content" className="flex-grow" tabIndex={-1}>
         <Switch>
           <Route path="/" component={Home} />
+          <Route path="/lifetime" component={Lifetime} />
           <Route path="/term/:id" component={SmartTermDetail} />
           <Route path="/terms" component={Terms} />
           <Route path="/categories" component={Categories} />

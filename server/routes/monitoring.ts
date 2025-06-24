@@ -292,11 +292,7 @@ export function registerMonitoringRoutes(app: Express): void {
       });
     }
   });
-}
 
-/**
- * Helper function to format uptime in readable format
- */
   /**
    * Get comprehensive analytics dashboard
    * GET /api/monitoring/analytics/dashboard?timeframe=week
@@ -378,7 +374,11 @@ export function registerMonitoringRoutes(app: Express): void {
       });
     }
   });
+}
 
+/**
+ * Helper function to format uptime in readable format
+ */
 function formatUptime(seconds: number): string {
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);

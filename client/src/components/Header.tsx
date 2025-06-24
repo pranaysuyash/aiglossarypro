@@ -57,6 +57,17 @@ export default function Header() {
           </div>
 
           <div className="flex items-center space-x-4">
+            {/* Lifetime Access Button */}
+            <Link href="/lifetime">
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="hidden sm:flex bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-4 py-2"
+              >
+                Get Lifetime Access
+              </Button>
+            </Link>
+            
             <button 
               className="md:hidden bg-gray-100 p-2 rounded-lg dark:bg-gray-700" 
               onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
@@ -177,6 +188,11 @@ export default function Header() {
               <Link href="/ai-tools">
                 <div className="px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
                   AI Tools
+                </div>
+              </Link>
+              <Link href="/lifetime">
+                <div className="px-3 py-2 rounded-md bg-blue-600 text-white hover:bg-blue-700 cursor-pointer font-medium">
+                  Get Lifetime Access
                 </div>
               </Link>
               {!isAuthenticated && (

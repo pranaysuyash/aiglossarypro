@@ -5,6 +5,7 @@ import { mockIsAuthenticated } from "../middleware/dev/mockAuth";
 import { features } from "../config";
 import type { ITerm, ApiResponse, PaginatedResponse } from "../../shared/types";
 import { validateInput, termIdSchema, paginationSchema } from "../middleware/security";
+import { rateLimitMiddleware, initializeRateLimiting } from "../middleware/rateLimiting";
 
 // Define authenticated request type properly
 interface AuthenticatedRequest extends Request {
@@ -21,6 +22,9 @@ interface AuthenticatedRequest extends Request {
  * Term management routes with proper pagination and search
  */
 export function registerTermRoutes(app: Express): void {
+  // Initialize rate limiting
+  initializeRateLimiting();
+  
   // Choose authentication middleware based on environment
   const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
   
@@ -270,7 +274,7 @@ export function registerTermRoutes(app: Express): void {
   });
 
   // Get single term by ID (must be last to avoid conflicts with named routes)
-  app.get('/api/terms/:id', (req, res, next) => {
+  app.get('/api/terms/:id', authMiddleware, rateLimitMiddleware, (req, res, next) => {
     try {
       termIdSchema.parse(req.params.id);
       next();

@@ -7,7 +7,7 @@ import { Router, Request, Response } from 'express';
 import { db } from '../db';
 import { terms, categories } from '../../shared/schema';
 import { eq, sql } from 'drizzle-orm';
-import { logger } from '../middleware/errorHandler';
+import { errorLogger } from '../middleware/errorHandler';
 import type { ApiResponse } from '../../shared/types';
 
 const seoRouter = Router();
@@ -96,7 +96,7 @@ seoRouter.get('/sitemap.xml', async (req: Request, res: Response) => {
     res.setHeader('Content-Type', 'application/xml');
     res.send(sitemap);
   } catch (error) {
-    logger.error('Sitemap generation error:', error);
+    errorLogger.error('Sitemap generation error:', error);
     res.status(500).send('<?xml version="1.0" encoding="UTF-8"?><error>Sitemap generation failed</error>');
   }
 });
@@ -198,7 +198,7 @@ seoRouter.get('/meta/term/:id', async (req: Request, res: Response<ApiResponse<a
       data: seoData
     });
   } catch (error) {
-    logger.error('SEO meta generation error:', error);
+    errorLogger.error('SEO meta generation error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to generate SEO metadata'
@@ -320,7 +320,7 @@ seoRouter.get('/structured-data/term/:id', async (req: Request, res: Response<Ap
       }
     });
   } catch (error) {
-    logger.error('Structured data generation error:', error);
+    errorLogger.error('Structured data generation error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to generate structured data'
@@ -381,7 +381,7 @@ seoRouter.get('/analytics', async (req: Request, res: Response<ApiResponse<any>>
       data: analytics
     });
   } catch (error) {
-    logger.error('SEO analytics error:', error);
+    errorLogger.error('SEO analytics error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to generate SEO analytics'

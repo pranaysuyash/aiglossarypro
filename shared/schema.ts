@@ -54,7 +54,7 @@ export const insertCategorySchema = createInsertSchema(categories).omit({
   id: true,
   createdAt: true,
   updatedAt: true 
-});
+} as const);
 
 export type InsertCategory = z.infer<typeof insertCategorySchema>;
 export type Category = typeof categories.$inferSelect;
@@ -76,7 +76,7 @@ export const insertSubcategorySchema = createInsertSchema(subcategories).omit({
   id: true, 
   createdAt: true,
   updatedAt: true 
-});
+} as const);
 
 export type InsertSubcategory = z.infer<typeof insertSubcategorySchema>;
 export type Subcategory = typeof subcategories.$inferSelect;
@@ -112,7 +112,7 @@ export const insertTermSchema = createInsertSchema(terms).omit({
   viewCount: true,
   createdAt: true,
   updatedAt: true 
-});
+} as const);
 
 export type InsertTerm = z.infer<typeof insertTermSchema>;
 export type Term = typeof terms.$inferSelect;

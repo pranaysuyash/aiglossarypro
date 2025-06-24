@@ -313,7 +313,7 @@ export const insertTermSectionSchema = createInsertSchema(termSections).omit({
   id: true,
   createdAt: true,
   updatedAt: true,
-});
+} as const);
 
 export const insertEnhancedTermSchema = createInsertSchema(enhancedTerms).omit({
   id: true,
@@ -321,17 +321,17 @@ export const insertEnhancedTermSchema = createInsertSchema(enhancedTerms).omit({
   lastViewed: true,
   createdAt: true,
   updatedAt: true,
-});
+} as const);
 
 export const insertInteractiveElementSchema = createInsertSchema(interactiveElements).omit({
   id: true,
   createdAt: true,
-});
+} as const);
 
 export const insertTermRelationshipSchema = createInsertSchema(termRelationships).omit({
   id: true,
   createdAt: true,
-});
+} as const);
 
 // Types
 export type TermSection = typeof termSections.$inferSelect;

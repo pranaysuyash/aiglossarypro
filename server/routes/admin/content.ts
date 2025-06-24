@@ -264,10 +264,12 @@ adminContentRouter.post("/terms/bulk", async (req: Request, res: Response<ApiRes
         break;
       
       case 'updateCategory':
-        await db
-          .update(terms)
-          .set({ categoryId: data.categoryId, updatedAt: new Date() })
-          .where(sql`${terms.id} = ANY(${termIds})`);
+        // Use raw SQL for bulk category update to avoid type issues
+        await db.execute(sql`
+          UPDATE terms 
+          SET category_id = ${data.categoryId}, updated_at = NOW()
+          WHERE id = ANY(${termIds})
+        `);
         break;
       
       case 'publish':

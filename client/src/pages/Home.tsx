@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import Sidebar from "@/components/Sidebar";
 import TermCard from "@/components/TermCard";
@@ -36,20 +36,13 @@ export default function Home() {
     enabled: isAuthenticated,
   });
   
-  // Update favorites map when favorites data changes
-  const [currentFavoritesMap, setCurrentFavoritesMap] = useState<Record<string, boolean>>({});
-  
-  // Update the favorites map when favorites data changes
-  useEffect(() => {
-    if (favorites && Array.isArray(favorites)) {
-      const newMap = (favorites as ITerm[]).reduce((acc: Record<string, boolean>, term: ITerm) => {
-        acc[term.id] = true;
-        return acc;
-      }, {});
-      setCurrentFavoritesMap(newMap);
-    } else {
-      setCurrentFavoritesMap({});
-    }
+  // Optimize favorites map computation with useMemo
+  const currentFavoritesMap = useMemo(() => {
+    if (!favorites || !Array.isArray(favorites)) return {};
+    return (favorites as ITerm[]).reduce((acc: Record<string, boolean>, term: ITerm) => {
+      acc[term.id] = true;
+      return acc;
+    }, {});
   }, [favorites]);
 
   return (

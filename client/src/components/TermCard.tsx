@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useCallback, memo } from "react";
 import { Link } from "wouter";
 import { Heart, Copy, Share2 } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -19,7 +19,7 @@ interface TermCardProps {
   showActions?: boolean;
 }
 
-export default function TermCard({ 
+const TermCard = memo(function TermCard({ 
   term, 
   isFavorite = false, 
   variant = 'default',
@@ -31,7 +31,7 @@ export default function TermCard({
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
 
-  const handleToggleFavorite = async () => {
+  const handleToggleFavorite = useCallback(async () => {
     if (!isAuthenticated) {
       toast({
         title: "Authentication required",
@@ -66,9 +66,9 @@ export default function TermCard({
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [isAuthenticated, favorite, term.id, term.name, toast]);
 
-  const handleCopyLink = async () => {
+  const handleCopyLink = useCallback(async () => {
     const url = `${window.location.origin}/term/${term.id}`;
     try {
       await navigator.clipboard.writeText(url);
@@ -83,17 +83,17 @@ export default function TermCard({
         variant: "destructive",
       });
     }
-  };
+  }, [term.id, toast]);
 
   // Track term view
-  const handleTermClick = async () => {
+  const handleTermClick = useCallback(async () => {
     try {
       await apiRequest("POST", `/api/terms/${term.id}/view`, null);
     } catch (error) {
       // Silent fail - not critical for UX
       console.error("Failed to log term view", error);
     }
-  };
+  }, [term.id]);
 
   // Minimal variant - just title and link
   if (variant === 'minimal') {
@@ -282,4 +282,6 @@ export default function TermCard({
       )}
     </Card>
   );
-}
+});
+
+export default TermCard;

@@ -714,7 +714,7 @@ class EnhancedStorage {
     // Recursively get prerequisites of prerequisites
     for (const prereq of prerequisites) {
       if (prereq.prerequisite) {
-        prereq.prerequisite.prerequisites = await this.getPrerequisiteChain(prereq.prerequisite.id, visited);
+        (prereq.prerequisite as any).prerequisites = await this.getPrerequisiteChain(prereq.prerequisite.id, visited);
       }
     }
     

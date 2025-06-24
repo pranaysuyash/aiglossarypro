@@ -1,7 +1,7 @@
 import ExcelJS from 'exceljs';
 import { db } from './db';
 import { terms, categories, subcategories, termSubcategories } from '../shared/enhancedSchema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 interface ExcelTerm {
   name: string;
@@ -198,8 +198,10 @@ export async function importToDatabase(parsedData: ParsedData): Promise<{
       try {
         // Check if the subcategory already exists
         const existingSubcat = await db.select().from(subcategories)
-          .where(eq(subcategories.name, subcatName))
-          .where(eq(subcategories.categoryId, categoryId));
+          .where(and(
+            eq(subcategories.name, subcatName),
+            eq(subcategories.categoryId, categoryId)
+          ));
         
         if (existingSubcat.length > 0) {
           subcategoryMap.set(`${categoryName}:${subcatName}`, existingSubcat[0].id);

@@ -133,7 +133,7 @@ export async function importFromS3() {
         console.log(`Processing worksheet: ${worksheet.name}`);
         
         // For storing terms
-        const terms = [];
+        const termsList: Array<{ name: string; definition: string; category: string }> = [];
         
         // Track the current category context
         let currentCategory = '';
@@ -144,9 +144,9 @@ export async function importFromS3() {
           if (!cellValues || typeof cellValues === 'string') return;
           
           // Convert values to string array
-          const rowData = Array.from(cellValues).map(val => 
-            val !== null && val !== undefined ? String(val).trim() : ''
-          ).filter(Boolean);
+          const rowData = Array.isArray(cellValues) 
+            ? cellValues.map(val => val !== null && val !== undefined ? String(val).trim() : '').filter(Boolean)
+            : Object.values(cellValues).map(val => val !== null && val !== undefined ? String(val).trim() : '').filter(Boolean);
           
           if (rowData.length === 0) return;
           
@@ -185,7 +185,7 @@ export async function importFromS3() {
             const definition = rowData[1];
             
             if (termName && definition && !termName.startsWith('#')) {
-              terms.push({
+              termsList.push({
                 name: termName,
                 definition: definition,
                 category: currentCategory
@@ -195,10 +195,10 @@ export async function importFromS3() {
           }
         });
         
-        console.log(`Extracted ${terms.length} terms from worksheet ${worksheet.name}`);
+        console.log(`Extracted ${termsList.length} terms from worksheet ${worksheet.name}`);
         
         // Save the terms to database
-        for (const term of terms) {
+        for (const term of termsList) {
           if (!term.category) continue;
           
           // Get the category ID

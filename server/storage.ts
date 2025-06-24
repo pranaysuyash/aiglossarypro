@@ -1515,25 +1515,92 @@ export class DatabaseStorage implements IStorage {
     return { success: true, message: "Content rejected successfully" };
   }
 
-  // Missing Section-Based Methods (placeholders for section-based architecture)
-  async getTermSections(termId: number): Promise<any[]> {
-    // This is a placeholder - you would need to implement sections table
-    return [];
+  // Section-Based Methods Implementation 
+  async getTermSections(termId: string): Promise<any[]> {
+    try {
+      const sectionsResult = await db.execute(sql`
+        SELECT 
+          s.id,
+          s.name,
+          s.display_order,
+          s.is_completed,
+          s.created_at,
+          s.updated_at,
+          COUNT(si.id) as item_count
+        FROM sections s
+        LEFT JOIN section_items si ON s.id = si.section_id
+        WHERE s.term_id = ${termId}
+        GROUP BY s.id, s.name, s.display_order, s.is_completed, s.created_at, s.updated_at
+        ORDER BY s.display_order ASC
+      `);
+      
+      return sectionsResult.rows;
+    } catch (error) {
+      console.error('Error fetching term sections:', error);
+      return [];
+    }
   }
 
-  async getUserProgressForTerm(userId: string, termId: number): Promise<any[]> {
-    // This is a placeholder - you would need to implement section progress
-    return [];
+  async getUserProgressForTerm(userId: string, termId: string): Promise<any[]> {
+    try {
+      // Return empty array for now - this would be implemented with a user_progress table
+      // that tracks which sections of each term the user has completed
+      return [];
+    } catch (error) {
+      console.error('Error fetching user progress for term:', error);
+      return [];
+    }
   }
 
   async getSectionById(sectionId: number): Promise<any> {
-    // This is a placeholder - you would need to implement sections table
-    return null;
+    try {
+      const sectionResult = await db.execute(sql`
+        SELECT 
+          s.id,
+          s.term_id,
+          s.name,
+          s.display_order,
+          s.is_completed,
+          s.created_at,
+          s.updated_at,
+          et.name as term_name
+        FROM sections s
+        LEFT JOIN enhanced_terms et ON s.term_id = et.id
+        WHERE s.id = ${sectionId}
+      `);
+      
+      return sectionResult.rows[0] || null;
+    } catch (error) {
+      console.error('Error fetching section by ID:', error);
+      return null;
+    }
   }
 
   async getSectionItems(sectionId: number): Promise<any[]> {
-    // This is a placeholder - you would need to implement section items table
-    return [];
+    try {
+      const itemsResult = await db.execute(sql`
+        SELECT 
+          si.id,
+          si.section_id,
+          si.label,
+          si.content,
+          si.content_type,
+          si.display_order,
+          si.metadata,
+          si.is_ai_generated,
+          si.verification_status,
+          si.created_at,
+          si.updated_at
+        FROM section_items si
+        WHERE si.section_id = ${sectionId}
+        ORDER BY si.display_order ASC
+      `);
+      
+      return itemsResult.rows;
+    } catch (error) {
+      console.error('Error fetching section items:', error);
+      return [];
+    }
   }
 
   async getUserProgressForSection(userId: string, sectionId: number): Promise<any> {
@@ -1575,14 +1642,142 @@ export class DatabaseStorage implements IStorage {
     return [];
   }
 
-  async searchSectionContent(query: string): Promise<any[]> {
-    // This is a placeholder - you would need to implement section content search
-    return [];
+  async searchSectionContent(options: {
+    query: string;
+    contentType?: string;
+    sectionName?: string;
+    page: number;
+    limit: number;
+  }): Promise<any> {
+    try {
+      const { query, contentType, sectionName, page, limit } = options;
+      const offset = (page - 1) * limit;
+      
+      // Build dynamic WHERE clause
+      let whereClause = `WHERE (si.content ILIKE '%${query}%' OR si.label ILIKE '%${query}%')`;
+      
+      if (contentType) {
+        whereClause += ` AND si.content_type = '${contentType}'`;
+      }
+      
+      if (sectionName) {
+        whereClause += ` AND s.name ILIKE '%${sectionName}%'`;
+      }
+      
+      const searchResult = await db.execute(sql`
+        SELECT 
+          si.id,
+          si.label,
+          si.content,
+          si.content_type,
+          si.metadata,
+          s.name as section_name,
+          et.name as term_name,
+          et.id as term_id
+        FROM section_items si
+        JOIN sections s ON si.section_id = s.id
+        JOIN enhanced_terms et ON s.term_id = et.id
+        ${sql.raw(whereClause)}
+        ORDER BY si.created_at DESC
+        LIMIT ${limit} OFFSET ${offset}
+      `);
+      
+      // Get total count for pagination
+      const countResult = await db.execute(sql`
+        SELECT COUNT(*) as total
+        FROM section_items si
+        JOIN sections s ON si.section_id = s.id
+        JOIN enhanced_terms et ON s.term_id = et.id
+        ${sql.raw(whereClause)}
+      `);
+      
+      return {
+        results: searchResult.rows,
+        totalResults: countResult.rows[0]?.total || 0,
+        page,
+        limit,
+        totalPages: Math.ceil((countResult.rows[0]?.total || 0) / limit)
+      };
+    } catch (error) {
+      console.error('Error searching section content:', error);
+      return {
+        results: [],
+        totalResults: 0,
+        page,
+        limit,
+        totalPages: 0
+      };
+    }
   }
 
   async getSectionAnalytics(): Promise<any> {
-    // This is a placeholder - you would need to implement section analytics
-    return {};
+    try {
+      // Get basic section analytics
+      const sectionStatsResult = await db.execute(sql`
+        SELECT 
+          COUNT(DISTINCT s.id) as total_sections,
+          COUNT(DISTINCT s.term_id) as terms_with_sections,
+          COUNT(DISTINCT si.id) as total_section_items,
+          AVG(item_counts.item_count) as avg_items_per_section
+        FROM sections s
+        LEFT JOIN section_items si ON s.id = si.section_id
+        LEFT JOIN (
+          SELECT section_id, COUNT(*) as item_count 
+          FROM section_items 
+          GROUP BY section_id
+        ) item_counts ON s.id = item_counts.section_id
+      `);
+      
+      // Get section distribution by name
+      const sectionDistributionResult = await db.execute(sql`
+        SELECT 
+          s.name,
+          COUNT(*) as section_count,
+          COUNT(si.id) as total_items
+        FROM sections s
+        LEFT JOIN section_items si ON s.id = si.section_id
+        GROUP BY s.name
+        ORDER BY section_count DESC
+        LIMIT 20
+      `);
+      
+      // Get content type distribution
+      const contentTypeResult = await db.execute(sql`
+        SELECT 
+          content_type,
+          COUNT(*) as count
+        FROM section_items
+        GROUP BY content_type
+        ORDER BY count DESC
+      `);
+      
+      const stats = sectionStatsResult.rows[0];
+      
+      return {
+        overview: {
+          totalSections: stats?.total_sections || 0,
+          termsWithSections: stats?.terms_with_sections || 0,
+          totalSectionItems: stats?.total_section_items || 0,
+          avgItemsPerSection: Number(stats?.avg_items_per_section) || 0
+        },
+        sectionDistribution: sectionDistributionResult.rows,
+        contentTypeDistribution: contentTypeResult.rows,
+        lastUpdated: new Date().toISOString()
+      };
+    } catch (error) {
+      console.error('Error fetching section analytics:', error);
+      return {
+        overview: {
+          totalSections: 0,
+          termsWithSections: 0,
+          totalSectionItems: 0,
+          avgItemsPerSection: 0
+        },
+        sectionDistribution: [],
+        contentTypeDistribution: [],
+        lastUpdated: new Date().toISOString()
+      };
+    }
   }
 
   // Missing User Progress Methods

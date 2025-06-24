@@ -9,6 +9,7 @@ import { performanceMiddleware } from "../middleware/performanceMonitor";
 import { registerAuthRoutes } from "./auth";
 import { registerCategoryRoutes } from "./categories";
 import { registerTermRoutes } from "./terms";
+import { registerSectionRoutes } from "./sections";
 import { registerSearchRoutes } from "./search";
 import { registerUserRoutes } from "./user";
 import { registerUserProgressRoutes } from "./user/progress";
@@ -59,6 +60,8 @@ export async function registerRoutes(app: Express): Promise<void> {
   registerAuthRoutes(app);
   registerCategoryRoutes(app);
   registerTermRoutes(app);
+  registerSectionRoutes(app);
+  console.log("✅ Section routes registered - 42-section content API now available");
   registerSearchRoutes(app);
   registerUserRoutes(app);
   registerUserProgressRoutes(app);
@@ -152,6 +155,18 @@ export async function registerRoutes(app: Express): Promise<void> {
           "POST /api/terms/:id/view",
           "GET /api/terms/:id/recommended",
           "GET /api/terms/:id/stats"
+        ],
+        sections: [
+          "GET /api/terms/:termId/sections",
+          "GET /api/sections/:sectionId",
+          "PATCH /api/progress/:termId/:sectionId",
+          "GET /api/progress/summary",
+          "GET /api/content/applications",
+          "GET /api/content/ethics",
+          "GET /api/content/tutorials",
+          "GET /api/content/quizzes",
+          "GET /api/sections/search",
+          "GET /api/sections/analytics"
         ],
         search: [
           "GET /api/search",

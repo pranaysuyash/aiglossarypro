@@ -55,8 +55,8 @@ export async function getTokens(
   
   return {
     accessToken: tokens.access_token!,
-    refreshToken: tokens.refresh_token,
-    expiry_date: tokens.expiry_date
+    refreshToken: tokens.refresh_token || undefined,
+    expiry_date: tokens.expiry_date || undefined
   };
 }
 

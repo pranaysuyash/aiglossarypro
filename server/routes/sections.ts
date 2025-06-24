@@ -7,7 +7,7 @@ import type {
   IProgressUpdate, 
   IProgressSummary,
   IContentGalleryResponse 
-} from '@shared/types';
+} from '../../shared/types';
 
 export function registerSectionRoutes(app: Express): void {
 
@@ -17,8 +17,8 @@ export function registerSectionRoutes(app: Express): void {
       const { termId } = req.params;
       const userId = req.user?.claims?.sub;
 
-      const sections = await storage.getTermSections(parseInt(termId));
-      const userProgress = userId ? await storage.getUserProgressForTerm(userId, parseInt(termId)) : [];
+      const sections = await storage.getTermSections(termId);
+      const userProgress = userId ? await storage.getUserProgressForTerm(userId, termId) : [];
 
       const response: ITermSectionsResponse = {
         term: await storage.getTermById(termId),

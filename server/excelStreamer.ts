@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import { db } from './db';
 import { categories, subcategories, terms, termSubcategories } from '@shared/enhancedSchema';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 interface ProcessResult {
   processed: number;
@@ -279,8 +279,10 @@ async function processBatch(data: {
           // Check if termSubcategory relation exists
           const existingRelation = await db.select()
             .from(termSubcategories)
-            .where(eq(termSubcategories.termId, termId))
-            .where(eq(termSubcategories.subcategoryId, subcategory.id))
+            .where(and(
+              eq(termSubcategories.termId, termId),
+              eq(termSubcategories.subcategoryId, subcategory.id)
+            ))
             .limit(1);
           
           if (existingRelation.length === 0) {

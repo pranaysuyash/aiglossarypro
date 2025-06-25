@@ -147,7 +147,7 @@ export const errorLoggingMiddleware = (err: Error, req: Request, res: Response, 
 export const rateLimitLoggingMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const originalEnd = res.end.bind(res);
   
-  (res as any).end = function(...args: any[]): any {
+  (res as any).end = function(chunk?: any, encoding?: BufferEncoding): any {
     // Check if this was a rate limit response
     if (res.statusCode === 429) {
       log.security.rateLimitExceeded(
@@ -157,7 +157,14 @@ export const rateLimitLoggingMiddleware = (req: Request, res: Response, next: Ne
       );
     }
     
-    return originalEnd.apply(this, args);
+    // Call original end function with proper parameters
+    if (chunk !== undefined && encoding !== undefined) {
+      return originalEnd.call(this, chunk, encoding);
+    } else if (chunk !== undefined) {
+      return originalEnd.call(this, chunk);
+    } else {
+      return originalEnd.call(this);
+    }
   };
   
   next();

@@ -13,6 +13,7 @@
     "db:studio": "drizzle-kit studio",
     "db:indexes": "tsx server/scripts/applyPerformanceIndexes.ts",
     "db:indexes-enhanced": "tsx server/scripts/enhancedPerformanceIndexes.ts",
+    "db:category-hierarchy": "tsx server/migrations/addCategoryHierarchy.ts",
     "import:optimized": "tsx server/scripts/optimizedImport.ts",
     "db:search-indexes": "tsx server/scripts/applySearchIndexes.ts",
     "test": "vitest",

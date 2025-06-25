@@ -347,3 +347,5 @@ export function AIAdminDashboard() {
     </div>
   );
 }
+
+export default AIAdminDashboard;

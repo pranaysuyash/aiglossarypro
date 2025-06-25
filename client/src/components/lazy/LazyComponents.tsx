@@ -48,7 +48,7 @@ const AdminSkeleton = () => (
 
 // Lazy load heavy components
 export const LazyAIFeedbackDashboard = lazy(() => import('@/components/AIFeedbackDashboard'));
-export const LazyAIAdminDashboard = lazy(() => import('@/components/AIAdminDashboard').then(module => ({ default: module.default || module })));
+export const LazyAIAdminDashboard = lazy(() => import('@/components/AIAdminDashboard'));
 export const LazyAdvancedSearch = lazy(() => import('@/components/search/AdvancedSearch'));
 export const LazyVirtualizedTermList = lazy(() => import('@/components/VirtualizedTermList'));
 export const LazyS3FileManagerDashboard = lazy(() => import('@/components/S3FileManagerDashboard'));

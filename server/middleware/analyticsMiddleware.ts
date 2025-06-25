@@ -41,7 +41,7 @@ export function performanceTrackingMiddleware() {
 
     // Override res.end to capture response data
     const originalEnd = res.end.bind(res);
-    (res as any).end = function(this: Response, ...args: any[]): any {
+    (res as any).end = function(this: Response, chunk?: any, encoding?: BufferEncoding): any {
       const responseTime = Date.now() - (req.startTime || Date.now());
       const endpoint = req.route?.path || req.path;
       const method = req.method;
@@ -69,8 +69,14 @@ export function performanceTrackingMiddleware() {
         });
       });
 
-      // Call original end function and return response
-      return originalEnd.apply(this, args);
+      // Call original end function with proper parameters
+      if (chunk !== undefined && encoding !== undefined) {
+        return originalEnd.call(this, chunk, encoding);
+      } else if (chunk !== undefined) {
+        return originalEnd.call(this, chunk);
+      } else {
+        return originalEnd.call(this);
+      }
     };
 
     next();

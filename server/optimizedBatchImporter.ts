@@ -310,9 +310,9 @@ export class OptimizedBatchImporter {
             const inserted = await db.insert(subcategories).values(chunk).returning({ id: subcategories.id, name: subcategories.name });
             
             for (const sub of inserted) {
-              const original = chunk.find(s => s.slug === sub.slug);
+              const original = chunk.find(s => s.name === sub.name);
               if (original) {
-                subcategoryIdMap.set(sub.slug, sub.id);
+                subcategoryIdMap.set(sub.name, sub.id);
               }
             }
             
@@ -342,13 +342,13 @@ export class OptimizedBatchImporter {
       const termSubcategoryRelations: any[] = [];
 
       for (const term of batch) {
-        if (!term.name || !term.slug) {
+        if (!term.name) {
           console.warn(`⚠️  Skipping invalid term:`, term);
           continue;
         }
 
         if (this.options.skipExisting) {
-          const existing = await db.select().from(terms).where(eq(terms.slug, term.slug)).limit(1);
+          const existing = await db.select().from(terms).where(eq(terms.name, term.name)).limit(1);
           if (existing.length > 0) {
             continue;
           }

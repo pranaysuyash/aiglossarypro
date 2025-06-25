@@ -78,9 +78,10 @@ export class OptimizedStorage implements IStorage {
       .onConflictDoUpdate({
         target: users.id,
         set: {
-          name: user.name,
+          firstName: user.firstName,
+          lastName: user.lastName,
           email: user.email,
-          avatarUrl: user.avatarUrl,
+          profileImageUrl: user.profileImageUrl,
           updatedAt: new Date()
         }
       })
@@ -101,7 +102,6 @@ export class OptimizedStorage implements IStorage {
           id: categories.id,
           name: categories.name,
           description: categories.description,
-          parentId: categories.parentId,
           termCount: sql<number>`(
             SELECT COUNT(*) 
             FROM ${terms} 
@@ -123,7 +123,6 @@ export class OptimizedStorage implements IStorage {
           id: categories.id,
           name: categories.name,
           description: categories.description,
-          parentId: categories.parentId,
           termCount: sql<number>`(
             SELECT COUNT(*) 
             FROM ${terms} 

@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Clock, Shield, Star } from "lucide-react";
+import { useCountryPricing } from '@/hooks/useCountryPricing';
 
 export function FinalCTA() {
+  const pricing = useCountryPricing();
+
   return (
     <section className="py-20 px-4 bg-gradient-to-br from-purple-900 via-blue-900 to-purple-900 text-white">
       <div className="max-w-5xl mx-auto text-center">
@@ -43,9 +46,23 @@ export function FinalCTA() {
           <Button 
             size="lg"
             className="bg-white text-purple-900 hover:bg-gray-100 px-12 py-6 text-xl font-bold rounded-xl shadow-2xl transition-all transform hover:scale-105"
-            onClick={() => window.open('https://gumroad.com/l/aimlglossarypro', '_blank')}
+            onClick={() => {
+              // Track analytics
+              if (typeof window !== 'undefined' && (window as any).gtag) {
+                (window as any).gtag('event', 'final_cta_click', {
+                  event_category: 'conversion',
+                  event_label: 'final_cta_button',
+                  value: pricing.localPrice,
+                });
+              }
+              
+              window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
+            }}
           >
-            Get Lifetime Access - $129
+            {pricing.discount > 0 
+              ? `Get Lifetime Access - $${pricing.localPrice} (${pricing.discount}% off)`
+              : `Get Lifetime Access - $${pricing.localPrice}`
+            }
             <ArrowRight className="ml-3 w-6 h-6" />
           </Button>
           
@@ -84,8 +101,13 @@ export function FinalCTA() {
                 <div className="text-gray-400">Coursera (yearly)</div>
               </div>
               <div className="text-center">
-                <div className="text-green-400 font-bold text-lg">$129</div>
+                <div className="text-green-400 font-bold text-lg">${pricing.localPrice}</div>
                 <div className="text-gray-400">Our platform (lifetime)</div>
+                {pricing.discount > 0 && (
+                  <div className="text-green-300 text-xs">
+                    {pricing.discount}% off for {pricing.countryName}
+                  </div>
+                )}
               </div>
             </div>
             <p className="text-gray-300 text-xs mt-4">

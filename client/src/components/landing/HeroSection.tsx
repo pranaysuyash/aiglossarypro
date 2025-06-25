@@ -1,8 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, BookOpen, Code, Users } from "lucide-react";
+import { useCountryPricing } from '@/hooks/useCountryPricing';
 
 export function HeroSection() {
+  const pricing = useCountryPricing();
+
   return (
     <section className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white py-20 px-4">
       <div className="max-w-7xl mx-auto text-center">
@@ -44,9 +47,23 @@ export function HeroSection() {
           <Button 
             size="lg"
             className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-xl transition-all transform hover:scale-105"
-            onClick={() => window.open('https://gumroad.com/l/aimlglossarypro', '_blank')}
+            onClick={() => {
+              // Track analytics
+              if (typeof window !== 'undefined' && (window as any).gtag) {
+                (window as any).gtag('event', 'hero_cta_click', {
+                  event_category: 'conversion',
+                  event_label: 'hero_button',
+                  value: pricing.localPrice,
+                });
+              }
+              
+              window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
+            }}
           >
-            Get Lifetime Access - $129
+            {pricing.discount > 0 
+              ? `Get Lifetime Access - $${pricing.localPrice} (${pricing.discount}% off)`
+              : `Get Lifetime Access - $${pricing.localPrice}`
+            }
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
           

@@ -5,6 +5,7 @@ import { registerAdminUserRoutes } from "./users";
 import { registerAdminMaintenanceRoutes } from "./maintenance";
 import { registerAdminContentRoutes } from "./content";
 import { registerAdminMonitoringRoutes } from "./monitoring";
+import { registerAdminRevenueRoutes } from "./revenue";
 
 /**
  * Main admin route registration function
@@ -20,6 +21,7 @@ export function registerAdminRoutes(app: Express): void {
   registerAdminMaintenanceRoutes(app);
   registerAdminContentRoutes(app);
   registerAdminMonitoringRoutes(app);
+  registerAdminRevenueRoutes(app);
   
   console.log('✅ All admin routes registered successfully');
 } 

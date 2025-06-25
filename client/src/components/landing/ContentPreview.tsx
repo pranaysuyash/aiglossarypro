@@ -11,8 +11,11 @@ import {
   ArrowRight,
   Code
 } from "lucide-react";
+import { useCountryPricing } from '@/hooks/useCountryPricing';
 
 export function ContentPreview() {
+  const pricing = useCountryPricing();
+  
   const categories = [
     {
       icon: Brain,
@@ -172,9 +175,23 @@ def gradient_descent(X, y, learning_rate=0.01, iterations=1000):
             <Button 
               size="lg"
               className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4"
-              onClick={() => window.open('https://gumroad.com/l/aimlglossarypro', '_blank')}
+              onClick={() => {
+                // Track analytics
+                if (typeof window !== 'undefined' && (window as any).gtag) {
+                  (window as any).gtag('event', 'content_preview_cta_click', {
+                    event_category: 'conversion',
+                    event_label: 'content_preview_button',
+                    value: pricing.localPrice,
+                  });
+                }
+                
+                window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
+              }}
             >
-              Get Access to All 10,000+ Terms
+              {pricing.discount > 0 
+                ? `Get Access to All 10,000+ Terms - $${pricing.localPrice} (${pricing.discount}% off)`
+                : `Get Access to All 10,000+ Terms - $${pricing.localPrice}`
+              }
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </div>

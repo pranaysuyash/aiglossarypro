@@ -1,7 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
+import { useCountryPricing } from '@/hooks/useCountryPricing';
 
 export function LandingHeader() {
+  const pricing = useCountryPricing();
+
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -58,9 +61,25 @@ export function LandingHeader() {
             </Link>
             <Button 
               className="bg-purple-600 hover:bg-purple-700 text-white px-6"
-              onClick={() => window.open('https://gumroad.com/l/aimlglossarypro', '_blank')}
+              onClick={() => {
+                // Track analytics
+                if (typeof window !== 'undefined' && (window as any).gtag) {
+                  (window as any).gtag('event', 'header_cta_click', {
+                    event_category: 'conversion',
+                    event_label: 'header_button',
+                    value: pricing.localPrice,
+                  });
+                }
+                
+                window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
+              }}
             >
-              Get Access - $129
+              {pricing.loading 
+                ? 'Get Access'
+                : pricing.discount > 0 
+                  ? `Get Access - $${pricing.localPrice} (${pricing.discount}% off)`
+                  : `Get Access - $${pricing.localPrice}`
+              }
             </Button>
           </div>
         </div>

@@ -2,8 +2,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Check, ArrowRight, X, DollarSign } from "lucide-react";
+import { PPPBanner } from './PPPBanner';
+import { PriceDisplay } from './PriceDisplay';
+import { useCountryPricing } from '@/hooks/useCountryPricing';
 
 export function Pricing() {
+  const pricing = useCountryPricing();
+  
   const comparison = [
     {
       feature: "AI/ML Term Coverage",
@@ -54,6 +59,9 @@ export function Pricing() {
             Why pay $300+ annually when you can get lifetime access for less?
           </p>
         </div>
+
+        {/* PPP Banner */}
+        <PPPBanner />
 
         {/* Comparison Table */}
         <div className="mb-16 max-w-5xl mx-auto">
@@ -159,7 +167,7 @@ export function Pricing() {
             <CardHeader className="bg-purple-50">
               <CardTitle className="text-center">
                 <div className="text-2xl font-bold text-purple-900">AI/ML Glossary Pro</div>
-                <div className="text-4xl font-bold text-purple-900 mt-2">$129</div>
+                <PriceDisplay showComparison={true} size="xl" />
                 <div className="text-sm text-purple-600">lifetime access</div>
               </CardTitle>
             </CardHeader>
@@ -187,9 +195,30 @@ export function Pricing() {
               <div className="pt-4">
                 <Button 
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                  onClick={() => window.open('https://gumroad.com/l/aimlglossarypro', '_blank')}
+                  onClick={() => {
+                    // Track analytics with pricing info
+                    if (typeof window !== 'undefined' && (window as any).gtag) {
+                      (window as any).gtag('event', 'purchase_intent', {
+                        event_category: 'ecommerce',
+                        event_label: 'lifetime_access',
+                        value: pricing.localPrice,
+                        custom_parameter: `${pricing.countryCode}_${pricing.discount}%_discount`,
+                      });
+                    }
+                    
+                    // Open Gumroad with country parameter
+                    const gumroadUrl = new URL('https://gumroad.com/l/aiml-glossary-pro');
+                    gumroadUrl.searchParams.set('country', pricing.countryCode);
+                    if (pricing.discount > 0) {
+                      gumroadUrl.searchParams.set('discount', pricing.discount.toString());
+                    }
+                    window.open(gumroadUrl.toString(), '_blank');
+                  }}
                 >
-                  Get Lifetime Access
+                  {pricing.discount > 0 
+                    ? `Get Access - $${pricing.localPrice} (${pricing.discount}% off)`
+                    : `Get Lifetime Access - $${pricing.localPrice}`
+                  }
                   <ArrowRight className="ml-2 w-4 h-4" />
                 </Button>
               </div>
@@ -214,8 +243,13 @@ export function Pricing() {
                 <div className="text-gray-600">Coursera (annual)</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-green-600 mb-2">$129</div>
+                <div className="text-3xl font-bold text-green-600 mb-2">${pricing.localPrice}</div>
                 <div className="text-gray-600">Our platform (lifetime)</div>
+                {pricing.discount > 0 && (
+                  <div className="text-sm text-green-600">
+                    {pricing.discount}% off for {pricing.countryName}
+                  </div>
+                )}
               </div>
             </div>
             <p className="text-gray-600 mt-6">

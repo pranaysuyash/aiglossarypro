@@ -209,6 +209,14 @@ export async function registerRoutes(app: Express): Promise<void> {
           "POST /api/admin/content/:id/approve",
           "POST /api/admin/content/:id/reject"
         ],
+        revenue: [
+          "GET /api/admin/revenue/dashboard",
+          "GET /api/admin/revenue/purchases",
+          "GET /api/admin/revenue/analytics",
+          "GET /api/admin/revenue/export",
+          "GET /api/admin/revenue/webhook-status",
+          "POST /api/admin/revenue/verify-purchase"
+        ],
         analytics: [
           "GET /api/analytics",
           "GET /api/analytics/user",

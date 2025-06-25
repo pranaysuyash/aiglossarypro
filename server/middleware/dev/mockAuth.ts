@@ -126,7 +126,12 @@ async function ensureDevUserExists() {
       email: DEV_USER.claims.email,
       firstName: DEV_USER.claims.first_name,
       lastName: DEV_USER.claims.last_name,
-      profileImageUrl: null
+      profileImageUrl: null,
+      subscriptionTier: 'lifetime',
+      lifetimeAccess: true,
+      purchaseDate: new Date(),
+      dailyViews: 0,
+      lastViewReset: new Date()
     });
     
     console.log("🔓 Development user ensured in database:", DEV_USER.claims.email);

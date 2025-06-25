@@ -5,6 +5,7 @@ import { Check, ArrowRight, X, DollarSign } from "lucide-react";
 import { PPPBanner } from './PPPBanner';
 import { PriceDisplay } from './PriceDisplay';
 import { useCountryPricing } from '@/hooks/useCountryPricing';
+import { TestPurchaseButton } from '../TestPurchaseButton';
 
 export function Pricing() {
   const pricing = useCountryPricing();
@@ -224,6 +225,11 @@ export function Pricing() {
               </div>
             </CardContent>
           </Card>
+        </div>
+
+        {/* Test Purchase Button - Only visible in development */}
+        <div className="mt-8 text-center">
+          <TestPurchaseButton />
         </div>
 
         {/* Value Proposition */}

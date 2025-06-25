@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Button } from '../components/ui/button';
 import { Check, Star, Shield, Zap, BookOpen, Code, TrendingUp } from 'lucide-react';
 import { PurchaseVerification } from '../components/PurchaseVerification';
+import { TestPurchaseButton } from '../components/TestPurchaseButton';
 
 export default function Lifetime() {
   const [showVerification, setShowVerification] = useState(false);
@@ -38,6 +39,12 @@ export default function Lifetime() {
                 Already Purchased? Verify Access
               </Button>
             </div>
+            
+            {/* Test Purchase Button - Only visible in development */}
+            <div className="mt-4">
+              <TestPurchaseButton />
+            </div>
+            
             <p className="text-sm text-gray-500 mt-4">
               One-time payment, lifetime access. 30-day money back guarantee.
             </p>

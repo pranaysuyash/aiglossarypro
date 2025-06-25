@@ -384,8 +384,8 @@ export class AnalyticsService {
       // Batch insert page view analytics
       for (const view of pageViews) {
         await db.execute(sql`
-          INSERT INTO page_view_analytics (page, term_id, user_ip, referrer, user_agent, timestamp)
-          VALUES (${view.page}, ${view.term_id}, ${view.user_ip}, ${view.referrer}, ${view.user_agent}, ${view.timestamp})
+          INSERT INTO page_view_analytics (page, term_id, user_ip, referrer, user_agent, session_duration_ms, timestamp)
+          VALUES (${view.page}, ${view.term_id}, ${view.user_ip}, ${view.referrer}, ${view.user_agent}, ${view.session_duration_ms || null}, ${view.timestamp})
         `);
       }
     } catch (error) {

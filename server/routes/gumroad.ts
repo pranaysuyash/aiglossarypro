@@ -327,4 +327,132 @@ export function registerGumroadRoutes(app: Express): void {
       res.status(500).json({ error: 'Failed to grant access' });
     }
   });
+
+  // TEST/DUMMY Purchase endpoint for development mode
+  app.post('/api/gumroad/test-purchase', async (req: Request, res: Response) => {
+    try {
+      // Only allow in development mode
+      if (process.env.NODE_ENV !== 'development') {
+        return res.status(403).json({ error: 'Test purchases only available in development mode' });
+      }
+
+      const { email } = req.body;
+      
+      if (!email) {
+        return res.status(400).json({ error: 'Email required for test purchase' });
+      }
+
+      log.info('Test purchase initiated', {
+        email: email.substring(0, 3) + '***',
+        environment: 'development'
+      });
+
+      // Generate a fake order ID for testing
+      const testOrderId = `TEST-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+      // Find or create user
+      let user = await storage.getUserByEmail(email);
+      let userId: string;
+      
+      if (!user) {
+        // Create new user with lifetime access
+        const newUserId = crypto.randomUUID();
+        await storage.upsertUser({
+          id: newUserId,
+          email: email,
+          subscriptionTier: 'lifetime',
+          lifetimeAccess: true,
+          purchaseDate: new Date(),
+          dailyViews: 0,
+          lastViewReset: new Date(),
+        });
+        userId = newUserId;
+        
+        log.info('Created new user with test lifetime access', {
+          userId: newUserId,
+          email: email.substring(0, 3) + '***'
+        });
+      } else {
+        // Update existing user to lifetime access
+        await storage.updateUser(user.id, {
+          subscriptionTier: 'lifetime',
+          lifetimeAccess: true,
+          purchaseDate: new Date(),
+        });
+        userId = user.id;
+        
+        log.info('Updated existing user with test lifetime access', {
+          userId: user.id,
+          email: email.substring(0, 3) + '***'
+        });
+      }
+
+      // Record test purchase in database
+      try {
+        await storage.createPurchase({
+          userId: userId,
+          gumroadOrderId: testOrderId,
+          amount: 12900, // $129.00 in cents
+          currency: 'USD',
+          status: 'completed',
+          purchaseData: {
+            test_purchase: true,
+            environment: 'development',
+            email: email,
+            amount_cents: 12900,
+            currency: 'USD',
+            order_id: testOrderId,
+            created_at: new Date().toISOString()
+          },
+        });
+        
+        log.info('Test purchase recorded successfully', {
+          userId,
+          orderId: testOrderId,
+          amount: 12900
+        });
+      } catch (error) {
+        log.error('Failed to record test purchase', {
+          userId,
+          orderId: testOrderId,
+          error: error instanceof Error ? error.message : 'Unknown error'
+        });
+      }
+
+      log.info('Test purchase completed successfully', {
+        email: email.substring(0, 3) + '***',
+        orderId: testOrderId,
+        userId
+      });
+
+      res.json({ 
+        success: true, 
+        message: 'Test purchase completed successfully! You now have lifetime access.',
+        user: {
+          email: email,
+          subscriptionTier: 'lifetime',
+          lifetimeAccess: true,
+          purchaseDate: new Date().toISOString(),
+        },
+        testData: {
+          orderId: testOrderId,
+          amount: '$129.00',
+          environment: 'development'
+        }
+      });
+    } catch (error) {
+      log.error('Test purchase error', {
+        email: req.body.email?.substring(0, 3) + '***',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+      
+      captureAPIError(error as Error, {
+        method: 'POST',
+        path: '/api/gumroad/test-purchase',
+        body: { email: 'filtered' }
+      });
+      
+      res.status(500).json({ error: 'Test purchase failed' });
+    }
+  });
 }

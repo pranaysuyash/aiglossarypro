@@ -93,18 +93,6 @@ app.use((req, res, next) => {
   
   await registerRoutes(app);
 
-  // Add logging error handler
-  app.use(loggingMiddleware.errorLogging);
-
-  // Add Sentry error handler
-  app.use(sentryErrorHandler());
-
-  // Add 404 handler for unmatched routes
-  app.use(notFoundHandler);
-
-  // Add comprehensive error handling middleware
-  app.use(errorHandler);
-
   // Get server configuration
   const serverConfig = getServerConfig();
 
@@ -135,6 +123,19 @@ app.use((req, res, next) => {
       process.exit(1);
     }
   }
+  
+  // Add logging error handler
+  app.use(loggingMiddleware.errorLogging);
+
+  // Add Sentry error handler
+  app.use(sentryErrorHandler());
+
+  // Add 404 handler for unmatched routes
+  app.use(notFoundHandler);
+
+  // Add comprehensive error handling middleware
+  app.use(errorHandler);
+
   
   // Initialize analytics system
   await initializeAnalytics();

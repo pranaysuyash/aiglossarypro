@@ -29,55 +29,101 @@ export default defineConfig({
     emptyOutDir: true,
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Core React bundle
-          'react-vendor': ['react', 'react-dom', 'react-router-dom', 'wouter'],
+        manualChunks(id) {
+          // Custom function for more granular chunk splitting
           
-          // UI Components - Large shadcn/ui bundle
-          'ui-components': [
-            '@radix-ui/react-accordion',
-            '@radix-ui/react-alert-dialog',
-            '@radix-ui/react-avatar',
-            '@radix-ui/react-checkbox',
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-select',
-            '@radix-ui/react-tabs',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-tooltip',
-          ],
+          // Node modules chunking
+          if (id.includes('node_modules')) {
+            // Core React libraries
+            if (id.includes('react') || id.includes('wouter')) {
+              return 'react-vendor';
+            }
+            
+            // Large UI libraries
+            if (id.includes('@radix-ui')) {
+              return 'ui-components';
+            }
+            
+            // Heavy visualization libraries
+            if (id.includes('recharts') || id.includes('cytoscape') || id.includes('d3')) {
+              return 'charts';
+            }
+            
+            // Mathematical and diagram libraries
+            if (id.includes('mermaid')) {
+              return 'diagrams';
+            }
+            if (id.includes('katex')) {
+              return 'math';
+            }
+            
+            // Content processing
+            if (id.includes('react-markdown') || id.includes('react-syntax-highlighter') || id.includes('prismjs')) {
+              return 'content';
+            }
+            
+            // Data utilities
+            if (id.includes('exceljs') || id.includes('date-fns') || id.includes('lodash')) {
+              return 'data-utils';
+            }
+            
+            // Query management
+            if (id.includes('@tanstack/react-query')) {
+              return 'query';
+            }
+            
+            // Icons
+            if (id.includes('lucide-react')) {
+              return 'icons';
+            }
+            
+            // Everything else from node_modules
+            return 'vendor';
+          }
           
-          // Charts and visualizations - Heavy components
-          'charts': ['recharts', 'cytoscape'],
+          // Application code chunking
+          if (id.includes('/pages/')) {
+            // Split each page into its own chunk
+            const pageName = id.split('/pages/')[1].split('.')[0].toLowerCase();
+            return `page-${pageName}`;
+          }
           
-          // Mathematical notation - KaTeX is heavy
-          'math': ['katex'],
+          if (id.includes('/components/lazy/')) {
+            return 'lazy-components';
+          }
           
-          // Diagrams - Mermaid is large
-          'diagrams': ['mermaid'],
+          if (id.includes('/components/interactive/')) {
+            return 'interactive-components';
+          }
           
-          // Data handling
-          'data-utils': ['exceljs', 'date-fns'],
+          if (id.includes('/components/ui/')) {
+            return 'ui-shared';
+          }
           
-          // Query and state management
-          'query': ['@tanstack/react-query'],
-          
-          // Icons - Lucide React
-          'icons': ['lucide-react'],
-          
-          // Markdown and syntax highlighting
-          'content': ['react-markdown', 'react-syntax-highlighter', 'prismjs'],
+          // Main application chunk for everything else
+          return 'main';
         },
         // Ensure consistent chunk naming
         chunkFileNames: 'assets/[name]-[hash].js',
         entryFileNames: 'assets/[name]-[hash].js',
         assetFileNames: 'assets/[name]-[hash].[ext]',
       },
+      // Tree shaking and optimization
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+        unknownGlobalSideEffects: false,
+      },
+      external: (id) => {
+        // Don't bundle node built-ins in client code
+        return id.startsWith('node:');
+      },
     },
-    // Optimize chunk size
-    chunkSizeWarningLimit: 1000, // Warn for chunks > 1MB
-    // Enable source maps for production debugging
+    // Optimize build settings
+    target: 'esnext',
+    minify: 'esbuild',
+    cssMinify: true,
+    chunkSizeWarningLimit: 800, // Reduced warning limit for better optimization
     sourcemap: process.env.NODE_ENV !== 'production',
   },
 });

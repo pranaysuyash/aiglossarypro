@@ -61,18 +61,18 @@ export default function Footer() {
             <h3 className="text-lg font-medium text-white mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link href="/">
-                  <div className="text-gray-400 hover:text-white transition cursor-pointer">Home</div>
+                <Link href="/" className="text-gray-400 hover:text-white transition">
+                  Home
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard">
-                  <div className="text-gray-400 hover:text-white transition cursor-pointer">Dashboard</div>
+                <Link href="/dashboard" className="text-gray-400 hover:text-white transition">
+                  Dashboard
                 </Link>
               </li>
               <li>
-                <Link href="/favorites">
-                  <div className="text-gray-400 hover:text-white transition cursor-pointer">Favorites</div>
+                <Link href="/favorites" className="text-gray-400 hover:text-white transition">
+                  Favorites
                 </Link>
               </li>
               <li>
@@ -102,14 +102,14 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row justify-between">
             <p>&copy; {new Date().getFullYear()} AI/ML Glossary. All rights reserved.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">
-              <Link href="/privacy">
-                <div className="hover:text-white transition cursor-pointer">Privacy Policy</div>
+              <Link href="/privacy" className="hover:text-white transition">
+                Privacy Policy
               </Link>
-              <Link href="/terms">
-                <div className="hover:text-white transition cursor-pointer">Terms of Service</div>
+              <Link href="/terms" className="hover:text-white transition">
+                Terms of Service
               </Link>
-              <Link href="/cookies">
-                <div className="hover:text-white transition cursor-pointer">Cookie Policy</div>
+              <Link href="/cookies" className="hover:text-white transition">
+                Cookie Policy
               </Link>
             </div>
           </div>

@@ -7,6 +7,7 @@ import type { Express, Request, Response } from 'express';
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
 import { asyncHandler, handleDatabaseError, ErrorCategory } from '../middleware/errorHandler';
+import { requireAdmin } from '../middleware/adminAuth';
 
 // Create feedback table if it doesn't exist
 const createFeedbackTable = async () => {
@@ -199,11 +200,7 @@ export function registerFeedbackRoutes(app: Express): void {
    * Get feedback for admin review (admin only)
    * GET /api/feedback?type=term_request&status=pending&limit=50
    */
-  app.get('/api/feedback', asyncHandler(async (req: Request, res: Response) => {
-    // TODO: Add admin authentication check
-    // if (!req.user || req.user.role !== 'admin') {
-    //   return res.status(403).json({ success: false, message: 'Admin access required' });
-    // }
+  app.get('/api/feedback', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
 
     const { 
       type, 
@@ -283,8 +280,7 @@ export function registerFeedbackRoutes(app: Express): void {
    * Update feedback status (admin only)
    * PUT /api/feedback/:feedbackId
    */
-  app.put('/api/feedback/:feedbackId', asyncHandler(async (req: Request, res: Response) => {
-    // TODO: Add admin authentication check
+  app.put('/api/feedback/:feedbackId', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
     
     const { feedbackId } = req.params;
     const { status, adminNotes } = req.body;

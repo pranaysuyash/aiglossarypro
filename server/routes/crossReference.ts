@@ -6,6 +6,7 @@
 import type { Express, Request, Response } from 'express';
 import { crossReferenceService } from '../services/crossReferenceService';
 import { asyncHandler, handleDatabaseError } from '../middleware/errorHandler';
+import { requireAdmin } from '../middleware/adminAuth';
 
 export function registerCrossReferenceRoutes(app: Express): void {
 
@@ -75,11 +76,7 @@ export function registerCrossReferenceRoutes(app: Express): void {
    * Update a term's definition with automatic links (admin only)
    * PUT /api/cross-reference/term/:termId/update-links
    */
-  app.put('/api/cross-reference/term/:termId/update-links', asyncHandler(async (req: Request, res: Response) => {
-    // TODO: Add admin authentication check
-    // if (!req.user || req.user.role !== 'admin') {
-    //   return res.status(403).json({ success: false, message: 'Admin access required' });
-    // }
+  app.put('/api/cross-reference/term/:termId/update-links', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
 
     const { termId } = req.params;
 
@@ -112,8 +109,7 @@ export function registerCrossReferenceRoutes(app: Express): void {
    * Bulk process multiple terms (admin only)
    * POST /api/cross-reference/bulk-process
    */
-  app.post('/api/cross-reference/bulk-process', asyncHandler(async (req: Request, res: Response) => {
-    // TODO: Add admin authentication check
+  app.post('/api/cross-reference/bulk-process', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
     
     const { termIds } = req.body;
 
@@ -163,8 +159,7 @@ export function registerCrossReferenceRoutes(app: Express): void {
    * Initialize term cache (admin only)
    * POST /api/cross-reference/initialize-cache
    */
-  app.post('/api/cross-reference/initialize-cache', asyncHandler(async (req: Request, res: Response) => {
-    // TODO: Add admin authentication check
+  app.post('/api/cross-reference/initialize-cache', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
 
     try {
       await crossReferenceService.initializeTermCache();

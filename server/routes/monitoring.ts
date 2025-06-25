@@ -10,6 +10,7 @@ import { db } from '../db';
 import { sql } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
+import { requireAdmin } from '../middleware/adminAuth';
 
 export function registerMonitoringRoutes(app: Express): void {
 
@@ -82,12 +83,8 @@ export function registerMonitoringRoutes(app: Express): void {
    * Get recent errors (admin only)
    * GET /api/monitoring/errors?limit=50&category=DATABASE
    */
-  app.get('/api/monitoring/errors', async (req: Request, res: Response) => {
+  app.get('/api/monitoring/errors', requireAdmin, async (req: Request, res: Response) => {
     try {
-      // TODO: Add admin authentication check
-      // if (!req.user || req.user.role !== 'admin') {
-      //   return res.status(403).json({ success: false, message: 'Admin access required' });
-      // }
 
       const { limit = 50, category } = req.query;
       const limitNum = Math.min(parseInt(limit as string) || 50, 100);
@@ -247,9 +244,8 @@ export function registerMonitoringRoutes(app: Express): void {
    * Clear old error logs (admin only)
    * DELETE /api/monitoring/errors?days=30
    */
-  app.delete('/api/monitoring/errors', async (req: Request, res: Response) => {
+  app.delete('/api/monitoring/errors', requireAdmin, async (req: Request, res: Response) => {
     try {
-      // TODO: Add admin authentication check
       
       const { days = 30 } = req.query;
       const daysNum = parseInt(days as string) || 30;

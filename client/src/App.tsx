@@ -6,31 +6,56 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/Home";
-import Lifetime from "@/pages/Lifetime";
 
-import EnhancedTermDetail from "@/pages/EnhancedTermDetail";
-import Terms from "@/pages/Terms";
-import Categories from "@/pages/Categories";
-import Trending from "@/pages/Trending";
-import Dashboard from "@/pages/Dashboard";
-import Favorites from "@/pages/Favorites";
-import Admin from "@/pages/Admin";
-import AnalyticsDashboard from "@/pages/AnalyticsDashboard";
-import Settings from "@/pages/Settings";
-import AITools from "@/pages/AITools";
-import UserProgressDashboard from "@/pages/UserProgressDashboard";
+// Lazy load heavy pages to reduce initial bundle size
+import {
+  LazyTermsPage,
+  LazyCategoriesPage,
+  LazyTrendingPage,
+  LazyDashboardPage,
+  LazyFavoritesPage,
+  LazyAdminPage,
+  LazyAnalyticsPage,
+  LazySettingsPage,
+  LazyAIToolsPage,
+  LazyProgressPage,
+  LazyTermDetailPage,
+  LazyLifetimePage
+} from "@/components/lazy/LazyPages";
+
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import LoginPage from "@/components/LoginPage";
 import { useAuth } from "@/hooks/useAuth";
+import { preloadOnIdle, preloadForAuthenticatedUser, preloadForAdmin } from "@/utils/preloadComponents";
+import "@/utils/bundleAnalyzer"; // Initialize bundle analyzer
+import { useEffect } from "react";
 
 // Smart Term Detail component that chooses between enhanced and regular view
 function SmartTermDetail() {
-  return <EnhancedTermDetail />;
+  return <LazyTermDetailPage />;
 }
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+
+  // Preload components based on authentication status
+  useEffect(() => {
+    // Preload critical components on idle
+    preloadOnIdle();
+
+    if (isAuthenticated) {
+      preloadForAuthenticatedUser();
+      
+      // Check if user is admin and preload admin components
+      // This would typically be determined by user role
+      // For now, we'll use a simple check or context
+      const isAdmin = localStorage.getItem('userRole') === 'admin';
+      if (isAdmin) {
+        preloadForAdmin();
+      }
+    }
+  }, [isAuthenticated]);
 
   if (isLoading) {
     return (
@@ -61,31 +86,31 @@ function Router() {
         <Switch>
           <Route path="/" component={Home} />
           <Route path="/login" component={LoginPage} />
-          <Route path="/lifetime" component={Lifetime} />
+          <Route path="/lifetime" component={LazyLifetimePage} />
           <Route path="/term/:id" component={SmartTermDetail} />
-          <Route path="/terms" component={Terms} />
-          <Route path="/categories" component={Categories} />
-          <Route path="/trending" component={Trending} />
+          <Route path="/terms" component={LazyTermsPage} />
+          <Route path="/categories" component={LazyCategoriesPage} />
+          <Route path="/trending" component={LazyTrendingPage} />
           <Route path="/dashboard">
-            {isAuthenticated ? <Dashboard /> : <LoginPage />}
+            {isAuthenticated ? <LazyDashboardPage /> : <LoginPage />}
           </Route>
           <Route path="/favorites">
-            {isAuthenticated ? <Favorites /> : <LoginPage />}
+            {isAuthenticated ? <LazyFavoritesPage /> : <LoginPage />}
           </Route>
           <Route path="/admin">
-            {isAuthenticated ? <Admin /> : <LoginPage />}
+            {isAuthenticated ? <LazyAdminPage /> : <LoginPage />}
           </Route>
           <Route path="/analytics">
-            {isAuthenticated ? <AnalyticsDashboard /> : <LoginPage />}
+            {isAuthenticated ? <LazyAnalyticsPage /> : <LoginPage />}
           </Route>
           <Route path="/settings">
-            {isAuthenticated ? <Settings /> : <LoginPage />}
+            {isAuthenticated ? <LazySettingsPage /> : <LoginPage />}
           </Route>
           <Route path="/ai-tools">
-            <AITools />
+            <LazyAIToolsPage />
           </Route>
           <Route path="/progress">
-            {isAuthenticated ? <UserProgressDashboard /> : <LoginPage />}
+            {isAuthenticated ? <LazyProgressPage /> : <LoginPage />}
           </Route>
           <Route component={NotFound} />
         </Switch>

@@ -26,15 +26,23 @@ export const mockIsAuthenticated = (req: Request, res: Response, next: NextFunct
   // Simulate authenticated user
   req.user = DEV_USER as any;
   
-  // Mock passport methods
-  req.isAuthenticated = () => true;
-  req.login = (user, callback) => {
+  // Mock passport methods with correct types
+  (req as any).isAuthenticated = () => true;
+  (req as any).login = (user: any, options?: any, callback?: (err: any) => void) => {
+    if (typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
     req.user = user;
     if (callback) callback(null);
   };
-  req.logout = (callback) => {
+  (req as any).logout = (options?: any, callback?: (err: any) => void) => {
+    if (typeof options === 'function') {
+      callback = options;
+      options = {};
+    }
     req.user = undefined;
-    if (callback) callback();
+    if (callback) callback(null);
   };
 
   console.log("🔓 Mock authentication: User logged in as", DEV_USER.claims.email);

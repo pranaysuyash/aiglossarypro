@@ -137,7 +137,7 @@ export const securityHeaders = helmet({
       mediaSrc: ["'self'", "blob:", "data:"],
       objectSrc: ["'none'"],
       frameSrc: ["'none'"],
-      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : undefined
+      upgradeInsecureRequests: process.env.NODE_ENV === 'production' ? [] : null
     }
   },
   

@@ -65,7 +65,9 @@ class QueryCache {
     // Evict oldest if at capacity
     if (this.cache.size >= this.maxItems) {
       const firstKey = this.cache.keys().next().value;
-      this.cache.delete(firstKey);
+      if (firstKey !== undefined) {
+        this.cache.delete(firstKey);
+      }
     }
     
     const entry: CacheEntry<T> = {
@@ -221,7 +223,7 @@ export const CacheWarming = {
   async warmPopularTerms() {
     const { db } = await import('../db');
     const { terms, categories } = await import('../../shared/schema');
-    const { desc } = await import('drizzle-orm');
+    const { desc, eq } = await import('drizzle-orm');
     
     console.log('🔥 Warming popular terms cache...');
     
@@ -234,7 +236,7 @@ export const CacheWarming = {
         viewCount: terms.viewCount
       })
       .from(terms)
-      .leftJoin(categories, terms.categoryId)
+      .leftJoin(categories, eq(terms.categoryId, categories.id))
       .orderBy(desc(terms.viewCount))
       .limit(50);
     

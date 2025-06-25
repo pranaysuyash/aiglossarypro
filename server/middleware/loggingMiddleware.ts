@@ -8,7 +8,6 @@ declare global {
   namespace Express {
     interface Request {
       requestId: string;
-      startTime: number;
       userId?: string;
     }
   }
@@ -17,7 +16,9 @@ declare global {
 // Request ID middleware - assigns unique ID to each request
 export const requestIdMiddleware = (req: Request, res: Response, next: NextFunction) => {
   req.requestId = uuidv4();
-  req.startTime = Date.now();
+  if (!req.startTime) {
+    req.startTime = Date.now();
+  }
   
   // Add request ID to response headers for debugging
   res.setHeader('X-Request-ID', req.requestId);
@@ -30,7 +31,7 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
   const timer = performanceTimer(`${req.method} ${req.path}`);
   
   // Extract user ID from session if available
-  req.userId = req.session?.user?.id;
+  req.userId = (req.session as any)?.user?.id || (req.user as any)?.id;
   
   // Log incoming request
   log.api.request(
@@ -144,9 +145,9 @@ export const errorLoggingMiddleware = (err: Error, req: Request, res: Response, 
 
 // Rate limiting logging middleware
 export const rateLimitLoggingMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const originalEnd = res.end;
+  const originalEnd = res.end.bind(res);
   
-  res.end = function(...args: any[]) {
+  (res as any).end = function(...args: any[]): any {
     // Check if this was a rate limit response
     if (res.statusCode === 429) {
       log.security.rateLimitExceeded(
@@ -156,7 +157,7 @@ export const rateLimitLoggingMiddleware = (req: Request, res: Response, next: Ne
       );
     }
     
-    return originalEnd.call(this, ...args);
+    return originalEnd.apply(this, args);
   };
   
   next();
@@ -212,8 +213,11 @@ export const healthCheckLoggingMiddleware = (req: Request, res: Response, next: 
 
 // User context middleware (for logging user info)
 export const userContextMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  if (req.session?.user) {
-    req.userId = req.session.user.id;
+  const sessionUser = (req.session as any)?.user;
+  const authUser = req.user as any;
+  
+  if (sessionUser || authUser) {
+    req.userId = sessionUser?.id || authUser?.id || authUser?.claims?.sub;
     
     // Add user context to logs
     addBreadcrumb(
@@ -222,7 +226,7 @@ export const userContextMiddleware = (req: Request, res: Response, next: NextFun
       'info',
       {
         userId: req.userId,
-        email: req.session.user.email
+        email: sessionUser?.email || authUser?.email || authUser?.claims?.email
       }
     );
   }

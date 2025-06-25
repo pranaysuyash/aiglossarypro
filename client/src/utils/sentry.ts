@@ -51,7 +51,7 @@ export const initSentry = () => {
             if (key.toLowerCase().includes('password') || 
                 key.toLowerCase().includes('secret') ||
                 key.toLowerCase().includes('token')) {
-              data[key] = '[Filtered]';
+              (data as Record<string, any>)[key] = '[Filtered]';
             }
           });
         }

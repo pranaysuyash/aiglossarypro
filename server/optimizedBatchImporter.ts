@@ -180,9 +180,9 @@ export class OptimizedBatchImporter {
 
         // Check if exists (if skipExisting is enabled)
         if (this.options.skipExisting) {
-          const existing = await db.select().from(categories).where(eq(categories.slug, category.slug)).limit(1);
+          const existing = await db.select().from(categories).where(eq(categories.name, category.name)).limit(1);
           if (existing.length > 0) {
-            categoryIdMap.set(category.slug, existing[0].id);
+            categoryIdMap.set(category.name, existing[0].id);
             continue;
           }
         }
@@ -205,13 +205,13 @@ export class OptimizedBatchImporter {
           await db.transaction(async (tx) => {
             for (let j = 0; j < validCategories.length; j += bulkInsertSize) {
               const chunk = validCategories.slice(j, j + bulkInsertSize);
-              const inserted = await tx.insert(categories).values(chunk).returning({ id: categories.id, slug: categories.slug });
+              const inserted = await tx.insert(categories).values(chunk).returning({ id: categories.id, name: categories.name });
               
               // Update ID mapping
               for (const cat of inserted) {
-                const original = chunk.find(c => c.slug === cat.slug);
+                const original = chunk.find(c => c.name === cat.name);
                 if (original) {
-                  categoryIdMap.set(cat.slug, cat.id);
+                  categoryIdMap.set(cat.name, cat.id);
                 }
               }
               
@@ -222,12 +222,12 @@ export class OptimizedBatchImporter {
           // Non-transactional bulk insert
           for (let j = 0; j < validCategories.length; j += bulkInsertSize) {
             const chunk = validCategories.slice(j, j + bulkInsertSize);
-            const inserted = await db.insert(categories).values(chunk).returning({ id: categories.id, slug: categories.slug });
+            const inserted = await db.insert(categories).values(chunk).returning({ id: categories.id, name: categories.name });
             
             for (const cat of inserted) {
-              const original = chunk.find(c => c.slug === cat.slug);
+              const original = chunk.find(c => c.name === cat.name);
               if (original) {
-                categoryIdMap.set(cat.slug, cat.id);
+                categoryIdMap.set(cat.name, cat.id);
               }
             }
             
@@ -268,9 +268,9 @@ export class OptimizedBatchImporter {
         }
 
         if (this.options.skipExisting) {
-          const existing = await db.select().from(subcategories).where(eq(subcategories.slug, subcategory.slug)).limit(1);
+          const existing = await db.select().from(subcategories).where(eq(subcategories.name, subcategory.name)).limit(1);
           if (existing.length > 0) {
-            subcategoryIdMap.set(subcategory.slug, existing[0].id);
+            subcategoryIdMap.set(subcategory.name, existing[0].id);
             continue;
           }
         }
@@ -292,12 +292,12 @@ export class OptimizedBatchImporter {
           await db.transaction(async (tx) => {
             for (let j = 0; j < validSubcategories.length; j += bulkInsertSize) {
               const chunk = validSubcategories.slice(j, j + bulkInsertSize);
-              const inserted = await tx.insert(subcategories).values(chunk).returning({ id: subcategories.id, slug: subcategories.slug });
+              const inserted = await tx.insert(subcategories).values(chunk).returning({ id: subcategories.id, name: subcategories.name });
               
               for (const sub of inserted) {
-                const original = chunk.find(s => s.slug === sub.slug);
+                const original = chunk.find(s => s.name === sub.name);
                 if (original) {
-                  subcategoryIdMap.set(sub.slug, sub.id);
+                  subcategoryIdMap.set(sub.name, sub.id);
                 }
               }
               
@@ -307,7 +307,7 @@ export class OptimizedBatchImporter {
         } else {
           for (let j = 0; j < validSubcategories.length; j += bulkInsertSize) {
             const chunk = validSubcategories.slice(j, j + bulkInsertSize);
-            const inserted = await db.insert(subcategories).values(chunk).returning({ id: subcategories.id, slug: subcategories.slug });
+            const inserted = await db.insert(subcategories).values(chunk).returning({ id: subcategories.id, name: subcategories.name });
             
             for (const sub of inserted) {
               const original = chunk.find(s => s.slug === sub.slug);

@@ -4,14 +4,14 @@
  */
 import { Request, Response, NextFunction } from 'express';
 import { analyticsService } from '../services/analyticsService';
-import { errorLogger } from './errorHandler';
+import { errorLogger, ErrorCategory } from './errorHandler';
 import os from 'os';
 
 // Extend Request interface to include analytics data
 declare global {
   namespace Express {
     interface Request {
-      startTime?: number;
+      startTime: number;
       userIp?: string;
       sessionId?: string;
     }
@@ -40,8 +40,8 @@ export function performanceTrackingMiddleware() {
                     `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     // Override res.end to capture response data
-    const originalEnd = res.end;
-    res.end = function(this: Response, ...args: any[]) {
+    const originalEnd = res.end.bind(res);
+    (res as any).end = function(this: Response, ...args: any[]): any {
       const responseTime = Date.now() - (req.startTime || Date.now());
       const endpoint = req.route?.path || req.path;
       const method = req.method;
@@ -65,12 +65,12 @@ export function performanceTrackingMiddleware() {
           memoryUsageMb,
           cpuPercent
         ).catch(error => {
-          errorLogger.logError(error, 'MIDDLEWARE_ERROR', 'Failed to track performance in middleware');
+          errorLogger.logError(error, req, ErrorCategory.UNKNOWN, 'medium');
         });
       });
 
-      // Call original end function
-      originalEnd.apply(this, args);
+      // Call original end function and return response
+      return originalEnd.apply(this, args);
     };
 
     next();
@@ -101,7 +101,7 @@ export function pageViewTrackingMiddleware() {
           referrer,
           userAgent
         ).catch(error => {
-          errorLogger.logError(error, 'MIDDLEWARE_ERROR', 'Failed to track page view in middleware');
+          errorLogger.logError(error, req, ErrorCategory.UNKNOWN, 'medium');
         });
       });
     }
@@ -142,7 +142,7 @@ export function searchTrackingMiddleware() {
               responseTime,
               req.userIp
             ).catch(error => {
-              errorLogger.logError(error, 'MIDDLEWARE_ERROR', 'Failed to track search in middleware');
+              errorLogger.logError(error, req, ErrorCategory.UNKNOWN, 'medium');
             });
           });
         }
@@ -171,7 +171,7 @@ export function trackUserInteraction(action: 'favorite' | 'share' | 'feedback' |
         req.userIp,
         req.sessionId
       ).catch(error => {
-        errorLogger.logError(error, 'MIDDLEWARE_ERROR', `Failed to track ${action} interaction`);
+        errorLogger.logError(error, req, ErrorCategory.UNKNOWN, 'medium');
       });
     });
 
@@ -206,19 +206,11 @@ export function systemHealthMiddleware() {
 
         // Log critical system health issues
         if (healthMetrics.memory_usage_percent > 90) {
-          errorLogger.logError(
-            new Error(`High memory usage: ${healthMetrics.memory_usage_percent}%`),
-            'SYSTEM_WARNING',
-            'System memory usage is critically high'
-          );
+          console.warn(`High memory usage: ${healthMetrics.memory_usage_percent}%`);
         }
 
         if (healthMetrics.load_average_1m > os.cpus().length * 2) {
-          errorLogger.logError(
-            new Error(`High system load: ${healthMetrics.load_average_1m}`),
-            'SYSTEM_WARNING',
-            'System load average is critically high'
-          );
+          console.warn(`High system load: ${healthMetrics.load_average_1m}`);
         }
       });
     }
@@ -236,6 +228,6 @@ export async function initializeAnalytics(): Promise<void> {
     // This is a placeholder for any initialization logic
     console.log('📊 Analytics middleware initialized');
   } catch (error) {
-    errorLogger.logError(error, 'INITIALIZATION_ERROR', 'Failed to initialize analytics');
+    console.error('Failed to initialize analytics:', error);
   }
 }

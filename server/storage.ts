@@ -1336,7 +1336,14 @@ export class DatabaseStorage implements IStorage {
     .groupBy(purchases.currency)
     .orderBy(sql`SUM(${purchases.amount}) DESC`);
     
-    return result;
+    // Filter out null currencies and ensure string type
+    return result
+      .filter(r => r.currency != null)
+      .map(r => ({
+        currency: r.currency as string,
+        amount: r.amount,
+        count: r.count
+      }));
   }
 
   async getDailyRevenueForPeriod(startDate: Date, endDate: Date): Promise<Array<{date: string, revenue: number, purchases: number}>> {

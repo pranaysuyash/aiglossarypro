@@ -4,7 +4,6 @@
  */
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
-import { errorLogger } from '../middleware/errorHandler';
 
 export interface SearchAnalytics {
   query: string;
@@ -85,7 +84,7 @@ export class AnalyticsService {
         await this.flushSearchAnalytics();
       }
     } catch (error) {
-      errorLogger.logError(error, 'ANALYTICS_ERROR', 'Failed to track search');
+      console.error('Failed to track search:', error);
     }
   }
 
@@ -113,7 +112,7 @@ export class AnalyticsService {
         await this.flushPageViewAnalytics();
       }
     } catch (error) {
-      errorLogger.logError(error, 'ANALYTICS_ERROR', 'Failed to track page view');
+      console.error('Failed to track page view:', error);
     }
   }
 
@@ -137,7 +136,7 @@ export class AnalyticsService {
         await this.flushPerformanceAnalytics();
       }
     } catch (error) {
-      errorLogger.logError(error, 'ANALYTICS_ERROR', 'Failed to track performance');
+      console.error('Failed to track performance:', error);
     }
   }
 
@@ -160,7 +159,7 @@ export class AnalyticsService {
         await this.flushUserInteractionAnalytics();
       }
     } catch (error) {
-      errorLogger.logError(error, 'ANALYTICS_ERROR', 'Failed to track user interaction');
+      console.error('Failed to track user interaction:', error);
     }
   }
 
@@ -255,20 +254,20 @@ export class AnalyticsService {
       return {
         timeframe,
         search: {
-          stats: searchStats[0] || {},
-          popular_queries: popularSearches || []
+          stats: searchStats.rows[0] || {},
+          popular_queries: popularSearches.rows || []
         },
         pageViews: {
-          stats: pageViewStats[0] || {},
-          popular_terms: popularTerms || []
+          stats: pageViewStats.rows[0] || {},
+          popular_terms: popularTerms.rows || []
         },
-        performance: performanceStats[0] || {},
-        interactions: interactionStats || [],
-        traffic_pattern: trafficPattern || [],
+        performance: performanceStats.rows[0] || {},
+        interactions: interactionStats.rows || [],
+        traffic_pattern: trafficPattern.rows || [],
         generated_at: new Date().toISOString()
       };
     } catch (error) {
-      errorLogger.logError(error, 'ANALYTICS_ERROR', 'Failed to get dashboard data');
+      console.error('Failed to get dashboard data:', error);
       throw error;
     }
   }
@@ -315,7 +314,7 @@ export class AnalyticsService {
         generated_at: new Date().toISOString()
       };
     } catch (error) {
-      errorLogger.logError(error, 'ANALYTICS_ERROR', 'Failed to get search insights');
+      console.error('Failed to get search insights:', error);
       throw error;
     }
   }
@@ -357,7 +356,7 @@ export class AnalyticsService {
         `);
       }
     } catch (error) {
-      errorLogger.logError(error, 'ANALYTICS_ERROR', 'Failed to flush search analytics');
+      console.error('Failed to flush search analytics:', error);
     }
   }
 
@@ -390,7 +389,7 @@ export class AnalyticsService {
         `);
       }
     } catch (error) {
-      errorLogger.logError(error, 'ANALYTICS_ERROR', 'Failed to flush page view analytics');
+      console.error('Failed to flush page view analytics:', error);
     }
   }
 
@@ -423,7 +422,7 @@ export class AnalyticsService {
         `);
       }
     } catch (error) {
-      errorLogger.logError(error, 'ANALYTICS_ERROR', 'Failed to flush performance metrics');
+      console.error('Failed to flush performance metrics:', error);
     }
   }
 
@@ -455,7 +454,7 @@ export class AnalyticsService {
         `);
       }
     } catch (error) {
-      errorLogger.logError(error, 'ANALYTICS_ERROR', 'Failed to flush user interaction analytics');
+      console.error('Failed to flush user interaction analytics:', error);
     }
   }
 }

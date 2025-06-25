@@ -50,7 +50,7 @@ export const initSentry = () => {
             if (key.toLowerCase().includes('password') || 
                 key.toLowerCase().includes('secret') ||
                 key.toLowerCase().includes('token')) {
-              data[key] = '[Filtered]';
+              (data as Record<string, any>)[key] = '[Filtered]';
             }
           });
         }
@@ -200,7 +200,7 @@ export const clearUser = () => {
 };
 
 // Express middleware for request tracking
-export const sentryRequestHandler = () => Sentry.expressIntegration();
+export const sentryRequestHandler = () => (req: any, res: any, next: any) => next();
 export const sentryTracingHandler = () => (req: any, res: any, next: any) => next();
 export const sentryErrorHandler = () => Sentry.expressErrorHandler();
 

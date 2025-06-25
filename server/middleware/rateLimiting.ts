@@ -19,15 +19,15 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
     const today = new Date().toISOString().split('T')[0];
     
     // Check if user is in grace period (new account)
-    const [userInfo] = await db.execute(sql`
+    const userInfo = await db.execute(sql`
       SELECT created_at FROM users WHERE id = ${userId}
     `);
     
-    if (!userInfo.length) {
+    if (!userInfo.rows || userInfo.rows.length === 0) {
       return true; // Allow if user not found (shouldn't happen)
     }
     
-    const userCreatedAt = new Date((userInfo[0] as any).created_at);
+    const userCreatedAt = new Date((userInfo.rows[0] as any).created_at);
     const daysSinceCreation = Math.floor(
       (Date.now() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24)
     );
@@ -38,14 +38,14 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
     }
     
     // Count today's views for this user
-    const [viewCount] = await db.execute(sql`
+    const viewCount = await db.execute(sql`
       SELECT COUNT(*) as count 
       FROM user_term_views 
       WHERE user_id = ${userId} 
       AND DATE(viewed_at) = ${today}
     `);
     
-    const todayViews = Number((viewCount[0] as any)?.count || 0);
+    const todayViews = Number((viewCount.rows[0] as any)?.count || 0);
     
     // Check if over daily limit
     if (todayViews >= DEFAULT_CONFIG.dailyLimit) {
@@ -64,7 +64,7 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
     return true;
     
   } catch (error) {
-    errorLogger.error('Rate limiting error:', error);
+    console.error('Rate limiting error:', error);
     return true; // Fail open to avoid blocking legitimate users
   }
 }
@@ -90,7 +90,7 @@ export function rateLimitMiddleware(req: Request, res: Response, next: NextFunct
     }
     next();
   }).catch(error => {
-    errorLogger.error('Rate limit middleware error:', error);
+    console.error('Rate limit middleware error:', error);
     next(); // Fail open
   });
 }

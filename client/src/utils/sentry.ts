@@ -35,7 +35,7 @@ export const initSentry = () => {
       Sentry.browserTracingIntegration(),
       
       // Session replay
-      new Sentry.Replay({
+      Sentry.replayIntegration({
         maskAllText: false,
         blockAllMedia: true,
       })
@@ -46,7 +46,7 @@ export const initSentry = () => {
       // Filter out sensitive data from forms
       if (event.request?.data) {
         const data = event.request.data;
-        if (typeof data === 'object') {
+        if (typeof data === 'object' && data !== null) {
           Object.keys(data).forEach(key => {
             if (key.toLowerCase().includes('password') || 
                 key.toLowerCase().includes('secret') ||
@@ -147,26 +147,29 @@ export const captureUserAction = (action: string, context?: {
 
 // Performance monitoring
 export const measurePerformance = (name: string, fn: () => void) => {
-  const transaction = Sentry.startTransaction({
+  const span = Sentry.startSpan({
     name,
     op: 'navigation'
+  }, () => {
+    try {
+      return fn();
+    } catch (error) {
+      Sentry.captureException(error);
+      throw error;
+    }
   });
   
-  Sentry.getCurrentHub().configureScope(scope => scope.setSpan(transaction));
-  
-  try {
-    fn();
-  } finally {
-    transaction.finish();
-  }
+  return span;
 };
 
 // React Error Boundary HOC
 export const withErrorBoundary = <P extends object>(
   Component: React.ComponentType<P>,
-  errorBoundaryOptions?: Sentry.ErrorBoundaryProps
+  errorBoundaryOptions?: any
 ) => {
-  const ErrorFallback = ({ error, resetError }: { error: Error; resetError: () => void }) => {
+  const ErrorFallback = ({ error, resetError }: { error: unknown; resetError: () => void }) => {
+    const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
+    
     return React.createElement('div', {
       className: 'flex items-center justify-center min-h-96 p-8'
     }, React.createElement('div', {

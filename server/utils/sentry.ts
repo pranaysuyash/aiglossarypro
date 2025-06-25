@@ -1,5 +1,4 @@
 import * as Sentry from '@sentry/node';
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
 
 // Initialize Sentry for server-side error tracking
 export const initSentry = () => {
@@ -30,22 +29,14 @@ export const initSentry = () => {
     profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
     
     integrations: [
-      nodeProfilingIntegration(),
-      // Capture console.log, console.error, etc.
-      new Sentry.Integrations.Console({
-        levels: ['error']
-      }),
-      // Capture HTTP requests
-      new Sentry.Integrations.Http({
-        tracing: true
-      }),
-      // Capture database queries (if using supported ORM)
-      new Sentry.Integrations.OnUncaughtException({
-        exitEvenIfOtherHandlersAreRegistered: false
-      }),
-      new Sentry.Integrations.OnUnhandledRejection({
-        mode: 'warn'
-      })
+      // HTTP integration for request tracing
+      Sentry.httpIntegration(),
+      // Console integration for capturing console errors
+      Sentry.consoleIntegration(),
+      // Node.js context integration
+      Sentry.contextLinesIntegration(),
+      // Local variables integration
+      Sentry.localVariablesIntegration(),
     ],
     
     // Configure which data to send
@@ -171,9 +162,16 @@ export const captureDatabaseError = (error: Error, context: {
 
 // Performance monitoring
 export const startTransaction = (name: string, operation: string) => {
-  return Sentry.startTransaction({
+  return Sentry.startSpan({
     name,
     op: operation
+  }, () => {
+    // Return a span-like object for compatibility
+    return {
+      setData: (key: string, value: any) => Sentry.setContext(key, value),
+      setTag: (key: string, value: string) => Sentry.setTag(key, value),
+      finish: () => {}, // No-op for compatibility
+    };
   });
 };
 
@@ -202,8 +200,8 @@ export const clearUser = () => {
 };
 
 // Express middleware for request tracking
-export const sentryRequestHandler = () => Sentry.Handlers.requestHandler();
-export const sentryTracingHandler = () => Sentry.Handlers.tracingHandler();
-export const sentryErrorHandler = () => Sentry.Handlers.errorHandler();
+export const sentryRequestHandler = () => Sentry.expressIntegration();
+export const sentryTracingHandler = () => (req: any, res: any, next: any) => next();
+export const sentryErrorHandler = () => Sentry.expressErrorHandler();
 
 export default Sentry;

@@ -49,7 +49,7 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
     
     // Check if over daily limit
     if (todayViews >= DEFAULT_CONFIG.dailyLimit) {
-      errorLogger.warn(`Rate limit exceeded for user ${userId}: ${todayViews} views today`);
+      console.warn(`Rate limit exceeded for user ${userId}: ${todayViews} views today`);
       return false;
     }
     

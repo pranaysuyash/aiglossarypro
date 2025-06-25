@@ -2,20 +2,10 @@ import React, { useMemo, useCallback } from 'react';
 import { FixedSizeList as List } from 'react-window';
 import InfiniteLoader from 'react-window-infinite-loader';
 import TermCard from './TermCard';
-
-interface Term {
-  id: string;
-  name: string;
-  definition: string;
-  shortDefinition?: string;
-  category?: string;
-  categoryId?: string;
-  viewCount?: number;
-  isFavorite?: boolean;
-}
+import type { ITerm } from '../../../shared/types';
 
 interface VirtualizedTermListProps {
-  terms: Term[];
+  terms: ITerm[];
   hasNextPage?: boolean;
   isNextPageLoading?: boolean;
   loadNextPage?: () => Promise<void>;
@@ -24,6 +14,7 @@ interface VirtualizedTermListProps {
   className?: string;
   itemHeight?: number;
   height?: number;
+  width?: number;
 }
 
 const VirtualizedTermList: React.FC<VirtualizedTermListProps> = ({
@@ -36,6 +27,7 @@ const VirtualizedTermList: React.FC<VirtualizedTermListProps> = ({
   className = '',
   itemHeight = 200, // Estimated height of TermCard
   height = 600, // Container height
+  width = 800, // Container width
 }) => {
   // Memoize item count including loading placeholder
   const itemCount = useMemo(() => {
@@ -101,10 +93,11 @@ const VirtualizedTermList: React.FC<VirtualizedTermListProps> = ({
         itemCount={itemCount}
         loadMoreItems={loadMoreItems}
       >
-        {({ onItemsRendered, ref }) => (
+        {({ onItemsRendered, ref }: { onItemsRendered: any; ref: any }) => (
           <List
             ref={ref}
             height={height}
+            width={width}
             itemCount={itemCount}
             itemSize={itemHeight}
             onItemsRendered={onItemsRendered}

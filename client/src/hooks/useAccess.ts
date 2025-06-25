@@ -72,7 +72,7 @@ export function useAccess(): AccessCheckResult {
   return {
     isLoading,
     error: error as Error | null,
-    accessStatus,
+    accessStatus: accessStatus || null,
     hasAccess,
     isFreeTier,
     hasReachedLimit,

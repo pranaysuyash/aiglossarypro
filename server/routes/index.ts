@@ -21,6 +21,7 @@ import { registerAnalyticsRoutes } from "./analytics";
 import { registerMediaRoutes } from "./media";
 import { registerSeoRoutes } from "./seo";
 import { registerContentRoutes } from "./content";
+import { registerGumroadRoutes } from "./gumroad";
 
 // Import existing specialized route modules
 import cacheRoutes from "./cache";
@@ -99,6 +100,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Register content accessibility routes
   registerContentRoutes(app);
   console.log("✅ Content accessibility routes registered");
+  
+  // Register Gumroad monetization routes
+  registerGumroadRoutes(app);
+  console.log("✅ Gumroad monetization routes registered");
   
   // Mount S3 routes if enabled
   if (features.s3Enabled) {

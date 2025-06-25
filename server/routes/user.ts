@@ -264,4 +264,131 @@ export function registerUserRoutes(app: Express): void {
       });
     }
   });
+
+  // Access status endpoint for monetization
+  app.get('/api/user/access-status', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ 
+          success: false,
+          message: "User not found" 
+        });
+      }
+
+      // Calculate days since account creation
+      const accountAge = Math.floor((Date.now() - new Date(user.createdAt).getTime()) / (1000 * 60 * 60 * 24));
+      const isNewUser = accountAge < 7;
+      
+      // For free tier users, check daily limits
+      const isFreeTier = user.subscriptionTier === 'free' || !user.lifetimeAccess;
+      const dailyLimit = isFreeTier ? 50 : Number.MAX_SAFE_INTEGER;
+      
+      // Calculate remaining views for today
+      const now = new Date();
+      const lastReset = user.lastViewReset ? new Date(user.lastViewReset) : new Date(user.createdAt);
+      const isSameDay = now.toDateString() === lastReset.toDateString();
+      
+      let dailyViews = 0;
+      let remainingViews = dailyLimit;
+      
+      if (isFreeTier) {
+        if (isSameDay) {
+          dailyViews = user.dailyViews || 0;
+        } else {
+          // Reset daily views if it's a new day
+          dailyViews = 0;
+          // Note: We should update the database here, but we'll do it when they view a term
+        }
+        remainingViews = Math.max(0, dailyLimit - dailyViews);
+      }
+
+      const accessStatus = {
+        hasAccess: user.lifetimeAccess || remainingViews > 0,
+        subscriptionTier: user.subscriptionTier || 'free',
+        lifetimeAccess: user.lifetimeAccess || false,
+        dailyViews,
+        dailyLimit,
+        remainingViews,
+        daysUntilReset: isFreeTier ? 1 : 0, // Always resets daily for free tier
+        purchaseDate: user.purchaseDate?.toISOString(),
+        isNewUser,
+        accountAge,
+      };
+      
+      res.json({
+        success: true,
+        data: accessStatus
+      });
+    } catch (error) {
+      console.error("Error fetching access status:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to fetch access status" 
+      });
+    }
+  });
+
+  // Term access check endpoint
+  app.get('/api/user/term-access/:termId', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      const { termId } = req.params;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ 
+          success: false,
+          message: "User not found" 
+        });
+      }
+
+      // If user has lifetime access, they can view any term
+      if (user.lifetimeAccess) {
+        return res.json({
+          success: true,
+          data: { canView: true, reason: 'lifetime_access' }
+        });
+      }
+
+      // Check if user has viewed this term today (free tier logic)
+      const now = new Date();
+      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      
+      // This would require a more complex query to check if the user has viewed this specific term today
+      // For now, we'll just check overall daily limits
+      const dailyViews = user.dailyViews || 0;
+      const dailyLimit = 50;
+      
+      if (dailyViews >= dailyLimit) {
+        return res.json({
+          success: true,
+          data: { 
+            canView: false, 
+            reason: 'daily_limit_reached',
+            dailyViews,
+            dailyLimit 
+          }
+        });
+      }
+
+      res.json({
+        success: true,
+        data: { 
+          canView: true, 
+          reason: 'within_daily_limit',
+          dailyViews,
+          remainingViews: dailyLimit - dailyViews
+        }
+      });
+    } catch (error) {
+      console.error("Error checking term access:", error);
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to check term access" 
+      });
+    }
+  });
 }

@@ -1,8 +1,11 @@
-import React from 'react';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
+import { Button } from '../components/ui/button';
 import { Check, Star, Shield, Zap, BookOpen, Code, TrendingUp } from 'lucide-react';
+import { PurchaseVerification } from '../components/PurchaseVerification';
 
 export default function Lifetime() {
+  const [showVerification, setShowVerification] = useState(false);
+  
   const handlePurchase = () => {
     window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
   };
@@ -20,12 +23,21 @@ export default function Lifetime() {
             code examples, and real-world applications.
           </p>
           <div className="mb-8">
-            <Button 
-              onClick={handlePurchase}
-              className="text-xl px-12 py-6 bg-blue-600 hover:bg-blue-700"
-            >
-              Get Lifetime Access - $129
-            </Button>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <Button 
+                onClick={handlePurchase}
+                className="text-xl px-12 py-6 bg-blue-600 hover:bg-blue-700"
+              >
+                Get Lifetime Access - $129
+              </Button>
+              <Button 
+                onClick={() => setShowVerification(true)}
+                variant="outline"
+                className="text-lg px-8 py-6"
+              >
+                Already Purchased? Verify Access
+              </Button>
+            </div>
             <p className="text-sm text-gray-500 mt-4">
               One-time payment, lifetime access. 30-day money back guarantee.
             </p>
@@ -210,6 +222,23 @@ export default function Lifetime() {
           </p>
         </div>
       </section>
+
+      {/* Purchase Verification Modal */}
+      {showVerification && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="relative">
+            <Button
+              onClick={() => setShowVerification(false)}
+              variant="ghost"
+              size="sm"
+              className="absolute -top-2 -right-2 text-white hover:text-gray-300 z-10"
+            >
+              ×
+            </Button>
+            <PurchaseVerification onVerified={() => setShowVerification(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }

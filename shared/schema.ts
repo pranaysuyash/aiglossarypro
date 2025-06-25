@@ -32,12 +32,39 @@ export const users = pgTable("users", {
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
   isAdmin: boolean("is_admin").default(false),
+  
+  // NEW MONETIZATION FIELDS
+  subscriptionTier: varchar("subscription_tier", { length: 20 }).default("free"),
+  lifetimeAccess: boolean("lifetime_access").default(false),
+  purchaseDate: timestamp("purchase_date"),
+  dailyViews: integer("daily_views").default(0),
+  lastViewReset: timestamp("last_view_reset").defaultNow(),
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+
+// NEW PURCHASES TABLE for Gumroad integration
+export const purchases = pgTable("purchases", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: varchar("user_id").references(() => users.id),
+  gumroadOrderId: varchar("gumroad_order_id").unique().notNull(),
+  amount: integer("amount"), // in cents
+  currency: varchar("currency", { length: 3 }).default("USD"),
+  status: varchar("status").default("completed"),
+  purchaseData: jsonb("purchase_data"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userIdx: index("purchases_user_idx").on(table.userId),
+  orderIdx: index("purchases_order_idx").on(table.gumroadOrderId),
+  statusIdx: index("purchases_status_idx").on(table.status),
+}));
+
+export type Purchase = typeof purchases.$inferSelect;
+export type InsertPurchase = typeof purchases.$inferInsert;
 
 // Categories table
 export const categories = pgTable("categories", {

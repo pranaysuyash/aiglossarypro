@@ -9,8 +9,9 @@ import {
   termViews,
   userSettings
 } from "@shared/enhancedSchema";
-import type { User, UpsertUser } from "@shared/schema";
+import type { User, UpsertUser, Purchase, InsertPurchase } from "@shared/schema";
 import { db } from "./db";
+import { purchases } from "@shared/schema";
 import { eq, desc, sql, and, like, ilike, asc, gte, lte, not, isNull, inArray, or } from "drizzle-orm";
 import { 
   createInsertSchema, 
@@ -66,6 +67,11 @@ export interface IStorage {
   // User data
   exportUserData(userId: string): Promise<any>;
   deleteUserData(userId: string): Promise<void>;
+  
+  // Monetization operations
+  getUserByEmail(email: string): Promise<User | undefined>;
+  updateUser(id: string, updates: Partial<User>): Promise<void>;
+  createPurchase(purchase: InsertPurchase): Promise<Purchase>;
   
   // Admin operations
   getAdminStats(): Promise<any>;
@@ -1215,6 +1221,30 @@ export class DatabaseStorage implements IStorage {
     };
   }
 
+  // Monetization operations
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        ...updates,
+        updatedAt: new Date(),
+      })
+      .where(eq(users.id, id));
+  }
+
+  async createPurchase(purchase: InsertPurchase): Promise<Purchase> {
+    const [newPurchase] = await db
+      .insert(purchases)
+      .values(purchase)
+      .returning();
+    return newPurchase;
+  }
+
   async clearAllData(): Promise<void> {
     // Clear all glossary data (terms, categories, etc.)
     await db.delete(termViews);
@@ -1839,4 +1869,5 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
+// Create and export storage instance
 export const storage = new DatabaseStorage();

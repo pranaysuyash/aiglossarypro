@@ -12,6 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **Monetization**: PPP pricing (21 countries) + Gumroad integration
 - **Test Suite**: Comprehensive testing infrastructure (5 test files, 1,500+ lines)
 - **TypeScript**: Reduced errors from 561+ to 98 (82% improvement)
+- **Security**: Secured all admin endpoints
 
 ### 🎯 Current Priorities
 ```bash

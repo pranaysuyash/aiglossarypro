@@ -1,5 +1,5 @@
 import { Express, Request, Response } from 'express';
-import { storage } from '../storage';
+import { optimizedStorage as storage } from "../optimizedStorage";
 import { authenticateToken } from '../middleware/adminAuth';
 import type { 
   ISectionResponse, 

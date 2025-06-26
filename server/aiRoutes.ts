@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { aiService } from "./aiService";
-import { storage } from "./storage";
+import { optimizedStorage as storage } from "./optimizedStorage";
 import { isAuthenticated } from "./replitAuth";
 import { isUserAdmin } from "./utils/authUtils";
 

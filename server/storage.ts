@@ -1871,15 +1871,15 @@ export class DatabaseStorage implements IStorage {
         totalResults: countResult.rows[0]?.total || 0,
         page,
         limit,
-        totalPages: Math.ceil((countResult.rows[0]?.total || 0) / limit)
+        totalPages: Math.ceil(Number(countResult.rows[0]?.total || 0) / limit)
       };
     } catch (error) {
       console.error('Error searching section content:', error);
       return {
         results: [],
         totalResults: 0,
-        page,
-        limit,
+        page: options.page,
+        limit: options.limit,
         totalPages: 0
       };
     }
@@ -2068,60 +2068,6 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async searchTerms(query: string): Promise<any[]> {
-    // Sanitize the query to prevent SQL injection
-    const sanitizedQuery = query.replace(/[%_]/g, '\\$&');
-    
-    const result = await db.select()
-      .from(terms)
-      .where(sql`${terms.name} ILIKE ${`%${sanitizedQuery}%`} OR ${terms.definition} ILIKE ${`%${sanitizedQuery}%`}`)
-      .orderBy(terms.name)
-      .limit(50);
-    
-    return result;
-  }
-
-  async getFavorites(userId: string): Promise<any[]> {
-    const result = await db.select({
-      id: terms.id,
-      name: terms.name,
-      definition: terms.definition,
-      shortDefinition: terms.shortDefinition,
-      categoryId: terms.categoryId,
-      viewCount: terms.viewCount,
-      createdAt: terms.createdAt,
-      updatedAt: terms.updatedAt
-    })
-    .from(favorites)
-    .innerJoin(terms, eq(favorites.termId, terms.id))
-    .where(eq(favorites.userId, userId))
-    .orderBy(favorites.createdAt);
-    
-    return result;
-  }
-
-  async addFavorite(userId: string, termId: string): Promise<void> {
-    try {
-      await db.insert(favorites).values({
-        userId,
-        termId
-      });
-    } catch (error: any) {
-      // Handle duplicate favorite gracefully
-      if (error.code === '23505') { // PostgreSQL unique violation
-        return;
-      }
-      throw error;
-    }
-  }
-
-  async removeFavorite(userId: string, termId: string): Promise<void> {
-    await db.delete(favorites)
-      .where(and(
-        eq(favorites.userId, userId),
-        eq(favorites.termId, termId)
-      ));
-  }
 
   async createTerm(termData: any): Promise<any> {
     // Validate required fields

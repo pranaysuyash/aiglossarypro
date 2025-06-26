@@ -6,7 +6,7 @@
 import fs from 'fs';
 import path from 'path';
 import { Transform } from 'stream';
-import { db } from './db';
+import { optimizedStorage as storage } from "./optimizedStorage";
 import {  categories, subcategories, terms, termSubcategories  } from "../shared/schema";
 import { eq, and } from 'drizzle-orm';
 

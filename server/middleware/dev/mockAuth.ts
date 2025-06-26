@@ -119,7 +119,7 @@ export function setupMockAuth(app: any) {
  */
 async function ensureDevUserExists() {
   try {
-    const { storage } = await import("../../storage");
+    import { optimizedStorage as storage } from "../optimizedStorage";
     
     await storage.upsertUser({
       id: DEV_USER.claims.sub,

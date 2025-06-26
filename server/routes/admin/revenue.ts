@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { storage } from "../../storage";
+import { optimizedStorage as storage } from "../optimizedStorage";
 import { isAuthenticated } from "../../replitAuth";
 import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
@@ -292,7 +292,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
         await storage.updateUserAccess(purchase.userId, {
           lifetimeAccess: true,
           subscriptionTier: 'lifetime',
-          purchaseDate: purchase.createdAt
+          purchaseDate: purchase.createdAt || new Date()
         });
       }
       

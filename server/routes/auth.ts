@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { storage } from "../storage";
+import { optimizedStorage as storage } from "../optimizedStorage";
 import { isAuthenticated } from "../replitAuth";
 import { authenticateToken } from "../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mockAuth";
@@ -110,7 +110,7 @@ export function registerAuthRoutes(app: Express): void {
   });
 
   // User data export
-  app.get('/api/user/export', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/export', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userInfo = getUserInfo(req);
       if (!userInfo) {
@@ -134,7 +134,7 @@ export function registerAuthRoutes(app: Express): void {
   });
 
   // Delete user data (GDPR compliance)
-  app.delete('/api/user/data', authMiddleware, async (req: Request & AuthenticatedRequest, res: Response) => {
+  app.delete('/api/user/data', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userInfo = getUserInfo(req);
       if (!userInfo) {

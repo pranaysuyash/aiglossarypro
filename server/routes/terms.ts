@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { storage } from "../storage";
+import { optimizedStorage as storage } from "../optimizedStorage";
 import { isAuthenticated } from "../replitAuth";
 import { mockIsAuthenticated } from "../middleware/dev/mockAuth";
 import { features } from "../config";

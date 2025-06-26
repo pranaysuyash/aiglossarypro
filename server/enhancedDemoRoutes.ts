@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { enhancedStorage } from "./enhancedStorage";
+import { enhancedStorage } from "./enhancedTermsStorage";
 import { isAuthenticated } from "./replitAuth";
 
 /**

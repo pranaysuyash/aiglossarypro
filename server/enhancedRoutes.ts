@@ -1,14 +1,14 @@
 import type { Express, Request, Response } from "express";
 import multer from "multer";
 import { processExcelUpload } from "./dataTransformationPipeline";
-import { optimizedStorage as storage } from "./optimizedStorage";
+import { enhancedStorage } from "./enhancedTermsStorage";
 import { isAuthenticated } from "./replitAuth";
 import { isUserAdmin } from "./utils/authUtils";
 import { z } from "zod";
 
 // File upload configuration
 const upload = multer({
-  storage: multer.memoryStorage(),
+  enhancedStorage: multer.memoryStorage(),
   limits: {
     fileSize: 100 * 1024 * 1024, // 100MB max file size for complex Excel files
   },

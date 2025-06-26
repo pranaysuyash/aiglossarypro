@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
 import type { AuthenticatedRequest } from "../../../shared/types";
+import { enhancedStorage as storage } from "../../enhancedStorage";
 
 /**
  * Mock authentication middleware for local development
@@ -23,8 +24,8 @@ const DEV_USER = {
  * Mock isAuthenticated middleware for development
  */
 export const mockIsAuthenticated = (req: Request, res: Response, next: NextFunction) => {
-  // Simulate authenticated user
-  req.user = DEV_USER as any;
+  // Simulate authenticated user with proper typing
+  (req as AuthenticatedRequest).user = DEV_USER;
   
   // Mock passport methods with correct types
   (req as any).isAuthenticated = () => true;
@@ -56,7 +57,7 @@ export const mockAuthenticateToken = (req: Request, res: Response, next: NextFun
   try {
     // Ensure user is set (should be from mockIsAuthenticated)
     if (!req.user) {
-      req.user = DEV_USER as any;
+      (req as AuthenticatedRequest).user = DEV_USER;
     }
 
     // Transform to expected format
@@ -119,7 +120,6 @@ export function setupMockAuth(app: any) {
  */
 async function ensureDevUserExists() {
   try {
-    import { optimizedStorage as storage } from "../optimizedStorage";
     
     await storage.upsertUser({
       id: DEV_USER.claims.sub,

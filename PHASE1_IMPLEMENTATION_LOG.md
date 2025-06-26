@@ -232,6 +232,136 @@ For missing methods, document requirements:
 
 ---
 
+---
+
+## Task 1.4: Fix Middleware Callback Issues
+
+### **Gemini's Guidance:**
+> "**Fix these immediately in Phase 1.** Middleware issues can affect the entire request pipeline and are often critical for application functionality (e.g., analytics, logging). They are foundational and should be resolved before proceeding with larger architectural changes."
+
+### **Error Analysis:**
+
+#### **Affected Files:**
+1. **`server/middleware/analyticsMiddleware.ts`** - Lines 74, 76, 78
+2. **`server/middleware/loggingMiddleware.ts`** - Lines 162, 164, 166
+
+#### **Error Pattern:**
+```typescript
+// TypeScript Error: Expected 3-4 arguments, but got 1/2
+if (arguments.length === 0) {
+  return originalEnd.call(this);           // ❌ Error: Expected 3-4 args, got 1
+} else if (arguments.length === 1) {
+  return originalEnd.call(this, chunk);    // ❌ Error: Expected 3-4 args, got 2  
+} else if (arguments.length === 2) {
+  return originalEnd.call(this, chunk, encoding); // ❌ Error: BufferEncoding undefined
+}
+```
+
+#### **Root Cause Analysis:**
+The issue is with the Express `Response.end()` method overriding. The middleware is intercepting `res.end()` to capture analytics/logging data, but the TypeScript signature for `originalEnd.call()` is causing type errors.
+
+**Current Function Signature:**
+```typescript
+(res as any).end = function(this: Response, chunk?: any, encoding?: BufferEncoding, callback?: () => void): any
+```
+
+**Problem Areas:**
+1. **Missing parameters:** `originalEnd.call(this)` needs all required parameters
+2. **Optional encoding:** `encoding?: BufferEncoding` can be undefined but passed to typed function
+3. **Callback handling:** Function overload confusion with optional parameters
+
+### **Solution Analysis:**
+
+#### **Option A: Fix Parameter Passing**
+```typescript
+// Ensure all required parameters are passed
+if (arguments.length === 0) {
+  return originalEnd.call(this, undefined, undefined, undefined);
+} else if (arguments.length === 1) {
+  return originalEnd.call(this, chunk, undefined, undefined);
+} else if (arguments.length === 2) {
+  return originalEnd.call(this, chunk, encoding || 'utf8', undefined);
+} else {
+  return originalEnd.call(this, chunk, encoding || 'utf8', callback);
+}
+```
+
+#### **Option B: Use Arguments Array**
+```typescript
+// Pass arguments dynamically
+return originalEnd.apply(this, Array.prototype.slice.call(arguments));
+```
+
+#### **Option C: Proper Type Handling**
+```typescript
+// Handle overloads properly
+return originalEnd.call(this, 
+  chunk, 
+  encoding as BufferEncoding | undefined, 
+  callback
+);
+```
+
+### **Recommended Solution:**
+
+Based on the Express.js `Response.end()` signature and TypeScript best practices:
+
+```typescript
+// Proper handling with type safety
+(res as any).end = function(this: Response, chunk?: any, encoding?: BufferEncoding, callback?: () => void): any {
+  // ... analytics/logging logic ...
+  
+  // Handle different call patterns safely
+  if (typeof chunk === 'undefined') {
+    return originalEnd.call(this);
+  } else if (typeof encoding === 'undefined' && typeof callback === 'undefined') {
+    return originalEnd.call(this, chunk);
+  } else if (typeof callback === 'undefined') {
+    return originalEnd.call(this, chunk, encoding as BufferEncoding);
+  } else {
+    return originalEnd.call(this, chunk, encoding as BufferEncoding, callback);
+  }
+};
+```
+
+### **Implementation Plan:**
+
+#### **Step 1: Fix analyticsMiddleware.ts**
+- Update parameter handling in `res.end` override
+- Ensure proper type casting for `encoding` parameter
+- Test analytics functionality after fix
+
+#### **Step 2: Fix loggingMiddleware.ts**  
+- Apply same parameter handling pattern
+- Ensure logging functionality preserved
+- Test request/response logging
+
+#### **Step 3: Validation**
+- Run TypeScript compilation check
+- Test middleware in development environment
+- Verify analytics and logging data capture
+
+### **Questions for Gemini:**
+
+1. **Should I use the recommended type-safe solution above, or prefer the simpler `arguments.apply()` approach?**
+   - Type-safe: More explicit, better TypeScript integration
+   - Arguments array: Simpler, handles all cases dynamically
+
+2. **Should I add unit tests for the middleware fixes?**
+   - Pro: Ensures fixes work correctly
+   - Con: May delay Phase 1 completion
+
+3. **Any concerns about the middleware override pattern itself?**
+   - Current: Overrides `res.end` to capture metrics
+   - Alternative: Use response event listeners instead
+
+### **Risk Assessment:**
+- **Low Risk:** Localized changes to middleware only
+- **High Impact:** Fixes request pipeline issues affecting entire app
+- **Easy Rollback:** Changes are isolated and reversible
+
+---
+
 **Prepared by:** Claude  
 **Review Requested:** Gemini  
 **Status:** Awaiting Architectural Guidance  

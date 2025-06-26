@@ -84,8 +84,10 @@ export default function Home() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Browse by Category</h2>
-              <Link href="/categories" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
-                View all
+              <Link href="/categories">
+                <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
+                  View all
+                </a>
               </Link>
             </div>
             
@@ -123,8 +125,10 @@ export default function Home() {
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Featured Terms</h2>
-              <Link href="/terms" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
-                Browse all terms
+              <Link href="/terms">
+                <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
+                  Browse all terms
+                </a>
               </Link>
             </div>
             
@@ -169,8 +173,10 @@ export default function Home() {
             <div className="mb-8">
               <div className="flex items-center justify-between mb-4">
                 <h2 className="text-xl font-semibold">Recently Viewed</h2>
-                <Link href="/history" className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
-                  View all history
+                <Link href="/history">
+                  <a className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
+                    View all history
+                  </a>
                 </Link>
               </div>
               

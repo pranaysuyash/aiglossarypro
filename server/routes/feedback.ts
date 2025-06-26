@@ -330,7 +330,7 @@ export function registerFeedbackRoutes(app: Express): void {
    * Get feedback statistics (admin only)
    * GET /api/feedback/stats
    */
-  app.get('/api/feedback/stats', asyncHandler(async (req: Request, res: Response) => {
+  app.get('/api/feedback/stats', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
     try {
       // Get feedback counts by type and status
       const stats = await db.execute(sql`

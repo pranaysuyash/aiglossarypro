@@ -121,7 +121,7 @@ export function registerMonitoringRoutes(app: Express): void {
    * Get database performance metrics
    * GET /api/monitoring/database
    */
-  app.get('/api/monitoring/database', async (req: Request, res: Response) => {
+  app.get('/api/monitoring/database', requireAdmin, async (req: Request, res: Response) => {
     try {
       // Database size and table information
       const tableStats = await db.execute(sql`
@@ -189,7 +189,7 @@ export function registerMonitoringRoutes(app: Express): void {
    * Get application metrics
    * GET /api/monitoring/metrics
    */
-  app.get('/api/monitoring/metrics', async (req: Request, res: Response) => {
+  app.get('/api/monitoring/metrics', requireAdmin, async (req: Request, res: Response) => {
     try {
       // Get term and category counts
       const termCount = await db.execute(sql`SELECT COUNT(*) as count FROM terms`);
@@ -293,7 +293,7 @@ export function registerMonitoringRoutes(app: Express): void {
    * Get comprehensive analytics dashboard
    * GET /api/monitoring/analytics/dashboard?timeframe=week
    */
-  app.get('/api/monitoring/analytics/dashboard', async (req: Request, res: Response) => {
+  app.get('/api/monitoring/analytics/dashboard', requireAdmin, async (req: Request, res: Response) => {
     try {
       const timeframe = req.query.timeframe as 'day' | 'week' | 'month' | 'year' || 'week';
       const dashboardData = await analyticsService.getDashboardData(timeframe);
@@ -315,7 +315,7 @@ export function registerMonitoringRoutes(app: Express): void {
    * Get search insights and optimization suggestions
    * GET /api/monitoring/analytics/search-insights
    */
-  app.get('/api/monitoring/analytics/search-insights', async (req: Request, res: Response) => {
+  app.get('/api/monitoring/analytics/search-insights', requireAdmin, async (req: Request, res: Response) => {
     try {
       const insights = await analyticsService.getSearchInsights();
       
@@ -336,7 +336,7 @@ export function registerMonitoringRoutes(app: Express): void {
    * Get real-time system metrics
    * GET /api/monitoring/metrics/realtime
    */
-  app.get('/api/monitoring/metrics/realtime', async (req: Request, res: Response) => {
+  app.get('/api/monitoring/metrics/realtime', requireAdmin, async (req: Request, res: Response) => {
     try {
       const memoryUsage = process.memoryUsage();
       const cpuUsage = process.cpuUsage();

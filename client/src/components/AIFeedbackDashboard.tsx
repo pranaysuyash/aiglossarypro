@@ -88,27 +88,25 @@ export function AIFeedbackDashboard() {
       }
 
       // Load analytics data
-      const analyticsResponse = await fetch('/api/analytics?timeframe=30d');
+      const analyticsResponse = await fetch('/api/monitoring/analytics/dashboard?timeframe=month');
       if (analyticsResponse.ok) {
         const analyticsData = await analyticsResponse.json();
         if (analyticsData.success && analyticsData.data) {
-          const metrics = analyticsData.data.metrics;
           setAnalytics({
-            totalRequests: metrics.totalViews || 0,
-            totalCost: 0, // Real cost tracking would be implemented in AI service
-            averageLatency: 850, // Default placeholder
-            successRate: 99.2, // Default placeholder
-            byOperation: {
-              'term_views': metrics.totalViews || 0,
-              'search_queries': Math.floor((metrics.totalViews || 0) * 0.6),
-              'content_generation': Math.floor((metrics.totalViews || 0) * 0.1),
-              'analytics_requests': Math.floor((metrics.totalViews || 0) * 0.05)
-            },
-            byModel: {
-              'gpt-4.1-nano': Math.floor((metrics.totalViews || 0) * 0.7),
-              'gpt-3.5-turbo': Math.floor((metrics.totalViews || 0) * 0.3)
-            },
-            timeline: []
+            totalRequests: analyticsData.data.totalPageViews,
+            totalCost: 0, // This should come from a dedicated AI cost tracking service
+            averageLatency: analyticsData.data.averageSessionDuration,
+            successRate: 99.5, // This would need to be calculated based on error logs
+            byOperation: analyticsData.data.topPages.reduce((acc: any, page: any) => {
+              acc[page.page] = page.view_count;
+              return acc;
+            }, {}),
+            byModel: {}, // This data is not available from the current analytics endpoint
+            timeline: analyticsData.data.pageViewsByDay.map((item: any) => ({
+              date: item.day,
+              requests: item.total_views,
+              cost: 0
+            }))
           });
         }
       }

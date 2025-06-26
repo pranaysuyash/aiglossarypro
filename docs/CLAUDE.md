@@ -213,3 +213,7 @@ npm run dev 2>&1 | grep -E "(database|error|connection)"
 ---
 *Last Updated: January 2025*
 *Next Update: After production deployment*
+
+Always work on your own branch, merge to main if no conflicts once all changes are committed.
+Suggestions when provided in cli should also be documented
+Always create a separate review doc if you feel a second set of eyes would be helpful especially while we are working with multiple agents in parallel.

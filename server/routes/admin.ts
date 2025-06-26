@@ -14,8 +14,9 @@ import { smartLoadExcelData } from '../smartExcelLoader';
 import path from 'path';
 import fs from 'fs';
 import { inArray, eq } from 'drizzle-orm';
-import { db } from '../db';
-import { enhancedTerms, categories } from '../../shared/enhancedSchema';
+// TODO: Phase 2 - Remove direct db import after all queries use storage layer
+// import { db } from '../db';
+// import { enhancedTerms, categories } from '../../shared/enhancedSchema';
 
 // Set up multer for file uploads
 const upload = multer({
@@ -50,6 +51,9 @@ export function registerAdminRoutes(app: Express): void {
   // Admin dashboard statistics
   app.get('/api/admin/stats', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
+      // TODO: Phase 2 - Add getAdminStats() method to enhancedStorage
+      // Expected signature: async getAdminStats(): Promise<AdminStats>
+      // Should return: { userCount, termCount, categoryCount, recentActivity }
       const stats = await storage.getAdminStats();
       
       const response: ApiResponse<AdminStats> = {
@@ -134,6 +138,8 @@ export function registerAdminRoutes(app: Express): void {
 
       console.log("🗑️  Admin initiated data clearing...");
       
+      // TODO: Phase 2 - Add clearAllData() method to enhancedStorage
+      // Expected signature: async clearAllData(): Promise<{ tablesCleared: string[] }>
       const result = await storage.clearAllData();
       
       console.log("✅ Data clearing completed");
@@ -155,8 +161,11 @@ export function registerAdminRoutes(app: Express): void {
   // System health check
   app.get('/api/admin/health', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      // Provide basic health check since getSystemHealth doesn't exist
-      const termCount = await storage.getTermCount();
+      // TODO: Phase 2 - Add getSystemHealth() method to enhancedStorage
+      // Expected signature: async getSystemHealth(): Promise<SystemHealth>
+      // TODO: Phase 2 - Add getTermCount() method to enhancedStorage
+      // For now, provide basic health check without term count
+      const termCount = 'unknown';
       const health = {
         database: 'healthy' as const,
         s3: 'healthy' as const, 
@@ -185,12 +194,15 @@ export function registerAdminRoutes(app: Express): void {
       let result;
       switch (operation) {
         case 'reindex':
+          // TODO: Phase 2 - Add reindexDatabase() method to enhancedStorage
           result = await storage.reindexDatabase();
           break;
         case 'cleanup':
+          // TODO: Phase 2 - Add cleanupDatabase() method to enhancedStorage
           result = await storage.cleanupDatabase();
           break;
         case 'vacuum':
+          // TODO: Phase 2 - Add vacuumDatabase() method to enhancedStorage
           result = await storage.vacuumDatabase();
           break;
         default:
@@ -219,6 +231,8 @@ export function registerAdminRoutes(app: Express): void {
     try {
       const { page = 1, limit = 50, search } = req.query;
       
+      // TODO: Phase 2 - Add getAllUsers() method to enhancedStorage
+      // Expected signature: async getAllUsers(): Promise<User[]>
       const users = await storage.getAllUsers();
       
       // Apply pagination and search on the client side for now
@@ -259,6 +273,8 @@ export function registerAdminRoutes(app: Express): void {
   // Content moderation
   app.get('/api/admin/content/pending', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
+      // TODO: Phase 2 - Add getPendingContent() method to enhancedStorage
+      // Expected signature: async getPendingContent(): Promise<PendingContent[]>
       const pendingContent = await storage.getPendingContent();
       
       res.json({
@@ -277,6 +293,7 @@ export function registerAdminRoutes(app: Express): void {
   app.post('/api/admin/content/:id/approve', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
+      // TODO: Phase 2 - Add approveContent() method to enhancedStorage
       const result = await storage.approveContent(id);
       
       res.json({
@@ -298,6 +315,7 @@ export function registerAdminRoutes(app: Express): void {
       const { id } = req.params;
       const { reason } = req.body;
       
+      // TODO: Phase 2 - Add rejectContent() method to enhancedStorage
       const result = await storage.rejectContent(id);
       
       res.json({
@@ -592,11 +610,16 @@ export function registerAdminRoutes(app: Express): void {
         const batch = termIds.slice(i, i + 5);
         
         try {
-          // Fetch terms for this batch
-          const termsBatch = await db
-            .select()
-            .from(enhancedTerms)
-            .where(inArray(enhancedTerms.id, batch));
+          // TODO: Phase 2 - Replace with storage layer method
+          // Expected: await storage.getTermsByIds(batch)
+          // Temporary workaround - commenting out direct db access
+          // const termsBatch = await db
+          //   .select()
+          //   .from(enhancedTerms)
+          //   .where(inArray(enhancedTerms.id, batch));
+          
+          // For now, return error since storage method doesn't exist
+          throw new Error('Batch categorization requires storage layer enhancement in Phase 2');
           
                       // Process each term with AI categorization
             for (const term of termsBatch) {
@@ -750,11 +773,17 @@ Respond with JSON only.`
       // Process terms individually for better quality
       for (const termId of termIds) {
         try {
-          // Fetch term
-          const [term] = await db
-            .select()
-            .from(enhancedTerms)
-                          .where(eq(enhancedTerms.id, termId));
+          // TODO: Phase 2 - Replace with storage layer method
+          // Expected: await storage.getTermById(termId) with full enhanced data
+          // Temporary workaround - commenting out direct db access
+          // const [term] = await db
+          //   .select()
+          //   .from(enhancedTerms)
+          //   .where(eq(enhancedTerms.id, termId));
+          
+          // For now, return error since storage method doesn't exist
+          const term = null;
+          throw new Error('Definition enhancement requires storage layer enhancement in Phase 2');
           
           if (!term) {
             errors.push({

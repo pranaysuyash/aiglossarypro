@@ -1,7 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { optimizedStorage as storage } from "../optimizedStorage";
 import type { SearchResult, SearchFilters, ApiResponse } from "../../shared/types";
-import { db } from "../db";
 import { enhancedTerms as terms, categories } from "../../shared/enhancedSchema";
 import { eq, ilike, or, sql } from "drizzle-orm";
 import { searchQuerySchema, paginationSchema } from "../middleware/security";
@@ -98,12 +97,13 @@ export function registerSearchRoutes(app: Express): void {
       // Use enhanced search service for better suggestions
       const termSuggestions = await getSearchSuggestions(query, Math.min(limit - 3, 15));
       
-      // Get category suggestions (simple implementation)
-      const categorySuggestions = await db
-        .select({ name: categories.name })
-        .from(categories)
-        .where(ilike(categories.name, `%${query}%`))
-        .limit(3);
+      // Get category suggestions (using storage layer)
+      // TODO: Add searchCategories(query, limit) method to enhancedStorage in Phase 2
+      const allCategories = await storage.getCategories();
+      const categorySuggestions = allCategories
+        .filter(cat => cat.name.toLowerCase().includes(query.toLowerCase()))
+        .slice(0, 3)
+        .map(cat => ({ name: cat.name }));
       
       // Combine suggestions in a more structured format
       const allSuggestions = [

@@ -13,6 +13,7 @@ import {
   type TermRelationship,
   type EnhancedUserSettings as EnhancedUserSettingsType
 } from "@shared/enhancedSchema";
+import { db } from './db';
 import { optimizedStorage as storage } from "./optimizedStorage";
 import { 
   eq, 

@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { optimizedStorage as storage } from "../optimizedStorage";
+import { enhancedStorage as storage } from "../enhancedStorage";
 import type { SearchResult, SearchFilters, ApiResponse } from "../../shared/types";
 import { enhancedTerms as terms, categories } from "../../shared/enhancedSchema";
 import { eq, ilike, or, sql } from "drizzle-orm";

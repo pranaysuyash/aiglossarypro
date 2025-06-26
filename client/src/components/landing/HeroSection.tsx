@@ -68,7 +68,7 @@ export function HeroSection() {
           </Button>
           
           <p className="text-gray-400 text-sm">
-            One-time payment, lifetime access. No recurring fees.
+            One-time payment, lifetime access. Save ${pricing.annualSavings}+ annually vs subscriptions.
           </p>
           
           <div className="pt-4">

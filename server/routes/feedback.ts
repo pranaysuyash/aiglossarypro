@@ -4,50 +4,24 @@
  */
 
 import type { Express, Request, Response } from 'express';
-import { db } from '../db';
-import { sql } from 'drizzle-orm';
+import { enhancedStorage as storage } from '../enhancedStorage';
+// TODO: Phase 2 - Remove direct db usage after storage layer implementation
+// import { db } from '../db';
+// import { sql } from 'drizzle-orm';
 import { asyncHandler, handleDatabaseError, ErrorCategory } from '../middleware/errorHandler';
 import { requireAdmin } from '../middleware/adminAuth';
 
-// Create feedback table if it doesn't exist
-const createFeedbackTable = async () => {
-  try {
-    await db.execute(sql`
-      CREATE TABLE IF NOT EXISTS user_feedback (
-        id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-        type VARCHAR(50) NOT NULL CHECK (type IN ('helpful', 'error_report', 'suggestion', 'term_request', 'general')),
-        term_id UUID REFERENCES terms(id) ON DELETE SET NULL,
-        rating INTEGER CHECK (rating >= 1 AND rating <= 5),
-        message TEXT,
-        contact_email VARCHAR(255),
-        user_agent TEXT,
-        ip_address INET,
-        status VARCHAR(20) DEFAULT 'pending' CHECK (status IN ('pending', 'reviewed', 'implemented', 'rejected')),
-        admin_notes TEXT,
-        created_at TIMESTAMP DEFAULT NOW(),
-        updated_at TIMESTAMP DEFAULT NOW()
-      )
-    `);
+// TODO: Phase 2 - Move table creation to storage layer migration
+// Feedback table should be created via Drizzle schema and migrations
+// For now, commenting out direct table creation
 
-    // Create index for efficient querying
-    await db.execute(sql`
-      CREATE INDEX IF NOT EXISTS idx_user_feedback_type_status 
-      ON user_feedback(type, status, created_at DESC)
-    `);
-
-    await db.execute(sql`
-      CREATE INDEX IF NOT EXISTS idx_user_feedback_term_id 
-      ON user_feedback(term_id) WHERE term_id IS NOT NULL
-    `);
-
-    console.log('✅ User feedback table initialized');
-  } catch (error) {
-    console.error('❌ Error creating feedback table:', error);
-  }
+const initializeFeedbackStorage = async () => {
+  // TODO: Phase 2 - Add initializeFeedbackSchema() to enhancedStorage
+  console.log('⚠️ Feedback schema initialization moved to Phase 2 storage layer');
 };
 
-// Initialize feedback table
-createFeedbackTable();
+// Initialize feedback storage
+initializeFeedbackStorage();
 
 export function registerFeedbackRoutes(app: Express): void {
 
@@ -75,38 +49,18 @@ export function registerFeedbackRoutes(app: Express): void {
     }
 
     try {
-      // Verify term exists
-      const termExists = await db.execute(sql`
-        SELECT id FROM terms WHERE id = ${termId}
-      `);
-
-      if (termExists.rows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Term not found'
-        });
-      }
-
-      // Insert feedback
-      const feedback = await db.execute(sql`
-        INSERT INTO user_feedback (
-          type, term_id, rating, message, contact_email, 
-          user_agent, ip_address
-        ) VALUES (
-          ${type}, ${termId}, ${rating || null}, ${message || null}, 
-          ${contactEmail || null}, ${req.get('user-agent') || null}, 
-          ${req.ip || req.connection.remoteAddress || null}
-        ) RETURNING id, created_at
-      `);
-
-      res.json({
-        success: true,
-        message: 'Thank you for your feedback!',
-        data: {
-          feedbackId: feedback.rows[0].id,
-          submittedAt: feedback.rows[0].created_at
-        }
+      // TODO: Phase 2 - Replace with storage layer methods
+      // Expected: await storage.getTermById(termId) and await storage.submitTermFeedback()
+      
+      // For now, return error since storage methods don't exist
+      return res.status(501).json({
+        success: false,
+        message: 'Term feedback submission requires storage layer enhancement in Phase 2'
       });
+      
+      // TODO: Implement these methods in enhancedStorage:
+      // - async verifyTermExists(termId: string): Promise<boolean>
+      // - async submitTermFeedback(data: TermFeedback): Promise<FeedbackResult>
 
     } catch (error) {
       const errorId = await handleDatabaseError(error, req);
@@ -148,43 +102,17 @@ export function registerFeedbackRoutes(app: Express): void {
     }
 
     try {
-      // For term requests, include suggested term details in the message
-      let fullMessage = message;
-      if (type === 'term_request') {
-        fullMessage = `Term Request: ${termName}\n\n`;
-        if (termDefinition) {
-          fullMessage += `Suggested Definition: ${termDefinition}\n\n`;
-        }
-        fullMessage += `Additional Details: ${message}`;
-      }
-
-      // Insert feedback
-      const feedback = await db.execute(sql`
-        INSERT INTO user_feedback (
-          type, message, contact_email, user_agent, ip_address
-        ) VALUES (
-          ${type}, ${fullMessage}, ${contactEmail || null}, 
-          ${req.get('user-agent') || null}, 
-          ${req.ip || req.connection.remoteAddress || null}
-        ) RETURNING id, created_at
-      `);
-
-      // Send appropriate response based on type
-      let responseMessage = 'Thank you for your feedback!';
-      if (type === 'term_request') {
-        responseMessage = `Thank you for suggesting "${termName}"! We'll review your request and consider adding it to the glossary.`;
-      } else if (type === 'suggestion') {
-        responseMessage = 'Thank you for your suggestion! We appreciate your input and will consider it for future improvements.';
-      }
-
-      res.json({
-        success: true,
-        message: responseMessage,
-        data: {
-          feedbackId: feedback.rows[0].id,
-          submittedAt: feedback.rows[0].created_at
-        }
+      // TODO: Phase 2 - Replace with storage layer method
+      // Expected: await storage.submitGeneralFeedback()
+      
+      // For now, return error since storage method doesn't exist
+      return res.status(501).json({
+        success: false,
+        message: 'General feedback submission requires storage layer enhancement in Phase 2'
       });
+      
+      // TODO: Implement in enhancedStorage:
+      // - async submitGeneralFeedback(data: GeneralFeedback): Promise<FeedbackResult>
 
     } catch (error) {
       const errorId = await handleDatabaseError(error, req);

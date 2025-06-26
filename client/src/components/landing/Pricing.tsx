@@ -24,10 +24,10 @@ export function Pricing() {
       us: "Comprehensive"
     },
     {
-      feature: "Cost per year",
+      feature: "Annual Cost",
       free: "Free",
       competitors: "$300-600",
-      us: "$129 Lifetime"
+      us: `${Math.round(pricing.localPrice / 5)} equivalent*`
     },
     {
       feature: "Mobile Access",
@@ -57,7 +57,7 @@ export function Pricing() {
             Simple, Fair Pricing
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Why pay $300+ annually when you can get lifetime access for less?
+            Why pay $300-600 annually when you can get comprehensive lifetime access?
           </p>
         </div>
 

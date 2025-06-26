@@ -9,24 +9,27 @@ interface CountryPricing {
   flag: string;
   currency: string;
   loading: boolean;
+  annualSavings: number; // vs competitors
+  localCompetitor: string;
 }
 
 export function useCountryPricing() {
   const [pricing, setPricing] = useState<CountryPricing>({
-    basePrice: 129,
-    localPrice: 129,
+    basePrice: 249,
+    localPrice: 249,
     discount: 0,
     countryCode: 'US',
     countryName: 'United States',
     flag: '🇺🇸',
     currency: 'USD',
     loading: true,
+    annualSavings: 300,
+    localCompetitor: 'DataCamp',
   });
 
   useEffect(() => {
     const detectCountry = async () => {
       try {
-        // Using ipapi.co for free IP geolocation
         const response = await fetch('https://ipapi.co/json/');
         const data = await response.json();
         
@@ -37,7 +40,6 @@ export function useCountryPricing() {
         });
       } catch (error) {
         console.error('Country detection failed:', error);
-        // Default to US pricing
         setPricing(prev => ({ ...prev, loading: false }));
       }
     };
@@ -49,32 +51,170 @@ export function useCountryPricing() {
 }
 
 function calculatePPPPricing(countryCode: string, countryName: string): Omit<CountryPricing, 'loading'> {
-  const basePrice = 129;
+  const basePrice = 249;
   
-  // PPP discount rates based on Small Bets model
-  const pppData: Record<string, { discount: number; flag: string; currency: string }> = {
-    'IN': { discount: 60, flag: '🇮🇳', currency: 'USD' }, // India
-    'BR': { discount: 55, flag: '🇧🇷', currency: 'USD' }, // Brazil
-    'MX': { discount: 50, flag: '🇲🇽', currency: 'USD' }, // Mexico
-    'AR': { discount: 65, flag: '🇦🇷', currency: 'USD' }, // Argentina
-    'TR': { discount: 45, flag: '🇹🇷', currency: 'USD' }, // Turkey
-    'PH': { discount: 60, flag: '🇵🇭', currency: 'USD' }, // Philippines
-    'VN': { discount: 65, flag: '🇻🇳', currency: 'USD' }, // Vietnam
-    'TH': { discount: 50, flag: '🇹🇭', currency: 'USD' }, // Thailand
-    'ID': { discount: 60, flag: '🇮🇩', currency: 'USD' }, // Indonesia
-    'MY': { discount: 45, flag: '🇲🇾', currency: 'USD' }, // Malaysia
-    'PK': { discount: 65, flag: '🇵🇰', currency: 'USD' }, // Pakistan
-    'BD': { discount: 70, flag: '🇧🇩', currency: 'USD' }, // Bangladesh
-    'LK': { discount: 65, flag: '🇱🇰', currency: 'USD' }, // Sri Lanka
-    'EG': { discount: 60, flag: '🇪🇬', currency: 'USD' }, // Egypt
-    'NG': { discount: 65, flag: '🇳🇬', currency: 'USD' }, // Nigeria
-    'KE': { discount: 60, flag: '🇰🇪', currency: 'USD' }, // Kenya
-    'GH': { discount: 65, flag: '🇬🇭', currency: 'USD' }, // Ghana
-    'UA': { discount: 55, flag: '🇺🇦', currency: 'USD' }, // Ukraine
-    'RO': { discount: 40, flag: '🇷🇴', currency: 'USD' }, // Romania
-    'BG': { discount: 45, flag: '🇧🇬', currency: 'USD' }, // Bulgaria
-    'RS': { discount: 50, flag: '🇷🇸', currency: 'USD' }, // Serbia
-    'HR': { discount: 35, flag: '🇭🇷', currency: 'USD' }, // Croatia
+  // Enhanced PPP data with competitor analysis
+  const pppData: Record<string, { 
+    discount: number; 
+    flag: string; 
+    currency: string;
+    annualSavings: number;
+    localCompetitor: string;
+  }> = {
+    'IN': { 
+      discount: 60, 
+      flag: '🇮🇳', 
+      currency: 'USD',
+      annualSavings: 400, // vs ₹25,000/year courses
+      localCompetitor: 'DataCamp India'
+    },
+    'BR': { 
+      discount: 55, 
+      flag: '🇧🇷', 
+      currency: 'USD',
+      annualSavings: 350,
+      localCompetitor: 'Coursera Brazil'
+    },
+    'MX': { 
+      discount: 50, 
+      flag: '🇲🇽', 
+      currency: 'USD',
+      annualSavings: 300,
+      localCompetitor: 'Platzi'
+    },
+    'AR': { 
+      discount: 65, 
+      flag: '🇦🇷', 
+      currency: 'USD',
+      annualSavings: 250,
+      localCompetitor: 'Coursera Argentina'
+    },
+    'TR': { 
+      discount: 45, 
+      flag: '🇹🇷', 
+      currency: 'USD',
+      annualSavings: 200,
+      localCompetitor: 'Udemy Turkey'
+    },
+    'PH': { 
+      discount: 60, 
+      flag: '🇵🇭', 
+      currency: 'USD',
+      annualSavings: 300,
+      localCompetitor: 'DataCamp Philippines'
+    },
+    'VN': { 
+      discount: 65, 
+      flag: '🇻🇳', 
+      currency: 'USD',
+      annualSavings: 250,
+      localCompetitor: 'Coursera Vietnam'
+    },
+    'TH': { 
+      discount: 50, 
+      flag: '🇹🇭', 
+      currency: 'USD',
+      annualSavings: 275,
+      localCompetitor: 'DataCamp Thailand'
+    },
+    'ID': { 
+      discount: 60, 
+      flag: '🇮🇩', 
+      currency: 'USD',
+      annualSavings: 300,
+      localCompetitor: 'Coursera Indonesia'
+    },
+    'MY': { 
+      discount: 45, 
+      flag: '🇲🇾', 
+      currency: 'USD',
+      annualSavings: 200,
+      localCompetitor: 'DataCamp Malaysia'
+    },
+    'PK': { 
+      discount: 65, 
+      flag: '🇵🇰', 
+      currency: 'USD',
+      annualSavings: 350,
+      localCompetitor: 'Local AI courses'
+    },
+    'BD': { 
+      discount: 70, 
+      flag: '🇧🇩', 
+      currency: 'USD',
+      annualSavings: 400,
+      localCompetitor: 'Local tech courses'
+    },
+    'EG': { 
+      discount: 60, 
+      flag: '🇪🇬', 
+      currency: 'USD',
+      annualSavings: 300,
+      localCompetitor: 'Coursera Egypt'
+    },
+    'NG': { 
+      discount: 65, 
+      flag: '🇳🇬', 
+      currency: 'USD',
+      annualSavings: 350,
+      localCompetitor: 'Local AI bootcamps'
+    },
+    'KE': { 
+      discount: 60, 
+      flag: '🇰🇪', 
+      currency: 'USD',
+      annualSavings: 300,
+      localCompetitor: 'DataCamp Kenya'
+    },
+    'UA': { 
+      discount: 55, 
+      flag: '🇺🇦', 
+      currency: 'USD',
+      annualSavings: 250,
+      localCompetitor: 'Coursera Ukraine'
+    },
+    'RO': { 
+      discount: 40, 
+      flag: '🇷🇴', 
+      currency: 'USD',
+      annualSavings: 200,
+      localCompetitor: 'European platforms'
+    },
+    'PL': { 
+      discount: 35, 
+      flag: '🇵🇱', 
+      currency: 'USD',
+      annualSavings: 200,
+      localCompetitor: 'European platforms'
+    },
+    'CZ': { 
+      discount: 35, 
+      flag: '🇨🇿', 
+      currency: 'USD',
+      annualSavings: 200,
+      localCompetitor: 'European platforms'
+    },
+    'BG': { 
+      discount: 45, 
+      flag: '🇧🇬', 
+      currency: 'USD',
+      annualSavings: 180,
+      localCompetitor: 'European platforms'
+    },
+    'RS': { 
+      discount: 50, 
+      flag: '🇷🇸', 
+      currency: 'USD',
+      annualSavings: 150,
+      localCompetitor: 'Regional platforms'
+    },
+    'HR': { 
+      discount: 35, 
+      flag: '🇭🇷', 
+      currency: 'USD',
+      annualSavings: 180,
+      localCompetitor: 'European platforms'
+    },
   };
 
   const countryInfo = pppData[countryCode];
@@ -89,17 +229,31 @@ function calculatePPPPricing(countryCode: string, countryName: string): Omit<Cou
       countryName,
       flag: countryInfo.flag,
       currency: countryInfo.currency,
+      annualSavings: countryInfo.annualSavings,
+      localCompetitor: countryInfo.localCompetitor,
     };
   }
 
-  // Default to US pricing
+  // Default to US pricing for developed countries
   return {
     basePrice,
     localPrice: basePrice,
     discount: 0,
     countryCode: countryCode || 'US',
     countryName: countryName || 'United States',
-    flag: '🇺🇸',
+    flag: getCountryFlag(countryCode),
     currency: 'USD',
+    annualSavings: 300, // vs DataCamp $300+/year
+    localCompetitor: 'DataCamp/Coursera',
   };
+}
+
+function getCountryFlag(countryCode: string): string {
+  const flags: Record<string, string> = {
+    'US': '🇺🇸', 'CA': '🇨🇦', 'GB': '🇬🇧', 'AU': '🇦🇺', 'DE': '🇩🇪', 
+    'FR': '🇫🇷', 'IT': '🇮🇹', 'ES': '🇪🇸', 'NL': '🇳🇱', 'SE': '🇸🇪',
+    'NO': '🇳🇴', 'DK': '🇩🇰', 'FI': '🇫🇮', 'CH': '🇨🇭', 'AT': '🇦🇹',
+    'IE': '🇮🇪', 'JP': '🇯🇵', 'KR': '🇰🇷', 'SG': '🇸🇬', 'NZ': '🇳🇿',
+  };
+  return flags[countryCode] || '🌍';
 }

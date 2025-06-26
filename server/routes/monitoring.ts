@@ -6,8 +6,10 @@
 import type { Express, Request, Response } from 'express';
 import { errorLogger, ErrorCategory } from '../middleware/errorHandler';
 import { analyticsService } from '../services/analyticsService';
-import { db } from '../db';
-import { sql } from 'drizzle-orm';
+import { enhancedStorage as storage } from '../enhancedStorage';
+// TODO: Phase 2 - Remove direct db usage after storage layer implementation
+// import { db } from '../db';
+// import { sql } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
 import { requireAdmin } from '../middleware/adminAuth';
@@ -30,8 +32,8 @@ export function registerMonitoringRoutes(app: Express): void {
 
       // Check database connectivity
       try {
-        await db.execute(sql`SELECT 1`);
-        healthChecks.database = true;
+        // Use enhanced storage health check
+        healthChecks.database = await storage.checkDatabaseHealth();
       } catch (dbError) {
         console.error('Database health check failed:', dbError);
       }
@@ -123,55 +125,17 @@ export function registerMonitoringRoutes(app: Express): void {
    */
   app.get('/api/monitoring/database', requireAdmin, async (req: Request, res: Response) => {
     try {
-      // Database size and table information
-      const tableStats = await db.execute(sql`
-        SELECT 
-          schemaname,
-          tablename,
-          n_live_tup as row_count,
-          n_dead_tup as dead_rows,
-          n_tup_ins as inserts,
-          n_tup_upd as updates,
-          n_tup_del as deletes,
-          last_vacuum,
-          last_autovacuum,
-          last_analyze,
-          last_autoanalyze
-        FROM pg_stat_user_tables 
-        ORDER BY n_live_tup DESC
-      `);
-
-      // Index usage statistics
-      const indexStats = await db.execute(sql`
-        SELECT 
-          schemaname,
-          tablename,
-          indexname,
-          idx_tup_read,
-          idx_tup_fetch,
-          idx_blks_read,
-          idx_blks_hit
-        FROM pg_stat_user_indexes 
-        WHERE idx_tup_read > 0
-        ORDER BY idx_tup_read DESC
-        LIMIT 20
-      `);
-
-      // Connection statistics
-      const connectionStats = await db.execute(sql`
-        SELECT 
-          count(*) as total_connections,
-          count(*) FILTER (WHERE state = 'active') as active_connections,
-          count(*) FILTER (WHERE state = 'idle') as idle_connections
-        FROM pg_stat_activity
-      `);
+      // Get comprehensive database metrics using enhanced storage
+      const metrics = await storage.getDatabaseMetrics();
+      const { tableStats, indexStats, connectionStats, queryPerformance } = metrics;
 
       res.json({
         success: true,
         data: {
-          tables: tableStats.rows,
-          indexes: indexStats.rows,
-          connections: connectionStats.rows[0],
+          tableStats,
+          indexStats,
+          connectionStats,
+          queryPerformance,
           timestamp: new Date().toISOString()
         }
       });
@@ -191,28 +155,20 @@ export function registerMonitoringRoutes(app: Express): void {
    */
   app.get('/api/monitoring/metrics', requireAdmin, async (req: Request, res: Response) => {
     try {
-      // Get term and category counts
-      const termCount = await db.execute(sql`SELECT COUNT(*) as count FROM terms`);
-      const categoryCount = await db.execute(sql`SELECT COUNT(*) as count FROM categories`);
+      // Get term and category counts using storage layer
+      const contentMetrics = await storage.getContentMetrics();
       
-      // Get search activity (if search_analytics table exists)
-      let searchMetrics = null;
-      try {
-        const recentSearches = await db.execute(sql`
-          SELECT COUNT(*) as search_count 
-          FROM term_views 
-          WHERE created_at > NOW() - INTERVAL '24 hours'
-        `);
-        searchMetrics = { recent_searches: recentSearches.rows[0]?.search_count || 0 };
-      } catch (searchError) {
-        // Search analytics table might not exist yet
-      }
+      const termCount = contentMetrics.totalTerms;
+      const categoryCount = contentMetrics.totalCategories;
+      
+      // Get search metrics using enhanced storage
+      const searchMetrics = await storage.getSearchMetrics('week');
 
       // Application metrics
       const metrics = {
         content: {
-          total_terms: parseInt(termCount.rows[0]?.count || '0'),
-          total_categories: parseInt(categoryCount.rows[0]?.count || '0')
+          total_terms: termCount,
+          total_categories: categoryCount
         },
         system: {
           uptime_seconds: Math.floor(process.uptime()),
@@ -303,7 +259,7 @@ export function registerMonitoringRoutes(app: Express): void {
         data: dashboardData
       });
     } catch (error) {
-      errorLogger.logError(error, 'API_ERROR', 'Failed to get analytics dashboard');
+      errorLogger.logError(error as Error, req, ErrorCategory.API_ERROR, 'medium');
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve analytics dashboard'
@@ -324,7 +280,7 @@ export function registerMonitoringRoutes(app: Express): void {
         data: insights
       });
     } catch (error) {
-      errorLogger.logError(error, 'API_ERROR', 'Failed to get search insights');
+      errorLogger.logError(error as Error, req, ErrorCategory.API_ERROR, 'medium');
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve search insights'
@@ -363,7 +319,7 @@ export function registerMonitoringRoutes(app: Express): void {
         data: metrics
       });
     } catch (error) {
-      errorLogger.logError(error, 'API_ERROR', 'Failed to get real-time metrics');
+      errorLogger.logError(error as Error, req, ErrorCategory.API_ERROR, 'medium');
       res.status(500).json({
         success: false,
         message: 'Failed to retrieve real-time metrics'

@@ -1,7 +1,7 @@
 import type { Express, Request, Response } from "express";
 import multer from "multer";
 import { processExcelUpload } from "./dataTransformationPipeline";
-import { enhancedStorage } from "./enhancedStorage";
+import { enhancedStorage } from "./enhancedTermsStorage";
 import { isAuthenticated } from "./replitAuth";
 import { isUserAdmin } from "./utils/authUtils";
 import { z } from "zod";

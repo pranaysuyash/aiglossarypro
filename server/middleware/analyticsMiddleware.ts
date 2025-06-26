@@ -69,16 +69,8 @@ export function performanceTrackingMiddleware() {
         });
       });
 
-      // Call original end function with proper parameters
-      if (arguments.length === 0) {
-        return originalEnd.call(this);
-      } else if (arguments.length === 1) {
-        return originalEnd.call(this, chunk);
-      } else if (arguments.length === 2) {
-        return originalEnd.call(this, chunk, encoding);
-      } else {
-        return originalEnd.call(this, chunk, encoding, callback);
-      }
+      // Handle different call patterns safely (Type-safe solution following Express signature)
+      return originalEnd.call(this, chunk || undefined, encoding as BufferEncoding, callback);
     };
 
     next();

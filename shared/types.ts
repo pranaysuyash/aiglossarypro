@@ -172,7 +172,11 @@ export interface AuthenticatedRequest extends Request {
       sub: string;
       email: string;
       name: string;
+      first_name?: string;
+      last_name?: string;
     };
+    access_token?: string;
+    expires_at?: number;
   };
 }
 

@@ -208,12 +208,13 @@ const TermCard = memo(function TermCard({
           </Badge>
           {showActions && (
             <Button 
-              variant="ghost" 
-              size="icon" 
-              className={`h-8 w-8 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
-              onClick={handleToggleFavorite}
-              disabled={isSubmitting}
-            >
+                variant="ghost" 
+                size="icon" 
+                className={`h-8 w-8 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
+                onClick={handleToggleFavorite}
+                disabled={isSubmitting}
+                aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
+              >
               <Heart className={favorite ? 'fill-current' : ''} size={20} />
             </Button>
           )}
@@ -249,7 +250,7 @@ const TermCard = memo(function TermCard({
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCopyLink}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCopyLink} aria-label="Copy link">
                     <Copy size={16} className="text-gray-500 dark:text-gray-400" />
                   </Button>
                 </TooltipTrigger>
@@ -267,6 +268,7 @@ const TermCard = memo(function TermCard({
                     size="icon"
                     className="h-8 w-8" 
                     onClick={() => setIsShareMenuOpen(true)}
+                    aria-label="Share"
                   >
                     <Share2 size={16} className="text-gray-500 dark:text-gray-400" />
                   </Button>

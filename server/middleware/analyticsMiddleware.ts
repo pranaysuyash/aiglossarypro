@@ -70,10 +70,10 @@ export function performanceTrackingMiddleware() {
       });
 
       // Call original end function with proper parameters
-      if (chunk !== undefined && encoding !== undefined) {
-        return originalEnd.call(this, chunk, encoding);
+      if (chunk !== undefined && encoding !== undefined && typeof encoding === 'string') {
+        return originalEnd.call(this, chunk, encoding as BufferEncoding, callback);
       } else if (chunk !== undefined) {
-        return originalEnd.call(this, chunk);
+        return originalEnd.call(this, chunk, callback);
       } else {
         return originalEnd.call(this);
       }

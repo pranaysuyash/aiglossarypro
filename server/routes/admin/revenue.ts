@@ -288,7 +288,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
       }
       
       // Update user access if purchase is valid
-      if (purchase.status === 'completed') {
+      if (purchase.status === 'completed' && purchase.userId) {
         await storage.updateUserAccess(purchase.userId, {
           lifetimeAccess: true,
           subscriptionTier: 'lifetime',

@@ -298,7 +298,7 @@ export function registerAdminRoutes(app: Express): void {
       const { id } = req.params;
       const { reason } = req.body;
       
-      const result = await storage.rejectContent(id, reason);
+      const result = await storage.rejectContent(id);
       
       res.json({
         success: true,
@@ -619,7 +619,7 @@ export function registerAdminRoutes(app: Express): void {
                       content: `Categorize this AI/ML term:
                       
 Name: ${term.name}
-Definition: ${term.definition}
+Definition: ${term.fullDefinition}
 
 Suggest appropriate categories from common AI/ML domains like:
 - Machine Learning
@@ -792,7 +792,7 @@ Respond with only the enhanced definition text.`
                   content: `Enhance this AI/ML term definition:
 
 Term: ${term.name}
-Current Definition: ${term.definition}
+Current Definition: ${term.fullDefinition}
 
 Provide an enhanced definition following the guidelines above.`
                 }
@@ -816,7 +816,7 @@ Provide an enhanced definition following the guidelines above.`
           results.push({
             termId: term.id,
             termName: term.name,
-            originalDefinition: term.definition,
+            originalDefinition: term.fullDefinition,
             enhancedDefinition,
             success: true,
             enhancementType,

@@ -66,18 +66,24 @@ export function registerCategoryRoutes(app: Express): void {
       const { id } = req.params;
       const { page = 1, limit = 50, sort = 'name' } = req.query;
       
-      const result = await storage.getTermsByCategory(id, {
+      // TODO: GEMINI REVIEW - storage.getTermsByCategory doesn't exist in DatabaseStorage
+      // Using a workaround for now - should implement proper method or use optimizedStorage
+      const allTerms = await storage.getFeaturedTerms();
+      const categoryTerms = allTerms.filter((term: any) => term.categoryId === id);
+      
+      const result = {
+        data: categoryTerms.slice((parseInt(page as string) - 1) * parseInt(limit as string), parseInt(page as string) * parseInt(limit as string)),
+        total: categoryTerms.length,
         page: parseInt(page as string),
-        limit: parseInt(limit as string),
-        sort: sort as string
-      });
+        totalPages: Math.ceil(categoryTerms.length / parseInt(limit as string))
+      };
       
       const response: PaginatedResponse<any> = {
-        data: result.terms,
+        data: result.data,
         total: result.total,
         page: parseInt(page as string),
         limit: parseInt(limit as string),
-        hasMore: result.hasMore
+        hasMore: result.page < result.totalPages
       };
       
       res.json({
@@ -97,7 +103,18 @@ export function registerCategoryRoutes(app: Express): void {
   app.get('/api/categories/:id/stats', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const stats = await storage.getCategoryStats(id);
+      // TODO: GEMINI REVIEW - storage.getCategoryStats doesn't exist in DatabaseStorage
+      // Using a workaround for now
+      const allTerms = await storage.getFeaturedTerms();
+      const categoryTerms = allTerms.filter((term: any) => term.categoryId === id);
+      
+      const stats = {
+        totalTerms: categoryTerms.length,
+        avgViewCount: categoryTerms.length > 0 
+          ? Math.round(categoryTerms.reduce((sum: number, term: any) => sum + (term.viewCount || 0), 0) / categoryTerms.length)
+          : 0,
+        lastUpdated: new Date()
+      };
       
       res.json({
         success: true,

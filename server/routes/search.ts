@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { storage } from "../storage";
+import { optimizedStorage as storage } from "../optimizedStorage";
 import type { SearchResult, SearchFilters, ApiResponse } from "../../shared/types";
 import { db } from "../db";
 import { enhancedTerms as terms, categories } from "../../shared/enhancedSchema";

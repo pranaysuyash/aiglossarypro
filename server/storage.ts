@@ -91,6 +91,8 @@ export interface IStorage {
   getPurchaseByOrderId(gumroadOrderId: string): Promise<Purchase | undefined>;
   updateUserAccess(userId: string, updates: any): Promise<void>;
   
+  
+  
   // Admin operations
   getAdminStats(): Promise<any>;
   clearAllData(): Promise<void>;
@@ -1604,212 +1606,7 @@ export class DatabaseStorage implements IStorage {
     await db.delete(categories);
   }
 
-  // Additional methods needed for AI integration
-  async getAllTermNames(): Promise<string[]> {
-    const results = await db.select({
-      name: terms.name
-    })
-    .from(terms)
-    .orderBy(terms.name);
-    
-    return results.map(r => r.name);
-  }
-
-  async getAllTermsForSearch(limit: number = 50): Promise<any[]> {
-    const results = await db.select({
-      id: terms.id,
-      name: terms.name,
-      shortDefinition: terms.shortDefinition,
-      definition: terms.definition,
-      category: categories.name,
-      categoryId: terms.categoryId
-    })
-    .from(terms)
-    .leftJoin(categories, eq(terms.categoryId, categories.id))
-    .orderBy(terms.updatedAt)
-    .limit(limit); // Only fetch what we actually need!
-    
-    return results.map(term => ({
-      id: term.id,
-      name: term.name,
-      shortDefinition: term.shortDefinition || '',
-      definition: term.definition,
-      category: term.category || 'Uncategorized',
-      categoryId: term.categoryId || ''
-    }));
-  }
-
-  async getTermCount(): Promise<number> {
-    const [result] = await db.select({
-      count: sql<number>`count(${terms.id})`
-    })
-    .from(terms);
-    
-    return result.count;
-  }
-
-
-  async updateTerm(termId: string, updates: any): Promise<any> {
-    const [updatedTerm] = await db.update(terms)
-      .set({
-        ...updates,
-        updatedAt: new Date()
-      })
-      .where(eq(terms.id, termId))
-      .returning();
-    
-    return updatedTerm;
-  }
-
-  async getAllTerms(options: {
-    limit?: number;
-    offset?: number;
-    categoryId?: string;
-    searchTerm?: string;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-  } = {}): Promise<{ terms: any[], total: number, hasMore: boolean }> {
-    const { 
-      limit = 50, 
-      offset = 0, 
-      categoryId, 
-      searchTerm,
-      sortBy = 'name',
-      sortOrder = 'asc'
-    } = options;
-    
-    try {
-      // Build WHERE conditions
-      const whereConditions = [];
-      
-      if (categoryId) {
-        whereConditions.push(eq(terms.categoryId, categoryId));
-      }
-      
-      if (searchTerm) {
-        whereConditions.push(
-          or(
-            ilike(terms.name, `%${searchTerm}%`),
-            ilike(terms.definition, `%${searchTerm}%`)
-          )
-        );
-      }
-      
-      // Build the complete query with conditions
-      let query = db.select({
-        id: terms.id,
-        name: terms.name,
-        shortDefinition: terms.shortDefinition,
-        definition: terms.definition,
-        viewCount: terms.viewCount,
-        categoryId: terms.categoryId,
-        category: categories.name,
-        createdAt: terms.createdAt,
-        updatedAt: terms.updatedAt
-      })
-      .from(terms)
-      .leftJoin(categories, eq(terms.categoryId, categories.id));
-      
-      // Apply WHERE conditions if any exist
-      if (whereConditions.length === 1) {
-        query = query.where(whereConditions[0]) as any;
-      } else if (whereConditions.length > 1) {
-        query = query.where(and(...whereConditions)) as any;
-      }
-      
-      // Apply sorting
-      const sortColumn = sortBy === 'viewCount' ? terms.viewCount : terms.name;
-      const sortDirection = sortOrder === 'desc' ? desc(sortColumn) : asc(sortColumn);
-      
-      // Get paginated results
-      const result = await query
-        .orderBy(sortDirection)
-        .limit(limit + 1) // Get one extra to check if there are more
-        .offset(offset);
-
-      // Check if there are more results
-      const hasMore = result.length > limit;
-      const terms_data = hasMore ? result.slice(0, limit) : result;
-      
-      // Get total count for pagination info
-      let totalQuery = db.select({ count: sql<number>`count(*)` }).from(terms);
-      if (whereConditions.length === 1) {
-        totalQuery = totalQuery.where(whereConditions[0]) as any;
-      } else if (whereConditions.length > 1) {
-        totalQuery = totalQuery.where(and(...whereConditions)) as any;
-      }
-      
-      const [{ count: total }] = await totalQuery;
-
-      return {
-        terms: terms_data.map(term => ({
-          id: term.id,
-          name: term.name || '',
-          shortDefinition: term.shortDefinition || '',
-          definition: term.definition || '',
-          viewCount: term.viewCount || 0,
-          categoryId: term.categoryId || null,
-          category: term.category || 'Uncategorized',
-          createdAt: term.createdAt,
-          updatedAt: term.updatedAt,
-          subcategories: [] // Will be populated separately if needed
-        })),
-        total,
-        hasMore
-      };
-    } catch (error) {
-      console.error("Error in getAllTerms:", error);
-      throw error;
-    }
-  }
-
-  async getTrendingTerms(limit: number = 10): Promise<any[]> {
-    const result = await db.select({
-      id: terms.id,
-      name: terms.name,
-      shortDefinition: terms.shortDefinition,
-      definition: terms.definition,
-      viewCount: terms.viewCount,
-      categoryId: categories.id,
-      category: categories.name,
-      createdAt: terms.createdAt,
-      updatedAt: terms.updatedAt
-    })
-    .from(terms)
-    .leftJoin(categories, eq(terms.categoryId, categories.id))
-    .orderBy(desc(terms.viewCount), desc(terms.updatedAt))
-    .limit(limit);
-
-    // Return without subcategories for performance - OPTIMIZED VERSION
-    return result.map(term => ({
-      ...term,
-      subcategories: [] // Empty for performance - can be populated later if needed
-    }));
-  }
-
-  async getRecentTerms(limit: number = 10): Promise<any[]> {
-    const result = await db.select({
-      id: terms.id,
-      name: terms.name,
-      shortDefinition: terms.shortDefinition,
-      definition: terms.definition,
-      viewCount: terms.viewCount,
-      categoryId: categories.id,
-      category: categories.name,
-      createdAt: terms.createdAt,
-      updatedAt: terms.updatedAt
-    })
-    .from(terms)
-    .leftJoin(categories, eq(terms.categoryId, categories.id))
-    .orderBy(desc(terms.createdAt))
-    .limit(limit);
-
-    // Return without subcategories for performance - OPTIMIZED VERSION
-    return result.map(term => ({
-      ...term,
-      subcategories: [] // Empty for performance - can be populated later if needed
-    }));
-  }
+  
   // Missing Admin Methods
   async getAllUsers(): Promise<any[]> {
     const result = await db.select({
@@ -2074,15 +1871,15 @@ export class DatabaseStorage implements IStorage {
         totalResults: countResult.rows[0]?.total || 0,
         page,
         limit,
-        totalPages: Math.ceil((countResult.rows[0]?.total || 0) / limit)
+        totalPages: Math.ceil(Number(countResult.rows[0]?.total || 0) / limit)
       };
     } catch (error) {
       console.error('Error searching section content:', error);
       return {
         results: [],
         totalResults: 0,
-        page,
-        limit,
+        page: options.page,
+        limit: options.limit,
         totalPages: 0
       };
     }
@@ -2271,60 +2068,6 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
-  async searchTerms(query: string): Promise<any[]> {
-    // Sanitize the query to prevent SQL injection
-    const sanitizedQuery = query.replace(/[%_]/g, '\\$&');
-    
-    const result = await db.select()
-      .from(terms)
-      .where(sql`${terms.name} ILIKE ${`%${sanitizedQuery}%`} OR ${terms.definition} ILIKE ${`%${sanitizedQuery}%`}`)
-      .orderBy(terms.name)
-      .limit(50);
-    
-    return result;
-  }
-
-  async getFavorites(userId: string): Promise<any[]> {
-    const result = await db.select({
-      id: terms.id,
-      name: terms.name,
-      definition: terms.definition,
-      shortDefinition: terms.shortDefinition,
-      categoryId: terms.categoryId,
-      viewCount: terms.viewCount,
-      createdAt: terms.createdAt,
-      updatedAt: terms.updatedAt
-    })
-    .from(favorites)
-    .innerJoin(terms, eq(favorites.termId, terms.id))
-    .where(eq(favorites.userId, userId))
-    .orderBy(favorites.createdAt);
-    
-    return result;
-  }
-
-  async addFavorite(userId: string, termId: string): Promise<void> {
-    try {
-      await db.insert(favorites).values({
-        userId,
-        termId
-      });
-    } catch (error: any) {
-      // Handle duplicate favorite gracefully
-      if (error.code === '23505') { // PostgreSQL unique violation
-        return;
-      }
-      throw error;
-    }
-  }
-
-  async removeFavorite(userId: string, termId: string): Promise<void> {
-    await db.delete(favorites)
-      .where(and(
-        eq(favorites.userId, userId),
-        eq(favorites.termId, termId)
-      ));
-  }
 
   async createTerm(termData: any): Promise<any> {
     // Validate required fields
@@ -2344,6 +2087,25 @@ export class DatabaseStorage implements IStorage {
     
     return newTerm;
   }
+
+  // AI/Search operations
+  
+
+  
+
+  async updateTerm(termId: string, updates: any): Promise<any> {
+    const [updatedTerm] = await db.update(terms)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(terms.id, termId))
+      .returning();
+    
+    return updatedTerm;
+  }
+
+  
 }
 
 // Create and export storage instance

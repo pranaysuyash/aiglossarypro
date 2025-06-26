@@ -1,5 +1,5 @@
 import ExcelJS from 'exceljs';
-import { db } from './db';
+import { optimizedStorage as storage } from "./optimizedStorage";
 import { terms, categories, subcategories, termSubcategories } from '../shared/enhancedSchema';
 import { eq, and } from 'drizzle-orm';
 

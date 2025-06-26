@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from 'express';
 import crypto from 'crypto';
-import { storage } from '../storage';
+import { optimizedStorage as storage } from "../optimizedStorage";
 import { users, purchases } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 import { log } from '../utils/logger';

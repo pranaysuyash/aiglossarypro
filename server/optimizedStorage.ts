@@ -672,6 +672,68 @@ export class OptimizedStorage implements IStorage {
       total: total
     };
   }
+
+  // AI/Search operations needed by aiRoutes.ts
+  async getAllTermNames(): Promise<string[]> {
+    return await cached(
+      CacheKeys.term('all-term-names'),
+      async () => {
+        const result = await db.select({ name: terms.name }).from(terms);
+        return result.map(term => term.name);
+      },
+      10 * 60 * 1000 // 10 minutes cache
+    );
+  }
+
+  async getAllTermsForSearch(limit: number = 1000): Promise<any[]> {
+    return await cached(
+      CacheKeys.term(`terms-for-search:${limit}`),
+      async () => {
+        const result = await db.select({
+          id: terms.id,
+          name: terms.name,
+          definition: terms.definition,
+          shortDefinition: terms.shortDefinition,
+          categoryId: terms.categoryId
+        })
+        .from(terms)
+        .orderBy(terms.viewCount)
+        .limit(limit);
+        
+        return result;
+      },
+      15 * 60 * 1000 // 15 minutes cache
+    );
+  }
+
+  // User stats method needed by user.ts
+  async getUserStats(userId: string): Promise<any> {
+    return await cached(
+      CacheKeys.user(`user-stats:${userId}`),
+      async () => {
+        const totalProgress = await db.select({ count: sql<number>`count(*)` })
+          .from(userProgress)
+          .where(eq(userProgress.userId, userId));
+
+        const completedProgress = await db.select({ count: sql<number>`count(*)` })
+          .from(userProgress)
+          .where(and(
+            eq(userProgress.userId, userId),
+            sql`${userProgress.learnedAt} IS NOT NULL`
+          ));
+
+        return {
+          totalTermsStarted: Number(totalProgress[0]?.count) || 0,
+          completedTerms: Number(completedProgress[0]?.count) || 0,
+          totalTimeSpent: 0, // Time tracking not implemented yet
+          completionRate: totalProgress[0]?.count > 0 
+            ? (Number(completedProgress[0]?.count) / Number(totalProgress[0]?.count)) * 100 
+            : 0
+        };
+      },
+      5 * 60 * 1000 // 5 minutes cache
+    );
+  }
 }
 
 // Export singleton instance

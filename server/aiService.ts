@@ -1,5 +1,6 @@
 import OpenAI from 'openai';
 import NodeCache from 'node-cache';
+import { db } from './db';
 import { ITerm, ICategory } from '../client/src/interfaces/interfaces';
 
 // Types for AI responses
@@ -149,7 +150,7 @@ class AIService {
   private async logUsage(metrics: AIUsageMetrics, userId?: string, termId?: string): Promise<void> {
     try {
       // Import db and schema at the top of the file if not already imported
-      const { db } = await import('./db');
+      
       const { aiUsageAnalytics } = await import('../shared/enhancedSchema');
       
       // Insert into database

@@ -230,10 +230,10 @@ export async function analyzeQueryPerformance(): Promise<void> {
       LIMIT 10
     `));
     
-    if (slowQueries.length > 0) {
+    if (slowQueries.rows.length > 0) {
       console.log('\n📊 Slowest Queries (>100ms average):');
-      for (const query of slowQueries) {
-        console.log(`   ${query.mean_time}ms: ${query.query?.substring(0, 80)}...`);
+      for (const query of slowQueries.rows) {
+        console.log(`   ${query.mean_time}ms: ${(query.query as string || '').substring(0, 80)}...`);
       }
     } else {
       console.log('✅ No slow queries detected or pg_stat_statements not available');
@@ -248,9 +248,9 @@ export async function analyzeQueryPerformance(): Promise<void> {
       LIMIT 10
     `));
     
-    if (indexUsage.length > 0) {
+    if (indexUsage.rows.length > 0) {
       console.log('\n📊 Most Used Indexes:');
-      for (const index of indexUsage) {
+      for (const index of indexUsage.rows) {
         console.log(`   ${index.indexname}: ${index.idx_scan} scans`);
       }
     }

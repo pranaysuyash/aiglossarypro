@@ -271,8 +271,7 @@ class OptimizedS3Client {
         },
         queueSize: 4,
         partSize: 1024 * 1024 * 5, // 5MB chunks
-        leavePartsOnError: false,
-        abortSignal
+        leavePartsOnError: false
       });
       
       // Track upload progress
@@ -292,7 +291,7 @@ class OptimizedS3Client {
       };
       
     } catch (error) {
-      progressTracker(0, 100, 'error', error instanceof Error ? error.message : 'Upload failed');
+      progressTracker(0, 100, 'error');
       throw error;
     }
   }
@@ -392,7 +391,7 @@ class OptimizedS3Client {
       }
       
       await pipeline(...streams);
-      progressTracker(totalSize, 'complete');
+      progressTracker(totalSize, totalSize, 'complete');
       
       return destinationPath;
     }, 'downloadFile');
@@ -404,11 +403,15 @@ class OptimizedS3Client {
     operation: 'getObject' | 'putObject' = 'getObject',
     expiresIn: number = 3600
   ): Promise<string> {
-    const commandClass = operation === 'getObject' ? GetObjectCommand : PutObjectCommand;
-    const command = new commandClass({
-      Bucket: this.config.bucketName,
-      Key: key
-    });
+    const command = operation === 'getObject' 
+      ? new GetObjectCommand({
+          Bucket: this.config.bucketName,
+          Key: key
+        })
+      : new PutObjectCommand({
+          Bucket: this.config.bucketName,
+          Key: key
+        });
     
     return getSignedUrl(this.s3Client, command, { expiresIn });
   }

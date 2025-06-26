@@ -127,7 +127,7 @@ mediaRouter.post('/upload', requireAdmin, upload.single('file'), async (req: Req
     const publicUrl = `/uploads/media/${req.file.filename}`;
 
     // Save file info to database
-    const [mediaFile] = await db.execute(sql`
+    const mediaFile = await db.execute(sql`
       INSERT INTO media_files (
         filename, original_name, mime_type, file_size, width, height,
         alt_text, caption, upload_path, public_url, term_id, uploaded_by
@@ -140,7 +140,7 @@ mediaRouter.post('/upload', requireAdmin, upload.single('file'), async (req: Req
 
     res.json({
       success: true,
-      data: mediaFile[0]
+      data: mediaFile
     });
   } catch (error) {
     errorLogger.error('Media upload error:', error);
@@ -181,7 +181,7 @@ mediaRouter.get('/', async (req: Request, res: Response<ApiResponse<any>>) => {
       LIMIT ${Number(limit)} OFFSET ${offset}
     `);
 
-    const [countResult] = await db.execute(sql`
+    const countResult = await db.execute(sql`
       SELECT COUNT(*) as count FROM media_files 
       ${sql.raw(whereClause)}
     `);
@@ -213,7 +213,7 @@ mediaRouter.patch('/:id', requireAdmin, async (req: Request, res: Response<ApiRe
     const { id } = req.params;
     const { altText, caption, termId } = req.body;
 
-    const [updatedFile] = await db.execute(sql`
+    const updatedFile = await db.execute(sql`
       UPDATE media_files 
       SET alt_text = ${altText}, caption = ${caption}, term_id = ${termId || null}, updated_at = NOW()
       WHERE id = ${id}
@@ -239,9 +239,9 @@ mediaRouter.delete('/:id', requireAdmin, async (req: Request, res: Response<ApiR
     const { id } = req.params;
 
     // Get file info first
-    const [fileInfo] = await db.execute(sql`
+    const fileInfo = (await db.execute(sql`
       SELECT upload_path FROM media_files WHERE id = ${id}
-    `);
+    `)).rows;
 
     if (fileInfo && fileInfo[0]) {
       // Delete physical file
@@ -287,18 +287,18 @@ mediaRouter.get('/serve/:filename', async (req: Request, res: Response) => {
     }
 
     // Get file info from database for security
-    const [fileInfo] = await db.execute(sql`
+    const fileInfo = await db.execute(sql`
       SELECT mime_type, original_name FROM media_files WHERE filename = ${filename}
     `);
 
-    if (!fileInfo.length) {
+    if (!fileInfo.rows.length) {
       return res.status(404).json({
         success: false,
         error: 'File not found in database'
       });
     }
 
-    const file = fileInfo[0] as any;
+    const file = fileInfo.rows[0] as any;
     res.setHeader('Content-Type', file.mime_type);
     res.setHeader('Content-Disposition', `inline; filename="${file.original_name}"`);
     res.sendFile(filePath);

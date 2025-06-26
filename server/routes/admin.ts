@@ -582,6 +582,99 @@ export function registerAdminRoutes(app: Express): void {
     }
   });
 
+  // Add the new secure force reprocess endpoint to the main app routes
+  app.post('/api/admin/import/force-reprocess', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+    try {
+      console.log('🔥 FORCE REPROCESS: Admin initiated force reprocessing');
+      
+      const { fileName, clearInvalidCache = true } = req.body;
+      
+      const dataDir = path.join(process.cwd(), 'data');
+      
+      // If no fileName specified, find the main Excel file
+      let targetFile = fileName;
+      if (!targetFile) {
+        if (!fs.existsSync(dataDir)) {
+          return res.status(404).json({
+            success: false,
+            error: 'Data directory not found'
+          });
+        }
+        
+        const files = fs.readdirSync(dataDir);
+        const excelFiles = files.filter(file => 
+          (file.endsWith('.xlsx') || file.endsWith('.xls')) && 
+          !file.startsWith('~$')
+        );
+        
+        if (excelFiles.length === 0) {
+          return res.status(404).json({
+            success: false,
+            error: 'No Excel files found in data directory'
+          });
+        }
+        
+        // Find main file (containing 'aiml') or use first one
+        targetFile = excelFiles.find(f => f.includes('aiml')) || excelFiles[0];
+      }
+      
+      const filePath = path.join(dataDir, targetFile);
+      
+      // Check if file exists
+      if (!fs.existsSync(filePath)) {
+        return res.status(404).json({
+          success: false,
+          error: `File ${targetFile} not found`
+        });
+      }
+      
+      console.log(`🎯 Force reprocessing target: ${targetFile}`);
+      
+      // Check and clear invalid cache if requested
+      let cacheCleared = false;
+      if (clearInvalidCache) {
+        cacheCleared = await cacheManager.forceInvalidateEmptyCache(filePath);
+        if (cacheCleared) {
+          console.log('🗑️ Invalid cache cleared');
+        }
+      }
+      
+      // Always clear cache for force reprocess
+      console.log('🗑️ Clearing all cache for force reprocess');
+      await cacheManager.clearCache(filePath);
+      
+      // Start force reprocessing
+      console.log(`🔄 Starting force reprocessing of ${targetFile}...`);
+      const startTime = Date.now();
+      
+      // Use force reprocess flag to bypass all caching
+      await smartLoadExcelData(filePath, {
+        chunkSize: 500,
+        enableProgress: true
+      }, true); // Force reprocess = true
+      
+      const processingTime = Date.now() - startTime;
+      
+      res.json({
+        success: true,
+        message: `Force reprocessing completed successfully`,
+        data: {
+          fileName: targetFile,
+          processingTimeSeconds: (processingTime / 1000).toFixed(2),
+          cacheCleared,
+          forceReprocessed: true
+        }
+      });
+      
+    } catch (error) {
+      console.error('❌ Force reprocess failed:', error);
+      res.status(500).json({
+        success: false,
+        error: `Force reprocess failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      });
+    }
+  });
+
   /**
    * Batch AI Operations for Admin
    */

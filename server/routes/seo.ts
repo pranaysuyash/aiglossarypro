@@ -332,43 +332,43 @@ seoRouter.get('/structured-data/term/:id', async (req: Request, res: Response<Ap
 seoRouter.get('/analytics', async (req: Request, res: Response<ApiResponse<any>>) => {
   try {
     // Get terms without descriptions (SEO issue)
-    const [termsWithoutShortDesc] = await db.execute(sql`
+    const termsWithoutShortDesc = await db.execute(sql`
       SELECT COUNT(*) as count FROM terms WHERE short_definition IS NULL OR short_definition = ''
     `);
 
     // Get terms without images (SEO opportunity)
-    const [termsWithoutImages] = await db.execute(sql`
+    const termsWithoutImages = await db.execute(sql`
       SELECT COUNT(*) as count FROM terms WHERE visual_url IS NULL OR visual_url = ''
     `);
 
     // Get terms with very short definitions (< 50 chars)
-    const [termsWithShortDefs] = await db.execute(sql`
+    const termsWithShortDefs = await db.execute(sql`
       SELECT COUNT(*) as count FROM terms WHERE LENGTH(definition) < 50
     `);
 
     // Get terms without references
-    const [termsWithoutRefs] = await db.execute(sql`
+    const termsWithoutRefs = await db.execute(sql`
       SELECT COUNT(*) as count FROM terms WHERE references IS NULL OR ARRAY_LENGTH(references, 1) IS NULL
     `);
 
     // Get total terms count
-    const [totalTerms] = await db.execute(sql`
+    const totalTerms = await db.execute(sql`
       SELECT COUNT(*) as count FROM terms
     `);
 
     const analytics = {
-      totalTerms: Number((totalTerms[0] as any)?.count || 0),
+      totalTerms: Number((totalTerms.rows[0] as any)?.count || 0),
       seoIssues: {
-        missingShortDescriptions: Number((termsWithoutShortDesc[0] as any)?.count || 0),
-        missingImages: Number((termsWithoutImages[0] as any)?.count || 0),
-        shortDefinitions: Number((termsWithShortDefs[0] as any)?.count || 0),
-        missingReferences: Number((termsWithoutRefs[0] as any)?.count || 0)
+        missingShortDescriptions: Number((termsWithoutShortDesc.rows[0] as any)?.count || 0),
+        missingImages: Number((termsWithoutImages.rows[0] as any)?.count || 0),
+        shortDefinitions: Number((termsWithShortDefs.rows[0] as any)?.count || 0),
+        missingReferences: Number((termsWithoutRefs.rows[0] as any)?.count || 0)
       },
       seoScore: {
-        descriptions: Math.round((1 - Number((termsWithoutShortDesc[0] as any)?.count || 0) / Number((totalTerms[0] as any)?.count || 1)) * 100),
-        images: Math.round((1 - Number((termsWithoutImages[0] as any)?.count || 0) / Number((totalTerms[0] as any)?.count || 1)) * 100),
-        content: Math.round((1 - Number((termsWithShortDefs[0] as any)?.count || 0) / Number((totalTerms[0] as any)?.count || 1)) * 100),
-        references: Math.round((1 - Number((termsWithoutRefs[0] as any)?.count || 0) / Number((totalTerms[0] as any)?.count || 1)) * 100)
+        descriptions: Math.round((1 - Number((termsWithoutShortDesc.rows[0] as any)?.count || 0) / Number((totalTerms.rows[0] as any)?.count || 1)) * 100),
+        images: Math.round((1 - Number((termsWithoutImages.rows[0] as any)?.count || 0) / Number((totalTerms.rows[0] as any)?.count || 1)) * 100),
+        content: Math.round((1 - Number((termsWithShortDefs.rows[0] as any)?.count || 0) / Number((totalTerms.rows[0] as any)?.count || 1)) * 100),
+        references: Math.round((1 - Number((termsWithoutRefs.rows[0] as any)?.count || 0) / Number((totalTerms.rows[0] as any)?.count || 1)) * 100)
       }
     };
 

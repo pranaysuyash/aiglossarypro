@@ -27,6 +27,29 @@ npm run check  # Current: 85 errors, Target: <20 errors
 # - Monitor performance metrics
 ```
 
+## Development Workflow
+
+### Branching Strategy
+**Parallel Development Protocol**: Since both Claude and Gemini work on the codebase simultaneously, we use feature branches to prevent conflicts:
+
+```bash
+# Claude branches
+git checkout -b claude/feature-name       # For Claude's work
+git checkout -b claude/fixes-batch-1      # For multiple fixes
+
+# Gemini branches  
+git checkout -b gemini/feature-name       # For Gemini's work
+
+# Process
+1. Create feature branch from main
+2. Commit changes to feature branch
+3. Push feature branch to remote
+4. Create PR to merge into main
+5. Review for conflicts before merging
+```
+
+**Current Branch**: `claude/playwright-and-api-fixes` - Working on remaining Gemini suggestions (Playwright config, OpenAI API setup)
+
 ## Build and Development Commands
 
 ### Development

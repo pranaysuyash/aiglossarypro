@@ -26,7 +26,7 @@ import {
 } from "drizzle-zod";
 import { z } from "zod";
 import { formatDistanceToNow, subDays, format, startOfDay, endOfDay } from "date-fns";
-import { cached, CacheKeys, CacheInvalidation, queryCache } from './middleware/queryCache';
+import { cached, CacheKeys, CacheInvalidation, queryCache, clearCache, getCacheStats } from './middleware/queryCache';
 
 // Interface for storage operations (same as original)
 export interface IStorage {
@@ -520,6 +520,157 @@ export class OptimizedStorage implements IStorage {
       },
       30 * 60 * 1000 // 30 minutes cache
     );
+  }
+
+  async updateTerm(termId: string, updates: any): Promise<any> {
+    const [updatedTerm] = await db.update(terms)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(terms.id, termId))
+      .returning();
+    
+    // Invalidate cache for this term
+    CacheInvalidation.term(termId);
+
+    return updatedTerm;
+  }
+
+  // Test-specific optimized methods
+  async getTermsOptimized(options: { limit?: number } = {}): Promise<any[]> {
+    const { limit = 20 } = options;
+    
+    return cached(
+      CacheKeys.term(`terms:optimized:${limit}`),
+      async () => {
+        const result = await db.select({
+          id: terms.id,
+          name: terms.name,
+          definition: terms.definition,
+          shortDefinition: terms.shortDefinition,
+          categoryId: terms.categoryId,
+          viewCount: terms.viewCount,
+          createdAt: terms.createdAt,
+          updatedAt: terms.updatedAt
+        })
+        .from(terms)
+        .orderBy(terms.viewCount)
+        .limit(limit);
+        
+        return result;
+      },
+      5 * 60 * 1000 // 5 minutes cache
+    );
+  }
+
+  async getCategoriesOptimized(): Promise<any[]> {
+    return cached(
+      CacheKeys.categoryTree(),
+      async () => {
+        const categoriesWithCount = await db.select({
+          id: categories.id,
+          name: categories.name,
+          description: categories.description,
+          termCount: sql<number>`count(${terms.id})::int`
+        })
+        .from(categories)
+        .leftJoin(terms, eq(terms.categoryId, categories.id))
+        .groupBy(categories.id, categories.name, categories.description)
+        .orderBy(categories.name);
+        
+        return categoriesWithCount;
+      },
+      10 * 60 * 1000 // 10 minutes cache
+    );
+  }
+
+  async bulkCreateTerms(termsData: any[]): Promise<{ success: number; failed: number }> {
+    let success = 0;
+    let failed = 0;
+    
+    // Process in batches of 10
+    for (let i = 0; i < termsData.length; i += 10) {
+      const batch = termsData.slice(i, i + 10);
+      
+      try {
+        await db.insert(terms).values(batch);
+        success += batch.length;
+      } catch (error) {
+        console.error('Batch insert failed:', error);
+        // Try individual inserts for failed batch
+        for (const termData of batch) {
+          try {
+            await db.insert(terms).values(termData);
+            success++;
+          } catch (individualError) {
+            console.error('Individual insert failed:', individualError);
+            failed++;
+          }
+        }
+      }
+    }
+    
+    // Clear cache after bulk insert
+    await clearCache();
+    
+    return { success, failed };
+  }
+
+  async getPerformanceMetrics(): Promise<any> {
+    return {
+      cacheHitRate: getCacheStats().hitRate,
+      averageResponseTime: getCacheStats().averageResponseTime || 0,
+      totalCachedQueries: getCacheStats().hits + getCacheStats().misses,
+      cacheSize: process.memoryUsage().heapUsed,
+      lastCacheReset: new Date()
+    };
+  }
+
+  // Additional methods needed by content.ts
+  async getTerms(options: { limit?: number; offset?: number } = {}): Promise<any[]> {
+    return this.getTermsOptimized(options);
+  }
+
+  async getAllTerms(options: { limit?: number; page?: number } = {}): Promise<{ data: any[]; terms: any[]; total: number }> {
+    const { limit = 100, page = 1 } = options;
+    const offset = (page - 1) * limit;
+    
+    const termsList = await cached(
+      CacheKeys.term(`all-terms:${limit}:${page}`),
+      async () => {
+        return await db.select({
+          id: terms.id,
+          name: terms.name,
+          definition: terms.definition,
+          shortDefinition: terms.shortDefinition,
+          categoryId: terms.categoryId,
+          viewCount: terms.viewCount,
+          createdAt: terms.createdAt,
+          updatedAt: terms.updatedAt
+        })
+        .from(terms)
+        .orderBy(terms.name)
+        .limit(limit)
+        .offset(offset);
+      },
+      5 * 60 * 1000 // 5 minutes cache
+    );
+
+    const total = await cached(
+      CacheKeys.term('total-terms-count'),
+      async () => {
+        const result = await db.select({ count: sql<number>`count(*)` }).from(terms);
+        return result[0].count;
+      },
+      30 * 60 * 1000 // 30 minutes cache
+    );
+
+    return {
+      data: termsList,
+      terms: termsList,
+      total: total
+    };
   }
 }
 

@@ -16,6 +16,7 @@ exports[`TermCard Component > Visual Snapshots > matches visual snapshot 1`] = `
         AI/ML
       </div>
       <button
+        aria-label="Add to favorites"
         class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent h-8 w-8 text-gray-400 hover:text-accent-500"
       >
         <svg
@@ -71,6 +72,7 @@ exports[`TermCard Component > Visual Snapshots > matches visual snapshot 1`] = `
       class="flex space-x-2"
     >
       <button
+        aria-label="Copy link"
         class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-8 w-8"
         data-state="closed"
       >
@@ -100,6 +102,7 @@ exports[`TermCard Component > Visual Snapshots > matches visual snapshot 1`] = `
         </svg>
       </button>
       <button
+        aria-label="Share"
         class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-8 w-8"
         data-state="closed"
       >
@@ -165,6 +168,7 @@ exports[`TermCard Component > Visual Snapshots > matches visual snapshot with fa
         AI/ML
       </div>
       <button
+        aria-label="Add to favorites"
         class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent h-8 w-8 text-gray-400 hover:text-accent-500"
       >
         <svg
@@ -220,6 +224,7 @@ exports[`TermCard Component > Visual Snapshots > matches visual snapshot with fa
       class="flex space-x-2"
     >
       <button
+        aria-label="Copy link"
         class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-8 w-8"
         data-state="closed"
       >
@@ -249,304 +254,7 @@ exports[`TermCard Component > Visual Snapshots > matches visual snapshot with fa
         </svg>
       </button>
       <button
-        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-8 w-8"
-        data-state="closed"
-      >
-        <svg
-          class="lucide lucide-share2 text-gray-500 dark:text-gray-400"
-          fill="none"
-          height="16"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="16"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle
-            cx="18"
-            cy="5"
-            r="3"
-          />
-          <circle
-            cx="6"
-            cy="12"
-            r="3"
-          />
-          <circle
-            cx="18"
-            cy="19"
-            r="3"
-          />
-          <line
-            x1="8.59"
-            x2="15.42"
-            y1="13.51"
-            y2="17.49"
-          />
-          <line
-            x1="15.41"
-            x2="8.59"
-            y1="6.51"
-            y2="10.49"
-          />
-        </svg>
-      </button>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`TermCard Component > matches visual snapshot 1`] = `
-<div
-  class="rounded-lg border bg-card text-card-foreground shadow-sm h-full flex flex-col transition-shadow hover:shadow-md"
->
-  <div
-    class="p-4 flex-1"
-  >
-    <div
-      class="flex items-center justify-between mb-2"
-    >
-      <div
-        class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300"
-      >
-        AI/ML
-      </div>
-      <button
-        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent h-8 w-8 text-gray-400 hover:text-accent-500"
-      >
-        <svg
-          class="lucide lucide-heart"
-          fill="none"
-          height="20"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-          />
-        </svg>
-      </button>
-    </div>
-    <h3
-      class="font-semibold text-lg mb-1"
-    >
-      Machine Learning
-    </h3>
-    <p
-      class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-3"
-    >
-      A method of data analysis that automates analytical model building
-    </p>
-    <div
-      class="text-xs text-gray-500 dark:text-gray-400 mb-2"
-    >
-      <span
-        class="font-medium"
-      >
-        Categories: 
-      </span>
-      <span>
-        Supervised Learning, Unsupervised Learning
-      </span>
-    </div>
-  </div>
-  <div
-    class="border-t border-gray-100 dark:border-gray-800 p-3 flex justify-between items-center"
-  >
-    <div
-      class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium cursor-pointer"
-    >
-      Read more
-    </div>
-    <div
-      class="flex space-x-2"
-    >
-      <button
-        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-8 w-8"
-        data-state="closed"
-      >
-        <svg
-          class="lucide lucide-copy text-gray-500 dark:text-gray-400"
-          fill="none"
-          height="16"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="16"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect
-            height="14"
-            rx="2"
-            ry="2"
-            width="14"
-            x="8"
-            y="8"
-          />
-          <path
-            d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
-          />
-        </svg>
-      </button>
-      <button
-        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-8 w-8"
-        data-state="closed"
-      >
-        <svg
-          class="lucide lucide-share2 text-gray-500 dark:text-gray-400"
-          fill="none"
-          height="16"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="16"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <circle
-            cx="18"
-            cy="5"
-            r="3"
-          />
-          <circle
-            cx="6"
-            cy="12"
-            r="3"
-          />
-          <circle
-            cx="18"
-            cy="19"
-            r="3"
-          />
-          <line
-            x1="8.59"
-            x2="15.42"
-            y1="13.51"
-            y2="17.49"
-          />
-          <line
-            x1="15.41"
-            x2="8.59"
-            y1="6.51"
-            y2="10.49"
-          />
-        </svg>
-      </button>
-    </div>
-  </div>
-</div>
-`;
-
-exports[`TermCard Component > matches visual snapshot with favorite and learned states 1`] = `
-<div
-  class="rounded-lg border bg-card text-card-foreground shadow-sm h-full flex flex-col transition-shadow hover:shadow-md"
->
-  <div
-    class="p-4 flex-1"
-  >
-    <div
-      class="flex items-center justify-between mb-2"
-    >
-      <div
-        class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 border-transparent bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300"
-      >
-        AI/ML
-      </div>
-      <button
-        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent h-8 w-8 text-gray-400 hover:text-accent-500"
-      >
-        <svg
-          class="lucide lucide-heart"
-          fill="none"
-          height="20"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="20"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <path
-            d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"
-          />
-        </svg>
-      </button>
-    </div>
-    <h3
-      class="font-semibold text-lg mb-1"
-    >
-      Machine Learning
-    </h3>
-    <p
-      class="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-3"
-    >
-      A method of data analysis that automates analytical model building
-    </p>
-    <div
-      class="text-xs text-gray-500 dark:text-gray-400 mb-2"
-    >
-      <span
-        class="font-medium"
-      >
-        Categories: 
-      </span>
-      <span>
-        Supervised Learning, Unsupervised Learning
-      </span>
-    </div>
-  </div>
-  <div
-    class="border-t border-gray-100 dark:border-gray-800 p-3 flex justify-between items-center"
-  >
-    <div
-      class="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium cursor-pointer"
-    >
-      Read more
-    </div>
-    <div
-      class="flex space-x-2"
-    >
-      <button
-        class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-8 w-8"
-        data-state="closed"
-      >
-        <svg
-          class="lucide lucide-copy text-gray-500 dark:text-gray-400"
-          fill="none"
-          height="16"
-          stroke="currentColor"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          viewBox="0 0 24 24"
-          width="16"
-          xmlns="http://www.w3.org/2000/svg"
-        >
-          <rect
-            height="14"
-            rx="2"
-            ry="2"
-            width="14"
-            x="8"
-            y="8"
-          />
-          <path
-            d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"
-          />
-        </svg>
-      </button>
-      <button
+        aria-label="Share"
         class="inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 hover:bg-accent hover:text-accent-foreground h-8 w-8"
         data-state="closed"
       >

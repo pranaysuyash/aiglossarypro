@@ -2215,6 +2215,135 @@ export class DatabaseStorage implements IStorage {
         : 0
     };
   }
+
+  // Missing methods for tests
+  async getTerms(options: { limit?: number; offset?: number } = {}): Promise<any[]> {
+    const { limit = 10, offset = 0 } = options;
+    
+    const result = await db.select({
+      id: terms.id,
+      name: terms.name,
+      definition: terms.definition,
+      shortDefinition: terms.shortDefinition,
+      categoryId: terms.categoryId,
+      characteristics: terms.characteristics,
+      visualUrl: terms.visualUrl,
+      mathFormulation: terms.mathFormulation,
+      viewCount: terms.viewCount,
+      createdAt: terms.createdAt,
+      updatedAt: terms.updatedAt
+    })
+    .from(terms)
+    .orderBy(terms.name)
+    .limit(limit)
+    .offset(offset);
+    
+    return result;
+  }
+
+  async getTerm(id: string): Promise<any> {
+    const [term] = await db.select()
+      .from(terms)
+      .where(eq(terms.id, id));
+    
+    return term || null;
+  }
+
+  async getTermsByCategory(categoryId: string, options: { limit?: number; offset?: number } = {}): Promise<any[]> {
+    const { limit = 20, offset = 0 } = options;
+    
+    const result = await db.select({
+      id: terms.id,
+      name: terms.name,
+      definition: terms.definition,
+      shortDefinition: terms.shortDefinition,
+      categoryId: terms.categoryId,
+      viewCount: terms.viewCount,
+      createdAt: terms.createdAt,
+      updatedAt: terms.updatedAt
+    })
+    .from(terms)
+    .where(eq(terms.categoryId, categoryId))
+    .orderBy(terms.name)
+    .limit(limit)
+    .offset(offset);
+    
+    return result;
+  }
+
+  async searchTerms(query: string): Promise<any[]> {
+    // Sanitize the query to prevent SQL injection
+    const sanitizedQuery = query.replace(/[%_]/g, '\\$&');
+    
+    const result = await db.select()
+      .from(terms)
+      .where(sql`${terms.name} ILIKE ${`%${sanitizedQuery}%`} OR ${terms.definition} ILIKE ${`%${sanitizedQuery}%`}`)
+      .orderBy(terms.name)
+      .limit(50);
+    
+    return result;
+  }
+
+  async getFavorites(userId: string): Promise<any[]> {
+    const result = await db.select({
+      id: terms.id,
+      name: terms.name,
+      definition: terms.definition,
+      shortDefinition: terms.shortDefinition,
+      categoryId: terms.categoryId,
+      viewCount: terms.viewCount,
+      createdAt: terms.createdAt,
+      updatedAt: terms.updatedAt
+    })
+    .from(favorites)
+    .innerJoin(terms, eq(favorites.termId, terms.id))
+    .where(eq(favorites.userId, userId))
+    .orderBy(favorites.createdAt);
+    
+    return result;
+  }
+
+  async addFavorite(userId: string, termId: string): Promise<void> {
+    try {
+      await db.insert(favorites).values({
+        userId,
+        termId
+      });
+    } catch (error: any) {
+      // Handle duplicate favorite gracefully
+      if (error.code === '23505') { // PostgreSQL unique violation
+        return;
+      }
+      throw error;
+    }
+  }
+
+  async removeFavorite(userId: string, termId: string): Promise<void> {
+    await db.delete(favorites)
+      .where(and(
+        eq(favorites.userId, userId),
+        eq(favorites.termId, termId)
+      ));
+  }
+
+  async createTerm(termData: any): Promise<any> {
+    // Validate required fields
+    if (!termData.name || !termData.definition) {
+      throw new Error('Term name and definition are required');
+    }
+    
+    const [newTerm] = await db.insert(terms).values({
+      name: termData.name,
+      definition: termData.definition,
+      shortDefinition: termData.shortDefinition,
+      categoryId: termData.categoryId,
+      characteristics: termData.characteristics,
+      visualUrl: termData.visualUrl,
+      mathFormulation: termData.mathFormulation
+    }).returning();
+    
+    return newTerm;
+  }
 }
 
 // Create and export storage instance

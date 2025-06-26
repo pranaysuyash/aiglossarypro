@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from 'express';
-import { storage } from '../storage';
+import { optimizedStorage as storage } from "../optimizedStorage";
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { requireAdmin } from '../middleware/adminAuth';
 import { validateQuery } from '../middleware/security';
@@ -23,7 +23,7 @@ export function registerContentRoutes(app: Express): void {
   app.get('/api/content/accessibility/term/:id', async (req: Request, res: Response) => {
     try {
       const termId = req.params.id;
-      const term = await storage.getTerm(termId);
+      const term = await storage.getTermById(termId);
       
       if (!term) {
         return res.status(404).json({
@@ -71,14 +71,14 @@ export function registerContentRoutes(app: Express): void {
         // Analyze specific terms
         terms = await Promise.all(
           termIds.map(async (id: string) => {
-            const term = await storage.getTerm(id);
+            const term: { id: string; name: string; definition: string; } | null = await storage.getTermById(id);
             return term ? { id: term.id, name: term.name, definition: term.definition } : null;
           })
-        ).then(results => results.filter(Boolean));
+        ).then(results => results.filter((term): term is { id: string; name: string; definition: string; } => term !== null));
       } else {
         // Analyze all terms (with limit)
-        const allTerms = await storage.getTerms({ limit: limit || 100, page: 1 });
-        terms = allTerms.data.map(term => ({
+        const allTerms = await storage.getAllTerms({ limit: limit || 100, page: 1 });
+        terms = allTerms.terms.map((term: any) => ({
           id: term.id,
           name: term.name,
           definition: term.definition
@@ -129,7 +129,7 @@ export function registerContentRoutes(app: Express): void {
   app.get('/api/content/simplify/term/:id', async (req: Request, res: Response) => {
     try {
       const termId = req.params.id;
-      const term = await storage.getTerm(termId);
+      const term = await storage.getTermById(termId);
       
       if (!term) {
         return res.status(404).json({
@@ -173,7 +173,7 @@ export function registerContentRoutes(app: Express): void {
       const termId = req.params.id;
       const { useSimplified, useEnhanced, customDefinition } = req.body;
       
-      const term = await storage.getTerm(termId);
+      const term = await storage.getTermById(termId);
       if (!term) {
         return res.status(404).json({
           success: false,
@@ -239,9 +239,9 @@ export function registerContentRoutes(app: Express): void {
     try {
       // Get sample of terms for analysis (configurable via query param)
       const sampleSize = parseInt(req.query.sampleSize as string) || 500;
-      const allTerms = await storage.getTerms({ limit: sampleSize, page: 1 });
+      const allTerms = await storage.getAllTerms({ limit: sampleSize, page: 1 });
       
-      const termsData = allTerms.data.map(term => ({
+      const termsData = allTerms.data.map((term: any) => ({
         id: term.id,
         name: term.name,
         definition: term.definition
@@ -311,9 +311,9 @@ export function registerContentRoutes(app: Express): void {
         
         // Get terms (this is a simplified implementation - in production,
         // you'd want to cache accessibility scores in the database)
-        const allTerms = await storage.getTerms({ limit: 1000, page: 1 });
+        const allTerms = await storage.getAllTerms({ limit: 1000, page: 1 });
         
-        const termsWithScores = allTerms.data.map(term => {
+        const termsWithScores = allTerms.data.map((term: any) => {
           const score = calculateAccessibilityScore(term.definition);
           return {
             ...term,

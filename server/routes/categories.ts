@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { storage } from "../storage";
+import { optimizedStorage as storage } from "../optimizedStorage";
 import type { ICategory, ApiResponse, PaginatedResponse } from "../../shared/types";
 
 /**

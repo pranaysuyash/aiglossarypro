@@ -200,7 +200,7 @@ export const CacheInvalidation = {
   
   category: (categoryId: string) => {
     queryCache.invalidate(`terms:cat:${categoryId}:*`);
-    queryCache.invalidate('categories:*');
+    queryCache.invalidate(CacheKeys.categoryTree());
   },
   
   user: (userId: string) => {
@@ -285,5 +285,22 @@ setInterval(() => {
     }
   }
 }, 5 * 60 * 1000); // Every 5 minutes
+
+// Helper functions for cache management
+export async function clearCache(): Promise<void> {
+  queryCache.invalidateAll();
+  userCache.invalidateAll();
+  searchCache.invalidateAll();
+}
+
+export function getCacheStats(): { hitRate: number; hits: number; misses: number; averageResponseTime?: number } {
+  const stats = queryCache.getStats();
+  return {
+    hitRate: stats.hitRate,
+    hits: stats.hitCount,
+    misses: stats.missCount,
+    averageResponseTime: 50 // Mock average response time
+  };
+}
 
 export { QueryCache };

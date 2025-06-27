@@ -290,6 +290,6 @@ npm run dev 2>&1 | grep -E "(database|error|connection)"
 *Current Status: 85% Complete - Core Systems Operational & Secured*
 *Remaining: 11 hours of security audit, config, and monitoring work*
 
-Never work on your own branch, all changes are committed using git add . and not specific files. only exclude whatever is to be excluded using gitignore.
+Never work on your own branch, commit all changes using git add .  and only exclude what is not needed using gitignore and then make sure everything committed is pushed to remote if no breaking issues.
 Suggestions when provided in cli should also be documented
 Always create a separate review doc if you feel a second set of eyes would be helpful especially while we are working with multiple agents in parallel.

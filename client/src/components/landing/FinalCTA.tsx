@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Clock, Shield, Star } from "lucide-react";
 import { useCountryPricing } from '@/hooks/useCountryPricing';
+import { trackCTAClick } from '@/types/analytics';
 
 export function FinalCTA() {
   const pricing = useCountryPricing();
@@ -48,13 +49,7 @@ export function FinalCTA() {
             className="bg-white text-purple-900 hover:bg-gray-100 px-12 py-6 text-xl font-bold rounded-xl shadow-2xl transition-all transform hover:scale-105"
             onClick={() => {
               // Track analytics
-              if (typeof window !== 'undefined' && (window as any).gtag) {
-                (window as any).gtag('event', 'final_cta_click', {
-                  event_category: 'conversion',
-                  event_label: 'final_cta_button',
-                  value: pricing.localPrice,
-                });
-              }
+              trackCTAClick('final', 'Get Lifetime Access');
               
               window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
             }}

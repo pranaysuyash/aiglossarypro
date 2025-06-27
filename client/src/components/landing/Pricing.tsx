@@ -6,6 +6,7 @@ import { PPPBanner } from './PPPBanner';
 import { PriceDisplay } from './PriceDisplay';
 import { useCountryPricing } from '@/hooks/useCountryPricing';
 import { TestPurchaseButton } from '../TestPurchaseButton';
+import { trackPurchaseIntent } from '@/types/analytics';
 
 export function Pricing() {
   const pricing = useCountryPricing();
@@ -198,14 +199,7 @@ export function Pricing() {
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white"
                   onClick={() => {
                     // Track analytics with pricing info
-                    if (typeof window !== 'undefined' && (window as any).gtag) {
-                      (window as any).gtag('event', 'purchase_intent', {
-                        event_category: 'ecommerce',
-                        event_label: 'lifetime_access',
-                        value: pricing.localPrice,
-                        custom_parameter: `${pricing.countryCode}_${pricing.discount}%_discount`,
-                      });
-                    }
+                    trackPurchaseIntent('lifetime_access', pricing.localPrice);
                     
                     // Open Gumroad with country parameter
                     const gumroadUrl = new URL('https://gumroad.com/l/aiml-glossary-pro');

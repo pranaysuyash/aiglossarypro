@@ -13,8 +13,8 @@ export const getDifficultyColor = (level?: string): string => {
 export const getProgressPercentage = (userSettings?: IEnhancedUserSettings, term?: IEnhancedTerm | ITerm): number => {
   if (!userSettings || !term) return 0;
   
-  const userLevel = (userSettings as any)?.experienceLevel || 'intermediate';
-  const termLevel = (term as any)?.difficultyLevel?.toLowerCase() || 'intermediate';
+  const userLevel = userSettings.experienceLevel || 'intermediate';
+  const termLevel = 'difficultyLevel' in term ? term.difficultyLevel?.toLowerCase() || 'intermediate' : 'intermediate';
   
   const levels = ['beginner', 'intermediate', 'advanced', 'expert'];
   const userIndex = levels.indexOf(userLevel);
@@ -36,4 +36,27 @@ export const formatViewCount = (count?: number): string => {
   if (count < 1000) return count.toString();
   if (count < 1000000) return `${(count / 1000).toFixed(1)}k`;
   return `${(count / 1000000).toFixed(1)}m`;
+};
+
+// Type guard to check if a term is enhanced
+export const isEnhancedTerm = (term: IEnhancedTerm | ITerm): term is IEnhancedTerm => {
+  return 'mainCategories' in term && 'difficultyLevel' in term;
+};
+
+// Helper to safely get main categories from any term
+export const getMainCategories = (term?: IEnhancedTerm | ITerm): string[] => {
+  if (!term) return [];
+  return isEnhancedTerm(term) ? term.mainCategories : [];
+};
+
+// Helper to safely get difficulty level from any term
+export const getDifficultyLevel = (term?: IEnhancedTerm | ITerm): string | undefined => {
+  if (!term) return undefined;
+  return isEnhancedTerm(term) ? term.difficultyLevel : undefined;
+};
+
+// Helper to safely get short definition from any term
+export const getShortDefinition = (term?: IEnhancedTerm | ITerm): string | undefined => {
+  if (!term) return undefined;
+  return isEnhancedTerm(term) ? term.shortDefinition : term.shortDefinition;
 };

@@ -6,6 +6,7 @@ import { storage } from '../storage';
 import { features, getAuthConfig } from '../config';
 import { log } from '../utils/logger';
 import { captureAuthEvent } from '../utils/sentry';
+import { AuthenticatedRequest } from '../types/express';
 
 // OAuth provider configurations
 interface OAuthConfig {
@@ -19,6 +20,19 @@ interface OAuthConfig {
     clientSecret: string;
     callbackURL: string;
   };
+}
+
+// OAuth user interface
+interface OAuthUser {
+  id: string;
+  email: string;
+  firstName: string;
+  lastName: string;
+  profileImageUrl: string | null;
+  provider: 'google' | 'github';
+  providerId: string;
+  accessToken: string;
+  refreshToken?: string;
 }
 
 // Get OAuth configuration from environment variables
@@ -67,13 +81,13 @@ export async function setupMultiAuth(app: Express) {
       scope: ['profile', 'email']
     }, async (accessToken: string, refreshToken: string, profile: any, done: any) => {
       try {
-        const user = {
+        const user: OAuthUser = {
           id: `google:${profile.id}`,
           email: profile.emails?.[0]?.value || '',
           firstName: profile.name?.givenName || '',
           lastName: profile.name?.familyName || '',
           profileImageUrl: profile.photos?.[0]?.value || null,
-          provider: 'google' as const,
+          provider: 'google',
           providerId: profile.id,
           accessToken,
           refreshToken
@@ -91,7 +105,7 @@ export async function setupMultiAuth(app: Express) {
           email: user.email
         });
         
-        return done(null, user as any);
+        return done(null, user);
       } catch (error) {
         log.error('Google OAuth error', { error: error instanceof Error ? error.message : 'Unknown error' });
         captureAuthEvent('google_login_error', { error: error instanceof Error ? error.message : 'Unknown error' });
@@ -170,7 +184,7 @@ export async function setupMultiAuth(app: Express) {
   
   // Enhanced logout that works with all providers
   app.get('/api/auth/logout', (req, res) => {
-    const user = req.user as any;
+    const user = req.user;
     const provider = user?.provider;
     
     captureAuthEvent('logout', {

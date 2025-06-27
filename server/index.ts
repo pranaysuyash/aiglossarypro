@@ -140,9 +140,11 @@ app.use((req, res, next) => {
   // Initialize analytics system
   await initializeAnalytics();
   
-  // Start listening
-  server.listen(port, '127.0.0.1', () => {
-    log(`🚀 Server running on http://127.0.0.1:${port} in ${serverConfig.nodeEnv} mode`);
+  // Start listening - use 0.0.0.0 in production for external access
+  const host = serverConfig.nodeEnv === 'production' ? '0.0.0.0' : '127.0.0.1';
+  
+  server.listen(port, host, () => {
+    log(`🚀 Server running on http://${host}:${port} in ${serverConfig.nodeEnv} mode`);
     log(`🔍 Server address: ${JSON.stringify(server.address())}`);
     log(`🛡️  Error handling and monitoring enabled`);
   });

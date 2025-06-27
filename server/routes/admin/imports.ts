@@ -139,6 +139,109 @@ export function registerAdminImportRoutes(app: Express): void {
     }
   });
 
+  // Force reprocess endpoint - clears cache and forces fresh processing
+  app.post('/api/admin/import/force-reprocess', authMiddleware, tokenMiddleware, requireAdmin, upload.single('file'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "No file uploaded for force reprocessing"
+        });
+      }
+
+      console.log(`🔄 Force reprocessing file: ${req.file.originalname}`);
+      console.log(`📊 File size: ${req.file.size} bytes`);
+
+      // Clear cache first to ensure fresh processing
+      await storage.clearCache();
+      console.log("🗑️  Cache cleared for force reprocessing");
+
+      // Determine file size to choose appropriate parser
+      const fileSizeMB = req.file.size / (1024 * 1024);
+      console.log(`📊 File size: ${fileSizeMB.toFixed(2)} MB`);
+
+      // For large files with 42-section structure, use advanced parser
+      if (fileSizeMB > 0.1 || req.file.originalname.includes('row1')) {
+        console.log('🧠 Force processing with Advanced Excel Parser...');
+        
+        // Initialize advanced parser with force flag
+        const advancedParser = new AdvancedExcelParser();
+        
+        // Parse with advanced parser (extracts all 42 sections) - bypassing cache
+        const parsedTerms = await advancedParser.parseComplexExcel(req.file.buffer, { forceReprocess: true });
+        
+        if (!parsedTerms || parsedTerms.length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: "No valid terms found in the Excel file during force reprocessing"
+          });
+        }
+
+        console.log(`✅ Force reprocessing completed: ${parsedTerms.length} terms with 42 sections each`);
+
+        // Import to enhanced database with full 42-section support
+        await importComplexTerms(parsedTerms);
+        
+        const importResult: ImportResult = {
+          success: true,
+          termsImported: parsedTerms.length,
+          categoriesImported: 0,
+          errors: [],
+          warnings: []
+        };
+
+        const response: ApiResponse<ImportResult> = {
+          success: true,
+          data: importResult,
+          message: `Force reprocessing completed: ${importResult.termsImported} terms with complete 42-section structure`
+        };
+
+        res.json(response);
+        
+      } else {
+        // Use basic parser for simple files
+        console.log('📋 Force processing with basic parser...');
+        
+        const parsedData = await parseExcelFile(req.file.buffer);
+        
+        if (!parsedData || parsedData.terms.length === 0) {
+          return res.status(400).json({
+            success: false,
+            message: "No valid data found in the Excel file during force reprocessing"
+          });
+        }
+
+        console.log(`✅ Force reprocessing completed: ${parsedData.terms.length} terms`);
+
+        // Import to database
+        const dbResult = await importToDatabase(parsedData);
+
+        const importResult: ImportResult = {
+          success: true,
+          termsImported: dbResult.termsImported,
+          categoriesImported: dbResult.categoriesImported,
+          errors: [],
+          warnings: []
+        };
+
+        const response: ApiResponse<ImportResult> = {
+          success: true,
+          data: importResult,
+          message: `Force reprocessing completed: ${importResult.termsImported} terms and ${importResult.categoriesImported} categories`
+        };
+
+        res.json(response);
+      }
+    } catch (error) {
+      console.error("Error during force reprocessing:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to force reprocess file",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Clear all data (dangerous operation)
   app.delete('/api/admin/clear-data', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {

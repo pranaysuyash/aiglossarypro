@@ -112,6 +112,33 @@ export class CacheManager {
         return false;
       }
 
+      // CRITICAL FIX: Validate cache integrity - check for empty or invalid data
+      if (!metadata.termCount || metadata.termCount <= 0) {
+        console.log(`📦 Cache is invalid: termCount is ${metadata.termCount || 0} (expected > 0)`);
+        return false;
+      }
+
+      // Validate cache data file integrity
+      try {
+        const dataContent = await readFile(dataPath, 'utf8');
+        const cachedData = JSON.parse(dataContent);
+        
+        // Verify the cached data actually contains terms
+        if (!cachedData.terms || !Array.isArray(cachedData.terms) || cachedData.terms.length === 0) {
+          console.log('📦 Cache is invalid: data file contains no terms');
+          return false;
+        }
+        
+        // Verify term count matches metadata
+        if (cachedData.terms.length !== metadata.termCount) {
+          console.log(`📦 Cache is invalid: term count mismatch (metadata: ${metadata.termCount}, data: ${cachedData.terms.length})`);
+          return false;
+        }
+      } catch (dataError) {
+        console.log('📦 Cache is invalid: corrupted data file');
+        return false;
+      }
+
       // Get current file metadata
       const currentMetadata = await this.getFileMetadata(filePath);
 
@@ -120,7 +147,7 @@ export class CacheManager {
                      metadata.lastModified === currentMetadata.lastModified;
 
       if (isValid) {
-        console.log('✅ Cache is valid and up-to-date');
+        console.log(`✅ Cache is valid and up-to-date with ${metadata.termCount} terms`);
         const cacheAge = Date.now() - metadata.processedAt;
         const ageHours = Math.round(cacheAge / (1000 * 60 * 60));
         console.log(`📦 Cache age: ${ageHours} hours`);
@@ -278,6 +305,50 @@ export class CacheManager {
     } catch (error) {
       console.error('Error listing cache:', error);
       return [];
+    }
+  }
+
+  /**
+   * Force invalidate cache - clears invalid/empty caches
+   */
+  async forceInvalidateEmptyCache(filePath: string): Promise<boolean> {
+    try {
+      const cacheInfo = await this.getCacheInfo(filePath);
+      
+      if (!cacheInfo) {
+        console.log('📦 No cache found to invalidate');
+        return false;
+      }
+
+      // Check if cache is empty or invalid
+      if (!cacheInfo.termCount || cacheInfo.termCount <= 0) {
+        console.log(`🗑️ Force invalidating empty cache (termCount: ${cacheInfo.termCount || 0})`);
+        await this.clearCache(filePath);
+        return true;
+      }
+
+      // Check data integrity
+      const { dataPath } = this.getCachePaths(filePath);
+      try {
+        const dataContent = await readFile(dataPath, 'utf8');
+        const cachedData = JSON.parse(dataContent);
+        
+        if (!cachedData.terms || !Array.isArray(cachedData.terms) || cachedData.terms.length === 0) {
+          console.log('🗑️ Force invalidating corrupted cache (no terms in data)');
+          await this.clearCache(filePath);
+          return true;
+        }
+      } catch (dataError) {
+        console.log('🗑️ Force invalidating corrupted cache (invalid data file)');
+        await this.clearCache(filePath);
+        return true;
+      }
+
+      console.log('📦 Cache appears valid, not invalidating');
+      return false;
+    } catch (error) {
+      console.error('Error force invalidating cache:', error);
+      return false;
     }
   }
 }

@@ -11,6 +11,7 @@
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
+    "db:status": "tsx server/scripts/check_db_status.ts",
     "db:indexes": "tsx server/scripts/applyPerformanceIndexes.ts",
     "db:indexes-enhanced": "tsx server/scripts/enhancedPerformanceIndexes.ts",
     "db:category-hierarchy": "tsx server/migrations/addCategoryHierarchy.ts",

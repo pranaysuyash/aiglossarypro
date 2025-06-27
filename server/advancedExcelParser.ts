@@ -74,6 +74,10 @@ class AdvancedExcelParser {
   }
 
   async parseComplexExcel(buffer: Buffer): Promise<ParsedTerm[]> {
+    console.log('\n🧠 ADVANCED EXCEL PARSER');
+    console.log('========================');
+    console.log('📋 Starting complex 42-section parsing...');
+    
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(buffer);
     
@@ -83,6 +87,7 @@ class AdvancedExcelParser {
     }
 
     // Map all headers
+    console.log('📋 Mapping column headers...');
     const firstRow = worksheet.getRow(1);
     firstRow.eachCell((cell, colNumber) => {
       const headerName = cell.value?.toString().trim() || '';
@@ -91,37 +96,77 @@ class AdvancedExcelParser {
       }
     });
 
-    console.log(`Found ${this.headers.size} columns in Excel file`);
+    console.log(`✅ Found ${this.headers.size} columns in Excel file`);
+    
+    // Log sample headers for verification
+    const sampleHeaders = Array.from(this.headers.keys()).slice(0, 5);
+    console.log('📋 Sample headers:', sampleHeaders);
 
     const parsedTerms: ParsedTerm[] = [];
+    const totalRows = worksheet.rowCount - 1; // Exclude header row
+    let processedCount = 0;
+    let cachedCount = 0;
+    let newlyParsedCount = 0;
+
+    console.log(`📊 Processing ${totalRows} term rows...`);
 
     // Process each term row
     for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
       const row = worksheet.getRow(rowNumber);
       if (row.hasValues) {
-        const termName = this.getCellValue(row, 'Term');
-        if (!termName) continue;
+        // Try multiple possible term name columns
+        const termName = this.getCellValue(row, 'Term') || 
+                         this.getCellValue(row, 'Name') ||
+                         this.getCellValue(row, 'Term Name') ||
+                         row.getCell(1).value?.toString().trim(); // First column fallback
+        
+        if (!termName) {
+          console.warn(`⚠️  Row ${rowNumber}: No term name found, skipping`);
+          continue;
+        }
 
-        console.log(`Processing term: ${termName}`);
+        processedCount++;
+        
+        if (processedCount % 100 === 0 || processedCount <= 10) {
+          console.log(`🔄 Processing term ${processedCount}/${totalRows}: ${termName}`);
+        }
         
         // Check if we have cached parsed data for this term
         const termHash = this.generateTermHash(row);
         const cachedTerm = await this.loadCachedTerm(termName, termHash);
         
         if (cachedTerm) {
-          console.log(`Using cached data for: ${termName}`);
+          if (processedCount <= 10) {
+            console.log(`⚡ Using cached data for: ${termName}`);
+          }
+          cachedCount++;
           parsedTerms.push(cachedTerm);
         } else {
-          console.log(`Parsing new data for: ${termName}`);
-          const parsedTerm = await this.parseTermRow(row, termName, termHash);
-          await this.saveCachedTerm(parsedTerm);
-          parsedTerms.push(parsedTerm);
+          if (processedCount <= 10) {
+            console.log(`🆕 Parsing new data for: ${termName}`);
+          }
+          try {
+            const parsedTerm = await this.parseTermRow(row, termName, termHash);
+            await this.saveCachedTerm(parsedTerm);
+            parsedTerms.push(parsedTerm);
+            newlyParsedCount++;
+          } catch (error) {
+            console.error(`❌ Error parsing term ${termName}:`, error);
+            // Continue with other terms
+          }
         }
       }
     }
 
     // Save AI parse cache
     await this.saveAIParseCache();
+
+    console.log('\n✅ ADVANCED PARSING COMPLETED');
+    console.log('=============================');
+    console.log(`📊 Total terms parsed: ${parsedTerms.length}`);
+    console.log(`⚡ From cache: ${cachedCount}`);
+    console.log(`🆕 Newly parsed: ${newlyParsedCount}`);
+    console.log(`🧠 AI cache entries: ${this.aiParseCache.size}`);
 
     return parsedTerms;
   }
@@ -431,16 +476,31 @@ Return clean, structured data that can be easily used in a web application.
 
 // Enhanced database import for complex structure
 export async function importComplexTerms(parsedTerms: ParsedTerm[]): Promise<void> {
+  console.log('\n💾 ENHANCED DATABASE IMPORT');
+  console.log('===========================');
+  console.log(`📊 Importing ${parsedTerms.length} complex terms to enhanced schema...`);
+  
   const { db } = await import('./db');
   const { enhancedTerms, termSections } = await import('../shared/enhancedSchema');
   const { eq } = await import('drizzle-orm');
   
-  console.log(`Importing ${parsedTerms.length} complex terms...`);
+  let successCount = 0;
+  let errorCount = 0;
+  let updateCount = 0;
+  let insertCount = 0;
   
-  for (const term of parsedTerms) {
-    console.log(`Processing term: ${term.name}`);
-    console.log(`Sections: ${Array.from(term.sections.keys()).join(', ')}`);
-    console.log(`Categories: Main=${term.categories.main.length}, Sub=${term.categories.sub.length}`);
+  for (let i = 0; i < parsedTerms.length; i++) {
+    const term = parsedTerms[i];
+    const progress = ((i + 1) / parsedTerms.length * 100).toFixed(1);
+    
+    if ((i + 1) % 100 === 0 || i < 10) {
+      console.log(`🔄 Processing term ${i + 1}/${parsedTerms.length} (${progress}%): ${term.name}`);
+    }
+    
+    if (i < 5) {
+      console.log(`📋 Sections: ${Array.from(term.sections.keys()).slice(0, 3).join(', ')}...`);
+      console.log(`🏷️  Categories: Main=${term.categories.main.length}, Sub=${term.categories.sub.length}`);
+    }
     
     try {
       // Create slug from name
@@ -489,20 +549,40 @@ export async function importComplexTerms(parsedTerms: ParsedTerm[]): Promise<voi
         parseVersion: '2.0'
       };
 
-      // Insert or update enhanced term
-      const [enhancedTerm] = await db
-        .insert(enhancedTerms)
-        .values(enhancedTermData)
-        .onConflictDoUpdate({
-          target: enhancedTerms.name,
-          set: {
+      // Check if term already exists
+      const existingTerm = await db.select()
+        .from(enhancedTerms)
+        .where(eq(enhancedTerms.name, term.name))
+        .limit(1);
+
+      let enhancedTerm;
+      if (existingTerm.length > 0) {
+        // Update existing term
+        [enhancedTerm] = await db
+          .update(enhancedTerms)
+          .set({
             ...enhancedTermData,
             updatedAt: new Date()
-          }
-        })
-        .returning();
-
-      console.log(`✅ Enhanced term saved: ${enhancedTerm.id}`);
+          })
+          .where(eq(enhancedTerms.id, existingTerm[0].id))
+          .returning();
+        updateCount++;
+        
+        if (i < 5) {
+          console.log(`🔄 Updated existing term: ${enhancedTerm.id}`);
+        }
+      } else {
+        // Insert new term
+        [enhancedTerm] = await db
+          .insert(enhancedTerms)
+          .values(enhancedTermData)
+          .returning();
+        insertCount++;
+        
+        if (i < 5) {
+          console.log(`➕ Inserted new term: ${enhancedTerm.id}`);
+        }
+      }
 
       // Delete existing sections for this term (for updates)
       await db.delete(termSections).where(eq(termSections.termId, enhancedTerm.id));
@@ -537,16 +617,28 @@ export async function importComplexTerms(parsedTerms: ParsedTerm[]): Promise<voi
 
       if (sectionInserts.length > 0) {
         await db.insert(termSections).values(sectionInserts);
-        console.log(`✅ Inserted ${sectionInserts.length} sections`);
+        if (i < 5) {
+          console.log(`📋 Inserted ${sectionInserts.length} sections`);
+        }
       }
+
+      successCount++;
 
     } catch (error) {
       console.error(`❌ Error importing term ${term.name}:`, error);
-      throw error;
+      errorCount++;
+      // Continue with other terms instead of throwing
     }
   }
   
-  console.log(`✅ Successfully imported ${parsedTerms.length} complex terms with 42-section structure`);
+  console.log('\n✅ ENHANCED IMPORT COMPLETED');
+  console.log('============================');
+  console.log(`📊 Total processed: ${parsedTerms.length}`);
+  console.log(`✅ Successfully imported: ${successCount}`);
+  console.log(`➕ New terms: ${insertCount}`);
+  console.log(`🔄 Updated terms: ${updateCount}`);
+  console.log(`❌ Errors: ${errorCount}`);
+  console.log(`💾 Database: Enhanced terms table (enhancedTerms + termSections)`);
 }
 
 export { AdvancedExcelParser, type ParsedTerm };

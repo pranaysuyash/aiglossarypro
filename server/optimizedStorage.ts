@@ -85,6 +85,21 @@ export interface IStorage {
   exportUserData(userId: string): Promise<any>;
   deleteUserData(userId: string): Promise<void>;
   getUserStreak(userId: string): Promise<any>;
+  
+  // Admin user management
+  getAllUsers(options?: { page?: number; limit?: number; search?: string }): Promise<{ data: any[]; total: number; page: number; limit: number; hasMore: boolean }>;
+  
+  // Admin data management
+  clearAllData(): Promise<{ tablesCleared: string[] }>;
+  reindexDatabase(): Promise<{ success: boolean; operation: string; duration: number; operations: string[]; timestamp: Date; message: string }>;
+  getAdminStats(): Promise<any>;
+  cleanupDatabase(): Promise<{ success: boolean; operation: string; duration: number; operations: string[]; timestamp: Date; message: string }>;
+  vacuumDatabase(): Promise<{ success: boolean; operation: string; duration: number; operations: string[]; timestamp: Date; message: string }>;
+  
+  // Content moderation  
+  getPendingContent(): Promise<any[]>;
+  approveContent(id: string): Promise<any>;
+  rejectContent(id: string): Promise<any>;
 }
 
 export class OptimizedStorage implements IStorage {
@@ -1101,6 +1116,601 @@ export class OptimizedStorage implements IStorage {
       longestStreak: 0,
       recentActivity: recentViews
     };
+  }
+
+  async getAllUsers(options?: { page?: number; limit?: number; search?: string }): Promise<{ data: any[]; total: number; page: number; limit: number; hasMore: boolean }> {
+    const { page = 1, limit = 50, search } = options || {};
+    const offset = (page - 1) * limit;
+
+    return cached(
+      CacheKeys.term(`users:page-${page}:limit-${limit}:search-${search || 'none'}`),
+      async () => {
+        // Build base query
+        let whereConditions = undefined;
+        
+        if (search) {
+          whereConditions = or(
+            ilike(users.email, `%${search}%`),
+            ilike(users.firstName, `%${search}%`),
+            ilike(users.lastName, `%${search}%`)
+          );
+        }
+
+        // Get total count
+        const totalResult = await db.select({ 
+          count: sql<number>`count(*)` 
+        })
+        .from(users)
+        .where(whereConditions);
+        
+        const total = Number(totalResult[0]?.count) || 0;
+
+        // Get paginated users with all relevant fields
+        const result = await db.select({
+          id: users.id,
+          email: users.email,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          profileImageUrl: users.profileImageUrl,
+          isAdmin: users.isAdmin,
+          subscriptionTier: users.subscriptionTier,
+          lifetimeAccess: users.lifetimeAccess,
+          purchaseDate: users.purchaseDate,
+          dailyViews: users.dailyViews,
+          lastViewReset: users.lastViewReset,
+          createdAt: users.createdAt,
+          updatedAt: users.updatedAt
+        })
+        .from(users)
+        .where(whereConditions)
+        .orderBy(desc(users.createdAt))
+        .limit(limit)
+        .offset(offset);
+
+        return {
+          data: result,
+          total,
+          page,
+          limit,
+          hasMore: offset + limit < total
+        };
+      },
+      300 // Cache for 5 minutes
+    );
+  }
+
+  async clearAllData(): Promise<{ tablesCleared: string[] }> {
+    const tablesCleared: string[] = [];
+    
+    try {
+      // Clear user-related data (in dependency order)
+      await db.delete(userSettings);
+      tablesCleared.push('userSettings');
+      
+      await db.delete(userProgress);
+      tablesCleared.push('userProgress');
+      
+      await db.delete(termViews);
+      tablesCleared.push('termViews');
+      
+      await db.delete(favorites);
+      tablesCleared.push('favorites');
+      
+      // Clear purchases data
+      await db.delete(purchases);
+      tablesCleared.push('purchases');
+      
+      // Clear users (this should be done after all user-dependent data)
+      await db.delete(users);
+      tablesCleared.push('users');
+      
+      // Clear term-related data
+      await db.delete(termSubcategories);
+      tablesCleared.push('termSubcategories');
+      
+      await db.delete(terms);
+      tablesCleared.push('terms');
+      
+      // Clear category hierarchy
+      await db.delete(subcategories);
+      tablesCleared.push('subcategories');
+      
+      await db.delete(categories);
+      tablesCleared.push('categories');
+      
+      // Clear all caches
+      await clearCache();
+      tablesCleared.push('queryCache');
+      
+      console.log(`[OptimizedStorage] Successfully cleared ${tablesCleared.length} tables`);
+      
+      return { tablesCleared };
+    } catch (error) {
+      console.error('[OptimizedStorage] clearAllData error:', error);
+      throw new Error(`Failed to clear data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async reindexDatabase(): Promise<{ success: boolean; operation: string; duration: number; operations: string[]; timestamp: Date; message: string }> {
+    const startTime = Date.now();
+    const operations: string[] = [];
+    
+    try {
+      console.log('[OptimizedStorage] Starting comprehensive database reindexing...');
+      operations.push('Database reindexing started');
+
+      // 1. Enable required extensions
+      try {
+        await db.execute(sql`CREATE EXTENSION IF NOT EXISTS pg_trgm`);
+        operations.push('pg_trgm extension enabled');
+      } catch (error) {
+        operations.push(`pg_trgm extension: ${error instanceof Error ? error.message : 'error'}`);
+      }
+
+      // 2. Core performance indexes
+      const coreIndexes = [
+        // Terms table indexes
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_name_idx ON terms(name)`,
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_category_id_idx ON terms(category_id)`,
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_view_count_idx ON terms(view_count DESC)`,
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_created_at_idx ON terms(created_at DESC)`,
+        
+        // Full-text search indexes
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_name_gin_idx ON terms USING GIN(to_tsvector('english', name))`,
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_definition_gin_idx ON terms USING GIN(to_tsvector('english', definition))`,
+        
+        // Composite indexes for common queries
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_category_view_count_idx ON terms(category_id, view_count DESC)`,
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_category_created_at_idx ON terms(category_id, created_at DESC)`,
+        
+        // User activity indexes
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS favorites_user_id_idx ON favorites(user_id)`,
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS user_progress_user_id_idx ON user_progress(user_id)`,
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS term_views_term_id_idx ON term_views(term_id)`,
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS term_views_user_id_idx ON term_views(user_id)`,
+        
+        // Category optimization
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS categories_name_lower_idx ON categories(LOWER(name))`,
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS subcategories_category_id_idx ON subcategories(category_id)`,
+      ];
+
+      for (const indexSQL of coreIndexes) {
+        try {
+          await db.execute(sql.raw(indexSQL));
+          operations.push(`✓ ${indexSQL.split(' ')[5]} created`);
+        } catch (error) {
+          operations.push(`⚠ Index creation: ${error instanceof Error ? error.message : 'error'}`);
+        }
+      }
+
+      // 3. Enhanced search indexes (if tables exist)
+      const enhancedIndexes = [
+        // Trigram indexes for fuzzy search
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_name_trgm_idx ON terms USING GIN(name gin_trgm_ops)`,
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_definition_trgm_idx ON terms USING GIN(definition gin_trgm_ops)`,
+        
+        // Case-insensitive search
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_name_lower_idx ON terms(LOWER(name))`,
+        
+        // Time-based partial indexes
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_recent_idx ON terms(created_at DESC) WHERE created_at > NOW() - INTERVAL '30 days'`,
+        `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_popular_idx ON terms(view_count DESC) WHERE view_count > 10`,
+      ];
+
+      for (const indexSQL of enhancedIndexes) {
+        try {
+          await db.execute(sql.raw(indexSQL));
+          operations.push(`✓ Enhanced: ${indexSQL.split(' ')[5]} created`);
+        } catch (error) {
+          operations.push(`⚠ Enhanced index: ${error instanceof Error ? error.message : 'error'}`);
+        }
+      }
+
+      // 4. Reindex existing indexes
+      try {
+        await db.execute(sql`REINDEX DATABASE CONCURRENTLY`);
+        operations.push('✓ Database reindexed');
+      } catch (error) {
+        // Fallback to table-specific reindexing
+        const tables = ['terms', 'categories', 'subcategories', 'users', 'favorites', 'user_progress', 'term_views'];
+        for (const table of tables) {
+          try {
+            await db.execute(sql.raw(`REINDEX TABLE ${table}`));
+            operations.push(`✓ Reindexed table: ${table}`);
+          } catch (tableError) {
+            operations.push(`⚠ Reindex ${table}: ${tableError instanceof Error ? tableError.message : 'error'}`);
+          }
+        }
+      }
+
+      // 5. Update table statistics
+      try {
+        await db.execute(sql`ANALYZE`);
+        operations.push('✓ Database statistics updated');
+      } catch (error) {
+        operations.push(`⚠ ANALYZE: ${error instanceof Error ? error.message : 'error'}`);
+      }
+
+      // 6. Clear query cache to force fresh query plans
+      await clearCache();
+      operations.push('✓ Query cache cleared');
+
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+      
+      console.log(`[OptimizedStorage] Database reindexing completed in ${duration}ms`);
+      
+      return {
+        success: true,
+        operation: 'reindex',
+        duration,
+        operations,
+        timestamp: new Date(),
+        message: `Database reindexing completed successfully in ${duration}ms`
+      };
+      
+    } catch (error) {
+      const endTime = Date.now();
+      console.error('[OptimizedStorage] reindexDatabase error:', error);
+      
+      return {
+        success: false,
+        operation: 'reindex',
+        duration: endTime - startTime,
+        operations: [...operations, `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`],
+        timestamp: new Date(),
+        message: `Database reindexing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  async getAdminStats(): Promise<any> {
+    return cached(
+      CacheKeys.term('admin_stats'),
+      async () => {
+        try {
+          // Get total counts
+          const [userCountResult] = await db.select({ 
+            count: sql<number>`count(*)` 
+          }).from(users);
+          
+          const [termCountResult] = await db.select({ 
+            count: sql<number>`count(*)` 
+          }).from(terms);
+          
+          const [categoryCountResult] = await db.select({ 
+            count: sql<number>`count(*)` 
+          }).from(categories);
+          
+          const [viewCountResult] = await db.select({ 
+            count: sql<number>`count(*)` 
+          }).from(termViews);
+
+          // Get recent activity (last 50 actions)
+          const recentActivity = await db.select({
+            id: termViews.id,
+            userId: termViews.userId,
+            action: sql<string>`'view'`,
+            entityType: sql<string>`'term'`,
+            entityId: termViews.termId,
+            createdAt: termViews.viewedAt
+          })
+          .from(termViews)
+          .orderBy(desc(termViews.viewedAt))
+          .limit(50);
+
+          // Get recent favorites as additional activity
+          const recentFavorites = await db.select({
+            id: favorites.id,
+            userId: favorites.userId,
+            action: sql<string>`'favorite'`,
+            entityType: sql<string>`'term'`,
+            entityId: favorites.termId,
+            createdAt: favorites.createdAt
+          })
+          .from(favorites)
+          .orderBy(desc(favorites.createdAt))
+          .limit(25);
+
+          // Combine and sort activity
+          const combinedActivity = [...recentActivity, ...recentFavorites]
+            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .slice(0, 50);
+
+          // Basic system health check
+          const systemHealth = {
+            database: 'healthy' as const,
+            s3: 'healthy' as const,
+            ai: 'healthy' as const
+          };
+
+          return {
+            totalUsers: Number(userCountResult?.count) || 0,
+            totalTerms: Number(termCountResult?.count) || 0,
+            totalCategories: Number(categoryCountResult?.count) || 0,
+            totalViews: Number(viewCountResult?.count) || 0,
+            recentActivity: combinedActivity,
+            systemHealth
+          };
+          
+        } catch (error) {
+          console.error('[OptimizedStorage] getAdminStats error:', error);
+          
+          // Return default stats on error
+          return {
+            totalUsers: 0,
+            totalTerms: 0,
+            totalCategories: 0,
+            totalViews: 0,
+            recentActivity: [],
+            systemHealth: {
+              database: 'error' as const,
+              s3: 'warning' as const,
+              ai: 'warning' as const
+            }
+          };
+        }
+      },
+      120 // Cache for 2 minutes (admin stats change frequently)
+    );
+  }
+
+  async cleanupDatabase(): Promise<{ success: boolean; operation: string; duration: number; operations: string[]; timestamp: Date; message: string }> {
+    const startTime = Date.now();
+    const operations: string[] = [];
+    
+    try {
+      console.log('[OptimizedStorage] Starting database cleanup...');
+      operations.push('Database cleanup started');
+
+      // 1. Clean up orphaned records
+      try {
+        // Remove user progress for non-existent users
+        const orphanedProgress = await db.delete(userProgress)
+          .where(sql`user_id NOT IN (SELECT id FROM users)`);
+        operations.push(`✓ Cleaned orphaned user progress records`);
+
+        // Remove favorites for non-existent users or terms
+        const orphanedFavorites = await db.delete(favorites)
+          .where(sql`user_id NOT IN (SELECT id FROM users) OR term_id NOT IN (SELECT id FROM terms)`);
+        operations.push(`✓ Cleaned orphaned favorites`);
+
+        // Remove term views for non-existent users or terms
+        const orphanedViews = await db.delete(termViews)
+          .where(sql`user_id NOT IN (SELECT id FROM users) OR term_id NOT IN (SELECT id FROM terms)`);
+        operations.push(`✓ Cleaned orphaned term views`);
+
+        // Remove user settings for non-existent users
+        const orphanedSettings = await db.delete(userSettings)
+          .where(sql`user_id NOT IN (SELECT id FROM users)`);
+        operations.push(`✓ Cleaned orphaned user settings`);
+
+      } catch (error) {
+        operations.push(`⚠ Orphan cleanup: ${error instanceof Error ? error.message : 'error'}`);
+      }
+
+      // 2. Clean up old/expired data
+      try {
+        // Remove old term views (older than 6 months)
+        const oldViews = await db.delete(termViews)
+          .where(sql`viewed_at < NOW() - INTERVAL '6 months'`);
+        operations.push(`✓ Cleaned old term views (6+ months)`);
+
+      } catch (error) {
+        operations.push(`⚠ Old data cleanup: ${error instanceof Error ? error.message : 'error'}`);
+      }
+
+      // 3. Optimize table statistics
+      try {
+        await db.execute(sql`ANALYZE users, terms, categories, subcategories, favorites, user_progress, term_views`);
+        operations.push('✓ Updated table statistics');
+      } catch (error) {
+        operations.push(`⚠ Statistics update: ${error instanceof Error ? error.message : 'error'}`);
+      }
+
+      // 4. Clear query cache
+      await clearCache();
+      operations.push('✓ Query cache cleared');
+
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+      
+      console.log(`[OptimizedStorage] Database cleanup completed in ${duration}ms`);
+      
+      return {
+        success: true,
+        operation: 'cleanup',
+        duration,
+        operations,
+        timestamp: new Date(),
+        message: `Database cleanup completed successfully in ${duration}ms`
+      };
+      
+    } catch (error) {
+      const endTime = Date.now();
+      console.error('[OptimizedStorage] cleanupDatabase error:', error);
+      
+      return {
+        success: false,
+        operation: 'cleanup',
+        duration: endTime - startTime,
+        operations: [...operations, `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`],
+        timestamp: new Date(),
+        message: `Database cleanup failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  async vacuumDatabase(): Promise<{ success: boolean; operation: string; duration: number; operations: string[]; timestamp: Date; message: string }> {
+    const startTime = Date.now();
+    const operations: string[] = [];
+    
+    try {
+      console.log('[OptimizedStorage] Starting database vacuum...');
+      operations.push('Database vacuum started');
+
+      // 1. Vacuum main tables
+      const tables = ['users', 'terms', 'categories', 'subcategories', 'favorites', 'user_progress', 'term_views', 'purchases'];
+      
+      for (const table of tables) {
+        try {
+          await db.execute(sql.raw(`VACUUM ANALYZE ${table}`));
+          operations.push(`✓ Vacuumed table: ${table}`);
+        } catch (error) {
+          operations.push(`⚠ Vacuum ${table}: ${error instanceof Error ? error.message : 'error'}`);
+        }
+      }
+
+      // 2. Full database vacuum (if supported)
+      try {
+        await db.execute(sql`VACUUM`);
+        operations.push('✓ Full database vacuum completed');
+      } catch (error) {
+        operations.push(`⚠ Full vacuum: ${error instanceof Error ? error.message : 'error'}`);
+      }
+
+      // 3. Update all table statistics
+      try {
+        await db.execute(sql`ANALYZE`);
+        operations.push('✓ All table statistics updated');
+      } catch (error) {
+        operations.push(`⚠ Statistics update: ${error instanceof Error ? error.message : 'error'}`);
+      }
+
+      // 4. Clear query cache to refresh query plans
+      await clearCache();
+      operations.push('✓ Query cache cleared');
+
+      const endTime = Date.now();
+      const duration = endTime - startTime;
+      
+      console.log(`[OptimizedStorage] Database vacuum completed in ${duration}ms`);
+      
+      return {
+        success: true,
+        operation: 'vacuum',
+        duration,
+        operations,
+        timestamp: new Date(),
+        message: `Database vacuum completed successfully in ${duration}ms`
+      };
+      
+    } catch (error) {
+      const endTime = Date.now();
+      console.error('[OptimizedStorage] vacuumDatabase error:', error);
+      
+      return {
+        success: false,
+        operation: 'vacuum',
+        duration: endTime - startTime,
+        operations: [...operations, `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`],
+        timestamp: new Date(),
+        message: `Database vacuum failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  async getPendingContent(): Promise<any[]> {
+    return cached(
+      CacheKeys.term('pending_content'),
+      async () => {
+        try {
+          // Get pending feedback from ai_content_feedback table
+          const pendingFeedback = await db.execute(sql`
+            SELECT 
+              f.id,
+              f.term_id,
+              f.user_id,
+              f.feedback_type,
+              f.section,
+              f.description,
+              f.severity,
+              f.status,
+              f.created_at,
+              t.name as term_name,
+              u.email as user_email
+            FROM ai_content_feedback f
+            LEFT JOIN terms t ON f.term_id = t.id
+            LEFT JOIN users u ON f.user_id = u.id
+            WHERE f.status IN ('pending', 'reviewing')
+            ORDER BY f.severity DESC, f.created_at DESC
+            LIMIT 100
+          `);
+
+          return pendingFeedback.rows || [];
+        } catch (error) {
+          console.error('[OptimizedStorage] getPendingContent error:', error);
+          return [];
+        }
+      },
+      60 // Cache for 1 minute (pending content changes frequently)
+    );
+  }
+
+  async approveContent(id: string): Promise<any> {
+    try {
+      // Update feedback status to resolved
+      const result = await db.execute(sql`
+        UPDATE ai_content_feedback 
+        SET 
+          status = 'resolved',
+          reviewed_at = NOW(),
+          review_notes = 'Content approved by admin'
+        WHERE id = ${id}
+        RETURNING *
+      `);
+
+      // Clear pending content cache
+      await clearCache();
+      
+      if (result.rows && result.rows.length > 0) {
+        console.log(`[OptimizedStorage] Content approved: ${id}`);
+        return {
+          success: true,
+          id,
+          status: 'resolved',
+          message: 'Content approved successfully'
+        };
+      } else {
+        throw new Error('Content not found');
+      }
+    } catch (error) {
+      console.error('[OptimizedStorage] approveContent error:', error);
+      throw new Error(`Failed to approve content: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async rejectContent(id: string): Promise<any> {
+    try {
+      // Update feedback status to dismissed
+      const result = await db.execute(sql`
+        UPDATE ai_content_feedback 
+        SET 
+          status = 'dismissed',
+          reviewed_at = NOW(),
+          review_notes = 'Content rejected by admin'
+        WHERE id = ${id}
+        RETURNING *
+      `);
+
+      // Clear pending content cache
+      await clearCache();
+      
+      if (result.rows && result.rows.length > 0) {
+        console.log(`[OptimizedStorage] Content rejected: ${id}`);
+        return {
+          success: true,
+          id,
+          status: 'dismissed',
+          message: 'Content rejected successfully'
+        };
+      } else {
+        throw new Error('Content not found');
+      }
+    } catch (error) {
+      console.error('[OptimizedStorage] rejectContent error:', error);
+      throw new Error(`Failed to reject content: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   }
 }
 

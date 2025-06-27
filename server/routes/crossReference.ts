@@ -7,14 +7,18 @@ import type { Express, Request, Response } from 'express';
 import { crossReferenceService } from '../services/crossReferenceService';
 import { asyncHandler, handleDatabaseError } from '../middleware/errorHandler';
 import { requireAdmin } from '../middleware/adminAuth';
+import { mockRequireAdmin } from '../middleware/dev/mockAuth';
+import { features } from '../config';
 
 export function registerCrossReferenceRoutes(app: Express): void {
+  // Choose admin middleware based on environment
+  const adminMiddleware = features.replitAuthEnabled ? requireAdmin : mockRequireAdmin;
 
   /**
    * Process text for automatic term linking
    * POST /api/cross-reference/process
    */
-  app.post('/api/cross-reference/process', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
+  app.post('/api/cross-reference/process', adminMiddleware, asyncHandler(async (req: Request, res: Response) => {
     const { text, excludeTermId } = req.body;
 
     if (!text || typeof text !== 'string') {
@@ -47,7 +51,7 @@ export function registerCrossReferenceRoutes(app: Express): void {
    * Get cross-references for a specific term
    * GET /api/cross-reference/term/:termId
    */
-  app.get('/api/cross-reference/term/:termId', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
+  app.get('/api/cross-reference/term/:termId', adminMiddleware, asyncHandler(async (req: Request, res: Response) => {
     const { termId } = req.params;
 
     try {

@@ -10,6 +10,8 @@ import { enhancedStorage as storage } from '../enhancedStorage';
 // import { sql } from 'drizzle-orm';
 import { asyncHandler, handleDatabaseError, ErrorCategory } from '../middleware/errorHandler';
 import { requireAdmin } from '../middleware/adminAuth';
+import { mockRequireAdmin } from '../middleware/dev/mockAuth';
+import { features } from '../config';
 
 // TODO: Phase 2 - Move table creation to storage layer migration
 // Feedback table should be created via Drizzle schema and migrations
@@ -24,12 +26,14 @@ const initializeFeedbackStorage = async () => {
 initializeFeedbackStorage();
 
 export function registerFeedbackRoutes(app: Express): void {
+  // Choose admin middleware based on environment
+  const adminMiddleware = features.replitAuthEnabled ? requireAdmin : mockRequireAdmin;
 
   /**
    * Submit feedback for a specific term
    * POST /api/feedback/term/:termId
    */
-  app.post('/api/feedback/term/:termId', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
+  app.post('/api/feedback/term/:termId', adminMiddleware, asyncHandler(async (req: Request, res: Response) => {
     const { termId } = req.params;
     const { type, rating, message, contactEmail } = req.body;
 
@@ -76,7 +80,7 @@ export function registerFeedbackRoutes(app: Express): void {
    * Submit general feedback or term request
    * POST /api/feedback/general
    */
-  app.post('/api/feedback/general', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
+  app.post('/api/feedback/general', adminMiddleware, asyncHandler(async (req: Request, res: Response) => {
     const { type, message, contactEmail, termName, termDefinition } = req.body;
 
     // Validation

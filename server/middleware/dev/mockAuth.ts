@@ -85,6 +85,31 @@ export const mockAuthenticateToken = (req: Request, res: Response, next: NextFun
 };
 
 /**
+ * Mock admin middleware for development - always allows access
+ */
+export async function mockRequireAdmin(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    // Ensure mock user is set
+    if (!req.user) {
+      (req as AuthenticatedRequest).user = DEV_USER;
+    }
+
+    console.log("🔓 Mock admin auth: Admin access granted to dev user");
+    next();
+  } catch (error) {
+    console.error("Mock admin authentication error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Mock admin authentication failed"
+    });
+  }
+};
+
+/**
  * Development auth setup that provides mock login/logout endpoints
  */
 export function setupMockAuth(app: any) {

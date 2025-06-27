@@ -37,22 +37,28 @@ import { registerEnhancedDemoRoutes } from "../enhancedDemoRoutes";
  * This replaces the monolithic routes.ts file with a modular structure
  */
 export async function registerRoutes(app: Express): Promise<void> {
-  console.log("🔧 Setting up application routes...");
-  
-  // Add performance monitoring middleware
-  app.use(performanceMiddleware);
-  console.log("📊 Performance monitoring enabled");
+  try {
+    console.log("🔧 Setting up application routes...");
+    
+    // Add performance monitoring middleware
+    app.use(performanceMiddleware);
+    console.log("📊 Performance monitoring enabled");
   
   // Set up authentication first
-  if (features.simpleAuthEnabled) {
-    registerSimpleAuthRoutes(app);
-    console.log("✅ Simple JWT + OAuth authentication setup complete");
-  } else if (features.replitAuthEnabled) {
-    await setupAuth(app);
-    console.log("✅ Replit authentication setup complete");
-  } else {
-    setupMockAuth(app);
-    console.log("✅ Mock authentication setup complete (development mode)");
+  try {
+    if (features.simpleAuthEnabled) {
+      registerSimpleAuthRoutes(app);
+      console.log("✅ Simple JWT + OAuth authentication setup complete");
+    } else if (features.replitAuthEnabled) {
+      await setupAuth(app);
+      console.log("✅ Replit authentication setup complete");
+    } else {
+      setupMockAuth(app);
+      console.log("✅ Mock authentication setup complete (development mode)");
+    }
+  } catch (error) {
+    console.error("❌ Error setting up authentication:", error);
+    throw error;
   }
   
   // Initialize S3 client if credentials are present
@@ -240,4 +246,19 @@ export async function registerRoutes(app: Express): Promise<void> {
   });
   
   console.log("✅ All routes registered successfully");
+  
+  } catch (error) {
+    console.error("❌ Error registering routes:", error);
+    
+    // Register fallback error route
+    app.get('/api/*', (_, res) => {
+      res.status(503).json({
+        success: false,
+        error: 'Service temporarily unavailable - route registration failed',
+        message: 'Please contact support if this issue persists'
+      });
+    });
+    
+    throw error; // Re-throw to let server handle startup failure
+  }
 }

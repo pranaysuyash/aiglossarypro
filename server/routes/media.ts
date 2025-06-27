@@ -13,6 +13,40 @@ import { requireAdmin } from '../middleware/adminAuth';
 import { errorLogger } from '../middleware/errorHandler';
 import type { ApiResponse } from '../../shared/types';
 
+// File type validation using magic numbers
+const FILE_SIGNATURES = {
+  'image/jpeg': [0xFF, 0xD8, 0xFF],
+  'image/png': [0x89, 0x50, 0x4E, 0x47],
+  'image/gif': [0x47, 0x49, 0x46],
+  'image/webp': [0x52, 0x49, 0x46, 0x46],
+  'application/pdf': [0x25, 0x50, 0x44, 0x46],
+  'video/mp4': [0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70], // ftypmp4
+  'video/webm': [0x1A, 0x45, 0xDF, 0xA3]
+};
+
+async function validateFileContent(filePath: string, declaredMimeType: string): Promise<boolean> {
+  try {
+    const fd = await fs.open(filePath, 'r');
+    const buffer = Buffer.alloc(20); // Read first 20 bytes
+    await fd.read(buffer, 0, 20, 0);
+    await fd.close();
+
+    const signature = FILE_SIGNATURES[declaredMimeType as keyof typeof FILE_SIGNATURES];
+    if (!signature) return false;
+
+    // Check if file starts with expected signature
+    for (let i = 0; i < signature.length; i++) {
+      if (buffer[i] !== signature[i]) {
+        return false;
+      }
+    }
+    return true;
+  } catch (error) {
+    console.error('File validation error:', error);
+    return false;
+  }
+}
+
 const mediaRouter = Router();
 
 // Create media table if it doesn't exist
@@ -112,6 +146,22 @@ mediaRouter.post('/upload', requireAdmin, upload.single('file'), async (req: Req
       });
     }
 
+    // Security: Validate file content matches declared MIME type
+    const isValidContent = await validateFileContent(req.file.path, req.file.mimetype);
+    if (!isValidContent) {
+      // Delete the uploaded file since it failed validation
+      try {
+        await fs.unlink(req.file.path);
+      } catch (unlinkError) {
+        console.warn('Could not delete invalid file:', unlinkError);
+      }
+      
+      return res.status(400).json({
+        success: false,
+        error: 'File content does not match declared file type'
+      });
+    }
+
     const { altText, caption, termId } = req.body;
     const userId = req.user?.claims?.sub;
 
@@ -140,10 +190,10 @@ mediaRouter.post('/upload', requireAdmin, upload.single('file'), async (req: Req
 
     res.json({
       success: true,
-      data: mediaFile
+      data: mediaFile.rows?.[0]
     });
   } catch (error) {
-    errorLogger.error('Media upload error:', error);
+    console.error('Media upload error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to upload media file'
@@ -157,49 +207,45 @@ mediaRouter.get('/', async (req: Request, res: Response<ApiResponse<any>>) => {
     const { termId, type, page = 1, limit = 20 } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
-    let whereClause = '';
-    const params = [];
-
+    // Build parameterized query conditions
+    let query = sql`SELECT * FROM media_files`;
+    let countQuery = sql`SELECT COUNT(*) as count FROM media_files`;
+    
+    const conditions = [];
+    
     if (termId) {
-      whereClause += 'WHERE term_id = $1';
-      params.push(termId);
+      conditions.push(sql`term_id = ${termId}`);
     }
-
+    
     if (type) {
-      if (whereClause) {
-        whereClause += ' AND mime_type LIKE $' + (params.length + 1);
-      } else {
-        whereClause += 'WHERE mime_type LIKE $1';
-      }
-      params.push(`${type}/%`);
+      conditions.push(sql`mime_type LIKE ${`${type}/%`}`);
     }
+    
+    if (conditions.length > 0) {
+      const whereClause = sql.join(conditions, sql` AND `);
+      query = sql`SELECT * FROM media_files WHERE ${whereClause}`;
+      countQuery = sql`SELECT COUNT(*) as count FROM media_files WHERE ${whereClause}`;
+    }
+    
+    query = sql`${query} ORDER BY created_at DESC LIMIT ${Number(limit)} OFFSET ${offset}`;
 
-    const mediaFiles = await db.execute(sql`
-      SELECT * FROM media_files 
-      ${sql.raw(whereClause)}
-      ORDER BY created_at DESC
-      LIMIT ${Number(limit)} OFFSET ${offset}
-    `);
-
-    const countResult = await db.execute(sql`
-      SELECT COUNT(*) as count FROM media_files 
-      ${sql.raw(whereClause)}
-    `);
+    const mediaFiles = await db.execute(query);
+    const countResult = await db.execute(countQuery);
 
     res.json({
       success: true,
       data: {
         files: mediaFiles,
         pagination: {
-          total: Number((countResult[0] as any)?.count || 0),
+          total: Number((countResult.rows?.[0] as any)?.count || 0),
           page: Number(page),
           limit: Number(limit),
-          totalPages: Math.ceil(Number((countResult[0] as any)?.count || 0) / Number(limit))
+          totalPages: Math.ceil(Number((countResult.rows?.[0] as any)?.count || 0) / Number(limit))
         }
       }
     });
   } catch (error) {
-    errorLogger.error('Media list error:', error);
+    console.error('Media list error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to fetch media files'
@@ -222,10 +268,10 @@ mediaRouter.patch('/:id', requireAdmin, async (req: Request, res: Response<ApiRe
 
     res.json({
       success: true,
-      data: updatedFile[0]
+      data: updatedFile.rows?.[0]
     });
   } catch (error) {
-    errorLogger.error('Media update error:', error);
+    console.error('Media update error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to update media file'
@@ -239,16 +285,16 @@ mediaRouter.delete('/:id', requireAdmin, async (req: Request, res: Response<ApiR
     const { id } = req.params;
 
     // Get file info first
-    const fileInfo = (await db.execute(sql`
+    const fileInfo = await db.execute(sql`
       SELECT upload_path FROM media_files WHERE id = ${id}
-    `)).rows;
+    `);
 
-    if (fileInfo && fileInfo[0]) {
+    if (fileInfo.rows?.length && fileInfo.rows[0]) {
       // Delete physical file
       try {
-        await fs.unlink((fileInfo[0] as any).upload_path);
+        await fs.unlink((fileInfo.rows[0] as any).upload_path);
       } catch (error) {
-        errorLogger.warn('Could not delete physical file:', error);
+        console.warn('Could not delete physical file:', error);
       }
     }
 
@@ -262,7 +308,7 @@ mediaRouter.delete('/:id', requireAdmin, async (req: Request, res: Response<ApiR
       data: { message: 'Media file deleted successfully' }
     });
   } catch (error) {
-    errorLogger.error('Media delete error:', error);
+    console.error('Media delete error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to delete media file'
@@ -274,7 +320,34 @@ mediaRouter.delete('/:id', requireAdmin, async (req: Request, res: Response<ApiR
 mediaRouter.get('/serve/:filename', async (req: Request, res: Response) => {
   try {
     const { filename } = req.params;
+    
+    // Security: Prevent path traversal attacks
+    if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid filename'
+      });
+    }
+    
+    // Security: Only allow alphanumeric, dash, underscore, and dot
+    if (!/^[a-zA-Z0-9._-]+$/.test(filename)) {
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid filename format'
+      });
+    }
+    
     const filePath = path.join(process.cwd(), 'uploads', 'media', filename);
+    
+    // Security: Ensure resolved path is still within uploads directory
+    const uploadsDir = path.join(process.cwd(), 'uploads', 'media');
+    const resolvedPath = path.resolve(filePath);
+    if (!resolvedPath.startsWith(path.resolve(uploadsDir))) {
+      return res.status(400).json({
+        success: false,
+        error: 'Access denied'
+      });
+    }
     
     // Check if file exists
     try {
@@ -291,7 +364,7 @@ mediaRouter.get('/serve/:filename', async (req: Request, res: Response) => {
       SELECT mime_type, original_name FROM media_files WHERE filename = ${filename}
     `);
 
-    if (!fileInfo.rows.length) {
+    if (!fileInfo.rows?.length) {
       return res.status(404).json({
         success: false,
         error: 'File not found in database'
@@ -299,11 +372,15 @@ mediaRouter.get('/serve/:filename', async (req: Request, res: Response) => {
     }
 
     const file = fileInfo.rows[0] as any;
+    
+    // Security: Sanitize headers to prevent header injection
+    const safeOriginalName = (file.original_name || 'download').replace(/["\\r\\n]/g, '');
+    
     res.setHeader('Content-Type', file.mime_type);
-    res.setHeader('Content-Disposition', `inline; filename="${file.original_name}"`);
+    res.setHeader('Content-Disposition', `inline; filename="${safeOriginalName}"`);
     res.sendFile(filePath);
   } catch (error) {
-    errorLogger.error('Media serve error:', error);
+    console.error('Media serve error:', error);
     res.status(500).json({
       success: false,
       error: 'Failed to serve media file'

@@ -553,6 +553,34 @@ export class OptimizedStorage implements IStorage {
     );
   }
 
+  async getTrendingTerms(limit: number = 10): Promise<any[]> {
+    return cached(
+      `trending_terms_${limit}`,
+      async () => {
+        const results = await db.select({
+          id: terms.id,
+          name: terms.name,
+          shortDefinition: terms.shortDefinition,
+          viewCount: terms.viewCount,
+          category: categories.name,
+          recentViews: sql<number>`COUNT(${termViews.id})`
+        })
+        .from(terms)
+        .leftJoin(categories, eq(terms.categoryId, categories.id))
+        .leftJoin(termViews, and(
+          eq(termViews.termId, terms.id),
+          gte(termViews.viewedAt, subDays(new Date(), 7)) // Last 7 days
+        ))
+        .groupBy(terms.id, categories.name)
+        .orderBy(desc(sql`recent_views`), desc(terms.viewCount))
+        .limit(limit);
+
+        return results;
+      },
+      15 * 60 * 1000 // 15 minutes cache
+    );
+  }
+
   async updateTerm(termId: string, updates: any): Promise<any> {
     const [updatedTerm] = await db.update(terms)
       .set({

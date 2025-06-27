@@ -1,7 +1,240 @@
 # Database Migration Guide
 
 ## Overview
-This guide documents the enhanced database schema migration for the AI Glossary Pro application. The migration adds sophisticated data structures to support enhanced term management with 42-section content organization, interactive elements, and advanced user personalization.
+This guide provides comprehensive instructions for database setup, migrations, and optimization for the AI/ML Glossary Pro application. It covers initial deployment, schema migrations, bulk data imports, and performance optimization for production environments.
+
+## Table of Contents
+- [Environment Setup](#environment-setup)
+- [Initial Database Setup](#initial-database-setup)
+- [Migration Process](#migration-process)
+- [Database Verification](#database-verification)
+- [Bulk Import Optimization](#bulk-import-optimization)
+- [Enhanced Schema Migration](#enhanced-schema-migration)
+- [Troubleshooting](#troubleshooting)
+
+## Environment Setup
+
+### Required Environment Variables
+
+**MANDATORY**: The application will fail to start without these:
+
+```bash
+# Database connection string (PostgreSQL)
+DATABASE_URL=postgresql://username:password@host:port/database?sslmode=require
+
+# Example connection strings:
+# Neon: postgresql://user:pass@ep-xxx.us-east-2.aws.neon.tech/dbname?sslmode=require
+# Supabase: postgresql://postgres.xxxx:pass@aws-0-us-east-1.pooler.supabase.com:5432/postgres
+# Local: postgresql://postgres:password@localhost:5432/aimlglossary
+```
+
+### Verifying Environment
+
+Before proceeding, verify your database configuration:
+
+```bash
+# Check database status and connectivity
+npm run db:status
+```
+
+This command will:
+- Verify DATABASE_URL is configured
+- Test database connectivity
+- List all tables and their status
+- Provide optimization recommendations
+
+## Initial Database Setup
+
+### Step 1: Create Database
+
+**For managed services (Neon, Supabase):**
+- Database is created automatically when you provision the service
+- Copy the connection string from your provider's dashboard
+
+**For self-hosted PostgreSQL:**
+```sql
+CREATE DATABASE aimlglossary;
+```
+
+### Step 2: Run Initial Migration
+
+```bash
+# Push all schemas to database
+npm run db:push
+```
+
+This creates all tables defined in:
+- `shared/schema.ts` - Core application tables
+- `shared/enhancedSchema.ts` - Enhanced features tables
+
+### Step 3: Apply Performance Indexes
+
+```bash
+# Apply all performance optimizations
+npm run db:indexes
+npm run db:indexes-enhanced
+npm run db:search-indexes
+```
+
+### Step 4: Verify Setup
+
+```bash
+# Confirm all tables and indexes are created
+npm run db:status
+```
+
+Expected output:
+```
+📊 TABLE STATUS:
+────────────────────────────────────────────────────────────────────────────────
+Table Name                    Exists    Rows           Indexes
+────────────────────────────────────────────────────────────────────────────────
+sessions                      ✓         0              2 indexes
+users                         ✓         0              2 indexes
+[... all tables should show ✓ ...]
+
+✅ Database check PASSED
+```
+
+## Migration Process
+
+### Running Migrations
+
+```bash
+# For schema changes
+npm run db:push
+
+# For production migrations with version control
+drizzle-kit generate:pg
+drizzle-kit push:pg
+```
+
+### Migration Best Practices
+
+1. **Always backup before migrations:**
+   ```bash
+   pg_dump $DATABASE_URL > backup_$(date +%Y%m%d_%H%M%S).sql
+   ```
+
+2. **Check current state:**
+   ```bash
+   npm run db:status > pre_migration_status.txt
+   ```
+
+3. **Apply migrations in order:**
+   - Schema changes first
+   - Data migrations second
+   - Index creation last
+
+4. **Verify after migration:**
+   ```bash
+   npm run db:status
+   ```
+
+## Database Verification
+
+The `db:status` script provides comprehensive verification:
+
+### What It Checks
+
+1. **Connection Health**
+   - DATABASE_URL configuration
+   - Connection pool status
+   - Query execution capability
+
+2. **Schema Integrity**
+   - All 21 expected tables
+   - Row counts per table
+   - Index coverage
+
+3. **Performance Settings**
+   - work_mem (recommended: 16MB+)
+   - maintenance_work_mem (recommended: 64MB+)
+   - Critical index presence
+
+4. **Bulk Import Readiness**
+   - Table capacity
+   - Index optimization
+   - Memory settings
+
+### Running Verification
+
+```bash
+# Full database status check
+npm run db:status
+
+# Open visual database browser
+npm run db:studio
+```
+
+## Bulk Import Optimization
+
+For importing large datasets (10,000+ terms, 286MB+ files):
+
+### Pre-Import Setup
+
+1. **Optimize PostgreSQL settings:**
+   ```sql
+   -- Increase memory for current session
+   SET work_mem = '32MB';
+   SET maintenance_work_mem = '128MB';
+   
+   -- For very large imports
+   SET synchronous_commit = 'off';
+   SET checkpoint_completion_target = 0.9;
+   ```
+
+2. **Prepare data:**
+   - Convert Excel to CSV for files > 100MB
+   - Use streaming import for large files
+   - Split into batches of 1000-5000 records
+
+3. **Disable constraints temporarily (if needed):**
+   ```sql
+   -- Disable foreign key checks
+   SET session_replication_role = 'replica';
+   -- Run import
+   SET session_replication_role = 'origin';
+   ```
+
+### Import Process
+
+```bash
+# For optimized import
+npm run import:optimized -- --file data.csv
+
+# Monitor progress
+tail -f logs/import.log
+```
+
+### Post-Import Optimization
+
+1. **Update table statistics:**
+   ```sql
+   ANALYZE enhanced_terms;
+   ANALYZE term_sections;
+   VACUUM ANALYZE;
+   ```
+
+2. **Rebuild indexes if needed:**
+   ```sql
+   REINDEX TABLE enhanced_terms;
+   ```
+
+3. **Verify data integrity:**
+   ```bash
+   npm run db:status
+   ```
+
+### Performance Benchmarks
+
+- 10,000 terms: 2-5 minutes (optimized)
+- 50,000 terms: 10-15 minutes
+- 100,000+ terms: 20-30 minutes
+
+## Enhanced Schema Migration
+
+The enhanced schema adds sophisticated data structures for advanced features:
 
 ## Migration Summary
 
@@ -199,10 +432,105 @@ If rollback is needed:
 2. Track database size growth
 3. Optimize queries based on usage patterns
 
+## Troubleshooting
+
+### Common Issues
+
+#### Database Connection Failed
+```
+Error: Database connection failed: password authentication failed
+```
+**Solutions:**
+- Verify DATABASE_URL format
+- Check credentials and SSL mode
+- Ensure database server is accessible
+
+#### Migration Errors
+```
+Error: relation "table_name" already exists
+```
+**Solutions:**
+- Database state out of sync
+- Use `db:studio` to inspect actual schema
+- Drop and recreate if safe
+
+#### Slow Imports
+```
+Import taking > 30 minutes for 10k records
+```
+**Solutions:**
+- Increase work_mem: `SET work_mem = '64MB';`
+- Check network latency
+- Use CSV streaming instead of Excel
+- Process in smaller batches
+
+#### Out of Memory
+```
+FATAL: out of memory
+```
+**Solutions:**
+- Reduce batch size
+- Increase server memory
+- Use streaming imports
+
+### Debug Commands
+
+```sql
+-- Check active connections
+SELECT count(*) FROM pg_stat_activity;
+
+-- Find slow queries
+SELECT query, state, wait_event_type, wait_event
+FROM pg_stat_activity 
+WHERE state = 'active';
+
+-- Check table sizes
+SELECT 
+  schemaname,
+  tablename,
+  pg_size_pretty(pg_total_relation_size(schemaname||'.'||tablename)) AS size
+FROM pg_tables
+WHERE schemaname = 'public'
+ORDER BY pg_total_relation_size(schemaname||'.'||tablename) DESC;
+
+-- Check index usage
+SELECT 
+  schemaname,
+  tablename,
+  indexname,
+  idx_scan,
+  idx_tup_read,
+  idx_tup_fetch
+FROM pg_stat_user_indexes
+ORDER BY idx_scan DESC;
+```
+
+## Production Checklist
+
+Before deploying to production:
+
+- [ ] DATABASE_URL configured and tested
+- [ ] All migrations applied successfully
+- [ ] Performance indexes created
+- [ ] Database status check passes
+- [ ] Bulk data imported (if applicable)
+- [ ] Query performance acceptable
+- [ ] Backup strategy implemented
+- [ ] Monitoring configured
+- [ ] Documentation updated
+
 ## Support
 
-For issues with this migration:
-1. Check the migration logs
-2. Verify all foreign key constraints
-3. Ensure all indexes were created successfully
-4. Contact the development team if data inconsistencies occur
+For database issues:
+1. Run `npm run db:status` and save output
+2. Check application logs for errors
+3. Review PostgreSQL logs
+4. Verify all environment variables
+5. Contact development team with diagnostics
+
+## Additional Resources
+
+- [Drizzle ORM Documentation](https://orm.drizzle.team/)
+- [PostgreSQL Performance Tuning](https://wiki.postgresql.org/wiki/Tuning_Your_PostgreSQL_Server)
+- [Neon Documentation](https://neon.tech/docs/introduction)
+- [Supabase Documentation](https://supabase.com/docs)

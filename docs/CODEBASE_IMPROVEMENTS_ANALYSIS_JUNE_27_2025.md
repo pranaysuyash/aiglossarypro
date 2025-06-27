@@ -168,8 +168,7 @@ Each file in the codebase was reviewed. For code files, observations were compar
 **Tasks for Claude:**
 
 *   **[REVIEW: Claude]** **Middleware Order:** Ensure that the `authenticateToken` middleware is always applied before `requireAdmin` to prevent unnecessary processing for unauthenticated requests. (This is generally handled by Express's middleware chain, but a quick review is good practice).
-*   **[REVIEW: Claude]** **Error Handling for Sub-Routers:** While this file itself is simple, ensure that the sub-routers it imports (e.g., `stats`, `revenue`, `imports`, `content`, `maintenance`, `monitoring`, `users`) have robust error handling within their respective files.
-*   **[REVIEW: Claude]** **Admin Route Granularity:** As the application grows, consider if further granularity is needed for admin roles (e.g., `admin:content`, `admin:users`) to implement more fine-grained access control. This is a future consideration but worth noting.
+*   **[REVIEW: Claude]** **Error Handling for Sub-Routers:** While this file itself is simple, ensure that the sub-routers it imports (e.g., `stats`, `revenue`, `imports`, `content`, `maintenance`, `monitoring`, `users`) have robust error handling within their respective files. This is a general point that applies to all index/main route files.
 
 ### `/.env.production.template`
 
@@ -213,3 +212,189 @@ Each file in the codebase was reviewed. For code files, observations were compar
 *   **[REVIEW: Claude]** **Consolidate Documentation:** Review the overlap between `FEEDBACK_VERIFICATION_REPORT_JUNE_27_2025.md` and `CLAUDE.md`. Consider if these documents can be partially merged or if a clear distinction in their purpose and audience can be established to reduce redundancy and maintenance overhead.
 *   **[REVIEW: Claude]** **Refine Language:** Consider refining the language around "ACTUALLY COMPLETED" to a more neutral tone, such as "Verified Completed" or "Confirmed Implemented."
 *   **[REVIEW: Claude]** **Enhance Specificity:** For items like "6 more components optimized" in React performance, consider adding specific file paths or a reference to a more detailed log if available, to make verification more granular.
+
+### `/server/routes/analytics.ts`
+
+**Analysis:**
+
+*   **Modular Design:** The `registerAnalyticsRoutes` function encapsulates all analytics-related routes, which is good for modularity.
+*   **Authentication Handling:** It correctly uses feature flags to switch between `replitAuthEnabled` and `mockIsAuthenticated`, and applies `requireAdmin` middleware for sensitive endpoints.
+*   **Database Interactions:** The routes directly interact with the database using Drizzle ORM, performing various aggregations and selections for analytics data.
+*   **Pagination Implementation:** The `/api/analytics/content` endpoint correctly implements pagination with `pageSize`, `pageNumber`, and `offset` calculations, and returns pagination metadata. This is a good practice for handling large datasets.
+*   **Timeframe and Granularity:** Supports `timeframe` and `granularity` query parameters for flexible data retrieval.
+*   **CSV Export:** The `/api/analytics/export` endpoint provides CSV export functionality, which is a useful feature.
+*   **Error Handling:** Each route has a `try-catch` block for basic error handling and logging to the console.
+*   **Potential Improvements:**
+    *   **Repeated Imports:** The `db` import and schema imports (`enhancedTerms`, `termViews`, etc.) are repeated within each route handler. These could be imported once at the top of the file.
+    *   **Raw SQL in Drizzle:** While Drizzle allows `sql` template literals, some queries could potentially be expressed more idiomatically using Drizzle's query builder methods (e.g., `count(distinct users.id)` could be `db.select({ count: countDistinct(users.id) })`).
+    *   **Magic Strings for Timeframes:** The `timeframe` parsing logic (`timeframe === '24h' ? 1 : ...`) uses magic strings. An enum or a map could make this more robust and readable.
+    *   **Logging:** Uses `console.error` and `console.log`. Integrating with a more structured logger (like Winston, as seen in `gumroad.ts`) would be beneficial for production.
+    *   **Data Validation:** While Express handles basic request parsing, adding input validation (e.g., using Zod schemas) for query parameters (`timeframe`, `limit`, `sort`, `page`) would make the API more robust.
+    *   **Performance of `unnest`:** The `unnest` function used for category analytics might be less performant on very large datasets compared to other approaches, depending on the database and indexing.
+
+**Tasks for Claude:**
+
+*   **[TASK: Claude]** **Consolidate Imports:** Move common imports (`db`, schema, `drizzle-orm` functions) to the top of the file to avoid repetition within each route handler.
+*   **[TASK: Claude]** **Implement Input Validation:** Add Zod schemas for validating query parameters in all analytics endpoints to ensure data integrity and provide better error messages.
+*   **[REVIEW: Claude]** **Refactor Raw SQL:** Review the raw SQL queries and refactor them to use Drizzle's query builder methods where appropriate for improved type safety and readability.
+*   **[REVIEW: Claude]** **Timeframe Parsing:** Consider using a more structured approach (e.g., a utility function or an enum) for parsing `timeframe` and `granularity` parameters.
+*   **[REVIEW: Claude]** **Logging Integration:** Replace `console.error` and `console.log` with the structured logger used elsewhere in the application (e.g., `../utils/logger.ts`).
+*   **[REVIEW: Claude]** **Category Analytics Performance:** Investigate the performance of the `unnest` function for category analytics on large datasets and consider alternative approaches if performance becomes an issue.
+
+### `/server/routes/admin/stats.ts`
+
+**Analysis:**
+
+*   **Admin-Specific Routes:** This file correctly groups routes related to admin statistics and health checks.
+*   **Authentication and Authorization:** It properly applies `authenticateToken` and `requireAdmin` middleware, ensuring that only authenticated administrators can access these endpoints.
+*   **Context Setting for Storage:** The `storage.setContext` call is a good pattern for passing user and request information to the storage layer, which can be useful for auditing or fine-grained access control within the storage service.
+*   **Mock Data for Health Check:** The `/api/admin/health` endpoint currently uses mock data (`termCount = 1000`). The `TODO` comment correctly identifies that a proper implementation for `getTermsOptimized` is needed.
+*   **Error Handling:** Basic `try-catch` blocks are present for error handling.
+*   **Potential Improvements:**
+    *   **Redundant Middleware Selection:** The `authMiddleware` and `tokenMiddleware` selection based on `features.replitAuthEnabled` is repeated in multiple route files. This could be centralized or abstracted.
+    *   **Direct Storage Access:** The routes directly call `storage.getAdminStats()`. While acceptable, for more complex logic, a dedicated service layer between routes and storage might be beneficial.
+    *   **Incomplete Health Check:** The health check endpoint is currently mocked. It needs to be fully implemented to provide accurate system health information.
+    *   **`as any` Usage:** The `req as any` cast for accessing `req.user` indicates a potential type definition gap for the `Request` object when custom properties are added by middleware.
+
+**Tasks for Claude:**
+
+*   **[TASK: Claude]** **Implement Proper Health Check:** Replace the mock `termCount` and other health metrics in `/api/admin/health` with actual data fetched from the database and other services (e.g., S3, AI service status).
+*   **[TASK: Claude]** **Refine Request Type Definitions:** Investigate and update the Express `Request` type definitions to include custom properties added by authentication middleware (e.g., `req.user`, `req.requestId`) to eliminate the need for `as any` casts.
+*   **[REVIEW: Claude]** **Centralize Middleware Selection:** Consider creating a utility function or a custom Express app extension to centralize the selection of authentication middleware based on feature flags, reducing repetition across route files.
+*   **[REVIEW: Claude]** **Service Layer for Admin Stats:** Evaluate if a dedicated `AdminService` layer would be beneficial for encapsulating the logic for fetching admin statistics, especially if `getAdminStats` becomes more complex or involves multiple data sources.
+
+### `/server/routes/monitoring.ts`
+
+**Analysis:**
+
+*   **Comprehensive Monitoring Endpoints:** This file provides a good set of endpoints for monitoring the application's health, errors, database performance, and general metrics. This is crucial for operational visibility.
+*   **Admin Protection:** Most sensitive endpoints (`/api/monitoring/errors`, `/api/monitoring/database`, `/api/monitoring/metrics`, `/api/monitoring/analytics/dashboard`, `/api/monitoring/analytics/search-insights`, `/api/monitoring/metrics/realtime`) are correctly protected with `requireAdmin` middleware.
+*   **Modular Components:** It leverages `errorLogger`, `analyticsService`, and `enhancedStorage` for specific functionalities, promoting modularity.
+*   **Filesystem Check:** The `checkFileSystem` function attempts to verify read/write access to the `logs` directory, which is a good basic check.
+*   **Memory Usage Metrics:** Provides detailed memory usage statistics, which are valuable for performance monitoring.
+*   **Uptime Formatting:** Includes a helper function `formatUptime` for human-readable uptime display.
+*   **Potential Improvements:**
+    *   **Redundant Health Check Logic:** There's some overlap between the health checks in `/api/monitoring/health` and the dedicated `healthCheck.ts` script. It might be better to consolidate or reuse the logic from `healthCheck.ts` to avoid duplication and ensure consistency.
+    *   **Hardcoded Memory Threshold:** The memory health check uses a hardcoded threshold (`memUsageMB.heapUsed < 500`). This should be configurable, similar to the recommendation for `healthCheck.ts`.
+    *   **Direct `fs` Access:** While `fs.accessSync` is used for a basic check, direct file system manipulation (like `fs.readdirSync`, `fs.unlinkSync` in the `/api/monitoring/errors` DELETE endpoint) within a route handler can be risky and should be handled with extreme care, potentially moving to a dedicated service.
+    *   **Error Logging Consistency:** The error logging uses `console.error` in some places and `errorLogger.logError` in others. Consistency is key for effective log management.
+    *   **`TODO` Comment:** The `TODO` comment about removing direct `db` usage after storage layer implementation indicates an ongoing refactoring effort that should be completed.
+
+**Tasks for Claude:**
+
+*   **[TASK: Claude]** **Consolidate Health Check Logic:** Refactor `/api/monitoring/health` to reuse or integrate with the `HealthChecker` class from `server/scripts/healthCheck.ts` to avoid redundant logic and ensure consistent health reporting.
+*   **[TASK: Claude]** **Externalize Memory Threshold:** Make the memory usage threshold in `/api/monitoring/health` configurable via environment variables.
+*   **[TASK: Claude]** **Centralize File System Operations:** Move file system manipulation logic (e.g., clearing old logs) from the route handler to a dedicated service or utility function to improve separation of concerns and testability.
+*   **[TASK: Claude]** **Ensure Consistent Error Logging:** Standardize all error logging to use `errorLogger.logError` for consistent error reporting and Sentry integration.
+*   **[TASK: Claude]** **Address `TODO` Comment:** Complete the refactoring to remove direct `db` usage and rely solely on the `enhancedStorage` layer.
+*   **[REVIEW: Claude]** **Real-time Metrics Granularity:** Review the granularity and usefulness of the real-time metrics provided by `/api/monitoring/metrics/realtime`. Consider if more detailed or aggregated metrics would be beneficial for real-time dashboards.
+
+### `/server/routes/feedback.ts`
+
+**Analysis:**
+
+*   **Incomplete Implementation:** The `submitTermFeedback` and `submitGeneralFeedback` endpoints are explicitly marked with `TODO: Phase 2 - Replace with storage layer methods` and currently return a `501 Not Implemented` status. This indicates that the feedback submission functionality is not yet fully operational.
+*   **Direct Database Access:** The `/api/feedback` (GET) and `/api/feedback/:feedbackId` (PUT) endpoints directly interact with the database using raw SQL queries (`db.execute(sql`...`)`). This is inconsistent with the stated goal of moving to an `enhancedStorage` layer.
+*   **Admin Protection:** The sensitive feedback retrieval and update endpoints (`/api/feedback`, `/api/feedback/:feedbackId`, `/api/feedback/stats`) are correctly protected with `requireAdmin` middleware.
+*   **Input Validation:** Basic input validation is performed for `type`, `rating`, `message`, and `termName`.
+*   **Error Handling:** Uses `asyncHandler` and `handleDatabaseError` for consistent error handling.
+*   **Hardcoded `TODO` Comments:** The file contains numerous `TODO` comments related to Phase 2 and moving to the storage layer, which is good for tracking but also highlights significant pending work.
+*   **Raw SQL for Filtering:** The `whereConditions` array and `sql.raw(whereClause)` for filtering feedback in the GET endpoint could be more robustly built using Drizzle's query builder for better type safety and to prevent potential SQL injection if not handled carefully.
+*   **Redundant `initializeFeedbackStorage`:** The `initializeFeedbackStorage` function is called directly, but its purpose is commented out and marked for Phase 2. This indicates dead or placeholder code.
+
+**Tasks for Claude:**
+
+*   **[TASK: Claude]** **Complete Feedback Submission Implementation:** Implement the `submitTermFeedback` and `submitGeneralFeedback` methods in the `enhancedStorage` layer and update the corresponding API endpoints to use these methods, removing the `501 Not Implemented` responses.
+*   **[TASK: Claude]** **Migrate to Enhanced Storage:** Refactor the `/api/feedback` (GET) and `/api/feedback/:feedbackId` (PUT) endpoints to use the `enhancedStorage` layer for all database interactions, eliminating direct raw SQL queries.
+*   **[TASK: Claude]** **Remove Dead Code:** Remove the `initializeFeedbackStorage` function and its call, as its functionality is marked for Phase 2 and currently serves no purpose.
+*   **[REVIEW: Claude]** **Refactor Raw SQL for Filtering:** Convert the raw SQL `WHERE` clause construction in the `/api/feedback` (GET) endpoint to use Drizzle's query builder for improved type safety and maintainability.
+*   **[REVIEW: Claude]** **Feedback Schema Definition:** Ensure that the `user_feedback` table schema is properly defined within Drizzle and managed via migrations, as indicated by the `TODO` comment.
+*   **[REVIEW: Claude]** **Feedback Status Management:** Review the feedback status workflow (`pending`, `reviewed`, `implemented`, `rejected`) and consider if any automated transitions or notifications would be beneficial.
+
+### `/server/routes/admin/index.ts`
+
+**Analysis:**
+
+*   **Modular Structure:** This file serves as an index for other admin routes, which is a good practice for organizing a large number of routes.
+*   **Clarity:** The file is clear and easy to understand, serving its purpose as a router index.
+*   **Centralized Admin Route Registration:** By importing and registering other admin-related route modules here, it provides a single point of entry for all admin functionalities.
+*   **Console Logs:** Uses `console.log` for logging route registration, which is acceptable for development but should be reviewed for production verbosity.
+
+**Tasks for Claude:**
+
+*   **[REVIEW: Claude]** **Logging:** Review the use of `console.log` for route registration. Consider replacing it with a more structured logging solution (e.g., Winston) for production environments, allowing for different log levels and easier log management.
+*   **[REVIEW: Claude]** **Error Handling for Sub-Routers:** While this file itself is simple, ensure that the sub-routers it imports (e.g., `stats`, `revenue`, `imports`, `content`, `maintenance`, `monitoring`, `users`) have robust error handling within their respective files. This is a general point that applies to all index/main route files.
+
+### `/server/routes/admin/revenue.ts`
+
+**Analysis:**
+
+*   **Admin-Specific Routes:** This file correctly groups routes related to revenue tracking and analytics, ensuring proper separation of concerns.
+*   **Authentication and Authorization:** All routes are protected with `authenticateToken` and `requireAdmin` middleware, which is essential for securing sensitive financial data.
+*   **Comprehensive Metrics:** Provides a wide range of revenue metrics, including total revenue, total purchases, recent revenue/purchases, conversion rate, average order value, revenue by currency, and daily revenue. This is excellent for business insights.
+*   **Data Export:** Includes functionality to export revenue data in CSV format, which is a useful feature for reporting and external analysis.
+*   **Webhook Status Monitoring:** The `/api/admin/revenue/webhook-status` endpoint provides valuable information about Gumroad webhook configuration and recent activity, aiding in troubleshooting and monitoring.
+*   **Dedicated Storage Calls:** The routes primarily interact with the `enhancedStorage` layer, which is good for abstracting database operations.
+*   **Hardcoded Period Logic:** The `startDate` calculation based on `period` uses a `switch` statement with hardcoded string values (`'7d'`, `'30d'`, etc.). This could be made more robust using an enum or a utility function.
+*   **Redundant Middleware Selection:** Similar to `admin/stats.ts`, the `authMiddleware` and `tokenMiddleware` selection based on `features.replitAuthEnabled` is repeated.
+*   **Error Handling:** Basic `try-catch` blocks are present for error handling, with `console.error` for logging.
+*   **Potential Improvements:**
+    *   **Input Validation:** While `parseInt` is used, more robust validation of query parameters (`period`, `limit`, `status`, `currency`) using Zod schemas would improve API robustness.
+    *   **Date Calculation Utility:** The date calculation logic for `startDate` could be extracted into a reusable utility function to improve readability and maintainability.
+    *   **Logging Consistency:** Use the structured logger (`../utils/logger.ts`) for all error and info logging.
+    *   **Pagination for Purchases:** The `/api/admin/revenue/purchases` endpoint currently fetches all purchases and then limits them. For very large datasets, implementing proper offset-based pagination (similar to `/api/analytics/content`) would be more efficient.
+    *   **Gumroad API Integration:** The `verify-purchase` endpoint currently relies on the internal `storage.getPurchaseByOrderId`. For true verification, it might be beneficial to integrate with the Gumroad API to confirm the purchase directly with Gumroad.
+
+**Tasks for Claude:**
+
+*   **[TASK: Claude]** **Implement Input Validation:** Add Zod schemas for validating query parameters in all revenue endpoints to ensure data integrity and provide better error messages.
+*   **[TASK: Claude]** **Extract Date Calculation Utility:** Create a reusable utility function for calculating `startDate` based on a given `period` string, and use it across all relevant endpoints.
+*   **[TASK: Claude]** **Implement Pagination for Purchases:** Refactor the `/api/admin/revenue/purchases` endpoint to use offset-based pagination for efficient retrieval of large purchase datasets.
+*   **[REVIEW: Claude]** **Logging Consistency:** Replace `console.error` with the structured logger (`../utils/logger.ts`) for all error logging in this file.
+*   **[REVIEW: Claude]** **Gumroad API Verification:** Investigate the feasibility and necessity of integrating with the Gumroad API for real-time purchase verification in the `/api/admin/revenue/verify-purchase` endpoint.
+*   **[REVIEW: Claude]** **Centralize Middleware Selection:** Consider creating a utility function or a custom Express app extension to centralize the selection of authentication middleware based on feature flags, reducing repetition across route files.
+
+### `/API_PRODUCTION_READINESS_ANALYSIS.md`
+
+**Analysis:**
+
+*   **Purpose and Scope:** This document provides a critical assessment of the API's production readiness, covering security, performance, and completeness. It's a high-level overview intended to highlight major blockers.
+*   **Clear Categorization:** Issues are clearly categorized into "Critical Production Blockers," "Security Analysis," "Performance Analysis," and "Completeness Assessment," making it easy to grasp the severity and type of problems.
+*   **Specific Examples:** For each issue, the document provides specific API endpoints and often code snippets to illustrate the problem, which is highly valuable for developers.
+*   **Actionable Recommendations:** The "Production Readiness Recommendations" section offers concrete steps for immediate, short-term, and medium-term improvements.
+*   **Risk Assessment:** The "Production Deployment Risk: HIGH" and "Estimated Time to Production Ready" provide a clear and concise summary of the overall project status.
+*   **Inconsistencies/Areas for Improvement:**
+    *   **Outdated Information:** The document states "78 API endpoints across 26 route files" and then lists specific issues. Some of these issues might have been addressed since this document was written (e.g., the `admin/health` endpoint's protection, as noted in `CLAUDE.md` and `FEEDBACK_VERIFICATION_REPORT_JUNE_27_2025.md`). This highlights the challenge of maintaining multiple, similar analysis documents.
+    *   **Redundancy:** There is significant overlap with `CLAUDE.md` and `FEEDBACK_VERIFICATION_REPORT_JUNE_27_2025.md` regarding critical issues and tasks. This redundancy can lead to confusion and outdated information if not meticulously synchronized.
+    *   **"TODO" Comments:** The document itself contains "TODO" comments (e.g., for `getTermsOptimized` in `admin/stats.ts`), indicating that the analysis might not be fully up-to-date with the latest code changes.
+
+**Tasks for Claude:**
+
+*   **[TASK: Claude]** **Update and Consolidate:** This document appears to be an older, high-level analysis. It should be updated to reflect the current state of the codebase, incorporating the fixes and progress noted in `CLAUDE.md` and `FEEDBACK_VERIFICATION_REPORT_JUNE_27_2025.md`. Ideally, its critical findings should be integrated into a single, authoritative source of truth (e.g., `CODEBASE_IMPROVEMENTS_ANALYSIS_JUNE_27_2025.md` itself, or a dedicated "Project Status" document).
+*   **[REVIEW: Claude]** **Cross-Reference and Verify:** Go through each "Critical Production Blocker" and "Security Analysis" point in this document and cross-reference it with the latest code and other documentation (`CLAUDE.md`, `FEEDBACK_VERIFICATION_REPORT_JUNE_27_2025.md`) to confirm its current status. Update the main analysis document accordingly.
+*   **[REVIEW: Claude]** **Maintain Single Source of Truth:** Discuss with the team the strategy for maintaining project status and critical issues. Having multiple documents with similar information can lead to confusion and outdated data. Consider consolidating this information into a single, living document.
+
+### `/docs/PRODUCTION_READINESS_STATUS.md`
+
+**Analysis:**
+
+*   **Purpose and Clarity:** This document provides a high-level overview of the project's production readiness, highlighting completed milestones, current status, pending tasks, and risk assessment. It's well-structured and uses clear language and emojis.
+*   **Focus on Milestones:** Effectively summarizes key achievements in authentication, revenue, storage, and database optimization.
+*   **Clear Task Prioritization:** Distinguishes between "HIGH PRIORITY," "MEDIUM PRIORITY," and "LOW PRIORITY" pending tasks, which is helpful for guiding development efforts.
+*   **Success Metrics:** Defines clear performance, security, and reliability targets, providing a framework for evaluating readiness.
+*   **Timeline:** Offers a short-term timeline for achieving production readiness.
+*   **Deployment Checklist:** Provides a concise checklist for deployment.
+*   **Inconsistencies/Areas for Improvement:**
+    *   **Redundancy with other docs:** Similar to `API_PRODUCTION_READINESS_ANALYSIS.md` and `CLAUDE.md`, there is significant overlap in content. For example, the "COMPLETED MAJOR MILESTONES" and "PENDING TASKS" sections are also present in `CLAUDE.md`.
+    *   **"Legacy Accomplishments" Section:** While useful for historical context, this section might become very long over time. Consider summarizing or linking to a separate historical log.
+    *   **"Known Issues (Non-Critical)" - TypeScript Errors:** The note about "~200 compilation errors (app runs despite errors)" is a significant concern, even if non-critical for immediate runtime. It indicates potential underlying code quality issues and technical debt that could lead to future bugs or maintenance challenges.
+    *   **"Manual CSV conversion still pending"**: This is a recurring theme across multiple documents, indicating a bottleneck in the data import process.
+    *   **"Overall Readiness: 75% Complete" vs. "85% Complete" in CLAUDE.md**: There's a discrepancy in the overall completion percentage between this document (75%) and `CLAUDE.md` (85%). This needs to be reconciled to provide a consistent view of project status.
+
+**Tasks for Claude:**
+
+*   **[TASK: Claude]** **Reconcile Completion Percentages:** Clarify and reconcile the overall completion percentage between `PRODUCTION_READINESS_STATUS.md` and `CLAUDE.md` to ensure consistency.
+*   **[REVIEW: Claude]** **Consolidate Documentation:** Review the overlap between this document and other status/analysis documents (`CLAUDE.md`, `API_PRODUCTION_READINESS_ANALYSIS.md`). Consider if a single, authoritative source of truth for project status and tasks can be established to reduce redundancy and maintenance overhead.
+*   **[REVIEW: Claude]** **Address TypeScript Errors:** Prioritize fixing the "~200 compilation errors." While non-critical for runtime, they represent technical debt and can hinder development velocity and introduce subtle bugs. This should be elevated in priority.
+*   **[REVIEW: Claude]** **Automate CSV Conversion:** Investigate and implement an automated solution for CSV conversion of the `aiml.xlsx` dataset to remove the manual bottleneck.
+*   **[REVIEW: Claude]** **Legacy Accomplishments Management:** Consider how to manage the "Legacy Accomplishments" section to prevent it from becoming overly long. Options include summarizing, archiving, or linking to a separate historical log.

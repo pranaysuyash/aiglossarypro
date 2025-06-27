@@ -28,6 +28,58 @@ export function registerTermRoutes(app: Express): void {
   // Choose authentication middleware based on environment
   const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
   
+  /**
+   * @swagger
+   * /api/terms:
+   *   get:
+   *     tags:
+   *       - Terms
+   *     summary: Get paginated list of AI/ML terms
+   *     description: Retrieve a paginated list of AI/ML terms with optional filtering and sorting
+   *     parameters:
+   *       - name: page
+   *         in: query
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           default: 1
+   *       - name: limit
+   *         in: query
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 50
+   *           default: 12
+   *       - name: search
+   *         in: query
+   *         schema:
+   *           type: string
+   *       - name: category
+   *         in: query
+   *         schema:
+   *           type: string
+   *       - name: sortBy
+   *         in: query
+   *         schema:
+   *           type: string
+   *           enum: [name, viewCount, createdAt]
+   *           default: name
+   *       - name: sortOrder
+   *         in: query
+   *         schema:
+   *           type: string
+   *           enum: [asc, desc]
+   *           default: asc
+   *     responses:
+   *       200:
+   *         description: Successfully retrieved terms
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/PaginatedResponse'
+   *       500:
+   *         description: Internal server error
+   */
   // Get all terms with pagination
   app.get('/api/terms', async (req, res) => {
     try {

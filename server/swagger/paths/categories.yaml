@@ -1,0 +1,372 @@
+# Categories API Documentation
+
+/api/categories:
+  get:
+    tags:
+      - Categories
+    summary: Get all AI/ML term categories
+    description: |
+      Retrieve all available categories for organizing AI/ML terms.
+      
+      **Use Cases:**
+      - Category navigation menu
+      - Filter options for search
+      - Content organization
+      - Browse by topic functionality
+      
+      **Category Examples:**
+      - Machine Learning (1,250+ terms)
+      - Deep Learning (890+ terms)
+      - Natural Language Processing (650+ terms)
+      - Computer Vision (420+ terms)
+      - Reinforcement Learning (380+ terms)
+    responses:
+      200:
+        description: Successfully retrieved categories
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ApiResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: array
+                      items:
+                        $ref: '#/components/schemas/Category'
+            example:
+              success: true
+              data:
+                - id: "machine-learning"
+                  name: "Machine Learning"
+                  description: "Algorithms and techniques for machine learning"
+                  termCount: 1250
+                  color: "#3B82F6"
+                  icon: "brain"
+                - id: "deep-learning"
+                  name: "Deep Learning"
+                  description: "Neural networks with multiple layers"
+                  termCount: 890
+                  color: "#7C3AED"
+                  icon: "layers"
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+
+/api/categories/{id}:
+  get:
+    tags:
+      - Categories
+    summary: Get detailed information about a specific category
+    description: |
+      Retrieve detailed information about a specific AI/ML category including metadata and statistics.
+      
+      **Information includes:**
+      - Category description and overview
+      - Number of terms in the category
+      - Subcategories (if any)
+      - Popular terms in the category
+      - Related categories
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique identifier for the category
+        schema:
+          type: string
+          example: "machine-learning"
+    responses:
+      200:
+        description: Successfully retrieved category details
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ApiResponse'
+                - type: object
+                  properties:
+                    data:
+                      allOf:
+                        - $ref: '#/components/schemas/Category'
+                        - type: object
+                          properties:
+                            popularTerms:
+                              type: array
+                              description: Most popular terms in this category
+                              items:
+                                $ref: '#/components/schemas/Term'
+                            relatedCategories:
+                              type: array
+                              description: Related categories
+                              items:
+                                $ref: '#/components/schemas/Category'
+                            subcategories:
+                              type: array
+                              description: Subcategories (if any)
+                              items:
+                                $ref: '#/components/schemas/Category'
+            example:
+              success: true
+              data:
+                id: "machine-learning"
+                name: "Machine Learning"
+                description: "Algorithms and techniques for machine learning"
+                termCount: 1250
+                color: "#3B82F6"
+                icon: "brain"
+                popularTerms:
+                  - id: "supervised-learning"
+                    name: "Supervised Learning"
+                    shortDefinition: "Learning with labeled training data"
+                    viewCount: 2840
+                relatedCategories:
+                  - id: "deep-learning"
+                    name: "Deep Learning"
+                    termCount: 890
+      404:
+        $ref: '#/components/responses/NotFoundError'
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'
+
+/api/categories/{id}/terms:
+  get:
+    tags:
+      - Categories
+    summary: Get all terms in a specific category
+    description: |
+      Retrieve all AI/ML terms that belong to a specific category with pagination support.
+      
+      **Features:**
+      - Server-side pagination
+      - Sorting options (name, popularity, difficulty)
+      - Search within category
+      - Difficulty level filtering
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique identifier for the category
+        schema:
+          type: string
+          example: "machine-learning"
+      - name: page
+        in: query
+        description: Page number (1-based)
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          default: 1
+          example: 1
+      - name: limit
+        in: query
+        description: Number of terms per page
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 50
+          default: 12
+          example: 12
+      - name: sort
+        in: query
+        description: Sort field
+        required: false
+        schema:
+          type: string
+          enum: [name, viewCount, difficulty, createdAt]
+          default: name
+          example: "viewCount"
+      - name: order
+        in: query
+        description: Sort order
+        required: false
+        schema:
+          type: string
+          enum: [asc, desc]
+          default: asc
+          example: "desc"
+      - name: search
+        in: query
+        description: Search within category
+        required: false
+        schema:
+          type: string
+          example: "supervised"
+      - name: difficulty
+        in: query
+        description: Filter by difficulty level
+        required: false
+        schema:
+          type: string
+          enum: [beginner, intermediate, advanced]
+          example: "intermediate"
+    responses:
+      200:
+        description: Successfully retrieved category terms
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/PaginatedResponse'
+                - type: object
+                  properties:
+                    categoryInfo:
+                      $ref: '#/components/schemas/Category'
+            example:
+              success: true
+              data:
+                - id: "supervised-learning"
+                  name: "Supervised Learning"
+                  shortDefinition: "Learning with labeled training data"
+                  categoryId: "machine-learning"
+                  category: "Machine Learning"
+                  viewCount: 2840
+                  difficulty: "beginner"
+              total: 1250
+              page: 1
+              limit: 12
+              hasMore: true
+              categoryInfo:
+                id: "machine-learning"
+                name: "Machine Learning"
+                description: "Algorithms and techniques for machine learning"
+      404:
+        $ref: '#/components/responses/NotFoundError'
+      429:
+        $ref: '#/components/responses/RateLimitError'
+
+/api/categories/{id}/stats:
+  get:
+    tags:
+      - Categories
+    summary: Get detailed statistics for a category
+    description: |
+      Retrieve comprehensive statistics and analytics for a specific category.
+      
+      **Statistics include:**
+      - Total terms and view counts
+      - Difficulty distribution
+      - Popular terms and trending content
+      - User engagement metrics
+      - Growth trends over time
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique identifier for the category
+        schema:
+          type: string
+          example: "machine-learning"
+      - name: timeframe
+        in: query
+        description: Time period for trend analysis
+        required: false
+        schema:
+          type: string
+          enum: [7d, 30d, 90d, 1y]
+          default: 30d
+          example: "30d"
+    responses:
+      200:
+        description: Successfully retrieved category statistics
+        content:
+          application/json:
+            schema:
+              allOf:
+                - $ref: '#/components/schemas/ApiResponse'
+                - type: object
+                  properties:
+                    data:
+                      type: object
+                      properties:
+                        category:
+                          $ref: '#/components/schemas/Category'
+                        statistics:
+                          type: object
+                          properties:
+                            totalTerms:
+                              type: integer
+                              description: Total number of terms
+                              example: 1250
+                            totalViews:
+                              type: integer
+                              description: Total category views
+                              example: 28450
+                            averageViewsPerTerm:
+                              type: number
+                              description: Average views per term
+                              example: 22.76
+                            difficultyDistribution:
+                              type: object
+                              properties:
+                                beginner:
+                                  type: integer
+                                  example: 420
+                                intermediate:
+                                  type: integer
+                                  example: 580
+                                advanced:
+                                  type: integer
+                                  example: 250
+                            trendingTerms:
+                              type: array
+                              description: Currently trending terms
+                              items:
+                                allOf:
+                                  - $ref: '#/components/schemas/Term'
+                                  - type: object
+                                    properties:
+                                      recentViews:
+                                        type: integer
+                                        example: 156
+                            growthTrend:
+                              type: object
+                              properties:
+                                viewsGrowth:
+                                  type: number
+                                  description: Percentage growth in views
+                                  example: 12.5
+                                termsAdded:
+                                  type: integer
+                                  description: New terms added in timeframe
+                                  example: 15
+            example:
+              success: true
+              data:
+                category:
+                  id: "machine-learning"
+                  name: "Machine Learning"
+                  description: "Algorithms and techniques for machine learning"
+                  termCount: 1250
+                statistics:
+                  totalTerms: 1250
+                  totalViews: 28450
+                  averageViewsPerTerm: 22.76
+                  difficultyDistribution:
+                    beginner: 420
+                    intermediate: 580
+                    advanced: 250
+                  trendingTerms:
+                    - id: "supervised-learning"
+                      name: "Supervised Learning"
+                      shortDefinition: "Learning with labeled training data"
+                      recentViews: 156
+                  growthTrend:
+                    viewsGrowth: 12.5
+                    termsAdded: 15
+      404:
+        $ref: '#/components/responses/NotFoundError'
+      500:
+        description: Internal server error
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ErrorResponse'

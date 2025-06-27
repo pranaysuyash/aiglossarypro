@@ -31,6 +31,7 @@ import s3RoutesOptimized from "../s3RoutesOptimized";
 import s3MonitoringRoutes from "../s3MonitoringRoutes";
 import { registerEnhancedRoutes } from "../enhancedRoutes";
 import { registerEnhancedDemoRoutes } from "../enhancedDemoRoutes";
+import { setupSwagger } from "../swagger/setup";
 
 /**
  * Main route registration function
@@ -244,6 +245,10 @@ export async function registerRoutes(app: Express): Promise<void> {
       }
     });
   });
+  
+  // Set up Swagger API documentation
+  setupSwagger(app);
+  console.log("📚 API documentation setup complete");
   
   console.log("✅ All routes registered successfully");
   

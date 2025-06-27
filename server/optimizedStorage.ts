@@ -279,6 +279,14 @@ export class OptimizedStorage implements IStorage {
           OR ${terms.name} ILIKE ${`%${query}%`}
         `;
 
+        const relevanceScore = sql<number>`
+          CASE 
+            WHEN ${terms.name} ILIKE ${`${query}%`} THEN 1.0
+            WHEN ${terms.name} ILIKE ${`%${query}%`} THEN 0.8
+            ELSE 0.5
+          END
+        `;
+
         const results = await db.select({
           id: terms.id,
           name: terms.name,
@@ -288,13 +296,7 @@ export class OptimizedStorage implements IStorage {
           categoryId: categories.id,
           subcategories: sql<string[]>`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`,
           // Add relevance scoring
-          relevance: sql<number>`
-            CASE 
-              WHEN ${terms.name} ILIKE ${`${query}%`} THEN 1.0
-              WHEN ${terms.name} ILIKE ${`%${query}%`} THEN 0.8
-              ELSE 0.5
-            END
-          `
+          relevance: relevanceScore
         })
         .from(terms)
         .leftJoin(categories, eq(terms.categoryId, categories.id))
@@ -302,7 +304,7 @@ export class OptimizedStorage implements IStorage {
         .leftJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
         .where(searchCondition)
         .groupBy(terms.id, categories.id, categories.name)
-        .orderBy(desc(sql`relevance`), desc(terms.viewCount))
+        .orderBy(desc(relevanceScore), desc(terms.viewCount))
         .limit(20);
 
         return results.map(result => ({

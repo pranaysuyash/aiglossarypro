@@ -63,7 +63,7 @@ export const mockAuthenticateToken = (req: Request, res: Response, next: NextFun
 
     // Transform to expected format
     const userClaims = (req.user as any).claims || (req.user as any);
-    req.user = {
+    (req as AuthenticatedRequest).user = {
       claims: {
         sub: userClaims.sub || "dev-user-123",
         email: userClaims.email || "dev@example.com",
@@ -72,10 +72,10 @@ export const mockAuthenticateToken = (req: Request, res: Response, next: NextFun
                 ? `${userClaims.first_name} ${userClaims.last_name}`
                 : "Development User")
       },
-      isAdmin: (req.user as any).isAdmin || true // Preserve admin status for development
+      isAdmin: (req.user as any)?.isAdmin || true // Preserve admin status for development
     };
 
-    console.log("🔓 Mock token auth: Validated user", req.user.claims.email);
+    console.log("🔓 Mock token auth: Validated user", (req as AuthenticatedRequest).user.claims.email);
     next();
   } catch (error) {
     console.error("Mock authentication error:", error);

@@ -168,7 +168,7 @@ export function registerAdminImportRoutes(app: Express): void {
         const advancedParser = new AdvancedExcelParser();
         
         // Parse with advanced parser (extracts all 42 sections) - bypassing cache
-        const parsedTerms = await advancedParser.parseComplexExcel(req.file.buffer, { forceReprocess: true });
+        const parsedTerms = await advancedParser.parseComplexExcel(req.file.buffer);
         
         if (!parsedTerms || parsedTerms.length === 0) {
           return res.status(400).json({

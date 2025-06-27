@@ -16,13 +16,15 @@ import { optimizedStorage, IStorage } from './optimizedStorage';
 import { enhancedStorage as enhancedTermsStorage } from './enhancedTermsStorage';
 import { redisCache as enhancedRedisCache, redis as redisManager } from './config/redis';
 import { z } from 'zod';
+import type { AdminStats, UserActivity } from '../shared/types';
 
 // ===== CORE INTERFACES =====
 
 export interface IEnhancedStorage extends IStorage {
-  // Admin Operations (8 methods)
+  // Admin Operations (9 methods)
   getAdminStats(): Promise<AdminStats>;
   getContentMetrics(): Promise<ContentMetrics>;
+  clearCache(): Promise<void>;
   clearAllData(): Promise<{ tablesCleared: string[] }>;
   reindexDatabase(): Promise<MaintenanceResult>;
   cleanupDatabase(): Promise<MaintenanceResult>;
@@ -94,23 +96,38 @@ export interface IEnhancedStorage extends IStorage {
   getProcessingStats(): Promise<any>;
   getSchemaInfo(): Promise<any>;
   getHealthStatus(): Promise<any>;
+  
+  // Revenue tracking methods
+  getTotalRevenue(): Promise<number>;
+  getTotalPurchases(): Promise<number>;
+  getRevenueForPeriod(startDate: Date, endDate: Date): Promise<number>;
+  getPurchasesForPeriod(startDate: Date, endDate: Date): Promise<number>;
+  getTotalUsers(): Promise<number>;
+  getRevenueByCurrency(): Promise<Array<{ currency: string; total: number }>>;
+  getDailyRevenueForPeriod(startDate: Date, endDate: Date): Promise<Array<{ date: string; revenue: number }>>;
+  getRecentPurchases(limit?: number): Promise<any[]>;
+  getRevenueByPeriod(period: string): Promise<any>;
+  getTopCountriesByRevenue(limit?: number): Promise<any[]>;
+  getConversionFunnel(): Promise<any>;
+  getRefundAnalytics(): Promise<any>;
+  getPurchasesForExport(startDate?: Date, endDate?: Date): Promise<any[]>;
+  getRecentWebhookActivity(limit?: number): Promise<any[]>;
+  getPurchaseByOrderId(orderId: string): Promise<any>;
+  updateUserAccess(orderId: string, updates: any): Promise<void>;
+  
+  // Additional user operations
+  getUserByEmail(email: string): Promise<any>;
+  updateUser(userId: string, updates: any): Promise<any>;
+  createPurchase(purchaseData: any): Promise<any>;
+  getUserSettings(userId: string): Promise<any>;
+  updateUserSettings(userId: string, settings: any): Promise<void>;
+  exportUserData(userId: string): Promise<any>;
+  deleteUserData(userId: string): Promise<void>;
+  getUserStreak(userId: string): Promise<any>;
+  getTermsOptimized(options?: { limit?: number }): Promise<any[]>;
 }
 
 // ===== TYPE DEFINITIONS =====
-
-// Core types
-interface AdminStats {
-  totalUsers: number;
-  totalTerms: number;
-  totalCategories: number;
-  totalViews: number;
-  recentActivity: ActivityItem[];
-  systemHealth: {
-    database: 'healthy' | 'warning' | 'error';
-    s3: 'healthy' | 'warning' | 'error';
-    ai: 'healthy' | 'warning' | 'error';
-  };
-}
 
 interface ContentMetrics {
   totalTerms: number;
@@ -596,6 +613,19 @@ export class EnhancedStorage implements IEnhancedStorage {
       return metrics;
     } catch (error) {
       console.error('[EnhancedStorage] getContentMetrics error:', error);
+      throw error;
+    }
+  }
+
+  async clearCache(): Promise<void> {
+    this.requireAdminAuth();
+    
+    try {
+      // Clear Redis cache
+      await enhancedRedisCache.clear();
+      console.log('[EnhancedStorage] clearCache: All cache cleared');
+    } catch (error) {
+      console.error('[EnhancedStorage] clearCache error:', error);
       throw error;
     }
   }
@@ -1209,6 +1239,89 @@ export class EnhancedStorage implements IEnhancedStorage {
   async getCategoryProgress(userId: string): Promise<CategoryProgress[]> {
     this.requireAuth();
     throw new Error('Method getCategoryProgress not implemented - Phase 2D');
+  }
+
+  // ===== REVENUE TRACKING METHODS =====
+  // Delegate to baseStorage (optimizedStorage) which has the implementations
+
+  async getTotalRevenue(): Promise<number> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getTotalRevenue();
+  }
+
+  async getTotalPurchases(): Promise<number> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getTotalPurchases();
+  }
+
+  async getRevenueForPeriod(startDate: Date, endDate: Date): Promise<number> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getRevenueForPeriod(startDate, endDate);
+  }
+
+  async getPurchasesForPeriod(startDate: Date, endDate: Date): Promise<number> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getPurchasesForPeriod(startDate, endDate);
+  }
+
+  async getTotalUsers(): Promise<number> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getTotalUsers();
+  }
+
+  async getRevenueByCurrency(): Promise<Array<{ currency: string; total: number }>> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getRevenueByCurrency();
+  }
+
+  async getDailyRevenueForPeriod(startDate: Date, endDate: Date): Promise<Array<{ date: string; revenue: number }>> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getDailyRevenueForPeriod(startDate, endDate);
+  }
+
+  async getRecentPurchases(limit: number = 10): Promise<any[]> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getRecentPurchases(limit);
+  }
+
+  async getRevenueByPeriod(period: string): Promise<any> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getRevenueByPeriod(period);
+  }
+
+  async getTopCountriesByRevenue(limit: number = 10): Promise<any[]> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getTopCountriesByRevenue(limit);
+  }
+
+  async getConversionFunnel(): Promise<any> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getConversionFunnel();
+  }
+
+  async getRefundAnalytics(): Promise<any> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getRefundAnalytics();
+  }
+
+  async getPurchasesForExport(startDate?: Date, endDate?: Date): Promise<any[]> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getPurchasesForExport(startDate, endDate);
+  }
+
+  async getRecentWebhookActivity(limit: number = 20): Promise<any[]> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getRecentWebhookActivity(limit);
+  }
+
+  async getPurchaseByOrderId(orderId: string): Promise<any> {
+    this.requireAdminAuth();
+    return await this.baseStorage.getPurchaseByOrderId(orderId);
+  }
+
+  async updateUserAccess(orderId: string, updates: any): Promise<void> {
+    this.requireAdminAuth();
+    return await this.baseStorage.updateUserAccess(orderId, updates);
   }
 }
 

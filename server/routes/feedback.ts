@@ -6,8 +6,8 @@
 import type { Express, Request, Response } from 'express';
 import { enhancedStorage as storage } from '../enhancedStorage';
 // TODO: Phase 2 - Remove direct db usage after storage layer implementation
-// import { db } from '../db';
-// import { sql } from 'drizzle-orm';
+import { db } from '../db';
+import { sql } from 'drizzle-orm';
 import { asyncHandler, handleDatabaseError, ErrorCategory } from '../middleware/errorHandler';
 import { requireAdmin } from '../middleware/adminAuth';
 import { mockRequireAdmin } from '../middleware/dev/mockAuth';

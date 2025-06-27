@@ -66,7 +66,7 @@ function updateUserSession(
 async function upsertUser(
   claims: any,
 ) {
-  const [user] = await storage.upsertUser({
+  const user = await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
     firstName: claims["first_name"],
@@ -93,10 +93,27 @@ export async function setupAuth(app: Express) {
     tokens: client.TokenEndpointResponse & client.TokenEndpointResponseHelpers,
     verified: passport.AuthenticateCallback
   ) => {
-    const userClaims = tokens.claims();
-    const user = await upsertUser(userClaims);
-    updateUserSession(user, tokens);
-    verified(null, user);
+    try {
+      const userClaims = tokens.claims();
+      const user = await upsertUser(userClaims);
+      updateUserSession(user, tokens);
+      // Create a simplified user object for passport
+      const passportUser = {
+        id: user.id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profileImageUrl: user.profileImageUrl,
+        isAdmin: user.isAdmin,
+        claims: userClaims,
+        access_token: tokens.access_token,
+        expires_at: userClaims?.exp
+      };
+      verified(null, passportUser);
+    } catch (error) {
+      console.error('Auth verification error:', error);
+      verified(error as Error, false);
+    }
   };
 
   const authConfig = getAuthConfig();

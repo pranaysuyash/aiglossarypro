@@ -18,6 +18,7 @@ import {
   userSettings
 } from "@shared/enhancedSchema";
 import type { User, UpsertUser } from "@shared/schema";
+import { purchases } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, sql, and, like, ilike, asc, gte, lte, not, isNull, inArray, or } from "drizzle-orm";
 import { 
@@ -56,6 +57,34 @@ export interface IStorage {
   isTermLearned(userId: string, termId: string): Promise<boolean>;
   markTermAsLearned(userId: string, termId: string): Promise<void>;
   unmarkTermAsLearned(userId: string, termId: string): Promise<void>;
+  
+  // Revenue tracking operations
+  getTotalRevenue(): Promise<number>;
+  getTotalPurchases(): Promise<number>;
+  getRevenueForPeriod(startDate: Date, endDate: Date): Promise<number>;
+  getPurchasesForPeriod(startDate: Date, endDate: Date): Promise<number>;
+  getTotalUsers(): Promise<number>;
+  getRevenueByCurrency(): Promise<Array<{ currency: string; total: number }>>;
+  getDailyRevenueForPeriod(startDate: Date, endDate: Date): Promise<Array<{ date: string; revenue: number }>>;
+  getRecentPurchases(limit?: number): Promise<any[]>;
+  getRevenueByPeriod(period: string): Promise<any>;
+  getTopCountriesByRevenue(limit?: number): Promise<any[]>;
+  getConversionFunnel(): Promise<any>;
+  getRefundAnalytics(): Promise<any>;
+  getPurchasesForExport(startDate?: Date, endDate?: Date): Promise<any[]>;
+  getRecentWebhookActivity(limit?: number): Promise<any[]>;
+  getPurchaseByOrderId(orderId: string): Promise<any>;
+  updateUserAccess(orderId: string, updates: any): Promise<void>;
+  
+  // Additional user operations
+  getUserByEmail(email: string): Promise<any>;
+  updateUser(userId: string, updates: any): Promise<any>;
+  createPurchase(purchaseData: any): Promise<any>;
+  getUserSettings(userId: string): Promise<any>;
+  updateUserSettings(userId: string, settings: any): Promise<void>;
+  exportUserData(userId: string): Promise<any>;
+  deleteUserData(userId: string): Promise<void>;
+  getUserStreak(userId: string): Promise<any>;
 }
 
 export class OptimizedStorage implements IStorage {
@@ -735,6 +764,315 @@ export class OptimizedStorage implements IStorage {
       },
       5 * 60 * 1000 // 5 minutes cache
     );
+  }
+
+  // Revenue tracking methods for admin dashboard
+  async getTotalRevenue(): Promise<number> {
+    const result = await db.select({
+      total: sql<number>`COALESCE(SUM(amount), 0)`
+    })
+    .from(purchases)
+    .where(eq(purchases.status, 'completed'));
+    
+    return Number(result[0]?.total) || 0;
+  }
+
+  async getTotalPurchases(): Promise<number> {
+    const result = await db.select({
+      count: sql<number>`COUNT(*)`
+    })
+    .from(purchases)
+    .where(eq(purchases.status, 'completed'));
+    
+    return Number(result[0]?.count) || 0;
+  }
+
+  async getRevenueForPeriod(startDate: Date, endDate: Date): Promise<number> {
+    const result = await db.select({
+      total: sql<number>`COALESCE(SUM(amount), 0)`
+    })
+    .from(purchases)
+    .where(and(
+      eq(purchases.status, 'completed'),
+      gte(purchases.createdAt, startDate),
+      lte(purchases.createdAt, endDate)
+    ));
+    
+    return Number(result[0]?.total) || 0;
+  }
+
+  async getPurchasesForPeriod(startDate: Date, endDate: Date): Promise<number> {
+    const result = await db.select({
+      count: sql<number>`COUNT(*)`
+    })
+    .from(purchases)
+    .where(and(
+      eq(purchases.status, 'completed'),
+      gte(purchases.createdAt, startDate),
+      lte(purchases.createdAt, endDate)
+    ));
+    
+    return Number(result[0]?.count) || 0;
+  }
+
+  async getTotalUsers(): Promise<number> {
+    const result = await db.select({
+      count: sql<number>`COUNT(*)`
+    })
+    .from(users);
+    
+    return Number(result[0]?.count) || 0;
+  }
+
+  async getRevenueByCurrency(): Promise<Array<{ currency: string; total: number }>> {
+    const result = await db.select({
+      currency: purchases.currency,
+      total: sql<number>`COALESCE(SUM(amount), 0)`
+    })
+    .from(purchases)
+    .where(eq(purchases.status, 'completed'))
+    .groupBy(purchases.currency);
+    
+    return result.map(row => ({
+      currency: row.currency || 'USD',
+      total: Number(row.total)
+    }));
+  }
+
+  async getDailyRevenueForPeriod(startDate: Date, endDate: Date): Promise<Array<{ date: string; revenue: number }>> {
+    const result = await db.select({
+      date: sql<string>`DATE(created_at)`,
+      revenue: sql<number>`COALESCE(SUM(amount), 0)`
+    })
+    .from(purchases)
+    .where(and(
+      eq(purchases.status, 'completed'),
+      gte(purchases.createdAt, startDate),
+      lte(purchases.createdAt, endDate)
+    ))
+    .groupBy(sql`DATE(created_at)`)
+    .orderBy(sql`DATE(created_at)`);
+    
+    return result.map(row => ({
+      date: row.date,
+      revenue: Number(row.revenue)
+    }));
+  }
+
+  async getRecentPurchases(limit: number = 10): Promise<any[]> {
+    return await db.select({
+      id: purchases.id,
+      userId: purchases.userId,
+      orderId: purchases.gumroadOrderId,
+      amount: purchases.amount,
+      currency: purchases.currency,
+      status: purchases.status,
+      createdAt: purchases.createdAt,
+      userEmail: users.email
+    })
+    .from(purchases)
+    .leftJoin(users, eq(purchases.userId, users.id))
+    .orderBy(desc(purchases.createdAt))
+    .limit(limit);
+  }
+
+  async getRevenueByPeriod(period: string): Promise<any> {
+    // Simplified implementation - can be enhanced
+    const now = new Date();
+    const periods = {
+      day: [],
+      week: [],
+      month: [],
+      year: []
+    };
+    
+    return periods[period as keyof typeof periods] || [];
+  }
+
+  async getTopCountriesByRevenue(limit: number = 10): Promise<any[]> {
+    // Extract country from purchase data JSON
+    const result = await db.select({
+      country: sql<string>`(purchase_data->>'country')::text`,
+      revenue: sql<number>`COALESCE(SUM(amount), 0)`
+    })
+    .from(purchases)
+    .where(eq(purchases.status, 'completed'))
+    .groupBy(sql`(purchase_data->>'country')::text`)
+    .orderBy(desc(sql`COALESCE(SUM(amount), 0)`))
+    .limit(limit);
+    
+    return result.map(row => ({
+      country: row.country || 'Unknown',
+      revenue: Number(row.revenue)
+    }));
+  }
+
+  async getConversionFunnel(): Promise<any> {
+    const totalUsers = await this.getTotalUsers();
+    const purchasedUsers = await db.select({
+      count: sql<number>`COUNT(DISTINCT user_id)`
+    })
+    .from(purchases)
+    .where(eq(purchases.status, 'completed'));
+    
+    const purchasedCount = Number(purchasedUsers[0]?.count) || 0;
+    
+    return {
+      visitors: totalUsers * 10, // Estimate
+      signups: totalUsers,
+      purchased: purchasedCount,
+      conversionRate: totalUsers > 0 ? (purchasedCount / totalUsers) * 100 : 0
+    };
+  }
+
+  async getRefundAnalytics(): Promise<any> {
+    const refunds = await db.select({
+      count: sql<number>`COUNT(*)`,
+      total: sql<number>`COALESCE(SUM(amount), 0)`
+    })
+    .from(purchases)
+    .where(eq(purchases.status, 'refunded'));
+    
+    return {
+      count: Number(refunds[0]?.count) || 0,
+      totalAmount: Number(refunds[0]?.total) || 0
+    };
+  }
+
+  async getPurchasesForExport(startDate?: Date, endDate?: Date): Promise<any[]> {
+    const baseQuery = db.select({
+      orderId: purchases.gumroadOrderId,
+      userEmail: users.email,
+      amount: purchases.amount,
+      currency: purchases.currency,
+      status: purchases.status,
+      createdAt: purchases.createdAt,
+      purchaseData: purchases.purchaseData
+    })
+    .from(purchases)
+    .leftJoin(users, eq(purchases.userId, users.id));
+    
+    if (startDate && endDate) {
+      return await baseQuery
+        .where(and(
+          gte(purchases.createdAt, startDate),
+          lte(purchases.createdAt, endDate)
+        ))
+        .orderBy(desc(purchases.createdAt));
+    }
+    
+    return await baseQuery.orderBy(desc(purchases.createdAt));
+  }
+
+  async getRecentWebhookActivity(limit: number = 20): Promise<any[]> {
+    // For now, return recent purchases as webhook activity
+    return await this.getRecentPurchases(limit);
+  }
+
+  async getPurchaseByOrderId(orderId: string): Promise<any> {
+    const result = await db.select()
+      .from(purchases)
+      .where(eq(purchases.gumroadOrderId, orderId))
+      .limit(1);
+    
+    return result[0];
+  }
+
+  async updateUserAccess(orderId: string, updates: any): Promise<void> {
+    const purchase = await this.getPurchaseByOrderId(orderId);
+    if (purchase && purchase.userId) {
+      await db.update(users)
+        .set({
+          lifetimeAccess: updates.grantAccess,
+          updatedAt: new Date()
+        })
+        .where(eq(users.id, purchase.userId));
+    }
+  }
+
+  // Additional methods needed by other routes
+  async getUserByEmail(email: string): Promise<any> {
+    const result = await db.select().from(users).where(eq(users.email, email)).limit(1);
+    return result[0];
+  }
+
+  async updateUser(userId: string, updates: any): Promise<any> {
+    const [updatedUser] = await db.update(users)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, userId))
+      .returning();
+    return updatedUser;
+  }
+
+  async createPurchase(purchaseData: any): Promise<any> {
+    const [purchase] = await db.insert(purchases)
+      .values(purchaseData)
+      .returning();
+    return purchase;
+  }
+
+  async getUserSettings(userId: string): Promise<any> {
+    const result = await db.select().from(userSettings).where(eq(userSettings.userId, userId)).limit(1);
+    return result[0]?.preferences || {};
+  }
+
+  async updateUserSettings(userId: string, settings: any): Promise<void> {
+    await db.insert(userSettings)
+      .values({
+        userId,
+        preferences: settings,
+        updatedAt: new Date()
+      })
+      .onConflictDoUpdate({
+        target: userSettings.userId,
+        set: {
+          preferences: settings,
+          updatedAt: new Date()
+        }
+      });
+  }
+
+  async exportUserData(userId: string): Promise<any> {
+    const user = await this.getUser(userId);
+    const favorites = await this.getUserFavorites(userId);
+    const progress = await this.getUserProgress(userId);
+    const settings = await this.getUserSettings(userId);
+    
+    return {
+      user,
+      favorites,
+      progress,
+      settings
+    };
+  }
+
+  async deleteUserData(userId: string): Promise<void> {
+    // Delete in order to respect foreign key constraints
+    await db.delete(userProgress).where(eq(userProgress.userId, userId));
+    await db.delete(favorites).where(eq(favorites.userId, userId));
+    await db.delete(termViews).where(eq(termViews.userId, userId));
+    await db.delete(userSettings).where(eq(userSettings.userId, userId));
+    await db.delete(users).where(eq(users.id, userId));
+  }
+
+  async getUserStreak(userId: string): Promise<any> {
+    // Simple implementation - can be enhanced
+    const recentViews = await db.select({
+      viewedAt: termViews.viewedAt
+    })
+    .from(termViews)
+    .where(eq(termViews.userId, userId))
+    .orderBy(desc(termViews.viewedAt))
+    .limit(30);
+
+    return {
+      currentStreak: 0,
+      longestStreak: 0,
+      recentActivity: recentViews
+    };
   }
 }
 

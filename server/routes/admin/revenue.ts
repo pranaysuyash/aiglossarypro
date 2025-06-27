@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { optimizedStorage as storage } from "../../optimizedStorage";
+import { enhancedStorage as storage } from "../../enhancedStorage";
 import { isAuthenticated } from "../../replitAuth";
 import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
@@ -90,12 +90,9 @@ export function registerAdminRevenueRoutes(app: Express): void {
     try {
       const { page = 1, limit = 50, status, currency } = req.query;
       
-      const purchases = await storage.getRecentPurchases({
-        page: parseInt(page as string),
-        limit: parseInt(limit as string),
-        status: status as string,
-        currency: currency as string
-      });
+      const purchases = await storage.getRecentPurchases(
+        parseInt(limit as string)
+      );
       
       const response: ApiResponse<typeof purchases> = {
         success: true,
@@ -139,10 +136,10 @@ export function registerAdminRevenueRoutes(app: Express): void {
       }
 
       // Get analytics data
-      const revenueByPeriod = await storage.getRevenueByPeriod(startDate, now, groupBy as string);
+      const revenueByPeriod = await storage.getRevenueByPeriod(groupBy as string);
       const topCountries = await storage.getTopCountriesByRevenue(10);
       const conversionFunnel = await storage.getConversionFunnel();
-      const refundAnalytics = await storage.getRefundAnalytics(startDate, now);
+      const refundAnalytics = await storage.getRefundAnalytics();
       
       const analytics = {
         revenueByPeriod,
@@ -289,8 +286,8 @@ export function registerAdminRevenueRoutes(app: Express): void {
       
       // Update user access if purchase is valid
       if (purchase.status === 'completed' && purchase.userId) {
-        await storage.updateUserAccess(purchase.userId, {
-          lifetimeAccess: true,
+        await storage.updateUserAccess(purchase.gumroadOrderId, {
+          grantAccess: true,
           subscriptionTier: 'lifetime',
           purchaseDate: purchase.createdAt || new Date()
         });

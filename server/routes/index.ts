@@ -3,6 +3,7 @@ import { setupAuth } from "../replitAuth";
 import { initS3Client } from "../s3Service";
 import { features } from "../config";
 import { setupMockAuth } from "../middleware/dev/mockAuth";
+import { registerSimpleAuthRoutes } from "./simpleAuth";
 import { performanceMiddleware } from "../middleware/performanceMonitor";
 
 // Import modular route handlers
@@ -43,7 +44,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   console.log("📊 Performance monitoring enabled");
   
   // Set up authentication first
-  if (features.replitAuthEnabled) {
+  if (features.simpleAuthEnabled) {
+    registerSimpleAuthRoutes(app);
+    console.log("✅ Simple JWT + OAuth authentication setup complete");
+  } else if (features.replitAuthEnabled) {
     await setupAuth(app);
     console.log("✅ Replit authentication setup complete");
   } else {

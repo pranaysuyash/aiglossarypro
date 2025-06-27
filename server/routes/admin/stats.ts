@@ -18,15 +18,16 @@ export function registerAdminStatsRoutes(app: Express): void {
   app.get('/api/admin/stats', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
       // Set user context for enhanced storage
+      const authReq = req as any;
       storage.setContext({
         user: {
-          id: req.user?.claims?.sub || req.user?.id || 'unknown',
-          email: req.user?.claims?.email || req.user?.email || 'unknown',
-          isAdmin: req.user?.isAdmin || false,
-          first_name: req.user?.claims?.first_name || req.user?.first_name,
-          last_name: req.user?.claims?.last_name || req.user?.last_name
+          id: authReq.user?.claims?.sub || authReq.user?.id || 'unknown',
+          email: authReq.user?.claims?.email || authReq.user?.email || 'unknown',
+          isAdmin: authReq.user?.isAdmin || false,
+          first_name: authReq.user?.claims?.first_name || authReq.user?.firstName,
+          last_name: authReq.user?.claims?.last_name || authReq.user?.lastName
         },
-        requestId: (req as any).requestId,
+        requestId: authReq.requestId,
         timestamp: new Date()
       });
       
@@ -50,8 +51,9 @@ export function registerAdminStatsRoutes(app: Express): void {
   // System health check
   app.get('/api/admin/health', async (req: Request, res: Response) => {
     try {
-      // Provide basic health check since getSystemHealth doesn't exist
-      const termCount = await storage.getTermCount();
+      // Provide basic health check
+      const allTerms = await storage.getTermsOptimized({ limit: 1 });
+      const termCount = allTerms.length;
       const health = {
         database: 'healthy' as const,
         s3: 'healthy' as const, 

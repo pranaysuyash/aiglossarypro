@@ -177,6 +177,7 @@ export interface AuthenticatedRequest extends Request {
     };
     access_token?: string;
     expires_at?: number;
+    isAdmin?: boolean;
   };
 }
 

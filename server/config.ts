@@ -28,7 +28,16 @@ interface EnvironmentConfig {
   // Google Drive Configuration (optional)
   GOOGLE_DRIVE_API_KEY?: string;
 
-  // Replit Authentication Configuration
+  // Simple Auth Configuration (JWT + OAuth)
+  JWT_SECRET?: string;
+  GOOGLE_CLIENT_ID?: string;
+  GOOGLE_CLIENT_SECRET?: string;
+  GOOGLE_REDIRECT_URI?: string;
+  GITHUB_CLIENT_ID?: string;
+  GITHUB_CLIENT_SECRET?: string;
+  GITHUB_REDIRECT_URI?: string;
+  
+  // Legacy Replit Authentication (deprecated)
   REPLIT_CLIENT_ID?: string;
   REPLIT_CLIENT_SECRET?: string;
   REPLIT_DOMAINS?: string;
@@ -80,6 +89,8 @@ function validateEnvironment(): EnvironmentConfig {
     'PGDATABASE', 'PGHOST', 'PGPORT', 'PGUSER', 'PGPASSWORD',
     'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'S3_BUCKET_NAME',
     'OPENAI_API_KEY', 'GOOGLE_DRIVE_API_KEY',
+    'JWT_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REDIRECT_URI',
+    'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'GITHUB_REDIRECT_URI',
     'REPLIT_CLIENT_ID', 'REPLIT_CLIENT_SECRET', 'REPLIT_DOMAINS', 'REPL_ID', 'ISSUER_URL'
   ];
 
@@ -98,9 +109,12 @@ function validateEnvironment(): EnvironmentConfig {
     console.warn('Warning: Incomplete S3 configuration detected. Ensure all S3 variables are set for full functionality.');
   }
 
-  // Check for Replit auth configuration
-  if (config.NODE_ENV === 'production' && !config.REPLIT_DOMAINS) {
-    console.warn('Warning: REPLIT_DOMAINS not configured. Authentication may not work properly in production.');
+  // Check for authentication configuration
+  const hasSimpleAuth = config.JWT_SECRET && (config.GOOGLE_CLIENT_ID || config.GITHUB_CLIENT_ID);
+  const hasReplitAuth = config.REPLIT_DOMAINS && config.REPL_ID;
+  
+  if (config.NODE_ENV === 'production' && !hasSimpleAuth && !hasReplitAuth) {
+    console.warn('Warning: No authentication configured. Set up JWT_SECRET with Google/GitHub OAuth or Replit auth.');
   }
 
   if (errors.length > 0) {
@@ -120,6 +134,7 @@ export const features = {
   s3Enabled: !!(config.AWS_ACCESS_KEY_ID && config.AWS_SECRET_ACCESS_KEY && config.S3_BUCKET_NAME),
   openaiEnabled: !!config.OPENAI_API_KEY,
   googleDriveEnabled: !!config.GOOGLE_DRIVE_API_KEY,
+  simpleAuthEnabled: !!(config.JWT_SECRET && (config.GOOGLE_CLIENT_ID || config.GITHUB_CLIENT_ID)),
   replitAuthEnabled: !!(config.REPLIT_DOMAINS && config.REPL_ID),
   analyticsEnabled: true, // Analytics is always enabled for now
   isDevelopment: config.NODE_ENV === 'development',

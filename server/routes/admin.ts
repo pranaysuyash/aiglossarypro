@@ -240,9 +240,9 @@ export function registerAdminRoutes(app: Express): void {
       const limitNum = parseInt(limit as string);
       const searchTerm = search as string;
       
-      let filteredUsers = users;
+      let filteredUsers = users.data;
       if (searchTerm) {
-        filteredUsers = users.filter(user => 
+        filteredUsers = users.data.filter((user: any) => 
           user.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
           user.lastName?.toLowerCase().includes(searchTerm.toLowerCase())

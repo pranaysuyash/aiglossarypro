@@ -68,7 +68,7 @@ export function WhatYouGet() {
             Pay once, access forever. No recurring fees.
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-            Get everything you need to master AI and Machine Learning concepts.
+            Get everything you need to master AI and Machine Learning concepts. <span className="text-purple-600 font-semibold">Save thousands vs annual subscriptions.</span>
           </p>
         </div>
 

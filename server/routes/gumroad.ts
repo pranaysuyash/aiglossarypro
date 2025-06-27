@@ -292,7 +292,7 @@ export function registerGumroadRoutes(app: Express): void {
           await storage.createPurchase({
             userId: user.id,
             gumroadOrderId: orderId,
-            amount: 12900, // $129.00 in cents
+            amount: 24900, // $249.00 in cents
             currency: 'USD',
             status: 'completed',
             purchaseData: {
@@ -396,14 +396,14 @@ export function registerGumroadRoutes(app: Express): void {
         await storage.createPurchase({
           userId: userId,
           gumroadOrderId: testOrderId,
-          amount: 12900, // $129.00 in cents
+          amount: 24900, // $249.00 in cents
           currency: 'USD',
           status: 'completed',
           purchaseData: {
             test_purchase: true,
             environment: 'development',
             email: email,
-            amount_cents: 12900,
+            amount_cents: 24900,
             currency: 'USD',
             order_id: testOrderId,
             created_at: new Date().toISOString()
@@ -431,7 +431,7 @@ export function registerGumroadRoutes(app: Express): void {
 
       res.json({ 
         success: true, 
-        message: 'Test purchase completed successfully! You now have lifetime access.',
+        message: 'Test purchase completed successfully! You now have lifetime access for $249.00.',
         user: {
           email: email,
           subscriptionTier: 'lifetime',
@@ -440,7 +440,7 @@ export function registerGumroadRoutes(app: Express): void {
         },
         testData: {
           orderId: testOrderId,
-          amount: '$129.00',
+          amount: '$249.00',
           environment: 'development'
         }
       });

@@ -9,7 +9,7 @@ export function FAQ() {
   const faqs = [
     {
       question: "Is this a one-time payment?",
-      answer: "Yes! Pay once and get lifetime access. No subscriptions, no recurring fees, no hidden costs. You pay $129 once and access the platform forever."
+      answer: "Yes! Pay once and get lifetime access. No subscriptions, no recurring fees, no hidden costs. You pay $249 once (with PPP discounts available) and access the platform forever. Compare this to DataCamp ($300+/year) or Coursera ($400+/year) - you save thousands!"
     },
     {
       question: "How is this different from free resources like Wikipedia?",
@@ -45,7 +45,11 @@ export function FAQ() {
     },
     {
       question: "What about Purchasing Power Parity pricing?",
-      answer: "Yes! Gumroad automatically applies Purchasing Power Parity discounts based on your location to ensure fair pricing worldwide. The discount is applied automatically at checkout."
+      answer: "Yes! We automatically apply PPP discounts (35-70% off) for 20+ countries to ensure fair global pricing. For example: India gets 60% off ($99), Brazil gets 55% off ($112), Bangladesh gets 70% off ($75). The discount is applied automatically based on your location."
+    },
+    {
+      question: "How does this compare to DataCamp or Coursera?",
+      answer: "DataCamp costs $300+/year and Coursera costs $400+/year with limited AI/ML coverage. We offer 10,000+ comprehensive AI/ML terms with code examples for a one-time $249 payment. You save $300-600 every year while getting more specialized content."
     }
   ];
 

@@ -42,8 +42,8 @@ export function ValueProposition() {
               <div className="flex items-start gap-3 p-4 bg-red-50 rounded-lg border border-red-200">
                 <DollarSign className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                 <div>
-                  <h4 className="font-semibold text-red-900">Expensive Subscriptions</h4>
-                  <p className="text-red-700 text-sm">$300+/year for platforms with incomplete coverage</p>
+                  <h4 className="font-semibold text-red-900">Expensive Recurring Costs</h4>
+                  <p className="text-red-700 text-sm">$300-600/year for DataCamp, Coursera with incomplete AI/ML coverage</p>
                 </div>
               </div>
             </div>
@@ -81,8 +81,8 @@ export function ValueProposition() {
                   <span className="text-white text-xs">✓</span>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-green-900">Lifetime Value</h4>
-                  <p className="text-green-700 text-sm">Pay once, access forever. No subscriptions</p>
+                  <h4 className="font-semibold text-green-900">Incredible Value</h4>
+                  <p className="text-green-700 text-sm">$249 lifetime vs $300-600/year subscriptions. Save $1000s</p>
                 </div>
               </div>
             </div>

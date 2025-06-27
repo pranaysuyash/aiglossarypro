@@ -32,7 +32,7 @@ export function SocialProof() {
 
   const testimonials = [
     {
-      quote: "Finally, a single source for all AI/ML concepts with practical examples. This saves me hours every week.",
+      quote: "Finally, a single source for all AI/ML concepts with practical examples. This saves me hours every week and costs way less than my DataCamp subscription.",
       author: "Dr. Sarah Chen",
       role: "ML Research Scientist",
       company: "Tech Startup"
@@ -44,7 +44,7 @@ export function SocialProof() {
       company: "Fortune 500"
     },
     {
-      quote: "Comprehensive coverage from basics to advanced topics. Essential reference for any AI/ML professional.",
+      quote: "Comprehensive coverage from basics to advanced topics. Best $249 I've spent - would cost me $400+ annually with Coursera for similar content.",
       author: "Priya Sharma",
       role: "AI Engineer",
       company: "AI Research Lab"

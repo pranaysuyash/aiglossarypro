@@ -709,7 +709,7 @@ export class OptimizedStorage implements IStorage {
   // User stats method needed by user.ts
   async getUserStats(userId: string): Promise<any> {
     return await cached(
-      CacheKeys.user(`user-stats:${userId}`),
+      `user-stats:${userId}`,
       async () => {
         const totalProgress = await db.select({ count: sql<number>`count(*)` })
           .from(userProgress)

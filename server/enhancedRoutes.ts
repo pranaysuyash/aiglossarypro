@@ -8,7 +8,7 @@ import { z } from "zod";
 
 // File upload configuration
 const upload = multer({
-  enhancedStorage: multer.memoryStorage(),
+  storage: multer.memoryStorage(),
   limits: {
     fileSize: 100 * 1024 * 1024, // 100MB max file size for complex Excel files
   },

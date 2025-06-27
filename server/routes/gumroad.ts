@@ -5,6 +5,10 @@ import { users, purchases } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 import { log } from '../utils/logger';
 import { captureAPIError } from '../utils/sentry';
+import { isAuthenticated } from '../replitAuth';
+import { requireAdmin, authenticateToken } from '../middleware/adminAuth';
+import { mockIsAuthenticated, mockAuthenticateToken } from '../middleware/dev/mockAuth';
+import { features } from '../config';
 
 // Gumroad webhook verification
 function verifyGumroadWebhook(body: string, signature: string): boolean {

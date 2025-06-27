@@ -333,7 +333,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Get cache status and information
-  router.get('/cache/status', async (req, res) => {
+  router.get('/cache/status', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
     try {
       const cacheEntries = await cacheManager.listCache();
       
@@ -363,7 +363,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Clear specific cache entry
-  router.delete('/cache/:fileName', async (req, res) => {
+  router.delete('/cache/:fileName', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
     try {
       const { fileName } = req.params;
       const dataDir = path.join(process.cwd(), 'data');
@@ -385,7 +385,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Clear all cache entries
-  router.delete('/cache', async (req, res) => {
+  router.delete('/cache', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
     try {
       await cacheManager.clearAllCache();
       
@@ -403,7 +403,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Force reprocess Excel file
-  router.post('/reprocess/:fileName', async (req, res) => {
+  router.post('/reprocess/:fileName', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
     try {
       const { fileName } = req.params;
       const { clearCache = true } = req.body;
@@ -452,7 +452,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Get list of available Excel files for processing
-  router.get('/files', (req, res) => {
+  router.get('/files', authMiddleware, tokenMiddleware, requireAdmin, (req, res) => {
     try {
       const dataDir = path.join(process.cwd(), 'data');
       
@@ -495,7 +495,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Get processing recommendations based on cache status and file changes
-  router.get('/recommendations', async (req, res) => {
+  router.get('/recommendations', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
     try {
       const dataDir = path.join(process.cwd(), 'data');
       const recommendations = [];
@@ -557,7 +557,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Schedule automatic reprocessing (placeholder for future cron implementation)
-  router.post('/schedule/reprocess', (req, res) => {
+  router.post('/schedule/reprocess', authMiddleware, tokenMiddleware, requireAdmin, (req, res) => {
     try {
       const { schedule = 'weekly', files = [] } = req.body;
       

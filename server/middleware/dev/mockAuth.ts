@@ -18,6 +18,7 @@ const DEV_USER = {
   },
   access_token: "dev-token",
   expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
+  isAdmin: true // Grant admin access in development
 };
 
 /**
@@ -70,7 +71,8 @@ export const mockAuthenticateToken = (req: Request, res: Response, next: NextFun
               (userClaims.first_name && userClaims.last_name 
                 ? `${userClaims.first_name} ${userClaims.last_name}`
                 : "Development User")
-      }
+      },
+      isAdmin: (req.user as any).isAdmin || true // Preserve admin status for development
     };
 
     console.log("🔓 Mock token auth: Validated user", req.user.claims.email);

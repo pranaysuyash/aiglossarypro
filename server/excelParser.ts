@@ -36,18 +36,52 @@ export async function parseExcelFile(buffer: Buffer): Promise<ParsedData> {
   
   // Check required columns
   const firstRow = worksheet.getRow(1);
-  const requiredColumns = ['name', 'definition', 'category'];
   const headers: Record<string, number> = {};
   
   // Map column names to indexes
   firstRow.eachCell((cell, colNumber) => {
-    headers[cell.value?.toString().toLowerCase() || ''] = colNumber;
+    const cellValue = cell.value?.toString().toLowerCase() || '';
+    headers[cellValue] = colNumber;
   });
   
-  // Validate required columns exist
-  const missingColumns = requiredColumns.filter(col => !(col in headers));
+  // Try to map columns intelligently based on content
+  const columnMapping = {
+    name: -1,
+    definition: -1,
+    category: -1
+  };
+  
+  // Look for name column (term, name, word, etc.)
+  for (const [headerName, colIndex] of Object.entries(headers)) {
+    if (headerName.includes('term') || headerName === 'name' || headerName.includes('word')) {
+      columnMapping.name = colIndex;
+      break;
+    }
+  }
+  
+  // Look for definition column (definition, overview, description, etc.)
+  for (const [headerName, colIndex] of Object.entries(headers)) {
+    if (headerName.includes('definition') || headerName.includes('overview') || headerName.includes('description')) {
+      columnMapping.definition = colIndex;
+      break;
+    }
+  }
+  
+  // Look for category column (category, main category, etc.)
+  for (const [headerName, colIndex] of Object.entries(headers)) {
+    if (headerName.includes('main category') || (headerName.includes('category') && !headerName.includes('sub'))) {
+      columnMapping.category = colIndex;
+      break;
+    }
+  }
+  
+  // Validate that we found the essential columns
+  const missingColumns = [];
+  if (columnMapping.name === -1) missingColumns.push('name/term');
+  if (columnMapping.definition === -1) missingColumns.push('definition/overview');
+  
   if (missingColumns.length > 0) {
-    throw new Error(`Missing required columns: ${missingColumns.join(', ')}`);
+    throw new Error(`Could not find required columns: ${missingColumns.join(', ')}`);
   }
   
   const parsedData: ParsedData = {
@@ -60,8 +94,8 @@ export async function parseExcelFile(buffer: Buffer): Promise<ParsedData> {
   for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
     const row = worksheet.getRow(rowNumber);
     if (row.hasValues) {
-      const termName = row.getCell(headers.name).value?.toString().trim();
-      const definition = row.getCell(headers.definition).value?.toString().trim();
+      const termName = row.getCell(columnMapping.name).value?.toString().trim();
+      const definition = row.getCell(columnMapping.definition).value?.toString().trim();
       
       // Skip if name or definition is missing
       if (!termName || !definition) {
@@ -72,8 +106,8 @@ export async function parseExcelFile(buffer: Buffer): Promise<ParsedData> {
       let categoryName = '';
       let subCategoryList: string[] = [];
       
-      if ('category' in headers) {
-        const categoryPath = row.getCell(headers.category).value?.toString().trim() || '';
+      if (columnMapping.category !== -1) {
+        const categoryPath = row.getCell(columnMapping.category).value?.toString().trim() || '';
         if (categoryPath) {
           // Parse category path like "a - b - c" into categories
           const parts = categoryPath.split('-').map(p => p.trim());

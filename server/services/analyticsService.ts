@@ -350,9 +350,11 @@ export class AnalyticsService {
 
       // Batch insert search analytics
       for (const query of queries) {
+        const userIp = query.user_ip ?? null;
+        
         await db.execute(sql`
-          INSERT INTO search_analytics (query, results_count, response_time_ms, user_ip, timestamp)
-          VALUES (${query.query}, ${query.results_count}, ${query.response_time_ms}, ${query.user_ip}, ${query.timestamp})
+          INSERT INTO search_analytics (query, results_count, response_time_ms, user_ip)
+          VALUES (${query.query}, ${query.results_count}, ${query.response_time_ms}, ${userIp})
         `);
       }
     } catch (error) {
@@ -383,9 +385,15 @@ export class AnalyticsService {
 
       // Batch insert page view analytics
       for (const view of pageViews) {
+        const termId = view.term_id ?? null;
+        const userIp = view.user_ip ?? null;
+        const referrer = view.referrer ?? null;
+        const userAgent = view.user_agent ?? null;
+        const sessionDuration = view.session_duration_ms ?? null;
+        
         await db.execute(sql`
-          INSERT INTO page_view_analytics (page, term_id, user_ip, referrer, user_agent, session_duration_ms, timestamp)
-          VALUES (${view.page}, ${view.term_id}, ${view.user_ip}, ${view.referrer}, ${view.user_agent}, ${view.session_duration_ms || null}, ${view.timestamp})
+          INSERT INTO page_view_analytics (page, term_id, user_ip, referrer, user_agent, session_duration_ms)
+          VALUES (${view.page}, ${termId}, ${userIp}, ${referrer}, ${userAgent}, ${sessionDuration})
         `);
       }
     } catch (error) {
@@ -416,9 +424,12 @@ export class AnalyticsService {
 
       // Batch insert performance metrics
       for (const metric of metrics) {
+        const memoryUsage = metric.memory_usage_mb ?? null;
+        const cpuUsage = metric.cpu_usage_percent ?? null;
+        
         await db.execute(sql`
-          INSERT INTO performance_metrics (endpoint, method, response_time_ms, status_code, memory_usage_mb, cpu_usage_percent, timestamp)
-          VALUES (${metric.endpoint}, ${metric.method}, ${metric.response_time_ms}, ${metric.status_code}, ${metric.memory_usage_mb}, ${metric.cpu_usage_percent}, ${metric.timestamp})
+          INSERT INTO performance_metrics (endpoint, method, response_time_ms, status_code, memory_usage_mb, cpu_usage_percent)
+          VALUES (${metric.endpoint}, ${metric.method}, ${metric.response_time_ms}, ${metric.status_code}, ${memoryUsage}, ${cpuUsage})
         `);
       }
     } catch (error) {
@@ -448,9 +459,14 @@ export class AnalyticsService {
 
       // Batch insert user interactions
       for (const interaction of interactions) {
+        const termId = interaction.term_id ?? null;
+        const query = interaction.query ?? null;
+        const userIp = interaction.user_ip ?? null;
+        const sessionId = interaction.session_id ?? null;
+        
         await db.execute(sql`
-          INSERT INTO user_interaction_analytics (action, term_id, query, user_ip, session_id, timestamp)
-          VALUES (${interaction.action}, ${interaction.term_id}, ${interaction.query}, ${interaction.user_ip}, ${interaction.session_id}, ${interaction.timestamp})
+          INSERT INTO user_interaction_analytics (action, term_id, query, user_ip, session_id)
+          VALUES (${interaction.action}, ${termId}, ${query}, ${userIp}, ${sessionId})
         `);
       }
     } catch (error) {

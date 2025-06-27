@@ -9,7 +9,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import expressWs from "express-ws";
 import { registerRoutes } from "./routes/index";
 import { setupVite, serveStatic, log } from "./vite";
-import { smartLoadExcelData, checkAndSmartLoadExcelData } from "./smartExcelLoader";
+import { smartLoadExcelData } from "./smartExcelLoader";
 import { getServerConfig, logConfigStatus } from "./config";
 import { setupMultiAuth } from "./middleware/multiAuth";
 import { securityHeaders, sanitizeRequest, securityMonitoring, apiRateLimit } from "./middleware/security";
@@ -154,13 +154,7 @@ app.use((req, res, next) => {
     console.error('❌ Server error:', err);
   });
     
-  // Use smart caching system for Excel processing
-  console.log("🚀 Starting smart Excel data loading with caching...");
-  checkAndSmartLoadExcelData({
-    chunkSize: 500,
-    enableProgress: true,
-    resumeProcessing: false
-  }).catch(err => {
-    console.error('❌ Error loading Excel data:', err);
-  });
+  // TODO: Implement automatic Excel data loading if needed
+  // For now, use the admin endpoint /api/admin/import/force-reprocess
+  console.log("🚀 Server ready. Use admin endpoint for Excel data processing.");
 })();

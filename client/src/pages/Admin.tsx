@@ -51,7 +51,7 @@ export default function AdminPage() {
         queryParams.append('maxChunks', maxChunks.toString());
       }
       
-      const response = await fetch(`/api/process/local-file?${queryParams.toString()}`, {
+      const response = await fetch(`/api/admin/import?${queryParams.toString()}`, {
         method: 'POST',
         body: formData
       });
@@ -76,13 +76,7 @@ export default function AdminPage() {
       const formData = new FormData();
       formData.append('file', file);
       
-      const queryParams = new URLSearchParams();
-      if (maxChunks) {
-        queryParams.append('maxChunks', maxChunks.toString());
-      }
-      queryParams.append('import', 'true');
-      
-      const response = await fetch(`/api/process/local-file?${queryParams.toString()}`, {
+      const response = await fetch('/api/admin/import', {
         method: 'POST',
         body: formData
       });

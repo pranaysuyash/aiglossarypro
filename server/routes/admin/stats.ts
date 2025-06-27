@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { optimizedStorage as storage } from "../../optimizedStorage";
+import { enhancedStorage as storage } from "../../enhancedStorage";
 import { isAuthenticated } from "../../replitAuth";
 import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
@@ -17,6 +17,19 @@ export function registerAdminStatsRoutes(app: Express): void {
   // Admin dashboard statistics
   app.get('/api/admin/stats', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
+      // Set user context for enhanced storage
+      storage.setContext({
+        user: {
+          id: req.user?.claims?.sub || req.user?.id || 'unknown',
+          email: req.user?.claims?.email || req.user?.email || 'unknown',
+          isAdmin: req.user?.isAdmin || false,
+          first_name: req.user?.claims?.first_name || req.user?.first_name,
+          last_name: req.user?.claims?.last_name || req.user?.last_name
+        },
+        requestId: (req as any).requestId,
+        timestamp: new Date()
+      });
+      
       const stats = await storage.getAdminStats();
       
       const response: ApiResponse<AdminStats> = {

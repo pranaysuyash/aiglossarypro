@@ -105,8 +105,14 @@ export function registerAnalyticsRoutes(app: Express): void {
       const { 
         timeframe = '30d',
         limit = 20,
-        sort = 'views'
+        sort = 'views',
+        page = 1
       } = req.query;
+      
+      // Proper pagination with reasonable limits
+      const pageSize = Math.min(parseInt(limit as string) || 20, 1000); // Allow up to 1000
+      const pageNumber = Math.max(parseInt(page as string) || 1, 1);
+      const offset = (pageNumber - 1) * pageSize;
       
       // Parse timeframe
       const days = timeframe === '24h' ? 1 : timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 7;
@@ -131,13 +137,27 @@ export function registerAnalyticsRoutes(app: Express): void {
         .where(gte(termViews.viewedAt, startDate))
         .groupBy(enhancedTerms.id)
         .orderBy(sort === 'views' ? desc(sql`count(${termViews.id})`) : desc(enhancedTerms.name))
-        .limit(parseInt(limit as string));
+        .limit(pageSize)
+        .offset(offset);
       
+      // Get total count for pagination
+      const totalCount = await db
+        .select({ count: sql<number>`count(*)` })
+        .from(enhancedTerms)
+        .leftJoin(termViews, eq(termViews.termId, enhancedTerms.id))
+        .where(gte(termViews.viewedAt, startDate));
+        
       res.json({
         success: true,
         data: {
           timeframe,
           content: contentAnalytics,
+          pagination: {
+            page: pageNumber,
+            limit: pageSize,
+            total: totalCount[0]?.count || 0,
+            totalPages: Math.ceil((totalCount[0]?.count || 0) / pageSize)
+          },
           generatedAt: new Date().toISOString()
         }
       });

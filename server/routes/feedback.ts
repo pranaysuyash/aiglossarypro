@@ -33,7 +33,7 @@ export function registerFeedbackRoutes(app: Express): void {
    * Submit feedback for a specific term
    * POST /api/feedback/term/:termId
    */
-  app.post('/api/feedback/term/:termId', adminMiddleware, asyncHandler(async (req: Request, res: Response) => {
+  app.post('/api/feedback/term/:termId', asyncHandler(async (req: Request, res: Response) => {
     const { termId } = req.params;
     const { type, rating, message, contactEmail } = req.body;
 
@@ -80,7 +80,7 @@ export function registerFeedbackRoutes(app: Express): void {
    * Submit general feedback or term request
    * POST /api/feedback/general
    */
-  app.post('/api/feedback/general', adminMiddleware, asyncHandler(async (req: Request, res: Response) => {
+  app.post('/api/feedback/general', asyncHandler(async (req: Request, res: Response) => {
     const { type, message, contactEmail, termName, termDefinition } = req.body;
 
     // Validation

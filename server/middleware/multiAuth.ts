@@ -230,7 +230,7 @@ export async function setupMultiAuth(app: Express) {
 
 // Enhanced authentication middleware that works with all providers
 export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
-  if (!req.isAuthenticated() || !req.user) {
+  if (!req.isAuthenticated?.() || !req.user) {
     return res.status(401).json({ 
       success: false,
       message: 'Authentication required',

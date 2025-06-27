@@ -98,7 +98,7 @@ export async function setupAuth(app: Express) {
       const user = await upsertUser(userClaims);
       updateUserSession(user, tokens);
       // Create a simplified user object for passport
-      const passportUser = {
+      const passportUser: Express.User = {
         id: user.id,
         email: user.email,
         firstName: user.firstName,

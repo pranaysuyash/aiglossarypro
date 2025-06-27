@@ -14,25 +14,13 @@ export async function authenticateToken(
 ): Promise<void> {
   try {
     // Check if user is authenticated via passport session
-    if (!req.isAuthenticated() || !(req.user as any)?.claims?.sub) {
+    if (!req.isAuthenticated?.() || !req.user?.id) {
       res.status(401).json({
         success: false,
         message: "Authentication required"
       });
       return;
     }
-
-    // Transform the user object to match AuthenticatedRequest structure
-    const userClaims = (req.user as any).claims;
-    req.user = {
-      claims: {
-        sub: userClaims.sub,
-        email: userClaims.email,
-        name: userClaims.first_name && userClaims.last_name 
-          ? `${userClaims.first_name} ${userClaims.last_name}`
-          : userClaims.email
-      }
-    };
 
     next();
   } catch (error) {
@@ -53,7 +41,7 @@ export async function requireAdmin(
   next: NextFunction
 ): Promise<void> {
   try {
-    if (!req.user?.claims?.sub) {
+    if (!req.user?.id) {
       res.status(401).json({
         success: false,
         message: "Authentication required"
@@ -62,7 +50,7 @@ export async function requireAdmin(
     }
 
     // In development mode with mock auth, allow admin access for dev user
-    if (req.user.claims.sub === "dev-user-123") {
+    if (req.user.id === "dev-user-123") {
       console.log("🔓 Development mode: Granting admin access to dev user");
       next();
       return;
@@ -72,7 +60,7 @@ export async function requireAdmin(
     const user = await db
       .select({ isAdmin: users.isAdmin })
       .from(users)
-      .where(eq(users.id, req.user.claims.sub))
+      .where(eq(users.id, req.user.id))
       .limit(1);
 
     if (!user.length || !user[0].isAdmin) {

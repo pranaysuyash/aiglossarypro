@@ -3,23 +3,21 @@ import { Request } from 'express';
 declare global {
   namespace Express {
     interface User {
-      claims: {
-        sub: string;
-        email: string;
-        name: string;
-        first_name?: string;
-        last_name?: string;
-      };
+      id: string;
+      email: string | null;
+      firstName: string | null;
+      lastName: string | null;
+      profileImageUrl: string | null;
+      isAdmin: boolean | null;
+      claims?: any;
       access_token?: string;
       expires_at?: number;
-      isAdmin?: boolean;
-      id?: string;
       provider?: 'google' | 'github' | 'replit';
     }
 
     interface Request {
       user?: User;
-      requestId?: string;
+      requestId: string;
       isAuthenticated?: () => boolean;
     }
   }

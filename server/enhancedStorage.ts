@@ -14,7 +14,7 @@
 
 import { optimizedStorage, IStorage } from './optimizedStorage';
 import { enhancedStorage as enhancedTermsStorage } from './enhancedTermsStorage';
-import { enhancedRedisCache, redisManager } from './config/redis';
+import { redisCache as enhancedRedisCache, redis as redisManager } from './config/redis';
 import { z } from 'zod';
 
 // ===== CORE INTERFACES =====

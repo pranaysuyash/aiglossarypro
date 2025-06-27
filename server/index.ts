@@ -9,7 +9,7 @@ import express, { type Request, Response, NextFunction } from "express";
 import expressWs from "express-ws";
 import { registerRoutes } from "./routes/index";
 import { setupVite, serveStatic, log } from "./vite";
-import { checkAndSmartLoadExcelData } from "./smartExcelLoader";
+import { smartLoadExcelData, checkAndSmartLoadExcelData } from "./smartExcelLoader";
 import { getServerConfig, logConfigStatus } from "./config";
 import { setupMultiAuth } from "./middleware/multiAuth";
 import { securityHeaders, sanitizeRequest, securityMonitoring, apiRateLimit } from "./middleware/security";

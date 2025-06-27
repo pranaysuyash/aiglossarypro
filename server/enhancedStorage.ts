@@ -29,6 +29,8 @@ export interface IEnhancedStorage extends IStorage {
   vacuumDatabase(): Promise<MaintenanceResult>;
   getAllUsers(options?: PaginationOptions): Promise<PaginatedResult<User>>;
   getPendingContent(): Promise<PendingContent[]>;
+  approveContent(id: string): Promise<any>;
+  rejectContent(id: string): Promise<any>;
 
   // Search & Discovery (3 methods)
   advancedSearch(options: AdvancedSearchOptions): Promise<SearchResult>;
@@ -101,14 +103,20 @@ interface AdminStats {
   totalUsers: number;
   totalTerms: number;
   totalCategories: number;
+  totalViews: number;
   recentActivity: ActivityItem[];
-  systemHealth: 'healthy' | 'degraded' | 'critical';
+  systemHealth: {
+    database: 'healthy' | 'warning' | 'error';
+    s3: 'healthy' | 'warning' | 'error';
+    ai: 'healthy' | 'warning' | 'error';
+  };
 }
 
 interface ContentMetrics {
   totalTerms: number;
   totalCategories: number;
   totalSections: number;
+  totalViews?: number;
   averageSectionsPerTerm: number;
   lastUpdated: Date;
 }
@@ -533,8 +541,13 @@ export class EnhancedStorage implements IEnhancedStorage {
         totalUsers: 0, // TODO: Implement user counting in Phase 2B
         totalTerms: contentMetrics.totalTerms,
         totalCategories: categories.length,
+        totalViews: contentMetrics.totalViews || 0, // Add totalViews
         recentActivity: [], // TODO: Implement activity tracking in Phase 2D
-        systemHealth: await this.checkDatabaseHealth() ? 'healthy' : 'degraded'
+        systemHealth: {
+          database: await this.checkDatabaseHealth() ? 'healthy' : 'warning',
+          s3: 'healthy', // TODO: Implement S3 health check
+          ai: 'healthy' // TODO: Implement AI health check
+        }
       };
 
       // Cache for 5 minutes (admin stats change frequently)
@@ -569,6 +582,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         totalTerms: processingStats.totalTerms,
         totalCategories: categories.length,
         totalSections: processingStats.totalSections,
+        totalViews: 0, // TODO: Implement view tracking in Phase 2C
         averageSectionsPerTerm: processingStats.totalTerms > 0 
           ? processingStats.totalSections / processingStats.totalTerms 
           : 0,
@@ -807,6 +821,16 @@ export class EnhancedStorage implements IEnhancedStorage {
     throw new Error('Method getPendingContent not implemented - Phase 2B');
   }
 
+  async approveContent(id: string): Promise<any> {
+    this.requireAdminAuth();
+    throw new Error('Method approveContent not implemented - Phase 2B');
+  }
+
+  async rejectContent(id: string): Promise<any> {
+    this.requireAdminAuth();
+    throw new Error('Method rejectContent not implemented - Phase 2B');
+  }
+
   async advancedSearch(options: AdvancedSearchOptions): Promise<SearchResult> {
     // This will be implemented using termsStorage.enhancedSearch in Phase 2C
     throw new Error('Method advancedSearch not implemented - Phase 2C');
@@ -1038,11 +1062,15 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Get search facets from enhanced terms storage
       const searchFacets = await this.termsStorage.getSearchFacets();
 
+      // Safe numeric conversion
+      const totalViews = Number(analyticsOverview.totalViews) || 0;
+      const totalTerms = Number(analyticsOverview.totalTerms) || 0;
+
       // Build search metrics
       const metrics: SearchMetrics = {
         timeframe,
-        totalSearches: analyticsOverview.totalViews || 0,
-        uniqueTermsSearched: analyticsOverview.totalTerms || 0,
+        totalSearches: totalViews,
+        uniqueTermsSearched: totalTerms,
         averageSearchTime: 150, // Estimated 150ms average
         popularSearchTerms: popularTerms.slice(0, 10).map((term: any) => ({
           term: term.name || term.termName || 'Unknown',
@@ -1055,15 +1083,15 @@ export class EnhancedStorage implements IEnhancedStorage {
           percentage: 0 // Will calculate below
         })) || [],
         searchPatterns: {
-          singleTermQueries: Math.floor((analyticsOverview.totalViews || 0) * 0.7), // 70% estimated
-          multiTermQueries: Math.floor((analyticsOverview.totalViews || 0) * 0.25), // 25% estimated  
-          advancedQueries: Math.floor((analyticsOverview.totalViews || 0) * 0.05), // 5% estimated
-          filterUsage: Math.floor((analyticsOverview.totalViews || 0) * 0.15) // 15% estimated
+          singleTermQueries: Math.floor(totalViews * 0.7), // 70% estimated
+          multiTermQueries: Math.floor(totalViews * 0.25), // 25% estimated  
+          advancedQueries: Math.floor(totalViews * 0.05), // 5% estimated
+          filterUsage: Math.floor(totalViews * 0.15) // 15% estimated
         },
         performanceMetrics: {
-          fastQueries: Math.floor((analyticsOverview.totalViews || 0) * 0.8), // <100ms
-          mediumQueries: Math.floor((analyticsOverview.totalViews || 0) * 0.15), // 100-500ms
-          slowQueries: Math.floor((analyticsOverview.totalViews || 0) * 0.05), // >500ms
+          fastQueries: Math.floor(totalViews * 0.8), // <100ms
+          mediumQueries: Math.floor(totalViews * 0.15), // 100-500ms
+          slowQueries: Math.floor(totalViews * 0.05), // >500ms
           timeoutQueries: 0
         },
         timestamp: new Date()

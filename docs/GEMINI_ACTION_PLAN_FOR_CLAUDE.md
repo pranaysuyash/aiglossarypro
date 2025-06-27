@@ -111,7 +111,7 @@ You are to address each major area of work in a **separate Git branch** as speci
 *   **Actionable Steps:**
     1.  **Audit Codebase:** Scan the code for all `process.env` references.
     2.  **Create Definitive `.env.example`:** Update `.env.example` to include every required and optional variable.
-    3.  **Update Host Binding:** Change the server host binding from `127.0.0.1` to `0.0.0.0` for production builds.
+    3.  **Update Host Binding:** Change the server host binding from `127.0.0.1` to `0.0.0.0` for production builds to ensure it's accessible from outside its container/machine.
 *   **Files to Investigate:** `.env.example`, the main server startup file.
 
 ---
@@ -136,6 +136,6 @@ You are to address each major area of work in a **separate Git branch** as speci
 *   **Problem:** The admin UI has controls (e.g., "Process File" button) that are not connected to any working backend endpoint.
 *   **Actionable Steps:**
     1.  **Identify Unimplemented Controls:** Review the `AdminPage` to list all UI elements that lack a functional backend.
-    2.  **Implement `local-file` Endpoint:** Prioritize implementing the `POST /api/process/local-file` endpoint to accept a file upload and trigger the import pipeline.
+    2.  **Implement `POST /api/process/local-file` Endpoint:** Prioritize implementing the `POST /api/process/local-file` endpoint to accept a file upload and trigger the data import pipeline.
     3.  **Connect and Test:** Connect the frontend button to the new endpoint and test the flow end-to-end.
 *   **Files to Investigate:** `AdminPage` component, `server/routes/` directory.

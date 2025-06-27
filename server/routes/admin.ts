@@ -695,8 +695,8 @@ export function registerAdminRoutes(app: Express): void {
         return res.status(400).json({ message: 'Maximum 50 terms can be processed at once' });
       }
       
-      const results = [];
-      const errors = [];
+      const results: any[] = [];
+      const errors: any[] = [];
       
       // Process terms in batches of 5 to avoid overwhelming the AI service
       for (let i = 0; i < termIds.length; i += 5) {
@@ -714,8 +714,9 @@ export function registerAdminRoutes(app: Express): void {
           // For now, return error since storage method doesn't exist
           throw new Error('Batch categorization requires storage layer enhancement in Phase 2');
           
-                      // Process each term with AI categorization
-            for (const term of termsBatch) {
+          /* TODO: Phase 2 - Implement AI categorization
+          // Process each term with AI categorization
+          for (const term of termsBatch) {
             try {
               const aiResponse = await fetch(`${process.env.OPENAI_API_URL || 'https://api.openai.com/v1'}/chat/completions`, {
                 method: 'POST',
@@ -809,6 +810,7 @@ Respond with JSON only.`
           if (i + 5 < termIds.length) {
             await new Promise(resolve => setTimeout(resolve, 1000));
           }
+          */
           
         } catch (batchError) {
           console.error(`Error processing batch ${i}-${i + 5}:`, batchError);
@@ -860,8 +862,8 @@ Respond with JSON only.`
         return res.status(400).json({ message: 'Maximum 20 terms can be enhanced at once' });
       }
       
-      const results = [];
-      const errors = [];
+      const results: any[] = [];
+      const errors: any[] = [];
       
       // Process terms individually for better quality
       for (const termId of termIds) {
@@ -875,9 +877,9 @@ Respond with JSON only.`
           //   .where(eq(enhancedTerms.id, termId));
           
           // For now, return error since storage method doesn't exist
-          const term = null;
           throw new Error('Definition enhancement requires storage layer enhancement in Phase 2');
           
+          /* TODO: Phase 2 - Implement definition enhancement
           if (!term) {
             errors.push({
               termId,
@@ -947,6 +949,7 @@ Provide an enhanced definition following the guidelines above.`
           
           // Add delay between requests to respect rate limits
           await new Promise(resolve => setTimeout(resolve, 500));
+          */
           
         } catch (termError) {
           console.error(`Error enhancing definition for term ${termId}:`, termError);

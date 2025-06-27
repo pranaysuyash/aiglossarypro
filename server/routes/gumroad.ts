@@ -236,9 +236,10 @@ export function registerGumroadRoutes(app: Express): void {
   });
   
   // Admin endpoint to manually grant lifetime access
-  app.post('/api/gumroad/grant-access', async (req: Request, res: Response) => {
+  app.post('/api/gumroad/grant-access', 
+    features.useReplit ? [isAuthenticated, requireAdmin] : [mockAuthenticateToken, requireAdmin],
+    async (req: Request, res: Response) => {
     try {
-      // This should have admin authentication middleware
       const { email, orderId } = req.body;
       
       if (!email) {
@@ -333,7 +334,9 @@ export function registerGumroadRoutes(app: Express): void {
   });
 
   // TEST/DUMMY Purchase endpoint for development mode
-  app.post('/api/gumroad/test-purchase', async (req: Request, res: Response) => {
+  app.post('/api/gumroad/test-purchase', 
+    features.useReplit ? [isAuthenticated, requireAdmin] : [mockAuthenticateToken, requireAdmin],
+    async (req: Request, res: Response) => {
     try {
       // Only allow in development mode
       if (process.env.NODE_ENV !== 'development') {

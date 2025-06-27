@@ -1,100 +1,105 @@
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
-// The 42 standardized sections identified from the Excel analysis
-export const STANDARD_SECTIONS = [
-  { name: 'Introduction', order: 1 },
-  { name: 'Prerequisites', order: 2 },
-  { name: 'Historical Context', order: 3 },
-  { name: 'Theoretical Concepts', order: 4 },
-  { name: 'How It Works', order: 5 },
-  { name: 'Implementation', order: 6 },
-  { name: 'Tools & Frameworks', order: 7 },
-  { name: 'Evaluation and Metrics', order: 8 },
-  { name: 'Applications', order: 9 },
-  { name: 'Real-world Datasets & Benchmarks', order: 10 },
-  { name: 'Case Studies', order: 11 },
-  { name: 'Hands-on Tutorials', order: 12 },
-  { name: 'Best Practices', order: 13 },
-  { name: 'Optimization Techniques', order: 14 },
-  { name: 'Common Challenges and Pitfalls', order: 15 },
-  { name: 'Security Considerations', order: 16 },
-  { name: 'Ethics and Responsible AI', order: 17 },
-  { name: 'Comparison with Alternatives', order: 18 },
-  { name: 'Variants or Extensions', order: 19 },
-  { name: 'Related Concepts', order: 20 },
-  { name: 'Industry Adoption', order: 21 },
-  { name: 'Innovation Spotlight', order: 22 },
-  { name: 'Future Directions', order: 23 },
-  { name: 'Research Papers', order: 24 },
-  { name: 'References', order: 25 },
-  { name: 'Further Reading', order: 26 },
-  { name: 'Recommended Websites & Courses', order: 27 },
-  { name: 'Career Guidance', order: 28 },
-  { name: 'Project Suggestions', order: 29 },
-  { name: 'Collaboration and Community', order: 30 },
-  { name: 'Advantages and Disadvantages', order: 31 },
-  { name: 'Interactive Elements', order: 32 },
-  { name: 'Quick Quiz', order: 33 },
-  { name: 'Did You Know?', order: 34 },
-  { name: 'Glossary', order: 35 },
-  { name: 'Tags & Keywords', order: 36 },
-  { name: 'FAQs', order: 37 },
-  { name: 'Conclusion', order: 38 },
-  { name: 'Appendices', order: 39 },
-  { name: 'Metadata', order: 40 },
-  { name: 'Feedback & Ratings', order: 41 },
-  { name: 'Version History', order: 42 }
-] as const;
-
-export async function migrateSectionData() {
+// Load standardized sections from external configuration
+function loadStandardSections() {
   try {
-    console.log('Starting section data migration...');
-
-    // Get all existing terms
-    const terms = await db.execute(sql`SELECT id, name FROM enhanced_terms`);
-    console.log(`Found ${terms.rows.length} terms to migrate`);
-
-    let totalSectionsCreated = 0;
-
-    // For each term, create all 42 sections
-    for (const term of terms.rows) {
-      const termId = term.id;
-      const termName = term.name;
-
-      console.log(`Creating sections for term: ${termName} (ID: ${termId})`);
-
-      // Insert all sections for this term
-      for (const section of STANDARD_SECTIONS) {
-        try {
-          await db.execute(sql`
-            INSERT INTO sections (term_id, name, display_order, created_at, updated_at)
-            VALUES (${termId}, ${section.name}, ${section.order}, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
-            ON CONFLICT (term_id, name) DO NOTHING
-          `);
-          totalSectionsCreated++;
-        } catch (error) {
-          console.error(`Error creating section ${section.name} for term ${termName}:`, error);
-        }
-      }
-
-      // Create basic section items for key sections using existing term data
-      await createBasicSectionItems(termId as number);
-    }
-
-    console.log(`Migration completed! Created ${totalSectionsCreated} sections total.`);
-    return { success: true, sectionsCreated: totalSectionsCreated };
-
+    const configPath = join(__dirname, '../config/standardSections.json');
+    const configData = readFileSync(configPath, 'utf-8');
+    return JSON.parse(configData) as Array<{ name: string; order: number }>;
   } catch (error) {
-    console.error('Section data migration failed:', error);
-    throw error;
+    console.error('Failed to load standard sections configuration:', error);
+    throw new Error('Standard sections configuration file not found or invalid');
   }
 }
 
-async function createBasicSectionItems(termId: number) {
+export const STANDARD_SECTIONS = loadStandardSections();
+
+export async function migrateSectionData() {
+  console.log('Starting section data migration...');
+
+  return await db.transaction(async (tx) => {
+    try {
+      // Get all existing terms
+      const terms = await tx.execute(sql`SELECT id, name FROM enhanced_terms`);
+      console.log(`Found ${terms.rows.length} terms to migrate`);
+
+      if (terms.rows.length === 0) {
+        console.log('No terms found for migration');
+        return { success: true, sectionsCreated: 0 };
+      }
+
+      // Prepare bulk insert data for sections
+      const sectionsToInsert = [];
+      for (const term of terms.rows) {
+        for (const section of STANDARD_SECTIONS) {
+          sectionsToInsert.push({
+            termId: term.id,
+            name: section.name,
+            displayOrder: section.order,
+            createdAt: new Date(),
+            updatedAt: new Date()
+          });
+        }
+      }
+
+      // Perform bulk insert for sections
+      console.log(`Inserting ${sectionsToInsert.length} sections...`);
+      
+      // Split into chunks to avoid parameter limits
+      const chunkSize = 1000;
+      let totalSectionsCreated = 0;
+      
+      for (let i = 0; i < sectionsToInsert.length; i += chunkSize) {
+        const chunk = sectionsToInsert.slice(i, i + chunkSize);
+        
+        // Build VALUES clause for bulk insert
+        const values = chunk.map((_, index) => {
+          const baseIndex = i + index;
+          return `($${baseIndex * 5 + 1}, $${baseIndex * 5 + 2}, $${baseIndex * 5 + 3}, $${baseIndex * 5 + 4}, $${baseIndex * 5 + 5})`;
+        }).join(', ');
+        
+        const params = chunk.flatMap(section => [
+          section.termId,
+          section.name,
+          section.displayOrder,
+          section.createdAt,
+          section.updatedAt
+        ]);
+        
+        const insertQuery = sql.raw(`
+          INSERT INTO sections (term_id, name, display_order, created_at, updated_at)
+          VALUES ${values}
+          ON CONFLICT (term_id, name) DO NOTHING
+        `, params);
+        
+        await tx.execute(insertQuery);
+        totalSectionsCreated += chunk.length;
+        console.log(`Processed ${Math.min(i + chunkSize, sectionsToInsert.length)}/${sectionsToInsert.length} sections`);
+      }
+
+      // Create basic section items for each term
+      console.log('Creating basic section items...');
+      for (const term of terms.rows) {
+        await createBasicSectionItems(tx, term.id as number);
+      }
+
+      console.log(`Migration completed! Created ${totalSectionsCreated} sections total.`);
+      return { success: true, sectionsCreated: totalSectionsCreated };
+      
+    } catch (error) {
+      console.error('Section data migration failed:', error);
+      throw error;
+    }
+  });
+}
+
+async function createBasicSectionItems(tx: any, termId: number) {
   try {
     // Get the term's full data
-    const termData = await db.execute(sql`
+    const termData = await tx.execute(sql`
       SELECT * FROM enhanced_terms WHERE id = ${termId}
     `);
     
@@ -103,7 +108,7 @@ async function createBasicSectionItems(termId: number) {
     const fullTerm = termData.rows[0];
 
     // Get section IDs for this term
-    const sectionsResult = await db.execute(sql`
+    const sectionsResult = await tx.execute(sql`
       SELECT id, name FROM sections WHERE term_id = ${termId}
     `);
 
@@ -166,27 +171,57 @@ async function createBasicSectionItems(termId: number) {
       }
     ];
 
-    // Insert section items
+    // Collect all section items for bulk insert
+    const itemsToInsert = [];
     for (const sectionData of sectionItems) {
       const sectionId = sectionMap.get(sectionData.sectionName);
       if (!sectionId) continue;
 
       for (const item of sectionData.items) {
         if (!item.content) continue; // Skip empty content
-
-        await db.execute(sql`
-          INSERT INTO section_items (
-            section_id, label, content, content_type, display_order,
-            is_ai_generated, verification_status, created_at, updated_at
-          )
-          VALUES (
-            ${sectionId}, ${item.label}, ${item.content}, ${item.contentType}, ${item.order},
-            ${fullTerm.is_ai_generated || false}, ${fullTerm.verification_status || 'unverified'},
-            CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
-          )
-          ON CONFLICT DO NOTHING
-        `);
+        
+        itemsToInsert.push({
+          sectionId,
+          label: item.label,
+          content: item.content,
+          contentType: item.contentType,
+          displayOrder: item.order,
+          isAiGenerated: fullTerm.is_ai_generated || false,
+          verificationStatus: fullTerm.verification_status || 'unverified',
+          createdAt: new Date(),
+          updatedAt: new Date()
+        });
       }
+    }
+
+    // Bulk insert section items if any exist
+    if (itemsToInsert.length > 0) {
+      const values = itemsToInsert.map((_, index) => {
+        return `($${index * 9 + 1}, $${index * 9 + 2}, $${index * 9 + 3}, $${index * 9 + 4}, $${index * 9 + 5}, $${index * 9 + 6}, $${index * 9 + 7}, $${index * 9 + 8}, $${index * 9 + 9})`;
+      }).join(', ');
+      
+      const params = itemsToInsert.flatMap(item => [
+        item.sectionId,
+        item.label,
+        item.content,
+        item.contentType,
+        item.displayOrder,
+        item.isAiGenerated,
+        item.verificationStatus,
+        item.createdAt,
+        item.updatedAt
+      ]);
+      
+      const insertQuery = sql.raw(`
+        INSERT INTO section_items (
+          section_id, label, content, content_type, display_order,
+          is_ai_generated, verification_status, created_at, updated_at
+        )
+        VALUES ${values}
+        ON CONFLICT DO NOTHING
+      `, params);
+      
+      await tx.execute(insertQuery);
     }
 
   } catch (error) {

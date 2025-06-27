@@ -144,105 +144,41 @@ export async function registerRoutes(app: Express): Promise<void> {
     });
   });
   
-  // API documentation endpoint
+  // API documentation endpoint - redirects to comprehensive Swagger docs
   app.get('/api', (_, res) => {
     res.json({
       success: true,
       message: "AI Glossary Pro API",
       version: "2.0.0",
-      documentation: "/api/docs",
-      endpoints: {
-        auth: [
-          "GET /api/auth/user",
-          "GET /api/settings",
-          "PUT /api/settings",
-          "GET /api/user/export",
-          "DELETE /api/user/data"
+      documentation: {
+        swagger: "/api/docs",
+        interactive: "/api/docs",
+        json: "/api/docs/swagger.json"
+      },
+      info: {
+        description: "Comprehensive AI/ML terminology API with 10,000+ terms",
+        features: [
+          "42-section content architecture",
+          "Advanced search & filtering",
+          "Real-time recommendations",
+          "Progress tracking",
+          "Mobile-optimized responsive design",
+          "Lifetime updates"
         ],
-        categories: [
-          "GET /api/categories",
-          "GET /api/categories/:id",
-          "GET /api/categories/:id/terms",
-          "GET /api/categories/:id/stats"
-        ],
-        terms: [
-          "GET /api/terms",
-          "GET /api/terms/:id",
-          "GET /api/terms/featured",
-          "GET /api/terms/trending",
-          "GET /api/terms/recent",
-          "GET /api/terms/recently-viewed",
-          "GET /api/terms/recommended",
-          "POST /api/terms/:id/view",
-          "GET /api/terms/:id/recommended",
-          "GET /api/terms/:id/stats"
-        ],
-        sections: [
-          "GET /api/terms/:termId/sections",
-          "GET /api/sections/:sectionId",
-          "PATCH /api/progress/:termId/:sectionId",
-          "GET /api/progress/summary",
-          "GET /api/content/applications",
-          "GET /api/content/ethics",
-          "GET /api/content/tutorials",
-          "GET /api/content/quizzes",
-          "GET /api/sections/search",
-          "GET /api/sections/analytics"
-        ],
-        search: [
-          "GET /api/search",
-          "GET /api/search/suggestions",
-          "GET /api/search/popular",
-          "GET /api/search/filters",
-          "POST /api/search/advanced"
-        ],
-        user: [
-          "GET /api/favorites",
-          "GET /api/favorites/:id",
-          "POST /api/favorites/:id",
-          "DELETE /api/favorites/:id",
-          "GET /api/user/progress",
-          "GET /api/progress/:id",
-          "POST /api/progress/:id",
-          "DELETE /api/progress/:id",
-          "GET /api/user/activity",
-          "GET /api/user/streak",
-          "GET /api/user/stats"
-        ],
-        admin: [
-          "GET /api/admin/stats",
-          "POST /api/admin/import",
-          "DELETE /api/admin/clear-data",
-          "GET /api/admin/health",
-          "POST /api/admin/maintenance",
-          "GET /api/admin/users",
-          "GET /api/admin/content/pending",
-          "POST /api/admin/content/:id/approve",
-          "POST /api/admin/content/:id/reject"
-        ],
-        revenue: [
-          "GET /api/admin/revenue/dashboard",
-          "GET /api/admin/revenue/purchases",
-          "GET /api/admin/revenue/analytics",
-          "GET /api/admin/revenue/export",
-          "GET /api/admin/revenue/webhook-status",
-          "POST /api/admin/revenue/verify-purchase"
-        ],
-        analytics: [
-          "GET /api/analytics",
-          "GET /api/analytics/user",
-          "GET /api/analytics/content",
-          "GET /api/analytics/search",
-          "GET /api/analytics/categories",
-          "GET /api/analytics/realtime",
-          "GET /api/analytics/export",
-          "GET /api/analytics/dashboard"
-        ],
-        system: [
-          "GET /api/health",
-          "GET /api"
-        ]
-      }
+        pricing: {
+          lifetime: "$249 USD",
+          features: "PPP discounts available for 20+ countries",
+          comparison: "Save $300-600 annually vs DataCamp/Coursera"
+        },
+        authentication: {
+          type: "JWT Bearer tokens",
+          rateLimit: {
+            free: "50 requests/day (7-day grace period)",
+            lifetime: "Unlimited requests"
+          }
+        }
+      },
+      quickStart: "Visit /api/docs for complete API documentation with interactive examples"
     });
   });
   

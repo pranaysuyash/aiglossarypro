@@ -1,6 +1,8 @@
 import express from 'express';
 import { cacheManager } from '../cacheManager';
 import { smartLoadExcelData } from '../smartExcelLoader';
+import { requireAdmin } from '../middleware/adminAuth';
+import { features } from '../config';
 import path from 'path';
 import fs from 'fs';
 
@@ -8,8 +10,9 @@ const router = express.Router();
 
 /**
  * Get cache status and information
+ * Requires admin authentication
  */
-router.get('/status', async (req, res) => {
+router.get('/status', requireAdmin, async (req, res) => {
   try {
     const cacheEntries = await cacheManager.listCache();
     
@@ -40,8 +43,9 @@ router.get('/status', async (req, res) => {
 
 /**
  * Clear specific cache entry
+ * Requires admin authentication
  */
-router.delete('/:fileName', async (req, res) => {
+router.delete('/:fileName', requireAdmin, async (req, res) => {
   try {
     const { fileName } = req.params;
     const dataDir = path.join(process.cwd(), 'data');
@@ -64,8 +68,9 @@ router.delete('/:fileName', async (req, res) => {
 
 /**
  * Clear all cache entries
+ * Requires admin authentication
  */
-router.delete('/', async (req, res) => {
+router.delete('/', requireAdmin, async (req, res) => {
   try {
     await cacheManager.clearAllCache();
     
@@ -84,8 +89,9 @@ router.delete('/', async (req, res) => {
 
 /**
  * Force reprocess Excel file
+ * Requires admin authentication
  */
-router.post('/reprocess/:fileName', async (req, res) => {
+router.post('/reprocess/:fileName', requireAdmin, async (req, res) => {
   try {
     const { fileName } = req.params;
     const { clearCache = true } = req.body;
@@ -135,8 +141,9 @@ router.post('/reprocess/:fileName', async (req, res) => {
 
 /**
  * Get processing recommendations based on cache status and file changes
+ * Requires admin authentication
  */
-router.get('/recommendations', async (req, res) => {
+router.get('/recommendations', requireAdmin, async (req, res) => {
   try {
     const dataDir = path.join(process.cwd(), 'data');
     const recommendations = [];

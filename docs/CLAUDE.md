@@ -297,6 +297,7 @@ npm run dev 2>&1 | grep -E "(database|error|connection)"
 *Current Status: 95% Complete - Ready for Market Launch*
 *Focus: Gumroad deployment and conversion tracking implementation*
 
-Never work on your own branch, commit all changes using git add .  and only exclude what is not needed using gitignore and then make sure everything committed is pushed to remote if no breaking issues.
-Suggestions when provided in cli should also be documented
-Always create a separate review doc if you feel a second set of eyes would be helpful especially while we are working with multiple agents in parallel.
+**Development Guidelines:**
+- Suggestions when provided in CLI should also be documented in relevant files
+- Always create a separate review doc if you feel a second set of eyes would be helpful, especially while working with multiple agents in parallel
+- Follow the branching strategy outlined above to prevent conflicts between agents

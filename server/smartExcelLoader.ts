@@ -1,12 +1,11 @@
 import fs from 'fs';
 import path from 'path';
-import { runPythonExcelProcessor, importProcessedData } from './pythonProcessor';
 import { cacheManager } from './cacheManager';
 import { aiChangeDetector } from './aiChangeDetector';
 
 /**
  * Smart Excel loader that chooses the appropriate processing method based on file size
- * - Uses chunked Python processor for large files (>50MB) with memory optimization
+ * - Uses Node.js CSV streaming processor for large files (>50MB) with memory optimization
  * - Uses JavaScript parser for smaller files
  * - Provides progress tracking and resumable processing
  */
@@ -84,7 +83,7 @@ export async function smartLoadExcelData(filePath: string, options: ProcessingOp
         // Get a quick sample of the current data for comparison
         let dataSample = null;
         if (fileSizeBytes > MAX_JS_FILE_SIZE) {
-          // For large files, get a small sample using Python
+          // For large files, get a small sample using Node.js
           dataSample = await getDataSample(filePath);
         } else {
           // For small files, parse a portion with JavaScript
@@ -137,8 +136,8 @@ export async function smartLoadExcelData(filePath: string, options: ProcessingOp
     let processedData;
     
     if (fileSizeBytes > MAX_JS_FILE_SIZE) {
-      console.log(`🐍 Using chunked Python processor for large file (${fileSizeMB.toFixed(2)} MB)`);
-      processedData = await processWithChunkedPython(filePath, options);
+      console.log(`🚀 Using Node.js streaming processor for large file (${fileSizeMB.toFixed(2)} MB)`);
+      processedData = await processWithNodeStreaming(filePath, options);
     } else {
       console.log(`📄 Using JavaScript parser for small file (${fileSizeMB.toFixed(2)} MB)`);
       const { parseExcelFile, importToDatabase } = await import('./excelParser');
@@ -160,192 +159,204 @@ export async function smartLoadExcelData(filePath: string, options: ProcessingOp
 }
 
 /**
- * Get a small sample of data from large Excel files for change detection
+ * Get a small sample of data from large Excel files for change detection (Node.js version)
  */
 async function getDataSample(filePath: string): Promise<any> {
   try {
-    const tempDir = path.join(process.cwd(), 'temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
+    console.log('📊 Getting data sample with Node.js...');
+    
+    // Convert Excel to CSV if needed
+    const fileExt = path.extname(filePath).toLowerCase();
+    let csvFilePath = filePath;
+    
+    if (fileExt === '.xlsx' || fileExt === '.xls') {
+      csvFilePath = await convertExcelToCSV(filePath);
     }
     
-    const outputPath = path.join(tempDir, `sample_${Date.now()}.json`);
-    const scriptPath = 'server/python/excel_processor_enhanced.py';
+    // Read a small sample using Node.js streaming
+    const { createReadStream } = await import('fs');
+    const { parse } = await import('csv-parse');
     
-    const { exec } = await import('child_process');
-    const venvPath = path.join(process.cwd(), 'venv', 'bin', 'python');
+    const sample = {
+      terms: [],
+      categories: new Set(),
+      subcategories: []
+    };
     
-    // Get just a small sample (50 rows) for change detection
-    const command = [
-      venvPath,
-      scriptPath,
-      `--input "${filePath}"`,
-      `--output "${outputPath}"`,
-      `--chunk-size 50`,
-      `--sample-only`
-    ].join(' ');
+    let rowCount = 0;
+    const maxSampleRows = 50;
     
     return new Promise((resolve, reject) => {
-      exec(command, { maxBuffer: 1024 * 1024 }, (error, stdout, stderr) => {
-        if (error) {
-          console.warn('Sample extraction failed, using basic analysis');
-          resolve(null);
-          return;
+      const parser = parse({
+        delimiter: ',',
+        columns: true,
+        skip_empty_lines: true
+      });
+      
+      parser.on('readable', () => {
+        let record;
+        while ((record = parser.read()) !== null && rowCount < maxSampleRows) {
+          rowCount++;
+          
+          // Extract sample term data
+          const termName = record['Term'] || record['Name'] || record[Object.keys(record)[0]];
+          const definition = record['Definition'] || record['Description'] || '';
+          const category = record['Category'] || record['Main Category'] || '';
+          
+          if (termName) {
+            sample.terms.push({
+              name: termName,
+              definition: definition.substring(0, 200), // Truncate for sample
+              category
+            });
+            
+            if (category) {
+              sample.categories.add(category);
+            }
+          }
         }
         
-        try {
-          if (fs.existsSync(outputPath)) {
-            const sampleData = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
-            fs.unlinkSync(outputPath); // Clean up
-            resolve(sampleData);
-          } else {
-            resolve(null);
-          }
-        } catch (e) {
-          resolve(null);
+        if (rowCount >= maxSampleRows) {
+          parser.destroy(); // Stop reading after sample
         }
       });
+      
+      parser.on('end', () => {
+        // Clean up temporary CSV file if created
+        if (csvFilePath !== filePath) {
+          try {
+            fs.unlinkSync(csvFilePath);
+          } catch (cleanupError) {
+            console.warn('⚠️  Could not clean up sample CSV file:', cleanupError);
+          }
+        }
+        
+        const result = {
+          terms: sample.terms,
+          categories: Array.from(sample.categories),
+          subcategories: sample.subcategories
+        };
+        
+        console.log(`✅ Sample extracted: ${sample.terms.length} terms, ${sample.categories.size} categories`);
+        resolve(result);
+      });
+      
+      parser.on('error', (error) => {
+        console.warn('Sample extraction failed, using basic analysis:', error);
+        
+        // Clean up on error
+        if (csvFilePath !== filePath) {
+          try {
+            fs.unlinkSync(csvFilePath);
+          } catch (cleanupError) {
+            // Ignore cleanup errors
+          }
+        }
+        
+        resolve(null);
+      });
+      
+      // Create read stream and pipe to parser
+      createReadStream(csvFilePath).pipe(parser);
     });
+    
   } catch (error) {
     console.warn('Error getting data sample:', error);
     return null;
   }
 }
 
-async function processWithChunkedPython(filePath: string, options: ProcessingOptions): Promise<any> {
+async function processWithNodeStreaming(filePath: string, options: ProcessingOptions): Promise<any> {
   try {
-    console.log('🚀 Starting chunked Excel processing...');
+    console.log('🚀 Starting Node.js streaming processing...');
     
-    // Use the enhanced Python processor with chunking
+    // Check if the file is Excel and needs conversion to CSV
+    const fileExt = path.extname(filePath).toLowerCase();
+    let csvFilePath = filePath;
+    
+    if (fileExt === '.xlsx' || fileExt === '.xls') {
+      console.log('📊 Converting Excel to CSV for streaming...');
+      csvFilePath = await convertExcelToCSV(filePath);
+    }
+    
+    // Import the CSV streaming processor class
+    const { default: CSVStreamingProcessor } = await import('../csv_streaming_processor');
+    
+    const processor = new (CSVStreamingProcessor as any)({
+      batchSize: options.chunkSize || DEFAULT_CHUNK_SIZE,
+      skipRows: 0,
+      maxRows: undefined
+    });
+    
+    console.log(`🔄 Running Node.js streaming processor:`);
+    console.log(`   📁 Input: ${csvFilePath}`);
+    console.log(`   ⚙️  Batch size: ${options.chunkSize || DEFAULT_CHUNK_SIZE} rows`);
+    console.log(`   🚀 Method: Node.js streaming (memory efficient)`);
+    
+    const startTime = Date.now();
+    
+    // Process the CSV file with streaming
+    await processor.processCSVFile(csvFilePath);
+    
+    const duration = (Date.now() - startTime) / 1000;
+    console.log(`✅ Node.js streaming processing completed in ${duration.toFixed(2)}s`);
+    
+    // Clean up temporary CSV file if it was converted from Excel
+    if (csvFilePath !== filePath) {
+      try {
+        fs.unlinkSync(csvFilePath);
+        console.log('🧹 Cleaned up temporary CSV file');
+      } catch (cleanupError) {
+        console.warn('⚠️  Could not clean up temporary CSV file:', cleanupError);
+      }
+    }
+    
+    // Return success status for caching
+    return {
+      success: true,
+      processingTime: duration,
+      method: 'node-streaming',
+      memoryEfficient: true,
+      terms: 'processed', // Placeholder - streaming doesn't return counts
+      categories: 'processed',
+      subcategories: 'processed'
+    };
+    
+  } catch (error) {
+    console.error('❌ Error in Node.js streaming processing:', error);
+    throw error;
+  }
+}
+
+/**
+ * Convert Excel file to CSV for streaming processing
+ */
+async function convertExcelToCSV(excelPath: string): Promise<string> {
+  try {
+    const xlsx = await import('xlsx');
+    
+    // Read the Excel file
+    const workbook = xlsx.readFile(excelPath);
+    const sheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[sheetName];
+    
+    // Convert to CSV
+    const csvData = xlsx.utils.sheet_to_csv(worksheet);
+    
+    // Save to temporary CSV file
     const tempDir = path.join(process.cwd(), 'temp');
     if (!fs.existsSync(tempDir)) {
       fs.mkdirSync(tempDir, { recursive: true });
     }
     
-    const outputPath = path.join(tempDir, `processed_chunked_${Date.now()}.json`);
+    const csvPath = path.join(tempDir, `converted_${Date.now()}.csv`);
+    fs.writeFileSync(csvPath, csvData);
     
-    // Check if we should use the enhanced processor
-    const enhancedScriptPath = 'server/python/excel_processor_enhanced.py';
-    const regularScriptPath = 'server/python/excel_processor.py';
+    console.log(`✅ Excel converted to CSV: ${csvPath}`);
+    return csvPath;
     
-    const scriptPath = fs.existsSync(enhancedScriptPath) ? enhancedScriptPath : regularScriptPath;
-    
-    const { exec } = await import('child_process');
-    const venvPath = path.join(process.cwd(), 'venv', 'bin', 'python');
-    
-    const chunkSize = options.chunkSize || DEFAULT_CHUNK_SIZE;
-    
-    // Build command with chunking parameters
-    const command = [
-      venvPath,
-      scriptPath,
-      `--input "${filePath}"`,
-      `--output "${outputPath}"`,
-      `--chunk-size ${chunkSize}`
-    ].join(' ');
-    
-    console.log(`🔄 Running chunked Python processor:`);
-    console.log(`   📁 Input: ${filePath}`);
-    console.log(`   📁 Output: ${outputPath}`);
-    console.log(`   ⚙️  Chunk size: ${chunkSize} rows`);
-    console.log(`   🐍 Script: ${scriptPath}`);
-    
-    return new Promise((resolve, reject) => {
-      const startTime = Date.now();
-      
-      const childProcess = exec(command, { 
-        maxBuffer: 1024 * 1024 * 10 // 10MB buffer
-      }, async (error, stdout, stderr) => {
-        const duration = (Date.now() - startTime) / 1000;
-        
-        if (error) {
-          console.error(`❌ Python processor error: ${error.message}`);
-          console.error(`stderr: ${stderr}`);
-          return reject(error);
-        }
-        
-        if (stderr) {
-          console.warn(`⚠️  Python processor warnings: ${stderr}`);
-        }
-        
-        try {
-          const result = JSON.parse(stdout);
-          
-          if (!result.success) {
-            return reject(new Error(result.error || 'Unknown error processing file'));
-          }
-          
-          console.log(`✅ Chunked processing complete in ${duration.toFixed(2)}s:`);
-          console.log(`   📊 ${result.terms} terms processed`);
-          console.log(`   📂 ${result.categories} categories created`);
-          console.log(`   📋 ${result.subcategories} subcategories created`);
-          console.log(`   🔄 ${result.chunks_processed} chunks processed`);
-          
-          // Use batched import instead of reading the large file directly
-          if (fs.existsSync(outputPath)) {
-            console.log('🔄 Starting batched database import...');
-            
-            const { batchedImportProcessedData } = await import('./batchedImporter');
-            const importResult = await batchedImportProcessedData(outputPath, {
-              batchSize: 100, // Smaller batches for large datasets
-              skipExisting: true,
-              enableProgress: true
-            });
-            
-            if (importResult.success) {
-              console.log(`✅ Batched database import complete:`);
-              console.log(`   📂 ${importResult.imported.categories} categories imported`);
-              console.log(`   📋 ${importResult.imported.subcategories} subcategories imported`);
-              console.log(`   📊 ${importResult.imported.terms} terms imported`);
-              console.log(`   ⏱️  Import duration: ${(importResult.duration / 1000).toFixed(2)}s`);
-              
-              if (importResult.errors.length > 0) {
-                console.warn(`⚠️  ${importResult.errors.length} import errors occurred`);
-                console.log('Sample errors:', importResult.errors.slice(0, 3));
-              }
-            } else {
-              console.error(`❌ Batched database import failed: ${importResult.errors.join(', ')}`);
-            }
-            
-            // Clean up temp file
-            try {
-              fs.unlinkSync(outputPath);
-              console.log('🧹 Temporary files cleaned up');
-            } catch (e) {
-              console.warn(`⚠️  Could not remove temp file: ${e}`);
-            }
-            
-            // Return the import result for caching
-            resolve({
-              terms: result.terms,
-              categories: result.categories,
-              subcategories: result.subcategories,
-              chunks_processed: result.chunks_processed,
-              importResult
-            });
-          } else {
-            resolve(null);
-          }
-        } catch (parseError) {
-          console.error(`❌ Error parsing Python output: ${parseError}`);
-          console.log('Raw output:', stdout);
-          reject(parseError);
-        }
-      });
-      
-      // Handle progress output if available
-      if (options.enableProgress && childProcess.stdout) {
-        childProcess.stdout.on('data', (data) => {
-          const output = data.toString();
-          // Look for progress indicators in the output
-          if (output.includes('Processing chunk') || output.includes('Processed')) {
-            process.stdout.write(`📈 ${output.trim()}\n`);
-          }
-        });
-      }
-    });
   } catch (error) {
-    console.error(`❌ Error in chunked Python processing: ${error}`);
+    console.error('❌ Excel to CSV conversion error:', error);
     throw error;
   }
 }

@@ -5,7 +5,6 @@ import { requireAdmin, authenticateToken } from "../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mockAuth";
 import { features } from "../config";
 import { parseExcelFile, importToDatabase } from "../excelParser";
-import { processAndImportFromS3, importProcessedData } from "../pythonProcessor";
 import multer from "multer";
 import type { AuthenticatedRequest, AdminStats, ImportResult, ApiResponse } from "../../shared/types";
 import express from 'express';

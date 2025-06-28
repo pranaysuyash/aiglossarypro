@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { MemoryRouter } from 'react-router-dom';
 import CategoryCard from './CategoryCard';
 
 // Mock function for actions
@@ -29,11 +28,9 @@ const meta: Meta<typeof CategoryCard> = {
   },
   decorators: [
     (Story) => (
-      <MemoryRouter>
-        <div className="w-full max-w-sm p-4">
-          <Story />
-        </div>
-      </MemoryRouter>
+      <div className="w-full max-w-sm p-4">
+        <Story />
+      </div>
     ),
   ],
   args: {
@@ -181,11 +178,9 @@ export const DarkMode: Story = {
   },
   decorators: [
     (Story) => (
-      <MemoryRouter>
-        <div className="w-full max-w-sm p-4 dark">
-          <Story />
-        </div>
-      </MemoryRouter>
+      <div className="w-full max-w-sm p-4 dark">
+        <Story />
+      </div>
     ),
   ],
 };

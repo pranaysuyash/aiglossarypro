@@ -129,6 +129,18 @@ Each story file includes:
 
 ## 🚨 Issues Encountered & Solutions
 
+### **MDX File Indexing Error**
+**Issue:** Storybook couldn't index the `.mdx` documentation file, causing startup failures.
+
+**Error:** `Invariant failed: No matching indexer found for storybook-index.stories.mdx`
+
+**Solution Applied:** 
+- Removed the problematic MDX file from `client/src/components/` directory
+- Created a TypeScript story file instead: `stories/ComponentIndex.stories.tsx`
+- Added React import to fix JSX compilation issues
+- Fixed render function to return valid React element
+- **Result:** ✅ Storybook now starts successfully
+
 ### **Type Interface Mismatches**
 **Issue:** Some components had interface mismatches between expected props and actual component interfaces.
 

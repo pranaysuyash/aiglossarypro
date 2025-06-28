@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { MemoryRouter } from 'react-router-dom';
 import Footer from './Footer';
 
 const meta: Meta<typeof Footer> = {
@@ -15,14 +14,12 @@ const meta: Meta<typeof Footer> = {
   },
   decorators: [
     (Story) => (
-      <MemoryRouter>
-        <div className="min-h-screen flex flex-col">
-          <div className="flex-1 bg-gray-50 p-8">
-            <div className="text-center text-gray-600">Page content goes here</div>
-          </div>
-          <Story />
+      <div className="min-h-screen flex flex-col">
+        <div className="flex-1 bg-gray-50 p-8">
+          <div className="text-center text-gray-600">Page content goes here</div>
         </div>
-      </MemoryRouter>
+        <Story />
+      </div>
     ),
   ],
   tags: ['autodocs'],
@@ -84,14 +81,12 @@ export const DarkMode: Story = {
   },
   decorators: [
     (Story) => (
-      <MemoryRouter>
-        <div className="min-h-screen flex flex-col dark">
-          <div className="flex-1 bg-gray-900 p-8">
-            <div className="text-center text-gray-400">Page content goes here</div>
-          </div>
-          <Story />
+      <div className="min-h-screen flex flex-col dark">
+        <div className="flex-1 bg-gray-900 p-8">
+          <div className="text-center text-gray-400">Page content goes here</div>
         </div>
-      </MemoryRouter>
+        <Story />
+      </div>
     ),
   ],
 };
@@ -107,21 +102,19 @@ export const WithLongContent: Story = {
   },
   decorators: [
     (Story) => (
-      <MemoryRouter>
-        <div className="min-h-screen flex flex-col">
-          <div className="flex-1 bg-gray-50 p-8">
-            <div className="space-y-4">
-              {Array.from({ length: 20 }, (_, i) => (
-                <div key={i} className="p-4 bg-white rounded shadow">
-                  <h3 className="font-semibold">Content Block {i + 1}</h3>
-                  <p className="text-gray-600">This is some sample content to demonstrate the footer positioning.</p>
-                </div>
-              ))}
-            </div>
+      <div className="min-h-screen flex flex-col">
+        <div className="flex-1 bg-gray-50 p-8">
+          <div className="space-y-4">
+            {Array.from({ length: 20 }, (_, i) => (
+              <div key={i} className="p-4 bg-white rounded shadow">
+                <h3 className="font-semibold">Content Block {i + 1}</h3>
+                <p className="text-gray-600">This is some sample content to demonstrate the footer positioning.</p>
+              </div>
+            ))}
           </div>
-          <Story />
         </div>
-      </MemoryRouter>
+        <Story />
+      </div>
     ),
   ],
 }; 

@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router-dom';
 import EnhancedTermCard from './EnhancedTermCard';
 import { IEnhancedTerm } from '@/interfaces/interfaces';
 
@@ -19,27 +18,29 @@ const queryClient = new QueryClient({
 // Mock enhanced term data
 const mockEnhancedTerm: IEnhancedTerm = {
   id: '1',
-  name: 'Neural Network',
-  slug: 'neural-network',
-  shortDefinition: 'A computing system inspired by biological neural networks.',
-  definition: 'A neural network is a computing system inspired by the biological neural networks that constitute animal brains. It consists of interconnected nodes (neurons) that process information using a connectionist approach to computation.',
-  fullDefinition: 'Neural networks are a fundamental concept in machine learning and artificial intelligence, consisting of layers of interconnected nodes that can learn complex patterns from data through training.',
-  mainCategories: ['Machine Learning', 'Artificial Intelligence'],
-  subCategories: ['Supervised Learning', 'Neural Networks'],
-  relatedConcepts: ['Deep Learning', 'Backpropagation', 'Perceptron'],
-  applicationDomains: ['Computer Vision', 'Natural Language Processing', 'Predictive Analytics'],
-  techniques: ['Feedforward', 'Backpropagation', 'Gradient Descent'],
-  difficultyLevel: 'Intermediate' as const,
-  hasImplementation: true,
-  hasInteractiveElements: true,
-  hasCaseStudies: true,
-  hasCodeExamples: true,
-  isAiGenerated: false,
-  verificationStatus: 'verified' as const,
-  searchText: 'neural network machine learning artificial intelligence',
-  keywords: ['neural', 'network', 'machine learning', 'AI', 'deep learning'],
-  createdAt: new Date('2024-01-01'),
-  updatedAt: new Date('2024-01-15'),
+  term: 'Machine Learning',
+  definition: 'A subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed.',
+  examples: [
+    'Recommendation systems used by Netflix and Spotify',
+    'Email spam detection algorithms',
+    'Image recognition in photo tagging'
+  ],
+  relatedTerms: ['Artificial Intelligence', 'Deep Learning', 'Neural Networks'],
+  category: 'Core Concepts',
+  difficulty: 'Intermediate',
+  tags: ['AI', 'Algorithms', 'Data Science'],
+  lastUpdated: new Date().toISOString(),
+  views: 1250,
+  likes: 89,
+  bookmarked: false,
+  readingTime: 3,
+  prerequisites: ['Statistics', 'Programming Basics'],
+  applications: ['Healthcare', 'Finance', 'Autonomous Vehicles'],
+  keyPoints: [
+    'Learns from data without explicit programming',
+    'Improves performance with more data',
+    'Used in various industries and applications'
+  ]
 };
 
 const meta: Meta<typeof EnhancedTermCard> = {
@@ -56,11 +57,9 @@ const meta: Meta<typeof EnhancedTermCard> = {
   decorators: [
     (Story) => (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <div className="w-full max-w-md p-4">
-            <Story />
-          </div>
-        </MemoryRouter>
+        <div className="w-full max-w-md p-4">
+          <Story />
+        </div>
       </QueryClientProvider>
     ),
   ],
@@ -204,11 +203,9 @@ export const DarkMode: Story = {
   decorators: [
     (Story) => (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <div className="w-full max-w-md p-4 dark">
-            <Story />
-          </div>
-        </MemoryRouter>
+        <div className="w-full max-w-md p-4 dark">
+          <Story />
+        </div>
       </QueryClientProvider>
     ),
   ],

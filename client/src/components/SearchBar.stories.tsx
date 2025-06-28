@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router-dom';
 // Mock function for actions
 const fn = () => () => {};
 import SearchBar from './SearchBar';
@@ -28,11 +27,9 @@ const meta: Meta<typeof SearchBar> = {
   decorators: [
     (Story) => (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <div className="w-full max-w-2xl p-4">
-            <Story />
-          </div>
-        </MemoryRouter>
+        <div className="w-full max-w-2xl p-4">
+          <Story />
+        </div>
       </QueryClientProvider>
     ),
   ],
@@ -156,11 +153,9 @@ export const DarkMode: Story = {
   decorators: [
     (Story) => (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <div className="w-full max-w-2xl p-4 dark">
-            <Story />
-          </div>
-        </MemoryRouter>
+        <div className="w-full max-w-2xl p-4 dark">
+          <Story />
+        </div>
       </QueryClientProvider>
     ),
   ],

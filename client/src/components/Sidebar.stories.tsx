@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
 // Mock function for actions
@@ -29,17 +28,15 @@ const meta: Meta<typeof Sidebar> = {
   decorators: [
     (Story) => (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <div className="flex h-screen">
-            <Story />
-            <div className="flex-1 bg-gray-50 p-8">
-              <div className="text-center text-gray-600">
-                <h2 className="text-xl font-semibold mb-2">Main Content Area</h2>
-                <p>This represents the main application content that appears alongside the sidebar.</p>
-              </div>
+        <div className="flex h-screen">
+          <Story />
+          <div className="flex-1 bg-gray-50 p-8">
+            <div className="text-center text-gray-600">
+              <h2 className="text-xl font-semibold mb-2">Main Content Area</h2>
+              <p>This represents the main application content that appears alongside the sidebar.</p>
             </div>
           </div>
-        </MemoryRouter>
+        </div>
       </QueryClientProvider>
     ),
   ],
@@ -124,17 +121,15 @@ export const Mobile: Story = {
   decorators: [
     (Story) => (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <div className="relative h-screen">
-            <Story />
-            <div className="h-full bg-gray-50 p-4">
-              <div className="text-center text-gray-600">
-                <h2 className="text-lg font-semibold mb-2">Mobile Layout</h2>
-                <p className="text-sm">Sidebar appears as overlay on mobile devices.</p>
-              </div>
+        <div className="relative h-screen">
+          <Story />
+          <div className="h-full bg-gray-50 p-4">
+            <div className="text-center text-gray-600">
+              <h2 className="text-lg font-semibold mb-2">Mobile Layout</h2>
+              <p className="text-sm">Sidebar appears as overlay on mobile devices.</p>
             </div>
           </div>
-        </MemoryRouter>
+        </div>
       </QueryClientProvider>
     ),
   ],
@@ -214,17 +209,15 @@ export const DarkMode: Story = {
   decorators: [
     (Story) => (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <div className="flex h-screen dark">
-            <Story />
-            <div className="flex-1 bg-gray-900 p-8">
-              <div className="text-center text-gray-400">
-                <h2 className="text-xl font-semibold mb-2">Main Content Area</h2>
-                <p>Dark mode layout with sidebar navigation.</p>
-              </div>
+        <div className="flex h-screen dark">
+          <Story />
+          <div className="flex-1 bg-gray-900 p-8">
+            <div className="text-center text-gray-400">
+              <h2 className="text-xl font-semibold mb-2">Main Content Area</h2>
+              <p>Dark mode layout with sidebar navigation.</p>
             </div>
           </div>
-        </MemoryRouter>
+        </div>
       </QueryClientProvider>
     ),
   ],

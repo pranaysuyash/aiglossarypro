@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router-dom';
 import TermHeader from './TermHeader';
 
 // Mock function for actions
@@ -18,13 +17,16 @@ const queryClient = new QueryClient({
 // Mock term data
 const mockTerm = {
   id: '1',
-  name: 'Neural Network',
-  shortDefinition: 'A computing system inspired by biological neural networks.',
-  definition: 'A neural network is a computing system inspired by the biological neural networks that constitute animal brains.',
-  category: 'Machine Learning',
-  viewCount: 1247,
-  createdAt: new Date('2024-01-01'),
-  updatedAt: new Date('2024-01-15'),
+  term: 'Machine Learning',
+  definition: 'A subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed.',
+  category: 'Core Concepts',
+  difficulty: 'Intermediate',
+  tags: ['AI', 'Algorithms', 'Data Science'],
+  lastUpdated: new Date().toISOString(),
+  views: 1250,
+  likes: 89,
+  bookmarked: false,
+  readingTime: 3,
 };
 
 const meta: Meta<typeof TermHeader> = {
@@ -34,18 +36,16 @@ const meta: Meta<typeof TermHeader> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'The header component for term detail pages with actions and metadata.',
+        component: 'Header component for term detail pages with title, metadata, and action buttons.',
       },
     },
   },
   decorators: [
     (Story) => (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <div className="min-h-screen bg-gray-50 p-4">
-            <Story />
-          </div>
-        </MemoryRouter>
+        <div className="min-h-screen bg-gray-50 p-4">
+          <Story />
+        </div>
       </QueryClientProvider>
     ),
   ],
@@ -53,7 +53,6 @@ const meta: Meta<typeof TermHeader> = {
     term: mockTerm,
     onFavorite: fn(),
     onShare: fn(),
-    isFavorite: false,
   },
   tags: ['autodocs'],
 };
@@ -179,11 +178,9 @@ export const DarkMode: Story = {
   decorators: [
     (Story) => (
       <QueryClientProvider client={queryClient}>
-        <MemoryRouter>
-          <div className="min-h-screen bg-gray-900 p-4 dark">
-            <Story />
-          </div>
-        </MemoryRouter>
+        <div className="min-h-screen bg-gray-900 p-4 dark">
+          <Story />
+        </div>
       </QueryClientProvider>
     ),
   ],

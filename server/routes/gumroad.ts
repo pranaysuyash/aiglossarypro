@@ -169,76 +169,30 @@ export function registerGumroadRoutes(app: Express): void {
         return res.status(400).json({ error: 'Email required' });
       }
 
+      const grantedBy = (req.user as any)?.id || 'admin';
+      
       log.info('Manual access grant requested', {
         email: email.substring(0, 3) + '***',
         orderId,
-        requestedBy: (req.user as any)?.id || 'unknown'
+        requestedBy: grantedBy
       });
 
-      // Find or create user
-      let user = await storage.getUserByEmail(email);
-      
-      if (!user) {
-        // Create new user
-        const newUserId = crypto.randomUUID();
-        await storage.upsertUser({
-          id: newUserId,
-          email: email,
-          subscriptionTier: 'lifetime',
-          lifetimeAccess: true,
-          purchaseDate: new Date(),
-          dailyViews: 0,
-          lastViewReset: new Date(),
-        });
-        user = { id: newUserId, email, lifetimeAccess: true };
-        
-        log.info('Created new user with manual lifetime access', {
-          userId: newUserId,
-          email: email.substring(0, 3) + '***'
-        });
-      } else {
-        // Update existing user
-        await storage.updateUser(user.id, {
-          subscriptionTier: 'lifetime',
-          lifetimeAccess: true,
-          purchaseDate: new Date(),
-        });
-        
-        log.info('Updated existing user with manual lifetime access', {
-          userId: user.id,
-          email: email.substring(0, 3) + '***'
-        });
-      }
-
-      // Record manual purchase if orderId provided
-      if (orderId) {
-        try {
-          await storage.createPurchase({
-            userId: user.id,
-            gumroadOrderId: orderId,
-            amount: 24900, // $249.00 in cents
-            currency: 'USD',
-            status: 'completed',
-            purchaseData: {
-              manual_grant: true,
-              granted_by: (req.user as any)?.id || 'admin',
-              granted_at: new Date().toISOString()
-            },
-          });
-        } catch (error) {
-          log.warn('Failed to record manual purchase', {
-            error: error instanceof Error ? error.message : 'Unknown error'
-          });
-        }
-      }
+      // Use UserService to grant lifetime access
+      const result = await UserService.grantLifetimeAccess({
+        email,
+        orderId,
+        amount: 24900, // $249.00 in cents
+        currency: 'USD',
+        grantedBy
+      });
 
       res.json({ 
         success: true, 
         message: 'Lifetime access granted successfully',
         user: {
-          id: user.id,
-          email: user.email,
-          lifetimeAccess: true
+          id: result.userId,
+          email: result.email,
+          lifetimeAccess: result.lifetimeAccess
         }
       });
     } catch (error) {
@@ -278,88 +232,30 @@ export function registerGumroadRoutes(app: Express): void {
       });
 
       // Generate a fake order ID for testing
-      const testOrderId = `TEST-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const testOrderId = UserService.generateTestOrderId();
 
-      // Find or create user
-      let user = await storage.getUserByEmail(email);
-      let userId: string;
-      
-      if (!user) {
-        // Create new user with lifetime access
-        const newUserId = crypto.randomUUID();
-        await storage.upsertUser({
-          id: newUserId,
-          email: email,
-          subscriptionTier: 'lifetime',
-          lifetimeAccess: true,
-          purchaseDate: new Date(),
-          dailyViews: 0,
-          lastViewReset: new Date(),
-        });
-        userId = newUserId;
-        
-        log.info('Created new user with test lifetime access', {
-          userId: newUserId,
-          email: email.substring(0, 3) + '***'
-        });
-      } else {
-        // Update existing user to lifetime access
-        await storage.updateUser(user.id, {
-          subscriptionTier: 'lifetime',
-          lifetimeAccess: true,
-          purchaseDate: new Date(),
-        });
-        userId = user.id;
-        
-        log.info('Updated existing user with test lifetime access', {
-          userId: user.id,
-          email: email.substring(0, 3) + '***'
-        });
-      }
-
-      // Record test purchase in database
-      try {
-        await storage.createPurchase({
-          userId: userId,
-          gumroadOrderId: testOrderId,
-          amount: 24900, // $249.00 in cents
-          currency: 'USD',
-          status: 'completed',
-          purchaseData: {
-            test_purchase: true,
-            environment: 'development',
-            email: email,
-            amount_cents: 24900,
-            currency: 'USD',
-            order_id: testOrderId,
-            created_at: new Date().toISOString()
-          },
-        });
-        
-        log.info('Test purchase recorded successfully', {
-          userId,
-          orderId: testOrderId,
-          amount: 12900
-        });
-      } catch (error) {
-        log.error('Failed to record test purchase', {
-          userId,
-          orderId: testOrderId,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
-      }
+      // Use UserService to grant lifetime access for test
+      const result = await UserService.grantLifetimeAccess({
+        email,
+        orderId: testOrderId,
+        amount: 24900, // $249.00 in cents
+        currency: 'USD',
+        purchaseData: { email },
+        isTestPurchase: true
+      });
 
       log.info('Test purchase completed successfully', {
         email: email.substring(0, 3) + '***',
         orderId: testOrderId,
-        userId
+        userId: result.userId,
+        wasExistingUser: result.wasExistingUser
       });
 
       res.json({ 
         success: true, 
         message: 'Test purchase completed successfully! You now have lifetime access for $249.00.',
         user: {
-          email: email,
+          email: result.email,
           subscriptionTier: 'lifetime',
           lifetimeAccess: true,
           purchaseDate: new Date().toISOString(),

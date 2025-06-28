@@ -28,6 +28,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { IEnhancedTerm, ITerm, ITermCardProps } from "@/interfaces/interfaces";
 import ShareMenu from "./ShareMenu";
 import AIContentFeedback from './AIContentFeedback';
+import { getDifficultyColor, getProgressPercentage } from '@/utils/termUtils';
 
 // Type guard to check if term is enhanced
 const isEnhancedTerm = (term: IEnhancedTerm | ITerm): term is IEnhancedTerm => {
@@ -112,15 +113,6 @@ export default function EnhancedTermCard({
     }
   };
 
-  const getDifficultyColor = (level?: string) => {
-    switch (level?.toLowerCase()) {
-      case 'beginner': return 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'advanced': return 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300';
-      case 'expert': return 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300';
-      default: return 'bg-gray-100 text-gray-700 dark:bg-gray-900 dark:text-gray-300';
-    }
-  };
 
   const getFeatureIcons = () => {
     if (!enhanced) return [];
@@ -134,22 +126,6 @@ export default function EnhancedTermCard({
     return features;
   };
 
-  const getProgressPercentage = () => {
-    if (!enhanced || !userSettings) return 0;
-    
-    // Calculate based on user's experience level and term difficulty
-    const userLevel = userSettings.experienceLevel || 'intermediate';
-    const termLevel = term.difficultyLevel?.toLowerCase() || 'intermediate';
-    
-    const levels = ['beginner', 'intermediate', 'advanced', 'expert'];
-    const userIndex = levels.indexOf(userLevel);
-    const termIndex = levels.indexOf(termLevel);
-    
-    if (userIndex >= termIndex) return 100;
-    if (userIndex === termIndex - 1) return 75;
-    if (userIndex === termIndex - 2) return 50;
-    return 25;
-  };
 
   const renderCompactCard = () => (
     <Card className="h-full transition-all duration-200 hover:shadow-md hover:-translate-y-1">
@@ -326,9 +302,9 @@ export default function EnhancedTermCard({
             <div className="mb-4">
               <div className="flex items-center justify-between text-xs text-gray-600 dark:text-gray-400 mb-1">
                 <span>Difficulty Match</span>
-                <span>{getProgressPercentage()}%</span>
+                <span>{getProgressPercentage(userSettings, term)}%</span>
               </div>
-              <Progress value={getProgressPercentage()} className="h-2" />
+              <Progress value={getProgressPercentage(userSettings, term)} className="h-2" />
             </div>
           )}
 

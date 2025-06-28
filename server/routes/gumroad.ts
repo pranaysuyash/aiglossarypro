@@ -1,14 +1,13 @@
 import type { Express, Request, Response } from 'express';
 import crypto from 'crypto';
 import { optimizedStorage as storage } from "../optimizedStorage";
-import { users, purchases } from '../../shared/schema';
-import { eq } from 'drizzle-orm';
 import { log } from '../utils/logger';
 import { captureAPIError } from '../utils/sentry';
 import { isAuthenticated } from '../replitAuth';
 import { requireAdmin, authenticateToken } from '../middleware/adminAuth';
 import { mockIsAuthenticated, mockAuthenticateToken } from '../middleware/dev/mockAuth';
 import { features } from '../config';
+import { UserService } from '../services/userService';
 
 // Gumroad webhook verification
 function verifyGumroadWebhook(body: string, signature: string): boolean {
@@ -71,88 +70,20 @@ export function registerGumroadRoutes(app: Express): void {
           currency
         });
         
-        // Find user by email
-        let existingUser;
-        try {
-          existingUser = await storage.getUserByEmail(email);
-        } catch (error) {
-          log.warn('Error finding user by email', {
-            email: email.substring(0, 3) + '***',
-            error: error instanceof Error ? error.message : 'Unknown error'
-          });
-          existingUser = null;
-        }
-        
-        let userId: string;
-        
-        if (!existingUser) {
-          // Create new user with lifetime access
-          const newUserId = crypto.randomUUID();
-          await storage.upsertUser({
-            id: newUserId,
-            email: email,
-            subscriptionTier: 'lifetime',
-            lifetimeAccess: true,
-            purchaseDate: new Date(),
-            dailyViews: 0,
-            lastViewReset: new Date(),
-          });
-          userId = newUserId;
-          
-          log.info('Created new user with lifetime access', {
-            userId: newUserId,
-            email: email.substring(0, 3) + '***'
-          });
-        } else {
-          // Update existing user to lifetime access
-          await storage.updateUser(existingUser.id, {
-            subscriptionTier: 'lifetime',
-            lifetimeAccess: true,
-            purchaseDate: new Date(),
-          });
-          userId = existingUser.id;
-          
-          log.info('Updated existing user to lifetime access', {
-            userId: existingUser.id,
-            email: email.substring(0, 3) + '***'
-          });
-        }
-
-        // Record purchase in database
-        try {
-          await storage.createPurchase({
-            userId: userId,
-            gumroadOrderId: order_id,
-            amount: amount_cents,
-            currency: currency,
-            status: 'completed',
-            purchaseData: data.sale,
-          });
-          
-          log.info('Purchase recorded successfully', {
-            userId,
-            orderId: order_id,
-            amount: amount_cents
-          });
-        } catch (error) {
-          log.error('Failed to record purchase', {
-            userId,
-            orderId: order_id,
-            error: error instanceof Error ? error.message : 'Unknown error'
-          });
-          
-          captureAPIError(error as Error, {
-            method: 'POST',
-            path: '/api/gumroad/webhook',
-            userId,
-            body: { orderId: order_id }
-          });
-        }
+        // Use UserService to grant lifetime access
+        const result = await UserService.grantLifetimeAccess({
+          email,
+          orderId: order_id,
+          amount: amount_cents,
+          currency,
+          purchaseData: data.sale
+        });
 
         log.info('Successfully processed Gumroad purchase', {
           email: email.substring(0, 3) + '***',
           orderId: order_id,
-          userId
+          userId: result.userId,
+          wasExistingUser: result.wasExistingUser
         });
       } else {
         log.warn('Invalid webhook data - missing sale or email', {
@@ -191,33 +122,25 @@ export function registerGumroadRoutes(app: Express): void {
         email: email.substring(0, 3) + '***'
       });
 
-      // Check if user has lifetime access
-      const user = await storage.getUserByEmail(email);
+      // Use UserService to check access status
+      const accessStatus = await UserService.getUserAccessStatus(email);
 
-      if (!user || !user.lifetimeAccess) {
+      if (!accessStatus.hasAccess) {
         log.info('No purchase found for email', {
-          email: email.substring(0, 3) + '***',
-          userExists: !!user,
-          hasLifetimeAccess: user?.lifetimeAccess || false
+          email: email.substring(0, 3) + '***'
         });
         
         return res.status(404).json({ error: 'No purchase found for this email' });
       }
 
       log.info('Purchase verification successful', {
-        email: email.substring(0, 3) + '***',
-        userId: user.id
+        email: email.substring(0, 3) + '***'
       });
 
       res.json({ 
         success: true, 
         message: 'Purchase verified',
-        user: {
-          email: user.email,
-          subscriptionTier: user.subscriptionTier,
-          lifetimeAccess: user.lifetimeAccess,
-          purchaseDate: user.purchaseDate,
-        }
+        user: accessStatus.user
       });
     } catch (error) {
       log.error('Purchase verification error', {

@@ -102,7 +102,7 @@ Each file in the codebase was reviewed. For code files, observations were compar
 * **[COMPLETED: Claude]** **~~Fix All Type Issues~~:** ✅ TypeScript issues resolved - no `as any` assertions found in current implementation.
 * **[TASK: Claude]** **Abstract Logic:** Move `getDifficultyColor` to a `utils` file. Refactor `getProgressPercentage` into a custom hook like `useTermProgress(term, userSettings)` that encapsulates the calculation logic. **STATUS**: Need to verify if these functions exist in component or have been moved to utils.
 * **[COMPLETED: Claude]** **~~Improve Data Update UX~~:** ✅ Uses `queryClient.invalidateQueries()` for seamless data updates instead of `window.location.reload()`.
-* **[COMPLETED: Claude]** **~~Centralize Strings~~:** ✅ Created centralized message constants file at `/client/src/constants/messages.ts` and updated EnhancedTermDetail component to use consistent message constants for auth, favorites, and clipboard operations.
+* **[COMPLETED: Claude]** **~~Centralize Strings~~:** ✅ Created centralized message constants file at `/client/src/constants/messages.ts` and updated components (EnhancedTermDetail, ProgressTracker, ShareMenu, AIDefinitionImprover) to use consistent message constants for auth, favorites, progress tracking, sharing, and AI improvement operations.
 * **[REVIEW: Claude]** **API Performance:** Investigate if a single, consolidated API endpoint could provide all the necessary data for this page in one request to prevent the data-fetching waterfall.
 
 ### `/server/migrations/sectionDataMigration.ts`

@@ -2,7 +2,7 @@ import React from 'react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { MemoryRouter } from 'react-router-dom';
+import { Router } from 'wouter';
 import TermCard from '../../client/src/components/TermCard';
 
 // Mock the API module
@@ -39,9 +39,9 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <MemoryRouter>
+      <Router>
         {children}
-      </MemoryRouter>
+      </Router>
     </QueryClientProvider>
   );
 };

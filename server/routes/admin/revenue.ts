@@ -5,6 +5,7 @@ import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
 import { features } from "../../config";
 import type { ApiResponse } from "../../../shared/types";
+import { log as logger } from "../../utils/logger";
 
 /**
  * Admin revenue tracking and analytics routes
@@ -77,7 +78,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error("Error fetching revenue dashboard:", error);
+      logger.error("Error fetching revenue dashboard", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch revenue dashboard" 
@@ -101,7 +102,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error("Error fetching purchases:", error);
+      logger.error("Error fetching purchases", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch purchases" 
@@ -157,7 +158,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error("Error fetching revenue analytics:", error);
+      logger.error("Error fetching revenue analytics", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch revenue analytics" 
@@ -223,7 +224,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
         res.json(response);
       }
     } catch (error) {
-      console.error("Error exporting revenue data:", error);
+      logger.error("Error exporting revenue data", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to export revenue data" 
@@ -254,7 +255,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error("Error fetching webhook status:", error);
+      logger.error("Error fetching webhook status", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch webhook status" 
@@ -301,7 +302,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error("Error verifying purchase:", error);
+      logger.error("Error verifying purchase", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to verify purchase" 

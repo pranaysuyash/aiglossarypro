@@ -7,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Badge } from '../components/ui/badge';
 import { Card, CardContent } from '../components/ui/card';
 import { Loader2, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'wouter';
 import type { ITerm, ApiResponse, PaginatedResponse } from '../interfaces/interfaces';
 
 interface TermsApiResponse extends PaginatedResponse<ITerm> {
@@ -17,7 +17,7 @@ interface TermsApiResponse extends PaginatedResponse<ITerm> {
 interface CategoriesApiResponse extends ApiResponse<any[]> {}
 
 export function Terms() {
-  const navigate = useNavigate();
+  const [location, setLocation] = useLocation();
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');

@@ -204,9 +204,12 @@ export function systemHealthMiddleware() {
           timestamp: new Date()
         };
 
-        // Log critical system health issues
-        if (healthMetrics.memory_usage_percent > 90) {
-          console.warn(`High memory usage: ${healthMetrics.memory_usage_percent}%`);
+        // Log critical system health issues (less aggressive in development)
+        const isDevelopment = process.env.NODE_ENV === 'development';
+        const memoryThreshold = isDevelopment ? 95 : 90; // Higher threshold in dev
+        
+        if (healthMetrics.memory_usage_percent > memoryThreshold) {
+          console.warn(`High memory usage: ${healthMetrics.memory_usage_percent}% (Node heap: ${healthMetrics.heap_used_mb}MB)`);
         }
 
         if (healthMetrics.load_average_1m > os.cpus().length * 2) {

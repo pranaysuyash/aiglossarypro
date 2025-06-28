@@ -239,6 +239,35 @@ interface PaginatedFeedback {}
 interface FeedbackStatistics {}
 interface FeedbackStatus {}
 interface FeedbackUpdate {}
+
+interface TermUpdate {
+  id: string;
+  updates: {
+    name?: string;
+    definition?: string;
+    shortDefinition?: string;
+    categories?: string[];
+    difficulty?: string;
+  };
+}
+
+interface BulkUpdateResult {
+  success: boolean;
+  updated: number;
+  failed: number;
+  errors: Array<{
+    id: string;
+    error: string;
+  }>;
+  message: string;
+}
+
+interface ExportFilters {
+  categories?: string[];
+  difficulty?: string;
+  includeEnhanced?: boolean;
+  format?: 'json' | 'csv';
+}
 interface SystemHealth {
   status: 'healthy' | 'degraded' | 'critical';
   checks: {
@@ -1400,12 +1429,193 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async bulkUpdateTerms(updates: TermUpdate[]): Promise<BulkUpdateResult> {
     this.requireAdminAuth();
-    throw new Error('Method bulkUpdateTerms not implemented - Phase 2C');
+    console.log(`[EnhancedStorage] bulkUpdateTerms called with ${updates.length} updates`);
+    
+    if (!updates || updates.length === 0) {
+      return {
+        success: true,
+        updated: 0,
+        failed: 0,
+        errors: [],
+        message: 'No updates provided'
+      };
+    }
+
+    const results: BulkUpdateResult = {
+      success: true,
+      updated: 0,
+      failed: 0,
+      errors: [],
+      message: ''
+    };
+
+    try {
+      // Process updates in batches to avoid overwhelming the database
+      const batchSize = 50;
+      for (let i = 0; i < updates.length; i += batchSize) {
+        const batch = updates.slice(i, i + batchSize);
+        
+        for (const update of batch) {
+          try {
+            // Validate update data
+            if (!update.id) {
+              results.errors.push({
+                id: update.id || 'unknown',
+                error: 'Missing term ID'
+              });
+              results.failed++;
+              continue;
+            }
+
+            // Check if term exists in enhanced terms storage
+            const existingTerm = await this.termsStorage.getEnhancedTermById(update.id);
+            
+            if (!existingTerm) {
+              results.errors.push({
+                id: update.id,
+                error: 'Term not found'
+              });
+              results.failed++;
+              continue;
+            }
+
+            // Apply updates to enhanced terms storage
+            const updateData = {
+              name: update.updates.name || existingTerm.name,
+              shortDefinition: update.updates.shortDefinition || existingTerm.shortDefinition,
+              mainCategories: update.updates.categories || existingTerm.mainCategories,
+              difficultyLevel: update.updates.difficulty || existingTerm.difficultyLevel
+            };
+
+            await this.termsStorage.updateEnhancedTerm(update.id, updateData);
+            results.updated++;
+
+          } catch (updateError) {
+            console.error(`[EnhancedStorage] Failed to update term ${update.id}:`, updateError);
+            results.errors.push({
+              id: update.id,
+              error: updateError instanceof Error ? updateError.message : 'Unknown error'
+            });
+            results.failed++;
+          }
+        }
+
+        // Small delay between batches to avoid overwhelming the database
+        if (i + batchSize < updates.length) {
+          await new Promise(resolve => setTimeout(resolve, 100));
+        }
+      }
+
+      // Set overall success status
+      results.success = results.failed === 0;
+      results.message = `Updated ${results.updated} terms, ${results.failed} failed`;
+
+      console.log(`[EnhancedStorage] bulkUpdateTerms completed: ${results.message}`);
+      return results;
+
+    } catch (error) {
+      console.error('[EnhancedStorage] bulkUpdateTerms error:', error);
+      
+      return {
+        success: false,
+        updated: results.updated,
+        failed: results.failed + (updates.length - results.updated - results.failed),
+        errors: [
+          ...results.errors,
+          {
+            id: 'bulk_operation',
+            error: error instanceof Error ? error.message : 'Bulk operation failed'
+          }
+        ],
+        message: 'Bulk update operation failed'
+      };
+    }
   }
 
   async exportTermsToJSON(filters?: ExportFilters): Promise<string> {
     this.requireAdminAuth();
-    throw new Error('Method exportTermsToJSON not implemented - Phase 2C');
+    console.log('[EnhancedStorage] exportTermsToJSON called with filters:', filters);
+    
+    try {
+      // Build search parameters based on filters
+      const searchParams = {
+        query: '', // Export all by default
+        page: 1,
+        limit: 10000, // Large limit for export
+        categories: filters?.categories?.join(','),
+        difficultyLevel: filters?.difficulty,
+        hasCodeExamples: undefined,
+        hasInteractiveElements: undefined,
+        applicationDomains: undefined,
+        techniques: undefined
+      };
+
+      // Get terms from enhanced storage
+      let termsData;
+      if (filters?.includeEnhanced) {
+        // Get enhanced terms with full 42-section data
+        console.log('[EnhancedStorage] Exporting enhanced terms with full sections');
+        termsData = await this.termsStorage.enhancedSearch(searchParams, this.context?.user?.id);
+      } else {
+        // Get basic terms for smaller export
+        console.log('[EnhancedStorage] Exporting basic terms');
+        termsData = await this.termsStorage.enhancedSearch(searchParams, this.context?.user?.id);
+      }
+
+      // Prepare export data
+      const exportData = {
+        metadata: {
+          exportDate: new Date().toISOString(),
+          totalTerms: termsData.pagination.total,
+          exportedTerms: termsData.terms.length,
+          filters: filters || {},
+          includeEnhanced: filters?.includeEnhanced || false,
+          version: '1.0'
+        },
+        terms: termsData.terms.map(term => ({
+          id: term.id,
+          name: term.name,
+          slug: term.slug,
+          shortDefinition: term.shortDefinition,
+          mainCategories: term.mainCategories,
+          subCategories: term.subCategories,
+          difficultyLevel: term.difficultyLevel,
+          hasImplementation: term.hasImplementation,
+          hasInteractiveElements: term.hasInteractiveElements,
+          hasCodeExamples: term.hasCodeExamples,
+          viewCount: term.viewCount,
+          createdAt: term.createdAt,
+          // Only include enhanced data if requested
+          ...(filters?.includeEnhanced && {
+            enhancedData: {
+              applicationDomains: term.applicationDomains,
+              techniques: term.techniques,
+              keywords: term.keywords,
+              searchText: term.searchText
+            }
+          })
+        }))
+      };
+
+      // Convert to JSON string with formatting
+      const jsonString = JSON.stringify(exportData, null, 2);
+      
+      console.log(`[EnhancedStorage] exportTermsToJSON completed: ${termsData.terms.length} terms exported`);
+      return jsonString;
+
+    } catch (error) {
+      console.error('[EnhancedStorage] exportTermsToJSON error:', error);
+      
+      // Return error information as JSON
+      const errorData = {
+        error: true,
+        message: 'Export failed',
+        details: error instanceof Error ? error.message : 'Unknown error',
+        timestamp: new Date().toISOString()
+      };
+      
+      return JSON.stringify(errorData, null, 2);
+    }
   }
 
   async getEnhancedTermById(id: string): Promise<EnhancedTerm> {

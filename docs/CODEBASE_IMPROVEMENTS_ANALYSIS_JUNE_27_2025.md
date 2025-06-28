@@ -120,7 +120,7 @@ Each file in the codebase was reviewed. For code files, observations were compar
 * **[COMPLETED: Claude]** **~~Externalize Section Definitions~~:** ✅ Moved `STANDARD_SECTIONS` to `/server/config/standardSections.json` with proper error handling and validation.
 * **[COMPLETED: Claude]** **~~Implement Bulk Inserts~~:** ✅ Refactored to use bulk inserts with chunking (1000 records per batch) for optimal performance and parameter limit compliance.
 * **[COMPLETED: Claude]** **~~Wrap in a Transaction~~:** ✅ Entire migration wrapped in `db.transaction()` block ensuring atomicity and rollback capability on failures.
-* **[TASK: Claude]** **Use Drizzle Query Builder:** Convert all raw SQL queries to use the Drizzle query builder for better type safety and consistency with the rest of the codebase.
+* **[COMPLETED: Claude]** **~~Use Drizzle Query Builder~~:** ✅ Converted all raw SQL queries to use Drizzle query builder. Added missing schema definitions for `sections` and `section_items` tables in enhancedSchema.ts and updated migration to use type-safe Drizzle queries instead of raw SQL with parameter interpolation.
 * **[REVIEW: Claude]** **Migration Strategy:** For a production environment, a more robust migration strategy is needed. Review Drizzle's official migration generation and execution tools (`drizzle-kit`) to manage schema changes in a more structured and reliable way.
 
 ### `/docs/CLAUDE.md`

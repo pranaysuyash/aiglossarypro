@@ -10,6 +10,8 @@ import {
   boolean,
   primaryKey,
   decimal,
+  serial,
+  unique,
 } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
@@ -291,6 +293,42 @@ export const aiUsageAnalytics = pgTable("ai_usage_analytics", {
   dateIdx: index("ai_usage_date_idx").on(table.createdAt),
 }));
 
+// Sections table - for the 42-section architecture
+export const sections = pgTable("sections", {
+  id: serial("id").primaryKey(),
+  termId: uuid("term_id").notNull().references(() => enhancedTerms.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 100 }).notNull(),
+  displayOrder: integer("display_order").notNull().default(0),
+  isCompleted: boolean("is_completed").default(false),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  termNameUnique: unique().on(table.termId, table.name),
+  termIdIdx: index("idx_sections_term_id").on(table.termId),
+  nameIdx: index("idx_sections_name").on(table.name),
+  orderIdx: index("idx_sections_order").on(table.termId, table.displayOrder),
+}));
+
+// Section items table - content within each section
+export const sectionItems = pgTable("section_items", {
+  id: serial("id").primaryKey(),
+  sectionId: integer("section_id").notNull().references(() => sections.id, { onDelete: "cascade" }),
+  label: varchar("label", { length: 200 }).notNull(),
+  content: text("content"),
+  contentType: varchar("content_type", { length: 50 }).default("markdown"),
+  displayOrder: integer("display_order").notNull().default(0),
+  metadata: jsonb("metadata"),
+  isAiGenerated: boolean("is_ai_generated").default(false),
+  verificationStatus: varchar("verification_status", { length: 20 }).default("unverified"),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  sectionIdIdx: index("idx_section_items_section_id").on(table.sectionId),
+  contentTypeIdx: index("idx_section_items_content_type").on(table.contentType),
+  orderIdx: index("idx_section_items_order").on(table.sectionId, table.displayOrder),
+  verificationIdx: index("idx_section_items_verification").on(table.verificationStatus),
+}));
+
 // Re-export original tables to maintain compatibility
 export {
   sessions,
@@ -330,6 +368,18 @@ export const insertTermRelationshipSchema = createInsertSchema(termRelationships
   createdAt: true,
 } as const);
 
+export const insertSectionSchema = createInsertSchema(sections).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertSectionItemSchema = createInsertSchema(sectionItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
 // Types
 export type TermSection = typeof termSections.$inferSelect;
 export type InsertTermSection = z.infer<typeof insertTermSectionSchema>;
@@ -345,3 +395,9 @@ export type InsertTermRelationship = z.infer<typeof insertTermRelationshipSchema
 
 export type EnhancedUserSettings = typeof enhancedUserSettings.$inferSelect;
 export type ContentAnalytics = typeof contentAnalytics.$inferSelect;
+
+export type Section = typeof sections.$inferSelect;
+export type InsertSection = z.infer<typeof insertSectionSchema>;
+
+export type SectionItem = typeof sectionItems.$inferSelect;
+export type InsertSectionItem = z.infer<typeof insertSectionItemSchema>;

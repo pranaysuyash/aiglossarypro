@@ -1,9 +1,4 @@
 import type { Express } from "express";
-import { setupAuth } from "../replitAuth";
-import { initS3Client } from "../s3Service";
-import { features } from "../config";
-import { setupMockAuth } from "../middleware/dev/mockAuth";
-import { registerSimpleAuthRoutes } from "./simpleAuth";
 import { performanceMiddleware } from "../middleware/performanceMonitor";
 
 // Import modular route handlers
@@ -46,28 +41,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     app.use(performanceMiddleware);
     logger.info("📊 Performance monitoring enabled");
   
-  // Set up authentication first
-  try {
-    if (features.simpleAuthEnabled) {
-      registerSimpleAuthRoutes(app);
-      logger.info("✅ Simple JWT + OAuth authentication setup complete");
-    } else if (features.replitAuthEnabled) {
-      await setupAuth(app);
-      logger.info("✅ Replit authentication setup complete");
-    } else {
-      setupMockAuth(app);
-      logger.info("✅ Mock authentication setup complete (development mode)");
-    }
-  } catch (error) {
-    logger.error("❌ Error setting up authentication", { error: error instanceof Error ? error.message : String(error) });
-    throw error;
-  }
-  
-  // Initialize S3 client if credentials are present
-  if (features.s3Enabled) {
-    initS3Client();
-    logger.info("✅ S3 client initialized");
-  }
+  // Authentication and S3 initialization moved to server/index.ts
   
   // Register core API routes
   logger.info("📝 Registering core API routes...");

@@ -8,6 +8,12 @@ import { validateInput, termIdSchema, paginationSchema } from "../middleware/sec
 import { rateLimitMiddleware, initializeRateLimiting } from "../middleware/rateLimiting";
 import { log as logger } from "../utils/logger";
 
+// Define sort order enum
+export enum SortOrder {
+  ASC = 'asc',
+  DESC = 'desc'
+}
+
 // Define authenticated request type properly
 interface AuthenticatedRequest extends Request {
   user: {
@@ -89,7 +95,7 @@ export function registerTermRoutes(app: Express): void {
       const search = req.query.search as string;
       const category = req.query.category as string;
       const sortBy = req.query.sortBy as string || 'name';
-      const sortOrder = req.query.sortOrder as string || 'asc';
+      const sortOrder = req.query.sortOrder as string || SortOrder.ASC;
 
       // Calculate offset
       const offset = (page - 1) * limit;
@@ -101,7 +107,7 @@ export function registerTermRoutes(app: Express): void {
         categoryId: category || undefined,
         searchTerm: search || undefined,
         sortBy,
-        sortOrder: (sortOrder === 'desc') ? 'desc' : 'asc'
+        sortOrder: (sortOrder === SortOrder.DESC) ? SortOrder.DESC : SortOrder.ASC
       });
 
       // Calculate pagination metadata
@@ -228,7 +234,7 @@ export function registerTermRoutes(app: Express): void {
         limit: parseInt(limit as string),
         offset: 0,
         sortBy: 'createdAt',
-        sortOrder: 'desc'
+        sortOrder: SortOrder.DESC
       });
       
       const response: ApiResponse<ITerm[]> = {

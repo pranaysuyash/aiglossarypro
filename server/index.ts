@@ -11,7 +11,12 @@ import { registerRoutes } from "./routes/index";
 import { setupVite, serveStatic } from "./vite";
 import { smartLoadExcelData } from "./smartExcelLoader";
 import { getServerConfig, logConfigStatus } from "./config";
+import { features } from "./config";
 import { setupMultiAuth } from "./middleware/multiAuth";
+import { setupAuth } from "./replitAuth";
+import { initS3Client } from "./s3Service";
+import { setupMockAuth } from "./middleware/dev/mockAuth";
+import { registerSimpleAuthRoutes } from "./routes/simpleAuth";
 import { securityHeaders, sanitizeRequest, securityMonitoring, apiRateLimit } from "./middleware/security";
 import { errorHandler, notFoundHandler, gracefulShutdown } from "./middleware/errorHandler";
 import { 
@@ -22,6 +27,7 @@ import {
   initializeAnalytics 
 } from "./middleware/analyticsMiddleware";
 import loggingMiddleware from "./middleware/loggingMiddleware";
+import { responseLoggingMiddleware } from "./middleware/responseLogging";
 import { log as logger } from "./utils/logger";
 
 const app = express();
@@ -54,35 +60,8 @@ app.use(pageViewTrackingMiddleware());
 app.use(searchTrackingMiddleware());
 app.use(systemHealthMiddleware());
 
-app.use((req, res, next) => {
-  const start = Date.now();
-  const path = req.path;
-  let capturedJsonResponse: Record<string, any> | undefined = undefined;
-
-  const originalResJson = res.json;
-  res.json = function (bodyJson, ...args) {
-    capturedJsonResponse = bodyJson;
-    return originalResJson.apply(res, [bodyJson, ...args]);
-  };
-
-  res.on("finish", () => {
-    const duration = Date.now() - start;
-    if (path.startsWith("/api")) {
-      let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
-      if (capturedJsonResponse) {
-        logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
-      }
-
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
-      }
-
-      logger.info(logLine);
-    }
-  });
-
-  next();
-});
+// Apply response logging middleware
+app.use(responseLoggingMiddleware);
 
 (async () => {
   // Load and validate configuration
@@ -90,6 +69,29 @@ app.use((req, res, next) => {
   
   // Setup multi-provider authentication
   await setupMultiAuth(app);
+  
+  // Setup authentication based on configuration
+  try {
+    if (features.simpleAuthEnabled) {
+      registerSimpleAuthRoutes(app);
+      logger.info("✅ Simple JWT + OAuth authentication setup complete");
+    } else if (features.replitAuthEnabled) {
+      await setupAuth(app);
+      logger.info("✅ Replit authentication setup complete");
+    } else {
+      setupMockAuth(app);
+      logger.info("✅ Mock authentication setup complete (development mode)");
+    }
+  } catch (error) {
+    logger.error("❌ Error setting up authentication", { error: error instanceof Error ? error.message : String(error) });
+    throw error;
+  }
+  
+  // Initialize S3 client if credentials are present
+  if (features.s3Enabled) {
+    initS3Client();
+    logger.info("✅ S3 client initialized");
+  }
   
   await registerRoutes(app);
 

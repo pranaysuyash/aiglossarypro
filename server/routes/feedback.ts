@@ -53,18 +53,32 @@ export function registerFeedbackRoutes(app: Express): void {
     }
 
     try {
-      // TODO: Phase 2 - Replace with storage layer methods
-      // Expected: await storage.getTermById(termId) and await storage.submitTermFeedback()
+      // Verify term exists using Phase 2D method
+      const termExists = await storage.verifyTermExists(termId);
+      if (!termExists) {
+        return res.status(404).json({
+          success: false,
+          message: 'Term not found'
+        });
+      }
+
+      // Submit term feedback using Phase 2D method
+      const feedbackData = {
+        termId,
+        type,
+        rating,
+        message,
+        contactEmail,
+        userId: (req as any).user?.id || null
+      };
+
+      const result = await storage.submitTermFeedback(feedbackData);
       
-      // For now, return error since storage methods don't exist
-      return res.status(501).json({
-        success: false,
-        message: 'Term feedback submission requires storage layer enhancement in Phase 2'
+      res.json({
+        success: true,
+        message: 'Feedback submitted successfully',
+        data: result
       });
-      
-      // TODO: Implement these methods in enhancedStorage:
-      // - async verifyTermExists(termId: string): Promise<boolean>
-      // - async submitTermFeedback(data: TermFeedback): Promise<FeedbackResult>
 
     } catch (error) {
       const errorId = await handleDatabaseError(error, req);
@@ -106,17 +120,23 @@ export function registerFeedbackRoutes(app: Express): void {
     }
 
     try {
-      // TODO: Phase 2 - Replace with storage layer method
-      // Expected: await storage.submitGeneralFeedback()
+      // Submit general feedback using Phase 2D method
+      const feedbackData = {
+        type,
+        message,
+        contactEmail,
+        termName,
+        termDefinition,
+        userId: (req as any).user?.id || null
+      };
+
+      const result = await storage.submitGeneralFeedback(feedbackData);
       
-      // For now, return error since storage method doesn't exist
-      return res.status(501).json({
-        success: false,
-        message: 'General feedback submission requires storage layer enhancement in Phase 2'
+      res.json({
+        success: true,
+        message: 'Feedback submitted successfully',
+        data: result
       });
-      
-      // TODO: Implement in enhancedStorage:
-      // - async submitGeneralFeedback(data: GeneralFeedback): Promise<FeedbackResult>
 
     } catch (error) {
       const errorId = await handleDatabaseError(error, req);
@@ -143,59 +163,23 @@ export function registerFeedbackRoutes(app: Express): void {
     } = req.query;
 
     try {
-      let whereConditions = [`status = '${status}'`];
+      // Use Phase 2D method to get feedback with filters and pagination
+      const filters = {
+        status,
+        type,
+        termId
+      };
       
-      if (type) {
-        whereConditions.push(`type = '${type}'`);
-      }
-      
-      if (termId) {
-        whereConditions.push(`term_id = '${termId}'`);
-      }
+      const pagination = {
+        limit: parseInt(limit as string),
+        offset: parseInt(offset as string)
+      };
 
-      const whereClause = whereConditions.join(' AND ');
-      
-      const feedback = await db.execute(sql`
-        SELECT 
-          f.id,
-          f.type,
-          f.term_id,
-          f.rating,
-          f.message,
-          f.contact_email,
-          f.status,
-          f.admin_notes,
-          f.created_at,
-          f.updated_at,
-          t.name as term_name
-        FROM user_feedback f
-        LEFT JOIN terms t ON f.term_id = t.id
-        WHERE ${sql.raw(whereClause)}
-        ORDER BY f.created_at DESC
-        LIMIT ${parseInt(limit as string)} 
-        OFFSET ${parseInt(offset as string)}
-      `);
-
-      // Get total count for pagination
-      const countResult = await db.execute(sql`
-        SELECT COUNT(*) as total 
-        FROM user_feedback 
-        WHERE ${sql.raw(whereClause)}
-      `);
-
-      const total = parseInt(countResult.rows[0]?.total || '0');
+      const result = await storage.getFeedback(filters, pagination);
 
       res.json({
         success: true,
-        data: {
-          feedback: feedback.rows,
-          pagination: {
-            total,
-            limit: parseInt(limit as string),
-            offset: parseInt(offset as string),
-            hasMore: total > parseInt(offset as string) + parseInt(limit as string)
-          }
-        }
+        data: result
       });
 
     } catch (error) {
@@ -225,27 +209,13 @@ export function registerFeedbackRoutes(app: Express): void {
     }
 
     try {
-      const result = await db.execute(sql`
-        UPDATE user_feedback 
-        SET 
-          status = ${status},
-          admin_notes = ${adminNotes || null},
-          updated_at = NOW()
-        WHERE id = ${feedbackId}
-        RETURNING id, type, status, updated_at
-      `);
-
-      if (result.rows.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Feedback not found'
-        });
-      }
+      // Use Phase 2D method to update feedback status
+      const result = await storage.updateFeedbackStatus(feedbackId, status, adminNotes);
 
       res.json({
         success: true,
         message: 'Feedback status updated successfully',
-        data: result.rows[0]
+        data: result
       });
 
     } catch (error) {
@@ -264,56 +234,12 @@ export function registerFeedbackRoutes(app: Express): void {
    */
   app.get('/api/feedback/stats', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
     try {
-      // Get feedback counts by type and status
-      const stats = await db.execute(sql`
-        SELECT 
-          type,
-          status,
-          COUNT(*) as count
-        FROM user_feedback 
-        GROUP BY type, status
-        ORDER BY type, status
-      `);
-
-      // Get average rating for helpful feedback
-      const ratingStats = await db.execute(sql`
-        SELECT 
-          AVG(rating) as average_rating,
-          COUNT(*) as total_ratings,
-          COUNT(*) FILTER (WHERE rating >= 4) as positive_ratings
-        FROM user_feedback 
-        WHERE type = 'helpful' AND rating IS NOT NULL
-      `);
-
-      // Get recent feedback activity
-      const recentActivity = await db.execute(sql`
-        SELECT 
-          DATE(created_at) as date,
-          COUNT(*) as feedback_count
-        FROM user_feedback 
-        WHERE created_at >= NOW() - INTERVAL '30 days'
-        GROUP BY DATE(created_at)
-        ORDER BY date DESC
-      `);
-
-      const ratingData = ratingStats.rows[0];
-      const averageRating = parseFloat(ratingData?.average_rating || '0');
-      const totalRatings = parseInt(ratingData?.total_ratings || '0');
-      const positiveRatings = parseInt(ratingData?.positive_ratings || '0');
+      // Use Phase 2D method to get feedback statistics
+      const stats = await storage.getFeedbackStats();
 
       res.json({
         success: true,
-        data: {
-          byTypeAndStatus: stats.rows,
-          ratings: {
-            averageRating: averageRating.toFixed(2),
-            totalRatings,
-            positiveRatings,
-            satisfactionRate: totalRatings > 0 ? ((positiveRatings / totalRatings) * 100).toFixed(1) : '0'
-          },
-          recentActivity: recentActivity.rows,
-          timestamp: new Date().toISOString()
-        }
+        data: stats
       });
 
     } catch (error) {

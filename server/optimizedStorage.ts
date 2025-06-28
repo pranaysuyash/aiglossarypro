@@ -36,18 +36,18 @@ export interface IStorage {
   upsertUser(user: UpsertUser): Promise<User>;
   
   // Category operations
-  getCategories(): Promise<any[]>;
-  getCategoryById(id: string): Promise<any>;
+  getCategories(): Promise<ICategory[]>;
+  getCategoryById(id: string): Promise<ICategory | null>;
   
   // Term operations
-  getFeaturedTerms(): Promise<any[]>;
-  getTermById(id: string): Promise<any>;
-  getRecentlyViewedTerms(userId: string): Promise<any[]>;
+  getFeaturedTerms(): Promise<ITerm[]>;
+  getTermById(id: string): Promise<ITerm | null>;
+  getRecentlyViewedTerms(userId: string): Promise<ITerm[]>;
   recordTermView(termId: string, userId: string | null): Promise<void>;
-  searchTerms(query: string): Promise<any[]>;
+  searchTerms(query: string): Promise<ITerm[]>;
   
   // Favorites operations
-  getUserFavorites(userId: string): Promise<any[]>;
+  getUserFavorites(userId: string): Promise<ITerm[]>;
   isTermFavorite(userId: string, termId: string): Promise<boolean>;
   addFavorite(userId: string, termId: string): Promise<void>;
   removeFavorite(userId: string, termId: string): Promise<void>;

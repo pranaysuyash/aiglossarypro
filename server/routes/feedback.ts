@@ -5,6 +5,7 @@
 
 import type { Express, Request, Response } from 'express';
 import { enhancedStorage as storage } from '../enhancedStorage';
+import type { AuthenticatedRequest } from '../types/express';
 // TODO: Phase 2 - Remove direct db usage after storage layer implementation
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
@@ -69,7 +70,7 @@ export function registerFeedbackRoutes(app: Express): void {
         rating,
         message,
         contactEmail,
-        userId: (req as any).user?.id || null
+        userId: (req as AuthenticatedRequest).user?.id || null
       };
 
       const result = await storage.submitTermFeedback(feedbackData);
@@ -127,7 +128,7 @@ export function registerFeedbackRoutes(app: Express): void {
         contactEmail,
         termName,
         termDefinition,
-        userId: (req as any).user?.id || null
+        userId: (req as AuthenticatedRequest).user?.id || null
       };
 
       const result = await storage.submitGeneralFeedback(feedbackData);

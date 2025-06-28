@@ -178,7 +178,7 @@ export function registerCategoryRoutes(app: Express): void {
         const stats = {
           totalTerms: searchResults.total,
           avgViewCount: searchResults.data.length > 0 
-            ? Math.round(searchResults.data.reduce((sum: number, term: any) => sum + (term.viewCount || 0), 0) / searchResults.data.length)
+            ? Math.round(searchResults.data.reduce((sum: number, term: ITerm) => sum + (term.viewCount || 0), 0) / searchResults.data.length)
             : 0,
           lastUpdated: new Date()
         };

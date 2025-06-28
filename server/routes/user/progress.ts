@@ -2,12 +2,13 @@ import type { Express } from "express";
 import { db } from "../../db";
 import { sql } from "drizzle-orm";
 import { enhancedStorage } from "../../enhancedStorage";
+import type { AuthenticatedRequest } from "../../types/express";
 
 export function registerUserProgressRoutes(app: Express): void {
   // Get user progress statistics
   app.get("/api/user/progress/stats", async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: "Authentication required" });
       }
@@ -148,52 +149,67 @@ export function registerUserProgressRoutes(app: Express): void {
   // Get detailed section progress
   app.get("/api/user/progress/sections", async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: "Authentication required" });
       }
 
-      // Mock section progress data
-      const mockSectionProgress = [
-        {
-          termId: "sample-1",
-          termName: "Transformer Architecture",
-          sectionName: "Introduction",
-          status: "completed" as const,
-          completionPercentage: 100,
-          timeSpent: 15,
-          lastAccessed: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          termId: "sample-1",
-          termName: "Transformer Architecture", 
-          sectionName: "Implementation",
-          status: "in_progress" as const,
-          completionPercentage: 65,
-          timeSpent: 25,
-          lastAccessed: new Date(Date.now() - 30 * 60 * 1000).toISOString()
-        },
-        {
-          termId: "sample-2",
-          termName: "Gradient Descent",
-          sectionName: "Theoretical Concepts",
-          status: "completed" as const,
-          completionPercentage: 100,
-          timeSpent: 20,
-          lastAccessed: new Date(Date.now() - 5 * 60 * 60 * 1000).toISOString()
-        },
-        {
-          termId: "sample-3",
-          termName: "Convolutional Neural Networks",
-          sectionName: "Applications",
-          status: "not_started" as const,
-          completionPercentage: 0,
-          timeSpent: 0,
-          lastAccessed: new Date().toISOString()
-        }
-      ];
+      try {
+        // Use our new Phase 2D getUserSectionProgress method
+        console.log(`[UserProgressRoute] Getting section progress for user: ${userId}`);
+        
+        const limit = parseInt(req.query.limit as string) || 50;
+        const offset = parseInt(req.query.offset as string) || 0;
+        
+        const sectionProgress = await enhancedStorage.getUserSectionProgress(userId, { limit, offset });
+        
+        // Transform to API format
+        const apiResponse = sectionProgress.map(progress => ({
+          termId: progress.termId,
+          termName: progress.termId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '), // Convert ID to readable name
+          sectionId: progress.sectionId,
+          sectionName: progress.sectionTitle || progress.sectionId.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' '),
+          status: progress.status,
+          completionPercentage: progress.completionPercentage,
+          timeSpent: progress.timeSpentMinutes,
+          lastAccessed: progress.lastAccessedAt.toISOString(),
+          completedAt: progress.completedAt?.toISOString()
+        }));
 
-      res.json(mockSectionProgress);
+        console.log(`[UserProgressRoute] Successfully retrieved ${apiResponse.length} section progress records`);
+        res.json(apiResponse);
+        
+      } catch (storageError) {
+        console.error('[UserProgressRoute] Enhanced storage error for sections:', storageError);
+        
+        // Fallback to basic mock data if storage fails
+        const fallbackProgress = [
+          {
+            termId: "neural-networks",
+            termName: "Neural Networks",
+            sectionId: "overview",
+            sectionName: "Overview",
+            status: "completed" as const,
+            completionPercentage: 100,
+            timeSpent: 15,
+            lastAccessed: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
+            completedAt: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString()
+          },
+          {
+            termId: "machine-learning",
+            termName: "Machine Learning",
+            sectionId: "technical-implementation",
+            sectionName: "Technical Implementation",
+            status: "in_progress" as const,
+            completionPercentage: 65,
+            timeSpent: 25,
+            lastAccessed: new Date(Date.now() - 30 * 60 * 1000).toISOString()
+          }
+        ];
+        
+        console.log('[UserProgressRoute] Using fallback section progress data');
+        res.json(fallbackProgress);
+      }
     } catch (error) {
       console.error("Error fetching section progress:", error);
       res.status(500).json({ error: "Failed to fetch section progress" });
@@ -203,30 +219,141 @@ export function registerUserProgressRoutes(app: Express): void {
   // Get user recommendations
   app.get("/api/user/recommendations", async (req, res) => {
     try {
-      const userId = (req as any).user?.id;
+      const userId = (req as AuthenticatedRequest).user?.id;
       if (!userId) {
         return res.status(401).json({ error: "Authentication required" });
       }
 
-      // Mock recommendations
-      const mockRecommendations = [
-        {
-          id: "rec-1",
-          termName: "Attention Mechanism",
-          reason: "Based on your interest in Transformer Architecture",
-          difficulty: "intermediate",
-          estimatedTime: "20 minutes"
-        },
-        {
-          id: "rec-2", 
-          termName: "Backpropagation",
-          reason: "Complements your study of Gradient Descent",
-          difficulty: "beginner",
-          estimatedTime: "15 minutes"
+      try {
+        // Use our Phase 2D methods to generate intelligent recommendations
+        console.log(`[UserProgressRoute] Getting recommendations for user: ${userId}`);
+        
+        // Get user progress to understand their learning patterns
+        const userStats = await enhancedStorage.getUserProgressStats(userId);
+        const categoryProgress = await enhancedStorage.getCategoryProgress(userId);
+        const sectionProgress = await enhancedStorage.getUserSectionProgress(userId, { limit: 10 });
+        
+        // Generate recommendations based on user data
+        const recommendations = [];
+        
+        // 1. Recommend terms in categories where user is active but not complete
+        const activeCategories = categoryProgress
+          .filter(cat => cat.completionPercentage > 0 && cat.completionPercentage < 80)
+          .sort((a, b) => b.completionPercentage - a.completionPercentage)
+          .slice(0, 2);
+        
+        for (const category of activeCategories) {
+          recommendations.push({
+            id: `cat-rec-${category.categoryId}`,
+            termName: `Advanced ${category.categoryName}`,
+            reason: `Continue your progress in ${category.categoryName} (${category.completionPercentage}% complete)`,
+            difficulty: category.completionPercentage > 50 ? "advanced" : "intermediate",
+            estimatedTime: "25 minutes",
+            category: category.categoryName
+          });
         }
-      ];
+        
+        // 2. Recommend next sections for partially completed terms
+        const inProgressSections = sectionProgress.filter(section => section.status === 'in_progress');
+        for (const section of inProgressSections.slice(0, 2)) {
+          recommendations.push({
+            id: `section-rec-${section.termId}-${section.sectionId}`,
+            termName: `${section.sectionTitle} (Continue)`,
+            reason: `Resume ${section.sectionTitle} - ${section.completionPercentage}% complete`,
+            difficulty: "current",
+            estimatedTime: `${Math.max(5, 20 - section.timeSpentMinutes)} minutes`,
+            termId: section.termId,
+            sectionId: section.sectionId
+          });
+        }
+        
+        // 3. Recommend popular terms in user's favorite categories
+        const userTopCategories = Object.entries(userStats.categoryProgress)
+          .sort(([,a], [,b]) => b.completionPercentage - a.completionPercentage)
+          .slice(0, 2);
+        
+        for (const [categoryName] of userTopCategories) {
+          recommendations.push({
+            id: `popular-rec-${categoryName.toLowerCase()}`,
+            termName: `Popular in ${categoryName}`,
+            reason: `Based on your expertise in ${categoryName}`,
+            difficulty: userStats.totalTermsViewed > 50 ? "advanced" : "intermediate",
+            estimatedTime: "15 minutes",
+            category: categoryName
+          });
+        }
+        
+        // 4. If user has high streak, recommend challenging content
+        if (userStats.streakDays >= 7) {
+          recommendations.push({
+            id: `challenge-rec-streak`,
+            termName: "Advanced AI Ethics",
+            reason: `Challenge yourself! You're on a ${userStats.streakDays}-day learning streak`,
+            difficulty: "expert",
+            estimatedTime: "30 minutes",
+            category: "AI Ethics"
+          });
+        }
+        
+        // Limit to 5 recommendations and add fallbacks if needed
+        let finalRecommendations = recommendations.slice(0, 5);
+        
+        // Add fallback recommendations if we don't have enough
+        if (finalRecommendations.length < 3) {
+          finalRecommendations = finalRecommendations.concat([
+            {
+              id: "fallback-1",
+              termName: "Introduction to Machine Learning",
+              reason: "Perfect for expanding your AI knowledge",
+              difficulty: "beginner",
+              estimatedTime: "20 minutes",
+              category: "Machine Learning"
+            },
+            {
+              id: "fallback-2",
+              termName: "Neural Network Fundamentals",
+              reason: "Build a strong foundation in deep learning",
+              difficulty: "intermediate", 
+              estimatedTime: "25 minutes",
+              category: "Deep Learning"
+            }
+          ].slice(0, 3 - finalRecommendations.length));
+        }
 
-      res.json(mockRecommendations);
+        console.log(`[UserProgressRoute] Generated ${finalRecommendations.length} personalized recommendations`);
+        res.json(finalRecommendations);
+        
+      } catch (storageError) {
+        console.error('[UserProgressRoute] Enhanced storage error for recommendations:', storageError);
+        
+        // Fallback to basic recommendations
+        const fallbackRecommendations = [
+          {
+            id: "fallback-rec-1",
+            termName: "Introduction to Machine Learning",
+            reason: "Great starting point for AI concepts",
+            difficulty: "beginner",
+            estimatedTime: "20 minutes"
+          },
+          {
+            id: "fallback-rec-2",
+            termName: "Neural Networks Basics",
+            reason: "Fundamental deep learning concept",
+            difficulty: "intermediate",
+            estimatedTime: "25 minutes"
+          },
+          {
+            id: "fallback-rec-3",
+            termName: "Data Science Fundamentals", 
+            reason: "Essential for AI understanding",
+            difficulty: "beginner",
+            estimatedTime: "15 minutes"
+          }
+        ];
+        
+        console.log('[UserProgressRoute] Using fallback recommendations');
+        res.json(fallbackRecommendations);
+      }
     } catch (error) {
       console.error("Error fetching recommendations:", error);
       res.status(500).json({ error: "Failed to fetch recommendations" });

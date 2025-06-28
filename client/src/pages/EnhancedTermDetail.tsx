@@ -16,6 +16,7 @@ import TermRelationships from "@/components/term/TermRelationships";
 import RecommendedTerms from "@/components/term/RecommendedTerms";
 import { useTermData, useTermActions } from "@/hooks/useTermData";
 import { useQueryClient } from "@tanstack/react-query";
+import { AUTH_MESSAGES, FAVORITES_MESSAGES, CLIPBOARD_MESSAGES } from "@/constants/messages";
 
 export default function EnhancedTermDetail() {
   const [, params] = useRoute("/enhanced/terms/:id");
@@ -59,8 +60,7 @@ export default function EnhancedTermDetail() {
   const toggleFavorite = async () => {
     if (!isAuthenticated) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to save favorites",
+        ...AUTH_MESSAGES.REQUIRED,
         variant: "destructive",
       });
       return;
@@ -75,16 +75,14 @@ export default function EnhancedTermDetail() {
       // Invalidate the favorites query to trigger a refetch
       queryClient.invalidateQueries({ queryKey: [`/api/favorites/${id}`] });
       
-      toast({
-        title: favorite ? "Removed from favorites" : "Added to favorites",
-        description: favorite 
-          ? `${term?.name} has been removed from your favorites` 
-          : `${term?.name} has been added to your favorites`,
-      });
+      toast(
+        favorite 
+          ? FAVORITES_MESSAGES.REMOVED(term?.name || 'Term')
+          : FAVORITES_MESSAGES.ADDED(term?.name || 'Term')
+      );
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to update favorites. Please try again.",
+        ...FAVORITES_MESSAGES.ERROR,
         variant: "destructive",
       });
     }
@@ -94,14 +92,10 @@ export default function EnhancedTermDetail() {
     const url = window.location.href;
     try {
       await navigator.clipboard.writeText(url);
-      toast({
-        title: "Link copied",
-        description: "Link has been copied to clipboard",
-      });
+      toast(CLIPBOARD_MESSAGES.SUCCESS);
     } catch (error) {
       toast({
-        title: "Failed to copy",
-        description: "Please try again or copy manually",
+        ...CLIPBOARD_MESSAGES.ERROR,
         variant: "destructive",
       });
     }

@@ -5,6 +5,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { PROGRESS_MESSAGES, PROGRESS_LABELS } from "@/constants/messages";
 
 interface ProgressTrackerProps {
   termId: string;
@@ -20,8 +21,7 @@ export default function ProgressTracker({ termId, isLearned: initialIsLearned }:
   const handleMarkAsLearned = async () => {
     if (!isAuthenticated) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to track your progress",
+        ...PROGRESS_MESSAGES.AUTH_REQUIRED,
         variant: "destructive",
       });
       window.location.href = "/api/login";
@@ -41,16 +41,10 @@ export default function ProgressTracker({ termId, isLearned: initialIsLearned }:
       // Invalidate relevant queries
       queryClient.invalidateQueries({ queryKey: ['/api/user/progress'] });
       
-      toast({
-        title: isLearned ? "Progress updated" : "Marked as learned",
-        description: isLearned 
-          ? "This term has been removed from your learned list" 
-          : "This term has been added to your learned list",
-      });
+      toast(isLearned ? PROGRESS_MESSAGES.UPDATED : PROGRESS_MESSAGES.MARKED_LEARNED);
     } catch (error) {
       toast({
-        title: "Error",
-        description: "Failed to update progress. Please try again.",
+        ...PROGRESS_MESSAGES.ERROR,
         variant: "destructive",
       });
     } finally {
@@ -66,11 +60,11 @@ export default function ProgressTracker({ termId, isLearned: initialIsLearned }:
             <Check className={`h-5 w-5 ${isLearned ? 'text-green-500' : 'text-gray-400'}`} />
           </div>
           <div>
-            <h3 className="font-medium text-gray-800 dark:text-gray-200">Track your progress</h3>
+            <h3 className="font-medium text-gray-800 dark:text-gray-200">{PROGRESS_LABELS.TRACK_PROGRESS}</h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               {isLearned 
-                ? "You've marked this term as learned" 
-                : "Mark this term as learned to track your progress"}
+                ? PROGRESS_LABELS.MARKED_AS_LEARNED 
+                : PROGRESS_LABELS.MARK_TO_TRACK}
             </p>
           </div>
         </div>
@@ -84,10 +78,10 @@ export default function ProgressTracker({ termId, isLearned: initialIsLearned }:
           {isLoading ? (
             <span className="flex items-center">
               <span className="animate-spin mr-2 h-4 w-4 border-2 border-current border-t-transparent rounded-full"></span>
-              Processing...
+              {PROGRESS_LABELS.PROCESSING}
             </span>
           ) : (
-            isLearned ? "Mark as unlearned" : "Mark as learned"
+            isLearned ? PROGRESS_LABELS.MARK_UNLEARNED : PROGRESS_LABELS.MARK_LEARNED
           )}
         </Button>
       </div>

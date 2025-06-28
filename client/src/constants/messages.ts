@@ -55,6 +55,134 @@ export const LEARNING_MESSAGES = {
   }
 } as const;
 
+export const PROGRESS_MESSAGES = {
+  AUTH_REQUIRED: {
+    title: "Authentication required",
+    description: "Please sign in to track your progress"
+  },
+  MARKED_LEARNED: {
+    title: "Marked as learned",
+    description: "This term has been added to your learned list"
+  },
+  UPDATED: {
+    title: "Progress updated",
+    description: "This term has been removed from your learned list"
+  },
+  ERROR: {
+    title: "Error",
+    description: "Failed to update progress. Please try again."
+  }
+} as const;
+
+export const SHARE_MESSAGES = {
+  COPIED: {
+    title: "Link copied to clipboard",
+    description: "You can now paste it anywhere"
+  },
+  COPY_ERROR: {
+    title: "Failed to copy link",
+    description: "Please try again"
+  }
+} as const;
+
+export const AI_IMPROVEMENT_MESSAGES = {
+  SUCCESS: {
+    title: "Success",
+    description: "AI improvements generated successfully!"
+  },
+  APPLIED: {
+    title: "Success",
+    description: "AI improvements applied successfully!"
+  },
+  DISMISSED: {
+    title: "Dismissed",
+    description: "AI improvements dismissed."
+  }
+} as const;
+
+export const NAVIGATION_LABELS = {
+  BACK: "Back",
+  HOME: "Home",
+  CATEGORIES: "Categories",
+  RETURN_HOME: "Return to Home"
+} as const;
+
+export const FEATURE_LABELS = {
+  CODE_EXAMPLES: "Code Examples",
+  INTERACTIVE: "Interactive",
+  CASE_STUDIES: "Case Studies",
+  IMPLEMENTATION: "Implementation"
+} as const;
+
+export const TAB_LABELS = {
+  OVERVIEW: "Overview",
+  SECTIONS: "Sections", 
+  INTERACTIVE: "Interactive",
+  RELATED: "Related",
+  AI_TOOLS: "AI Tools",
+  PROGRESS: "Progress"
+} as const;
+
+export const ERROR_MESSAGES = {
+  TERM_NOT_FOUND: {
+    title: "Term Not Found",
+    description: "The term you're looking for doesn't exist or has been removed."
+  },
+  FAILED_TO_GENERATE: {
+    title: "Error",
+    description: "Failed to generate improvements"
+  },
+  FAILED_TO_APPLY: {
+    title: "Error", 
+    description: "Failed to apply improvements"
+  }
+} as const;
+
+export const PROGRESS_LABELS = {
+  TRACK_PROGRESS: "Track your progress",
+  MARKED_AS_LEARNED: "You've marked this term as learned",
+  MARK_TO_TRACK: "Mark this term as learned to track your progress",
+  MARK_LEARNED: "Mark as learned",
+  MARK_UNLEARNED: "Mark as unlearned",
+  PROCESSING: "Processing...",
+  DIFFICULTY_MATCH: (level: string) => `Difficulty Match for ${level}`
+} as const;
+
+export const CONTENT_LABELS = {
+  KEYWORDS_PREFIX: "Keywords: ",
+  ANALYZING: "Analyzing Definition...",
+  APPLYING: "Applying...",
+  CURRENT: "Current",
+  AI_IMPROVED: "AI Improved",
+  NONE: "None",
+  IMPROVED: "Improved", 
+  NEW: "New",
+  SUGGESTED: "Suggested"
+} as const;
+
+export const AI_TOOL_LABELS = {
+  AI_DEFINITION_IMPROVER: "AI Definition Improver",
+  USE_AI_ENHANCE: (termName: string) => `Use AI to enhance and improve the definition for "${termName}"`,
+  AI_SUGGESTIONS_DESC: "Get AI-powered suggestions to improve this term's definition, characteristics, and applications.",
+  GENERATE_IMPROVEMENTS: "Generate AI Improvements",
+  AI_IMPROVEMENT_SUGGESTIONS: "AI Improvement Suggestions",
+  DISMISS: "Dismiss",
+  APPLY_CHANGES: "Apply Changes",
+  SHORT_DEFINITION: "Short Definition",
+  DETAILED_DEFINITION: "Detailed Definition", 
+  CHARACTERISTICS: "Characteristics",
+  MATHEMATICAL_FORMULATION: "Mathematical Formulation",
+  APPLICATIONS: "Applications",
+  RELATED_TERMS: "Related Terms"
+} as const;
+
+export const SHARE_LABELS = {
+  SHARE_TERM: "Share this term",
+  SHARE_VIA: (title: string) => `Share "${title}" with others via:`,
+  CHECK_OUT_TERM: (title: string) => `Check out "${title}" in the AI/ML Glossary`,
+  THOUGHT_INTERESTED: "I thought you might be interested in this AI/ML term:"
+} as const;
+
 export const GENERIC_MESSAGES = {
   ERROR: {
     title: "Error",

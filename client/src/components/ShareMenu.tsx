@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Twitter, Facebook, Linkedin, Mail, Copy, Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import { SHARE_MESSAGES } from "@/constants/messages";
 
 interface ShareMenuProps {
   isOpen: boolean;
@@ -53,15 +54,11 @@ export default function ShareMenu({ isOpen, onClose, title, url }: ShareMenuProp
     try {
       await navigator.clipboard.writeText(url);
       setCopied(true);
-      toast({
-        title: "Link copied to clipboard",
-        description: "You can now paste it anywhere",
-      });
+      toast(SHARE_MESSAGES.COPIED);
       setTimeout(() => setCopied(false), 3000);
     } catch (error) {
       toast({
-        title: "Failed to copy link",
-        description: "Please try again",
+        ...SHARE_MESSAGES.COPY_ERROR,
         variant: "destructive",
       });
     }

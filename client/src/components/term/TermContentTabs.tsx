@@ -1,6 +1,7 @@
 import { BookOpen, Settings, Zap, Lightbulb, Brain, Star } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { IEnhancedTerm, ITerm, ITermSection, IInteractiveElement, IEnhancedUserSettings } from "@/interfaces/interfaces";
+import { TAB_LABELS } from "@/constants/messages";
 
 interface TermContentTabsProps {
   term: IEnhancedTerm | ITerm;
@@ -44,29 +45,29 @@ export default function TermContentTabs({
       <TabsList className="grid w-full grid-cols-4 lg:grid-cols-6">
         <TabsTrigger value="overview" className="flex items-center space-x-1">
           <BookOpen className="h-4 w-4" />
-          <span className="hidden sm:inline">Overview</span>
+          <span className="hidden sm:inline">{TAB_LABELS.OVERVIEW}</span>
         </TabsTrigger>
         <TabsTrigger value="sections" className="flex items-center space-x-1">
           <Settings className="h-4 w-4" />
-          <span className="hidden sm:inline">Sections</span>
+          <span className="hidden sm:inline">{TAB_LABELS.SECTIONS}</span>
         </TabsTrigger>
         <TabsTrigger value="interactive" className="flex items-center space-x-1">
           <Zap className="h-4 w-4" />
-          <span className="hidden sm:inline">Interactive</span>
+          <span className="hidden sm:inline">{TAB_LABELS.INTERACTIVE}</span>
         </TabsTrigger>
         <TabsTrigger value="relationships" className="flex items-center space-x-1">
           <Lightbulb className="h-4 w-4" />
-          <span className="hidden sm:inline">Related</span>
+          <span className="hidden sm:inline">{TAB_LABELS.RELATED}</span>
         </TabsTrigger>
         {isAuthenticated && (
           <TabsTrigger value="ai-tools" className="flex items-center space-x-1">
             <Brain className="h-4 w-4" />
-            <span className="hidden sm:inline">AI Tools</span>
+            <span className="hidden sm:inline">{TAB_LABELS.AI_TOOLS}</span>
           </TabsTrigger>
         )}
         <TabsTrigger value="progress" className="flex items-center space-x-1">
           <Star className="h-4 w-4" />
-          <span className="hidden sm:inline">Progress</span>
+          <span className="hidden sm:inline">{TAB_LABELS.PROGRESS}</span>
         </TabsTrigger>
       </TabsList>
 

@@ -5,6 +5,7 @@ import { Badge } from './ui/badge';
 import { Loader2, Wand2, Check, X, ArrowRight } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { ITerm } from '../interfaces/interfaces';
+import { AI_IMPROVEMENT_MESSAGES, GENERIC_MESSAGES } from '../constants/messages';
 
 interface AIDefinitionImproverProps {
   term: ITerm;
@@ -56,17 +57,14 @@ export function AIDefinitionImprover({
       if (result.success) {
         setImprovements(result.data);
         setShowComparison(true);
-        toast({
-          title: "Success",
-          description: "AI improvements generated successfully!",
-        });
+        toast(AI_IMPROVEMENT_MESSAGES.SUCCESS);
       } else {
         throw new Error(result.error || 'Failed to generate improvements');
       }
     } catch (error) {
       console.error('Error generating improvements:', error);
       toast({
-        title: "Error",
+        title: GENERIC_MESSAGES.ERROR.title,
         description: error instanceof Error ? error.message : 'Failed to generate improvements',
         variant: "destructive"
       });
@@ -100,10 +98,7 @@ export function AIDefinitionImprover({
       
       if (result.success) {
         onImprovementApplied?.(result.data);
-        toast({
-          title: "Success",
-          description: "AI improvements applied successfully!",
-        });
+        toast(AI_IMPROVEMENT_MESSAGES.APPLIED);
         setShowComparison(false);
         setImprovements(null);
       } else {
@@ -112,7 +107,7 @@ export function AIDefinitionImprover({
     } catch (error) {
       console.error('Error applying improvements:', error);
       toast({
-        title: "Error",
+        title: GENERIC_MESSAGES.ERROR.title,
         description: error instanceof Error ? error.message : 'Failed to apply improvements',
         variant: "destructive"
       });
@@ -124,10 +119,7 @@ export function AIDefinitionImprover({
   const dismissImprovements = () => {
     setImprovements(null);
     setShowComparison(false);
-    toast({
-      title: "Dismissed",
-      description: "AI improvements dismissed.",
-    });
+    toast(AI_IMPROVEMENT_MESSAGES.DISMISSED);
   };
 
   const ComparisonSection = ({ 

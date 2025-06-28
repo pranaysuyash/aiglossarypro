@@ -1,6 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { optimizedStorage as storage } from "../optimizedStorage";
-import type { ICategory, ApiResponse, PaginatedResponse } from "../../shared/types";
+import type { ICategory, ApiResponse, PaginatedResponse, ITerm } from "../../shared/types";
+import { log } from "../utils/logger";
 
 /**
  * Category management routes
@@ -21,7 +22,7 @@ export function registerCategoryRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error("Error fetching categories:", error);
+      log.error("Error fetching categories", { error, component: 'CategoryRoutes' });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch categories",
@@ -52,7 +53,7 @@ export function registerCategoryRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error(`Error fetching category ${req.params.id}:`, error);
+      log.error(`Error fetching category ${req.params.id}`, { error, component: 'CategoryRoutes', categoryId: req.params.id });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch category" 
@@ -95,7 +96,7 @@ export function registerCategoryRoutes(app: Express): void {
           return;
         }
       } catch (optimizedError) {
-        console.warn('Optimized getTermsByCategory failed, using fallback:', optimizedError);
+        log.warn('Optimized getTermsByCategory failed, using fallback', { error: optimizedError, component: 'CategoryRoutes' });
       }
       
       // Fallback: Use enhanced storage method
@@ -115,7 +116,7 @@ export function registerCategoryRoutes(app: Express): void {
           ...response
         });
       } catch (searchError) {
-        console.warn('Search fallback failed, using basic approach:', searchError);
+        log.warn('Search fallback failed, using basic approach', { error: searchError, component: 'CategoryRoutes' });
         
         // Last fallback: basic category filtering (not ideal but better than fetching all terms)
         const category = await storage.getCategoryById(id);
@@ -142,7 +143,7 @@ export function registerCategoryRoutes(app: Express): void {
         });
       }
     } catch (error) {
-      console.error(`Error fetching terms for category ${req.params.id}:`, error);
+      log.error(`Error fetching terms for category ${req.params.id}`, { error, component: 'CategoryRoutes', categoryId: req.params.id });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch category terms" 
@@ -168,7 +169,7 @@ export function registerCategoryRoutes(app: Express): void {
           return;
         }
       } catch (optimizedError) {
-        console.warn('Optimized getCategoryStats failed, using fallback:', optimizedError);
+        log.warn('Optimized getCategoryStats failed, using fallback', { error: optimizedError, component: 'CategoryRoutes' });
       }
       
       // Fallback: Use search to get category terms efficiently
@@ -188,7 +189,7 @@ export function registerCategoryRoutes(app: Express): void {
           data: stats
         });
       } catch (searchError) {
-        console.warn('Search fallback failed, using basic approach:', searchError);
+        log.warn('Search fallback failed, using basic approach', { error: searchError, component: 'CategoryRoutes' });
         
         // Last fallback: return basic stats without fetching all terms
         const category = await storage.getCategoryById(id);
@@ -212,7 +213,7 @@ export function registerCategoryRoutes(app: Express): void {
         });
       }
     } catch (error) {
-      console.error(`Error fetching category stats ${req.params.id}:`, error);
+      log.error(`Error fetching category stats ${req.params.id}`, { error, component: 'CategoryRoutes', categoryId: req.params.id });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch category statistics" 

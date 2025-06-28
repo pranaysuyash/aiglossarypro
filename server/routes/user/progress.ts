@@ -3,6 +3,7 @@ import { db } from "../../db";
 import { sql } from "drizzle-orm";
 import { enhancedStorage } from "../../enhancedStorage";
 import type { AuthenticatedRequest } from "../../types/express";
+import { log } from "../../utils/logger";
 
 export function registerUserProgressRoutes(app: Express): void {
   // Get user progress statistics
@@ -15,7 +16,7 @@ export function registerUserProgressRoutes(app: Express): void {
 
       try {
         // Use our new Phase 2D getUserProgressStats method
-        console.log(`[UserProgressRoute] Getting progress stats for user: ${userId}`);
+        log.info(`Getting progress stats for user: ${userId}`, { component: 'UserProgressRoute', userId });
         const userStats = await enhancedStorage.getUserProgressStats(userId);
         
         // Also get learning streak using our Phase 2D updateLearningStreak method
@@ -85,11 +86,11 @@ export function registerUserProgressRoutes(app: Express): void {
           ])
         };
 
-        console.log(`[UserProgressRoute] Successfully retrieved progress stats for user: ${userId}`);
+        log.info(`Successfully retrieved progress stats for user: ${userId}`, { component: 'UserProgressRoute', userId });
         res.json(apiResponse);
         
       } catch (storageError) {
-        console.error('[UserProgressRoute] Enhanced storage error:', storageError);
+        log.error('Enhanced storage error', { component: 'UserProgressRoute', error: storageError });
         
         // Fallback to mock data if storage fails
         const fallbackStats = {
@@ -137,11 +138,11 @@ export function registerUserProgressRoutes(app: Express): void {
           ]
         };
         
-        console.log('[UserProgressRoute] Using fallback mock data');
+        log.warn('Using fallback mock data', { component: 'UserProgressRoute' });
         res.json(fallbackStats);
       }
     } catch (error) {
-      console.error("Error fetching user progress stats:", error);
+      log.error("Error fetching user progress stats", { error, component: 'UserProgressRoute' });
       res.status(500).json({ error: "Failed to fetch progress statistics" });
     }
   });
@@ -156,7 +157,7 @@ export function registerUserProgressRoutes(app: Express): void {
 
       try {
         // Use our new Phase 2D getUserSectionProgress method
-        console.log(`[UserProgressRoute] Getting section progress for user: ${userId}`);
+        log.info(`Getting section progress for user: ${userId}`, { component: 'UserProgressRoute', userId });
         
         const limit = parseInt(req.query.limit as string) || 50;
         const offset = parseInt(req.query.offset as string) || 0;
@@ -176,11 +177,11 @@ export function registerUserProgressRoutes(app: Express): void {
           completedAt: progress.completedAt?.toISOString()
         }));
 
-        console.log(`[UserProgressRoute] Successfully retrieved ${apiResponse.length} section progress records`);
+        log.info(`Successfully retrieved ${apiResponse.length} section progress records`, { component: 'UserProgressRoute', count: apiResponse.length });
         res.json(apiResponse);
         
       } catch (storageError) {
-        console.error('[UserProgressRoute] Enhanced storage error for sections:', storageError);
+        log.error('Enhanced storage error for sections', { component: 'UserProgressRoute', error: storageError });
         
         // Fallback to basic mock data if storage fails
         const fallbackProgress = [
@@ -207,11 +208,11 @@ export function registerUserProgressRoutes(app: Express): void {
           }
         ];
         
-        console.log('[UserProgressRoute] Using fallback section progress data');
+        log.warn('Using fallback section progress data', { component: 'UserProgressRoute' });
         res.json(fallbackProgress);
       }
     } catch (error) {
-      console.error("Error fetching section progress:", error);
+      log.error("Error fetching section progress", { error, component: 'UserProgressRoute' });
       res.status(500).json({ error: "Failed to fetch section progress" });
     }
   });
@@ -226,7 +227,7 @@ export function registerUserProgressRoutes(app: Express): void {
 
       try {
         // Use our Phase 2D methods to generate intelligent recommendations
-        console.log(`[UserProgressRoute] Getting recommendations for user: ${userId}`);
+        log.info(`Getting recommendations for user: ${userId}`, { component: 'UserProgressRoute', userId });
         
         // Get user progress to understand their learning patterns
         const userStats = await enhancedStorage.getUserProgressStats(userId);
@@ -320,11 +321,11 @@ export function registerUserProgressRoutes(app: Express): void {
           ].slice(0, 3 - finalRecommendations.length));
         }
 
-        console.log(`[UserProgressRoute] Generated ${finalRecommendations.length} personalized recommendations`);
+        log.info(`Generated ${finalRecommendations.length} personalized recommendations`, { component: 'UserProgressRoute', count: finalRecommendations.length });
         res.json(finalRecommendations);
         
       } catch (storageError) {
-        console.error('[UserProgressRoute] Enhanced storage error for recommendations:', storageError);
+        log.error('Enhanced storage error for recommendations', { component: 'UserProgressRoute', error: storageError });
         
         // Fallback to basic recommendations
         const fallbackRecommendations = [
@@ -351,14 +352,14 @@ export function registerUserProgressRoutes(app: Express): void {
           }
         ];
         
-        console.log('[UserProgressRoute] Using fallback recommendations');
+        log.warn('Using fallback recommendations', { component: 'UserProgressRoute' });
         res.json(fallbackRecommendations);
       }
     } catch (error) {
-      console.error("Error fetching recommendations:", error);
+      log.error("Error fetching recommendations", { error, component: 'UserProgressRoute' });
       res.status(500).json({ error: "Failed to fetch recommendations" });
     }
   });
 
-  console.log("📊 User progress routes registered");
+  log.info("User progress routes registered", { component: 'UserProgressRoute' });
 } 

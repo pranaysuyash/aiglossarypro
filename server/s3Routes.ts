@@ -7,11 +7,19 @@ import {
 } from './s3Service';
 import { processAndImportFromS3 } from './pythonProcessor';
 import { isAuthenticated } from './replitAuth';
+import { authenticateToken, requireAdmin } from './middleware/adminAuth';
+import { mockIsAuthenticated, mockAuthenticateToken, mockRequireAdmin } from './middleware/dev/mockAuth';
+import { features } from './config';
 
 const router = Router();
 
-// Check S3 setup status
-router.get('/setup', async (req, res) => {
+// Choose authentication middleware based on environment
+const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
+const tokenMiddleware = features.replitAuthEnabled ? authenticateToken : mockAuthenticateToken;
+const adminMiddleware = features.replitAuthEnabled ? requireAdmin : mockRequireAdmin;
+
+// Check S3 setup status - REQUIRES ADMIN
+router.get('/setup', authMiddleware, tokenMiddleware, adminMiddleware, async (req, res) => {
   try {
     const hasAccessKey = !!process.env.AWS_ACCESS_KEY_ID;
     const hasSecretKey = !!process.env.AWS_SECRET_ACCESS_KEY;
@@ -50,8 +58,8 @@ router.get('/setup', async (req, res) => {
   }
 });
 
-// List Excel files in S3 bucket
-router.get('/list-files', async (req, res) => {
+// List Excel files in S3 bucket - REQUIRES ADMIN
+router.get('/list-files', authMiddleware, tokenMiddleware, adminMiddleware, async (req, res) => {
   try {
     const bucketName = process.env.S3_BUCKET_NAME;
     
@@ -83,8 +91,8 @@ router.get('/list-files', async (req, res) => {
   }
 });
 
-// Python-based Excel processing
-router.get('/python-import', async (req, res) => {
+// Python-based Excel processing - REQUIRES ADMIN
+router.get('/python-import', authMiddleware, tokenMiddleware, adminMiddleware, async (req, res) => {
   try {
     const bucketName = process.env.S3_BUCKET_NAME;
     const fileKey = req.query.fileKey as string | undefined;

@@ -1,7 +1,7 @@
 /**
  * Interface for Node.js to call the Python Excel processor
  */
-import { exec } from 'child_process';
+import { exec, execFile } from 'child_process';
 import * as fs from 'fs';
 import * as path from 'path';
 import { db } from './db';
@@ -53,19 +53,28 @@ export async function runPythonExcelProcessor(
         scriptPath = 'server/python/excel_processor.py';
       }
       
-      // Build the command using virtual environment
+      // Build the command using virtual environment with proper argument escaping
       const venvPath = path.join(process.cwd(), 'venv', 'bin', 'python');
-      let command = `${venvPath} ${scriptPath} --input "${localFilePath}" --output "${outputPath}"`;
       
-      // Add max chunks if specified for testing or limiting processing
-      if (maxChunks) {
-        command += ` --max-chunks ${maxChunks}`;
+      // Validate and sanitize inputs to prevent command injection
+      if (!localFilePath || !outputPath || !scriptPath) {
+        return reject(new Error('Invalid file paths provided'));
       }
       
-      console.log(`Executing Python script: ${command}`);
+      // Use execFile instead of exec to prevent command injection
       
-      // Execute the Python script
-      exec(command, (error, stdout, stderr) => {
+      // Build arguments array (safer than string interpolation)
+      const args = [scriptPath, '--input', localFilePath, '--output', outputPath];
+      
+      // Add max chunks if specified for testing or limiting processing
+      if (maxChunks && typeof maxChunks === 'number' && maxChunks > 0) {
+        args.push('--max-chunks', maxChunks.toString());
+      }
+      
+      console.log(`Executing Python script: ${venvPath} ${args.join(' ')}`);
+      
+      // Execute the Python script with execFile (safer than exec)
+      execFile(venvPath, args, (error, stdout, stderr) => {
         if (error) {
           console.error(`Error executing Python script: ${error.message}`);
           console.error(`stderr: ${stderr}`);

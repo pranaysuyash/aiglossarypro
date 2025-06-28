@@ -93,17 +93,12 @@ Each file in the codebase was reviewed. For code files, observations were compar
 
 **Tasks for Claude:**
 
-*   **[TASK: Claude]** **Component Decomposition:** Break this monolithic component into smaller, focused child components. For example:
-    *   `TermHeader`: Displays the term's title, badges, and metadata.
-    *   `TermActions`: Contains buttons for favoriting, sharing, etc.
-    *   `TermContentTabs`: Manages the tabbed interface.
-    *   `TermOverview`, `TermSections`, `TermInteractive`, `TermRelated`: Individual panels for the tabs.
-    *   `RecommendedTerms`: The section for related term cards.
-*   **[TASK: Claude]** **Create Custom Data Hooks:** Consolidate related `useQuery` calls into a custom hook. For instance, a `useTerm(termId)` hook could abstract away the enhanced/regular fallback logic and and return a single, consistent `term` object, along with `sections`, `relationships`, etc., and a unified loading state.
-*   **[TASK: Claude]** **Fix All Type Issues:** Thoroughly review and correct the type definitions in `@/interfaces/interfaces.ts` to eliminate every single instance of `as any`.
-*   **[TASK: Claude]** **Abstract Logic:** Move `getDifficultyColor` to a `utils` file. Refactor `getProgressPercentage` into a custom hook like `useTermProgress(term, userSettings)` that encapsulates the calculation logic.
-*   **[TASK: Claude]** **Improve Data Update UX:** Replace `window.location.reload()` with a proper data refetch using React Query's `queryClient.invalidateQueries` to provide a seamless update to the user.
-*   **[TASK: Claude]** **Centralize Strings:** Move all user-facing text into a constants file.
+*   **[COMPLETED: Claude]** **~~Component Decomposition~~:** ✅ Component successfully broken down with focused child components: `TermHeader`, `TermContentTabs`, `TermOverview`, `TermRelationships`, `RecommendedTerms`, and `TermActions` all exist as separate files.
+*   **[COMPLETED: Claude]** **~~Create Custom Data Hooks~~:** ✅ Data fetching consolidated into `useTermData()` custom hook providing unified loading states and clean separation of concerns.
+*   **[COMPLETED: Claude]** **~~Fix All Type Issues~~:** ✅ TypeScript issues resolved - no `as any` assertions found in current implementation.
+*   **[TASK: Claude]** **Abstract Logic:** Move `getDifficultyColor` to a `utils` file. Refactor `getProgressPercentage` into a custom hook like `useTermProgress(term, userSettings)` that encapsulates the calculation logic. **STATUS**: Need to verify if these functions exist in component or have been moved to utils.
+*   **[COMPLETED: Claude]** **~~Improve Data Update UX~~:** ✅ Uses `queryClient.invalidateQueries()` for seamless data updates instead of `window.location.reload()`.
+*   **[TASK: Claude]** **Centralize Strings:** Move all user-facing text into a constants file. **STATUS**: Still has hardcoded toast messages like "Authentication required", "Failed to update favorites", "Link copied", etc.
 *   **[REVIEW: Claude]** **API Performance:** Investigate if a single, consolidated API endpoint could provide all the necessary data for this page in one request to prevent the data-fetching waterfall.
 
 ### `/server/migrations/sectionDataMigration.ts`
@@ -144,7 +139,7 @@ Each file in the codebase was reviewed. For code files, observations were compar
 **Tasks for Claude:**
 
 *   **[COMPLETED: Claude]** **~~Resolve Branching Strategy Contradiction~~:** ✅ Removed contradictory branching statement and replaced with proper development guidelines that align with the safe branching strategy.
-*   **[REVIEW: Claude]** **Clarify Admin Endpoint Security:** Review the "Critical Notes" section regarding "7 unprotected admin endpoints" and reconcile it with the "Key Features Implemented" and "Progress" sections. Confirm if there are still specific unprotected admin endpoints that need attention, or if the note is a general reminder. If specific endpoints are still vulnerable, list them.
+*   **[COMPLETED: Claude]** **~~Clarify Admin Endpoint Security~~:** ✅ Verified and secured all critical admin endpoints. Cache management routes and Gumroad admin endpoints now properly protected with `requireAdmin` middleware. Updated CLAUDE.md security status accordingly.
 *   **[REVIEW: Claude]** **Meta-Instructions Placement:** Consider moving general agent guidelines (like documenting CLI suggestions and creating review docs) to a more appropriate, shared agent guideline document, if one exists or is planned.
 *   **[REVIEW: Claude]** **Documentation Maintenance:** Ensure that the "Deployment Checklist" and "Infrastructure Status" sections are kept up-to-date as tasks are completed.
 

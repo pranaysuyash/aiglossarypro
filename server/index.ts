@@ -8,7 +8,7 @@ initSentry();
 import express, { type Request, Response, NextFunction } from "express";
 import expressWs from "express-ws";
 import { registerRoutes } from "./routes/index";
-import { setupVite, serveStatic, log } from "./vite";
+import { setupVite, serveStatic } from "./vite";
 import { smartLoadExcelData } from "./smartExcelLoader";
 import { getServerConfig, logConfigStatus } from "./config";
 import { setupMultiAuth } from "./middleware/multiAuth";
@@ -77,7 +77,7 @@ app.use((req, res, next) => {
         logLine = logLine.slice(0, 79) + "…";
       }
 
-      log(logLine);
+      logger.info(logLine);
     }
   });
 
@@ -105,21 +105,21 @@ app.use((req, res, next) => {
   
   // Setup Vite dev server in development, static files in production
   if (serverConfig.nodeEnv === "development") {
-    log("🔧 Setting up Vite dev server for development...");
+    logger.info("🔧 Setting up Vite dev server for development...");
     try {
       await setupVite(app, server);
-      log("✅ Vite dev server setup complete");
+      logger.info("✅ Vite dev server setup complete");
     } catch (error) {
-      console.error("❌ Error setting up Vite dev server:", error);
+      logger.error("❌ Error setting up Vite dev server", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       process.exit(1);
     }
   } else {
-    log("📦 Setting up static file serving for production...");
+    logger.info("📦 Setting up static file serving for production...");
     try {
       serveStatic(app);
-      log("✅ Static file serving setup complete");
+      logger.info("✅ Static file serving setup complete");
     } catch (error) {
-      console.error("❌ Error setting up static file serving:", error);
+      logger.error("❌ Error setting up static file serving", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       process.exit(1);
     }
   }
@@ -144,19 +144,19 @@ app.use((req, res, next) => {
   const host = serverConfig.nodeEnv === 'production' ? '0.0.0.0' : '127.0.0.1';
   
   server.listen(port, host, () => {
-    log(`🚀 Server running on http://${host}:${port} in ${serverConfig.nodeEnv} mode`);
-    log(`🔍 Server address: ${JSON.stringify(server.address())}`);
-    log(`🛡️  Error handling and monitoring enabled`);
+    logger.info(`🚀 Server running on http://${host}:${port} in ${serverConfig.nodeEnv} mode`);
+    logger.info(`🔍 Server address: ${JSON.stringify(server.address())}`);
+    logger.info(`🛡️  Error handling and monitoring enabled`);
   });
 
   // Setup graceful shutdown
   gracefulShutdown(server);
 
   server.on('error', (err) => {
-    console.error('❌ Server error:', err);
+    logger.error('❌ Server error', { error: err.message, stack: err.stack });
   });
     
   // TODO: Implement automatic Excel data loading if needed
   // For now, use the admin endpoint /api/admin/import/force-reprocess
-  console.log("🚀 Server ready. Use admin endpoint for Excel data processing.");
+  logger.info("🚀 Server ready. Use admin endpoint for Excel data processing.");
 })();

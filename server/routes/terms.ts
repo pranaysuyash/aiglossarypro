@@ -6,6 +6,7 @@ import { features } from "../config";
 import type { ITerm, ApiResponse, PaginatedResponse } from "../../shared/types";
 import { validateInput, termIdSchema, paginationSchema } from "../middleware/security";
 import { rateLimitMiddleware, initializeRateLimiting } from "../middleware/rateLimiting";
+import { log as logger } from "../utils/logger";
 
 // Define authenticated request type properly
 interface AuthenticatedRequest extends Request {
@@ -127,7 +128,7 @@ export function registerTermRoutes(app: Express): void {
         }
       });
     } catch (error) {
-      console.error('Error fetching terms:', error);
+      logger.error('Error fetching terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false, 
         error: 'Failed to fetch terms',
@@ -149,7 +150,7 @@ export function registerTermRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error('Error fetching featured terms:', error);
+      logger.error('Error fetching featured terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch featured terms'
@@ -170,7 +171,7 @@ export function registerTermRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error('Error fetching trending terms:', error);
+      logger.error('Error fetching trending terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch trending terms'
@@ -209,7 +210,7 @@ export function registerTermRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error('Error fetching recently viewed terms:', error);
+      logger.error('Error fetching recently viewed terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch recently viewed terms'
@@ -237,7 +238,7 @@ export function registerTermRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error('Error fetching recent terms:', error);
+      logger.error('Error fetching recent terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch recent terms'
@@ -261,7 +262,7 @@ export function registerTermRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error('Error fetching recommended terms:', error);
+      logger.error('Error fetching recommended terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch recommended terms'
@@ -317,7 +318,7 @@ export function registerTermRoutes(app: Express): void {
       });
 
     } catch (error) {
-      console.error('Error searching terms:', error);
+      logger.error('Error searching terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to search terms'
@@ -360,7 +361,7 @@ export function registerTermRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error('Error fetching term:', error);
+      logger.error('Error fetching term', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch term'
@@ -390,7 +391,7 @@ export function registerTermRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error('Error fetching recommendations:', error);
+      logger.error('Error fetching recommendations', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch recommendations'

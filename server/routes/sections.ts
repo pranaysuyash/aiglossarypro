@@ -8,6 +8,7 @@ import type {
   IProgressSummary,
   IContentGalleryResponse 
 } from '../../shared/types';
+import { log as logger } from '../utils/logger';
 
 export function registerSectionRoutes(app: Express): void {
 
@@ -31,7 +32,7 @@ export function registerSectionRoutes(app: Express): void {
         data: response
       });
     } catch (error) {
-      console.error('Error fetching term sections:', error);
+      logger.error('Error fetching term sections', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch term sections'
@@ -60,7 +61,7 @@ export function registerSectionRoutes(app: Express): void {
         data: response
       });
     } catch (error) {
-      console.error('Error fetching section:', error);
+      logger.error('Error fetching section', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch section'
@@ -87,7 +88,7 @@ export function registerSectionRoutes(app: Express): void {
         message: 'Progress updated successfully'
       });
     } catch (error) {
-      console.error('Error updating progress:', error);
+      logger.error('Error updating progress', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to update progress'
@@ -106,7 +107,7 @@ export function registerSectionRoutes(app: Express): void {
         data: summary
       });
     } catch (error) {
-      console.error('Error fetching progress summary:', error);
+      logger.error('Error fetching progress summary', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch progress summary'
@@ -130,7 +131,7 @@ export function registerSectionRoutes(app: Express): void {
         data: galleries
       });
     } catch (error) {
-      console.error('Error fetching applications gallery:', error);
+      logger.error('Error fetching applications gallery', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch applications gallery'
@@ -152,7 +153,7 @@ export function registerSectionRoutes(app: Express): void {
         data: galleries
       });
     } catch (error) {
-      console.error('Error fetching ethics hub:', error);
+      logger.error('Error fetching ethics hub', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch ethics hub'
@@ -174,7 +175,7 @@ export function registerSectionRoutes(app: Express): void {
         data: galleries
       });
     } catch (error) {
-      console.error('Error fetching tutorials:', error);
+      logger.error('Error fetching tutorials', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch tutorials'
@@ -196,7 +197,7 @@ export function registerSectionRoutes(app: Express): void {
         data: quizzes
       });
     } catch (error) {
-      console.error('Error fetching quizzes:', error);
+      logger.error('Error fetching quizzes', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch quizzes'
@@ -229,7 +230,7 @@ export function registerSectionRoutes(app: Express): void {
         data: results
       });
     } catch (error) {
-      console.error('Error searching section content:', error);
+      logger.error('Error searching section content', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to search section content'
@@ -247,7 +248,7 @@ export function registerSectionRoutes(app: Express): void {
         data: analytics
       });
     } catch (error) {
-      console.error('Error fetching section analytics:', error);
+      logger.error('Error fetching section analytics', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch section analytics'

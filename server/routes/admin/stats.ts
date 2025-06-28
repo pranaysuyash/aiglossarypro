@@ -5,6 +5,7 @@ import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
 import { features } from "../../config";
 import type { AdminStats, ApiResponse } from "../../../shared/types";
+import { log as logger } from "../../utils/logger";
 
 /**
  * Admin statistics and dashboard routes
@@ -40,7 +41,7 @@ export function registerAdminStatsRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error("Error fetching admin stats:", error);
+      logger.error("Error fetching admin stats", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch admin statistics" 
@@ -66,7 +67,7 @@ export function registerAdminStatsRoutes(app: Express): void {
         data: health
       });
     } catch (error) {
-      console.error("Error checking system health:", error);
+      logger.error("Error checking system health", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         message: "Health check failed"

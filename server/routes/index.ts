@@ -23,6 +23,7 @@ import { registerMediaRoutes } from "./media";
 import { registerSeoRoutes } from "./seo";
 import { registerContentRoutes } from "./content";
 import { registerGumroadRoutes } from "./gumroad";
+import { log as logger } from "../utils/logger";
 
 // Import existing specialized route modules
 import cacheRoutes from "./cache";
@@ -39,42 +40,42 @@ import { setupSwagger } from "../swagger/setup";
  */
 export async function registerRoutes(app: Express): Promise<void> {
   try {
-    console.log("🔧 Setting up application routes...");
+    logger.info("🔧 Setting up application routes...");
     
     // Add performance monitoring middleware
     app.use(performanceMiddleware);
-    console.log("📊 Performance monitoring enabled");
+    logger.info("📊 Performance monitoring enabled");
   
   // Set up authentication first
   try {
     if (features.simpleAuthEnabled) {
       registerSimpleAuthRoutes(app);
-      console.log("✅ Simple JWT + OAuth authentication setup complete");
+      logger.info("✅ Simple JWT + OAuth authentication setup complete");
     } else if (features.replitAuthEnabled) {
       await setupAuth(app);
-      console.log("✅ Replit authentication setup complete");
+      logger.info("✅ Replit authentication setup complete");
     } else {
       setupMockAuth(app);
-      console.log("✅ Mock authentication setup complete (development mode)");
+      logger.info("✅ Mock authentication setup complete (development mode)");
     }
   } catch (error) {
-    console.error("❌ Error setting up authentication:", error);
+    logger.error("❌ Error setting up authentication", { error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
   
   // Initialize S3 client if credentials are present
   if (features.s3Enabled) {
     initS3Client();
-    console.log("✅ S3 client initialized");
+    logger.info("✅ S3 client initialized");
   }
   
   // Register core API routes
-  console.log("📝 Registering core API routes...");
+  logger.info("📝 Registering core API routes...");
   registerAuthRoutes(app);
   registerCategoryRoutes(app);
   registerTermRoutes(app);
   registerSectionRoutes(app);
-  console.log("✅ Section routes registered - 42-section content API now available");
+  logger.info("✅ Section routes registered - 42-section content API now available");
   registerSearchRoutes(app);
   registerUserRoutes(app);
   registerUserProgressRoutes(app);
@@ -84,54 +85,54 @@ export async function registerRoutes(app: Express): Promise<void> {
   
   // Register monitoring routes (for error tracking and system health)
   registerMonitoringRoutes(app);
-  console.log("✅ Monitoring routes registered");
+  logger.info("✅ Monitoring routes registered");
   
   // Register feedback routes (for user feedback and suggestions)
   registerFeedbackRoutes(app);
-  console.log("✅ Feedback routes registered");
+  logger.info("✅ Feedback routes registered");
   
   // Register cross-reference routes (for automatic term linking)
   registerCrossReferenceRoutes(app);
-  console.log("✅ Cross-reference routes registered");
+  logger.info("✅ Cross-reference routes registered");
   
   // Register analytics routes
   if (features.analyticsEnabled) {
     registerAnalyticsRoutes(app);
-    console.log("✅ Analytics routes registered");
+    logger.info("✅ Analytics routes registered");
   }
   
   // Register media routes (for rich content support)
   registerMediaRoutes(app);
-  console.log("✅ Media routes registered");
+  logger.info("✅ Media routes registered");
   
   // Register SEO routes (for search engine optimization)
   registerSeoRoutes(app);
-  console.log("✅ SEO routes registered");
+  logger.info("✅ SEO routes registered");
   
   // Register content accessibility routes
   registerContentRoutes(app);
-  console.log("✅ Content accessibility routes registered");
+  logger.info("✅ Content accessibility routes registered");
   
   // Register Gumroad monetization routes
   registerGumroadRoutes(app);
-  console.log("✅ Gumroad monetization routes registered");
+  logger.info("✅ Gumroad monetization routes registered");
   
   // Mount S3 routes if enabled
   if (features.s3Enabled) {
     app.use('/api/s3', s3Routes);
     app.use('/api/s3-optimized', s3RoutesOptimized);
     app.use('/api/s3-monitoring', s3MonitoringRoutes);
-    console.log("✅ S3 routes mounted");
+    logger.info("✅ S3 routes mounted");
   }
   
   // Register enhanced parsing system routes
   registerEnhancedRoutes(app);
   registerEnhancedDemoRoutes(app);
-  console.log("✅ Enhanced routes registered");
+  logger.info("✅ Enhanced routes registered");
   
   // Register cache management routes
   app.use('/api/cache', cacheRoutes);
-  console.log("✅ Cache management routes registered");
+  logger.info("✅ Cache management routes registered");
   
   // Health check endpoint
   app.get('/api/health', (_, res) => {
@@ -184,12 +185,12 @@ export async function registerRoutes(app: Express): Promise<void> {
   
   // Set up Swagger API documentation
   setupSwagger(app);
-  console.log("📚 API documentation setup complete");
+  logger.info("📚 API documentation setup complete");
   
-  console.log("✅ All routes registered successfully");
+  logger.info("✅ All routes registered successfully");
   
   } catch (error) {
-    console.error("❌ Error registering routes:", error);
+    logger.error("❌ Error registering routes", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
     
     // Register fallback error route
     app.get('/api/*', (_, res) => {

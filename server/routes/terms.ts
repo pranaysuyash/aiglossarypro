@@ -7,6 +7,7 @@ import type { ITerm, ApiResponse, PaginatedResponse } from "../../shared/types";
 import { validateInput, termIdSchema, paginationSchema } from "../middleware/security";
 import { rateLimitMiddleware, initializeRateLimiting } from "../middleware/rateLimiting";
 import { log as logger } from "../utils/logger";
+import { parsePaginationParams, calculatePaginationMetadata, parseLimit, applyClientSidePagination } from "../utils/pagination";
 
 // Define sort order enum
 export enum SortOrder {
@@ -90,15 +91,18 @@ export function registerTermRoutes(app: Express): void {
   // Get all terms with pagination
   app.get('/api/terms', async (req, res) => {
     try {
-      const page = parseInt(req.query.page as string) || 1;
-      const limit = parseInt(req.query.limit as string) || 20;
+      // Parse pagination parameters
+      const { page, limit, offset } = parsePaginationParams({
+        page: req.query.page,
+        limit: req.query.limit,
+        defaultLimit: 20,
+        maxLimit: 100
+      });
+
       const search = req.query.search as string;
       const category = req.query.category as string;
       const sortBy = req.query.sortBy as string || 'name';
       const sortOrder = req.query.sortOrder as string || SortOrder.ASC;
-
-      // Calculate offset
-      const offset = (page - 1) * limit;
 
       // Use existing storage method with proper parameters
       const result = await storage.getAllTerms({
@@ -111,9 +115,7 @@ export function registerTermRoutes(app: Express): void {
       });
 
       // Calculate pagination metadata
-      const totalPages = Math.ceil(result.total / limit);
-      const hasMore = page < totalPages;
-      const hasPrevious = page > 1;
+      const pagination = calculatePaginationMetadata(page, limit, result.total);
 
       res.json({
         success: true,
@@ -121,17 +123,8 @@ export function registerTermRoutes(app: Express): void {
         total: result.total,
         page: page,
         limit: limit,
-        hasMore: hasMore,
-        pagination: {
-          currentPage: page,
-          totalPages,
-          totalItems: result.total,
-          itemsPerPage: limit,
-          hasMore,
-          hasPrevious,
-          startItem: offset + 1,
-          endItem: Math.min(offset + limit, result.total)
-        }
+        hasMore: pagination.hasMore,
+        pagination
       });
     } catch (error) {
       logger.error('Error fetching terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
@@ -146,12 +139,12 @@ export function registerTermRoutes(app: Express): void {
   // Get featured terms
   app.get('/api/terms/featured', async (req: Request, res: Response) => {
     try {
-      const { limit = 10 } = req.query;
+      const limit = parseLimit(req.query.limit, 10, 50);
       const featuredTerms = await storage.getFeaturedTerms();
       
       const response: ApiResponse<ITerm[]> = {
         success: true,
-        data: featuredTerms.slice(0, parseInt(limit as string))
+        data: featuredTerms.slice(0, limit)
       };
       
       res.json(response);
@@ -167,8 +160,8 @@ export function registerTermRoutes(app: Express): void {
   // Get trending terms
   app.get('/api/terms/trending', async (req: Request, res: Response) => {
     try {
-      const { limit = 10 } = req.query;
-      const trendingTerms = await storage.getTrendingTerms(parseInt(limit as string));
+      const limit = parseLimit(req.query.limit, 10, 50);
+      const trendingTerms = await storage.getTrendingTerms(limit);
       
       const response: ApiResponse<ITerm[]> = {
         success: true,
@@ -230,8 +223,9 @@ export function registerTermRoutes(app: Express): void {
       const { limit = 10 } = req.query;
       
       // For now, get the most recently created terms
+      const limitNum = parseLimit(limit, 10, 50);
       const result = await storage.getAllTerms({
-        limit: parseInt(limit as string),
+        limit: limitNum,
         offset: 0,
         sortBy: 'createdAt',
         sortOrder: SortOrder.DESC
@@ -259,11 +253,12 @@ export function registerTermRoutes(app: Express): void {
       
       // For now, return featured terms as recommended
       // You can implement more sophisticated recommendation logic later
+      const limitNum = parseLimit(limit, 10, 50);
       const recommendedTerms = await storage.getFeaturedTerms();
       
       const response: ApiResponse<ITerm[]> = {
         success: true,
-        data: recommendedTerms.slice(0, parseInt(limit as string))
+        data: recommendedTerms.slice(0, limitNum)
       };
       
       res.json(response);
@@ -294,28 +289,36 @@ export function registerTermRoutes(app: Express): void {
         });
       }
 
-      const pageNum = Math.max(1, parseInt(page as string));
-      const limitNum = Math.min(50, Math.max(1, parseInt(limit as string)));
-      const offset = (pageNum - 1) * limitNum;
+      // Parse pagination parameters
+      const { page: pageNum, limit: limitNum } = parsePaginationParams({
+        page,
+        limit,
+        defaultLimit: 10,
+        maxLimit: 50
+      });
       
       // Use existing search method
       const searchResults = await storage.searchTerms(searchQuery);
       
-      // Apply pagination and filtering
+      // Apply filtering
       let filteredResults = searchResults;
       if (category) {
         filteredResults = searchResults.filter(term => term.categoryId === category);
       }
       
-      const total = filteredResults.length;
-      const paginatedResults = filteredResults.slice(offset, offset + limitNum);
+      // Apply client-side pagination (ideally this should be moved to database level)
+      const { paginatedItems, totalItems, metadata } = applyClientSidePagination(
+        filteredResults,
+        pageNum,
+        limitNum
+      );
 
       const response: PaginatedResponse<ITerm> = {
-        data: paginatedResults,
-        total,
+        data: paginatedItems,
+        total: totalItems,
         page: pageNum,
         limit: limitNum,
-        hasMore: offset + limitNum < total
+        hasMore: metadata.hasMore
       };
 
       res.json({
@@ -388,11 +391,12 @@ export function registerTermRoutes(app: Express): void {
       const { id } = req.params;
       const { limit = 5 } = req.query;
       
+      const limitNum = parseLimit(limit, 10, 50);
       const recommendations = await storage.getRecommendedTermsForTerm(id, null);
       
       const response: ApiResponse<ITerm[]> = {
         success: true,
-        data: recommendations.slice(0, parseInt(limit as string))
+        data: recommendations.slice(0, limitNum)
       };
       
       res.json(response);

@@ -1,7 +1,8 @@
 import { db } from '../db';
-import { sql } from 'drizzle-orm';
+import { sql, eq, and } from 'drizzle-orm';
 import { readFileSync } from 'fs';
 import { join } from 'path';
+import { enhancedTerms } from '../../shared/enhancedSchema';
 
 // Load standardized sections from external configuration
 function loadStandardSections() {

@@ -3,6 +3,23 @@ import { isAuthenticated } from "../replitAuth";
 import { requireAdmin, authenticateToken } from "../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mockAuth";
 import { features } from "../config";
+import { db } from '../db';
+import { enhancedTerms, termViews, users, favorites, userProgress } from '../../shared/enhancedSchema';
+import { sql, gte, eq, desc, count } from 'drizzle-orm';
+import {
+  validateQuery,
+  GeneralAnalyticsQuerySchema,
+  UserAnalyticsQuerySchema,
+  ContentAnalyticsQuerySchema,
+  CategoryAnalyticsQuerySchema,
+  ExportAnalyticsQuerySchema,
+  timeframeToDays,
+  type GeneralAnalyticsQuery,
+  type UserAnalyticsQuery,
+  type ContentAnalyticsQuery,
+  type CategoryAnalyticsQuery,
+  type ExportAnalyticsQuery
+} from '../schemas/analyticsValidation';
 
 /**
  * Analytics and reporting routes
@@ -13,20 +30,13 @@ export function registerAnalyticsRoutes(app: Express): void {
   const tokenMiddleware = features.replitAuthEnabled ? authenticateToken : mockAuthenticateToken;
   
   // General analytics (public - basic metrics only)
-  app.get('/api/analytics', async (req: Request, res: Response) => {
+  app.get('/api/analytics', validateQuery(GeneralAnalyticsQuerySchema), async (req: Request, res: Response) => {
     try {
-      const { 
-        timeframe = '30d',
-        granularity = 'daily'
-      } = req.query;
+      const { timeframe, granularity } = req.query as GeneralAnalyticsQuery;
       
-      // Parse timeframe
-      const days = timeframe === '24h' ? 1 : timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 7;
+      // Parse timeframe using utility function
+      const days = timeframeToDays(timeframe);
       const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-      
-      const { db } = await import('../db');
-      const { enhancedTerms, termViews, users } = await import('../../shared/enhancedSchema');
-      const { sql, gte, count, desc } = await import('drizzle-orm');
       
       // Get basic analytics
       const [analytics] = await db
@@ -59,18 +69,14 @@ export function registerAnalyticsRoutes(app: Express): void {
   });
 
   // User-specific analytics (authenticated)
-  app.get('/api/analytics/user', authMiddleware, async (req: any, res: Response) => {
+  app.get('/api/analytics/user', authMiddleware, validateQuery(UserAnalyticsQuerySchema), async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const { timeframe = '30d' } = req.query;
+      const { timeframe } = req.query as UserAnalyticsQuery;
       
-      // Parse timeframe
-      const days = timeframe === '24h' ? 1 : timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 7;
+      // Parse timeframe using utility function
+      const days = timeframeToDays(timeframe);
       const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-      
-      const { db } = await import('../db');
-      const { termViews, favorites, userProgress } = await import('../../shared/enhancedSchema');
-      const { sql, gte, eq, count } = await import('drizzle-orm');
       
       // Get user-specific analytics
       const [userAnalytics] = await db
@@ -100,27 +106,16 @@ export function registerAnalyticsRoutes(app: Express): void {
   });
 
   // Content performance analytics (admin only)
-  app.get('/api/analytics/content', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/analytics/content', authMiddleware, tokenMiddleware, requireAdmin, validateQuery(ContentAnalyticsQuerySchema), async (req: Request, res: Response) => {
     try {
-      const { 
-        timeframe = '30d',
-        limit = 20,
-        sort = 'views',
-        page = 1
-      } = req.query;
+      const { timeframe, limit, sort, page } = req.query as ContentAnalyticsQuery;
       
-      // Proper pagination with reasonable limits
-      const pageSize = Math.min(parseInt(limit as string) || 20, 1000); // Allow up to 1000
-      const pageNumber = Math.max(parseInt(page as string) || 1, 1);
-      const offset = (pageNumber - 1) * pageSize;
+      // Calculate pagination
+      const offset = (page - 1) * limit;
       
-      // Parse timeframe
-      const days = timeframe === '24h' ? 1 : timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 7;
+      // Parse timeframe using utility function
+      const days = timeframeToDays(timeframe);
       const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-      
-      const { db } = await import('../db');
-      const { enhancedTerms, termViews } = await import('../../shared/enhancedSchema');
-      const { sql, gte, eq, desc, count } = await import('drizzle-orm');
       
       // Get content analytics
       const contentAnalytics = await db
@@ -137,7 +132,7 @@ export function registerAnalyticsRoutes(app: Express): void {
         .where(gte(termViews.viewedAt, startDate))
         .groupBy(enhancedTerms.id)
         .orderBy(sort === 'views' ? desc(sql`count(${termViews.id})`) : desc(enhancedTerms.name))
-        .limit(pageSize)
+        .limit(limit)
         .offset(offset);
       
       // Get total count for pagination
@@ -153,10 +148,10 @@ export function registerAnalyticsRoutes(app: Express): void {
           timeframe,
           content: contentAnalytics,
           pagination: {
-            page: pageNumber,
-            limit: pageSize,
+            page,
+            limit,
             total: totalCount[0]?.count || 0,
-            totalPages: Math.ceil((totalCount[0]?.count || 0) / pageSize)
+            totalPages: Math.ceil((totalCount[0]?.count || 0) / limit)
           },
           generatedAt: new Date().toISOString()
         }
@@ -171,17 +166,13 @@ export function registerAnalyticsRoutes(app: Express): void {
   });
 
   // Category performance analytics (admin only)
-  app.get('/api/analytics/categories', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/analytics/categories', authMiddleware, tokenMiddleware, requireAdmin, validateQuery(CategoryAnalyticsQuerySchema), async (req: Request, res: Response) => {
     try {
-      const { timeframe = '30d' } = req.query;
+      const { timeframe } = req.query as CategoryAnalyticsQuery;
       
-      // Parse timeframe
-      const days = timeframe === '24h' ? 1 : timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 7;
+      // Parse timeframe using utility function
+      const days = timeframeToDays(timeframe);
       const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-      
-      const { db } = await import('../db');
-      const { enhancedTerms, termViews } = await import('../../shared/enhancedSchema');
-      const { sql, gte, eq, desc, count } = await import('drizzle-orm');
       
       // Get category analytics
       const categoryAnalytics = await db
@@ -217,9 +208,6 @@ export function registerAnalyticsRoutes(app: Express): void {
   // Real-time analytics (admin only)
   app.get('/api/analytics/realtime', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      const { db } = await import('../db');
-      const { termViews, enhancedTerms } = await import('../../shared/enhancedSchema');
-      const { sql, gte, desc, count } = await import('drizzle-orm');
       
       // Get last hour activity
       const lastHour = new Date(Date.now() - 60 * 60 * 1000);
@@ -251,7 +239,7 @@ export function registerAnalyticsRoutes(app: Express): void {
   });
 
   // Export analytics data (admin only) - already has admin verification
-  app.get('/api/analytics/export', authMiddleware, async (req: any, res: Response) => {
+  app.get('/api/analytics/export', authMiddleware, validateQuery(ExportAnalyticsQuerySchema), async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const { isUserAdmin } = await import('../utils/authUtils');
@@ -264,19 +252,11 @@ export function registerAnalyticsRoutes(app: Express): void {
         });
       }
       
-      const { 
-        format = 'json',
-        timeframe = '30d',
-        type = 'summary'
-      } = req.query;
+      const { format, timeframe, type } = req.query as ExportAnalyticsQuery;
       
-      // Parse timeframe
-      const days = timeframe === '24h' ? 1 : timeframe === '7d' ? 7 : timeframe === '30d' ? 30 : 7;
+      // Parse timeframe using utility function
+      const days = timeframeToDays(timeframe);
       const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-      
-      const { db } = await import('../db');
-      const { enhancedTerms, termViews, users } = await import('../../shared/enhancedSchema');
-      const { sql, gte, desc, count } = await import('drizzle-orm');
       
       // Get export data
       const exportData = await db

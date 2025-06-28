@@ -86,6 +86,21 @@ export interface SearchResult {
   hasMore: boolean;
 }
 
+export interface AdvancedSearchOptions {
+  query?: string;
+  filters?: {
+    categories?: string[];
+    difficulty?: string;
+    hasCodeExamples?: boolean;
+    hasInteractiveElements?: boolean;
+    applicationDomains?: string[];
+    techniques?: string[];
+  };
+  page: number;
+  limit: number;
+  sortBy?: 'relevance' | 'name' | 'popularity' | 'recent';
+}
+
 // Analytics and progress types
 export interface UserProgress {
   id: string;

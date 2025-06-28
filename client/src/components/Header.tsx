@@ -11,6 +11,7 @@ import {
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
+import { useFocusTrap, useFocusLock } from "@/hooks/useFocusTrap";
 import SearchBar from "./SearchBar";
 
 export default function Header() {
@@ -18,6 +19,15 @@ export default function Header() {
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
+  
+  // Focus trap for mobile menu
+  const mobileMenuRef = useFocusTrap(mobileMenuOpen);
+  useFocusLock(mobileMenuOpen);
+  
+  // Handle escape key to close mobile menu
+  const handleEscapeClose = () => {
+    setMobileMenuOpen(false);
+  };
 
   const handleLogout = () => {
     window.location.href = "/api/auth/logout";
@@ -80,7 +90,11 @@ export default function Header() {
             {isAuthenticated ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700">
+                  <Button 
+                    variant="ghost" 
+                    className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                    aria-label={`User menu for ${userObj?.firstName || 'User'}`}
+                  >
                     <Avatar className="h-8 w-8">
                       {userObj?.profileImageUrl && (
                         <AvatarImage 
@@ -161,7 +175,20 @@ export default function Header() {
         
         {/* Mobile menu (hidden by default) */}
         {mobileMenuOpen && (
-          <div id="mobile-navigation-menu" className="md:hidden py-4 border-t border-gray-100 dark:border-gray-700">
+          <div 
+            id="mobile-navigation-menu" 
+            ref={mobileMenuRef}
+            className="md:hidden py-4 border-t border-gray-100 dark:border-gray-700"
+            onKeyDown={(e) => {
+              if (e.key === 'Escape') {
+                e.preventDefault();
+                handleEscapeClose();
+              }
+            }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Mobile navigation menu"
+          >
             <nav aria-label="Mobile navigation menu" role="navigation">
               <ul className="flex flex-col space-y-2">
                 <li>

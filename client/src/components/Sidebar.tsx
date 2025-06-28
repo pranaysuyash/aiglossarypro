@@ -99,7 +99,11 @@ export default function Sidebar() {
                     {userProgress?.termsLearned || 0}/{userProgress?.totalTerms || 0}
                   </span>
                 </div>
-                <Progress value={userProgress ? (userProgress.termsLearned / userProgress.totalTerms) * 100 : 0} className="h-2" />
+                <Progress 
+                  value={userProgress ? (userProgress.termsLearned / userProgress.totalTerms) * 100 : 0} 
+                  className="h-2"
+                  aria-label={`Learning progress: ${userProgress?.termsLearned || 0} out of ${userProgress?.totalTerms || 0} terms learned`}
+                />
               </div>
               
               <div>

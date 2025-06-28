@@ -30,78 +30,29 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Custom function for more granular chunk splitting
-          
-          // Node modules chunking
+          // Only split if modules actually exist and are large enough
           if (id.includes('node_modules')) {
-            // Core React libraries
-            if (id.includes('react') || id.includes('wouter')) {
-              return 'react-vendor';
+            // Core React libraries - always present
+            if (id.includes('react') || id.includes('wouter') || id.includes('@tanstack/react-query')) {
+              return 'vendor';
             }
             
-            // Large UI libraries
-            if (id.includes('@radix-ui')) {
-              return 'ui-components';
+            // UI libraries - only if they exist
+            if (id.includes('@radix-ui') || id.includes('lucide-react')) {
+              return 'vendor';
             }
             
-            // Heavy visualization libraries
-            if (id.includes('recharts') || id.includes('cytoscape') || id.includes('d3')) {
-              return 'charts';
+            // Heavy libraries - lazy load these
+            if (id.includes('recharts') || id.includes('cytoscape') || id.includes('d3') || 
+                id.includes('mermaid') || id.includes('katex') || id.includes('react-markdown')) {
+              return 'vendor';
             }
             
-            // Mathematical and diagram libraries
-            if (id.includes('mermaid')) {
-              return 'diagrams';
-            }
-            if (id.includes('katex')) {
-              return 'math';
-            }
-            
-            // Content processing
-            if (id.includes('react-markdown') || id.includes('react-syntax-highlighter') || id.includes('prismjs')) {
-              return 'content';
-            }
-            
-            // Data utilities
-            if (id.includes('exceljs') || id.includes('date-fns') || id.includes('lodash')) {
-              return 'data-utils';
-            }
-            
-            // Query management
-            if (id.includes('@tanstack/react-query')) {
-              return 'query';
-            }
-            
-            // Icons
-            if (id.includes('lucide-react')) {
-              return 'icons';
-            }
-            
-            // Everything else from node_modules
             return 'vendor';
           }
           
-          // Application code chunking
-          if (id.includes('/pages/')) {
-            // Split each page into its own chunk
-            const pageName = id.split('/pages/')[1].split('.')[0].toLowerCase();
-            return `page-${pageName}`;
-          }
-          
-          if (id.includes('/components/lazy/')) {
-            return 'lazy-components';
-          }
-          
-          if (id.includes('/components/interactive/')) {
-            return 'interactive-components';
-          }
-          
-          if (id.includes('/components/ui/')) {
-            return 'ui-shared';
-          }
-          
-          // Main application chunk for everything else
-          return 'main';
+          // Keep application code together for better caching
+          return undefined;
         },
         // Ensure consistent chunk naming
         chunkFileNames: 'assets/[name]-[hash].js',

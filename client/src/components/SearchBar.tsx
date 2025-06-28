@@ -29,6 +29,7 @@ export default function SearchBar({
   initialValue = ""
 }: SearchBarProps) {
   const [query, setQuery] = useState(initialValue);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialValue);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedIndex, setSelectedIndex] = useState(-1);
   const [useAISearch, setUseAISearch] = useState(false);
@@ -37,18 +38,27 @@ export default function SearchBar({
   const suggestionsRef = useRef<HTMLDivElement>(null);
   const listboxId = "search-suggestions-listbox";
 
-  // Fetch suggestions when query changes
+  // Debounce the query to prevent excessive API calls
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(query);
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timer);
+  }, [query]);
+
+  // Fetch suggestions when debounced query changes
   const { data: suggestions = [], isLoading } = useQuery<SearchSuggestion[]>({
-    queryKey: [`/api/search/suggestions?q=${query}&limit=8`],
-    enabled: query.length >= 2,
+    queryKey: [`/api/search/suggestions?q=${debouncedQuery}&limit=8`],
+    enabled: debouncedQuery.length >= 2,
     refetchOnWindowFocus: false,
     staleTime: 30000, // 30 seconds
   });
 
   useEffect(() => {
-    setShowSuggestions(query.length >= 2 && Array.isArray(suggestions) && suggestions.length > 0);
+    setShowSuggestions(debouncedQuery.length >= 2 && Array.isArray(suggestions) && suggestions.length > 0);
     setSelectedIndex(-1);
-  }, [suggestions, query]);
+  }, [suggestions, debouncedQuery]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;

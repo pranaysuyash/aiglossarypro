@@ -86,7 +86,7 @@ export function Terms() {
   };
 
   const handleCategoryChange = (categoryId: string) => {
-    setSelectedCategory(categoryId);
+    setSelectedCategory(categoryId === "all" ? "" : categoryId);
     setCurrentPage(1);
   };
 
@@ -175,12 +175,12 @@ export function Terms() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-2">Category</label>
-                  <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+                  <Select value={selectedCategory || "all"} onValueChange={handleCategoryChange}>
                     <SelectTrigger>
                       <SelectValue placeholder="All categories" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="">All categories</SelectItem>
+                      <SelectItem value="all">All categories</SelectItem>
                       {categories.map((category: any) => (
                         <SelectItem key={category.id} value={category.id}>
                           {category.name}

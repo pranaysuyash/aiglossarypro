@@ -36,13 +36,13 @@ export default function Favorites() {
   const [sortOrder, setSortOrder] = useState<"alphabetical" | "recent" | "views">("recent");
   
   // Fetch user's favorite terms
-  const { data: favorites, isLoading } = useQuery<ITerm[]>({
+  const { data: favorites, isLoading, error: favoritesError } = useQuery<ITerm[]>({
     queryKey: ["/api/favorites"],
     enabled: isAuthenticated,
   });
   
   // Fetch categories for filtering
-  const { data: categories } = useQuery<ICategory[]>({
+  const { data: categories, error: categoriesError } = useQuery<ICategory[]>({
     queryKey: ["/api/categories"],
     enabled: isAuthenticated,
   });
@@ -91,6 +91,29 @@ export default function Favorites() {
     );
   }
 
+  // Handle errors
+  if (favoritesError || categoriesError) {
+    return (
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <Card className="max-w-md mx-auto">
+          <CardHeader>
+            <CardTitle className="text-center text-red-600">Error Loading Data</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-center mb-4">
+              {favoritesError ? "Failed to load favorites." : "Failed to load categories."}
+            </p>
+            <div className="flex justify-center">
+              <Button onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex justify-between items-center mb-6">
@@ -125,13 +148,16 @@ export default function Favorites() {
         </div>
         
         <div className="flex gap-2">
-          <Select onValueChange={(value) => setCategoryFilter(value || null)}>
+          <Select 
+            value={categoryFilter || "all"} 
+            onValueChange={(value) => setCategoryFilter(value === "all" ? null : value)}
+          >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="All Categories" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">All Categories</SelectItem>
-              {categories?.map((category: any) => (
+              <SelectItem value="all">All Categories</SelectItem>
+              {categories && categories.length > 0 && categories.map((category: any) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
                 </SelectItem>

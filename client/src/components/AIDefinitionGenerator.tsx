@@ -146,12 +146,12 @@ export function AIDefinitionGenerator({
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Category (Optional)</label>
-              <Select value={category} onValueChange={setCategory} disabled={isGenerating}>
+              <Select value={category || "none"} onValueChange={(value) => setCategory(value === "none" ? "" : value)} disabled={isGenerating}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">No specific category</SelectItem>
+                  <SelectItem value="none">No specific category</SelectItem>
                   {categories.map((cat: any) => (
                     <SelectItem key={cat.id} value={cat.name}>
                       {cat.name}

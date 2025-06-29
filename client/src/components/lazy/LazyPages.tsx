@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ErrorBoundary } from '@/components/ErrorBoundary';
 
 // Page Loading Skeleton
 const PageSkeleton = () => (
@@ -34,13 +35,15 @@ export const LazyUserProgressDashboard = lazy(() => import('@/pages/UserProgress
 export const LazyEnhancedTermDetail = lazy(() => import('@/pages/EnhancedTermDetail'));
 export const LazyLifetime = lazy(() => import('@/pages/Lifetime'));
 
-// HOC to wrap lazy pages with Suspense
+// HOC to wrap lazy pages with Suspense and ErrorBoundary
 export function withLazyLoading<T extends object>(Component: React.ComponentType<T>) {
   return function LazyWrapper(props: T) {
     return (
-      <Suspense fallback={<PageSkeleton />}>
-        <Component {...props} />
-      </Suspense>
+      <ErrorBoundary>
+        <Suspense fallback={<PageSkeleton />}>
+          <Component {...props} />
+        </Suspense>
+      </ErrorBoundary>
     );
   };
 }

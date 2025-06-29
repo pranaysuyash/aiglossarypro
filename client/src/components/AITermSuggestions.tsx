@@ -107,12 +107,12 @@ export function AITermSuggestions({
           <div className="flex gap-4 items-end">
             <div className="flex-1 space-y-2">
               <label className="text-sm font-medium">Focus Category (Optional)</label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <Select value={selectedCategory || "all"} onValueChange={(value) => setSelectedCategory(value === "all" ? "" : value)}>
                 <SelectTrigger>
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">All categories</SelectItem>
+                  <SelectItem value="all">All categories</SelectItem>
                   {categories.map((cat: any) => (
                     <SelectItem key={cat.id} value={cat.name}>
                       {cat.name} ({cat.termCount} terms)

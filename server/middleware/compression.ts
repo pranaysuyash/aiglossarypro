@@ -17,7 +17,7 @@ export async function compressionMiddleware(req: Request, res: Response, next: N
   const originalSend = res.send;
   
   // Override res.json to add compression
-  res.json = function(body: any) {
+  res.json = function(this: Response, body: any) {
     const jsonString = JSON.stringify(body);
     const sizeInBytes = Buffer.byteLength(jsonString, 'utf8');
     
@@ -39,10 +39,11 @@ export async function compressionMiddleware(req: Request, res: Response, next: N
           // Fallback to uncompressed
           originalJson.call(this, body);
         });
+      return this;
     } else {
       return originalJson.call(this, body);
     }
-  };
+  } as any;
   
   next();
 }

@@ -37,7 +37,7 @@ export function registerUserRoutes(app: Express): void {
   const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
   
   // Favorites management
-  app.get('/api/favorites', authMiddleware, parsePagination, async (req: AuthenticatedRequest & RequestWithPagination, res: Response) => {
+  app.get('/api/favorites', authMiddleware as any, parsePagination, async (req: AuthenticatedRequest & RequestWithPagination, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const { page, limit, offset } = req.pagination;
@@ -61,7 +61,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.get('/api/favorites/:id', authMiddleware, parseId(), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
+  app.get('/api/favorites/:id', authMiddleware as any, parseId(), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.parsedId;
@@ -81,7 +81,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.post('/api/favorites/:id', authMiddleware, parseId(), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
+  app.post('/api/favorites/:id', authMiddleware as any, parseId(), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.parsedId;
@@ -101,7 +101,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.delete('/api/favorites/:id', authMiddleware, parseId(), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
+  app.delete('/api/favorites/:id', authMiddleware as any, parseId(), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.parsedId;
@@ -122,7 +122,7 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // Progress tracking
-  app.get('/api/user/progress', authMiddleware, parsePagination, async (req: AuthenticatedRequest & RequestWithPagination, res: Response) => {
+  app.get('/api/user/progress', authMiddleware as any, parsePagination, async (req: AuthenticatedRequest & RequestWithPagination, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const { page, limit, offset } = req.pagination;
@@ -147,7 +147,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.get('/api/progress/:id', authMiddleware, parseId(), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
+  app.get('/api/progress/:id', authMiddleware as any, parseId(), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.parsedId;
@@ -168,7 +168,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.post('/api/progress/:id', authMiddleware, parseId(), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
+  app.post('/api/progress/:id', authMiddleware as any, parseId(), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.parsedId;
@@ -198,7 +198,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.delete('/api/progress/:id', authMiddleware, parseId(), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
+  app.delete('/api/progress/:id', authMiddleware as any, parseId(), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.parsedId;
@@ -219,7 +219,7 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // User activity and analytics
-  app.get('/api/user/activity', authMiddleware, parsePagination, parseNumericQuery('days', 30, 1, 365), async (req: AuthenticatedRequest & RequestWithPagination & RequestWithParsedQuery, res: Response) => {
+  app.get('/api/user/activity', authMiddleware as any, parsePagination, parseNumericQuery('days', 30, 1, 365), async (req: AuthenticatedRequest & RequestWithPagination & RequestWithParsedQuery, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const { page, limit } = req.pagination;
@@ -250,7 +250,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.get('/api/user/streak', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/streak', authMiddleware as any, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const streak = await storage.getUserStreak(userId);
@@ -269,7 +269,7 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // User statistics
-  app.get('/api/user/stats', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/stats', authMiddleware as any, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const stats = await storage.getUserStats(userId);
@@ -288,7 +288,7 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // Access status endpoint for monetization
-  app.get('/api/user/access-status', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/access-status', authMiddleware as any, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -338,7 +338,7 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // Term access check endpoint
-  app.get('/api/user/term-access/:termId', authMiddleware, parseId('termId'), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
+  app.get('/api/user/term-access/:termId', authMiddleware as any, parseId('termId'), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.parsedId;

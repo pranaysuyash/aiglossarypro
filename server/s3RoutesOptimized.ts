@@ -8,7 +8,7 @@ import { isAuthenticated } from './replitAuth';
 import { WebSocket } from 'ws';
 
 const router = Router();
-const wsRouter = expressWs(router).getWss;
+const wsRouter = expressWs(router as any).getWss;
 
 // Configure multer for file uploads with enhanced validation
 const upload = multer({

@@ -7,7 +7,7 @@ import { errorLogger, ErrorCategory } from "../../middleware/errorHandler";
 import { log as logger } from "../../utils/logger";
 import { BULK_ACTIONS } from "../../constants";
 import { db } from "../../db";
-import { terms } from "../../../shared/schema";
+import { terms, categories } from "../../../shared/schema";
 import { eq } from "drizzle-orm";
 
 const adminContentRouter = Router();

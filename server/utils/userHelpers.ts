@@ -12,8 +12,7 @@ export function transformUserForPublic(user: any): Partial<IUser> {
     firstName: user.firstName || user.first_name,
     lastName: user.lastName || user.last_name,
     profileImageUrl: user.profileImageUrl || user.profile_image_url,
-    createdAt: user.createdAt || user.created_at,
-    updatedAt: user.updatedAt || user.updated_at
+    createdAt: user.createdAt || user.created_at
   };
 }
 
@@ -34,7 +33,6 @@ export function transformUserForAdmin(user: any): any {
     subscriptionTier: user.subscriptionTier || user.subscription_tier,
     purchaseDate: user.purchaseDate || user.purchase_date,
     createdAt: user.createdAt || user.created_at,
-    updatedAt: user.updatedAt || user.updated_at,
     lastLoginAt: user.lastLoginAt || user.last_login_at,
     termsViewed: user.termsViewed || user.terms_viewed || 0,
     favoriteTerms: user.favoriteTerms || user.favorite_terms || 0

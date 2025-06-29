@@ -204,7 +204,7 @@ async function getDataSample(filePath: string): Promise<any> {
           const category = record['Category'] || record['Main Category'] || '';
           
           if (termName) {
-            sample.terms.push({
+            (sample.terms as any[]).push({
               name: termName,
               definition: definition.substring(0, 200), // Truncate for sample
               category
@@ -280,7 +280,7 @@ async function processWithNodeStreaming(filePath: string, options: ProcessingOpt
     }
     
     // Import the CSV streaming processor class
-    const { default: CSVStreamingProcessor } = await import('../csv_streaming_processor');
+    const CSVStreamingProcessor = (await import('../csv_streaming_processor') as any).default;
     
     const processor = new (CSVStreamingProcessor as any)({
       batchSize: options.chunkSize || DEFAULT_CHUNK_SIZE,

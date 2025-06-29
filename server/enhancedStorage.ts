@@ -311,8 +311,12 @@ interface FeedbackStatistics {
   total?: number;
   averageRating: number;
   categoryBreakdown: Record<string, number>;
+  byCategory?: Record<string, number>;
+  byStatus?: Record<string, number>;
+  byRating?: Record<string, number>;
   recentTrends: any[];
   daily?: any[];
+  topIssues?: Array<{ issue: string; count: number }>;
 }
 
 type FeedbackStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed' | 'archived';
@@ -1799,7 +1803,14 @@ export class EnhancedStorage implements IEnhancedStorage {
         } else {
           // Generate mock stats for development
           stats = {
+            totalFeedback: 156,
             total: 156,
+            categoryBreakdown: {
+              general: 45,
+              term: 78,
+              bug: 23,
+              feature: 10
+            },
             byCategory: {
               general: 45,
               term: 78,
@@ -1820,12 +1831,10 @@ export class EnhancedStorage implements IEnhancedStorage {
               5: 78
             },
             averageRating: 4.2,
-            recentTrends: {
-              daily: Array.from({ length: 7 }, (_, i) => ({
-                date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-                count: Math.floor(Math.random() * 20) + 5
-              })).reverse()
-            } as any,
+            recentTrends: Array.from({ length: 7 }, (_, i) => ({
+              date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+              count: Math.floor(Math.random() * 20) + 5
+            })).reverse(),
             topIssues: [
               { issue: 'Definition clarity', count: 23 },
               { issue: 'Missing examples', count: 18 },
@@ -1837,12 +1846,14 @@ export class EnhancedStorage implements IEnhancedStorage {
         console.warn('[EnhancedStorage] Base storage stats retrieval failed:', statsError);
         // Return basic stats
         stats = {
+          totalFeedback: 0,
           total: 0,
+          categoryBreakdown: {},
           byCategory: {},
           byStatus: {},
           byRating: {},
           averageRating: 0,
-          recentTrends: { daily: [] } as any,
+          recentTrends: [],
           topIssues: []
         };
       }
@@ -2568,7 +2579,13 @@ export class EnhancedStorage implements IEnhancedStorage {
           const sections = await this.termsStorage.getTermSections(termId);
           if (sections && sections.length > 0) {
             console.log(`[EnhancedStorage] getTermSections: Found ${sections.length} sections`);
-            return sections;
+            return sections.map(section => ({
+              ...section,
+              priority: section.priority ?? undefined,
+              isInteractive: section.isInteractive ?? undefined,
+              createdAt: section.createdAt ?? undefined,
+              updatedAt: section.updatedAt ?? undefined
+            }));
           }
         }
       } catch (enhancedError) {
@@ -2591,13 +2608,13 @@ export class EnhancedStorage implements IEnhancedStorage {
         sectionName: section.name,
         sectionData: {},
         displayType: 'text',
-        priority: section.displayOrder,
+        priority: section.displayOrder ?? undefined,
         isInteractive: false,
-        createdAt: section.createdAt,
-        updatedAt: section.updatedAt,
+        createdAt: section.createdAt ?? undefined,
+        updatedAt: section.updatedAt ?? undefined,
         title: section.name,
         content: '',
-        order: section.displayOrder,
+        order: section.displayOrder ?? undefined,
         metadata: {}
       }));
       
@@ -2834,11 +2851,11 @@ export class EnhancedStorage implements IEnhancedStorage {
             totalTimeSpent: userAnalytics.totalTimeSpent || 0,
             streakDays: (userAnalytics as any).currentStreak || 0,
             favoriteTerms: (userAnalytics as any).favoriteCount || 0,
-            completedSections: userAnalytics.sectionsCompleted || 0,
-            averageRating: userAnalytics.averageRating || 0,
-            categoryProgress: userAnalytics.categoryProgress || {},
-            achievements: userAnalytics.achievements || [],
-            lastActivity: userAnalytics.lastActivity || new Date()
+            completedSections: (userAnalytics as any).sectionsCompleted || 0,
+            averageRating: (userAnalytics as any).averageRating || 0,
+            categoryProgress: (userAnalytics as any).categoryProgress || {},
+            achievements: (userAnalytics as any).achievements || [],
+            lastActivity: (userAnalytics as any).lastActivity || new Date()
           };
           
           console.log(`[EnhancedStorage] getUserProgressStats: Retrieved stats for user ${userId}`);
@@ -3129,7 +3146,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         if (existingStreak) {
           console.log('[EnhancedStorage] updateLearningStreak: Found existing streak');
           
-          const lastActivityDate = new Date(existingStreak.lastActivityDate);
+          const lastActivityDate = new Date((existingStreak as any).lastActivityDate || (existingStreak as any).lastActivity || new Date());
           const lastActivityDay = new Date(lastActivityDate.getFullYear(), lastActivityDate.getMonth(), lastActivityDate.getDate());
           const daysDiff = Math.floor((today.getTime() - lastActivityDay.getTime()) / (1000 * 60 * 60 * 24));
           
@@ -3138,9 +3155,12 @@ export class EnhancedStorage implements IEnhancedStorage {
           if (daysDiff === 0) {
             // Same day - no streak change, just update activity time
             updatedStreak = {
-              ...existingStreak,
+              userId,
+              currentStreak: existingStreak.currentStreak,
+              longestStreak: existingStreak.longestStreak,
               lastActivityDate: now,
-              isActive: true
+              isActive: true,
+              streakType: 'daily'
             };
           } else if (daysDiff === 1) {
             // Consecutive day - extend streak
@@ -3366,7 +3386,7 @@ export class EnhancedStorage implements IEnhancedStorage {
               };
               
               // Store achievement (in real implementation)
-              await this.unlockAchievement(userId, unlockedAchievement);
+              await this.unlockAchievement(userId, unlockedAchievement.id);
               unlockedAchievements.push(unlockedAchievement);
               
               console.log(`[EnhancedStorage] Unlocked achievement: ${achievement.name} for user ${userId}`);
@@ -3457,7 +3477,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       try {
         // Get all categories
         const categoriesResult = await this.getCategories();
-        const categories = categoriesResult.data || [];
+        const categories = Array.isArray(categoriesResult) ? categoriesResult : (categoriesResult as any)?.data || [];
         
         // Get user progress stats
         const userStats = await this.getUserProgressStats(userId);
@@ -3504,7 +3524,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   /**
    * Helper method to check if achievement is already unlocked
    */
-  private async isAchievementUnlocked(userId: string, achievementId: string): Promise<boolean> {
+  async isAchievementUnlocked(userId: string, achievementId: string): Promise<boolean> {
     try {
       if (typeof this.baseStorage.isAchievementUnlocked === 'function') {
         return await this.baseStorage.isAchievementUnlocked(userId, achievementId);
@@ -3519,13 +3539,13 @@ export class EnhancedStorage implements IEnhancedStorage {
   /**
    * Helper method to unlock achievement
    */
-  private async unlockAchievement(userId: string, achievement: Achievement): Promise<void> {
+  async unlockAchievement(userId: string, achievementId: string): Promise<void> {
     try {
       if (typeof this.baseStorage.unlockAchievement === 'function') {
-        await this.baseStorage.unlockAchievement(userId, achievement);
+        await this.baseStorage.unlockAchievement(userId, achievementId);
       }
       // In development, just log
-      console.log(`[EnhancedStorage] Achievement unlocked: ${achievement.name}`);
+      console.log(`[EnhancedStorage] Achievement unlocked: ${achievementId}`);
     } catch (error) {
       console.warn('[EnhancedStorage] Failed to store unlocked achievement:', error);
     }
@@ -3631,8 +3651,8 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getRecentTerms(limit: number): Promise<any[]> {
     try {
-      if (typeof this.baseStorage.getRecentTerms === 'function') {
-        return await this.baseStorage.getRecentTerms(limit);
+      if (typeof (this.baseStorage as any).getRecentTerms === 'function') {
+        return await (this.baseStorage as any).getRecentTerms(limit);
       }
       // Fallback implementation
       return [];
@@ -3644,8 +3664,8 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async getRecentFeedback(limit: number): Promise<any[]> {
     try {
-      if (typeof this.baseStorage.getRecentFeedback === 'function') {
-        return await this.baseStorage.getRecentFeedback(limit);
+      if (typeof (this.baseStorage as any).getRecentFeedback === 'function') {
+        return await (this.baseStorage as any).getRecentFeedback(limit);
       }
       // Fallback implementation
       return [];
@@ -3657,8 +3677,8 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async deleteTerm(id: string): Promise<void> {
     try {
-      if (typeof this.baseStorage.deleteTerm === 'function') {
-        await this.baseStorage.deleteTerm(id);
+      if (typeof (this.baseStorage as any).deleteTerm === 'function') {
+        await (this.baseStorage as any).deleteTerm(id);
       } else {
         console.warn('[EnhancedStorage] deleteTerm not implemented in base storage');
       }
@@ -3670,8 +3690,8 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async bulkDeleteTerms(ids: string[]): Promise<any> {
     try {
-      if (typeof this.baseStorage.bulkDeleteTerms === 'function') {
-        return await this.baseStorage.bulkDeleteTerms(ids);
+      if (typeof (this.baseStorage as any).bulkDeleteTerms === 'function') {
+        return await (this.baseStorage as any).bulkDeleteTerms(ids);
       }
       // Fallback implementation
       return { success: false, message: 'Bulk delete not implemented' };
@@ -3683,8 +3703,8 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async bulkUpdateTermCategory(ids: string[], categoryId: string): Promise<any> {
     try {
-      if (typeof this.baseStorage.bulkUpdateTermCategory === 'function') {
-        return await this.baseStorage.bulkUpdateTermCategory(ids, categoryId);
+      if (typeof (this.baseStorage as any).bulkUpdateTermCategory === 'function') {
+        return await (this.baseStorage as any).bulkUpdateTermCategory(ids, categoryId);
       }
       // Fallback implementation
       return { success: false, message: 'Bulk update category not implemented' };
@@ -3696,8 +3716,8 @@ export class EnhancedStorage implements IEnhancedStorage {
 
   async bulkUpdateTermStatus(ids: string[], status: string): Promise<any> {
     try {
-      if (typeof this.baseStorage.bulkUpdateTermStatus === 'function') {
-        return await this.baseStorage.bulkUpdateTermStatus(ids, status);
+      if (typeof (this.baseStorage as any).bulkUpdateTermStatus === 'function') {
+        return await (this.baseStorage as any).bulkUpdateTermStatus(ids, status);
       }
       // Fallback implementation
       return { success: false, message: 'Bulk update status not implemented' };
@@ -3742,7 +3762,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   }
 
   async getTermsOptimized(options?: { limit?: number }): Promise<any[]> {
-    return this.baseStorage.getTermsOptimized(options);
+    return this.baseStorage.getTermsOptimized?.(options) || [];
   }
 
   // ===== MISSING ADMIN METHODS =====
@@ -3826,7 +3846,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   
   async incrementTermViewCount(termId: string): Promise<void> {
     try {
-      await this.baseStorage.incrementTermViewCount?.(termId);
+      await (this.baseStorage as any).incrementTermViewCount?.(termId);
     } catch (error) {
       console.warn('[EnhancedStorage] incrementTermViewCount fallback:', error);
     }

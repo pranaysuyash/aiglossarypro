@@ -6,6 +6,7 @@ import { requireAdmin } from "../../middleware/adminAuth";
 import { ZodError } from "zod";
 import type { ApiResponse } from "../../../shared/types";
 import { errorLogger, ErrorCategory } from "../../middleware/errorHandler";
+import { log as logger } from "../../utils/logger";
 
 const adminContentRouter = Router();
 
@@ -469,7 +470,7 @@ adminContentRouter.delete("/categories/:id", async (req: Request, res: Response<
 // Register content management routes
 export function registerAdminContentRoutes(app: Express): void {
   app.use('/api/admin/content', adminContentRouter);
-  console.log('✅ Admin content management routes registered');
+  logger.info('✅ Admin content management routes registered');
 }
 
 export { adminContentRouter }; 

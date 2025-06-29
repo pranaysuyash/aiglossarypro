@@ -199,7 +199,7 @@ export function registerTermRoutes(app: Express): void {
         // Try to get recently viewed terms if method exists
         // const recentlyViewed = await storage.getRecentlyViewedTerms(userId, parseInt(limit as string));
       } catch (error) {
-        console.log('Recently viewed terms method not implemented yet');
+        logger.warn('Recently viewed terms method not implemented yet', { error: error instanceof Error ? error.message : String(error) });
       }
       
       const response: ApiResponse<ITerm[]> = {
@@ -360,7 +360,7 @@ export function registerTermRoutes(app: Express): void {
         await storage.recordTermView(id, null);
       } catch (error) {
         // If method doesn't exist, continue without recording view
-        console.log('View recording not available');
+        logger.warn('View recording not available', { termId: id, error: error instanceof Error ? error.message : String(error) });
       }
       
       const response: ApiResponse<ITerm> = {

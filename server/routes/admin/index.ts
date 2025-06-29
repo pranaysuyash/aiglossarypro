@@ -6,13 +6,14 @@ import { registerAdminMaintenanceRoutes } from "./maintenance";
 import { registerAdminContentRoutes } from "./content";
 import { registerAdminMonitoringRoutes } from "./monitoring";
 import { registerAdminRevenueRoutes } from "./revenue";
+import { log as logger } from "../../utils/logger";
 
 /**
  * Main admin route registration function
  * Replaces the monolithic admin.ts file with modular structure
  */
 export function registerAdminRoutes(app: Express): void {
-  console.log('📋 Registering modular admin routes...');
+  logger.info('📋 Registering modular admin routes...');
   
   // Register all admin sub-modules
   registerAdminStatsRoutes(app);
@@ -23,5 +24,5 @@ export function registerAdminRoutes(app: Express): void {
   registerAdminMonitoringRoutes(app);
   registerAdminRevenueRoutes(app);
   
-  console.log('✅ All admin routes registered successfully');
+  logger.info('✅ All admin routes registered successfully');
 } 

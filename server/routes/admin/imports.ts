@@ -8,6 +8,7 @@ import { parseExcelFile, importToDatabase } from "../../excelParser";
 import { AdvancedExcelParser, importComplexTerms } from "../../advancedExcelParser";
 import multer from "multer";
 import type { ImportResult, ApiResponse } from "../../../shared/types";
+import { log as logger } from "../../utils/logger";
 
 // Set up multer for file uploads
 const upload = multer({
@@ -50,16 +51,16 @@ export function registerAdminImportRoutes(app: Express): void {
         });
       }
 
-      console.log(`📁 Processing uploaded file: ${req.file.originalname}`);
-      console.log(`📊 File size: ${req.file.size} bytes`);
+      logger.info(`📁 Processing uploaded file: ${req.file.originalname}`);
+      logger.info(`📊 File size: ${req.file.size} bytes`);
 
       // Determine file size to choose appropriate parser
       const fileSizeMB = req.file.size / (1024 * 1024);
-      console.log(`📊 File size: ${fileSizeMB.toFixed(2)} MB`);
+      logger.info(`📊 File size: ${fileSizeMB.toFixed(2)} MB`);
 
       // For large files with 42-section structure, use advanced parser
       if (fileSizeMB > 0.1 || req.file.originalname.includes('row1')) { // Use advanced for row1.xlsx or larger files
-        console.log('🧠 Using Advanced Excel Parser for 42-section structure...');
+        logger.info('🧠 Using Advanced Excel Parser for 42-section structure...');
         
         // Initialize advanced parser
         const advancedParser = new AdvancedExcelParser();
@@ -74,7 +75,7 @@ export function registerAdminImportRoutes(app: Express): void {
           });
         }
 
-        console.log(`✅ Advanced parser extracted ${parsedTerms.length} terms with 42 sections each`);
+        logger.info(`✅ Advanced parser extracted ${parsedTerms.length} terms with 42 sections each`);
 
         // Import to enhanced database with full 42-section support
         await importComplexTerms(parsedTerms);
@@ -97,7 +98,7 @@ export function registerAdminImportRoutes(app: Express): void {
         
       } else {
         // Use basic parser for simple files
-        console.log('📋 Using basic parser for simple structure...');
+        logger.info('📋 Using basic parser for simple structure...');
         
         const parsedData = await parseExcelFile(req.file.buffer);
         
@@ -108,7 +109,7 @@ export function registerAdminImportRoutes(app: Express): void {
           });
         }
 
-        console.log(`✅ Basic parser extracted ${parsedData.terms.length} terms`);
+        logger.info(`✅ Basic parser extracted ${parsedData.terms.length} terms`);
 
         // Import to database
         const dbResult = await importToDatabase(parsedData);
@@ -130,7 +131,7 @@ export function registerAdminImportRoutes(app: Express): void {
         res.json(response);
       }
     } catch (error) {
-      console.error("Error importing Excel file:", error);
+      logger.error("Error importing Excel file:", error);
       res.status(500).json({
         success: false,
         message: "Failed to import Excel file",
@@ -149,20 +150,20 @@ export function registerAdminImportRoutes(app: Express): void {
         });
       }
 
-      console.log(`🔄 Force reprocessing file: ${req.file.originalname}`);
-      console.log(`📊 File size: ${req.file.size} bytes`);
+      logger.info(`🔄 Force reprocessing file: ${req.file.originalname}`);
+      logger.info(`📊 File size: ${req.file.size} bytes`);
 
       // Clear cache first to ensure fresh processing
       await storage.clearCache();
-      console.log("🗑️  Cache cleared for force reprocessing");
+      logger.info("🗑️  Cache cleared for force reprocessing");
 
       // Determine file size to choose appropriate parser
       const fileSizeMB = req.file.size / (1024 * 1024);
-      console.log(`📊 File size: ${fileSizeMB.toFixed(2)} MB`);
+      logger.info(`📊 File size: ${fileSizeMB.toFixed(2)} MB`);
 
       // For large files with 42-section structure, use advanced parser
       if (fileSizeMB > 0.1 || req.file.originalname.includes('row1')) {
-        console.log('🧠 Force processing with Advanced Excel Parser...');
+        logger.info('🧠 Force processing with Advanced Excel Parser...');
         
         // Initialize advanced parser with force flag
         const advancedParser = new AdvancedExcelParser();
@@ -177,7 +178,7 @@ export function registerAdminImportRoutes(app: Express): void {
           });
         }
 
-        console.log(`✅ Force reprocessing completed: ${parsedTerms.length} terms with 42 sections each`);
+        logger.info(`✅ Force reprocessing completed: ${parsedTerms.length} terms with 42 sections each`);
 
         // Import to enhanced database with full 42-section support
         await importComplexTerms(parsedTerms);
@@ -200,7 +201,7 @@ export function registerAdminImportRoutes(app: Express): void {
         
       } else {
         // Use basic parser for simple files
-        console.log('📋 Force processing with basic parser...');
+        logger.info('📋 Force processing with basic parser...');
         
         const parsedData = await parseExcelFile(req.file.buffer);
         
@@ -211,7 +212,7 @@ export function registerAdminImportRoutes(app: Express): void {
           });
         }
 
-        console.log(`✅ Force reprocessing completed: ${parsedData.terms.length} terms`);
+        logger.info(`✅ Force reprocessing completed: ${parsedData.terms.length} terms`);
 
         // Import to database
         const dbResult = await importToDatabase(parsedData);
@@ -233,7 +234,7 @@ export function registerAdminImportRoutes(app: Express): void {
         res.json(response);
       }
     } catch (error) {
-      console.error("Error during force reprocessing:", error);
+      logger.error("Error during force reprocessing:", error);
       res.status(500).json({
         success: false,
         message: "Failed to force reprocess file",
@@ -254,11 +255,11 @@ export function registerAdminImportRoutes(app: Express): void {
         });
       }
 
-      console.log("🗑️  Admin initiated data clearing...");
+      logger.info("🗑️  Admin initiated data clearing...");
       
       const result = await storage.clearAllData();
       
-      console.log("✅ Data clearing completed");
+      logger.info("✅ Data clearing completed");
 
       res.json({
         success: true,
@@ -266,7 +267,7 @@ export function registerAdminImportRoutes(app: Express): void {
         data: result
       });
     } catch (error) {
-      console.error("Error clearing data:", error);
+      logger.error("Error clearing data:", error);
       res.status(500).json({
         success: false,
         message: "Failed to clear data"

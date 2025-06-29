@@ -195,23 +195,7 @@ declare global {
 }
 
 export interface AuthenticatedRequest extends Request {
-  user: {
-    id: string;
-    email: string;
-    firstName?: string;
-    lastName?: string;
-    profileImageUrl?: string;
-    claims: {
-      sub: string;
-      email: string;
-      name: string;
-      first_name?: string;
-      last_name?: string;
-    };
-    access_token?: string;
-    expires_at?: number;
-    isAdmin?: boolean;
-  };
+  user: Express.User;
 }
 
 // Admin types

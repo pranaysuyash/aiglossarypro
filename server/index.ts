@@ -29,6 +29,7 @@ import {
 import loggingMiddleware from "./middleware/loggingMiddleware";
 import { responseLoggingMiddleware } from "./middleware/responseLogging";
 import { log as logger } from "./utils/logger";
+import { performanceMiddleware } from "./middleware/compression";
 
 const app = express();
 const wsInstance = expressWs(app);
@@ -60,6 +61,9 @@ app.use(performanceTrackingMiddleware());
 app.use(pageViewTrackingMiddleware());
 app.use(searchTrackingMiddleware());
 app.use(systemHealthMiddleware());
+
+// Apply compression and performance middleware
+app.use(performanceMiddleware());
 
 // Apply response logging middleware
 app.use(responseLoggingMiddleware);

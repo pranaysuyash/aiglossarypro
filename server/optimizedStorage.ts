@@ -365,11 +365,105 @@ export class OptimizedStorage implements IStorage {
       2 * 60 * 1000 // 2 minutes cache (shorter for search)
     );
   }
+  
+  // NEW: Optimized search with database-level pagination and field selection
+  async searchTermsOptimized(options: {
+    query: string;
+    categoryId?: string;
+    offset?: number;
+    limit?: number;
+    fields?: string[];
+  }): Promise<{ data: any[]; total: number }> {
+    const { 
+      query, 
+      categoryId, 
+      offset = 0, 
+      limit = 20,
+      fields = ['id', 'name', 'shortDefinition', 'viewCount']
+    } = options;
+    
+    const cacheKey = `search-optimized:${query}:${categoryId || 'all'}:${offset}:${limit}:${fields.join(',')}`;
+    
+    return cached(
+      cacheKey,
+      async () => {
+        // Build search condition
+        const searchCondition = sql`
+          to_tsvector('english', ${terms.name} || ' ' || COALESCE(${terms.shortDefinition}, '') || ' ' || COALESCE(${terms.definition}, '')) 
+          @@ plainto_tsquery('english', ${query})
+          OR ${terms.name} ILIKE ${`%${query}%`}
+          OR ${terms.shortDefinition} ILIKE ${`%${query}%`}
+        `;
+        
+        const relevanceScore = sql<number>`
+          CASE 
+            WHEN ${terms.name} ILIKE ${`${query}%`} THEN 3.0
+            WHEN ${terms.name} ILIKE ${`%${query}%`} THEN 2.0
+            WHEN ${terms.shortDefinition} ILIKE ${`%${query}%`} THEN 1.5
+            ELSE 1.0
+          END
+        `;
+        
+        // Build where conditions
+        const whereConditions = [searchCondition];
+        if (categoryId) {
+          whereConditions.push(eq(terms.categoryId, categoryId));
+        }
+        
+        // Get total count
+        let countQuery = db.select({ count: sql<number>`count(*)` }).from(terms);
+        if (fields.includes('category')) {
+          countQuery = countQuery.leftJoin(categories, eq(terms.categoryId, categories.id));
+        }
+        countQuery = countQuery.where(and(...whereConditions));
+        
+        const totalResult = await countQuery;
+        const total = totalResult[0]?.count || 0;
+        
+        // Build dynamic select
+        const selectObj: any = {
+          relevance: relevanceScore
+        };
+        
+        if (fields.includes('id')) selectObj.id = terms.id;
+        if (fields.includes('name')) selectObj.name = terms.name;
+        if (fields.includes('shortDefinition')) selectObj.shortDefinition = terms.shortDefinition;
+        if (fields.includes('definition')) selectObj.definition = terms.definition;
+        if (fields.includes('viewCount')) selectObj.viewCount = terms.viewCount;
+        if (fields.includes('categoryId')) selectObj.categoryId = terms.categoryId;
+        if (fields.includes('category')) selectObj.category = categories.name;
+        if (fields.includes('createdAt')) selectObj.createdAt = terms.createdAt;
+        
+        // Build main query
+        let query_ = db.select(selectObj).from(terms);
+        
+        // Add joins only if needed
+        if (fields.includes('category')) {
+          query_ = query_.leftJoin(categories, eq(terms.categoryId, categories.id));
+        }
+        
+        // Add where conditions
+        query_ = query_.where(and(...whereConditions));
+        
+        // Add ordering, limit, and offset
+        const results = await query_
+          .orderBy(desc(relevanceScore), desc(terms.viewCount))
+          .limit(limit)
+          .offset(offset);
+        
+        return {
+          data: results,
+          total
+        };
+      },
+      90 * 1000 // 1.5 minutes cache for search results
+    );
+  }
 
-  // OPTIMIZED: Fixed N+1 query problem in favorites
-  async getUserFavorites(userId: string, pagination?: { limit?: number; offset?: number }): Promise<{ data: any[]; total: number; hasMore: boolean }> {
-    const { limit = 50, offset = 0 } = pagination || {};
-    const cacheKey = `${CacheKeys.userFavorites(userId)}:${limit}:${offset}`;
+  // OPTIMIZED: Fixed N+1 query problem in favorites with field selection
+  async getUserFavorites(userId: string, pagination?: { limit?: number; offset?: number; fields?: string[] }): Promise<{ data: any[]; total: number; hasMore: boolean }> {
+    const { limit = 50, offset = 0, fields = ['termId', 'name', 'shortDefinition', 'viewCount', 'category'] } = pagination || {};
+    const cacheKey = `${CacheKeys.userFavorites(userId)}:${limit}:${offset}:${fields.join(',')}`;
     
     return cached(
       cacheKey,
@@ -380,40 +474,30 @@ export class OptimizedStorage implements IStorage {
           .where(eq(favorites.userId, userId));
         const total = totalResult[0]?.count || 0;
 
-        // Single query with aggregated subcategories and pagination
-        const results = await db.select({
+        // Build dynamic select based on requested fields
+        const selectObj: any = {
           termId: favorites.termId,
-          createdAt: favorites.createdAt,
-          name: terms.name,
-          shortDefinition: terms.shortDefinition,
-          viewCount: terms.viewCount,
-          category: categories.name,
-          categoryId: categories.id,
-          subcategories: sql<string[]>`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`
-        })
+          createdAt: favorites.createdAt
+        };
+        
+        if (fields.includes('name')) selectObj.name = terms.name;
+        if (fields.includes('shortDefinition')) selectObj.shortDefinition = terms.shortDefinition;
+        if (fields.includes('definition')) selectObj.definition = terms.definition;
+        if (fields.includes('viewCount')) selectObj.viewCount = terms.viewCount;
+        if (fields.includes('category')) selectObj.category = categories.name;
+        if (fields.includes('categoryId')) selectObj.categoryId = categories.id;
+        
+        // Single query with field selection and pagination
+        const results = await db.select(selectObj)
         .from(favorites)
         .innerJoin(terms, eq(favorites.termId, terms.id))
         .leftJoin(categories, eq(terms.categoryId, categories.id))
-        .leftJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
-        .leftJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
         .where(eq(favorites.userId, userId))
-        .groupBy(
-          favorites.termId, 
-          favorites.createdAt,
-          terms.name,
-          terms.shortDefinition,
-          terms.viewCount,
-          categories.name,
-          categories.id
-        )
         .orderBy(desc(favorites.createdAt))
         .limit(limit)
         .offset(offset);
 
-        const data = results.map(result => ({
-          ...result,
-          subcategories: result.subcategories?.filter(Boolean) || []
-        }));
+        const data = results;
 
         return {
           data,
@@ -421,7 +505,7 @@ export class OptimizedStorage implements IStorage {
           hasMore: offset + limit < total
         };
       },
-      10 * 60 * 1000 // 10 minutes cache
+      5 * 60 * 1000 // 5 minutes cache for field-specific results
     );
   }
 
@@ -526,38 +610,79 @@ export class OptimizedStorage implements IStorage {
     queryCache.invalidate(`user:${userId}:learned:${termId}`);
   }
 
-  // Bulk operations for better performance
-  async getTermsByCategory(categoryId: string, page: number = 1, limit: number = 20): Promise<any[]> {
+  // Optimized bulk operations with field selection
+  async getTermsByCategory(categoryId: string, options: {
+    offset?: number;
+    limit?: number;
+    sort?: string;
+    order?: 'asc' | 'desc';
+    fields?: string[];
+  } = {}): Promise<{ data: any[]; total: number }> {
+    const { 
+      offset = 0, 
+      limit = 20, 
+      sort = 'name', 
+      order = 'asc',
+      fields = ['id', 'name', 'shortDefinition', 'viewCount']
+    } = options;
+    
+    const cacheKey = `${CacheKeys.termsByCategory(categoryId)}:${offset}:${limit}:${sort}:${order}:${fields.join(',')}`;
+    
     return cached(
-      CacheKeys.termsByCategory(categoryId, page),
+      cacheKey,
       async () => {
-        const offset = (page - 1) * limit;
+        // Build dynamic select based on requested fields
+        const selectObj: any = {};
         
-        const results = await db.select({
-          id: terms.id,
-          name: terms.name,
-          shortDefinition: terms.shortDefinition,
-          viewCount: terms.viewCount,
-          category: categories.name,
-          categoryId: categories.id,
-          subcategories: sql<string[]>`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`
-        })
-        .from(terms)
-        .leftJoin(categories, eq(terms.categoryId, categories.id))
-        .leftJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
-        .leftJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
-        .where(eq(terms.categoryId, categoryId))
-        .groupBy(terms.id, categories.id, categories.name)
-        .orderBy(desc(terms.viewCount))
-        .limit(limit)
-        .offset(offset);
-
-        return results.map(result => ({
-          ...result,
-          subcategories: result.subcategories?.filter(Boolean) || []
-        }));
+        if (fields.includes('id')) selectObj.id = terms.id;
+        if (fields.includes('name')) selectObj.name = terms.name;
+        if (fields.includes('shortDefinition')) selectObj.shortDefinition = terms.shortDefinition;
+        if (fields.includes('definition')) selectObj.definition = terms.definition;
+        if (fields.includes('viewCount')) selectObj.viewCount = terms.viewCount;
+        if (fields.includes('category')) selectObj.category = categories.name;
+        if (fields.includes('categoryId')) selectObj.categoryId = categories.id;
+        if (fields.includes('createdAt')) selectObj.createdAt = terms.createdAt;
+        if (fields.includes('updatedAt')) selectObj.updatedAt = terms.updatedAt;
+        
+        // Get total count first
+        const totalResult = await db.select({ count: sql<number>`count(*)` })
+          .from(terms)
+          .where(eq(terms.categoryId, categoryId));
+        
+        const total = totalResult[0]?.count || 0;
+        
+        // Build main query
+        let query = db.select(selectObj).from(terms);
+        
+        // Add joins only if needed
+        if (fields.includes('category')) {
+          query = query.leftJoin(categories, eq(terms.categoryId, categories.id));
+        }
+        
+        // Add where clause
+        query = query.where(eq(terms.categoryId, categoryId));
+        
+        // Add sorting
+        const sortColumn = sort === 'name' ? terms.name :
+                          sort === 'viewCount' ? terms.viewCount :
+                          sort === 'createdAt' ? terms.createdAt :
+                          terms.name;
+        
+        query = order === 'desc' ? 
+          query.orderBy(desc(sortColumn)) :
+          query.orderBy(asc(sortColumn));
+        
+        // Add pagination
+        const results = await query
+          .limit(limit)
+          .offset(offset);
+        
+        return {
+          data: results,
+          total
+        };
       },
-      15 * 60 * 1000 // 15 minutes cache
+      10 * 60 * 1000 // 10 minutes cache
     );
   }
 
@@ -664,22 +789,74 @@ export class OptimizedStorage implements IStorage {
     );
   }
 
-  async getCategoriesOptimized(): Promise<any[]> {
+  async getCategoriesOptimized(options: {
+    offset?: number;
+    limit?: number;
+    fields?: string[];
+    search?: string;
+    includeStats?: boolean;
+  } = {}): Promise<any[]> {
+    const { offset = 0, limit = 20, fields = ['id', 'name', 'description'], search, includeStats = false } = options;
+    
+    const cacheKey = `${CacheKeys.categoryTree()}:${offset}:${limit}:${fields.join(',')}:${search || 'all'}:${includeStats}`;
+    
     return cached(
-      CacheKeys.categoryTree(),
+      cacheKey,
       async () => {
-        const categoriesWithCount = await db.select({
-          id: categories.id,
-          name: categories.name,
-          description: categories.description,
-          termCount: sql<number>`count(${terms.id})::int`
-        })
-        .from(categories)
-        .leftJoin(terms, eq(terms.categoryId, categories.id))
-        .groupBy(categories.id, categories.name, categories.description)
-        .orderBy(categories.name);
+        // Build dynamic select based on requested fields
+        const selectObj: any = {};
         
-        return categoriesWithCount;
+        if (fields.includes('id')) selectObj.id = categories.id;
+        if (fields.includes('name')) selectObj.name = categories.name;
+        if (fields.includes('description')) selectObj.description = categories.description;
+        if (fields.includes('termCount') || includeStats) {
+          selectObj.termCount = sql<number>`count(${terms.id})::int`;
+        }
+        
+        let query = db.select(selectObj).from(categories);
+        
+        // Add joins only if needed
+        if (fields.includes('termCount') || includeStats) {
+          query = query.leftJoin(terms, eq(terms.categoryId, categories.id));
+        }
+        
+        // Add search filter if provided
+        if (search) {
+          query = query.where(ilike(categories.name, `%${search}%`));
+        }
+        
+        // Add grouping only if aggregating
+        if (fields.includes('termCount') || includeStats) {
+          query = query.groupBy(categories.id, categories.name, categories.description);
+        }
+        
+        // Add ordering, limit, and offset
+        const result = await query
+          .orderBy(categories.name)
+          .limit(limit)
+          .offset(offset);
+        
+        return result;
+      },
+      5 * 60 * 1000 // 5 minutes cache for paginated results
+    );
+  }
+  
+  async getCategoriesCount(options: { search?: string } = {}): Promise<number> {
+    const { search } = options;
+    const cacheKey = `categories:count:${search || 'all'}`;
+    
+    return cached(
+      cacheKey,
+      async () => {
+        let query = db.select({ count: sql<number>`count(*)` }).from(categories);
+        
+        if (search) {
+          query = query.where(ilike(categories.name, `%${search}%`));
+        }
+        
+        const result = await query;
+        return result[0]?.count || 0;
       },
       10 * 60 * 1000 // 10 minutes cache
     );
@@ -737,38 +914,115 @@ export class OptimizedStorage implements IStorage {
     }
   }
 
-  async getAllTerms(options: { limit?: number; page?: number } = {}): Promise<{ data: any[]; terms: any[]; total: number }> {
-    const { limit = 100, page = 1 } = options;
-    const offset = (page - 1) * limit;
+  async getAllTerms(options: { 
+    limit?: number; 
+    page?: number;
+    offset?: number;
+    categoryId?: string;
+    searchTerm?: string;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
+    fields?: string[];
+  } = {}): Promise<{ data: any[]; terms: any[]; total: number }> {
+    const { 
+      limit = 100, 
+      page = 1, 
+      offset = (page - 1) * limit,
+      categoryId,
+      searchTerm,
+      sortBy = 'name',
+      sortOrder = 'asc',
+      fields = ['id', 'name', 'shortDefinition', 'viewCount', 'categoryId']
+    } = options;
+    
+    const cacheKey = `all-terms:${limit}:${offset}:${categoryId || 'all'}:${searchTerm || 'all'}:${sortBy}:${sortOrder}:${fields.join(',')}`;
     
     const termsList = await cached(
-      CacheKeys.term(`all-terms:${limit}:${page}`),
+      cacheKey,
       async () => {
-        return await db.select({
-          id: terms.id,
-          name: terms.name,
-          definition: terms.definition,
-          shortDefinition: terms.shortDefinition,
-          categoryId: terms.categoryId,
-          viewCount: terms.viewCount,
-          createdAt: terms.createdAt,
-          updatedAt: terms.updatedAt
-        })
-        .from(terms)
-        .orderBy(terms.name)
-        .limit(limit)
-        .offset(offset);
+        // Build dynamic select based on requested fields
+        const selectObj: any = {};
+        
+        if (fields.includes('id')) selectObj.id = terms.id;
+        if (fields.includes('name')) selectObj.name = terms.name;
+        if (fields.includes('shortDefinition')) selectObj.shortDefinition = terms.shortDefinition;
+        if (fields.includes('definition')) selectObj.definition = terms.definition;
+        if (fields.includes('categoryId')) selectObj.categoryId = terms.categoryId;
+        if (fields.includes('viewCount')) selectObj.viewCount = terms.viewCount;
+        if (fields.includes('createdAt')) selectObj.createdAt = terms.createdAt;
+        if (fields.includes('updatedAt')) selectObj.updatedAt = terms.updatedAt;
+        if (fields.includes('category')) selectObj.category = categories.name;
+        
+        let query = db.select(selectObj).from(terms);
+        
+        // Add joins only if needed
+        if (fields.includes('category')) {
+          query = query.leftJoin(categories, eq(terms.categoryId, categories.id));
+        }
+        
+        // Add filters
+        const whereConditions = [];
+        if (categoryId) {
+          whereConditions.push(eq(terms.categoryId, categoryId));
+        }
+        if (searchTerm) {
+          whereConditions.push(
+            or(
+              ilike(terms.name, `%${searchTerm}%`),
+              ilike(terms.shortDefinition, `%${searchTerm}%`)
+            )
+          );
+        }
+        
+        if (whereConditions.length > 0) {
+          query = query.where(and(...whereConditions));
+        }
+        
+        // Add sorting
+        const sortColumn = sortBy === 'name' ? terms.name :
+                          sortBy === 'viewCount' ? terms.viewCount :
+                          sortBy === 'createdAt' ? terms.createdAt :
+                          terms.name;
+        
+        query = sortOrder === 'desc' ? 
+          query.orderBy(desc(sortColumn)) :
+          query.orderBy(asc(sortColumn));
+        
+        return await query
+          .limit(limit)
+          .offset(offset);
       },
-      5 * 60 * 1000 // 5 minutes cache
+      3 * 60 * 1000 // 3 minutes cache for filtered results
     );
 
+    // Get total count with same filters
+    const totalCacheKey = `total-terms-count:${categoryId || 'all'}:${searchTerm || 'all'}`;
     const total = await cached(
-      CacheKeys.term('total-terms-count'),
+      totalCacheKey,
       async () => {
-        const result = await db.select({ count: sql<number>`count(*)` }).from(terms);
-        return result[0].count;
+        let countQuery = db.select({ count: sql<number>`count(*)` }).from(terms);
+        
+        const whereConditions = [];
+        if (categoryId) {
+          whereConditions.push(eq(terms.categoryId, categoryId));
+        }
+        if (searchTerm) {
+          whereConditions.push(
+            or(
+              ilike(terms.name, `%${searchTerm}%`),
+              ilike(terms.shortDefinition, `%${searchTerm}%`)
+            )
+          );
+        }
+        
+        if (whereConditions.length > 0) {
+          countQuery = countQuery.where(and(...whereConditions));
+        }
+        
+        const result = await countQuery;
+        return result[0]?.count || 0;
       },
-      30 * 60 * 1000 // 30 minutes cache
+      10 * 60 * 1000 // 10 minutes cache
     );
 
     return {

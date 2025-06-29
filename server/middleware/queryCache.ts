@@ -175,7 +175,7 @@ export async function cached<T>(
   return result;
 }
 
-// Cache key generators
+// Cache key generators with better granularity
 export const CacheKeys = {
   term: (id: string) => `term:${id}`,
   termsByCategory: (categoryId: string, page: number = 1) => `terms:cat:${categoryId}:page:${page}`,
@@ -185,7 +185,11 @@ export const CacheKeys = {
   termSections: (termId: string) => `term:${termId}:sections`,
   analytics: (type: string, date: string) => `analytics:${type}:${date}`,
   popularTerms: (timeframe: string = 'week') => `popular:${timeframe}`,
-  recentTerms: (limit: number = 10) => `recent:${limit}`
+  recentTerms: (limit: number = 10) => `recent:${limit}`,
+  searchOptimized: (query: string, categoryId?: string, page: number = 1) => 
+    `search-opt:${query}:${categoryId || 'all'}:${page}`,
+  categoriesPaginated: (page: number, limit: number, fields: string) => 
+    `categories:page:${page}:limit:${limit}:fields:${fields}`
 };
 
 // Cache invalidation helpers
@@ -210,6 +214,8 @@ export const CacheInvalidation = {
   search: () => {
     searchCache.invalidateAll();
     queryCache.invalidate('search:*');
+    queryCache.invalidate('search-opt:*');
+    queryCache.invalidate('search-optimized:*');
   },
   
   analytics: () => {
@@ -218,7 +224,7 @@ export const CacheInvalidation = {
   }
 };
 
-// Cache warming functions
+// Enhanced cache warming functions
 export const CacheWarming = {
   async warmPopularTerms() {
     const { db } = await import('../db');
@@ -246,18 +252,83 @@ export const CacheWarming = {
   
   async warmCategoryTree() {
     const { db } = await import('../db');
-    const { categories } = await import('../../shared/schema');
-    const { isNull } = await import('drizzle-orm');
+    const { categories, terms } = await import('../../shared/schema');
+    const { eq, sql } = await import('drizzle-orm');
     
     console.log('🔥 Warming category tree cache...');
     
+    // Warm basic categories
     const categoryTree = await db
-      .select()
+      .select({
+        id: categories.id,
+        name: categories.name,
+        description: categories.description,
+        termCount: sql<number>`count(${terms.id})::int`
+      })
       .from(categories)
+      .leftJoin(terms, eq(terms.categoryId, categories.id))
+      .groupBy(categories.id, categories.name, categories.description)
       .orderBy(categories.name);
     
     queryCache.set(CacheKeys.categoryTree(), categoryTree, 60 * 60 * 1000); // 1 hour
     console.log(`✅ Cached ${categoryTree.length} categories`);
+    
+    // Warm paginated categories for common page sizes
+    for (const limit of [10, 20, 50]) {
+      const paginatedKey = CacheKeys.categoriesPaginated(1, limit, 'id,name,description,termCount');
+      queryCache.set(paginatedKey, categoryTree.slice(0, limit), 30 * 60 * 1000);
+    }
+    console.log('✅ Warmed paginated category caches');
+  },
+  
+  async warmFrequentTermQueries() {
+    const { db } = await import('../db');
+    const { terms, categories } = await import('../../shared/schema');
+    const { desc, eq, sql } = await import('drizzle-orm');
+    
+    console.log('🔥 Warming frequent term queries...');
+    
+    // Warm featured terms with different field combinations
+    const featuredFields = ['id,name,shortDefinition,viewCount', 'id,name,shortDefinition', 'id,name,viewCount'];
+    
+    for (const fields of featuredFields) {
+      const fieldList = fields.split(',');
+      const selectObj: any = {};
+      
+      if (fieldList.includes('id')) selectObj.id = terms.id;
+      if (fieldList.includes('name')) selectObj.name = terms.name;
+      if (fieldList.includes('shortDefinition')) selectObj.shortDefinition = terms.shortDefinition;
+      if (fieldList.includes('viewCount')) selectObj.viewCount = terms.viewCount;
+      if (fieldList.includes('category')) selectObj.category = categories.name;
+      
+      const result = await db.select(selectObj)
+        .from(terms)
+        .leftJoin(categories, eq(terms.categoryId, categories.id))
+        .orderBy(desc(terms.viewCount))
+        .limit(20);
+      
+      queryCache.set(`featured-terms:${fields}`, result, 15 * 60 * 1000);
+    }
+    
+    console.log('✅ Warmed featured terms with different field combinations');
+  },
+  
+  async warmAll() {
+    console.log('🔥 Starting comprehensive cache warming...');
+    const startTime = Date.now();
+    
+    try {
+      await Promise.all([
+        this.warmPopularTerms(),
+        this.warmCategoryTree(),
+        this.warmFrequentTermQueries()
+      ]);
+      
+      const duration = Date.now() - startTime;
+      console.log(`✅ Cache warming completed in ${duration}ms`);
+    } catch (error) {
+      console.error('❌ Cache warming failed:', error);
+    }
   }
 };
 
@@ -276,15 +347,42 @@ export function cacheStatsMiddleware(req: any, res: any, next: any) {
   next();
 }
 
-// Cleanup task - run periodically
+// Enhanced cleanup and warming tasks
 setInterval(() => {
   if (process.env.NODE_ENV !== 'test') {
+    // Cleanup expired entries
     const cleaned = queryCache.cleanup();
     if (cleaned > 0) {
       console.log(`🧹 Cleaned ${cleaned} expired cache entries`);
     }
+    
+    // Cleanup other cache instances
+    const userCleaned = userCache.cleanup();
+    const searchCleaned = searchCache.cleanup();
+    
+    if (userCleaned > 0 || searchCleaned > 0) {
+      console.log(`🧹 Cleaned ${userCleaned} user cache entries, ${searchCleaned} search cache entries`);
+    }
   }
 }, 5 * 60 * 1000); // Every 5 minutes
+
+// Cache warming task - run every 30 minutes
+setInterval(() => {
+  if (process.env.NODE_ENV === 'production') {
+    CacheWarming.warmAll().catch(error => {
+      console.error('Cache warming failed:', error);
+    });
+  }
+}, 30 * 60 * 1000); // Every 30 minutes
+
+// Initial cache warming on startup (delayed to allow app to fully initialize)
+setTimeout(() => {
+  if (process.env.NODE_ENV === 'production') {
+    CacheWarming.warmAll().catch(error => {
+      console.error('Initial cache warming failed:', error);
+    });
+  }
+}, 30000); // 30 seconds after startup
 
 // Helper functions for cache management
 export async function clearCache(): Promise<void> {

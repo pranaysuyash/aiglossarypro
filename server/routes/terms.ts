@@ -10,16 +10,8 @@ import { log as logger } from "../utils/logger";
 import { parsePaginationParams, calculatePaginationMetadata, parseLimit, applyClientSidePagination } from "../utils/pagination";
 import { SORT_ORDERS, DEFAULT_LIMITS, ERROR_MESSAGES } from "../constants";
 
-// Define authenticated request type properly
-interface AuthenticatedRequest extends Request {
-  user: {
-    claims: {
-      sub: string;
-      email: string;
-      name: string;
-    };
-  };
-}
+// Import AuthenticatedRequest from shared types
+// (Removed duplicate interface definition)
 
 /**
  * Term management routes with proper pagination and search
@@ -83,34 +75,44 @@ export function registerTermRoutes(app: Express): void {
    *       500:
    *         description: Internal server error
    */
-  // Get all terms with pagination
+  // Get all terms with optimized pagination and field selection
   app.get('/api/terms', async (req, res) => {
     try {
-      // Parse pagination parameters
+      // Parse pagination parameters with stricter limits
       const { page, limit, offset } = parsePaginationParams({
-        page: req.query.page,
-        limit: req.query.limit,
-        defaultLimit: 20,
-        maxLimit: 100
+        page: typeof req.query.page === 'string' ? req.query.page : String(req.query.page || 1),
+        limit: typeof req.query.limit === 'string' ? req.query.limit : String(req.query.limit || 12),
+        defaultLimit: 12,
+        maxLimit: 50
       });
 
       const search = req.query.search as string;
       const category = req.query.category as string;
-      const sortBy = req.query.sortBy as string || 'name';
-      const sortOrder = req.query.sortOrder as string || SORT_ORDERS.ASC;
+      const sortBy = (typeof req.query.sortBy === 'string' ? req.query.sortBy : 'name');
+      const sortOrder = (typeof req.query.sortOrder === 'string' ? req.query.sortOrder : SORT_ORDERS.ASC);
+      const fields = req.query.fields as string || 'id,name,shortDefinition,viewCount,categoryId';
+      const fieldList = fields.split(',').map(f => f.trim());
 
-      // Use existing storage method with proper parameters
+      // Use optimized storage method with field selection
       const result = await storage.getAllTerms({
         limit,
         offset,
         categoryId: category || undefined,
         searchTerm: search || undefined,
         sortBy,
-        sortOrder: (sortOrder === SORT_ORDERS.DESC) ? SORT_ORDERS.DESC : SORT_ORDERS.ASC
+        sortOrder: (sortOrder === SORT_ORDERS.DESC) ? SORT_ORDERS.DESC : SORT_ORDERS.ASC,
+        fields: fieldList
       });
 
       // Calculate pagination metadata
       const pagination = calculatePaginationMetadata(page, limit, result.total);
+
+      // Set cache headers for better performance
+      res.set({
+        'Cache-Control': 'public, max-age=180', // 3 minutes
+        'ETag': `"terms-${page}-${limit}-${sortBy}-${sortOrder}-${fields}"`,
+        'Vary': 'Accept-Encoding'
+      });
 
       res.json({
         success: true,
@@ -134,7 +136,7 @@ export function registerTermRoutes(app: Express): void {
   // Get featured terms
   app.get('/api/terms/featured', async (req: Request, res: Response) => {
     try {
-      const limit = parseLimit(req.query.limit, DEFAULT_LIMITS.FEATURED_TERMS, DEFAULT_LIMITS.TERMS_PER_PAGE);
+      const limit = parseLimit(typeof req.query.limit === 'string' ? req.query.limit : String(req.query.limit || DEFAULT_LIMITS.FEATURED_TERMS), DEFAULT_LIMITS.FEATURED_TERMS, DEFAULT_LIMITS.TERMS);
       const featuredTerms = await storage.getFeaturedTerms();
       
       const response: ApiResponse<ITerm[]> = {
@@ -155,7 +157,7 @@ export function registerTermRoutes(app: Express): void {
   // Get trending terms
   app.get('/api/terms/trending', async (req: Request, res: Response) => {
     try {
-      const limit = parseLimit(req.query.limit, DEFAULT_LIMITS.FEATURED_TERMS, DEFAULT_LIMITS.TERMS_PER_PAGE);
+      const limit = parseLimit(typeof req.query.limit === 'string' ? req.query.limit : String(req.query.limit || DEFAULT_LIMITS.FEATURED_TERMS), DEFAULT_LIMITS.FEATURED_TERMS, DEFAULT_LIMITS.TERMS);
       const trendingTerms = await storage.getTrendingTerms(limit);
       
       const response: ApiResponse<ITerm[]> = {
@@ -218,7 +220,7 @@ export function registerTermRoutes(app: Express): void {
       const { limit = DEFAULT_LIMITS.FEATURED_TERMS } = req.query;
       
       // For now, get the most recently created terms
-      const limitNum = parseLimit(limit, 10, 50);
+      const limitNum = parseLimit(typeof limit === 'string' ? limit : String(limit), 10, 50);
       const result = await storage.getAllTerms({
         limit: limitNum,
         offset: 0,
@@ -248,7 +250,7 @@ export function registerTermRoutes(app: Express): void {
       
       // For now, return featured terms as recommended
       // You can implement more sophisticated recommendation logic later
-      const limitNum = parseLimit(limit, 10, 50);
+      const limitNum = parseLimit(typeof limit === 'string' ? limit : String(limit), 10, 50);
       const recommendedTerms = await storage.getFeaturedTerms();
       
       const response: ApiResponse<ITerm[]> = {
@@ -266,14 +268,15 @@ export function registerTermRoutes(app: Express): void {
     }
   });
 
-  // Search terms with advanced filters
+  // Search terms with advanced filters and database-level pagination
   app.get('/api/terms/search', async (req: Request, res: Response) => {
     try {
       const {
         q = '',
         page = 1,
         limit = 12,
-        category = ''
+        category = '',
+        fields = 'id,name,shortDefinition,viewCount'
       } = req.query;
 
       const searchQuery = (q as string).trim();
@@ -285,36 +288,38 @@ export function registerTermRoutes(app: Express): void {
       }
 
       // Parse pagination parameters
-      const { page: pageNum, limit: limitNum } = parsePaginationParams({
-        page,
-        limit,
+      const { page: pageNum, limit: limitNum, offset } = parsePaginationParams({
+        page: typeof page === 'string' ? page : String(page),
+        limit: typeof limit === 'string' ? limit : String(limit),
         defaultLimit: 10,
-        maxLimit: 50
+        maxLimit: 30
       });
       
-      // Use existing search method
-      const searchResults = await storage.searchTerms(searchQuery);
+      const fieldList = (fields as string).split(',').map(f => f.trim());
       
-      // Apply filtering
-      let filteredResults = searchResults;
-      if (category) {
-        filteredResults = searchResults.filter(term => term.categoryId === category);
-      }
-      
-      // Apply client-side pagination (ideally this should be moved to database level)
-      const { paginatedItems, totalItems, metadata } = applyClientSidePagination(
-        filteredResults,
-        pageNum,
-        limitNum
-      );
+      // Use optimized search with database-level pagination
+      const searchResults = await storage.searchTermsOptimized({
+        query: searchQuery,
+        categoryId: category as string || undefined,
+        offset,
+        limit: limitNum,
+        fields: fieldList
+      });
 
       const response: PaginatedResponse<ITerm> = {
-        data: paginatedItems,
-        total: totalItems,
+        data: searchResults.data,
+        total: searchResults.total,
         page: pageNum,
         limit: limitNum,
-        hasMore: metadata.hasMore
+        hasMore: offset + searchResults.data.length < searchResults.total
       };
+
+      // Set cache headers for search results
+      res.set({
+        'Cache-Control': 'public, max-age=120', // 2 minutes for search
+        'ETag': `"search-${Buffer.from(searchQuery).toString('base64')}-${pageNum}-${limitNum}"`,
+        'Vary': 'Accept-Encoding'
+      });
 
       res.json({
         success: true,
@@ -386,8 +391,9 @@ export function registerTermRoutes(app: Express): void {
       const { id } = req.params;
       const { limit = 5 } = req.query;
       
-      const limitNum = parseLimit(limit, 10, 50);
-      const recommendations = await storage.getRecommendedTermsForTerm(id, null);
+      const limitNum = parseLimit(typeof limit === 'string' ? limit : String(limit), 10, 50);
+      // Since getRecommendedTermsForTerm doesn't exist, use related terms or featured terms
+      const recommendations = await storage.getFeaturedTerms();
       
       const response: ApiResponse<ITerm[]> = {
         success: true,

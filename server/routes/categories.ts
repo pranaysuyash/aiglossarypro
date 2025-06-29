@@ -8,17 +8,53 @@ import { log } from "../utils/logger";
  */
 export function registerCategoryRoutes(app: Express): void {
   
-  // Get all categories
+  // Get all categories with pagination and field selection
   app.get('/api/categories', async (req: Request, res: Response) => {
     try {
-      const { page = 1, limit = 50, search } = req.query;
+      const { 
+        page = 1, 
+        limit = 20, 
+        search,
+        fields = 'id,name,description,termCount',
+        includeStats = false 
+      } = req.query;
       
-      const categories = await storage.getCategoriesOptimized();
+      const pageNum = parseInt(page as string);
+      const limitNum = Math.min(parseInt(limit as string), 100); // Max 100 items per page
+      const offset = (pageNum - 1) * limitNum;
+      const fieldList = (fields as string).split(',').map(f => f.trim());
       
-      const response: ApiResponse<ICategory[]> = {
+      // Get categories with optimized field selection
+      const categories = await storage.getCategoriesOptimized({
+        offset,
+        limit: limitNum,
+        fields: fieldList,
+        search: search as string,
+        includeStats: includeStats === 'true'
+      });
+      
+      // Get total count for pagination
+      const totalCount = await storage.getCategoriesCount({
+        search: search as string
+      });
+      
+      const response = {
         success: true,
-        data: categories
+        data: categories,
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total: totalCount,
+          hasMore: offset + categories.length < totalCount,
+          pages: Math.ceil(totalCount / limitNum)
+        }
       };
+      
+      // Set cache headers for better performance
+      res.set({
+        'Cache-Control': 'public, max-age=300', // 5 minutes
+        'ETag': `"categories-${pageNum}-${limitNum}-${fields}"`
+      });
       
       res.json(response);
     } catch (error) {
@@ -61,87 +97,50 @@ export function registerCategoryRoutes(app: Express): void {
     }
   });
 
-  // Get terms by category
+  // Get terms by category with optimized pagination
   app.get('/api/categories/:id/terms', async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
-      const { page = 1, limit = 50, sort = 'name' } = req.query;
+      const { 
+        page = 1, 
+        limit = 20, 
+        sort = 'name',
+        order = 'asc',
+        fields = 'id,name,shortDefinition,viewCount'
+      } = req.query;
       
       const pageNum = parseInt(page as string);
-      const limitNum = parseInt(limit as string);
+      const limitNum = Math.min(parseInt(limit as string), 50); // Max 50 items per page
       const offset = (pageNum - 1) * limitNum;
+      const fieldList = (fields as string).split(',').map(f => f.trim());
       
-      // Use efficient database query instead of fetching all terms
-      try {
-        // Try to use optimized method if available
-        if (typeof storage.getTermsByCategory === 'function') {
-          const result = await storage.getTermsByCategory(id, {
-            offset,
-            limit: limitNum,
-            sort: sort as string
-          });
-          
-          const response: PaginatedResponse<any> = {
-            data: result.data,
-            total: result.total,
-            page: pageNum,
-            limit: limitNum,
-            hasMore: offset + result.data.length < result.total
-          };
-          
-          res.json({
-            success: true,
-            ...response
-          });
-          return;
-        }
-      } catch (optimizedError) {
-        log.warn('Optimized getTermsByCategory failed, using fallback', { error: optimizedError, component: 'CategoryRoutes' });
-      }
+      // Use optimized database query with field selection
+      const result = await storage.getTermsByCategory(id, {
+        offset,
+        limit: limitNum,
+        sort: sort as string,
+        order: order as 'asc' | 'desc',
+        fields: fieldList
+      });
       
-      // Fallback: Use enhanced storage method
-      try {
-        const searchResults = await storage.searchTerms(`category:${id}`, limitNum, offset);
-        
-        const response: PaginatedResponse<any> = {
-          data: searchResults.data,
-          total: searchResults.total,
-          page: pageNum, 
-          limit: limitNum,
-          hasMore: searchResults.hasMore
-        };
-        
-        res.json({
-          success: true,
-          ...response
-        });
-      } catch (searchError) {
-        log.warn('Search fallback failed, using basic approach', { error: searchError, component: 'CategoryRoutes' });
-        
-        // Last fallback: basic category filtering (not ideal but better than fetching all terms)
-        const category = await storage.getCategoryById(id);
-        if (!category) {
-          return res.status(404).json({
-            success: false,
-            message: "Category not found"
-          });
-        }
-        
-        // Return empty result rather than inefficient full fetch
-        const response: PaginatedResponse<any> = {
-          data: [],
-          total: 0,
-          page: pageNum,
-          limit: limitNum,
-          hasMore: false
-        };
-        
-        res.json({
-          success: true,
-          ...response,
-          message: "Category found but terms retrieval method needs implementation"
-        });
-      }
+      const response: PaginatedResponse<any> = {
+        data: result.data,
+        total: result.total,
+        page: pageNum,
+        limit: limitNum,
+        hasMore: offset + result.data.length < result.total
+      };
+      
+      // Set cache headers
+      res.set({
+        'Cache-Control': 'public, max-age=300',
+        'ETag': `"cat-${id}-terms-${pageNum}-${limitNum}-${sort}-${order}"`
+      });
+      
+      res.json({
+        success: true,
+        ...response
+      });
     } catch (error) {
       log.error(`Error fetching terms for category ${req.params.id}`, { error, component: 'CategoryRoutes', categoryId: req.params.id });
       res.status(500).json({ 
@@ -174,12 +173,12 @@ export function registerCategoryRoutes(app: Express): void {
       
       // Fallback: Use search to get category terms efficiently
       try {
-        const searchResults = await storage.searchTerms(`category:${id}`, 1000, 0);
+        const searchResults = await storage.searchTerms(`category:${id}`);
         
         const stats = {
-          totalTerms: searchResults.total,
-          avgViewCount: searchResults.data.length > 0 
-            ? Math.round(searchResults.data.reduce((sum: number, term: ITerm) => sum + (term.viewCount || 0), 0) / searchResults.data.length)
+          totalTerms: searchResults.length,
+          avgViewCount: searchResults.length > 0 
+            ? Math.round(searchResults.reduce((sum: number, term: ITerm) => sum + (term.viewCount || 0), 0) / searchResults.length)
             : 0,
           lastUpdated: new Date()
         };

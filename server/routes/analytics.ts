@@ -6,6 +6,7 @@ import { features } from "../config";
 import { enhancedStorage as storage } from "../enhancedStorage";
 import { log as logger } from "../utils/logger";
 import { ERROR_MESSAGES } from "../constants";
+import { TIME_CONSTANTS, CSV_CONSTANTS, ANALYTICS_CONSTANTS, HTTP_STATUS, TIME_CONSTANTS as TIME_PERIODS } from "../utils/constants";
 import { calculateDateRange, calculateDateRangeFromTimeframe } from "../utils/dateHelpers";
 import { generateCSV, sendCSVResponse } from "../utils/csvHelpers";
 import { db } from "../db";
@@ -58,7 +59,7 @@ export function registerAnalyticsRoutes(app: Express): void {
       });
     } catch (error) {
       logger.error("Error fetching analytics", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
-      res.status(500).json({ 
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ 
         success: false,
         message: ERROR_MESSAGES.ANALYTICS_FETCH_FAILED || "Failed to fetch analytics" 
       });
@@ -92,7 +93,7 @@ export function registerAnalyticsRoutes(app: Express): void {
       });
     } catch (error) {
       logger.error("Error fetching user analytics", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
-      res.status(500).json({ 
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ 
         success: false,
         message: ERROR_MESSAGES.USER_ANALYTICS_FETCH_FAILED || "Failed to fetch user analytics" 
       });
@@ -151,7 +152,7 @@ export function registerAnalyticsRoutes(app: Express): void {
       });
     } catch (error) {
       logger.error("Error fetching content analytics", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
-      res.status(500).json({ 
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ 
         success: false,
         message: ERROR_MESSAGES.CONTENT_ANALYTICS_FETCH_FAILED || "Failed to fetch content analytics" 
       });
@@ -178,7 +179,7 @@ export function registerAnalyticsRoutes(app: Express): void {
         .where(gte(termViews.viewedAt, startDate))
         .groupBy(terms.categoryId)
         .orderBy(desc(sql`count(${termViews.id})`))
-        .limit(20);
+        .limit(ANALYTICS_CONSTANTS.REALTIME_CATEGORY_LIMIT);
       
       res.json({
         success: true,
@@ -202,7 +203,7 @@ export function registerAnalyticsRoutes(app: Express): void {
     try {
       
       // Get last hour activity
-      const lastHour = new Date(Date.now() - 60 * 60 * 1000);
+      const lastHour = new Date(Date.now() - TIME_CONSTANTS.MILLISECONDS_IN_HOUR);
       
       const [realtimeData] = await db
         .select({
@@ -259,19 +260,17 @@ export function registerAnalyticsRoutes(app: Express): void {
       const filename = `analytics-${type}-${timeframe}.${format}`;
       
       if (format === 'csv') {
-        // Generate CSV using utility function
+        // Generate CSV using utility function with centralized columns
         const columns = [
-          { key: 'termName', header: 'Term Name' },
+          ...CSV_CONSTANTS.ANALYTICS_COLUMNS,
           { key: 'categories', header: 'Categories', formatter: (val: string[]) => val?.join(';') || '' },
-          { key: 'totalViews', header: 'Total Views' },
-          { key: 'recentViews', header: 'Recent Views' },
           { key: 'lastViewed', header: 'Last Viewed', formatter: (val: any) => val || '' }
         ];
         
         const csvData = generateCSV(exportData, columns);
         sendCSVResponse(res, csvData, filename);
       } else {
-        res.setHeader('Content-Type', 'application/json');
+        res.setHeader('Content-Type', CSV_CONSTANTS.CONTENT_TYPE_JSON);
         res.setHeader('Content-Disposition', `attachment; filename="${filename}"`);
         res.json({
           success: true,
@@ -292,5 +291,5 @@ export function registerAnalyticsRoutes(app: Express): void {
     }
   });
 
-  console.log("✅ Analytics routes registered successfully");
+  logger.info("Analytics routes registered successfully");
 }

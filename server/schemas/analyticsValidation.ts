@@ -1,13 +1,14 @@
 import { z } from 'zod';
+import { ANALYTICS_CONSTANTS, PAGINATION_CONSTANTS } from '../utils/constants';
 
 // Valid timeframe options
-const TimeframeSchema = z.enum(['24h', '7d', '30d'], {
-  errorMap: () => ({ message: "Timeframe must be one of: 24h, 7d, 30d" })
+const TimeframeSchema = z.enum(ANALYTICS_CONSTANTS.VALID_TIMEFRAMES, {
+  errorMap: () => ({ message: `Timeframe must be one of: ${ANALYTICS_CONSTANTS.VALID_TIMEFRAMES.join(', ')}` })
 });
 
 // Valid granularity options
-const GranularitySchema = z.enum(['hourly', 'daily', 'weekly'], {
-  errorMap: () => ({ message: "Granularity must be one of: hourly, daily, weekly" })
+const GranularitySchema = z.enum(ANALYTICS_CONSTANTS.VALID_GRANULARITIES, {
+  errorMap: () => ({ message: `Granularity must be one of: ${ANALYTICS_CONSTANTS.VALID_GRANULARITIES.join(', ')}` })
 });
 
 // Valid sort options
@@ -33,8 +34,8 @@ const PaginationSchema = z.object({
 
 // General analytics query schema
 export const GeneralAnalyticsQuerySchema = z.object({
-  timeframe: TimeframeSchema.default('30d'),
-  granularity: GranularitySchema.default('daily')
+  timeframe: TimeframeSchema.default(ANALYTICS_CONSTANTS.DEFAULT_TIMEFRAME),
+  granularity: GranularitySchema.default(ANALYTICS_CONSTANTS.DEFAULT_GRANULARITY)
 });
 
 // User analytics query schema

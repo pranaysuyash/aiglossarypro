@@ -8,11 +8,12 @@ import { requireAdmin, authenticateToken } from '../middleware/adminAuth';
 import { mockIsAuthenticated, mockAuthenticateToken } from '../middleware/dev/mockAuth';
 import { features } from '../config';
 import { UserService } from '../services/userService';
+import { PRICING_CONSTANTS, HTTP_STATUS, ORDER_CONSTANTS, ENVIRONMENT_CONSTANTS } from '../utils/constants';
 
 // Gumroad webhook verification
 function verifyGumroadWebhook(body: string, signature: string): boolean {
   if (!process.env.GUMROAD_WEBHOOK_SECRET) {
-    console.warn('GUMROAD_WEBHOOK_SECRET not set - allowing webhook in development');
+    log.warn('GUMROAD_WEBHOOK_SECRET not set - allowing webhook in development');
     return true; // Allow in development
   }
   
@@ -49,7 +50,7 @@ export function registerGumroadRoutes(app: Express): void {
           signature: signature?.substring(0, 10) + '...',
           expectedLength: process.env.GUMROAD_WEBHOOK_SECRET?.length
         });
-        return res.status(400).json({ error: 'Invalid signature' });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: 'Invalid signature' });
       }
 
       const data = req.body;
@@ -92,7 +93,7 @@ export function registerGumroadRoutes(app: Express): void {
         });
       }
 
-      res.status(200).json({ success: true });
+      res.status(HTTP_STATUS.OK).json({ success: true });
     } catch (error) {
       log.error('Gumroad webhook processing error', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -105,7 +106,7 @@ export function registerGumroadRoutes(app: Express): void {
         body: req.body
       });
       
-      res.status(500).json({ error: 'Webhook processing failed' });
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Webhook processing failed' });
     }
   });
   
@@ -130,7 +131,7 @@ export function registerGumroadRoutes(app: Express): void {
           email: email.substring(0, 3) + '***'
         });
         
-        return res.status(404).json({ error: 'No purchase found for this email' });
+        return res.status(HTTP_STATUS.NOT_FOUND).json({ error: 'No purchase found for this email' });
       }
 
       log.info('Purchase verification successful', {
@@ -154,7 +155,7 @@ export function registerGumroadRoutes(app: Express): void {
         body: { email: 'filtered' }
       });
       
-      res.status(500).json({ error: 'Verification failed' });
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Verification failed' });
     }
   });
   
@@ -166,7 +167,7 @@ export function registerGumroadRoutes(app: Express): void {
       const { email, orderId } = req.body;
       
       if (!email) {
-        return res.status(400).json({ error: 'Email required' });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: 'Email required' });
       }
 
       const grantedBy = (req.user as any)?.id || 'admin';
@@ -181,8 +182,8 @@ export function registerGumroadRoutes(app: Express): void {
       const result = await UserService.grantLifetimeAccess({
         email,
         orderId,
-        amount: 24900, // $249.00 in cents
-        currency: 'USD',
+        amount: PRICING_CONSTANTS.LIFETIME_PRICE_CENTS, // $249.00 in cents
+        currency: PRICING_CONSTANTS.CURRENCY_USD,
         grantedBy
       });
 
@@ -206,7 +207,7 @@ export function registerGumroadRoutes(app: Express): void {
         body: { email: 'filtered' }
       });
       
-      res.status(500).json({ error: 'Failed to grant access' });
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Failed to grant access' });
     }
   });
 
@@ -216,14 +217,14 @@ export function registerGumroadRoutes(app: Express): void {
     async (req: Request, res: Response) => {
     try {
       // Only allow in development mode
-      if (process.env.NODE_ENV !== 'development') {
-        return res.status(403).json({ error: 'Test purchases only available in development mode' });
+      if (process.env.NODE_ENV !== ENVIRONMENT_CONSTANTS.NODE_ENV_DEVELOPMENT) {
+        return res.status(HTTP_STATUS.FORBIDDEN).json({ error: 'Test purchases only available in development mode' });
       }
 
       const { email } = req.body;
       
       if (!email) {
-        return res.status(400).json({ error: 'Email required for test purchase' });
+        return res.status(HTTP_STATUS.BAD_REQUEST).json({ error: 'Email required for test purchase' });
       }
 
       log.info('Test purchase initiated', {
@@ -238,8 +239,8 @@ export function registerGumroadRoutes(app: Express): void {
       const result = await UserService.grantLifetimeAccess({
         email,
         orderId: testOrderId,
-        amount: 24900, // $249.00 in cents
-        currency: 'USD',
+        amount: PRICING_CONSTANTS.LIFETIME_PRICE_CENTS, // $249.00 in cents
+        currency: PRICING_CONSTANTS.CURRENCY_USD,
         purchaseData: { email },
         isTestPurchase: true
       });
@@ -253,7 +254,7 @@ export function registerGumroadRoutes(app: Express): void {
 
       res.json({ 
         success: true, 
-        message: 'Test purchase completed successfully! You now have lifetime access for $249.00.',
+        message: `Test purchase completed successfully! You now have lifetime access for ${PRICING_CONSTANTS.LIFETIME_PRICE_DISPLAY}.`,
         user: {
           email: result.email,
           subscriptionTier: 'lifetime',
@@ -262,8 +263,8 @@ export function registerGumroadRoutes(app: Express): void {
         },
         testData: {
           orderId: testOrderId,
-          amount: '$249.00',
-          environment: 'development'
+          amount: PRICING_CONSTANTS.LIFETIME_PRICE_DISPLAY,
+          environment: ENVIRONMENT_CONSTANTS.NODE_ENV_DEVELOPMENT
         }
       });
     } catch (error) {
@@ -278,7 +279,7 @@ export function registerGumroadRoutes(app: Express): void {
         body: { email: 'filtered' }
       });
       
-      res.status(500).json({ error: 'Test purchase failed' });
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Test purchase failed' });
     }
   });
 }

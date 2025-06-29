@@ -1,6 +1,7 @@
 import crypto from 'crypto';
 import { optimizedStorage as storage } from "../optimizedStorage";
 import { log } from '../utils/logger';
+import { PRICING_CONSTANTS, ORDER_CONSTANTS, ENVIRONMENT_CONSTANTS } from '../utils/constants';
 
 export interface GrantLifetimeAccessOptions {
   email: string;
@@ -30,7 +31,7 @@ export class UserService {
    * Used by Gumroad webhook, manual grant, and test purchase endpoints
    */
   static async grantLifetimeAccess(options: GrantLifetimeAccessOptions): Promise<LifetimeAccessResult> {
-    const { email, orderId, amount = 24900, currency = 'USD', purchaseData, grantedBy, isTestPurchase = false } = options;
+    const { email, orderId, amount = PRICING_CONSTANTS.LIFETIME_PRICE_CENTS, currency = PRICING_CONSTANTS.CURRENCY_USD, purchaseData, grantedBy, isTestPurchase = false } = options;
     
     log.info('Granting lifetime access', {
       email: email.substring(0, 3) + '***',

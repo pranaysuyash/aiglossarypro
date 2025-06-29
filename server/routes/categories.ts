@@ -2,6 +2,7 @@ import type { Express, Request, Response } from "express";
 import { optimizedStorage as storage } from "../optimizedStorage";
 import type { ICategory, ApiResponse, PaginatedResponse, ITerm } from "../../shared/types";
 import { log } from "../utils/logger";
+import { PAGINATION_CONSTANTS, HTTP_STATUS } from "../utils/constants";
 
 /**
  * Category management routes

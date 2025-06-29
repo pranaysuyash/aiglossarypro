@@ -434,6 +434,10 @@ export class DatabaseStorage implements IStorage {
     return result;
   }
 
+  async getUserFavorites(userId: string): Promise<any[]> {
+    return this.getFavorites(userId);
+  }
+
   async isTermFavorite(userId: string, termId: string): Promise<boolean> {
     // Check if the term is in user's favorites
     const [favorite] = await db.select()
@@ -1137,7 +1141,7 @@ export class DatabaseStorage implements IStorage {
     const user = await this.getUser(userId);
     
     // Get user's favorites
-    const favorites = await this.getUserFavorites(userId);
+    const favorites = await this.getFavorites(userId);
     
     // Get user's progress
     const learned = await db.select({

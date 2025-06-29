@@ -87,6 +87,9 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
   (req as AuthenticatedRequest).user = {
     id: decoded.sub,
     email: decoded.email,
+    firstName: decoded.firstName || null,
+    lastName: decoded.lastName || null,
+    profileImageUrl: decoded.profileImageUrl || null,
     claims: {
       sub: decoded.sub,
       email: decoded.email,
@@ -111,6 +114,9 @@ export function optionalAuth(req: Request, res: Response, next: NextFunction) {
       (req as AuthenticatedRequest).user = {
         id: decoded.sub,
         email: decoded.email,
+        firstName: decoded.firstName || null,
+        lastName: decoded.lastName || null,
+        profileImageUrl: decoded.profileImageUrl || null,
         claims: {
           sub: decoded.sub,
           email: decoded.email,

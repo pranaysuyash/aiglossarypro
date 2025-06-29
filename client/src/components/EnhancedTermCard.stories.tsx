@@ -143,7 +143,7 @@ export const AIGenerated: Story = {
     term: {
       ...mockEnhancedTerm,
       isAiGenerated: true,
-      verificationStatus: 'pending',
+      verificationStatus: 'needs_review',
     },
   },
   parameters: {
@@ -158,7 +158,7 @@ export const AIGenerated: Story = {
 export const Compact: Story = {
   args: {
     term: mockEnhancedTerm,
-    variant: 'compact',
+    displayMode: 'compact',
   },
   parameters: {
     docs: {

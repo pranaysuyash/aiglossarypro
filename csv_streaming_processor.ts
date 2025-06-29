@@ -138,7 +138,7 @@ class CSVStreamingProcessor {
       }
 
       const sections = new Map<string, any>();
-      const categories = { main: [], sub: [] };
+      const categories: { main: string[], sub: string[] } = { main: [], sub: [] };
 
       // Map CSV columns to 42 sections
       for (const sectionConfig of COMPLETE_CONTENT_SECTIONS) {

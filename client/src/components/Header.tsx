@@ -185,7 +185,7 @@ export default function Header() {
         {mobileMenuOpen && (
           <div 
             id="mobile-navigation-menu" 
-            ref={mobileMenuRef}
+            ref={mobileMenuRef as React.RefObject<HTMLDivElement>}
             className="md:hidden py-4 border-t border-gray-100 dark:border-gray-700"
             onKeyDown={(e) => {
               if (e.key === 'Escape') {

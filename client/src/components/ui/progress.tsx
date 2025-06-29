@@ -20,7 +20,7 @@ const Progress = React.forwardRef<
     )}
     aria-label={ariaLabel}
     aria-labelledby={ariaLabelledBy}
-    aria-valuenow={value}
+    aria-valuenow={value ?? undefined}
     aria-valuemin={0}
     aria-valuemax={100}
     {...props}

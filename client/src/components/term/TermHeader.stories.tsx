@@ -90,7 +90,7 @@ export const WithLongName: Story = {
 
 export const Favorited: Story = {
   args: {
-    isFavorite: true,
+    favorite: true,
   },
   parameters: {
     docs: {

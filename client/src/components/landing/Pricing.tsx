@@ -57,7 +57,7 @@ export function Pricing() {
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             Simple, Fair Pricing
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
             Why pay $300-600 annually when you can get comprehensive lifetime access?
           </p>
         </div>
@@ -81,8 +81,8 @@ export function Pricing() {
                 {comparison.map((row, index) => (
                   <tr key={index} className="border-b border-gray-100">
                     <td className="p-4 font-medium text-gray-900">{row.feature}</td>
-                    <td className="p-4 text-center border-l border-gray-200 text-gray-600">{row.free}</td>
-                    <td className="p-4 text-center border-l border-gray-200 text-gray-600">{row.competitors}</td>
+                    <td className="p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400">{row.free}</td>
+                    <td className="p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400">{row.competitors}</td>
                     <td className="p-4 text-center border-l border-gray-200 bg-purple-50 font-semibold text-purple-900">{row.us}</td>
                   </tr>
                 ))}
@@ -236,15 +236,15 @@ export function Pricing() {
             <div className="grid md:grid-cols-3 gap-6 text-center">
               <div>
                 <div className="text-3xl font-bold text-red-600 mb-2">$300+</div>
-                <div className="text-gray-600">DataCamp (annual)</div>
+                <div className="text-gray-600 dark:text-gray-400">DataCamp (annual)</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-red-600 mb-2">$400+</div>
-                <div className="text-gray-600">Coursera (annual)</div>
+                <div className="text-gray-600 dark:text-gray-400">Coursera (annual)</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-green-600 mb-2">${pricing.localPrice}</div>
-                <div className="text-gray-600">Our platform (lifetime)</div>
+                <div className="text-gray-600 dark:text-gray-400">Our platform (lifetime)</div>
                 {pricing.discount > 0 && (
                   <div className="text-sm text-green-600">
                     {pricing.discount}% off for {pricing.countryName}
@@ -252,7 +252,7 @@ export function Pricing() {
                 )}
               </div>
             </div>
-            <p className="text-gray-600 mt-6">
+            <p className="text-gray-600 dark:text-gray-400 mt-6">
               <strong>Save hundreds of dollars</strong> while getting more comprehensive AI/ML coverage.
             </p>
             <p className="text-sm text-gray-500 mt-2">

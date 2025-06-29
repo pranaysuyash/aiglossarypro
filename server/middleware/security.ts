@@ -2,6 +2,7 @@ import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
+import cors from 'cors';
 import { log } from '../utils/logger';
 import { addBreadcrumb } from '../utils/sentry';
 
@@ -94,6 +95,80 @@ export const rateLimitConfig = {
   search: { windowMs: 1 * 60 * 1000, max: 30 },
   auth: { windowMs: 15 * 60 * 1000, max: 5 },
 };
+
+// CORS configuration for production security
+export const corsMiddleware = cors({
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:3001', 
+      'http://localhost:5173', // Vite dev server
+      'https://localhost:3000',
+      'https://localhost:3001',
+      process.env.FRONTEND_URL,
+      process.env.PRODUCTION_URL,
+      process.env.STAGING_URL
+    ].filter(Boolean); // Remove undefined values
+    
+    // In production, be more restrictive
+    if (process.env.NODE_ENV === 'production') {
+      const productionOrigins = [
+        process.env.FRONTEND_URL,
+        process.env.PRODUCTION_URL,
+        process.env.STAGING_URL
+      ].filter(Boolean);
+      
+      if (productionOrigins.length === 0) {
+        log.error('No production origins configured for CORS');
+        return callback(new Error('CORS configuration error'), false);
+      }
+      
+      if (productionOrigins.includes(origin)) {
+        return callback(null, true);
+      } else {
+        log.warn('CORS blocked origin in production', { origin, allowedOrigins: productionOrigins });
+        return callback(new Error(`Origin ${origin} not allowed by CORS`), false);
+      }
+    }
+    
+    // In development, allow localhost variants
+    if (origin.includes('localhost') || allowedOrigins.includes(origin)) {
+      return callback(null, true);
+    }
+    
+    log.warn('CORS blocked origin', { origin, allowedOrigins });
+    callback(new Error(`Origin ${origin} not allowed by CORS`), false);
+  },
+  
+  credentials: true, // Allow cookies and auth headers
+  
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  
+  allowedHeaders: [
+    'Origin',
+    'X-Requested-With',
+    'Content-Type',
+    'Accept',
+    'Authorization',
+    'X-CSRF-Token',
+    'X-Request-ID',
+    'X-API-Key'
+  ],
+  
+  exposedHeaders: [
+    'X-Request-ID',
+    'X-RateLimit-Limit',
+    'X-RateLimit-Remaining',
+    'X-RateLimit-Reset'
+  ],
+  
+  maxAge: 86400, // 24 hours preflight cache
+  
+  optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+});
 
 // Enhanced security headers with Helmet
 export const securityHeaders = helmet({
@@ -435,6 +510,7 @@ export const validateEnvironmentVariables = (): { valid: boolean; errors: string
 };
 
 export default {
+  corsMiddleware,
   securityHeaders,
   sanitizeRequest,
   validateInput,

@@ -91,7 +91,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose }: Upg
             <div className="border rounded-lg p-3 bg-gradient-to-r from-blue-50 to-purple-50">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">$129</div>
-                <div className="text-sm text-gray-600">One-time payment</div>
+                <div className="text-sm text-gray-600 dark:text-gray-400">One-time payment</div>
                 <div className="text-xs text-green-600 font-medium mt-1">
                   Auto-adjusted for your region
                 </div>
@@ -112,7 +112,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose }: Upg
               )}
             </div>
             
-            <p className="text-xs text-center text-gray-500">
+            <p className="text-xs text-center text-gray-500 dark:text-gray-400">
               7-day money-back guarantee • No subscription • One-time payment
             </p>
           </CardContent>
@@ -145,7 +145,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose }: Upg
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div 
               className={`h-2 rounded-full transition-all duration-300 ${
                 remainingViews > 10 
@@ -166,7 +166,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose }: Upg
             Upgrade for Unlimited Access
           </Button>
           
-          <p className="text-xs text-center text-gray-500">
+          <p className="text-xs text-center text-gray-500 dark:text-gray-400">
             One-time payment • Regional pricing • 7-day guarantee
           </p>
         </div>

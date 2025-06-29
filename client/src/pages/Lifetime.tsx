@@ -19,7 +19,7 @@ export default function Lifetime() {
           <h1 className="text-5xl font-bold text-gray-900 mb-6">
             Master AI & Machine Learning
           </h1>
-          <p className="text-2xl text-gray-600 mb-8">
+          <p className="text-2xl text-gray-600 dark:text-gray-400 dark:text-gray-400 mb-8">
             The most comprehensive AI/ML reference with 10,000+ terms, 
             code examples, and real-world applications.
           </p>
@@ -45,11 +45,11 @@ export default function Lifetime() {
               <TestPurchaseButton />
             </div>
             
-            <p className="text-sm text-gray-500 mt-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
               One-time payment, lifetime access. 30-day money back guarantee.
             </p>
           </div>
-          <div className="flex justify-center items-center space-x-8 text-gray-600">
+          <div className="flex justify-center items-center space-x-8 text-gray-600 dark:text-gray-400">
             <div className="flex items-center">
               <Check className="w-5 h-5 text-green-500 mr-2" />
               <span>10,000+ Terms</span>
@@ -76,7 +76,7 @@ export default function Lifetime() {
             <div className="bg-white p-8 rounded-lg shadow-sm">
               <BookOpen className="w-12 h-12 text-blue-600 mb-4" />
               <h3 className="text-xl font-semibold mb-3">Comprehensive Coverage</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Every AI/ML concept explained clearly, from basics to advanced topics. 
                 No more jumping between scattered resources.
               </p>
@@ -84,7 +84,7 @@ export default function Lifetime() {
             <div className="bg-white p-8 rounded-lg shadow-sm">
               <Code className="w-12 h-12 text-blue-600 mb-4" />
               <h3 className="text-xl font-semibold mb-3">Practical Code Examples</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Real Python implementations for every concept. Copy-paste ready code 
                 that actually works in your projects.
               </p>
@@ -92,7 +92,7 @@ export default function Lifetime() {
             <div className="bg-white p-8 rounded-lg shadow-sm">
               <TrendingUp className="w-12 h-12 text-blue-600 mb-4" />
               <h3 className="text-xl font-semibold mb-3">Always Up-to-Date</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 AI evolves rapidly. Get lifetime updates with new terms and concepts 
                 as they emerge in the field.
               </p>
@@ -100,7 +100,7 @@ export default function Lifetime() {
             <div className="bg-white p-8 rounded-lg shadow-sm">
               <Shield className="w-12 h-12 text-blue-600 mb-4" />
               <h3 className="text-xl font-semibold mb-3">Risk-Free Guarantee</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 30-day money back guarantee. If you're not completely satisfied, 
                 get a full refund - no questions asked.
               </p>
@@ -127,7 +127,7 @@ export default function Lifetime() {
             ].map((item, index) => (
               <div key={index} className="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
                 <span className="font-medium">{item.category}</span>
-                <span className="text-gray-600">{item.count}</span>
+                <span className="text-gray-600 dark:text-gray-400">{item.count}</span>
               </div>
             ))}
           </div>
@@ -140,7 +140,7 @@ export default function Lifetime() {
           <h2 className="text-3xl font-bold mb-8">Simple, Fair Pricing</h2>
           <div className="bg-white p-8 rounded-lg shadow-lg">
             <div className="text-5xl font-bold text-blue-600 mb-4">$129</div>
-            <div className="text-xl text-gray-600 mb-8">Lifetime Access</div>
+            <div className="text-xl text-gray-600 dark:text-gray-400 mb-8">Lifetime Access</div>
             <ul className="text-left space-y-3 mb-8">
               {[
                 "All 10,000+ terms and definitions",
@@ -162,7 +162,7 @@ export default function Lifetime() {
             >
               Get Lifetime Access Now
             </Button>
-            <p className="text-sm text-gray-500 mt-4">
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
               Purchasing Power Parity automatically applied at checkout
             </p>
           </div>
@@ -178,14 +178,14 @@ export default function Lifetime() {
           <div className="space-y-8">
             <div>
               <h3 className="text-xl font-semibold mb-3">Is this really a one-time payment?</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Yes! Pay once and get lifetime access. No subscriptions, no recurring fees, 
                 no surprises. Updates are included forever.
               </p>
             </div>
             <div>
               <h3 className="text-xl font-semibold mb-3">How is this different from free resources?</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 We provide comprehensive, structured coverage with practical code examples. 
                 Everything is organized, searchable, and in one place - saving you hundreds 
                 of hours of searching and piecing together information.
@@ -193,14 +193,14 @@ export default function Lifetime() {
             </div>
             <div>
               <h3 className="text-xl font-semibold mb-3">What if I'm not satisfied?</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 We offer a 30-day money back guarantee. If you're not completely satisfied, 
                 just email us and we'll refund your purchase - no questions asked.
               </p>
             </div>
             <div>
               <h3 className="text-xl font-semibold mb-3">Do prices vary by country?</h3>
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Yes! We use Purchasing Power Parity to ensure fair pricing globally. 
                 The price will automatically adjust based on your location at checkout.
               </p>

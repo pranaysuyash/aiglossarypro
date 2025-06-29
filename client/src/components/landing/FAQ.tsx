@@ -60,7 +60,7 @@ export function FAQ() {
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             Frequently Asked Questions
           </h2>
-          <p className="text-xl text-gray-600">
+          <p className="text-xl text-gray-600 dark:text-gray-400">
             Everything you need to know about AI/ML Glossary Pro.
           </p>
         </div>
@@ -75,7 +75,7 @@ export function FAQ() {
               <AccordionTrigger className="text-left font-semibold text-gray-900 hover:text-purple-700">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-gray-600 pt-2 pb-4">
+              <AccordionContent className="text-gray-600 dark:text-gray-400 pt-2 pb-4">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>

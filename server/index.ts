@@ -17,7 +17,7 @@ import { setupAuth } from "./replitAuth";
 import { initS3Client } from "./s3Service";
 import { setupMockAuth } from "./middleware/dev/mockAuth";
 import { registerSimpleAuthRoutes } from "./routes/simpleAuth";
-import { securityHeaders, sanitizeRequest, securityMonitoring, apiRateLimit } from "./middleware/security";
+import { securityHeaders, sanitizeRequest, securityMonitoring, apiRateLimit, corsMiddleware } from "./middleware/security";
 import { errorHandler, notFoundHandler, gracefulShutdown } from "./middleware/errorHandler";
 import { 
   performanceTrackingMiddleware, 
@@ -49,6 +49,7 @@ app.use(loggingMiddleware.securityLogging);
 app.use(loggingMiddleware.performance);
 
 // Apply security middleware
+app.use(corsMiddleware);
 app.use(securityHeaders);
 app.use(sanitizeRequest);
 app.use(securityMonitoring);

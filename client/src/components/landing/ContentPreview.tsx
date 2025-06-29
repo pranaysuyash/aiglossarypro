@@ -87,7 +87,7 @@ def gradient_descent(X, y, learning_rate=0.01, iterations=1000):
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             Comprehensive Coverage Across All AI/ML Domains
           </h2>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
             From basic concepts to cutting-edge research, we've got you covered.
           </p>
         </div>
@@ -110,7 +110,7 @@ def gradient_descent(X, y, learning_rate=0.01, iterations=1000):
               <CardContent className="pt-0">
                 <div className="space-y-2">
                   {category.topics.map((topic, topicIndex) => (
-                    <div key={topicIndex} className="flex items-center gap-2 text-sm text-gray-600">
+                    <div key={topicIndex} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
                       <div className="w-1.5 h-1.5 bg-gray-400 rounded-full"></div>
                       <span>{topic}</span>
                     </div>
@@ -127,7 +127,7 @@ def gradient_descent(X, y, learning_rate=0.01, iterations=1000):
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
               See What's Inside - Example Term
             </h3>
-            <p className="text-gray-600">
+            <p className="text-gray-600 dark:text-gray-400">
               Every term includes detailed explanations, code examples, and real-world applications.
             </p>
           </div>

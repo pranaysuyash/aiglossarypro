@@ -8,6 +8,7 @@ import { db } from '../db';
 import { terms, categories } from '../../shared/schema';
 import { eq, sql } from 'drizzle-orm';
 import { errorLogger } from '../middleware/errorHandler';
+import { log as logger } from '../utils/logger';
 import type { ApiResponse } from '../../shared/types';
 
 const seoRouter = Router();
@@ -404,7 +405,7 @@ export function registerSeoRoutes(app: any): void {
     seoRouter(req, res, () => {});
   });
   
-  console.log('✅ SEO optimization routes registered');
+  logger.info('SEO optimization routes registered');
 }
 
 export { seoRouter };

@@ -42,7 +42,7 @@ export const TIME_PERIODS = {
   ONE_YEAR: '1y'
 } as const;
 
-// Default Pagination Limits
+// Default Pagination Limits  
 export const DEFAULT_LIMITS = {
   TERMS: 10,
   CONTENT: 12,

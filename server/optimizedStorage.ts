@@ -28,6 +28,7 @@ import {
 import { z } from "zod";
 import { formatDistanceToNow, subDays, format, startOfDay, endOfDay } from "date-fns";
 import { cached, CacheKeys, CacheInvalidation, queryCache, clearCache, getCacheStats } from './middleware/queryCache';
+import type { ITerm, ICategory } from '../shared/types';
 
 // Interface for storage operations (same as original)
 export interface IStorage {
@@ -48,6 +49,7 @@ export interface IStorage {
   
   // Favorites operations
   getUserFavorites(userId: string): Promise<ITerm[]>;
+  getUserFavoritesOptimized?(userId: string, pagination?: { limit?: number; offset?: number; fields?: string[] }): Promise<{ data: any[]; total: number; hasMore: boolean }>;
   isTermFavorite(userId: string, termId: string): Promise<boolean>;
   addFavorite(userId: string, termId: string): Promise<void>;
   removeFavorite(userId: string, termId: string): Promise<void>;
@@ -461,7 +463,12 @@ export class OptimizedStorage implements IStorage {
   }
 
   // OPTIMIZED: Fixed N+1 query problem in favorites with field selection
-  async getUserFavorites(userId: string, pagination?: { limit?: number; offset?: number; fields?: string[] }): Promise<{ data: any[]; total: number; hasMore: boolean }> {
+  async getUserFavorites(userId: string): Promise<ITerm[]> {
+    const result = await this.getUserFavoritesOptimized(userId, { limit: 100 });
+    return result.data;
+  }
+
+  async getUserFavoritesOptimized(userId: string, pagination?: { limit?: number; offset?: number; fields?: string[] }): Promise<{ data: any[]; total: number; hasMore: boolean }> {
     const { limit = 50, offset = 0, fields = ['termId', 'name', 'shortDefinition', 'viewCount', 'category'] } = pagination || {};
     const cacheKey = `${CacheKeys.userFavorites(userId)}:${limit}:${offset}:${fields.join(',')}`;
     

@@ -10,9 +10,6 @@ const mockCategory = {
   name: 'Machine Learning',
   description: 'Algorithms and statistical models that computer systems use to perform tasks without explicit instructions.',
   termCount: 45,
-  slug: 'machine-learning',
-  icon: '🤖',
-  color: '#3B82F6',
 };
 
 const meta: Meta<typeof CategoryCard> = {
@@ -35,7 +32,6 @@ const meta: Meta<typeof CategoryCard> = {
   ],
   args: {
     category: mockCategory,
-    onClick: fn(),
   },
   tags: ['autodocs'],
 };
@@ -78,8 +74,6 @@ export const WithLowTermCount: Story = {
       name: 'Quantum Computing',
       description: 'Computing using quantum-mechanical phenomena.',
       termCount: 3,
-      icon: '⚛️',
-      color: '#8B5CF6',
     },
   },
   parameters: {
@@ -98,8 +92,6 @@ export const WithHighTermCount: Story = {
       name: 'Deep Learning',
       description: 'Machine learning methods based on artificial neural networks.',
       termCount: 127,
-      icon: '🧠',
-      color: '#EF4444',
     },
   },
   parameters: {
@@ -117,8 +109,6 @@ export const WithoutIcon: Story = {
       ...mockCategory,
       name: 'Computer Vision',
       description: 'Interdisciplinary field that deals with how computers can be made to gain understanding from digital images.',
-      icon: undefined,
-      color: '#10B981',
     },
   },
   parameters: {
@@ -137,8 +127,6 @@ export const WithShortDescription: Story = {
       name: 'Robotics',
       description: 'Robots and automation.',
       termCount: 23,
-      icon: '🤖',
-      color: '#F59E0B',
     },
   },
   parameters: {

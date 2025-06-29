@@ -100,12 +100,16 @@ export async function setupAuth(app: Express) {
       // Create a simplified user object for passport
       const passportUser: Express.User = {
         id: user.id,
-        email: user.email,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        profileImageUrl: user.profileImageUrl,
-        isAdmin: user.isAdmin,
-        claims: userClaims,
+        email: user.email || '',
+        firstName: user.firstName || undefined,
+        lastName: user.lastName || undefined,
+        profileImageUrl: user.profileImageUrl || undefined,
+        isAdmin: user.isAdmin || undefined,
+        claims: userClaims || {
+          sub: user.id,
+          email: user.email || '',
+          name: user.firstName && user.lastName ? `${user.firstName} ${user.lastName}` : user.email || 'Unknown User'
+        },
         access_token: tokens.access_token,
         expires_at: userClaims?.exp
       };
@@ -163,7 +167,7 @@ export async function setupAuth(app: Express) {
 export const isAuthenticated: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
 
-  if (!req.isAuthenticated() || !user.expires_at) {
+  if (!req.isAuthenticated?.() || !user.expires_at) {
     return res.status(401).json({ message: "Unauthorized" });
   }
 

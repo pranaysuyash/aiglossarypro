@@ -1,4 +1,5 @@
 import DOMPurify from 'dompurify';
+import type { Config } from 'dompurify';
 
 /**
  * Sanitizes HTML content to prevent XSS attacks
@@ -6,9 +7,9 @@ import DOMPurify from 'dompurify';
  * @param options - DOMPurify configuration options
  * @returns Sanitized HTML string
  */
-export function sanitizeHTML(dirty: string, options?: DOMPurify.Config): string {
+export function sanitizeHTML(dirty: string, options?: Config): string {
   // Configure DOMPurify with safe defaults
-  const defaultConfig: DOMPurify.Config = {
+  const defaultConfig: Config = {
     ALLOWED_TAGS: [
       'p', 'br', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
       'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'em', 'strong',
@@ -28,7 +29,6 @@ export function sanitizeHTML(dirty: string, options?: DOMPurify.Config): string 
     FORCE_BODY: true,
     RETURN_DOM: false,
     RETURN_DOM_FRAGMENT: false,
-    RETURN_DOM_IMPORT: false,
     SAFE_FOR_TEMPLATES: true,
     SANITIZE_DOM: true,
     KEEP_CONTENT: true,

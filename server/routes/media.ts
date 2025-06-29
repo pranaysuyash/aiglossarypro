@@ -11,6 +11,7 @@ import { db } from '../db';
 import { sql } from 'drizzle-orm';
 import { requireAdmin } from '../middleware/adminAuth';
 import { errorLogger } from '../middleware/errorHandler';
+import { log as logger } from '../utils/logger';
 import type { ApiResponse } from '../../shared/types';
 
 // File type validation using magic numbers
@@ -42,7 +43,7 @@ async function validateFileContent(filePath: string, declaredMimeType: string): 
     }
     return true;
   } catch (error) {
-    console.error('File validation error:', error);
+    logger.error('File validation error', { error: error instanceof Error ? error.message : String(error) });
     return false;
   }
 }
@@ -82,9 +83,9 @@ const createMediaTable = async () => {
       ON media_files(mime_type)
     `);
 
-    console.log('✅ Media files table initialized');
+    logger.info('Media files table initialized');
   } catch (error) {
-    console.error('❌ Error creating media table:', error);
+    logger.error('Error creating media table', { error: error instanceof Error ? error.message : String(error) });
   }
 };
 
@@ -153,7 +154,7 @@ mediaRouter.post('/upload', requireAdmin, upload.single('file'), async (req: Req
       try {
         await fs.unlink(req.file.path);
       } catch (unlinkError) {
-        console.warn('Could not delete invalid file:', unlinkError);
+        logger.warn('Could not delete invalid file', { error: unlinkError instanceof Error ? unlinkError.message : String(unlinkError) });
       }
       
       return res.status(400).json({
@@ -193,7 +194,7 @@ mediaRouter.post('/upload', requireAdmin, upload.single('file'), async (req: Req
       data: mediaFile.rows?.[0]
     });
   } catch (error) {
-    console.error('Media upload error:', error);
+    logger.error('Media upload error', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({
       success: false,
       error: 'Failed to upload media file'
@@ -245,7 +246,7 @@ mediaRouter.get('/', async (req: Request, res: Response<ApiResponse<any>>) => {
       }
     });
   } catch (error) {
-    console.error('Media list error:', error);
+    logger.error('Media list error', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({
       success: false,
       error: 'Failed to fetch media files'
@@ -271,7 +272,7 @@ mediaRouter.patch('/:id', requireAdmin, async (req: Request, res: Response<ApiRe
       data: updatedFile.rows?.[0]
     });
   } catch (error) {
-    console.error('Media update error:', error);
+    logger.error('Media update error', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({
       success: false,
       error: 'Failed to update media file'
@@ -294,7 +295,7 @@ mediaRouter.delete('/:id', requireAdmin, async (req: Request, res: Response<ApiR
       try {
         await fs.unlink((fileInfo.rows[0] as any).upload_path);
       } catch (error) {
-        console.warn('Could not delete physical file:', error);
+        logger.warn('Could not delete physical file', { error: error instanceof Error ? error.message : String(error) });
       }
     }
 
@@ -308,7 +309,7 @@ mediaRouter.delete('/:id', requireAdmin, async (req: Request, res: Response<ApiR
       data: { message: 'Media file deleted successfully' }
     });
   } catch (error) {
-    console.error('Media delete error:', error);
+    logger.error('Media delete error', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({
       success: false,
       error: 'Failed to delete media file'
@@ -380,7 +381,7 @@ mediaRouter.get('/serve/:filename', async (req: Request, res: Response) => {
     res.setHeader('Content-Disposition', `inline; filename="${safeOriginalName}"`);
     res.sendFile(filePath);
   } catch (error) {
-    console.error('Media serve error:', error);
+    logger.error('Media serve error', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({
       success: false,
       error: 'Failed to serve media file'
@@ -391,7 +392,7 @@ mediaRouter.get('/serve/:filename', async (req: Request, res: Response) => {
 // Register media routes
 export function registerMediaRoutes(app: any): void {
   app.use('/api/media', mediaRouter);
-  console.log('✅ Media management routes registered');
+  logger.info('Media management routes registered');
 }
 
 export { mediaRouter };

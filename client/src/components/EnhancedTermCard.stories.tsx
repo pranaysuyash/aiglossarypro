@@ -18,29 +18,25 @@ const queryClient = new QueryClient({
 // Mock enhanced term data
 const mockEnhancedTerm: IEnhancedTerm = {
   id: '1',
-  term: 'Machine Learning',
+  name: 'Machine Learning',
+  slug: 'machine-learning',
   definition: 'A subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed.',
-  examples: [
-    'Recommendation systems used by Netflix and Spotify',
-    'Email spam detection algorithms',
-    'Image recognition in photo tagging'
-  ],
-  relatedTerms: ['Artificial Intelligence', 'Deep Learning', 'Neural Networks'],
+  shortDefinition: 'A subset of AI that enables systems to learn and improve from experience without explicit programming.',
   category: 'Core Concepts',
-  difficulty: 'Intermediate',
-  tags: ['AI', 'Algorithms', 'Data Science'],
-  lastUpdated: new Date().toISOString(),
-  views: 1250,
-  likes: 89,
-  bookmarked: false,
-  readingTime: 3,
-  prerequisites: ['Statistics', 'Programming Basics'],
-  applications: ['Healthcare', 'Finance', 'Autonomous Vehicles'],
-  keyPoints: [
-    'Learns from data without explicit programming',
-    'Improves performance with more data',
-    'Used in various industries and applications'
-  ]
+  mainCategories: ['Artificial Intelligence'],
+  subCategories: ['Supervised Learning', 'Unsupervised Learning'],
+  relatedConcepts: ['Artificial Intelligence', 'Deep Learning', 'Neural Networks'],
+  applicationDomains: ['Healthcare', 'Finance', 'Autonomous Vehicles'],
+  techniques: ['Classification', 'Regression', 'Clustering'],
+  difficultyLevel: 'Intermediate',
+  hasImplementation: true,
+  hasInteractiveElements: false,
+  hasCaseStudies: true,
+  hasCodeExamples: true,
+  keywords: ['AI', 'Algorithms', 'Data Science'],
+  viewCount: 1250,
+  createdAt: new Date(),
+  updatedAt: new Date()
 };
 
 const meta: Meta<typeof EnhancedTermCard> = {
@@ -65,8 +61,7 @@ const meta: Meta<typeof EnhancedTermCard> = {
   ],
   args: {
     term: mockEnhancedTerm,
-    onFavorite: fn(),
-    onShare: fn(),
+    isFavorite: false,
   },
   tags: ['autodocs'],
 };
@@ -90,7 +85,7 @@ export const Beginner: Story = {
     term: {
       ...mockEnhancedTerm,
       name: 'Machine Learning',
-      difficultyLevel: 'beginner',
+      difficultyLevel: 'Beginner',
       shortDefinition: 'A method of data analysis that automates analytical model building.',
       hasImplementation: false,
       hasCodeExamples: false,
@@ -110,7 +105,7 @@ export const Advanced: Story = {
     term: {
       ...mockEnhancedTerm,
       name: 'Transformer Architecture',
-      difficultyLevel: 'advanced',
+      difficultyLevel: 'Advanced',
       shortDefinition: 'A neural network architecture that relies entirely on attention mechanisms.',
       hasImplementation: true,
       hasCodeExamples: true,

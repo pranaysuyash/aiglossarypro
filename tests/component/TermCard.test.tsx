@@ -9,9 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 
 // Mock the API module
 vi.mock('../../client/src/lib/api', () => ({
-  // No longer mocking toggleFavorite or getFavorites directly here
-  // as the component now uses props for these interactions.
-  // apiRequest is still mocked for error handling test.
   apiRequest: vi.fn(),
 }));
 

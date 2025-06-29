@@ -173,7 +173,7 @@ export function registerUserProgressRoutes(app: Express): void {
           status: progress.status,
           completionPercentage: progress.completionPercentage,
           timeSpent: progress.timeSpentMinutes,
-          lastAccessed: progress.lastAccessedAt.toISOString(),
+          lastAccessed: progress.lastAccessed.toISOString(),
           completedAt: progress.completedAt?.toISOString()
         }));
 

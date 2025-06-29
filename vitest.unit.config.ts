@@ -7,7 +7,7 @@ export default defineConfig({
   plugins: [react()],
   test: {
     globals: true,
-    environment: 'jest-environment-jsdom-latest',
+    environment: 'jsdom',
     setupFiles: ['./tests/setup-env.ts'],
     include: ['tests/component/TermCard.test.tsx'],
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache', 'tests/visual/**/*'],

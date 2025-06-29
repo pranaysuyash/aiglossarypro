@@ -21,7 +21,7 @@ import type { AdminStats, UserActivity, ITerm } from '../shared/types';
 // ===== CORE INTERFACES =====
 
 export interface IEnhancedStorage extends IStorage {
-  // Admin Operations (9 methods)
+  // Admin Operations (18 methods)
   getAdminStats(): Promise<AdminStats>;
   getContentMetrics(): Promise<ContentMetrics>;
   clearCache(): Promise<void>;
@@ -30,6 +30,13 @@ export interface IEnhancedStorage extends IStorage {
   cleanupDatabase(): Promise<MaintenanceResult>;
   vacuumDatabase(): Promise<MaintenanceResult>;
   getAllUsers(options?: PaginationOptions): Promise<PaginatedResult<User>>;
+  getAllTerms(options?: any): Promise<any>;
+  getRecentTerms(limit: number): Promise<any[]>;
+  getRecentFeedback(limit: number): Promise<any[]>;
+  deleteTerm(id: string): Promise<void>;
+  bulkDeleteTerms(ids: string[]): Promise<any>;
+  bulkUpdateTermCategory(ids: string[], categoryId: string): Promise<any>;
+  bulkUpdateTermStatus(ids: string[], status: string): Promise<any>;
   getPendingContent(): Promise<PendingContent[]>;
   approveContent(id: string): Promise<any>;
   rejectContent(id: string): Promise<any>;
@@ -184,6 +191,7 @@ interface TermSection {
 interface PaginationOptions {
   page?: number;
   limit?: number;
+  offset?: number;
   sortBy?: string;
   sortOrder?: 'asc' | 'desc';
 }
@@ -302,7 +310,11 @@ interface UserProgressStats {
   favoriteTerms: number;
   completedSections: number;
   averageRating: number;
-  categoryProgress: Record<string, number>;
+  categoryProgress: Record<string, {
+    totalTerms: number;
+    completedTerms: number;
+    completionPercentage: number;
+  }>;
   achievements: string[];
   lastActivity: Date;
 }
@@ -396,11 +408,49 @@ interface SearchMetrics {
 interface TermUpdate {}
 interface BulkUpdateResult {}
 interface ExportFilters {}
-interface UserProgressStats {}
-interface SectionProgress {}
-interface LearningStreak {}
-interface Achievement {}
-interface CategoryProgress {}
+interface SectionProgress {
+  userId: string;
+  termId: string;
+  sectionId: string;
+  sectionTitle?: string;
+  status: 'not_started' | 'in_progress' | 'completed' | 'reviewed';
+  completionPercentage: number;
+  timeSpentMinutes: number;
+  lastAccessed: Date;
+  completedAt?: Date;
+}
+
+interface LearningStreak {
+  userId: string;
+  currentStreak: number;
+  longestStreak: number;
+  lastActivityDate: Date;
+  isActive: boolean;
+  streakType: 'daily' | 'weekly';
+}
+
+interface Achievement {
+  id: string;
+  userId: string;
+  achievementId: string;
+  title: string;
+  description: string;
+  category: string;
+  unlockedAt: Date;
+  progress?: number;
+  maxProgress?: number;
+}
+
+interface CategoryProgress {
+  userId: string;
+  categoryId: string;
+  categoryName: string;
+  totalTerms: number;
+  completedTerms: number;
+  completionPercentage: number;
+  timeSpent: number;
+  lastAccessed: Date;
+}
 interface ActivityItem {}
 interface SearchFacets {}
 interface TableStatistics {
@@ -3420,6 +3470,99 @@ export class EnhancedStorage implements IEnhancedStorage {
   async updateUserAccess(orderId: string, updates: any): Promise<void> {
     this.requireAdminAuth();
     return await this.baseStorage.updateUserAccess(orderId, updates);
+  }
+
+  // ===== MISSING ADMIN METHODS =====
+
+  async getAllTerms(options?: any): Promise<any> {
+    try {
+      if (typeof this.baseStorage.getAllTerms === 'function') {
+        return await this.baseStorage.getAllTerms(options);
+      }
+      // Fallback implementation
+      return { terms: [], total: 0 };
+    } catch (error) {
+      console.error('[EnhancedStorage] getAllTerms error:', error);
+      return { terms: [], total: 0 };
+    }
+  }
+
+  async getRecentTerms(limit: number): Promise<any[]> {
+    try {
+      if (typeof this.baseStorage.getRecentTerms === 'function') {
+        return await this.baseStorage.getRecentTerms(limit);
+      }
+      // Fallback implementation
+      return [];
+    } catch (error) {
+      console.error('[EnhancedStorage] getRecentTerms error:', error);
+      return [];
+    }
+  }
+
+  async getRecentFeedback(limit: number): Promise<any[]> {
+    try {
+      if (typeof this.baseStorage.getRecentFeedback === 'function') {
+        return await this.baseStorage.getRecentFeedback(limit);
+      }
+      // Fallback implementation
+      return [];
+    } catch (error) {
+      console.error('[EnhancedStorage] getRecentFeedback error:', error);
+      return [];
+    }
+  }
+
+  async deleteTerm(id: string): Promise<void> {
+    try {
+      if (typeof this.baseStorage.deleteTerm === 'function') {
+        await this.baseStorage.deleteTerm(id);
+      } else {
+        console.warn('[EnhancedStorage] deleteTerm not implemented in base storage');
+      }
+    } catch (error) {
+      console.error('[EnhancedStorage] deleteTerm error:', error);
+      throw error;
+    }
+  }
+
+  async bulkDeleteTerms(ids: string[]): Promise<any> {
+    try {
+      if (typeof this.baseStorage.bulkDeleteTerms === 'function') {
+        return await this.baseStorage.bulkDeleteTerms(ids);
+      }
+      // Fallback implementation
+      return { success: false, message: 'Bulk delete not implemented' };
+    } catch (error) {
+      console.error('[EnhancedStorage] bulkDeleteTerms error:', error);
+      throw error;
+    }
+  }
+
+  async bulkUpdateTermCategory(ids: string[], categoryId: string): Promise<any> {
+    try {
+      if (typeof this.baseStorage.bulkUpdateTermCategory === 'function') {
+        return await this.baseStorage.bulkUpdateTermCategory(ids, categoryId);
+      }
+      // Fallback implementation
+      return { success: false, message: 'Bulk update category not implemented' };
+    } catch (error) {
+      console.error('[EnhancedStorage] bulkUpdateTermCategory error:', error);
+      throw error;
+    }
+  }
+
+  async bulkUpdateTermStatus(ids: string[], status: string): Promise<any> {
+    try {
+      if (typeof this.baseStorage.bulkUpdateTermStatus === 'function') {
+        return await this.baseStorage.bulkUpdateTermStatus(ids, status);
+      }
+      // Fallback implementation
+      return { success: false, message: 'Bulk update status not implemented' };
+    } catch (error) {
+      console.error('[EnhancedStorage] bulkUpdateTermStatus error:', error);
+      throw error;
+    }
   }
 
 }

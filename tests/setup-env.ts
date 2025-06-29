@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { vi, expect } from 'vitest';
 import * as matchers from '@testing-library/jest-dom/matchers';
 
 // Extend Vitest's expect with react-testing-library matchers

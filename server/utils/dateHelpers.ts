@@ -109,3 +109,27 @@ export function getStartOf(date: Date, unit: 'day' | 'week' | 'month' | 'year'):
   
   return result;
 }
+
+/**
+ * Calculate date range from timeframe string (for analytics)
+ * Supports timeframes like '24h', '7d', '30d', '1y'
+ */
+export function calculateDateRangeFromTimeframe(timeframe: string): { startDate: Date; endDate: Date } {
+  const now = new Date();
+  let days = 30; // default
+  
+  // Parse timeframe to days
+  if (timeframe.endsWith('h')) {
+    const hours = parseInt(timeframe);
+    days = hours / 24;
+  } else if (timeframe.endsWith('d')) {
+    days = parseInt(timeframe);
+  } else if (timeframe.endsWith('y')) {
+    const years = parseInt(timeframe);
+    days = years * 365;
+  }
+  
+  const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+  
+  return { startDate, endDate: now };
+}

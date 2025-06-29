@@ -1,4 +1,4 @@
-import type { User } from "../../shared/types";
+import type { User } from "../../shared/schema";
 
 /**
  * Access control utilities for feature gating and permissions

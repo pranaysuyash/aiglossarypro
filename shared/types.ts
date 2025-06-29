@@ -8,6 +8,9 @@ export interface IUser {
   id: string;
   email: string;
   name: string;
+  firstName?: string;
+  lastName?: string;
+  profileImageUrl?: string;
   avatar?: string;
   createdAt: Date;
   preferences?: UserPreferences;
@@ -172,17 +175,32 @@ import type { Request } from 'express';
 declare global {
   namespace Express {
     interface User {
+      id: string;
+      email: string;
+      firstName?: string;
+      lastName?: string;
+      profileImageUrl?: string;
       claims: {
         sub: string;
         email: string;
         name: string;
+        first_name?: string;
+        last_name?: string;
       };
+      access_token?: string;
+      expires_at?: number;
+      isAdmin?: boolean;
     }
   }
 }
 
 export interface AuthenticatedRequest extends Request {
   user: {
+    id: string;
+    email: string;
+    firstName?: string;
+    lastName?: string;
+    profileImageUrl?: string;
     claims: {
       sub: string;
       email: string;
@@ -202,6 +220,12 @@ export interface AdminStats {
   totalTerms: number;
   totalCategories: number;
   totalViews: number;
+  termCount?: number;
+  categoryCount?: number;
+  userCount?: number;
+  pendingFeedback?: number;
+  weeklyGrowth?: number;
+  monthlyGrowth?: number;
   recentActivity: UserActivity[];
   systemHealth: {
     database: 'healthy' | 'warning' | 'error';

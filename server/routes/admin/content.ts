@@ -6,6 +6,9 @@ import type { ApiResponse } from "../../../shared/types";
 import { errorLogger, ErrorCategory } from "../../middleware/errorHandler";
 import { log as logger } from "../../utils/logger";
 import { BULK_ACTIONS } from "../../constants";
+import { db } from "../../db";
+import { terms } from "../../../shared/schema";
+import { eq } from "drizzle-orm";
 
 const adminContentRouter = Router();
 
@@ -218,16 +221,15 @@ adminContentRouter.get("/feedback", async (req: Request, res: Response<ApiRespon
     const { status = 'pending', page = 1, limit = 20 } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
-    const feedbackResult = await storage.getFeedback({
-      status: status as string,
-      limit: Number(limit),
-      offset: offset
-    });
+    const feedbackResult = await storage.getFeedback(
+      { status: status as string },
+      { limit: Number(limit), offset: offset }
+    );
 
     res.json({
       success: true,
       data: {
-        feedback: feedbackResult.items,
+        feedback: feedbackResult.feedback,
         pagination: {
           total: feedbackResult.total,
           page: Number(page),

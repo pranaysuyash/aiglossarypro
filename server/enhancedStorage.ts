@@ -16,7 +16,7 @@ import { optimizedStorage, IStorage } from './optimizedStorage';
 import { enhancedStorage as enhancedTermsStorage } from './enhancedTermsStorage';
 import { redisCache as enhancedRedisCache, redis as redisManager } from './config/redis';
 import { z } from 'zod';
-import type { AdminStats, UserActivity, ITerm } from '../shared/types';
+import type { AdminStats, UserActivity, ITerm, IEnhancedTerm, ISection, ISectionItem } from '../shared/types';
 
 // ===== CORE INTERFACES =====
 
@@ -153,12 +153,7 @@ interface SearchResult {
   hasMore: boolean;
 }
 
-interface PopularTerm {
-  name: string;
-  searchCount: number;
-  percentage: number;
-  lastSearched: Date;
-}
+// PopularTerm interface defined later in file
 
 interface DatabaseMetrics {
   tableStats: TableStatistics[];
@@ -167,25 +162,7 @@ interface DatabaseMetrics {
   queryPerformance: QueryPerformance[];
 }
 
-interface EnhancedTerm {
-  id: string;
-  name: string;
-  definition: string;
-  shortDefinition: string;
-  sections: TermSection[];
-  metadata: TermMetadata;
-  relationships: TermRelationship[];
-  aiEnhancements?: AIEnhancements;
-}
-
-interface TermSection {
-  id: string;
-  termId: string;
-  sectionType: string; // One of 42 section types
-  content: any; // Section-specific content
-  order: number;
-  lastUpdated: Date;
-}
+// EnhancedTerm and TermSection are defined later in the file to avoid duplicates
 
 // Pagination and common types
 interface PaginationOptions {
@@ -220,9 +197,30 @@ interface AdvancedSearchOptions {
 }
 
 // Placeholder types (to be fully defined in implementation phases)
-interface User {}
-interface Term {}
-interface Category {}
+interface User {
+  id: string;
+  email: string;
+  isAdmin?: boolean;
+  first_name?: string;
+  last_name?: string;
+  createdAt?: Date;
+}
+interface Term {
+  id: string;
+  name: string;
+  definition?: string;
+  shortDefinition?: string;
+  category?: string;
+  subcategories?: string[];
+  viewCount?: number;
+  createdAt?: Date;
+}
+interface Category {
+  id: string;
+  name: string;
+  description?: string;
+  slug?: string;
+}
 interface MaintenanceResult {
   success: boolean;
   operation: string;
@@ -231,8 +229,28 @@ interface MaintenanceResult {
   timestamp: Date;
   message: string;
 }
-interface PendingContent {}
-interface PopularTerm {}
+interface PendingContent {
+  id: string;
+  title: string;
+  description?: string;
+  content?: any;
+  author?: string;
+  priority: 'low' | 'medium' | 'high';
+  submittedAt: Date;
+  status: 'pending' | 'approved' | 'rejected';
+  userId?: string;
+  type: 'term' | 'section' | 'feedback' | 'term_suggestion' | 'ai_generated';
+  metadata?: any;
+}
+interface PopularTerm {
+  id?: string;
+  name?: any;
+  term?: string;
+  searchCount: any;
+  timeframe?: string;
+  percentage?: number;
+  lastSearched?: Date;
+}
 interface SearchFilters {
   categories: string[];
   difficulties: string[];
@@ -255,6 +273,11 @@ interface GeneralFeedback {
   description: string;
   priority?: 'low' | 'medium' | 'high';
   metadata?: Record<string, any>;
+  type: string;
+  message: string;
+  email?: string;
+  name?: string;
+  url?: string;
 }
 
 interface FeedbackResult {
@@ -276,6 +299,7 @@ interface FeedbackFilters {
 
 interface PaginatedFeedback {
   feedback: any[];
+  items?: any[];
   total: number;
   page: number;
   limit: number;
@@ -284,22 +308,30 @@ interface PaginatedFeedback {
 
 interface FeedbackStatistics {
   totalFeedback: number;
+  total?: number;
   averageRating: number;
   categoryBreakdown: Record<string, number>;
   recentTrends: any[];
+  daily?: any[];
 }
 
-interface FeedbackStatus {
-  status: 'pending' | 'reviewed' | 'resolved' | 'dismissed';
+type FeedbackStatus = 'pending' | 'reviewed' | 'resolved' | 'dismissed' | 'archived';
+
+interface FeedbackStatusInfo {
+  status: FeedbackStatus;
   reviewedBy?: string;
   reviewedAt?: Date;
   notes?: string;
 }
 
 interface FeedbackUpdate {
+  id?: string;
   status?: string;
   notes?: string;
   priority?: string;
+  previousStatus?: string;
+  updatedAt?: Date;
+  updatedBy?: string;
 }
 
 interface UserProgressStats {
@@ -328,34 +360,11 @@ interface LearningStreak {
   streakType: 'daily' | 'weekly';
 }
 
-interface TermUpdate {
-  id: string;
-  updates: {
-    name?: string;
-    definition?: string;
-    shortDefinition?: string;
-    categories?: string[];
-    difficulty?: string;
-  };
-}
+// TermUpdate interface defined later in file
 
-interface BulkUpdateResult {
-  success: boolean;
-  updated: number;
-  failed: number;
-  errors: Array<{
-    id: string;
-    error: string;
-  }>;
-  message: string;
-}
+// BulkUpdateResult interface defined later in file
 
-interface ExportFilters {
-  categories?: string[];
-  difficulty?: string;
-  includeEnhanced?: boolean;
-  format?: 'json' | 'csv';
-}
+// ExportFilters interface defined later in file
 interface SystemHealth {
   status: 'healthy' | 'degraded' | 'critical';
   checks: {
@@ -405,9 +414,26 @@ interface SearchMetrics {
   timestamp: Date;
   error?: string;
 }
-interface TermUpdate {}
-interface BulkUpdateResult {}
-interface ExportFilters {}
+interface TermUpdate {
+  id: string;
+  updates: Record<string, any>;
+}
+interface BulkUpdateResult {
+  success: boolean;
+  updatedCount?: number;
+  updated: number;
+  failed: number;
+  errors: { id: string; error: string; }[];
+  message: string;
+}
+interface ExportFilters {
+  categories?: string[];
+  dateRange?: { start: Date; end: Date };
+  status?: string;
+  difficulty?: string;
+  includeEnhanced?: boolean;
+  format?: 'json' | 'csv';
+}
 interface SectionProgress {
   userId: string;
   termId: string;
@@ -439,6 +465,7 @@ interface Achievement {
   unlockedAt: Date;
   progress?: number;
   maxProgress?: number;
+  name?: string;
 }
 
 interface CategoryProgress {
@@ -450,6 +477,7 @@ interface CategoryProgress {
   completionPercentage: number;
   timeSpent: number;
   lastAccessed: Date;
+  viewedTerms?: number;
 }
 interface ActivityItem {}
 interface SearchFacets {}
@@ -481,11 +509,59 @@ interface QueryPerformance {
   executionCount: number;
   cacheHitRate: number;
 }
-interface TermMetadata {}
-interface TermRelationship {}
-interface AIEnhancements {}
-interface DifficultyLevel {}
-interface DateRange {}
+interface TermMetadata {
+  keywords?: string[];
+  applicationDomains?: string[];
+  techniques?: string[];
+  searchText?: string;
+}
+
+interface TermRelationship {
+  id: string;
+  fromTermId: string;
+  toTermId: string;
+  relationshipType: string;
+}
+
+interface AIEnhancements {
+  isAiGenerated: boolean;
+  confidenceLevel: 'low' | 'medium' | 'high';
+  model?: string;
+}
+
+interface DifficultyLevel {
+  level: 'beginner' | 'intermediate' | 'advanced';
+  score: number;
+}
+
+interface DateRange {
+  start: Date;
+  end: Date;
+}
+
+// Use IEnhancedTerm from shared types
+type EnhancedTerm = IEnhancedTerm & {
+  definition: string;
+  metadata?: TermMetadata;
+  slug?: string;
+};
+
+// TermSection type
+interface TermSection {
+  id: string;
+  termId: string;
+  sectionName: string;
+  sectionData: any;
+  displayType: string;
+  priority?: number;
+  isInteractive?: boolean;
+  createdAt?: Date;
+  updatedAt?: Date;
+  title?: string;
+  content?: string;
+  order?: number;
+  metadata?: any;
+}
 
 // ===== AUTHORIZATION FRAMEWORK =====
 
@@ -496,9 +572,14 @@ interface RequestContext {
     isAdmin: boolean;
     first_name?: string;
     last_name?: string;
+    claims?: any;
   };
+  userId?: string;
   requestId?: string;
   timestamp: Date;
+  headers?: any;
+  ip?: string;
+  analytics?: any;
 }
 
 class UnauthorizedError extends Error {
@@ -1048,7 +1129,7 @@ export class EnhancedStorage implements IEnhancedStorage {
               author: feedback.userEmail || feedback.userId || 'Anonymous',
               submittedAt: feedback.createdAt || new Date(),
               status: 'pending' as const,
-              priority: feedback.rating <= 2 ? 'high' : 'medium',
+              priority: (feedback.rating <= 2 ? 'high' : 'medium') as 'low' | 'medium' | 'high',
               metadata: {
                 termId: feedback.termId,
                 rating: feedback.rating,
@@ -1091,7 +1172,7 @@ export class EnhancedStorage implements IEnhancedStorage {
               author: `AI Model: ${aiContent.model || 'Unknown'}`,
               submittedAt: aiContent.createdAt || new Date(),
               status: 'pending' as const,
-              priority: aiContent.confidenceLevel === 'low' ? 'high' : 'medium',
+              priority: (aiContent.confidenceLevel === 'low' ? 'high' : 'medium') as 'low' | 'medium' | 'high',
               metadata: {
                 model: aiContent.model,
                 confidenceLevel: aiContent.confidenceLevel,
@@ -1339,11 +1420,11 @@ export class EnhancedStorage implements IEnhancedStorage {
           id: term.id,
           name: term.name,
           definition: term.shortDefinition || '',
-          shortDefinition: term.shortDefinition,
+          shortDefinition: term.shortDefinition || undefined,
           category: term.mainCategories?.[0] || '',
           subcategories: term.subCategories || [],
           viewCount: term.viewCount || 0,
-          createdAt: term.createdAt,
+          createdAt: term.createdAt || undefined,
           // Enhanced fields from enhanced terms
           isFavorite: false, // Will be set based on user favorites
           isLearned: false   // Will be set based on user progress
@@ -1690,6 +1771,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       console.log(`[EnhancedStorage] getFeedback: Retrieved ${feedbackItems.length} items`);
       
       return {
+        feedback: feedbackItems,
         items: feedbackItems,
         total: totalCount,
         page: Math.floor(offset / limit) + 1,
@@ -1797,7 +1879,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           updateResult = {
             id,
             previousStatus: 'pending',
-            newStatus: status,
+            status: status,
             updatedAt: new Date(),
             updatedBy: this.context?.user?.claims?.email || 'admin',
             notes
@@ -1809,7 +1891,7 @@ export class EnhancedStorage implements IEnhancedStorage {
         updateResult = {
           id,
           previousStatus: 'pending',
-          newStatus: status,
+          status: status,
           updatedAt: new Date(),
           updatedBy: 'dev-admin',
           notes
@@ -2169,7 +2251,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       const terms = await this.termsStorage.getTermsByIds(ids);
       
       // Transform to ITerm format
-      const transformedTerms = terms.map(term => ({
+      const transformedTerms = terms.map((term: any) => ({
         id: term.id,
         name: term.name,
         definition: term.shortDefinition || '',
@@ -2363,7 +2445,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           id: term.id,
           name: term.name,
           slug: term.slug,
-          shortDefinition: term.shortDefinition,
+          shortDefinition: term.shortDefinition || undefined,
           mainCategories: term.mainCategories,
           subCategories: term.subCategories,
           difficultyLevel: term.difficultyLevel,
@@ -2371,14 +2453,14 @@ export class EnhancedStorage implements IEnhancedStorage {
           hasInteractiveElements: term.hasInteractiveElements,
           hasCodeExamples: term.hasCodeExamples,
           viewCount: term.viewCount,
-          createdAt: term.createdAt,
+          createdAt: term.createdAt || undefined,
           // Only include enhanced data if requested
           ...(filters?.includeEnhanced && {
             enhancedData: {
-              applicationDomains: term.applicationDomains,
-              techniques: term.techniques,
-              keywords: term.keywords,
-              searchText: term.searchText
+              applicationDomains: (term as any).applicationDomains || [],
+              techniques: (term as any).techniques || [],
+              keywords: (term as any).keywords || [],
+              searchText: (term as any).searchText || ''
             }
           })
         }))
@@ -2415,7 +2497,25 @@ export class EnhancedStorage implements IEnhancedStorage {
           const enhancedTerm = await this.termsStorage.getEnhancedTermWithSections(id);
           if (enhancedTerm) {
             console.log(`[EnhancedStorage] getEnhancedTermById: Found enhanced term with ${enhancedTerm.sections?.length || 0} sections`);
-            return enhancedTerm;
+            return {
+              ...enhancedTerm,
+              definition: enhancedTerm.definition || enhancedTerm.shortDefinition || '',
+              category: enhancedTerm.category || enhancedTerm.mainCategories?.[0] || '',
+              shortDefinition: enhancedTerm.shortDefinition || undefined,
+              viewCount: enhancedTerm.viewCount || 0,
+              createdAt: enhancedTerm.createdAt || undefined,
+              updatedAt: enhancedTerm.updatedAt || undefined,
+              sections: enhancedTerm.sections?.map((section: any, index: number) => ({
+                id: parseInt(section.id) || index + 1,
+                termId: parseInt(enhancedTerm.id) || 0,
+                name: section.sectionName || section.title || '',
+                displayOrder: section.order || section.priority || index + 1,
+                isCompleted: false,
+                createdAt: section.createdAt || new Date(),
+                updatedAt: section.updatedAt || new Date(),
+                items: []
+              })) || []
+            };
           }
         }
       } catch (enhancedError) {
@@ -2433,21 +2533,14 @@ export class EnhancedStorage implements IEnhancedStorage {
         const enhancedTerm: EnhancedTerm = {
           ...baseTerm,
           slug: baseTerm.name.toLowerCase().replace(/\s+/g, '-'),
-          mainCategories: baseTerm.category ? [baseTerm.category] : [],
-          subCategories: baseTerm.subcategories || [],
-          relatedConcepts: [],
-          toolsFrameworks: [],
+          subcategories: baseTerm.subcategories || [],
           sections: this.generateDefaultSections(baseTerm),
-          seoMetadata: {
-            title: `${baseTerm.name} - AI/ML Glossary`,
-            description: baseTerm.shortDefinition || baseTerm.definition.substring(0, 160),
-            keywords: [baseTerm.name, baseTerm.category, 'AI', 'ML', 'glossary'].filter(Boolean)
+          metadata: {
+            keywords: [baseTerm.name, baseTerm.category, 'AI', 'ML', 'glossary'].filter(Boolean),
+            searchText: `${baseTerm.name} ${baseTerm.definition} ${baseTerm.category}`.toLowerCase()
           },
-          lastReviewed: baseTerm.updatedAt || new Date(),
-          contributorCount: 1,
+          lastReviewed: (baseTerm.updatedAt || new Date()).toISOString(),
           viewCount: baseTerm.viewCount || 0,
-          rating: 0,
-          difficulty: 'intermediate',
           relatedTerms: []
         };
         
@@ -2491,7 +2584,24 @@ export class EnhancedStorage implements IEnhancedStorage {
       const sections = this.generateDefaultSections(term);
       console.log(`[EnhancedStorage] getTermSections: Generated ${sections.length} default sections`);
       
-      return sections;
+      // Convert ISection[] to TermSection[]
+      const termSections: TermSection[] = sections.map((section, index) => ({
+        id: section.id.toString(),
+        termId: section.termId.toString(),
+        sectionName: section.name,
+        sectionData: {},
+        displayType: 'text',
+        priority: section.displayOrder,
+        isInteractive: false,
+        createdAt: section.createdAt,
+        updatedAt: section.updatedAt,
+        title: section.name,
+        content: '',
+        order: section.displayOrder,
+        metadata: {}
+      }));
+      
+      return termSections;
       
     } catch (error) {
       console.error('[EnhancedStorage] getTermSections error:', error);
@@ -2597,63 +2707,90 @@ export class EnhancedStorage implements IEnhancedStorage {
   /**
    * Generate default sections for a term when enhanced sections are not available
    */
-  private generateDefaultSections(term: ITerm): TermSection[] {
-    const sections: TermSection[] = [
+  private generateDefaultSections(term: ITerm): ISection[] {
+    const sections: ISection[] = [
       {
-        id: 'overview',
-        title: 'Overview',
-        content: term.definition,
-        order: 1
+        id: 1,
+        termId: parseInt(term.id) || 0,
+        name: 'Overview',
+        displayOrder: 1,
+        isCompleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        items: []
       }
     ];
     
     if (term.characteristics) {
       sections.push({
-        id: 'characteristics',
-        title: 'Key Characteristics',
-        content: term.characteristics,
-        order: 2
+        id: 2,
+        termId: parseInt(term.id) || 0,
+        name: 'Key Characteristics',
+        displayOrder: 2,
+        isCompleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        items: []
       });
     }
     
     if (term.mathFormulation) {
       sections.push({
-        id: 'mathematical-foundation',
-        title: 'Mathematical Foundation',
-        content: term.mathFormulation,
-        order: 3
+        id: 3,
+        termId: parseInt(term.id) || 0,
+        name: 'Mathematical Foundation',
+        displayOrder: 3,
+        isCompleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        items: []
       });
     }
     
     if (term.visualUrl) {
       sections.push({
-        id: 'visual-representation',
-        title: 'Visual Representation',
-        content: term.visualCaption || 'Visual representation of the concept',
-        metadata: { imageUrl: term.visualUrl },
-        order: 4
+        id: 4,
+        termId: parseInt(term.id) || 0,
+        name: 'Visual Representation',
+        displayOrder: 4,
+        isCompleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        items: []
       });
     }
     
     // Add placeholder sections for the 42-section structure
     sections.push(
       {
-        id: 'technical-implementation',
-        title: 'Technical Implementation',
-        content: 'Technical implementation details coming soon...',
-        order: 5
+        id: 5,
+        termId: parseInt(term.id) || 0,
+        name: 'Technical Implementation',
+        displayOrder: 5,
+        isCompleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        items: []
       },
       {
-        id: 'practical-applications',
-        title: 'Practical Applications',
-        content: 'Real-world applications and use cases coming soon...',
-        order: 6
+        id: 6,
+        termId: parseInt(term.id) || 0,
+        name: 'Practical Applications',
+        displayOrder: 6,
+        isCompleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        items: []
       },
       {
-        id: 'related-concepts',
-        title: 'Related Concepts',
-        content: 'Related terms and concepts coming soon...',
-        order: 7
+        id: 7,
+        termId: parseInt(term.id) || 0,
+        name: 'Related Concepts',
+        displayOrder: 7,
+        isCompleted: false,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        items: []
       }
     );
     
@@ -2762,10 +2899,16 @@ export class EnhancedStorage implements IEnhancedStorage {
         // Get categories for progress estimation
         const categories = await this.baseStorage.getCategories();
         
-        // Initialize category progress with zeros
-        const categoryProgress: Record<string, number> = {};
+        // Initialize category progress with proper structure
+        const categoryProgress: Record<string, { totalTerms: number; completedTerms: number; completionPercentage: number; }> = {};
         categories.slice(0, 10).forEach(cat => {
-          categoryProgress[cat.name] = Math.floor(Math.random() * 5); // 0-4 estimated progress
+          const totalTerms = Math.floor(Math.random() * 20) + 5; // 5-25 terms per category
+          const completedTerms = Math.floor(Math.random() * totalTerms); // 0-totalTerms completed
+          categoryProgress[cat.name] = {
+            totalTerms,
+            completedTerms,
+            completionPercentage: Math.round((completedTerms / totalTerms) * 100)
+          };
         });
         
         // Generate realistic mock data for development
@@ -2851,7 +2994,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           status: i < 10 ? 'completed' : i < 15 ? 'in_progress' : 'not_started',
           completionPercentage: i < 10 ? 100 : i < 15 ? Math.floor(Math.random() * 99) : 0,
           timeSpentMinutes: Math.floor(Math.random() * 30) + 5,
-          lastAccessedAt: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
+          lastAccessed: new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000),
           completedAt: i < 10 ? new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000) : undefined
         });
       }
@@ -3213,11 +3356,11 @@ export class EnhancedStorage implements IEnhancedStorage {
               // Unlock the achievement
               const unlockedAchievement: Achievement = {
                 id: achievement.id,
+                achievementId: achievement.id,
                 userId,
                 name: achievement.name,
+                title: achievement.name,
                 description: achievement.description,
-                icon: achievement.icon,
-                points: achievement.points,
                 unlockedAt: new Date(),
                 category: 'learning'
               };
@@ -3336,9 +3479,8 @@ export class EnhancedStorage implements IEnhancedStorage {
             viewedTerms: progress.completedTerms,
             completedTerms: Math.floor(progress.completedTerms * 0.8), // Estimate 80% completion rate
             completionPercentage: progress.completionPercentage,
-            lastAccessedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
-            timeSpentMinutes: Math.floor(Math.random() * 120) + 10,
-            favoriteTerms: Math.floor(Math.random() * 5)
+            lastAccessed: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+            timeSpent: Math.floor(Math.random() * 120) + 10
           });
         }
         
@@ -3677,6 +3819,22 @@ export class EnhancedStorage implements IEnhancedStorage {
       location: 'local'
     };
   }
+
+
+
+  // Additional missing method implementations
+  
+  async incrementTermViewCount(termId: string): Promise<void> {
+    try {
+      await this.baseStorage.incrementTermViewCount?.(termId);
+    } catch (error) {
+      console.warn('[EnhancedStorage] incrementTermViewCount fallback:', error);
+    }
+  }
+
+
+
+  // Note: Some methods already exist in the class above
 
 }
 

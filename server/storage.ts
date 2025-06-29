@@ -96,6 +96,53 @@ export interface IStorage {
   // Admin operations
   getAdminStats(): Promise<any>;
   clearAllData(): Promise<void>;
+  
+  // Content Management Methods
+  getPendingContent?(): Promise<any[]>;
+  approveContent?(id: string): Promise<any>;
+  rejectContent?(id: string): Promise<any>;
+  
+  // Feedback System Methods
+  submitFeedback?(feedback: any): Promise<void>;
+  storeFeedback?(feedback: any): Promise<void>;
+  getFeedback?(filters?: any, pagination?: any): Promise<any>;
+  getFeedbackStats?(): Promise<any>;
+  updateFeedbackStatus?(id: string, status: any, notes?: string): Promise<any>;
+  initializeFeedbackSchema?(): Promise<void>;
+  createFeedbackIndexes?(): Promise<void>;
+  getRecentFeedback?(limit: number): Promise<any[]>;
+  
+  // Enhanced Term Management Methods
+  getTermsByIds?(ids: string[]): Promise<any[]>;
+  getEnhancedTermById?(id: string): Promise<any>;
+  updateEnhancedTerm?(id: string, data: any): Promise<void>;
+  getTermSections?(termId: string): Promise<any[]>;
+  updateTermSection?(termId: string, sectionId: string, data: any): Promise<void>;
+  incrementTermViewCount?(termId: string): Promise<void>;
+  
+  // User Analytics and Progress Tracking Methods
+  getUserAnalytics?(userId: string): Promise<any>;
+  getUserSectionProgress?(userId: string, options?: any): Promise<any[]>;
+  trackTermView?(userId: string, termId: string, sectionId?: string): Promise<void>;
+  trackSectionCompletion?(userId: string, termId: string, sectionId: string): Promise<void>;
+  updateUserProgress?(userId: string, updates: any): Promise<void>;
+  getUserTimeSpent?(userId: string, timeframe?: string): Promise<number>;
+  getCategoryProgress?(userId: string): Promise<any[]>;
+  
+  // Streak and Achievement Methods
+  getUserStreak?(userId: string): Promise<any>;
+  updateUserStreak?(userId: string, streak: any): Promise<void>;
+  isAchievementUnlocked?(userId: string, achievementId: string): Promise<boolean>;
+  unlockAchievement?(userId: string, achievement: any): Promise<void>;
+  
+  // Admin and Bulk Operations Methods
+  getAllTerms?(options?: any): Promise<any>;
+  getRecentTerms?(limit: number): Promise<any[]>;
+  deleteTerm?(id: string): Promise<void>;
+  bulkDeleteTerms?(ids: string[]): Promise<any>;
+  bulkUpdateTermCategory?(ids: string[], categoryId: string): Promise<any>;
+  bulkUpdateTermStatus?(ids: string[], status: string): Promise<any>;
+  getTermsOptimized?(options?: { limit?: number }): Promise<any[]>;
 }
 
 export class DatabaseStorage implements IStorage {

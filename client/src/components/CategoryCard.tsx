@@ -36,16 +36,18 @@ export default function CategoryCard({ category, termCount }: CategoryCardProps)
   return (
     <div onClick={() => window.location.href=`/category/${category.id}`} className="cursor-pointer">
         <Card className="h-full transition-shadow hover:shadow-md border border-gray-100 dark:border-gray-800">
-          <CardContent className="p-4">
-            <div className="flex items-start min-w-0">
-              <div className={`w-12 h-12 rounded-lg ${colorClass} flex items-center justify-center mr-4 flex-shrink-0`}>
-                {icon}
+          <CardContent className="p-3 xs:p-4">
+            <div className="flex items-start w-full overflow-hidden">
+              <div className={`w-10 h-10 xs:w-12 xs:h-12 rounded-lg ${colorClass} flex items-center justify-center mr-3 xs:mr-4 flex-shrink-0`}>
+                <div className="w-4 h-4 xs:w-6 xs:h-6">
+                  {icon}
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <h3 className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition truncate">
+              <div className="flex-1 min-w-0 overflow-hidden">
+                <h3 className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition truncate text-sm xs:text-base">
                   {category.name}
                 </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{displayTermCount} terms</p>
+                <p className="text-xs xs:text-sm text-gray-500 dark:text-gray-400 mt-1">{displayTermCount} terms</p>
               </div>
             </div>
           </CardContent>

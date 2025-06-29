@@ -49,17 +49,17 @@ export default function Header() {
 
   return (
     <header id="navigation" className="bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-800 transition-all duration-200" role="banner">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-3 sm:py-4">
-          <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
+          <div className="flex items-center space-x-1 xs:space-x-2 min-w-0 flex-shrink-0">
             <Link href="/">
               <div className="flex items-center space-x-2 cursor-pointer" role="link" aria-label="AI/ML Glossary - Go to homepage">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 xs:h-8 xs:w-8 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <title>AI/ML Glossary Logo</title>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
                 <span className="text-xl font-semibold hidden sm:inline">AI/ML Glossary</span>
-                <span className="text-xl font-semibold sm:hidden">AI/ML</span>
+                <span className="text-lg xs:text-xl font-semibold sm:hidden">AI/ML</span>
               </div>
             </Link>
           </div>
@@ -71,8 +71,13 @@ export default function Header() {
           <div className="hidden md:flex lg:hidden flex-1 max-w-md mx-4">
             <SearchBar onSearch={handleSearch} placeholder="Search..." />
           </div>
+          
+          {/* Ultra-small screen search (icon only for screens < 350px) */}
+          <div className="hidden xs:flex sm:hidden ml-2">
+            <SearchBar onSearch={handleSearch} iconOnly />
+          </div>
 
-          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
+          <div className="flex items-center space-x-1 xs:space-x-2 sm:space-x-4 flex-shrink-0">
             {/* Lifetime Access Button */}
             <Link href="/lifetime">
               <Button 
@@ -92,7 +97,7 @@ export default function Header() {
             </Link>
             
             <button 
-              className={`md:hidden p-2.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary ${
+              className={`xs:hidden p-2.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary ${
                 mobileSearchOpen 
                   ? 'bg-primary text-primary-foreground' 
                   : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'

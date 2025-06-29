@@ -5,8 +5,8 @@ test.describe('Main Navigation Flows', () => {
   test.beforeEach(async ({ page }) => {
     // Navigate to the homepage before each test
     await page.goto('/');
-    // Wait for the main content to be visible
-    await expect(page.locator('main')).toBeVisible();
+    // Wait for the main content to be visible - use specific ID to avoid multiple elements
+    await expect(page.locator('#main-content')).toBeVisible();
   });
 
   test('should navigate from homepage to a category page', async ({ page }) => {

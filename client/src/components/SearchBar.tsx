@@ -13,6 +13,7 @@ interface SearchBarProps {
   placeholder?: string;
   className?: string;
   initialValue?: string;
+  iconOnly?: boolean;
 }
 
 interface SearchSuggestion {
@@ -26,7 +27,8 @@ export default function SearchBar({
   onSearch, 
   placeholder = "Search AI/ML terms...", 
   className,
-  initialValue = ""
+  initialValue = "",
+  iconOnly = false
 }: SearchBarProps) {
   const [query, setQuery] = useState(initialValue);
   const [debouncedQuery, setDebouncedQuery] = useState(initialValue);
@@ -156,6 +158,26 @@ export default function SearchBar({
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, []);
+
+  // For icon-only mode on ultra-small screens
+  if (iconOnly) {
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => {
+          // Focus the input in mobile search or open mobile search
+          if (inputRef.current) {
+            inputRef.current.focus();
+          }
+        }}
+        className="p-2 h-8 w-8 hover:bg-gray-100 dark:hover:bg-gray-700"
+        aria-label="Search AI/ML terms"
+      >
+        <Search className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+      </Button>
+    );
+  }
 
   return (
     <div id="search" className={cn("relative w-full max-w-md", className)}>

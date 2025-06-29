@@ -77,4 +77,12 @@ export default defineConfig({
     chunkSizeWarningLimit: 800, // Reduced warning limit for better optimization
     sourcemap: process.env.NODE_ENV !== 'production',
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3001',
+        changeOrigin: true,
+      },
+    },
+  },
 });

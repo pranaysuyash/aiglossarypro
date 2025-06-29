@@ -13,7 +13,7 @@ export function registerCategoryRoutes(app: Express): void {
     try {
       const { page = 1, limit = 50, search } = req.query;
       
-      const categories = await storage.getCategories();
+      const categories = await storage.getCategoriesOptimized();
       
       const response: ApiResponse<ICategory[]> = {
         success: true,

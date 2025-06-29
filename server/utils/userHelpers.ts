@@ -1,4 +1,6 @@
 import type { IUser } from '../../shared/types';
+import { getLastNDaysRange } from './dateHelpers';
+import { TIME_CONSTANTS } from './constants';
 
 /**
  * Transform raw user data to public user object
@@ -90,8 +92,8 @@ export function hasUserAccess(user: any): boolean {
   // Check purchase date (if within trial period)
   if (user.purchaseDate || user.purchase_date) {
     const purchaseDate = new Date(user.purchaseDate || user.purchase_date);
-    const trialEndDate = new Date(purchaseDate);
-    trialEndDate.setDate(trialEndDate.getDate() + 7); // 7-day trial
+    // Use time constants for trial period calculation (7 days)
+    const trialEndDate = new Date(purchaseDate.getTime() + 7 * TIME_CONSTANTS.MILLISECONDS_IN_DAY);
     
     if (new Date() <= trialEndDate) return true;
   }

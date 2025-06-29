@@ -4,6 +4,7 @@ import { sql } from "drizzle-orm";
 import { enhancedStorage } from "../../enhancedStorage";
 import type { AuthenticatedRequest } from "../../types/express";
 import { log } from "../../utils/logger";
+import { getLastNDaysRange } from "../../utils/dateHelpers";
 
 export function registerUserProgressRoutes(app: Express): void {
   // Get user progress statistics
@@ -36,12 +37,16 @@ export function registerUserProgressRoutes(app: Express): void {
             advanced: Math.floor(userStats.totalTermsViewed * 0.2),
             expert: Math.floor(userStats.totalTermsViewed * 0.05)
           },
-          categoryProgress: Object.entries(userStats.categoryProgress).slice(0, 5).map(([category, progress]) => ({
-            category,
-            completed: progress,
-            total: progress + Math.floor(Math.random() * 10) + 5,
-            percentage: Math.floor((progress / (progress + Math.floor(Math.random() * 10) + 5)) * 100)
-          })),
+          categoryProgress: Object.entries(userStats.categoryProgress).slice(0, 5).map(([category, progress]) => {
+            const completed = typeof progress === 'object' ? progress.completedTerms || 0 : Number(progress) || 0;
+            const total = completed + Math.floor(Math.random() * 10) + 5;
+            return {
+              category,
+              completed,
+              total,
+              percentage: Math.floor((completed / total) * 100)
+            };
+          }),
           recentActivity: [
             {
               termId: "sample-1",
@@ -80,7 +85,7 @@ export function registerUserProgressRoutes(app: Express): void {
               id: "first-term",
               name: "First Steps",
               description: "Viewed your first term",
-              unlockedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+              unlockedAt: getLastNDaysRange(7).startDate.toISOString(),
               icon: "🎯"
             }
           ])
@@ -132,7 +137,7 @@ export function registerUserProgressRoutes(app: Express): void {
               id: "first-term",
               name: "First Steps",
               description: "Viewed your first term",
-              unlockedAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+              unlockedAt: getLastNDaysRange(7).startDate.toISOString(),
               icon: "🎯"
             }
           ]

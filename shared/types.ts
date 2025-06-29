@@ -168,35 +168,8 @@ export interface FileUploadMetadata {
   status: 'pending' | 'processing' | 'completed' | 'failed';
 }
 
-// Authentication types
-import type { Request } from 'express';
-
-// Extend Express Request interface
-declare global {
-  namespace Express {
-    interface User {
-      id: string;
-      email: string;
-      firstName?: string;
-      lastName?: string;
-      profileImageUrl?: string;
-      claims: {
-        sub: string;
-        email: string;
-        name: string;
-        first_name?: string;
-        last_name?: string;
-      };
-      access_token?: string;
-      expires_at?: number;
-      isAdmin?: boolean;
-    }
-  }
-}
-
-export interface AuthenticatedRequest extends Request {
-  user: Express.User;
-}
+// Authentication types - using types from server/types/express.d.ts
+export type { AuthenticatedRequest, AdminRequest } from '../server/types/express';
 
 // Admin types
 export interface AdminStats {

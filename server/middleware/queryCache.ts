@@ -4,6 +4,7 @@
  * Implements intelligent caching for database queries to reduce load
  * and improve response times. Uses LRU cache with TTL support.
  */
+import { TIME_CONSTANTS } from '../utils/constants';
 
 interface QueryCacheOptions {
   maxItems?: number;
@@ -28,7 +29,7 @@ class QueryCache {
   
   constructor(options: QueryCacheOptions = {}) {
     this.maxItems = options.maxItems || 1000;
-    this.defaultTtlMs = options.defaultTtlMs || 5 * 60 * 1000; // 5 minutes
+    this.defaultTtlMs = options.defaultTtlMs || 5 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 12; // 5 minutes
     this.enabled = options.enabled !== false;
   }
   
@@ -139,19 +140,19 @@ class QueryCache {
 // Global cache instances for different types of data
 export const queryCache = new QueryCache({
   maxItems: 2000,
-  defaultTtlMs: 10 * 60 * 1000, // 10 minutes
+  defaultTtlMs: 10 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 6, // 10 minutes
   enabled: process.env.NODE_ENV !== 'test'
 });
 
 export const searchCache = new QueryCache({
   maxItems: 500,
-  defaultTtlMs: 5 * 60 * 1000, // 5 minutes
+  defaultTtlMs: 5 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 12, // 5 minutes
   enabled: process.env.NODE_ENV !== 'test'
 });
 
 export const userCache = new QueryCache({
   maxItems: 1000,
-  defaultTtlMs: 15 * 60 * 1000, // 15 minutes
+  defaultTtlMs: 15 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 4, // 15 minutes
   enabled: process.env.NODE_ENV !== 'test'
 });
 
@@ -246,7 +247,7 @@ export const CacheWarming = {
       .orderBy(desc(terms.viewCount))
       .limit(50);
     
-    queryCache.set(CacheKeys.popularTerms(), popularTerms, 30 * 60 * 1000); // 30 minutes
+    queryCache.set(CacheKeys.popularTerms(), popularTerms, 30 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 2); // 30 minutes
     console.log(`✅ Cached ${popularTerms.length} popular terms`);
   },
   
@@ -270,13 +271,13 @@ export const CacheWarming = {
       .groupBy(categories.id, categories.name, categories.description)
       .orderBy(categories.name);
     
-    queryCache.set(CacheKeys.categoryTree(), categoryTree, 60 * 60 * 1000); // 1 hour
+    queryCache.set(CacheKeys.categoryTree(), categoryTree, TIME_CONSTANTS.MILLISECONDS_IN_HOUR); // 1 hour
     console.log(`✅ Cached ${categoryTree.length} categories`);
     
     // Warm paginated categories for common page sizes
     for (const limit of [10, 20, 50]) {
       const paginatedKey = CacheKeys.categoriesPaginated(1, limit, 'id,name,description,termCount');
-      queryCache.set(paginatedKey, categoryTree.slice(0, limit), 30 * 60 * 1000);
+      queryCache.set(paginatedKey, categoryTree.slice(0, limit), 30 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 2);
     }
     console.log('✅ Warmed paginated category caches');
   },
@@ -307,7 +308,7 @@ export const CacheWarming = {
         .orderBy(desc(terms.viewCount))
         .limit(20);
       
-      queryCache.set(`featured-terms:${fields}`, result, 15 * 60 * 1000);
+      queryCache.set(`featured-terms:${fields}`, result, 15 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 4);
     }
     
     console.log('✅ Warmed featured terms with different field combinations');
@@ -364,7 +365,7 @@ setInterval(() => {
       console.log(`🧹 Cleaned ${userCleaned} user cache entries, ${searchCleaned} search cache entries`);
     }
   }
-}, 5 * 60 * 1000); // Every 5 minutes
+}, 5 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 12); // Every 5 minutes
 
 // Cache warming task - run every 30 minutes
 setInterval(() => {
@@ -373,7 +374,7 @@ setInterval(() => {
       console.error('Cache warming failed:', error);
     });
   }
-}, 30 * 60 * 1000); // Every 30 minutes
+}, 30 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 2); // Every 30 minutes
 
 // Initial cache warming on startup (delayed to allow app to fully initialize)
 setTimeout(() => {

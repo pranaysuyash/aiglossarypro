@@ -85,6 +85,8 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
 
   // Set user on request
   (req as AuthenticatedRequest).user = {
+    id: decoded.sub,
+    email: decoded.email,
     claims: {
       sub: decoded.sub,
       email: decoded.email,
@@ -107,6 +109,8 @@ export function optionalAuth(req: Request, res: Response, next: NextFunction) {
     const decoded = verifyToken(token);
     if (decoded) {
       (req as AuthenticatedRequest).user = {
+        id: decoded.sub,
+        email: decoded.email,
         claims: {
           sub: decoded.sub,
           email: decoded.email,

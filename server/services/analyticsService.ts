@@ -4,6 +4,8 @@
  */
 import { db } from '../db';
 import { sql } from 'drizzle-orm';
+import { TIME_CONSTANTS } from '../utils/constants';
+import { getLastNDaysRange } from '../utils/dateHelpers';
 
 export interface SearchAnalytics {
   query: string;
@@ -166,15 +168,15 @@ export class AnalyticsService {
   // Get comprehensive analytics dashboard data
   async getDashboardData(timeframe: 'day' | 'week' | 'month' | 'year' = 'week'): Promise<any> {
     try {
-      const timeframeHours = {
-        day: 24,
-        week: 168,
-        month: 720,
-        year: 8760
+      const timeframeDays = {
+        day: 1,
+        week: 7,
+        month: 30,
+        year: 365
       };
 
-      const hours = timeframeHours[timeframe];
-      const startDate = new Date(Date.now() - hours * 60 * 60 * 1000);
+      const days = timeframeDays[timeframe];
+      const { startDate } = getLastNDaysRange(days);
 
       // Get search analytics
       const searchStats = await db.execute(sql`

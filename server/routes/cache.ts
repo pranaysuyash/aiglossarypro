@@ -3,6 +3,7 @@ import { cacheManager } from '../cacheManager';
 import { smartLoadExcelData } from '../smartExcelLoader';
 import { requireAdmin } from '../middleware/adminAuth';
 import { features } from '../config';
+import { TIME_CONSTANTS } from '../utils/constants';
 import path from 'path';
 import fs from 'fs';
 
@@ -26,7 +27,7 @@ router.get('/status', requireAdmin, async (req, res) => {
         subcategoryCount: entry.subcategoryCount,
         processedAt: new Date(entry.processedAt).toISOString(),
         processingTimeSeconds: (entry.processingTime / 1000).toFixed(2),
-        ageHours: Math.round((Date.now() - entry.processedAt) / (1000 * 60 * 60)),
+        ageHours: Math.round((Date.now() - entry.processedAt) / TIME_CONSTANTS.MILLISECONDS_IN_HOUR),
         cacheVersion: entry.cacheVersion
       }))
     };

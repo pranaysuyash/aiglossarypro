@@ -31,7 +31,8 @@ interface ScreenshotConfig {
 }
 
 class SimpleVisualAuditor {
-  private baseUrl = 'http://localhost:3001';
+  // Base URL for the site under test – can be overridden via BASE_URL env var
+  private baseUrl = process.env.BASE_URL || 'http://localhost:3001';
   private outputDir: string;
   private viteProcess: any = null;
 
@@ -47,9 +48,9 @@ class SimpleVisualAuditor {
   }
 
   async startServer(): Promise<void> {
-    // Check if server is already running
+    // Check if server is already running on the target URL
     try {
-      await execAsync('curl -s http://localhost:3001/ > /dev/null');
+      await execAsync(`curl -s ${this.baseUrl}/ > /dev/null 2>&1`);
       console.log(chalk.green('✅ Using existing server'));
       return;
     } catch (error) {
@@ -64,16 +65,35 @@ class SimpleVisualAuditor {
         shell: true
       });
 
+      let viteUrl = '';
+      
       this.viteProcess.stdout.on('data', (data: Buffer) => {
         const output = data.toString();
+        console.log(chalk.gray(output.trim()));
+        
+        // Parse Vite's Local URL if we don't have BASE_URL set
+        if (!process.env.BASE_URL && output.includes('Local:')) {
+          const localMatch = output.match(/Local:\s+(http:\/\/localhost:\d+)/); 
+          if (localMatch) {
+            viteUrl = localMatch[1];
+            this.baseUrl = viteUrl;
+            console.log(chalk.cyan(`🔗 Detected Vite URL: ${this.baseUrl}`));
+          }
+        }
+        
         if (output.includes('ready in') || output.includes('Local:')) {
           console.log(chalk.green('✅ Server ready'));
-          setTimeout(resolve, 3000); // Wait 3 seconds for stability
+          // Wait longer for Vite proxy to be fully ready
+          setTimeout(resolve, 5000);
         }
       });
 
+      this.viteProcess.stderr.on('data', (data: Buffer) => {
+        console.error(chalk.red(data.toString()));
+      });
+
       this.viteProcess.on('error', reject);
-      setTimeout(() => reject(new Error('Server startup timeout')), 30000);
+      setTimeout(() => reject(new Error('Server startup timeout')), 45000);
     });
   }
 
@@ -129,8 +149,12 @@ class SimpleVisualAuditor {
       }
 
       await page.goto(`${this.baseUrl}${config.url}`, {
-        waitUntil: 'networkidle'
+        waitUntil: 'domcontentloaded',
+        timeout: 30000
       });
+      
+      // Wait for body to ensure page is rendered
+      await page.waitForSelector('body', { timeout: 10000 });
 
       // Perform actions if specified
       if (config.actions) {

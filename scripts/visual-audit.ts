@@ -47,7 +47,7 @@ interface VisualIssue {
 class VisualAuditor {
   private browser: Browser | null = null;
   private viteProcess: any = null;
-  private baseUrl = 'http://localhost:3001';
+  private baseUrl = process.env.BASE_URL || 'http://localhost:3001';
   private screenshotDir: string;
   private reportDir: string;
   private issues: VisualIssue[] = [];
@@ -176,7 +176,7 @@ class VisualAuditor {
 
       // Navigate to page
       await page.goto(`${this.baseUrl}${pageConfig.url}`, {
-        waitUntil: 'networkidle'
+        waitUntil: 'domcontentloaded'
       });
 
       // Perform any actions

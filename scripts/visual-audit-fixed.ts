@@ -28,7 +28,7 @@ interface ScreenshotConfig {
 }
 
 class FixedVisualAuditor {
-  private baseUrl = 'http://localhost:3001';
+  private baseUrl = process.env.BASE_URL || 'http://localhost:3001';
   private outputDir: string;
   private viteProcess: any = null;
 
@@ -45,7 +45,7 @@ class FixedVisualAuditor {
 
   async checkServer(): Promise<boolean> {
     try {
-      await execAsync('curl -s http://localhost:3001/ > /dev/null');
+      await execAsync(`curl -s ${this.baseUrl}/ > /dev/null`);
       console.log(chalk.green('✅ Server is responding'));
       return true;
     } catch (error) {
@@ -144,7 +144,7 @@ class FixedVisualAuditor {
         // Navigate to page
         console.log(chalk.gray(`    Navigating to ${config.url}...`));
         await page.goto(`${this.baseUrl}${config.url}`, {
-          waitUntil: 'networkidle',
+          waitUntil: 'domcontentloaded',
           timeout: 30000
         });
 

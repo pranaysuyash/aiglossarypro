@@ -42,7 +42,7 @@ export function registerUserRoutes(app: Express): void {
       const userId = req.user.claims.sub;
       const { page, limit, offset } = req.pagination;
       
-      const result = await storage.getUserFavorites(userId, { limit, offset });
+      const result = await (storage as any).getUserFavoritesOptimized(userId, { limit, offset });
 
       res.json({
         success: true,

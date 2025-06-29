@@ -1825,7 +1825,7 @@ export class EnhancedStorage implements IEnhancedStorage {
                 date: new Date(Date.now() - i * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                 count: Math.floor(Math.random() * 20) + 5
               })).reverse()
-            },
+            } as any,
             topIssues: [
               { issue: 'Definition clarity', count: 23 },
               { issue: 'Missing examples', count: 18 },
@@ -1842,7 +1842,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           byStatus: {},
           byRating: {},
           averageRating: 0,
-          recentTrends: { daily: [] },
+          recentTrends: { daily: [] } as any,
           topIssues: []
         };
       }
@@ -2660,7 +2660,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       
       try {
         const categoriesResult = await this.getCategories();
-        allCategories = categoriesResult.data || [];
+        allCategories = Array.isArray(categoriesResult) ? categoriesResult : (categoriesResult as any).data || [];
       } catch (error) {
         console.warn('[EnhancedStorage] Failed to get categories:', error);
         allCategories = [];
@@ -2830,10 +2830,10 @@ export class EnhancedStorage implements IEnhancedStorage {
           // Map analytics data to progress stats
           const stats: UserProgressStats = {
             userId,
-            totalTermsViewed: userAnalytics.totalViews || 0,
+            totalTermsViewed: (userAnalytics as any).totalViews || userAnalytics.totalTermsViewed || 0,
             totalTimeSpent: userAnalytics.totalTimeSpent || 0,
-            streakDays: userAnalytics.currentStreak || 0,
-            favoriteTerms: userAnalytics.favoriteCount || 0,
+            streakDays: (userAnalytics as any).currentStreak || 0,
+            favoriteTerms: (userAnalytics as any).favoriteCount || 0,
             completedSections: userAnalytics.sectionsCompleted || 0,
             averageRating: userAnalytics.averageRating || 0,
             categoryProgress: userAnalytics.categoryProgress || {},

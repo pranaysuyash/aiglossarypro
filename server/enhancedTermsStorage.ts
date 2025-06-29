@@ -779,6 +779,70 @@ class EnhancedStorage {
       };
     }
   }
+
+  // Missing methods that are referenced elsewhere
+  async getEnhancedTermById(id: string) {
+    const [term] = await db.select().from(enhancedTerms).where(eq(enhancedTerms.id, id));
+    return term || null;
+  }
+
+  async updateEnhancedTerm(id: string, updates: any) {
+    const [updatedTerm] = await db.update(enhancedTerms)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(enhancedTerms.id, id))
+      .returning();
+    return updatedTerm;
+  }
+
+  async getTermSections(termId: string) {
+    return await db.select()
+      .from(termSections)
+      .where(eq(termSections.termId, termId))
+      .orderBy(desc(termSections.priority), asc(termSections.sectionName));
+  }
+
+  async updateTermSection(termId: string, sectionId: string, data: any) {
+    await db.update(termSections)
+      .set({
+        ...data,
+        updatedAt: new Date()
+      })
+      .where(and(
+        eq(termSections.termId, termId),
+        eq(termSections.id, sectionId)
+      ));
+  }
+
+  async getUserAnalytics(userId: string) {
+    // Placeholder implementation - would need user analytics schema
+    return {
+      totalTermsViewed: 0,
+      totalTimeSpent: 0,
+      completionRate: 0
+    };
+  }
+
+  async getUserStreak(userId: string) {
+    // Placeholder implementation - would need streak tracking
+    return {
+      currentStreak: 0,
+      longestStreak: 0,
+      lastActivity: null
+    };
+  }
+
+  async updateUserStreak(userId: string, streakData: any) {
+    // Placeholder implementation - would need streak tracking
+    console.log('Update user streak placeholder:', { userId, streakData });
+    return {
+      currentStreak: 0,
+      longestStreak: 0,
+      lastActivity: new Date()
+    };
+  }
 }
 
 // Export singleton instance

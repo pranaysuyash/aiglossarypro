@@ -55,7 +55,7 @@ export function registerAdminUserRoutes(app: Express): void {
       const endIndex = startIndex + limit;
       const paginatedUsers = filteredUsers.slice(startIndex, endIndex);
       
-      const response: ApiResponse<any> = {
+      const response = {
         success: true,
         data: paginatedUsers,
         total: filteredUsers.length,

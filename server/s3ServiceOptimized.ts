@@ -390,8 +390,8 @@ class OptimizedS3Client {
         });
       }
       
-      await pipeline(...streams);
-      progressTracker(totalSize, totalSize, 'complete');
+      await pipeline(...(streams as [any, ...any[]]));
+      progressTracker(totalSize, totalSize);
       
       return destinationPath;
     }, 'downloadFile');

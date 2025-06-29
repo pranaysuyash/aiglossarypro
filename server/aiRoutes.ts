@@ -205,7 +205,7 @@ export function registerAIRoutes(app: Express): void {
         shortDefinition: improvements.shortDefinition || term.shortDefinition,
         definition: improvements.definition || term.definition,
         characteristics: improvements.characteristics || term.characteristics,
-        applications: improvements.applications || term.applications,
+        applications: improvements.applications || (term as any).applications,
         mathFormulation: improvements.mathFormulation || term.mathFormulation
       });
 

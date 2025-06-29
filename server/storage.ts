@@ -131,7 +131,6 @@ export interface IStorage {
   getCategoryProgress?(userId: string): Promise<any[]>;
   
   // Streak and Achievement Methods
-  getUserStreak?(userId: string): Promise<any>;
   updateUserStreak?(userId: string, streak: any): Promise<void>;
   isAchievementUnlocked?(userId: string, achievementId: string): Promise<boolean>;
   unlockAchievement?(userId: string, achievement: any): Promise<void>;
@@ -1839,9 +1838,9 @@ export class DatabaseStorage implements IStorage {
     return null;
   }
 
-  async updateUserProgress(userId: string, termId: number, sectionId: number, progressUpdate: any): Promise<void> {
-    // This is a placeholder - you would need to implement section progress updates
-    console.log("Progress update placeholder:", { userId, termId, sectionId, progressUpdate });
+  async updateUserProgress(userId: string, updates: any): Promise<void> {
+    // This is a placeholder - you would need to implement progress updates
+    console.log("Progress update placeholder:", { userId, updates });
   }
 
   async getUserProgressSummary(userId: string): Promise<any> {

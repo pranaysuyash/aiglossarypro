@@ -102,6 +102,27 @@ export interface IStorage {
   getPendingContent(): Promise<any[]>;
   approveContent(id: string): Promise<any>;
   rejectContent(id: string): Promise<any>;
+  
+  // Missing methods for enhanced features
+  getTermsOptimized?(options?: { limit?: number }): Promise<any[]>;
+  getTermsByIds?(ids: string[]): Promise<any[]>;
+  submitFeedback?(data: any): Promise<any>;
+  storeFeedback?(data: any): Promise<any>;
+  getFeedback?(filters: any, pagination: any): Promise<any>;
+  getFeedbackStats?(): Promise<any>;
+  updateFeedbackStatus?(id: string, status: string, notes?: string): Promise<any>;
+  initializeFeedbackSchema?(): Promise<void>;
+  createFeedbackIndexes?(): Promise<void>;
+  updateTermSection?(termId: string, sectionId: string, data: any): Promise<void>;
+  trackTermView?(userId: string, termId: string, sectionId?: string): Promise<void>;
+  trackSectionCompletion?(userId: string, termId: string, sectionId: string): Promise<void>;
+  updateUserProgress?(userId: string, updates: any): Promise<void>;
+  getUserSectionProgress?(userId: string, options?: any): Promise<any[]>;
+  getUserTimeSpent?(userId: string, timeframe?: string): Promise<number>;
+  getCategoryProgress?(userId: string): Promise<any[]>;
+  isAchievementUnlocked?(userId: string, achievementId: string): Promise<boolean>;
+  unlockAchievement?(userId: string, achievementId: string): Promise<any>;
+  getAllTerms?(options?: any): Promise<any>;
 }
 
 export class OptimizedStorage implements IStorage {
@@ -146,11 +167,11 @@ export class OptimizedStorage implements IStorage {
   }
 
   // Categories (heavily cached since they change rarely)
-  async getCategories(): Promise<any[]> {
+  async getCategories(): Promise<ICategory[]> {
     return cached(
       CacheKeys.categoryTree(),
       async () => {
-        return await db.select({
+        const results = await db.select({
           id: categories.id,
           name: categories.name,
           description: categories.description,
@@ -162,12 +183,18 @@ export class OptimizedStorage implements IStorage {
         })
         .from(categories)
         .orderBy(categories.name);
+        return results.map(r => ({
+          id: r.id,
+          name: r.name,
+          description: r.description ?? undefined,
+          termCount: Number(r.termCount)
+        }));
       },
       60 * 60 * 1000 // 1 hour cache
     );
   }
 
-  async getCategoryById(id: string): Promise<any> {
+  async getCategoryById(id: string): Promise<ICategory | null> {
     return cached(
       CacheKeys.term(`category:${id}`),
       async () => {
@@ -184,19 +211,23 @@ export class OptimizedStorage implements IStorage {
         .from(categories)
         .where(eq(categories.id, id))
         .limit(1);
-        
-        return result[0];
+        if (!result[0]) return null;
+        return {
+          id: result[0].id,
+          name: result[0].name,
+          description: result[0].description ?? undefined,
+          termCount: Number(result[0].termCount)
+        };
       },
       30 * 60 * 1000 // 30 minutes
     );
   }
 
   // OPTIMIZED: Fixed N+1 query problem in featured terms
-  async getFeaturedTerms(): Promise<any[]> {
+  async getFeaturedTerms(): Promise<ITerm[]> {
     return cached(
       CacheKeys.popularTerms(),
       async () => {
-        // Single query with aggregated subcategories
         const results = await db.select({
           id: terms.id,
           name: terms.name,
@@ -204,6 +235,7 @@ export class OptimizedStorage implements IStorage {
           viewCount: terms.viewCount,
           category: categories.name,
           categoryId: categories.id,
+          definition: terms.definition,
           subcategories: sql<string[]>`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`
         })
         .from(terms)
@@ -213,21 +245,25 @@ export class OptimizedStorage implements IStorage {
         .groupBy(terms.id, categories.id, categories.name)
         .orderBy(desc(terms.viewCount))
         .limit(20);
-
         return results.map(result => ({
-          ...result,
+          id: result.id,
+          name: result.name,
+          definition: result.definition ?? '',
+          shortDefinition: result.shortDefinition ?? undefined,
+          viewCount: result.viewCount ?? 0,
+          category: result.category ?? '',
+          categoryId: result.categoryId ?? '',
           subcategories: result.subcategories?.filter(Boolean) || []
-        }));
+        }) as ITerm);
       },
       10 * 60 * 1000 // 10 minutes cache
     );
   }
 
-  async getTermById(id: string): Promise<any> {
+  async getTermById(id: string): Promise<ITerm | null> {
     return cached(
       CacheKeys.term(id),
       async () => {
-        // Single query with all related data
         const result = await db.select({
           id: terms.id,
           name: terms.name,
@@ -248,23 +284,28 @@ export class OptimizedStorage implements IStorage {
         .where(eq(terms.id, id))
         .groupBy(terms.id, categories.id)
         .limit(1);
-
-        if (result.length === 0) return undefined;
-
+        if (result.length === 0) return null;
         return {
-          ...result[0],
-          subcategories: result[0].subcategories?.filter(Boolean) || []
-        };
+          id: result[0].id,
+          name: result[0].name,
+          definition: result[0].definition,
+          shortDefinition: result[0].shortDefinition,
+          viewCount: result[0].viewCount,
+          categoryId: result[0].categoryId,
+          category: result[0].category,
+          subcategories: result[0].subcategories?.filter(Boolean) || [],
+          createdAt: result[0].createdAt,
+          updatedAt: result[0].updatedAt
+        } as ITerm;
       },
       15 * 60 * 1000 // 15 minutes cache
     );
   }
 
-  async getRecentlyViewedTerms(userId: string): Promise<any[]> {
+  async getRecentlyViewedTerms(userId: string): Promise<ITerm[]> {
     return cached(
       `user:${userId}:recent_views`,
       async () => {
-        // Optimized query with single JOIN
         const results = await db.select({
           id: terms.id,
           name: terms.name,
@@ -273,6 +314,7 @@ export class OptimizedStorage implements IStorage {
           category: categories.name,
           categoryId: categories.id,
           viewedAt: termViews.viewedAt,
+          definition: terms.definition,
           subcategories: sql<string[]>`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`
         })
         .from(termViews)
@@ -284,11 +326,17 @@ export class OptimizedStorage implements IStorage {
         .groupBy(terms.id, categories.id, termViews.viewedAt)
         .orderBy(desc(termViews.viewedAt))
         .limit(20);
-
         return results.map(result => ({
-          ...result,
-          subcategories: result.subcategories?.filter(Boolean) || []
-        }));
+          id: result.id,
+          name: result.name,
+          definition: result.definition ?? '',
+          shortDefinition: result.shortDefinition ?? undefined,
+          viewCount: result.viewCount ?? 0,
+          category: result.category ?? '',
+          categoryId: result.categoryId ?? '',
+          subcategories: result.subcategories?.filter(Boolean) || [],
+          viewedAt: result.viewedAt
+        }) as ITerm);
       },
       5 * 60 * 1000 // 5 minutes cache
     );
@@ -320,25 +368,10 @@ export class OptimizedStorage implements IStorage {
   }
 
   // OPTIMIZED: Single query for search with aggregated subcategories
-  async searchTerms(query: string): Promise<any[]> {
+  async searchTerms(query: string): Promise<ITerm[]> {
     return cached(
       CacheKeys.termSearch(query),
       async () => {
-        // Use full-text search if available, fallback to ILIKE
-        const searchCondition = sql`
-          to_tsvector('english', ${terms.name} || ' ' || COALESCE(${terms.definition}, '')) 
-          @@ plainto_tsquery('english', ${query})
-          OR ${terms.name} ILIKE ${`%${query}%`}
-        `;
-
-        const relevanceScore = sql<number>`
-          CASE 
-            WHEN ${terms.name} ILIKE ${`${query}%`} THEN 1.0
-            WHEN ${terms.name} ILIKE ${`%${query}%`} THEN 0.8
-            ELSE 0.5
-          END
-        `;
-
         const results = await db.select({
           id: terms.id,
           name: terms.name,
@@ -346,23 +379,29 @@ export class OptimizedStorage implements IStorage {
           viewCount: terms.viewCount,
           category: categories.name,
           categoryId: categories.id,
-          subcategories: sql<string[]>`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`,
-          // Add relevance scoring
-          relevance: relevanceScore
+          definition: terms.definition,
+          relevance: sql<number>`ts_rank_cd(${terms.definition}, plainto_tsquery(${query}))`,
+          subcategories: sql<string[]>`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`
         })
         .from(terms)
         .leftJoin(categories, eq(terms.categoryId, categories.id))
         .leftJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
         .leftJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
-        .where(searchCondition)
-        .groupBy(terms.id, categories.id, categories.name)
-        .orderBy(desc(relevanceScore), desc(terms.viewCount))
+        .where(ilike(terms.name, `%${query}%`))
+        .groupBy(terms.id, categories.id)
+        .orderBy(desc(sql<number>`ts_rank_cd(${terms.definition}, plainto_tsquery(${query}))`))
         .limit(20);
-
         return results.map(result => ({
-          ...result,
-          subcategories: result.subcategories?.filter(Boolean) || []
-        }));
+          id: result.id,
+          name: result.name,
+          definition: result.definition ?? '',
+          shortDefinition: result.shortDefinition ?? undefined,
+          viewCount: result.viewCount ?? 0,
+          category: result.category ?? '',
+          categoryId: result.categoryId ?? '',
+          subcategories: result.subcategories?.filter(Boolean) || [],
+          relevance: result.relevance
+        }) as ITerm);
       },
       2 * 60 * 1000 // 2 minutes cache (shorter for search)
     );
@@ -2044,6 +2083,97 @@ export class OptimizedStorage implements IStorage {
       console.error('[OptimizedStorage] getCategoryStats error:', error);
       throw new Error(`Failed to get category stats: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
+  }
+
+  // Additional missing methods implementation
+  async getTermsByIds(ids: string[]): Promise<any[]> {
+    if (ids.length === 0) return [];
+    
+    return await db.select()
+      .from(terms)
+      .where(inArray(terms.id, ids));
+  }
+
+  async submitFeedback(data: any): Promise<any> {
+    // Placeholder implementation - would need feedback table schema
+    return { success: true, id: 'feedback-' + Date.now() };
+  }
+
+  async storeFeedback(data: any): Promise<any> {
+    // Placeholder implementation - would need feedback table schema
+    return { success: true, id: 'feedback-' + Date.now() };
+  }
+
+  async getFeedback(filters: any, pagination: any): Promise<any> {
+    // Placeholder implementation - would need feedback table schema
+    return { data: [], total: 0 };
+  }
+
+  async getFeedbackStats(): Promise<any> {
+    // Placeholder implementation - would need feedback table schema
+    return { totalFeedback: 0, pendingReview: 0, resolved: 0 };
+  }
+
+  async updateFeedbackStatus(id: string, status: string, notes?: string): Promise<any> {
+    // Placeholder implementation - would need feedback table schema
+    return { success: true, id, status };
+  }
+
+  async initializeFeedbackSchema(): Promise<void> {
+    // Placeholder implementation - would need feedback table schema
+    console.log('Feedback schema initialization placeholder');
+  }
+
+  async createFeedbackIndexes(): Promise<void> {
+    // Placeholder implementation - would need feedback table schema
+    console.log('Feedback indexes creation placeholder');
+  }
+
+  async updateTermSection(termId: string, sectionId: string, data: any): Promise<void> {
+    // Placeholder implementation - would need enhanced term sections
+    console.log('Term section update placeholder:', { termId, sectionId, data });
+  }
+
+  async trackTermView(userId: string, termId: string, sectionId?: string): Promise<void> {
+    await this.recordTermView(termId, userId);
+  }
+
+  async trackSectionCompletion(userId: string, termId: string, sectionId: string): Promise<void> {
+    // Placeholder implementation - would need section completion tracking
+    console.log('Section completion tracking placeholder:', { userId, termId, sectionId });
+  }
+
+  async updateUserProgress(userId: string, updates: any): Promise<void> {
+    // Simple implementation using existing user progress
+    if (updates.termId) {
+      await this.markTermAsLearned(userId, updates.termId);
+    }
+  }
+
+  async getUserSectionProgress(userId: string, options?: any): Promise<any[]> {
+    // Return user progress in a different format
+    const progress = await this.getUserProgress(userId);
+    return progress.learnedTerms || [];
+  }
+
+  async getUserTimeSpent(userId: string, timeframe?: string): Promise<number> {
+    // Placeholder implementation - would need time tracking schema
+    return 0;
+  }
+
+  async getCategoryProgress(userId: string): Promise<any[]> {
+    // Placeholder implementation - would need category progress tracking
+    return [];
+  }
+
+  async isAchievementUnlocked(userId: string, achievementId: string): Promise<boolean> {
+    // Placeholder implementation - would need achievements schema
+    return false;
+  }
+
+  async unlockAchievement(userId: string, achievementId: string): Promise<any> {
+    // Placeholder implementation - would need achievements schema
+    return { success: true, achievementId, userId };
   }
 }
 

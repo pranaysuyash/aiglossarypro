@@ -20,7 +20,8 @@ import {
   LazyAIToolsPage,
   LazyProgressPage,
   LazyTermDetailPage,
-  LazyLifetimePage
+  LazyLifetimePage,
+  LazyProfilePage
 } from "@/components/lazy/LazyPages";
 
 import Header from "@/components/Header";
@@ -100,6 +101,9 @@ function Router() {
           </Route>
           <Route path="/progress">
             {isAuthenticated ? <LazyProgressPage /> : <LoginPage />}
+          </Route>
+          <Route path="/profile">
+            {isAuthenticated ? <LazyProfilePage /> : <LoginPage />}
           </Route>
           <Route component={NotFound} />
         </Switch>

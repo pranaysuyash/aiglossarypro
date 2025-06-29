@@ -233,7 +233,7 @@ const TermCard = memo(function TermCard({
 
   // Default variant - full card
   return (
-    <Card className="h-full flex flex-col transition-shadow hover:shadow-md">
+    <Card className="h-full flex flex-col transition-shadow hover:shadow-md min-h-[280px]">
       <CardContent className="p-4 flex-1">
         <div className="flex items-center justify-between mb-2">
           <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300">
@@ -267,7 +267,7 @@ const TermCard = memo(function TermCard({
         
         <h3 className="font-semibold text-lg mb-1">{term.name}</h3>
         
-        <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-3">
+        <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-4 flex-1">
           {term.shortDefinition}
         </p>
         

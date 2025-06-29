@@ -47,7 +47,7 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="flex flex-col md:flex-row gap-6">
+      <div className="flex flex-col lg:flex-row gap-8">
         <Sidebar />
         
         <main className="flex-1">
@@ -81,7 +81,7 @@ export default function Home() {
           </div>
 
           {/* Term Categories */}
-          <div className="mb-8">
+          <div className="mb-12">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Browse by Category</h2>
               <Link href="/categories">
@@ -91,7 +91,7 @@ export default function Home() {
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
               {categoriesLoading ? (
                 // Skeleton loading for categories
                 Array.from({ length: 6 }).map((_, i) => (
@@ -122,7 +122,7 @@ export default function Home() {
           </div>
 
           {/* Featured Terms */}
-          <div className="mb-8">
+          <div className="mb-12">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-semibold">Featured Terms</h2>
               <Link href="/terms">
@@ -132,7 +132,7 @@ export default function Home() {
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
               {termsLoading ? (
                 // Skeleton loading for terms
                 Array.from({ length: 3 }).map((_, i) => (

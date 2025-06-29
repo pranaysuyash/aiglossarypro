@@ -34,6 +34,7 @@ export const LazyAITools = lazy(() => import('@/pages/AITools'));
 export const LazyUserProgressDashboard = lazy(() => import('@/pages/UserProgressDashboard'));
 export const LazyEnhancedTermDetail = lazy(() => import('@/pages/EnhancedTermDetail'));
 export const LazyLifetime = lazy(() => import('@/pages/Lifetime'));
+export const LazyProfile = lazy(() => import('@/pages/Profile'));
 
 // HOC to wrap lazy pages with Suspense and ErrorBoundary
 export function withLazyLoading<T extends object>(Component: React.ComponentType<T>) {
@@ -61,3 +62,4 @@ export const LazyAIToolsPage = withLazyLoading(LazyAITools);
 export const LazyProgressPage = withLazyLoading(LazyUserProgressDashboard);
 export const LazyTermDetailPage = withLazyLoading(LazyEnhancedTermDetail);
 export const LazyLifetimePage = withLazyLoading(LazyLifetime);
+export const LazyProfilePage = withLazyLoading(LazyProfile);

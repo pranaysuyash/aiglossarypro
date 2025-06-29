@@ -171,3 +171,106 @@
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--primary) / 50%);
 }
+
+/* Mobile Navigation Animations */
+@keyframes slide-in-from-top {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slide-out-to-top {
+  from {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+}
+
+.animate-in {
+  animation-fill-mode: both;
+}
+
+.slide-in-from-top-2 {
+  animation: slide-in-from-top 0.2s ease-out;
+}
+
+.slide-out-to-top-2 {
+  animation: slide-out-to-top 0.2s ease-in;
+}
+
+/* Mobile Menu Item Stagger Animation */
+.mobile-nav-item {
+  opacity: 0;
+  transform: translateX(-20px);
+  animation: slide-in-left 0.3s ease-out forwards;
+}
+
+.mobile-nav-item:nth-child(1) { animation-delay: 0.05s; }
+.mobile-nav-item:nth-child(2) { animation-delay: 0.1s; }
+.mobile-nav-item:nth-child(3) { animation-delay: 0.15s; }
+.mobile-nav-item:nth-child(4) { animation-delay: 0.2s; }
+.mobile-nav-item:nth-child(5) { animation-delay: 0.25s; }
+.mobile-nav-item:nth-child(6) { animation-delay: 0.3s; }
+
+@keyframes slide-in-left {
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* Enhanced focus styles for mobile */
+@media (max-width: 768px) {
+  button:focus-visible,
+  [role="button"]:focus-visible,
+  a:focus-visible {
+    @apply ring-4 ring-primary/30 ring-offset-2;
+  }
+}
+
+/* Layout and spacing improvements */
+.line-clamp-4 {
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.auto-rows-fr {
+  grid-auto-rows: 1fr;
+}
+
+/* Enhanced card hover effects */
+.card-hover {
+  transition: all 0.2s ease-in-out;
+}
+
+.card-hover:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Responsive grid improvements */
+@media (min-width: 768px) {
+  .grid-auto-fit {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  }
+}
+
+/* Better spacing system */
+.space-y-8 > * + * {
+  margin-top: 2rem;
+}
+
+.space-y-12 > * + * {
+  margin-top: 3rem;
+}

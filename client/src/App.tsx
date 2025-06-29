@@ -78,6 +78,7 @@ function Router() {
           <Route path="/login" component={LoginPage} />
           <Route path="/lifetime" component={LazyLifetimePage} />
           <Route path="/term/:id" component={SmartTermDetail} />
+          <Route path="/category/:id" component={LazyCategoriesPage} />
           <Route path="/terms" component={LazyTermsPage} />
           <Route path="/categories" component={LazyCategoriesPage} />
           <Route path="/trending" component={LazyTrendingPage} />

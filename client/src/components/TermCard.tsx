@@ -149,7 +149,7 @@ const TermCard = memo(function TermCard({
   // Minimal variant - just title and link
   if (variant === 'minimal') {
     return (
-      <div className="p-2 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
+      <div className="p-2 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-testid="term-card">
         <div className="flex items-center justify-between">
           <Link href={`/term/${term.id}`} onClick={handleTermClick} className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium flex-1">
             {term.name}
@@ -173,7 +173,7 @@ const TermCard = memo(function TermCard({
   // Compact variant - condensed card
   if (variant === 'compact') {
     return (
-      <Card className="h-full flex flex-col transition-shadow hover:shadow-md">
+      <Card className="h-full flex flex-col transition-shadow hover:shadow-md" data-testid="term-card">
         <CardContent className="p-3 flex-1">
           <div className="flex items-start justify-between mb-2">
             <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 text-xs">
@@ -233,7 +233,7 @@ const TermCard = memo(function TermCard({
 
   // Default variant - full card
   return (
-    <Card className="h-full flex flex-col transition-shadow hover:shadow-md min-h-[280px]">
+    <Card className="h-full flex flex-col transition-shadow hover:shadow-md min-h-[280px]" data-testid="term-card">
       <CardContent className="p-4 flex-1">
         <div className="flex items-center justify-between mb-2">
           <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300">

@@ -34,7 +34,11 @@ export default function CategoryCard({ category, termCount }: CategoryCardProps)
   const displayTermCount = termCount ?? category.termCount ?? 0;
 
   return (
-    <div onClick={() => window.location.href=`/category/${category.id}`} className="cursor-pointer">
+    <div 
+      onClick={() => window.location.href=`/category/${category.id}`} 
+      className="cursor-pointer"
+      data-testid="category-card"
+    >
         <Card className="h-full transition-shadow hover:shadow-md border border-gray-100 dark:border-gray-800">
           <CardContent className="p-3 xs:p-4">
             <div className="flex items-start w-full overflow-hidden">

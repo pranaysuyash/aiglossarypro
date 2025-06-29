@@ -1706,7 +1706,7 @@ export class OptimizedStorage implements IStorage {
 
           // Combine and sort activity
           const combinedActivity = [...recentActivity, ...recentFavorites]
-            .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+            .sort((a, b) => new Date(b.createdAt || new Date()).getTime() - new Date(a.createdAt || new Date()).getTime())
             .slice(0, 50);
 
           // Basic system health check

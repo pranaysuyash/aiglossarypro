@@ -17,16 +17,13 @@ const queryClient = new QueryClient({
 // Mock term data
 const mockTerm = {
   id: '1',
-  term: 'Machine Learning',
+  name: 'Machine Learning',
   definition: 'A subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed.',
+  shortDefinition: 'A subset of AI that enables systems to learn from experience.',
   category: 'Core Concepts',
-  difficulty: 'Intermediate',
-  tags: ['AI', 'Algorithms', 'Data Science'],
-  lastUpdated: new Date().toISOString(),
-  views: 1250,
-  likes: 89,
-  bookmarked: false,
-  readingTime: 3,
+  viewCount: 1250,
+  createdAt: new Date(),
+  updatedAt: new Date(),
 };
 
 const meta: Meta<typeof TermHeader> = {
@@ -51,8 +48,13 @@ const meta: Meta<typeof TermHeader> = {
   ],
   args: {
     term: mockTerm,
-    onFavorite: fn(),
-    onShare: fn(),
+    isEnhanced: false,
+    favorite: false,
+    favoriteLoading: false,
+    shareMenuOpen: false,
+    onToggleFavorite: fn(),
+    onCopyLink: fn(),
+    onShareMenuToggle: fn(),
   },
   tags: ['autodocs'],
 };

@@ -119,6 +119,7 @@ export interface IStorage {
   getTermSections?(termId: string): Promise<any[]>;
   updateTermSection?(termId: string, sectionId: string, data: any): Promise<void>;
   incrementTermViewCount?(termId: string): Promise<void>;
+  getTermsOptimized?(options?: { limit?: number }): Promise<any[]>;
   
   // User Analytics and Progress Tracking Methods
   getUserAnalytics?(userId: string): Promise<any>;

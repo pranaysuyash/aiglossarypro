@@ -11,6 +11,9 @@ import { enhancedStorage as storage } from "../../enhancedStorage";
 const DEV_USER = {
   id: "dev-user-123",
   email: "dev@example.com",
+  firstName: "Development",
+  lastName: "User",
+  profileImageUrl: null,
   claims: {
     sub: "dev-user-123",
     email: "dev@example.com",
@@ -68,6 +71,9 @@ export const mockAuthenticateToken = (req: Request, res: Response, next: NextFun
     (req as AuthenticatedRequest).user = {
       id: userClaims.sub || "dev-user-123",
       email: userClaims.email || "dev@example.com",
+      firstName: userClaims.first_name || "Development",
+      lastName: userClaims.last_name || "User",
+      profileImageUrl: null,
       claims: {
         sub: userClaims.sub || "dev-user-123",
         email: userClaims.email || "dev@example.com",

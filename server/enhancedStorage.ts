@@ -1104,7 +1104,7 @@ export class EnhancedStorage implements IEnhancedStorage {
     try {
       // Try to get pending content from enhanced terms storage
       try {
-        const pendingItems = await this.termsStorage.getPendingContent?.();
+        const pendingItems = await this.baseStorage.getPendingContent?.();
         if (pendingItems && Array.isArray(pendingItems)) {
           console.log(`[EnhancedStorage] getPendingContent: Found ${pendingItems.length} pending items from enhanced storage`);
           return pendingItems;
@@ -1274,7 +1274,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       // Try to approve content using enhanced storage
       try {
-        const result = await this.termsStorage.approveContent?.(id);
+        const result = await this.baseStorage.approveContent?.(id);
         if (result) {
           console.log(`[EnhancedStorage] approveContent: Content ${id} approved via enhanced storage`);
           return {
@@ -1340,7 +1340,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
       // Try to reject content using enhanced storage
       try {
-        const result = await this.termsStorage.rejectContent?.(id);
+        const result = await this.baseStorage.rejectContent?.(id);
         if (result) {
           console.log(`[EnhancedStorage] rejectContent: Content ${id} rejected via enhanced storage`);
           return {
@@ -1623,8 +1623,8 @@ export class EnhancedStorage implements IEnhancedStorage {
       // Try to use enhanced terms storage for feedback submission
       try {
         // Check if enhanced terms storage has feedback capabilities
-        if (typeof this.termsStorage.submitFeedback === 'function') {
-          await this.termsStorage.submitFeedback(feedbackRecord);
+        if (typeof this.baseStorage.submitFeedback === 'function') {
+          await this.baseStorage.submitFeedback(feedbackRecord);
         } else {
           // Fallback to base storage or in-memory storage
           console.log('[EnhancedStorage] Using fallback feedback storage');
@@ -2248,7 +2248,7 @@ export class EnhancedStorage implements IEnhancedStorage {
       }
       
       // Use enhanced terms storage for bulk retrieval
-      const terms = await this.termsStorage.getTermsByIds(ids);
+      const terms = await this.baseStorage.getTermsByIds?.(ids) || [];
       
       // Transform to ITerm format
       const transformedTerms = terms.map((term: any) => ({
@@ -2499,8 +2499,8 @@ export class EnhancedStorage implements IEnhancedStorage {
             console.log(`[EnhancedStorage] getEnhancedTermById: Found enhanced term with ${enhancedTerm.sections?.length || 0} sections`);
             return {
               ...enhancedTerm,
-              definition: enhancedTerm.definition || enhancedTerm.shortDefinition || '',
-              category: enhancedTerm.category || enhancedTerm.mainCategories?.[0] || '',
+              definition: (enhancedTerm as any).definition || (enhancedTerm as any).shortDefinition || '',
+              category: (enhancedTerm as any).category || (enhancedTerm as any).mainCategories?.[0] || '',
               shortDefinition: enhancedTerm.shortDefinition || undefined,
               viewCount: enhancedTerm.viewCount || 0,
               createdAt: enhancedTerm.createdAt || undefined,

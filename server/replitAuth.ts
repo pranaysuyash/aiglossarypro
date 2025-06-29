@@ -101,10 +101,10 @@ export async function setupAuth(app: Express) {
       const passportUser: Express.User = {
         id: user.id,
         email: user.email || '',
-        firstName: user.firstName || undefined,
-        lastName: user.lastName || undefined,
-        profileImageUrl: user.profileImageUrl || undefined,
-        isAdmin: user.isAdmin || undefined,
+        firstName: user.firstName || null,
+        lastName: user.lastName || null,
+        profileImageUrl: user.profileImageUrl || null,
+        isAdmin: user.isAdmin || null,
         claims: userClaims || {
           sub: user.id,
           email: user.email || '',

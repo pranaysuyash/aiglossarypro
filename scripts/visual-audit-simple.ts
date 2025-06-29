@@ -11,10 +11,13 @@
  */
 
 import { chromium } from 'playwright';
-import { spawn } from 'child_process';
+import { spawn, exec } from 'child_process';
+import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
+
+const execAsync = promisify(exec);
 
 interface ScreenshotConfig {
   name: string;
@@ -44,6 +47,15 @@ class SimpleVisualAuditor {
   }
 
   async startServer(): Promise<void> {
+    // Check if server is already running
+    try {
+      await execAsync('curl -s http://localhost:3001/ > /dev/null');
+      console.log(chalk.green('✅ Using existing server'));
+      return;
+    } catch (error) {
+      // Server not running, start it
+    }
+
     console.log(chalk.yellow('Starting development server...'));
     
     return new Promise((resolve, reject) => {
@@ -434,6 +446,8 @@ Auditor: [Your Name]
     if (this.viteProcess) {
       console.log(chalk.yellow('Stopping server...'));
       this.viteProcess.kill();
+    } else {
+      console.log(chalk.gray('Server was already running, left it running'));
     }
   }
 
@@ -461,7 +475,8 @@ Auditor: [Your Name]
 }
 
 // Run if called directly
-if (require.main === module) {
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
   const auditor = new SimpleVisualAuditor();
   auditor.run().catch(console.error);
 }

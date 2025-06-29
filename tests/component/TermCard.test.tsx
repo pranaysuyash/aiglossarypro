@@ -7,9 +7,13 @@ import TermCard from '../../client/src/components/TermCard';
 
 // Mock the API module
 vi.mock('../../client/src/lib/api', () => ({
-  toggleFavorite: vi.fn(),
-  getFavorites: vi.fn()
+  // No longer mocking toggleFavorite or getFavorites directly here
+  // as the component now uses props for these interactions.
+  // apiRequest is still mocked for error handling test.
+  apiRequest: vi.fn(),
 }));
+
+import * as queryClientModule from '../../client/src/lib/queryClient';
 
 // Mock term data
 const mockTerm = {
@@ -117,12 +121,10 @@ describe('TermCard Component', () => {
     });
 
     it('handles favorite toggle interaction', async () => {
-      const { toggleFavorite } = await import('../../client/src/lib/api');
-      (toggleFavorite as any).mockResolvedValue({ success: true });
-
+      const onFavoriteToggle = vi.fn();
       render(
         <TestWrapper>
-          <TermCard term={mockTerm} />
+          <TermCard term={mockTerm} onFavoriteToggle={onFavoriteToggle} />
         </TestWrapper>
       );
 
@@ -130,7 +132,7 @@ describe('TermCard Component', () => {
       fireEvent.click(favoriteButton);
 
       await waitFor(() => {
-        expect(toggleFavorite).toHaveBeenCalledWith(mockTerm.id);
+        expect(onFavoriteToggle).toHaveBeenCalledWith(mockTerm.id, true);
       });
     });
 
@@ -155,14 +157,14 @@ describe('TermCard Component', () => {
       );
 
       const termLink = screen.getByRole('link');
-      expect(termLink).toHaveAttribute('href', `/terms/${mockTerm.id}`);
+      expect(termLink).toHaveAttribute('href', `/term/${mockTerm.id}`);
     });
   });
 
   describe('Error Handling', () => {
     it('handles favorite toggle errors gracefully', async () => {
-      const { toggleFavorite } = await import('../../client/src/lib/api');
-      (toggleFavorite as any).mockRejectedValue(new Error('Network error'));
+      const apiRequestSpy = vi.spyOn(queryClientModule, 'apiRequest');
+      apiRequestSpy.mockRejectedValue(new Error('Network error'));
 
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 

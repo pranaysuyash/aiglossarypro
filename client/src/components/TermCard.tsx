@@ -1,6 +1,6 @@
 import { useState, useCallback, memo } from "react";
 import { Link } from "wouter";
-import { Heart, Copy, Share2 } from "lucide-react";
+import { Heart, Copy, Share2, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -15,24 +15,29 @@ import ShareMenu from "./ShareMenu";
 interface TermCardProps {
   term: ITerm;
   isFavorite?: boolean;
+  isLearned?: boolean;
   variant?: 'default' | 'compact' | 'minimal';
   showActions?: boolean;
   compact?: boolean;
   onTermClick?: (termId: string) => void;
   onFavoriteToggle?: (termId: string, isFavorite: boolean) => void;
+  onLearnedToggle?: (termId: string, isLearned: boolean) => void;
 }
 
 const TermCard = memo(function TermCard({ 
   term, 
   isFavorite = false, 
+  isLearned = false,
   variant = 'default',
   showActions = true,
   compact = false,
   onTermClick,
-  onFavoriteToggle
+  onFavoriteToggle,
+  onLearnedToggle
 }: TermCardProps) {
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [favorite, setFavorite] = useState(isFavorite);
+  const [learned, setLearned] = useState(isLearned);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
@@ -51,10 +56,11 @@ const TermCard = memo(function TermCard({
     try {
       await apiRequest(
         favorite ? "DELETE" : "POST", 
-        `/api/favorites/${term.id}`, 
+        `/api/favorites/${term.id}`,
       );
       
       setFavorite(!favorite);
+      onFavoriteToggle?.(term.id, !favorite);
       queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
       
       toast({
@@ -72,7 +78,45 @@ const TermCard = memo(function TermCard({
     } finally {
       setIsSubmitting(false);
     }
-  }, [isAuthenticated, favorite, term.id, term.name, toast]);
+  }, [isAuthenticated, favorite, term.id, term.name, toast, onFavoriteToggle]);
+
+  const handleToggleLearned = useCallback(async () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Authentication required",
+        description: "Please sign in to track your progress",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await apiRequest(
+        learned ? "DELETE" : "POST", 
+        `/api/progress/${term.id}`,
+      );
+      
+      setLearned(!learned);
+      onLearnedToggle?.(term.id, !learned);
+      queryClient.invalidateQueries({ queryKey: ['/api/progress'] });
+      
+      toast({
+        title: learned ? "Removed from learned" : "Marked as learned",
+        description: learned 
+          ? `${term.name} has been removed from your learned terms` 
+          : `${term.name} has been added to your learned terms`,
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update progress. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
+  }, [isAuthenticated, learned, term.id, term.name, toast, onLearnedToggle]);
 
   const handleCopyLink = useCallback(async () => {
     const url = `${window.location.origin}/term/${term.id}`;
@@ -95,26 +139,21 @@ const TermCard = memo(function TermCard({
   const handleTermClick = useCallback(async () => {
     try {
       await apiRequest("POST", `/api/terms/${term.id}/view`, null);
+      onTermClick?.(term.id);
     } catch (error) {
       // Silent fail - not critical for UX
       console.error("Failed to log term view", error);
     }
-  }, [term.id]);
+  }, [term.id, onTermClick]);
 
   // Minimal variant - just title and link
   if (variant === 'minimal') {
     return (
       <div className="p-2 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors">
         <div className="flex items-center justify-between">
-          <div 
-            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium cursor-pointer flex-1"
-            onClick={() => {
-              handleTermClick();
-              window.location.href = `/term/${term.id}`;
-            }}
-          >
+          <Link href={`/term/${term.id}`} onClick={handleTermClick} className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium flex-1">
             {term.name}
-          </div>
+          </Link>
           {showActions && (
             <Button 
               variant="ghost" 
@@ -161,15 +200,9 @@ const TermCard = memo(function TermCard({
         </CardContent>
         
         <CardFooter className="border-t border-gray-100 dark:border-gray-800 p-2 flex justify-between items-center">
-          <div
-            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-xs font-medium cursor-pointer"
-            onClick={() => {
-              handleTermClick();
-              window.location.href = `/term/${term.id}`;
-            }}
-          >
+          <Link href={`/term/${term.id}`} onClick={handleTermClick} className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-xs font-medium">
             View
-          </div>
+          </Link>
           
           {showActions && (
             <div className="flex space-x-1">
@@ -207,16 +240,28 @@ const TermCard = memo(function TermCard({
             {term.category}
           </Badge>
           {showActions && (
-            <Button 
-                variant="ghost" 
-                size="icon" 
-                className={`h-8 w-8 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
-                onClick={handleToggleFavorite}
-                disabled={isSubmitting}
-                aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
-              >
-              <Heart className={favorite ? 'fill-current' : ''} size={20} />
-            </Button>
+            <div className="flex items-center">
+              <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`h-8 w-8 ${learned ? 'text-green-500' : 'text-gray-400 hover:text-green-500'}`}
+                  onClick={handleToggleLearned}
+                  disabled={isSubmitting}
+                  aria-label={learned ? 'Mark as unlearned' : 'Mark as learned'}
+                >
+                <CheckCircle className={learned ? 'fill-current' : ''} size={20} />
+              </Button>
+              <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className={`h-8 w-8 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
+                  onClick={handleToggleFavorite}
+                  disabled={isSubmitting}
+                  aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
+                >
+                <Heart className={favorite ? 'fill-current' : ''} size={20} />
+              </Button>
+            </div>
           )}
         </div>
         
@@ -236,15 +281,9 @@ const TermCard = memo(function TermCard({
       
       {showActions && (
         <CardFooter className="border-t border-gray-100 dark:border-gray-800 p-3 flex justify-between items-center">
-          <div
-            className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium cursor-pointer"
-            onClick={() => {
-              handleTermClick();
-              window.location.href = `/term/${term.id}`;
-            }}
-          >
+          <Link href={`/term/${term.id}`} onClick={handleTermClick} className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium">
             Read more
-          </div>
+          </Link>
           
           <div className="flex space-x-2">
             <TooltipProvider>

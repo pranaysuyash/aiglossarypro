@@ -451,7 +451,8 @@ ${issues.map(issue => `- **[${issue.severity.toUpperCase()}]** ${issue.descripti
 }
 
 // Run the visual auditor
-if (require.main === module) {
+const isMainModule = import.meta.url === `file://${process.argv[1]}`;
+if (isMainModule) {
   const auditor = new VisualAuditor();
   auditor.run().catch(console.error);
 }

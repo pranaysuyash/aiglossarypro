@@ -19,6 +19,7 @@
     "db:search-indexes": "tsx server/scripts/applySearchIndexes.ts",
     "audit:visual": "tsx scripts/visual-audit-simple.ts",
     "audit:visual:full": "tsx scripts/visual-audit.ts",
+    "audit:visual:debug": "tsx scripts/visual-audit-fixed.ts",
     "test": "vitest --config vitest.unit.config.ts",
     "test:storybook": "vitest --config vitest.config.ts",
     "test:ui": "vitest --ui",

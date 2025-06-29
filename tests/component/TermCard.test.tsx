@@ -131,7 +131,9 @@ describe('TermCard Component', () => {
       );
 
       const favoriteButton = screen.getByRole('button', { name: /favorite/i });
-      await fireEvent.click(favoriteButton); // Await the click event
+      await act(async () => {
+        fireEvent.click(favoriteButton);
+      });
 
       await waitFor(() => {
         expect(onFavoriteToggle).toHaveBeenCalledWith(mockTerm.id, true);
@@ -165,8 +167,8 @@ describe('TermCard Component', () => {
 
   describe('Error Handling', () => {
     it('handles favorite toggle errors gracefully', async () => {
-      const apiRequestSpy = vi.spyOn(queryClientModule, 'apiRequest');
-      apiRequestSpy.mockRejectedValue(new Error('Network error'));
+      const { apiRequest } = await import('../../client/src/lib/api');
+      (apiRequest as ReturnType<typeof vi.fn>).mockRejectedValue(new Error('Network error'));
 
       const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
@@ -177,10 +179,12 @@ describe('TermCard Component', () => {
       );
 
       const favoriteButton = screen.getByRole('button', { name: /favorite/i });
-      fireEvent.click(favoriteButton);
+      await act(async () => {
+        fireEvent.click(favoriteButton);
+      });
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalled();
+        expect(console.error).toHaveBeenCalled();
       });
 
       consoleSpy.mockRestore();

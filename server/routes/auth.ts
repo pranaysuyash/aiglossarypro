@@ -6,6 +6,7 @@ import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mo
 import { multiAuthMiddleware, getUserInfo } from "../middleware/multiAuth";
 import { features } from "../config";
 import type { AuthenticatedRequest, IUser, ApiResponse } from "../../shared/types";
+import { log as logger } from "../utils/logger";
 
 /**
  * Authentication and user management routes
@@ -47,7 +48,7 @@ export function registerAuthRoutes(app: Express): void {
       
       res.json(response);
     } catch (error) {
-      console.error("Error fetching user:", error);
+      logger.error('Error fetching user', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch user",
@@ -74,7 +75,7 @@ export function registerAuthRoutes(app: Express): void {
         data: settings
       });
     } catch (error) {
-      console.error("Error fetching user settings:", error);
+      logger.error('Error fetching user settings', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch user settings" 
@@ -101,7 +102,7 @@ export function registerAuthRoutes(app: Express): void {
         message: "Settings updated successfully"
       });
     } catch (error) {
-      console.error("Error updating user settings:", error);
+      logger.error('Error updating user settings', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to update user settings" 
@@ -125,7 +126,7 @@ export function registerAuthRoutes(app: Express): void {
       res.setHeader('Content-Disposition', `attachment; filename="user-data-${userInfo.id}.json"`);
       res.json(userData);
     } catch (error) {
-      console.error("Error exporting user data:", error);
+      logger.error('Error exporting user data', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to export user data" 
@@ -150,7 +151,7 @@ export function registerAuthRoutes(app: Express): void {
         message: "User data deleted successfully"
       });
     } catch (error) {
-      console.error("Error deleting user data:", error);
+      logger.error('Error deleting user data', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to delete user data" 

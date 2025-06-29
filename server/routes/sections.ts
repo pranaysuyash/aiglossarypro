@@ -9,6 +9,16 @@ import type {
   IContentGalleryResponse 
 } from '../../shared/types';
 import { log as logger } from '../utils/logger';
+import { SECTION_NAMES, DEFAULT_LIMITS } from '../constants';
+import { 
+  validateParams, 
+  validateQuery, 
+  sectionParamsSchema, 
+  progressParamsSchema,
+  queryParamsSchema,
+  quizQuerySchema,
+  paginationSchema 
+} from '../utils/validation';
 
 export function registerSectionRoutes(app: Express): void {
 
@@ -43,12 +53,12 @@ export function registerSectionRoutes(app: Express): void {
   // Get specific section with items
   app.get('/api/sections/:sectionId', async (req: Request, res: Response) => {
     try {
-      const { sectionId } = req.params;
+      const { sectionId } = validateParams(sectionParamsSchema)(req);
       const userId = req.user?.claims?.sub;
 
-      const section = await storage.getSectionById(parseInt(sectionId));
-      const items = await storage.getSectionItems(parseInt(sectionId));
-      const userProgress = userId ? await storage.getUserProgressForSection(userId, parseInt(sectionId)) : undefined;
+      const section = await storage.getSectionById(sectionId);
+      const items = await storage.getSectionItems(sectionId);
+      const userProgress = userId ? await storage.getUserProgressForSection(userId, sectionId) : undefined;
 
       const response: ISectionResponse = {
         section,
@@ -72,14 +82,14 @@ export function registerSectionRoutes(app: Express): void {
   // Update user progress for a section
   app.patch('/api/progress/:termId/:sectionId', authenticateToken, async (req: Request, res: Response) => {
     try {
-      const { termId, sectionId } = req.params;
+      const { termId, sectionId } = validateParams(progressParamsSchema)(req);
       const userId = req.user!.claims.sub;
       const progressUpdate: IProgressUpdate = req.body;
 
       await storage.updateUserProgress(
         userId,
-        parseInt(termId),
-        parseInt(sectionId),
+        termId,
+        sectionId,
         progressUpdate
       );
 
@@ -120,10 +130,10 @@ export function registerSectionRoutes(app: Express): void {
   // Applications Gallery
   app.get('/api/content/applications', async (req: Request, res: Response) => {
     try {
-      const { page = 1, limit = 12 } = req.query;
-      const galleries = await storage.getContentGallery('Applications', {
-        page: parseInt(page as string),
-        limit: parseInt(limit as string)
+      const { page, limit } = validateQuery(paginationSchema)(req);
+      const galleries = await storage.getContentGallery(SECTION_NAMES.APPLICATIONS, {
+        page,
+        limit
       });
 
       res.json({
@@ -142,10 +152,10 @@ export function registerSectionRoutes(app: Express): void {
   // Ethics Hub
   app.get('/api/content/ethics', async (req: Request, res: Response) => {
     try {
-      const { page = 1, limit = 12 } = req.query;
-      const galleries = await storage.getContentGallery('Ethics and Responsible AI', {
-        page: parseInt(page as string),
-        limit: parseInt(limit as string)
+      const { page, limit } = validateQuery(paginationSchema)(req);
+      const galleries = await storage.getContentGallery(SECTION_NAMES.ETHICS, {
+        page,
+        limit
       });
 
       res.json({
@@ -164,10 +174,10 @@ export function registerSectionRoutes(app: Express): void {
   // Hands-on Tutorials
   app.get('/api/content/tutorials', async (req: Request, res: Response) => {
     try {
-      const { page = 1, limit = 12 } = req.query;
-      const galleries = await storage.getContentGallery('Hands-on Tutorials', {
-        page: parseInt(page as string),
-        limit: parseInt(limit as string)
+      const { page, limit } = validateQuery(paginationSchema)(req);
+      const galleries = await storage.getContentGallery(SECTION_NAMES.TUTORIALS, {
+        page,
+        limit
       });
 
       res.json({
@@ -186,10 +196,10 @@ export function registerSectionRoutes(app: Express): void {
   // Quick Quiz system
   app.get('/api/content/quizzes', async (req: Request, res: Response) => {
     try {
-      const { termId, difficulty } = req.query;
+      const { termId, difficulty } = validateQuery(quizQuerySchema)(req);
       const quizzes = await storage.getQuizzes({
-        termId: termId ? parseInt(termId as string) : undefined,
-        difficulty: difficulty as 'easy' | 'medium' | 'hard' | undefined
+        termId,
+        difficulty
       });
 
       res.json({
@@ -208,7 +218,7 @@ export function registerSectionRoutes(app: Express): void {
   // Search across all section content
   app.get('/api/sections/search', async (req: Request, res: Response) => {
     try {
-      const { q, contentType, sectionName, page = 1, limit = 20 } = req.query;
+      const { q, contentType, sectionName, page, limit } = validateQuery(queryParamsSchema)(req);
 
       if (!q) {
         return res.status(400).json({
@@ -218,11 +228,11 @@ export function registerSectionRoutes(app: Express): void {
       }
 
       const results = await storage.searchSectionContent({
-        query: q as string,
-        contentType: contentType as string,
-        sectionName: sectionName as string,
-        page: parseInt(page as string),
-        limit: parseInt(limit as string)
+        query: q,
+        contentType,
+        sectionName,
+        page,
+        limit
       });
 
       res.json({

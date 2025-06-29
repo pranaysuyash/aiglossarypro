@@ -5,6 +5,10 @@ import { authenticateToken } from "../middleware/adminAuth";
 import { mockIsAuthenticated } from "../middleware/dev/mockAuth";
 import { features } from "../config";
 import type { AuthenticatedRequest, UserProgress, UserActivity, ApiResponse } from "../../shared/types";
+import { log as logger } from "../utils/logger";
+import { parsePagination, parseId, parseNumericQuery, userRouteValidation } from "../middleware/inputValidation";
+import { hasUserAccess } from "../utils/userHelpers";
+import { getUserAccessStatus, canViewTerm, getRemainingDailyViews } from "../utils/accessControl";
 
 /**
  * User-specific routes (favorites, progress, activity)
@@ -14,30 +18,23 @@ export function registerUserRoutes(app: Express): void {
   const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
   
   // Favorites management
-  app.get('/api/favorites', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/favorites', authMiddleware, parsePagination, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const { page = 1, limit = 50 } = req.query;
+      const { page, limit, offset } = (req as any).pagination;
       
-            const favorites = await storage.getUserFavorites(userId);
-      
-      // Apply pagination on client side for now
-      const pageNum = parseInt(page as string);
-      const limitNum = parseInt(limit as string);
-      const startIndex = (pageNum - 1) * limitNum;
-      const endIndex = startIndex + limitNum;
-      const paginatedFavorites = favorites.slice(startIndex, endIndex);
+      const result = await storage.getUserFavorites(userId, { limit, offset });
 
       res.json({
         success: true,
-        data: paginatedFavorites,
-        total: favorites.length,
-        page: pageNum,
-        limit: limitNum,
-        hasMore: endIndex < favorites.length
+        data: result.data,
+        total: result.total,
+        page,
+        limit,
+        hasMore: result.hasMore
       });
     } catch (error) {
-      console.error("Error fetching user favorites:", error);
+      logger.error('Error fetching user favorites', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch favorites" 
@@ -45,10 +42,10 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.get('/api/favorites/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/favorites/:id', authMiddleware, parseId(), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const termId = req.params.id;
+      const termId = (req as any).parsedId;
       
       const isFavorite = await storage.isTermFavorite(userId, termId);
       
@@ -57,7 +54,7 @@ export function registerUserRoutes(app: Express): void {
         data: { isFavorite }
       });
     } catch (error) {
-      console.error("Error checking favorite status:", error);
+      logger.error('Error checking favorite status', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to check favorite status" 
@@ -65,10 +62,10 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.post('/api/favorites/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/favorites/:id', authMiddleware, parseId(), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const termId = req.params.id;
+      const termId = (req as any).parsedId;
       
       await storage.addFavorite(userId, termId);
       
@@ -77,7 +74,7 @@ export function registerUserRoutes(app: Express): void {
         message: "Term added to favorites"
       });
     } catch (error) {
-      console.error("Error adding favorite:", error);
+      logger.error('Error adding favorite', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to add favorite" 
@@ -85,10 +82,10 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.delete('/api/favorites/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.delete('/api/favorites/:id', authMiddleware, parseId(), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const termId = req.params.id;
+      const termId = (req as any).parsedId;
       
       await storage.removeFavorite(userId, termId);
       
@@ -97,7 +94,7 @@ export function registerUserRoutes(app: Express): void {
         message: "Term removed from favorites"
       });
     } catch (error) {
-      console.error("Error removing favorite:", error);
+      logger.error('Error removing favorite', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to remove favorite" 
@@ -106,14 +103,15 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // Progress tracking
-  app.get('/api/user/progress', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/progress', authMiddleware, parsePagination, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const { page = 1, limit = 50, status } = req.query;
+      const { page, limit } = (req as any).pagination;
+      const { status } = req.query;
       
       const progress = await storage.getUserProgress(userId, {
-        page: parseInt(page as string),
-        limit: parseInt(limit as string),
+        page,
+        limit,
         status: status as string
       });
       
@@ -121,12 +119,12 @@ export function registerUserRoutes(app: Express): void {
         success: true,
         data: progress.items,
         total: progress.total,
-        page: parseInt(page as string),
-        limit: parseInt(limit as string),
+        page,
+        limit,
         hasMore: progress.hasMore
       });
     } catch (error) {
-      console.error("Error fetching user progress:", error);
+      logger.error('Error fetching user progress', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch progress" 
@@ -134,10 +132,10 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.get('/api/progress/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/progress/:id', authMiddleware, parseId(), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const termId = req.params.id;
+      const termId = (req as any).parsedId;
       
       const progress = await storage.getTermProgress(userId, termId);
       
@@ -146,7 +144,7 @@ export function registerUserRoutes(app: Express): void {
         data: progress
       });
     } catch (error) {
-      console.error("Error fetching term progress:", error);
+      logger.error('Error fetching term progress', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch term progress" 
@@ -154,15 +152,23 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.post('/api/progress/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.post('/api/progress/:id', authMiddleware, parseId(), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const termId = req.params.id;
+      const termId = (req as any).parsedId;
       const { status, progress } = req.body;
+      
+      const parsedProgress = parseInt(progress) || 0;
+      if (parsedProgress < 0 || parsedProgress > 100) {
+        return res.status(400).json({
+          success: false,
+          message: "Progress must be between 0 and 100"
+        });
+      }
       
       await storage.updateTermProgress(userId, termId, {
         status,
-        progress: parseInt(progress) || 0
+        progress: parsedProgress
       });
       
       res.json({
@@ -170,7 +176,7 @@ export function registerUserRoutes(app: Express): void {
         message: "Progress updated successfully"
       });
     } catch (error) {
-      console.error("Error updating term progress:", error);
+      logger.error('Error updating term progress', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to update progress" 
@@ -178,10 +184,10 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.delete('/api/progress/:id', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.delete('/api/progress/:id', authMiddleware, parseId(), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const termId = req.params.id;
+      const termId = (req as any).parsedId;
       
       await storage.removeTermProgress(userId, termId);
       
@@ -190,7 +196,7 @@ export function registerUserRoutes(app: Express): void {
         message: "Progress removed successfully"
       });
     } catch (error) {
-      console.error("Error removing term progress:", error);
+      logger.error('Error removing term progress', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to remove progress" 
@@ -199,28 +205,30 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // User activity and analytics
-  app.get('/api/user/activity', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/activity', authMiddleware, parsePagination, parseNumericQuery('days', 30, 1, 365), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const { page = 1, limit = 50, type, days = 30 } = req.query;
+      const { page, limit } = (req as any).pagination;
+      const { type } = req.query;
+      const days = (req.query as any).parsed?.days || 30;
       
       const activity = await storage.getUserActivity(userId, {
-        page: parseInt(page as string),
-        limit: parseInt(limit as string),
+        page,
+        limit,
         type: type as string,
-        days: parseInt(days as string)
+        days
       });
       
       res.json({
         success: true,
         data: activity.items,
         total: activity.total,
-        page: parseInt(page as string),
-        limit: parseInt(limit as string),
+        page,
+        limit,
         hasMore: activity.hasMore
       });
     } catch (error) {
-      console.error("Error fetching user activity:", error);
+      logger.error('Error fetching user activity', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch user activity" 
@@ -238,7 +246,7 @@ export function registerUserRoutes(app: Express): void {
         data: streak
       });
     } catch (error) {
-      console.error("Error fetching user streak:", error);
+      logger.error('Error fetching user streak', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch user streak" 
@@ -257,7 +265,7 @@ export function registerUserRoutes(app: Express): void {
         data: stats
       });
     } catch (error) {
-      console.error("Error fetching user stats:", error);
+      logger.error('Error fetching user stats', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch user statistics" 
@@ -282,48 +290,32 @@ export function registerUserRoutes(app: Express): void {
       const accountAge = Math.floor((Date.now() - new Date(user.createdAt || new Date()).getTime()) / (1000 * 60 * 60 * 24));
       const isNewUser = accountAge < 7;
       
-      // For free tier users, check daily limits
-      const isFreeTier = user.subscriptionTier === 'free' || !user.lifetimeAccess;
-      const dailyLimit = isFreeTier ? 50 : Number.MAX_SAFE_INTEGER;
+      // Use centralized access control logic
+      const accessStatus = getUserAccessStatus(user);
+      const dailyLimits = accessStatus.dailyLimits;
       
-      // Calculate remaining views for today
-      const now = new Date();
-      const lastReset = user.lastViewReset ? new Date(user.lastViewReset) : new Date(user.createdAt || new Date());
-      const isSameDay = now.toDateString() === lastReset.toDateString();
-      
-      let dailyViews = 0;
-      let remainingViews = dailyLimit;
-      
-      if (isFreeTier) {
-        if (isSameDay) {
-          dailyViews = user.dailyViews || 0;
-        } else {
-          // Reset daily views if it's a new day
-          dailyViews = 0;
-          // Note: We should update the database here, but we'll do it when they view a term
-        }
-        remainingViews = Math.max(0, dailyLimit - dailyViews);
-      }
-
-      const accessStatus = {
-        hasAccess: user.lifetimeAccess || remainingViews > 0,
+      const status = {
+        hasAccess: accessStatus.hasAccess,
+        accessType: accessStatus.accessType,
         subscriptionTier: user.subscriptionTier || 'free',
         lifetimeAccess: user.lifetimeAccess || false,
-        dailyViews,
-        dailyLimit,
-        remainingViews,
-        daysUntilReset: isFreeTier ? 1 : 0, // Always resets daily for free tier
+        dailyViews: dailyLimits.dailyViews,
+        dailyLimit: dailyLimits.limit,
+        remainingViews: dailyLimits.remaining,
+        daysUntilReset: accessStatus.accessType === 'free' ? 1 : 0,
         purchaseDate: user.purchaseDate?.toISOString(),
         isNewUser,
         accountAge,
+        canAccessPremiumFeatures: accessStatus.canAccessPremiumFeatures,
+        isAdmin: accessStatus.isAdmin
       };
       
       res.json({
         success: true,
-        data: accessStatus
+        data: status
       });
     } catch (error) {
-      console.error("Error fetching access status:", error);
+      logger.error('Error fetching access status', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to fetch access status" 
@@ -332,10 +324,10 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // Term access check endpoint
-  app.get('/api/user/term-access/:termId', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/term-access/:termId', authMiddleware, parseId('termId'), async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const { termId } = req.params;
+      const termId = (req as any).parsedId;
       const user = await storage.getUser(userId);
       
       if (!user) {
@@ -345,46 +337,19 @@ export function registerUserRoutes(app: Express): void {
         });
       }
 
-      // If user has lifetime access, they can view any term
-      if (user.lifetimeAccess) {
-        return res.json({
-          success: true,
-          data: { canView: true, reason: 'lifetime_access' }
-        });
-      }
-
-      // Check if user has viewed this term today (free tier logic)
-      const now = new Date();
-      const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      // Use centralized access control logic
+      const accessCheck = canViewTerm(user, termId);
       
-      // This would require a more complex query to check if the user has viewed this specific term today
-      // For now, we'll just check overall daily limits
-      const dailyViews = user.dailyViews || 0;
-      const dailyLimit = 50;
-      
-      if (dailyViews >= dailyLimit) {
-        return res.json({
-          success: true,
-          data: { 
-            canView: false, 
-            reason: 'daily_limit_reached',
-            dailyViews,
-            dailyLimit 
-          }
-        });
-      }
-
       res.json({
         success: true,
-        data: { 
-          canView: true, 
-          reason: 'within_daily_limit',
-          dailyViews,
-          remainingViews: dailyLimit - dailyViews
+        data: {
+          canView: accessCheck.canView,
+          reason: accessCheck.reason,
+          ...accessCheck.metadata
         }
       });
     } catch (error) {
-      console.error("Error checking term access:", error);
+      logger.error('Error checking term access', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
         message: "Failed to check term access" 

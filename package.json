@@ -188,6 +188,8 @@
     "cypress": "^14.5.0",
     "drizzle-kit": "^0.30.4",
     "esbuild": "^0.25.0",
+    "jest-environment-jsdom-latest": "^26.6.2",
+    "jest-fixed-jsdom": "^0.0.9",
     "jsdom": "^26.1.0",
     "playwright": "^1.53.1",
     "postcss": "^8.4.47",

@@ -367,11 +367,20 @@ export class OptimizedStorage implements IStorage {
   }
 
   // OPTIMIZED: Fixed N+1 query problem in favorites
-  async getUserFavorites(userId: string): Promise<any[]> {
+  async getUserFavorites(userId: string, pagination?: { limit?: number; offset?: number }): Promise<{ data: any[]; total: number; hasMore: boolean }> {
+    const { limit = 50, offset = 0 } = pagination || {};
+    const cacheKey = `${CacheKeys.userFavorites(userId)}:${limit}:${offset}`;
+    
     return cached(
-      CacheKeys.userFavorites(userId),
+      cacheKey,
       async () => {
-        // Single query with aggregated subcategories
+        // Get total count first
+        const totalResult = await db.select({ count: sql<number>`count(*)` })
+          .from(favorites)
+          .where(eq(favorites.userId, userId));
+        const total = totalResult[0]?.count || 0;
+
+        // Single query with aggregated subcategories and pagination
         const results = await db.select({
           termId: favorites.termId,
           createdAt: favorites.createdAt,
@@ -397,12 +406,20 @@ export class OptimizedStorage implements IStorage {
           categories.name,
           categories.id
         )
-        .orderBy(desc(favorites.createdAt));
+        .orderBy(desc(favorites.createdAt))
+        .limit(limit)
+        .offset(offset);
 
-        return results.map(result => ({
+        const data = results.map(result => ({
           ...result,
           subcategories: result.subcategories?.filter(Boolean) || []
         }));
+
+        return {
+          data,
+          total,
+          hasMore: offset + limit < total
+        };
       },
       10 * 60 * 1000 // 10 minutes cache
     );
@@ -1724,6 +1741,47 @@ export class OptimizedStorage implements IStorage {
     } catch (error) {
       console.error('[OptimizedStorage] rejectContent error:', error);
       throw new Error(`Failed to reject content: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  }
+
+  async getCategoryStats(categoryId?: string): Promise<any> {
+    try {
+      if (categoryId) {
+        // Get stats for a specific category
+        const [termCountResult] = await db.select({
+          count: sql<number>`count(*)`
+        })
+        .from(terms)
+        .where(eq(terms.categoryId, categoryId));
+
+        const [categoryResult] = await db.select()
+          .from(categories)
+          .where(eq(categories.id, categoryId))
+          .limit(1);
+
+        return {
+          categoryId,
+          categoryName: categoryResult?.name || 'Unknown',
+          termCount: termCountResult?.count || 0,
+          lastUpdated: new Date()
+        };
+      } else {
+        // Get stats for all categories
+        const results = await db.select({
+          categoryId: categories.id,
+          categoryName: categories.name,
+          termCount: sql<number>`count(${terms.id})`
+        })
+        .from(categories)
+        .leftJoin(terms, eq(categories.id, terms.categoryId))
+        .groupBy(categories.id, categories.name)
+        .orderBy(desc(sql`count(${terms.id})`));
+
+        return results;
+      }
+    } catch (error) {
+      console.error('[OptimizedStorage] getCategoryStats error:', error);
+      throw new Error(`Failed to get category stats: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 }

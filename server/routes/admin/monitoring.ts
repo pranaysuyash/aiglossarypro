@@ -4,6 +4,7 @@ import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
 import { features } from "../../config";
 import { getPerformanceMetrics, resetPerformanceMetrics } from "../../middleware/performanceMonitor";
+import { log as logger } from "../../utils/logger";
 
 /**
  * Admin monitoring and analytics routes
@@ -27,7 +28,7 @@ export function registerAdminMonitoringRoutes(app: Express): void {
         }
       });
     } catch (error) {
-      console.error('Error fetching performance metrics:', error);
+      logger.error('Error fetching performance metrics', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         message: 'Failed to fetch performance metrics'
@@ -45,7 +46,7 @@ export function registerAdminMonitoringRoutes(app: Express): void {
         message: 'Performance metrics reset successfully'
       });
     } catch (error) {
-      console.error('Error resetting performance metrics:', error);
+      logger.error('Error resetting performance metrics', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({
         success: false,
         message: 'Failed to reset performance metrics'
@@ -53,5 +54,5 @@ export function registerAdminMonitoringRoutes(app: Express): void {
     }
   });
   
-  console.log('📊 Admin monitoring routes registered');
+  logger.info('📊 Admin monitoring routes registered');
 } 

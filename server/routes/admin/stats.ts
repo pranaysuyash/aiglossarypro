@@ -6,6 +6,7 @@ import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev
 import { features } from "../../config";
 import type { AdminStats, ApiResponse } from "../../../shared/types";
 import { log as logger } from "../../utils/logger";
+import { HEALTH_STATUS } from "../../constants";
 
 /**
  * Admin statistics and dashboard routes
@@ -56,9 +57,9 @@ export function registerAdminStatsRoutes(app: Express): void {
       const termCount = 1000; // Mock count for health check
       // TODO: Implement proper getTermsOptimized in enhancedStorage
       const health = {
-        database: 'healthy' as const,
-        s3: 'healthy' as const, 
-        ai: 'healthy' as const,
+        database: HEALTH_STATUS.HEALTHY,
+        s3: HEALTH_STATUS.HEALTHY, 
+        ai: HEALTH_STATUS.HEALTHY,
         termCount
       };
       

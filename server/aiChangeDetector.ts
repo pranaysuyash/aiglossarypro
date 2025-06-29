@@ -16,6 +16,7 @@ export class AIChangeDetector {
     if (process.env.OPENAI_API_KEY) {
       this.openai = new OpenAI({
         apiKey: process.env.OPENAI_API_KEY,
+        dangerouslyAllowBrowser: true,
       });
     }
   }

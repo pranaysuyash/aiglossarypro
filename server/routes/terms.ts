@@ -8,12 +8,7 @@ import { validateInput, termIdSchema, paginationSchema } from "../middleware/sec
 import { rateLimitMiddleware, initializeRateLimiting } from "../middleware/rateLimiting";
 import { log as logger } from "../utils/logger";
 import { parsePaginationParams, calculatePaginationMetadata, parseLimit, applyClientSidePagination } from "../utils/pagination";
-
-// Define sort order enum
-export enum SortOrder {
-  ASC = 'asc',
-  DESC = 'desc'
-}
+import { SORT_ORDERS, DEFAULT_LIMITS, ERROR_MESSAGES } from "../constants";
 
 // Define authenticated request type properly
 interface AuthenticatedRequest extends Request {
@@ -102,7 +97,7 @@ export function registerTermRoutes(app: Express): void {
       const search = req.query.search as string;
       const category = req.query.category as string;
       const sortBy = req.query.sortBy as string || 'name';
-      const sortOrder = req.query.sortOrder as string || SortOrder.ASC;
+      const sortOrder = req.query.sortOrder as string || SORT_ORDERS.ASC;
 
       // Use existing storage method with proper parameters
       const result = await storage.getAllTerms({
@@ -111,7 +106,7 @@ export function registerTermRoutes(app: Express): void {
         categoryId: category || undefined,
         searchTerm: search || undefined,
         sortBy,
-        sortOrder: (sortOrder === SortOrder.DESC) ? SortOrder.DESC : SortOrder.ASC
+        sortOrder: (sortOrder === SORT_ORDERS.DESC) ? SORT_ORDERS.DESC : SORT_ORDERS.ASC
       });
 
       // Calculate pagination metadata
@@ -139,7 +134,7 @@ export function registerTermRoutes(app: Express): void {
   // Get featured terms
   app.get('/api/terms/featured', async (req: Request, res: Response) => {
     try {
-      const limit = parseLimit(req.query.limit, 10, 50);
+      const limit = parseLimit(req.query.limit, DEFAULT_LIMITS.FEATURED_TERMS, DEFAULT_LIMITS.TERMS_PER_PAGE);
       const featuredTerms = await storage.getFeaturedTerms();
       
       const response: ApiResponse<ITerm[]> = {
@@ -160,7 +155,7 @@ export function registerTermRoutes(app: Express): void {
   // Get trending terms
   app.get('/api/terms/trending', async (req: Request, res: Response) => {
     try {
-      const limit = parseLimit(req.query.limit, 10, 50);
+      const limit = parseLimit(req.query.limit, DEFAULT_LIMITS.FEATURED_TERMS, DEFAULT_LIMITS.TERMS_PER_PAGE);
       const trendingTerms = await storage.getTrendingTerms(limit);
       
       const response: ApiResponse<ITerm[]> = {
@@ -182,7 +177,7 @@ export function registerTermRoutes(app: Express): void {
   app.get('/api/terms/recently-viewed', authMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user?.claims?.sub;
-      const { limit = 10 } = req.query;
+      const { limit = DEFAULT_LIMITS.FEATURED_TERMS } = req.query;
       
       if (!userId) {
         return res.status(401).json({
@@ -220,7 +215,7 @@ export function registerTermRoutes(app: Express): void {
   // Get recent terms (general recent terms, not user-specific)
   app.get('/api/terms/recent', async (req: Request, res: Response) => {
     try {
-      const { limit = 10 } = req.query;
+      const { limit = DEFAULT_LIMITS.FEATURED_TERMS } = req.query;
       
       // For now, get the most recently created terms
       const limitNum = parseLimit(limit, 10, 50);
@@ -228,7 +223,7 @@ export function registerTermRoutes(app: Express): void {
         limit: limitNum,
         offset: 0,
         sortBy: 'createdAt',
-        sortOrder: SortOrder.DESC
+        sortOrder: SORT_ORDERS.DESC
       });
       
       const response: ApiResponse<ITerm[]> = {
@@ -249,7 +244,7 @@ export function registerTermRoutes(app: Express): void {
   // Get recommended terms (general recommendations)
   app.get('/api/terms/recommended', async (req: Request, res: Response) => {
     try {
-      const { limit = 10 } = req.query;
+      const { limit = DEFAULT_LIMITS.FEATURED_TERMS } = req.query;
       
       // For now, return featured terms as recommended
       // You can implement more sophisticated recommendation logic later

@@ -4,6 +4,8 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Router } from 'wouter';
 import TermCard from '../../client/src/components/TermCard';
+import { useAuth } from "@/hooks/useAuth";
+import { useToast } from "@/hooks/use-toast";
 
 // Mock the API module
 vi.mock('../../client/src/lib/api', () => ({
@@ -122,6 +124,9 @@ describe('TermCard Component', () => {
 
     it('handles favorite toggle interaction', async () => {
       const onFavoriteToggle = vi.fn();
+      const { apiRequest } = await import('../../client/src/lib/api');
+      (apiRequest as ReturnType<typeof vi.fn>).mockResolvedValueOnce({});
+
       render(
         <TestWrapper>
           <TermCard term={mockTerm} onFavoriteToggle={onFavoriteToggle} />
@@ -129,7 +134,7 @@ describe('TermCard Component', () => {
       );
 
       const favoriteButton = screen.getByRole('button', { name: /favorite/i });
-      fireEvent.click(favoriteButton);
+      await fireEvent.click(favoriteButton); // Await the click event
 
       await waitFor(() => {
         expect(onFavoriteToggle).toHaveBeenCalledWith(mockTerm.id, true);

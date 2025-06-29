@@ -117,6 +117,12 @@ export class OptimizedStorage implements IStorage {
   }
 
   async upsertUser(user: UpsertUser): Promise<User> {
+    const userSchema = createInsertSchema(users);
+    const validationResult = userSchema.safeParse(user);
+    if (!validationResult.success) {
+      throw new Error(`Invalid user data: ${validationResult.error.message}`);
+    }
+
     const result = await db.insert(users)
       .values(user)
       .onConflictDoUpdate({
@@ -422,7 +428,10 @@ export class OptimizedStorage implements IStorage {
       userId,
       termId,
       createdAt: new Date()
-    }).onConflictDoNothing();
+    }).onConflictDoUpdate({
+      target: [favorites.userId, favorites.termId],
+      set: { createdAt: new Date() }
+    });
     
     // Invalidate caches
     CacheInvalidation.user(userId);
@@ -660,40 +669,40 @@ export class OptimizedStorage implements IStorage {
   }
 
   async bulkCreateTerms(termsData: any[]): Promise<{ success: number; failed: number }> {
-    let success = 0;
-    let failed = 0;
-    
-    // Process in batches of 10
-    for (let i = 0; i < termsData.length; i += 10) {
-      const batch = termsData.slice(i, i + 10);
-      
-      try {
-        await db.insert(terms).values(batch);
-        success += batch.length;
-      } catch (error) {
-        console.error('Batch insert failed:', error);
-        // Try individual inserts for failed batch
-        for (const termData of batch) {
-          try {
-            await db.insert(terms).values(termData);
-            success++;
-          } catch (individualError) {
-            console.error('Individual insert failed:', individualError);
-            failed++;
-          }
+    if (termsData.length === 0) {
+      return { success: 0, failed: 0 };
+    }
+
+    try {
+      const result = await db.insert(terms).values(termsData).onConflictDoNothing();
+      // The result of a bulk insert in Drizzle doesn't directly tell us how many rows were inserted.
+      // We'll assume success for all if no error is thrown.
+      const successCount = termsData.length;
+      await clearCache();
+      return { success: successCount, failed: 0 };
+    } catch (error) {
+      console.error('Bulk insert failed:', error);
+      // If the bulk insert fails, we can fall back to individual inserts to salvage what we can.
+      let success = 0;
+      let failed = 0;
+      for (const termData of termsData) {
+        try {
+          await db.insert(terms).values(termData).onConflictDoNothing();
+          success++;
+        } catch (individualError) {
+          console.error('Individual insert failed:', individualError);
+          failed++;
         }
       }
+      await clearCache();
+      return { success, failed };
     }
-    
-    // Clear cache after bulk insert
-    await clearCache();
-    
-    return { success, failed };
   }
 
   async getPerformanceMetrics(): Promise<any> {
     return {
       cacheHitRate: getCacheStats().hitRate,
+      averageQueryTime: getCacheStats().averageResponseTime || 0,
       averageResponseTime: getCacheStats().averageResponseTime || 0,
       totalCachedQueries: getCacheStats().hits + getCacheStats().misses,
       cacheSize: process.memoryUsage().heapUsed,
@@ -703,7 +712,12 @@ export class OptimizedStorage implements IStorage {
 
   // Additional methods needed by content.ts
   async getTerms(options: { limit?: number; offset?: number } = {}): Promise<any[]> {
-    return this.getTermsOptimized(options);
+    try {
+      return await this.getTermsOptimized(options);
+    } catch (error) {
+      console.error('Error getting terms:', error);
+      throw error;
+    }
   }
 
   async getAllTerms(options: { limit?: number; page?: number } = {}): Promise<{ data: any[]; terms: any[]; total: number }> {

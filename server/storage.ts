@@ -224,6 +224,10 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getTermById(id: string): Promise<any> {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return null;
+    }
     // Get the term with category
     const [term] = await db.select({
       id: terms.id,
@@ -386,7 +390,7 @@ export class DatabaseStorage implements IStorage {
   }
   
   // Favorites operations
-  async getUserFavorites(userId: string): Promise<any[]> {
+  async getFavorites(userId: string): Promise<any[]> {
     // Get user's favorite terms
     const userFavorites = await db.select({
       termId: favorites.termId,

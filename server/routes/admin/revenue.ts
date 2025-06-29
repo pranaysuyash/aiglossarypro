@@ -6,6 +6,9 @@ import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev
 import { features } from "../../config";
 import type { ApiResponse } from "../../../shared/types";
 import { log as logger } from "../../utils/logger";
+import { TIME_PERIODS } from "../../constants";
+import { calculateDateRange } from "../../utils/dateHelpers";
+import { csvGenerators, sendCSVResponse } from "../../utils/csvHelpers";
 
 /**
  * Admin revenue tracking and analytics routes
@@ -18,28 +21,10 @@ export function registerAdminRevenueRoutes(app: Express): void {
   // Revenue dashboard overview
   app.get('/api/admin/revenue/dashboard', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      const { period = '30d' } = req.query;
+      const { period = TIME_PERIODS.THIRTY_DAYS } = req.query;
       
       // Calculate date range based on period
-      const now = new Date();
-      let startDate = new Date();
-      
-      switch (period) {
-        case '7d':
-          startDate.setDate(now.getDate() - 7);
-          break;
-        case '30d':
-          startDate.setDate(now.getDate() - 30);
-          break;
-        case '90d':
-          startDate.setDate(now.getDate() - 90);
-          break;
-        case '1y':
-          startDate.setFullYear(now.getFullYear() - 1);
-          break;
-        default:
-          startDate.setDate(now.getDate() - 30);
-      }
+      const { startDate, endDate: now } = calculateDateRange(period as string);
 
       // Get purchase statistics
       const totalRevenue = await storage.getTotalRevenue();
@@ -113,28 +98,10 @@ export function registerAdminRevenueRoutes(app: Express): void {
   // Revenue analytics and trends
   app.get('/api/admin/revenue/analytics', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      const { period = '30d', groupBy = 'day' } = req.query;
+      const { period = TIME_PERIODS.THIRTY_DAYS, groupBy = 'day' } = req.query;
       
       // Calculate date range
-      const now = new Date();
-      let startDate = new Date();
-      
-      switch (period) {
-        case '7d':
-          startDate.setDate(now.getDate() - 7);
-          break;
-        case '30d':
-          startDate.setDate(now.getDate() - 30);
-          break;
-        case '90d':
-          startDate.setDate(now.getDate() - 90);
-          break;
-        case '1y':
-          startDate.setFullYear(now.getFullYear() - 1);
-          break;
-        default:
-          startDate.setDate(now.getDate() - 30);
-      }
+      const { startDate, endDate: now } = calculateDateRange(period as string);
 
       // Get analytics data
       const revenueByPeriod = await storage.getRevenueByPeriod(groupBy as string);
@@ -169,51 +136,17 @@ export function registerAdminRevenueRoutes(app: Express): void {
   // Export revenue data
   app.get('/api/admin/revenue/export', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      const { format = 'csv', period = '30d' } = req.query;
+      const { format = 'csv', period = TIME_PERIODS.THIRTY_DAYS } = req.query;
       
       // Calculate date range
-      const now = new Date();
-      let startDate = new Date();
-      
-      switch (period) {
-        case '7d':
-          startDate.setDate(now.getDate() - 7);
-          break;
-        case '30d':
-          startDate.setDate(now.getDate() - 30);
-          break;
-        case '90d':
-          startDate.setDate(now.getDate() - 90);
-          break;
-        case '1y':
-          startDate.setFullYear(now.getFullYear() - 1);
-          break;
-        default:
-          startDate.setDate(now.getDate() - 30);
-      }
+      const { startDate, endDate: now } = calculateDateRange(period as string);
 
       const purchases = await storage.getPurchasesForExport(startDate, now);
       
       if (format === 'csv') {
-        // Generate CSV
-        const csvHeader = 'Date,Order ID,User ID,Email,Amount,Currency,Status,Country,Payment Method\n';
-        const csvRows = purchases.map(purchase => [
-          purchase.createdAt.toISOString(),
-          purchase.gumroadOrderId,
-          purchase.userId,
-          purchase.userEmail,
-          purchase.amount / 100, // Convert cents to dollars
-          purchase.currency,
-          purchase.status,
-          purchase.country || '',
-          purchase.paymentMethod || ''
-        ].join(',')).join('\n');
-        
-        const csv = csvHeader + csvRows;
-        
-        res.setHeader('Content-Type', 'text/csv');
-        res.setHeader('Content-Disposition', `attachment; filename="revenue-export-${period}.csv"`);
-        res.send(csv);
+        // Generate CSV using utility
+        const csv = csvGenerators.purchases(purchases);
+        sendCSVResponse(res, csv, `revenue-export-${period}.csv`);
       } else {
         // Return JSON
         const response: ApiResponse<typeof purchases> = {

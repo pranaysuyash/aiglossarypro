@@ -1,12 +1,11 @@
 import { Router, Request, Response, Express } from "express";
-import { db } from "../../db";
-import { terms, categories, users } from "../../../shared/schema";
-import { eq, desc, sql, and, gte, or, like } from "drizzle-orm";
+import { enhancedStorage as storage } from "../../enhancedStorage";
 import { requireAdmin } from "../../middleware/adminAuth";
 import { ZodError } from "zod";
 import type { ApiResponse } from "../../../shared/types";
 import { errorLogger, ErrorCategory } from "../../middleware/errorHandler";
 import { log as logger } from "../../utils/logger";
+import { BULK_ACTIONS } from "../../constants";
 
 const adminContentRouter = Router();
 
@@ -20,58 +19,20 @@ adminContentRouter.get("/dashboard", async (req: Request, res: Response<ApiRespo
     const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
     const lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
-    // Get counts
-    const [termCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(terms);
-    
-    const [categoryCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(categories);
-    
-    const [userCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(users);
-    
-    const feedbackResult = await db.execute(
-      sql`SELECT COUNT(*) as count FROM user_feedback WHERE status = 'pending'`
-    );
-    const feedbackCount = feedbackResult.rows[0] || { count: 0 };
+    // Get counts using enhanced storage
+    const adminStats = await storage.getAdminStats();
+    const termCount = { count: adminStats.termCount || 0 };
+    const categoryCount = { count: adminStats.categoryCount || 0 };
+    const userCount = { count: adminStats.userCount || 0 };
+    const feedbackCount = { count: adminStats.pendingFeedback || 0 };
 
-    // Recent activity
-    const recentTerms = await db
-      .select({
-        id: terms.id,
-        name: terms.name,
-        createdAt: terms.createdAt,
-        updatedAt: terms.updatedAt
-      })
-      .from(terms)
-      .orderBy(desc(terms.updatedAt))
-      .limit(10);
-
-    const recentFeedback = await db.execute(
-      sql`
-        SELECT f.id, f.type, f.message as content, f.created_at,
-               u.id as user_id, u.email, u.first_name, u.last_name
-        FROM user_feedback f
-        LEFT JOIN users u ON f.user_id = u.id
-        WHERE f.status = 'pending'
-        ORDER BY f.created_at DESC
-        LIMIT 10
-      `
-    );
+    // Recent activity using enhanced storage
+    const recentTerms = await storage.getRecentTerms(10);
+    const recentFeedback = await storage.getRecentFeedback(10);
 
     // Growth metrics
-    const [weeklyGrowth] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(terms)
-      .where(gte(terms.createdAt, lastWeek));
-
-    const [monthlyGrowth] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(terms)
-      .where(gte(terms.createdAt, lastMonth));
+    const weeklyGrowth = { count: adminStats.weeklyGrowth || 0 };
+    const monthlyGrowth = { count: adminStats.monthlyGrowth || 0 };
 
     res.json({
       success: true,
@@ -114,67 +75,25 @@ adminContentRouter.get("/terms", async (req: Request, res: Response<ApiResponse<
 
     const offset = (Number(page) - 1) * Number(limit);
 
-    // Apply filters
-    const conditions = [];
-    if (search) {
-      conditions.push(
-        or(
-          like(terms.name, `%${search}%`),
-          like(terms.definition, `%${search}%`)
-        )
-      );
-    }
-    if (categoryId) {
-      conditions.push(eq(terms.categoryId, String(categoryId)));
-    }
-
-    // Apply sorting
-    const sortColumn = sortBy === 'name' ? terms.name : 
-                      sortBy === 'viewCount' ? terms.viewCount :
-                      sortBy === 'createdAt' ? terms.createdAt :
-                      terms.updatedAt;
-
-    // Build query with all conditions at once  
-    const baseQuery = db.select({
-      id: terms.id,
-      name: terms.name,
-      definition: terms.definition,
-      shortDefinition: terms.shortDefinition,
-      categoryId: terms.categoryId,
-      category: categories.name,
-      viewCount: terms.viewCount,
-      createdAt: terms.createdAt,
-      updatedAt: terms.updatedAt
-    })
-    .from(terms)
-    .leftJoin(categories, eq(terms.categoryId, categories.id));
-
-    // Build final query with all parts
-    const finalQuery = baseQuery
-      .$dynamic()
-      .where(conditions.length > 0 ? and(...conditions) : undefined)
-      .orderBy(sortOrder === 'asc' ? sql`${sortColumn} ASC` : desc(sortColumn))
-      .limit(Number(limit))
-      .offset(offset);
-
-    // Execute paginated query
-    const results = await finalQuery;
-
-    // Get total count
-    const [countResult] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(terms)
-      .where(conditions.length > 0 ? and(...conditions) : undefined);
+    // Use enhanced storage method
+    const result = await storage.getAllTerms({
+      limit: Number(limit),
+      offset,
+      categoryId: categoryId ? String(categoryId) : undefined,
+      searchTerm: search ? String(search) : undefined,
+      sortBy: String(sortBy),
+      sortOrder: String(sortOrder) as 'asc' | 'desc'
+    });
 
     res.json({
       success: true,
       data: {
-        terms: results,
+        terms: result.terms,
         pagination: {
-          total: Number(countResult.count),
+          total: result.total,
           page: Number(page),
           limit: Number(limit),
-          totalPages: Math.ceil(Number(countResult.count) / Number(limit))
+          totalPages: Math.ceil(result.total / Number(limit))
         }
       }
     });
@@ -239,7 +158,7 @@ adminContentRouter.delete("/terms/:id", async (req: Request, res: Response<ApiRe
   try {
     const { id } = req.params;
 
-    await db.delete(terms).where(eq(terms.id, String(id)));
+    await storage.deleteTerm(String(id));
 
     res.json({
       success: true,
@@ -260,22 +179,24 @@ adminContentRouter.post("/terms/bulk", async (req: Request, res: Response<ApiRes
     const { action, termIds, data } = req.body;
 
     switch (action) {
-      case 'delete':
-        await db.delete(terms).where(sql`${terms.id} = ANY(${termIds})`);
+      case BULK_ACTIONS.DELETE:
+        await storage.bulkDeleteTerms(termIds);
         break;
       
-      case 'updateCategory':
-        // Use raw SQL for bulk category update to avoid type issues
-        await db.execute(sql`
-          UPDATE terms 
-          SET category_id = ${data.categoryId}, updated_at = NOW()
-          WHERE id = ANY(${termIds})
-        `);
+      case BULK_ACTIONS.UPDATE_CATEGORY:
+        await storage.bulkUpdateTermCategory(termIds, data.categoryId);
         break;
       
-      case 'publish':
+      case BULK_ACTIONS.UPDATE_STATUS:
         // For future use when we have draft/published states
+        await storage.bulkUpdateTermStatus(termIds, data.status);
         break;
+        
+      default:
+        return res.status(400).json({
+          success: false,
+          error: `Invalid bulk action. Valid actions: ${Object.values(BULK_ACTIONS).join(', ')}`
+        });
     }
 
     res.json({
@@ -297,34 +218,21 @@ adminContentRouter.get("/feedback", async (req: Request, res: Response<ApiRespon
     const { status = 'pending', page = 1, limit = 20 } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
 
-    const feedbackItems = await db.execute(
-      sql`
-        SELECT f.id, f.type, f.message as content, f.term_id, f.status, f.created_at,
-               u.id as user_id, u.email, u.first_name, u.last_name,
-               t.id as term_id, t.name as term_name
-        FROM user_feedback f
-        LEFT JOIN users u ON f.user_id = u.id
-        LEFT JOIN terms t ON f.term_id = t.id
-        WHERE f.status = ${status}
-        ORDER BY f.created_at DESC
-        LIMIT ${Number(limit)} OFFSET ${offset}
-      `
-    );
-
-    const countQuery = await db.execute(
-      sql`SELECT COUNT(*) as count FROM user_feedback WHERE status = ${status}`
-    );
-    const countResult = countQuery.rows[0] || { count: 0 };
+    const feedbackResult = await storage.getFeedback({
+      status: status as string,
+      limit: Number(limit),
+      offset: offset
+    });
 
     res.json({
       success: true,
       data: {
-        feedback: feedbackItems,
+        feedback: feedbackResult.items,
         pagination: {
-          total: Number((countResult as any)?.count || 0),
+          total: feedbackResult.total,
           page: Number(page),
           limit: Number(limit),
-          totalPages: Math.ceil(Number((countResult as any)?.count || 0) / Number(limit))
+          totalPages: Math.ceil(feedbackResult.total / Number(limit))
         }
       }
     });
@@ -343,18 +251,14 @@ adminContentRouter.patch("/feedback/:id", async (req: Request, res: Response<Api
     const { id } = req.params;
     const { status, adminNotes } = req.body;
 
-    const updatedFeedback = await db.execute(
-      sql`
-        UPDATE user_feedback 
-        SET status = ${status}, admin_notes = ${adminNotes}, updated_at = NOW()
-        WHERE id = ${id}
-        RETURNING *
-      `
-    );
+    const updatedFeedback = await storage.updateFeedback(id, {
+      status,
+      adminNotes
+    });
 
     res.json({
       success: true,
-      data: updatedFeedback.rows[0]
+      data: updatedFeedback
     });
   } catch (error) {
     await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
@@ -368,18 +272,7 @@ adminContentRouter.patch("/feedback/:id", async (req: Request, res: Response<Api
 // Category management
 adminContentRouter.get("/categories", async (req: Request, res: Response<ApiResponse<any>>) => {
   try {
-    const categoryList = await db
-      .select({
-        id: categories.id,
-        name: categories.name,
-        description: categories.description,
-        termCount: sql<number>`count(${terms.id})`,
-        createdAt: categories.createdAt
-      })
-      .from(categories)
-      .leftJoin(terms, eq(categories.id, terms.categoryId))
-      .groupBy(categories.id)
-      .orderBy(categories.name);
+    const categoryList = await storage.getCategoriesWithStats();
 
     res.json({
       success: true,
@@ -440,19 +333,16 @@ adminContentRouter.delete("/categories/:id", async (req: Request, res: Response<
     const { id } = req.params;
 
     // Check if category has terms
-    const [termCount] = await db
-      .select({ count: sql<number>`count(*)` })
-      .from(terms)
-      .where(eq(terms.categoryId, String(id)));
-
-    if (Number(termCount.count) > 0) {
+    const categoryStats = await storage.getCategoryStats(String(id));
+    
+    if (categoryStats.termCount > 0) {
       return res.status(400).json({
         success: false,
         error: 'Cannot delete category with existing terms. Please reassign or delete terms first.'
       });
     }
 
-    await db.delete(categories).where(eq(categories.id, String(id)));
+    await storage.deleteCategory(String(id));
 
     res.json({
       success: true,

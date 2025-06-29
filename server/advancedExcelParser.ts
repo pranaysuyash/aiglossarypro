@@ -4,10 +4,16 @@ import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI client lazily
+let openai: OpenAI | null = null;
+function getOpenAIClient() {
+  if (!openai) {
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 // Cache directory for parsed results
 const CACHE_DIR = path.join(process.cwd(), 'temp', 'parsed_cache');
@@ -372,7 +378,7 @@ Return clean, structured data that can be easily used in a web application.
 `;
       }
 
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAIClient().chat.completions.create({
         model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: systemPrompt },

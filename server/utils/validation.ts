@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { BULK_LIMITS } from '../constants';
 
 // Common validation schemas
 export const idSchema = z.string().min(1, 'ID is required');
@@ -30,6 +31,22 @@ export const quizQuerySchema = z.object({
   difficulty: z.enum(['easy', 'medium', 'hard']).optional()
 });
 
+// Cross-reference validation schemas
+export const processTextSchema = z.object({
+  text: z.string().min(1, 'Text content is required'),
+  excludeTermId: z.string().optional()
+});
+
+export const bulkProcessSchema = z.object({
+  termIds: z.array(z.string().min(1))
+    .min(1, 'At least one term ID is required')
+    .max(BULK_LIMITS.CROSS_REFERENCE_TERMS, `Maximum ${BULK_LIMITS.CROSS_REFERENCE_TERMS} terms can be processed at once`)
+});
+
+export const termIdParamSchema = z.object({
+  termId: z.string().min(1, 'Term ID is required')
+});
+
 // Validation middleware helper
 export function validateParams<T>(schema: z.ZodSchema<T>) {
   return (req: any) => {
@@ -40,6 +57,50 @@ export function validateParams<T>(schema: z.ZodSchema<T>) {
 export function validateQuery<T>(schema: z.ZodSchema<T>) {
   return (req: any) => {
     return schema.parse(req.query);
+  };
+}
+
+export function validateBody<T>(schema: z.ZodSchema<T>) {
+  return (req: any, res: any, next: any) => {
+    try {
+      const validatedData = schema.parse(req.body);
+      req.body = validatedData;
+      next();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation error',
+          errors: error.errors
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid request data'
+      });
+    }
+  };
+}
+
+export function validateParamsMiddleware<T>(schema: z.ZodSchema<T>) {
+  return (req: any, res: any, next: any) => {
+    try {
+      const validatedData = schema.parse(req.params);
+      req.params = validatedData;
+      next();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          message: 'Invalid parameters',
+          errors: error.errors
+        });
+      }
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid request parameters'
+      });
+    }
   };
 }
 

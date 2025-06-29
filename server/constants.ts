@@ -48,7 +48,16 @@ export const DEFAULT_LIMITS = {
   CONTENT: 12,
   SEARCH: 20,
   ADMIN: 25,
-  FEATURED_TERMS: 10
+  FEATURED_TERMS: 10,
+  PAGE_SIZE: 20,
+  MAX_PAGE_SIZE: 100
+} as const;
+
+// Bulk Operation Limits
+export const BULK_LIMITS = {
+  CROSS_REFERENCE_TERMS: 100,
+  DELETE_TERMS: 50,
+  UPDATE_TERMS: 100
 } as const;
 
 // Error Messages
@@ -58,7 +67,13 @@ export const ERROR_MESSAGES = {
   UNAUTHORIZED: 'Unauthorized access',
   FORBIDDEN: 'Access forbidden',
   VALIDATION_ERROR: 'Validation error',
-  INTERNAL_ERROR: 'Internal server error'
+  INTERNAL_ERROR: 'Internal server error',
+  ANALYTICS_FETCH_FAILED: 'Failed to fetch analytics data',
+  USER_ANALYTICS_FETCH_FAILED: 'Failed to fetch user analytics',
+  CONTENT_ANALYTICS_FETCH_FAILED: 'Failed to fetch content analytics',
+  CATEGORY_ANALYTICS_FETCH_FAILED: 'Failed to fetch category analytics',
+  REALTIME_ANALYTICS_FETCH_FAILED: 'Failed to fetch realtime analytics',
+  ANALYTICS_EXPORT_FAILED: 'Failed to export analytics data'
 } as const;
 
 export type SectionName = typeof SECTION_NAMES[keyof typeof SECTION_NAMES];
@@ -68,3 +83,4 @@ export type HealthStatus = typeof HEALTH_STATUS[keyof typeof HEALTH_STATUS];
 export type BulkAction = typeof BULK_ACTIONS[keyof typeof BULK_ACTIONS];
 export type TimePeriod = typeof TIME_PERIODS[keyof typeof TIME_PERIODS];
 export type ErrorMessage = typeof ERROR_MESSAGES[keyof typeof ERROR_MESSAGES];
+export type BulkLimit = typeof BULK_LIMITS[keyof typeof BULK_LIMITS];

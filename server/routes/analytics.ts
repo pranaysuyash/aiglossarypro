@@ -6,6 +6,8 @@ import { features } from "../config";
 import { db } from '../db';
 import { enhancedTerms, termViews, users, favorites, userProgress } from '../../shared/enhancedSchema';
 import { sql, gte, eq, desc, count } from 'drizzle-orm';
+import { log as logger } from "../utils/logger";
+import { ERROR_MESSAGES } from "../constants";
 import {
   validateQuery,
   GeneralAnalyticsQuerySchema,
@@ -60,10 +62,10 @@ export function registerAnalyticsRoutes(app: Express): void {
         }
       });
     } catch (error) {
-      console.error("Error fetching analytics:", error);
+      logger.error("Error fetching analytics", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
-        message: "Failed to fetch analytics" 
+        message: ERROR_MESSAGES.ANALYTICS_FETCH_FAILED || "Failed to fetch analytics" 
       });
     }
   });
@@ -97,10 +99,10 @@ export function registerAnalyticsRoutes(app: Express): void {
         }
       });
     } catch (error) {
-      console.error("Error fetching user analytics:", error);
+      logger.error("Error fetching user analytics", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
-        message: "Failed to fetch user analytics" 
+        message: ERROR_MESSAGES.USER_ANALYTICS_FETCH_FAILED || "Failed to fetch user analytics" 
       });
     }
   });
@@ -157,10 +159,10 @@ export function registerAnalyticsRoutes(app: Express): void {
         }
       });
     } catch (error) {
-      console.error("Error fetching content analytics:", error);
+      logger.error("Error fetching content analytics", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
-        message: "Failed to fetch content analytics" 
+        message: ERROR_MESSAGES.CONTENT_ANALYTICS_FETCH_FAILED || "Failed to fetch content analytics" 
       });
     }
   });
@@ -197,10 +199,10 @@ export function registerAnalyticsRoutes(app: Express): void {
         }
       });
     } catch (error) {
-      console.error("Error fetching category analytics:", error);
+      logger.error("Error fetching category analytics", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
-        message: "Failed to fetch category analytics" 
+        message: ERROR_MESSAGES.CATEGORY_ANALYTICS_FETCH_FAILED || "Failed to fetch category analytics" 
       });
     }
   });
@@ -230,27 +232,18 @@ export function registerAnalyticsRoutes(app: Express): void {
         }
       });
     } catch (error) {
-      console.error("Error fetching realtime analytics:", error);
+      logger.error("Error fetching realtime analytics", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
-        message: "Failed to fetch realtime analytics" 
+        message: ERROR_MESSAGES.REALTIME_ANALYTICS_FETCH_FAILED || "Failed to fetch realtime analytics" 
       });
     }
   });
 
-  // Export analytics data (admin only) - already has admin verification
-  app.get('/api/analytics/export', authMiddleware, validateQuery(ExportAnalyticsQuerySchema), async (req: any, res: Response) => {
+  // Export analytics data (admin only)
+  app.get('/api/analytics/export', authMiddleware, tokenMiddleware, requireAdmin, validateQuery(ExportAnalyticsQuerySchema), async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
-      const { isUserAdmin } = await import('../utils/authUtils');
-      const isAdmin = await isUserAdmin(userId);
-      
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          error: 'Admin privileges required'
-        });
-      }
       
       const { format, timeframe, type } = req.query as ExportAnalyticsQuery;
       
@@ -300,10 +293,10 @@ export function registerAnalyticsRoutes(app: Express): void {
         });
       }
     } catch (error) {
-      console.error("Error exporting analytics:", error);
+      logger.error("Error exporting analytics", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
       res.status(500).json({ 
         success: false,
-        message: "Failed to export analytics" 
+        message: ERROR_MESSAGES.ANALYTICS_EXPORT_FAILED || "Failed to export analytics" 
       });
     }
   });

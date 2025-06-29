@@ -9,6 +9,8 @@ import { asyncHandler, handleDatabaseError } from '../middleware/errorHandler';
 import { requireAdmin } from '../middleware/adminAuth';
 import { mockRequireAdmin } from '../middleware/dev/mockAuth';
 import { features } from '../config';
+import { BULK_LIMITS } from '../constants';
+import { validateBody, validateParamsMiddleware, processTextSchema, bulkProcessSchema, termIdParamSchema } from '../utils/validation';
 
 export function registerCrossReferenceRoutes(app: Express): void {
   // Choose admin middleware based on environment
@@ -18,15 +20,8 @@ export function registerCrossReferenceRoutes(app: Express): void {
    * Process text for automatic term linking
    * POST /api/cross-reference/process
    */
-  app.post('/api/cross-reference/process', adminMiddleware, asyncHandler(async (req: Request, res: Response) => {
+  app.post('/api/cross-reference/process', adminMiddleware, validateBody(processTextSchema), asyncHandler(async (req: Request, res: Response) => {
     const { text, excludeTermId } = req.body;
-
-    if (!text || typeof text !== 'string') {
-      return res.status(400).json({
-        success: false,
-        message: 'Text content is required'
-      });
-    }
 
     try {
       const result = await crossReferenceService.processTextForLinks(text, excludeTermId);
@@ -51,7 +46,7 @@ export function registerCrossReferenceRoutes(app: Express): void {
    * Get cross-references for a specific term
    * GET /api/cross-reference/term/:termId
    */
-  app.get('/api/cross-reference/term/:termId', adminMiddleware, asyncHandler(async (req: Request, res: Response) => {
+  app.get('/api/cross-reference/term/:termId', adminMiddleware, validateParamsMiddleware(termIdParamSchema), asyncHandler(async (req: Request, res: Response) => {
     const { termId } = req.params;
 
     try {
@@ -80,8 +75,7 @@ export function registerCrossReferenceRoutes(app: Express): void {
    * Update a term's definition with automatic links (admin only)
    * PUT /api/cross-reference/term/:termId/update-links
    */
-  app.put('/api/cross-reference/term/:termId/update-links', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
-
+  app.put('/api/cross-reference/term/:termId/update-links', requireAdmin, validateParamsMiddleware(termIdParamSchema), asyncHandler(async (req: Request, res: Response) => {
     const { termId } = req.params;
 
     try {
@@ -113,23 +107,8 @@ export function registerCrossReferenceRoutes(app: Express): void {
    * Bulk process multiple terms (admin only)
    * POST /api/cross-reference/bulk-process
    */
-  app.post('/api/cross-reference/bulk-process', requireAdmin, asyncHandler(async (req: Request, res: Response) => {
-    
+  app.post('/api/cross-reference/bulk-process', requireAdmin, validateBody(bulkProcessSchema), asyncHandler(async (req: Request, res: Response) => {
     const { termIds } = req.body;
-
-    if (!Array.isArray(termIds) || termIds.length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Array of term IDs is required'
-      });
-    }
-
-    if (termIds.length > 100) {
-      return res.status(400).json({
-        success: false,
-        message: 'Maximum 100 terms can be processed at once'
-      });
-    }
 
     try {
       const results = await crossReferenceService.bulkProcessTerms(termIds);

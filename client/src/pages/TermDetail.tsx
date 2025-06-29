@@ -13,6 +13,7 @@ import ShareMenu from "@/components/ShareMenu";
 import TermCard from "@/components/TermCard";
 import { AIDefinitionImprover } from "@/components/AIDefinitionImprover";
 import { useAuth } from "@/hooks/useAuth";
+import { sanitizeHTML, sanitizeMathHTML } from "@/utils/sanitize";
 
 export default function TermDetail() {
   const { id } = useParams();
@@ -256,7 +257,7 @@ export default function TermDetail() {
                   <h2 className="text-xl font-semibold mb-3">Key Characteristics</h2>
                   <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
                     {term.characteristics.map((characteristic: string, index: number) => (
-                      <li key={index} dangerouslySetInnerHTML={{ __html: characteristic }} />
+                      <li key={index} dangerouslySetInnerHTML={{ __html: sanitizeHTML(characteristic) }} />
                     ))}
                   </ul>
                 </div>
@@ -299,7 +300,7 @@ export default function TermDetail() {
                 <div className="mb-8">
                   <h2 className="text-xl font-semibold mb-3">Mathematical Foundation</h2>
                   <div className="bg-gray-50 dark:bg-gray-900/50 p-5 rounded-lg font-mono text-sm">
-                    <div dangerouslySetInnerHTML={{ __html: term.mathFormulation }} />
+                    <div dangerouslySetInnerHTML={{ __html: sanitizeMathHTML(term.mathFormulation) }} />
                   </div>
                 </div>
               )}
@@ -311,7 +312,7 @@ export default function TermDetail() {
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {term.applications.map((app: any, index: number) => (
                       <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                        {app.icon && <div className="mb-2" dangerouslySetInnerHTML={{ __html: app.icon }} />}
+                        {app.icon && <div className="mb-2" dangerouslySetInnerHTML={{ __html: sanitizeHTML(app.icon) }} />}
                         <h3 className="font-medium mb-1">{app.name}</h3>
                         <p className="text-sm text-gray-600 dark:text-gray-400">{app.description}</p>
                       </div>

@@ -19,6 +19,7 @@ import { registerSeoRoutes } from "./seo";
 import { registerContentRoutes } from "./content";
 import { registerGumroadRoutes } from "./gumroad";
 import { log as logger } from "../utils/logger";
+import { features } from "../config";
 
 // Import existing specialized route modules
 import cacheRoutes from "./cache";
@@ -70,10 +71,8 @@ export async function registerRoutes(app: Express): Promise<void> {
   logger.info("✅ Cross-reference routes registered");
   
   // Register analytics routes
-  if (features.analyticsEnabled) {
-    registerAnalyticsRoutes(app);
-    logger.info("✅ Analytics routes registered");
-  }
+  registerAnalyticsRoutes(app);
+  logger.info("✅ Analytics routes registered");
   
   // Register media routes (for rich content support)
   registerMediaRoutes(app);
@@ -91,13 +90,11 @@ export async function registerRoutes(app: Express): Promise<void> {
   registerGumroadRoutes(app);
   logger.info("✅ Gumroad monetization routes registered");
   
-  // Mount S3 routes if enabled
-  if (features.s3Enabled) {
-    app.use('/api/s3', s3Routes);
-    app.use('/api/s3-optimized', s3RoutesOptimized);
-    app.use('/api/s3-monitoring', s3MonitoringRoutes);
-    logger.info("✅ S3 routes mounted");
-  }
+  // Mount S3 routes
+  app.use('/api/s3', s3Routes);
+  app.use('/api/s3-optimized', s3RoutesOptimized);
+  app.use('/api/s3-monitoring', s3MonitoringRoutes);
+  logger.info("✅ S3 routes mounted");
   
   // Register enhanced parsing system routes
   registerEnhancedRoutes(app);

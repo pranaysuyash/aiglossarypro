@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Copy, Download, ZoomIn, ZoomOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { sanitizeMermaidHTML } from '@/utils/sanitize';
 
 interface MermaidDiagramProps {
   diagram: string;
@@ -209,7 +210,7 @@ export default function MermaidDiagram({
               transformOrigin: 'top center',
               transition: 'transform 0.2s ease-in-out'
             }}
-            dangerouslySetInnerHTML={{ __html: diagramSvg }}
+            dangerouslySetInnerHTML={{ __html: sanitizeMermaidHTML(diagramSvg) }}
           />
         </div>
       </CardContent>

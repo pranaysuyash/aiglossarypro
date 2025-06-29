@@ -37,8 +37,8 @@ test.describe('Main Navigation Flows', () => {
   });
 
   test('should navigate from category page to a term page', async ({ page }) => {
-    // First, navigate to a category page using a real category ID  
-    await page.goto('/category/6875b911-79f1-42c4-8771-2b509d879ce4'); // 3D Convolutional Neural Networks
+    // Navigate to Machine Learning category page (validated clean data)
+    await page.goto('/category/79f3d163-dae1-499d-8371-047accbe70e9'); // Machine Learning category
     
     // Wait for page to load
     await expect(page.locator('#main-content')).toBeVisible();
@@ -66,8 +66,8 @@ test.describe('Main Navigation Flows', () => {
   });
 
   test('should handle direct navigation to a term page', async ({ page }) => {
-    // Navigate directly to a known term page using real term ID
-    await page.goto('/term/95a06f9b-382d-4408-be14-e3961028a630'); // Machine Learning
+    // Navigate directly to a known term page using real term ID from row1.xlsx
+    await page.goto('/term/1fd85108-329d-44ea-bc3e-82a8b1c1e940'); // Chebyshev Polynomials in Neural Networks
     
     // Wait for page to load
     await expect(page.locator('#main-content')).toBeVisible();

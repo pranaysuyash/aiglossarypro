@@ -51,14 +51,15 @@ export default function Header() {
     <header id="navigation" className="bg-white shadow-sm sticky top-0 z-10 dark:bg-gray-800" role="banner">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-4">
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
             <Link href="/">
               <div className="flex items-center space-x-2 cursor-pointer" role="link" aria-label="AI/ML Glossary - Go to homepage">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <title>AI/ML Glossary Logo</title>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <span className="text-xl font-semibold">AI/ML Glossary</span>
+                <span className="text-xl font-semibold hidden sm:inline">AI/ML Glossary</span>
+                <span className="text-xl font-semibold sm:hidden">AI/ML</span>
               </div>
             </Link>
           </div>
@@ -67,15 +68,22 @@ export default function Header() {
             <SearchBar onSearch={handleSearch} />
           </div>
 
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4 flex-shrink-0">
             {/* Lifetime Access Button */}
             <Link href="/lifetime">
               <Button 
                 variant="default" 
                 size="sm" 
-                className="hidden sm:flex bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-4 py-2"
+                className="hidden lg:flex bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-4 py-2"
               >
                 Get Lifetime Access
+              </Button>
+              <Button 
+                variant="default" 
+                size="sm" 
+                className="hidden md:flex lg:hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-3 py-2"
+              >
+                Upgrade
               </Button>
             </Link>
             

@@ -241,7 +241,7 @@ export function Terms() {
           <span className="ml-2">Loading terms...</span>
         </div>
       ) : Array.isArray(terms) && terms.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
           {terms.map((term: ITerm) => (
             <TermCard
               key={term.id}

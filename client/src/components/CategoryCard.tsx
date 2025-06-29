@@ -37,12 +37,12 @@ export default function CategoryCard({ category, termCount }: CategoryCardProps)
     <div onClick={() => window.location.href=`/category/${category.id}`} className="cursor-pointer">
         <Card className="h-full transition-shadow hover:shadow-md border border-gray-100 dark:border-gray-800">
           <CardContent className="p-4">
-            <div className="flex items-start">
-              <div className={`w-12 h-12 rounded-lg ${colorClass} flex items-center justify-center mr-4 shrink-0`}>
+            <div className="flex items-start min-w-0">
+              <div className={`w-12 h-12 rounded-lg ${colorClass} flex items-center justify-center mr-4 flex-shrink-0`}>
                 {icon}
               </div>
-              <div>
-                <h3 className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition truncate">
                   {category.name}
                 </h3>
                 <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{displayTermCount} terms</p>

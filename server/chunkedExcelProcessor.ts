@@ -360,7 +360,7 @@ export class ChunkedExcelProcessor {
         scriptPath,
         `--input "${excelPath}"`,
         `--output "${finalOutputPath}"`,
-        `--chunk-size ${this.options.chunkSize}`
+        `--max-chunks ${Math.ceil(50000 / this.options.chunkSize)}` // Convert chunk size to max chunks
       ].join(' ');
       
       console.log(`🔄 Running chunked Python processor: ${command}`);

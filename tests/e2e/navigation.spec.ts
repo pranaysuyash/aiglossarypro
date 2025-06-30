@@ -66,18 +66,19 @@ test.describe('Main Navigation Flows', () => {
   });
 
   test('should handle direct navigation to a term page', async ({ page }) => {
-    // Navigate directly to a known term page using real term ID from row1.xlsx
-    await page.goto('/term/1fd85108-329d-44ea-bc3e-82a8b1c1e940'); // Chebyshev Polynomials in Neural Networks
+    // Navigate directly to the "Characteristic Function" term from row1.xlsx (using basic term ID)
+    await page.goto('/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941'); // Characteristic Function
     
     // Wait for page to load
     await expect(page.locator('#main-content')).toBeVisible();
     
-    // Verify we're on a term page (either the term exists or shows not found)
+    // Verify that we're on the Characteristic Function term page
     const headerText = await page.locator('h1').innerText();
     
-    // Should either show the term name or a "not found" message
+    // Should show the term name
     expect(headerText).toBeTruthy();
     expect(headerText.length).toBeGreaterThan(0);
+    expect(headerText.toLowerCase()).toContain('characteristic');
   });
 
   test('should use search to find and navigate to a term', async ({ page }) => {

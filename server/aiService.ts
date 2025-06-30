@@ -4,6 +4,7 @@ import { db } from './db';
 import { ITerm, ICategory } from '../client/src/interfaces/interfaces';
 import fs from 'fs/promises';
 import path from 'path';
+import { log as logger } from './utils/logger';
 
 // Types for AI responses
 export interface AIDefinitionResponse {
@@ -158,9 +159,9 @@ class AIService {
       const content = await fs.readFile(this.CACHE_FILE, 'utf-8');
       const data = JSON.parse(content);
       this.persistentCache = new Map(Object.entries(data));
-      console.log(`Loaded ${this.persistentCache.size} cached AI results`);
+      logger.info(`Loaded ${this.persistentCache.size} cached AI results`);
     } catch (error) {
-      console.log('No existing cache file, starting fresh');
+      logger.info('No existing cache file, starting fresh');
       this.persistentCache = new Map();
     }
   }
@@ -171,9 +172,9 @@ class AIService {
       const tmpFile = this.CACHE_FILE + '.tmp';
       await fs.writeFile(tmpFile, JSON.stringify(data, null, 2), 'utf-8');
       await fs.rename(tmpFile, this.CACHE_FILE);
-      console.log(`Saved ${this.persistentCache.size} AI results to cache`);
+      logger.info(`Saved ${this.persistentCache.size} AI results to cache`);
     } catch (error) {
-      console.error('Failed to save persistent cache:', error);
+      logger.error('Failed to save persistent cache:', error);
     }
   }
 
@@ -219,16 +220,16 @@ class AIService {
       });
       
       // Also log to console for debugging
-      console.log('AI Usage Logged:', {
+      logger.info('AI Usage Logged:', {
         ...metrics,
         userId,
         termId,
         timestamp: new Date().toISOString()
       });
     } catch (error) {
-      console.error('Failed to log AI usage to database:', error);
+      logger.error('Failed to log AI usage to database:', error);
       // Fallback to console only
-      console.log('AI Usage (fallback):', {
+      logger.info('AI Usage (fallback):', {
         ...metrics,
         userId,
         termId,
@@ -252,11 +253,11 @@ class AIService {
           errorMessage.includes('timeout');
         
         if (isLastAttempt) {
-          console.error(`AI operation failed after ${this.MAX_RETRIES} attempts:`, error instanceof Error ? error : new Error(String(error)));
+          logger.error(`AI operation failed after ${this.MAX_RETRIES} attempts:`, error instanceof Error ? error : new Error(String(error)));
           
           // If we have a fallback, use it
           if (fallback !== undefined) {
-            console.log('Using fallback response due to API failure');
+            logger.info('Using fallback response due to API failure');
             return fallback;
           }
           
@@ -272,7 +273,7 @@ class AIService {
         
         // Exponential backoff with jitter from smart_processor.cjs
         const delay = this.RETRY_DELAY * (attempt + 1) + Math.random() * 1000;
-        console.log(`AI operation attempt ${attempt} failed, retrying in ${delay}ms:`, errorMessage);
+        logger.info(`AI operation attempt ${attempt} failed, retrying in ${delay}ms:`, errorMessage);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
@@ -308,7 +309,7 @@ class AIService {
     } catch (error) {
       if (attempt < this.MAX_RETRIES) {
         const delay = this.RETRY_DELAY * (attempt + 1);
-        console.log(`OpenAI call attempt ${attempt + 1} failed, retrying with ${attempt >= 1 ? this.modelConfig.secondary : this.modelConfig.primary} in ${delay}ms`);
+        logger.info(`OpenAI call attempt ${attempt + 1} failed, retrying with ${attempt >= 1 ? this.modelConfig.secondary : this.modelConfig.primary} in ${delay}ms`);
         await new Promise(resolve => setTimeout(resolve, delay));
         return this.callOpenAIWithRetry(prompt, systemPrompt, attempt + 1);
       }
@@ -326,7 +327,7 @@ class AIService {
     if (persistentCached) {
       try {
         const parsed = JSON.parse(persistentCached) as AIDefinitionResponse;
-        console.log(`⚡ Using cached definition for: ${term}`);
+        logger.info(`⚡ Using cached definition for: ${term}`);
         await this.logUsage({
           operation: 'generate_definition',
           model: this.modelConfig.primary,
@@ -335,7 +336,7 @@ class AIService {
         }, userId);
         return parsed;
       } catch (error) {
-        console.log(`Cache parse error for ${term}, regenerating`);
+        logger.info(`Cache parse error for ${term}, regenerating`);
       }
     }
     
@@ -427,7 +428,7 @@ Your definitions will be marked as AI-generated and subject to expert review. Pr
         errorMessage: error instanceof Error ? error.message : 'Unknown error'
       }, userId);
 
-      console.error('Error generating definition:', error);
+      logger.error('Error generating definition:', error);
       throw new Error('Failed to generate definition');
     }
   }
@@ -481,7 +482,7 @@ Your definitions will be marked as AI-generated and subject to expert review. Pr
       
       return result;
     } catch (error) {
-      console.error('Error generating suggestions:', error);
+      logger.error('Error generating suggestions:', error);
       throw new Error('Failed to generate term suggestions');
     }
   }
@@ -531,7 +532,7 @@ Your definitions will be marked as AI-generated and subject to expert review. Pr
       
       return result;
     } catch (error) {
-      console.error('Error categorizing term:', error);
+      logger.error('Error categorizing term:', error);
       throw new Error('Failed to categorize term');
     }
   }
@@ -615,7 +616,7 @@ Your definitions will be marked as AI-generated and subject to expert review. Pr
         errorMessage: error instanceof Error ? error.message : 'Unknown error'
       }, userId);
 
-      console.error('Error in semantic search:', error);
+      logger.error('Error in semantic search:', error);
       throw new Error('Failed to perform semantic search');
     }
   }
@@ -665,7 +666,7 @@ Your definitions will be marked as AI-generated and subject to expert review. Pr
       
       return result;
     } catch (error) {
-      console.error('Error improving definition:', error);
+      logger.error('Error improving definition:', error);
       throw new Error('Failed to improve definition');
     }
   }
@@ -827,7 +828,7 @@ Keep the core meaning intact while enhancing clarity and usefulness.
     // Check persistent cache first
     const persistentCached = this.getCachedResult(term, section);
     if (persistentCached) {
-      console.log(`⚡ Using cached content for: ${term} → ${section}`);
+      logger.info(`⚡ Using cached content for: ${term} → ${section}`);
       await this.logUsage({
         operation: 'generate_section_content',
         model: this.modelConfig.primary,
@@ -859,7 +860,7 @@ Keep the core meaning intact while enhancing clarity and usefulness.
           success: true
         }, userId);
         
-        console.log(`✅ Generated content for: ${term} → ${section} (${content.length} chars)`);
+        logger.info(`✅ Generated content for: ${term} → ${section} (${content.length} chars)`);
         return content;
       }
       
@@ -875,7 +876,7 @@ Keep the core meaning intact while enhancing clarity and usefulness.
         errorMessage: error instanceof Error ? error.message : 'Unknown error'
       }, userId);
 
-      console.error(`Error generating section content for ${term} → ${section}:`, error);
+      logger.error(`Error generating section content for ${term} → ${section}:`, error);
       throw new Error('Failed to generate section content');
     }
   }

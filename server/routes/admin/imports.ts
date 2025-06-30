@@ -268,8 +268,8 @@ export function registerAdminImportRoutes(app: Express): void {
       // Initialize advanced parser
       const parser = new AdvancedExcelParser();
       
-      // Parse with AI enhancement
-      const parsedTerms = await parser.parseComplexExcel(req.file.buffer, aiOptions);
+      // Parse with AI enhancement and checkpoint support
+      const parsedTerms = await parser.parseComplexExcel(req.file.buffer, aiOptions, req.file.originalname);
       
       if (!parsedTerms || parsedTerms.length === 0) {
         return res.status(400).json({

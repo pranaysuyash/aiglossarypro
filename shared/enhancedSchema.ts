@@ -293,6 +293,34 @@ export const aiUsageAnalytics = pgTable("ai_usage_analytics", {
   dateIdx: index("ai_usage_date_idx").on(table.createdAt),
 }));
 
+// Term Versions table - for AI-powered versioning system
+export const termVersions = pgTable("term_versions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  termId: uuid("term_id").notNull().references(() => enhancedTerms.id, { onDelete: "cascade" }),
+  version: varchar("version", { length: 20 }).notNull(), // e.g., "1.0", "1.1", "2.0-review"
+  
+  // Content storage
+  content: jsonb("content").notNull(), // Full term content for this version
+  
+  // Quality metrics
+  qualityMetrics: jsonb("quality_metrics").notNull(), // ContentQualityMetrics JSON
+  
+  // Version status
+  isActive: boolean("is_active").default(false), // Only one active version per term
+  
+  // Metadata
+  metadata: jsonb("metadata").notNull(), // Processing metadata, decision info, etc.
+  
+  // Timestamps
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  termVersionIdx: index("term_version_term_idx").on(table.termId),
+  activeVersionIdx: index("term_version_active_idx").on(table.termId, table.isActive),
+  versionIdx: index("term_version_version_idx").on(table.version),
+  createdAtIdx: index("term_version_created_idx").on(table.createdAt),
+}));
+
 // Sections table - for the 42-section architecture
 export const sections = pgTable("sections", {
   id: serial("id").primaryKey(),

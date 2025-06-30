@@ -3,6 +3,10 @@ import OpenAI from 'openai';
 import fs from 'fs/promises';
 import path from 'path';
 import crypto from 'crypto';
+import { aiService } from './aiService';
+import { CheckpointManager } from './checkpointManager';
+import { versioningService } from './versioningService';
+import { log as logger } from './utils/logger';
 
 // Initialize OpenAI client lazily
 let openai: OpenAI | null = null;
@@ -73,6 +77,7 @@ interface ParsedTerm {
 class AdvancedExcelParser {
   private headers: Map<string, number> = new Map();
   private aiParseCache: Map<string, any> = new Map();
+  private checkpointManager: CheckpointManager | null = null;
 
   constructor() {
     this.initializeCache();
@@ -88,12 +93,12 @@ class AdvancedExcelParser {
         const cacheData = await fs.readFile(cacheFile, 'utf8');
         const cacheObj = JSON.parse(cacheData);
         this.aiParseCache = new Map(Object.entries(cacheObj));
-        console.log(`Loaded ${this.aiParseCache.size} cached AI parse results`);
+        logger.info(`Loaded ${this.aiParseCache.size} cached AI parse results`);
       } catch {
-        console.log('No existing AI parse cache found, starting fresh');
+        logger.info('No existing AI parse cache found, starting fresh');
       }
     } catch (error) {
-      console.error('Error initializing cache:', error);
+      logger.error('Error initializing cache:', error);
     }
   }
 
@@ -101,10 +106,10 @@ class AdvancedExcelParser {
     enableAI: false, 
     mode: 'none', 
     costOptimization: true 
-  }): Promise<ParsedTerm[]> {
-    console.log('\n🧠 ADVANCED EXCEL PARSER');
-    console.log('========================');
-    console.log('📋 Starting complex 42-section parsing...');
+  }, fileName: string = 'excel_file.xlsx'): Promise<ParsedTerm[]> {
+    logger.info('🧠 ADVANCED EXCEL PARSER WITH CHECKPOINTS');
+    logger.info('==========================================');
+    logger.info('📋 Starting complex 42-section parsing...');
     
     const workbook = new ExcelJS.Workbook();
     await workbook.xlsx.load(buffer);
@@ -114,8 +119,12 @@ class AdvancedExcelParser {
       throw new Error('Excel file has no worksheets');
     }
 
+    // Initialize checkpoint manager
+    this.checkpointManager = new CheckpointManager(`${fileName}_checkpoint.json`);
+    await this.checkpointManager.loadCheckpoint();
+
     // Map all headers
-    console.log('📋 Mapping column headers...');
+    logger.info('📋 Mapping column headers...');
     const firstRow = worksheet.getRow(1);
     firstRow.eachCell((cell, colNumber) => {
       const headerName = cell.value?.toString().trim() || '';
@@ -124,19 +133,39 @@ class AdvancedExcelParser {
       }
     });
 
-    console.log(`✅ Found ${this.headers.size} columns in Excel file`);
+    logger.info(`✅ Found ${this.headers.size} columns in Excel file`);
     
     // Log sample headers for verification
     const sampleHeaders = Array.from(this.headers.keys()).slice(0, 5);
-    console.log('📋 Sample headers:', sampleHeaders);
+    logger.info('📋 Sample headers:', sampleHeaders);
+
+    // Initialize checkpoint if not exists
+    const totalRows = worksheet.rowCount - 1; // Exclude header row
+    const totalCells = totalRows * this.headers.size;
+    
+    if (!this.checkpointManager!.getProgress().total) {
+      await this.checkpointManager!.initializeCheckpoint(
+        'typescript',
+        fileName,
+        totalRows,
+        this.headers.size,
+        { enableAI: options.enableAI, mode: options.mode }
+      );
+    }
 
     const parsedTerms: ParsedTerm[] = [];
-    const totalRows = worksheet.rowCount - 1; // Exclude header row
     let processedCount = 0;
     let cachedCount = 0;
     let newlyParsedCount = 0;
+    let checkpointHits = 0;
 
-    console.log(`📊 Processing ${totalRows} term rows...`);
+    logger.info(`📊 Processing ${totalRows} term rows...`);
+    const progress = this.checkpointManager!.getProgress();
+    logger.info(`📈 Checkpoint progress: ${progress.processed}/${progress.total} cells (${progress.percentage.toFixed(1)}%)`);
+    
+    if (progress.errors > 0) {
+      logger.info(`⚠️  Previous errors: ${progress.errors}`);
+    }
 
     // Process each term row
     for (let rowNumber = 2; rowNumber <= worksheet.rowCount; rowNumber++) {
@@ -149,14 +178,14 @@ class AdvancedExcelParser {
                          row.getCell(1).value?.toString().trim(); // First column fallback
         
         if (!termName) {
-          console.warn(`⚠️  Row ${rowNumber}: No term name found, skipping`);
+          logger.warn(`⚠️  Row ${rowNumber}: No term name found, skipping`);
           continue;
         }
 
         processedCount++;
         
         if (processedCount % 100 === 0 || processedCount <= 10) {
-          console.log(`🔄 Processing term ${processedCount}/${totalRows}: ${termName}`);
+          logger.info(`🔄 Processing term ${processedCount}/${totalRows}: ${termName}`);
         }
         
         // Check if we have cached parsed data for this term
@@ -165,21 +194,35 @@ class AdvancedExcelParser {
         
         if (cachedTerm) {
           if (processedCount <= 10) {
-            console.log(`⚡ Using cached data for: ${termName}`);
+            logger.info(`⚡ Using cached data for: ${termName}`);
           }
           cachedCount++;
           parsedTerms.push(cachedTerm);
+          
+          // Mark cells as completed in checkpoint for cached terms
+          for (let colIdx = 1; colIdx < this.headers.size; colIdx++) {
+            this.checkpointManager!.markCellCompleted(rowNumber, colIdx);
+          }
+          checkpointHits++;
         } else {
           if (processedCount <= 10) {
-            console.log(`🆕 Parsing new data for: ${termName}`);
+            logger.info(`🆕 Parsing new data for: ${termName}`);
           }
           try {
-            const parsedTerm = await this.parseTermRow(row, termName, termHash, options);
+            const startTime = Date.now();
+            const parsedTerm = await this.parseTermRowWithCheckpoint(row, termName, termHash, options, rowNumber);
             await this.saveCachedTerm(parsedTerm);
             parsedTerms.push(parsedTerm);
             newlyParsedCount++;
+            
+            const processingTime = Date.now() - startTime;
+            if (processedCount <= 10) {
+              logger.info(`✅ Parsed ${termName} in ${processingTime}ms`);
+            }
           } catch (error) {
-            console.error(`❌ Error parsing term ${termName}:`, error);
+            logger.error(`❌ Error parsing term ${termName}:`, error);
+            // Log error in checkpoint
+            this.checkpointManager!.logError(rowNumber, 1, termName, 'term_parsing', error instanceof Error ? error.message : String(error));
             // Continue with other terms
           }
         }
@@ -189,12 +232,21 @@ class AdvancedExcelParser {
     // Save AI parse cache
     await this.saveAIParseCache();
 
-    console.log('\n✅ ADVANCED PARSING COMPLETED');
-    console.log('=============================');
-    console.log(`📊 Total terms parsed: ${parsedTerms.length}`);
-    console.log(`⚡ From cache: ${cachedCount}`);
-    console.log(`🆕 Newly parsed: ${newlyParsedCount}`);
-    console.log(`🧠 AI cache entries: ${this.aiParseCache.size}`);
+    // Final checkpoint save and report
+    if (this.checkpointManager) {
+      await this.checkpointManager.saveCheckpoint();
+      logger.info('\n📊 CHECKPOINT REPORT');
+      logger.info('===================');
+      logger.info(this.checkpointManager.generateReport());
+    }
+
+    logger.info('\n✅ ADVANCED PARSING WITH CHECKPOINTS COMPLETED');
+    logger.info('===============================================');
+    logger.info(`📊 Total terms parsed: ${parsedTerms.length}`);
+    logger.info(`⚡ From cache: ${cachedCount}`);
+    logger.info(`🔍 Checkpoint hits: ${checkpointHits}`);
+    logger.info(`🆕 Newly parsed: ${newlyParsedCount}`);
+    logger.info(`🧠 AI cache entries: ${this.aiParseCache.size}`);
 
     return parsedTerms;
   }
@@ -237,7 +289,7 @@ class AdvancedExcelParser {
       };
       await fs.writeFile(cacheFile, JSON.stringify(serializable, null, 2));
     } catch (error) {
-      console.error(`Error saving cache for ${parsedTerm.name}:`, error);
+      logger.error(`Error saving cache for ${parsedTerm.name}:`, error);
     }
   }
 
@@ -246,9 +298,9 @@ class AdvancedExcelParser {
       const cacheFile = path.join(CACHE_DIR, 'ai_parse_cache.json');
       const cacheObj = Object.fromEntries(this.aiParseCache);
       await fs.writeFile(cacheFile, JSON.stringify(cacheObj, null, 2));
-      console.log(`Saved ${this.aiParseCache.size} AI parse results to cache`);
+      logger.info(`Saved ${this.aiParseCache.size} AI parse results to cache`);
     } catch (error) {
-      console.error('Error saving AI parse cache:', error);
+      logger.error('Error saving AI parse cache:', error);
     }
   }
 
@@ -288,18 +340,197 @@ class AdvancedExcelParser {
     return parsedTerm;
   }
 
+  private async parseTermRowWithCheckpoint(
+    row: ExcelJS.Row, 
+    termName: string, 
+    hash: string, 
+    options: AIGenerationOptions,
+    rowNumber: number
+  ): Promise<ParsedTerm> {
+    const parsedTerm: ParsedTerm = {
+      name: termName,
+      sections: new Map(),
+      categories: {
+        main: [],
+        sub: [],
+        related: [],
+        domains: [],
+        techniques: []
+      },
+      metadata: {},
+      displayData: {
+        cardContent: {},
+        filterData: {},
+        sidebarContent: {},
+        mainContent: {}
+      },
+      parseHash: hash
+    };
+
+    // Parse each content section with checkpoint tracking
+    for (const section of CONTENT_SECTIONS) {
+      try {
+        const startTime = Date.now();
+        const sectionData = await this.parseSectionDataWithCheckpoint(row, section, termName, options, rowNumber);
+        parsedTerm.sections.set(section.sectionName, sectionData);
+
+        // Distribute data based on display type
+        this.distributeDisplayData(parsedTerm, section, sectionData);
+        
+        const processingTime = Date.now() - startTime;
+        
+        // Mark section columns as completed in checkpoint
+        for (const columnName of section.columns) {
+          const colIdx = this.headers.get(columnName);
+          if (colIdx) {
+            this.checkpointManager!.markCellCompleted(rowNumber, colIdx, processingTime);
+          }
+        }
+      } catch (error) {
+        logger.error(`❌ Error parsing section ${section.sectionName} for ${termName}:`, error);
+        
+        // Log error for each column in this section
+        for (const columnName of section.columns) {
+          const colIdx = this.headers.get(columnName);
+          if (colIdx) {
+            this.checkpointManager!.logError(
+              rowNumber, 
+              colIdx, 
+              termName, 
+              section.sectionName, 
+              error instanceof Error ? error.message : String(error)
+            );
+          }
+        }
+      }
+    }
+
+    // Parse categories using AI (with checkpoint tracking)
+    try {
+      await this.parseCategories(row, parsedTerm);
+    } catch (error) {
+      logger.error(`❌ Error parsing categories for ${termName}:`, error);
+      this.checkpointManager!.logError(rowNumber, 1, termName, 'categories', error instanceof Error ? error.message : String(error));
+    }
+
+    return parsedTerm;
+  }
+
+  private async parseSectionDataWithCheckpoint(
+    row: ExcelJS.Row, 
+    section: ContentSection, 
+    termName: string, 
+    options: AIGenerationOptions,
+    rowNumber: number
+  ): Promise<any> {
+    const sectionData: any = {};
+
+    for (const columnName of section.columns) {
+      const colIdx = this.headers.get(columnName);
+      if (!colIdx) continue;
+
+      // Check if this cell was already processed via checkpoint
+      if (this.checkpointManager!.isCellCompleted(rowNumber, colIdx)) {
+        // Cell already processed, skip
+        continue;
+      }
+
+      const cellValue = this.getCellValue(row, columnName);
+      const fieldName = this.extractFieldName(columnName);
+      
+      // Check if we should generate AI content for empty fields
+      if (!cellValue && this.shouldGenerateAIContent(section, columnName, options)) {
+        try {
+          logger.info(`🤖 Generating AI content for ${termName} → ${columnName}`);
+          const startTime = Date.now();
+          const aiContent = await this.generateAIContent(termName, columnName, section);
+          const processingTime = Date.now() - startTime;
+          
+          if (aiContent) {
+            sectionData[fieldName] = aiContent;
+            
+            // Update checkpoint performance metrics
+            this.checkpointManager!.updatePerformanceMetrics({
+              apiCalls: 1,
+              cacheMisses: 1,
+              costEstimate: 0.001 // Rough estimate per API call
+            });
+            
+            this.checkpointManager!.markCellCompleted(rowNumber, colIdx, processingTime);
+            continue;
+          }
+        } catch (error) {
+          logger.error(`❌ AI generation failed for ${termName} → ${columnName}:`, error);
+          this.checkpointManager!.logError(
+            rowNumber, 
+            colIdx, 
+            termName, 
+            columnName, 
+            error instanceof Error ? error.message : String(error)
+          );
+        }
+      }
+      
+      if (!cellValue) {
+        this.checkpointManager!.markCellCompleted(rowNumber, colIdx, 0);
+        continue;
+      }
+      
+      // Process existing content
+      try {
+        const startTime = Date.now();
+        
+        switch (section.parseType) {
+          case 'simple':
+            sectionData[fieldName] = cellValue;
+            break;
+            
+          case 'list':
+            sectionData[fieldName] = this.parseAsList(cellValue);
+            break;
+            
+          case 'structured':
+            sectionData[fieldName] = await this.parseStructured(cellValue, columnName);
+            break;
+            
+          case 'ai_parse':
+            sectionData[fieldName] = await this.parseWithAICached(cellValue, columnName);
+            this.checkpointManager!.updatePerformanceMetrics({
+              apiCalls: 1,
+              cacheMisses: 1,
+              costEstimate: 0.001
+            });
+            break;
+        }
+        
+        const processingTime = Date.now() - startTime;
+        this.checkpointManager!.markCellCompleted(rowNumber, colIdx, processingTime);
+        
+      } catch (error) {
+        logger.error(`❌ Error processing ${columnName} for ${termName}:`, error);
+        this.checkpointManager!.logError(
+          rowNumber, 
+          colIdx, 
+          termName, 
+          columnName, 
+          error instanceof Error ? error.message : String(error)
+        );
+      }
+    }
+
+    return sectionData;
+  }
+
   private async parseSectionData(row: ExcelJS.Row, section: ContentSection, termName: string, options: AIGenerationOptions): Promise<any> {
     const sectionData: any = {};
 
     for (const columnName of section.columns) {
       const cellValue = this.getCellValue(row, columnName);
-      if (!cellValue) continue;
-
       const fieldName = this.extractFieldName(columnName);
       
       // Check if we should generate AI content for empty fields
       if (!cellValue && this.shouldGenerateAIContent(section, columnName, options)) {
-        console.log(`🤖 Generating AI content for ${termName} → ${columnName}`);
+        logger.info(`🤖 Generating AI content for ${termName} → ${columnName}`);
         const aiContent = await this.generateAIContent(termName, columnName, section);
         if (aiContent) {
           sectionData[fieldName] = aiContent;
@@ -432,7 +663,7 @@ Return clean, structured data that can be easily used in a web application.
         }
       }
     } catch (error) {
-      console.error('AI parsing error:', error);
+      logger.error('AI parsing error:', error);
     }
 
     return {};
@@ -542,93 +773,38 @@ Return clean, structured data that can be easily used in a web application.
   private async generateAIContent(termName: string, sectionName: string, section: ContentSection): Promise<string | null> {
     const cacheKey = `ai_gen_${termName}_${sectionName}`;
     
-    // Check cache first for cost optimization
+    // Check local cache first for cost optimization
     if (this.aiParseCache.has(cacheKey)) {
       return this.aiParseCache.get(cacheKey);
     }
 
     try {
-      const prompt = this.constructPrompt(termName, sectionName);
-      const content = await this.callOpenAIWithRetry(prompt);
+      // Use enhanced aiService with smart caching
+      logger.info(`🤖 Generating AI content for: ${termName} → ${sectionName}`);
+      const content = await aiService.generateSectionContent(termName, sectionName);
       
       if (content && content.length > 10) {
-        // Cache the generated content
+        // Cache locally as well for this session
         this.aiParseCache.set(cacheKey, content);
+        logger.info(`✅ Generated content for ${termName} → ${sectionName} (${content.length} chars)`);
         return content;
       }
       
       return null;
     } catch (error) {
-      console.error(`Error generating AI content for ${termName} -> ${sectionName}:`, error);
+      logger.error(`Error generating AI content for ${termName} -> ${sectionName}:`, error);
       return null;
     }
   }
 
-  private constructPrompt(term: string, section: string): string {
-    // Integrated from aimlv2_simple.js constructPrompt function
-    return `You are an AI/ML educational content assistant. ` +
-           `For the term "${term}", please write only the content for this section:\n\n` +
-           `"${section}"\n\n` +
-           `Do not include any extra headings or formatting—just the prose, ` +
-           `concise enough to fit in one spreadsheet cell.`;
-  }
-
-  private async callOpenAIWithRetry(prompt: string, attempt: number = 0): Promise<string | null> {
-    try {
-      const response = await getOpenAIClient().chat.completions.create({
-        model: AI_CONFIG.PRIMARY_MODEL,
-        messages: [
-          { role: "system", content: "You are an AI/ML educational content assistant." },
-          { role: "user", content: prompt }
-        ],
-        max_tokens: 1000,
-        temperature: 0.7
-      }, {
-        timeout: AI_CONFIG.REQUEST_TIMEOUT
-      });
-
-      const content = response.choices[0]?.message?.content?.trim();
-      if (content && content.length > 10) {
-        return content;
-      }
-      
-      throw new Error('Content too short');
-    } catch (error) {
-      if (attempt < AI_CONFIG.MAX_RETRIES) {
-        console.warn(`AI call failed (attempt ${attempt + 1}), retrying...`);
-        await new Promise(resolve => setTimeout(resolve, AI_CONFIG.RETRY_DELAY));
-        return this.callOpenAIWithRetry(prompt, attempt + 1);
-      }
-      
-      // Try fallback model
-      if (attempt === AI_CONFIG.MAX_RETRIES) {
-        try {
-          const response = await getOpenAIClient().chat.completions.create({
-            model: AI_CONFIG.FALLBACK_MODEL,
-            messages: [
-              { role: "system", content: "You are an AI/ML educational content assistant." },
-              { role: "user", content: prompt }
-            ],
-            max_tokens: 1000,
-            temperature: 0.7
-          });
-
-          return response.choices[0]?.message?.content?.trim() || null;
-        } catch (fallbackError) {
-          console.error('Fallback model also failed:', fallbackError);
-        }
-      }
-      
-      throw error;
-    }
-  }
+  // AI methods removed - now using enhanced aiService with smart caching
 }
 
-// Enhanced database import for complex structure
-export async function importComplexTerms(parsedTerms: ParsedTerm[]): Promise<void> {
-  console.log('\n💾 ENHANCED DATABASE IMPORT');
-  console.log('===========================');
-  console.log(`📊 Importing ${parsedTerms.length} complex terms to enhanced schema...`);
+// Enhanced database import for complex structure with versioning
+export async function importComplexTerms(parsedTerms: ParsedTerm[], enableVersioning: boolean = true): Promise<void> {
+  logger.info('\n💾 ENHANCED DATABASE IMPORT');
+  logger.info('===========================');
+  logger.info(`📊 Importing ${parsedTerms.length} complex terms to enhanced schema...`);
   
   const { db } = await import('./db');
   const { enhancedTerms, termSections } = await import('../shared/enhancedSchema');
@@ -644,12 +820,12 @@ export async function importComplexTerms(parsedTerms: ParsedTerm[]): Promise<voi
     const progress = ((i + 1) / parsedTerms.length * 100).toFixed(1);
     
     if ((i + 1) % 100 === 0 || i < 10) {
-      console.log(`🔄 Processing term ${i + 1}/${parsedTerms.length} (${progress}%): ${term.name}`);
+      logger.info(`🔄 Processing term ${i + 1}/${parsedTerms.length} (${progress}%): ${term.name}`);
     }
     
     if (i < 5) {
-      console.log(`📋 Sections: ${Array.from(term.sections.keys()).slice(0, 3).join(', ')}...`);
-      console.log(`🏷️  Categories: Main=${term.categories.main.length}, Sub=${term.categories.sub.length}`);
+      logger.info(`📋 Sections: ${Array.from(term.sections.keys()).slice(0, 3).join(', ')}...`);
+      logger.info(`🏷️  Categories: Main=${term.categories.main.length}, Sub=${term.categories.sub.length}`);
     }
     
     try {
@@ -707,19 +883,65 @@ export async function importComplexTerms(parsedTerms: ParsedTerm[]): Promise<voi
 
       let enhancedTerm;
       if (existingTerm.length > 0) {
-        // Update existing term
-        [enhancedTerm] = await db
-          .update(enhancedTerms)
-          .set({
-            ...enhancedTermData,
-            updatedAt: new Date()
-          })
-          .where(eq(enhancedTerms.id, existingTerm[0].id))
-          .returning();
-        updateCount++;
-        
-        if (i < 5) {
-          console.log(`🔄 Updated existing term: ${enhancedTerm.id}`);
+        // If versioning is enabled and term exists, use versioning system
+        if (enableVersioning) {
+          logger.info(`🔄 Using versioning system for existing term: ${term.name}`);
+          
+          // Create new version with quality assessment
+          const versionResult = await versioningService.createVersion(
+            existingTerm[0].id,
+            term.name,
+            {
+              sections: Object.fromEntries(term.sections),
+              categories: term.categories,
+              displayData: term.displayData,
+              metadata: term.metadata
+            },
+            {
+              source: 'excel_import',
+              processingMode: 'advanced_42_section',
+              aiGenerated: true
+            }
+          );
+          
+          logger.info(`📊 Versioning decision: ${versionResult.decision.action} (confidence: ${versionResult.decision.confidence})`);
+          
+          // Update term data only if version was upgraded
+          if (versionResult.decision.action === 'upgrade') {
+            [enhancedTerm] = await db
+              .update(enhancedTerms)
+              .set({
+                ...enhancedTermData,
+                updatedAt: new Date()
+              })
+              .where(eq(enhancedTerms.id, existingTerm[0].id))
+              .returning();
+            updateCount++;
+            
+            if (i < 5) {
+              logger.info(`✨ Upgraded term v${versionResult.decision.qualityDelta.toFixed(1)}: ${enhancedTerm.id}`);
+            }
+          } else {
+            enhancedTerm = existingTerm[0];
+            if (i < 5) {
+              logger.info(`📋 Kept existing version: ${enhancedTerm.id} (${versionResult.decision.reasoning})`);
+            }
+          }
+        } else {
+          // Standard update without versioning
+          [enhancedTerm] = await db
+            .update(enhancedTerms)
+            .set({
+              ...enhancedTermData,
+              updatedAt: new Date()
+            })
+            .where(eq(enhancedTerms.id, existingTerm[0].id))
+            .returning();
+          updateCount++;
+          
+          if (i < 5) {
+            logger.info(`🔄 Updated existing term: ${enhancedTerm.id}`);
+          }
         }
       } else {
         // Insert new term
@@ -729,8 +951,31 @@ export async function importComplexTerms(parsedTerms: ParsedTerm[]): Promise<voi
           .returning();
         insertCount++;
         
-        if (i < 5) {
-          console.log(`➕ Inserted new term: ${enhancedTerm.id}`);
+        // If versioning enabled, create initial version
+        if (enableVersioning) {
+          await versioningService.createVersion(
+            enhancedTerm.id,
+            term.name,
+            {
+              sections: Object.fromEntries(term.sections),
+              categories: term.categories,
+              displayData: term.displayData,
+              metadata: term.metadata
+            },
+            {
+              source: 'excel_import',
+              processingMode: 'advanced_42_section',
+              aiGenerated: true
+            }
+          );
+          
+          if (i < 5) {
+            logger.info(`✨ Created new term with versioning: ${enhancedTerm.id}`);
+          }
+        } else {
+          if (i < 5) {
+            logger.info(`➕ Inserted new term: ${enhancedTerm.id}`);
+          }
         }
       }
 
@@ -768,27 +1013,27 @@ export async function importComplexTerms(parsedTerms: ParsedTerm[]): Promise<voi
       if (sectionInserts.length > 0) {
         await db.insert(termSections).values(sectionInserts);
         if (i < 5) {
-          console.log(`📋 Inserted ${sectionInserts.length} sections`);
+          logger.info(`📋 Inserted ${sectionInserts.length} sections`);
         }
       }
 
       successCount++;
 
     } catch (error) {
-      console.error(`❌ Error importing term ${term.name}:`, error);
+      logger.error(`❌ Error importing term ${term.name}:`, error);
       errorCount++;
       // Continue with other terms instead of throwing
     }
   }
   
-  console.log('\n✅ ENHANCED IMPORT COMPLETED');
-  console.log('============================');
-  console.log(`📊 Total processed: ${parsedTerms.length}`);
-  console.log(`✅ Successfully imported: ${successCount}`);
-  console.log(`➕ New terms: ${insertCount}`);
-  console.log(`🔄 Updated terms: ${updateCount}`);
-  console.log(`❌ Errors: ${errorCount}`);
-  console.log(`💾 Database: Enhanced terms table (enhancedTerms + termSections)`);
+  logger.info('\n✅ ENHANCED IMPORT COMPLETED');
+  logger.info('============================');
+  logger.info(`📊 Total processed: ${parsedTerms.length}`);
+  logger.info(`✅ Successfully imported: ${successCount}`);
+  logger.info(`➕ New terms: ${insertCount}`);
+  logger.info(`🔄 Updated terms: ${updateCount}`);
+  logger.info(`❌ Errors: ${errorCount}`);
+  logger.info(`💾 Database: Enhanced terms table (enhancedTerms + termSections)`);
 }
 
 export { AdvancedExcelParser, type ParsedTerm };

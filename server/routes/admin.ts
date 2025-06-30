@@ -14,6 +14,7 @@ import { AdvancedExcelParser, importComplexTerms } from '../advancedExcelParser'
 import path from 'path';
 import fs from 'fs';
 import { inArray, eq } from 'drizzle-orm';
+import { log as logger } from '../utils/logger';
 // TODO: Phase 2 - Remove direct db import after all queries use storage layer
 // import { db } from '../db';
 // import { enhancedTerms, categories } from '../../shared/enhancedSchema';
@@ -81,8 +82,8 @@ export function registerAdminRoutes(app: Express): void {
         });
       }
 
-      console.log(`📁 Processing uploaded file: ${req.file.originalname}`);
-      console.log(`📊 File size: ${req.file.size} bytes`);
+      logger.info(`📁 Processing uploaded file: ${req.file.originalname}`);
+      logger.info(`📊 File size: ${req.file.size} bytes`);
 
       // Parse the Excel file
       const parsedData = await parseExcelFile(req.file.buffer);
@@ -94,7 +95,7 @@ export function registerAdminRoutes(app: Express): void {
         });
       }
 
-      console.log(`✅ Parsed ${parsedData.terms.length} terms from Excel file`);
+      logger.info(`✅ Parsed ${parsedData.terms.length} terms from Excel file`);
 
       // Import to database
       const dbResult = await importToDatabase(parsedData);
@@ -134,8 +135,8 @@ export function registerAdminRoutes(app: Express): void {
         });
       }
 
-      console.log(`🚀 Processing uploaded file with advanced AI processing: ${req.file.originalname}`);
-      console.log(`📊 File size: ${req.file.size} bytes`);
+      logger.info(`🚀 Processing uploaded file with advanced AI processing: ${req.file.originalname}`);
+      logger.info(`📊 File size: ${req.file.size} bytes`);
 
       // Parse AI options from request
       const aiOptions = req.body.aiOptions ? JSON.parse(req.body.aiOptions) : {
@@ -144,7 +145,7 @@ export function registerAdminRoutes(app: Express): void {
         costOptimization: true
       };
 
-      console.log(`🤖 AI Options:`, aiOptions);
+      logger.info(`🤖 AI Options:`, aiOptions);
 
       // Initialize advanced parser
       const parser = new AdvancedExcelParser();
@@ -159,7 +160,7 @@ export function registerAdminRoutes(app: Express): void {
         });
       }
 
-      console.log(`✅ Parsed ${parsedTerms.length} terms with 42-section structure`);
+      logger.info(`✅ Parsed ${parsedTerms.length} terms with 42-section structure`);
 
       // Import to enhanced database
       await importComplexTerms(parsedTerms);
@@ -206,13 +207,13 @@ export function registerAdminRoutes(app: Express): void {
         });
       }
 
-      console.log("🗑️  Admin initiated data clearing...");
+      logger.info("🗑️  Admin initiated data clearing...");
       
       // TODO: Phase 2 - Add clearAllData() method to enhancedStorage
       // Expected signature: async clearAllData(): Promise<{ tablesCleared: string[] }>
       const result = await storage.clearAllData();
       
-      console.log("✅ Data clearing completed");
+      logger.info("✅ Data clearing completed");
 
       res.json({
         success: true,
@@ -492,11 +493,11 @@ export function registerAdminRoutes(app: Express): void {
       // Clear cache if requested
       if (clearCache) {
         await cacheManager.clearCache(filePath);
-        console.log(`🗑️ Cache cleared for ${fileName}`);
+        logger.info(`🗑️ Cache cleared for ${fileName}`);
       }
       
       // Start reprocessing
-      console.log(`🔄 Starting manual reprocessing of ${fileName}...`);
+      logger.info(`🔄 Starting manual reprocessing of ${fileName}...`);
       const startTime = Date.now();
       
       await smartLoadExcelData(filePath, {
@@ -655,7 +656,7 @@ export function registerAdminRoutes(app: Express): void {
   // Add the new secure force reprocess endpoint to the main app routes
   app.post('/api/admin/import/force-reprocess', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      console.log('🔥 FORCE REPROCESS: Admin initiated force reprocessing');
+      logger.info('🔥 FORCE REPROCESS: Admin initiated force reprocessing');
       
       const { fileName, clearInvalidCache = true } = req.body;
       
@@ -698,23 +699,23 @@ export function registerAdminRoutes(app: Express): void {
         });
       }
       
-      console.log(`🎯 Force reprocessing target: ${targetFile}`);
+      logger.info(`🎯 Force reprocessing target: ${targetFile}`);
       
       // Check and clear invalid cache if requested
       let cacheCleared = false;
       if (clearInvalidCache) {
         cacheCleared = await cacheManager.forceInvalidateEmptyCache(filePath);
         if (cacheCleared) {
-          console.log('🗑️ Invalid cache cleared');
+          logger.info('🗑️ Invalid cache cleared');
         }
       }
       
       // Always clear cache for force reprocess
-      console.log('🗑️ Clearing all cache for force reprocess');
+      logger.info('🗑️ Clearing all cache for force reprocess');
       await cacheManager.clearCache(filePath);
       
       // Start force reprocessing
-      console.log(`🔄 Starting force reprocessing of ${targetFile}...`);
+      logger.info(`🔄 Starting force reprocessing of ${targetFile}...`);
       const startTime = Date.now();
       
       // Use force reprocess flag to bypass all caching
@@ -1075,7 +1076,7 @@ Provide an enhanced definition following the guidelines above.`
     }
   });
 
-  console.log("✅ Admin routes registered successfully");
+  logger.info("✅ Admin routes registered successfully");
 }
 
 export default router;

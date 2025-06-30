@@ -1,5 +1,1 @@
-{
-  "test_term:definition": "{\"shortDefinition\": \"Test definition\", \"definition\": \"This is a test definition for caching\"}",
-  "neural_network:applications": "Neural networks are used in image recognition, natural language processing, and autonomous vehicles.",
-  "machine_learning:prerequisites": "Understanding of linear algebra, statistics, and programming fundamentals is recommended."
-}
+{}

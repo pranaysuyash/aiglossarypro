@@ -1,16 +1,11 @@
 #!/usr/bin/env node
 
-/**
- * Smart AI/ML Glossary Processor - Cost Optimized
- * Based on aimlv2_simple.js but with secure configuration
- */
-
 const fs = require('fs').promises;
 const https = require('https');
 
 // ── Configuration ─────────────────────────────────────────────────────────────
 
-const CSV_FILE = process.argv.includes('--sample') ? "aiml2_sample.csv" : "aiml2.csv";
+const CSV_FILE = "aiml2.csv";
 const JSON_FILE = "aiml2.json";
 const CHECKPOINT_FILE = "checkpoint.json";
 
@@ -20,14 +15,13 @@ const REQUEST_TIMEOUT = 60000;
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 2000;
 
-// Use environment variable for API key (secure)
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const PRIMARY_MODEL = "gpt-4.1-nano";  // Cost-optimized model as requested
+const PRIMARY_MODEL = "gpt-4.1-nano";
 const FALLBACK_MODEL = "gpt-3.5-turbo";
 
 // ── Validation ───────────────────────────────────────────────────────────────
 
-if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your-openai-api-key-here') {
+if (!OPENAI_API_KEY) {
     console.error('❌ ERROR: OPENAI_API_KEY environment variable is required');
     console.error('Set it with: export OPENAI_API_KEY="your-actual-api-key"');
     process.exit(1);
@@ -100,12 +94,25 @@ async function saveCSV(filename, headers, rows) {
     await fs.rename(tmpFile, filename);
 }
 
+async function loadJSON(filename) {
+    const content = await fs.readFile(filename, 'utf-8');
+    const records = JSON.parse(content);
+    const headers = records.length > 0 ? Object.keys(records[0]) : [];
+    return { headers, records };
+}
+
+async function saveJSON(filename, records) {
+    const tmpFile = filename + '.tmp';
+    await fs.writeFile(tmpFile, JSON.stringify(records, null, 2), 'utf-8');
+    await fs.rename(tmpFile, filename);
+}
+
 // ── OpenAI API ────────────────────────────────────────────────────────────────
 
-async function callOpenAI(prompt, model = PRIMARY_MODEL) {
+async function callOpenAI(prompt) {
     return new Promise((resolve, reject) => {
         const data = JSON.stringify({
-            model: model,
+            model: PRIMARY_MODEL,
             messages: [
                 { role: "system", content: "You are an AI/ML educational content assistant." },
                 { role: "user", content: prompt }
@@ -185,9 +192,7 @@ async function processCell(term, section, row, col, attempt = 0) {
     log('info', `Row ${row}, Col ${col}: '${term}' → '${section}' (attempt ${attempt + 1})`);
     
     try {
-        const model = attempt < MAX_RETRIES ? PRIMARY_MODEL : FALLBACK_MODEL;
-        const content = await callOpenAI(constructPrompt(term, section), model);
-        
+        const content = await callOpenAI(constructPrompt(term, section));
         if (content && content.length > 10) {
             log('info', `Completed Row ${row}, Col ${col} (${content.length} chars)`);
             return content;
@@ -196,7 +201,7 @@ async function processCell(term, section, row, col, attempt = 0) {
     } catch (error) {
         if (attempt < MAX_RETRIES) {
             log('warning', `Row ${row}, Col ${col}: ${error.message}, retrying...`);
-            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * (attempt + 1)));
+            await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
             return processCell(term, section, row, col, attempt + 1);
         }
         log('error', `Row ${row}, Col ${col}: Final failure: ${error.message}`);
@@ -206,7 +211,6 @@ async function processCell(term, section, row, col, attempt = 0) {
 
 async function processCSV(mode = 'topdown') {
     log('info', `Starting CSV processing in ${mode} mode`);
-    log('info', `Using model: ${PRIMARY_MODEL} (cost-optimized)`);
     
     const { headers, rows } = await loadCSV(CSV_FILE);
     const checkpoint = await loadCheckpoint();
@@ -265,43 +269,101 @@ async function processCSV(mode = 'topdown') {
     log('info', 'CSV processing complete!');
 }
 
+async function processJSON(mode = 'topdown') {
+    log('info', `Starting JSON processing in ${mode} mode`);
+    
+    const { headers, records } = await loadJSON(JSON_FILE);
+    const checkpoint = await loadCheckpoint();
+    
+    // Find missing cells
+    const tasks = [];
+    for (let rowIdx = 0; rowIdx < records.length; rowIdx++) {
+        const record = records[rowIdx];
+        const term = record[headers[0]] || '';
+        if (!term) continue;
+        
+        for (let colIdx = 1; colIdx < headers.length; colIdx++) {
+            const excelRow = rowIdx + 2;
+            const key = `${excelRow}-${colIdx}`;
+            const header = headers[colIdx];
+            
+            if (checkpoint[key] || record[header]) continue;
+            
+            tasks.push({
+                rowIdx, colIdx, excelRow,
+                term, section: header
+            });
+        }
+    }
+    
+    if (mode === 'bottomup') tasks.reverse();
+    
+    log('info', `Found ${tasks.length} cells to process`);
+    
+    // Process in batches
+    for (let i = 0; i < tasks.length; i += BATCH_SIZE) {
+        const batch = tasks.slice(i, i + BATCH_SIZE);
+        log('info', `Processing batch ${Math.floor(i/BATCH_SIZE) + 1}/${Math.ceil(tasks.length/BATCH_SIZE)}`);
+        
+        const promises = batch.map(task => 
+            processCell(task.term, task.section, task.excelRow, task.colIdx)
+                .then(content => ({ ...task, content }))
+        );
+        
+        const results = await Promise.all(promises);
+        
+        // Update data and checkpoint
+        let updated = 0;
+        for (const result of results) {
+            if (result.content) {
+                records[result.rowIdx][headers[result.colIdx]] = result.content;
+                checkpoint[`${result.excelRow}-${result.colIdx}`] = true;
+                updated++;
+            }
+        }
+        
+        await saveJSON(JSON_FILE, records);
+        await saveCheckpoint(checkpoint);
+        log('info', `Batch completed: ${updated}/${batch.length} updated`);
+    }
+    
+    log('info', 'JSON processing complete!');
+}
+
 // ── CLI Interface ─────────────────────────────────────────────────────────────
 
 async function main() {
     const args = process.argv.slice(2);
+    const format = args.includes('--json') ? 'json' : 'csv';
+    const mode = args.includes('--bottomup') ? 'bottomup' : 'topdown';
     
     if (args.includes('--help') || args.includes('-h')) {
         console.log(`
-Smart AI/ML Glossary Processor (Cost-Optimized)
+AI/ML Glossary Content Processor (Node.js Simple Version)
 
 Usage:
-  node smart_processor.cjs [options]
+  node aimlv2_simple.js [options]
 
 Options:
   --csv         Process CSV file (default)
+  --json        Process JSON file
   --topdown     Process from top to bottom (default)
   --bottomup    Process from bottom to top
   --help, -h    Show this help
 
-Environment Variables:
-  OPENAI_API_KEY    Required: Your OpenAI API key
-
-Configuration:
-  Model: ${PRIMARY_MODEL} (cost-optimized)
-  Fallback: ${FALLBACK_MODEL}
-  Batch Size: ${BATCH_SIZE}
-  Workers: ${MAX_WORKERS}
-
 Examples:
-  export OPENAI_API_KEY="your-actual-key"
-  node smart_processor.cjs --csv --topdown
+  node aimlv2_simple.js --csv --topdown
+  node aimlv2_simple.js --json --bottomup
         `);
         return;
     }
     
     try {
-        const mode = args.includes('--bottomup') ? 'bottomup' : 'topdown';
-        await processCSV(mode);
+        if (format === 'json') {
+            await processJSON(mode);
+        } else {
+            await processCSV(mode);
+        }
     } catch (error) {
         log('error', `Fatal error: ${error.message}`);
         process.exit(1);

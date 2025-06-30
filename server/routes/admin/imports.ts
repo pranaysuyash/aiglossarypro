@@ -243,6 +243,76 @@ export function registerAdminImportRoutes(app: Express): void {
     }
   });
 
+  // Advanced Excel processing with AI content generation
+  app.post('/api/admin/import-advanced', authMiddleware, tokenMiddleware, requireAdmin, upload.single('file'), async (req: Request, res: Response) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          message: "No file uploaded"
+        });
+      }
+
+      logger.info(`🚀 Processing uploaded file with advanced AI processing: ${req.file.originalname}`);
+      logger.info(`📊 File size: ${req.file.size} bytes`);
+
+      // Parse AI options from request
+      const aiOptions = req.body.aiOptions ? JSON.parse(req.body.aiOptions) : {
+        enableAI: false,
+        mode: 'none',
+        costOptimization: true
+      };
+
+      logger.info(`🤖 AI Options:`, aiOptions);
+
+      // Initialize advanced parser
+      const parser = new AdvancedExcelParser();
+      
+      // Parse with AI enhancement
+      const parsedTerms = await parser.parseComplexExcel(req.file.buffer, aiOptions);
+      
+      if (!parsedTerms || parsedTerms.length === 0) {
+        return res.status(400).json({
+          success: false,
+          message: "No valid data found in the Excel file"
+        });
+      }
+
+      logger.info(`✅ Parsed ${parsedTerms.length} terms with 42-section structure`);
+
+      // Import to enhanced database
+      await importComplexTerms(parsedTerms);
+
+      const importResult: ImportResult = {
+        success: true,
+        termsImported: parsedTerms.length,
+        categoriesImported: 0, // Will be calculated during import
+        errors: [],
+        warnings: [],
+        metadata: {
+          processingMode: aiOptions.enableAI ? aiOptions.mode : 'no-ai',
+          sectionsProcessed: 42,
+          aiGenerated: aiOptions.enableAI ? parsedTerms.filter(t => t.sections.size > 7).length : 0
+        }
+      };
+
+      const response: ApiResponse<ImportResult> = {
+        success: true,
+        data: importResult,
+        message: `Successfully processed ${importResult.termsImported} terms with ${aiOptions.enableAI ? 'AI enhancement' : 'standard processing'}`
+      };
+
+      res.json(response);
+    } catch (error) {
+      logger.error("Error in advanced processing:", error);
+      res.status(500).json({
+        success: false,
+        message: "Failed to process file with advanced options",
+        error: error instanceof Error ? error.message : "Unknown error"
+      });
+    }
+  });
+
   // Clear all data (dangerous operation)
   app.delete('/api/admin/clear-data', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {

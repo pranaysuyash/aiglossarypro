@@ -2,6 +2,8 @@ import OpenAI from 'openai';
 import NodeCache from 'node-cache';
 import { db } from './db';
 import { ITerm, ICategory } from '../client/src/interfaces/interfaces';
+import fs from 'fs/promises';
+import path from 'path';
 
 // Types for AI responses
 export interface AIDefinitionResponse {
@@ -62,12 +64,16 @@ interface RateLimitConfig {
 class AIService {
   private openai: OpenAI;
   private cache: NodeCache;
+  private persistentCache: Map<string, any> = new Map();
   private rateLimiter: Map<string, number[]> = new Map();
   private readonly rateLimitConfig: RateLimitConfig = {
     maxRequestsPerMinute: 60,
     maxRequestsPerHour: 1000,
     maxRequestsPerDay: 5000
   };
+  private readonly CACHE_FILE = path.join(process.cwd(), 'ai_cache.json');
+  private readonly MAX_RETRIES = 3;
+  private readonly RETRY_DELAY = 2000;
 
   // Model configurations for different operations
   private readonly modelConfig = {
@@ -95,8 +101,14 @@ class AIService {
       maxKeys: 10000
     });
 
+    // Load persistent cache on startup
+    this.loadPersistentCache();
+
     // Cleanup rate limiter every hour
     setInterval(() => this.cleanupRateLimiter(), 60 * 60 * 1000);
+    
+    // Save persistent cache every 5 minutes
+    setInterval(() => this.savePersistentCache(), 5 * 60 * 1000);
   }
 
   private checkRateLimit(identifier: string = 'default'): boolean {
@@ -140,6 +152,41 @@ class AIService {
     }
   }
 
+  // Smart caching system from smart_processor.cjs
+  private async loadPersistentCache(): Promise<void> {
+    try {
+      const content = await fs.readFile(this.CACHE_FILE, 'utf-8');
+      const data = JSON.parse(content);
+      this.persistentCache = new Map(Object.entries(data));
+      console.log(`Loaded ${this.persistentCache.size} cached AI results`);
+    } catch (error) {
+      console.log('No existing cache file, starting fresh');
+      this.persistentCache = new Map();
+    }
+  }
+
+  private async savePersistentCache(): Promise<void> {
+    try {
+      const data = Object.fromEntries(this.persistentCache);
+      const tmpFile = this.CACHE_FILE + '.tmp';
+      await fs.writeFile(tmpFile, JSON.stringify(data, null, 2), 'utf-8');
+      await fs.rename(tmpFile, this.CACHE_FILE);
+      console.log(`Saved ${this.persistentCache.size} AI results to cache`);
+    } catch (error) {
+      console.error('Failed to save persistent cache:', error);
+    }
+  }
+
+  private getCachedResult(term: string, section: string): string | null {
+    const key = `${term}:${section}`;
+    return this.persistentCache.get(key) || null;
+  }
+
+  private setCachedResult(term: string, section: string, content: string): void {
+    const key = `${term}:${section}`;
+    this.persistentCache.set(key, content);
+  }
+
   private calculateCost(model: string, inputTokens: number, outputTokens: number): number {
     const costs = this.modelConfig.costs[model as keyof typeof this.modelConfig.costs];
     if (!costs) return 0;
@@ -153,22 +200,22 @@ class AIService {
       
       const { aiUsageAnalytics } = await import('../shared/enhancedSchema');
       
-      // Insert into database
+      // Insert into database with correct field mapping
       await db.insert(aiUsageAnalytics).values({
         operation: metrics.operation,
         model: metrics.model,
-        userId: userId || null,
-        termId: termId || null,
-        inputTokens: metrics.inputTokens || null,
-        outputTokens: metrics.outputTokens || null,
+        userId: userId || undefined,
+        termId: termId || undefined,
+        inputTokens: metrics.inputTokens || undefined,
+        outputTokens: metrics.outputTokens || undefined,
         latency: metrics.latency,
-        cost: metrics.cost ? metrics.cost.toString() : null,
+        cost: metrics.cost ? metrics.cost.toString() : undefined,
         success: metrics.success,
-        errorType: metrics.errorType || null,
-        errorMessage: metrics.errorMessage || null,
-        sessionId: null, // Could be passed in future
-        ipAddress: null, // Could be passed in future
-        userAgent: null, // Could be passed in future
+        errorType: metrics.errorType || undefined,
+        errorMessage: metrics.errorMessage || undefined,
+        sessionId: undefined, // Could be passed in future
+        ipAddress: undefined, // Could be passed in future
+        userAgent: undefined, // Could be passed in future
       });
       
       // Also log to console for debugging
@@ -190,24 +237,22 @@ class AIService {
     }
   }
 
-  // Enhanced fail-safe for API outages
+  // Enhanced fail-safe for API outages with smart model fallback
   private async executeWithFailsafe<T>(operation: () => Promise<T>, fallback?: T): Promise<T> {
-    const maxRetries = 3;
-    const baseDelay = 1000;
     
-    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    for (let attempt = 1; attempt <= this.MAX_RETRIES; attempt++) {
       try {
         return await operation();
-             } catch (error: unknown) {
-         const isLastAttempt = attempt === maxRetries;
-         const errorMessage = error instanceof Error ? error.message : String(error);
-         const isRateLimitError = errorMessage.includes('rate limit');
-         const isAPIError = errorMessage.includes('API') || 
-           errorMessage.includes('network') ||
-           errorMessage.includes('timeout');
+      } catch (error: unknown) {
+        const isLastAttempt = attempt === this.MAX_RETRIES;
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        const isRateLimitError = errorMessage.includes('rate limit');
+        const isAPIError = errorMessage.includes('API') || 
+          errorMessage.includes('network') ||
+          errorMessage.includes('timeout');
         
-                 if (isLastAttempt) {
-           console.error(`AI operation failed after ${maxRetries} attempts:`, error instanceof Error ? error : new Error(String(error)));
+        if (isLastAttempt) {
+          console.error(`AI operation failed after ${this.MAX_RETRIES} attempts:`, error instanceof Error ? error : new Error(String(error)));
           
           // If we have a fallback, use it
           if (fallback !== undefined) {
@@ -225,14 +270,50 @@ class AIService {
           }
         }
         
-                 // Exponential backoff with jitter
-         const delay = baseDelay * Math.pow(2, attempt - 1) + Math.random() * 1000;
-         console.log(`AI operation attempt ${attempt} failed, retrying in ${delay}ms:`, errorMessage);
-         await new Promise(resolve => setTimeout(resolve, delay));
+        // Exponential backoff with jitter from smart_processor.cjs
+        const delay = this.RETRY_DELAY * (attempt + 1) + Math.random() * 1000;
+        console.log(`AI operation attempt ${attempt} failed, retrying in ${delay}ms:`, errorMessage);
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
     
     throw new Error('Maximum retries exceeded');
+  }
+
+  // Smart OpenAI call with cost optimization and model fallback
+  private async callOpenAIWithRetry(
+    prompt: string, 
+    systemPrompt: string = "You are an AI/ML educational content assistant.",
+    attempt: number = 0
+  ): Promise<string> {
+    const model = attempt < this.MAX_RETRIES ? this.modelConfig.primary : this.modelConfig.secondary;
+    
+    try {
+      const completion = await this.openai.chat.completions.create({
+        model: model,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: prompt }
+        ],
+        max_tokens: 1000,
+        temperature: 0.7,
+      });
+
+      const content = completion.choices[0]?.message?.content;
+      if (!content || content.length < 10) {
+        throw new Error('Content too short or empty');
+      }
+
+      return content.trim();
+    } catch (error) {
+      if (attempt < this.MAX_RETRIES) {
+        const delay = this.RETRY_DELAY * (attempt + 1);
+        console.log(`OpenAI call attempt ${attempt + 1} failed, retrying with ${attempt >= 1 ? this.modelConfig.secondary : this.modelConfig.primary} in ${delay}ms`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.callOpenAIWithRetry(prompt, systemPrompt, attempt + 1);
+      }
+      throw error;
+    }
   }
 
   // Generate comprehensive definition for a term using primary model
@@ -240,7 +321,25 @@ class AIService {
     const cacheKey = `definition:${term}:${category || 'none'}`;
     const startTime = Date.now();
     
-    // Check cache first
+    // Check persistent cache first (smart caching)
+    const persistentCached = this.getCachedResult(term, 'definition');
+    if (persistentCached) {
+      try {
+        const parsed = JSON.parse(persistentCached) as AIDefinitionResponse;
+        console.log(`⚡ Using cached definition for: ${term}`);
+        await this.logUsage({
+          operation: 'generate_definition',
+          model: this.modelConfig.primary,
+          latency: Date.now() - startTime,
+          success: true
+        }, userId);
+        return parsed;
+      } catch (error) {
+        console.log(`Cache parse error for ${term}, regenerating`);
+      }
+    }
+    
+    // Check in-memory cache
     const cached = this.cache.get<AIDefinitionResponse>(cacheKey);
     if (cached) {
       await this.logUsage({
@@ -310,8 +409,11 @@ Your definitions will be marked as AI-generated and subject to expert review. Pr
         success: true
       }, userId);
       
-      // Cache for 24 hours
+      // Cache for 24 hours in memory
       this.cache.set(cacheKey, result, 24 * 3600);
+      
+      // Save to persistent cache (smart caching)
+      this.setCachedResult(term, 'definition', JSON.stringify(result));
       
       return result;
     } catch (error) {
@@ -718,15 +820,92 @@ Keep the core meaning intact while enhancing clarity and usefulness.
   }
 
   // Utility methods
+  // Generate AI content for specific section (from smart_processor.cjs)
+  async generateSectionContent(term: string, section: string, userId?: string): Promise<string> {
+    const startTime = Date.now();
+    
+    // Check persistent cache first
+    const persistentCached = this.getCachedResult(term, section);
+    if (persistentCached) {
+      console.log(`⚡ Using cached content for: ${term} → ${section}`);
+      await this.logUsage({
+        operation: 'generate_section_content',
+        model: this.modelConfig.primary,
+        latency: Date.now() - startTime,
+        success: true
+      }, userId);
+      return persistentCached;
+    }
+
+    // Check rate limit
+    if (!this.checkRateLimit(userId)) {
+      throw new Error('Rate limit exceeded. Please try again later.');
+    }
+
+    try {
+      const prompt = this.constructSectionPrompt(term, section);
+      const content = await this.callOpenAIWithRetry(prompt);
+      
+      if (content && content.length > 10) {
+        // Cache the result
+        this.setCachedResult(term, section, content);
+        
+        // Log usage
+        const latency = Date.now() - startTime;
+        await this.logUsage({
+          operation: 'generate_section_content',
+          model: this.modelConfig.primary,
+          latency,
+          success: true
+        }, userId);
+        
+        console.log(`✅ Generated content for: ${term} → ${section} (${content.length} chars)`);
+        return content;
+      }
+      
+      throw new Error('Content too short');
+    } catch (error) {
+      const latency = Date.now() - startTime;
+      await this.logUsage({
+        operation: 'generate_section_content',
+        model: this.modelConfig.primary,
+        latency,
+        success: false,
+        errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
+        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+      }, userId);
+
+      console.error(`Error generating section content for ${term} → ${section}:`, error);
+      throw new Error('Failed to generate section content');
+    }
+  }
+
+  // Smart prompt construction (from smart_processor.cjs)
+  private constructSectionPrompt(term: string, section: string): string {
+    return `You are an AI/ML educational content assistant. ` +
+           `For the term "${term}", please write only the content for this section:\n\n` +
+           `"${section}"\n\n` +
+           `Do not include any extra headings or formatting—just the prose, ` +
+           `concise enough to fit in one spreadsheet cell.`;
+  }
+
   getCacheStats(): object {
     return {
       keys: this.cache.keys().length,
-      stats: this.cache.getStats()
+      stats: this.cache.getStats(),
+      persistentCacheSize: this.persistentCache.size,
+      cacheFile: this.CACHE_FILE
     };
   }
 
   clearCache(): void {
     this.cache.flushAll();
+    this.persistentCache.clear();
+  }
+
+  // Force save persistent cache
+  async forceSaveCache(): Promise<void> {
+    await this.savePersistentCache();
   }
 
   getRateLimitStatus(identifier: string = 'default'): object {

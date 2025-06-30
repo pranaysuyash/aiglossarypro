@@ -15,6 +15,24 @@ function getOpenAIClient() {
   return openai;
 }
 
+// AI Content Generation Configuration (integrated from aimlv2_simple.js)
+const AI_CONFIG = {
+  PRIMARY_MODEL: "gpt-4-turbo-preview",
+  FALLBACK_MODEL: "gpt-3.5-turbo",
+  MAX_RETRIES: 3,
+  RETRY_DELAY: 2000,
+  REQUEST_TIMEOUT: 60000,
+  MAX_WORKERS: 25,
+  BATCH_SIZE: 75, // MAX_WORKERS * 3
+};
+
+interface AIGenerationOptions {
+  enableAI: boolean;
+  mode: 'none' | 'basic' | 'full' | 'selective';
+  sections?: string[]; // For selective mode
+  costOptimization: boolean;
+}
+
 // Cache directory for parsed results
 const CACHE_DIR = path.join(process.cwd(), 'temp', 'parsed_cache');
 
@@ -79,7 +97,11 @@ class AdvancedExcelParser {
     }
   }
 
-  async parseComplexExcel(buffer: Buffer): Promise<ParsedTerm[]> {
+  async parseComplexExcel(buffer: Buffer, options: AIGenerationOptions = { 
+    enableAI: false, 
+    mode: 'none', 
+    costOptimization: true 
+  }): Promise<ParsedTerm[]> {
     console.log('\n🧠 ADVANCED EXCEL PARSER');
     console.log('========================');
     console.log('📋 Starting complex 42-section parsing...');
@@ -152,7 +174,7 @@ class AdvancedExcelParser {
             console.log(`🆕 Parsing new data for: ${termName}`);
           }
           try {
-            const parsedTerm = await this.parseTermRow(row, termName, termHash);
+            const parsedTerm = await this.parseTermRow(row, termName, termHash, options);
             await this.saveCachedTerm(parsedTerm);
             parsedTerms.push(parsedTerm);
             newlyParsedCount++;
@@ -230,7 +252,7 @@ class AdvancedExcelParser {
     }
   }
 
-  private async parseTermRow(row: ExcelJS.Row, termName: string, hash: string): Promise<ParsedTerm> {
+  private async parseTermRow(row: ExcelJS.Row, termName: string, hash: string, options: AIGenerationOptions): Promise<ParsedTerm> {
     const parsedTerm: ParsedTerm = {
       name: termName,
       sections: new Map(),
@@ -251,9 +273,9 @@ class AdvancedExcelParser {
       parseHash: hash
     };
 
-    // Parse each content section
+    // Parse each content section with AI enhancement if enabled
     for (const section of CONTENT_SECTIONS) {
-      const sectionData = await this.parseSectionData(row, section);
+      const sectionData = await this.parseSectionData(row, section, termName, options);
       parsedTerm.sections.set(section.sectionName, sectionData);
 
       // Distribute data based on display type
@@ -266,7 +288,7 @@ class AdvancedExcelParser {
     return parsedTerm;
   }
 
-  private async parseSectionData(row: ExcelJS.Row, section: ContentSection): Promise<any> {
+  private async parseSectionData(row: ExcelJS.Row, section: ContentSection, termName: string, options: AIGenerationOptions): Promise<any> {
     const sectionData: any = {};
 
     for (const columnName of section.columns) {
@@ -274,6 +296,18 @@ class AdvancedExcelParser {
       if (!cellValue) continue;
 
       const fieldName = this.extractFieldName(columnName);
+      
+      // Check if we should generate AI content for empty fields
+      if (!cellValue && this.shouldGenerateAIContent(section, columnName, options)) {
+        console.log(`🤖 Generating AI content for ${termName} → ${columnName}`);
+        const aiContent = await this.generateAIContent(termName, columnName, section);
+        if (aiContent) {
+          sectionData[fieldName] = aiContent;
+          continue;
+        }
+      }
+      
+      if (!cellValue) continue;
       
       switch (section.parseType) {
         case 'simple':
@@ -477,6 +511,116 @@ Return clean, structured data that can be easily used in a web application.
 
   private sanitizeFilename(filename: string): string {
     return filename.replace(/[^a-z0-9_-]/gi, '_').toLowerCase();
+  }
+
+  // AI Content Generation Methods (integrated from aimlv2_simple.js)
+  private shouldGenerateAIContent(section: ContentSection, columnName: string, options: AIGenerationOptions): boolean {
+    if (!options.enableAI || options.mode === 'none') return false;
+    
+    switch (options.mode) {
+      case 'basic':
+        // Only generate basic sections
+        const basicSections = ['definition', 'examples', 'applications', 'advantages', 'disadvantages'];
+        return basicSections.some(basic => columnName.toLowerCase().includes(basic));
+        
+      case 'full':
+        // Generate all sections
+        return true;
+        
+      case 'selective':
+        // Only generate selected sections
+        return options.sections?.some(selected => 
+          section.sectionName.toLowerCase().includes(selected.toLowerCase()) ||
+          columnName.toLowerCase().includes(selected.toLowerCase())
+        ) || false;
+        
+      default:
+        return false;
+    }
+  }
+
+  private async generateAIContent(termName: string, sectionName: string, section: ContentSection): Promise<string | null> {
+    const cacheKey = `ai_gen_${termName}_${sectionName}`;
+    
+    // Check cache first for cost optimization
+    if (this.aiParseCache.has(cacheKey)) {
+      return this.aiParseCache.get(cacheKey);
+    }
+
+    try {
+      const prompt = this.constructPrompt(termName, sectionName);
+      const content = await this.callOpenAIWithRetry(prompt);
+      
+      if (content && content.length > 10) {
+        // Cache the generated content
+        this.aiParseCache.set(cacheKey, content);
+        return content;
+      }
+      
+      return null;
+    } catch (error) {
+      console.error(`Error generating AI content for ${termName} -> ${sectionName}:`, error);
+      return null;
+    }
+  }
+
+  private constructPrompt(term: string, section: string): string {
+    // Integrated from aimlv2_simple.js constructPrompt function
+    return `You are an AI/ML educational content assistant. ` +
+           `For the term "${term}", please write only the content for this section:\n\n` +
+           `"${section}"\n\n` +
+           `Do not include any extra headings or formatting—just the prose, ` +
+           `concise enough to fit in one spreadsheet cell.`;
+  }
+
+  private async callOpenAIWithRetry(prompt: string, attempt: number = 0): Promise<string | null> {
+    try {
+      const response = await getOpenAIClient().chat.completions.create({
+        model: AI_CONFIG.PRIMARY_MODEL,
+        messages: [
+          { role: "system", content: "You are an AI/ML educational content assistant." },
+          { role: "user", content: prompt }
+        ],
+        max_tokens: 1000,
+        temperature: 0.7
+      }, {
+        timeout: AI_CONFIG.REQUEST_TIMEOUT
+      });
+
+      const content = response.choices[0]?.message?.content?.trim();
+      if (content && content.length > 10) {
+        return content;
+      }
+      
+      throw new Error('Content too short');
+    } catch (error) {
+      if (attempt < AI_CONFIG.MAX_RETRIES) {
+        console.warn(`AI call failed (attempt ${attempt + 1}), retrying...`);
+        await new Promise(resolve => setTimeout(resolve, AI_CONFIG.RETRY_DELAY));
+        return this.callOpenAIWithRetry(prompt, attempt + 1);
+      }
+      
+      // Try fallback model
+      if (attempt === AI_CONFIG.MAX_RETRIES) {
+        try {
+          const response = await getOpenAIClient().chat.completions.create({
+            model: AI_CONFIG.FALLBACK_MODEL,
+            messages: [
+              { role: "system", content: "You are an AI/ML educational content assistant." },
+              { role: "user", content: prompt }
+            ],
+            max_tokens: 1000,
+            temperature: 0.7
+          });
+
+          return response.choices[0]?.message?.content?.trim() || null;
+        } catch (fallbackError) {
+          console.error('Fallback model also failed:', fallbackError);
+        }
+      }
+      
+      throw error;
+    }
   }
 }
 

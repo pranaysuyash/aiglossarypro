@@ -183,3 +183,6 @@ data/processed_*.json
 
 *storybook.log
 storybook-static
+*.csv
+checkpoint.json
+*.log

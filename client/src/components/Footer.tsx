@@ -3,9 +3,11 @@ import { Github, Twitter, Linkedin } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function Footer() {
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,19 +63,25 @@ export default function Footer() {
             <h3 className="text-lg font-medium text-white mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <a href="/" className="text-gray-400 hover:text-white transition">
-                  Home
-                </a>
+                <Link href={isAuthenticated ? "/app" : "/"}>
+                  <a className="text-gray-400 hover:text-white transition">
+                    Home
+                  </a>
+                </Link>
               </li>
               <li>
-                <a href="/dashboard" className="text-gray-400 hover:text-white transition">
-                  Dashboard
-                </a>
+                <Link href="/dashboard">
+                  <a className="text-gray-400 hover:text-white transition">
+                    Dashboard
+                  </a>
+                </Link>
               </li>
               <li>
-                <a href="/favorites" className="text-gray-400 hover:text-white transition">
-                  Favorites
-                </a>
+                <Link href="/favorites">
+                  <a className="text-gray-400 hover:text-white transition">
+                    Favorites
+                  </a>
+                </Link>
               </li>
               <li>
                 <a href="#about" className="text-gray-400 hover:text-white transition">About Us</a>

@@ -28,11 +28,19 @@ async function request<T = any>(
 ): Promise<ApiResponse<T>> {
   const url = endpoint.startsWith('/') ? `/api${endpoint}` : endpoint;
   
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  // Add Authorization header if token exists
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  
   const options: RequestInit = {
     method,
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers,
     credentials: 'include',
   };
 

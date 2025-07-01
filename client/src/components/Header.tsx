@@ -52,7 +52,7 @@ export default function Header() {
       <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-3 sm:py-4">
           <div className="flex items-center space-x-1 xs:space-x-2 min-w-0 flex-shrink-0">
-            <Link href="/">
+            <Link href={isAuthenticated ? "/app" : "/"}>
               <div className="flex items-center space-x-2 cursor-pointer" role="link" aria-label="AI/ML Glossary - Go to homepage">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 xs:h-8 xs:w-8 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <title>AI/ML Glossary Logo</title>

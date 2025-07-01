@@ -57,18 +57,16 @@ export function HeroSection() {
                 });
               }
               
-              window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
+              // Redirect to trial signup instead of direct payment
+              window.location.href = '/login';
             }}
           >
-            {pricing.discount > 0 
-              ? `Get Lifetime Access - $${pricing.localPrice} (${pricing.discount}% off)`
-              : `Get Lifetime Access - $${pricing.localPrice}`
-            }
+            Start Your 7-Day Free Trial
             <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
           
           <p className="text-gray-400 text-sm">
-            One-time payment, lifetime access. Save ${pricing.annualSavings}+ annually vs subscriptions.
+            No credit card required • Instant access • Then ${pricing.localPrice} one-time for lifetime access
           </p>
           
           <div className="pt-4">

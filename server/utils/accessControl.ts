@@ -40,7 +40,16 @@ export function hasPremiumAccess(user: any): boolean {
 export function isInTrialPeriod(user: any, config: AccessControlConfig = defaultAccessConfig): boolean {
   if (!user) return false;
   
-  // Check purchase date (if within trial period)
+  // Check account creation date for trial (NEW LOGIC - fixes issue with new users)
+  if (user.createdAt || user.created_at) {
+    const createdDate = new Date(user.createdAt || user.created_at);
+    const trialEndDate = new Date(createdDate);
+    trialEndDate.setDate(trialEndDate.getDate() + config.trialDays);
+    
+    return new Date() <= trialEndDate;
+  }
+  
+  // Fallback: Check purchase date (for existing users with purchase history)
   if (user.purchaseDate || user.purchase_date) {
     const purchaseDate = new Date(user.purchaseDate || user.purchase_date);
     const trialEndDate = new Date(purchaseDate);

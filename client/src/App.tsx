@@ -1,4 +1,4 @@
-import { Switch, Route } from "wouter";
+import { Switch, Route, useLocation } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -40,6 +40,36 @@ function SmartTermDetail() {
   return <LazyTermDetailPage />;
 }
 
+// Smart Landing Page wrapper that redirects authenticated users to app
+function SmartLandingPage() {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+  
+  // Handle authenticated user redirect
+  useEffect(() => {
+    if (!isLoading && isAuthenticated) {
+      setLocation("/app");
+    }
+  }, [isAuthenticated, isLoading, setLocation]);
+  
+  // Show loading while checking auth status
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+  
+  // Don't render anything while redirecting authenticated users
+  if (isAuthenticated) {
+    return null;
+  }
+  
+  // New visitors see marketing page
+  return <LazyLandingPage />;
+}
+
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
 
@@ -76,8 +106,9 @@ function Router() {
       <Header />
       <main id="main-content" className="flex-grow" tabIndex={-1}>
         <Switch>
-          <Route path="/" component={Home} />
-          <Route path="/landing" component={LazyLandingPage} />
+          <Route path="/" component={SmartLandingPage} />
+          <Route path="/app" component={Home} />
+          <Route path="/browse" component={Home} />
           <Route path="/login" component={FirebaseLoginPage} />
           <Route path="/lifetime" component={LazyLifetimePage} />
           <Route path="/term/:id" component={SmartTermDetail} />

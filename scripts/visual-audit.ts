@@ -69,8 +69,18 @@ class VisualAuditor {
   }
 
   async startViteServer(): Promise<void> {
-    console.log(chalk.yellow('⚡ Starting Vite development server...'));
-    
+    console.log(chalk.yellow('⚡ Checking Vite development server...'));
+
+    try {
+      // Check if the port is already in use
+      await execAsync(`lsof -i :${this.baseUrl.split(':')[2]}`);
+      console.log(chalk.green('✅ Vite server is already running'));
+      return;
+    } catch (error) {
+      // Port is not in use, so start the server
+      console.log(chalk.yellow('⚡ Starting Vite development server...'));
+    }
+
     return new Promise((resolve, reject) => {
       this.viteProcess = spawn('npm', ['run', 'dev'], {
         stdio: 'pipe',
@@ -225,6 +235,7 @@ class VisualAuditor {
     switch (action.type) {
       case 'click':
         if (action.selector) {
+          await page.waitForSelector(action.selector, { state: 'visible', timeout: 15000 });
           await page.click(action.selector);
         }
         break;

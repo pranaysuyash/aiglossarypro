@@ -13,7 +13,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// Session storage table for Replit Auth
+// Session storage table for authentication
 export const sessions = pgTable(
   "sessions",
   {
@@ -24,7 +24,7 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for Replit Auth
+// User storage table for authentication
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().notNull(),
   email: varchar("email").unique(),
@@ -35,7 +35,7 @@ export const users = pgTable("users", {
   
   // Firebase authentication fields
   firebaseUid: varchar("firebase_uid").unique(),
-  authProvider: varchar("auth_provider", { length: 50 }).default("replit"),
+  authProvider: varchar("auth_provider", { length: 50 }).default("firebase"),
   
   // NEW MONETIZATION FIELDS
   subscriptionTier: varchar("subscription_tier", { length: 20 }).default("free"),

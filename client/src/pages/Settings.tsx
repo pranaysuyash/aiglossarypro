@@ -246,7 +246,7 @@ export default function Settings() {
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Note</AlertTitle>
                 <AlertDescription>
-                  Account information is managed through your Replit account.
+                  Account information is managed through your authentication provider.
                 </AlertDescription>
               </Alert>
             </CardContent>

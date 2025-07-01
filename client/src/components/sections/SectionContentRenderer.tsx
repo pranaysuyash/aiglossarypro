@@ -18,6 +18,7 @@ import ReactMarkdown from 'react-markdown';
 import InteractiveQuiz from '../interactive/InteractiveQuiz';
 import CodeBlock from '../interactive/CodeBlock';
 import MermaidDiagram from '../interactive/MermaidDiagram';
+import { OptimizedImage } from '../ui/optimized-image';
 
 interface SectionItem {
   id: number;
@@ -163,7 +164,7 @@ export default function SectionContentRenderer({
         return (
           <div className="mb-4">
             <h4 className="font-medium mb-2">{item.label}</h4>
-            <img 
+            <OptimizedImage 
               src={item.content} 
               alt={item.label}
               className="max-w-full h-auto rounded-lg"

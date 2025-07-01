@@ -17,6 +17,7 @@ import { sanitizeHTML, sanitizeMathHTML } from "@/utils/sanitize";
 import { FreeTierGate } from "@/components/FreeTierGate";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { useAccess } from "@/hooks/useAccess";
+import { OptimizedImage } from "@/components/ui/optimized-image";
 
 export default function TermDetail() {
   const { id } = useParams();
@@ -325,10 +326,12 @@ export default function TermDetail() {
               {term.visualUrl && (
                 <div className="mb-8">
                   <h2 className="text-xl font-semibold mb-3">Visual Representation</h2>
-                  <img 
+                  <OptimizedImage 
                     src={term.visualUrl} 
                     alt={`${term.name} diagram`} 
                     className="rounded-lg shadow-sm w-full h-auto object-cover mb-2"
+                    lazy={false}
+                    priority
                   />
                   {term.visualCaption && (
                     <p className="text-sm text-gray-500 dark:text-gray-400 italic text-center">

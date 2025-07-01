@@ -17,7 +17,7 @@ interface AuthProvidersResponse {
   data: {
     google: boolean;
     github: boolean;
-    replit: boolean;
+    firebase: boolean;
   };
 }
 
@@ -58,12 +58,12 @@ const LoginPage: React.FC = () => {
           });
         }
         
-        if (data.data.replit) {
+        if (data.data.firebase) {
           availableProviders.push({
-            name: 'replit',
-            displayName: 'Replit',
+            name: 'firebase',
+            displayName: 'Firebase',
             icon: <Code className="w-5 h-5" />,
-            url: '/api/login',
+            url: '/api/auth/firebase',
             enabled: true
           });
         }
@@ -93,7 +93,7 @@ const LoginPage: React.FC = () => {
       const errorMessages: { [key: string]: string } = {
         'google_auth_failed': 'Google authentication failed. Please try again.',
         'github_auth_failed': 'GitHub authentication failed. Please try again.',
-        'replit_auth_failed': 'Replit authentication failed. Please try again.',
+        'firebase_auth_failed': 'Firebase authentication failed. Please try again.',
         'session_expired': 'Your session has expired. Please log in again.',
         'unauthorized': 'You are not authorized to access this resource.'
       };

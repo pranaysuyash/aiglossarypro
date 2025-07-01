@@ -174,6 +174,7 @@ export default function Profile() {
                         value={formData.firstName}
                         onChange={(e) => handleInputChange("firstName", e.target.value)}
                         placeholder="Enter your first name"
+                        autoComplete="given-name"
                       />
                     </div>
                     <div className="space-y-2">
@@ -183,6 +184,7 @@ export default function Profile() {
                         value={formData.lastName}
                         onChange={(e) => handleInputChange("lastName", e.target.value)}
                         placeholder="Enter your last name"
+                        autoComplete="family-name"
                       />
                     </div>
                   </div>
@@ -194,6 +196,7 @@ export default function Profile() {
                       value={formData.email}
                       onChange={(e) => handleInputChange("email", e.target.value)}
                       placeholder="Enter your email"
+                      autoComplete="email"
                     />
                   </div>
                   <Separator />

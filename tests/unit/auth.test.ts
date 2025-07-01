@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import request from 'supertest';
 import { app } from '../../server/index';
-import { isAuthenticated } from '../../server/replitAuth';
+import { isAuthenticated } from '../../server/auth/firebaseAuth';
 import { requireAdmin } from '../../server/middleware/adminAuth';
 import { mockIsAuthenticated } from '../../server/middleware/dev/mockAuth';
 import { features } from '../../server/config';
@@ -191,7 +191,7 @@ describe('Authentication System', () => {
       const res = mockResponse();
       const next = vi.fn();
 
-      if (features.replitAuthEnabled) {
+      if (features.authEnabled) {
         await isAuthenticated(req, res, next);
         expect(res.status).toHaveBeenCalledWith(401);
       }

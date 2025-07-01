@@ -10,6 +10,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { signInWithProvider, signInWithEmail, createAccount } from '@/lib/firebase';
 import { api } from '@/lib/api';
+import { OptimizedImage } from '@/components/ui/optimized-image';
 
 export default function FirebaseLoginPage() {
   const [, navigate] = useLocation();
@@ -149,10 +150,13 @@ export default function FirebaseLoginPage() {
                 {loading ? (
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 ) : (
-                  <img 
+                  <OptimizedImage 
                     src="https://www.google.com/favicon.ico" 
                     alt="Google" 
+                    width={16}
+                    height={16}
                     className="mr-2 h-4 w-4" 
+                    priority
                   />
                 )}
                 Continue with Google

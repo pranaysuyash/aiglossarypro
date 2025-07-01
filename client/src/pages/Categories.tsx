@@ -5,6 +5,7 @@ import CategoryCard from "@/components/CategoryCard";
 import TermCard from "@/components/TermCard";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import PageBreadcrumb from "@/components/ui/page-breadcrumb";
 import { ICategory, ITerm } from "@/interfaces/interfaces";
 import { Search, FolderOpen, ChevronRight } from "lucide-react";
 
@@ -55,15 +56,17 @@ export default function Categories() {
     return (
       <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-4 xs:py-6">
         {/* Breadcrumb */}
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <Link href="/" className="hover:text-primary">Home</Link>
-          <ChevronRight className="h-4 w-4" />
-          <Link href="/categories" className="hover:text-primary">Categories</Link>
-          <ChevronRight className="h-4 w-4" />
-          <span className="text-gray-900 font-medium">
-            {categoryLoading ? "Loading..." : ((categoryDetails as any)?.name || "Category")}
-          </span>
-        </div>
+        <PageBreadcrumb 
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Categories", href: "/categories" },
+            { 
+              label: categoryLoading ? "Loading..." : ((categoryDetails as any)?.name || "Category"), 
+              isCurrentPage: true 
+            }
+          ]}
+          className="mb-4"
+        />
 
         {/* Category Header */}
         <div className="mb-8">
@@ -133,11 +136,13 @@ export default function Categories() {
     <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-4 xs:py-6">
       {/* Header */}
       <div className="mb-8">
-        <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <Link href="/" className="hover:text-primary">Home</Link>
-          <span>/</span>
-          <span className="text-gray-900 font-medium">Categories</span>
-        </div>
+        <PageBreadcrumb 
+          items={[
+            { label: "Home", href: "/" },
+            { label: "Categories", isCurrentPage: true }
+          ]}
+          className="mb-4"
+        />
         
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>

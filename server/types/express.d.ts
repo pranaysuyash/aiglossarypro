@@ -12,7 +12,7 @@ declare global {
       claims?: any;
       access_token?: string;
       expires_at?: number;
-      provider?: 'google' | 'github' | 'replit';
+      provider?: 'google' | 'github';
     }
 
     interface Request {

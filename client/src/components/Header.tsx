@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Search, ChevronDown, User, Heart, Sun, Moon, Settings, Home, BarChart3, Bookmark, Zap, Crown, LogOut, Grid3X3 } from "lucide-react";
+import { Menu, X, Search, ChevronDown, User, Heart, Sun, Moon, Settings, Home, BarChart3, Bookmark, Zap, Crown, LogOut, Grid3X3 } from "@/components/ui/icons";
 import { 
   DropdownMenu, 
   DropdownMenuContent, 
@@ -12,6 +12,7 @@ import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useFocusTrap, useFocusLock } from "@/hooks/useFocusTrap";
+import { useTheme } from "@/components/ThemeProvider";
 import SearchBar from "./SearchBar";
 import { BaseComponentProps } from "@/types/common-props";
 
@@ -31,6 +32,7 @@ export default function Header({
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [, navigate] = useLocation();
   const { user, isAuthenticated } = useAuth();
+  const { theme, setTheme } = useTheme();
   
   // Focus trap for mobile menu
   const mobileMenuRef = useFocusTrap(mobileMenuOpen);
@@ -39,6 +41,18 @@ export default function Header({
   // Handle escape key to close mobile menu
   const handleEscapeClose = () => {
     setMobileMenuOpen(false);
+  };
+
+  const toggleTheme = () => {
+    if (theme === "light") {
+      setTheme("dark");
+    } else if (theme === "dark") {
+      setTheme("light");
+    } else {
+      // For system or high-contrast, toggle to the opposite of current appearance
+      const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      setTheme(isDark ? "light" : "dark");
+    }
   };
 
   const handleLogout = () => {
@@ -73,17 +87,17 @@ export default function Header({
 
   return (
     <header id="navigation" className={`bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-800 transition-all duration-200 ${className || ''}`} role="banner">
-      <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-3 sm:py-4">
-          <div className="flex items-center space-x-1 xs:space-x-2 min-w-0 flex-shrink-0">
+      <div className="container mx-auto px-2 xs:px-3 sm:px-6 lg:px-8">
+        <div className="flex justify-between items-center py-2 xs:py-3 sm:py-4">
+          <div className="flex items-center space-x-1 xs:space-x-2 min-w-0 flex-shrink-0 overflow-hidden">
             <Link href={isAuthenticated ? "/app" : "/"}>
-              <div className="flex items-center space-x-2 cursor-pointer" role="link" aria-label="AI/ML Glossary - Go to homepage">
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 xs:h-8 xs:w-8 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <div className="flex items-center space-x-1 xs:space-x-2 cursor-pointer" role="link" aria-label="AI/ML Glossary - Go to homepage">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 xs:h-7 xs:w-7 sm:h-8 sm:w-8 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <title>AI/ML Glossary Logo</title>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <span className="text-xl font-semibold hidden sm:inline">AI/ML Glossary</span>
-                <span className="text-lg xs:text-xl font-semibold sm:hidden">AI/ML</span>
+                <span className="text-lg sm:text-xl font-semibold hidden sm:inline">AI/ML Glossary</span>
+                <span className="text-sm xs:text-base sm:text-lg font-semibold sm:hidden truncate max-w-[60px] xs:max-w-[80px]">AI/ML</span>
               </div>
             </Link>
           </div>
@@ -101,7 +115,23 @@ export default function Header({
             <SearchBar onSearch={handleSearch} iconOnly />
           </div>
 
-          <div className="flex items-center space-x-1 xs:space-x-2 sm:space-x-4 flex-shrink-0">
+          <div className="flex items-center space-x-1 xs:space-x-2 flex-shrink-0">
+            {/* Theme Toggle Button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="hidden sm:flex p-2.5 rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+              title={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+            >
+              {theme === "dark" ? (
+                <Sun className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              ) : (
+                <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              )}
+            </Button>
+
             {/* Lifetime Access Button */}
             <Link href="/lifetime">
               <Button 
@@ -121,7 +151,7 @@ export default function Header({
             </Link>
             
             <button 
-              className={`xs:hidden p-2.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary ${
+              className={`xs:hidden p-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary ${
                 mobileSearchOpen 
                   ? 'bg-primary text-primary-foreground' 
                   : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -130,7 +160,7 @@ export default function Header({
               aria-label={mobileSearchOpen ? "Close search" : "Open search"}
               aria-expanded={mobileSearchOpen}
             >
-              <Search className={`h-5 w-5 transition-transform duration-200 ${
+              <Search className={`h-4 w-4 transition-transform duration-200 ${
                 mobileSearchOpen 
                   ? 'text-primary-foreground scale-110' 
                   : 'text-gray-500 dark:text-gray-300'
@@ -204,7 +234,7 @@ export default function Header({
             )}
             
             <button 
-              className={`lg:hidden p-2.5 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary ${
+              className={`lg:hidden p-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary ${
                 mobileMenuOpen 
                   ? 'bg-gray-100 dark:bg-gray-700 rotate-90' 
                   : 'hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -215,9 +245,9 @@ export default function Header({
               aria-controls="mobile-navigation-menu"
             >
               {mobileMenuOpen ? (
-                <X className="h-5 w-5 transition-transform duration-200" />
+                <X className="h-4 w-4 xs:h-5 xs:w-5 transition-transform duration-200" />
               ) : (
-                <Menu className="h-5 w-5 transition-transform duration-200" />
+                <Menu className="h-4 w-4 xs:h-5 xs:w-5 transition-transform duration-200" />
               )}
             </button>
           </div>
@@ -356,6 +386,23 @@ export default function Header({
                     Tools & Features
                   </div>
                   <div className="space-y-1">
+                    <button
+                      className="flex items-center w-full px-3 py-2.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary transition-colors duration-150"
+                      onClick={() => {
+                        toggleTheme();
+                        setMobileMenuOpen(false);
+                      }}
+                      aria-label={`Switch to ${theme === "light" ? "dark" : "light"} mode`}
+                    >
+                      {theme === "dark" ? (
+                        <Sun className="mr-3 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                      ) : (
+                        <Moon className="mr-3 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                      )}
+                      <span className="font-medium">
+                        {theme === "dark" ? "Light Mode" : "Dark Mode"}
+                      </span>
+                    </button>
                     <Link href="/ai-tools">
                       <a 
                         className="flex items-center px-3 py-2.5 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary transition-colors duration-150"

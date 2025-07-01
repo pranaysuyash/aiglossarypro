@@ -15,6 +15,8 @@ import {
   Archive
 } from "lucide-react";
 import { useLiveRegion } from "@/components/accessibility/LiveRegion";
+import { BaseComponentProps } from "@/types/common-props";
+import { cn } from "@/lib/utils";
 
 interface FileUpload {
   id: string;
@@ -25,7 +27,7 @@ interface FileUpload {
   result?: any;
 }
 
-interface DragDropUploaderProps {
+interface DragDropUploaderProps extends BaseComponentProps {
   onUploadComplete?: (results: any[]) => void;
   onUploadError?: (error: string) => void;
   acceptedTypes?: string[];
@@ -42,7 +44,10 @@ export default function DragDropUploader({
   maxFileSize = 100 * 1024 * 1024, // 100MB
   maxFiles = 10,
   enableCompression = false,
-  showPreview = true
+  showPreview = true,
+  className,
+  id,
+  children
 }: DragDropUploaderProps) {
   const [isDragOver, setIsDragOver] = useState(false);
   const [files, setFiles] = useState<FileUpload[]>([]);
@@ -370,7 +375,10 @@ export default function DragDropUploader({
   const errorFiles = files.filter(f => f.status === 'error');
   
   return (
-    <div className="space-y-4">
+    <div 
+      id={id}
+      className={cn("space-y-4", className)}
+    >
       {/* Drop Zone */}
       <Card>
         <CardContent className="p-6">
@@ -569,6 +577,7 @@ export default function DragDropUploader({
           </CardContent>
         </Card>
       )}
+      {children}
     </div>
   );
 }

@@ -4,7 +4,7 @@ import { enhancedStorage as storage } from "../../enhancedStorage";
 
 /**
  * Mock authentication middleware for local development
- * This bypasses Replit authentication and provides a test user
+ * This bypasses authentication and provides a test user
  */
 
 // Test user for local development

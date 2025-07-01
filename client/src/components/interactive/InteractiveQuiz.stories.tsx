@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { InteractiveQuiz } from './InteractiveQuiz';
+import InteractiveQuiz from './InteractiveQuiz';
 
 const meta: Meta<typeof InteractiveQuiz> = {
   title: 'Interactive/InteractiveQuiz',

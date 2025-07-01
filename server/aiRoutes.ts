@@ -1,12 +1,12 @@
 import type { Express } from "express";
 import { aiService } from "./aiService";
 import { optimizedStorage as storage } from "./optimizedStorage";
-import { isAuthenticated } from "./replitAuth";
+import { mockIsAuthenticated } from "./middleware/dev/mockAuth";
 import { isUserAdmin } from "./utils/authUtils";
 
 export function registerAIRoutes(app: Express): void {
   // Generate definition for a new term
-  app.post('/api/ai/generate-definition', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai/generate-definition', mockIsAuthenticated, async (req: any, res) => {
     try {
       const { term, category, context } = req.body;
       const userId = req.user.claims.sub;
@@ -40,7 +40,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Get term suggestions
-  app.get('/api/ai/term-suggestions', isAuthenticated, async (req: any, res) => {
+  app.get('/api/ai/term-suggestions', mockIsAuthenticated, async (req: any, res) => {
     try {
       const focusCategory = req.query.category as string;
       const limit = parseInt(req.query.limit as string) || 8;
@@ -69,7 +69,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Categorize a term
-  app.post('/api/ai/categorize-term', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai/categorize-term', mockIsAuthenticated, async (req: any, res) => {
     try {
       const { term, definition } = req.body;
       
@@ -100,7 +100,7 @@ export function registerAIRoutes(app: Express): void {
   app.post('/api/ai/semantic-search', async (req: any, res) => {
     try {
       const { query, limit = 10 } = req.body;
-      const userId = req.isAuthenticated?.() ? req.user.claims.sub : null;
+      const userId = req.mockIsAuthenticated?.() ? req.user.claims.sub : null;
       
       if (!query || typeof query !== 'string') {
         return res.status(400).json({ 
@@ -141,7 +141,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Improve existing term definition
-  app.post('/api/ai/improve-definition/:id', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai/improve-definition/:id', mockIsAuthenticated, async (req: any, res) => {
     try {
       const termId = req.params.id;
       
@@ -176,7 +176,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Apply AI-generated improvements to a term
-  app.put('/api/ai/apply-improvements/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/ai/apply-improvements/:id', mockIsAuthenticated, async (req: any, res) => {
     try {
       const termId = req.params.id;
       const { improvements } = req.body;
@@ -227,7 +227,7 @@ export function registerAIRoutes(app: Express): void {
   // ========================
 
   // Submit feedback for AI-generated content
-  app.post('/api/ai/feedback', isAuthenticated, async (req: any, res) => {
+  app.post('/api/ai/feedback', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const { termId, sectionName, feedbackType, rating, comment } = req.body;
@@ -268,7 +268,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Get feedback list (admin only)
-  app.get('/api/ai/feedback', isAuthenticated, async (req: any, res) => {
+  app.get('/api/ai/feedback', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -331,7 +331,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Update feedback status (admin only)
-  app.put('/api/ai/feedback/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/ai/feedback/:id', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -395,7 +395,7 @@ export function registerAIRoutes(app: Express): void {
   // ========================
 
   // Get content verification status (admin only)
-  app.get('/api/ai/verification', isAuthenticated, async (req: any, res) => {
+  app.get('/api/ai/verification', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -455,7 +455,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Update content verification (admin only)
-  app.put('/api/ai/verification/:id', isAuthenticated, async (req: any, res) => {
+  app.put('/api/ai/verification/:id', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -515,7 +515,7 @@ export function registerAIRoutes(app: Express): void {
   // ========================
 
   // Get AI usage analytics (admin only)
-  app.get('/api/ai/analytics', isAuthenticated, async (req: any, res) => {
+  app.get('/api/ai/analytics', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -636,7 +636,7 @@ export function registerAIRoutes(app: Express): void {
   });
 
   // Get AI service health and status
-  app.get('/api/ai/status', isAuthenticated, async (req: any, res) => {
+  app.get('/api/ai/status', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);

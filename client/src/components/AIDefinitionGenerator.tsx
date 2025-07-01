@@ -4,7 +4,7 @@ import { Input } from './ui/input';
 import { Textarea } from './ui/textarea';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
-import { Loader2, Sparkles, Copy, Check } from 'lucide-react';
+import { Loader2, Sparkles, Copy, Check } from '@/components/ui/icons';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from '../hooks/use-toast';

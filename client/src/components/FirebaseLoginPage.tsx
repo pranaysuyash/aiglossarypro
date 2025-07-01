@@ -5,7 +5,7 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Loader2 } from '@/components/ui/icons';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { useToast } from '@/hooks/use-toast';
 import { signInWithProvider, signInWithEmail, createAccount } from '@/lib/firebase';
@@ -196,6 +196,7 @@ export default function FirebaseLoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={loading}
+                  autoComplete="email"
                 />
               </div>
               
@@ -208,6 +209,7 @@ export default function FirebaseLoginPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   disabled={loading}
+                  autoComplete="current-password"
                 />
               </div>
 
@@ -228,6 +230,7 @@ export default function FirebaseLoginPage() {
                     value={firstName}
                     onChange={(e) => setFirstName(e.target.value)}
                     disabled={loading}
+                    autoComplete="given-name"
                   />
                 </div>
                 
@@ -238,6 +241,7 @@ export default function FirebaseLoginPage() {
                     value={lastName}
                     onChange={(e) => setLastName(e.target.value)}
                     disabled={loading}
+                    autoComplete="family-name"
                   />
                 </div>
               </div>
@@ -252,6 +256,7 @@ export default function FirebaseLoginPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                   disabled={loading}
+                  autoComplete="email"
                 />
               </div>
               
@@ -265,6 +270,7 @@ export default function FirebaseLoginPage() {
                   required
                   minLength={6}
                   disabled={loading}
+                  autoComplete="new-password"
                 />
                 <p className="text-xs text-muted-foreground">
                   Must be at least 6 characters

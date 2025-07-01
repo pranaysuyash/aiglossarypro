@@ -1,6 +1,6 @@
 import { useState, useCallback, memo, useMemo } from "react";
 import { Link } from "wouter";
-import { Heart, Copy, Share2, CheckCircle } from "lucide-react";
+import { Heart, Copy, Share2, CheckCircle } from "@/components/ui/icons";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

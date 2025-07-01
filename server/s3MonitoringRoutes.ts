@@ -1,12 +1,12 @@
 import { Router } from 'express';
 import { getS3MonitoringService, AlertRule } from './s3MonitoringService';
-import { isAuthenticated } from './replitAuth';
+import { mockIsAuthenticated } from './middleware/dev/mockAuth';
 
 const router = Router();
 const monitoringService = getS3MonitoringService();
 
 // Get comprehensive metrics
-router.get('/metrics', isAuthenticated, async (req, res) => {
+router.get('/metrics', mockIsAuthenticated, async (req, res) => {
   try {
     const metrics = monitoringService.generateMetrics();
     res.json({
@@ -24,7 +24,7 @@ router.get('/metrics', isAuthenticated, async (req, res) => {
 });
 
 // Get recent logs
-router.get('/logs', isAuthenticated, async (req, res) => {
+router.get('/logs', mockIsAuthenticated, async (req, res) => {
   try {
     const { limit = 100, operation } = req.query;
     
@@ -48,7 +48,7 @@ router.get('/logs', isAuthenticated, async (req, res) => {
 });
 
 // Get logs by date range
-router.get('/logs/range', isAuthenticated, async (req, res) => {
+router.get('/logs/range', mockIsAuthenticated, async (req, res) => {
   try {
     const { startDate, endDate } = req.query;
     
@@ -90,7 +90,7 @@ router.get('/logs/range', isAuthenticated, async (req, res) => {
 });
 
 // Export logs
-router.get('/logs/export', isAuthenticated, async (req, res) => {
+router.get('/logs/export', mockIsAuthenticated, async (req, res) => {
   try {
     const { format = 'json', startDate, endDate } = req.query;
     
@@ -125,7 +125,7 @@ router.get('/logs/export', isAuthenticated, async (req, res) => {
 });
 
 // Get alerts
-router.get('/alerts', isAuthenticated, async (req, res) => {
+router.get('/alerts', mockIsAuthenticated, async (req, res) => {
   try {
     const alerts = monitoringService.getAlerts();
     res.json({
@@ -142,7 +142,7 @@ router.get('/alerts', isAuthenticated, async (req, res) => {
 });
 
 // Add new alert
-router.post('/alerts', isAuthenticated, async (req, res) => {
+router.post('/alerts', mockIsAuthenticated, async (req, res) => {
   try {
     const alertData: Omit<AlertRule, 'id'> = req.body;
     
@@ -171,7 +171,7 @@ router.post('/alerts', isAuthenticated, async (req, res) => {
 });
 
 // Update alert
-router.put('/alerts/:id', isAuthenticated, async (req, res) => {
+router.put('/alerts/:id', mockIsAuthenticated, async (req, res) => {
   try {
     const { id } = req.params;
     const updates: Partial<AlertRule> = req.body;
@@ -199,7 +199,7 @@ router.put('/alerts/:id', isAuthenticated, async (req, res) => {
 });
 
 // Delete alert
-router.delete('/alerts/:id', isAuthenticated, async (req, res) => {
+router.delete('/alerts/:id', mockIsAuthenticated, async (req, res) => {
   try {
     const { id } = req.params;
     
@@ -226,7 +226,7 @@ router.delete('/alerts/:id', isAuthenticated, async (req, res) => {
 });
 
 // Real-time metrics endpoint (for dashboards)
-router.get('/metrics/realtime', isAuthenticated, async (req, res) => {
+router.get('/metrics/realtime', mockIsAuthenticated, async (req, res) => {
   try {
     const metrics = monitoringService.generateMetrics();
     
@@ -268,7 +268,7 @@ router.get('/metrics/realtime', isAuthenticated, async (req, res) => {
 });
 
 // Performance analytics
-router.get('/analytics/performance', isAuthenticated, async (req, res) => {
+router.get('/analytics/performance', mockIsAuthenticated, async (req, res) => {
   try {
     const { days = 7 } = req.query;
     const daysCount = parseInt(days as string);
@@ -341,7 +341,7 @@ router.get('/analytics/performance', isAuthenticated, async (req, res) => {
 });
 
 // Usage analytics
-router.get('/analytics/usage', isAuthenticated, async (req, res) => {
+router.get('/analytics/usage', mockIsAuthenticated, async (req, res) => {
   try {
     const { days = 30 } = req.query;
     const daysCount = parseInt(days as string);

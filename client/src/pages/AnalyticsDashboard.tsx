@@ -135,7 +135,7 @@ export default function AnalyticsDashboard() {
         </Alert>
       ) : analytics ? (
         <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 xs:gap-4 mb-6">
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center text-gray-500 dark:text-gray-400">
@@ -215,7 +215,7 @@ export default function AnalyticsDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80">
+                  <div className="h-64 xs:h-80 overflow-hidden">
                     <LineChart 
                       config={userActivityConfig}
                       data={prepareUserActivityData()}
@@ -236,7 +236,7 @@ export default function AnalyticsDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="h-80">
+                  <div className="h-64 xs:h-80 overflow-hidden">
                     <BarChart 
                       config={topTermsConfig}
                       data={prepareTopTermsData()}
@@ -257,7 +257,7 @@ export default function AnalyticsDashboard() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex justify-center">
-                  <div className="h-80 w-full max-w-lg">
+                  <div className="h-64 xs:h-80 w-full max-w-xs xs:max-w-lg overflow-hidden">
                     <PieChart 
                       config={categoryConfig}
                       data={prepareCategoryDistributionData()}

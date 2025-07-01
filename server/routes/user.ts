@@ -1,6 +1,5 @@
 import type { Express, Request, Response } from "express";
 import { optimizedStorage as storage } from "../optimizedStorage";
-import { isAuthenticated } from "../replitAuth";
 import { authenticateToken } from "../middleware/adminAuth";
 import { mockIsAuthenticated } from "../middleware/dev/mockAuth";
 import { features } from "../config";
@@ -34,7 +33,7 @@ import { getUserAccessStatus, canViewTerm, getRemainingDailyViews } from "../uti
  */
 export function registerUserRoutes(app: Express): void {
   // Choose authentication middleware based on environment
-  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
+  const authMiddleware = mockIsAuthenticated;
   
   // Favorites management
   app.get('/api/favorites', authMiddleware as any, parsePagination, async (req: AuthenticatedRequest & RequestWithPagination, res: Response) => {

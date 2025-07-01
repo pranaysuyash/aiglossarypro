@@ -2,7 +2,7 @@ import type { Express, Request, Response } from "express";
 import multer from "multer";
 import { processExcelUpload } from "./dataTransformationPipeline";
 import { enhancedStorage } from "./enhancedTermsStorage";
-import { isAuthenticated } from "./replitAuth";
+import { mockIsAuthenticated } from "./middleware/dev/mockAuth";
 import { isUserAdmin } from "./utils/authUtils";
 import { z } from "zod";
 import { AuthenticatedRequest, AdminRequest } from "./types/express";
@@ -80,7 +80,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Enhanced Excel upload with advanced parsing
    * POST /api/enhanced/upload
    */
-  app.post('/api/enhanced/upload', isAuthenticated, upload.single('file'), async (req: Request, res: Response) => {
+  app.post('/api/enhanced/upload', mockIsAuthenticated, upload.single('file'), async (req: Request, res: Response) => {
     try {
       if (!req.user) {
         return res.status(401).json({ success: false, message: "Authentication required" });
@@ -132,7 +132,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Get upload processing status
    * GET /api/enhanced/upload/status
    */
-  app.get('/api/enhanced/upload/status', isAuthenticated, async (req: Request, res: Response) => {
+  app.get('/api/enhanced/upload/status', mockIsAuthenticated, async (req: Request, res: Response) => {
     try {
       if (!req.user) {
         return res.status(401).json({ success: false, message: "Authentication required" });
@@ -342,7 +342,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Get user preferences for enhanced experience
    * GET /api/enhanced/preferences
    */
-  app.get('/api/enhanced/preferences', isAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/enhanced/preferences', mockIsAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const preferences = await enhancedStorage.getUserPreferences(userId);
@@ -358,7 +358,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Update user preferences
    * PUT /api/enhanced/preferences
    */
-  app.put('/api/enhanced/preferences', isAuthenticated, async (req: any, res: Response) => {
+  app.put('/api/enhanced/preferences', mockIsAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const preferences = userPreferencesSchema.parse(req.body);
@@ -383,7 +383,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Get personalized term recommendations
    * GET /api/enhanced/recommendations
    */
-  app.get('/api/enhanced/recommendations', isAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/enhanced/recommendations', mockIsAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const limit = parseInt(req.query.limit as string) || 10;
@@ -405,7 +405,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Get term analytics
    * GET /api/enhanced/analytics/terms/:id
    */
-  app.get('/api/enhanced/analytics/terms/:id', isAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/enhanced/analytics/terms/:id', mockIsAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -429,7 +429,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Get overall content analytics
    * GET /api/enhanced/analytics/overview
    */
-  app.get('/api/enhanced/analytics/overview', isAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/enhanced/analytics/overview', mockIsAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -473,7 +473,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Rate term or section quality
    * POST /api/enhanced/rate
    */
-  app.post('/api/enhanced/rate', isAuthenticated, async (req: any, res: Response) => {
+  app.post('/api/enhanced/rate', mockIsAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const { termId, sectionName, rating, feedback } = req.body;
@@ -495,7 +495,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Get content quality reports
    * GET /api/enhanced/quality-report
    */
-  app.get('/api/enhanced/quality-report', isAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/enhanced/quality-report', mockIsAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);
@@ -559,7 +559,7 @@ export function registerEnhancedRoutes(app: Express): void {
    * Get enhanced schema information for debugging
    * GET /api/enhanced/schema-info
    */
-  app.get('/api/enhanced/schema-info', isAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/enhanced/schema-info', mockIsAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const isAdmin = await isUserAdmin(userId);

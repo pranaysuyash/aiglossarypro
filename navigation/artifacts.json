@@ -1,0 +1,177 @@
+{
+  "fetchTime": "2025-07-01T16:14:30.373Z",
+  "Timing": [
+    {
+      "name": "lh:config",
+      "entryType": "measure",
+      "startTime": 1007.443167,
+      "duration": 370.1583750000001,
+      "detail": null
+    },
+    {
+      "name": "lh:config:resolveArtifactsToDefns",
+      "entryType": "measure",
+      "startTime": 1008.712792,
+      "duration": 36.60470800000007,
+      "detail": null
+    },
+    {
+      "name": "lh:runner:gather",
+      "entryType": "measure",
+      "startTime": 1377.723584,
+      "duration": 32701.168958000002,
+      "detail": null
+    },
+    {
+      "name": "lh:driver:connect",
+      "entryType": "measure",
+      "startTime": 1467.151292,
+      "duration": 4.09091699999999,
+      "detail": null
+    },
+    {
+      "name": "lh:driver:navigate",
+      "entryType": "measure",
+      "startTime": 1471.393917,
+      "duration": 40.80354199999988,
+      "detail": null
+    },
+    {
+      "name": "lh:gather:getBenchmarkIndex",
+      "entryType": "measure",
+      "startTime": 1512.474375,
+      "duration": 1003.2792919999999,
+      "detail": null
+    },
+    {
+      "name": "lh:gather:getVersion",
+      "entryType": "measure",
+      "startTime": 2515.883375,
+      "duration": 0.9146249999998872,
+      "detail": null
+    },
+    {
+      "name": "lh:gather:getDevicePixelRatio",
+      "entryType": "measure",
+      "startTime": 2516.942834,
+      "duration": 0.974999999999909,
+      "detail": null
+    },
+    {
+      "name": "lh:prepare:navigationMode",
+      "entryType": "measure",
+      "startTime": 2518.0415,
+      "duration": 52.595250000000306,
+      "detail": null
+    },
+    {
+      "name": "lh:storage:clearDataForOrigin",
+      "entryType": "measure",
+      "startTime": 2530.151292,
+      "duration": 25.886625000000095,
+      "detail": null
+    },
+    {
+      "name": "lh:storage:clearBrowserCaches",
+      "entryType": "measure",
+      "startTime": 2556.138792,
+      "duration": 10.112624999999753,
+      "detail": null
+    },
+    {
+      "name": "lh:gather:prepareThrottlingAndNetwork",
+      "entryType": "measure",
+      "startTime": 2566.927584,
+      "duration": 3.6873749999999745,
+      "detail": null
+    },
+    {
+      "name": "lh:computed:NetworkRecords",
+      "entryType": "measure",
+      "startTime": 34068.033584,
+      "duration": 1.7348750000019209,
+      "detail": null
+    }
+  ],
+  "LighthouseRunWarnings": [
+    {
+      "i18nId": "core/lib/lh-error.js | noFcp",
+      "values": {
+        "errorCode": "NO_FCP"
+      },
+      "formattedDefault": "The page did not paint any content. Please ensure you keep the browser window in the foreground during the load and try again. (NO_FCP)"
+    }
+  ],
+  "settings": {
+    "output": [
+      "json"
+    ],
+    "maxWaitForFcp": 30000,
+    "maxWaitForLoad": 45000,
+    "pauseAfterFcpMs": 5250,
+    "pauseAfterLoadMs": 5250,
+    "networkQuietThresholdMs": 5250,
+    "cpuQuietThresholdMs": 5250,
+    "formFactor": "mobile",
+    "throttling": {
+      "rttMs": 150,
+      "throughputKbps": 1638.4,
+      "requestLatencyMs": 562.5,
+      "downloadThroughputKbps": 1474.5600000000002,
+      "uploadThroughputKbps": 675,
+      "cpuSlowdownMultiplier": 4
+    },
+    "throttlingMethod": "devtools",
+    "screenEmulation": {
+      "mobile": true,
+      "width": 412,
+      "height": 823,
+      "deviceScaleFactor": 1.75,
+      "disabled": false
+    },
+    "emulatedUserAgent": "Mozilla/5.0 (Linux; Android 11; moto g power (2022)) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/136.0.0.0 Mobile Safari/537.36",
+    "auditMode": false,
+    "gatherMode": "navigation",
+    "clearStorageTypes": [
+      "file_systems",
+      "shader_cache",
+      "service_workers",
+      "cache_storage"
+    ],
+    "disableStorageReset": false,
+    "debugNavigation": false,
+    "channel": "cli",
+    "usePassiveGathering": false,
+    "disableFullPageScreenshot": false,
+    "skipAboutBlank": false,
+    "blankPage": "about:blank",
+    "ignoreStatusCode": false,
+    "locale": "en-US",
+    "blockedUrlPatterns": null,
+    "additionalTraceCategories": null,
+    "extraHeaders": null,
+    "precomputedLanternData": null,
+    "onlyAudits": null,
+    "onlyCategories": null,
+    "skipAudits": null
+  },
+  "BenchmarkIndex": 2636.5,
+  "HostDPR": 1,
+  "HostUserAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/138.0.0.0 Safari/537.36",
+  "HostFormFactor": "desktop",
+  "HostProduct": "Chrome/138.0.7204.49",
+  "URL": {
+    "requestedUrl": "http://localhost:5173/",
+    "mainDocumentUrl": "http://localhost:5173/",
+    "finalDisplayedUrl": "http://localhost:5173/"
+  },
+  "PageLoadError": {
+    "sentinel": "__LighthouseErrorSentinel",
+    "code": "NO_FCP",
+    "stack": "LighthouseError: NO_FCP\n    at Timeout.<anonymous> (file:///Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/node_modules/lighthouse/core/gather/driver/wait-for-condition.js:85:14)\n    at listOnTimeout (node:internal/timers:608:17)\n    at process.processTimers (node:internal/timers:543:7)",
+    "properties": {}
+  },
+  "GatherContext": {
+    "gatherMode": "navigation"
+  }
+}

@@ -3,7 +3,6 @@ import crypto from 'crypto';
 import { optimizedStorage as storage } from "../optimizedStorage";
 import { log } from '../utils/logger';
 import { captureAPIError } from '../utils/sentry';
-import { isAuthenticated } from '../replitAuth';
 import { requireAdmin, authenticateToken } from '../middleware/adminAuth';
 import { mockIsAuthenticated, mockAuthenticateToken } from '../middleware/dev/mockAuth';
 import { features } from '../config';
@@ -161,7 +160,7 @@ export function registerGumroadRoutes(app: Express): void {
   
   // Admin endpoint to manually grant lifetime access
   app.post('/api/gumroad/grant-access', 
-    features.useReplit ? [isAuthenticated, requireAdmin] : [mockAuthenticateToken, requireAdmin],
+    [mockAuthenticateToken, requireAdmin],
     async (req: Request, res: Response) => {
     try {
       const { email, orderId } = req.body;
@@ -213,7 +212,7 @@ export function registerGumroadRoutes(app: Express): void {
 
   // TEST/DUMMY Purchase endpoint for development mode
   app.post('/api/gumroad/test-purchase', 
-    features.useReplit ? [isAuthenticated, requireAdmin] : [mockAuthenticateToken, requireAdmin],
+    [mockAuthenticateToken, requireAdmin],
     async (req: Request, res: Response) => {
     try {
       // Only allow in development mode

@@ -1,9 +1,10 @@
 import { Link } from "wouter";
-import { ArrowLeft, Eye, Clock, Code, Zap, TestTube, Brain, Heart, Copy, Share2 } from "lucide-react";
+import { ArrowLeft, Eye, Clock, Code, Zap, TestTube, Brain, Heart, Copy, Share2, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import ShareMenu from "@/components/ShareMenu";
 import { IEnhancedTerm, ITerm, IEnhancedUserSettings } from "@/interfaces/interfaces";
 import { 
@@ -30,6 +31,14 @@ interface TermHeaderProps {
 }
 
 
+// Utility function to calculate reading time
+const calculateReadingTime = (text: string): number => {
+  const wordsPerMinute = 200; // Average reading speed
+  const words = text.trim().split(/\s+/).length;
+  const readingTime = Math.ceil(words / wordsPerMinute);
+  return readingTime < 1 ? 1 : readingTime;
+};
+
 export default function TermHeader({
   term,
   isEnhanced,
@@ -46,6 +55,14 @@ export default function TermHeader({
   const mainCategories = getMainCategories(term);
   const difficultyLevel = getDifficultyLevel(term);
   const shortDefinition = getShortDefinition(term);
+  
+  // Calculate reading time based on term content
+  const totalContent = [
+    term?.description,
+    enhancedTerm?.fullDefinition,
+    enhancedTerm?.sections?.map(s => JSON.stringify(s.sectionData)).join(' ')
+  ].filter(Boolean).join(' ');
+  const readingTime = calculateReadingTime(totalContent);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6">
@@ -108,6 +125,14 @@ export default function TermHeader({
                   {difficultyLevel}
                 </Badge>
               )}
+              {/* Reading Time Badge - More Prominent */}
+              <Badge 
+                variant="outline" 
+                className="bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300 font-medium px-3 py-1"
+              >
+                <BookOpen className="h-3 w-3 mr-1.5" />
+                {readingTime} min read
+              </Badge>
               {mainCategories.slice(0, 3).map((category: string, index: number) => (
                 <Badge key={index} variant="secondary">
                   {category}
@@ -175,31 +200,61 @@ export default function TermHeader({
           
           {/* Action buttons */}
           <div className="flex items-center space-x-2 flex-shrink-0">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={onToggleFavorite}
-              disabled={favoriteLoading}
-              className={favorite ? "text-accent-500" : "text-gray-400 hover:text-accent-500"}
-            >
-              <Heart className={favorite ? "fill-current" : ""} />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={onToggleFavorite}
+                    disabled={favoriteLoading}
+                    className={favorite ? "text-accent-500" : "text-gray-400 hover:text-accent-500"}
+                    aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
+                  >
+                    <Heart className={favorite ? "fill-current" : ""} />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{favorite ? "Remove from favorites" : "Add to favorites"}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={onCopyLink}
-            >
-              <Copy />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={onCopyLink}
+                    aria-label="Copy link to this term"
+                  >
+                    <Copy />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Copy link</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={() => onShareMenuToggle(true)}
-            >
-              <Share2 />
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    onClick={() => onShareMenuToggle(true)}
+                    aria-label="Share this term"
+                  >
+                    <Share2 />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Share term</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
             
             <ShareMenu 
               isOpen={shareMenuOpen} 

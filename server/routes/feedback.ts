@@ -28,7 +28,7 @@ initializeFeedbackStorage();
 
 export function registerFeedbackRoutes(app: Express): void {
   // Choose admin middleware based on environment
-  const adminMiddleware = features.replitAuthEnabled ? requireAdmin : mockRequireAdmin;
+  const adminMiddleware = mockRequireAdmin;
 
   /**
    * Submit feedback for a specific term

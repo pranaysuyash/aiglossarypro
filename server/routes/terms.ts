@@ -1,6 +1,5 @@
 import type { Express, Request, Response } from "express";
 import { optimizedStorage as storage } from "../optimizedStorage";
-import { isAuthenticated } from "../replitAuth";
 import { mockIsAuthenticated } from "../middleware/dev/mockAuth";
 import { features } from "../config";
 import type { ITerm, ApiResponse, PaginatedResponse } from "../../shared/types";
@@ -23,7 +22,7 @@ export function registerTermRoutes(app: Express): void {
   initializeRateLimiting();
   
   // Choose authentication middleware based on environment
-  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
+  const authMiddleware = mockIsAuthenticated;
   
   /**
    * @swagger

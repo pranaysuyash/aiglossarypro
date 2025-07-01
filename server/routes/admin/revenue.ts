@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { enhancedStorage as storage } from "../../enhancedStorage";
-import { isAuthenticated } from "../../replitAuth";
+import { mockIsAuthenticated } from "../../middleware/dev/mockAuth";
 import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
 import { features } from "../../config";
@@ -15,8 +15,8 @@ import { csvGenerators, sendCSVResponse } from "../../utils/csvHelpers";
  */
 export function registerAdminRevenueRoutes(app: Express): void {
   // Choose authentication middleware based on environment
-  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
-  const tokenMiddleware = features.replitAuthEnabled ? authenticateToken : mockAuthenticateToken;
+  const authMiddleware = mockIsAuthenticated;
+  const tokenMiddleware = mockAuthenticateToken;
   
   // Revenue dashboard overview
   app.get('/api/admin/revenue/dashboard', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {

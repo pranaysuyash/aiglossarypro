@@ -1,5 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { isAuthenticated } from "../../replitAuth";
+import { mockIsAuthenticated } from "../../middleware/dev/mockAuth";
 import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
 import { features } from "../../config";
@@ -11,8 +11,8 @@ import { log as logger } from "../../utils/logger";
  */
 export function registerAdminMonitoringRoutes(app: Express): void {
   // Choose authentication middleware based on environment
-  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
-  const tokenMiddleware = features.replitAuthEnabled ? authenticateToken : mockAuthenticateToken;
+  const authMiddleware = mockIsAuthenticated;
+  const tokenMiddleware = mockAuthenticateToken;
   
   // Get performance metrics
   app.get('/api/admin/performance', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {

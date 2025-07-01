@@ -14,7 +14,7 @@ import { validateBody, validateParamsMiddleware, processTextSchema, bulkProcessS
 
 export function registerCrossReferenceRoutes(app: Express): void {
   // Choose admin middleware based on environment
-  const adminMiddleware = features.replitAuthEnabled ? requireAdmin : mockRequireAdmin;
+  const adminMiddleware = mockRequireAdmin;
 
   /**
    * Process text for automatic term linking

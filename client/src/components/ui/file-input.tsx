@@ -2,7 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload, AlertCircle } from "lucide-react";
+import { Upload, AlertCircle } from "@/components/ui/icons";
 import { useLiveRegion } from "@/components/accessibility/LiveRegion";
 
 export interface FileInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -89,6 +89,7 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
             accept={accept}
             onChange={handleFileChange}
             className="hidden"
+            autoComplete="off"
             {...props}
           />
           <div className="text-center">

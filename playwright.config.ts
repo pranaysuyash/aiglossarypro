@@ -12,6 +12,21 @@ export default defineConfig({
     baseURL: 'http://localhost:5173',
     trace: 'on-first-retry',
     screenshot: 'only-on-failure',
+    // Visual testing specific settings
+    video: 'retain-on-failure',
+    actionTimeout: 10000,
+    navigationTimeout: 30000,
+  },
+
+  // Visual testing specific configuration
+  expect: {
+    // Threshold for visual comparisons
+    threshold: 0.2,
+    // Animation handling
+    toHaveScreenshot: {
+      threshold: 0.2,
+      animations: 'disabled',
+    },
   },
 
   projects: [

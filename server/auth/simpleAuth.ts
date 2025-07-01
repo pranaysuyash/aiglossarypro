@@ -1,6 +1,6 @@
 /**
  * Simple JWT + OAuth Authentication System
- * Cost-free alternative to Replit Auth using Google/GitHub OAuth
+ * Simple authentication using Google/GitHub OAuth
  * 
  * Features:
  * - JWT tokens for sessions

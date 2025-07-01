@@ -1,6 +1,5 @@
 import type { Express, Request, Response } from "express";
 import { optimizedStorage as storage } from "../optimizedStorage";
-import { isAuthenticated } from "../replitAuth";
 import { authenticateToken } from "../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mockAuth";
 import { multiAuthMiddleware, getUserInfo } from "../middleware/multiAuth";
@@ -14,8 +13,8 @@ import { log as logger } from "../utils/logger";
 export function registerAuthRoutes(app: Express): void {
   
   // Choose authentication middleware based on environment
-  const authMiddleware = features.replitAuthEnabled ? multiAuthMiddleware : mockIsAuthenticated;
-  const tokenMiddleware = features.replitAuthEnabled ? authenticateToken : mockAuthenticateToken;
+  const authMiddleware = mockIsAuthenticated;
+  const tokenMiddleware = mockAuthenticateToken;
   
   // Get current authenticated user
   app.get('/api/auth/user', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {

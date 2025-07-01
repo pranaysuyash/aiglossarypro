@@ -1,6 +1,5 @@
 import type { Express, Request, Response } from "express";
 import { enhancedStorage as storage } from "../enhancedStorage";
-import { isAuthenticated } from "../replitAuth";
 import { requireAdmin, authenticateToken } from "../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mockAuth";
 import { features } from "../config";
@@ -46,8 +45,8 @@ const router = express.Router();
  */
 export function registerAdminRoutes(app: Express): void {
   // Choose authentication middleware based on environment
-  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
-  const tokenMiddleware = features.replitAuthEnabled ? authenticateToken : mockAuthenticateToken;
+  const authMiddleware = mockIsAuthenticated;
+  const tokenMiddleware = mockAuthenticateToken;
   
   // Admin dashboard statistics
   app.get('/api/admin/stats', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {

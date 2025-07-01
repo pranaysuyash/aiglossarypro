@@ -1,5 +1,4 @@
 import type { Express, Request, Response } from "express";
-import { isAuthenticated } from "../replitAuth";
 import { requireAdmin, authenticateToken } from "../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mockAuth";
 import { features } from "../config";
@@ -31,8 +30,8 @@ import {
  */
 export function registerAnalyticsRoutes(app: Express): void {
   // Choose authentication middleware based on environment
-  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
-  const tokenMiddleware = features.replitAuthEnabled ? authenticateToken : mockAuthenticateToken;
+  const authMiddleware = mockIsAuthenticated;
+  const tokenMiddleware = mockAuthenticateToken;
   
   // General analytics (public - basic metrics only)
   app.get('/api/analytics', validateQuery(GeneralAnalyticsQuerySchema), async (req: Request, res: Response) => {

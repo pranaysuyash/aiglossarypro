@@ -37,12 +37,6 @@ interface EnvironmentConfig {
   GITHUB_CLIENT_SECRET?: string;
   GITHUB_REDIRECT_URI?: string;
   
-  // Legacy Replit Authentication (deprecated)
-  REPLIT_CLIENT_ID?: string;
-  REPLIT_CLIENT_SECRET?: string;
-  REPLIT_DOMAINS?: string;
-  REPL_ID?: string;
-  ISSUER_URL?: string;
 
   // Application Configuration
   NODE_ENV: string;
@@ -65,8 +59,7 @@ function validateEnvironment(): EnvironmentConfig {
   // Conditionally required variables based on features
   const conditionallyRequired: Record<string, string[]> = {
     's3_enabled': ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'S3_BUCKET_NAME'],
-    'openai_enabled': ['OPENAI_API_KEY'],
-    'replit_auth_enabled': ['REPLIT_DOMAINS', 'REPL_ID']
+    'openai_enabled': ['OPENAI_API_KEY']
   };
 
   // Validate required variables
@@ -90,8 +83,7 @@ function validateEnvironment(): EnvironmentConfig {
     'AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'S3_BUCKET_NAME',
     'OPENAI_API_KEY', 'GOOGLE_DRIVE_API_KEY',
     'JWT_SECRET', 'GOOGLE_CLIENT_ID', 'GOOGLE_CLIENT_SECRET', 'GOOGLE_REDIRECT_URI',
-    'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'GITHUB_REDIRECT_URI',
-    'REPLIT_CLIENT_ID', 'REPLIT_CLIENT_SECRET', 'REPLIT_DOMAINS', 'REPL_ID', 'ISSUER_URL'
+    'GITHUB_CLIENT_ID', 'GITHUB_CLIENT_SECRET', 'GITHUB_REDIRECT_URI'
   ];
 
   for (const varName of optionalVars) {
@@ -111,10 +103,9 @@ function validateEnvironment(): EnvironmentConfig {
 
   // Check for authentication configuration
   const hasSimpleAuth = config.JWT_SECRET && (config.GOOGLE_CLIENT_ID || config.GITHUB_CLIENT_ID);
-  const hasReplitAuth = config.REPLIT_DOMAINS && config.REPL_ID;
   
-  if (config.NODE_ENV === 'production' && !hasSimpleAuth && !hasReplitAuth) {
-    console.warn('Warning: No authentication configured. Set up JWT_SECRET with Google/GitHub OAuth or Replit auth.');
+  if (config.NODE_ENV === 'production' && !hasSimpleAuth) {
+    console.warn('Warning: No authentication configured. Set up JWT_SECRET with Google/GitHub OAuth.');
   }
 
   if (errors.length > 0) {
@@ -135,7 +126,6 @@ export const features = {
   openaiEnabled: !!config.OPENAI_API_KEY,
   googleDriveEnabled: !!config.GOOGLE_DRIVE_API_KEY,
   simpleAuthEnabled: !!(config.JWT_SECRET && (config.GOOGLE_CLIENT_ID || config.GITHUB_CLIENT_ID)),
-  replitAuthEnabled: !!(config.REPLIT_DOMAINS && config.REPL_ID),
   analyticsEnabled: true, // Analytics is always enabled for now
   isDevelopment: config.NODE_ENV === 'development',
   isProduction: config.NODE_ENV === 'production'
@@ -209,14 +199,6 @@ export function getServerConfig() {
   };
 }
 
-// Authentication configuration helper
-export function getAuthConfig() {
-  return {
-    replitDomains: config.REPLIT_DOMAINS?.split(',') || [],
-    replId: config.REPL_ID,
-    issuerUrl: config.ISSUER_URL || 'https://replit.com/oidc'
-  };
-}
 
 // Security utility to redact sensitive information from logs
 function redactSensitiveInfo(value: string): string {
@@ -248,12 +230,6 @@ export function logConfigStatus() {
   }
   
   console.log(`  - Google Drive Integration: ${features.googleDriveEnabled ? '✅ Enabled' : '⚠️  Disabled'}`);
-  console.log(`  - Replit Auth: ${features.replitAuthEnabled ? '✅ Enabled' : '⚠️  Disabled'}`);
-  
-  if (features.replitAuthEnabled) {
-    console.log(`    - Domains: ${config.REPLIT_DOMAINS}`);
-    console.log(`    - Repl ID: ${config.REPL_ID ? redactSensitiveInfo(config.REPL_ID) : 'Not set'}`);
-  }
   
   console.log('');
 }
@@ -265,7 +241,7 @@ export function sanitizeLogData(data: any): any {
   const sensitiveKeys = [
     'password', 'secret', 'token', 'key', 'auth', 'credential',
     'AWS_SECRET_ACCESS_KEY', 'OPENAI_API_KEY', 'SESSION_SECRET',
-    'REPLIT_CLIENT_SECRET', 'GOOGLE_DRIVE_API_KEY'
+    'GOOGLE_DRIVE_API_KEY'
   ];
   
   const sanitized = { ...data };
@@ -322,12 +298,6 @@ export const appConfig = {
     redirectUri: process.env.GOOGLE_DRIVE_REDIRECT_URI
   },
   
-  // Replit Authentication Configuration
-  replit: {
-    enabled: !!(process.env.REPLIT_DB_URL && process.env.REPLIT_APP_NAME),
-    dbUrl: process.env.REPLIT_DB_URL,
-    appName: process.env.REPLIT_APP_NAME
-  },
   
   // Feature Flags
   features: {

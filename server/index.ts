@@ -13,7 +13,6 @@ import { smartLoadExcelData } from "./smartExcelLoader";
 import { getServerConfig, logConfigStatus } from "./config";
 import { features } from "./config";
 import { setupMultiAuth } from "./middleware/multiAuth";
-import { setupAuth } from "./replitAuth";
 import { initS3Client } from "./s3Service";
 import { setupMockAuth } from "./middleware/dev/mockAuth";
 import { registerSimpleAuthRoutes } from "./routes/simpleAuth";
@@ -82,9 +81,6 @@ app.use(responseLoggingMiddleware);
       registerSimpleAuthRoutes(app);
       registerFirebaseAuthRoutes(app);
       logger.info("✅ Simple JWT + OAuth + Firebase authentication setup complete");
-    } else if (features.replitAuthEnabled) {
-      await setupAuth(app);
-      logger.info("✅ Replit authentication setup complete");
     } else {
       setupMockAuth(app);
       logger.info("✅ Mock authentication setup complete (development mode)");
@@ -105,8 +101,8 @@ app.use(responseLoggingMiddleware);
   // Get server configuration
   const serverConfig = getServerConfig();
 
-  // Use configurable port (fallback to 5000 for Replit compatibility)
-  const port = process.env.REPLIT_ENVIRONMENT === 'true' ? 5000 : serverConfig.port;
+  // Use configurable port
+  const port = serverConfig.port;
   
   // Create HTTP server instance
   const { createServer } = await import('http');

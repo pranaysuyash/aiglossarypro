@@ -92,7 +92,7 @@ export default function Home() {
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 xs:gap-4 sm:gap-6">
               {categoriesLoading ? (
                 // Skeleton loading for categories
                 Array.from({ length: 6 }).map((_, i) => (
@@ -107,7 +107,7 @@ export default function Home() {
                   />
                 ))
               ) : (
-                <div className="col-span-3 text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="col-span-full text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
                   <p className="text-gray-500 dark:text-gray-400">No categories found. Check back later!</p>
                 </div>
               )}
@@ -125,7 +125,7 @@ export default function Home() {
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 auto-rows-fr">
               {termsLoading ? (
                 // Skeleton loading for terms
                 Array.from({ length: 3 }).map((_, i) => (
@@ -140,7 +140,7 @@ export default function Home() {
                   />
                 ))
               ) : (
-                <div className="col-span-3 text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+                <div className="col-span-full text-center p-6 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
                   <p className="text-gray-500 dark:text-gray-400">No featured terms available at the moment.</p>
                 </div>
               )}

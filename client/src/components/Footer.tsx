@@ -42,72 +42,93 @@ export default function Footer({ className, onSubscribe }: FooterProps = {}) {
   };
 
   return (
-    <footer className={cn("bg-gray-800 text-gray-300 dark:bg-gray-900", className)}>
+    <footer className={cn("bg-gray-800 text-gray-300 dark:bg-gray-900 dark:text-gray-200", className)}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>
             <div className="flex items-center space-x-2 mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-primary-300 dark:text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
               </svg>
-              <span className="text-xl font-semibold text-white">AI/ML Glossary</span>
+              <span className="text-xl font-semibold text-white dark:text-gray-100">AI/ML Glossary</span>
             </div>
-            <p className="text-sm mb-4">
+            <p className="text-sm mb-4 text-gray-300 dark:text-gray-200">
               A comprehensive resource for artificial intelligence and machine learning terminology, 
               designed to help you understand complex concepts.
             </p>
             <div className="flex space-x-4">
-              <a href="https://github.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">
+              <a 
+                href="https://github.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition"
+                aria-label="Follow us on GitHub"
+                title="Follow us on GitHub"
+              >
                 <Github className="h-6 w-6" />
               </a>
-              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">
+              <a 
+                href="https://twitter.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition"
+                aria-label="Follow us on Twitter"
+                title="Follow us on Twitter"
+              >
                 <Twitter className="h-6 w-6" />
               </a>
-              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-white transition">
+              <a 
+                href="https://linkedin.com" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition"
+                aria-label="Connect with us on LinkedIn"
+                title="Connect with us on LinkedIn"
+              >
                 <Linkedin className="h-6 w-6" />
               </a>
             </div>
           </div>
           
           <div>
-            <h3 className="text-lg font-medium text-white mb-4">Quick Links</h3>
+            <h3 className="text-lg font-medium text-white dark:text-gray-100 mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
                 <Link href={isAuthenticated ? "/app" : "/"}>
-                  <a className="text-gray-400 hover:text-white transition">
+                  <a className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition">
                     Home
                   </a>
                 </Link>
               </li>
               <li>
                 <Link href="/dashboard">
-                  <a className="text-gray-400 hover:text-white transition">
+                  <a className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition">
                     Dashboard
                   </a>
                 </Link>
               </li>
               <li>
                 <Link href="/favorites">
-                  <a className="text-gray-400 hover:text-white transition">
+                  <a className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition">
                     Favorites
                   </a>
                 </Link>
               </li>
               <li>
-                <a href="#about" className="text-gray-400 hover:text-white transition">About Us</a>
+                <a href="#about" className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition">About Us</a>
               </li>
             </ul>
           </div>
           
           <div>
-            <h3 className="text-lg font-medium text-white mb-4">Subscribe to Updates</h3>
-            <p className="text-sm mb-4">Get notified when we add new terms or update content.</p>
+            <h3 className="text-lg font-medium text-white dark:text-gray-100 mb-4">Subscribe to Updates</h3>
+            <p className="text-sm mb-4 text-gray-300 dark:text-gray-200">Get notified when we add new terms or update content.</p>
             <form onSubmit={handleSubscribe} className="flex">
               <Input 
                 type="email" 
                 name="email" 
                 placeholder="Enter your email" 
-                className="rounded-r-none focus:ring-primary" 
+                className="rounded-r-none focus:ring-primary dark:bg-gray-800 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-400" 
               />
               <Button type="submit" className="rounded-l-none">
                 Subscribe
@@ -116,17 +137,17 @@ export default function Footer({ className, onSubscribe }: FooterProps = {}) {
           </div>
         </div>
         
-        <div className="mt-8 pt-8 border-t border-gray-700 text-sm text-gray-400">
+        <div className="mt-8 pt-8 border-t border-gray-700 dark:border-gray-600 text-sm text-gray-400 dark:text-gray-300">
           <div className="flex flex-col md:flex-row justify-between">
             <p>&copy; {new Date().getFullYear()} AI/ML Glossary. All rights reserved.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">
-              <a href="/privacy" className="hover:text-white transition">
+              <a href="/privacy" className="hover:text-white dark:hover:text-gray-100 transition">
                 Privacy Policy
               </a>
-              <a href="/terms" className="hover:text-white transition">
+              <a href="/terms" className="hover:text-white dark:hover:text-gray-100 transition">
                 Terms of Service
               </a>
-              <a href="/cookies" className="hover:text-white transition">
+              <a href="/cookies" className="hover:text-white dark:hover:text-gray-100 transition">
                 Cookie Policy
               </a>
             </div>

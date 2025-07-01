@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { enhancedStorage } from "./enhancedTermsStorage";
-import { isAuthenticated } from "./replitAuth";
+import { mockIsAuthenticated } from "./middleware/dev/mockAuth";
 
 /**
  * Demo routes to showcase the enhanced API capabilities
@@ -187,7 +187,7 @@ export function registerEnhancedDemoRoutes(app: Express): void {
    * Demo endpoint for personalized features
    * GET /api/demo/personalization
    */
-  app.get('/api/demo/personalization', isAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/demo/personalization', mockIsAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       
@@ -228,7 +228,7 @@ export function registerEnhancedDemoRoutes(app: Express): void {
    * Demo endpoint for analytics features
    * GET /api/demo/analytics
    */
-  app.get('/api/demo/analytics', isAuthenticated, async (req: any, res: Response) => {
+  app.get('/api/demo/analytics', mockIsAuthenticated, async (req: any, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const user = await enhancedStorage.getUser(userId);

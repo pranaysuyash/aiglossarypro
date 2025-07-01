@@ -11,6 +11,9 @@ export default {
       'lg': '1024px',
       'xl': '1280px',
       '2xl': '1536px',
+      // Custom intermediate breakpoints for better responsive design
+      'xxs': '320px',    // Ultra-small phones
+      'tablet': '900px', // Tablet landscape
     },
     extend: {
       borderRadius: {

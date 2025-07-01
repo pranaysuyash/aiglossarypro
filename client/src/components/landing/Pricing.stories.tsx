@@ -8,353 +8,374 @@ const meta: Meta<typeof Pricing> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Pricing plans component with features comparison, billing toggles, and call-to-action buttons.',
+        component: 'Pricing component for the landing page with flexible plans, feature comparisons, and purchase integration.',
       },
     },
   },
-  argTypes: {
-    onPlanSelect: { action: 'plan selected' },
-    onBillingToggle: { action: 'billing period changed' },
-    billingPeriod: {
-      control: { type: 'select' },
-      options: ['monthly', 'annual'],
-    },
-  },
+  tags: ['autodocs'],
 };
 
 export default meta;
 type Story = StoryObj<typeof meta>;
 
-const defaultPlans = [
+const basicPricingData = [
   {
     id: 'free',
     name: 'Free',
-    description: 'Perfect for getting started with AI/ML concepts',
-    price: { monthly: 0, annual: 0 },
-    originalPrice: null,
-    badge: null,
+    price: 0,
+    currency: 'USD',
+    interval: 'month',
+    description: 'Perfect for students and casual learners',
     features: [
-      '100 basic AI/ML term definitions',
+      '1,000+ basic AI/ML terms',
       'Basic search functionality',
-      'Mobile-responsive access',
+      'Mobile app access',
       'Community support',
-      'Email updates',
     ],
     limitations: [
       'No AI-powered features',
-      'No code examples',
-      'No progress tracking',
       'Limited search results',
+      'Basic definitions only',
     ],
-    cta: 'Start Free',
+    buttonText: 'Get Started Free',
+    buttonAction: 'signup',
     popular: false,
-    color: 'gray',
+    recommended: false,
   },
   {
     id: 'pro',
     name: 'Professional',
-    description: 'For serious learners and professionals',
-    price: { monthly: 19.99, annual: 199.99 },
-    originalPrice: { monthly: null, annual: 239.88 },
-    badge: 'Most Popular',
+    price: 29,
+    currency: 'USD',
+    interval: 'month',
+    yearlyPrice: 290,
+    yearlyDiscount: 17,
+    description: 'For professionals and advanced learners',
     features: [
-      '2,000+ comprehensive term definitions',
+      '10,000+ comprehensive terms',
       'AI-powered semantic search',
-      'Interactive code examples',
-      'Personalized learning paths',
-      'Progress tracking & analytics',
+      'Interactive visualizations',
+      'Code examples & implementations',
+      'Learning paths & progress tracking',
       'Offline access',
-      'Priority email support',
-      'Export to popular formats',
-      'Advanced filtering & categorization',
+      'Priority support',
+      'Export capabilities',
     ],
-    limitations: [],
-    cta: 'Start Pro Trial',
+    buttonText: 'Start Free Trial',
+    buttonAction: 'trial',
     popular: true,
-    color: 'blue',
-    trialDays: 14,
+    recommended: true,
+    badge: 'Most Popular',
+  },
+  {
+    id: 'team',
+    name: 'Team',
+    price: 99,
+    currency: 'USD',
+    interval: 'month',
+    yearlyPrice: 990,
+    yearlyDiscount: 17,
+    description: 'For teams and organizations',
+    features: [
+      'Everything in Professional',
+      'Team collaboration tools',
+      'Custom glossaries',
+      'Admin dashboard',
+      'Team progress analytics',
+      'SSO integration',
+      'API access',
+      'Dedicated account manager',
+    ],
+    buttonText: 'Contact Sales',
+    buttonAction: 'contact',
+    popular: false,
+    recommended: false,
+    minSeats: 5,
+    maxSeats: 50,
   },
   {
     id: 'enterprise',
     name: 'Enterprise',
-    description: 'For teams and organizations',
-    price: { monthly: 99.99, annual: 999.99 },
-    originalPrice: { monthly: null, annual: 1199.88 },
-    badge: 'Best Value',
+    price: null,
+    currency: 'USD',
+    interval: 'month',
+    description: 'Custom solutions for large organizations',
     features: [
-      'Everything in Professional',
-      'Team collaboration features',
-      'Custom content creation',
-      'API access for integration',
-      'White-label options',
-      'Dedicated account manager',
+      'Everything in Team',
       'Custom integrations',
-      'Advanced analytics & reporting',
-      'SSO integration',
-      'Priority phone support',
+      'White-label solutions',
+      'Advanced analytics',
+      'Custom AI training',
+      'On-premise deployment',
+      '24/7 phone support',
+      'SLA guarantee',
     ],
-    limitations: [],
-    cta: 'Contact Sales',
+    buttonText: 'Contact Sales',
+    buttonAction: 'contact',
     popular: false,
-    color: 'purple',
-    isCustomPricing: false,
+    recommended: false,
+    customPricing: true,
   },
+];
+
+const advancedPricingData = [
+  {
+    id: 'student',
+    name: 'Student',
+    price: 9,
+    currency: 'USD',
+    interval: 'month',
+    originalPrice: 29,
+    discount: 69,
+    description: 'Special pricing for students and educators',
+    features: [
+      'Full Professional features',
+      'Student community access',
+      'Academic resources',
+      'Thesis support tools',
+    ],
+    requirements: [
+      'Valid student ID required',
+      'Educational email address',
+      'Annual verification',
+    ],
+    buttonText: 'Verify Student Status',
+    buttonAction: 'verify',
+    badge: '69% OFF',
+    popular: false,
+    recommended: false,
+  },
+  ...basicPricingData.slice(1),
 ];
 
 export const Default: Story = {
   args: {
-    plans: defaultPlans,
-    billingPeriod: 'monthly',
-    showBillingToggle: true,
-    showMoneyBackGuarantee: true,
+    plans: basicPricingData,
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
-export const AnnualBilling: Story = {
+export const WithYearlyToggle: Story = {
   args: {
-    plans: defaultPlans,
-    billingPeriod: 'annual',
-    showBillingToggle: true,
-    showAnnualDiscount: true,
-    annualDiscountPercentage: 17,
+    plans: basicPricingData,
+    showYearlyToggle: true,
+    defaultInterval: 'month',
+    yearlyDiscountText: 'Save 17% with yearly billing',
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onIntervalChange: (interval: string) => console.log(`Billing interval changed to: ${interval}`),
   },
 };
 
-export const SimplePlans: Story = {
+export const WithStudentPricing: Story = {
   args: {
-    plans: [
-      {
-        id: 'basic',
-        name: 'Basic',
-        description: 'Essential AI/ML knowledge',
-        price: { monthly: 9.99, annual: 99.99 },
-        features: [
-          '500 term definitions',
-          'Basic search',
-          'Mobile access',
-          'Email support',
-        ],
-        cta: 'Get Started',
-        popular: false,
-        color: 'blue',
-      },
-      {
-        id: 'premium',
-        name: 'Premium',
-        description: 'Complete learning experience',
-        price: { monthly: 19.99, annual: 199.99 },
-        badge: 'Popular',
-        features: [
-          '2,000+ definitions',
-          'AI-powered search',
-          'Code examples',
-          'Progress tracking',
-          'Priority support',
-        ],
-        cta: 'Upgrade Now',
-        popular: true,
-        color: 'green',
-      },
-    ],
-    billingPeriod: 'monthly',
-    showBillingToggle: true,
-    variant: 'simple',
+    plans: advancedPricingData,
+    showStudentPricing: true,
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
-export const WithFeatureComparison: Story = {
+export const ComparisonView: Story = {
   args: {
-    plans: defaultPlans,
-    billingPeriod: 'monthly',
+    plans: basicPricingData,
+    layout: 'comparison',
     showFeatureComparison: true,
-    featureCategories: [
-      {
-        name: 'Content Access',
-        features: [
-          { name: 'Term Definitions', free: '100', pro: '2,000+', enterprise: '2,000+' },
-          { name: 'Code Examples', free: '❌', pro: '✅', enterprise: '✅' },
-          { name: 'Interactive Content', free: '❌', pro: '✅', enterprise: '✅' },
-        ],
-      },
-      {
-        name: 'AI Features',
-        features: [
-          { name: 'Semantic Search', free: '❌', pro: '✅', enterprise: '✅' },
-          { name: 'Personalized Paths', free: '❌', pro: '✅', enterprise: '✅' },
-          { name: 'AI Explanations', free: '❌', pro: '✅', enterprise: '✅' },
-        ],
-      },
-      {
-        name: 'Support',
-        features: [
-          { name: 'Community Support', free: '✅', pro: '✅', enterprise: '✅' },
-          { name: 'Email Support', free: '❌', pro: '✅', enterprise: '✅' },
-          { name: 'Phone Support', free: '❌', pro: '❌', enterprise: '✅' },
-        ],
-      },
-    ],
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
-export const StudentDiscountPricing: Story = {
+export const WithTrialBanner: Story = {
   args: {
-    plans: defaultPlans.map(plan => ({
+    plans: basicPricingData,
+    showTrialBanner: true,
+    trialDays: 14,
+    trialFeatures: [
+      'Full access to all Professional features',
+      'No credit card required',
+      'Cancel anytime',
+    ],
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+  },
+};
+
+export const WithCustomCurrency: Story = {
+  args: {
+    plans: basicPricingData.map(plan => ({
       ...plan,
-      price: {
-        monthly: plan.price.monthly * 0.5,
-        annual: plan.price.annual * 0.5,
-      },
-      badge: plan.id === 'pro' ? 'Student Discount' : plan.badge,
+      price: plan.price ? plan.price * 0.85 : null,
+      currency: 'EUR',
+      yearlyPrice: plan.yearlyPrice ? plan.yearlyPrice * 0.85 : undefined,
     })),
-    billingPeriod: 'annual',
-    showStudentDiscount: true,
-    discountPercentage: 50,
+    currency: 'EUR',
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
-export const CustomPricingTiers: Story = {
+export const WithPPPBanner: Story = {
   args: {
-    plans: [
-      {
-        id: 'starter',
-        name: 'Starter',
-        description: 'For individuals just beginning',
-        price: { monthly: 4.99, annual: 49.99 },
-        features: [
-          '300 term definitions',
-          'Basic search',
-          'Mobile access',
-        ],
-        cta: 'Start Learning',
-        popular: false,
-        color: 'blue',
-      },
-      {
-        id: 'professional',
-        name: 'Professional',
-        description: 'For working professionals',
-        price: { monthly: 14.99, annual: 149.99 },
-        badge: 'Recommended',
-        features: [
-          '1,500+ definitions',
-          'AI search',
-          'Code examples',
-          'Progress tracking',
-        ],
-        cta: 'Go Professional',
-        popular: true,
-        color: 'green',
-      },
-      {
-        id: 'expert',
-        name: 'Expert',
-        description: 'For teams and experts',
-        price: { monthly: 29.99, annual: 299.99 },
-        features: [
-          '2,500+ definitions',
-          'Advanced AI features',
-          'Team collaboration',
-          'API access',
-          'Custom content',
-        ],
-        cta: 'Become Expert',
-        popular: false,
-        color: 'purple',
-      },
-      {
-        id: 'enterprise',
-        name: 'Enterprise',
-        description: 'Custom solutions',
-        price: 'Custom',
-        features: [
-          'Unlimited access',
-          'White-label solution',
-          'Dedicated support',
-          'Custom integrations',
-        ],
-        cta: 'Contact Sales',
-        popular: false,
-        color: 'gray',
-        isCustomPricing: true,
-      },
-    ],
-    billingPeriod: 'monthly',
-    showBillingToggle: true,
+    plans: basicPricingData,
+    showPPPBanner: true,
+    pppDiscount: 40,
+    userCountry: 'IN',
+    pppMessage: 'Special pricing available for your region',
+    onPPPApply: () => console.log('PPP discount applied'),
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
 export const WithTestimonials: Story = {
   args: {
-    plans: defaultPlans,
-    billingPeriod: 'annual',
+    plans: basicPricingData,
     showTestimonials: true,
     testimonials: [
       {
-        text: "This glossary has been invaluable for my machine learning journey. The AI-powered search finds exactly what I need.",
-        author: "Sarah Chen",
-        role: "Data Scientist at Google",
-        avatar: "SC",
+        id: '1',
+        author: 'Sarah Chen',
+        role: 'ML Engineer at Google',
+        content: 'This glossary has become my go-to resource for AI terminology. The semantic search is incredibly accurate.',
+        rating: 5,
+        plan: 'pro',
       },
       {
-        text: "The code examples and interactive content make complex concepts so much clearer. Worth every penny!",
-        author: "Michael Rodriguez",
-        role: "ML Engineer at Tesla",
-        avatar: "MR",
-      },
-      {
-        text: "Our entire team uses this for reference. The collaboration features in Enterprise are fantastic.",
-        author: "Dr. Emily Watson",
-        role: "AI Research Lead at OpenAI",
-        avatar: "EW",
+        id: '2',
+        author: 'Dr. Michael Rodriguez',
+        role: 'AI Research Professor',
+        content: 'I use this with my students. The learning paths and interactive content make complex concepts accessible.',
+        rating: 5,
+        plan: 'team',
       },
     ],
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
-export const LimitedTimeOffer: Story = {
+export const WithFAQ: Story = {
   args: {
-    plans: defaultPlans.map(plan => ({
+    plans: basicPricingData,
+    showFAQ: true,
+    faqItems: [
+      {
+        question: 'Can I change plans anytime?',
+        answer: 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.',
+      },
+      {
+        question: 'What payment methods do you accept?',
+        answer: 'We accept all major credit cards, PayPal, and wire transfers for enterprise customers.',
+      },
+      {
+        question: 'Is there a free trial?',
+        answer: 'Yes, we offer a 14-day free trial of our Professional plan with full access to all features.',
+      },
+    ],
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+  },
+};
+
+export const WithLimitedTimeOffer: Story = {
+  args: {
+    plans: basicPricingData.map(plan => ({
       ...plan,
-      badge: plan.id === 'pro' ? '50% OFF - Limited Time!' : plan.badge,
-      originalPrice: plan.id === 'pro' ? {
-        monthly: 39.99,
-        annual: 399.99,
-      } : plan.originalPrice,
+      limitedOffer: plan.id === 'pro' ? {
+        discount: 30,
+        originalPrice: plan.price,
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+        reason: 'Launch Special',
+      } : undefined,
     })),
-    billingPeriod: 'annual',
-    showCountdown: true,
-    countdownEndDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
-export const Loading: Story = {
+export const WithUsageBasedPricing: Story = {
   args: {
-    isLoading: true,
-    billingPeriod: 'monthly',
+    plans: [
+      ...basicPricingData.slice(0, 2),
+      {
+        id: 'usage',
+        name: 'Pay-as-you-go',
+        price: null,
+        currency: 'USD',
+        interval: 'usage',
+        description: 'Perfect for occasional users',
+        usagePricing: {
+          basePrice: 5,
+          perQuery: 0.10,
+          includedQueries: 50,
+          maxQueries: 1000,
+        },
+        features: [
+          '$5 base fee per month',
+          '$0.10 per AI search query',
+          '50 queries included',
+          'All Professional features',
+        ],
+        buttonText: 'Start Usage Plan',
+        buttonAction: 'usage',
+      },
+      ...basicPricingData.slice(2),
+    ],
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+  },
+};
+
+export const WithAddOns: Story = {
+  args: {
+    plans: basicPricingData.map(plan => ({
+      ...plan,
+      addOns: plan.id === 'pro' || plan.id === 'team' ? [
+        {
+          id: 'priority-support',
+          name: 'Priority Support',
+          price: 15,
+          description: '24/7 priority support with 1-hour response time',
+        },
+        {
+          id: 'custom-integrations',
+          name: 'Custom Integrations',
+          price: 50,
+          description: 'Custom API integrations with your existing tools',
+        },
+      ] : undefined,
+    })),
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onAddOnToggle: (planId: string, addOnId: string, selected: boolean) => 
+      console.log(`Add-on ${addOnId} ${selected ? 'added to' : 'removed from'} plan ${planId}`),
+  },
+};
+
+export const LoadingState: Story = {
+  args: {
+    loading: true,
+    skeletonCount: 3,
+  },
+};
+
+export const ErrorState: Story = {
+  args: {
+    error: 'Failed to load pricing information. Please try again.',
+    onRetry: () => console.log('Retrying pricing load...'),
   },
 };
 
 export const DarkMode: Story = {
   args: {
-    plans: defaultPlans,
-    billingPeriod: 'annual',
-    showBillingToggle: true,
+    plans: basicPricingData,
+    showYearlyToggle: true,
+    theme: 'dark',
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
   },
-  decorators: [
-    (Story) => (
-      <div className="dark bg-gray-900 min-h-screen p-6">
-        <Story />
-      </div>
-    ),
-  ],
+  parameters: {
+    themes: {
+      default: 'dark',
+    },
+  },
 };
 
-export const Mobile: Story = {
+export const MobileOptimized: Story = {
   args: {
-    plans: defaultPlans,
-    billingPeriod: 'monthly',
-    showBillingToggle: true,
+    plans: basicPricingData,
+    showYearlyToggle: true,
     mobileOptimized: true,
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
   },
   parameters: {
     viewport: {
@@ -363,39 +384,47 @@ export const Mobile: Story = {
   },
 };
 
-export const CompactView: Story = {
+export const WithAnalytics: Story = {
   args: {
-    plans: defaultPlans.slice(0, 2),
-    billingPeriod: 'monthly',
-    variant: 'compact',
-    showBillingToggle: false,
+    plans: basicPricingData,
+    trackingEnabled: true,
+    onPlanSelect: (planId: string, action: string) => {
+      console.log(`Selected plan: ${planId}, action: ${action}`);
+      // Analytics tracking would happen here
+    },
+    onPlanView: (planId: string) => console.log(`Plan ${planId} viewed`),
+    onFeatureClick: (planId: string, feature: string) => console.log(`Feature "${feature}" clicked on plan ${planId}`),
   },
 };
 
-export const WithAddOns: Story = {
+export const WithCustomization: Story = {
   args: {
-    plans: defaultPlans,
-    billingPeriod: 'monthly',
-    showAddOns: true,
-    addOns: [
-      {
-        id: 'priority-support',
-        name: 'Priority Support',
-        description: '24/7 priority email and chat support',
-        price: { monthly: 9.99, annual: 99.99 },
-      },
-      {
-        id: 'custom-content',
-        name: 'Custom Content Creation',
-        description: 'Get custom terms and definitions for your specific needs',
-        price: { monthly: 19.99, annual: 199.99 },
-      },
-      {
-        id: 'api-access',
-        name: 'Extended API Access',
-        description: 'Higher rate limits and advanced API features',
-        price: { monthly: 14.99, annual: 149.99 },
-      },
-    ],
+    plans: basicPricingData,
+    customization: {
+      primaryColor: '#6366f1',
+      borderRadius: 'large',
+      fontFamily: 'Inter',
+      buttonStyle: 'gradient',
+      cardStyle: 'elevated',
+    },
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+  },
+};
+
+export const WithExperimentalFeatures: Story = {
+  args: {
+    plans: basicPricingData,
+    experimentalFeatures: {
+      aiPriceOptimization: true,
+      dynamicPricing: true,
+      personalizedRecommendations: true,
+    },
+    userProfile: {
+      usage: 'heavy',
+      teamSize: 12,
+      industry: 'technology',
+      budget: 'medium',
+    },
+    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };

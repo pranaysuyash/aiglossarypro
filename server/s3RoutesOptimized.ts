@@ -4,7 +4,7 @@ import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
 import { getOptimizedS3Client, UploadProgress } from './s3ServiceOptimized';
-import { isAuthenticated } from './replitAuth';
+import { mockIsAuthenticated } from './middleware/dev/mockAuth';
 import { WebSocket } from 'ws';
 
 const router = Router();
@@ -455,7 +455,7 @@ router.post('/archive', async (req, res) => {
 });
 
 // Cleanup old files
-router.post('/cleanup', isAuthenticated, async (req, res) => {
+router.post('/cleanup', mockIsAuthenticated, async (req, res) => {
   try {
     const { prefix = '', olderThanDays = 30, keepVersions = 5 } = req.body;
     

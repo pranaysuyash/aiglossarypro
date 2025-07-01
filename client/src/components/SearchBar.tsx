@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, memo, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
-import { Search, X, Brain, Zap } from "lucide-react";
+import { Search, X, Brain, Zap } from "@/components/ui/icons";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";

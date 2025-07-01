@@ -3,7 +3,7 @@ import passport from 'passport';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import { storage } from '../storage';
-import { features, getAuthConfig } from '../config';
+import { features } from '../config';
 import { log } from '../utils/logger';
 import { captureAuthEvent } from '../utils/sentry';
 import { AuthenticatedRequest } from '../types/express';
@@ -67,8 +67,7 @@ export async function setupMultiAuth(app: Express) {
   log.info('Setting up multi-provider authentication', {
     providers: {
       google: !!oauthConfig.google,
-      github: !!oauthConfig.github,
-      replit: features.replitAuthEnabled
+      github: !!oauthConfig.github
     }
   });
   
@@ -213,19 +212,6 @@ export async function setupMultiAuth(app: Express) {
     });
   });
   
-  // Get available auth providers endpoint (DISABLED - Using Firebase providers instead)
-  // app.get('/api/auth/providers', (req, res) => {
-  //   const providers = {
-  //     google: !!oauthConfig.google,
-  //     github: !!oauthConfig.github,
-  //     replit: features.replitAuthEnabled
-  //   };
-  //   
-  //   res.json({
-  //     success: true,
-  //     data: providers
-  //   });
-  // });
 }
 
 // Enhanced authentication middleware that works with all providers
@@ -236,8 +222,7 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
       message: 'Authentication required',
       availableProviders: {
         google: !!process.env.GOOGLE_CLIENT_ID,
-        github: !!process.env.GITHUB_CLIENT_ID,
-        replit: features.replitAuthEnabled
+        github: !!process.env.GITHUB_CLIENT_ID
       }
     });
   }
@@ -245,7 +230,7 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
   
   // For OAuth providers (Google/GitHub), check if user still exists in database
-  if (user.provider && user.provider !== 'replit') {
+  if (user.provider) {
     try {
       const dbUser = await storage.getUser(user.id);
       if (!dbUser) {
@@ -266,36 +251,6 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
     }
   }
   
-  // For Replit OAuth, use existing token refresh logic
-  if (user.expires_at) {
-    const now = Math.floor(Date.now() / 1000);
-    if (now > user.expires_at && user.refresh_token) {
-      try {
-        // TODO: Implement token refresh logic when getOidcConfig is available
-        console.warn('Token refresh not implemented yet');
-        // const { getOidcConfig } = await import('../replitAuth');
-        // const client = await import('openid-client');
-        // const config = await getOidcConfig();
-        // const tokenResponse = await client.refreshTokenGrant(config, user.refresh_token);
-        
-        // user.claims = tokenResponse.claims();
-        // user.access_token = tokenResponse.access_token;
-        // user.refresh_token = tokenResponse.refresh_token;
-        // user.expires_at = user.claims?.exp;
-        
-        log.info('Replit token refreshed successfully', { userId: user.id });
-      } catch (error) {
-        log.error('Replit token refresh failed', { 
-          userId: user.id,
-          error: error instanceof Error ? error.message : 'Unknown error'
-        });
-        return res.status(401).json({ 
-          success: false,
-          message: 'Session expired, please login again' 
-        });
-      }
-    }
-  }
   
   next();
 };
@@ -306,15 +261,6 @@ export function getUserInfo(req: Request): { id: string; email: string; name: st
   
   const user = req.user as any;
   
-  // Handle Replit OAuth format
-  if (user.claims) {
-    return {
-      id: user.claims.sub,
-      email: user.claims.email || '',
-      name: `${user.claims.first_name || ''} ${user.claims.last_name || ''}`.trim() || user.claims.email || 'Unknown User',
-      provider: 'replit'
-    };
-  }
   
   // Handle Google/GitHub OAuth format
   return {

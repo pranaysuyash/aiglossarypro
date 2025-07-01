@@ -31,6 +31,7 @@ import {
   Settings as SettingsIcon
 } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import PageBreadcrumb from "@/components/ui/page-breadcrumb";
 import { apiRequest } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
 import { queryClient } from "@/lib/queryClient";
@@ -184,6 +185,13 @@ export default function Settings() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <PageBreadcrumb 
+        items={[
+          { label: "Home", href: "/" },
+          { label: "Settings", isCurrentPage: true }
+        ]}
+        className="mb-6"
+      />
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
       
       <Tabs defaultValue="account" className="space-y-4">

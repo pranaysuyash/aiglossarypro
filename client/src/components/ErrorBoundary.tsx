@@ -3,9 +3,10 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Button } from './ui/button';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
 import { ERROR_MESSAGES } from '@/constants/messages';
+import { BaseComponentProps } from '@/types/common-props';
+import { cn } from '@/lib/utils';
 
-interface Props {
-  children: ReactNode;
+interface Props extends BaseComponentProps {
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
 }
@@ -92,7 +93,10 @@ export class ErrorBoundary extends Component<Props, State> {
                             this.state.error?.message.includes('network');
 
       return (
-        <div className="min-h-[400px] flex items-center justify-center p-4">
+        <div 
+          id={this.props.id}
+          className={cn("min-h-[400px] flex items-center justify-center p-4", this.props.className)}
+        >
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
               <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
@@ -166,6 +170,7 @@ export class ErrorBoundary extends Component<Props, State> {
               </p>
             </CardContent>
           </Card>
+          {this.props.children}
         </div>
       );
     }

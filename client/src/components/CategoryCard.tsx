@@ -58,19 +58,19 @@ const CategoryCard = memo(function CategoryCard({ category, termCount }: Categor
       className="cursor-pointer"
       data-testid="category-card"
     >
-        <Card className="h-full transition-shadow hover:shadow-md border border-gray-100 dark:border-gray-800">
+        <Card className="h-full transition-shadow hover:shadow-md border border-gray-100 dark:border-gray-800 min-w-0">
           <CardContent className="p-3 xs:p-4">
-            <div className="flex items-start w-full overflow-hidden">
-              <div className={`w-10 h-10 xs:w-12 xs:h-12 rounded-lg ${colorClass} flex items-center justify-center mr-3 xs:mr-4 flex-shrink-0`}>
-                <div className="w-4 h-4 xs:w-6 xs:h-6">
+            <div className="flex items-start w-full min-w-0">
+              <div className={`w-8 h-8 xs:w-10 xs:h-10 sm:w-12 sm:h-12 rounded-lg ${colorClass} flex items-center justify-center mr-2 xs:mr-3 flex-shrink-0`}>
+                <div className="w-3 h-3 xs:w-4 xs:h-4 sm:w-6 sm:h-6">
                   {icon}
                 </div>
               </div>
-              <div className="flex-1 min-w-0 overflow-hidden">
-                <h3 className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition truncate text-sm xs:text-base">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-medium text-gray-800 dark:text-gray-200 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition truncate text-xs xs:text-sm sm:text-base leading-tight">
                   {category.name}
                 </h3>
-                <p className="text-xs xs:text-sm text-gray-500 dark:text-gray-400 mt-1">{displayTermCount} terms</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 xs:mt-1 truncate">{displayTermCount} terms</p>
               </div>
             </div>
           </CardContent>

@@ -1,6 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { enhancedStorage as storage } from "../../enhancedStorage";
-import { isAuthenticated } from "../../replitAuth";
+import { mockIsAuthenticated } from "../../middleware/dev/mockAuth";
 import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
 import { features } from "../../config";
@@ -23,8 +23,8 @@ type MaintenanceOperation = typeof MAINTENANCE_OPERATIONS[keyof typeof MAINTENAN
  */
 export function registerAdminMaintenanceRoutes(app: Express): void {
   // Choose authentication middleware based on environment
-  const authMiddleware = features.replitAuthEnabled ? isAuthenticated : mockIsAuthenticated;
-  const tokenMiddleware = features.replitAuthEnabled ? authenticateToken : mockAuthenticateToken;
+  const authMiddleware = mockIsAuthenticated;
+  const tokenMiddleware = mockAuthenticateToken;
   
   // Database maintenance operations
   app.post('/api/admin/maintenance', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {

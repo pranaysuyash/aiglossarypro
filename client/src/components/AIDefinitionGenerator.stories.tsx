@@ -37,22 +37,22 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    termName: '',
-    onDefinitionGenerated: (definition: string) => console.log('Generated:', definition),
+    initialTerm: '',
+    onDefinitionGenerated: (definition: any) => console.log('Generated:', definition),
   },
 };
 
 export const WithPrefilledTerm: Story = {
   args: {
-    termName: 'Transformer Architecture',
-    onDefinitionGenerated: (definition: string) => console.log('Generated:', definition),
+    initialTerm: 'Transformer Architecture',
+    onDefinitionGenerated: (definition: any) => console.log('Generated:', definition),
   },
 };
 
 export const GeneratingState: Story = {
   args: {
-    termName: 'Attention Mechanism',
-    onDefinitionGenerated: (definition: string) => console.log('Generated:', definition),
+    initialTerm: 'Attention Mechanism',
+    onDefinitionGenerated: (definition: any) => console.log('Generated:', definition),
   },
   parameters: {
     mockData: [
@@ -69,8 +69,8 @@ export const GeneratingState: Story = {
 
 export const SuccessfulGeneration: Story = {
   args: {
-    termName: 'Convolutional Neural Network',
-    onDefinitionGenerated: (definition: string) => console.log('Generated:', definition),
+    initialTerm: 'Convolutional Neural Network',
+    onDefinitionGenerated: (definition: any) => console.log('Generated:', definition),
   },
   parameters: {
     mockData: [
@@ -109,21 +109,16 @@ export const SuccessfulGeneration: Story = {
 
 export const WithCustomizationOptions: Story = {
   args: {
-    termName: 'Gradient Descent',
-    onDefinitionGenerated: (definition: string) => console.log('Generated:', definition),
-    options: {
-      complexity: 'intermediate',
-      includeExamples: true,
-      includeCode: true,
-      targetAudience: 'students',
-    },
+    initialTerm: 'Gradient Descent',
+    initialCategory: 'Machine Learning',
+    onDefinitionGenerated: (definition: any) => console.log('Generated:', definition),
   },
 };
 
 export const ErrorState: Story = {
   args: {
-    termName: 'Invalid Term',
-    onDefinitionGenerated: (definition: string) => console.log('Generated:', definition),
+    initialTerm: 'Invalid Term',
+    onDefinitionGenerated: (definition: any) => console.log('Generated:', definition),
   },
   parameters: {
     mockData: [
@@ -137,44 +132,26 @@ export const ErrorState: Story = {
   },
 };
 
-export const WithHistory: Story = {
+export const WithCategory: Story = {
   args: {
-    termName: 'Random Forest',
-    onDefinitionGenerated: (definition: string) => console.log('Generated:', definition),
-    showHistory: true,
-    recentGenerations: [
-      {
-        term: 'Decision Tree',
-        timestamp: '2024-01-15T10:30:00Z',
-        preview: 'A decision tree is a flowchart-like structure...',
-      },
-      {
-        term: 'Support Vector Machine',
-        timestamp: '2024-01-15T09:15:00Z',
-        preview: 'Support Vector Machines are supervised learning models...',
-      },
-      {
-        term: 'K-Means Clustering',
-        timestamp: '2024-01-14T16:45:00Z',
-        preview: 'K-Means is an unsupervised learning algorithm...',
-      },
-    ],
+    initialTerm: 'Random Forest',
+    initialCategory: 'Machine Learning',
+    onDefinitionGenerated: (definition: any) => console.log('Generated:', definition),
   },
 };
 
-export const AdminMode: Story = {
+export const ReinforcementLearning: Story = {
   args: {
-    termName: 'Reinforcement Learning',
-    onDefinitionGenerated: (definition: string) => console.log('Generated:', definition),
-    adminMode: true,
-    showAdvancedOptions: true,
+    initialTerm: 'Reinforcement Learning',
+    initialCategory: 'Artificial Intelligence',
+    onDefinitionGenerated: (definition: any) => console.log('Generated:', definition),
   },
 };
 
 export const DarkMode: Story = {
   args: {
-    termName: 'Natural Language Processing',
-    onDefinitionGenerated: (definition: string) => console.log('Generated:', definition),
+    initialTerm: 'Natural Language Processing',
+    onDefinitionGenerated: (definition: any) => console.log('Generated:', definition),
   },
   parameters: {
     themes: {
@@ -185,8 +162,8 @@ export const DarkMode: Story = {
 
 export const MobileView: Story = {
   args: {
-    termName: 'Computer Vision',
-    onDefinitionGenerated: (definition: string) => console.log('Generated:', definition),
+    initialTerm: 'Computer Vision',
+    onDefinitionGenerated: (definition: any) => console.log('Generated:', definition),
   },
   parameters: {
     viewport: {

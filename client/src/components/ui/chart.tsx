@@ -8,6 +8,28 @@ import { cn } from "@/lib/utils"
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const
 
+// Default theme colors for better dark mode support
+const DEFAULT_THEME_COLORS = {
+  light: {
+    background: "hsl(0 0% 100%)",
+    foreground: "hsl(222.2 84% 4.9%)",
+    muted: "hsl(210 40% 96%)",
+    "muted-foreground": "hsl(215.4 16.3% 46.9%)",
+    border: "hsl(214.3 31.8% 91.4%)",
+    primary: "hsl(221.2 83.2% 53.3%)",
+    "primary-foreground": "hsl(210 40% 98%)",
+  },
+  dark: {
+    background: "hsl(222.2 84% 4.9%)",
+    foreground: "hsl(210 40% 98%)",
+    muted: "hsl(217.2 32.6% 17.5%)",
+    "muted-foreground": "hsl(215 20.2% 65.1%)",
+    border: "hsl(217.2 32.6% 17.5%)",
+    primary: "hsl(217.2 91.2% 59.8%)",
+    "primary-foreground": "hsl(222.2 84% 4.9%)",
+  },
+} as const
+
 export type ChartConfig = {
   [k in string]: {
     label?: React.ReactNode
@@ -76,10 +98,6 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
     ([, config]) => config.theme || config.color
   )
 
-  if (!colorConfig.length) {
-    return null
-  }
-
   return (
     <style
       dangerouslySetInnerHTML={{
@@ -87,6 +105,12 @@ const ChartStyle = ({ id, config }: { id: string; config: ChartConfig }) => {
           .map(
             ([theme, prefix]) => `
 ${prefix} [data-chart=${id}] {
+  /* Default theme colors */
+${Object.entries(DEFAULT_THEME_COLORS[theme as keyof typeof DEFAULT_THEME_COLORS])
+  .map(([key, color]) => `  --color-${key}: ${color};`)
+  .join("\n")}
+  
+  /* Chart-specific colors */
 ${colorConfig
   .map(([key, itemConfig]) => {
     const color =
@@ -94,7 +118,12 @@ ${colorConfig
       itemConfig.color
     return color ? `  --color-${key}: ${color};` : null
   })
+  .filter(Boolean)
   .join("\n")}
+  
+  /* Enhanced grid and axis colors for theme */
+  --chart-grid: ${theme === 'dark' ? 'hsl(217.2 32.6% 17.5%)' : 'hsl(214.3 31.8% 91.4%)'};
+  --chart-text: ${theme === 'dark' ? 'hsl(215 20.2% 65.1%)' : 'hsl(215.4 16.3% 46.9%)'};
 }
 `
           )

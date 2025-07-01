@@ -14,11 +14,15 @@ import TermCard from "@/components/TermCard";
 import { AIDefinitionImprover } from "@/components/AIDefinitionImprover";
 import { useAuth } from "@/hooks/useAuth";
 import { sanitizeHTML, sanitizeMathHTML } from "@/utils/sanitize";
+import { FreeTierGate } from "@/components/FreeTierGate";
+import { UpgradePrompt } from "@/components/UpgradePrompt";
+import { useAccess } from "@/hooks/useAccess";
 
 export default function TermDetail() {
   const { id } = useParams();
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
+  const { accessStatus, isFreeTier } = useAccess();
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   
   // Fetch term details
@@ -161,6 +165,11 @@ export default function TermDetail() {
         <Sidebar />
         
         <main className="flex-1">
+          {/* Free Tier Banner */}
+          {isAuthenticated && isFreeTier && accessStatus && (
+            <UpgradePrompt variant="banner" className="mb-4" />
+          )}
+          
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6">
             <div className="p-6">
               {/* Breadcrumb */}
@@ -246,36 +255,70 @@ export default function TermDetail() {
               {/* Definition */}
               <div className="mb-8">
                 <h2 className="text-xl font-semibold mb-3">Definition</h2>
-                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
-                  {term.definition}
-                </p>
+                
+                {/* Check if this is a preview version */}
+                {term.isPreview ? (
+                  <div>
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
+                      {term.definition}
+                    </p>
+                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                            Sign in to view full definition
+                          </h3>
+                          <p className="text-blue-700 dark:text-blue-300 text-sm">
+                            Get unlimited access to complete definitions, examples, and more features.
+                          </p>
+                        </div>
+                        <Button 
+                          onClick={() => window.location.href = '/login'}
+                          className="bg-blue-600 hover:bg-blue-700 text-white"
+                        >
+                          Sign In
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <FreeTierGate termId={id}>
+                    <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                      {term.definition}
+                    </p>
+                  </FreeTierGate>
+                )}
               </div>
 
               {/* Key Characteristics */}
-              {term.characteristics && term.characteristics.length > 0 && (
-                <div className="mb-8">
-                  <h2 className="text-xl font-semibold mb-3">Key Characteristics</h2>
-                  <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
-                    {term.characteristics.map((characteristic: string, index: number) => (
-                      <li key={index} dangerouslySetInnerHTML={{ __html: sanitizeHTML(characteristic) }} />
-                    ))}
-                  </ul>
-                </div>
+              {!term.isPreview && term.characteristics && term.characteristics.length > 0 && (
+                <FreeTierGate termId={id}>
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-3">Key Characteristics</h2>
+                    <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
+                      {term.characteristics.map((characteristic: string, index: number) => (
+                        <li key={index} dangerouslySetInnerHTML={{ __html: sanitizeHTML(characteristic) }} />
+                      ))}
+                    </ul>
+                  </div>
+                </FreeTierGate>
               )}
 
               {/* Types */}
-              {term.types && term.types.length > 0 && (
-                <div className="mb-8">
-                  <h2 className="text-xl font-semibold mb-3">Types of {term.name}</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {term.types.map((type: any, index: number) => (
-                      <div key={index} className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
-                        <h3 className="font-medium text-lg mb-2">{type.name}</h3>
-                        <p className="text-gray-700 dark:text-gray-300 text-sm">{type.description}</p>
-                      </div>
-                    ))}
+              {!term.isPreview && term.types && term.types.length > 0 && (
+                <FreeTierGate termId={id}>
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-3">Types of {term.name}</h2>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {term.types.map((type: any, index: number) => (
+                        <div key={index} className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
+                          <h3 className="font-medium text-lg mb-2">{type.name}</h3>
+                          <p className="text-gray-700 dark:text-gray-300 text-sm">{type.description}</p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
+                </FreeTierGate>
               )}
 
               {/* Visual Representation */}

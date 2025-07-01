@@ -10,6 +10,7 @@ import { log as logger } from "../utils/logger";
 import { parsePaginationParams, calculatePaginationMetadata, parseLimit, applyClientSidePagination } from "../utils/pagination";
 import { SORT_ORDERS, DEFAULT_LIMITS, ERROR_MESSAGES } from "../constants";
 import { PAGINATION_CONSTANTS, DATABASE_CONSTANTS, HTTP_STATUS } from "../utils/constants";
+import { canViewTerm, hasPremiumAccess, isInTrialPeriod, getRemainingDailyViews } from "../utils/accessControl";
 
 // Import AuthenticatedRequest from shared types
 // (Removed duplicate interface definition)
@@ -336,8 +337,8 @@ export function registerTermRoutes(app: Express): void {
     }
   });
 
-  // Get single term by ID (must be last to avoid conflicts with named routes)
-  app.get('/api/terms/:id', authMiddleware, rateLimitMiddleware, (req, res, next) => {
+  // Get single term by ID with smart access control (must be last to avoid conflicts with named routes)
+  app.get('/api/terms/:id', (req, res, next) => {
     try {
       termIdSchema.parse(req.params.id);
       next();
@@ -356,17 +357,77 @@ export function registerTermRoutes(app: Express): void {
         });
       }
 
-      // Record view if method exists
+      // Check authentication status
+      const isAuthenticated = !!(req as any).user?.claims?.sub;
+      
+      // If not authenticated, return preview version
+      if (!isAuthenticated) {
+        const previewTerm = {
+          ...term,
+          definition: term.definition ? term.definition.substring(0, 200) + "..." : "",
+          longDefinition: term.longDefinition ? term.longDefinition.substring(0, 300) + "..." : "",
+          isPreview: true,
+          requiresAuth: true
+        };
+        
+        const response: ApiResponse<any> = {
+          success: true,
+          data: previewTerm,
+          message: "Sign in to view full definition"
+        };
+        
+        return res.json(response);
+      }
+
+      // For authenticated users, fetch user data and check access permissions
+      const userId = (req as any).user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          error: 'User not found'
+        });
+      }
+
+      const accessCheck = canViewTerm(user, id);
+      
+      if (!accessCheck.canView) {
+        // User is authenticated but hit limits
+        if (accessCheck.reason === 'daily_limit_reached') {
+          return res.status(429).json({
+            success: false,
+            error: 'Daily viewing limit reached. Please try again tomorrow or upgrade your account.',
+            metadata: accessCheck.metadata
+          });
+        }
+        
+        return res.status(403).json({
+          success: false,
+          error: 'Access denied',
+          reason: accessCheck.reason
+        });
+      }
+
+      // Record view for authenticated users
       try {
-        await storage.recordTermView(id, null);
+        await storage.recordTermView(id, userId);
+        
+        // Update user's daily view count (for access control)
+        // This would typically be handled by the recordTermView method
       } catch (error) {
-        // If method doesn't exist, continue without recording view
-        logger.warn('View recording not available', { termId: id, error: error instanceof Error ? error.message : String(error) });
+        logger.warn('View recording not available', { termId: id, userId, error: error instanceof Error ? error.message : String(error) });
       }
       
-      const response: ApiResponse<ITerm> = {
+      // Return full term data with access metadata
+      const response: ApiResponse<any> = {
         success: true,
-        data: term
+        data: {
+          ...term,
+          isPreview: false,
+          accessType: accessCheck.reason,
+          userLimits: accessCheck.metadata
+        }
       };
       
       res.json(response);

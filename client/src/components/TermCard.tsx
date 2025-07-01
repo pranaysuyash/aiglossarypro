@@ -9,10 +9,13 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { queryClient } from "@/lib/queryClient";
 import { useAuth } from "@/hooks/useAuth";
+import { useLiveRegion } from "@/components/accessibility/LiveRegion";
 import { ITerm } from "@/interfaces/interfaces";
 import ShareMenu from "./ShareMenu";
+import { BaseComponentProps, SizeVariant, StyleVariant } from "@/types/common-props";
+import { cn } from "@/lib/utils";
 
-interface TermCardProps {
+interface TermCardProps extends BaseComponentProps {
   term: ITerm;
   isFavorite?: boolean;
   isLearned?: boolean;
@@ -31,6 +34,9 @@ const TermCard = memo(function TermCard({
   variant = 'default',
   showActions = true,
   compact = false,
+  className,
+  id,
+  children,
   onTermClick,
   onFavoriteToggle,
   onLearnedToggle
@@ -41,6 +47,7 @@ const TermCard = memo(function TermCard({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
+  const { announce } = useLiveRegion();
 
   // Memoize expensive calculations
   const termUrl = useMemo(() => `${window.location.origin}/term/${term.id}`, [term.id]);
@@ -70,15 +77,19 @@ const TermCard = memo(function TermCard({
         `/api/favorites/${term.id}`,
       );
       
-      setFavorite(!favorite);
-      onFavoriteToggle?.(term.id, !favorite);
+      const newFavoriteState = !favorite;
+      setFavorite(newFavoriteState);
+      onFavoriteToggle?.(term.id, newFavoriteState);
       queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
       
+      const actionText = newFavoriteState ? "Added to favorites" : "Removed from favorites";
+      announce(`${term.name} ${actionText.toLowerCase()}`, 'polite');
+      
       toast({
-        title: favorite ? "Removed from favorites" : "Added to favorites",
-        description: favorite 
-          ? `${term.name} has been removed from your favorites` 
-          : `${term.name} has been added to your favorites`,
+        title: actionText,
+        description: newFavoriteState 
+          ? `${term.name} has been added to your favorites` 
+          : `${term.name} has been removed from your favorites`,
       });
     } catch (error) {
       toast({
@@ -108,15 +119,19 @@ const TermCard = memo(function TermCard({
         `/api/progress/${term.id}`,
       );
       
-      setLearned(!learned);
-      onLearnedToggle?.(term.id, !learned);
+      const newLearnedState = !learned;
+      setLearned(newLearnedState);
+      onLearnedToggle?.(term.id, newLearnedState);
       queryClient.invalidateQueries({ queryKey: ['/api/progress'] });
       
+      const actionText = newLearnedState ? "Marked as learned" : "Removed from learned";
+      announce(`${term.name} ${actionText.toLowerCase()}`, 'polite');
+      
       toast({
-        title: learned ? "Removed from learned" : "Marked as learned",
-        description: learned 
-          ? `${term.name} has been removed from your learned terms` 
-          : `${term.name} has been added to your learned terms`,
+        title: actionText,
+        description: newLearnedState 
+          ? `${term.name} has been added to your learned terms` 
+          : `${term.name} has been removed from your learned terms`,
       });
     } catch (error) {
       toast({
@@ -132,6 +147,7 @@ const TermCard = memo(function TermCard({
   const handleCopyLink = useCallback(async () => {
     try {
       await navigator.clipboard.writeText(termUrl);
+      announce(`Link copied for ${term.name}`, 'polite');
       toast({
         title: "Link copied",
         description: "Link has been copied to clipboard",
@@ -159,7 +175,11 @@ const TermCard = memo(function TermCard({
   // Minimal variant - just title and link
   if (variant === 'minimal') {
     return (
-      <div className="p-2 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors" data-testid="term-card">
+      <div 
+        id={id}
+        className={cn("p-2 border border-gray-200 dark:border-gray-700 rounded-md hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors", className)} 
+        data-testid="term-card"
+      >
         <div className="flex items-center justify-between">
           <Link href={`/term/${term.id}`} onClick={handleTermClick} className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium flex-1">
             {term.name}
@@ -168,7 +188,7 @@ const TermCard = memo(function TermCard({
             <Button 
               variant="ghost" 
               size="icon" 
-              className={`h-6 w-6 ml-2 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
+              className={`h-6 w-6 ml-2 ${favorite ? 'text-accent-500' : 'text-gray-400 dark:text-gray-300 hover:text-accent-500'}`}
               onClick={handleToggleFavorite}
               disabled={isSubmitting}
             >
@@ -176,6 +196,7 @@ const TermCard = memo(function TermCard({
             </Button>
           )}
         </div>
+        {children}
       </div>
     );
   }
@@ -183,7 +204,11 @@ const TermCard = memo(function TermCard({
   // Compact variant - condensed card
   if (variant === 'compact') {
     return (
-      <Card className="h-full flex flex-col transition-shadow hover:shadow-md" data-testid="term-card">
+      <Card 
+        id={id}
+        className={cn("h-full flex flex-col transition-shadow hover:shadow-md", className)} 
+        data-testid="term-card"
+      >
         <CardContent className="p-3 flex-1">
           <div className="flex items-start justify-between mb-2">
             <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 text-xs">
@@ -193,7 +218,7 @@ const TermCard = memo(function TermCard({
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className={`h-6 w-6 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
+                className={`h-6 w-6 ${favorite ? 'text-accent-500' : 'text-gray-400 dark:text-gray-300 hover:text-accent-500'}`}
                 onClick={handleToggleFavorite}
                 disabled={isSubmitting}
               >
@@ -217,7 +242,7 @@ const TermCard = memo(function TermCard({
           {showActions && (
             <div className="flex space-x-1">
               <Button variant="ghost" size="icon" className="h-6 w-6" onClick={handleCopyLink}>
-                <Copy size={12} className="text-gray-500 dark:text-gray-400" />
+                <Copy size={12} className="text-gray-500 dark:text-gray-300" />
               </Button>
               <Button 
                 variant="ghost" 
@@ -225,7 +250,7 @@ const TermCard = memo(function TermCard({
                 className="h-6 w-6" 
                 onClick={() => setIsShareMenuOpen(true)}
               >
-                <Share2 size={12} className="text-gray-500 dark:text-gray-400" />
+                <Share2 size={12} className="text-gray-500 dark:text-gray-300" />
               </Button>
             </div>
           )}
@@ -237,13 +262,18 @@ const TermCard = memo(function TermCard({
           title={term.name}
           url={termUrl}
         />
+        {children}
       </Card>
     );
   }
 
   // Default variant - full card
   return (
-    <Card className="h-full flex flex-col transition-shadow hover:shadow-md min-h-[280px]" data-testid="term-card">
+    <Card 
+      id={id}
+      className={cn("h-full flex flex-col transition-shadow hover:shadow-md min-h-[280px]", className)} 
+      data-testid="term-card"
+    >
       <CardContent className="p-4 flex-1">
         <div className="flex items-center justify-between mb-2">
           <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300">
@@ -254,7 +284,7 @@ const TermCard = memo(function TermCard({
               <Button 
                   variant="ghost" 
                   size="icon" 
-                  className={`h-8 w-8 ${learned ? 'text-green-500' : 'text-gray-400 hover:text-green-500'}`}
+                  className={`h-8 w-8 ${learned ? 'text-green-500' : 'text-gray-400 dark:text-gray-300 hover:text-green-500'}`}
                   onClick={handleToggleLearned}
                   disabled={isSubmitting}
                   aria-label={learned ? 'Mark as unlearned' : 'Mark as learned'}
@@ -264,7 +294,7 @@ const TermCard = memo(function TermCard({
               <Button 
                   variant="ghost" 
                   size="icon" 
-                  className={`h-8 w-8 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
+                  className={`h-8 w-8 ${favorite ? 'text-accent-500' : 'text-gray-400 dark:text-gray-300 hover:text-accent-500'}`}
                   onClick={handleToggleFavorite}
                   disabled={isSubmitting}
                   aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
@@ -282,7 +312,7 @@ const TermCard = memo(function TermCard({
         </p>
         
         {term.subcategories && term.subcategories.length > 0 && (
-          <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+          <div className="text-xs text-gray-500 dark:text-gray-300 mb-2">
             <span className="font-medium">Categories: </span>
             <span>{subcategoriesText}</span>
           </div>
@@ -300,7 +330,7 @@ const TermCard = memo(function TermCard({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={handleCopyLink} aria-label="Copy link">
-                    <Copy size={16} className="text-gray-500 dark:text-gray-400" />
+                    <Copy size={16} className="text-gray-500 dark:text-gray-300" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -319,7 +349,7 @@ const TermCard = memo(function TermCard({
                     onClick={() => setIsShareMenuOpen(true)}
                     aria-label="Share"
                   >
-                    <Share2 size={16} className="text-gray-500 dark:text-gray-400" />
+                    <Share2 size={16} className="text-gray-500 dark:text-gray-300" />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
@@ -337,6 +367,7 @@ const TermCard = memo(function TermCard({
           </div>
         </CardFooter>
       )}
+      {children}
     </Card>
   );
 });

@@ -8,6 +8,8 @@ import { Badge } from '../components/ui/badge';
 import { Card, CardContent } from '../components/ui/card';
 import { Loader2, Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocation } from 'wouter';
+import { TermCardSkeleton } from '@/components/ui/skeleton';
+import { useLiveRegion } from '@/components/accessibility/LiveRegion';
 import type { ITerm, ApiResponse, PaginatedResponse } from '../interfaces/interfaces';
 
 interface TermsApiResponse extends PaginatedResponse<ITerm> {
@@ -25,6 +27,7 @@ export function Terms() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showFilters, setShowFilters] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState('');
+  const { announce } = useLiveRegion();
   
   const TERMS_PER_PAGE = 12;
 
@@ -80,6 +83,24 @@ export function Terms() {
   const total = termsData?.total || 0;
   const hasMore = termsData?.hasMore || false;
   const totalPages = Math.ceil(total / TERMS_PER_PAGE);
+
+  // Announce search results to screen readers
+  useEffect(() => {
+    if (!isLoading && termsData) {
+      const filterInfo = [];
+      if (debouncedSearch) filterInfo.push(`search "${debouncedSearch}"`);
+      if (selectedCategory) filterInfo.push(`category filter`);
+      
+      const filterText = filterInfo.length > 0 ? ` with ${filterInfo.join(' and ')}` : '';
+      const pageText = totalPages > 1 ? ` on page ${currentPage} of ${totalPages}` : '';
+      
+      if (terms.length === 0) {
+        announce(`No terms found${filterText}`, 'polite');
+      } else {
+        announce(`Found ${total} term${total !== 1 ? 's' : ''}${filterText}${pageText}`, 'polite');
+      }
+    }
+  }, [isLoading, terms.length, total, debouncedSearch, selectedCategory, currentPage, totalPages, announce]);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -237,9 +258,10 @@ export function Terms() {
 
       {/* Terms Grid */}
       {isLoading ? (
-        <div className="flex justify-center items-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin" />
-          <span className="ml-2">Loading terms...</span>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+          {Array.from({ length: TERMS_PER_PAGE }).map((_, i) => (
+            <TermCardSkeleton key={`term-skeleton-${i}`} />
+          ))}
         </div>
       ) : Array.isArray(terms) && terms.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">

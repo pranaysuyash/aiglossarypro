@@ -14,6 +14,7 @@ import {
   FileText,
   Archive
 } from "lucide-react";
+import { useLiveRegion } from "@/components/accessibility/LiveRegion";
 
 interface FileUpload {
   id: string;
@@ -48,9 +49,22 @@ export default function DragDropUploader({
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const { announce } = useLiveRegion();
+  const prevErrorRef = useRef<string | null>(null);
   
   // Generate unique ID for files
   const generateId = () => Math.random().toString(36).substr(2, 9);
+  
+  // Announce error changes to screen readers
+  React.useEffect(() => {
+    if (error && error !== prevErrorRef.current) {
+      const errorCount = error.split('\n').length;
+      announce(`File upload errors: ${errorCount} validation issues found`, 'assertive');
+      prevErrorRef.current = error;
+    } else if (!error && prevErrorRef.current) {
+      prevErrorRef.current = null;
+    }
+  }, [error, announce]);
   
   // Validate file
   const validateFile = useCallback((file: File): string | null => {
@@ -117,7 +131,10 @@ export default function DragDropUploader({
     });
     
     if (errors.length > 0) {
-      setError(errors.join('\n'));
+      const errorMessage = errors.join('\n');
+      setError(errorMessage);
+      // Announce file validation errors
+      announce(`File validation errors: ${errors.length} files have issues`, 'assertive');
     } else {
       setError(null);
     }
@@ -404,7 +421,7 @@ export default function DragDropUploader({
       
       {/* Error Alert */}
       {error && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" role="alert" aria-live="polite">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription className="whitespace-pre-line">{error}</AlertDescription>
         </Alert>

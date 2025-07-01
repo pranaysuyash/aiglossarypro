@@ -14,6 +14,8 @@ import {
 
 import { cn } from "@/lib/utils"
 import { Label } from "@/components/ui/label"
+import { AlertCircle, CheckCircle } from "lucide-react"
+import { useLiveRegion } from "@/components/accessibility/LiveRegion"
 
 const Form = FormProvider
 
@@ -147,19 +149,42 @@ const FormMessage = React.forwardRef<
   React.HTMLAttributes<HTMLParagraphElement>
 >(({ className, children, ...props }, ref) => {
   const { error, formMessageId } = useFormField()
+  const { announce } = useLiveRegion()
   const body = error ? String(error?.message ?? "") : children
+  const prevErrorRef = React.useRef<string | null>(null)
+
+  // Announce new errors to screen readers
+  React.useEffect(() => {
+    if (error?.message && error.message !== prevErrorRef.current) {
+      announce(`Form validation error: ${error.message}`, 'assertive')
+      prevErrorRef.current = error.message
+    } else if (!error && prevErrorRef.current) {
+      prevErrorRef.current = null
+    }
+  }, [error?.message, announce])
 
   if (!body) {
     return null
   }
 
+  const isError = !!error
+  const Icon = isError ? AlertCircle : CheckCircle
+  const iconColor = isError ? "text-destructive" : "text-green-600"
+
   return (
     <p
       ref={ref}
       id={formMessageId}
-      className={cn("text-sm font-medium text-destructive", className)}
+      className={cn(
+        "text-sm font-medium flex items-center gap-2",
+        isError ? "text-destructive" : "text-green-600",
+        className
+      )}
+      role={isError ? "alert" : "status"}
+      aria-live="polite"
       {...props}
     >
+      <Icon className={cn("h-4 w-4 flex-shrink-0", iconColor)} />
       {body}
     </p>
   )

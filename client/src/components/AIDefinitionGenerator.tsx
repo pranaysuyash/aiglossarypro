@@ -8,6 +8,7 @@ import { Loader2, Sparkles, Copy, Check } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useQuery } from '@tanstack/react-query';
 import { useToast } from '../hooks/use-toast';
+import { useLiveRegion } from './accessibility/LiveRegion';
 
 interface AIDefinitionGeneratorProps {
   onDefinitionGenerated?: (definition: any) => void;
@@ -39,6 +40,7 @@ export function AIDefinitionGenerator({
   const [generatedDefinition, setGeneratedDefinition] = useState<AIDefinitionResponse | null>(null);
   const [copiedField, setCopiedField] = useState<string | null>(null);
   const { toast } = useToast();
+  const { announce } = useLiveRegion();
 
   // Fetch available categories
   const { data: categories = [] } = useQuery({
@@ -61,6 +63,7 @@ export function AIDefinitionGenerator({
     }
 
     setIsGenerating(true);
+    announce(`Generating AI definition for ${term.trim()}`, 'polite');
     try {
       const response = await fetch('/api/ai/generate-definition', {
         method: 'POST',
@@ -84,6 +87,7 @@ export function AIDefinitionGenerator({
       if (result.success) {
         setGeneratedDefinition(result.data);
         onDefinitionGenerated?.(result.data);
+        announce(`AI definition for ${term.trim()} generated successfully`, 'polite');
         toast({
           title: "Success",
           description: "AI definition generated successfully!",
@@ -93,6 +97,7 @@ export function AIDefinitionGenerator({
       }
     } catch (error) {
       console.error('Error generating definition:', error);
+      announce(`Failed to generate definition for ${term.trim()}`, 'assertive');
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : 'Failed to generate definition',

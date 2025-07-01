@@ -1,5 +1,5 @@
 import { useState, useEffect, memo, useMemo, useCallback } from "react";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { 
   Heart, 
   Copy, 
@@ -50,6 +50,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const { measure } = usePerformanceMonitor('EnhancedTermCard');
+  const [, navigate] = useLocation();
 
   const enhanced = isEnhancedTerm(term);
 
@@ -132,6 +133,12 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
     }
   }, [term.id]);
 
+  const handleNavigateToTerm = useCallback(() => {
+    const termPath = enhanced ? `/term/${term.slug}` : `/term/${term.id}`;
+    handleTermClick();
+    navigate(termPath);
+  }, [enhanced, term.slug, term.id, handleTermClick, navigate]);
+
 
   // Performance monitoring for render
   useEffect(() => {
@@ -192,10 +199,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
             variant="ghost" 
             size="sm" 
             className="text-xs h-6 px-2"
-            onClick={() => {
-              handleTermClick();
-              window.location.href = termUrl;
-            }}
+            onClick={handleNavigateToTerm}
           >
             View
           </Button>
@@ -342,10 +346,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
         <Button
           variant="default"
           size="sm"
-          onClick={() => {
-            handleTermClick();
-            window.location.href = termUrl;
-          }}
+          onClick={handleNavigateToTerm}
           className="flex items-center space-x-1"
         >
           <span>Learn More</span>
@@ -406,7 +407,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
               </Badge>
             ) : (
               <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300">
-                {(term as ITerm).category}
+                {term.category}
               </Badge>
             )}
             {enhanced && term.difficultyLevel && (
@@ -463,10 +464,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
       <CardFooter className="border-t border-gray-100 dark:border-gray-800 p-3 flex justify-between items-center">
         <div
           className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium cursor-pointer"
-          onClick={() => {
-            handleTermClick();
-            window.location.href = termUrl;
-          }}
+          onClick={handleNavigateToTerm}
         >
           Read more
         </div>

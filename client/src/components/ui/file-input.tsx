@@ -2,7 +2,8 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Upload } from "lucide-react";
+import { Upload, AlertCircle } from "lucide-react";
+import { useLiveRegion } from "@/components/accessibility/LiveRegion";
 
 export interface FileInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -31,8 +32,20 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
   ) => {
     const inputRef = React.useRef<HTMLInputElement>(null);
     const [fileName, setFileName] = React.useState<string>("");
+    const { announce } = useLiveRegion();
+    const prevErrorRef = React.useRef<string | null>(null);
 
     React.useImperativeHandle(ref, () => inputRef.current as HTMLInputElement);
+
+    // Announce new errors to screen readers
+    React.useEffect(() => {
+      if (error && error !== prevErrorRef.current) {
+        announce(`File input error: ${error}`, 'assertive');
+        prevErrorRef.current = error;
+      } else if (!error && prevErrorRef.current) {
+        prevErrorRef.current = null;
+      }
+    }, [error, announce]);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const files = e.target.files;
@@ -103,7 +116,10 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
           </div>
         </div>
         {error && (
-          <p className="mt-1 text-sm text-red-600 dark:text-red-400">{error}</p>
+          <div className="mt-2 flex items-center gap-2" role="alert" aria-live="polite">
+            <AlertCircle className="h-4 w-4 text-red-600 dark:text-red-400 flex-shrink-0" />
+            <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
+          </div>
         )}
       </div>
     );

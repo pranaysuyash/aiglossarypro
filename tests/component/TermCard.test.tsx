@@ -14,6 +14,28 @@ vi.mock('../../client/src/lib/api', () => ({
 
 import * as queryClientModule from '../../client/src/lib/queryClient';
 
+// Mock the authentication hook
+vi.mock('../../client/src/hooks/useAuth', () => ({
+  useAuth: vi.fn().mockReturnValue({
+    isAuthenticated: true,
+    user: { id: 'test-user' }
+  })
+}));
+
+// Mock the toast hook
+vi.mock('../../client/src/hooks/use-toast', () => ({
+  useToast: vi.fn().mockReturnValue({
+    toast: vi.fn()
+  })
+}));
+
+// Mock the live region hook
+vi.mock('../../client/src/components/accessibility/LiveRegion', () => ({
+  useLiveRegion: vi.fn().mockReturnValue({
+    announce: vi.fn()
+  })
+}));
+
 // Mock term data
 const mockTerm = {
   id: '1',
@@ -120,6 +142,10 @@ describe('TermCard Component', () => {
     });
 
     it('handles favorite toggle interaction', async () => {
+      // Mock the API request to succeed
+      const apiRequestSpy = vi.spyOn(queryClientModule, 'apiRequest');
+      apiRequestSpy.mockResolvedValue({ success: true });
+
       const onFavoriteToggle = vi.fn();
       render(
         <TestWrapper>
@@ -133,6 +159,8 @@ describe('TermCard Component', () => {
       await waitFor(() => {
         expect(onFavoriteToggle).toHaveBeenCalledWith(mockTerm.id, true);
       });
+
+      apiRequestSpy.mockRestore();
     });
 
     it('renders learned state correctly', () => {
@@ -165,7 +193,10 @@ describe('TermCard Component', () => {
       const apiRequestSpy = vi.spyOn(queryClientModule, 'apiRequest');
       apiRequestSpy.mockRejectedValue(new Error('Network error'));
 
-      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
+      // Mock the toast function to verify error toast is called
+      const mockToast = vi.fn();
+      const useToastMock = vi.mocked(useToast);
+      useToastMock.mockReturnValue({ toast: mockToast });
 
       render(
         <TestWrapper>
@@ -177,10 +208,14 @@ describe('TermCard Component', () => {
       fireEvent.click(favoriteButton);
 
       await waitFor(() => {
-        expect(consoleSpy).toHaveBeenCalled();
+        expect(mockToast).toHaveBeenCalledWith({
+          title: "Error",
+          description: "Failed to update favorites. Please try again.",
+          variant: "destructive",
+        });
       });
 
-      consoleSpy.mockRestore();
+      apiRequestSpy.mockRestore();
     });
 
     it('handles malformed term data', () => {

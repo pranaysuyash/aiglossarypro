@@ -8,6 +8,7 @@ import { Link } from "wouter";
 import { BarChart3, TrendingUp } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { ITerm, ICategory } from "@/interfaces/interfaces";
+import { CategoryCardSkeleton, TermCardSkeleton } from "@/components/ui/skeleton";
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
@@ -95,15 +96,7 @@ export default function Home() {
               {categoriesLoading ? (
                 // Skeleton loading for categories
                 Array.from({ length: 6 }).map((_, i) => (
-                  <div key={`cat-skeleton-${i}`} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 border border-gray-100 dark:border-gray-700">
-                    <div className="flex items-start animate-pulse">
-                      <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 mr-4 shrink-0"></div>
-                      <div className="space-y-2 flex-1">
-                        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
-                      </div>
-                    </div>
-                  </div>
+                  <CategoryCardSkeleton key={`cat-skeleton-${i}`} />
                 ))
               ) : Array.isArray(categories) && categories.length > 0 ? (
                 categories.slice(0, 6).map((category: ICategory) => (
@@ -136,21 +129,7 @@ export default function Home() {
               {termsLoading ? (
                 // Skeleton loading for terms
                 Array.from({ length: 3 }).map((_, i) => (
-                  <div key={`term-skeleton-${i}`} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4">
-                    <div className="animate-pulse">
-                      <div className="flex justify-between mb-2">
-                        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-                        <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded-full w-5"></div>
-                      </div>
-                      <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-3"></div>
-                      <div className="space-y-2 mb-3">
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                        <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-4/5"></div>
-                      </div>
-                      <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
-                    </div>
-                  </div>
+                  <TermCardSkeleton key={`term-skeleton-${i}`} />
                 ))
               ) : Array.isArray(featuredTerms) && featuredTerms.length > 0 ? (
                 featuredTerms.map((term: ITerm) => (

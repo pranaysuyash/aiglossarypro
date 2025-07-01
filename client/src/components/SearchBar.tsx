@@ -7,11 +7,11 @@ import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
 import { debounce } from "@/lib/utils";
 import { cn } from "@/lib/utils";
+import { BaseComponentProps } from "@/types/common-props";
 
-interface SearchBarProps {
+interface SearchBarProps extends BaseComponentProps {
   onSearch: (query: string) => void;
   placeholder?: string;
-  className?: string;
   initialValue?: string;
   iconOnly?: boolean;
 }
@@ -174,7 +174,7 @@ const SearchBar = memo(function SearchBar({
         className="p-2 h-8 w-8 hover:bg-gray-100 dark:hover:bg-gray-700"
         aria-label="Search AI/ML terms"
       >
-        <Search className="h-4 w-4 text-gray-500 dark:text-gray-400" />
+        <Search className="h-4 w-4 text-gray-500 dark:text-gray-300" />
       </Button>
     );
   }
@@ -183,7 +183,7 @@ const SearchBar = memo(function SearchBar({
     <div id="search" className={cn("relative w-full max-w-md", className)}>
       <div className="relative">
         <Search 
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" 
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 h-4 w-4" 
           aria-hidden="true"
         />
         <Input
@@ -231,7 +231,7 @@ const SearchBar = memo(function SearchBar({
           className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-64 overflow-y-auto"
         >
           {isLoading ? (
-            <div className="p-3 text-center text-gray-500" role="status" aria-live="polite">
+            <div className="p-3 text-center text-gray-500 dark:text-gray-300" role="status" aria-live="polite">
               <div 
                 className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-primary mx-auto"
                 aria-hidden="true"

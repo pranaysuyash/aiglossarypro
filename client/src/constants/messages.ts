@@ -126,15 +126,53 @@ export const TAB_LABELS = {
 export const ERROR_MESSAGES = {
   TERM_NOT_FOUND: {
     title: "Term Not Found",
-    description: "The term you're looking for doesn't exist or has been removed."
+    description: "The term you're looking for doesn't exist or has been removed.",
+    action: "Try searching for a similar term or browse our categories"
   },
   FAILED_TO_GENERATE: {
-    title: "Error",
-    description: "Failed to generate improvements"
+    title: "AI Generation Error",
+    description: "Unable to generate AI improvements at this time. This might be due to high server load or a temporary service interruption.",
+    action: "Please try again in a few moments"
   },
   FAILED_TO_APPLY: {
-    title: "Error", 
-    description: "Failed to apply improvements"
+    title: "Update Error", 
+    description: "The improvements couldn't be saved due to a technical issue.",
+    action: "Please try applying the changes again"
+  },
+  NETWORK_ERROR: {
+    title: "Connection Error",
+    description: "Unable to connect to our servers. Please check your internet connection.",
+    action: "Try refreshing the page or check your network settings"
+  },
+  SEARCH_ERROR: {
+    title: "Search Unavailable",
+    description: "The search service is temporarily unavailable.",
+    action: "Please try again in a moment or browse categories instead"
+  },
+  FAVORITES_SYNC_ERROR: {
+    title: "Sync Error",
+    description: "Your favorites couldn't be synchronized with the server.",
+    action: "Changes are saved locally and will sync when connection is restored"
+  },
+  PROGRESS_SYNC_ERROR: {
+    title: "Progress Sync Error",
+    description: "Your learning progress couldn't be saved to the server.",
+    action: "Changes are saved locally and will sync when connection is restored"
+  },
+  SESSION_ERROR: {
+    title: "Session Expired",
+    description: "Your session has expired for security reasons.",
+    action: "Please sign in again to continue"
+  },
+  PERMISSION_ERROR: {
+    title: "Access Denied",
+    description: "You don't have permission to perform this action.",
+    action: "Please contact support if you believe this is an error"
+  },
+  RATE_LIMIT_ERROR: {
+    title: "Too Many Requests",
+    description: "You're making requests too quickly. Please slow down.",
+    action: "Wait a moment before trying again"
   }
 } as const;
 

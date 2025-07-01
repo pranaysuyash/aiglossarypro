@@ -16,7 +16,9 @@ import TermRelationships from "@/components/term/TermRelationships";
 import RecommendedTerms from "@/components/term/RecommendedTerms";
 import { useTermData, useTermActions } from "@/hooks/useTermData";
 import { useQueryClient } from "@tanstack/react-query";
-import { AUTH_MESSAGES, FAVORITES_MESSAGES, CLIPBOARD_MESSAGES } from "@/constants/messages";
+import { AUTH_MESSAGES, FAVORITES_MESSAGES, CLIPBOARD_MESSAGES, ERROR_MESSAGES } from "@/constants/messages";
+import { TermHeaderSkeleton, TermContentSkeleton } from "@/components/ui/skeleton";
+import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function EnhancedTermDetail() {
   const [, params] = useRoute("/enhanced/terms/:id");
@@ -113,21 +115,10 @@ export default function EnhancedTermDetail() {
         <div className="flex flex-col lg:flex-row gap-6">
           <Sidebar />
           <main className="flex-1">
-            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6 animate-pulse">
-              <div className="p-6">
-                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3 mb-6"></div>
-                <div className="space-y-2 mb-4">
-                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded-full w-1/6"></div>
-                  <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
-                </div>
-                
-                <div className="space-y-4 my-8">
-                  <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/5 mb-3"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
-                  <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-3/4"></div>
-                </div>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6 p-6">
+              <TermHeaderSkeleton />
+              <div className="mt-8">
+                <TermContentSkeleton />
               </div>
             </div>
           </main>
@@ -143,11 +134,23 @@ export default function EnhancedTermDetail() {
           <Sidebar />
           <main className="flex-1">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6 text-center">
-              <h1 className="text-2xl font-bold mb-4">Term Not Found</h1>
-              <p className="mb-6">The term you're looking for doesn't exist or has been removed.</p>
-              <Link href="/">
-                <Button>Return to Home</Button>
-              </Link>
+              <div className="mx-auto mb-4 h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                <span className="text-2xl">🔍</span>
+              </div>
+              <h1 className="text-2xl font-bold mb-4">{ERROR_MESSAGES.TERM_NOT_FOUND.title}</h1>
+              <p className="text-muted-foreground mb-2">{ERROR_MESSAGES.TERM_NOT_FOUND.description}</p>
+              <p className="text-sm text-muted-foreground mb-6">{ERROR_MESSAGES.TERM_NOT_FOUND.action}</p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Link href="/terms">
+                  <Button variant="outline">Browse All Terms</Button>
+                </Link>
+                <Link href="/categories">
+                  <Button variant="outline">View Categories</Button>
+                </Link>
+                <Link href="/">
+                  <Button>Return to Home</Button>
+                </Link>
+              </div>
             </div>
           </main>
         </div>
@@ -156,7 +159,8 @@ export default function EnhancedTermDetail() {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <ErrorBoundary>
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex flex-col lg:flex-row gap-6">
         <Sidebar />
         
@@ -222,5 +226,6 @@ export default function EnhancedTermDetail() {
         </main>
       </div>
     </div>
+    </ErrorBoundary>
   );
 }

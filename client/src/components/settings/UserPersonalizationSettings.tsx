@@ -317,7 +317,7 @@ export default function UserPersonalizationSettings({
 
         <div>
           <div className="flex items-center space-x-2 mb-3">
-            <EyeOff className="h-4 w-4 text-gray-500" />
+            <EyeOff className="h-4 w-4 text-gray-500 dark:text-gray-300" />
             <Label>Hidden Sections</Label>
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">

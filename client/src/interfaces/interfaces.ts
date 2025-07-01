@@ -290,6 +290,7 @@ export interface ITermCardProps {
   showInteractive?: boolean;
   userSettings?: IEnhancedUserSettings;
   isFavorite?: boolean;
+  variant?: 'default' | 'compact' | 'detailed';
 }
 
 export interface IAdvancedSearchProps {

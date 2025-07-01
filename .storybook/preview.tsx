@@ -79,25 +79,74 @@ const preview: Preview = {
     },
     viewport: {
       viewports: {
+        smallMobile: {
+          name: 'Small Mobile (320px)',
+          styles: {
+            width: '320px',
+            height: '568px',
+          },
+        },
         mobile: {
-          name: 'Mobile',
+          name: 'Mobile (375px)',
           styles: {
             width: '375px',
             height: '667px',
           },
         },
+        largeMobile: {
+          name: 'Large Mobile (414px)',
+          styles: {
+            width: '414px',
+            height: '896px',
+          },
+        },
+        smallTablet: {
+          name: 'Small Tablet (640px)',
+          styles: {
+            width: '640px',
+            height: '960px',
+          },
+        },
         tablet: {
-          name: 'Tablet',
+          name: 'Tablet (768px)',
           styles: {
             width: '768px',
             height: '1024px',
           },
         },
-        desktop: {
-          name: 'Desktop',
+        largeTablet: {
+          name: 'Large Tablet (1024px)',
           styles: {
-            width: '1200px',
+            width: '1024px',
+            height: '768px',
+          },
+        },
+        smallDesktop: {
+          name: 'Small Desktop (1280px)',
+          styles: {
+            width: '1280px',
             height: '800px',
+          },
+        },
+        desktop: {
+          name: 'Desktop (1440px)',
+          styles: {
+            width: '1440px',
+            height: '900px',
+          },
+        },
+        largeDesktop: {
+          name: 'Large Desktop (1920px)',
+          styles: {
+            width: '1920px',
+            height: '1080px',
+          },
+        },
+        ultrawide: {
+          name: 'Ultrawide (2560px)',
+          styles: {
+            width: '2560px',
+            height: '1440px',
           },
         },
       },

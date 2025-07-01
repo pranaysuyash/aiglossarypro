@@ -13,8 +13,20 @@ import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/useAuth";
 import { useFocusTrap, useFocusLock } from "@/hooks/useFocusTrap";
 import SearchBar from "./SearchBar";
+import { BaseComponentProps } from "@/types/common-props";
 
-export default function Header() {
+interface HeaderProps extends BaseComponentProps {
+  onSearch?: (query: string) => void;
+  onLogout?: () => void;
+  onLogin?: () => void;
+}
+
+export default function Header({ 
+  className,
+  onSearch,
+  onLogout,
+  onLogin
+}: HeaderProps = {}) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [, navigate] = useLocation();
@@ -30,15 +42,27 @@ export default function Header() {
   };
 
   const handleLogout = () => {
-    window.location.href = "/api/auth/logout";
+    if (onLogout) {
+      onLogout();
+    } else {
+      window.location.href = "/api/auth/logout";
+    }
   };
 
   const handleLogin = () => {
-    navigate("/login");
+    if (onLogin) {
+      onLogin();
+    } else {
+      navigate("/login");
+    }
   };
 
   const handleSearch = (query: string) => {
-    navigate(`/terms?search=${encodeURIComponent(query)}`);
+    if (onSearch) {
+      onSearch(query);
+    } else {
+      navigate(`/terms?search=${encodeURIComponent(query)}`);
+    }
     setMobileSearchOpen(false);
   };
 
@@ -48,7 +72,7 @@ export default function Header() {
     : userObj?.email?.substring(0, 2).toUpperCase() || "ML";
 
   return (
-    <header id="navigation" className="bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-800 transition-all duration-200" role="banner">
+    <header id="navigation" className={`bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-800 transition-all duration-200 ${className || ''}`} role="banner">
       <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-3 sm:py-4">
           <div className="flex items-center space-x-1 xs:space-x-2 min-w-0 flex-shrink-0">

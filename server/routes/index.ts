@@ -19,7 +19,6 @@ import { registerSeoRoutes } from "./seo";
 import { registerContentRoutes } from "./content";
 import { registerGumroadRoutes } from "./gumroad";
 import { log as logger } from "../utils/logger";
-import { features } from "../config";
 
 // Import existing specialized route modules
 import cacheRoutes from "./cache";

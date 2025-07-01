@@ -4,8 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { BaseComponentProps } from "@/types/common-props";
+import { cn } from "@/lib/utils";
 
-export default function Footer() {
+interface FooterProps extends BaseComponentProps {
+  onSubscribe?: (email: string) => void;
+}
+
+export default function Footer({ className, onSubscribe }: FooterProps = {}) {
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
 
@@ -23,16 +29,20 @@ export default function Footer() {
       return;
     }
     
-    // Here you would typically send the email to your backend
-    toast({
-      title: "Success",
-      description: "You have been subscribed to our newsletter",
-    });
+    if (onSubscribe) {
+      onSubscribe(email);
+    } else {
+      // Here you would typically send the email to your backend
+      toast({
+        title: "Success",
+        description: "You have been subscribed to our newsletter",
+      });
+    }
     form.reset();
   };
 
   return (
-    <footer className="bg-gray-800 text-gray-300 dark:bg-gray-900">
+    <footer className={cn("bg-gray-800 text-gray-300 dark:bg-gray-900", className)}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           <div>

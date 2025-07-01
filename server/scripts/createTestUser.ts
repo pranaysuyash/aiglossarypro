@@ -26,7 +26,7 @@ async function createTestUsers() {
 
     if (testUser) {
       // Create database record
-      const dbUser = await storage.createUser({
+      const dbUser = await storage.upsertUser({
         email: TEST_USER_EMAIL,
         firstName: 'Test',
         lastName: 'User',
@@ -56,7 +56,7 @@ async function createTestUsers() {
       await setCustomUserClaims(adminUser.uid, { admin: true });
 
       // Create database record with admin privileges
-      const dbAdminUser = await storage.createUser({
+      const dbAdminUser = await storage.upsertUser({
         email: TEST_ADMIN_EMAIL,
         firstName: 'Admin',
         lastName: 'User',

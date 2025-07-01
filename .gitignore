@@ -191,3 +191,4 @@ storybook-static
 *.csv
 checkpoint.json
 *.log
+server/config/secrets/

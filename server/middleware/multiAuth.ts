@@ -213,19 +213,19 @@ export async function setupMultiAuth(app: Express) {
     });
   });
   
-  // Get available auth providers endpoint
-  app.get('/api/auth/providers', (req, res) => {
-    const providers = {
-      google: !!oauthConfig.google,
-      github: !!oauthConfig.github,
-      replit: features.replitAuthEnabled
-    };
-    
-    res.json({
-      success: true,
-      data: providers
-    });
-  });
+  // Get available auth providers endpoint (DISABLED - Using Firebase providers instead)
+  // app.get('/api/auth/providers', (req, res) => {
+  //   const providers = {
+  //     google: !!oauthConfig.google,
+  //     github: !!oauthConfig.github,
+  //     replit: features.replitAuthEnabled
+  //   };
+  //   
+  //   res.json({
+  //     success: true,
+  //     data: providers
+  //   });
+  // });
 }
 
 // Enhanced authentication middleware that works with all providers

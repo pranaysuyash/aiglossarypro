@@ -106,7 +106,7 @@ app.use(responseLoggingMiddleware);
   const serverConfig = getServerConfig();
 
   // Use configurable port (fallback to 5000 for Replit compatibility)
-  const port = process.env.REPLIT_ENVIRONMENT ? 5000 : serverConfig.port;
+  const port = process.env.REPLIT_ENVIRONMENT === 'true' ? 5000 : serverConfig.port;
   
   // Create HTTP server instance
   const { createServer } = await import('http');

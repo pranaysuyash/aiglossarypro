@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import TermCard from '../components/TermCard';
 import SearchBar from '../components/SearchBar';
@@ -81,16 +81,16 @@ export function Terms() {
   const hasMore = termsData?.hasMore || false;
   const totalPages = Math.ceil(total / TERMS_PER_PAGE);
 
-  const handleSearch = (query: string) => {
+  const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
-  };
+  }, []);
 
-  const handleCategoryChange = (categoryId: string) => {
+  const handleCategoryChange = useCallback((categoryId: string) => {
     setSelectedCategory(categoryId === "all" ? "" : categoryId);
     setCurrentPage(1);
-  };
+  }, []);
 
-  const handleSortChange = (newSortBy: string) => {
+  const handleSortChange = useCallback((newSortBy: string) => {
     if (newSortBy === sortBy) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -98,20 +98,20 @@ export function Terms() {
       setSortOrder('asc');
     }
     setCurrentPage(1);
-  };
+  }, [sortBy, sortOrder]);
 
-  const clearFilters = () => {
+  const clearFilters = useCallback(() => {
     setSearchQuery('');
     setSelectedCategory('');
     setSortBy('name');
     setSortOrder('asc');
     setCurrentPage(1);
-  };
+  }, []);
 
-  const goToPage = (page: number) => {
+  const goToPage = useCallback((page: number) => {
     setCurrentPage(page);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
+  }, []);
 
   const categories = categoriesData?.data || [];
   const activeFiltersCount = [searchQuery, selectedCategory].filter(Boolean).length;
@@ -143,6 +143,7 @@ export function Terms() {
           Explore our comprehensive collection of AI and machine learning terms
         </p>
       </div>
+
 
       {/* Search and Filters */}
       <div className="mb-6 space-y-4">

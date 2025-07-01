@@ -3,6 +3,8 @@
  * Tracks render times and performance metrics
  */
 
+import React from 'react';
+
 interface PerformanceMetric {
   component: string;
   renderTime: number;

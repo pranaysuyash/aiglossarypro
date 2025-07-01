@@ -1,3 +1,4 @@
+import { memo, useMemo, useCallback } from "react";
 import { Link } from "wouter";
 import { Card, CardContent } from "@/components/ui/card";
 import { Brain, Lightbulb, MessageSquare, Eye, Smile, Calculator } from "lucide-react";
@@ -28,14 +29,32 @@ const categoryColors: Record<string, string> = {
   "Mathematics for ML": "bg-amber-100 text-amber-600 dark:bg-amber-900 dark:text-amber-300",
 };
 
-export default function CategoryCard({ category, termCount }: CategoryCardProps) {
-  const icon = categoryIcons[category.name] || <Brain className="h-6 w-6" />;
-  const colorClass = categoryColors[category.name] || "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300";
-  const displayTermCount = termCount ?? category.termCount ?? 0;
+const CategoryCard = memo(function CategoryCard({ category, termCount }: CategoryCardProps) {
+  // Memoize icon rendering
+  const icon = useMemo(() => 
+    categoryIcons[category.name] || <Brain className="h-6 w-6" />, 
+    [category.name]
+  );
+  
+  // Memoize color class calculation
+  const colorClass = useMemo(() => 
+    categoryColors[category.name] || "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-300",
+    [category.name]
+  );
+  
+  const displayTermCount = useMemo(() => 
+    termCount ?? category.termCount ?? 0,
+    [termCount, category.termCount]
+  );
+
+  // Memoize click handler
+  const handleClick = useCallback(() => {
+    window.location.href = `/category/${category.id}`;
+  }, [category.id]);
 
   return (
     <div 
-      onClick={() => window.location.href=`/category/${category.id}`} 
+      onClick={handleClick}
       className="cursor-pointer"
       data-testid="category-card"
     >
@@ -58,4 +77,11 @@ export default function CategoryCard({ category, termCount }: CategoryCardProps)
         </Card>
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom comparison for complex props
+  return prevProps.category.id === nextProps.category.id &&
+         prevProps.category.name === nextProps.category.name &&
+         prevProps.termCount === nextProps.termCount;
+});
+
+export default CategoryCard;

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, memo, useCallback, useMemo } from "react";
 import { useLocation } from "wouter";
 import { Search, X, Brain, Zap } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -23,7 +23,7 @@ interface SearchSuggestion {
   type: 'term' | 'category';
 }
 
-export default function SearchBar({ 
+const SearchBar = memo(function SearchBar({ 
   onSearch, 
   placeholder = "Search AI/ML terms...", 
   className,
@@ -38,7 +38,7 @@ export default function SearchBar({
   const [, navigate] = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const listboxId = "search-suggestions-listbox";
+  const listboxId = useMemo(() => "search-suggestions-listbox", []);
 
   // Debounce the query to prevent excessive API calls
   useEffect(() => {
@@ -62,13 +62,13 @@ export default function SearchBar({
     setSelectedIndex(-1);
   }, [suggestions, debouncedQuery]);
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
     setQuery(value);
     setSelectedIndex(-1);
-  };
+  }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
     if (!showSuggestions) {
       if (e.key === 'Enter') {
         handleSearch();
@@ -103,16 +103,16 @@ export default function SearchBar({
         inputRef.current?.blur();
         break;
     }
-  };
+  }, [showSuggestions, suggestions, selectedIndex]);
 
-  const handleSearch = () => {
+  const handleSearch = useCallback(() => {
     if (query.trim()) {
       onSearch(query.trim());
       setShowSuggestions(false);
     }
-  };
+  }, [query, onSearch]);
 
-  const handleSuggestionSelect = (suggestion: SearchSuggestion) => {
+  const handleSuggestionSelect = useCallback((suggestion: SearchSuggestion) => {
     if (suggestion.type === 'term') {
       navigate(`/term/${suggestion.id}`);
     } else if (suggestion.type === 'category') {
@@ -121,28 +121,28 @@ export default function SearchBar({
     }
     setShowSuggestions(false);
     setSelectedIndex(-1);
-  };
+  }, [navigate, onSearch]);
 
-  const clearSearch = () => {
+  const clearSearch = useCallback(() => {
     setQuery("");
     setShowSuggestions(false);
     inputRef.current?.focus();
-  };
+  }, []);
 
-  const handleFocus = () => {
+  const handleFocus = useCallback(() => {
     if (query.length >= 2 && Array.isArray(suggestions) && suggestions.length > 0) {
       setShowSuggestions(true);
     }
-  };
+  }, [query.length, suggestions]);
 
-  const handleBlur = (e: React.FocusEvent) => {
+  const handleBlur = useCallback((e: React.FocusEvent) => {
     // Delay hiding suggestions to allow for clicks
     setTimeout(() => {
       if (!suggestionsRef.current?.contains(e.relatedTarget as Node)) {
         setShowSuggestions(false);
       }
     }, 150);
-  };
+  }, []);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -305,4 +305,6 @@ export default function SearchBar({
       </div>
     </div>
   );
-}
+});
+
+export default SearchBar;

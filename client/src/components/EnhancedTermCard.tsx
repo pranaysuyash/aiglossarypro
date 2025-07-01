@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect, memo, useMemo, useCallback } from "react";
 import { Link } from "wouter";
 import { 
   Heart, 
@@ -29,13 +29,14 @@ import { IEnhancedTerm, ITerm, ITermCardProps } from "@/interfaces/interfaces";
 import ShareMenu from "./ShareMenu";
 import AIContentFeedback from './AIContentFeedback';
 import { getDifficultyColor, getProgressPercentage } from '@/utils/termUtils';
+import { usePerformanceMonitor } from '@/utils/performanceMonitor';
 
 // Type guard to check if term is enhanced
 const isEnhancedTerm = (term: IEnhancedTerm | ITerm): term is IEnhancedTerm => {
   return 'mainCategories' in term && 'difficultyLevel' in term;
 };
 
-export default function EnhancedTermCard({ 
+const EnhancedTermCard = memo(function EnhancedTermCard({ 
   term, 
   displayMode = 'default',
   showInteractive = true,
@@ -48,10 +49,29 @@ export default function EnhancedTermCard({
   const [isExpanded, setIsExpanded] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
+  const { measure } = usePerformanceMonitor('EnhancedTermCard');
 
   const enhanced = isEnhancedTerm(term);
 
-  const handleToggleFavorite = async () => {
+  // Memoize expensive calculations
+  const termUrl = useMemo(() => 
+    `${window.location.origin}/term/${enhanced ? term.slug : term.id}`, 
+    [enhanced, term.slug, term.id]
+  );
+
+  const featureIcons = useMemo(() => {
+    if (!enhanced) return [];
+    
+    const features = [];
+    if (term.hasCodeExamples) features.push({ icon: Code, label: "Code Examples", color: "text-blue-500" });
+    if (term.hasInteractiveElements) features.push({ icon: Play, label: "Interactive", color: "text-purple-500" });
+    if (term.hasCaseStudies) features.push({ icon: TestTube, label: "Case Studies", color: "text-green-500" });
+    if (term.hasImplementation) features.push({ icon: Brain, label: "Implementation", color: "text-orange-500" });
+    
+    return features;
+  }, [enhanced, term]);
+
+  const handleToggleFavorite = useCallback(async () => {
     if (!isAuthenticated) {
       toast({
         title: "Authentication required",
@@ -86,12 +106,11 @@ export default function EnhancedTermCard({
     } finally {
       setIsSubmitting(false);
     }
-  };
+  }, [isAuthenticated, favorite, term.id, term.name, toast]);
 
-  const handleCopyLink = async () => {
-    const url = `${window.location.origin}/term/${enhanced ? term.slug : term.id}`;
+  const handleCopyLink = useCallback(async () => {
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(termUrl);
       toast({
         title: "Link copied",
         description: "Link has been copied to clipboard",
@@ -103,28 +122,28 @@ export default function EnhancedTermCard({
         variant: "destructive",
       });
     }
-  };
+  }, [termUrl, toast]);
 
-  const handleTermClick = async () => {
+  const handleTermClick = useCallback(async () => {
     try {
       await apiRequest("POST", `/api/terms/${term.id}/view`, null);
     } catch (error) {
       console.error("Failed to log term view", error);
     }
-  };
+  }, [term.id]);
 
 
-  const getFeatureIcons = () => {
-    if (!enhanced) return [];
-    
-    const features = [];
-    if (term.hasCodeExamples) features.push({ icon: Code, label: "Code Examples", color: "text-blue-500" });
-    if (term.hasInteractiveElements) features.push({ icon: Play, label: "Interactive", color: "text-purple-500" });
-    if (term.hasCaseStudies) features.push({ icon: TestTube, label: "Case Studies", color: "text-green-500" });
-    if (term.hasImplementation) features.push({ icon: Brain, label: "Implementation", color: "text-orange-500" });
-    
-    return features;
-  };
+  // Performance monitoring for render
+  useEffect(() => {
+    measure(() => {
+      // Component render logic measurement
+    }, { 
+      termId: term.id, 
+      displayMode, 
+      enhanced,
+      featureCount: featureIcons.length
+    });
+  });
 
 
   const renderCompactCard = () => (
@@ -156,7 +175,7 @@ export default function EnhancedTermCard({
         
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-1">
-            {getFeatureIcons().slice(0, 2).map((feature, index) => (
+            {featureIcons.slice(0, 2).map((feature, index) => (
               <TooltipProvider key={index}>
                 <Tooltip>
                   <TooltipTrigger>
@@ -175,7 +194,7 @@ export default function EnhancedTermCard({
             className="text-xs h-6 px-2"
             onClick={() => {
               handleTermClick();
-              window.location.href = `/term/${enhanced ? term.slug : term.id}`;
+              window.location.href = termUrl;
             }}
           >
             View
@@ -275,9 +294,9 @@ export default function EnhancedTermCard({
           </div>
 
           {/* Feature Icons */}
-          {showInteractive && getFeatureIcons().length > 0 && (
+          {showInteractive && featureIcons.length > 0 && (
             <div className="flex items-center space-x-3 mb-4">
-              {getFeatureIcons().map((feature, index) => (
+              {featureIcons.map((feature, index) => (
                 <TooltipProvider key={index}>
                   <Tooltip>
                     <TooltipTrigger>
@@ -325,7 +344,7 @@ export default function EnhancedTermCard({
           size="sm"
           onClick={() => {
             handleTermClick();
-            window.location.href = `/term/${enhanced ? term.slug : term.id}`;
+            window.location.href = termUrl;
           }}
           className="flex items-center space-x-1"
         >
@@ -369,7 +388,7 @@ export default function EnhancedTermCard({
             isOpen={isShareMenuOpen} 
             onClose={() => setIsShareMenuOpen(false)}
             title={term.name}
-            url={`${window.location.origin}/term/${enhanced ? term.slug : term.id}`}
+            url={termUrl}
           />
         </div>
       </CardFooter>
@@ -414,9 +433,9 @@ export default function EnhancedTermCard({
         </p>
         
         {/* Feature indicators */}
-        {showInteractive && getFeatureIcons().length > 0 && (
+        {showInteractive && featureIcons.length > 0 && (
           <div className="flex items-center space-x-2 mb-3">
-            {getFeatureIcons().slice(0, 4).map((feature, index) => (
+            {featureIcons.slice(0, 4).map((feature, index) => (
               <TooltipProvider key={index}>
                 <Tooltip>
                   <TooltipTrigger>
@@ -446,7 +465,7 @@ export default function EnhancedTermCard({
           className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium cursor-pointer"
           onClick={() => {
             handleTermClick();
-            window.location.href = `/term/${enhanced ? term.slug : term.id}`;
+            window.location.href = termUrl;
           }}
         >
           Read more
@@ -488,7 +507,7 @@ export default function EnhancedTermCard({
             isOpen={isShareMenuOpen} 
             onClose={() => setIsShareMenuOpen(false)}
             title={term.name}
-            url={`${window.location.origin}/term/${enhanced ? term.slug : term.id}`}
+            url={termUrl}
           />
         </div>
       </CardFooter>
@@ -505,4 +524,6 @@ export default function EnhancedTermCard({
     default:
       return renderDefaultCard();
   }
-}
+});
+
+export default EnhancedTermCard;

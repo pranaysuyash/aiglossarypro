@@ -1,4 +1,4 @@
-import { useState, useCallback, memo } from "react";
+import { useState, useCallback, memo, useMemo } from "react";
 import { Link } from "wouter";
 import { Heart, Copy, Share2, CheckCircle } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -41,6 +41,17 @@ const TermCard = memo(function TermCard({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
+
+  // Memoize expensive calculations
+  const termUrl = useMemo(() => `${window.location.origin}/term/${term.id}`, [term.id]);
+  const truncatedDefinition = useMemo(() => 
+    term.shortDefinition?.substring(0, 200) || '', 
+    [term.shortDefinition]
+  );
+  const subcategoriesText = useMemo(() => 
+    term.subcategories?.join(', ') || '', 
+    [term.subcategories]
+  );
 
   const handleToggleFavorite = useCallback(async () => {
     if (!isAuthenticated) {
@@ -119,9 +130,8 @@ const TermCard = memo(function TermCard({
   }, [isAuthenticated, learned, term.id, term.name, toast, onLearnedToggle]);
 
   const handleCopyLink = useCallback(async () => {
-    const url = `${window.location.origin}/term/${term.id}`;
     try {
-      await navigator.clipboard.writeText(url);
+      await navigator.clipboard.writeText(termUrl);
       toast({
         title: "Link copied",
         description: "Link has been copied to clipboard",
@@ -133,7 +143,7 @@ const TermCard = memo(function TermCard({
         variant: "destructive",
       });
     }
-  }, [term.id, toast]);
+  }, [termUrl, toast]);
 
   // Track term view
   const handleTermClick = useCallback(async () => {
@@ -195,7 +205,7 @@ const TermCard = memo(function TermCard({
           <h3 className="font-semibold text-base mb-1 line-clamp-2">{term.name}</h3>
           
           <p className="text-gray-600 dark:text-gray-400 text-xs mb-2 line-clamp-2">
-            {term.shortDefinition}
+            {truncatedDefinition}
           </p>
         </CardContent>
         
@@ -225,7 +235,7 @@ const TermCard = memo(function TermCard({
           isOpen={isShareMenuOpen} 
           onClose={() => setIsShareMenuOpen(false)}
           title={term.name}
-          url={`${window.location.origin}/term/${term.id}`}
+          url={termUrl}
         />
       </Card>
     );
@@ -268,13 +278,13 @@ const TermCard = memo(function TermCard({
         <h3 className="font-semibold text-lg mb-1">{term.name}</h3>
         
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-4 flex-1">
-          {term.shortDefinition}
+          {truncatedDefinition}
         </p>
         
         {term.subcategories && term.subcategories.length > 0 && (
           <div className="text-xs text-gray-500 dark:text-gray-400 mb-2">
             <span className="font-medium">Categories: </span>
-            <span>{term.subcategories.join(', ')}</span>
+            <span>{subcategoriesText}</span>
           </div>
         )}
       </CardContent>
@@ -322,7 +332,7 @@ const TermCard = memo(function TermCard({
               isOpen={isShareMenuOpen} 
               onClose={() => setIsShareMenuOpen(false)}
               title={term.name}
-              url={`${window.location.origin}/term/${term.id}`}
+              url={termUrl}
             />
           </div>
         </CardFooter>

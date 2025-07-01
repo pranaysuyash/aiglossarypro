@@ -21,11 +21,13 @@ import {
   LazyProgressPage,
   LazyTermDetailPage,
   LazyLifetimePage,
-  LazyProfilePage
+  LazyProfilePage,
+  LazyLandingPage
 } from "@/components/lazy/LazyPages";
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
+import FirebaseLoginPage from "@/components/FirebaseLoginPage";
 import SkipLinks from "@/components/accessibility/SkipLinks";
 import LoginPage from "@/components/LoginPage";
 import { useAuth } from "@/hooks/useAuth";
@@ -75,7 +77,8 @@ function Router() {
       <main id="main-content" className="flex-grow" tabIndex={-1}>
         <Switch>
           <Route path="/" component={Home} />
-          <Route path="/login" component={LoginPage} />
+          <Route path="/landing" component={LazyLandingPage} />
+          <Route path="/login" component={FirebaseLoginPage} />
           <Route path="/lifetime" component={LazyLifetimePage} />
           <Route path="/term/:id" component={SmartTermDetail} />
           <Route path="/category/:id" component={LazyCategoriesPage} />

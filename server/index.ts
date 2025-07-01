@@ -17,6 +17,7 @@ import { setupAuth } from "./replitAuth";
 import { initS3Client } from "./s3Service";
 import { setupMockAuth } from "./middleware/dev/mockAuth";
 import { registerSimpleAuthRoutes } from "./routes/simpleAuth";
+import { registerFirebaseAuthRoutes } from "./routes/firebaseAuth";
 import { securityHeaders, sanitizeRequest, securityMonitoring, apiRateLimit, corsMiddleware } from "./middleware/security";
 import { errorHandler, notFoundHandler, gracefulShutdown } from "./middleware/errorHandler";
 import { 
@@ -79,7 +80,8 @@ app.use(responseLoggingMiddleware);
   try {
     if (features.simpleAuthEnabled) {
       registerSimpleAuthRoutes(app);
-      logger.info("✅ Simple JWT + OAuth authentication setup complete");
+      registerFirebaseAuthRoutes(app);
+      logger.info("✅ Simple JWT + OAuth + Firebase authentication setup complete");
     } else if (features.replitAuthEnabled) {
       await setupAuth(app);
       logger.info("✅ Replit authentication setup complete");

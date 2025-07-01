@@ -33,6 +33,10 @@ export const users = pgTable("users", {
   profileImageUrl: varchar("profile_image_url"),
   isAdmin: boolean("is_admin").default(false),
   
+  // Firebase authentication fields
+  firebaseUid: varchar("firebase_uid").unique(),
+  authProvider: varchar("auth_provider", { length: 50 }).default("replit"),
+  
   // NEW MONETIZATION FIELDS
   subscriptionTier: varchar("subscription_tier", { length: 20 }).default("free"),
   lifetimeAccess: boolean("lifetime_access").default(false),

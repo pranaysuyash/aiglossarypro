@@ -155,70 +155,70 @@ const mathQuizData = {
 
 export const Default: Story = {
   args: {
-    quizData: basicQuizData,
-    onComplete: (results) => console.log('Quiz completed:', results),
-    onProgress: (progress) => console.log('Progress:', progress),
+    questions: basicQuizData.questions,
+    title: basicQuizData.title,
+    description: basicQuizData.description,
+    timeLimit: basicQuizData.timeLimit,
+    onComplete: (results: any) => console.log('Quiz completed:', results),
   },
 };
 
 export const AdvancedQuiz: Story = {
   args: {
-    quizData: advancedQuizData,
-    onComplete: (results) => console.log('Advanced quiz completed:', results),
-    onProgress: (progress) => console.log('Progress:', progress),
-    showHints: true,
+    questions: advancedQuizData.questions,
+    title: advancedQuizData.title,
+    description: advancedQuizData.description,
+    timeLimit: advancedQuizData.timeLimit,
+    onComplete: (results: any) => console.log('Advanced quiz completed:', results),
+    showExplanations: true,
   },
 };
 
 export const MathematicsQuiz: Story = {
   args: {
-    quizData: mathQuizData,
-    onComplete: (results) => console.log('Math quiz completed:', results),
-    allowCalculator: true,
-    showFormulas: true,
+    questions: mathQuizData.questions,
+    title: mathQuizData.title,
+    description: mathQuizData.description,
+    timeLimit: mathQuizData.timeLimit,
+    onComplete: (results: any) => console.log('Math quiz completed:', results),
+    showExplanations: true,
   },
 };
 
 export const TimedQuiz: Story = {
   args: {
-    quizData: basicQuizData,
-    onComplete: (results) => console.log('Timed quiz completed:', results),
-    showTimer: true,
-    strictTiming: true,
-    onTimeUp: () => console.log('Time is up!'),
+    questions: basicQuizData.questions,
+    title: basicQuizData.title,
+    timeLimit: basicQuizData.timeLimit,
+    onComplete: (results: any) => console.log('Timed quiz completed:', results),
   },
 };
 
 export const PracticeMode: Story = {
   args: {
-    quizData: basicQuizData,
-    mode: 'practice',
-    onComplete: (results) => console.log('Practice completed:', results),
-    showCorrectAnswers: true,
-    allowRetries: true,
-    immediateAnswerFeedback: true,
+    questions: basicQuizData.questions,
+    title: basicQuizData.title,
+    onComplete: (results: any) => console.log('Practice completed:', results),
+    showExplanations: true,
+    allowRetry: true,
   },
 };
 
 export const AssessmentMode: Story = {
   args: {
-    quizData: advancedQuizData,
-    mode: 'assessment',
-    onComplete: (results) => console.log('Assessment completed:', results),
-    showCorrectAnswers: false,
-    allowRetries: false,
-    randomizeQuestions: true,
-    randomizeOptions: true,
+    questions: advancedQuizData.questions,
+    title: advancedQuizData.title,
+    onComplete: (results: any) => console.log('Assessment completed:', results),
+    showExplanations: false,
+    allowRetry: false,
   },
 };
 
 export const WithProgress: Story = {
   args: {
-    quizData: basicQuizData,
-    onComplete: (results) => console.log('Quiz completed:', results),
-    showProgress: true,
-    showQuestionNumbers: true,
-    allowNavigation: true,
+    questions: basicQuizData.questions,
+    title: basicQuizData.title,
+    onComplete: (results: any) => console.log('Quiz completed:', results),
   },
 };
 
@@ -292,8 +292,9 @@ export const WithHints: Story = {
 
 export const LoadingState: Story = {
   args: {
-    loading: true,
-    onComplete: (results) => console.log('Quiz completed:', results),
+    questions: [],
+    title: "Loading Quiz...",
+    onComplete: (results: any) => console.log('Quiz completed:', results),
   },
 };
 
@@ -329,9 +330,9 @@ export const CompletedState: Story = {
 
 export const DarkMode: Story = {
   args: {
-    quizData: basicQuizData,
-    onComplete: (results) => console.log('Quiz completed:', results),
-    theme: 'dark',
+    questions: basicQuizData.questions,
+    title: basicQuizData.title,
+    onComplete: (results: any) => console.log('Quiz completed:', results),
   },
   parameters: {
     themes: {

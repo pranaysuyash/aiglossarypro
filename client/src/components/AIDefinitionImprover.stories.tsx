@@ -70,14 +70,10 @@ export const Default: Story = {
       name: 'Machine Learning',
       definition: sampleDefinition,
       category: 'AI',
-      slug: 'machine-learning',
-      tags: ['ai', 'algorithms'],
-      difficulty: 'intermediate',
-      views: 100,
-      featured: false,
-      aiGenerated: true,
-      created: new Date().toISOString(),
-      updated: new Date().toISOString()
+      viewCount: 100,
+      isAiGenerated: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
   },
 };
@@ -89,14 +85,10 @@ export const WithLongDefinition: Story = {
       name: 'Neural Networks',
       definition: `Neural networks are computing systems inspired by biological neural networks. They consist of interconnected nodes called neurons that process information. Each neuron receives inputs, processes them using an activation function, and produces an output. Neural networks can learn to recognize patterns and make predictions through training on data.`,
       category: 'Deep Learning',
-      slug: 'neural-networks',
-      tags: ['neural-networks', 'deep-learning'],
-      difficulty: 'advanced',
-      views: 250,
-      featured: true,
-      aiGenerated: true,
-      created: new Date().toISOString(),
-      updated: new Date().toISOString()
+      viewCount: 250,
+      isAiGenerated: true,
+      createdAt: new Date(),
+      updatedAt: new Date()
     },
   },
 };
@@ -108,16 +100,12 @@ export const ImprovingState: Story = {
       name: 'Machine Learning',
       definition: sampleDefinition,
       category: 'AI',
-      slug: 'machine-learning-improving',
-      tags: ['ai', 'algorithms', 'learning'],
-      difficulty: 'intermediate',
-      views: 180,
-      featured: false,
-      aiGenerated: true,
-      created: new Date(Date.now() - 86400000).toISOString(), // 1 day ago
-      updated: new Date().toISOString()
+      viewCount: 180,
+      isAiGenerated: true,
+      createdAt: new Date(Date.now() - 86400000), // 1 day ago
+      updatedAt: new Date()
     },
-    onImprovementAccepted: (improved: string) => console.log('Accepted improvement:', improved),
+    onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
   parameters: {
     mockData: [
@@ -139,16 +127,12 @@ export const WithImprovements: Story = {
       name: 'Machine Learning',
       definition: sampleDefinition,
       category: 'AI',
-      slug: 'machine-learning-improvements',
-      tags: ['ai', 'algorithms', 'learning', 'patterns'],
-      difficulty: 'intermediate',
-      views: 350,
-      featured: true,
-      aiGenerated: true,
-      created: new Date(Date.now() - 172800000).toISOString(), // 2 days ago
-      updated: new Date().toISOString()
+      viewCount: 350,
+      isAiGenerated: true,
+      createdAt: new Date(Date.now() - 172800000), // 2 days ago
+      updatedAt: new Date()
     },
-    onImprovementAccepted: (improved: string) => console.log('Accepted improvement:', improved),
+    onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
   parameters: {
     mockData: [
@@ -199,17 +183,12 @@ export const WithCustomImprovementTypes: Story = {
       name: 'Deep Learning',
       definition: `Deep learning uses neural networks with multiple layers to learn complex patterns in data.`,
       category: 'Deep Learning',
-      slug: 'deep-learning-custom',
-      tags: ['deep-learning', 'neural-networks', 'patterns', 'layers'],
-      difficulty: 'advanced',
-      views: 420,
-      featured: true,
-      aiGenerated: false,
-      created: new Date(Date.now() - 259200000).toISOString(), // 3 days ago
-      updated: new Date(Date.now() - 86400000).toISOString() // 1 day ago
+      viewCount: 420,
+      isAiGenerated: false,
+      createdAt: new Date(Date.now() - 259200000), // 3 days ago
+      updatedAt: new Date(Date.now() - 86400000) // 1 day ago
     },
-    onImprovementAccepted: (improved: string) => console.log('Accepted improvement:', improved),
-    improvementTypes: ['add_examples', 'technical_accuracy', 'beginner_friendly', 'add_code_samples'],
+    onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
 };
 
@@ -220,17 +199,12 @@ export const ComparisonMode: Story = {
       name: 'Machine Learning',
       definition: sampleDefinition,
       category: 'AI',
-      slug: 'machine-learning-comparison',
-      tags: ['ai', 'algorithms', 'comparison', 'analysis'],
-      difficulty: 'intermediate',
-      views: 290,
-      featured: false,
-      aiGenerated: true,
-      created: new Date(Date.now() - 345600000).toISOString(), // 4 days ago
-      updated: new Date(Date.now() - 43200000).toISOString() // 12 hours ago
+      viewCount: 290,
+      isAiGenerated: true,
+      createdAt: new Date(Date.now() - 345600000), // 4 days ago
+      updatedAt: new Date(Date.now() - 43200000) // 12 hours ago
     },
-    onImprovementAccepted: (improved: string) => console.log('Accepted improvement:', improved),
-    showComparison: true,
+    onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
   parameters: {
     mockData: [
@@ -266,17 +240,12 @@ export const MultipleVersions: Story = {
       name: 'Machine Learning',
       definition: sampleDefinition,
       category: 'AI',
-      slug: 'machine-learning-versions',
-      tags: ['ai', 'algorithms', 'versions', 'multiple'],
-      difficulty: 'intermediate',
-      views: 520,
-      featured: true,
-      aiGenerated: true,
-      created: new Date(Date.now() - 432000000).toISOString(), // 5 days ago
-      updated: new Date(Date.now() - 21600000).toISOString() // 6 hours ago
+      viewCount: 520,
+      isAiGenerated: true,
+      createdAt: new Date(Date.now() - 432000000), // 5 days ago
+      updatedAt: new Date(Date.now() - 21600000) // 6 hours ago
     },
-    onImprovementAccepted: (improved: string) => console.log('Accepted improvement:', improved),
-    showMultipleVersions: true,
+    onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
   parameters: {
     mockData: [
@@ -322,16 +291,12 @@ export const ErrorState: Story = {
       name: 'Machine Learning',
       definition: sampleDefinition,
       category: 'AI',
-      slug: 'machine-learning-error',
-      tags: ['ai', 'algorithms', 'error-handling'],
-      difficulty: 'intermediate',
-      views: 95,
-      featured: false,
-      aiGenerated: true,
-      created: new Date(Date.now() - 518400000).toISOString(), // 6 days ago
-      updated: new Date(Date.now() - 172800000).toISOString() // 2 days ago
+      viewCount: 95,
+      isAiGenerated: true,
+      createdAt: new Date(Date.now() - 518400000), // 6 days ago
+      updatedAt: new Date(Date.now() - 172800000) // 2 days ago
     },
-    onImprovementAccepted: (improved: string) => console.log('Accepted improvement:', improved),
+    onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
   parameters: {
     mockData: [
@@ -352,17 +317,12 @@ export const WithFeedback: Story = {
       name: 'Machine Learning',
       definition: sampleDefinition,
       category: 'AI',
-      slug: 'machine-learning-feedback',
-      tags: ['ai', 'algorithms', 'feedback', 'user-interaction'],
-      difficulty: 'intermediate',
-      views: 240,
-      featured: false,
-      aiGenerated: true,
-      created: new Date(Date.now() - 604800000).toISOString(), // 7 days ago
-      updated: new Date(Date.now() - 10800000).toISOString() // 3 hours ago
+      viewCount: 240,
+      isAiGenerated: true,
+      createdAt: new Date(Date.now() - 604800000), // 7 days ago
+      updatedAt: new Date(Date.now() - 10800000) // 3 hours ago
     },
-    onImprovementAccepted: (improved: string) => console.log('Accepted improvement:', improved),
-    enableFeedback: true,
+    onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
   parameters: {
     mockData: [
@@ -393,16 +353,12 @@ export const DarkMode: Story = {
       name: 'Machine Learning',
       definition: sampleDefinition,
       category: 'AI',
-      slug: 'machine-learning-dark',
-      tags: ['ai', 'algorithms', 'dark-theme'],
-      difficulty: 'intermediate',
-      views: 160,
-      featured: false,
-      aiGenerated: true,
-      created: new Date(Date.now() - 691200000).toISOString(), // 8 days ago
-      updated: new Date(Date.now() - 7200000).toISOString() // 2 hours ago
+      viewCount: 160,
+      isAiGenerated: true,
+      createdAt: new Date(Date.now() - 691200000), // 8 days ago
+      updatedAt: new Date(Date.now() - 7200000) // 2 hours ago
     },
-    onImprovementAccepted: (improved: string) => console.log('Accepted improvement:', improved),
+    onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
   parameters: {
     themes: {
@@ -418,16 +374,12 @@ export const MobileView: Story = {
       name: 'Machine Learning',
       definition: sampleDefinition,
       category: 'AI',
-      slug: 'machine-learning-mobile',
-      tags: ['ai', 'algorithms', 'mobile-responsive'],
-      difficulty: 'intermediate',
-      views: 210,
-      featured: false,
-      aiGenerated: true,
-      created: new Date(Date.now() - 777600000).toISOString(), // 9 days ago
-      updated: new Date(Date.now() - 3600000).toISOString() // 1 hour ago
+      viewCount: 210,
+      isAiGenerated: true,
+      createdAt: new Date(Date.now() - 777600000), // 9 days ago
+      updatedAt: new Date(Date.now() - 3600000) // 1 hour ago
     },
-    onImprovementAccepted: (improved: string) => console.log('Accepted improvement:', improved),
+    onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
   parameters: {
     viewport: {

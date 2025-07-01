@@ -2,16 +2,13 @@ import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import CodeBlock from './CodeBlock';
 
-// Mock the useToast hook
-const mockToast = jest.fn();
-jest.mock('@/hooks/use-toast', () => ({
-  useToast: () => ({ toast: mockToast }),
-}));
-
-// Mock next-themes
-jest.mock('next-themes', () => ({
-  useTheme: () => ({ theme: 'light' }),
-}));
+const CodeBlockDecorator = (Story: any, context: any) => {
+  return (
+    <div className="w-full max-w-4xl">
+      <Story />
+    </div>
+  );
+};
 
 const meta: Meta<typeof CodeBlock> = {
   title: 'Interactive/CodeBlock',
@@ -25,11 +22,7 @@ const meta: Meta<typeof CodeBlock> = {
     },
   },
   decorators: [
-    (Story) => (
-      <div className="w-full max-w-4xl">
-        <Story />
-      </div>
-    ),
+    CodeBlockDecorator,
   ],
   args: {
     showLineNumbers: true,
@@ -770,44 +763,8 @@ public class KMeans {
 };
 
 export const DarkMode: Story = {
-  render: () => {
-    // Mock dark theme
-    jest.doMock('next-themes', () => ({
-      useTheme: () => ({ theme: 'dark' }),
-    }));
-    
-    return (
-      <div className="dark bg-gray-900 p-6 rounded-lg">
-        <CodeBlock
-          code={`# Deep Learning with PyTorch
-import torch
-import torch.nn as nn
-
-class SimpleNN(nn.Module):
-    def __init__(self, input_size, hidden_size, output_size):
-        super(SimpleNN, self).__init__()
-        self.fc1 = nn.Linear(input_size, hidden_size)
-        self.relu = nn.ReLU()
-        self.fc2 = nn.Linear(hidden_size, output_size)
-    
-    def forward(self, x):
-        out = self.fc1(x)
-        out = self.relu(out)
-        out = self.fc2(out)
-        return out
-
-# Create model instance
-model = SimpleNN(784, 128, 10)
-print(model)`}
-          language="python"
-          title="PyTorch Neural Network"
-          description="Simple neural network implementation"
-          executable={true}
-        />
-      </div>
-    );
-  },
   parameters: {
+    theme: 'dark',
     backgrounds: {
       default: 'dark',
     },
@@ -817,4 +774,9 @@ print(model)`}
       },
     },
   },
+  render: (args) => (
+    <div className="dark bg-gray-900 p-6 rounded-lg">
+      <CodeBlock {...args} />
+    </div>
+  ),
 };

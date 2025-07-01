@@ -56,8 +56,8 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
 
   // Memoize expensive calculations
   const termUrl = useMemo(() => 
-    `${window.location.origin}/term/${enhanced ? term.slug : term.id}`, 
-    [enhanced, term.slug, term.id]
+    `${window.location.origin}/term/${term.id}`, 
+    [term.id]
   );
 
   const featureIcons = useMemo(() => {
@@ -134,10 +134,10 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
   }, [term.id]);
 
   const handleNavigateToTerm = useCallback(() => {
-    const termPath = enhanced ? `/term/${term.slug}` : `/term/${term.id}`;
+    const termPath = `/term/${term.id}`;
     handleTermClick();
     navigate(termPath);
-  }, [enhanced, term.slug, term.id, handleTermClick, navigate]);
+  }, [term.id, handleTermClick, navigate]);
 
 
   // Performance monitoring for render

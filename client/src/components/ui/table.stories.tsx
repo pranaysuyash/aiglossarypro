@@ -1,9 +1,11 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import {
   Table,
   TableBody,
   TableCaption,
   TableCell,
+  TableFooter,
   TableHead,
   TableHeader,
   TableRow,

@@ -1,23 +1,35 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { PriceDisplay } from './PriceDisplay';
 
-// Mock the useCountryPricing hook for Storybook
+// Helper to create mock pricing data
 const createMockPricing = (overrides = {}) => ({
-  localPrice: 249,
   basePrice: 299,
+  localPrice: 249,
   discount: 17,
   countryName: 'United States',
   countryCode: 'US',
   currency: 'USD',
   annualSavings: 351,
   loading: false,
+  flag: '🇺🇸',
+  localCompetitor: 'DataCamp',
   ...overrides,
 });
 
-// Mock the hook
-jest.mock('@/hooks/useCountryPricing', () => ({
-  useCountryPricing: () => createMockPricing(),
-}));
+// Simple mock decorator that doesn't rely on jest
+const MockPricingDecorator = (Story: any, context: any) => {
+  return (
+    <div className="p-6 bg-white rounded-lg shadow-sm">
+      <Story />
+    </div>
+  );
+};
+
+// Helper component to wrap stories that need specific mock data
+const MockPricingWrapper = ({ children, mockPricing }: { children: React.ReactNode; mockPricing: any }) => {
+  return <>{children}</>;
+};
 
 const meta: Meta<typeof PriceDisplay> = {
   title: 'Landing/PriceDisplay',
@@ -31,11 +43,7 @@ const meta: Meta<typeof PriceDisplay> = {
     },
   },
   decorators: [
-    (Story) => (
-      <div className="p-6 bg-white rounded-lg shadow-sm">
-        <Story />
-      </div>
-    ),
+    MockPricingDecorator, // Apply our custom decorator
   ],
   args: {
     showComparison: false,
@@ -162,23 +170,12 @@ export const ExtraLarge: Story = {
 };
 
 export const LoadingState: Story = {
-  render: (args) => {
-    // Mock loading state for this story
-    const MockPriceDisplayLoading = () => {
-      jest.doMock('@/hooks/useCountryPricing', () => ({
-        useCountryPricing: () => createMockPricing({ loading: true }),
-      }));
-      
-      return <PriceDisplay {...args} />;
-    };
-    
-    return <MockPriceDisplayLoading />;
-  },
   args: {
     showComparison: true,
     showSavings: true,
   },
   parameters: {
+    mockPricing: createMockPricing({ loading: true }),
     docs: {
       description: {
         story: 'Price display showing loading skeleton while pricing data is being fetched.',
@@ -203,38 +200,28 @@ export const InternationalPricing: Story = {
           International Pricing Examples
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {countries.map((country) => {
-            const MockCountryPricing = ({ country: countryData }: { country: typeof countries[0] }) => {
-              jest.doMock('@/hooks/useCountryPricing', () => ({
-                useCountryPricing: () => createMockPricing({
-                  localPrice: countryData.price,
-                  basePrice: countryData.basePrice,
-                  discount: countryData.discount,
-                  countryName: countryData.name,
-                  countryCode: countryData.code,
-                  annualSavings: Math.round((countryData.basePrice - countryData.price) * 1.5),
-                }),
-              }));
-              
-              return (
-                <div className="p-4 border rounded-lg text-center">
-                  <h4 className="font-medium mb-2">{countryData.name}</h4>
-                  <PriceDisplay 
-                    size="md" 
-                    showComparison={true}
-                    showSavings={true}
-                  />
-                </div>
-              );
-            };
-            
-            return (
-              <MockCountryPricing 
-                key={country.code} 
-                country={country}
-              />
-            );
-          })}
+          {countries.map((country) => (
+            <MockPricingWrapper 
+              key={country.code} 
+              mockPricing={createMockPricing({
+                localPrice: country.price,
+                basePrice: country.basePrice,
+                discount: country.discount,
+                countryName: country.name,
+                countryCode: country.code,
+                annualSavings: Math.round((country.basePrice - country.price) * 1.5),
+              })}
+            >
+              <div className="p-4 border rounded-lg text-center">
+                <h4 className="font-medium mb-2">{country.name}</h4>
+                <PriceDisplay 
+                  size="md" 
+                  showComparison={true}
+                  showSavings={true}
+                />
+              </div>
+            </MockPricingWrapper>
+          ))}
         </div>
       </div>
     );
@@ -249,28 +236,18 @@ export const InternationalPricing: Story = {
 };
 
 export const NoDiscount: Story = {
-  render: (args) => {
-    const MockNoDiscountPricing = () => {
-      jest.doMock('@/hooks/useCountryPricing', () => ({
-        useCountryPricing: () => createMockPricing({
-          localPrice: 299,
-          basePrice: 299,
-          discount: 0,
-          countryName: 'Switzerland',
-          countryCode: 'CH',
-        }),
-      }));
-      
-      return <PriceDisplay {...args} />;
-    };
-    
-    return <MockNoDiscountPricing />;
-  },
   args: {
     showComparison: true,
     showSavings: true,
   },
   parameters: {
+    mockPricing: createMockPricing({
+      localPrice: 299,
+      basePrice: 299,
+      discount: 0,
+      countryName: 'Switzerland',
+      countryCode: 'CH',
+    }),
     docs: {
       description: {
         story: 'Price display for regions without discount pricing.',
@@ -304,60 +281,50 @@ export const PricingCards: Story = {
     
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-        {plans.map((plan) => {
-          const MockPlanPricing = ({ plan: planData }: { plan: typeof plans[0] }) => {
-            jest.doMock('@/hooks/useCountryPricing', () => ({
-              useCountryPricing: () => createMockPricing({
-                localPrice: planData.price,
-                basePrice: planData.price + 50,
-                discount: planData.popular ? 17 : 0,
-                annualSavings: planData.price * 1.2,
-              }),
-            }));
-            
-            return (
-              <div className={`p-6 border rounded-xl ${planData.popular ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
-                {planData.popular && (
-                  <div className="bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full text-center mb-4">
-                    MOST POPULAR
-                  </div>
-                )}
-                
-                <h3 className="text-xl font-bold text-center mb-2">{planData.name}</h3>
-                
-                <PriceDisplay 
-                  size="lg"
-                  showComparison={planData.popular}
-                  className="mb-6"
-                />
-                
-                <ul className="space-y-2 mb-6">
-                  {planData.features.map((feature, index) => (
-                    <li key={index} className="flex items-center text-sm">
-                      <span className="text-green-500 mr-2">✓</span>
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
-                
-                <button className={`w-full py-3 rounded-lg font-semibold ${
-                  planData.popular 
-                    ? 'bg-purple-500 text-white hover:bg-purple-600' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}>
-                  Get Started
-                </button>
-              </div>
-            );
-          };
-          
-          return (
-            <MockPlanPricing 
-              key={plan.name} 
-              plan={plan}
-            />
-          );
-        })}
+        {plans.map((plan) => (
+          <MockPricingWrapper 
+            key={plan.name} 
+            mockPricing={createMockPricing({
+              localPrice: plan.price,
+              basePrice: plan.price + 50,
+              discount: plan.popular ? 17 : 0,
+              annualSavings: plan.price * 1.2,
+            })}
+          >
+            <div className={`p-6 border rounded-xl ${plan.popular ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
+              {plan.popular && (
+                <div className="bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full text-center mb-4">
+                  MOST POPULAR
+                </div>
+              )}
+              
+              <h3 className="text-xl font-bold text-center mb-2">{plan.name}</h3>
+              
+              <PriceDisplay 
+                size="lg"
+                showComparison={plan.popular}
+                className="mb-6"
+              />
+              
+              <ul className="space-y-2 mb-6">
+                {plan.features.map((feature, index) => (
+                  <li key={index} className="flex items-center text-sm">
+                    <span className="text-green-500 mr-2">✓</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              
+              <button className={`w-full py-3 rounded-lg font-semibold ${
+                plan.popular 
+                  ? 'bg-purple-500 text-white hover:bg-purple-600' 
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}>
+                Get Started
+              </button>
+            </div>
+          </MockPricingWrapper>
+        ))}
       </div>
     );
   },

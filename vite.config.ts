@@ -5,7 +5,7 @@ import path from "path";
 
 export default defineConfig({
   plugins: [
-    million.vite(),
+    million.vite({ auto: true }),
     react(),
   ],
   resolve: {

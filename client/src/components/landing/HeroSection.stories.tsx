@@ -2,22 +2,29 @@ import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { HeroSection } from './HeroSection';
 
-// Mock the useCountryPricing hook for Storybook
-const mockPricing = {
-  localPrice: 249,
+import { setMockCountryPricing } from '@/hooks/__mocks__/useCountryPricing';
+
+const createMockPricing = (overrides = {}) => ({
   basePrice: 299,
+  localPrice: 249,
   discount: 17,
   countryName: 'United States',
   countryCode: 'US',
   currency: 'USD',
   annualSavings: 351,
   loading: false,
-};
+  flag: '🇺🇸',
+  localCompetitor: 'DataCamp',
+  ...overrides,
+});
 
-// Mock the hook
-jest.mock('@/hooks/useCountryPricing', () => ({
-  useCountryPricing: () => mockPricing,
-}));
+const HeroSectionDecorator = (Story, context) => {
+  const { mockPricing } = context.parameters;
+
+  setMockCountryPricing(mockPricing || createMockPricing());
+
+  return <Story />;
+};
 
 const meta: Meta<typeof HeroSection> = {
   title: 'Landing/HeroSection',
@@ -30,7 +37,9 @@ const meta: Meta<typeof HeroSection> = {
       },
     },
   },
-  tags: ['autodocs'],
+  decorators: [
+    HeroSectionDecorator,
+  ],
 };
 
 export default meta;
@@ -47,27 +56,14 @@ export const Default: Story = {
 };
 
 export const WithDifferentPricing: Story = {
-  render: () => {
-    // Mock different pricing for this story
-    const MockHeroWithPricing = () => {
-      // Override the mock for this component
-      jest.doMock('@/hooks/useCountryPricing', () => ({
-        useCountryPricing: () => ({
-          ...mockPricing,
-          localPrice: 199,
-          discount: 33,
-          countryName: 'India',
-          countryCode: 'IN',
-          currency: 'USD',
-        }),
-      }));
-      
-      return <HeroSection />;
-    };
-    
-    return <MockHeroWithPricing />;
-  },
   parameters: {
+    mockPricing: createMockPricing({
+      localPrice: 199,
+      discount: 33,
+      countryName: 'India',
+      countryCode: 'IN',
+      currency: 'USD',
+    }),
     docs: {
       description: {
         story: 'Hero section with different pricing for international markets.',
@@ -77,22 +73,10 @@ export const WithDifferentPricing: Story = {
 };
 
 export const LoadingState: Story = {
-  render: () => {
-    // Mock loading state
-    const MockHeroLoading = () => {
-      jest.doMock('@/hooks/useCountryPricing', () => ({
-        useCountryPricing: () => ({
-          ...mockPricing,
-          loading: true,
-        }),
-      }));
-      
-      return <HeroSection />;
-    };
-    
-    return <MockHeroLoading />;
-  },
   parameters: {
+    mockPricing: createMockPricing({
+      loading: true,
+    }),
     docs: {
       description: {
         story: 'Hero section in loading state while pricing data is being fetched.',

@@ -1,35 +1,39 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import RecommendedTerms from './RecommendedTerms';
 import { ITerm } from '@/interfaces/interfaces';
 
 // Mock TermCard component
-jest.mock('@/components/TermCard', () => {
-  return function MockTermCard({ term, variant, isFavorite }: any) {
-    return (
-      <div className={`p-4 border rounded-lg ${variant === 'compact' ? 'bg-gray-50' : 'bg-white'}`}>
-        <div className="flex justify-between items-start mb-2">
-          <h3 className="font-semibold text-lg">{term.term}</h3>
-          {isFavorite && <span className="text-red-500">❤️</span>}
-        </div>
-        <p className="text-gray-600 text-sm mb-2">{term.definition}</p>
-        {term.category && (
-          <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
-            {term.category}
-          </span>
-        )}
+const MockTermCard = ({ term, variant, isFavorite }: any) => {
+  return (
+    <div className={`p-4 border rounded-lg ${variant === 'compact' ? 'bg-gray-50' : 'bg-white'}`}>
+      <div className="flex justify-between items-start mb-2">
+        <h3 className="font-semibold text-lg">{term.term}</h3>
+        {isFavorite && <span className="text-red-500">❤️</span>}
       </div>
-    );
-  };
-});
+      <p className="text-gray-600 text-sm mb-2">{term.definition}</p>
+      {term.category && (
+        <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+          {term.category}
+        </span>
+      )}
+    </div>
+  );
+};
 
 // Mock wouter Link component
-jest.mock('wouter', () => ({
-  Link: ({ href, children }: any) => (
-    <a href={href} className="text-primary-600 hover:text-primary-700">
-      {children}
-    </a>
-  ),
-}));
+const MockLink = ({ href, children }: any) => (
+  <a href={href} className="text-primary-600 hover:text-primary-700">
+    {children}
+  </a>
+);
+
+// Create a decorator to provide the mocked components
+const RecommendedTermsDecorator = (Story) => (
+  <div className="w-full max-w-6xl">
+    <Story />
+  </div>
+);
 
 const sampleTerms: ITerm[] = [
   {
@@ -88,11 +92,7 @@ const meta: Meta<typeof RecommendedTerms> = {
     },
   },
   decorators: [
-    (Story) => (
-      <div className="w-full max-w-6xl">
-        <Story />
-      </div>
-    ),
+    RecommendedTermsDecorator,
   ],
   args: {
     recommended: sampleTerms.slice(0, 3),
@@ -500,3 +500,4 @@ export const DarkMode: Story = {
     ),
   ],
 };
+

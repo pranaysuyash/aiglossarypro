@@ -26,8 +26,8 @@ const meta: Meta<typeof Sidebar> = {
     },
   },
   decorators: [
-    (Story) => (
-      <QueryClientProvider client={queryClient}>
+    (Story, { storyId }) => (
+      <QueryClientProvider client={queryClient} key={storyId}>
         <div className="flex h-screen">
           <Story />
           <div className="flex-1 bg-gray-50 p-8">
@@ -119,8 +119,8 @@ export const Mobile: Story = {
     },
   },
   decorators: [
-    (Story) => (
-      <QueryClientProvider client={queryClient}>
+    (Story, { storyId }) => (
+      <QueryClientProvider client={queryClient} key={storyId}>
         <div className="relative h-screen">
           <Story />
           <div className="h-full bg-gray-50 p-4">
@@ -207,8 +207,8 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
-      <QueryClientProvider client={queryClient}>
+    (Story, { storyId }) => (
+      <QueryClientProvider client={queryClient} key={storyId}>
         <div className="flex h-screen dark">
           <Story />
           <div className="flex-1 bg-gray-900 p-8">

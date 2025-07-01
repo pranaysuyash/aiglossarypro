@@ -72,10 +72,11 @@ export default function Sidebar() {
                   <ul className="ml-4 mt-1 space-y-1">
                     {category.subcategories.map(subcategory => (
                       <li key={subcategory.id}>
-                        <Link href={`/category/${subcategory.id}`}>
-                          <a className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-600 dark:text-gray-400">
-                            {subcategory.name}
-                          </a>
+                        <Link 
+                          href={`/category/${subcategory.id}`}
+                          className="block px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 text-sm text-gray-600 dark:text-gray-400"
+                        >
+                          {subcategory.name}
                         </Link>
                       </li>
                     ))}
@@ -115,9 +116,12 @@ export default function Sidebar() {
                   {userProgress?.lastWeekActivity?.map((activity: number, i: number) => (
                     <div 
                       key={i}
-                      className={`w-full ${
-                        activity ? 'bg-accent h-' + Math.min(Math.max(activity, 2), 6) : 'bg-gray-200 dark:bg-gray-700 h-2'
-                      } rounded`}
+                      className="w-full bg-accent rounded"
+                      style={{ 
+                        height: activity ? `${Math.min(Math.max(activity, 2), 6) * 4}px` : '8px',
+                        backgroundColor: activity ? undefined : '',
+                        opacity: activity ? 1 : 0.2
+                      }}
                     ></div>
                   ))}
                 </div>
@@ -131,7 +135,7 @@ export default function Sidebar() {
             </p>
             <button 
               className="px-4 py-1 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm"
-              onClick={() => window.location.href = "/api/login"}
+              onClick={() => navigate("/api/login")}
             >
               Sign In
             </button>

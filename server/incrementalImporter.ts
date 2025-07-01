@@ -93,7 +93,8 @@ export class IncrementalImporter {
 
     } catch (error) {
       console.error('❌ Import failed:', error);
-      await this.updateSessionStatus(session.id, 'failed', error.message);
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      await this.updateSessionStatus(session.id, 'failed', errorMessage);
       throw error;
     }
   }
@@ -121,7 +122,8 @@ export class IncrementalImporter {
     // Process each row
     for (const row of data) {
       try {
-        const termName = row['Term'] || row['Name'] || row[Object.keys(row)[0]];
+        const rowData = row as Record<string, any>;
+        const termName = rowData['Term'] || rowData['Name'] || rowData[Object.keys(rowData)[0]];
         
         if (!termName || termName.trim() === '') {
           continue;
@@ -149,7 +151,8 @@ export class IncrementalImporter {
         }
 
       } catch (error) {
-        result.errors.push({ row, error: error.message });
+        const errorMessage = error instanceof Error ? error.message : String(error);
+        result.errors.push({ row, error: errorMessage });
       }
     }
 
@@ -213,7 +216,8 @@ export class IncrementalImporter {
           
         } catch (error) {
           await client.query('ROLLBACK');
-          await this.logImportAction(sessionId, null, termData['Term'] || termData['Name'], 'error', error.message);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          await this.logImportAction(sessionId, null, termData['Term'] || termData['Name'], 'error', errorMessage);
         }
       }
     } finally {
@@ -236,16 +240,17 @@ export class IncrementalImporter {
           const termId = await this.updateTerm(term, changes, client);
           
           // Update term hash
-          await this.updateTermHash(termId, term);
+          await this.updateTerm(termId, term);
           
           // Log import action
-          await this.logImportAction(sessionId, termId, term['Term'] || term['Name'], 'update', null, changes);
+          await this.logImportAction(sessionId, termId, term['Term'] || term['Name'], 'update', undefined, changes);
           
           await client.query('COMMIT');
           
         } catch (error) {
           await client.query('ROLLBACK');
-          await this.logImportAction(sessionId, null, term['Term'] || term['Name'], 'error', error.message);
+          const errorMessage = error instanceof Error ? error.message : String(error);
+          await this.logImportAction(sessionId, null, term['Term'] || term['Name'], 'error', errorMessage);
         }
       }
     } finally {

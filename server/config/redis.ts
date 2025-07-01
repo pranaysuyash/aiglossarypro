@@ -31,6 +31,47 @@ interface RedisClient {
   isConnected(): boolean;
 }
 
+class ProductionRedisClient implements RedisClient {
+  constructor(private ioredisClient: any) {}
+
+  async get(key: string): Promise<string | null> {
+    return await this.ioredisClient.get(key);
+  }
+
+  async set(key: string, value: string, ttl?: number): Promise<void> {
+    if (ttl) {
+      await this.ioredisClient.setex(key, ttl, value);
+    } else {
+      await this.ioredisClient.set(key, value);
+    }
+  }
+
+  async del(key: string): Promise<void> {
+    await this.ioredisClient.del(key);
+  }
+
+  async exists(key: string): Promise<boolean> {
+    const result = await this.ioredisClient.exists(key);
+    return result === 1;
+  }
+
+  async expire(key: string, ttl: number): Promise<void> {
+    await this.ioredisClient.expire(key, ttl);
+  }
+
+  async flushdb(): Promise<void> {
+    await this.ioredisClient.flushdb();
+  }
+
+  async quit(): Promise<void> {
+    await this.ioredisClient.quit();
+  }
+
+  isConnected(): boolean {
+    return this.ioredisClient.status === 'ready' || this.ioredisClient.status === 'connecting';
+  }
+}
+
 class MockRedisClient implements RedisClient {
   private cache = new Map<string, { value: string; expires?: number }>();
   private connected = true;
@@ -109,24 +150,40 @@ const redisConfig: RedisConfig = {
 let redisClient: RedisClient;
 
 const createRedisClient = (): RedisClient => {
+  // Use mock client for development if no Redis URL is provided
   if (process.env.NODE_ENV === 'development' && !process.env.REDIS_URL) {
     console.log('[Redis] Using mock Redis client for development');
     return new MockRedisClient();
   }
 
-  // In production or when REDIS_URL is provided, you would create actual Redis client
-  // For now, use mock client as fallback
-  console.log('[Redis] Redis client configuration:', { 
-    host: redisConfig.host, 
-    port: redisConfig.port,
-    db: redisConfig.db 
-  });
+  // Use actual Redis client in production or when REDIS_URL is provided
+  if (process.env.REDIS_URL || process.env.NODE_ENV === 'production') {
+    try {
+      // Use dynamic import instead of require for ESM compatibility
+      import('ioredis').then(({ default: Redis }) => {
+        console.log('[Redis] Initializing real Redis client');
+        
+        const client = process.env.REDIS_URL 
+          ? new Redis(process.env.REDIS_URL)
+          : new Redis(redisConfig);
+        
+        // Replace the global client with the real one
+        redisClient = new ProductionRedisClient(client);
+      }).catch(error => {
+        console.error('[Redis] Failed to dynamically import ioredis:', error);
+      });
+      
+      // Return mock client for immediate use, will be replaced by real client
+      console.log('[Redis] Starting with mock client, will upgrade to real Redis when available');
+      return new MockRedisClient();
+    } catch (error) {
+      console.error('[Redis] Failed to initialize Redis client:', error);
+      console.warn('[Redis] Falling back to mock Redis client');
+      return new MockRedisClient();
+    }
+  }
   
-  // TODO: Implement actual Redis client when Redis is available
-  // import Redis from 'ioredis';
-  // return new Redis(redisConfig);
-  
-  console.warn('[Redis] Falling back to mock Redis client');
+  console.log('[Redis] Using mock Redis client as fallback');
   return new MockRedisClient();
 };
 

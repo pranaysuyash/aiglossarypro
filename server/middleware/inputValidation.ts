@@ -46,10 +46,11 @@ export function parseId(paramName: string = 'id') {
       const id = req.params[paramName];
       
       if (!id || typeof id !== 'string' || id.trim() === '') {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: `Invalid ${paramName} parameter`
         });
+        return;
       }
 
       // Add parsed ID to request
@@ -77,10 +78,11 @@ export function parseNumericQuery(fieldName: string, defaultValue?: number, min?
         parsed = parseInt(value);
         
         if (isNaN(parsed)) {
-          return res.status(400).json({
+          res.status(400).json({
             success: false,
             message: `Invalid ${fieldName} parameter: must be a number`
           });
+          return;
         }
 
         if (min !== undefined && parsed < min) {
@@ -117,10 +119,11 @@ export function parseSorting(allowedFields: string[] = ['createdAt', 'updatedAt'
       const sortOrder = (req.query.sortOrder as string)?.toLowerCase() === 'asc' ? 'asc' : 'desc';
 
       if (!allowedFields.includes(sortBy)) {
-        return res.status(400).json({
+        res.status(400).json({
           success: false,
           message: `Invalid sortBy field. Allowed values: ${allowedFields.join(', ')}`
         });
+        return;
       }
 
       // Add parsed values to request

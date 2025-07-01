@@ -452,13 +452,16 @@ export class OptimizedStorage implements IStorage {
         }
         
         // Get total count
-        let countQuery = db.select({ count: sql<number>`count(*)` }).from(terms);
+        const countQuery = db.select({ count: sql<number>`count(*)` }).from(terms);
         if (fields.includes('category')) {
-          countQuery = countQuery.leftJoin(categories, eq(terms.categoryId, categories.id));
+          const countWithJoin = countQuery.leftJoin(categories, eq(terms.categoryId, categories.id));
+          const countWithWhere = countWithJoin.where(and(...whereConditions));
+          var finalCountQuery = countWithWhere;
+        } else {
+          var finalCountQuery = countQuery.where(and(...whereConditions));
         }
-        countQuery = countQuery.where(and(...whereConditions));
         
-        const totalResult = await countQuery;
+        const totalResult = await finalCountQuery;
         const total = totalResult[0]?.count || 0;
         
         // Build dynamic select
@@ -476,18 +479,18 @@ export class OptimizedStorage implements IStorage {
         if (fields.includes('createdAt')) selectObj.createdAt = terms.createdAt;
         
         // Build main query
-        let query_ = db.select(selectObj).from(terms);
+        const baseQuery = db.select(selectObj).from(terms);
         
-        // Add joins only if needed
+        // Add joins and conditions
         if (fields.includes('category')) {
-          query_ = query_.leftJoin(categories, eq(terms.categoryId, categories.id));
+          const joinedQuery = baseQuery.leftJoin(categories, eq(terms.categoryId, categories.id));
+          var finalQuery = joinedQuery.where(and(...whereConditions));
+        } else {
+          var finalQuery = baseQuery.where(and(...whereConditions));
         }
         
-        // Add where conditions
-        query_ = query_.where(and(...whereConditions));
-        
         // Add ordering, limit, and offset
-        const results = await query_
+        const results = await finalQuery
           .orderBy(desc(relevanceScore), desc(terms.viewCount))
           .limit(limit)
           .offset(offset);
@@ -698,15 +701,15 @@ export class OptimizedStorage implements IStorage {
         const total = totalResult[0]?.count || 0;
         
         // Build main query
-        let query = db.select(selectObj).from(terms);
+        const baseQuery2 = db.select(selectObj).from(terms);
         
-        // Add joins only if needed
+        // Add joins and conditions
         if (fields.includes('category')) {
-          query = query.leftJoin(categories, eq(terms.categoryId, categories.id));
+          const joinedQuery2 = baseQuery2.leftJoin(categories, eq(terms.categoryId, categories.id));
+          var finalQuery2 = joinedQuery2.where(eq(terms.categoryId, categoryId));
+        } else {
+          var finalQuery2 = baseQuery2.where(eq(terms.categoryId, categoryId));
         }
-        
-        // Add where clause
-        query = query.where(eq(terms.categoryId, categoryId));
         
         // Add sorting
         const sortColumn = sort === 'name' ? terms.name :
@@ -714,12 +717,12 @@ export class OptimizedStorage implements IStorage {
                           sort === 'createdAt' ? terms.createdAt :
                           terms.name;
         
-        query = order === 'desc' ? 
-          query.orderBy(desc(sortColumn)) :
-          query.orderBy(asc(sortColumn));
+        const sortedQuery = order === 'desc' ? 
+          finalQuery2.orderBy(desc(sortColumn)) :
+          finalQuery2.orderBy(asc(sortColumn));
         
         // Add pagination
-        const results = await query
+        const results = await sortedQuery
           .limit(limit)
           .offset(offset);
         

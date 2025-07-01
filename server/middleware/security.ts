@@ -108,6 +108,9 @@ export const corsMiddleware = cors({
       'http://localhost:5173', // Vite dev server
       'https://localhost:3000',
       'https://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
+      'http://127.0.0.1:5173',
       process.env.FRONTEND_URL,
       process.env.PRODUCTION_URL,
       process.env.STAGING_URL
@@ -134,8 +137,8 @@ export const corsMiddleware = cors({
       }
     }
     
-    // In development, allow localhost variants
-    if (origin.includes('localhost') || allowedOrigins.includes(origin)) {
+    // In development, allow localhost and 127.0.0.1 variants
+    if (origin.includes('localhost') || origin.includes('127.0.0.1') || allowedOrigins.includes(origin)) {
       return callback(null, true);
     }
     

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { FirebaseLoginPage } from './FirebaseLoginPage';
+import FirebaseLoginPage from './FirebaseLoginPage';
 
 const meta: Meta<typeof FirebaseLoginPage> = {
   title: 'Authentication/FirebaseLoginPage',

@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { MermaidDiagram } from './MermaidDiagram';
+import MermaidDiagram from './MermaidDiagram';
 
 const meta: Meta<typeof MermaidDiagram> = {
   title: 'Interactive/MermaidDiagram',

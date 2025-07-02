@@ -1,0 +1,623 @@
+{
+  "timestamp": "2025-07-02T09:32:45.852Z",
+  "summary": {
+    "totalTests": 27,
+    "pagesAudited": 13,
+    "breakpointsTested": 25,
+    "userFlowsTested": 11,
+    "accessibilityTests": 1,
+    "videosRecorded": 27
+  },
+  "configurations": [
+    {
+      "name": "homepage-desktop",
+      "url": "/",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "hero-interaction",
+          "steps": [
+            {
+              "type": "hover",
+              "selector": ".hero-section button, main button, [role=\"button\"]"
+            },
+            {
+              "type": "click",
+              "selector": ".hero-section button, main button, [role=\"button\"]"
+            },
+            {
+              "type": "wait",
+              "value": 2000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "homepage-mobile",
+      "url": "/",
+      "device": "iPhone 13",
+      "recordVideo": true,
+      "actions": [
+        {
+          "type": "wait",
+          "value": 2000
+        },
+        {
+          "type": "click",
+          "selector": "button[aria-label*=\"menu\"], .mobile-menu-button, .hamburger"
+        },
+        {
+          "type": "wait",
+          "value": 1000,
+          "screenshot": true
+        }
+      ]
+    },
+    {
+      "name": "homepage-tablet",
+      "url": "/",
+      "device": "iPad Pro",
+      "recordVideo": true
+    },
+    {
+      "name": "terms-page",
+      "url": "/terms",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "search-and-filter",
+          "steps": [
+            {
+              "type": "type",
+              "selector": "input[type=\"text\"]",
+              "value": "neural network"
+            },
+            {
+              "type": "wait",
+              "value": 2000
+            },
+            {
+              "type": "click",
+              "selector": "button:has-text(\"Filter\"), .filter-button"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "click",
+              "selector": "[role=\"combobox\"], select"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "categories-page",
+      "url": "/categories",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "browse-categories",
+          "steps": [
+            {
+              "type": "click",
+              "selector": ".category-card:first-child, .category:first-child"
+            },
+            {
+              "type": "wait",
+              "value": 2000
+            },
+            {
+              "type": "scroll",
+              "value": 500
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "trending-page",
+      "url": "/trending",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "favorites-page",
+      "url": "/favorites",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "dashboard-page",
+      "url": "/dashboard",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "dashboard-navigation",
+          "steps": [
+            {
+              "type": "click",
+              "selector": ".dashboard-card:first-child, .metric-card:first-child"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "hover",
+              "selector": ".chart, .progress-bar"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "settings-page",
+      "url": "/settings",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "settings-interaction",
+          "steps": [
+            {
+              "type": "click",
+              "selector": "button, .toggle, input[type=\"checkbox\"]"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "type",
+              "selector": "input[type=\"text\"], input[type=\"email\"]",
+              "value": "test@example.com"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ai-tools-page",
+      "url": "/ai-tools",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "login-page",
+      "url": "/login",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "oauth-login-flow",
+          "steps": [
+            {
+              "type": "click",
+              "selector": "button:has-text(\"Google\"), .google-login, .oauth-button"
+            },
+            {
+              "type": "wait",
+              "value": 2000
+            },
+            {
+              "type": "click",
+              "selector": "button:has-text(\"GitHub\"), .github-login"
+            },
+            {
+              "type": "wait",
+              "value": 2000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "profile-page",
+      "url": "/profile",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "progress-page",
+      "url": "/progress",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "lifetime-page",
+      "url": "/lifetime",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "search-comprehensive",
+      "url": "/",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "complete-search-flow",
+          "steps": [
+            {
+              "type": "click",
+              "selector": "input[type=\"text\"], .search-input"
+            },
+            {
+              "type": "type",
+              "selector": "input[type=\"text\"]",
+              "value": "machine"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "keyboard",
+              "key": "ArrowDown"
+            },
+            {
+              "type": "keyboard",
+              "key": "Enter"
+            },
+            {
+              "type": "wait",
+              "value": 2000
+            },
+            {
+              "type": "type",
+              "selector": "input[type=\"text\"]",
+              "value": "deep learning"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "keyboard",
+              "key": "Escape"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mobile-portrait-320",
+      "url": "/",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "mobile-portrait-375",
+      "url": "/",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "mobile-landscape",
+      "url": "/",
+      "viewport": {
+        "width": 812,
+        "height": 375
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "tablet-portrait",
+      "url": "/",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "tablet-landscape",
+      "url": "/",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "desktop-small",
+      "url": "/",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "desktop-large",
+      "url": "/",
+      "viewport": {
+        "width": 2560,
+        "height": 1440
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "accessibility-keyboard-navigation",
+      "url": "/",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "accessibility": {
+        "focusTest": true,
+        "keyboardNavigation": true
+      },
+      "userFlows": [
+        {
+          "name": "full-keyboard-navigation",
+          "steps": [
+            {
+              "type": "keyboard",
+              "key": "Tab"
+            },
+            {
+              "type": "wait",
+              "value": 500,
+              "screenshot": true
+            },
+            {
+              "type": "keyboard",
+              "key": "Tab"
+            },
+            {
+              "type": "wait",
+              "value": 500,
+              "screenshot": true
+            },
+            {
+              "type": "keyboard",
+              "key": "Tab"
+            },
+            {
+              "type": "wait",
+              "value": 500,
+              "screenshot": true
+            },
+            {
+              "type": "keyboard",
+              "key": "Enter"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "keyboard",
+              "key": "Escape"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dark-mode-complete",
+      "url": "/",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "dark-mode-all-pages",
+          "steps": [
+            {
+              "type": "screenshot",
+              "description": "Light mode homepage"
+            },
+            {
+              "type": "click",
+              "selector": "button[aria-label*=\"mode\"], button[aria-label*=\"theme\"]"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Dark mode homepage"
+            },
+            {
+              "type": "click",
+              "selector": "a[href=\"/terms\"], .nav-link:has-text(\"Terms\")"
+            },
+            {
+              "type": "wait",
+              "value": 2000,
+              "screenshot": true,
+              "description": "Dark mode terms page"
+            },
+            {
+              "type": "click",
+              "selector": "a[href=\"/categories\"]"
+            },
+            {
+              "type": "wait",
+              "value": 2000,
+              "screenshot": true,
+              "description": "Dark mode categories page"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "all-button-interactions",
+      "url": "/",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "test-all-buttons",
+          "steps": [
+            {
+              "type": "hover",
+              "selector": "button:nth-child(1)"
+            },
+            {
+              "type": "wait",
+              "value": 500,
+              "screenshot": true
+            },
+            {
+              "type": "hover",
+              "selector": "button:nth-child(2)"
+            },
+            {
+              "type": "wait",
+              "value": 500,
+              "screenshot": true
+            },
+            {
+              "type": "click",
+              "selector": "button:first-of-type"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "all-form-interactions",
+      "url": "/settings",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "test-all-forms",
+          "steps": [
+            {
+              "type": "click",
+              "selector": "input[type=\"text\"]:first-of-type"
+            },
+            {
+              "type": "type",
+              "selector": "input[type=\"text\"]:first-of-type",
+              "value": "Test User"
+            },
+            {
+              "type": "click",
+              "selector": "input[type=\"email\"]"
+            },
+            {
+              "type": "type",
+              "selector": "input[type=\"email\"]",
+              "value": "test@example.com"
+            },
+            {
+              "type": "click",
+              "selector": "input[type=\"checkbox\"]"
+            },
+            {
+              "type": "wait",
+              "value": 500
+            },
+            {
+              "type": "click",
+              "selector": "select, [role=\"combobox\"]"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "error-states",
+      "url": "/nonexistent-page",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "actions": [
+        {
+          "type": "wait",
+          "value": 3000,
+          "screenshot": true,
+          "description": "404 error page"
+        }
+      ]
+    }
+  ]
+}

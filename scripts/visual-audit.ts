@@ -117,8 +117,9 @@ class VisualAuditor {
     if (!this.browser) throw new Error('Browser not initialized');
 
     const pages: PageConfig[] = [
+      // Homepage variants
       {
-        name: 'homepage',
+        name: 'homepage-desktop',
         url: '/',
         viewport: { width: 1920, height: 1080 }
       },
@@ -132,6 +133,8 @@ class VisualAuditor {
         url: '/',
         viewport: { width: 768, height: 1024 }
       },
+      
+      // Main pages
       {
         name: 'terms-listing',
         url: '/terms',
@@ -143,13 +146,46 @@ class VisualAuditor {
         viewport: { width: 1920, height: 1080 }
       },
       {
+        name: 'trending',
+        url: '/trending',
+        viewport: { width: 1920, height: 1080 }
+      },
+      {
+        name: 'login-page',
+        url: '/login',
+        viewport: { width: 1920, height: 1080 }
+      },
+      {
+        name: 'dashboard',
+        url: '/dashboard',
+        viewport: { width: 1920, height: 1080 }
+      },
+      {
+        name: 'favorites',
+        url: '/favorites',
+        viewport: { width: 1920, height: 1080 }
+      },
+      {
+        name: 'settings',
+        url: '/settings',
+        viewport: { width: 1920, height: 1080 }
+      },
+      {
+        name: 'ai-tools',
+        url: '/ai-tools',
+        viewport: { width: 1920, height: 1080 }
+      },
+      
+      // Interactive states
+      {
         name: 'search-active',
         url: '/',
         viewport: { width: 1920, height: 1080 },
         actions: [
-          { type: 'click', selector: '#search input' },
-          { type: 'type', selector: '#search input', value: 'machine learning' },
-          { type: 'wait', value: 1000 }
+          { type: 'wait', value: 2000 },
+          { type: 'click', selector: 'input[type="text"]' },
+          { type: 'type', selector: 'input[type="text"]', value: 'machine learning' },
+          { type: 'wait', value: 2000 }
         ]
       },
       {
@@ -157,8 +193,9 @@ class VisualAuditor {
         url: '/',
         viewport: { width: 375, height: 812 },
         actions: [
+          { type: 'wait', value: 2000 },
           { type: 'click', selector: 'button[aria-label*="menu"]' },
-          { type: 'wait', value: 500 }
+          { type: 'wait', value: 1000 }
         ]
       },
       {
@@ -166,9 +203,54 @@ class VisualAuditor {
         url: '/',
         viewport: { width: 1920, height: 1080 },
         actions: [
-          { type: 'click', selector: 'button[aria-label*="theme"]' },
-          { type: 'wait', value: 500 }
+          { type: 'wait', value: 2000 },
+          { type: 'click', selector: 'button[aria-label*="mode"]' },
+          { type: 'wait', value: 1000 }
         ]
+      },
+      
+      // Forms and interactions
+      {
+        name: 'term-filters',
+        url: '/terms',
+        viewport: { width: 1920, height: 1080 },
+        actions: [
+          { type: 'wait', value: 2000 },
+          { type: 'click', selector: 'button:has-text("Filters"), button[aria-label*="filter"], .filter-button' },
+          { type: 'wait', value: 1000 }
+        ]
+      },
+      {
+        name: 'category-dropdown',
+        url: '/categories',
+        viewport: { width: 1920, height: 1080 },
+        actions: [
+          { type: 'wait', value: 2000 },
+          { type: 'click', selector: '[role="combobox"], select, .category-select' },
+          { type: 'wait', value: 1000 }
+        ]
+      },
+      
+      // Responsive breakpoints
+      {
+        name: 'mobile-portrait',
+        url: '/terms',
+        viewport: { width: 360, height: 640 }
+      },
+      {
+        name: 'mobile-landscape',
+        url: '/terms',
+        viewport: { width: 640, height: 360 }
+      },
+      {
+        name: 'small-desktop',
+        url: '/',
+        viewport: { width: 1366, height: 768 }
+      },
+      {
+        name: 'large-desktop',
+        url: '/',
+        viewport: { width: 2560, height: 1440 }
       }
     ];
 
@@ -270,24 +352,64 @@ class VisualAuditor {
       console.log(chalk.gray(`  Analyzing ${screenshot}...`));
       
       try {
-        // Create a prompt for Claude
-        const prompt = `Analyze this screenshot of a web application and identify any visual, UX, or accessibility issues. 
-        Focus on:
-        1. Visual hierarchy and layout issues
-        2. Color contrast and readability
-        3. Responsive design problems
-        4. Accessibility concerns
-        5. Inconsistent styling or spacing
-        6. Missing or unclear UI elements
-        7. Mobile usability issues
+        // Create a comprehensive prompt for Claude
+        const prompt = `You are an expert UX/UI designer and accessibility specialist. Analyze this screenshot of an AI/ML Glossary web application and provide a comprehensive visual audit.
+
+        FOCUS AREAS:
+        1. **Visual Hierarchy & Layout**
+           - Information architecture and content organization
+           - Proper use of white space and visual grouping
+           - Clear navigation and breadcrumbs
+           - Logical flow and user journey
         
-        For each issue found, provide:
-        - Severity (critical/high/medium/low)
-        - Category (layout/color/typography/accessibility/responsiveness/consistency)
-        - Clear description
-        - Specific recommendation to fix it
+        2. **Accessibility & WCAG Compliance**
+           - Color contrast ratios (WCAG AA standards)
+           - Text readability and font sizes
+           - Button and link accessibility
+           - Focus indicators and keyboard navigation
+           - ARIA labels and semantic markup
         
-        Screenshot name: ${screenshot}`;
+        3. **Responsive Design**
+           - Mobile-first design principles
+           - Touch target sizes (minimum 44px)
+           - Content adaptation across breakpoints
+           - Horizontal scrolling issues
+        
+        4. **Visual Design & Consistency**
+           - Brand consistency and design system adherence
+           - Color palette usage and meaning
+           - Typography hierarchy and readability
+           - Icon consistency and clarity
+           - Button states and interactive elements
+        
+        5. **User Experience**
+           - Clear call-to-actions
+           - Loading states and feedback
+           - Error handling and messaging
+           - Search and filtering functionality
+           - Information scent and discoverability
+        
+        6. **Performance & Technical**
+           - Image optimization and loading
+           - Content loading patterns
+           - Progressive enhancement
+        
+        RESPONSE FORMAT:
+        For each issue found, provide exactly this format:
+        
+        **Issue #N**
+        - **Severity**: [critical/high/medium/low]
+        - **Category**: [layout/accessibility/responsive/visual-design/ux/performance]
+        - **Description**: [Clear, specific description of the issue]
+        - **Recommendation**: [Actionable solution with specific steps]
+        - **WCAG Impact**: [If applicable, mention WCAG guidelines affected]
+        
+        Also provide:
+        - **Overall Score**: /10 for the page
+        - **Top 3 Priority Fixes**: Most critical issues to address first
+        
+        Screenshot: ${screenshot}
+        Page Context: This is from an AI/ML Glossary application that helps users learn AI concepts and terminology.`;
 
         // Execute claude command with the screenshot
         const claudeCommand = `claude -p "@${screenshotPath} ${prompt}"`;

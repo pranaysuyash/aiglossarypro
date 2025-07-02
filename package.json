@@ -28,6 +28,7 @@
     "audit:visual:full": "tsx scripts/visual-audit.ts",
     "audit:visual:debug": "tsx scripts/visual-audit-fixed.ts",
     "audit:visual:enhanced": "tsx scripts/visual-audit-enhanced.ts",
+    "audit:visual:comprehensive": "tsx scripts/comprehensive-visual-audit.ts",
     "visual-test": "tsx scripts/visual-audit-cli.ts",
     "visual-test:accessibility": "tsx scripts/visual-audit-cli.ts test --type=accessibility",
     "visual-test:performance": "tsx scripts/visual-audit-cli.ts test --type=performance",

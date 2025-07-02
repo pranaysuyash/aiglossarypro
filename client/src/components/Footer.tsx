@@ -94,24 +94,18 @@ export default function Footer({ className, onSubscribe }: FooterProps = {}) {
             <h3 className="text-lg font-medium text-white dark:text-gray-100 mb-4">Quick Links</h3>
             <ul className="space-y-2">
               <li>
-                <Link href={isAuthenticated ? "/app" : "/"}>
-                  <a className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition">
-                    Home
-                  </a>
+                <Link href={isAuthenticated ? "/app" : "/"} className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition">
+                  Home
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard">
-                  <a className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition">
-                    Dashboard
-                  </a>
+                <Link href="/dashboard" className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition">
+                  Dashboard
                 </Link>
               </li>
               <li>
-                <Link href="/favorites">
-                  <a className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition">
-                    Favorites
-                  </a>
+                <Link href="/favorites" className="text-gray-400 hover:text-white dark:text-gray-300 dark:hover:text-gray-100 transition">
+                  Favorites
                 </Link>
               </li>
               <li>

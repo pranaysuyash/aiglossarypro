@@ -20,7 +20,7 @@ const Progress = React.forwardRef<
     )}
     aria-label={ariaLabel}
     aria-labelledby={ariaLabelledBy}
-    aria-valuenow={value ?? undefined}
+    aria-valuenow={typeof value === 'number' && !isNaN(value) ? value : undefined}
     aria-valuemin={0}
     aria-valuemax={100}
     {...props}

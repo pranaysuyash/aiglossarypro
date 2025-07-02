@@ -55,11 +55,30 @@ export default function Header({
     }
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     if (onLogout) {
       onLogout();
     } else {
-      window.location.href = "/api/auth/logout";
+      try {
+        // Import Firebase signOut function dynamically
+        const { signOutUser } = await import("@/lib/firebase");
+        
+        // Sign out from Firebase first
+        await signOutUser();
+        
+        // Then call backend logout to clear server-side session
+        await fetch("/api/auth/logout", {
+          method: "POST",
+          credentials: "include"
+        });
+        
+        // Redirect to home page
+        window.location.href = "/";
+      } catch (error) {
+        console.error("Logout error:", error);
+        // Fallback to simple redirect
+        window.location.href = "/api/auth/logout";
+      }
     }
   };
 

@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visual Audit Report - 2025-07-02T09-05-38-689Z</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+        h1 {
+            color: #2c3e50;
+            margin: 0 0 10px 0;
+        }
+        .summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .metric {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #3498db;
+        }
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+        }
+        .severity-critical { color: #e74c3c; }
+        .severity-high { color: #e67e22; }
+        .severity-medium { color: #f39c12; }
+        .severity-low { color: #95a5a6; }
+        .issue {
+            background: white;
+            padding: 20px;
+            margin: 10px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            border-left: 4px solid #3498db;
+        }
+        .issue.critical { border-left-color: #e74c3c; }
+        .issue.high { border-left-color: #e67e22; }
+        .issue.medium { border-left-color: #f39c12; }
+        .issue.low { border-left-color: #95a5a6; }
+        .screenshot {
+            max-width: 100%;
+            margin: 10px 0;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        .performance-chart {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            background: none;
+            font-size: 16px;
+            color: #666;
+            transition: all 0.3s;
+        }
+        .tab.active {
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .code-snippet {
+            background: #f4f4f4;
+            padding: 10px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 0.9em;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Visual Audit Report</h1>
+        <p>Generated: 7/2/2025, 2:38:20 PM</p>
+        <div class="summary">
+            <div class="metric">
+                <div class="metric-value">5</div>
+                <div class="metric-label">Total Issues</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">1</div>
+                <div class="metric-label">Critical Issues</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">4</div>
+                <div class="metric-label">High Priority</div>
+            </div>
+            <div class="metric">
+                <div class="metric-value">0</div>
+                <div class="metric-label">Pages Tested</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab active" onclick="showTab('issues')">Issues</button>
+        <button class="tab" onclick="showTab('performance')">Performance</button>
+        <button class="tab" onclick="showTab('accessibility')">Accessibility</button>
+        <button class="tab" onclick="showTab('screenshots')">Screenshots</button>
+    </div>
+
+    <div id="issues" class="tab-content active">
+        <h2>Issues by Severity</h2>
+        
+        <div class="issue critical">
+            <h3><span class="severity-critical">[CRITICAL]</span> Ensure all ARIA attributes have valid values (1 instances)</h3>
+            <p><strong>Page:</strong> accessibility-keyboard-nav</p>
+            <p><strong>Category:</strong> accessibility</p>
+            <p><strong>Recommendation:</strong> ARIA attributes must conform to valid values</p>
+            <p><strong>WCAG:</strong> cat.aria, wcag2a, wcag412, EN-301-549, EN-9.4.1.2</p>
+            <div class="code-snippet">&lt;div aria-valuemax=&quot;100&quot; aria-valuemin=&quot;0&quot; aria-valuenow=&quot;NaN&quot; role=&quot;progressbar&quot; data-state=&quot;indeterminate&quot; data-max=&quot;100&quot; class=&quot;relative w-full overflow-hidden rounded-full bg-secondary h-2&quot; aria-label=&quot;Learning progress: 0 out of 10382 terms learned&quot;&gt;</div>
+        </div>
+    
+        <div class="issue high">
+            <h3><span class="severity-high">[HIGH]</span> Ensure the autocomplete attribute is correct and suitable for the form field (1 instances)</h3>
+            <p><strong>Page:</strong> login-page</p>
+            <p><strong>Category:</strong> accessibility</p>
+            <p><strong>Recommendation:</strong> autocomplete attribute must be used correctly</p>
+            <p><strong>WCAG:</strong> cat.forms, wcag21aa, wcag135, EN-301-549, EN-9.1.3.5, ACT</p>
+            <div class="code-snippet">&lt;input type=&quot;text&quot; class=&quot;flex h-10 w-full rounded-md border px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-10 pr-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700&quot; placeholder=&quot;Search AI/ML terms...&quot; aria-label=&quot;Search AI/ML terms and definitions&quot; aria-expanded=&quot;false&quot; aria-haspopup=&quot;listbox&quot; autocomplete=&quot;search&quot; role=&quot;combobox&quot; value=&quot;&quot;&gt;</div>
+        </div>
+    
+        <div class="issue high">
+            <h3><span class="severity-high">[HIGH]</span> Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds (6 instances)</h3>
+            <p><strong>Page:</strong> login-page</p>
+            <p><strong>Category:</strong> accessibility</p>
+            <p><strong>Recommendation:</strong> Elements must meet minimum color contrast ratio thresholds</p>
+            <p><strong>WCAG:</strong> cat.color, wcag2aa, wcag143, TTv5, TT13.c, EN-301-549, EN-9.1.4.3, ACT</p>
+            <div class="code-snippet">&lt;span class=&quot;flex h-full w-full items-center justify-center rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300&quot;&gt;DE&lt;/span&gt;</div>
+        </div>
+    
+        <div class="issue high">
+            <h3><span class="severity-high">[HIGH]</span> Ensure the autocomplete attribute is correct and suitable for the form field (1 instances)</h3>
+            <p><strong>Page:</strong> accessibility-keyboard-nav</p>
+            <p><strong>Category:</strong> accessibility</p>
+            <p><strong>Recommendation:</strong> autocomplete attribute must be used correctly</p>
+            <p><strong>WCAG:</strong> cat.forms, wcag21aa, wcag135, EN-301-549, EN-9.1.3.5, ACT</p>
+            <div class="code-snippet">&lt;input type=&quot;text&quot; class=&quot;flex h-10 w-full rounded-md border px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-10 pr-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700&quot; placeholder=&quot;Search AI/ML terms...&quot; aria-label=&quot;Search AI/ML terms and definitions&quot; aria-expanded=&quot;false&quot; aria-haspopup=&quot;listbox&quot; autocomplete=&quot;search&quot; role=&quot;combobox&quot; value=&quot;&quot;&gt;</div>
+        </div>
+    
+        <div class="issue high">
+            <h3><span class="severity-high">[HIGH]</span> Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds (17 instances)</h3>
+            <p><strong>Page:</strong> accessibility-keyboard-nav</p>
+            <p><strong>Category:</strong> accessibility</p>
+            <p><strong>Recommendation:</strong> Elements must meet minimum color contrast ratio thresholds</p>
+            <p><strong>WCAG:</strong> cat.color, wcag2aa, wcag143, TTv5, TT13.c, EN-301-549, EN-9.1.4.3, ACT</p>
+            <div class="code-snippet">&lt;span class=&quot;flex h-full w-full items-center justify-center rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300&quot;&gt;DE&lt;/span&gt;</div>
+        </div>
+    
+    </div>
+
+    <div id="performance" class="tab-content">
+        <h2>Performance Metrics</h2>
+        
+    </div>
+
+    <div id="accessibility" class="tab-content">
+        <h2>Accessibility Issues</h2>
+        
+        <div class="issue high">
+            <h3><span class="severity-high">[HIGH]</span> Ensure the autocomplete attribute is correct and suitable for the form field (1 instances)</h3>
+            <p><strong>Page:</strong> login-page</p>
+            <p><strong>WCAG Guideline:</strong> cat.forms, wcag21aa, wcag135, EN-301-549, EN-9.1.3.5, ACT</p>
+            <p><strong>Recommendation:</strong> autocomplete attribute must be used correctly</p>
+            <p><strong>Affected Users:</strong> serious</p>
+            <div class="code-snippet">&lt;input type=&quot;text&quot; class=&quot;flex h-10 w-full rounded-md border px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-10 pr-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700&quot; placeholder=&quot;Search AI/ML terms...&quot; aria-label=&quot;Search AI/ML terms and definitions&quot; aria-expanded=&quot;false&quot; aria-haspopup=&quot;listbox&quot; autocomplete=&quot;search&quot; role=&quot;combobox&quot; value=&quot;&quot;&gt;</div>
+        </div>
+    
+        <div class="issue high">
+            <h3><span class="severity-high">[HIGH]</span> Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds (6 instances)</h3>
+            <p><strong>Page:</strong> login-page</p>
+            <p><strong>WCAG Guideline:</strong> cat.color, wcag2aa, wcag143, TTv5, TT13.c, EN-301-549, EN-9.1.4.3, ACT</p>
+            <p><strong>Recommendation:</strong> Elements must meet minimum color contrast ratio thresholds</p>
+            <p><strong>Affected Users:</strong> serious</p>
+            <div class="code-snippet">&lt;span class=&quot;flex h-full w-full items-center justify-center rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300&quot;&gt;DE&lt;/span&gt;</div>
+        </div>
+    
+        <div class="issue critical">
+            <h3><span class="severity-critical">[CRITICAL]</span> Ensure all ARIA attributes have valid values (1 instances)</h3>
+            <p><strong>Page:</strong> accessibility-keyboard-nav</p>
+            <p><strong>WCAG Guideline:</strong> cat.aria, wcag2a, wcag412, EN-301-549, EN-9.4.1.2</p>
+            <p><strong>Recommendation:</strong> ARIA attributes must conform to valid values</p>
+            <p><strong>Affected Users:</strong> critical</p>
+            <div class="code-snippet">&lt;div aria-valuemax=&quot;100&quot; aria-valuemin=&quot;0&quot; aria-valuenow=&quot;NaN&quot; role=&quot;progressbar&quot; data-state=&quot;indeterminate&quot; data-max=&quot;100&quot; class=&quot;relative w-full overflow-hidden rounded-full bg-secondary h-2&quot; aria-label=&quot;Learning progress: 0 out of 10382 terms learned&quot;&gt;</div>
+        </div>
+    
+        <div class="issue high">
+            <h3><span class="severity-high">[HIGH]</span> Ensure the autocomplete attribute is correct and suitable for the form field (1 instances)</h3>
+            <p><strong>Page:</strong> accessibility-keyboard-nav</p>
+            <p><strong>WCAG Guideline:</strong> cat.forms, wcag21aa, wcag135, EN-301-549, EN-9.1.3.5, ACT</p>
+            <p><strong>Recommendation:</strong> autocomplete attribute must be used correctly</p>
+            <p><strong>Affected Users:</strong> serious</p>
+            <div class="code-snippet">&lt;input type=&quot;text&quot; class=&quot;flex h-10 w-full rounded-md border px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-10 pr-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700&quot; placeholder=&quot;Search AI/ML terms...&quot; aria-label=&quot;Search AI/ML terms and definitions&quot; aria-expanded=&quot;false&quot; aria-haspopup=&quot;listbox&quot; autocomplete=&quot;search&quot; role=&quot;combobox&quot; value=&quot;&quot;&gt;</div>
+        </div>
+    
+        <div class="issue high">
+            <h3><span class="severity-high">[HIGH]</span> Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds (17 instances)</h3>
+            <p><strong>Page:</strong> accessibility-keyboard-nav</p>
+            <p><strong>WCAG Guideline:</strong> cat.color, wcag2aa, wcag143, TTv5, TT13.c, EN-301-549, EN-9.1.4.3, ACT</p>
+            <p><strong>Recommendation:</strong> Elements must meet minimum color contrast ratio thresholds</p>
+            <p><strong>Affected Users:</strong> serious</p>
+            <div class="code-snippet">&lt;span class=&quot;flex h-full w-full items-center justify-center rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300&quot;&gt;DE&lt;/span&gt;</div>
+        </div>
+    
+    </div>
+
+    <div id="screenshots" class="tab-content">
+        <h2>Screenshot Gallery</h2>
+        
+        <div style="margin: 20px 0;">
+            <h3>accessibility-keyboard-nav-final.png</h3>
+            <img src="screenshots/accessibility-keyboard-nav-final.png" alt="accessibility-keyboard-nav-final.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>component-states-final.png</h3>
+            <img src="screenshots/component-states-final.png" alt="component-states-final.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>components/component-states-button-fallback.png</h3>
+            <img src="screenshots/components/component-states-button-fallback.png" alt="components/component-states-button-fallback.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>components/component-states-card-fallback.png</h3>
+            <img src="screenshots/components/component-states-card-fallback.png" alt="components/component-states-card-fallback.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>components/homepage-desktop-hero-section-fallback.png</h3>
+            <img src="screenshots/components/homepage-desktop-hero-section-fallback.png" alt="components/homepage-desktop-hero-section-fallback.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>components/homepage-desktop-navigation-hover.png</h3>
+            <img src="screenshots/components/homepage-desktop-navigation-hover.png" alt="components/homepage-desktop-navigation-hover.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>dark-mode-toggle-final.png</h3>
+            <img src="screenshots/dark-mode-toggle-final.png" alt="dark-mode-toggle-final.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>homepage-desktop-final.png</h3>
+            <img src="screenshots/homepage-desktop-final.png" alt="homepage-desktop-final.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>homepage-mobile-final.png</h3>
+            <img src="screenshots/homepage-mobile-final.png" alt="homepage-mobile-final.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>homepage-tablet-final.png</h3>
+            <img src="screenshots/homepage-tablet-final.png" alt="homepage-tablet-final.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/accessibility-keyboard-nav-keyboard-1751447259920.png</h3>
+            <img src="screenshots/interactions/accessibility-keyboard-nav-keyboard-1751447259920.png" alt="interactions/accessibility-keyboard-nav-keyboard-1751447259920.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/accessibility-keyboard-nav-keyboard-1751447259997.png</h3>
+            <img src="screenshots/interactions/accessibility-keyboard-nav-keyboard-1751447259997.png" alt="interactions/accessibility-keyboard-nav-keyboard-1751447259997.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/accessibility-keyboard-nav-keyboard-1751447260087.png</h3>
+            <img src="screenshots/interactions/accessibility-keyboard-nav-keyboard-1751447260087.png" alt="interactions/accessibility-keyboard-nav-keyboard-1751447260087.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/accessibility-keyboard-nav-wait-1751447261180.png</h3>
+            <img src="screenshots/interactions/accessibility-keyboard-nav-wait-1751447261180.png" alt="interactions/accessibility-keyboard-nav-wait-1751447261180.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/dark-mode-toggle-Dark-mode-activated.png</h3>
+            <img src="screenshots/interactions/dark-mode-toggle-Dark-mode-activated.png" alt="interactions/dark-mode-toggle-Dark-mode-activated.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/dark-mode-toggle-Light-mode-default.png</h3>
+            <img src="screenshots/interactions/dark-mode-toggle-Light-mode-default.png" alt="interactions/dark-mode-toggle-Light-mode-default.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/homepage-mobile-Mobile-menu-opened.png</h3>
+            <img src="screenshots/interactions/homepage-mobile-Mobile-menu-opened.png" alt="interactions/homepage-mobile-Mobile-menu-opened.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/login-page-Login-button-focused.png</h3>
+            <img src="screenshots/interactions/login-page-Login-button-focused.png" alt="interactions/login-page-Login-button-focused.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/login-page-wait-1751447228558.png</h3>
+            <img src="screenshots/interactions/login-page-wait-1751447228558.png" alt="interactions/login-page-wait-1751447228558.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/search-interaction-wait-1751447219917.png</h3>
+            <img src="screenshots/interactions/search-interaction-wait-1751447219917.png" alt="interactions/search-interaction-wait-1751447219917.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/search-interaction-wait-1751447222033.png</h3>
+            <img src="screenshots/interactions/search-interaction-wait-1751447222033.png" alt="interactions/search-interaction-wait-1751447222033.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/terms-listing-Filters-panel-opened.png</h3>
+            <img src="screenshots/interactions/terms-listing-Filters-panel-opened.png" alt="interactions/terms-listing-Filters-panel-opened.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>interactions/terms-listing-wait-1751447252879.png</h3>
+            <img src="screenshots/interactions/terms-listing-wait-1751447252879.png" alt="interactions/terms-listing-wait-1751447252879.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>login-page-final.png</h3>
+            <img src="screenshots/login-page-final.png" alt="login-page-final.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>search-interaction-final.png</h3>
+            <img src="screenshots/search-interaction-final.png" alt="search-interaction-final.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>terms-listing-final.png</h3>
+            <img src="screenshots/terms-listing-final.png" alt="terms-listing-final.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>terms-listing-loaded.png</h3>
+            <img src="screenshots/terms-listing-loaded.png" alt="terms-listing-loaded.png" class="screenshot" />
+        </div>
+    
+        <div style="margin: 20px 0;">
+            <h3>terms-listing-loading.png</h3>
+            <img src="screenshots/terms-listing-loading.png" alt="terms-listing-loading.png" class="screenshot" />
+        </div>
+    
+    </div>
+
+    <script>
+        function showTab(tabName) {
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tabName).classList.add('active');
+        }
+    </script>
+</body>
+</html>

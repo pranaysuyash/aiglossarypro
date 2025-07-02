@@ -200,7 +200,7 @@ const SearchBar = memo(function SearchBar({
           aria-expanded={showSuggestions}
           aria-haspopup="listbox"
           aria-controls={showSuggestions ? listboxId : undefined}
-          autoComplete="search"
+          autoComplete="off"
           aria-activedescendant={
             selectedIndex >= 0 && suggestions?.[selectedIndex] 
               ? `suggestion-${suggestions[selectedIndex].type}-${suggestions[selectedIndex].id}`

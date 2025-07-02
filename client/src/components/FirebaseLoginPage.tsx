@@ -48,7 +48,35 @@ export default function FirebaseLoginPage() {
         navigate(response.data.user.isAdmin ? '/admin' : '/dashboard');
       }
     } catch (err: any) {
-      setError(err.message || `Failed to sign in with ${provider}`);
+      console.error(`${provider} OAuth error:`, err);
+      
+      // Handle specific Firebase error codes
+      let errorMessage = `Failed to sign in with ${provider}`;
+      if (err.code) {
+        switch (err.code) {
+          case 'auth/popup-closed-by-user':
+            errorMessage = 'Sign-in was cancelled. Please try again.';
+            break;
+          case 'auth/popup-blocked':
+            errorMessage = 'Popup was blocked by your browser. Please allow popups and try again.';
+            break;
+          case 'auth/cancelled-popup-request':
+            errorMessage = 'Another sign-in popup is already open.';
+            break;
+          case 'auth/internal-error':
+            errorMessage = 'Authentication service is temporarily unavailable. Please try again in a moment.';
+            break;
+          case 'auth/network-request-failed':
+            errorMessage = 'Network error. Please check your connection and try again.';
+            break;
+          default:
+            errorMessage = err.message || errorMessage;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -78,7 +106,38 @@ export default function FirebaseLoginPage() {
         navigate(response.data.user.isAdmin ? '/admin' : '/dashboard');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to sign in');
+      console.error('Email login error:', err);
+      
+      // Handle specific Firebase error codes for email login
+      let errorMessage = 'Failed to sign in';
+      if (err.code) {
+        switch (err.code) {
+          case 'auth/user-not-found':
+            errorMessage = 'No account found with this email address.';
+            break;
+          case 'auth/wrong-password':
+            errorMessage = 'Incorrect password. Please try again.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Invalid email address format.';
+            break;
+          case 'auth/user-disabled':
+            errorMessage = 'This account has been disabled.';
+            break;
+          case 'auth/too-many-requests':
+            errorMessage = 'Too many failed attempts. Please try again later.';
+            break;
+          case 'auth/internal-error':
+            errorMessage = 'Authentication service is temporarily unavailable. Please try again in a moment.';
+            break;
+          default:
+            errorMessage = err.message || errorMessage;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -110,7 +169,35 @@ export default function FirebaseLoginPage() {
         loginTab?.click();
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to create account');
+      console.error('Registration error:', err);
+      
+      // Handle specific Firebase error codes for registration
+      let errorMessage = 'Failed to create account';
+      if (err.code) {
+        switch (err.code) {
+          case 'auth/email-already-in-use':
+            errorMessage = 'An account with this email already exists. Please sign in instead.';
+            break;
+          case 'auth/weak-password':
+            errorMessage = 'Password is too weak. Please choose a stronger password.';
+            break;
+          case 'auth/invalid-email':
+            errorMessage = 'Invalid email address format.';
+            break;
+          case 'auth/operation-not-allowed':
+            errorMessage = 'Email/password accounts are not enabled. Please contact support.';
+            break;
+          case 'auth/internal-error':
+            errorMessage = 'Authentication service is temporarily unavailable. Please try again in a moment.';
+            break;
+          default:
+            errorMessage = err.message || errorMessage;
+        }
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+      
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -132,10 +219,10 @@ export default function FirebaseLoginPage() {
         )}
 
         <Tabs defaultValue="login" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className={`grid w-full ${import.meta.env.DEV ? 'grid-cols-3' : 'grid-cols-2'}`}>
             <TabsTrigger value="login">Sign In</TabsTrigger>
             <TabsTrigger value="register">Sign Up</TabsTrigger>
-            <TabsTrigger value="test">Test Users</TabsTrigger>
+            {import.meta.env.DEV && <TabsTrigger value="test">Test Users</TabsTrigger>}
           </TabsList>
           
           <TabsContent value="login" className="space-y-4">
@@ -288,72 +375,74 @@ export default function FirebaseLoginPage() {
             </form>
           </TabsContent>
           
-          <TabsContent value="test" className="space-y-4">
-            <div className="text-center mb-4">
-              <h3 className="text-lg font-semibold mb-2">Test User Accounts</h3>
-              <p className="text-sm text-muted-foreground">
-                Pre-configured accounts for development and testing
-              </p>
-            </div>
-            
-            <div className="space-y-3">
-              <div className="p-4 border rounded-lg space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Regular User</span>
-                  <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">USER</span>
-                </div>
-                <div className="text-sm text-muted-foreground space-y-1">
-                  <div><strong>Email:</strong> test@aimlglossary.com</div>
-                  <div><strong>Password:</strong> testpass123</div>
-                </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    setEmail('test@aimlglossary.com');
-                    setPassword('testpass123');
-                    // Switch to login tab
-                    const loginTab = document.querySelector('[value="login"]') as HTMLElement;
-                    loginTab?.click();
-                  }}
-                  disabled={loading}
-                >
-                  Use This Account
-                </Button>
+          {import.meta.env.DEV && (
+            <TabsContent value="test" className="space-y-4">
+              <div className="text-center mb-4">
+                <h3 className="text-lg font-semibold mb-2">Test User Accounts</h3>
+                <p className="text-sm text-muted-foreground">
+                  Pre-configured accounts for development and testing
+                </p>
               </div>
               
-              <div className="p-4 border rounded-lg space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="font-medium">Admin User</span>
-                  <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">ADMIN</span>
+              <div className="space-y-3">
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Regular User</span>
+                    <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">USER</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <div><strong>Email:</strong> test@aimlglossary.com</div>
+                    <div><strong>Password:</strong> testpass123</div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      setEmail('test@aimlglossary.com');
+                      setPassword('testpass123');
+                      // Switch to login tab
+                      const loginTab = document.querySelector('[value="login"]') as HTMLElement;
+                      loginTab?.click();
+                    }}
+                    disabled={loading}
+                  >
+                    Use This Account
+                  </Button>
                 </div>
-                <div className="text-sm text-muted-foreground space-y-1">
-                  <div><strong>Email:</strong> admin@aimlglossary.com</div>
-                  <div><strong>Password:</strong> adminpass123</div>
+                
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Admin User</span>
+                    <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded">ADMIN</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <div><strong>Email:</strong> admin@aimlglossary.com</div>
+                    <div><strong>Password:</strong> adminpass123</div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      setEmail('admin@aimlglossary.com');
+                      setPassword('adminpass123');
+                      // Switch to login tab
+                      const loginTab = document.querySelector('[value="login"]') as HTMLElement;
+                      loginTab?.click();
+                    }}
+                    disabled={loading}
+                  >
+                    Use This Account
+                  </Button>
                 </div>
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="w-full"
-                  onClick={() => {
-                    setEmail('admin@aimlglossary.com');
-                    setPassword('adminpass123');
-                    // Switch to login tab
-                    const loginTab = document.querySelector('[value="login"]') as HTMLElement;
-                    loginTab?.click();
-                  }}
-                  disabled={loading}
-                >
-                  Use This Account
-                </Button>
               </div>
-            </div>
-            
-            <div className="text-xs text-center text-muted-foreground">
-              💡 These accounts are only available in development mode
-            </div>
-          </TabsContent>
+              
+              <div className="text-xs text-center text-muted-foreground">
+                💡 These accounts are only available in development mode
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
 
         <p className="text-center text-xs text-muted-foreground mt-4">

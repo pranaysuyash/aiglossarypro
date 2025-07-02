@@ -27,34 +27,61 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
+// Validate Firebase configuration
+const requiredConfigKeys = ['apiKey', 'authDomain', 'projectId', 'appId'];
+const missingKeys = requiredConfigKeys.filter(key => !firebaseConfig[key as keyof typeof firebaseConfig]);
+
+if (missingKeys.length > 0) {
+  console.error('❌ Missing Firebase configuration keys:', missingKeys);
+  console.error('Please check your .env file for the following VITE_FIREBASE_* variables:', 
+    missingKeys.map(key => `VITE_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`));
+}
+
 // Initialize Firebase
 let app;
 let auth;
 
 try {
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  console.log('✅ Firebase initialized');
+  if (missingKeys.length === 0) {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    console.log('✅ Firebase initialized successfully');
+  } else {
+    console.warn('⚠️ Firebase not initialized due to missing configuration');
+  }
 } catch (error) {
   console.error('❌ Firebase initialization error:', error);
+  console.error('This may cause authentication issues. Please check your Firebase configuration.');
 }
 
-// Auth providers
-export const googleProvider = new GoogleAuthProvider();
-export const githubProvider = new GithubAuthProvider();
+// Auth providers - only initialize if Firebase is available
+export const googleProvider = auth ? new GoogleAuthProvider() : null;
+export const githubProvider = auth ? new GithubAuthProvider() : null;
 
 // Configure providers
-googleProvider.addScope('email');
-googleProvider.addScope('profile');
-githubProvider.addScope('user:email');
+if (googleProvider) {
+  googleProvider.addScope('email');
+  googleProvider.addScope('profile');
+}
+if (githubProvider) {
+  githubProvider.addScope('user:email');
+}
 
 /**
  * Sign in with OAuth provider
  */
 export async function signInWithProvider(providerName: 'google' | 'github') {
   try {
-    const provider: AuthProvider = providerName === 'google' ? googleProvider : githubProvider;
-    const result = await signInWithPopup(auth!, provider);
+    if (!auth) {
+      throw new Error('Firebase authentication is not initialized');
+    }
+    
+    const provider: AuthProvider | null = providerName === 'google' ? googleProvider : githubProvider;
+    if (!provider) {
+      throw new Error(`${providerName} provider is not available`);
+    }
+    
+    const result = await signInWithPopup(auth, provider);
     
     // Get ID token to send to backend
     const idToken = await result.user.getIdToken();
@@ -66,7 +93,7 @@ export async function signInWithProvider(providerName: 'google' | 'github') {
     };
   } catch (error: any) {
     console.error(`Error signing in with ${providerName}:`, error);
-    throw new Error(error.message || `Failed to sign in with ${providerName}`);
+    throw error; // Preserve the original error for better error handling
   }
 }
 
@@ -75,7 +102,11 @@ export async function signInWithProvider(providerName: 'google' | 'github') {
  */
 export async function signInWithEmail(email: string, password: string) {
   try {
-    const result = await signInWithEmailAndPassword(auth!, email, password);
+    if (!auth) {
+      throw new Error('Firebase authentication is not initialized');
+    }
+    
+    const result = await signInWithEmailAndPassword(auth, email, password);
     const idToken = await result.user.getIdToken();
     
     return {
@@ -84,7 +115,7 @@ export async function signInWithEmail(email: string, password: string) {
     };
   } catch (error: any) {
     console.error('Error signing in with email:', error);
-    throw new Error(error.message || 'Failed to sign in');
+    throw error; // Preserve the original error for better error handling
   }
 }
 
@@ -93,7 +124,11 @@ export async function signInWithEmail(email: string, password: string) {
  */
 export async function createAccount(email: string, password: string) {
   try {
-    const result = await createUserWithEmailAndPassword(auth!, email, password);
+    if (!auth) {
+      throw new Error('Firebase authentication is not initialized');
+    }
+    
+    const result = await createUserWithEmailAndPassword(auth, email, password);
     const idToken = await result.user.getIdToken();
     
     return {
@@ -102,7 +137,7 @@ export async function createAccount(email: string, password: string) {
     };
   } catch (error: any) {
     console.error('Error creating account:', error);
-    throw new Error(error.message || 'Failed to create account');
+    throw error; // Preserve the original error for better error handling
   }
 }
 
@@ -111,7 +146,10 @@ export async function createAccount(email: string, password: string) {
  */
 export async function signOutUser() {
   try {
-    await signOut(auth!);
+    if (!auth) {
+      throw new Error('Firebase authentication is not initialized');
+    }
+    await signOut(auth);
   } catch (error) {
     console.error('Error signing out:', error);
     throw error;
@@ -129,7 +167,11 @@ export function getCurrentUser(): User | null {
  * Subscribe to auth state changes
  */
 export function onAuthChange(callback: (user: User | null) => void) {
-  return onAuthStateChanged(auth!, callback);
+  if (!auth) {
+    console.warn('Firebase auth not initialized, cannot subscribe to auth changes');
+    return () => {}; // Return empty unsubscribe function
+  }
+  return onAuthStateChanged(auth, callback);
 }
 
 /**

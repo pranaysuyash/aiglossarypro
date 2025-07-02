@@ -29,7 +29,6 @@ import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FirebaseLoginPage from "@/components/FirebaseLoginPage";
 import SkipLinks from "@/components/accessibility/SkipLinks";
-import LoginPage from "@/components/LoginPage";
 import { useAuth } from "@/hooks/useAuth";
 import { preloadOnIdle, preloadForAuthenticatedUser, preloadForAdmin } from "@/utils/preloadComponents";
 import "@/utils/bundleAnalyzer"; // Initialize bundle analyzer
@@ -38,6 +37,32 @@ import { useEffect } from "react";
 // Smart Term Detail component that chooses between enhanced and regular view
 function SmartTermDetail() {
   return <LazyTermDetailPage />;
+}
+
+// Protected Route component that redirects to login
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const { isAuthenticated, isLoading } = useAuth();
+  const [, setLocation] = useLocation();
+
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      setLocation("/login");
+    }
+  }, [isAuthenticated, isLoading, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (!isAuthenticated) {
+    return null; // Will redirect to login
+  }
+
+  return <>{children}</>;
 }
 
 // Smart Landing Page wrapper that redirects authenticated users to app
@@ -118,28 +143,42 @@ function Router() {
           <Route path="/categories" component={LazyCategoriesPage} />
           <Route path="/trending" component={LazyTrendingPage} />
           <Route path="/dashboard">
-            {isAuthenticated ? <LazyDashboardPage /> : <LoginPage />}
+            <ProtectedRoute>
+              <LazyDashboardPage />
+            </ProtectedRoute>
           </Route>
           <Route path="/favorites">
-            {isAuthenticated ? <LazyFavoritesPage /> : <LoginPage />}
+            <ProtectedRoute>
+              <LazyFavoritesPage />
+            </ProtectedRoute>
           </Route>
           <Route path="/admin">
-            {isAuthenticated ? <LazyAdminPage /> : <LoginPage />}
+            <ProtectedRoute>
+              <LazyAdminPage />
+            </ProtectedRoute>
           </Route>
           <Route path="/analytics">
-            {isAuthenticated ? <LazyAnalyticsPage /> : <LoginPage />}
+            <ProtectedRoute>
+              <LazyAnalyticsPage />
+            </ProtectedRoute>
           </Route>
           <Route path="/settings">
-            {isAuthenticated ? <LazySettingsPage /> : <LoginPage />}
+            <ProtectedRoute>
+              <LazySettingsPage />
+            </ProtectedRoute>
           </Route>
           <Route path="/ai-tools">
             <LazyAIToolsPage />
           </Route>
           <Route path="/progress">
-            {isAuthenticated ? <LazyProgressPage /> : <LoginPage />}
+            <ProtectedRoute>
+              <LazyProgressPage />
+            </ProtectedRoute>
           </Route>
           <Route path="/profile">
-            {isAuthenticated ? <LazyProfilePage /> : <LoginPage />}
+            <ProtectedRoute>
+              <LazyProfilePage />
+            </ProtectedRoute>
           </Route>
           <Route component={NotFound} />
         </Switch>

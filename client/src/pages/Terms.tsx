@@ -51,8 +51,46 @@ export function Terms() {
     }
   });
 
-  // Fetch terms with server-side pagination
-  const { data: termsData, isLoading, error } = useQuery({
+  // Fetch terms with server-side pagination (try enhanced search first, fallback to basic)
+  const { data: enhancedTermsData, isError: enhancedError } = useQuery({
+    queryKey: ['enhanced-terms', currentPage, debouncedSearch, selectedCategory, sortBy, sortOrder],
+    queryFn: async (): Promise<TermsApiResponse> => {
+      const params = new URLSearchParams({
+        page: currentPage.toString(),
+        limit: TERMS_PER_PAGE.toString(),
+        sort: sortBy,
+        order: sortOrder
+      });
+
+      if (debouncedSearch) {
+        params.append('query', debouncedSearch);
+      }
+
+      if (selectedCategory) {
+        params.append('categories', selectedCategory);
+      }
+
+      const response = await fetch(`/api/enhanced/search?${params}`);
+      if (!response.ok) throw new Error('Enhanced search failed');
+      
+      const data = await response.json();
+      // Transform enhanced search response to match expected format
+      return {
+        success: true,
+        data: data.terms || [],
+        total: data.total || 0,
+        page: data.pagination?.currentPage || currentPage,
+        limit: data.pagination?.itemsPerPage || TERMS_PER_PAGE,
+        hasMore: data.pagination?.hasMore || false,
+        pagination: data.pagination
+      };
+    },
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+    retry: false,
+  });
+
+  const { data: basicTermsData, isLoading, error } = useQuery({
     queryKey: ['terms', currentPage, debouncedSearch, selectedCategory, sortBy, sortOrder],
     queryFn: async (): Promise<TermsApiResponse> => {
       const params = new URLSearchParams({
@@ -75,9 +113,12 @@ export function Terms() {
       
       return response.json();
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10, // 10 minutes
+    enabled: !enhancedTermsData || enhancedError,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });
+
+  const termsData = enhancedTermsData || basicTermsData;
 
   const terms = termsData?.data || [];
   const total = termsData?.total || 0;

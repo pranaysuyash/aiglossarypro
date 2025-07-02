@@ -21,8 +21,11 @@ import { TermHeaderSkeleton, TermContentSkeleton } from "@/components/ui/skeleto
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 
 export default function EnhancedTermDetail() {
-  const [, params] = useRoute("/enhanced/terms/:id");
-  const id = params?.id;
+  // Support both route patterns: /term/:id and /enhanced/terms/:id
+  const [matchBasic, paramsBasic] = useRoute("/term/:id");
+  const [matchEnhanced, paramsEnhanced] = useRoute("/enhanced/terms/:id");
+  
+  const id = paramsBasic?.id || paramsEnhanced?.id;
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();

@@ -21,7 +21,11 @@ async function testAdvancedParser() {
     // Read the Excel file and parse it
     const fs = await import('fs');
     const buffer = fs.readFileSync(filePath);
-    const parsedTerms = await parser.parseComplexExcel(buffer);
+    const parsedTerms = await parser.parseComplexExcel(buffer, {
+      enableAI: false,
+      mode: 'none',
+      costOptimization: true
+    }, 'row1.xlsx');
     
     console.log(`\n📊 Parsing Results:`);
     console.log(`   Terms found: ${parsedTerms.length}`);

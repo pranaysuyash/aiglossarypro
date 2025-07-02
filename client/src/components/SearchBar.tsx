@@ -49,13 +49,23 @@ const SearchBar = memo(function SearchBar({
     return () => clearTimeout(timer);
   }, [query]);
 
-  // Fetch suggestions when debounced query changes
-  const { data: suggestions = [], isLoading } = useQuery<SearchSuggestion[]>({
-    queryKey: [`/api/search/suggestions?q=${debouncedQuery}&limit=8`],
+  // Fetch suggestions when debounced query changes (try enhanced first, fallback to basic)
+  const { data: enhancedSuggestions, isError: enhancedError } = useQuery<SearchSuggestion[]>({
+    queryKey: [`/api/enhanced/suggest?query=${debouncedQuery}&limit=8`],
     enabled: debouncedQuery.length >= 2,
     refetchOnWindowFocus: false,
-    staleTime: 30000, // 30 seconds
+    staleTime: 30000,
+    retry: false,
   });
+
+  const { data: basicSuggestions = [], isLoading } = useQuery<SearchSuggestion[]>({
+    queryKey: [`/api/search/suggestions?q=${debouncedQuery}&limit=8`],
+    enabled: debouncedQuery.length >= 2 && (!enhancedSuggestions || enhancedError),
+    refetchOnWindowFocus: false,
+    staleTime: 30000,
+  });
+
+  const suggestions = enhancedSuggestions || basicSuggestions;
 
   useEffect(() => {
     setShowSuggestions(debouncedQuery.length >= 2 && Array.isArray(suggestions) && suggestions.length > 0);

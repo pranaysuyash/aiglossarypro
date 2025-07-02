@@ -563,37 +563,165 @@ class AdvancedExcelParser {
   }
 
   private async parseCategories(row: ExcelJS.Row, parsedTerm: ParsedTerm): Promise<void> {
-    const categoryColumns = [
-      'Introduction – Category and Sub-category of the Term – Main Category',
-      'Introduction – Category and Sub-category of the Term – Sub-category',
-      'Tags and Keywords – Main Category Tags',
-      'Tags and Keywords – Sub-category Tags',
-      'Tags and Keywords – Related Concept Tags',
-      'Tags and Keywords – Application Domain Tags',
-      'Tags and Keywords – Technique or Algorithm Tags'
-    ];
-
-    const categoryData: string[] = [];
+    // Extract actual category structure from specific columns
+    const mainCategoryValue = this.getCellValue(row, 'Introduction – Category and Sub-category of the Term – Main Category');
+    const subCategoryValue = this.getCellValue(row, 'Introduction – Category and Sub-category of the Term – Sub-category');
+    const relationshipValue = this.getCellValue(row, 'Introduction – Category and Sub-category of the Term – Relationship to Other Categories or Domains');
     
-    for (const column of categoryColumns) {
-      const value = this.getCellValue(row, column);
-      if (value) {
-        categoryData.push(`${column}: ${value}`);
-      }
+    // Extract tag-based categorization (these are for filtering, not hierarchy)
+    const mainTagsValue = this.getCellValue(row, 'Tags and Keywords – Main Category Tags');
+    const subTagsValue = this.getCellValue(row, 'Tags and Keywords – Sub-category Tags');
+    const relatedTagsValue = this.getCellValue(row, 'Tags and Keywords – Related Concept Tags');
+    const domainTagsValue = this.getCellValue(row, 'Tags and Keywords – Application Domain Tags');
+    const techniqueTagsValue = this.getCellValue(row, 'Tags and Keywords – Technique or Algorithm Tags');
+
+    // Parse main categories (proper hierarchical categories)
+    if (mainCategoryValue) {
+      const mainCategories = this.parseListItems(mainCategoryValue);
+      parsedTerm.categories.main = mainCategories.filter(cat => this.isValidCategory(cat));
     }
 
-    if (categoryData.length > 0) {
+    // Parse subcategories (should be related to main categories)
+    if (subCategoryValue) {
+      const subCategories = this.parseListItems(subCategoryValue);
+      parsedTerm.categories.sub = subCategories.filter(cat => this.isValidCategory(cat));
+    }
+
+    // Parse related domains from relationship field
+    if (relationshipValue) {
+      const relatedItems = this.parseListItems(relationshipValue);
+      parsedTerm.categories.related = relatedItems.filter(item => this.isValidCategory(item));
+    }
+
+    // Parse application domains from domain tags
+    if (domainTagsValue) {
+      const domains = this.parseListItems(domainTagsValue);
+      parsedTerm.categories.domains = domains.filter(domain => this.isValidDomain(domain));
+    }
+
+    // Parse techniques from technique tags
+    if (techniqueTagsValue) {
+      const techniques = this.parseListItems(techniqueTagsValue);
+      parsedTerm.categories.techniques = techniques.filter(tech => this.isValidTechnique(tech));
+    }
+
+    // Fallback: if no proper categories found, try to extract from combined tag data
+    if (parsedTerm.categories.main.length === 0 && parsedTerm.categories.sub.length === 0) {
+      await this.extractCategoriesFromTags(parsedTerm, {
+        mainTags: mainTagsValue,
+        subTags: subTagsValue,
+        relatedTags: relatedTagsValue,
+        domainTags: domainTagsValue,
+        techniqueTags: techniqueTagsValue
+      });
+    }
+  }
+
+  private parseListItems(value: string): string[] {
+    if (!value) return [];
+    
+    // Handle various list formats
+    return value
+      .split(/[,;|]+/) // Split by comma, semicolon, or pipe
+      .map(item => item.trim())
+      .filter(item => item.length > 0 && item.length <= 100) // Reasonable length limits
+      .map(item => this.normalizeCategory(item));
+  }
+
+  private normalizeCategory(category: string): string {
+    // Clean and normalize category names
+    return category
+      .replace(/^[-\*•\s]+/, '') // Remove leading bullets/dashes
+      .replace(/\s+/g, ' ') // Normalize whitespace
+      .trim()
+      .replace(/^(Category|Tag|Domain|Technique):\s*/i, '') // Remove prefixes
+      .replace(/\s*\([^)]*\)$/, '') // Remove trailing parentheses
+      .trim();
+  }
+
+  private isValidCategory(category: string): boolean {
+    if (!category || category.length < 3 || category.length > 80) return false;
+    
+    // Filter out invalid category patterns
+    const invalidPatterns = [
+      /^tags?:/i,
+      /^introduction/i,
+      /^definition/i,
+      /^overview/i,
+      /^description/i,
+      /^example/i,
+      /^see also/i,
+      /^note:/i,
+      /^[0-9]+\.?\s*$/,
+      /^[a-z]\.?\s*$/i,
+      /^\s*[-•*]\s*$/
+    ];
+    
+    return !invalidPatterns.some(pattern => pattern.test(category));
+  }
+
+  private isValidDomain(domain: string): boolean {
+    if (!this.isValidCategory(domain)) return false;
+    
+    // Additional validation for application domains
+    const validDomainKeywords = [
+      'computer vision', 'nlp', 'natural language', 'machine learning', 'deep learning',
+      'robotics', 'healthcare', 'finance', 'autonomous', 'recommendation', 'search',
+      'speech', 'audio', 'image', 'video', 'text', 'data mining', 'web', 'social',
+      'security', 'bioinformatics', 'scientific computing', 'optimization'
+    ];
+    
+    const domainLower = domain.toLowerCase();
+    return validDomainKeywords.some(keyword => domainLower.includes(keyword)) ||
+           domainLower.includes('processing') || domainLower.includes('analysis') ||
+           domainLower.includes('recognition') || domainLower.includes('detection');
+  }
+
+  private isValidTechnique(technique: string): boolean {
+    if (!this.isValidCategory(technique)) return false;
+    
+    // Additional validation for techniques/algorithms
+    const validTechKeywords = [
+      'neural', 'network', 'learning', 'algorithm', 'method', 'approach', 'technique',
+      'model', 'regression', 'classification', 'clustering', 'optimization', 'search',
+      'tree', 'forest', 'svm', 'gradient', 'backprop', 'convolution', 'attention',
+      'transformer', 'lstm', 'rnn', 'cnn', 'gan', 'autoencoder', 'reinforcement'
+    ];
+    
+    const techLower = technique.toLowerCase();
+    return validTechKeywords.some(keyword => techLower.includes(keyword));
+  }
+
+  private async extractCategoriesFromTags(parsedTerm: ParsedTerm, tagData: {
+    mainTags?: string;
+    subTags?: string;
+    relatedTags?: string;
+    domainTags?: string;
+    techniqueTags?: string;
+  }): Promise<void> {
+    // Combine all tag data for AI parsing as fallback
+    const combinedTags = Object.values(tagData)
+      .filter(Boolean)
+      .join(', ');
+    
+    if (combinedTags) {
       const aiParsedCategories = await this.parseWithAICached(
-        categoryData.join('\n'),
-        'category_extraction'
+        combinedTags,
+        'category_extraction_fallback'
       );
 
-      // Distribute parsed categories
-      if (aiParsedCategories.main) parsedTerm.categories.main = aiParsedCategories.main;
-      if (aiParsedCategories.sub) parsedTerm.categories.sub = aiParsedCategories.sub;
-      if (aiParsedCategories.related) parsedTerm.categories.related = aiParsedCategories.related;
-      if (aiParsedCategories.domains) parsedTerm.categories.domains = aiParsedCategories.domains;
-      if (aiParsedCategories.techniques) parsedTerm.categories.techniques = aiParsedCategories.techniques;
+      // Only use AI results if we have high confidence categories
+      if (aiParsedCategories.main && Array.isArray(aiParsedCategories.main)) {
+        parsedTerm.categories.main = aiParsedCategories.main
+          .filter((cat: string) => this.isValidCategory(cat))
+          .slice(0, 3); // Limit to top 3
+      }
+      
+      if (aiParsedCategories.sub && Array.isArray(aiParsedCategories.sub)) {
+        parsedTerm.categories.sub = aiParsedCategories.sub
+          .filter((cat: string) => this.isValidCategory(cat))
+          .slice(0, 5); // Limit to top 5
+      }
     }
   }
 
@@ -619,20 +747,29 @@ class AdvancedExcelParser {
     try {
       let systemPrompt = '';
       
-      if (context === 'category_extraction') {
+      if (context === 'category_extraction' || context === 'category_extraction_fallback') {
         systemPrompt = `
-You are a data parser for an AI/ML glossary. Extract and categorize information from the given text.
+You are a data parser for an AI/ML glossary. Extract ONLY high-level, meaningful categories from the given text.
+
+IMPORTANT RULES:
+- Only extract actual categories like "Machine Learning", "Neural Networks", "Computer Vision"
+- Do NOT extract individual terms, definitions, or metadata
+- Do NOT extract phrases like "Tags: Something" or "Introduction: Something"
+- Focus on broad subject areas, not specific algorithms or techniques
+- Main categories should be high-level domains (max 3)
+- Sub-categories should be more specific areas within main categories (max 5)
+
 Return a JSON object with these exact keys:
 {
-  "main": ["array of main categories"],
-  "sub": ["array of subcategories"],
-  "related": ["array of related concepts"],
+  "main": ["array of 1-3 main category names"],
+  "sub": ["array of 1-5 subcategory names"],
+  "related": ["array of related concept areas"],
   "domains": ["array of application domains"],
   "techniques": ["array of techniques/algorithms"]
 }
 
-Parse comma-separated values, sentences, and any other format. Extract meaningful categories only.
-Each array should contain clean, normalized category names.
+Examples of GOOD categories: "Machine Learning", "Deep Learning", "Computer Vision", "Natural Language Processing"
+Examples of BAD categories: "Introduction", "Definition", "Tags: ML", "Collaborative Reasoning Tag"
 `;
       } else {
         systemPrompt = `

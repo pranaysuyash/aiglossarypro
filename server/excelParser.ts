@@ -23,6 +23,73 @@ interface ParsedData {
 }
 
 /**
+ * Helper functions for category validation and cleaning
+ */
+function isValidCategoryValue(value: string): boolean {
+  // Filter out obviously invalid category values
+  const invalidPatterns = [
+    /^introduction/i,
+    /^definition/i,
+    /^overview/i,
+    /^tags?:/i,
+    /^example/i,
+    /^see also/i,
+    /^\s*$/,
+    /^[0-9]+\.?\s*$/
+  ];
+  
+  return !invalidPatterns.some(pattern => pattern.test(value)) && value.length > 2;
+}
+
+function cleanCategoryName(name: string): string {
+  return name
+    .replace(/^[-\*•\s]+/, '') // Remove leading bullets/dashes
+    .replace(/\s+/g, ' ') // Normalize whitespace
+    .replace(/^(Category|Tag|Domain|Technique):\s*/i, '') // Remove prefixes
+    .replace(/\s*\([^)]*\)$/, '') // Remove trailing parentheses
+    .trim();
+}
+
+function isValidCategoryName(name: string): boolean {
+  if (!name || name.length < 3 || name.length > 80) return false;
+  
+  // Valid category patterns for AI/ML domain
+  const validPatterns = [
+    /machine learning/i,
+    /deep learning/i,
+    /neural network/i,
+    /computer vision/i,
+    /natural language/i,
+    /artificial intelligence/i,
+    /data science/i,
+    /statistics/i,
+    /probability/i,
+    /linear algebra/i,
+    /optimization/i,
+    /reinforcement learning/i,
+    /supervised learning/i,
+    /unsupervised learning/i,
+    /robotics/i,
+    /nlp/i
+  ];
+  
+  const invalidPatterns = [
+    /^tags?:/i,
+    /^introduction/i,
+    /^definition/i,
+    /^overview/i,
+    /^description/i,
+    /^example/i
+  ];
+  
+  // Check if it's a valid AI/ML category or passes basic validation
+  const isValidAIML = validPatterns.some(pattern => pattern.test(name));
+  const isNotInvalid = !invalidPatterns.some(pattern => pattern.test(name));
+  
+  return (isValidAIML || isNotInvalid) && name.split(' ').length <= 5; // Max 5 words
+}
+
+/**
  * Parse Excel file content and extract terms, categories, and subcategories
  */
 export async function parseExcelFile(buffer: Buffer): Promise<ParsedData> {
@@ -67,11 +134,21 @@ export async function parseExcelFile(buffer: Buffer): Promise<ParsedData> {
     }
   }
   
-  // Look for category column (category, main category, etc.)
+  // Look for category column (prioritize main category over generic category)
   for (const [headerName, colIndex] of Object.entries(headers)) {
-    if (headerName.includes('main category') || (headerName.includes('category') && !headerName.includes('sub'))) {
+    if (headerName.includes('main category')) {
       columnMapping.category = colIndex;
       break;
+    }
+  }
+  
+  // Fallback to generic category if no main category found
+  if (columnMapping.category === -1) {
+    for (const [headerName, colIndex] of Object.entries(headers)) {
+      if (headerName.includes('category') && !headerName.includes('sub') && !headerName.includes('tag')) {
+        columnMapping.category = colIndex;
+        break;
+      }
     }
   }
   
@@ -108,22 +185,27 @@ export async function parseExcelFile(buffer: Buffer): Promise<ParsedData> {
       
       if (columnMapping.category !== -1) {
         const categoryPath = row.getCell(columnMapping.category).value?.toString().trim() || '';
-        if (categoryPath) {
+        if (categoryPath && isValidCategoryValue(categoryPath)) {
           // Parse category path like "a - b - c" into categories
-          const parts = categoryPath.split('-').map(p => p.trim());
-          categoryName = parts[0];
-          parsedData.categories.add(categoryName);
+          const parts = categoryPath.split(/[-–|>]/).map(p => p.trim());
+          const cleanMainCategory = cleanCategoryName(parts[0]);
           
-          // Add subcategories
-          if (parts.length > 1) {
-            for (let i = 1; i < parts.length; i++) {
-              if (parts[i]) {
-                subCategoryList.push(parts[i]);
-                
-                if (!parsedData.subcats.has(categoryName)) {
-                  parsedData.subcats.set(categoryName, new Set<string>());
+          if (cleanMainCategory && isValidCategoryName(cleanMainCategory)) {
+            categoryName = cleanMainCategory;
+            parsedData.categories.add(categoryName);
+            
+            // Add subcategories
+            if (parts.length > 1) {
+              for (let i = 1; i < parts.length; i++) {
+                const cleanSubCategory = cleanCategoryName(parts[i]);
+                if (cleanSubCategory && isValidCategoryName(cleanSubCategory)) {
+                  subCategoryList.push(cleanSubCategory);
+                  
+                  if (!parsedData.subcats.has(categoryName)) {
+                    parsedData.subcats.set(categoryName, new Set<string>());
+                  }
+                  parsedData.subcats.get(categoryName)!.add(cleanSubCategory);
                 }
-                parsedData.subcats.get(categoryName)!.add(parts[i]);
               }
             }
           }

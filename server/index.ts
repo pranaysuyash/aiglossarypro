@@ -72,16 +72,19 @@ app.use(responseLoggingMiddleware);
   // Load and validate configuration
   logConfigStatus();
   
-  // Setup multi-provider authentication
-  await setupMultiAuth(app);
-  
-  // Setup authentication based on configuration
+  // Setup authentication based on configuration priority
   try {
-    if (features.simpleAuthEnabled) {
-      registerSimpleAuthRoutes(app);
+    if (features.firebaseAuthEnabled) {
+      // Firebase auth takes priority - provides Google, GitHub, email/password
       registerFirebaseAuthRoutes(app);
-      logger.info("✅ Simple JWT + OAuth + Firebase authentication setup complete");
+      logger.info("✅ Firebase authentication setup complete (Google, GitHub, Email/Password)");
+    } else if (features.simpleAuthEnabled) {
+      // Fallback to simple JWT + OAuth
+      await setupMultiAuth(app);
+      registerSimpleAuthRoutes(app);
+      logger.info("✅ Simple JWT + OAuth authentication setup complete");
     } else {
+      // Development mock auth
       setupMockAuth(app);
       logger.info("✅ Mock authentication setup complete (development mode)");
     }

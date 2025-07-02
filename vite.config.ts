@@ -22,52 +22,94 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // Only split if modules actually exist and are large enough
+          // Improved chunk splitting for better caching and loading
           if (id.includes('node_modules')) {
-            // Core React libraries - always present
-            if (id.includes('react') || id.includes('wouter') || id.includes('@tanstack/react-query')) {
-              return 'vendor';
+            // Core React libraries - critical path
+            if (id.includes('react') || id.includes('wouter')) {
+              return 'react-core';
             }
             
-            // UI libraries - only if they exist
-            if (id.includes('@radix-ui') || id.includes('lucide-react')) {
-              return 'vendor';
+            // Query/State management libraries
+            if (id.includes('@tanstack/react-query') || id.includes('zustand')) {
+              return 'state-management';
             }
             
-            // Heavy libraries - lazy load these
-            if (id.includes('recharts') || id.includes('cytoscape') || id.includes('d3') || 
-                id.includes('mermaid') || id.includes('katex') || id.includes('react-markdown')) {
-              return 'vendor';
+            // UI Component libraries
+            if (id.includes('@radix-ui')) {
+              return 'ui-components';
             }
             
+            // Icon libraries
+            if (id.includes('lucide-react') || id.includes('@heroicons')) {
+              return 'icons';
+            }
+            
+            // Heavy/optional libraries - separate chunks for lazy loading
+            if (id.includes('recharts') || id.includes('cytoscape') || id.includes('d3')) {
+              return 'charts';
+            }
+            
+            if (id.includes('mermaid') || id.includes('katex') || id.includes('react-markdown')) {
+              return 'content-rendering';
+            }
+            
+            // Form libraries
+            if (id.includes('react-hook-form') || id.includes('@hookform')) {
+              return 'forms';
+            }
+            
+            // Other vendor code
             return 'vendor';
           }
           
-          // Keep application code together for better caching
+          // Application code chunking
+          if (id.includes('/components/landing/')) {
+            return 'landing';
+          }
+          
+          if (id.includes('/components/admin/') || id.includes('/components/AIAdmin')) {
+            return 'admin';
+          }
+          
+          // Keep core app code together
           return undefined;
         },
-        // Ensure consistent chunk naming
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash].[ext]',
+        // Optimized chunk naming with content hashing
+        chunkFileNames: 'assets/js/[name]-[hash].js',
+        entryFileNames: 'assets/js/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          const name = assetInfo.name || 'asset';
+          const info = name.split('.');
+          const ext = info[info.length - 1];
+          if (/\.(png|jpe?g|svg|gif|tiff|bmp|ico)$/i.test(name)) {
+            return `assets/images/[name]-[hash].[ext]`;
+          }
+          if (/\.(css)$/i.test(name)) {
+            return `assets/css/[name]-[hash].[ext]`;
+          }
+          return `assets/[name]-[hash].[ext]`;
+        },
       },
-      // Tree shaking and optimization
+      // Enhanced tree shaking
       treeshake: {
         moduleSideEffects: false,
         propertyReadSideEffects: false,
         unknownGlobalSideEffects: false,
       },
       external: (id) => {
-        // Don't bundle node built-ins in client code
         return id.startsWith('node:');
       },
     },
-    // Optimize build settings
-    target: 'esnext',
+    // Optimized build settings for performance
+    target: 'es2022',
     minify: 'esbuild',
-    cssMinify: true,
-    chunkSizeWarningLimit: 800, // Reduced warning limit for better optimization
+    cssMinify: 'esbuild',
+    cssCodeSplit: true,
+    chunkSizeWarningLimit: 500, // Smaller chunks for better loading
     sourcemap: process.env.NODE_ENV !== 'production',
+    reportCompressedSize: false, // Faster builds
+    // Add compression and optimization
+    assetsInlineLimit: 4096, // Inline small assets
   },
   server: {
     port: 5173,

@@ -50,6 +50,8 @@
     "test:all": "npm run test:unit && npm run test:component && npm run test:visual",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
+    "chromatic": "chromatic",
+    "chromatic:ci": "chromatic --exit-zero-on-changes",
     "lint": "eslint . --ext .js,.jsx,.ts,.tsx",
     "lint:fix": "eslint . --ext .js,.jsx,.ts,.tsx --fix",
     "lint:a11y": "eslint . --ext .js,.jsx,.ts,.tsx --config eslint.config.js"

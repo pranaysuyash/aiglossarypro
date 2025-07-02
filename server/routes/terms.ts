@@ -91,7 +91,7 @@ export function registerTermRoutes(app: Express): void {
       const category = req.query.category as string;
       const sortBy = (typeof req.query.sortBy === 'string' ? req.query.sortBy : 'name');
       const sortOrder = (typeof req.query.sortOrder === 'string' ? req.query.sortOrder : SORT_ORDERS.ASC);
-      const fields = req.query.fields as string || 'id,name,shortDefinition,viewCount,categoryId';
+      const fields = req.query.fields as string || 'id,name,shortDefinition,definition,viewCount,categoryId,category';
       const fieldList = fields.split(',').map(f => f.trim());
 
       // Use optimized storage method with field selection

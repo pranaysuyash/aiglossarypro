@@ -89,15 +89,15 @@ export default function Header({
     <header id="navigation" className={`bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-800 transition-all duration-200 ${className || ''}`} role="banner">
       <div className="container mx-auto px-2 xs:px-3 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-2 xs:py-3 sm:py-4">
-          <div className="flex items-center space-x-1 xs:space-x-2 min-w-0 flex-shrink-0 overflow-hidden">
+          <div className="flex items-center space-x-1 xs:space-x-2 min-w-0 flex-shrink-0">
             <Link href={isAuthenticated ? "/app" : "/"}>
               <div className="flex items-center space-x-1 xs:space-x-2 cursor-pointer" role="link" aria-label="AI/ML Glossary - Go to homepage">
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 xs:h-7 xs:w-7 sm:h-8 sm:w-8 text-primary flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <title>AI/ML Glossary Logo</title>
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                 </svg>
-                <span className="text-lg sm:text-xl font-semibold hidden sm:inline">AI/ML Glossary</span>
-                <span className="text-sm xs:text-base sm:text-lg font-semibold sm:hidden truncate max-w-[60px] xs:max-w-[80px]">AI/ML</span>
+                <span className="text-lg sm:text-xl font-semibold hidden sm:inline whitespace-nowrap">AI/ML Glossary</span>
+                <span className="text-sm xs:text-base font-semibold sm:hidden whitespace-nowrap">AI/ML</span>
               </div>
             </Link>
           </div>
@@ -110,8 +110,8 @@ export default function Header({
             <SearchBar onSearch={handleSearch} placeholder="Search..." />
           </div>
           
-          {/* Ultra-small screen search (icon only for screens < 350px) */}
-          <div className="hidden xs:flex sm:hidden ml-2">
+          {/* Search for tablet and small desktop */}
+          <div className="hidden sm:flex md:hidden flex-1 max-w-sm mx-3">
             <SearchBar onSearch={handleSearch} iconOnly />
           </div>
 
@@ -151,7 +151,7 @@ export default function Header({
             </Link>
             
             <button 
-              className={`xs:hidden p-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary ${
+              className={`sm:hidden p-2 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary ${
                 mobileSearchOpen 
                   ? 'bg-primary text-primary-foreground' 
                   : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -255,11 +255,11 @@ export default function Header({
 
         {/* Mobile search (hidden by default) */}
         {mobileSearchOpen && (
-          <div className="md:hidden pb-4 animate-in slide-in-from-top-2 duration-200">
-            <div className="px-4">
+          <div className="sm:hidden pb-4 animate-in slide-in-from-top-2 duration-200">
+            <div className="px-3 xs:px-4">
               <div className="relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-accent/5 rounded-lg"></div>
-                <div className="relative bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm border border-gray-200 dark:border-gray-700">
+                <div className="relative bg-white dark:bg-gray-800 rounded-lg p-3 xs:p-4 shadow-sm border border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-sm font-medium text-gray-900 dark:text-gray-100">
                       Search AI/ML Terms
@@ -284,7 +284,7 @@ export default function Header({
           <div 
             id="mobile-navigation-menu" 
             ref={mobileMenuRef as React.RefObject<HTMLDivElement>}
-            className="lg:hidden py-4 border-t border-gray-100 dark:border-gray-700 animate-in slide-in-from-top-2 duration-200"
+            className="lg:hidden py-4 px-2 xs:px-3 sm:px-4 border-t border-gray-100 dark:border-gray-700 animate-in slide-in-from-top-2 duration-200 max-h-[calc(100vh-80px)] overflow-y-auto"
             onKeyDown={(e) => {
               if (e.key === 'Escape') {
                 e.preventDefault();
@@ -431,11 +431,11 @@ export default function Header({
                   <div className="space-y-2">
                     <Link href="/lifetime">
                       <a 
-                        className="flex items-center w-full px-3 py-3 rounded-md bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium transition-all duration-150"
+                        className="flex items-center w-full px-3 py-3 rounded-md bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium transition-all duration-150 text-sm xs:text-base"
                         onClick={() => setMobileMenuOpen(false)}
                       >
-                        <Crown className="mr-3 h-4 w-4" />
-                        <span>Get Lifetime Access</span>
+                        <Crown className="mr-3 h-4 w-4 flex-shrink-0" />
+                        <span className="whitespace-nowrap">Get Lifetime Access</span>
                       </a>
                     </Link>
                     

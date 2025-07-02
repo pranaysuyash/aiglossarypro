@@ -5,7 +5,7 @@ import { enhancedTerms as terms, categories } from "../../shared/enhancedSchema"
 import { eq, ilike, or, sql, desc, asc } from "drizzle-orm";
 import { db } from "../db";
 import { searchQuerySchema, paginationSchema } from "../middleware/security";
-// import { enhancedSearch, getSearchSuggestions } from "../enhancedSearchService";
+import { enhancedSearch, getSearchSuggestions } from "../enhancedSearchService";
 
 /**
  * Search and discovery routes
@@ -44,13 +44,33 @@ export function registerSearchRoutes(app: Express): void {
       
       console.log('Search query:', q);
       
-      // Temporary basic search result to test API
-      const searchResult: SearchResult = {
-        terms: [],
-        total: 0,
+      // Use enhanced search service
+      const searchResponse = await enhancedSearch({
+        query: q as string,
         page: parseInt(page as string) || 1,
         limit: parseInt(limit as string) || 20,
-        hasMore: false
+        category: category as string,
+        sort: sort as 'relevance' | 'name' | 'popularity' | 'recent'
+      });
+      
+      // Transform search response to match shared types
+      const searchResult: SearchResult = {
+        terms: searchResponse.results.map(result => ({
+          id: result.id,
+          name: result.name,
+          definition: result.definition,
+          shortDefinition: result.shortDefinition,
+          category: result.category?.name || 'Uncategorized',
+          categoryId: result.category?.id,
+          viewCount: result.viewCount,
+          createdAt: result.createdAt,
+          updatedAt: result.updatedAt,
+          characteristics: result.characteristics?.[0] || undefined,
+        })),
+        total: searchResponse.total,
+        page: searchResponse.page,
+        limit: searchResponse.limit,
+        hasMore: searchResponse.page < searchResponse.totalPages
       };
       
       const response: ApiResponse<SearchResult> = {

@@ -196,20 +196,40 @@ export async function setupMultiAuth(app: Express) {
       provider
     });
     
-    req.logout((err) => {
-      if (err) {
-        log.error('Logout error', { error: err.message });
-        return res.status(500).json({ success: false, message: 'Logout failed' });
-      }
-      
-      (req as any).session.destroy((err: any) => {
+    // Check if req.logout exists (Passport.js method)
+    if (typeof req.logout === 'function') {
+      req.logout((err) => {
         if (err) {
-          log.error('Session destruction error', { error: err.message });
+          log.error('Logout error', { error: err.message });
+          return res.status(500).json({ success: false, message: 'Logout failed' });
         }
+        
+        (req as any).session?.destroy?.((err: any) => {
+          if (err) {
+            log.error('Session destruction error', { error: err.message });
+          }
+          res.clearCookie('connect.sid');
+          res.redirect('/');
+        });
+      });
+    } else {
+      // Handle logout for mock auth or when Passport is not available
+      req.user = undefined;
+      
+      // Clear session if it exists
+      if ((req as any).session?.destroy) {
+        (req as any).session.destroy((err: any) => {
+          if (err) {
+            log.error('Session destruction error', { error: err.message });
+          }
+          res.clearCookie('connect.sid');
+          res.redirect('/');
+        });
+      } else {
         res.clearCookie('connect.sid');
         res.redirect('/');
-      });
-    });
+      }
+    }
   });
   
 }

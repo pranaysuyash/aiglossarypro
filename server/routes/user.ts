@@ -1,8 +1,7 @@
 import type { Express, Request, Response, RequestHandler } from "express";
 import { optimizedStorage as storage } from "../optimizedStorage";
-import { getUserInfo } from "../middleware/multiAuth";
 import { authenticateToken } from "../middleware/adminAuth";
-import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mockAuth";
+import { mockIsAuthenticated } from "../middleware/dev/mockAuth";
 import { features } from "../config";
 import type { AuthenticatedRequest, UserProgress, UserActivity, ApiResponse } from "../../shared/types";
 import { log as logger } from "../utils/logger";
@@ -35,7 +34,6 @@ import { getUserAccessStatus, canViewTerm, getRemainingDailyViews } from "../uti
 export function registerUserRoutes(app: Express): void {
   // Choose authentication middleware based on environment
   const authMiddleware = mockIsAuthenticated;
-  const tokenMiddleware = mockAuthenticateToken;
   
   // Favorites management
   app.get('/api/favorites', 
@@ -125,38 +123,6 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  // Dashboard API endpoint - moved here for testing
-  app.get('/api/dashboard', (req: Request, res: Response) => {
-    try {
-      res.json({
-        success: true,
-        data: {
-          user: {
-            id: "dev-user-123",
-            firstName: "Development", 
-            lastName: "User",
-            email: "dev@example.com"
-          },
-          stats: {
-            totalTermsLearned: 0,
-            favoritesCount: 0,
-            currentStreak: 0,
-            longestStreak: 0
-          },
-          recentFavorites: [],
-          recentProgress: []
-        }
-      });
-    } catch (error) {
-      console.error('Dashboard error:', error);
-      res.status(500).json({
-        success: false,
-        message: "Dashboard error",
-        error: String(error)
-      });
-    }
-  });
-
   // Progress tracking
   app.get('/api/user/progress', authMiddleware as any, parsePagination as any, async (req: any, res: Response) => {
     try {
@@ -189,7 +155,7 @@ export function registerUserRoutes(app: Express): void {
       const termId = req.parsedId;
       
       const allProgress = await storage.getUserProgress(userId);
-      const progress = allProgress?.find(p => p.termId === termId);
+      const progress = allProgress?.find((p: any) => p.termId === termId);
       
       res.json({
         success: true,
@@ -255,7 +221,7 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // User activity and analytics
-  app.get('/api/user/activity', authMiddleware as any, parsePagination as any, parseNumericQuery('days', 30, 1, 365) as any, async (req: any, res: Response) => {
+  app.get('/api/user/activity', authMiddleware as any, parsePagination, parseNumericQuery('days', 30, 1, 365), async (req: AuthenticatedRequest & RequestWithPagination & RequestWithParsedQuery, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const { page, limit } = req.pagination;
@@ -286,7 +252,7 @@ export function registerUserRoutes(app: Express): void {
     }
   });
 
-  app.get('/api/user/streak', authMiddleware as any, async (req: any, res: Response) => {
+  app.get('/api/user/streak', authMiddleware as any, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const streak = await storage.getUserStreak(userId);
@@ -305,7 +271,7 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // User statistics
-  app.get('/api/user/stats', authMiddleware as any, async (req: any, res: Response) => {
+  app.get('/api/user/stats', authMiddleware as any, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const stats = await storage.getUserStats(userId);
@@ -324,7 +290,7 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // Access status endpoint for monetization
-  app.get('/api/user/access-status', authMiddleware as any, async (req: any, res: Response) => {
+  app.get('/api/user/access-status', authMiddleware as any, async (req: AuthenticatedRequest, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const user = await storage.getUser(userId);
@@ -374,7 +340,7 @@ export function registerUserRoutes(app: Express): void {
   });
 
   // Term access check endpoint
-  app.get('/api/user/term-access/:termId', authMiddleware as any, parseId('termId') as any, async (req: any, res: Response) => {
+  app.get('/api/user/term-access/:termId', authMiddleware as any, parseId('termId'), async (req: AuthenticatedRequest & RequestWithParsedId, res: Response) => {
     try {
       const userId = req.user.claims.sub;
       const termId = req.parsedId;
@@ -406,5 +372,4 @@ export function registerUserRoutes(app: Express): void {
       });
     }
   });
-
 }

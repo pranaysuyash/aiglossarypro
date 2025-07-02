@@ -25,7 +25,7 @@ const meta: Meta<CalendarProps> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<CalendarProps>;
 
 export const Default: Story = {
   args: {},
@@ -82,6 +82,7 @@ export const MultipleSelection: Story = {
 };
 
 export const RangeSelection: Story = {
+  args: {},
   render: () => {
     const [dateRange, setDateRange] = useState<{from: Date; to?: Date} | undefined>({
       from: new Date('2024-06-10'),

@@ -29,7 +29,7 @@ const meta: Meta<AccordionProps> = {
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<AccordionProps>;
 
 export const Default: Story = {
   args: {
@@ -37,7 +37,7 @@ export const Default: Story = {
     collapsible: true,
     className: 'w-full max-w-md',
   },
-  render: (args) => (
+  render: (args: AccordionProps) => (
     <Accordion {...args}>
       <AccordionItem value="item-1">
         <AccordionTrigger>What is AI/ML Glossary?</AccordionTrigger>
@@ -66,7 +66,7 @@ export const Multiple: Story = {
     type: 'multiple',
     className: 'w-full max-w-md',
   },
-  render: (args) => (
+  render: (args: AccordionProps) => (
     <Accordion {...args}>
       <AccordionItem value="item-1">
         <AccordionTrigger>Machine Learning</AccordionTrigger>
@@ -96,7 +96,7 @@ export const SingleItem: Story = {
     collapsible: true,
     className: 'w-full max-w-md',
   },
-  render: (args) => (
+  render: (args: AccordionProps) => (
     <Accordion {...args}>
       <AccordionItem value="item-1">
         <AccordionTrigger>What is Artificial Intelligence?</AccordionTrigger>
@@ -114,7 +114,7 @@ export const LongContent: Story = {
     collapsible: true,
     className: 'w-full max-w-lg',
   },
-  render: (args) => (
+  render: (args: AccordionProps) => (
     <Accordion {...args}>
       <AccordionItem value="item-1">
         <AccordionTrigger>Comprehensive Guide to Natural Language Processing</AccordionTrigger>
@@ -170,7 +170,7 @@ export const CustomStyling: Story = {
     collapsible: true,
     className: 'w-full max-w-md border rounded-lg p-4 bg-gradient-to-r from-blue-50 to-indigo-50',
   },
-  render: (args) => (
+  render: (args: AccordionProps) => (
     <Accordion {...args}>
       <AccordionItem value="item-1" className="border-blue-200">
         <AccordionTrigger className="text-blue-800 hover:text-blue-900">
@@ -198,7 +198,7 @@ export const EmptyState: Story = {
     collapsible: true,
     className: 'w-full max-w-md',
   },
-  render: (args) => (
+  render: (args: AccordionProps) => (
     <Accordion {...args}>
       {/* Empty accordion for testing purposes */}
     </Accordion>
@@ -211,7 +211,7 @@ export const DisabledState: Story = {
     collapsible: true,
     className: 'w-full max-w-md',
   },
-  render: (args) => (
+  render: (args: AccordionProps) => (
     <Accordion {...args}>
       <AccordionItem value="item-1">
         <AccordionTrigger disabled className="opacity-50 cursor-not-allowed">

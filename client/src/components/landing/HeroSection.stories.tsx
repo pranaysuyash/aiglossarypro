@@ -18,7 +18,7 @@ const createMockPricing = (overrides = {}) => ({
   ...overrides,
 });
 
-const HeroSectionDecorator = (Story, context) => {
+const HeroSectionDecorator = (Story: React.ComponentType, context: any) => {
   const { mockPricing } = context.parameters;
 
   setMockCountryPricing(mockPricing || createMockPricing());

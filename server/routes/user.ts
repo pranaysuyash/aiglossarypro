@@ -372,4 +372,55 @@ export function registerUserRoutes(app: Express): void {
       });
     }
   });
+
+  // Dashboard API endpoint
+  app.get('/api/dashboard', authMiddleware as any, async (req: any, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      
+      // Get user data
+      const user = await storage.getUser(userId);
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: "User not found"
+        });
+      }
+
+      // Get user progress and statistics
+      const progress = await storage.getUserProgress(userId);
+      const favorites = await storage.getUserFavorites(userId);
+      const streak = await storage.getUserStreak(userId);
+      
+      // Calculate dashboard metrics
+      const dashboardData = {
+        user: {
+          id: user.id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email
+        },
+        stats: {
+          totalTermsLearned: progress?.length || 0,
+          favoritesCount: favorites?.length || 0,
+          currentStreak: streak?.currentStreak || 0,
+          longestStreak: streak?.longestStreak || 0
+        },
+        recentFavorites: favorites?.slice(0, 5) || [],
+        recentProgress: progress?.slice(0, 5) || [],
+        accessStatus: getUserAccessStatus(user)
+      };
+
+      res.json({
+        success: true,
+        data: dashboardData
+      });
+    } catch (error) {
+      logger.error('Error fetching dashboard data', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      res.status(500).json({
+        success: false,
+        message: "Failed to fetch dashboard data"
+      });
+    }
+  });
 }

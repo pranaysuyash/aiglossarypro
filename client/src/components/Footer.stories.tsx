@@ -23,12 +23,23 @@ const meta: Meta<typeof Footer> = {
     ),
   ],
   tags: ['autodocs'],
+  argTypes: {
+    className: {
+      control: 'text',
+      description: 'Additional CSS classes'
+    },
+    onSubscribe: {
+      action: 'subscribed',
+      description: 'Callback when user subscribes to newsletter'
+    }
+  }
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof Footer>;
 
 export const Default: Story = {
+  args: {},
   parameters: {
     docs: {
       description: {
@@ -39,6 +50,7 @@ export const Default: Story = {
 };
 
 export const Mobile: Story = {
+  args: {},
   parameters: {
     viewport: {
       defaultViewport: 'mobile1',
@@ -52,6 +64,7 @@ export const Mobile: Story = {
 };
 
 export const Tablet: Story = {
+  args: {},
   parameters: {
     viewport: {
       defaultViewport: 'tablet',
@@ -65,6 +78,7 @@ export const Tablet: Story = {
 };
 
 export const DarkMode: Story = {
+  args: {},
   parameters: {
     backgrounds: {
       default: 'dark',
@@ -88,6 +102,7 @@ export const DarkMode: Story = {
 };
 
 export const WithLongContent: Story = {
+  args: {},
   parameters: {
     docs: {
       description: {

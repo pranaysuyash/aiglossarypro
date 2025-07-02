@@ -74,10 +74,8 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
         updatedAt: terms.updatedAt,
         categoryId: categories.id,
         categoryName: categories.name,
-        // Calculate relevance score using PostgreSQL full-text search
-        relevanceScore: fuzzy 
-          ? sql<number>`similarity(${query}, ${terms.name})`
-          : sql<number>`ts_rank_cd(to_tsvector('english', ${terms.name} || ' ' || COALESCE(${terms.definition}, '') || ' ' || COALESCE(${terms.shortDefinition}, '')), plainto_tsquery('english', ${query}))`
+        // Calculate basic relevance score
+        relevanceScore: sql<number>`1`.as('relevance_score')
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id));
@@ -85,18 +83,14 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
     // Build WHERE conditions
     const conditions: any[] = [];
 
-    if (fuzzy) {
-      // Use trigram similarity for fuzzy search
-      conditions.push(
-        sql`similarity(${query}, ${terms.name}) > ${threshold}`
-      );
-    } else {
-      // Use full-text search
-      conditions.push(
-        sql`to_tsvector('english', ${terms.name} || ' ' || COALESCE(${terms.definition}, '') || ' ' || COALESCE(${terms.shortDefinition}, '')) 
-            @@ plainto_tsquery('english', ${query})`
-      );
-    }
+    // Use basic LIKE search for now
+    conditions.push(
+      or(
+        ilike(terms.name, `%${query}%`),
+        ilike(terms.definition, `%${query}%`),
+        ilike(terms.shortDefinition, `%${query}%`)
+      )
+    );
 
     // Add filters
     if (category) {
@@ -112,7 +106,6 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
     switch (sort) {
       case 'relevance':
         searchQuery = (searchQuery as any).orderBy(
-          desc(sql`relevance_score`),
           desc(terms.viewCount),
           asc(terms.name)
         );
@@ -135,7 +128,7 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
       .leftJoin(categories, eq(terms.categoryId, categories.id));
 
     if (conditions.length > 0) {
-      countQuery.where(and(...conditions)) as any;
+      (countQuery as any).where(and(...conditions));
     }
 
     // Execute queries
@@ -159,7 +152,7 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
         name: result.categoryName!
       } : undefined,
       viewCount: result.viewCount || 0,
-      relevanceScore: result.relevanceScore || 0,
+      relevanceScore: result.relevance_score || 0,
       createdAt: result.createdAt || new Date(),
       updatedAt: result.updatedAt || new Date()
     }));

@@ -32,12 +32,31 @@ const meta: Meta<typeof Header> = {
     ),
   ],
   tags: ['autodocs'],
+  argTypes: {
+    className: {
+      control: 'text',
+      description: 'Additional CSS classes'
+    },
+    onSearch: {
+      action: 'searched',
+      description: 'Callback when user searches'
+    },
+    onLogout: {
+      action: 'logout',
+      description: 'Callback when user logs out'
+    },
+    onLogin: {
+      action: 'login',
+      description: 'Callback when user logs in'
+    }
+  }
 };
 
 export default meta;
-type Story = StoryObj<typeof meta>;
+type Story = StoryObj<typeof Header>;
 
 export const Default: Story = {
+  args: {},
   parameters: {
     docs: {
       description: {
@@ -48,6 +67,7 @@ export const Default: Story = {
 };
 
 export const WithLongSearch: Story = {
+  args: {},
   parameters: {
     docs: {
       description: {
@@ -64,6 +84,7 @@ export const WithLongSearch: Story = {
 };
 
 export const Mobile: Story = {
+  args: {},
   parameters: {
     viewport: {
       defaultViewport: 'mobile1',
@@ -77,6 +98,7 @@ export const Mobile: Story = {
 };
 
 export const Tablet: Story = {
+  args: {},
   parameters: {
     viewport: {
       defaultViewport: 'tablet',
@@ -90,6 +112,7 @@ export const Tablet: Story = {
 };
 
 export const DarkMode: Story = {
+  args: {},
   parameters: {
     backgrounds: {
       default: 'dark',

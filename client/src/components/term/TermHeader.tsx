@@ -58,7 +58,7 @@ export default function TermHeader({
   
   // Calculate reading time based on term content
   const totalContent = [
-    term?.description,
+    term?.definition,
     enhancedTerm?.fullDefinition,
     enhancedTerm?.sections?.map(s => JSON.stringify(s.sectionData)).join(' ')
   ].filter(Boolean).join(' ');

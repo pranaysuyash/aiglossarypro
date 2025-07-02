@@ -5,10 +5,10 @@
  * metadata, or other invalid data that was incorrectly stored as categories.
  */
 
-import { db } from '../db.js';
+import { db } from '../db';
 import { categories, subcategories, terms, termSubcategories } from '../../shared/enhancedSchema';
 import { eq, like, ilike, sql, inArray } from 'drizzle-orm';
-import { log } from '../utils/logger.js';
+import { log } from '../utils/logger';
 
 interface CleanupStats {
   invalidCategoriesFound: number;

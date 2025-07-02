@@ -353,47 +353,40 @@ export const MultipleTooltips: Story = {
   },
 };
 
-// export const DarkMode: Story = {
-//   render: () => (
-//     <div className="flex gap-4">
-//       <Tooltip>
-//         <TooltipTrigger asChild>
-//           <Button variant="outline">Default tooltip</Button>
-//         </TooltipTrigger>
-//         <TooltipContent>
-//           <p>This is a tooltip in dark mode</p>
-//         </TooltipContent>
-//       </Tooltip>
-//       
-//       <Tooltip>
-//         <TooltipTrigger asChild>
-//           <Button variant="outline" size="icon">
-//             <Info className="h-4 w-4" />
-//           </Button>
-//         </TooltipTrigger>
-//         <TooltipContent>
-//           <p>Information tooltip</p>
-//         </TooltipContent>
-//       </Tooltip>
-//     </div>
-//   ),
-//   parameters: {
-//     backgrounds: {
-//       default: 'dark',
-//     },
-//     docs: {
-//       description: {
-//         story: 'Tooltips in dark mode theme.',
-//       },
-//     },
-//   },
-//   decorators: [
-//     (Story) => (
-//       <TooltipProvider>
-//         <div className="p-20 dark">
-//           <Story />
-//         </div>
-//       </TooltipProvider>
-//     ),
-//   ],
-// };
+export const DarkMode: Story = {
+  render: () => (
+    <div style={{ background: '#18181b', padding: 32, minHeight: 200 }}>
+      <div className="dark">
+        <TooltipProvider>
+          <div className="flex gap-4">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline">Default tooltip</Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>This is a tooltip in dark mode</p>
+              </TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Info className="h-4 w-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Information tooltip</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+        </TooltipProvider>
+      </div>
+    </div>
+  ),
+  parameters: {
+    docs: {
+      description: {
+        story: 'Tooltips in dark mode theme.',
+      },
+    },
+  },
+};

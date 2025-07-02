@@ -21,6 +21,10 @@ import { promisify } from 'util';
 import fs from 'fs/promises';
 import path from 'path';
 import chalk from 'chalk';
+import { config } from 'dotenv';
+
+// Load environment variables from .env file
+config();
 // Import types and interfaces
 interface AxeResults {
   violations: Array<{

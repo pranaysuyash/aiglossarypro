@@ -17,7 +17,7 @@ I have successfully created a comprehensive enhanced visual testing system that 
 ### Documentation & Configuration
 
 6. **`docs/ENHANCED_VISUAL_TESTING_GUIDE.md`** - Comprehensive user guide and documentation
-7. **`.env.visual-audit.example`** - Environment variables configuration template
+7. **Environment variables in `.env` file** - Visual audit configuration integrated into main environment file
 8. **`.github/workflows/visual-tests.yml`** - GitHub Actions workflow for CI/CD integration
 
 ### Package Updates

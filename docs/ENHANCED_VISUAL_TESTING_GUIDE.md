@@ -62,6 +62,8 @@ npm run visual-test flow user-authentication
 
 ### Environment Variables
 
+Configure visual testing in your main `.env` file by adding or updating these variables:
+
 ```bash
 # Base URL for testing
 BASE_URL=http://localhost:3001
@@ -81,6 +83,8 @@ EMAIL_REPORT=true
 # Slack webhook for notifications
 SLACK_WEBHOOK_URL=https://hooks.slack.com/...
 ```
+
+All visual audit configuration is now integrated into the main `.env` file - no separate environment file needed.
 
 ### Test Configuration
 

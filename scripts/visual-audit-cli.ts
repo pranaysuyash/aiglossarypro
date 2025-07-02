@@ -16,8 +16,12 @@
  */
 
 import chalk from 'chalk';
+import { config as dotenvConfig } from 'dotenv';
 import { EnhancedVisualAuditor } from './visual-audit-enhanced';
 import config from './visual-audit-config';
+
+// Load environment variables from .env file
+dotenvConfig();
 
 // Optional dependencies with graceful fallbacks
 let Command: any;

@@ -143,7 +143,8 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       }
 
       // Create user in database
-      const user = await storage.createUser({
+      const user = await storage.upsertUser({
+        id: firebaseUser.uid, // Use Firebase UID as primary key
         email,
         firstName: firstName || '',
         lastName: lastName || '',

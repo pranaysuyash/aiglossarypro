@@ -31,7 +31,7 @@ export function useErrorHandler() {
     }
 
     // Determine error type and appropriate message
-    let errorMessage = ERROR_MESSAGES.NETWORK_ERROR;
+    let errorMessage: typeof ERROR_MESSAGES.NETWORK_ERROR | typeof ERROR_MESSAGES.SESSION_ERROR | typeof ERROR_MESSAGES.PERMISSION_ERROR | typeof ERROR_MESSAGES.RATE_LIMIT_ERROR | typeof ERROR_MESSAGES.TERM_NOT_FOUND = ERROR_MESSAGES.NETWORK_ERROR;
     
     if (normalizedError.message.includes('fetch')) {
       errorMessage = ERROR_MESSAGES.NETWORK_ERROR;
@@ -51,11 +51,6 @@ export function useErrorHandler() {
         title: errorMessage.title,
         description: errorMessage.description,
         variant: "destructive",
-        action: retryAction ? {
-          altText: "Try again",
-          children: "Retry",
-          onClick: retryAction
-        } : undefined,
       });
     }
 

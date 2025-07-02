@@ -2,6 +2,8 @@ import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import { Calendar, type CalendarProps } from './calendar';
+import { format } from 'date-fns';
+import type { DateRange } from 'react-day-picker';
 
 const meta: Meta<CalendarProps> = {
   title: 'UI/Calendar',
@@ -31,13 +33,19 @@ export const Default: Story = {
   args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
+
     return (
-      <Calendar
-        mode="single"
-        selected={date}
-        onSelect={setDate}
-        className="rounded-md border"
-      />
+      <div className="space-y-4">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          className="rounded-md border"
+        />
+        <div className="text-sm text-gray-600">
+          Selected: {date ? format(date, 'PPP') : 'None'}
+        </div>
+      </div>
     );
   },
 };
@@ -81,20 +89,30 @@ export const MultipleSelection: Story = {
   },
 };
 
-export const RangeSelection: Story = {
-  args: {},
-  render: () => {
-    const [dateRange, setDateRange] = useState<{from: Date; to?: Date} | undefined>({
-      from: new Date('2024-06-10'),
-      to: new Date('2024-06-20'),
+export const RangeMode: Story = {
+  args: {
+    mode: 'range',
+    showOutsideDays: true,
+  },
+  render: (args: CalendarProps) => {
+    const [dateRange, setDateRange] = useState<DateRange | undefined>({
+      from: new Date(2023, 0, 20),
+      to: new Date(2023, 0, 25),
     });
+
     return (
-      <Calendar
-        mode="range"
-        selected={dateRange}
-        onSelect={setDateRange}
-        className="rounded-md border"
-      />
+      <div className="space-y-4">
+        <Calendar
+          {...args}
+          selected={dateRange}
+          onSelect={setDateRange}
+          numberOfMonths={2}
+        />
+        <div className="text-sm text-gray-600">
+          Selected range: {dateRange?.from ? format(dateRange.from, 'PPP') : 'None'} 
+          {dateRange?.to ? ` to ${format(dateRange.to, 'PPP')}` : ''}
+        </div>
+      </div>
     );
   },
 };

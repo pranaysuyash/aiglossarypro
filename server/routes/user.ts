@@ -372,4 +372,65 @@ export function registerUserRoutes(app: Express): void {
       });
     }
   });
+
+  // Get enhanced user settings
+  app.get('/api/user/enhanced-settings', authMiddleware as any, async (req: AuthenticatedRequest, res: Response) => {
+    try {
+      const userId = req.user.claims.sub;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ 
+          success: false,
+          message: "User not found" 
+        });
+      }
+
+      // Get user preferences or create default ones
+      const preferences = user.preferences || {};
+      
+      // Return enhanced settings
+      const enhancedSettings = {
+        userId: user.id,
+        
+        // Display preferences
+        experienceLevel: preferences.experienceLevel || 'intermediate',
+        preferredSections: preferences.preferredSections || [],
+        hiddenSections: preferences.hiddenSections || [],
+        
+        // Content preferences
+        showMathematicalDetails: preferences.showMathematicalDetails !== false,
+        showCodeExamples: preferences.showCodeExamples !== false,
+        showInteractiveElements: preferences.showInteractiveElements !== false,
+        
+        // Personalization
+        favoriteCategories: preferences.favoriteCategories || [],
+        favoriteApplications: preferences.favoriteApplications || [],
+        
+        // UI preferences
+        compactMode: preferences.compactMode || false,
+        darkMode: preferences.darkMode || false,
+        
+        // Include all other preferences
+        ...preferences,
+        
+        createdAt: user.createdAt?.toISOString() || new Date().toISOString(),
+        updatedAt: user.updatedAt?.toISOString() || new Date().toISOString()
+      };
+      
+      res.json({
+        success: true,
+        data: enhancedSettings
+      });
+    } catch (error) {
+      logger.error('Error fetching enhanced settings', { 
+        error: error instanceof Error ? error.message : String(error), 
+        stack: error instanceof Error ? error.stack : undefined 
+      });
+      res.status(500).json({ 
+        success: false,
+        message: "Failed to fetch enhanced settings" 
+      });
+    }
+  });
 }

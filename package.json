@@ -182,7 +182,7 @@
   "devDependencies": {
     "@axe-core/playwright": "^4.10.2",
     "@chromatic-com/storybook": "^4.0.1",
-    "@playwright/test": "^1.53.1",
+    "@playwright/test": "^1.53.2",
     "@storybook/addon-a11y": "^9.0.12",
     "@storybook/addon-docs": "^9.0.12",
     "@storybook/addon-onboarding": "^9.0.12",

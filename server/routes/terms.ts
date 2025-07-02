@@ -470,4 +470,46 @@ export function registerTermRoutes(app: Express): void {
       });
     }
   });
+
+  // Track term view
+  app.post('/api/terms/:id/view', authMiddleware, async (req: Request, res: Response) => {
+    try {
+      const { id } = req.params;
+      const userId = (req as any).user?.id;
+      
+      if (!userId) {
+        return res.status(401).json({
+          success: false,
+          error: 'User not authenticated'
+        });
+      }
+
+      // Validate term ID
+      try {
+        termIdSchema.parse(id);
+      } catch (error) {
+        return res.status(400).json({
+          success: false,
+          error: 'Invalid term ID format'
+        });
+      }
+
+      // Track the view
+      await storage.trackTermView(userId, id);
+      
+      res.json({
+        success: true,
+        message: 'View tracked successfully'
+      });
+    } catch (error) {
+      logger.error('Error tracking term view', { 
+        error: error instanceof Error ? error.message : String(error), 
+        stack: error instanceof Error ? error.stack : undefined 
+      });
+      res.status(500).json({
+        success: false,
+        error: 'Failed to track term view'
+      });
+    }
+  });
 }

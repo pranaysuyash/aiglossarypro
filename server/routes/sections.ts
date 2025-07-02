@@ -6,7 +6,11 @@ import type {
   ITermSectionsResponse, 
   IProgressUpdate, 
   IProgressSummary,
-  IContentGalleryResponse 
+  IContentGalleryResponse,
+  ISection,
+  IUserProgress,
+  IEnhancedTerm,
+  ISectionItem
 } from '../../shared/types';
 import { log as logger } from '../utils/logger';
 import { SECTION_NAMES, DEFAULT_LIMITS } from '../constants';
@@ -29,11 +33,29 @@ export function registerSectionRoutes(app: Express): void {
       const userId = req.user?.claims?.sub;
 
       // These methods don't exist in OptimizedStorage, return empty data for now
-      const sections = [];
-      const userProgress = [];
+      const sections: ISection[] = [];
+      const userProgress: IUserProgress[] = [];
+
+      const baseTerm = await storage.getTermById(termId);
+      if (!baseTerm) {
+        return res.status(404).json({
+          success: false,
+          error: 'Term not found'
+        });
+      }
+
+      // Convert ITerm to IEnhancedTerm
+      const term: IEnhancedTerm = {
+        ...baseTerm,
+        sections,
+        userProgress,
+        completionPercentage: 0,
+        totalSections: 0,
+        completedSections: 0
+      };
 
       const response: ITermSectionsResponse = {
-        term: await storage.getTermById(termId),
+        term,
         sections,
         userProgress
       };
@@ -58,12 +80,12 @@ export function registerSectionRoutes(app: Express): void {
       const userId = req.user?.claims?.sub;
 
       // These methods don't exist in OptimizedStorage, return empty data for now
-      const section = null;
-      const items = [];
-      const userProgress = undefined;
+      const section: ISection | null = null;
+      const items: ISectionItem[] = [];
+      const userProgress: IUserProgress | undefined = undefined;
 
       const response: ISectionResponse = {
-        section,
+        section: section as any, // Cast to handle null case
         items,
         userProgress
       };

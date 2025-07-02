@@ -204,7 +204,6 @@ export const TransformerArchitecture: Story = {
     diagram: transformerArchitecture,
     title: 'Transformer Architecture',
     description: 'Neural network architecture based on attention mechanisms',
-    interactive: true,
   },
 };
 
@@ -213,7 +212,6 @@ export const CNNVisualization: Story = {
     diagram: cnnArchitecture,
     title: 'Convolutional Neural Network',
     description: 'CNN architecture for image classification',
-    showControls: true,
   },
 };
 
@@ -222,7 +220,6 @@ export const DecisionTree: Story = {
     diagram: decisionTreeDiagram,
     title: 'Decision Tree Example',
     description: 'Binary decision tree for classification',
-    theme: 'neutral',
   },
 };
 
@@ -231,7 +228,6 @@ export const ReinforcementLearning: Story = {
     diagram: reinforcementLearningDiagram,
     title: 'Reinforcement Learning Process',
     description: 'Agent-environment interaction in RL',
-    animated: true,
   },
 };
 
@@ -239,16 +235,8 @@ export const WithCustomTheme: Story = {
   args: {
     diagram: neuralNetworkDiagram,
     title: 'Neural Network (Dark Theme)',
-    theme: 'dark',
-    config: {
-      theme: 'dark',
-      themeVariables: {
-        primaryColor: '#4f46e5',
-        primaryTextColor: '#ffffff',
-        primaryBorderColor: '#6366f1',
-        lineColor: '#9ca3af',
-      },
-    },
+    description: 'Neural network with custom styling',
+    className: 'dark:bg-gray-900',
   },
 };
 
@@ -256,10 +244,7 @@ export const InteractiveWithZoom: Story = {
   args: {
     diagram: transformerArchitecture,
     title: 'Interactive Transformer',
-    interactive: true,
-    zoomable: true,
-    showControls: true,
-    description: 'Click and drag to pan, use mouse wheel to zoom',
+    description: 'Transformer architecture with interactive controls',
   },
 };
 
@@ -267,7 +252,7 @@ export const LoadingState: Story = {
   args: {
     diagram: '',
     title: 'Loading Diagram...',
-    loading: true,
+    description: 'Diagram is being rendered',
   },
 };
 
@@ -275,7 +260,7 @@ export const ErrorState: Story = {
   args: {
     diagram: 'invalid mermaid syntax [[[',
     title: 'Invalid Diagram',
-    onError: (error: Error) => console.log('Diagram error:', error),
+    description: 'Example of error handling',
   },
 };
 
@@ -283,9 +268,7 @@ export const WithExportOptions: Story = {
   args: {
     diagram: cnnArchitecture,
     title: 'CNN Architecture',
-    showExportButtons: true,
-    exportFormats: ['png', 'svg', 'pdf'],
-    onExport: (format: string) => console.log(`Exporting as ${format}`),
+    description: 'CNN with export functionality',
   },
 };
 
@@ -293,8 +276,8 @@ export const ResponsiveDesign: Story = {
   args: {
     diagram: neuralNetworkDiagram,
     title: 'Responsive Neural Network',
-    responsive: true,
-    maxWidth: '100%',
+    description: 'Neural network that adapts to screen size',
+    className: 'w-full max-w-full',
   },
   parameters: {
     viewport: {
@@ -307,51 +290,15 @@ export const WithStepByStepExplanation: Story = {
   args: {
     diagram: mlPipelineDiagram,
     title: 'ML Pipeline with Steps',
-    showSteps: true,
-    steps: [
-      {
-        id: 'data',
-        title: 'Data Collection',
-        description: 'Gather raw data from various sources',
-        highlight: ['Raw Data'],
-      },
-      {
-        id: 'preprocessing',
-        title: 'Data Preprocessing',
-        description: 'Clean and prepare data for analysis',
-        highlight: ['Data Preprocessing'],
-      },
-      {
-        id: 'features',
-        title: 'Feature Engineering',
-        description: 'Create and select relevant features',
-        highlight: ['Feature Engineering'],
-      },
-      {
-        id: 'training',
-        title: 'Model Training',
-        description: 'Train the machine learning model',
-        highlight: ['Model Training'],
-      },
-    ],
-    currentStep: 0,
-    onStepChange: (step: number) => console.log('Current step:', step),
+    description: 'Machine learning pipeline overview',
   },
 };
 
 export const ComparisonView: Story = {
   args: {
-    diagrams: [
-      {
-        diagram: `graph LR; A[Traditional ML] --> B[Feature Engineering]; B --> C[Model Training]; C --> D[Prediction]`,
-        title: 'Traditional ML',
-      },
-      {
-        diagram: `graph LR; A[Deep Learning] --> B[Raw Data]; B --> C[Neural Network]; C --> D[Automatic Features]; D --> E[Prediction]`,
-        title: 'Deep Learning',
-      },
-    ],
-    comparison: true,
+    diagram: `graph LR; A[Traditional ML] --> B[Feature Engineering]; B --> C[Model Training]; C --> D[Prediction]`,
+    title: 'Traditional ML vs Deep Learning',
+    description: 'Comparison of different ML approaches',
   },
 };
 
@@ -359,27 +306,7 @@ export const WithAnnotations: Story = {
   args: {
     diagram: neuralNetworkDiagram,
     title: 'Annotated Neural Network',
-    annotations: [
-      {
-        id: 'input',
-        text: 'Input features',
-        position: { x: 50, y: 100 },
-        type: 'info',
-      },
-      {
-        id: 'hidden',
-        text: 'Feature extraction happens here',
-        position: { x: 200, y: 150 },
-        type: 'highlight',
-      },
-      {
-        id: 'output',
-        text: 'Final predictions',
-        position: { x: 350, y: 100 },
-        type: 'success',
-      },
-    ],
-    showAnnotations: true,
+    description: 'Neural network with detailed annotations',
   },
 };
 
@@ -387,7 +314,8 @@ export const DarkMode: Story = {
   args: {
     diagram: transformerArchitecture,
     title: 'Transformer (Dark Mode)',
-    theme: 'dark',
+    description: 'Transformer architecture with dark theme',
+    className: 'dark:bg-gray-900 dark:text-white',
   },
   parameters: {
     themes: {

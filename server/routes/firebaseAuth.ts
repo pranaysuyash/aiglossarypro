@@ -42,7 +42,8 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       if (!user) {
         // Create new user
         const nameParts = (decodedToken.name || '').split(' ');
-        user = await storage.createUser({
+        user = await storage.upsertUser({
+          id: decodedToken.uid, // Use Firebase UID as the primary key
           email: decodedToken.email!,
           firstName: nameParts[0] || '',
           lastName: nameParts.slice(1).join(' ') || '',

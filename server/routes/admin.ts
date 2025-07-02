@@ -169,12 +169,7 @@ export function registerAdminRoutes(app: Express): void {
         termsImported: parsedTerms.length,
         categoriesImported: 0, // Will be calculated during import
         errors: [],
-        warnings: [],
-        metadata: {
-          processingMode: aiOptions.enableAI ? aiOptions.mode : 'no-ai',
-          sectionsProcessed: 42,
-          aiGenerated: aiOptions.enableAI ? parsedTerms.filter(t => t.sections.size > 7).length : 0
-        }
+        warnings: []
       };
 
       const response: ApiResponse<ImportResult> = {

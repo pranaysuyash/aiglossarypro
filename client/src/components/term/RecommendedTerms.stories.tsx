@@ -1,27 +1,25 @@
 import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import RecommendedTerms from './RecommendedTerms';
-import { ITerm } from '@/interfaces/interfaces';
+import type { ITerm } from '../../../../shared/types';
 
-// Mock TermCard component
+// Mock components to avoid dependency issues
 const MockTermCard = ({ term, variant, isFavorite }: any) => {
   return (
-    <div className={`p-4 border rounded-lg ${variant === 'compact' ? 'bg-gray-50' : 'bg-white'}`}>
-      <div className="flex justify-between items-start mb-2">
-        <h3 className="font-semibold text-lg">{term.term}</h3>
-        {isFavorite && <span className="text-red-500">❤️</span>}
-      </div>
-      <p className="text-gray-600 text-sm mb-2">{term.definition}</p>
-      {term.category && (
-        <span className="inline-block px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+    <div className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
+      <h3 className="font-semibold text-lg mb-2">{term.name}</h3>
+      <p className="text-gray-600 text-sm mb-3 line-clamp-2">{term.definition}</p>
+      <div className="flex items-center justify-between">
+        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
           {term.category}
         </span>
-      )}
+        {isFavorite && <span className="text-red-500">❤️</span>}
+      </div>
     </div>
   );
 };
 
-// Mock wouter Link component
+// Mock the Link component
 const MockLink = ({ href, children }: any) => (
   <a href={href} className="text-primary-600 hover:text-primary-700">
     {children}
@@ -29,7 +27,7 @@ const MockLink = ({ href, children }: any) => (
 );
 
 // Create a decorator to provide the mocked components
-const RecommendedTermsDecorator = (Story) => (
+const RecommendedTermsDecorator = (Story: any) => (
   <div className="w-full max-w-6xl">
     <Story />
   </div>
@@ -38,44 +36,50 @@ const RecommendedTermsDecorator = (Story) => (
 const sampleTerms: ITerm[] = [
   {
     id: '1',
-    term: 'Machine Learning',
+    name: 'Machine Learning',
     definition: 'A subset of artificial intelligence that enables computers to learn and improve from experience without being explicitly programmed.',
     category: 'Core Concepts',
+    viewCount: 1250,
     isFavorite: false,
   },
   {
     id: '2',
-    term: 'Neural Network',
+    name: 'Neural Network',
     definition: 'A computing system inspired by biological neural networks that can learn to recognize patterns and make decisions.',
     category: 'Deep Learning',
+    viewCount: 980,
     isFavorite: true,
   },
   {
     id: '3',
-    term: 'Gradient Descent',
+    name: 'Gradient Descent',
     definition: 'An optimization algorithm used to minimize the cost function in machine learning by iteratively moving in the direction of steepest descent.',
     category: 'Optimization',
+    viewCount: 750,
     isFavorite: false,
   },
   {
     id: '4',
-    term: 'Natural Language Processing',
+    name: 'Natural Language Processing',
     definition: 'A branch of AI that helps computers understand, interpret and manipulate human language.',
     category: 'NLP',
+    viewCount: 1100,
     isFavorite: false,
   },
   {
     id: '5',
-    term: 'Computer Vision',
+    name: 'Computer Vision',
     definition: 'A field of artificial intelligence that trains computers to interpret and understand the visual world.',
     category: 'Computer Vision',
+    viewCount: 890,
     isFavorite: true,
   },
   {
     id: '6',
-    term: 'Reinforcement Learning',
+    name: 'Reinforcement Learning',
     definition: 'A type of machine learning where an agent learns to behave in an environment by performing actions and seeing the results.',
     category: 'Learning Types',
+    viewCount: 670,
     isFavorite: false,
   },
 ];
@@ -192,23 +196,26 @@ export const LongDefinitions: Story = {
     recommended: [
       {
         id: '1',
-        term: 'Transformer Architecture',
+        name: 'Transformer Architecture',
         definition: 'A neural network architecture that relies entirely on self-attention mechanisms to draw global dependencies between input and output, revolutionizing natural language processing and forming the foundation for models like BERT, GPT, and T5.',
         category: 'Deep Learning',
+        viewCount: 1500,
         isFavorite: false,
       },
       {
         id: '2',
-        term: 'Generative Adversarial Networks',
+        name: 'Generative Adversarial Networks',
         definition: 'A class of machine learning frameworks where two neural networks contest with each other in a game-theoretic scenario, consisting of a generator that creates fake data and a discriminator that tries to detect the fake data.',
         category: 'Generative Models',
+        viewCount: 1200,
         isFavorite: true,
       },
       {
         id: '3',
-        term: 'Convolutional Neural Networks',
+        name: 'Convolutional Neural Networks',
         definition: 'A deep learning algorithm particularly powerful for analyzing visual imagery, using a mathematical operation called convolution to detect features like edges, textures, and patterns in images.',
         category: 'Computer Vision',
+        viewCount: 1350,
         isFavorite: false,
       },
     ],
@@ -227,23 +234,26 @@ export const DifferentCategories: Story = {
     recommended: [
       {
         id: '1',
-        term: 'Supervised Learning',
+        name: 'Supervised Learning',
         definition: 'A type of machine learning where the algorithm learns from labeled training data.',
         category: 'Learning Types',
+        viewCount: 850,
         isFavorite: false,
       },
       {
         id: '2',
-        term: 'LSTM',
+        name: 'LSTM',
         definition: 'Long Short-Term Memory networks, a special kind of RNN capable of learning long-term dependencies.',
         category: 'Neural Networks',
+        viewCount: 720,
         isFavorite: true,
       },
       {
         id: '3',
-        term: 'Precision',
+        name: 'Precision',
         definition: 'A metric that measures the accuracy of positive predictions in classification tasks.',
         category: 'Evaluation Metrics',
+        viewCount: 650,
         isFavorite: false,
       },
     ],
@@ -365,7 +375,7 @@ export const CustomLayout: Story = {
             {recommended.map((term: any) => (
               <div key={term.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
                 <div className="flex justify-between items-start mb-3">
-                  <h3 className="font-bold text-lg text-gray-900">{term.term}</h3>
+                  <h3 className="font-bold text-lg text-gray-900">{term.name}</h3>
                   {term.isFavorite && <span className="text-red-500 text-xl">♥</span>}
                 </div>
                 <p className="text-gray-600 mb-4 leading-relaxed">{term.definition}</p>

@@ -29,7 +29,6 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
   parameters: {
     docs: {
       description: {
@@ -40,7 +39,6 @@ export const Default: Story = {
 };
 
 export const Mobile: Story = {
-  args: {},
   parameters: {
     viewport: {
       defaultViewport: 'mobile1',
@@ -54,7 +52,6 @@ export const Mobile: Story = {
 };
 
 export const Tablet: Story = {
-  args: {},
   parameters: {
     viewport: {
       defaultViewport: 'tablet',
@@ -68,7 +65,6 @@ export const Tablet: Story = {
 };
 
 export const DarkMode: Story = {
-  args: {},
   parameters: {
     backgrounds: {
       default: 'dark',
@@ -92,7 +88,6 @@ export const DarkMode: Story = {
 };
 
 export const WithLongContent: Story = {
-  args: {},
   parameters: {
     docs: {
       description: {

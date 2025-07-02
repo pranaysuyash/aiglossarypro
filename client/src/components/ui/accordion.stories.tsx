@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import {
   Accordion,
@@ -6,7 +7,10 @@ import {
   AccordionTrigger,
 } from './accordion';
 
-const meta: Meta<typeof Accordion> = {
+// Define the props type for the Accordion component
+type AccordionProps = React.ComponentProps<typeof Accordion>;
+
+const meta: Meta<AccordionProps> = {
   title: 'UI/Accordion',
   component: Accordion,
   parameters: {

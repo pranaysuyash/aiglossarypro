@@ -202,7 +202,7 @@ export async function setupMultiAuth(app: Express) {
         return res.status(500).json({ success: false, message: 'Logout failed' });
       }
       
-      req.session.destroy((err) => {
+      (req as any).session.destroy((err: any) => {
         if (err) {
           log.error('Session destruction error', { error: err.message });
         }

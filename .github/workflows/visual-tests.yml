@@ -1,0 +1,391 @@
+name: Visual Tests
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+env:
+  # Visual audit settings
+  HEADLESS: true
+  CI_MODE: true
+  FAIL_ON_CRITICAL: true
+  LIGHTHOUSE_ENABLED: true
+  TEST_TIMEOUT: 60000
+
+jobs:
+  visual-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+        test-type: [accessibility, performance, interaction]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: |
+          npm start &
+          sleep 10
+          npx wait-on http://localhost:3001
+
+      - name: Run visual tests - ${{ matrix.test-type }}
+        run: npm run visual-test -- --type=${{ matrix.test-type }}
+        env:
+          BASE_URL: http://localhost:3001
+          CLAUDE_API_KEY: ${{ secrets.CLAUDE_API_KEY }}
+
+      - name: Upload visual audit artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-audit-${{ matrix.test-type }}-${{ matrix.node-version }}
+          path: |
+            visual-audits/
+            !visual-audits/**/node_modules
+          retention-days: 7
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request' && matrix.test-type == 'accessibility'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const path = './visual-audits/latest/report.json';
+            
+            if (fs.existsSync(path)) {
+              const report = JSON.parse(fs.readFileSync(path, 'utf8'));
+              
+              const body = `## 🎯 Visual Audit Results
+              
+              ### Summary
+              - **Total Issues:** ${report.summary.totalIssues}
+              - **Critical:** ${report.summary.criticalIssues}
+              - **High Priority:** ${report.summary.highPriorityIssues}
+              
+              ### Top Issues
+              ${report.issues.slice(0, 3).map(issue => 
+                `- **[${issue.severity.toUpperCase()}]** ${issue.description}`
+              ).join('\n')}
+              
+              [View Full Report](${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID})
+              `;
+              
+              github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: body
+              });
+            }
+
+  visual-regression:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Download baseline screenshots
+        uses: actions/download-artifact@v4
+        with:
+          name: visual-baseline
+          path: visual-baseline/
+        continue-on-error: true
+
+      - name: Build and start application
+        run: |
+          npm run build
+          npm start &
+          sleep 10
+          npx wait-on http://localhost:3001
+
+      - name: Run visual regression tests
+        run: npm run visual-test compare
+        env:
+          BASE_URL: http://localhost:3001
+          UPDATE_BASELINE: false
+
+      - name: Upload regression results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-regression-results
+          path: |
+            visual-audits/
+            visual-diffs/
+
+  component-tests:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Start Storybook
+        run: |
+          npm run build-storybook
+          npx http-server storybook-static -p 6006 &
+          sleep 10
+
+      - name: Test critical components
+        run: |
+          npm run visual-test component Button --interactions
+          npm run visual-test component TermCard --states=hover,selected
+          npm run visual-test component Navigation --breakpoints
+
+      - name: Upload component test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: component-test-results
+          path: visual-audits/
+
+  performance-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Build application
+        run: npm run build
+
+      - name: Start application
+        run: |
+          npm start &
+          sleep 10
+          npx wait-on http://localhost:3001
+
+      - name: Run performance audit
+        run: npm run visual-test -- --type=performance
+        env:
+          BASE_URL: http://localhost:3001
+          LIGHTHOUSE_ENABLED: true
+
+      - name: Check performance thresholds
+        run: |
+          node -e "
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('./visual-audits/latest/report.json', 'utf8'));
+            
+            const failedPages = report.performanceMetrics.filter(p => 
+              p.lighthouse?.performance < 0.9 || p.fcp > 1800 || p.lcp > 2500
+            );
+            
+            if (failedPages.length > 0) {
+              console.log('Performance thresholds failed for:', failedPages.map(p => p.page));
+              process.exit(1);
+            }
+            
+            console.log('All performance thresholds passed!');
+          "
+
+      - name: Upload performance results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: performance-audit-results
+          path: |
+            visual-audits/
+            lighthouse-reports/
+
+  accessibility-audit:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Build and start application
+        run: |
+          npm run build
+          npm start &
+          sleep 10
+          npx wait-on http://localhost:3001
+
+      - name: Run accessibility audit
+        run: npm run visual-test -- --type=accessibility
+        env:
+          BASE_URL: http://localhost:3001
+          WCAG_LEVEL: AA
+          TEST_KEYBOARD_NAV: true
+          TEST_FOCUS_STATES: true
+
+      - name: Check accessibility compliance
+        run: |
+          node -e "
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('./visual-audits/latest/report.json', 'utf8'));
+            
+            const a11yIssues = report.issues.filter(i => i.category === 'accessibility');
+            const criticalA11yIssues = a11yIssues.filter(i => i.severity === 'critical');
+            
+            if (criticalA11yIssues.length > 0) {
+              console.log('Critical accessibility issues found:', criticalA11yIssues.length);
+              process.exit(1);
+            }
+            
+            console.log('No critical accessibility issues found!');
+          "
+
+      - name: Upload accessibility results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: accessibility-audit-results
+          path: visual-audits/
+
+  update-baseline:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Build and start application
+        run: |
+          npm run build
+          npm start &
+          sleep 10
+          npx wait-on http://localhost:3001
+
+      - name: Generate new baseline screenshots
+        run: npm run audit:visual:enhanced
+        env:
+          BASE_URL: http://localhost:3001
+          UPDATE_BASELINE: true
+
+      - name: Upload new baseline
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-baseline
+          path: visual-baseline/
+          retention-days: 30
+
+  notify-results:
+    runs-on: ubuntu-latest
+    needs: [visual-audit, visual-regression, component-tests, performance-audit, accessibility-audit]
+    if: always()
+    
+    steps:
+      - name: Notify Slack
+        if: env.SLACK_WEBHOOK_URL
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow
+          text: |
+            Visual Tests Results:
+            - Visual Audit: ${{ needs.visual-audit.result }}
+            - Visual Regression: ${{ needs.visual-regression.result }}
+            - Component Tests: ${{ needs.component-tests.result }}
+            - Performance: ${{ needs.performance-audit.result }}
+            - Accessibility: ${{ needs.accessibility-audit.result }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Create GitHub Issue for failures
+        if: failure()
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Visual Tests Failed - ${new Date().toISOString().split('T')[0]}`,
+              body: `Visual tests failed on commit ${context.sha}.
+              
+              Please check the action logs for details:
+              ${process.env.GITHUB_SERVER_URL}/${process.env.GITHUB_REPOSITORY}/actions/runs/${process.env.GITHUB_RUN_ID}
+              
+              Failed jobs:
+              - Visual Audit: ${{ needs.visual-audit.result }}
+              - Visual Regression: ${{ needs.visual-regression.result }}
+              - Component Tests: ${{ needs.component-tests.result }}
+              - Performance: ${{ needs.performance-audit.result }}
+              - Accessibility: ${{ needs.accessibility-audit.result }}
+              `,
+              labels: ['visual-testing', 'bug']
+            });

@@ -37,7 +37,7 @@ export function performanceTrackingMiddleware() {
 
     // Generate or extract session ID
     req.sessionId = req.headers['x-session-id'] as string || 
-                    req.sessionID || 
+                    (req as any).sessionID || 
                     `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
     // Override res.end to capture response data

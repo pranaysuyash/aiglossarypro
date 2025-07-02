@@ -47,7 +47,8 @@ export async function authenticateFirebaseToken(
     
     if (!user) {
       // Create new user from Firebase data
-      user = await storage.createUser({
+      user = await storage.upsertUser({
+        id: decodedToken.uid, // Use Firebase UID as the primary key
         email: decodedToken.email!,
         firstName: decodedToken.name?.split(' ')[0] || '',
         lastName: decodedToken.name?.split(' ').slice(1).join(' ') || '',

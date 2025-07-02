@@ -31,7 +31,7 @@ export const requestLoggingMiddleware = (req: Request, res: Response, next: Next
   const timer = performanceTimer(`${req.method} ${req.path}`);
   
   // Extract user ID from session if available
-  req.userId = (req.session as any)?.user?.id || (req.user as any)?.id;
+  req.userId = ((req as any).session as any)?.user?.id || (req.user as any)?.id;
   
   // Log incoming request
   log.api.request(
@@ -214,7 +214,7 @@ export const healthCheckLoggingMiddleware = (req: Request, res: Response, next: 
 
 // User context middleware (for logging user info)
 export const userContextMiddleware = (req: Request, res: Response, next: NextFunction) => {
-  const sessionUser = (req.session as any)?.user;
+  const sessionUser = ((req as any).session as any)?.user;
   const authUser = req.user as any;
   
   if (sessionUser || authUser) {

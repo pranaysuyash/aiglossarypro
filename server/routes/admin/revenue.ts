@@ -1,8 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { enhancedStorage as storage } from "../../enhancedStorage";
-import { mockIsAuthenticated } from "../../middleware/dev/mockAuth";
-import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
+import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { features } from "../../config";
 import type { ApiResponse } from "../../../shared/types";
 import { log as logger } from "../../utils/logger";

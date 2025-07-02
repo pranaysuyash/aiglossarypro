@@ -1,8 +1,9 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
-import { Calendar } from './calendar';
+import { Calendar, type CalendarProps } from './calendar';
 
-const meta: Meta<typeof Calendar> = {
+const meta: Meta<CalendarProps> = {
   title: 'UI/Calendar',
   component: Calendar,
   parameters: {
@@ -27,6 +28,7 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>(new Date());
     return (
@@ -41,6 +43,7 @@ export const Default: Story = {
 };
 
 export const WithSelectedDate: Story = {
+  args: {},
   render: () => {
     const [date, setDate] = useState<Date | undefined>(new Date('2024-06-15'));
     return (
@@ -55,17 +58,23 @@ export const WithSelectedDate: Story = {
 };
 
 export const MultipleSelection: Story = {
+  args: {},
   render: () => {
     const [dates, setDates] = useState<Date[]>([
       new Date('2024-06-15'),
       new Date('2024-06-20'),
       new Date('2024-06-25'),
     ]);
+    const handleMultipleSelect = (selectedDates: Date[] | undefined) => {
+      if (selectedDates) {
+        setDates(selectedDates);
+      }
+    };
     return (
       <Calendar
         mode="multiple"
         selected={dates}
-        onSelect={setDates}
+        onSelect={handleMultipleSelect}
         className="rounded-md border"
       />
     );

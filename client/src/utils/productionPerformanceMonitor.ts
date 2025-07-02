@@ -28,12 +28,12 @@ class ProductionPerformanceMonitor {
 
   private setupWebVitals() {
     // Core Web Vitals tracking
-    import('web-vitals').then(({ getCLS, getFID, getFCP, getLCP, getTTFB }) => {
-      getCLS(this.recordMetric.bind(this));
-      getFID(this.recordMetric.bind(this));
-      getFCP(this.recordMetric.bind(this));
-      getLCP(this.recordMetric.bind(this));
-      getTTFB(this.recordMetric.bind(this));
+    import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB }) => {
+      onCLS(this.recordMetric.bind(this));
+      onFID(this.recordMetric.bind(this));
+      onFCP(this.recordMetric.bind(this));
+      onLCP(this.recordMetric.bind(this));
+      onTTFB(this.recordMetric.bind(this));
     }).catch(() => {
       // Fallback for environments without web-vitals
       console.log('Web Vitals not available, using fallback monitoring');
@@ -49,7 +49,7 @@ class ProductionPerformanceMonitor {
             const navEntry = entry as PerformanceNavigationTiming;
             this.recordCustomMetric('page-load', navEntry.loadEventEnd - navEntry.loadEventStart);
             this.recordCustomMetric('dom-content-loaded', navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart);
-            this.recordCustomMetric('time-to-interactive', navEntry.domInteractive - navEntry.navigationStart);
+            this.recordCustomMetric('time-to-interactive', navEntry.domInteractive - navEntry.fetchStart);
           }
         });
       });

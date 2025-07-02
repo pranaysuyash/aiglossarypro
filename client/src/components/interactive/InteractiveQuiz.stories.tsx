@@ -35,26 +35,23 @@ const basicQuizData = {
       ],
       correctAnswer: 1,
       explanation: 'Activation functions introduce non-linearity into the network, allowing it to learn complex patterns and relationships in the data.',
-      difficulty: 'beginner' as const,
       points: 10,
     },
     {
       id: '2',
       type: 'true-false' as const,
       question: 'Gradient descent always finds the global minimum of a loss function.',
-      correctAnswer: false,
+      options: ['True', 'False'],
+      correctAnswer: 1,
       explanation: 'Gradient descent can get stuck in local minima, especially in non-convex optimization landscapes common in deep learning.',
-      difficulty: 'intermediate' as const,
       points: 15,
     },
     {
       id: '3',
-      type: 'fill-in-blank' as const,
+      type: 'fill-blank' as const,
       question: 'The process of adjusting weights in a neural network based on the error is called ___.',
       correctAnswer: 'backpropagation',
-      acceptableAnswers: ['backpropagation', 'back propagation', 'back-propagation'],
       explanation: 'Backpropagation is the algorithm used to calculate gradients and update weights in neural networks.',
-      difficulty: 'intermediate' as const,
       points: 15,
     },
   ],
@@ -79,9 +76,7 @@ const advancedQuizData = {
       ],
       correctAnswer: 2,
       explanation: 'Dropout randomly sets some neurons to zero during training, preventing the network from becoming too dependent on specific neurons.',
-      difficulty: 'advanced' as const,
       points: 20,
-      tags: ['regularization', 'overfitting'],
     },
     {
       id: '2',
@@ -93,24 +88,22 @@ const advancedQuizData = {
         'Acts as a form of regularization',
         'Eliminates the need for activation functions',
       ],
-      correctAnswers: [0, 1, 2],
+      correctAnswer: ['0', '1', '2'],
       explanation: 'Batch normalization provides faster convergence, reduces initialization sensitivity, and has regularization effects, but doesn\'t eliminate the need for activation functions.',
-      difficulty: 'advanced' as const,
       points: 25,
     },
     {
       id: '3',
-      type: 'ordering' as const,
-      question: 'Order the following steps in the transformer attention mechanism:',
-      items: [
+      type: 'multiple-choice' as const,
+      question: 'In transformer attention mechanism, what is computed first?',
+      options: [
         'Apply softmax to attention scores',
         'Compute query, key, and value matrices',
         'Calculate attention scores (Q·K^T)',
         'Apply attention weights to values',
       ],
-      correctOrder: [1, 2, 0, 3],
-      explanation: 'The attention mechanism follows: 1) Compute Q,K,V matrices, 2) Calculate attention scores, 3) Apply softmax, 4) Weight the values.',
-      difficulty: 'advanced' as const,
+      correctAnswer: 1,
+      explanation: 'The attention mechanism starts by computing Q, K, V matrices from the input.',
       points: 30,
     },
   ],
@@ -125,28 +118,19 @@ const mathQuizData = {
   questions: [
     {
       id: '1',
-      type: 'numerical' as const,
+      type: 'fill-blank' as const,
       question: 'If a dataset has 1000 samples and we use 80% for training, how many samples are in the test set?',
-      correctAnswer: 200,
-      tolerance: 0,
+      correctAnswer: '200',
       explanation: 'With 80% for training (800 samples), the remaining 20% (200 samples) are used for testing.',
-      difficulty: 'beginner' as const,
       points: 10,
     },
     {
       id: '2',
-      type: 'formula' as const,
-      question: 'What is the formula for Mean Squared Error (MSE)?',
-      correctAnswer: '(1/n) * Σ(yi - ŷi)²',
-      acceptableAnswers: [
-        '(1/n) * Σ(yi - ŷi)²',
-        '(1/n) * sum((yi - ŷi)²)',
-        'mean((y - ŷ)²)',
-      ],
+      type: 'fill-blank' as const,
+      question: 'What does MSE stand for in machine learning?',
+      correctAnswer: 'Mean Squared Error',
       explanation: 'MSE calculates the average of squared differences between actual and predicted values.',
-      difficulty: 'intermediate' as const,
       points: 20,
-      showFormula: true,
     },
   ],
   timeLimit: 240, // 4 minutes
@@ -224,69 +208,37 @@ export const WithProgress: Story = {
 
 export const CustomStyling: Story = {
   args: {
-    quizData: basicQuizData,
-    onComplete: (results) => console.log('Styled quiz completed:', results),
-    theme: 'gradient',
-    accentColor: '#6366f1',
-    showAnimations: true,
+    questions: basicQuizData.questions,
+    title: basicQuizData.title,
+    onComplete: (results: any) => console.log('Styled quiz completed:', results),
+    className: 'bg-gradient-to-r from-blue-500 to-purple-600 p-6 rounded-lg text-white',
   },
 };
 
 export const AdaptiveQuiz: Story = {
   args: {
-    quizData: {
-      ...basicQuizData,
-      adaptive: true,
-      adaptiveSettings: {
-        startingDifficulty: 'intermediate',
-        adjustmentFactor: 0.3,
-        minQuestions: 5,
-        maxQuestions: 15,
-        targetAccuracy: 0.75,
-      },
-    },
-    onComplete: (results) => console.log('Adaptive quiz completed:', results),
-    onDifficultyAdjust: (newDifficulty) => console.log('Difficulty adjusted to:', newDifficulty),
+    questions: basicQuizData.questions,
+    title: basicQuizData.title,
+    onComplete: (results: any) => console.log('Adaptive quiz completed:', results),
+    showExplanations: true,
   },
 };
 
 export const MultipleAttempts: Story = {
   args: {
-    quizData: basicQuizData,
-    onComplete: (results) => console.log('Quiz attempt completed:', results),
-    maxAttempts: 3,
-    showAttemptHistory: true,
-    attemptHistory: [
-      {
-        attemptNumber: 1,
-        score: 65,
-        completedAt: '2024-01-15T10:30:00Z',
-        timeSpent: 240,
-      },
-      {
-        attemptNumber: 2,
-        score: 78,
-        completedAt: '2024-01-16T14:15:00Z',
-        timeSpent: 180,
-      },
-    ],
+    questions: basicQuizData.questions,
+    title: basicQuizData.title,
+    onComplete: (results: any) => console.log('Quiz attempt completed:', results),
+    allowRetry: true,
   },
 };
 
 export const WithHints: Story = {
   args: {
-    quizData: {
-      ...basicQuizData,
-      questions: basicQuizData.questions.map(q => ({
-        ...q,
-        hint: q.id === '1' ? 'Think about what makes neural networks different from linear models' :
-              q.id === '2' ? 'Consider the shape of typical loss functions in deep learning' :
-              'This is a fundamental algorithm in neural network training',
-      })),
-    },
-    onComplete: (results) => console.log('Quiz with hints completed:', results),
-    showHints: true,
-    hintPenalty: 5, // Reduce points by 5 when hint is used
+    questions: basicQuizData.questions,
+    title: basicQuizData.title,
+    onComplete: (results: any) => console.log('Quiz with hints completed:', results),
+    showExplanations: true,
   },
 };
 
@@ -300,31 +252,18 @@ export const LoadingState: Story = {
 
 export const ErrorState: Story = {
   args: {
-    error: 'Failed to load quiz data. Please try again.',
-    onRetry: () => console.log('Retrying quiz load...'),
-    onComplete: (results) => console.log('Quiz completed:', results),
+    questions: [],
+    title: "Quiz Error",
+    onComplete: (results: any) => console.log('Quiz completed:', results),
   },
 };
 
 export const CompletedState: Story = {
   args: {
-    quizData: basicQuizData,
-    completed: true,
-    results: {
-      score: 85,
-      totalQuestions: 3,
-      correctAnswers: 2,
-      timeSpent: 145,
-      passed: true,
-      accuracy: 0.85,
-      breakdown: {
-        beginner: { correct: 1, total: 1 },
-        intermediate: { correct: 1, total: 2 },
-        advanced: { correct: 0, total: 0 },
-      },
-    },
-    onRestart: () => console.log('Restarting quiz...'),
-    onComplete: (results) => console.log('Quiz completed:', results),
+    questions: basicQuizData.questions,
+    title: basicQuizData.title,
+    onComplete: (results: any) => console.log('Quiz completed:', results),
+    showExplanations: true,
   },
 };
 
@@ -333,6 +272,7 @@ export const DarkMode: Story = {
     questions: basicQuizData.questions,
     title: basicQuizData.title,
     onComplete: (results: any) => console.log('Quiz completed:', results),
+    className: 'bg-gray-900 text-white',
   },
   parameters: {
     themes: {
@@ -343,9 +283,10 @@ export const DarkMode: Story = {
 
 export const MobileView: Story = {
   args: {
-    quizData: basicQuizData,
-    onComplete: (results) => console.log('Quiz completed:', results),
-    mobileOptimized: true,
+    questions: basicQuizData.questions,
+    title: basicQuizData.title,
+    onComplete: (results: any) => console.log('Quiz completed:', results),
+    className: 'max-w-sm mx-auto',
   },
   parameters: {
     viewport: {
@@ -356,14 +297,9 @@ export const MobileView: Story = {
 
 export const AccessibleQuiz: Story = {
   args: {
-    quizData: basicQuizData,
-    onComplete: (results) => console.log('Accessible quiz completed:', results),
-    accessibilityFeatures: {
-      screenReaderSupport: true,
-      highContrast: true,
-      keyboardNavigation: true,
-      fontSize: 'large',
-    },
-    announceProgress: true,
+    questions: basicQuizData.questions,
+    title: basicQuizData.title,
+    onComplete: (results: any) => console.log('Accessible quiz completed:', results),
+    showExplanations: true,
   },
 };

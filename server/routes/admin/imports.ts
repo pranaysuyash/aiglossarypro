@@ -1,8 +1,7 @@
 import type { Express, Request, Response } from "express";
 import { enhancedStorage as storage } from "../../enhancedStorage";
-import { mockIsAuthenticated } from "../../middleware/dev/mockAuth";
-import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
+import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { features } from "../../config";
 import { parseExcelFile, importToDatabase } from "../../excelParser";
 import { AdvancedExcelParser, importComplexTerms } from "../../advancedExcelParser";
@@ -288,12 +287,7 @@ export function registerAdminImportRoutes(app: Express): void {
         termsImported: parsedTerms.length,
         categoriesImported: 0, // Will be calculated during import
         errors: [],
-        warnings: [],
-        metadata: {
-          processingMode: aiOptions.enableAI ? aiOptions.mode : 'no-ai',
-          sectionsProcessed: 42,
-          aiGenerated: aiOptions.enableAI ? parsedTerms.filter(t => t.sections.size > 7).length : 0
-        }
+        warnings: []
       };
 
       const response: ApiResponse<ImportResult> = {

@@ -1,6 +1,5 @@
 import type { Express, Request, Response } from "express";
 import { enhancedStorage as storage } from "../../enhancedStorage";
-import { mockIsAuthenticated } from "../../middleware/dev/mockAuth";
 import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
 import { features } from "../../config";
@@ -20,7 +19,7 @@ export function registerAdminUserRoutes(app: Express): void {
   // Get all users with pagination and search
   app.get('/api/admin/users', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
-      const { page, limit } = validateQuery(paginationSchema)(req);
+      const { page = 1, limit = DEFAULT_LIMITS.PAGE_SIZE } = validateQuery(paginationSchema)(req);
       const { search } = req.query;
       
       // Set user context for enhanced storage

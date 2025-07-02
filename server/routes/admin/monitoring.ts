@@ -1,7 +1,6 @@
 import type { Express, Request, Response } from "express";
-import { mockIsAuthenticated } from "../../middleware/dev/mockAuth";
-import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
+import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { features } from "../../config";
 import { getPerformanceMetrics, resetPerformanceMetrics } from "../../middleware/performanceMonitor";
 import { log as logger } from "../../utils/logger";

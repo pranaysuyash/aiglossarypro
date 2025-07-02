@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+// Import Recharts dynamically to reduce initial bundle size
 import * as RechartsPrimitive from "recharts"
 
 import { cn } from "@/lib/utils"
@@ -57,7 +58,7 @@ function useChart() {
 }
 
 const ChartContainer = React.forwardRef<
-  HTMLDivElement,
+  React.ElementRef<"div">,
   React.ComponentProps<"div"> & {
     config: ChartConfig
     children: React.ComponentProps<
@@ -136,7 +137,7 @@ ${colorConfig
 const ChartTooltip = RechartsPrimitive.Tooltip
 
 const ChartTooltipContent = React.forwardRef<
-  HTMLDivElement,
+  React.ElementRef<"div">,
   React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
     React.ComponentProps<"div"> & {
       hideLabel?: boolean
@@ -292,7 +293,7 @@ ChartTooltipContent.displayName = "ChartTooltip"
 const ChartLegend = RechartsPrimitive.Legend
 
 const ChartLegendContent = React.forwardRef<
-  HTMLDivElement,
+  React.ElementRef<"div">,
   React.ComponentProps<"div"> &
     Pick<RechartsPrimitive.LegendProps, "payload" | "verticalAlign"> & {
       hideIcon?: boolean
@@ -397,7 +398,7 @@ export const BarChart = ({
   yAxisKey = "value",
   ...props
 }: Omit<React.ComponentProps<typeof ChartContainer>, 'children'> & {
-  data: Record<string, any>[];
+  data: Record<string, unknown>[];
   xAxisKey?: string;
   yAxisKey?: string;
 }) => {
@@ -438,7 +439,7 @@ export const LineChart = ({
   yAxisKey = "value",
   ...props
 }: Omit<React.ComponentProps<typeof ChartContainer>, 'children'> & {
-  data: Record<string, any>[];
+  data: Record<string, unknown>[];
   xAxisKey?: string;
   yAxisKey?: string;
 }) => {
@@ -479,7 +480,7 @@ export const PieChart = ({
   valueKey = "value",
   ...props
 }: Omit<React.ComponentProps<typeof ChartContainer>, 'children'> & {
-  data: Record<string, any>[];
+  data: Record<string, unknown>[];
   nameKey?: string;
   valueKey?: string;
 }) => {

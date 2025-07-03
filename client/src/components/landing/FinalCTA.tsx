@@ -71,7 +71,7 @@ export function FinalCTA() {
           <div className="flex flex-wrap justify-center gap-6 text-sm text-gray-400">
             <div className="flex items-center gap-2">
               <Shield className="w-4 h-4 text-green-400" />
-              <span>30-day money back guarantee</span>
+              <span>7-day free trial • No credit card required</span>
             </div>
             <div className="flex items-center gap-2">
               <Clock className="w-4 h-4 text-blue-400" />

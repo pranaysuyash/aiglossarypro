@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { BULK_LIMITS } from '../constants';
+import { Request, Response, NextFunction } from 'express';
 
 // Common validation schemas
 export const idSchema = z.string().min(1, 'ID is required');
@@ -49,22 +50,22 @@ export const termIdParamSchema = z.object({
 
 // Validation middleware helper
 export function validateParams<T>(schema: z.ZodSchema<T>) {
-  return (req: any) => {
+  return (req: Request) => {
     return schema.parse(req.params);
   };
 }
 
 export function validateQuery<T>(schema: z.ZodSchema<T>) {
-  return (req: any) => {
+  return (req: Request) => {
     return schema.parse(req.query);
   };
 }
 
 export function validateBody<T>(schema: z.ZodSchema<T>) {
-  return (req: any, res: any, next: any) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     try {
       const validatedData = schema.parse(req.body);
-      req.body = validatedData;
+      (req as any).body = validatedData;
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {
@@ -83,10 +84,10 @@ export function validateBody<T>(schema: z.ZodSchema<T>) {
 }
 
 export function validateParamsMiddleware<T>(schema: z.ZodSchema<T>) {
-  return (req: any, res: any, next: any) => {
+  return (req: Request, res: Response, next: NextFunction) => {
     try {
       const validatedData = schema.parse(req.params);
-      req.params = validatedData;
+      (req as any).params = validatedData;
       next();
     } catch (error) {
       if (error instanceof z.ZodError) {

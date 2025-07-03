@@ -1,6 +1,6 @@
 import { useState, useCallback, memo, useMemo } from "react";
 import { Link } from "wouter";
-import { Heart, Copy, Share2, CheckCircle } from "@/components/ui/icons";
+import { Heart, Copy, Share2, CheckCircle, Folder, FolderOpen } from "@/components/ui/icons";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,11 +21,51 @@ interface TermCardProps extends BaseComponentProps {
   isLearned?: boolean;
   variant?: 'default' | 'compact' | 'minimal';
   showActions?: boolean;
+  showCategoryInfo?: boolean;
   compact?: boolean;
   onTermClick?: (termId: string) => void;
   onFavoriteToggle?: (termId: string, isFavorite: boolean) => void;
   onLearnedToggle?: (termId: string, isLearned: boolean) => void;
 }
+
+// Helper component for rendering category and subcategory badges
+const CategoryBadges = memo(({ term, variant }: { term: ITerm; variant: string }) => {
+  const badgeSize = variant === 'compact' ? 'text-xs' : 'text-sm';
+  
+  return (
+    <div className="flex flex-wrap gap-1">
+      {/* Main Category Badge */}
+      <Link href={`/category/${term.categoryId}`}>
+        <Badge variant="secondary" className={`bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 ${badgeSize} cursor-pointer transition-colors`}>
+          <FolderOpen className="w-3 h-3 mr-1" />
+          {term.category}
+        </Badge>
+      </Link>
+      
+      {/* Subcategory Badges */}
+      {term.subcategoryIds && term.subcategoryIds.length > 0 && (
+        <>
+          {term.subcategoryIds.slice(0, variant === 'compact' ? 1 : 2).map((subcategoryId, index) => {
+            const subcategoryName = term.subcategories?.[index] || `Subcategory ${index + 1}`;
+            return (
+              <Link key={subcategoryId} href={`/subcategories/${subcategoryId}`}>
+                <Badge variant="outline" className={`text-gray-600 hover:text-primary hover:border-primary dark:text-gray-400 ${badgeSize} cursor-pointer transition-colors`}>
+                  <Folder className="w-3 h-3 mr-1" />
+                  {subcategoryName}
+                </Badge>
+              </Link>
+            );
+          })}
+          {term.subcategoryIds.length > (variant === 'compact' ? 1 : 2) && (
+            <Badge variant="outline" className={`text-gray-500 ${badgeSize}`}>
+              +{term.subcategoryIds.length - (variant === 'compact' ? 1 : 2)} more
+            </Badge>
+          )}
+        </>
+      )}
+    </div>
+  );
+});
 
 const TermCard = memo(function TermCard({ 
   term, 
@@ -33,6 +73,7 @@ const TermCard = memo(function TermCard({
   isLearned = false,
   variant = 'default',
   showActions = true,
+  showCategoryInfo = true,
   compact = false,
   className,
   id,
@@ -188,11 +229,11 @@ const TermCard = memo(function TermCard({
             <Button 
               variant="ghost" 
               size="icon" 
-              className={`h-6 w-6 ml-2 ${favorite ? 'text-accent-500' : 'text-gray-400 dark:text-gray-300 hover:text-accent-500'}`}
+              className={`h-8 w-8 ml-2 ${favorite ? 'text-accent-500' : 'text-gray-400 dark:text-gray-300 hover:text-accent-500'}`}
               onClick={handleToggleFavorite}
               disabled={isSubmitting}
             >
-              <Heart className={favorite ? 'fill-current' : ''} size={14} />
+              <Heart className={favorite ? 'fill-current' : ''} size={16} />
             </Button>
           )}
         </div>
@@ -209,27 +250,31 @@ const TermCard = memo(function TermCard({
         className={cn("h-full flex flex-col transition-shadow hover:shadow-md", className)} 
         data-testid="term-card"
       >
-        <CardContent className="p-3 flex-1">
+        <CardContent className="p-4 flex-1">
           <div className="flex items-start justify-between mb-2">
-            <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 text-xs">
-              {term.category}
-            </Badge>
+            {showCategoryInfo ? (
+              <CategoryBadges term={term} variant={variant} />
+            ) : (
+              <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300 text-xs">
+                {term.category}
+              </Badge>
+            )}
             {showActions && (
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className={`h-6 w-6 ${favorite ? 'text-accent-500' : 'text-gray-400 dark:text-gray-300 hover:text-accent-500'}`}
+                className={`h-8 w-8 ml-2 flex-shrink-0 ${favorite ? 'text-accent-500' : 'text-gray-400 dark:text-gray-300 hover:text-accent-500'}`}
                 onClick={handleToggleFavorite}
                 disabled={isSubmitting}
               >
-                <Heart className={favorite ? 'fill-current' : ''} size={16} />
+                <Heart className={favorite ? 'fill-current' : ''} size={18} />
               </Button>
             )}
           </div>
           
-          <h3 className="font-semibold text-base mb-1 line-clamp-2">{term.name}</h3>
+          <h3 className="font-semibold text-base sm:text-lg mb-1 line-clamp-2">{term.name}</h3>
           
-          <p className="text-gray-600 dark:text-gray-400 text-xs mb-2 line-clamp-2">
+          <p className="text-gray-600 dark:text-gray-400 text-sm mb-2 line-clamp-2">
             {truncatedDefinition}
           </p>
         </CardContent>
@@ -275,12 +320,19 @@ const TermCard = memo(function TermCard({
       data-testid="term-card"
     >
       <CardContent className="p-4 flex-1">
-        <div className="flex items-center justify-between mb-2">
-          <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300">
-            {term.category}
-          </Badge>
+        <div className="flex items-start justify-between mb-3">
+          {showCategoryInfo ? (
+            <div className="flex-1 mr-2">
+              <CategoryBadges term={term} variant={variant} />
+            </div>
+          ) : (
+            <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300">
+              {term.category}
+            </Badge>
+          )}
+          
           {showActions && (
-            <div className="flex items-center">
+            <div className="flex items-center flex-shrink-0">
               <Button 
                   variant="ghost" 
                   size="icon" 
@@ -305,18 +357,11 @@ const TermCard = memo(function TermCard({
           )}
         </div>
         
-        <h3 className="font-semibold text-lg mb-1">{term.name}</h3>
+        <h3 className="font-semibold text-lg mb-2">{term.name}</h3>
         
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-4 flex-1">
           {truncatedDefinition}
         </p>
-        
-        {term.subcategories && term.subcategories.length > 0 && (
-          <div className="text-xs text-gray-500 dark:text-gray-300 mb-2">
-            <span className="font-medium">Categories: </span>
-            <span>{subcategoriesText}</span>
-          </div>
-        )}
       </CardContent>
       
       {showActions && (

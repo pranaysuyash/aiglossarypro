@@ -79,12 +79,12 @@ export function registerTermRoutes(app: Express): void {
   // Get all terms with optimized pagination and field selection
   app.get('/api/terms', async (req, res) => {
     try {
-      // Parse pagination parameters with stricter limits
+      // Parse pagination parameters with increased limits for better data access
       const { page, limit, offset } = parsePaginationParams({
         page: typeof req.query.page === 'string' ? req.query.page : String(req.query.page || 1),
-        limit: typeof req.query.limit === 'string' ? req.query.limit : String(req.query.limit || 12),
-        defaultLimit: 12,
-        maxLimit: 50
+        limit: typeof req.query.limit === 'string' ? req.query.limit : String(req.query.limit || 24),
+        defaultLimit: 24,
+        maxLimit: 100
       });
 
       const search = req.query.search as string;
@@ -288,12 +288,12 @@ export function registerTermRoutes(app: Express): void {
         });
       }
 
-      // Parse pagination parameters
+      // Parse pagination parameters with increased limits for search
       const { page: pageNum, limit: limitNum, offset } = parsePaginationParams({
         page: typeof page === 'string' ? page : String(page),
         limit: typeof limit === 'string' ? limit : String(limit),
-        defaultLimit: 10,
-        maxLimit: 30
+        defaultLimit: 20,
+        maxLimit: 50
       });
       
       const fieldList = (fields as string).split(',').map(f => f.trim());

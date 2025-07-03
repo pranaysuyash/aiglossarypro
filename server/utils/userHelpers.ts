@@ -1,11 +1,27 @@
+import { Request } from 'express';
 import type { IUser } from '../../shared/types';
-import { getLastNDaysRange } from './dateHelpers';
 import { TIME_CONSTANTS } from './constants';
+
+type UserForTransformation = Partial<IUser> & {
+    [key: string]: unknown;
+};
+
+interface IAdminUser extends IUser {
+    role: string;
+    isActive: boolean;
+    isAdmin: boolean;
+    lifetimeAccess: boolean;
+    subscriptionTier?: string;
+    purchaseDate?: Date | string;
+    lastLoginAt?: Date | string;
+    termsViewed: number;
+    favoriteTerms: number;
+}
 
 /**
  * Transform raw user data to public user object
  */
-export function transformUserForPublic(user: any): Partial<IUser> {
+export function transformUserForPublic(user: UserForTransformation): Partial<IUser> {
   return {
     id: user.id,
     email: user.email,
@@ -19,7 +35,7 @@ export function transformUserForPublic(user: any): Partial<IUser> {
 /**
  * Transform user for admin view (includes additional fields)
  */
-export function transformUserForAdmin(user: any): any {
+export function transformUserForAdmin(user: UserForTransformation): Partial<IAdminUser> {
   return {
     id: user.id,
     email: user.email,
@@ -42,30 +58,31 @@ export function transformUserForAdmin(user: any): any {
 /**
  * Extract user from request (supports multiple auth types)
  */
-export function extractUserFromRequest(req: any): Partial<IUser> | null {
+export function extractUserFromRequest(req: Request): Partial<IUser> | null {
+  const user = (req as any).user;
   // JWT auth
-  if (req.user?.claims) {
+  if (user?.claims) {
     return {
-      id: req.user.claims.sub,
-      email: req.user.claims.email,
-      firstName: req.user.claims.first_name,
-      lastName: req.user.claims.last_name
+      id: user.claims.sub,
+      email: user.claims.email,
+      firstName: user.claims.first_name,
+      lastName: user.claims.last_name
     };
   }
   
   // Session auth
-  if (req.user?.id) {
-    return transformUserForPublic(req.user);
+  if (user?.id) {
+    return transformUserForPublic(user);
   }
   
   // OAuth
-  if (req.user?.provider) {
+  if (user?.provider) {
     return {
-      id: req.user.id,
-      email: req.user.emails?.[0]?.value || req.user.email,
-      firstName: req.user.name?.givenName,
-      lastName: req.user.name?.familyName,
-      profileImageUrl: req.user.photos?.[0]?.value
+      id: user.id,
+      email: user.emails?.[0]?.value || user.email,
+      firstName: user.name?.givenName,
+      lastName: user.name?.familyName,
+      profileImageUrl: user.photos?.[0]?.value
     };
   }
   
@@ -75,7 +92,7 @@ export function extractUserFromRequest(req: any): Partial<IUser> | null {
 /**
  * Check if user has access to premium features
  */
-export function hasUserAccess(user: any): boolean {
+export function hasUserAccess(user: UserForTransformation): boolean {
   if (!user) return false;
   
   // Admin always has access
@@ -102,7 +119,7 @@ export function hasUserAccess(user: any): boolean {
 /**
  * Sanitize user object for public display
  */
-export function sanitizeUser(user: any): any {
+export function sanitizeUser(user: UserForTransformation): Partial<UserForTransformation> {
   const sanitized = { ...user };
   
   // Remove sensitive fields
@@ -124,7 +141,7 @@ export function sanitizeUser(user: any): any {
 /**
  * Build user display name
  */
-export function getUserDisplayName(user: any): string {
+export function getUserDisplayName(user: UserForTransformation): string {
   if (user.firstName && user.lastName) {
     return `${user.firstName} ${user.lastName}`;
   }

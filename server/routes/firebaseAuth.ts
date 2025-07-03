@@ -184,6 +184,16 @@ export function registerFirebaseAuthRoutes(app: Express): void {
     res.clearCookie('authToken');
     res.clearCookie('firebaseToken');
     
+    // Set mock logout state for development
+    if (process.env.NODE_ENV === 'development') {
+      try {
+        const { setMockLogoutState } = require('../middleware/dev/mockAuth');
+        setMockLogoutState(true);
+      } catch (error) {
+        console.warn('Could not set mock logout state:', error);
+      }
+    }
+    
     res.json({
       success: true,
       message: 'Logged out successfully'

@@ -14,14 +14,14 @@ export function registerCategoryRoutes(app: Express): void {
     try {
       const { 
         page = 1, 
-        limit = 20, 
+        limit = 100, 
         search,
         fields = 'id,name,description,termCount',
         includeStats = false 
       } = req.query;
       
       const pageNum = parseInt(page as string);
-      const limitNum = Math.min(parseInt(limit as string), 100); // Max 100 items per page
+      const limitNum = Math.min(parseInt(limit as string), 500); // Max 500 items per page
       const offset = (pageNum - 1) * limitNum;
       const fieldList = (fields as string).split(',').map(f => f.trim());
       
@@ -104,14 +104,14 @@ export function registerCategoryRoutes(app: Express): void {
       const { id } = req.params;
       const { 
         page = 1, 
-        limit = 20, 
+        limit = 50, 
         sort = 'name',
         order = 'asc',
         fields = 'id,name,shortDefinition,viewCount'
       } = req.query;
       
       const pageNum = parseInt(page as string);
-      const limitNum = Math.min(parseInt(limit as string), 50); // Max 50 items per page
+      const limitNum = Math.min(parseInt(limit as string), 100); // Max 100 items per page
       const offset = (pageNum - 1) * limitNum;
       const fieldList = (fields as string).split(',').map(f => f.trim());
       

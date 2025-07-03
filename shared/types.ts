@@ -14,6 +14,7 @@ export interface IUser {
   avatar?: string;
   createdAt: Date;
   preferences?: UserPreferences;
+  isAdmin?: boolean;
 }
 
 export interface UserPreferences {

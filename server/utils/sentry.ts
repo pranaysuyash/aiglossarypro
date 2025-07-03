@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/node';
+import { Request, Response, NextFunction } from 'express';
 
 // Initialize Sentry for server-side error tracking
 export const initSentry = () => {
@@ -40,7 +41,7 @@ export const initSentry = () => {
     ],
     
     // Configure which data to send
-    beforeSend(event, hint) {
+    beforeSend(event, _hint) {
       // Filter out sensitive data
       if (event.request?.data) {
         const data = event.request.data;
@@ -50,7 +51,7 @@ export const initSentry = () => {
             if (key.toLowerCase().includes('password') || 
                 key.toLowerCase().includes('secret') ||
                 key.toLowerCase().includes('token')) {
-              (data as Record<string, any>)[key] = '[Filtered]';
+              (data as Record<string, unknown>)[key] = '[Filtered]';
             }
           });
         }
@@ -79,7 +80,7 @@ export const captureAPIError = (error: Error, context: {
   path: string;
   userId?: string;
   requestId?: string;
-  body?: any;
+  body?: Record<string, unknown>;
 }) => {
   Sentry.withScope((scope) => {
     scope.setTag('errorType', 'api');
@@ -168,7 +169,7 @@ export const startTransaction = (name: string, operation: string) => {
   }, () => {
     // Return a span-like object for compatibility
     return {
-      setData: (key: string, value: any) => Sentry.setContext(key, value),
+      setData: (key: string, value: Record<string, unknown> | null) => Sentry.setContext(key, value),
       setTag: (key: string, value: string) => Sentry.setTag(key, value),
       finish: () => {}, // No-op for compatibility
     };
@@ -176,7 +177,7 @@ export const startTransaction = (name: string, operation: string) => {
 };
 
 // Add breadcrumb for debugging
-export const addBreadcrumb = (message: string, category: string, level: Sentry.SeverityLevel = 'info', data?: any) => {
+export const addBreadcrumb = (message: string, category: string, level: Sentry.SeverityLevel = 'info', data?: Record<string, unknown>) => {
   Sentry.addBreadcrumb({
     message,
     category,
@@ -200,8 +201,8 @@ export const clearUser = () => {
 };
 
 // Express middleware for request tracking
-export const sentryRequestHandler = () => (req: any, res: any, next: any) => next();
-export const sentryTracingHandler = () => (req: any, res: any, next: any) => next();
+export const sentryRequestHandler = () => (req: Request, res: Response, next: NextFunction) => next();
+export const sentryTracingHandler = () => (req: Request, res: Response, next: NextFunction) => next();
 export const sentryErrorHandler = () => Sentry.expressErrorHandler();
 
 export default Sentry;

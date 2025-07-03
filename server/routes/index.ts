@@ -4,6 +4,7 @@ import { performanceMiddleware } from "../middleware/performanceMonitor";
 // Import modular route handlers
 import { registerAuthRoutes } from "./auth";
 import { registerCategoryRoutes } from "./categories";
+import { registerSubcategoryRoutes } from "./subcategories";
 import { registerTermRoutes } from "./terms";
 import { registerSectionRoutes } from "./sections";
 import { registerSearchRoutes } from "./search";
@@ -19,6 +20,9 @@ import { registerSeoRoutes } from "./seo";
 import { registerContentRoutes } from "./content";
 import { registerGumroadRoutes } from "./gumroad";
 import { log as logger } from "../utils/logger";
+
+// Import newsletter routes
+import newsletterRoutes from "./newsletter";
 
 // Import existing specialized route modules
 import cacheRoutes from "./cache";
@@ -47,6 +51,8 @@ export async function registerRoutes(app: Express): Promise<void> {
   logger.info("📝 Registering core API routes...");
   registerAuthRoutes(app);
   registerCategoryRoutes(app);
+  registerSubcategoryRoutes(app);
+  logger.info("✅ Subcategory routes registered - 21,993 subcategories now accessible");
   registerTermRoutes(app);
   registerSectionRoutes(app);
   logger.info("✅ Section routes registered - 42-section content API now available");
@@ -88,6 +94,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Register Gumroad monetization routes
   registerGumroadRoutes(app);
   logger.info("✅ Gumroad monetization routes registered");
+  
+  // Register newsletter and contact routes
+  app.use('/api/newsletter', newsletterRoutes);
+  logger.info("✅ Newsletter and contact routes registered");
   
   // Mount S3 routes
   app.use('/api/s3', s3Routes);

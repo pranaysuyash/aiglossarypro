@@ -192,7 +192,7 @@ export function Pricing() {
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-green-500" />
-                <span>30-day money back guarantee</span>
+                <span>7-day free trial • No credit card required</span>
               </div>
               <div className="pt-4">
                 <Button 

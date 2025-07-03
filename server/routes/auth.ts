@@ -12,13 +12,25 @@ import { log as logger } from "../utils/logger";
  */
 export function registerAuthRoutes(app: Express): void {
   
-  // Choose authentication middleware based on environment
-  const authMiddleware = mockIsAuthenticated;
-  const tokenMiddleware = mockAuthenticateToken;
+  // Choose authentication middleware based on enabled features
+  const authMiddleware = features.firebaseAuthEnabled || features.simpleAuthEnabled 
+    ? multiAuthMiddleware 
+    : mockIsAuthenticated;
+  const tokenMiddleware = features.firebaseAuthEnabled || features.simpleAuthEnabled 
+    ? authenticateToken 
+    : mockAuthenticateToken;
   
   // Get current authenticated user
   app.get('/api/auth/user', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
+      // Check if user is logged out (for development mock auth)
+      if (process.env.NODE_ENV === 'development' && !req.user) {
+        return res.status(401).json({
+          success: false,
+          message: "User not authenticated"
+        });
+      }
+      
       const userInfo = getUserInfo(req);
       if (!userInfo) {
         return res.status(401).json({
@@ -110,7 +122,7 @@ export function registerAuthRoutes(app: Express): void {
   });
 
   // User data export
-  app.get('/api/user/export', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.get('/api/user/export', authMiddleware, async (req: Request, res: Response) => {
     try {
       const userInfo = getUserInfo(req);
       if (!userInfo) {
@@ -134,7 +146,7 @@ export function registerAuthRoutes(app: Express): void {
   });
 
   // Delete user data (GDPR compliance)
-  app.delete('/api/user/data', authMiddleware, async (req: AuthenticatedRequest, res: Response) => {
+  app.delete('/api/user/data', authMiddleware, async (req: Request, res: Response) => {
     try {
       const userInfo = getUserInfo(req);
       if (!userInfo) {

@@ -1,8 +1,19 @@
-import type { User } from "../../shared/schema";
-
 /**
  * Access control utilities for feature gating and permissions
  */
+import { IUser } from '../../shared/types';
+
+type UserWithAccessControl = Partial<IUser> & {
+  role?: string;
+  lifetimeAccess?: boolean;
+  lifetime_access?: boolean;
+  subscriptionTier?: string;
+  purchaseDate?: Date | string;
+  purchase_date?: Date | string;
+  lastViewReset?: Date | string;
+  dailyViews?: number;
+  created_at?: Date | string;
+};
 
 export interface AccessControlConfig {
   dailyLimitFree: number;
@@ -19,7 +30,7 @@ export const defaultAccessConfig: AccessControlConfig = {
 /**
  * Check if user has premium access (lifetime or subscription)
  */
-export function hasPremiumAccess(user: any): boolean {
+export function hasPremiumAccess(user: UserWithAccessControl): boolean {
   if (!user) return false;
   
   // Admin always has access
@@ -37,12 +48,13 @@ export function hasPremiumAccess(user: any): boolean {
 /**
  * Check if user is in trial period
  */
-export function isInTrialPeriod(user: any, config: AccessControlConfig = defaultAccessConfig): boolean {
+export function isInTrialPeriod(user: UserWithAccessControl, config: AccessControlConfig = defaultAccessConfig): boolean {
   if (!user) return false;
   
   // Check account creation date for trial (NEW LOGIC - fixes issue with new users)
-  if (user.createdAt || user.created_at) {
-    const createdDate = new Date(user.createdAt || user.created_at);
+  const creationDateValue = user.createdAt || user.created_at;
+  if (creationDateValue) {
+    const createdDate = new Date(creationDateValue);
     const trialEndDate = new Date(createdDate);
     trialEndDate.setDate(trialEndDate.getDate() + config.trialDays);
     
@@ -50,8 +62,9 @@ export function isInTrialPeriod(user: any, config: AccessControlConfig = default
   }
   
   // Fallback: Check purchase date (for existing users with purchase history)
-  if (user.purchaseDate || user.purchase_date) {
-    const purchaseDate = new Date(user.purchaseDate || user.purchase_date);
+  const purchaseDateValue = user.purchaseDate || user.purchase_date;
+  if (purchaseDateValue) {
+    const purchaseDate = new Date(purchaseDateValue);
     const trialEndDate = new Date(purchaseDate);
     trialEndDate.setDate(trialEndDate.getDate() + config.trialDays);
     
@@ -64,7 +77,7 @@ export function isInTrialPeriod(user: any, config: AccessControlConfig = default
 /**
  * Check if user has any access (premium, trial, or free tier)
  */
-export function hasUserAccess(user: any, config: AccessControlConfig = defaultAccessConfig): boolean {
+export function hasUserAccess(user: UserWithAccessControl, config: AccessControlConfig = defaultAccessConfig): boolean {
   if (!user) return false;
   
   // Premium access
@@ -80,7 +93,7 @@ export function hasUserAccess(user: any, config: AccessControlConfig = defaultAc
 /**
  * Calculate daily usage limits for user
  */
-export function getDailyLimits(user: any, config: AccessControlConfig = defaultAccessConfig): { limit: number; isUnlimited: boolean } {
+export function getDailyLimits(user: UserWithAccessControl, config: AccessControlConfig = defaultAccessConfig): { limit: number; isUnlimited: boolean } {
   if (!user) {
     return { limit: config.dailyLimitFree, isUnlimited: false };
   }
@@ -102,7 +115,7 @@ export function getDailyLimits(user: any, config: AccessControlConfig = defaultA
 /**
  * Calculate remaining daily views for user
  */
-export function getRemainingDailyViews(user: any, config: AccessControlConfig = defaultAccessConfig): { remaining: number; dailyViews: number; limit: number } {
+export function getRemainingDailyViews(user: UserWithAccessControl, config: AccessControlConfig = defaultAccessConfig): { remaining: number; dailyViews: number; limit: number } {
   const { limit, isUnlimited } = getDailyLimits(user, config);
   
   if (isUnlimited) {
@@ -126,8 +139,15 @@ export function getRemainingDailyViews(user: any, config: AccessControlConfig = 
 
 /**
  * Check if user can view a specific term
+ * @param {any} user The user object
+ * @param {string} [termId] The ID of the term being viewed (optional)
+ * @param {AccessControlConfig} [config] The access control configuration
+ * @returns {{canView: boolean, reason: string, metadata?: any}}
  */
-export function canViewTerm(user: any, termId?: string, config: AccessControlConfig = defaultAccessConfig): { canView: boolean; reason: string; metadata?: any } {
+export function canViewTerm(
+  user: UserWithAccessControl,
+  config: AccessControlConfig = defaultAccessConfig
+): { canView: boolean; reason: string; metadata?: any } {
   if (!user) {
     return { canView: false, reason: 'not_authenticated' };
   }
@@ -162,8 +182,10 @@ export function canViewTerm(user: any, termId?: string, config: AccessControlCon
 
 /**
  * Check if user can perform admin actions
+ * @param {any} user The user object
+ * @returns {boolean}
  */
-export function canPerformAdminAction(user: any, action: string): boolean {
+export function canPerformAdminAction(user: UserWithAccessControl): boolean {
   if (!user) return false;
   
   // Check if user is admin
@@ -175,12 +197,14 @@ export function canPerformAdminAction(user: any, action: string): boolean {
 
 /**
  * Check if user can access premium features
+ * @param {any} user The user object
+ * @returns {boolean}
  */
-export function canAccessPremiumFeature(user: any, feature: string): boolean {
+export function canAccessPremiumFeature(user: UserWithAccessControl): boolean {
   if (!user) return false;
   
   // Admin can access all features
-  if (canPerformAdminAction(user, 'access_premium_features')) return true;
+  if (canPerformAdminAction(user)) return true;
   
   // Premium users can access premium features
   if (hasPremiumAccess(user)) return true;
@@ -194,7 +218,7 @@ export function canAccessPremiumFeature(user: any, feature: string): boolean {
 /**
  * Get user access status summary
  */
-export function getUserAccessStatus(user: any, config: AccessControlConfig = defaultAccessConfig): {
+export function getUserAccessStatus(user: UserWithAccessControl, config: AccessControlConfig = defaultAccessConfig): {
   hasAccess: boolean;
   accessType: 'premium' | 'trial' | 'free' | 'none';
   dailyLimits: ReturnType<typeof getRemainingDailyViews>;
@@ -211,7 +235,7 @@ export function getUserAccessStatus(user: any, config: AccessControlConfig = def
     };
   }
   
-  const isAdmin = canPerformAdminAction(user, 'admin_access');
+  const isAdmin = canPerformAdminAction(user);
   const isPremium = hasPremiumAccess(user);
   const isTrial = isInTrialPeriod(user, config);
   const dailyLimits = getRemainingDailyViews(user, config);
@@ -225,7 +249,7 @@ export function getUserAccessStatus(user: any, config: AccessControlConfig = def
     hasAccess: hasUserAccess(user, config),
     accessType,
     dailyLimits,
-    canAccessPremiumFeatures: canAccessPremiumFeature(user, 'premium'),
+    canAccessPremiumFeatures: canAccessPremiumFeature(user),
     isAdmin
   };
 }

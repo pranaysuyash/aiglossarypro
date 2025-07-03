@@ -52,35 +52,55 @@ export function LandingHeader() {
             </a>
           </nav>
 
-          {/* CTA Button */}
-          <div className="flex items-center space-x-4">
-            <Link href="/app">
-              <Button variant="ghost" className="text-gray-600 hover:text-purple-600">
-                Sign In
+          {/* CTA Buttons */}
+          <div className="flex items-center space-x-3">
+            {/* Desktop: Show both buttons */}
+            <div className="hidden md:flex items-center space-x-3">
+              <Link href="/app">
+                <Button variant="ghost" className="text-gray-600 hover:text-purple-600 px-4">
+                  Sign In
+                </Button>
+              </Link>
+              <Button 
+                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 font-medium"
+                onClick={() => {
+                  // Track analytics
+                  if (typeof window !== 'undefined' && (window as any).gtag) {
+                    (window as any).gtag('event', 'header_cta_click', {
+                      event_category: 'conversion',
+                      event_label: 'header_button',
+                      value: pricing.localPrice,
+                    });
+                  }
+                  
+                  window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
+                }}
+              >
+                Get Lifetime Access
               </Button>
-            </Link>
-            <Button 
-              className="bg-purple-600 hover:bg-purple-700 text-white px-6"
-              onClick={() => {
-                // Track analytics
-                if (typeof window !== 'undefined' && (window as any).gtag) {
-                  (window as any).gtag('event', 'header_cta_click', {
-                    event_category: 'conversion',
-                    event_label: 'header_button',
-                    value: pricing.localPrice,
-                  });
-                }
-                
-                window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
-              }}
-            >
-              {pricing.loading 
-                ? 'Get Access'
-                : pricing.discount > 0 
-                  ? `Get Access - $${pricing.localPrice} (${pricing.discount}% off)`
-                  : `Get Access - $${pricing.localPrice}`
-              }
-            </Button>
+            </div>
+            
+            {/* Mobile: Show only primary CTA */}
+            <div className="md:hidden">
+              <Button 
+                size="sm"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 font-medium"
+                onClick={() => {
+                  // Track analytics
+                  if (typeof window !== 'undefined' && (window as any).gtag) {
+                    (window as any).gtag('event', 'header_cta_click', {
+                      event_category: 'conversion',
+                      event_label: 'mobile_header_button',
+                      value: pricing.localPrice,
+                    });
+                  }
+                  
+                  window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
+                }}
+              >
+                Get Access
+              </Button>
+            </div>
           </div>
         </div>
       </div>

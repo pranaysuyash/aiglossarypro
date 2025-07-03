@@ -11,6 +11,8 @@ import Home from "@/pages/Home";
 import {
   LazyTermsPage,
   LazyCategoriesPage,
+  LazySubcategoriesPage,
+  LazySubcategoryDetailPage,
   LazyTrendingPage,
   LazyDashboardPage,
   LazyFavoritesPage,
@@ -97,6 +99,7 @@ function SmartLandingPage() {
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  const [location] = useLocation();
 
   // Preload components based on authentication status
   useEffect(() => {
@@ -124,11 +127,16 @@ function Router() {
     );
   }
 
+  // Check if we're on the landing page route
+  const isLandingPage = location === '/';
+
   return (
     <div className="flex flex-col min-h-screen">
       <SkipLinks />
       
-      <Header />
+      {/* Only show main header if NOT on landing page */}
+      {!isLandingPage && <Header />}
+      
       <main id="main-content" className="flex-grow" tabIndex={-1}>
         <Switch>
           <Route path="/" component={SmartLandingPage} />
@@ -141,6 +149,9 @@ function Router() {
           <Route path="/category/:id" component={LazyCategoriesPage} />
           <Route path="/terms" component={LazyTermsPage} />
           <Route path="/categories" component={LazyCategoriesPage} />
+          <Route path="/subcategories" component={LazySubcategoriesPage} />
+          <Route path="/subcategories/:id" component={LazySubcategoryDetailPage} />
+          <Route path="/categories/:categoryId/subcategories" component={LazySubcategoriesPage} />
           <Route path="/trending" component={LazyTrendingPage} />
           <Route path="/dashboard">
             <ProtectedRoute>

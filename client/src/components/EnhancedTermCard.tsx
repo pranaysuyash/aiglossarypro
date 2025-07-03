@@ -98,7 +98,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
           ? `${term.name} has been removed from your favorites` 
           : `${term.name} has been added to your favorites`,
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Error",
         description: "Failed to update favorites. Please try again.",
@@ -116,7 +116,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
         title: "Link copied",
         description: "Link has been copied to clipboard",
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: "Failed to copy",
         description: "Please try again or copy manually",
@@ -128,8 +128,8 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
   const handleTermClick = useCallback(async () => {
     try {
       await apiRequest("POST", `/api/terms/${term.id}/view`, null);
-    } catch (error) {
-      console.error("Failed to log term view", error);
+    } catch (_error) {
+      console.error("Failed to log term view", _error);
     }
   }, [term.id]);
 
@@ -205,6 +205,18 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
           </Button>
         </div>
       </CardContent>
+      <div
+        className="absolute inset-0 cursor-pointer"
+        onClick={handleNavigateToTerm}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleNavigateToTerm();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={`View details for ${term.name}`}
+      />
     </Card>
   );
 
@@ -393,6 +405,18 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
           />
         </div>
       </CardFooter>
+      <div
+        className="absolute inset-0 cursor-pointer"
+        onClick={handleNavigateToTerm}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleNavigateToTerm();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={`View details for ${term.name}`}
+      />
     </Card>
   );
 
@@ -509,6 +533,18 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
           />
         </div>
       </CardFooter>
+      <div
+        className="absolute inset-0 cursor-pointer"
+        onClick={handleNavigateToTerm}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            handleNavigateToTerm();
+          }
+        }}
+        role="button"
+        tabIndex={0}
+        aria-label={`View details for ${term.name}`}
+      />
     </Card>
   );
 

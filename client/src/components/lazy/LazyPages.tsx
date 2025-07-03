@@ -24,6 +24,8 @@ const PageSkeleton = () => (
 // Lazy load heavy page components
 export const LazyTerms = lazy(() => import('@/pages/Terms'));
 export const LazyCategories = lazy(() => import('@/pages/Categories'));
+export const LazySubcategories = lazy(() => import('@/pages/Subcategories'));
+export const LazySubcategoryDetail = lazy(() => import('@/pages/SubcategoryDetail'));
 export const LazyTrending = lazy(() => import('@/pages/Trending'));
 export const LazyDashboard = lazy(() => import('@/pages/Dashboard'));
 export const LazyFavorites = lazy(() => import('@/pages/Favorites'));
@@ -53,6 +55,8 @@ export function withLazyLoading<T extends object>(Component: React.ComponentType
 // Pre-wrapped components for immediate use
 export const LazyTermsPage = withLazyLoading(LazyTerms);
 export const LazyCategoriesPage = withLazyLoading(LazyCategories);
+export const LazySubcategoriesPage = withLazyLoading(LazySubcategories);
+export const LazySubcategoryDetailPage = withLazyLoading(LazySubcategoryDetail);
 export const LazyTrendingPage = withLazyLoading(LazyTrending);
 export const LazyDashboardPage = withLazyLoading(LazyDashboard);
 export const LazyFavoritesPage = withLazyLoading(LazyFavorites);

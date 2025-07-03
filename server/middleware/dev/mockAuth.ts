@@ -7,6 +7,9 @@ import { enhancedStorage as storage } from "../../enhancedStorage";
  * This bypasses authentication and provides a test user
  */
 
+// Mock session state to track logout
+let mockLoggedOut = false;
+
 // Test user for local development
 const DEV_USER = {
   id: "dev-user-123",
@@ -30,16 +33,25 @@ const DEV_USER = {
  * Mock isAuthenticated middleware for development
  */
 export const mockIsAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+  // Check if user has been logged out
+  if (mockLoggedOut) {
+    console.log("🔓 Mock authentication: User is logged out");
+    // Don't set user, proceed without authentication
+    next();
+    return;
+  }
+  
   // Simulate authenticated user with proper typing
   (req as AuthenticatedRequest).user = DEV_USER;
   
   // Mock passport methods with correct types
-  (req as any).isAuthenticated = () => true;
+  (req as any).isAuthenticated = () => !mockLoggedOut;
   (req as any).login = (user: any, options?: any, callback?: (err: any) => void) => {
     if (typeof options === 'function') {
       callback = options;
       options = {};
     }
+    mockLoggedOut = false;
     req.user = user;
     if (callback) callback(null);
   };
@@ -48,6 +60,7 @@ export const mockIsAuthenticated = (req: Request, res: Response, next: NextFunct
       callback = options;
       options = {};
     }
+    mockLoggedOut = true;
     req.user = undefined;
     if (callback) callback(null);
   };
@@ -61,6 +74,14 @@ export const mockIsAuthenticated = (req: Request, res: Response, next: NextFunct
  */
 export const mockAuthenticateToken = (req: Request, res: Response, next: NextFunction) => {
   try {
+    // Check if user has been logged out
+    if (mockLoggedOut) {
+      console.log("🔓 Mock token auth: User is logged out");
+      // Don't set user, proceed without authentication
+      next();
+      return;
+    }
+    
     // Ensure user is set (should be from mockIsAuthenticated)
     if (!req.user) {
       (req as AuthenticatedRequest).user = DEV_USER;
@@ -175,4 +196,12 @@ async function ensureDevUserExists() {
   } catch (error) {
     console.warn("⚠️  Could not ensure dev user exists:", error);
   }
+}
+
+/**
+ * Set mock logout state - for use by logout endpoints
+ */
+export function setMockLogoutState(loggedOut: boolean) {
+  mockLoggedOut = loggedOut;
+  console.log(`🔓 Mock auth state changed: ${loggedOut ? 'LOGGED OUT' : 'LOGGED IN'}`);
 }

@@ -89,14 +89,14 @@ const logger = winston.createLogger({
 
 // Export logging functions
 export const log = {
-  error: (message: string, meta?: any) => logger.error(message, meta),
-  warn: (message: string, meta?: any) => logger.warn(message, meta),
-  info: (message: string, meta?: any) => logger.info(message, meta),
-  debug: (message: string, meta?: any) => logger.debug(message, meta),
+  error: (message: string, meta?: Record<string, unknown>) => logger.error(message, meta),
+  warn: (message: string, meta?: Record<string, unknown>) => logger.warn(message, meta),
+  info: (message: string, meta?: Record<string, unknown>) => logger.info(message, meta),
+  debug: (message: string, meta?: Record<string, unknown>) => logger.debug(message, meta),
   
   // Specific logging functions for different components
   api: {
-    request: (method: string, path: string, userId?: string, meta?: any) => 
+    request: (method: string, path: string, userId?: string, meta?: Record<string, unknown>) => 
       logger.info(`API Request: ${method} ${path}`, { 
         method, 
         path, 
@@ -105,7 +105,7 @@ export const log = {
         ...meta 
       }),
     
-    response: (method: string, path: string, statusCode: number, duration: number, meta?: any) =>
+    response: (method: string, path: string, statusCode: number, duration: number, meta?: Record<string, unknown>) =>
       logger.info(`API Response: ${method} ${path} ${statusCode} (${duration}ms)`, {
         method,
         path,
@@ -115,7 +115,7 @@ export const log = {
         ...meta
       }),
     
-    error: (method: string, path: string, error: Error, meta?: any) =>
+    error: (method: string, path: string, error: Error, meta?: Record<string, unknown>) =>
       logger.error(`API Error: ${method} ${path}`, {
         method,
         path,
@@ -150,7 +150,7 @@ export const log = {
   },
   
   database: {
-    query: (query: string, duration: number, meta?: any) =>
+    query: (query: string, duration: number, meta?: Record<string, unknown>) =>
       logger.debug('Database query', {
         query: query.substring(0, 200), // Truncate long queries
         duration,
@@ -158,7 +158,7 @@ export const log = {
         ...meta
       }),
     
-    error: (query: string, error: Error, meta?: any) =>
+    error: (query: string, error: Error, meta?: Record<string, unknown>) =>
       logger.error('Database error', {
         query: query.substring(0, 200),
         error: error.message,
@@ -167,7 +167,7 @@ export const log = {
         ...meta
       }),
     
-    connection: (event: 'connect' | 'disconnect' | 'error', meta?: any) =>
+    connection: (event: 'connect' | 'disconnect' | 'error', meta?: Record<string, unknown>) =>
       logger.info(`Database ${event}`, {
         event,
         type: 'db_connection',
@@ -184,7 +184,7 @@ export const log = {
         type: 'security_rate_limit'
       }),
     
-    suspiciousActivity: (userId: string, activity: string, meta?: any) =>
+    suspiciousActivity: (userId: string, activity: string, meta?: Record<string, unknown>) =>
       logger.warn('Suspicious activity detected', {
         userId,
         activity,
@@ -206,7 +206,7 @@ export const log = {
 export const performanceTimer = (label: string) => {
   const start = Date.now();
   return {
-    end: (meta?: any) => {
+    end: (meta?: Record<string, unknown>) => {
       const duration = Date.now() - start;
       logger.info(`Performance: ${label}`, {
         duration,
@@ -220,7 +220,7 @@ export const performanceTimer = (label: string) => {
 };
 
 // Health check logging
-export const logHealthCheck = (component: string, status: 'healthy' | 'unhealthy', details?: any) => {
+export const logHealthCheck = (component: string, status: 'healthy' | 'unhealthy', details?: Record<string, unknown>) => {
   const level = status === 'healthy' ? 'info' : 'error';
   logger.log(level, `Health check: ${component} is ${status}`, {
     component,

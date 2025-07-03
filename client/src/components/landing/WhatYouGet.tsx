@@ -51,7 +51,7 @@ export function WhatYouGet() {
     {
       icon: Shield,
       title: "100% Satisfaction Guarantee",
-      description: "30-day money back guarantee",
+      description: "7-day free trial, no credit card required",
       details: "If you're not completely satisfied, get a full refund",
       color: "text-red-600"
     }
@@ -109,7 +109,7 @@ export function WhatYouGet() {
           <div className="text-center p-6 bg-purple-50 rounded-xl border border-purple-200">
             <Shield className="w-8 h-8 text-purple-600 mx-auto mb-4" />
             <h3 className="font-bold text-purple-900 mb-2">Risk-Free</h3>
-            <p className="text-purple-700 text-sm">30-day money back guarantee. No questions asked.</p>
+            <p className="text-purple-700 text-sm">7-day free trial. No credit card required.</p>
           </div>
         </div>
       </div>

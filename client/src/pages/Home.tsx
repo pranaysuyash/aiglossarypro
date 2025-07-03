@@ -48,18 +48,18 @@ export default function Home() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <div className="flex flex-col lg:flex-row gap-8">
+      <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
         <Sidebar />
         
         <main className="flex-1">
           {/* Welcome Banner */}
-          <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg shadow-sm mb-6 p-6 text-white">
-            <h1 className="text-2xl font-bold mb-2">AI/ML Glossary</h1>
-            <p className="max-w-2xl">
+          <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg shadow-sm mb-6 p-4 sm:p-6 text-white">
+            <h1 className="text-xl sm:text-2xl font-bold mb-2">AI/ML Glossary</h1>
+            <p className="max-w-2xl text-sm sm:text-base">
               Your comprehensive dictionary of artificial intelligence, machine learning, and deep learning terminology. 
               Browse definitions, learn concepts, and track your progress.
             </p>
-            <div className="mt-4 flex flex-wrap gap-3">
+            <div className="mt-4 flex flex-col xs:flex-row flex-wrap gap-3">
               {isAuthenticated ? (
                 <Link href="/dashboard">
                   <Button variant="secondary" className="bg-white text-primary-600 hover:bg-gray-50">
@@ -73,7 +73,7 @@ export default function Home() {
                 </Button>
               )}
               <Link href="/trending">
-                <Button variant="outline" className="border-white text-white hover:bg-white/10">
+                <Button variant="outline" className="border-white text-white hover:bg-white hover:text-primary-600 transition-colors">
                   <TrendingUp className="mr-2 h-5 w-5" />
                   Trending terms
                 </Button>
@@ -90,7 +90,7 @@ export default function Home() {
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-3 xs:gap-4 sm:gap-6">
+            <div className="grid grid-cols-1 xs:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
               {categoriesLoading ? (
                 // Skeleton loading for categories
                 Array.from({ length: 6 }).map((_, i) => (
@@ -121,7 +121,7 @@ export default function Home() {
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4 xs:gap-6 auto-rows-fr">
+            <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 auto-rows-fr">
               {termsLoading ? (
                 // Skeleton loading for terms
                 Array.from({ length: 3 }).map((_, i) => (

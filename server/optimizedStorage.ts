@@ -2188,6 +2188,171 @@ export class OptimizedStorage implements IStorage {
     // Placeholder implementation - would need achievements schema
     return { success: true, achievementId, userId };
   }
+
+  // Subcategory operations
+  async getSubcategoriesOptimized(options: {
+    offset?: number;
+    limit?: number;
+    fields?: string[];
+    search?: string;
+    categoryId?: string;
+    includeStats?: boolean;
+  }): Promise<any[]> {
+    const { offset = 0, limit = 100, fields = ['*'], search, categoryId, includeStats = false } = options;
+    
+    try {
+      // Start with basic query
+      let query = db.select()
+        .from(subcategories);
+      
+      const conditions = [];
+      
+      if (search) {
+        conditions.push(
+          ilike(subcategories.name, `%${search}%`)
+        );
+      }
+      
+      if (categoryId) {
+        conditions.push(eq(subcategories.categoryId, categoryId));
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions));
+      }
+      
+      query = query.orderBy(asc(subcategories.name))
+        .limit(limit)
+        .offset(offset);
+      
+      const results = await query;
+      
+      // If includeStats is true, add term count manually
+      if (includeStats) {
+        const resultsWithCount = await Promise.all(
+          results.map(async (subcategory) => {
+            const countQuery = await db.select({
+              count: sql<number>`COUNT(*)`
+            })
+            .from(termSubcategories)
+            .where(eq(termSubcategories.subcategoryId, subcategory.id));
+            
+            return {
+              ...subcategory,
+              termCount: countQuery[0]?.count || 0
+            };
+          })
+        );
+        return resultsWithCount;
+      }
+      
+      return results.map(r => ({ ...r, termCount: 0 }));
+    } catch (error) {
+      console.error('Error in getSubcategoriesOptimized:', error);
+      throw error;
+    }
+  }
+
+  async getSubcategoriesCount(options: {
+    search?: string;
+    categoryId?: string;
+  }): Promise<number> {
+    try {
+      const { search, categoryId } = options || {};
+      
+      let query = db.select({ count: sql<number>`COUNT(*)` })
+        .from(subcategories);
+      
+      const conditions = [];
+      
+      if (search) {
+        conditions.push(
+          ilike(subcategories.name, `%${search}%`)
+        );
+      }
+      
+      if (categoryId) {
+        conditions.push(eq(subcategories.categoryId, categoryId));
+      }
+      
+      if (conditions.length > 0) {
+        query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions));
+      }
+      
+      const result = await query;
+      return result[0]?.count || 0;
+    } catch (error) {
+      console.error('Error in getSubcategoriesCount:', error);
+      return 0;
+    }
+  }
+
+  async getSubcategoryById(id: string): Promise<any | null> {
+    const result = await db.select({
+      id: subcategories.id,
+      name: subcategories.name,
+      categoryId: subcategories.categoryId,
+      createdAt: subcategories.createdAt,
+      updatedAt: subcategories.updatedAt,
+      termCount: sql<number>`COUNT(DISTINCT ${termSubcategories.termId})`
+    })
+    .from(subcategories)
+    .leftJoin(termSubcategories, eq(subcategories.id, termSubcategories.subcategoryId))
+    .where(eq(subcategories.id, id))
+    .groupBy(subcategories.id, subcategories.name, subcategories.categoryId, subcategories.createdAt, subcategories.updatedAt);
+    
+    return result[0] || null;
+  }
+
+  async getTermsBySubcategory(subcategoryId: string, options: {
+    offset?: number;
+    limit?: number;
+    sort?: string;
+    order?: 'asc' | 'desc';
+    fields?: string[];
+  }): Promise<{ data: any[]; total: number }> {
+    const { offset = 0, limit = 50, sort = 'name', order = 'asc', fields = ['*'] } = options;
+    
+    // Get total count first
+    const totalResult = await db.select({
+      count: sql<number>`COUNT(DISTINCT ${terms.id})`
+    })
+    .from(terms)
+    .innerJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
+    .where(eq(termSubcategories.subcategoryId, subcategoryId));
+    
+    const total = totalResult[0]?.count || 0;
+    
+    // Get the actual data
+    let query = db.select({
+      id: terms.id,
+      name: terms.name,
+      shortDefinition: terms.shortDefinition,
+      definition: terms.definition,
+      viewCount: terms.viewCount,
+      categoryId: terms.categoryId,
+      createdAt: terms.createdAt,
+      updatedAt: terms.updatedAt
+    })
+    .from(terms)
+    .innerJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
+    .where(eq(termSubcategories.subcategoryId, subcategoryId));
+    
+    // Apply sorting
+    if (sort === 'name') {
+      query = query.orderBy(order === 'desc' ? desc(terms.name) : asc(terms.name));
+    } else if (sort === 'viewCount') {
+      query = query.orderBy(order === 'desc' ? desc(terms.viewCount) : asc(terms.viewCount));
+    } else if (sort === 'createdAt') {
+      query = query.orderBy(order === 'desc' ? desc(terms.createdAt) : asc(terms.createdAt));
+    }
+    
+    query = query.limit(limit).offset(offset);
+    
+    const data = await query;
+    
+    return { data, total };
+  }
 }
 
 // Export singleton instance

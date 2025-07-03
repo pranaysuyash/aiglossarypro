@@ -80,7 +80,6 @@ export default defineConfig({
         assetFileNames: (assetInfo) => {
           const name = assetInfo.name || 'asset';
           const info = name.split('.');
-          const ext = info[info.length - 1];
           if (/\.(png|jpe?g|svg|gif|tiff|bmp|ico)$/i.test(name)) {
             return `assets/images/[name]-[hash].[ext]`;
           }

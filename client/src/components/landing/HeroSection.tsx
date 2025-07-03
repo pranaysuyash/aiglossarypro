@@ -73,7 +73,7 @@ export function HeroSection() {
             <Button 
               variant="outline" 
               size="lg"
-              className="border-white/30 text-white hover:bg-white/10 px-6 py-3"
+              className="border-2 border-white bg-transparent text-white hover:bg-white hover:text-purple-900 px-8 py-3 font-medium transition-all duration-200 shadow-lg"
               onClick={() => document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' })}
             >
               See What's Inside
@@ -81,9 +81,9 @@ export function HeroSection() {
           </div>
         </div>
 
-        {/* Money back guarantee */}
+        {/* Trust signals */}
         <div className="mt-8 text-gray-400 text-sm">
-          <p>✅ 30-day money back guarantee • ✅ Instant access • ✅ Lifetime updates</p>
+          <p>✅ 7-day free trial • ✅ No credit card required • ✅ Lifetime updates</p>
         </div>
       </div>
     </section>

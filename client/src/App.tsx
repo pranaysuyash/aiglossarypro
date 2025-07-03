@@ -194,7 +194,9 @@ function Router() {
           <Route component={NotFound} />
         </Switch>
       </main>
-      <Footer />
+      
+      {/* Only show main footer if NOT on landing page */}
+      {!isLandingPage && <Footer />}
     </div>
   );
 }

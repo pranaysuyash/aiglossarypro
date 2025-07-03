@@ -54,13 +54,13 @@ export function FAQ() {
   ];
 
   return (
-    <section id="faq" className="py-20 px-4 bg-white">
+    <section id="faq" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-4xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
             Frequently Asked Questions
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400">
+          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 px-4 sm:px-0">
             Everything you need to know about AI/ML Glossary Pro.
           </p>
         </div>
@@ -70,25 +70,31 @@ export function FAQ() {
             <AccordionItem 
               key={index} 
               value={`item-${index}`}
-              className="border border-gray-200 rounded-lg px-6 py-2 hover:border-purple-300 transition-colors"
+              className="border border-gray-200 rounded-lg px-4 sm:px-6 py-2 hover:border-purple-300 transition-colors touch-manipulation"
             >
-              <AccordionTrigger className="text-left font-semibold text-gray-900 hover:text-purple-700">
+              <AccordionTrigger className="text-left font-semibold text-gray-900 hover:text-purple-700 text-base sm:text-lg py-4 min-h-[48px] flex items-center">
                 {faq.question}
               </AccordionTrigger>
-              <AccordionContent className="text-gray-600 dark:text-gray-400 pt-2 pb-4">
+              <AccordionContent className="text-gray-600 dark:text-gray-400 pt-2 pb-4 text-sm sm:text-base leading-relaxed">
                 {faq.answer}
               </AccordionContent>
             </AccordionItem>
           ))}
         </Accordion>
 
-        <div className="mt-12 text-center">
-          <div className="bg-purple-50 border border-purple-200 rounded-xl p-8">
-            <h3 className="text-xl font-bold text-purple-900 mb-4">
+        <div className="mt-12 text-center px-4 sm:px-0">
+          <div className="bg-purple-50 border border-purple-200 rounded-xl p-6 sm:p-8">
+            <h3 className="text-lg sm:text-xl font-bold text-purple-900 mb-4">
               Still have questions?
             </h3>
-            <p className="text-purple-700 mb-6">
-              We're here to help! Contact us at support@aimlglossarypro.com
+            <p className="text-purple-700 mb-6 text-sm sm:text-base">
+              We're here to help! Contact us at{' '}
+              <a 
+                href="mailto:support@aimlglossarypro.com" 
+                className="underline hover:no-underline break-words"
+              >
+                support@aimlglossarypro.com
+              </a>
             </p>
             <div className="text-sm text-purple-600">
               We typically respond within 24 hours.

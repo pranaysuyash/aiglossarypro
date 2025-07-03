@@ -51,13 +51,13 @@ export function Pricing() {
   ];
 
   return (
-    <section id="pricing" className="py-20 px-4 bg-gray-50">
+    <section id="pricing" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
             Simple, Fair Pricing
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto px-4 sm:px-0">
             Why pay $300-600 annually when you can get comprehensive lifetime access?
           </p>
         </div>
@@ -66,33 +66,36 @@ export function Pricing() {
         <PPPBanner />
 
         {/* Comparison Table */}
-        <div className="mb-16 max-w-5xl mx-auto">
-          <div className="overflow-x-auto">
-            <table className="w-full border border-gray-200 rounded-lg overflow-hidden bg-white shadow-lg">
+        <div className="mb-12 sm:mb-16 max-w-5xl mx-auto">
+          <div className="overflow-x-auto touch-manipulation">
+            <table className="w-full border border-gray-200 rounded-lg overflow-hidden bg-white shadow-lg min-w-[600px]">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-left p-4 font-semibold text-gray-900 border-b">Features</th>
-                  <th className="text-center p-4 font-semibold text-gray-900 border-b border-l">Free Resources</th>
-                  <th className="text-center p-4 font-semibold text-gray-900 border-b border-l">DataCamp/Coursera</th>
-                  <th className="text-center p-4 font-semibold text-white bg-purple-600 border-b border-l">AI/ML Glossary Pro</th>
+                  <th className="text-left p-2 sm:p-4 font-semibold text-gray-900 border-b text-sm sm:text-base">Features</th>
+                  <th className="text-center p-2 sm:p-4 font-semibold text-gray-900 border-b border-l text-sm sm:text-base">Free Resources</th>
+                  <th className="text-center p-2 sm:p-4 font-semibold text-gray-900 border-b border-l text-sm sm:text-base">DataCamp/Coursera</th>
+                  <th className="text-center p-2 sm:p-4 font-semibold text-white bg-purple-600 border-b border-l text-sm sm:text-base">AI/ML Glossary Pro</th>
                 </tr>
               </thead>
               <tbody>
                 {comparison.map((row, index) => (
                   <tr key={index} className="border-b border-gray-100">
-                    <td className="p-4 font-medium text-gray-900">{row.feature}</td>
-                    <td className="p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400">{row.free}</td>
-                    <td className="p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400">{row.competitors}</td>
-                    <td className="p-4 text-center border-l border-gray-200 bg-purple-50 font-semibold text-purple-900">{row.us}</td>
+                    <td className="p-2 sm:p-4 font-medium text-gray-900 text-sm sm:text-base">{row.feature}</td>
+                    <td className="p-2 sm:p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400 text-sm sm:text-base">{row.free}</td>
+                    <td className="p-2 sm:p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400 text-sm sm:text-base">{row.competitors}</td>
+                    <td className="p-2 sm:p-4 text-center border-l border-gray-200 bg-purple-50 font-semibold text-purple-900 text-sm sm:text-base">{row.us}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          <div className="text-center mt-4 text-sm text-gray-500 sm:hidden">
+            ← Scroll to see all features →
+          </div>
         </div>
 
         {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
           {/* Free Alternative */}
           <Card className="border border-gray-200">
             <CardHeader>
@@ -196,7 +199,7 @@ export function Pricing() {
               </div>
               <div className="pt-4">
                 <Button 
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white"
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
                   onClick={() => {
                     // Track analytics with pricing info
                     trackPurchaseIntent('lifetime_access', pricing.localPrice);
@@ -210,11 +213,15 @@ export function Pricing() {
                     window.open(gumroadUrl.toString(), '_blank');
                   }}
                 >
-                  {pricing.discount > 0 
-                    ? `Get Access - $${pricing.localPrice} (${pricing.discount}% off)`
-                    : `Get Lifetime Access - $${pricing.localPrice}`
-                  }
-                  <ArrowRight className="ml-2 w-4 h-4" />
+                  <span className="flex items-center justify-center gap-2">
+                    <span>
+                      {pricing.discount > 0 
+                        ? `Get Access - $${pricing.localPrice} (${pricing.discount}% off)`
+                        : `Get Lifetime Access - $${pricing.localPrice}`
+                      }
+                    </span>
+                    <ArrowRight className="w-4 h-4 flex-shrink-0" />
+                  </span>
                 </Button>
               </div>
             </CardContent>

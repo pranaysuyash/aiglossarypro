@@ -83,11 +83,14 @@ export function ContactForm({ className }: ContactFormProps) {
 
   return (
     <Card className={className}>
-      <CardHeader>
-        <CardTitle className="text-2xl font-bold text-center">Contact Us</CardTitle>
-        <p className="text-gray-600 text-center">
+      <CardHeader className="px-4 sm:px-6">
+        <CardTitle className="text-xl sm:text-2xl font-bold text-center">Contact Us</CardTitle>
+        <p className="text-sm sm:text-base text-gray-600 text-center px-2 sm:px-0">
           Still have questions? We're here to help! Contact us at{' '}
-          <a href="mailto:support@aimlglossarypro.com" className="text-purple-600 hover:underline">
+          <a 
+            href="mailto:support@aimlglossarypro.com" 
+            className="text-purple-600 hover:underline break-words"
+          >
             support@aimlglossarypro.com
           </a>
         </p>
@@ -95,11 +98,11 @@ export function ContactForm({ className }: ContactFormProps) {
           We typically respond within 24 hours.
         </p>
       </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <CardContent className="px-4 sm:px-6">
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
-              <Label htmlFor="name">Your Name *</Label>
+              <Label htmlFor="name" className="text-sm sm:text-base font-medium">Your Name *</Label>
               <Input
                 id="name"
                 name="name"
@@ -109,10 +112,11 @@ export function ContactForm({ className }: ContactFormProps) {
                 required
                 placeholder="Enter your full name"
                 disabled={isSubmitting}
+                className="min-h-[48px] text-base sm:text-sm px-4 py-3 sm:py-2 touch-manipulation"
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address *</Label>
+              <Label htmlFor="email" className="text-sm sm:text-base font-medium">Email Address *</Label>
               <Input
                 id="email"
                 name="email"
@@ -122,12 +126,13 @@ export function ContactForm({ className }: ContactFormProps) {
                 required
                 placeholder="your.email@example.com"
                 disabled={isSubmitting}
+                className="min-h-[48px] text-base sm:text-sm px-4 py-3 sm:py-2 touch-manipulation"
               />
             </div>
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="subject">Subject *</Label>
+            <Label htmlFor="subject" className="text-sm sm:text-base font-medium">Subject *</Label>
             <Input
               id="subject"
               name="subject"
@@ -137,11 +142,12 @@ export function ContactForm({ className }: ContactFormProps) {
               required
               placeholder="What can we help you with?"
               disabled={isSubmitting}
+              className="min-h-[48px] text-base sm:text-sm px-4 py-3 sm:py-2 touch-manipulation"
             />
           </div>
           
           <div className="space-y-2">
-            <Label htmlFor="message">Message *</Label>
+            <Label htmlFor="message" className="text-sm sm:text-base font-medium">Message *</Label>
             <Textarea
               id="message"
               name="message"
@@ -149,14 +155,14 @@ export function ContactForm({ className }: ContactFormProps) {
               onChange={handleChange}
               required
               placeholder="Please describe your question or feedback in detail..."
-              className="min-h-[120px]"
+              className="min-h-[120px] sm:min-h-[120px] text-base sm:text-sm px-4 py-3 sm:py-2 touch-manipulation resize-none"
               disabled={isSubmitting}
             />
           </div>
           
           <Button 
             type="submit" 
-            className="w-full bg-purple-600 hover:bg-purple-700"
+            className="w-full bg-purple-600 hover:bg-purple-700 min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
             disabled={isSubmitting}
           >
             {isSubmitting ? 'Sending...' : 'Send Message'}

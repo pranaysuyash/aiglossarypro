@@ -8,12 +8,13 @@ export function LandingHeader() {
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+        <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
           <div className="flex items-center">
             <Link href="/">
-              <div className="text-2xl font-bold text-purple-600 cursor-pointer">
-                AI/ML Glossary Pro
+              <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-600 cursor-pointer min-h-[44px] flex items-center">
+                <span className="hidden sm:inline">AI/ML Glossary Pro</span>
+                <span className="sm:hidden">AI/ML Pro</span>
               </div>
             </Link>
           </div>
@@ -84,7 +85,7 @@ export function LandingHeader() {
             <div className="md:hidden">
               <Button 
                 size="sm"
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 font-medium"
+                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 font-medium min-h-[44px] touch-manipulation"
                 onClick={() => {
                   // Track analytics
                   if (typeof window !== 'undefined' && (window as any).gtag) {

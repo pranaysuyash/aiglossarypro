@@ -25,6 +25,11 @@ export function NeuralNetworkBackground({
   maxConnections = 3,
   animationSpeed = 0.5
 }: NeuralNetworkBackgroundProps) {
+  // Reduce complexity on mobile devices
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const adjustedNodeCount = isMobile ? Math.min(nodeCount, 25) : nodeCount;
+  const adjustedMaxConnections = isMobile ? Math.min(maxConnections, 2) : maxConnections;
+  const adjustedAnimationSpeed = isMobile ? animationSpeed * 0.5 : animationSpeed;
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
   const nodesRef = useRef<Node[]>([]);
@@ -66,12 +71,12 @@ export function NeuralNetworkBackground({
       const nodes: Node[] = [];
       const rect = canvas.getBoundingClientRect();
       
-      for (let i = 0; i < nodeCount; i++) {
+      for (let i = 0; i < adjustedNodeCount; i++) {
         const node: Node = {
           x: Math.random() * rect.width,
           y: Math.random() * rect.height,
-          vx: (Math.random() - 0.5) * animationSpeed,
-          vy: (Math.random() - 0.5) * animationSpeed,
+          vx: (Math.random() - 0.5) * adjustedAnimationSpeed,
+          vy: (Math.random() - 0.5) * adjustedAnimationSpeed,
           connections: [],
           pulse: Math.random() * Math.PI * 2,
           pulseSpeed: 0.02 + Math.random() * 0.02
@@ -81,7 +86,7 @@ export function NeuralNetworkBackground({
 
       // Create connections
       nodes.forEach((node, index) => {
-        const connections = Math.floor(Math.random() * maxConnections);
+        const connections = Math.floor(Math.random() * adjustedMaxConnections);
         for (let i = 0; i < connections; i++) {
           const targetIndex = Math.floor(Math.random() * nodes.length);
           if (targetIndex !== index && !node.connections.includes(targetIndex)) {
@@ -182,7 +187,7 @@ export function NeuralNetworkBackground({
       }
       window.removeEventListener('resize', handleResize);
     };
-  }, [opacity, nodeCount, maxConnections, animationSpeed]);
+  }, [opacity, adjustedNodeCount, adjustedMaxConnections, adjustedAnimationSpeed]);
 
   return (
     <canvas

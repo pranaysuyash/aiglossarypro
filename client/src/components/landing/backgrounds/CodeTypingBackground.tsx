@@ -73,6 +73,10 @@ export function CodeTypingBackground({
   linesCount = 15,
   typingSpeed = 50
 }: CodeTypingBackgroundProps) {
+  // Reduce complexity on mobile devices
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const adjustedLinesCount = isMobile ? Math.min(linesCount, 8) : linesCount;
+  const adjustedTypingSpeed = isMobile ? typingSpeed * 1.5 : typingSpeed; // Faster on mobile
   const containerRef = useRef<HTMLDivElement>(null);
   const [lines, setLines] = useState<CodeLine[]>([]);
   const animationRef = useRef<number>();
@@ -102,15 +106,15 @@ export function CodeTypingBackground({
       const containerRect = container.getBoundingClientRect();
       const newLines: CodeLine[] = [];
       
-      for (let i = 0; i < linesCount; i++) {
+      for (let i = 0; i < adjustedLinesCount; i++) {
         const snippet = AI_ML_CODE_SNIPPETS[Math.floor(Math.random() * AI_ML_CODE_SNIPPETS.length)];
         const line: CodeLine = {
           text: snippet,
-          x: Math.random() * (containerRect.width - 400), // Leave space for text
+          x: Math.random() * (containerRect.width - (isMobile ? 200 : 400)), // Less space on mobile
           y: Math.random() * (containerRect.height - 100),
           opacity: 0.1 + Math.random() * 0.4,
           progress: 0,
-          speed: isReducedMotion.current ? 1000 : typingSpeed + Math.random() * 30,
+          speed: isReducedMotion.current ? 1000 : adjustedTypingSpeed + Math.random() * 30,
           delay: Math.random() * 5000,
           isComplete: false
         };
@@ -148,11 +152,11 @@ export function CodeTypingBackground({
             return {
               ...line,
               text: snippet,
-              x: Math.random() * ((containerRect?.width || 800) - 400),
+              x: Math.random() * ((containerRect?.width || 800) - (isMobile ? 200 : 400)),
               y: Math.random() * ((containerRect?.height || 600) - 100),
               opacity: 0.1 + Math.random() * 0.4,
               progress: 0,
-              speed: isReducedMotion.current ? 1000 : typingSpeed + Math.random() * 30,
+              speed: isReducedMotion.current ? 1000 : adjustedTypingSpeed + Math.random() * 30,
               delay: Math.random() * 2000,
               isComplete: false
             };
@@ -180,7 +184,7 @@ export function CodeTypingBackground({
       }
       window.removeEventListener('resize', handleResize);
     };
-  }, [linesCount, typingSpeed]);
+  }, [adjustedLinesCount, adjustedTypingSpeed, isMobile]);
 
   return (
     <div

@@ -34,6 +34,15 @@ const isBrowserSupported = (): boolean => {
     typeof Object.assign === 'function'
   );
   
+  // Check device capabilities for mobile optimization
+  const isMobile = window.innerWidth < 768;
+  const isLowPower = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2;
+  
+  // Use fallback on low-power mobile devices
+  if (isMobile && isLowPower) {
+    return false;
+  }
+  
   return canvasSupported && rafSupported && modernJSSupported;
 };
 

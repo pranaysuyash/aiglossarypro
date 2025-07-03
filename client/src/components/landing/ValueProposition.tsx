@@ -2,19 +2,19 @@ import { X, Clock, DollarSign } from "lucide-react";
 
 export function ValueProposition() {
   return (
-    <section className="py-20 px-4 bg-gray-50">
+    <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
             Forget about scattered documentation
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto px-4 sm:px-0">
             Get everything you need in one comprehensive platform.
           </p>
         </div>
 
         {/* Pain points vs Solution */}
-        <div className="grid md:grid-cols-2 gap-12 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 sm:gap-12 mb-12 sm:mb-16">
           {/* Pain Points */}
           <div className="space-y-6">
             <h3 className="text-2xl font-bold text-red-600 mb-6 flex items-center">
@@ -90,24 +90,24 @@ export function ValueProposition() {
         </div>
 
         {/* Call out */}
-        <div className="text-center bg-purple-100 border border-purple-200 rounded-xl p-8">
-          <h3 className="text-2xl font-bold text-purple-900 mb-4">
+        <div className="text-center bg-purple-100 border border-purple-200 rounded-xl p-6 sm:p-8">
+          <h3 className="text-xl sm:text-2xl font-bold text-purple-900 mb-6">
             When you join AI/ML Glossary Pro you'll find:
           </h3>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 text-sm">
-            <div className="text-purple-800">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 text-sm sm:text-base">
+            <div className="text-purple-800 p-3 sm:p-0">
               <div className="font-semibold">✅ 10,000+ AI/ML terms</div>
               <div>with detailed explanations</div>
             </div>
-            <div className="text-purple-800">
+            <div className="text-purple-800 p-3 sm:p-0">
               <div className="font-semibold">✅ Code examples</div>
               <div>for every major concept</div>
             </div>
-            <div className="text-purple-800">
+            <div className="text-purple-800 p-3 sm:p-0">
               <div className="font-semibold">✅ Real-world applications</div>
               <div>and use cases</div>
             </div>
-            <div className="text-purple-800">
+            <div className="text-purple-800 p-3 sm:p-0">
               <div className="font-semibold">✅ Lifetime updates</div>
               <div>as the field evolves</div>
             </div>

@@ -81,19 +81,19 @@ def gradient_descent(X, y, learning_rate=0.01, iterations=1000):
   };
 
   return (
-    <section id="preview" className="py-20 px-4 bg-gray-50">
+    <section id="preview" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
+        <div className="text-center mb-12 sm:mb-16">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
             Comprehensive Coverage Across All AI/ML Domains
           </h2>
-          <p className="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+          <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto px-4 sm:px-0">
             From basic concepts to cutting-edge research, we've got you covered.
           </p>
         </div>
 
         {/* Categories Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-12 sm:mb-16">
           {categories.map((category, index) => (
             <Card key={index} className="hover:shadow-lg transition-shadow duration-300">
               <CardHeader className="pb-3">
@@ -151,8 +151,8 @@ def gradient_descent(X, y, learning_rate=0.01, iterations=1000):
                 
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">Code Example</h4>
-                  <div className="bg-gray-900 rounded-lg p-4 overflow-x-auto">
-                    <pre className="text-sm text-gray-300">
+                  <div className="bg-gray-900 rounded-lg p-3 sm:p-4 overflow-x-auto touch-manipulation">
+                    <pre className="text-xs sm:text-sm text-gray-300 whitespace-pre-wrap sm:whitespace-pre">
                       <code>{exampleTerm.codeExample}</code>
                     </pre>
                   </div>
@@ -160,7 +160,7 @@ def gradient_descent(X, y, learning_rate=0.01, iterations=1000):
                 
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
                   <h4 className="font-semibold text-blue-900 mb-2">Real-World Applications</h4>
-                  <div className="grid md:grid-cols-2 gap-2 text-sm text-blue-800">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-blue-800">
                     <div>• Training neural networks</div>
                     <div>• Linear regression optimization</div>
                     <div>• Cost function minimization</div>
@@ -171,10 +171,10 @@ def gradient_descent(X, y, learning_rate=0.01, iterations=1000):
             </CardContent>
           </Card>
 
-          <div className="text-center mt-8">
+          <div className="text-center mt-8 px-4 sm:px-0">
             <Button 
               size="lg"
-              className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-4 w-full sm:w-auto min-h-[48px] sm:min-h-[52px] text-base sm:text-lg font-semibold touch-manipulation"
               onClick={() => {
                 // Track analytics
                 if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -188,11 +188,15 @@ def gradient_descent(X, y, learning_rate=0.01, iterations=1000):
                 window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
               }}
             >
-              {pricing.discount > 0 
-                ? `Get Access to All 10,000+ Terms - $${pricing.localPrice} (${pricing.discount}% off)`
-                : `Get Access to All 10,000+ Terms - $${pricing.localPrice}`
-              }
-              <ArrowRight className="ml-2 w-5 h-5" />
+              <span className="flex items-center justify-center gap-2">
+                <span className="text-center">
+                  {pricing.discount > 0 
+                    ? `Get Access to All 10,000+ Terms - $${pricing.localPrice} (${pricing.discount}% off)`
+                    : `Get Access to All 10,000+ Terms - $${pricing.localPrice}`
+                  }
+                </span>
+                <ArrowRight className="w-5 h-5 flex-shrink-0" />
+              </span>
             </Button>
           </div>
         </div>

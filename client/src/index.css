@@ -452,3 +452,112 @@
     text-rendering: optimizeLegibility;
   }
 }
+
+/* Enhanced mobile-specific utilities */
+.mobile-typography {
+  font-size: 16px; /* Prevents iOS zoom on input focus */
+  line-height: 1.5;
+}
+
+.mobile-button {
+  min-height: 44px;
+  min-width: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+.mobile-form-input {
+  font-size: 16px; /* Prevents iOS zoom */
+  padding: 12px 16px;
+  border-radius: 8px;
+  min-height: 48px;
+}
+
+.mobile-card {
+  border-radius: 12px;
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.mobile-section-padding {
+  padding: 48px 16px;
+}
+
+@media (min-width: 640px) {
+  .mobile-section-padding {
+    padding: 64px 24px;
+  }
+}
+
+@media (min-width: 768px) {
+  .mobile-section-padding {
+    padding: 80px 32px;
+  }
+}
+
+/* Mobile landscape optimizations */
+@media (max-width: 896px) and (orientation: landscape) and (max-height: 500px) {
+  .mobile-landscape-compact {
+    padding-top: 24px;
+    padding-bottom: 24px;
+  }
+  
+  .mobile-landscape-text {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+  }
+}
+
+/* Performance optimizations for mobile */
+@media (max-width: 768px) {
+  .mobile-performance {
+    will-change: auto;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  
+  .mobile-scroll-performance {
+    -webkit-transform: translate3d(0,0,0);
+    transform: translate3d(0,0,0);
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Mobile-specific grid improvements */
+@media (max-width: 640px) {
+  .mobile-grid-single {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .mobile-grid-spacing {
+    margin: 0 -0.5rem;
+  }
+  
+  .mobile-grid-spacing > * {
+    padding: 0 0.5rem;
+  }
+}
+
+/* Enhanced mobile navigation */
+.mobile-nav-item {
+  padding: 12px 16px;
+  border-radius: 8px;
+  transition: background-color 0.2s ease;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.mobile-nav-item:active {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Mobile-specific animation reductions */
+@media (prefers-reduced-motion: reduce) {
+  .mobile-performance * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

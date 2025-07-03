@@ -24,6 +24,9 @@ import { log as logger } from "../utils/logger";
 // Import newsletter routes
 import newsletterRoutes from "./newsletter";
 
+// Import A/B testing routes
+import abTestRoutes from "./abTests";
+
 // Import existing specialized route modules
 import cacheRoutes from "./cache";
 import s3Routes from "../s3Routes";
@@ -98,6 +101,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Register newsletter and contact routes
   app.use('/api/newsletter', newsletterRoutes);
   logger.info("✅ Newsletter and contact routes registered");
+  
+  // Register A/B testing routes
+  app.use('/api/ab-tests', abTestRoutes);
+  logger.info("✅ A/B testing routes registered");
   
   // Mount S3 routes
   app.use('/api/s3', s3Routes);

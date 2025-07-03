@@ -7,9 +7,13 @@ import { PriceDisplay } from './PriceDisplay';
 import { useCountryPricing } from '@/hooks/useCountryPricing';
 import { TestPurchaseButton } from '../TestPurchaseButton';
 import { trackPurchaseIntent } from '@/types/analytics';
+import { useBackgroundABTest } from '@/hooks/useBackgroundABTest';
+import { useABTestTracking } from '@/services/abTestingService';
 
 export function Pricing() {
   const pricing = useCountryPricing();
+  const { currentVariant } = useBackgroundABTest();
+  const { trackConversion } = useABTestTracking(currentVariant);
   
   const comparison = [
     {
@@ -203,6 +207,15 @@ export function Pricing() {
                   onClick={() => {
                     // Track analytics with pricing info
                     trackPurchaseIntent('lifetime_access', pricing.localPrice);
+                    
+                    // Track A/B test conversion
+                    trackConversion('pricing_cta_click', {
+                      value: pricing.localPrice,
+                      button_text: `Get Lifetime Access - $${pricing.localPrice}`,
+                      position: 'pricing_table',
+                      discount: pricing.discount,
+                      country: pricing.countryCode
+                    });
                     
                     // Open Gumroad with country parameter
                     const gumroadUrl = new URL('https://gumroad.com/l/aiml-glossary-pro');

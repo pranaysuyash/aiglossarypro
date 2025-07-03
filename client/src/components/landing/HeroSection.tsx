@@ -1,19 +1,63 @@
+import { useEffect } from 'react';
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowRight, BookOpen, Code, Users } from "lucide-react";
 import { useCountryPricing } from '@/hooks/useCountryPricing';
 import { useBackgroundABTest } from '@/hooks/useBackgroundABTest';
 import { BACKGROUND_COMPONENTS, BackgroundTester } from '@/components/landing/backgrounds';
+import { useABTestTracking } from '@/services/abTestingService';
 
 export function HeroSection() {
   const pricing = useCountryPricing();
   const { currentVariant, trackInteraction, isClient, setVariant } = useBackgroundABTest();
+  const { trackPageView, trackConversion, trackEngagement } = useABTestTracking(currentVariant);
 
   // Get the background component for current variant
   const BackgroundComponent = BACKGROUND_COMPONENTS[currentVariant];
 
+  // Track page view when component mounts
+  useEffect(() => {
+    if (isClient) {
+      trackPageView({
+        page: 'landing_hero',
+        pricing: pricing.localPrice,
+        country: pricing.country
+      });
+
+      // Track scroll depth
+      let maxScroll = 0;
+      const handleScroll = () => {
+        const scrollPercentage = (window.scrollY / (document.documentElement.scrollHeight - window.innerHeight)) * 100;
+        if (scrollPercentage > maxScroll) {
+          maxScroll = scrollPercentage;
+          
+          // Track significant scroll milestones
+          if (maxScroll >= 25 && maxScroll < 26) {
+            trackEngagement('scroll_depth', 25);
+          } else if (maxScroll >= 50 && maxScroll < 51) {
+            trackEngagement('scroll_depth', 50);
+          } else if (maxScroll >= 75 && maxScroll < 76) {
+            trackEngagement('scroll_depth', 75);
+          } else if (maxScroll >= 90) {
+            trackEngagement('scroll_depth', 90);
+          }
+        }
+      };
+
+      window.addEventListener('scroll', handleScroll);
+      return () => window.removeEventListener('scroll', handleScroll);
+    }
+  }, [isClient, currentVariant]);
+
   const handleCTAClick = () => {
     trackInteraction('cta_click');
+    
+    // Track conversion with A/B testing service
+    trackConversion('hero_cta_click', {
+      value: pricing.localPrice,
+      button_text: 'Start Your 7-Day Free Trial',
+      position: 'hero_main'
+    });
     
     // Track analytics
     if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -33,6 +77,13 @@ export function HeroSection() {
 
   const handleSecondaryClick = () => {
     trackInteraction('secondary_cta_click');
+    
+    // Track conversion with A/B testing service
+    trackConversion('see_whats_inside_click', {
+      button_text: 'See What\'s Inside',
+      position: 'hero_secondary'
+    });
+    
     document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' });
   };
 

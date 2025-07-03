@@ -3,9 +3,13 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowRight, Clock, Shield, Star } from "lucide-react";
 import { useCountryPricing } from '@/hooks/useCountryPricing';
 import { trackCTAClick } from '@/types/analytics';
+import { useBackgroundABTest } from '@/hooks/useBackgroundABTest';
+import { useABTestTracking } from '@/services/abTestingService';
 
 export function FinalCTA() {
   const pricing = useCountryPricing();
+  const { currentVariant } = useBackgroundABTest();
+  const { trackConversion } = useABTestTracking(currentVariant);
 
   return (
     <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-purple-900 via-blue-900 to-purple-900 text-white">
@@ -50,6 +54,15 @@ export function FinalCTA() {
             onClick={() => {
               // Track analytics
               trackCTAClick('final', 'Get Lifetime Access');
+              
+              // Track A/B test conversion
+              trackConversion('final_cta_click', {
+                value: pricing.localPrice,
+                button_text: `Get Lifetime Access - $${pricing.localPrice}`,
+                position: 'final_cta',
+                discount: pricing.discount,
+                country: pricing.countryCode
+              });
               
               window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
             }}

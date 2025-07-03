@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { db } from '../db';
 import { eq, and, desc } from 'drizzle-orm';
 import { validateRequest } from '../middleware/validateRequest';
-import { authenticateUser } from '../middleware/auth';
+import { authenticateToken } from '../middleware/adminAuth';
 import { calculateStatisticalSignificance, determineWinner } from '../utils/statistics';
 import {
   abTests,
@@ -11,7 +11,7 @@ import {
   abTestEvents,
   type ABTest,
   type ABTestMetrics as ABTestMetricsType
-} from '../../shared/abTestingSchema';
+} from '../../shared/enhancedSchema';
 
 const router = Router();
 
@@ -211,26 +211,24 @@ router.get('/results/:testId', async (req, res) => {
 });
 
 // Get all active A/B tests
-router.get('/active', authenticateUser, async (req, res) => {
+router.get('/active', authenticateToken, async (req, res) => {
   try {
-    const tests = await prisma.aBTest.findMany({
-      where: {
-        status: 'active'
-      },
-      include: {
-        metrics: true
-      }
+    const tests = await db.select().from(abTests).where(eq(abTests.status, 'running'));
+    res.json({
+      success: true,
+      data: tests
     });
-
-    res.json(tests);
   } catch (error) {
     console.error('Error fetching active tests:', error);
-    res.status(500).json({ error: 'Failed to fetch active tests' });
+    res.status(500).json({ 
+      success: false,
+      error: 'Failed to fetch active tests' 
+    });
   }
 });
 
 // Create new A/B test (admin only)
-router.post('/create', authenticateUser, validateRequest(createABTestSchema), async (req, res) => {
+router.post('/create', authenticateToken, validateRequest(createABTestSchema), async (req, res) => {
   try {
     const { name, description, variants, trafficSplit, startDate, endDate, successMetric } = req.body;
 
@@ -257,7 +255,7 @@ router.post('/create', authenticateUser, validateRequest(createABTestSchema), as
 });
 
 // End an A/B test (admin only)
-router.post('/end/:testId', authenticateUser, async (req, res) => {
+router.post('/end/:testId', authenticateToken, async (req, res) => {
   try {
     const { testId } = req.params;
 
@@ -293,7 +291,7 @@ router.post('/end/:testId', authenticateUser, async (req, res) => {
 });
 
 // Get historical test results
-router.get('/history', authenticateUser, async (req, res) => {
+router.get('/history', authenticateToken, async (req, res) => {
   try {
     const tests = await prisma.aBTest.findMany({
       where: {

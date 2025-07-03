@@ -24,8 +24,8 @@ import { log as logger } from "../utils/logger";
 // Import newsletter routes
 import newsletterRoutes from "./newsletter";
 
-// Import A/B testing routes
-import abTestRoutes from "./abTests";
+// Import A/B testing routes (simplified version)
+import abTestRoutes from "./abTestsSimplified";
 
 // Import existing specialized route modules
 import cacheRoutes from "./cache";

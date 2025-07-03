@@ -433,3 +433,13 @@ export type InsertSection = z.infer<typeof insertSectionSchema>;
 
 export type SectionItem = typeof sectionItems.$inferSelect;
 export type InsertSectionItem = z.infer<typeof insertSectionItemSchema>;
+
+// Re-export A/B testing tables
+export {
+  abTests,
+  abTestMetrics,
+  abTestEvents,
+  type ABTest,
+  type ABTestMetrics,
+  type ABTestEvent
+} from './abTestingSchema';

@@ -15,6 +15,8 @@ import { useAuth } from "../hooks/useAuth";
 import { queryClient } from "@/lib/queryClient";
 import S3FileBrowser from "@/components/S3FileBrowser";
 import { AIAdminDashboard } from "@/components/AIAdminDashboard";
+import AdminNewsletterDashboard from "@/pages/admin/AdminNewsletterDashboard";
+import AdminContactsDashboard from "@/pages/admin/AdminContactsDashboard";
 
 export default function AdminPage() {
   const { user, isAuthenticated } = useAuth();
@@ -149,6 +151,8 @@ export default function AdminPage() {
             <Sparkles className="w-4 h-4 mr-1" />
             Advanced Processing
           </TabsTrigger>
+          <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
+          <TabsTrigger value="contacts">Contacts</TabsTrigger>
           <TabsTrigger value="ai">AI Management</TabsTrigger>
         </TabsList>
         
@@ -431,6 +435,14 @@ export default function AdminPage() {
               </CardContent>
             </Card>
           </div>
+        </TabsContent>
+
+        <TabsContent value="newsletter" className="mt-4">
+          <AdminNewsletterDashboard />
+        </TabsContent>
+
+        <TabsContent value="contacts" className="mt-4">
+          <AdminContactsDashboard />
         </TabsContent>
 
         <TabsContent value="ai" className="mt-4">

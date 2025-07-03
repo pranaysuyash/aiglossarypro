@@ -28,6 +28,8 @@ import {
   userProgress,
   termViews,
   userSettings,
+  newsletterSubscriptions,
+  contactSubmissions,
 } from './schema';
 
 // Enhanced schema for complex term structure with 42 sections
@@ -369,6 +371,8 @@ export {
   userProgress,
   termViews,
   userSettings,
+  newsletterSubscriptions,
+  contactSubmissions,
 };
 
 // Enhanced schemas for validation

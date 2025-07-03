@@ -1,8 +1,10 @@
 import { Router } from 'express';
 import { db } from '../db';
-import { logger } from '../utils/logger';
+import { log } from '../utils/logger';
 import { z } from 'zod';
 import crypto from 'crypto';
+import { newsletterSubscriptions, contactSubmissions } from '../../shared/schema';
+import { eq } from 'drizzle-orm';
 
 const router = Router();
 
@@ -50,10 +52,10 @@ router.post('/subscribe', async (req, res) => {
     const { hashedIp, userAgent, language } = extractLocationData(req);
     
     // Check if email already exists
-    const existingSubscription = await db.query(
-      'SELECT id FROM newsletter_subscriptions WHERE email = ?',
-      [email]
-    );
+    const existingSubscription = await db
+      .select({ id: newsletterSubscriptions.id })
+      .from(newsletterSubscriptions)
+      .where(eq(newsletterSubscriptions.email, email));
     
     if (existingSubscription.length > 0) {
       return res.status(400).json({
@@ -63,15 +65,18 @@ router.post('/subscribe', async (req, res) => {
     }
     
     // Insert new subscription with location and attribution data
-    await db.query(
-      `INSERT INTO newsletter_subscriptions (
-        email, subscribed_at, status, language, user_agent, ip_address,
-        utm_source, utm_medium, utm_campaign
-      ) VALUES (?, datetime('now'), ?, ?, ?, ?, ?, ?, ?)`,
-      [email, 'active', language, userAgent, hashedIp, utm_source, utm_medium, utm_campaign]
-    );
+    await db.insert(newsletterSubscriptions).values({
+      email,
+      status: 'active',
+      language,
+      userAgent,
+      ipAddress: hashedIp,
+      utmSource: utm_source,
+      utmMedium: utm_medium,
+      utmCampaign: utm_campaign
+    });
     
-    logger.info(`New newsletter subscription: ${email} (${language})`);
+    log.info(`New newsletter subscription: ${email} (${language})`);
     
     res.json({
       success: true,
@@ -86,7 +91,7 @@ router.post('/subscribe', async (req, res) => {
       });
     }
     
-    logger.error('Newsletter subscription error:', error);
+    log.error('Newsletter subscription error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to subscribe. Please try again later.'
@@ -101,15 +106,21 @@ router.post('/contact', async (req, res) => {
     const { hashedIp, userAgent, language } = extractLocationData(req);
     
     // Insert contact form submission with location data
-    await db.query(
-      `INSERT INTO contact_submissions (
-        name, email, subject, message, submitted_at, status, language,
-        user_agent, ip_address, utm_source, utm_medium, utm_campaign
-      ) VALUES (?, ?, ?, ?, datetime('now'), ?, ?, ?, ?, ?, ?, ?)`,
-      [name, email, subject, message, 'new', language, userAgent, hashedIp, utm_source, utm_medium, utm_campaign]
-    );
+    await db.insert(contactSubmissions).values({
+      name,
+      email,
+      subject,
+      message,
+      status: 'new',
+      language,
+      userAgent,
+      ipAddress: hashedIp,
+      utmSource: utm_source,
+      utmMedium: utm_medium,
+      utmCampaign: utm_campaign
+    });
     
-    logger.info(`New contact form submission from: ${email} (${language})`);
+    log.info(`New contact form submission from: ${email} (${language})`);
     
     res.json({
       success: true,
@@ -124,7 +135,7 @@ router.post('/contact', async (req, res) => {
       });
     }
     
-    logger.error('Contact form submission error:', error);
+    log.error('Contact form submission error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to send message. Please try again later.'
@@ -137,12 +148,15 @@ router.post('/unsubscribe', async (req, res) => {
   try {
     const { email } = emailSchema.parse(req.body);
     
-    await db.query(
-      'UPDATE newsletter_subscriptions SET status = ?, unsubscribed_at = NOW() WHERE email = ?',
-      ['unsubscribed', email]
-    );
+    await db
+      .update(newsletterSubscriptions)
+      .set({ 
+        status: 'unsubscribed', 
+        unsubscribedAt: new Date()
+      })
+      .where(eq(newsletterSubscriptions.email, email));
     
-    logger.info(`Newsletter unsubscribe: ${email}`);
+    log.info(`Newsletter unsubscribe: ${email}`);
     
     res.json({
       success: true,
@@ -150,7 +164,7 @@ router.post('/unsubscribe', async (req, res) => {
     });
     
   } catch (error) {
-    logger.error('Newsletter unsubscribe error:', error);
+    log.error('Newsletter unsubscribe error:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to unsubscribe. Please try again later.'

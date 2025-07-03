@@ -6,6 +6,7 @@ import { registerAdminMaintenanceRoutes } from "./maintenance";
 import { registerAdminContentRoutes } from "./content";
 import { registerAdminMonitoringRoutes } from "./monitoring";
 import { registerAdminRevenueRoutes } from "./revenue";
+import { registerAdminNewsletterRoutes } from "./newsletter";
 import { log as logger } from "../../utils/logger";
 
 /**
@@ -23,6 +24,7 @@ export function registerAdminRoutes(app: Express): void {
   registerAdminContentRoutes(app);
   registerAdminMonitoringRoutes(app);
   registerAdminRevenueRoutes(app);
+  registerAdminNewsletterRoutes(app);
   
   logger.info('✅ All admin routes registered successfully');
 } 

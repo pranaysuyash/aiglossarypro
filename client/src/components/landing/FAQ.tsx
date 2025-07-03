@@ -54,7 +54,7 @@ export function FAQ() {
   ];
 
   return (
-    <section className="py-20 px-4 bg-white">
+    <section id="faq" className="py-20 px-4 bg-white">
       <div className="max-w-4xl mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">

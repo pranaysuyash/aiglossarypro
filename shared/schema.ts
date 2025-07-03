@@ -196,3 +196,65 @@ export const userSettings = pgTable("user_settings", {
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 });
+
+// Newsletter subscriptions table
+export const newsletterSubscriptions = pgTable("newsletter_subscriptions", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  email: varchar("email", { length: 255 }).notNull().unique(),
+  status: varchar("status", { length: 20 }).notNull().default("active"), // active, unsubscribed
+  language: varchar("language", { length: 10 }).default("en"),
+  userAgent: text("user_agent"),
+  ipAddress: varchar("ip_address", { length: 64 }), // Hashed IP for privacy
+  utmSource: varchar("utm_source", { length: 100 }),
+  utmMedium: varchar("utm_medium", { length: 100 }),
+  utmCampaign: varchar("utm_campaign", { length: 100 }),
+  createdAt: timestamp("created_at").defaultNow(),
+  unsubscribedAt: timestamp("unsubscribed_at"),
+}, (table) => ({
+  emailIdx: index("newsletter_email_idx").on(table.email),
+  statusIdx: index("newsletter_status_idx").on(table.status),
+  createdAtIdx: index("newsletter_created_at_idx").on(table.createdAt),
+  utmSourceIdx: index("newsletter_utm_source_idx").on(table.utmSource),
+}));
+
+export const insertNewsletterSubscriptionSchema = createInsertSchema(newsletterSubscriptions).omit({
+  id: true,
+  createdAt: true,
+  unsubscribedAt: true,
+} as const);
+
+export type NewsletterSubscription = typeof newsletterSubscriptions.$inferSelect;
+export type InsertNewsletterSubscription = z.infer<typeof insertNewsletterSubscriptionSchema>;
+
+// Contact form submissions table
+export const contactSubmissions = pgTable("contact_submissions", {
+  id: integer("id").primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar("name", { length: 100 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  subject: varchar("subject", { length: 200 }).notNull(),
+  message: text("message").notNull(),
+  status: varchar("status", { length: 20 }).notNull().default("new"), // new, in_progress, resolved
+  language: varchar("language", { length: 10 }).default("en"),
+  userAgent: text("user_agent"),
+  ipAddress: varchar("ip_address", { length: 64 }), // Hashed IP for privacy
+  utmSource: varchar("utm_source", { length: 100 }),
+  utmMedium: varchar("utm_medium", { length: 100 }),
+  utmCampaign: varchar("utm_campaign", { length: 100 }),
+  notes: text("notes"), // Admin notes
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  emailIdx: index("contact_email_idx").on(table.email),
+  statusIdx: index("contact_status_idx").on(table.status),
+  createdAtIdx: index("contact_created_at_idx").on(table.createdAt),
+  utmSourceIdx: index("contact_utm_source_idx").on(table.utmSource),
+}));
+
+export const insertContactSubmissionSchema = createInsertSchema(contactSubmissions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export type ContactSubmission = typeof contactSubmissions.$inferSelect;
+export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;

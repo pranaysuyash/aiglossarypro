@@ -35,7 +35,7 @@ export function LandingHeader() {
               className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                document.querySelector('[class*="Pricing"]')?.scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
               }}
             >
               Pricing
@@ -45,7 +45,7 @@ export function LandingHeader() {
               className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
               onClick={(e) => {
                 e.preventDefault();
-                document.querySelector('[class*="FAQ"]')?.scrollIntoView({ behavior: 'smooth' });
+                document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' });
               }}
             >
               FAQ

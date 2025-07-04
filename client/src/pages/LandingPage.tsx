@@ -1,6 +1,7 @@
 import { LandingHeader } from "@/components/landing/LandingHeader";
 import { HeroSection } from "@/components/landing/HeroSection";
 import { ValueProposition } from "@/components/landing/ValueProposition";
+import { FounderStory } from "@/components/landing/FounderStory";
 import { WhatYouGet } from "@/components/landing/WhatYouGet";
 import { ContentPreview } from "@/components/landing/ContentPreview";
 import InteractiveDemo from "@/components/interactive/InteractiveDemo";
@@ -22,6 +23,9 @@ export default function LandingPage() {
       
       {/* Value Proposition */}
       <ValueProposition />
+      
+      {/* Founder Story */}
+      <FounderStory />
       
       {/* What You Get */}
       <WhatYouGet />

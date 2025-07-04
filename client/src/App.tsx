@@ -24,13 +24,16 @@ import {
   LazyTermDetailPage,
   LazyLifetimePage,
   LazyProfilePage,
-  LazyLandingPage
+  LazyLandingPage,
+  LazyPrivacyPolicyPage,
+  LazyTermsOfServicePage
 } from "@/components/lazy/LazyPages";
 
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FirebaseLoginPage from "@/components/FirebaseLoginPage";
 import SkipLinks from "@/components/accessibility/SkipLinks";
+import CookieConsentBanner from "@/components/CookieConsentBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { preloadOnIdle, preloadForAuthenticatedUser, preloadForAdmin } from "@/utils/preloadComponents";
 import "@/utils/bundleAnalyzer"; // Initialize bundle analyzer
@@ -191,12 +194,17 @@ function Router() {
               <LazyProfilePage />
             </ProtectedRoute>
           </Route>
+          <Route path="/privacy" component={LazyPrivacyPolicyPage} />
+          <Route path="/terms" component={LazyTermsOfServicePage} />
           <Route component={NotFound} />
         </Switch>
       </main>
       
       {/* Only show main footer if NOT on landing page */}
       {!isLandingPage && <Footer />}
+      
+      {/* Cookie Consent Banner - Show on all pages */}
+      <CookieConsentBanner />
     </div>
   );
 }

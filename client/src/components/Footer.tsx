@@ -140,15 +140,22 @@ export default function Footer({ className, onSubscribe }: FooterProps = {}) {
           <div className="flex flex-col md:flex-row justify-between">
             <p>&copy; {new Date().getFullYear()} AI/ML Glossary. All rights reserved.</p>
             <div className="flex space-x-4 mt-4 md:mt-0">
-              <a href="/privacy" className="hover:text-white dark:hover:text-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+              <Link href="/privacy" className="hover:text-white dark:hover:text-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 Privacy Policy
-              </a>
-              <a href="/terms" className="hover:text-white dark:hover:text-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+              </Link>
+              <Link href="/terms" className="hover:text-white dark:hover:text-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                 Terms of Service
-              </a>
-              <a href="/cookies" className="hover:text-white dark:hover:text-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                Cookie Policy
-              </a>
+              </Link>
+              <button 
+                onClick={() => {
+                  // Clear cookie consent to show banner again
+                  localStorage.removeItem('ai-glossary-cookie-consent');
+                  window.location.reload();
+                }}
+                className="hover:text-white dark:hover:text-gray-100 transition focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Cookie Settings
+              </button>
             </div>
           </div>
         </div>

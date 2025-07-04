@@ -39,6 +39,10 @@ export const LazyLifetime = lazy(() => import('@/pages/Lifetime'));
 export const LazyProfile = lazy(() => import('@/pages/Profile'));
 export const LazyLanding = lazy(() => import('@/pages/LandingPage'));
 
+// Legal pages
+export const LazyPrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
+export const LazyTermsOfService = lazy(() => import('@/pages/TermsOfService'));
+
 // HOC to wrap lazy pages with Suspense and ErrorBoundary
 export function withLazyLoading<T extends object>(Component: React.ComponentType<T>) {
   return function LazyWrapper(props: T) {
@@ -69,3 +73,7 @@ export const LazyTermDetailPage = withLazyLoading(LazyEnhancedTermDetail);
 export const LazyLifetimePage = withLazyLoading(LazyLifetime);
 export const LazyProfilePage = withLazyLoading(LazyProfile);
 export const LazyLandingPage = withLazyLoading(LazyLanding);
+
+// Legal pages
+export const LazyPrivacyPolicyPage = withLazyLoading(LazyPrivacyPolicy);
+export const LazyTermsOfServicePage = withLazyLoading(LazyTermsOfService);

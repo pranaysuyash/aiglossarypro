@@ -150,8 +150,8 @@ const redisConfig: RedisConfig = {
 let redisClient: RedisClient;
 
 const createRedisClient = (): RedisClient => {
-  // Use mock client for development if no Redis URL is provided
-  if (process.env.NODE_ENV === 'development' && !process.env.REDIS_URL) {
+  // Use mock client for development if no Redis URL is provided and REDIS_ENABLED is not true
+  if (process.env.NODE_ENV === 'development' && !process.env.REDIS_URL && process.env.REDIS_ENABLED !== 'true') {
     console.log('[Redis] Using mock Redis client for development');
     return new MockRedisClient();
   }

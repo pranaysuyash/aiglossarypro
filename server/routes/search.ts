@@ -6,6 +6,7 @@ import { eq, ilike, or, sql, desc, asc } from "drizzle-orm";
 import { db } from "../db";
 import { searchQuerySchema, paginationSchema } from "../middleware/security";
 import { enhancedSearch, getSearchSuggestions } from "../enhancedSearchService";
+import { optimizedSearch, optimizedSearchSuggestions, getPopularSearchTerms as getOptimizedPopularTerms } from "../optimizedSearchService";
 
 /**
  * Search and discovery routes
@@ -44,13 +45,14 @@ export function registerSearchRoutes(app: Express): void {
       
       console.log('Search query:', q);
       
-      // Use enhanced search service
-      const searchResponse = await enhancedSearch({
+      // Use optimized search service for better performance
+      const searchResponse = await optimizedSearch({
         query: q as string,
         page: parseInt(page as string) || 1,
         limit: parseInt(limit as string) || 20,
         category: category as string,
-        sort: sort as 'relevance' | 'name' | 'popularity' | 'recent'
+        sort: sort as 'relevance' | 'name' | 'popularity' | 'recent',
+        includeDefinition: true
       });
       
       // Transform search response to match shared types
@@ -102,14 +104,8 @@ export function registerSearchRoutes(app: Express): void {
         return res.json([]);
       }
       
-      // Use basic search for suggestions
-      const suggestionResults = await db.select({ name: terms.name })
-        .from(terms)
-        .where(ilike(terms.name, `${query}%`))
-        .orderBy(desc(terms.viewCount))
-        .limit(Math.min(limit - 3, 15));
-      
-      const termSuggestions = suggestionResults.map(r => r.name);
+      // Use optimized search for suggestions
+      const termSuggestions = await optimizedSearchSuggestions(query, Math.min(limit - 3, 15));
       
       // Get category suggestions (using storage layer)
       // TODO: Add searchCategories(query, limit) method to enhancedStorage in Phase 2
@@ -234,9 +230,9 @@ export function registerSearchRoutes(app: Express): void {
     try {
       const { limit = 10, timeframe = '7d' } = req.query;
       
-      const popularTerms = await storage.getPopularSearchTerms(
-        parseInt(limit as string),
-        timeframe as string
+      // Use optimized popular terms for better performance
+      const popularTerms = await getOptimizedPopularTerms(
+        parseInt(limit as string)
       );
       
       res.json({

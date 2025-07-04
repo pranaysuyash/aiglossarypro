@@ -18,7 +18,7 @@ export default function About() {
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
             The story of how AI/ML Glossary Pro came to be, and why it's designed specifically for 
-            professionals who need to understand AI/ML concepts without a computer science background.
+            professionals who need to understand AI/ML concepts in a rapidly evolving field.
           </p>
         </div>
       </section>
@@ -40,15 +40,11 @@ export default function About() {
                     Hi, I'm Pranay
                   </h2>
                   <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-                    I'm the founder of AI/ML Glossary Pro, and I'm not a computer scientist, AI researcher, 
-                    or software engineer. I'm a business professional who got completely overwhelmed trying 
-                    to understand the AI/ML world - and decided to do something about it.
+                    I'm the founder of AI/ML Glossary Pro. I have a CS degree, but I spent the last 10 years building my career outside of tech. When I decided to dive into AI/ML, I thought my technical background would help. I was wrong.
                   </p>
                   <Quote className="w-8 h-8 text-blue-500 mb-4 mx-auto lg:mx-0" />
                   <blockquote className="text-lg text-gray-700 italic leading-relaxed">
-                    "Every article assumed I knew what 'gradient descent' meant, every tutorial skipped explaining 
-                    what a 'tensor' actually was, and every paper felt like it was written in a foreign language. 
-                    I spent entire weekends just trying to understand what 'backpropagation' meant."
+                    "The field had evolved completely. Terms like 'transformer architecture,' 'attention mechanisms,' and 'RLHF' didn't exist when I was in school. Even basic concepts had new implementations and meanings. I found myself googling constantly, jumping between research papers, blog posts, and Stack Overflow threads."
                   </blockquote>
                 </div>
               </div>
@@ -70,13 +66,12 @@ export default function About() {
                     <div>
                       <h3 className="font-bold text-red-900 mb-2">Time Wasted on Scattered Information</h3>
                       <p className="text-red-700 text-sm leading-relaxed mb-4">
-                        I'd spend hours jumping between Wikipedia, research papers, blog posts, and tutorials, 
-                        trying to piece together one concept. Each source assumed different background knowledge.
+                        I'd spend hours jumping between research papers, blog posts, and Stack Overflow threads, 
+                        trying to piece together one concept. Every resource assumed knowledge I didn't have or explained things in ways that felt disconnected from practical application.
                       </p>
                       <p className="text-red-700 text-sm leading-relaxed">
-                        I once spent an entire weekend trying to understand what "attention mechanisms" were, 
-                        only to realize I needed to understand transformers first, which required understanding 
-                        sequence-to-sequence models, which needed RNNs, which needed... you get the idea.
+                        I once spent an entire weekend trying to understand what "transformer architecture" meant, 
+                        only to realize the field had evolved completely since my CS degree. Terms that didn't exist when I was in school were now fundamental concepts.
                       </p>
                     </div>
                   </div>
@@ -92,12 +87,10 @@ export default function About() {
                     <div>
                       <h3 className="font-bold text-orange-900 mb-2">Content Not Made for Real People</h3>
                       <p className="text-orange-700 text-sm leading-relaxed mb-4">
-                        Academic papers written for PhD researchers. Wikipedia articles that assume you already 
-                        know everything. Tutorials that skip the "why" and jump straight to code.
+                        So I started taking notes. Detailed notes. If I struggled to understand something, I'd research it from multiple angles until I could explain it clearly to someone re-entering tech like me.
                       </p>
                       <p className="text-orange-700 text-sm leading-relaxed">
-                        I needed explanations that started from "what is this?" and built up logically, 
-                        with real-world examples I could relate to. Not found anywhere.
+                        I needed explanations that bridged the gap between academic complexity and practical understanding - written for someone who knows what it's like to feel behind in a rapidly moving field.
                       </p>
                     </div>
                   </div>
@@ -120,9 +113,7 @@ export default function About() {
                   <div>
                     <h3 className="font-bold text-gray-900 mb-2">The Frustration Phase</h3>
                     <p className="text-gray-700 leading-relaxed">
-                      Working in business, I kept hearing about AI/ML transforming industries. I wanted to understand 
-                      it, but every resource assumed I had a computer science background. I'd start reading about 
-                      "neural networks" and get lost in mathematical notation within the first paragraph.
+                      After 10 years outside of tech, I kept hearing about AI/ML transforming industries. I thought my CS degree would help me understand it quickly. But the field had evolved completely - terms like "transformer architecture," "attention mechanisms," and "RLHF" didn't exist when I was in school.
                     </p>
                   </div>
                 </div>
@@ -134,9 +125,7 @@ export default function About() {
                   <div>
                     <h3 className="font-bold text-gray-900 mb-2">The Obsession Phase</h3>
                     <p className="text-gray-700 leading-relaxed">
-                      I decided to systematically learn everything. I started keeping notes, creating my own 
-                      glossary, and breaking down complex concepts into simpler terms. I'd spend evenings and 
-                      weekends reading research papers, watching YouTube videos, and taking online courses.
+                      So I started taking notes. Detailed notes. If I struggled to understand something, I'd research it from multiple angles until I could explain it clearly to someone re-entering tech like me. I'd spend evenings and weekends reading research papers, watching YouTube videos, and taking online courses.
                     </p>
                   </div>
                 </div>
@@ -148,9 +137,7 @@ export default function About() {
                   <div>
                     <h3 className="font-bold text-gray-900 mb-2">The Breakthrough Phase</h3>
                     <p className="text-gray-700 leading-relaxed">
-                      After months of struggle, things started clicking. I developed a method: always start with 
-                      the basic definition, explain it in simple terms, provide real-world examples, then build 
-                      up to more complex applications. I started sharing my notes with colleagues who had the same struggles.
+                      My notes grew: 100 terms... 1,000... 5,000... 10,000+. I developed a method: always start with the basic definition, explain it in simple terms, provide real-world examples, then build up to more complex applications. I started sharing my notes with colleagues who had the same struggles.
                     </p>
                   </div>
                 </div>
@@ -162,9 +149,7 @@ export default function About() {
                   <div>
                     <h3 className="font-bold text-gray-900 mb-2">The Building Phase</h3>
                     <p className="text-gray-700 leading-relaxed">
-                      My colleagues loved my notes. They were finally understanding concepts they'd been confused 
-                      about for years. I realized I wasn't the only one struggling - there were thousands of business 
-                      professionals, students, and career changers who needed AI/ML explanations written for real people.
+                      Colleagues transitioning into AI/ML started asking for copies. "Finally, explanations that don't assume I've been following every AI breakthrough for the past decade!" I realized I wasn't the only one struggling - there were thousands of professionals, students, and career changers who needed AI/ML explanations that bridge the gap between academic complexity and practical understanding.
                     </p>
                   </div>
                 </div>
@@ -234,14 +219,11 @@ export default function About() {
                   Why Free Forever?
                 </h2>
                 <p className="text-lg text-green-800 leading-relaxed mb-6">
-                  I remember exactly how it felt to be lost and overwhelmed, staring at a research paper 
-                  that might as well have been written in another language. I remember the frustration of 
-                  paying for courses that assumed knowledge I didn't have.
+                  I remember exactly how it felt to be lost and overwhelmed, realizing that my CS degree couldn't keep up with how fast the field was evolving. I remember the frustration of paying for courses that assumed I'd been following every AI breakthrough for the past decade.
                 </p>
                 <p className="text-lg text-green-800 leading-relaxed">
                   That's why the core platform is free forever. Everyone deserves access to clear, 
-                  understandable explanations of AI/ML concepts. Premium features help support continued 
-                  development, but the essentials will always be free.
+                  understandable explanations of AI/ML concepts - especially those re-entering tech or transitioning careers. Premium features help support continued development, but the essentials will always be free.
                 </p>
               </CardContent>
             </Card>

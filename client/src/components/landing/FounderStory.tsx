@@ -35,7 +35,7 @@ export function FounderStory() {
               <div className="flex-1 text-center lg:text-left">
                 <Quote className="w-8 h-8 text-blue-500 mb-4 mx-auto lg:mx-0" />
                 <blockquote className="text-lg sm:text-xl text-gray-700 mb-6 italic leading-relaxed">
-                  "I'm not a computer scientist or AI researcher. I'm a business professional who got completely lost in the AI/ML world. Every article assumed I knew what 'gradient descent' meant, every tutorial skipped explaining what a 'tensor' actually was, and every paper felt like it was written in a foreign language."
+                  "I have a CS degree, but I spent the last 10 years building my career outside of tech. When I decided to dive into AI/ML, I thought my technical background would help. I was wrong. The field had evolved completely. Terms like 'transformer architecture,' 'attention mechanisms,' and 'RLHF' didn't exist when I was in school."
                 </blockquote>
                 <div className="text-right">
                   <cite className="text-base text-gray-600 not-italic">
@@ -58,8 +58,7 @@ export function FounderStory() {
                 <div>
                   <h3 className="font-bold text-red-900 mb-2">The Frustration</h3>
                   <p className="text-red-700 text-sm leading-relaxed">
-                    Spending entire weekends just to understand what "backpropagation" meant. 
-                    Technical papers written for PhDs. Wikipedia articles that sent me down rabbit holes of prerequisites I didn't have.
+                    I found myself googling constantly, jumping between research papers, blog posts, and Stack Overflow threads. Every resource assumed knowledge I didn't have or explained things in ways that felt disconnected from practical application.
                   </p>
                 </div>
               </div>
@@ -75,8 +74,7 @@ export function FounderStory() {
                 <div>
                   <h3 className="font-bold text-orange-900 mb-2">The Missing Piece</h3>
                   <p className="text-orange-700 text-sm leading-relaxed">
-                    No single resource that explained AI/ML concepts the way I needed them explained — 
-                    in plain English, with real examples, building from basics to advanced, designed for actual learning.
+                    So I started taking notes. Detailed notes. If I struggled to understand something, I'd research it from multiple angles until I could explain it clearly to someone re-entering tech like me.
                   </p>
                 </div>
               </div>
@@ -111,9 +109,8 @@ export function FounderStory() {
             
             <div className="text-center">
               <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                After 2 years of obsessive research, curating, and writing (while working my day job), 
-                I created the comprehensive AI/ML reference I desperately needed. <span className="font-semibold text-blue-600">Now 1,000+ professionals use it daily</span> 
-                to understand everything from basic concepts like "what is a neural network" to advanced topics like transformer architectures.
+                My notes grew: 100 terms... 1,000... 5,000... 10,000+. Colleagues transitioning into AI/ML started asking for copies. "Finally, explanations that don't assume I've been following every AI breakthrough for the past decade!" <span className="font-semibold text-blue-600">Now 1,000+ professionals use it daily</span> 
+                to bridge the gap between academic complexity and practical understanding.
               </p>
               
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl mx-auto">
@@ -121,9 +118,8 @@ export function FounderStory() {
                   Why Free Forever?
                 </p>
                 <p className="text-blue-700 text-sm leading-relaxed">
-                  I remember what it felt like to be lost and overwhelmed. That's why the core platform is free forever. 
-                  Premium features like advanced code examples and AI-powered explanations help support 
-                  continued development while keeping the essentials free for everyone who needs them.
+                  AI/ML Glossary Pro bridges the gap between academic complexity and practical understanding - built by someone who knows what it's like to feel behind in a rapidly moving field. That's why the core platform is free forever. 
+                  Premium features help support continued development while keeping the essentials accessible to everyone.
                 </p>
               </div>
             </div>
@@ -139,11 +135,11 @@ export function FounderStory() {
             <div className="grid sm:grid-cols-3 gap-4 text-sm text-gray-600">
               <div className="flex items-center justify-center gap-2">
                 <Heart className="w-4 h-4 text-red-500" />
-                <span>Non-technical background</span>
+                <span>Career changer perspective</span>
               </div>
               <div className="flex items-center justify-center gap-2">
                 <BookOpen className="w-4 h-4 text-blue-500" />
-                <span>Self-taught AI/ML enthusiast</span>
+                <span>Re-entering tech after 10 years</span>
               </div>
               <div className="flex items-center justify-center gap-2">
                 <Target className="w-4 h-4 text-green-500" />

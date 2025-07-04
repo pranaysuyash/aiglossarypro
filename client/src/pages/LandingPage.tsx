@@ -3,6 +3,7 @@ import { HeroSection } from "@/components/landing/HeroSection";
 import { ValueProposition } from "@/components/landing/ValueProposition";
 import { WhatYouGet } from "@/components/landing/WhatYouGet";
 import { ContentPreview } from "@/components/landing/ContentPreview";
+import InteractiveDemo from "@/components/interactive/InteractiveDemo";
 import { SocialProof } from "@/components/landing/SocialProof";
 import { Pricing } from "@/components/landing/Pricing";
 import { FAQ } from "@/components/landing/FAQ";
@@ -27,6 +28,13 @@ export default function LandingPage() {
       
       {/* Content Preview */}
       <ContentPreview />
+      
+      {/* Interactive Demo */}
+      <section className="py-16 sm:py-20 lg:py-24 bg-gradient-to-b from-gray-50 to-white">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <InteractiveDemo />
+        </div>
+      </section>
       
       {/* Social Proof */}
       <SocialProof />

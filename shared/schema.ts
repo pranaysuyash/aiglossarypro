@@ -258,3 +258,50 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
 
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;
+
+// Early bird customers table for First 500 Customers promotion
+export const earlyBirdCustomers = pgTable("early_bird_customers", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
+  email: varchar("email", { length: 255 }).notNull(),
+  purchaseOrderId: varchar("purchase_order_id", { length: 255 }).unique(), // Gumroad order ID
+  status: varchar("status", { length: 20 }).notNull().default("registered"), // registered, purchased, expired
+  discountAmount: integer("discount_amount").notNull().default(70), // $70 discount
+  originalPrice: integer("original_price").notNull().default(24900), // $249 in cents
+  discountedPrice: integer("discounted_price").notNull().default(17900), // $179 in cents
+  registeredAt: timestamp("registered_at").defaultNow().notNull(),
+  purchasedAt: timestamp("purchased_at"),
+  expiresAt: timestamp("expires_at").notNull(), // 30 days from registration
+  utmSource: varchar("utm_source", { length: 100 }),
+  utmMedium: varchar("utm_medium", { length: 100 }),
+  utmCampaign: varchar("utm_campaign", { length: 100 }),
+  countryCode: varchar("country_code", { length: 2 }),
+  ipAddress: varchar("ip_address", { length: 64 }), // Hashed IP for privacy
+}, (table) => ({
+  emailIdx: index("early_bird_customers_email_idx").on(table.email),
+  statusIdx: index("early_bird_customers_status_idx").on(table.status),
+  registeredAtIdx: index("early_bird_customers_registered_at_idx").on(table.registeredAt),
+  purchasedAtIdx: index("early_bird_customers_purchased_at_idx").on(table.purchasedAt),
+  utmSourceIdx: index("early_bird_customers_utm_source_idx").on(table.utmSource),
+}));
+
+export const insertEarlyBirdCustomerSchema = createInsertSchema(earlyBirdCustomers).omit({
+  id: true,
+  registeredAt: true,
+} as const);
+
+export type EarlyBirdCustomer = typeof earlyBirdCustomers.$inferSelect;
+export type InsertEarlyBirdCustomer = z.infer<typeof insertEarlyBirdCustomerSchema>;
+
+// Early bird status tracking table
+export const earlyBirdStatus = pgTable("early_bird_status", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  totalRegistered: integer("total_registered").notNull().default(0),
+  totalPurchased: integer("total_purchased").notNull().default(0),
+  maxEarlyBirdSlots: integer("max_early_bird_slots").notNull().default(500),
+  earlyBirdActive: boolean("early_bird_active").notNull().default(true),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
+
+export type EarlyBirdStatus = typeof earlyBirdStatus.$inferSelect;
+export type InsertEarlyBirdStatus = typeof earlyBirdStatus.$inferInsert;

@@ -19,6 +19,7 @@ import { registerMediaRoutes } from "./media";
 import { registerSeoRoutes } from "./seo";
 import { registerContentRoutes } from "./content";
 import { registerGumroadRoutes } from "./gumroad";
+import { registerEarlyBirdRoutes } from "./earlyBird";
 import { log as logger } from "../utils/logger";
 
 // Import newsletter routes
@@ -97,6 +98,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Register Gumroad monetization routes
   registerGumroadRoutes(app);
   logger.info("✅ Gumroad monetization routes registered");
+  
+  // Register early bird pricing routes
+  registerEarlyBirdRoutes(app);
+  logger.info("✅ Early bird pricing routes registered");
   
   // Register newsletter and contact routes
   app.use('/api/newsletter', newsletterRoutes);

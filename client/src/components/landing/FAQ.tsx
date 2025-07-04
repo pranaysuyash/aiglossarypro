@@ -17,7 +17,7 @@ export function FAQ() {
     },
     {
       question: "Do you offer refunds?", 
-      answer: "Absolutely! We offer a 100% money back guarantee within 30 days of purchase, no questions asked. If you're not completely satisfied with the platform, just contact us for a full refund."
+      answer: "We do not offer refunds. However, you can try the platform risk-free with a 7-day free trial before purchasing. If you have questions, contact us at support@aimlglossarypro.com."
     },
     {
       question: "How often is the content updated?",

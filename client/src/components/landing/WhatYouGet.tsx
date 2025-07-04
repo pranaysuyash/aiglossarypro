@@ -50,9 +50,9 @@ export function WhatYouGet() {
     },
     {
       icon: Shield,
-      title: "100% Satisfaction Guarantee",
+      title: "Risk-Free Trial",
       description: "7-day free trial, no credit card required",
-      details: "If you're not completely satisfied, get a full refund",
+      details: "Try before you buy. No refunds after purchase.",
       color: "text-red-600"
     }
   ];

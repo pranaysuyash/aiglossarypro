@@ -72,7 +72,7 @@ export function Pricing() {
         {/* Comparison Table */}
         <div className="mb-12 sm:mb-16 max-w-5xl mx-auto">
           <div className="overflow-x-auto touch-manipulation">
-            <table className="w-full border border-gray-200 rounded-lg overflow-hidden bg-white shadow-lg min-w-[600px]">
+            <table className="w-full border border-gray-200 rounded-lg overflow-hidden bg-white shadow-lg sm:min-w-[600px]">
               <thead className="bg-gray-50">
                 <tr>
                   <th className="text-left p-2 sm:p-4 font-semibold text-gray-900 border-b text-sm sm:text-base">Features</th>

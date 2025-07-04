@@ -12,7 +12,7 @@ import Footer from "@/components/Footer";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       {/* Landing Header - separate from main app header */}
       <LandingHeader />
       

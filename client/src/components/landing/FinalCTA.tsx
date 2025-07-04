@@ -147,7 +147,7 @@ export function FinalCTA() {
         {/* Final Reassurance */}
         <div className="mt-12 text-gray-400 text-sm sm:text-base max-w-2xl mx-auto px-4 sm:px-0">
           <p className="leading-relaxed">
-            <strong className="text-white">Risk-free trial:</strong> Try the platform free for 7 days. After purchase, no refunds are provided. We're confident you'll find this invaluable for your AI/ML journey.
+            <strong className="text-white">Start free forever:</strong> Access all 10,000+ terms with no barriers. Upgrade anytime to premium features for enhanced learning. We're confident you'll find this invaluable for your AI/ML journey.
           </p>
         </div>
       </div>

@@ -25,6 +25,7 @@ import {
   LazyLifetimePage,
   LazyProfilePage,
   LazyLandingPage,
+  LazyAboutPage,
   LazyPrivacyPolicyPage,
   LazyTermsOfServicePage
 } from "@/components/lazy/LazyPages";
@@ -194,6 +195,7 @@ function Router() {
               <LazyProfilePage />
             </ProtectedRoute>
           </Route>
+          <Route path="/about" component={LazyAboutPage} />
           <Route path="/privacy" component={LazyPrivacyPolicyPage} />
           <Route path="/terms" component={LazyTermsOfServicePage} />
           <Route component={NotFound} />

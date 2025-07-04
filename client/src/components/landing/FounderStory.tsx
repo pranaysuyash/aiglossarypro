@@ -35,11 +35,11 @@ export function FounderStory() {
               <div className="flex-1 text-center lg:text-left">
                 <Quote className="w-8 h-8 text-blue-500 mb-4 mx-auto lg:mx-0" />
                 <blockquote className="text-lg sm:text-xl text-gray-700 mb-6 italic leading-relaxed">
-                  "I'm not a computer scientist or AI researcher. I'm a business professional who got frustrated trying to understand AI/ML concepts from scattered Wikipedia articles, dense academic papers, and incomplete tutorials."
+                  "I'm not a computer scientist or AI researcher. I'm a business professional who got completely lost in the AI/ML world. Every article assumed I knew what 'gradient descent' meant, every tutorial skipped explaining what a 'tensor' actually was, and every paper felt like it was written in a foreign language."
                 </blockquote>
                 <div className="text-right">
                   <cite className="text-base text-gray-600 not-italic">
-                    — Sarah Chen, Founder
+                    — Pranay, Founder
                   </cite>
                 </div>
               </div>
@@ -58,8 +58,8 @@ export function FounderStory() {
                 <div>
                   <h3 className="font-bold text-red-900 mb-2">The Frustration</h3>
                   <p className="text-red-700 text-sm leading-relaxed">
-                    Spending hours jumping between dozens of sources just to understand one concept. 
-                    Technical papers written for PhDs. Wikipedia articles that assume you already know everything.
+                    Spending entire weekends just to understand what "backpropagation" meant. 
+                    Technical papers written for PhDs. Wikipedia articles that sent me down rabbit holes of prerequisites I didn't have.
                   </p>
                 </div>
               </div>
@@ -75,8 +75,8 @@ export function FounderStory() {
                 <div>
                   <h3 className="font-bold text-orange-900 mb-2">The Missing Piece</h3>
                   <p className="text-orange-700 text-sm leading-relaxed">
-                    No single resource that explained AI/ML concepts in plain English, 
-                    with practical examples, organized for learning — not just reference.
+                    No single resource that explained AI/ML concepts the way I needed them explained — 
+                    in plain English, with real examples, building from basics to advanced, designed for actual learning.
                   </p>
                 </div>
               </div>
@@ -111,9 +111,9 @@ export function FounderStory() {
             
             <div className="text-center">
               <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                After 2 years of research, curating, and writing, I created the comprehensive AI/ML reference 
-                I always wanted. <span className="font-semibold text-blue-600">Now 1,000+ professionals use it daily</span> 
-                to understand everything from basic neural networks to advanced transformer architectures.
+                After 2 years of obsessive research, curating, and writing (while working my day job), 
+                I created the comprehensive AI/ML reference I desperately needed. <span className="font-semibold text-blue-600">Now 1,000+ professionals use it daily</span> 
+                to understand everything from basic concepts like "what is a neural network" to advanced topics like transformer architectures.
               </p>
               
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl mx-auto">
@@ -121,9 +121,9 @@ export function FounderStory() {
                   Why Free Forever?
                 </p>
                 <p className="text-blue-700 text-sm leading-relaxed">
-                  I believe knowledge should be accessible. That's why the core platform is free forever. 
+                  I remember what it felt like to be lost and overwhelmed. That's why the core platform is free forever. 
                   Premium features like advanced code examples and AI-powered explanations help support 
-                  continued development while keeping the essentials free for everyone.
+                  continued development while keeping the essentials free for everyone who needs them.
                 </p>
               </div>
             </div>

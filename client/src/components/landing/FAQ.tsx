@@ -8,8 +8,8 @@ import {
 export function FAQ() {
   const faqs = [
     {
-      question: "Is this a one-time payment?",
-      answer: "Yes! Pay once and get lifetime access. No subscriptions, no recurring fees, no hidden costs. You pay $249 once (with PPP discounts available) and access the platform forever. Compare this to DataCamp ($300+/year) or Coursera ($400+/year) - you save thousands!"
+      question: "How does the pricing work?",
+      answer: "Start completely free with access to all 10,000+ AI/ML terms! No credit card required, no trials - it's free forever. If you want premium features like interactive quizzes and AI-powered explanations, upgrade for a one-time payment of $179 (early bird price, originally $249). Compare this to DataCamp ($300+/year) or Coursera ($400+/year) - you save thousands!"
     },
     {
       question: "How is this different from free resources like Wikipedia?",
@@ -17,7 +17,7 @@ export function FAQ() {
     },
     {
       question: "Do you offer refunds?", 
-      answer: "We do not offer refunds. However, you can try the platform risk-free with a 7-day free trial before purchasing. If you have questions, contact us at support@aimlglossarypro.com."
+      answer: "We do not offer refunds for premium purchases. However, you can use the platform completely free forever to evaluate all core features before deciding to upgrade. If you have questions, contact us at support@aimlglossarypro.com."
     },
     {
       question: "How often is the content updated?",
@@ -29,7 +29,7 @@ export function FAQ() {
     },
     {
       question: "Is there a limit to how much I can access?",
-      answer: "No limits! With your lifetime access, you can view all 10,000+ terms, run unlimited searches, and access all features as much as you want."
+      answer: "No limits on the free tier! You can view all 10,000+ terms, run unlimited searches, and access core features as much as you want, forever. Premium features add interactive quizzes, AI explanations, and advanced learning tools."
     },
     {
       question: "What programming languages are covered in code examples?",
@@ -49,7 +49,11 @@ export function FAQ() {
     },
     {
       question: "How does this compare to DataCamp or Coursera?",
-      answer: "DataCamp costs $300+/year and Coursera costs $400+/year with limited AI/ML coverage. We offer 10,000+ comprehensive AI/ML terms with code examples for a one-time $249 payment. You save $300-600 every year while getting more specialized content."
+      answer: "DataCamp costs $300+/year and Coursera costs $400+/year with limited AI/ML coverage. We offer 10,000+ comprehensive AI/ML terms with code examples completely FREE, plus optional premium features for $179 one-time (early bird). You save hundreds every year while getting more specialized content."
+    },
+    {
+      question: "What's included in the early bird special?",
+      answer: "The first 500 customers get premium features for $179 instead of $249 (save $70). This includes everything in the free tier plus interactive quizzes, AI-powered explanations, personalized learning paths, and offline access. Early bird pricing ends when we reach 500 customers."
     }
   ];
 

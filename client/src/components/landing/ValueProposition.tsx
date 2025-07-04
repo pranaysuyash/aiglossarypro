@@ -82,7 +82,7 @@ export function ValueProposition() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-green-900">Incredible Value</h4>
-                  <p className="text-green-700 text-sm">$249 lifetime vs $300-600/year subscriptions. Save $1000s</p>
+                  <p className="text-green-700 text-sm">$179 early bird (reg. $249) vs $300-600/year subscriptions. Save $1000s</p>
                 </div>
               </div>
             </div>

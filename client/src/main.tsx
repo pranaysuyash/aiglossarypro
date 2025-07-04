@@ -2,6 +2,7 @@ import React, { Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
+import { initAnalytics } from "./lib/analytics";
 
 // Performance monitoring
 const startTime = performance.now();
@@ -47,6 +48,9 @@ class ErrorBoundary extends React.Component<
     return this.props.children;
   }
 }
+
+// Initialize analytics
+initAnalytics();
 
 const root = createRoot(document.getElementById("root")!);
 

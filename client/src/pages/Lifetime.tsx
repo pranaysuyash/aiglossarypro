@@ -8,7 +8,7 @@ export default function Lifetime() {
   const [showVerification, setShowVerification] = useState(false);
   
   const handlePurchase = () => {
-    window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
+    window.open('https://pranaysuyash.gumroad.com/l/ggczfy/EARLY500', '_blank');
   };
 
   return (
@@ -29,7 +29,7 @@ export default function Lifetime() {
                 onClick={handlePurchase}
                 className="text-xl px-12 py-6 bg-blue-600 hover:bg-blue-700"
               >
-                Get Lifetime Access - $129
+                Get Lifetime Access - $179
               </Button>
               <Button 
                 onClick={() => setShowVerification(true)}
@@ -139,8 +139,13 @@ export default function Lifetime() {
         <div className="max-w-2xl mx-auto text-center">
           <h2 className="text-3xl font-bold mb-8">Simple, Fair Pricing</h2>
           <div className="bg-white p-8 rounded-lg shadow-lg">
-            <div className="text-5xl font-bold text-blue-600 mb-4">$129</div>
-            <div className="text-xl text-gray-600 dark:text-gray-400 mb-8">Lifetime Access</div>
+            <div className="text-5xl font-bold text-blue-600 mb-4">
+              $179 <span className="text-2xl text-gray-500 line-through">$249</span>
+            </div>
+            <div className="text-xl text-gray-600 dark:text-gray-400 mb-2">Early Bird Price</div>
+            <div className="text-sm text-gray-500 mb-8">
+              Automatically adjusted for your country ($99-$249)
+            </div>
             <ul className="text-left space-y-3 mb-8">
               {[
                 "All 10,000+ terms and definitions",
@@ -163,7 +168,7 @@ export default function Lifetime() {
               Get Lifetime Access Now
             </Button>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
-              Purchasing Power Parity automatically applied at checkout
+              Early bird pricing • Save $70 • PPP automatically applied
             </p>
           </div>
         </div>
@@ -222,7 +227,7 @@ export default function Lifetime() {
             onClick={handlePurchase}
             className="text-xl px-12 py-6 bg-white text-gray-900 hover:bg-gray-100"
           >
-            Get Lifetime Access - $129
+            Get Lifetime Access - $179
           </Button>
           <p className="text-sm text-gray-400 mt-4">
             30-day money back guarantee • Instant access • Lifetime updates

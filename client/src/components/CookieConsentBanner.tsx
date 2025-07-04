@@ -236,7 +236,7 @@ export default function CookieConsentBanner({
                             Analytics Cookies
                           </h4>
                           <p className="text-blue-700 dark:text-blue-300">
-                            Anonymous usage statistics via PostHog to improve our service.
+                            Anonymous usage statistics via Google Analytics 4 and PostHog to improve our service and understand user behavior.
                           </p>
                         </div>
                         <div>

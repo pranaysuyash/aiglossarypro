@@ -1,4 +1,5 @@
 import { posthog } from '@/lib/analytics';
+import { ga4Analytics } from '@/lib/ga4Analytics';
 
 export interface ABTestEvent {
   eventName: string;
@@ -65,7 +66,7 @@ class ABTestingService {
     // Track with PostHog
     posthog.capture('ab_test_page_view', eventData);
 
-    // Track with Google Analytics
+    // Track with Google Analytics (legacy)
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'page_view', {
         event_category: 'ab_test',
@@ -76,6 +77,13 @@ class ABTestingService {
         }
       });
     }
+
+    // Track with GA4
+    ga4Analytics.trackABTestView(this.testId, variant, 'background_test');
+    ga4Analytics.trackPageView(
+      `Landing Page - ${variant}`,
+      window.location.href
+    );
 
     // Store session data
     this.storeSessionData(variant);
@@ -97,7 +105,7 @@ class ABTestingService {
     // Track with PostHog
     posthog.capture('ab_test_conversion', conversionData);
 
-    // Track with Google Analytics
+    // Track with Google Analytics (legacy)
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', eventName, {
         event_category: 'ab_test_conversion',
@@ -109,6 +117,28 @@ class ABTestingService {
           conversion_type: this.getConversionType(eventName)
         }
       });
+    }
+
+    // Track with GA4
+    const conversionType = this.getConversionType(eventName);
+    if (conversionType === 'trial_conversion' || conversionType === 'primary_cta') {
+      ga4Analytics.trackConversion({
+        event_name: eventName,
+        conversion_type: conversionType === 'trial_conversion' ? 'trial_signup' : 'premium_purchase',
+        funnel_stage: eventName,
+        value: properties.value || 1,
+        currency: properties.currency || 'USD',
+        event_category: 'ab_test_conversion',
+        event_label: variant,
+        variant,
+        test_id: this.testId,
+        custom_parameters: {
+          background_variant: variant,
+          time_to_conversion: this.getTimeToConversion()
+        }
+      });
+    } else {
+      ga4Analytics.trackCTAClick(eventName, properties.location || 'landing', variant, properties.value || 1);
     }
 
     // Update session conversion data
@@ -125,7 +155,29 @@ class ABTestingService {
       session_duration: this.getSessionDuration()
     };
 
+    // Track with PostHog
     posthog.capture('ab_test_engagement', engagementData);
+
+    // Track with GA4
+    if (engagementType === 'scroll_depth') {
+      ga4Analytics.trackScrollDepth(value);
+    } else {
+      ga4Analytics.trackEngagement({
+        event_name: `ab_test_${engagementType}`,
+        engagement_type: engagementType as any,
+        engagement_value: value,
+        page_location: window.location.href,
+        page_title: document.title,
+        event_category: 'ab_test_engagement',
+        event_label: variant,
+        variant,
+        test_id: this.testId,
+        custom_parameters: {
+          background_variant: variant,
+          session_duration: this.getSessionDuration()
+        }
+      });
+    }
   }
 
   // Get conversion funnel data

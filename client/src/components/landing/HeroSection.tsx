@@ -6,11 +6,13 @@ import { useCountryPricing } from '@/hooks/useCountryPricing';
 import { useBackgroundABTest } from '@/hooks/useBackgroundABTest';
 import { BACKGROUND_COMPONENTS, BackgroundTester } from '@/components/landing/backgrounds';
 import { useABTestTracking } from '@/services/abTestingService';
+import { useGA4 } from '@/types/analytics';
 
 export function HeroSection() {
   const pricing = useCountryPricing();
   const { currentVariant, trackInteraction, isClient, setVariant } = useBackgroundABTest();
   const { trackPageView, trackConversion, trackEngagement } = useABTestTracking(currentVariant);
+  const { trackSectionView, trackCTAClick, trackLandingPageFunnel } = useGA4();
 
   // Get the background component for current variant
   const BackgroundComponent = BACKGROUND_COMPONENTS[currentVariant];
@@ -23,6 +25,12 @@ export function HeroSection() {
         pricing: pricing.localPrice,
         country: pricing.country
       });
+
+      // Track hero section view
+      trackSectionView('hero', 1);
+      
+      // Track landing page funnel - page view
+      trackLandingPageFunnel('page_view');
 
       // Track scroll depth
       let maxScroll = 0;
@@ -47,7 +55,7 @@ export function HeroSection() {
       window.addEventListener('scroll', handleScroll);
       return () => window.removeEventListener('scroll', handleScroll);
     }
-  }, [isClient, currentVariant]);
+  }, [isClient, currentVariant, trackSectionView, trackEngagement]);
 
   const handleCTAClick = () => {
     trackInteraction('cta_click');
@@ -58,7 +66,13 @@ export function HeroSection() {
       position: 'hero_main'
     });
     
-    // Track analytics
+    // Track with GA4
+    trackCTAClick('Start Free Forever', 'hero_main', 'hero');
+    
+    // Track funnel progression
+    trackLandingPageFunnel('cta_click');
+    
+    // Track analytics (legacy)
     if (typeof window !== 'undefined' && (window as any).gtag) {
       (window as any).gtag('event', 'hero_cta_click', {
         event_category: 'conversion',
@@ -81,6 +95,12 @@ export function HeroSection() {
       button_text: 'See What\'s Inside',
       position: 'hero_secondary'
     });
+    
+    // Track with GA4
+    trackCTAClick('See What\'s Inside', 'hero_secondary', 'hero');
+    
+    // Track hero engagement for funnel
+    trackLandingPageFunnel('hero_engagement');
     
     document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -147,7 +167,7 @@ export function HeroSection() {
             No credit card required • Instant access • Premium preview available for $179 (early bird)
           </p>
           
-          <div className="pt-4">
+          <div className="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
             <Button 
               variant="outline" 
               size="lg"
@@ -155,6 +175,14 @@ export function HeroSection() {
               onClick={handleSecondaryClick}
             >
               See What's Inside
+            </Button>
+            <Button 
+              variant="outline" 
+              size="lg"
+              className="border-2 border-purple-300 bg-purple-600/20 text-purple-200 hover:bg-purple-500 hover:text-white px-6 sm:px-8 py-3 sm:py-3 font-medium transition-all duration-200 shadow-lg w-full sm:w-auto min-h-[48px] sm:min-h-[52px] touch-manipulation"
+              onClick={() => window.open('https://pranaysuyash.gumroad.com/l/ggczfy/EARLY500', '_blank')}
+            >
+              Get Premium - $179
             </Button>
           </div>
         </div>

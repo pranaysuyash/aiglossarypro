@@ -252,10 +252,7 @@ export function Pricing() {
                     });
                     
                     // Open Gumroad with early bird discount
-                    const gumroadUrl = new URL('https://gumroad.com/l/aiml-glossary-pro');
-                    gumroadUrl.searchParams.set('country', pricing.countryCode);
-                    gumroadUrl.searchParams.set('discount', '28'); // 28% off for early bird
-                    window.open(gumroadUrl.toString(), '_blank');
+                    window.open('https://pranaysuyash.gumroad.com/l/ggczfy/EARLY500', '_blank');
                   }}
                 >
                   <span className="flex items-center justify-center gap-2">

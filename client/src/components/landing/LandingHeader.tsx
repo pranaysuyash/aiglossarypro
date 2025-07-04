@@ -74,7 +74,7 @@ export function LandingHeader() {
                     });
                   }
                   
-                  window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
+                  window.open('https://pranaysuyash.gumroad.com/l/ggczfy', '_blank');
                 }}
               >
                 Get Lifetime Access
@@ -96,7 +96,7 @@ export function LandingHeader() {
                     });
                   }
                   
-                  window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
+                  window.open('https://pranaysuyash.gumroad.com/l/ggczfy', '_blank');
                 }}
               >
                 Get Access

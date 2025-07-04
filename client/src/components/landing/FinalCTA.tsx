@@ -79,9 +79,7 @@ export function FinalCTA() {
                   originalPrice: 249,
                   discount: 70
                 });
-                const gumroadUrl = new URL('https://gumroad.com/l/aiml-glossary-pro');
-                gumroadUrl.searchParams.set('discount', '28');
-                window.open(gumroadUrl.toString(), '_blank');
+                window.open('https://pranaysuyash.gumroad.com/l/ggczfy/EARLY500', '_blank');
               }}
             >
               <span className="flex items-center justify-center gap-3">

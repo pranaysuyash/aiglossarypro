@@ -46,40 +46,53 @@ export function FinalCTA() {
           </div>
         </div>
 
-        {/* Main CTA */}
+        {/* Main CTAs */}
         <div className="space-y-6 px-4 sm:px-0">
-          <Button 
-            size="lg"
-            className="bg-white text-purple-900 hover:bg-gray-100 px-8 sm:px-12 py-4 sm:py-6 text-lg sm:text-xl font-bold rounded-xl shadow-2xl transition-all transform hover:scale-105 w-full sm:w-auto min-h-[56px] sm:min-h-[64px] touch-manipulation"
-            onClick={() => {
-              // Track analytics
-              trackCTAClick('final', 'Get Lifetime Access');
-              
-              // Track A/B test conversion
-              trackConversion('final_cta_click', {
-                value: pricing.localPrice,
-                button_text: `Get Lifetime Access - $${pricing.localPrice}`,
-                position: 'final_cta',
-                discount: pricing.discount,
-                country: pricing.countryCode
-              });
-              
-              window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
-            }}
-          >
-            <span className="flex items-center justify-center gap-3">
-              <span className="text-center">
-                {pricing.discount > 0 
-                  ? `Get Lifetime Access - $${pricing.localPrice} (${pricing.discount}% off)`
-                  : `Get Lifetime Access - $${pricing.localPrice}`
-                }
+          <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+            <Button 
+              size="lg"
+              className="bg-green-600 hover:bg-green-700 text-white px-8 sm:px-12 py-4 sm:py-6 text-lg sm:text-xl font-bold rounded-xl shadow-2xl transition-all transform hover:scale-105 w-full sm:w-auto min-h-[56px] sm:min-h-[64px] touch-manipulation"
+              onClick={() => {
+                trackCTAClick('final', 'Start Free Forever');
+                trackConversion('final_free_cta_click', {
+                  button_text: 'Start Free Forever',
+                  position: 'final_cta'
+                });
+                window.location.href = '/login';
+              }}
+            >
+              <span className="flex items-center justify-center gap-3">
+                <span>Start Free Forever</span>
+                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
               </span>
-              <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
-            </span>
-          </Button>
+            </Button>
+            
+            <Button 
+              size="lg"
+              className="bg-white text-purple-900 hover:bg-gray-100 px-8 sm:px-12 py-4 sm:py-6 text-lg sm:text-xl font-bold rounded-xl shadow-2xl transition-all transform hover:scale-105 w-full sm:w-auto min-h-[56px] sm:min-h-[64px] touch-manipulation"
+              onClick={() => {
+                trackCTAClick('final', 'Get Premium Early Bird');
+                trackConversion('final_premium_cta_click', {
+                  value: 179,
+                  button_text: 'Get Premium - $179 (Early Bird)',
+                  position: 'final_cta',
+                  originalPrice: 249,
+                  discount: 70
+                });
+                const gumroadUrl = new URL('https://gumroad.com/l/aiml-glossary-pro');
+                gumroadUrl.searchParams.set('discount', '28');
+                window.open(gumroadUrl.toString(), '_blank');
+              }}
+            >
+              <span className="flex items-center justify-center gap-3">
+                <span>Get Premium - $179 (Early Bird)</span>
+                <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+              </span>
+            </Button>
+          </div>
           
           <p className="text-gray-400 text-base sm:text-lg">
-            One payment. Lifetime access. No regrets.
+            Start free instantly. Upgrade anytime for premium features.
           </p>
         </div>
 
@@ -88,7 +101,7 @@ export function FinalCTA() {
           <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-6 text-sm sm:text-base text-gray-400 px-4 sm:px-0">
             <div className="flex items-center justify-center gap-2 min-h-[44px]">
               <Shield className="w-4 h-4 text-green-400" />
-              <span>7-day free trial • No credit card required</span>
+              <span>Free forever • No credit card required</span>
             </div>
             <div className="flex items-center justify-center gap-2 min-h-[44px]">
               <Clock className="w-4 h-4 text-blue-400" />
@@ -101,29 +114,32 @@ export function FinalCTA() {
           </div>
           
           {/* Pricing Comparison */}
-          <div className="mt-8 bg-white/10 rounded-xl p-4 sm:p-6 max-w-2xl mx-auto">
+          <div className="mt-8 bg-white/10 rounded-xl p-4 sm:p-6 max-w-3xl mx-auto">
             <h3 className="text-lg sm:text-xl font-bold mb-4">Compare the Value</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm sm:text-base">
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm sm:text-base">
+              <div className="text-center p-3 sm:p-0 bg-green-500/20 rounded-lg">
+                <div className="text-green-400 font-bold text-lg sm:text-xl">$0</div>
+                <div className="text-gray-400">Our free tier</div>
+                <div className="text-green-300 text-xs">10,000+ terms</div>
+              </div>
+              <div className="text-center p-3 sm:p-0 bg-purple-500/20 rounded-lg">
+                <div className="text-purple-400 font-bold text-lg sm:text-xl">$179</div>
+                <div className="text-gray-400">Early Bird Premium</div>
+                <div className="text-purple-300 text-xs">Save $70</div>
+              </div>
               <div className="text-center p-3 sm:p-0">
                 <div className="text-red-400 font-bold text-lg sm:text-xl">$300+</div>
                 <div className="text-gray-400">DataCamp (yearly)</div>
+                <div className="text-red-300 text-xs">Recurring cost</div>
               </div>
               <div className="text-center p-3 sm:p-0">
                 <div className="text-red-400 font-bold text-lg sm:text-xl">$400+</div>
                 <div className="text-gray-400">Coursera (yearly)</div>
-              </div>
-              <div className="text-center p-3 sm:p-0 bg-white/10 rounded-lg sm:bg-transparent sm:rounded-none">
-                <div className="text-green-400 font-bold text-lg sm:text-xl">${pricing.localPrice}</div>
-                <div className="text-gray-400">Our platform (lifetime)</div>
-                {pricing.discount > 0 && (
-                  <div className="text-green-300 text-xs sm:text-sm">
-                    {pricing.discount}% off for {pricing.countryName}
-                  </div>
-                )}
+                <div className="text-red-300 text-xs">Recurring cost</div>
               </div>
             </div>
             <p className="text-gray-300 text-xs sm:text-sm mt-4">
-              * Purchasing Power Parity discounts applied automatically
+              * Early bird pricing limited to first 500 customers
             </p>
           </div>
         </div>

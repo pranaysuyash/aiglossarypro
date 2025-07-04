@@ -54,8 +54,7 @@ export function HeroSection() {
     
     // Track conversion with A/B testing service
     trackConversion('hero_cta_click', {
-      value: pricing.localPrice,
-      button_text: 'Start Your 7-Day Free Trial',
+      button_text: 'Start Free Forever',
       position: 'hero_main'
     });
     
@@ -64,14 +63,13 @@ export function HeroSection() {
       (window as any).gtag('event', 'hero_cta_click', {
         event_category: 'conversion',
         event_label: 'hero_button',
-        value: pricing.localPrice,
         custom_map: {
           background_variant: currentVariant
         }
       });
     }
     
-    // Redirect to trial signup instead of direct payment
+    // Redirect to free signup
     window.location.href = '/login';
   };
 
@@ -140,13 +138,13 @@ export function HeroSection() {
             onClick={handleCTAClick}
           >
             <span className="flex items-center justify-center gap-2">
-              <span>Start Your 7-Day Free Trial</span>
+              <span>Start Free Forever</span>
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
             </span>
           </Button>
           
           <p className="text-gray-400 text-sm sm:text-base leading-relaxed">
-            No credit card required • Instant access • Then ${pricing.localPrice} one-time for lifetime access
+            No credit card required • Instant access • Premium preview available for $179 (early bird)
           </p>
           
           <div className="pt-4">
@@ -164,11 +162,11 @@ export function HeroSection() {
         {/* Trust signals */}
         <div className="mt-8 text-gray-400 text-sm sm:text-base px-4 sm:px-0">
           <p className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-            <span>✅ 7-day free trial</span>
+            <span>✅ Free forever access</span>
             <span className="hidden sm:inline">•</span>
             <span>✅ No credit card required</span>
             <span className="hidden sm:inline">•</span>
-            <span>✅ Lifetime updates</span>
+            <span>✅ Early bird: $179 (save $70)</span>
           </p>
         </div>
       </div>

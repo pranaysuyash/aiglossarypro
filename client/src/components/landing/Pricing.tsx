@@ -9,6 +9,8 @@ import { TestPurchaseButton } from '../TestPurchaseButton';
 import { trackPurchaseIntent } from '@/types/analytics';
 import { useBackgroundABTest } from '@/hooks/useBackgroundABTest';
 import { useABTestTracking } from '@/services/abTestingService';
+import { PricingCountdown } from './PricingCountdown';
+import { FreeForeverMessaging } from './FreeForeverMessaging';
 
 export function Pricing() {
   const pricing = useCountryPricing();
@@ -59,11 +61,21 @@ export function Pricing() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
-            Simple, Fair Pricing
+            Free Forever + Premium Preview
           </h2>
           <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto px-4 sm:px-0">
-            Why pay $300-600 annually when you can get comprehensive lifetime access?
+            Start free with full access. Upgrade only if you want premium features.
           </p>
+        </div>
+
+        {/* Early Bird Countdown */}
+        <div className="mb-12 sm:mb-16 max-w-2xl mx-auto">
+          <PricingCountdown />
+        </div>
+
+        {/* Free Forever Messaging */}
+        <div className="mb-12 sm:mb-16 max-w-4xl mx-auto">
+          <FreeForeverMessaging variant="compact" />
         </div>
 
         {/* PPP Banner */}
@@ -100,35 +112,54 @@ export function Pricing() {
 
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
-          {/* Free Alternative */}
-          <Card className="border border-gray-200">
-            <CardHeader>
+          {/* Free Tier */}
+          <Card className="border-2 border-green-200 shadow-lg">
+            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-1">
+              Always Free
+            </Badge>
+            <CardHeader className="bg-green-50">
               <CardTitle className="text-center">
-                <div className="text-2xl font-bold text-gray-700">Free Resources</div>
-                <div className="text-3xl font-bold text-gray-900 mt-2">$0</div>
-                <div className="text-sm text-gray-500">Wikipedia, Stack Overflow</div>
+                <div className="text-2xl font-bold text-green-900">Free Forever</div>
+                <div className="text-3xl font-bold text-green-900 mt-2">$0</div>
+                <div className="text-sm text-green-600">No credit card required</div>
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 pt-6">
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-green-500" />
-                <span>Basic definitions</span>
+                <span>All 10,000+ AI/ML terms</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <X className="w-4 h-4 text-red-500" />
-                <span>No code examples</span>
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Code examples & applications</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <X className="w-4 h-4 text-red-500" />
-                <span>Scattered information</span>
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Advanced search & filters</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
-                <X className="w-4 h-4 text-red-500" />
-                <span>No organization</span>
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Mobile optimized</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <Check className="w-4 h-4 text-green-500" />
+                <span>Forever access</span>
               </div>
               <div className="pt-4">
-                <Button variant="outline" className="w-full" disabled>
-                  Limited Value
+                <Button 
+                  className="w-full bg-green-600 hover:bg-green-700 text-white min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
+                  onClick={() => {
+                    trackConversion('free_start_click', {
+                      button_text: 'Start Free Now',
+                      position: 'pricing_table'
+                    });
+                    window.location.href = '/login';
+                  }}
+                >
+                  <span className="flex items-center justify-center gap-2">
+                    <span>Start Free Now</span>
+                    <ArrowRight className="w-4 h-4 flex-shrink-0" />
+                  </span>
                 </Button>
               </div>
             </CardContent>
@@ -168,71 +199,67 @@ export function Pricing() {
             </CardContent>
           </Card>
 
-          {/* Our Product */}
+          {/* Premium Tier - Early Bird */}
           <Card className="border-2 border-purple-500 shadow-xl relative">
             <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-4 py-1">
-              Best Value
+              Early Bird Special
             </Badge>
             <CardHeader className="bg-purple-50">
               <CardTitle className="text-center">
-                <div className="text-2xl font-bold text-purple-900">AI/ML Glossary Pro</div>
-                <PriceDisplay showComparison={true} size="xl" />
-                <div className="text-sm text-purple-600">lifetime access</div>
+                <div className="text-2xl font-bold text-purple-900">Premium Preview</div>
+                <div className="flex items-center justify-center gap-2 mt-2">
+                  <div className="text-3xl font-bold text-purple-900">$179</div>
+                  <div className="text-xl text-gray-500 line-through">$249</div>
+                </div>
+                <div className="text-sm text-purple-600">lifetime access • first 500 customers</div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-6">
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-green-500" />
-                <span>10,000+ AI/ML terms</span>
+                <span>Everything in Free Forever</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-green-500" />
-                <span>Comprehensive code examples</span>
+                <span>Interactive quizzes & exercises</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-green-500" />
-                <span>Lifetime updates</span>
+                <span>AI-powered explanations</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-green-500" />
-                <span>Mobile optimized</span>
+                <span>Personalized learning paths</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-green-500" />
-                <span>7-day free trial • No credit card required</span>
+                <span>Export & offline access</span>
               </div>
               <div className="pt-4">
                 <Button 
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
                   onClick={() => {
-                    // Track analytics with pricing info
-                    trackPurchaseIntent('lifetime_access', pricing.localPrice);
+                    // Track analytics with early bird pricing
+                    trackPurchaseIntent('early_bird_lifetime', 179);
                     
                     // Track A/B test conversion
-                    trackConversion('pricing_cta_click', {
-                      value: pricing.localPrice,
-                      button_text: `Get Lifetime Access - $${pricing.localPrice}`,
+                    trackConversion('early_bird_cta_click', {
+                      value: 179,
+                      button_text: 'Get Early Bird Access - $179',
                       position: 'pricing_table',
-                      discount: pricing.discount,
-                      country: pricing.countryCode
+                      originalPrice: 249,
+                      discount: 70
                     });
                     
-                    // Open Gumroad with country parameter
+                    // Open Gumroad with early bird discount
                     const gumroadUrl = new URL('https://gumroad.com/l/aiml-glossary-pro');
                     gumroadUrl.searchParams.set('country', pricing.countryCode);
-                    if (pricing.discount > 0) {
-                      gumroadUrl.searchParams.set('discount', pricing.discount.toString());
-                    }
+                    gumroadUrl.searchParams.set('discount', '28'); // 28% off for early bird
                     window.open(gumroadUrl.toString(), '_blank');
                   }}
                 >
                   <span className="flex items-center justify-center gap-2">
-                    <span>
-                      {pricing.discount > 0 
-                        ? `Get Access - $${pricing.localPrice} (${pricing.discount}% off)`
-                        : `Get Lifetime Access - $${pricing.localPrice}`
-                      }
-                    </span>
+                    <span>Get Early Bird Access - $179</span>
                     <ArrowRight className="w-4 h-4 flex-shrink-0" />
                   </span>
                 </Button>
@@ -251,32 +278,35 @@ export function Pricing() {
           <div className="bg-white border border-purple-200 rounded-xl p-8 max-w-4xl mx-auto">
             <DollarSign className="w-12 h-12 text-purple-600 mx-auto mb-4" />
             <h3 className="text-2xl font-bold text-gray-900 mb-4">
-              Incredible Value Compared to Alternatives
+              Start Free, Upgrade Only If You Want More
             </h3>
-            <div className="grid md:grid-cols-3 gap-6 text-center">
+            <div className="grid md:grid-cols-4 gap-6 text-center">
+              <div>
+                <div className="text-3xl font-bold text-green-600 mb-2">$0</div>
+                <div className="text-gray-600 dark:text-gray-400">Our free tier</div>
+                <div className="text-sm text-green-600 mt-1">10,000+ terms</div>
+              </div>
+              <div>
+                <div className="text-3xl font-bold text-purple-600 mb-2">$179</div>
+                <div className="text-gray-600 dark:text-gray-400">Premium early bird</div>
+                <div className="text-sm text-purple-600 mt-1">Limited time</div>
+              </div>
               <div>
                 <div className="text-3xl font-bold text-red-600 mb-2">$300+</div>
                 <div className="text-gray-600 dark:text-gray-400">DataCamp (annual)</div>
+                <div className="text-sm text-red-600 mt-1">Recurring cost</div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-red-600 mb-2">$400+</div>
                 <div className="text-gray-600 dark:text-gray-400">Coursera (annual)</div>
-              </div>
-              <div>
-                <div className="text-3xl font-bold text-green-600 mb-2">${pricing.localPrice}</div>
-                <div className="text-gray-600 dark:text-gray-400">Our platform (lifetime)</div>
-                {pricing.discount > 0 && (
-                  <div className="text-sm text-green-600">
-                    {pricing.discount}% off for {pricing.countryName}
-                  </div>
-                )}
+                <div className="text-sm text-red-600 mt-1">Recurring cost</div>
               </div>
             </div>
             <p className="text-gray-600 dark:text-gray-400 mt-6">
-              <strong>Save hundreds of dollars</strong> while getting more comprehensive AI/ML coverage.
+              <strong>Start free with no barriers.</strong> Get lifetime value for less than one year of competitors.
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              * Purchasing Power Parity automatically applied at checkout for fair global pricing
+              * Early bird pricing limited to first 500 customers • No recurring fees • Lifetime updates included
             </p>
           </div>
         </div>

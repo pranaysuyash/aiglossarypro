@@ -50,10 +50,10 @@ export function WhatYouGet() {
     },
     {
       icon: Shield,
-      title: "Risk-Free Trial",
-      description: "7-day free trial, no credit card required",
-      details: "Try before you buy. No refunds after purchase.",
-      color: "text-red-600"
+      title: "Free Forever Access",
+      description: "Start free, upgrade optionally to premium",
+      details: "Full access with no barriers. Premium features available.",
+      color: "text-green-600"
     }
   ];
 
@@ -108,8 +108,8 @@ export function WhatYouGet() {
           
           <div className="text-center p-6 bg-purple-50 rounded-xl border border-purple-200">
             <Shield className="w-8 h-8 text-purple-600 mx-auto mb-4" />
-            <h3 className="font-bold text-purple-900 mb-2">Risk-Free</h3>
-            <p className="text-purple-700 text-sm">7-day free trial. No credit card required.</p>
+            <h3 className="font-bold text-purple-900 mb-2">Always Free</h3>
+            <p className="text-purple-700 text-sm">Start free forever. No credit card required.</p>
           </div>
         </div>
       </div>

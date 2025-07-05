@@ -20,6 +20,7 @@ import { registerSeoRoutes } from "./seo";
 import { registerContentRoutes } from "./content";
 import { registerGumroadRoutes } from "./gumroad";
 import { registerEarlyBirdRoutes } from "./earlyBird";
+import { registerJobRoutes } from "./jobs";
 import { log as logger } from "../utils/logger";
 
 // Import newsletter routes
@@ -125,6 +126,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Register cache management routes
   app.use('/api/cache', cacheRoutes);
   logger.info("✅ Cache management routes registered");
+  
+  // Register job management routes
+  registerJobRoutes(app);
+  logger.info("✅ Job management routes registered");
   
   // Health check endpoint
   app.get('/api/health', (_, res) => {

@@ -104,6 +104,7 @@ export const RangeMode: Story = {
       <div className="space-y-4">
         <Calendar
           {...args}
+          mode="range"
           selected={dateRange}
           onSelect={setDateRange}
           numberOfMonths={2}
@@ -310,7 +311,7 @@ export const EventCalendar: Story = {
           onSelect={setDate}
           className="rounded-md border"
           classNames={{
-            day: hasEvent(date) ? "bg-green-100 text-green-800 font-semibold" : "",
+            // Remove dynamic classNames as they can't be evaluated per day in this way
           }}
           modifiers={{
             hasEvent: events.map(event => event.date),

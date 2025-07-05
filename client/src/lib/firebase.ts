@@ -38,8 +38,8 @@ if (missingKeys.length > 0) {
 }
 
 // Initialize Firebase
-let app;
-let auth;
+let app: ReturnType<typeof initializeApp> | undefined;
+let auth: ReturnType<typeof getAuth> | undefined;
 
 try {
   if (missingKeys.length === 0) {
@@ -91,7 +91,7 @@ export async function signInWithProvider(providerName: 'google' | 'github') {
       idToken,
       provider: providerName
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error(`Error signing in with ${providerName}:`, error);
     throw error; // Preserve the original error for better error handling
   }
@@ -113,7 +113,7 @@ export async function signInWithEmail(email: string, password: string) {
       user: result.user,
       idToken
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error signing in with email:', error);
     throw error; // Preserve the original error for better error handling
   }
@@ -135,7 +135,7 @@ export async function createAccount(email: string, password: string) {
       user: result.user,
       idToken
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error('Error creating account:', error);
     throw error; // Preserve the original error for better error handling
   }

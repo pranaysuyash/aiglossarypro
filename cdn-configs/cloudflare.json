@@ -1,0 +1,267 @@
+{
+  "name": "AIGlossaryPro Cloudflare CDN Configuration",
+  "version": "1.0.0",
+  "description": "Cloudflare CDN configuration for optimal performance and security",
+  "settings": {
+    "ssl": {
+      "mode": "strict",
+      "tls_1_3": "on",
+      "min_tls_version": "1.2",
+      "http2": "on",
+      "http3": "on",
+      "hsts": {
+        "enabled": true,
+        "max_age": 31536000,
+        "include_subdomains": true,
+        "preload": true
+      }
+    },
+    "cache": {
+      "level": "aggressive",
+      "browser_ttl": 31536000,
+      "edge_ttl": 86400,
+      "development_mode": false,
+      "purge_everything": false,
+      "cache_rules": [
+        {
+          "pattern": "*.js",
+          "cache_ttl": 31536000,
+          "browser_ttl": 31536000,
+          "edge_ttl": 86400,
+          "headers": {
+            "Cache-Control": "public, max-age=31536000, immutable"
+          }
+        },
+        {
+          "pattern": "*.css",
+          "cache_ttl": 31536000,
+          "browser_ttl": 31536000,
+          "edge_ttl": 86400,
+          "headers": {
+            "Cache-Control": "public, max-age=31536000, immutable"
+          }
+        },
+        {
+          "pattern": "*.png",
+          "cache_ttl": 31536000,
+          "browser_ttl": 31536000,
+          "edge_ttl": 86400,
+          "headers": {
+            "Cache-Control": "public, max-age=31536000, immutable"
+          }
+        },
+        {
+          "pattern": "*.jpg",
+          "cache_ttl": 31536000,
+          "browser_ttl": 31536000,
+          "edge_ttl": 86400,
+          "headers": {
+            "Cache-Control": "public, max-age=31536000, immutable"
+          }
+        },
+        {
+          "pattern": "*.svg",
+          "cache_ttl": 31536000,
+          "browser_ttl": 31536000,
+          "edge_ttl": 86400,
+          "headers": {
+            "Cache-Control": "public, max-age=31536000, immutable"
+          }
+        },
+        {
+          "pattern": "*.woff2",
+          "cache_ttl": 31536000,
+          "browser_ttl": 31536000,
+          "edge_ttl": 86400,
+          "headers": {
+            "Cache-Control": "public, max-age=31536000, immutable"
+          }
+        },
+        {
+          "pattern": "*.woff",
+          "cache_ttl": 31536000,
+          "browser_ttl": 31536000,
+          "edge_ttl": 86400,
+          "headers": {
+            "Cache-Control": "public, max-age=31536000, immutable"
+          }
+        },
+        {
+          "pattern": "*.ico",
+          "cache_ttl": 31536000,
+          "browser_ttl": 31536000,
+          "edge_ttl": 86400,
+          "headers": {
+            "Cache-Control": "public, max-age=31536000, immutable"
+          }
+        },
+        {
+          "pattern": "*.html",
+          "cache_ttl": 3600,
+          "browser_ttl": 3600,
+          "edge_ttl": 1800,
+          "headers": {
+            "Cache-Control": "public, max-age=3600, s-maxage=1800"
+          }
+        },
+        {
+          "pattern": "api/*",
+          "cache_ttl": 0,
+          "browser_ttl": 0,
+          "edge_ttl": 0,
+          "headers": {
+            "Cache-Control": "private, no-cache, no-store, must-revalidate"
+          }
+        }
+      ]
+    },
+    "performance": {
+      "minify": {
+        "css": true,
+        "js": true,
+        "html": true
+      },
+      "auto_minify": true,
+      "brotli": true,
+      "gzip": true,
+      "image_optimization": {
+        "polish": "lossy",
+        "webp": true,
+        "avif": true,
+        "resize": true
+      },
+      "early_hints": true,
+      "h2_prioritization": true,
+      "rocket_loader": false,
+      "mirage": true
+    },
+    "security": {
+      "waf": {
+        "enabled": true,
+        "mode": "on",
+        "rules": [
+          {
+            "rule": "block_bad_bots",
+            "action": "block"
+          },
+          {
+            "rule": "rate_limit_login",
+            "action": "challenge",
+            "threshold": 10,
+            "period": 300
+          },
+          {
+            "rule": "block_malicious_requests",
+            "action": "block"
+          }
+        ]
+      },
+      "bot_fight_mode": true,
+      "ddos_protection": {
+        "enabled": true,
+        "sensitivity": "medium"
+      },
+      "firewall_rules": [
+        {
+          "name": "Block suspicious user agents",
+          "expression": "(http.user_agent contains \"bot\" and not http.user_agent contains \"googlebot\" and not http.user_agent contains \"bingbot\")",
+          "action": "challenge"
+        },
+        {
+          "name": "Rate limit API endpoints",
+          "expression": "(http.request.uri.path contains \"/api/\" and rate(5m) > 100)",
+          "action": "block"
+        }
+      ],
+      "browser_integrity_check": true,
+      "challenge_passage": 3600,
+      "privacy_pass": true
+    },
+    "network": {
+      "ipv6": true,
+      "websockets": true,
+      "pseudo_ipv4": true,
+      "ip_geolocation": true,
+      "opportunistic_encryption": true,
+      "onion_routing": true,
+      "orange_to_orange": true
+    },
+    "dns": {
+      "proxy_status": "proxied",
+      "ttl": 300,
+      "priority": 1
+    },
+    "page_rules": [
+      {
+        "pattern": "*.aiglossarypro.com/assets/*",
+        "settings": {
+          "cache_level": "cache_everything",
+          "edge_cache_ttl": 86400,
+          "browser_cache_ttl": 31536000
+        }
+      },
+      {
+        "pattern": "*.aiglossarypro.com/api/*",
+        "settings": {
+          "cache_level": "bypass",
+          "disable_performance": false,
+          "disable_security": false
+        }
+      },
+      {
+        "pattern": "*.aiglossarypro.com/*",
+        "settings": {
+          "cache_level": "standard",
+          "edge_cache_ttl": 3600,
+          "browser_cache_ttl": 3600
+        }
+      }
+    ]
+  },
+  "monitoring": {
+    "analytics": {
+      "enabled": true,
+      "web_analytics": true,
+      "real_user_monitoring": true
+    },
+    "alerts": [
+      {
+        "name": "High Error Rate",
+        "condition": "error_rate > 5%",
+        "action": "email"
+      },
+      {
+        "name": "Low Cache Hit Ratio",
+        "condition": "cache_hit_ratio < 80%",
+        "action": "email"
+      },
+      {
+        "name": "DDoS Attack",
+        "condition": "ddos_attack_detected",
+        "action": "email"
+      }
+    ]
+  },
+  "workers": {
+    "edge_functions": [
+      {
+        "name": "asset_optimization",
+        "route": "*/assets/*",
+        "script": "asset-optimization-worker.js",
+        "description": "Optimize asset delivery and add custom headers"
+      },
+      {
+        "name": "security_headers",
+        "route": "*",
+        "script": "security-headers-worker.js",
+        "description": "Add security headers to all responses"
+      },
+      {
+        "name": "analytics_tracker",
+        "route": "*",
+        "script": "analytics-worker.js",
+        "description": "Track CDN performance metrics"
+      }
+    ]
+  }
+}

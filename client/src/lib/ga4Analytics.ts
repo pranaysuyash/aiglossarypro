@@ -100,13 +100,16 @@ class GA4AnalyticsService {
       (window as any).dataLayer.push(arguments);
     };
 
-    window.gtag('js', new Date());
+    if (window.gtag) {
+      window.gtag('js', new Date());
+    }
 
     // Get configuration for GA4 setup
     const { config } = getValidatedAnalyticsConfig();
     
     // Configure GA4 with privacy settings
-    window.gtag('config', this.measurementId, {
+    if (window.gtag) {
+      window.gtag('config', this.measurementId, {
       // Privacy and consent settings
       anonymize_ip: config.privacy.anonymizeIp,
       allow_google_signals: config.privacy.allowGoogleSignals,
@@ -129,7 +132,8 @@ class GA4AnalyticsService {
       // Cookie settings from configuration
       cookie_flags: config.ga4.cookieFlags,
       cookie_expires: config.ga4.cookieExpires,
-    });
+      });
+    }
 
     if (this.isDebug) {
       console.log('GA4 Analytics initialized with measurement ID:', this.measurementId);
@@ -166,7 +170,7 @@ class GA4AnalyticsService {
   // Set user ID
   setUserId(userId: string): void {
     this.userId = userId;
-    if (this.isInitialized()) {
+    if (this.isInitialized() && window.gtag) {
       window.gtag('config', this.measurementId, {
         user_id: userId
       });
@@ -199,7 +203,9 @@ class GA4AnalyticsService {
       language: navigator.language,
     };
 
-    window.gtag('event', 'page_view', pageViewData);
+    if (window.gtag) {
+      window.gtag('event', 'page_view', pageViewData);
+    }
 
     if (this.isDebug) {
       console.log('GA4 Page View:', pageViewData);
@@ -229,16 +235,20 @@ class GA4AnalyticsService {
     };
 
     // Track as GA4 conversion event
-    window.gtag('event', 'conversion', conversionData);
+    if (window.gtag) {
+      window.gtag('event', 'conversion', conversionData);
+    }
 
     // Also track specific conversion type
-    window.gtag('event', event.conversion_type, {
+    if (window.gtag) {
+      window.gtag('event', event.conversion_type, {
       event_category: 'conversion',
       event_label: event.funnel_stage,
       value: event.value || 1,
       currency: event.currency || 'USD',
       ...conversionData
-    });
+      });
+    }
 
     if (this.isDebug) {
       console.log('GA4 Conversion:', conversionData);
@@ -258,12 +268,14 @@ class GA4AnalyticsService {
       session_duration: this.getSessionDuration(),
     };
 
-    window.gtag('event', event.engagement_type, {
+    if (window.gtag) {
+      window.gtag('event', event.engagement_type, {
       event_category: 'engagement',
       event_label: event.engagement_type,
       value: event.engagement_value,
       ...engagementData
-    });
+      });
+    }
 
     if (this.isDebug) {
       console.log('GA4 Engagement:', engagementData);
@@ -283,7 +295,8 @@ class GA4AnalyticsService {
       session_duration: this.getSessionDuration(),
     };
 
-    window.gtag('event', event.business_metric, {
+    if (window.gtag) {
+      window.gtag('event', event.business_metric, {
       event_category: 'business_metrics',
       event_label: event.business_metric,
       value: event.value || 1,
@@ -293,7 +306,8 @@ class GA4AnalyticsService {
         cohort: event.cohort
       },
       ...businessData
-    });
+      });
+    }
 
     if (this.isDebug) {
       console.log('GA4 Business Event:', businessData);
@@ -352,11 +366,11 @@ class GA4AnalyticsService {
   }
 
   // Track form submissions
-  trackFormSubmission(form_type: 'contact' | 'newsletter' | 'signup', form_location: string): void {
+  trackFormSubmission(form_type: 'contact' | 'newsletter' | 'signup' | 'feedback', form_location: string): void {
     this.trackConversion({
       event_name: 'form_submit',
-      conversion_type: form_type === 'contact' ? 'contact_form' : 'newsletter_signup',
-      funnel_stage: form_type === 'contact' ? 'contact_inquiry' : 'newsletter_subscribe',
+      conversion_type: form_type === 'contact' ? 'contact_form' : form_type === 'feedback' ? 'contact_form' : 'newsletter_signup',
+      funnel_stage: form_type === 'contact' ? 'contact_inquiry' : form_type === 'feedback' ? 'feedback_submission' : 'newsletter_subscribe',
       event_category: 'conversion',
       event_label: form_type,
       value: 1,
@@ -405,7 +419,8 @@ class GA4AnalyticsService {
   trackPurchase(transaction_id: string, value: number, currency: string = 'USD', items: any[]): void {
     if (!this.hasAnalyticsConsent() || !this.isInitialized()) return;
 
-    window.gtag('event', 'purchase', {
+    if (window.gtag) {
+      window.gtag('event', 'purchase', {
       transaction_id,
       value,
       currency,
@@ -414,7 +429,8 @@ class GA4AnalyticsService {
       user_id: this.userId,
       event_category: 'ecommerce',
       event_label: 'premium_purchase'
-    });
+      });
+    }
 
     // Also track as conversion
     this.trackConversion({
@@ -445,12 +461,14 @@ class GA4AnalyticsService {
       value: value || 1
     };
 
-    window.gtag('event', 'funnel_step', {
+    if (window.gtag) {
+      window.gtag('event', 'funnel_step', {
       event_category: 'funnel_tracking',
       event_label: `${funnelName}_step_${stepPosition}`,
       value: value || 1,
       custom_parameters: funnelData
-    });
+      });
+    }
 
     // Store funnel progress in session storage for analysis
     this.storeFunnelProgress(funnelName, stepName, stepPosition);
@@ -481,12 +499,14 @@ class GA4AnalyticsService {
       ...journey.metadata
     };
 
-    window.gtag('event', 'user_journey', {
+    if (window.gtag) {
+      window.gtag('event', 'user_journey', {
       event_category: 'user_journey',
       event_label: `${journey.stage}_${journey.action}`,
       value: 1,
       custom_parameters: journeyData
-    });
+      });
+    }
 
     if (this.isDebug) {
       console.log('GA4 User Journey:', journeyData);
@@ -586,14 +606,18 @@ class GA4AnalyticsService {
   enableDebugMode(): void {
     this.isDebug = true;
     if (this.isInitialized()) {
-      window.gtag('config', this.measurementId, { debug_mode: true });
+      if (window.gtag) {
+        window.gtag('config', this.measurementId, { debug_mode: true });
+      }
     }
   }
 
   disableDebugMode(): void {
     this.isDebug = false;
     if (this.isInitialized()) {
-      window.gtag('config', this.measurementId, { debug_mode: false });
+      if (window.gtag) {
+        window.gtag('config', this.measurementId, { debug_mode: false });
+      }
     }
   }
 
@@ -614,13 +638,6 @@ class GA4AnalyticsService {
 
 // Export singleton instance
 export const ga4Analytics = new GA4AnalyticsService();
-
-// Global gtag interface
-declare global {
-  interface Window {
-    gtag: (...args: any[]) => void;
-  }
-}
 
 // Export utility functions for React components
 export const useGA4 = () => {

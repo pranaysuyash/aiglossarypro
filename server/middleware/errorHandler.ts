@@ -291,8 +291,18 @@ export const notFoundHandler = (req: Request, res: Response) => {
  * Graceful shutdown handler
  */
 export const gracefulShutdown = (server: any) => {
-  const shutdown = () => {
+  const shutdown = async () => {
     console.log('🔄 Graceful shutdown initiated...');
+    
+    // Shutdown job queue system first
+    try {
+      const { jobQueueManager } = await import('../jobs/queue');
+      console.log('🔄 Shutting down job queue system...');
+      await jobQueueManager.shutdown();
+      console.log('✅ Job queue system shutdown complete');
+    } catch (error) {
+      console.error('❌ Error shutting down job queue system:', error);
+    }
     
     server.close(() => {
       console.log('✅ HTTP server closed');
@@ -304,11 +314,11 @@ export const gracefulShutdown = (server: any) => {
       process.exit(0);
     });
 
-    // Force close after 10 seconds
+    // Force close after 15 seconds (increased to allow job queue cleanup)
     setTimeout(() => {
       console.error('❌ Could not close connections in time, forcefully shutting down');
       process.exit(1);
-    }, 10000);
+    }, 15000);
   };
 
   // Listen for termination signals

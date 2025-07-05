@@ -34,16 +34,16 @@ export function useFormTracking({
   metadata,
   onTrackingComplete
 }: FormSubmissionTrackerProps) {
-  const { trackFormSubmission } = useGA4();
+  const { trackFormSubmission: trackFormSubmissionGA4 } = useGA4();
 
   const trackFormStart = useCallback(() => {
     // Track form interaction start
-    trackFormSubmission(formType, `${formLocation}_start`);
+    trackFormSubmissionGA4(formType, `${formLocation}_start`);
     
     if (import.meta.env.NODE_ENV === 'development') {
       console.log(`Form start tracked: ${formType} at ${formLocation}`);
     }
-  }, [formType, formLocation, trackFormSubmission]);
+  }, [formType, formLocation, trackFormSubmissionGA4]);
 
   const trackFieldInteraction = useCallback((fieldName: string, fieldType: string = 'input') => {
     // Track individual field interactions for funnel analysis
@@ -62,12 +62,12 @@ export function useFormTracking({
     }
   }, [formType, formLocation, formId]);
 
-  const trackFormSubmission = useCallback(async (data: FormTrackingData) => {
+  const trackFormSubmissionData = useCallback(async (data: FormTrackingData) => {
     const startTime = performance.now();
     
     try {
       // Track with GA4
-      trackFormSubmission(data.formType, data.formLocation);
+      trackFormSubmissionGA4(data.formType, data.formLocation);
 
       // Enhanced GA4 tracking with detailed data
       if (typeof window !== 'undefined' && window.gtag) {
@@ -137,7 +137,7 @@ export function useFormTracking({
     } catch (error) {
       console.error('Error tracking form submission:', error);
     }
-  }, [formType, formLocation, formId, metadata, trackFormSubmission, onTrackingComplete]);
+  }, [formType, formLocation, formId, metadata, trackFormSubmissionGA4, onTrackingComplete]);
 
   const trackFormAbandon = useCallback((fieldName?: string, timeSpent?: number) => {
     if (typeof window !== 'undefined' && window.gtag) {
@@ -193,7 +193,7 @@ export function useFormTracking({
   return {
     trackFormStart,
     trackFieldInteraction,
-    trackFormSubmission,
+    trackFormSubmission: trackFormSubmissionData,
     trackFormAbandon,
     trackFormError
   };

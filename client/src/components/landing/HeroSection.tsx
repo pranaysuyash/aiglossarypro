@@ -23,7 +23,7 @@ export function HeroSection() {
       trackPageView({
         page: 'landing_hero',
         pricing: pricing.localPrice,
-        country: pricing.country
+        country: pricing.countryName
       });
 
       // Track hero section view

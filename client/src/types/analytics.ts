@@ -102,7 +102,7 @@ export const trackSectionView = (sectionName: string, position?: number): void =
   ga4Analytics.trackSectionView(sectionName, position);
 };
 
-export const trackFormSubmission = (formType: 'contact' | 'newsletter' | 'signup', location: string): void => {
+export const trackFormSubmission = (formType: 'contact' | 'newsletter' | 'signup' | 'feedback', location: string): void => {
   ga4Analytics.trackFormSubmission(formType, location);
 };
 

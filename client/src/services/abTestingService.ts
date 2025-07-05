@@ -130,9 +130,9 @@ class ABTestingService {
         currency: properties.currency || 'USD',
         event_category: 'ab_test_conversion',
         event_label: variant,
-        variant,
-        test_id: this.testId,
         custom_parameters: {
+          variant,
+          test_id: this.testId,
           background_variant: variant,
           time_to_conversion: this.getTimeToConversion()
         }
@@ -170,9 +170,9 @@ class ABTestingService {
         page_title: document.title,
         event_category: 'ab_test_engagement',
         event_label: variant,
-        variant,
-        test_id: this.testId,
         custom_parameters: {
+          variant,
+          test_id: this.testId,
           background_variant: variant,
           session_duration: this.getSessionDuration()
         }

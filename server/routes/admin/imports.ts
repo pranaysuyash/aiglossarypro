@@ -5,6 +5,8 @@ import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
 import { features } from "../../config";
 import { parseExcelFile, importToDatabase } from "../../excelParser";
 import { AdvancedExcelParser, importComplexTerms } from "../../advancedExcelParser";
+import { jobQueue, JobType } from "../../jobs/queue";
+import { JobPriority } from "../../jobs/types";
 import multer from "multer";
 import type { ImportResult, ApiResponse } from "../../../shared/types";
 import { log as logger } from "../../utils/logger";
@@ -57,9 +59,43 @@ export function registerAdminImportRoutes(app: Express): void {
       const fileSizeMB = req.file.size / (1024 * 1024);
       logger.info(`📊 File size: ${fileSizeMB.toFixed(2)} MB`);
 
-      // For large files with 42-section structure, use advanced parser
-      if (fileSizeMB > 0.1 || req.file.originalname.includes('row1')) { // Use advanced for row1.xlsx or larger files
-        logger.info('🧠 Using Advanced Excel Parser for 42-section structure...');
+      // For large files (>5MB) or complex processing, use job queue
+      if (fileSizeMB > 5 || req.query.async === 'true') {
+        logger.info('🚀 Using job queue for large file or async processing...');
+        
+        // Create Excel import job
+        const jobId = await jobQueue.addExcelImportJob({
+          fileBuffer: req.file.buffer,
+          fileName: req.file.originalname,
+          fileSize: req.file.size,
+          importOptions: {
+            mode: fileSizeMB > 0.1 ? 'advanced' : 'basic',
+            enableAI: req.body.enableAI === 'true',
+            aiMode: req.body.aiMode || 'basic',
+            batchSize: parseInt(req.body.batchSize || '50'),
+            checkpointEnabled: true,
+          },
+          userId: req.user?.id,
+          requestId: req.headers['x-request-id'] as string,
+        }, {
+          priority: fileSizeMB > 10 ? JobPriority.HIGH : JobPriority.NORMAL,
+        });
+
+        const response: ApiResponse<any> = {
+          success: true,
+          data: {
+            jobId,
+            jobType: JobType.EXCEL_IMPORT,
+            async: true,
+            estimatedDuration: Math.min(fileSizeMB * 30000, 300000), // ~30s per MB, max 5 min
+          },
+          message: `Excel import job created successfully. Job ID: ${jobId}`
+        };
+
+        return res.json(response);
+        
+      } else if (fileSizeMB > 0.1 || req.file.originalname.includes('row1')) { // Use advanced for row1.xlsx or larger files
+        logger.info('🧠 Using Advanced Excel Parser for 42-section structure (synchronous)...');
         
         // Initialize advanced parser
         const advancedParser = new AdvancedExcelParser();

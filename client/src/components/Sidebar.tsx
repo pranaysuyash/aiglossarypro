@@ -17,45 +17,45 @@ export default function Sidebar() {
       id: "machine-learning",
       name: "Machine Learning",
       subcategories: [
-        { id: "supervised-learning", name: "Supervised Learning" },
-        { id: "unsupervised-learning", name: "Unsupervised Learning" },
-        { id: "reinforcement-learning", name: "Reinforcement Learning" },
+        { id: "supervised-learning", name: "Supervised Learning", categoryId: "machine-learning" },
+        { id: "unsupervised-learning", name: "Unsupervised Learning", categoryId: "machine-learning" },
+        { id: "reinforcement-learning", name: "Reinforcement Learning", categoryId: "machine-learning" },
       ]
     },
     {
       id: "deep-learning",
       name: "Deep Learning",
       subcategories: [
-        { id: "neural-networks", name: "Neural Networks" },
-        { id: "cnns", name: "Convolutional Neural Networks" },
-        { id: "rnns", name: "Recurrent Neural Networks" },
+        { id: "neural-networks", name: "Neural Networks", categoryId: "deep-learning" },
+        { id: "cnns", name: "Convolutional Neural Networks", categoryId: "deep-learning" },
+        { id: "rnns", name: "Recurrent Neural Networks", categoryId: "deep-learning" },
       ]
     },
     {
       id: "computer-vision",
       name: "Computer Vision",
       subcategories: [
-        { id: "image-processing", name: "Image Processing" },
-        { id: "object-detection", name: "Object Detection" },
-        { id: "image-classification", name: "Image Classification" },
+        { id: "image-processing", name: "Image Processing", categoryId: "computer-vision" },
+        { id: "object-detection", name: "Object Detection", categoryId: "computer-vision" },
+        { id: "image-classification", name: "Image Classification", categoryId: "computer-vision" },
       ]
     },
     {
       id: "nlp",
       name: "Natural Language Processing",
       subcategories: [
-        { id: "text-processing", name: "Text Processing" },
-        { id: "language-models", name: "Language Models" },
-        { id: "sentiment-analysis", name: "Sentiment Analysis" },
+        { id: "text-processing", name: "Text Processing", categoryId: "nlp" },
+        { id: "language-models", name: "Language Models", categoryId: "nlp" },
+        { id: "sentiment-analysis", name: "Sentiment Analysis", categoryId: "nlp" },
       ]
     },
     {
       id: "data-science",
       name: "Data Science",
       subcategories: [
-        { id: "statistics", name: "Statistics" },
-        { id: "data-mining", name: "Data Mining" },
-        { id: "feature-engineering", name: "Feature Engineering" },
+        { id: "statistics", name: "Statistics", categoryId: "data-science" },
+        { id: "data-mining", name: "Data Mining", categoryId: "data-science" },
+        { id: "feature-engineering", name: "Feature Engineering", categoryId: "data-science" },
       ]
     }
   ];

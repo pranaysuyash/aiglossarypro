@@ -145,6 +145,17 @@ app.use(responseLoggingMiddleware);
   app.use(errorHandler);
 
   
+  // Initialize job queue system
+  try {
+    const { jobQueueManager } = await import("./jobs/queue");
+    await jobQueueManager.initialize();
+    logger.info("✅ Job queue system initialized");
+  } catch (error) {
+    logger.error("❌ Error initializing job queue system", { error: error instanceof Error ? error.message : String(error) });
+    // Don't exit on job queue failure - app can still function without it
+    logger.warn("⚠️ Continuing without job queue system");
+  }
+  
   // Initialize analytics system
   await initializeAnalytics();
   

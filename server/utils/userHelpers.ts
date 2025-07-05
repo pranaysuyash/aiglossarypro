@@ -25,10 +25,10 @@ export function transformUserForPublic(user: UserForTransformation): Partial<IUs
   return {
     id: user.id,
     email: user.email,
-    firstName: user.firstName || user.first_name,
-    lastName: user.lastName || user.last_name,
-    profileImageUrl: user.profileImageUrl || user.profile_image_url,
-    createdAt: user.createdAt || user.created_at
+    firstName: user.firstName || (user.first_name as string | undefined),
+    lastName: user.lastName || (user.last_name as string | undefined),
+    profileImageUrl: user.profileImageUrl || (user.profile_image_url as string | undefined),
+    createdAt: user.createdAt || (user.created_at as Date | undefined)
   };
 }
 
@@ -39,19 +39,19 @@ export function transformUserForAdmin(user: UserForTransformation): Partial<IAdm
   return {
     id: user.id,
     email: user.email,
-    firstName: user.firstName || user.first_name,
-    lastName: user.lastName || user.last_name,
-    profileImageUrl: user.profileImageUrl || user.profile_image_url,
-    role: user.role || 'user',
+    firstName: user.firstName || (user.first_name as string | undefined),
+    lastName: user.lastName || (user.last_name as string | undefined),
+    profileImageUrl: user.profileImageUrl || (user.profile_image_url as string | undefined),
+    role: (user.role as string) || 'user',
     isActive: user.isActive !== false,
     isAdmin: user.isAdmin || false,
-    lifetimeAccess: user.lifetimeAccess || user.lifetime_access || false,
-    subscriptionTier: user.subscriptionTier || user.subscription_tier,
-    purchaseDate: user.purchaseDate || user.purchase_date,
-    createdAt: user.createdAt || user.created_at,
-    lastLoginAt: user.lastLoginAt || user.last_login_at,
-    termsViewed: user.termsViewed || user.terms_viewed || 0,
-    favoriteTerms: user.favoriteTerms || user.favorite_terms || 0
+    lifetimeAccess: user.lifetimeAccess || (user.lifetime_access as boolean | undefined) || false,
+    subscriptionTier: user.subscriptionTier || (user.subscription_tier as string | undefined),
+    purchaseDate: user.purchaseDate || (user.purchase_date as Date | string | undefined),
+    createdAt: user.createdAt || (user.created_at as Date | undefined),
+    lastLoginAt: user.lastLoginAt || (user.last_login_at as Date | string | undefined),
+    termsViewed: (user.termsViewed as number | undefined) || (user.terms_viewed as number | undefined) || 0,
+    favoriteTerms: (user.favoriteTerms as number | undefined) || (user.favorite_terms as number | undefined) || 0
   };
 }
 
@@ -106,7 +106,7 @@ export function hasUserAccess(user: UserForTransformation): boolean {
   
   // Check purchase date (if within trial period)
   if (user.purchaseDate || user.purchase_date) {
-    const purchaseDate = new Date(user.purchaseDate || user.purchase_date);
+    const purchaseDate = new Date((user.purchaseDate || user.purchase_date) as string | number | Date);
     // Use time constants for trial period calculation (7 days)
     const trialEndDate = new Date(purchaseDate.getTime() + 7 * TIME_CONSTANTS.MILLISECONDS_IN_DAY);
     
@@ -151,7 +151,7 @@ export function getUserDisplayName(user: UserForTransformation): string {
   }
   
   if (user.firstName || user.first_name) {
-    return user.firstName || user.first_name;
+    return (user.firstName || user.first_name) as string;
   }
   
   if (user.email) {

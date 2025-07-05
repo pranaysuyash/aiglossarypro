@@ -80,7 +80,7 @@ export class VersioningService {
       return qualityMetrics;
 
     } catch (error) {
-      logger.error(`❌ Quality assessment failed for ${termName}:`, error);
+      logger.error(`❌ Quality assessment failed for ${termName}:`, error as Record<string, unknown>);
       
       // Return default conservative assessment
       return {
@@ -154,7 +154,7 @@ export class VersioningService {
       return decision;
 
     } catch (error) {
-      logger.error(`❌ Version comparison failed for ${termName}:`, error);
+      logger.error(`❌ Version comparison failed for ${termName}:`, error as Record<string, unknown>);
       
       // Conservative fallback
       return {
@@ -250,7 +250,7 @@ export class VersioningService {
       };
 
     } catch (error) {
-      logger.error(`❌ Failed to create version for ${termName}:`, error);
+      logger.error(`❌ Failed to create version for ${termName}:`, error as Record<string, unknown>);
       throw error;
     }
   }
@@ -271,14 +271,14 @@ export class VersioningService {
         version: v.version,
         content: v.content,
         qualityMetrics: v.qualityMetrics as ContentQualityMetrics,
-        isActive: v.isActive,
+        isActive: v.isActive ?? false,
         createdAt: v.createdAt,
         updatedAt: v.updatedAt,
         metadata: v.metadata as any
       }));
 
     } catch (error) {
-      logger.error(`❌ Failed to get version history for term ${termId}:`, error);
+      logger.error(`❌ Failed to get version history for term ${termId}:`, error as Record<string, unknown>);
       return [];
     }
   }
@@ -322,7 +322,7 @@ export class VersioningService {
       return true;
 
     } catch (error) {
-      logger.error(`❌ Failed to promote version ${versionId}:`, error);
+      logger.error(`❌ Failed to promote version ${versionId}:`, error as Record<string, unknown>);
       return false;
     }
   }
@@ -356,7 +356,7 @@ export class VersioningService {
       };
 
     } catch (error) {
-      logger.error(`❌ Failed to generate quality report for term ${termId}:`, error);
+      logger.error(`❌ Failed to generate quality report for term ${termId}:`, error as Record<string, unknown>);
       throw error;
     }
   }
@@ -458,7 +458,7 @@ Consider: accuracy, clarity, completeness, and practical value for AI/ML practit
       };
 
     } catch (error) {
-      logger.error('❌ Failed to parse quality assessment:', error);
+      logger.error('❌ Failed to parse quality assessment:', error as Record<string, unknown>);
       throw error;
     }
   }
@@ -488,7 +488,7 @@ Consider: accuracy, clarity, completeness, and practical value for AI/ML practit
       };
 
     } catch (error) {
-      logger.error('❌ Failed to parse version decision:', error);
+      logger.error('❌ Failed to parse version decision:', error as Record<string, unknown>);
       
       // Fallback decision based on quality scores
       const qualityDelta = newQuality.overallScore - existingQuality.overallScore;
@@ -540,7 +540,7 @@ Consider: accuracy, clarity, completeness, and practical value for AI/ML practit
         logger.info(`🧹 Cleaned up ${versionsToDelete.length} old versions for term ${termId}`);
       }
     } catch (error) {
-      logger.error(`❌ Failed to cleanup old versions for term ${termId}:`, error);
+      logger.error(`❌ Failed to cleanup old versions for term ${termId}:`, error as Record<string, unknown>);
     }
   }
 

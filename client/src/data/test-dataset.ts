@@ -127,7 +127,7 @@ export const performanceTestData = {
 export const interactiveElementsData = contentOutline.sections
   .map(section => section.subsections?.filter(sub => sub.metadata?.isInteractive))
   .flat()
-  .filter(Boolean)
+  .filter((item): item is NonNullable<typeof item> => Boolean(item))
   .map(addMockContent);
 
 // Search test scenarios

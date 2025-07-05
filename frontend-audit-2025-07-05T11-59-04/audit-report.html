@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Frontend Audit Report</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .summary { background: #f5f5f5; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        .metric { display: inline-block; margin: 10px; padding: 10px; background: white; border-radius: 4px; }
+        .test { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+        .passed { background: #d4edda; border-left: 4px solid #28a745; }
+        .warning { background: #fff3cd; border-left: 4px solid #ffc107; }
+        .failed { background: #f8d7da; border-left: 4px solid #dc3545; }
+        .screenshot { max-width: 200px; cursor: pointer; }
+        .timestamp { color: #666; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Frontend Audit Report</h1>
+    <p class="timestamp">Generated: 7/5/2025, 5:30:20 PM</p>
+    
+    <div class="summary">
+        <h2>📊 Test Results Summary</h2>
+        <div class="metric"><strong>9</strong><br>Total Tests</div>
+        <div class="metric"><strong>0</strong><br>Passed</div>
+        <div class="metric"><strong>8</strong><br>Warnings</div>
+        <div class="metric"><strong>1</strong><br>Failed</div>
+    </div>
+
+    <h2>📋 Detailed Results</h2>
+    
+        <div class="test warning">
+            <h3>homepage-navigation</h3>
+            <p>⚠️ Test homepage loading and basic navigation completed with 6 issues</p>
+            
+                <p><strong>Metrics:</strong> Load: 8622ms, Render: 8622ms</p>
+            
+            
+                <details>
+                    <summary>Errors (6)</summary>
+                    <ul><li>Step failed: goto - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: click - TimeoutError: Waiting for selector `nav a[href="/categories"]` failed: Waiting failed: 5000ms exceeded</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li></ul>
+                </details>
+            
+            
+                <p><img src="homepage-navigation-1751716758616.png" alt="Screenshot" class="screenshot" onclick="window.open(this.src, '_blank')"></p>
+            
+        </div>
+    
+        <div class="test warning">
+            <h3>hierarchical-navigation</h3>
+            <p>⚠️ Test new hierarchical navigation system completed with 8 issues</p>
+            
+                <p><strong>Metrics:</strong> Load: 18188ms, Render: 18188ms</p>
+            
+            
+                <details>
+                    <summary>Errors (8)</summary>
+                    <ul><li>Step failed: goto - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TimeoutError: Waiting for selector `[data-testid="card"]` failed: Waiting failed: 5000ms exceeded</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: click - TimeoutError: Waiting for selector `button:has-text("Tree")` failed: Waiting failed: 5000ms exceeded</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: click - TimeoutError: Waiting for selector `button:has-text("Flat")` failed: Waiting failed: 5000ms exceeded</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li></ul>
+                </details>
+            
+            
+                <p><img src="hierarchical-navigation-1751716776878.png" alt="Screenshot" class="screenshot" onclick="window.open(this.src, '_blank')"></p>
+            
+        </div>
+    
+        <div class="test warning">
+            <h3>search-functionality</h3>
+            <p>⚠️ Test search across 295 subsections completed with 9 issues</p>
+            
+                <p><strong>Metrics:</strong> Load: 3360ms, Render: 3360ms</p>
+            
+            
+                <details>
+                    <summary>Errors (9)</summary>
+                    <ul><li>Step failed: goto - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: type - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: clear - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: type - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li></ul>
+                </details>
+            
+            
+                <p><img src="search-functionality-1751716780367.png" alt="Screenshot" class="screenshot" onclick="window.open(this.src, '_blank')"></p>
+            
+        </div>
+    
+        <div class="test warning">
+            <h3>authentication-flow</h3>
+            <p>⚠️ Test Firebase authentication completed with 8 issues</p>
+            
+                <p><strong>Metrics:</strong> Load: 1274ms, Render: 1274ms</p>
+            
+            
+                <details>
+                    <summary>Errors (8)</summary>
+                    <ul><li>Step failed: goto - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: type - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: type - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: click - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li></ul>
+                </details>
+            
+            
+                <p><img src="authentication-flow-1751716782572.png" alt="Screenshot" class="screenshot" onclick="window.open(this.src, '_blank')"></p>
+            
+        </div>
+    
+        <div class="test warning">
+            <h3>term-page-interaction</h3>
+            <p>⚠️ Test term page with 42 sections completed with 9 issues</p>
+            
+                <p><strong>Metrics:</strong> Load: 7336ms, Render: 7336ms</p>
+            
+            
+                <details>
+                    <summary>Errors (9)</summary>
+                    <ul><li>Step failed: goto - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: scroll - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: click - TimeoutError: Waiting for selector `button:contains("Introduction")` failed: Waiting failed: 5000ms exceeded</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li></ul>
+                </details>
+            
+            
+                <p><img src="term-page-interaction-1751716789900.png" alt="Screenshot" class="screenshot" onclick="window.open(this.src, '_blank')"></p>
+            
+        </div>
+    
+        <div class="test warning">
+            <h3>dashboard-functionality</h3>
+            <p>⚠️ Test user dashboard and progress tracking completed with 6 issues</p>
+            
+                <p><strong>Metrics:</strong> Load: 11122ms, Render: 11122ms</p>
+            
+            
+                <details>
+                    <summary>Errors (6)</summary>
+                    <ul><li>Step failed: goto - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TimeoutError: Waiting for selector `.dashboard` failed: Waiting failed: 5000ms exceeded</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: click - TimeoutError: Waiting for selector `.progress-card` failed: Waiting failed: 5000ms exceeded</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li></ul>
+                </details>
+            
+            
+                <p><img src="dashboard-functionality-1751716801018.png" alt="Screenshot" class="screenshot" onclick="window.open(this.src, '_blank')"></p>
+            
+        </div>
+    
+        <div class="test warning">
+            <h3>mobile-responsiveness</h3>
+            <p>⚠️ Test mobile responsive design completed with 7 issues</p>
+            
+                <p><strong>Metrics:</strong> Load: 7191ms, Render: 7191ms</p>
+            
+            
+                <details>
+                    <summary>Errors (7)</summary>
+                    <ul><li>Step failed: viewport - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: goto - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: click - TimeoutError: Waiting for selector `button.menu-toggle` failed: Waiting failed: 5000ms exceeded</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li></ul>
+                </details>
+            
+            
+                <p><img src="mobile-responsiveness-1751716807810.png" alt="Screenshot" class="screenshot" onclick="window.open(this.src, '_blank')"></p>
+            
+        </div>
+    
+        <div class="test warning">
+            <h3>form-interactions</h3>
+            <p>⚠️ Test all form interactions completed with 8 issues</p>
+            
+                <p><strong>Metrics:</strong> Load: 11070ms, Render: 11070ms</p>
+            
+            
+                <details>
+                    <summary>Errors (8)</summary>
+                    <ul><li>Step failed: goto - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: click - TimeoutError: Waiting for selector `input[type="checkbox"]` failed: Waiting failed: 5000ms exceeded</li><li>Step failed: type - TimeoutError: Waiting for selector `input[name="firstName"]` failed: Waiting failed: 5000ms exceeded</li><li>Step failed: click - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: wait - TypeError: this.page.waitForTimeout is not a function</li><li>Step failed: screenshot - TypeError: this.page.waitForTimeout is not a function</li></ul>
+                </details>
+            
+            
+                <p><img src="form-interactions-1751716819315.png" alt="Screenshot" class="screenshot" onclick="window.open(this.src, '_blank')"></p>
+            
+        </div>
+    
+        <div class="test failed">
+            <h3>component-interactions</h3>
+            <p>❌ Component interaction test failed: TypeError: this.page.waitForTimeout is not a function</p>
+            
+            
+                <details>
+                    <summary>Errors (1)</summary>
+                    <ul><li>TypeError: this.page.waitForTimeout is not a function</li></ul>
+                </details>
+            
+            
+        </div>
+    
+
+    <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+        <h2>📁 Files</h2>
+        <p><strong>Report:</strong> frontend-audit-2025-07-05T11-59-04/audit-report.html</p>
+        <p><strong>Screenshots:</strong> frontend-audit-2025-07-05T11-59-04/</p>
+    </div>
+</body>
+</html>

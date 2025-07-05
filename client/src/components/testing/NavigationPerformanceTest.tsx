@@ -368,11 +368,11 @@ const NavigationPerformanceTest: React.FC = () => {
           <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-gray-500">Navigation Time:</span>
-              <span className="ml-2 font-mono">{(metrics.navigation || 0).toFixed(1)}ms</span>
+              <span className="ml-2 font-mono">{(metrics.interactionLatency || 0).toFixed(1)}ms</span>
             </div>
             <div>
               <span className="text-gray-500">Expand/Collapse:</span>
-              <span className="ml-2 font-mono">{(metrics.expand_collapse || 0).toFixed(1)}ms</span>
+              <span className="ml-2 font-mono">{(metrics.expandCollapseTime || 0).toFixed(1)}ms</span>
             </div>
           </div>
         </div>

@@ -1,4 +1,5 @@
 // Performance benchmarking utilities for hierarchical navigation testing
+import * as React from 'react';
 
 export interface PerformanceMetrics {
   renderTime: number;

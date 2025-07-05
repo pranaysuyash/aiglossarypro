@@ -18,6 +18,8 @@ import { FreeTierGate } from "@/components/FreeTierGate";
 import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { useAccess } from "@/hooks/useAccess";
 import { OptimizedImage } from "@/components/ui/optimized-image";
+import { HierarchicalNavigator } from "@/components/sections/HierarchicalNavigator";
+import { contentOutline } from "@/data/content-outline";
 
 export default function TermDetail() {
   const { id } = useParams();
@@ -290,6 +292,28 @@ export default function TermDetail() {
                   </FreeTierGate>
                 )}
               </div>
+
+              {/* Hierarchical Navigation for 42 Sections + 295 Subsections */}
+              {!term.isPreview && (
+                <div className="mb-8">
+                  <h2 className="text-xl font-semibold mb-4">Content Navigation</h2>
+                  <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border">
+                    <HierarchicalNavigator
+                      sections={contentOutline.sections}
+                      onNodeClick={(path, node) => {
+                        console.log('Navigated to:', path, node);
+                        // TODO: Implement navigation logic to jump to specific content sections
+                      }}
+                      searchable={true}
+                      collapsible={true}
+                      showProgress={true}
+                      showInteractiveElements={true}
+                      currentPath={id ? `0.0` : undefined}
+                      className="p-4"
+                    />
+                  </div>
+                </div>
+              )}
 
               {/* Key Characteristics */}
               {!term.isPreview && term.characteristics && term.characteristics.length > 0 && (

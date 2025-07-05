@@ -6,6 +6,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiRequest } from "@/lib/queryClient";
 import Sidebar from "@/components/Sidebar";
 import SectionLayoutManager from "@/components/sections/SectionLayoutManager";
+import { HierarchicalNavigator } from "@/components/sections/HierarchicalNavigator";
+import { contentOutline } from "@/data/content-outline";
 import InteractiveElementsManager from "@/components/interactive/InteractiveElementsManager";
 import { AIDefinitionImprover } from "@/components/AIDefinitionImprover";
 import ProgressTracker from "@/components/ProgressTracker";
@@ -200,11 +202,31 @@ export default function EnhancedTermDetail() {
             onAIImprovementApplied={handleAIImprovementApplied}
             overviewComponent={<TermOverview term={term} isEnhanced={isEnhanced} />}
             sectionsComponent={
-              <SectionLayoutManager
-                sections={sections || []}
-                userSettings={userSettings}
-                onInteraction={handleSectionInteraction}
-              />
+              <div className="space-y-6">
+                {/* Hierarchical Navigation for 42 Sections + 295 Subsections */}
+                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border">
+                  <HierarchicalNavigator
+                    sections={contentOutline.sections}
+                    onNodeClick={(path, node) => {
+                      console.log('Navigated to:', path, node);
+                      // TODO: Implement navigation logic
+                    }}
+                    searchable={true}
+                    collapsible={true}
+                    showProgress={true}
+                    showInteractiveElements={true}
+                    currentPath={id ? `0.0` : undefined}
+                    className="p-4"
+                  />
+                </div>
+                
+                {/* Legacy Section Layout Manager */}
+                <SectionLayoutManager
+                  sections={sections || []}
+                  userSettings={userSettings}
+                  onInteraction={handleSectionInteraction}
+                />
+              </div>
             }
             interactiveComponent={
               <InteractiveElementsManager

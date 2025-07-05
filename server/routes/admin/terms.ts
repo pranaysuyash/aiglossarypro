@@ -524,6 +524,151 @@ export function registerAdminTermsRoutes(app: Express): void {
       });
     }
   });
+
+  // Create single term with AI assistance
+  app.post('/api/admin/terms/create-single', mockIsAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const isAdmin = await isUserAdmin(userId);
+      
+      if (!isAdmin) {
+        return res.status(403).json({
+          success: false,
+          error: 'Admin privileges required'
+        });
+      }
+
+      const { name, shortDefinition, definition, category, useAI } = req.body;
+
+      if (!name || !category) {
+        return res.status(400).json({
+          success: false,
+          error: 'Name and category are required'
+        });
+      }
+
+      // Generate a unique ID for the term
+      const termId = `term_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+
+      // Create base term object
+      let termData: any = {
+        id: termId,
+        name,
+        shortDefinition: shortDefinition || `A concise definition of ${name}`,
+        definition: definition || `${name} is a term in ${category} that...`,
+        category,
+        subcategory: '',
+        characteristics: [],
+        applications: [],
+        advantages: [],
+        disadvantages: [],
+        examples: [],
+        prerequisites: [],
+        mathFormulation: '',
+        relatedTerms: [],
+        aiGenerated: useAI,
+        verificationStatus: 'unverified',
+        qualityScore: 50,
+        createdBy: userId,
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      // If AI is enabled, generate additional content
+      if (useAI) {
+        try {
+          logger.info(`Generating AI content for term: ${name}`);
+          
+          // Generate comprehensive content using AI
+          const aiContent = await aiService.generateTermContent(name, category, {
+            definition: definition || undefined,
+            shortDefinition: shortDefinition || undefined,
+            sections: [
+              'definition',
+              'examples',
+              'applications',
+              'advantages',
+              'disadvantages',
+              'prerequisites',
+              'characteristics',
+              'related_terms'
+            ]
+          });
+
+          // Merge AI content with base term
+          if (aiContent) {
+            termData = {
+              ...termData,
+              definition: aiContent.definition || termData.definition,
+              shortDefinition: aiContent.shortDefinition || termData.shortDefinition,
+              examples: aiContent.examples || [],
+              applications: aiContent.applications || [],
+              advantages: aiContent.advantages || [],
+              disadvantages: aiContent.disadvantages || [],
+              prerequisites: aiContent.prerequisites || [],
+              characteristics: aiContent.characteristics || [],
+              relatedTerms: aiContent.relatedTerms || [],
+              qualityScore: 75 // Higher quality score for AI-enhanced content
+            };
+          }
+        } catch (aiError) {
+          logger.error('Error generating AI content:', { error: aiError instanceof Error ? aiError.message : String(aiError) });
+          // Continue with basic term creation even if AI fails
+        }
+      }
+
+      // Insert the term into database
+      await db.insert(enhancedTerms).values(termData);
+
+      logger.info(`Created single term: ${name} (${termId}) by user ${userId}`);
+
+      res.json({
+        success: true,
+        data: termData,
+        message: `Successfully created term "${name}"${useAI ? ' with AI enhancement' : ''}`
+      });
+    } catch (error) {
+      logger.error('Error creating single term:', { error: error instanceof Error ? error.message : String(error) });
+      res.status(500).json({
+        success: false,
+        error: 'Failed to create term'
+      });
+    }
+  });
+
+  // Delete term
+  app.delete('/api/admin/terms/:termId', mockIsAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user.claims.sub;
+      const isAdmin = await isUserAdmin(userId);
+      
+      if (!isAdmin) {
+        return res.status(403).json({
+          success: false,
+          error: 'Admin privileges required'
+        });
+      }
+
+      const { termId } = req.params;
+
+      await db
+        .delete(enhancedTerms)
+        .where(eq(enhancedTerms.id, termId));
+
+      logger.info(`Deleted term ${termId} by user ${userId}`);
+
+      res.json({
+        success: true,
+        message: 'Term deleted successfully'
+      });
+    } catch (error) {
+      logger.error('Error deleting term:', { error: error instanceof Error ? error.message : String(error) });
+      res.status(500).json({
+        success: false,
+        error: 'Failed to delete term'
+      });
+    }
+  });
 }
 
 // Helper function to analyze term quality

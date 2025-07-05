@@ -30,7 +30,20 @@ export function useCountryPricing() {
   useEffect(() => {
     const detectCountry = async () => {
       try {
-        const response = await fetch('https://ipapi.co/json/');
+        // Use a more reliable service or fallback to default
+        const response = await fetch('https://api.ipdata.co/v1/current?api-key=test', {
+          mode: 'cors',
+          headers: {
+            'Accept': 'application/json',
+          }
+        }).catch(() => null);
+        
+        if (!response || !response.ok) {
+          // Fallback to default US pricing
+          setPricing(prev => ({ ...prev, loading: false }));
+          return;
+        }
+        
         const data = await response.json();
         
         const countryPricing = calculatePPPPricing(data.country_code, data.country_name);

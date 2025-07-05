@@ -1,0 +1,102 @@
+{
+  "timestamp": "2025-07-05T14:18:02.928Z",
+  "duration": 22429,
+  "sections": [
+    {
+      "name": "Homepage",
+      "status": "fail",
+      "details": [
+        "Navigation failed"
+      ],
+      "errors": [
+        "page.$x is not a function"
+      ]
+    },
+    {
+      "name": "Authentication",
+      "status": "fail",
+      "details": [
+        "Authentication audit failed"
+      ],
+      "errors": [
+        "page.$x is not a function"
+      ]
+    },
+    {
+      "name": "Hierarchical Navigation",
+      "status": "fail",
+      "details": [
+        "Navigation audit failed"
+      ],
+      "errors": [
+        "page.$x is not a function"
+      ]
+    },
+    {
+      "name": "Search Functionality",
+      "status": "fail",
+      "details": [
+        "Search audit failed"
+      ],
+      "errors": [
+        "page.$x is not a function"
+      ]
+    },
+    {
+      "name": "Performance",
+      "status": "warning",
+      "details": [
+        "Page load time: 1547ms",
+        "DOM Content Loaded: 106ms",
+        "JS Heap Used: 24.20MB",
+        "Nodes: 1975",
+        "Navigation to /category/79f3d163-dae1-499d-8371-047accbe70e9: 1128ms",
+        "Navigation to /term/8b5bff9a-afb7-4691-a58e-adc2bf94f941: 921ms",
+        "Navigation to /terms?search=ai: 927ms"
+      ],
+      "errors": []
+    },
+    {
+      "name": "Accessibility",
+      "status": "fail",
+      "details": [
+        "Accessibility audit failed"
+      ],
+      "errors": [
+        "page.waitForTimeout is not a function"
+      ]
+    },
+    {
+      "name": "TypeScript Compilation",
+      "status": "fail",
+      "details": [
+        "TypeScript errors: 199",
+        "\nErrors by file:",
+        "  server/advancedExcelParser.ts: 17 errors",
+        "  server/routes/admin/newsletter.ts: 13 errors",
+        "  server/routes/jobs.ts: 13 errors",
+        "  server/jobs/processors/excelImportProcessor.ts: 11 errors",
+        "  server/routes/abTests.ts: 11 errors"
+      ],
+      "errors": [
+        "server/adaptiveSearchService.ts(202,15): error TS2741: Property 'orderBy' is missing in type 'Omit<PgSelectBase<\"terms\", any, \"multiple\", Record<\"terms\", \"not-null\"> & { categories: \"nullable\"; }, false, \"where\" | \"orderBy\", { terms: any; categories: any; }[], any>, \"where\" | \"orderBy\">' but required in type 'Omit<PgSelectBase<\"terms\", any, \"multiple\", Record<\"terms\", \"not-null\"> & { categories: \"nullable\"; }, false, \"where\", { terms: any; categories: any; }[], any>, \"where\">'.",
+        "server/adaptiveSearchService.ts(205,15): error TS2741: Property 'orderBy' is missing in type 'Omit<PgSelectBase<\"terms\", any, \"multiple\", Record<\"terms\", \"not-null\"> & { categories: \"nullable\"; }, false, \"where\" | \"orderBy\", { terms: any; categories: any; }[], any>, \"where\" | \"orderBy\">' but required in type 'Omit<PgSelectBase<\"terms\", any, \"multiple\", Record<\"terms\", \"not-null\"> & { categories: \"nullable\"; }, false, \"where\", { terms: any; categories: any; }[], any>, \"where\">'.",
+        "server/adaptiveSearchService.ts(208,15): error TS2741: Property 'orderBy' is missing in type 'Omit<PgSelectBase<\"terms\", any, \"multiple\", Record<\"terms\", \"not-null\"> & { categories: \"nullable\"; }, false, \"where\" | \"orderBy\", { terms: any; categories: any; }[], any>, \"where\" | \"orderBy\">' but required in type 'Omit<PgSelectBase<\"terms\", any, \"multiple\", Record<\"terms\", \"not-null\"> & { categories: \"nullable\"; }, false, \"where\", { terms: any; categories: any; }[], any>, \"where\">'.",
+        "server/adaptiveSearchService.ts(211,15): error TS2741: Property 'orderBy' is missing in type 'Omit<PgSelectBase<\"terms\", any, \"multiple\", Record<\"terms\", \"not-null\"> & { categories: \"nullable\"; }, false, \"where\" | \"orderBy\", { terms: any; categories: any; }[], any>, \"where\" | \"orderBy\">' but required in type 'Omit<PgSelectBase<\"terms\", any, \"multiple\", Record<\"terms\", \"not-null\"> & { categories: \"nullable\"; }, false, \"where\", { terms: any; categories: any; }[], any>, \"where\">'.",
+        "server/advancedExcelParser.ts(101,49): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, unknown> | undefined'.",
+        "server/advancedExcelParser.ts(140,39): error TS2345: Argument of type 'string[]' is not assignable to parameter of type 'Record<string, unknown>'.",
+        "server/advancedExcelParser.ts(223,63): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, unknown> | undefined'.",
+        "server/advancedExcelParser.ts(292,66): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, unknown> | undefined'.",
+        "server/advancedExcelParser.ts(303,52): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, unknown> | undefined'.",
+        "server/advancedExcelParser.ts(390,89): error TS2345: Argument of type 'unknown' is not assignable to parameter of type 'Record<string, unknown> | undefined'.",
+        "... and 189 more errors"
+      ]
+    }
+  ],
+  "summary": {
+    "totalTests": 7,
+    "passed": 0,
+    "failed": 6,
+    "warnings": 1
+  }
+}

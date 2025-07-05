@@ -130,4 +130,4 @@ export type OmitProps<T, K extends keyof T> = Omit<T, K>;
 /**
  * Utility type to extend HTML element props
  */
-export type ExtendHTMLProps<T extends HTMLAttributes<any>, P = {}> = OmitProps<T, keyof P> & P;
+export type ExtendHTMLProps<T extends HTMLAttributes<any>, P = {}> = Omit<T, keyof P> & P;

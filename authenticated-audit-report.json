@@ -1,0 +1,66 @@
+{
+  "timestamp": "2025-07-05T14:23:44.443Z",
+  "duration": 12291,
+  "sections": [
+    {
+      "name": "Interactive Content",
+      "status": "warning",
+      "details": [
+        "Interactive Terms: ❌ Not found",
+        "Interactive Code Examples: ✅",
+        "Demo Elements: 0"
+      ],
+      "errors": [],
+      "screenshots": [
+        "auth-audit-interactive-content.png"
+      ]
+    },
+    {
+      "name": "Authenticated Features",
+      "status": "fail",
+      "details": [
+        "Authentication: ❌ Login failed"
+      ],
+      "errors": [],
+      "screenshots": [
+        "auth-audit-hierarchical-nav-authenticated.png"
+      ]
+    },
+    {
+      "name": "Admin Features",
+      "status": "fail",
+      "details": [
+        "Admin Authentication: ❌ Login failed"
+      ],
+      "errors": [],
+      "screenshots": [
+        "auth-audit-admin-dashboard.png"
+      ]
+    },
+    {
+      "name": "Complete User Flows",
+      "status": "fail",
+      "details": [
+        "User flow audit failed"
+      ],
+      "errors": [
+        "page.waitForTimeout is not a function"
+      ]
+    }
+  ],
+  "summary": {
+    "totalTests": 4,
+    "passed": 0,
+    "failed": 3,
+    "warnings": 1
+  },
+  "interactiveContent": {
+    "found": false,
+    "components": []
+  },
+  "hierarchicalNavigation": {
+    "authenticated": false,
+    "visible": false,
+    "sections": 0
+  }
+}

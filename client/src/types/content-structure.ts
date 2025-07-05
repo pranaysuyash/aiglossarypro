@@ -55,7 +55,7 @@ export function flattenStructure(nodes: ContentNode[], parentPath: string = ''):
   
   for (const [index, node] of nodes.entries()) {
     const currentPath = parentPath ? `${parentPath}.${index}` : `${index}`;
-    const depth = parentPath.split('.').length;
+    const depth = parentPath ? parentPath.split('.').length : 0;
     
     result.push({
       name: node.name,
@@ -77,9 +77,10 @@ export function findNodeByPath(nodes: ContentNode[], path: string): ContentNode 
   const pathParts = path.split('.').map(p => parseInt(p));
   let current = nodes;
   
-  for (const index of pathParts) {
+  for (let i = 0; i < pathParts.length; i++) {
+    const index = pathParts[i];
     if (!current[index]) return null;
-    if (pathParts.indexOf(index) === pathParts.length - 1) {
+    if (i === pathParts.length - 1) {
       return current[index];
     }
     current = current[index].subsections || [];

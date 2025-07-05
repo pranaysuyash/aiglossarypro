@@ -1,0 +1,1281 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`HierarchicalNavigator > Visual Snapshots > matches snapshot for basic rendering 1`] = `
+<div
+  class="h-fit"
+  data-testid="card"
+>
+  <div
+    class="pb-4"
+    data-testid="card-header"
+  >
+    <div
+      class="text-lg font-semibold"
+      data-testid="card-title"
+    >
+      Content Navigation
+    </div>
+    <div
+      class="relative"
+    >
+      <div
+        class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+        data-testid="search-icon"
+      />
+      <input
+        class="pl-10"
+        data-testid="input"
+        placeholder="Search sections..."
+        value=""
+      />
+    </div>
+    <div
+      class="space-y-2"
+    >
+      <div
+        class="flex items-center justify-between text-sm"
+      >
+        <span
+          class="text-gray-600 dark:text-gray-400"
+        >
+          Overall Progress
+        </span>
+        <span
+          class="font-medium"
+        >
+          0
+          /
+          11
+        </span>
+      </div>
+      <div
+        class="h-2"
+        data-testid="progress"
+        data-value="0"
+      />
+      <div
+        class="flex items-center justify-between text-xs text-gray-500"
+      >
+        <span>
+          0
+          % Complete
+        </span>
+        <div
+          class="flex items-center space-x-2"
+        >
+          <button
+            class="h-6 text-xs"
+            data-size="sm"
+            data-testid="button"
+            data-variant="default"
+          >
+            Tree
+          </button>
+          <button
+            class="h-6 text-xs"
+            data-size="sm"
+            data-testid="button"
+            data-variant="outline"
+          >
+            Flat
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="pt-0"
+    data-testid="card-content"
+  >
+    <div
+      class="space-y-1 max-h-96 overflow-y-auto"
+    >
+      <div
+        class="transition-all duration-200 border-l-2 border-l-blue-500"
+      >
+        <div
+          class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          role="button"
+          tabindex="0"
+        >
+          <button
+            class="p-0 h-4 w-4"
+            data-size="sm"
+            data-testid="button"
+            data-variant="ghost"
+          >
+            <div
+              class="h-3 w-3"
+              data-testid="chevron-down"
+            />
+          </button>
+          <div
+            class="flex-shrink-0"
+          >
+            <div
+              class="h-4 w-4 text-gray-500"
+              data-testid="book-open"
+            />
+          </div>
+          <div
+            class="flex-1 min-w-0"
+          >
+            <div
+              class="flex items-center space-x-2"
+            >
+              <span
+                class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+              >
+                Introduction to AI
+              </span>
+              <div
+                class="h-3 w-3 text-yellow-500"
+                data-testid="star"
+              />
+            </div>
+          </div>
+          <div
+            class="flex-shrink-0 flex items-center space-x-1"
+          >
+            <div
+              class="h-4 w-4 text-gray-300"
+              data-testid="circle"
+            />
+            <span
+              class="text-xs"
+              data-testid="badge"
+              data-variant="outline"
+            >
+              2
+            </span>
+          </div>
+        </div>
+        <div
+          class="ml-2 mt-1 space-y-1"
+        >
+          <div
+            class="transition-all duration-200 border-l-2 border-l-yellow-500"
+          >
+            <div
+              class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ml-4"
+              role="button"
+              tabindex="0"
+            >
+              <button
+                class="p-0 h-4 w-4"
+                data-size="sm"
+                data-testid="button"
+                data-variant="ghost"
+              >
+                <div
+                  class="h-3 w-3"
+                  data-testid="chevron-right"
+                />
+              </button>
+              <div
+                class="flex-shrink-0"
+              >
+                <div
+                  class="h-4 w-4 text-purple-500"
+                  data-testid="play-icon"
+                />
+              </div>
+              <div
+                class="flex-1 min-w-0"
+              >
+                <div
+                  class="flex items-center space-x-2"
+                >
+                  <span
+                    class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+                  >
+                    What is AI?
+                  </span>
+                  <span
+                    class="text-xs bg-purple-100 text-purple-700"
+                    data-testid="badge"
+                    data-variant="secondary"
+                  >
+                    Interactive
+                  </span>
+                </div>
+                <div
+                  class="mt-1"
+                >
+                  <div
+                    class="h-1"
+                    data-testid="progress"
+                    data-value="100"
+                  />
+                </div>
+              </div>
+              <div
+                class="flex-shrink-0 flex items-center space-x-1"
+              >
+                <div
+                  class="h-4 w-4 text-green-500"
+                  data-testid="check-circle"
+                />
+                <span
+                  class="text-xs"
+                  data-testid="badge"
+                  data-variant="outline"
+                >
+                  2
+                </span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="transition-all duration-200 border-l-2 border-l-gray-300"
+          >
+            <div
+              class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ml-4"
+              role="button"
+              tabindex="0"
+            >
+              <button
+                class="p-0 h-4 w-4"
+                data-size="sm"
+                data-testid="button"
+                data-variant="ghost"
+              >
+                <div
+                  class="h-3 w-3"
+                  data-testid="chevron-right"
+                />
+              </button>
+              <div
+                class="flex-shrink-0"
+              >
+                <div
+                  class="h-4 w-4 text-gray-500"
+                  data-testid="book-open"
+                />
+              </div>
+              <div
+                class="flex-1 min-w-0"
+              >
+                <div
+                  class="flex items-center space-x-2"
+                >
+                  <span
+                    class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+                  >
+                    History of AI
+                  </span>
+                </div>
+              </div>
+              <div
+                class="flex-shrink-0 flex items-center space-x-1"
+              >
+                <div
+                  class="h-4 w-4 text-gray-300"
+                  data-testid="circle"
+                />
+                <span
+                  class="text-xs"
+                  data-testid="badge"
+                  data-variant="outline"
+                >
+                  1
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="transition-all duration-200 border-l-2 border-l-blue-500"
+      >
+        <div
+          class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          role="button"
+          tabindex="0"
+        >
+          <button
+            class="p-0 h-4 w-4"
+            data-size="sm"
+            data-testid="button"
+            data-variant="ghost"
+          >
+            <div
+              class="h-3 w-3"
+              data-testid="chevron-down"
+            />
+          </button>
+          <div
+            class="flex-shrink-0"
+          >
+            <div
+              class="h-4 w-4 text-green-500"
+              data-testid="code-icon"
+            />
+          </div>
+          <div
+            class="flex-1 min-w-0"
+          >
+            <div
+              class="flex items-center space-x-2"
+            >
+              <span
+                class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+              >
+                Machine Learning Basics
+              </span>
+              <div
+                class="h-3 w-3 text-yellow-500"
+                data-testid="star"
+              />
+            </div>
+            <div
+              class="mt-1"
+            >
+              <div
+                class="h-1"
+                data-testid="progress"
+                data-value="50"
+              />
+            </div>
+          </div>
+          <div
+            class="flex-shrink-0 flex items-center space-x-1"
+          >
+            <div
+              class="h-4 w-4 text-yellow-500"
+              data-testid="clock"
+            />
+            <span
+              class="text-xs"
+              data-testid="badge"
+              data-variant="outline"
+            >
+              2
+            </span>
+          </div>
+        </div>
+        <div
+          class="ml-2 mt-1 space-y-1"
+        >
+          <div
+            class="transition-all duration-200 border-l-2 border-l-yellow-500"
+          >
+            <div
+              class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ml-4"
+              role="button"
+              tabindex="0"
+            >
+              <div
+                class="flex-shrink-0"
+              >
+                <div
+                  class="h-4 w-4 text-purple-500"
+                  data-testid="play-icon"
+                />
+              </div>
+              <div
+                class="flex-1 min-w-0"
+              >
+                <div
+                  class="flex items-center space-x-2"
+                >
+                  <span
+                    class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+                  >
+                    Supervised Learning
+                  </span>
+                  <span
+                    class="text-xs bg-purple-100 text-purple-700"
+                    data-testid="badge"
+                    data-variant="secondary"
+                  >
+                    Interactive
+                  </span>
+                </div>
+                <div
+                  class="mt-1"
+                >
+                  <div
+                    class="h-1"
+                    data-testid="progress"
+                    data-value="100"
+                  />
+                </div>
+              </div>
+              <div
+                class="flex-shrink-0 flex items-center space-x-1"
+              >
+                <div
+                  class="h-4 w-4 text-green-500"
+                  data-testid="check-circle"
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            class="transition-all duration-200 border-l-2 border-l-yellow-500"
+          >
+            <div
+              class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ml-4"
+              role="button"
+              tabindex="0"
+            >
+              <div
+                class="flex-shrink-0"
+              >
+                <div
+                  class="h-4 w-4 text-green-500"
+                  data-testid="code-icon"
+                />
+              </div>
+              <div
+                class="flex-1 min-w-0"
+              >
+                <div
+                  class="flex items-center space-x-2"
+                >
+                  <span
+                    class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+                  >
+                    Unsupervised Learning
+                  </span>
+                </div>
+                <div
+                  class="mt-1"
+                >
+                  <div
+                    class="h-1"
+                    data-testid="progress"
+                    data-value="30"
+                  />
+                </div>
+              </div>
+              <div
+                class="flex-shrink-0 flex items-center space-x-1"
+              >
+                <div
+                  class="h-4 w-4 text-yellow-500"
+                  data-testid="clock"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="transition-all duration-200 border-l-2 border-l-blue-500"
+      >
+        <div
+          class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          role="button"
+          tabindex="0"
+        >
+          <button
+            class="p-0 h-4 w-4"
+            data-size="sm"
+            data-testid="button"
+            data-variant="ghost"
+          >
+            <div
+              class="h-3 w-3"
+              data-testid="chevron-down"
+            />
+          </button>
+          <div
+            class="flex-shrink-0"
+          >
+            <div
+              class="h-4 w-4 text-gray-500"
+              data-testid="book-open"
+            />
+          </div>
+          <div
+            class="flex-1 min-w-0"
+          >
+            <div
+              class="flex items-center space-x-2"
+            >
+              <span
+                class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+              >
+                Deep Learning
+              </span>
+              <div
+                class="h-3 w-3 text-yellow-500"
+                data-testid="star"
+              />
+            </div>
+          </div>
+          <div
+            class="flex-shrink-0 flex items-center space-x-1"
+          >
+            <div
+              class="h-4 w-4 text-gray-300"
+              data-testid="circle"
+            />
+            <span
+              class="text-xs"
+              data-testid="badge"
+              data-variant="outline"
+            >
+              1
+            </span>
+          </div>
+        </div>
+        <div
+          class="ml-2 mt-1 space-y-1"
+        >
+          <div
+            class="transition-all duration-200 border-l-2 border-l-blue-500"
+          >
+            <div
+              class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ml-4"
+              role="button"
+              tabindex="0"
+            >
+              <div
+                class="flex-shrink-0"
+              >
+                <div
+                  class="h-4 w-4 text-purple-500"
+                  data-testid="play-icon"
+                />
+              </div>
+              <div
+                class="flex-1 min-w-0"
+              >
+                <div
+                  class="flex items-center space-x-2"
+                >
+                  <span
+                    class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+                  >
+                    Neural Networks
+                  </span>
+                  <span
+                    class="text-xs bg-purple-100 text-purple-700"
+                    data-testid="badge"
+                    data-variant="secondary"
+                  >
+                    Interactive
+                  </span>
+                  <div
+                    class="h-3 w-3 text-yellow-500"
+                    data-testid="star"
+                  />
+                </div>
+              </div>
+              <div
+                class="flex-shrink-0 flex items-center space-x-1"
+              >
+                <div
+                  class="h-4 w-4 text-gray-300"
+                  data-testid="circle"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`HierarchicalNavigator > Visual Snapshots > matches snapshot for empty state 1`] = `
+<div
+  class="h-fit"
+  data-testid="card"
+>
+  <div
+    class="pb-4"
+    data-testid="card-header"
+  >
+    <div
+      class="text-lg font-semibold"
+      data-testid="card-title"
+    >
+      Content Navigation
+    </div>
+    <div
+      class="relative"
+    >
+      <div
+        class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+        data-testid="search-icon"
+      />
+      <input
+        class="pl-10"
+        data-testid="input"
+        placeholder="Search sections..."
+        value=""
+      />
+    </div>
+    <div
+      class="space-y-2"
+    >
+      <div
+        class="flex items-center justify-between text-sm"
+      >
+        <span
+          class="text-gray-600 dark:text-gray-400"
+        >
+          Overall Progress
+        </span>
+        <span
+          class="font-medium"
+        >
+          0
+          /
+          0
+        </span>
+      </div>
+      <div
+        class="h-2"
+        data-testid="progress"
+        data-value="0"
+      />
+      <div
+        class="flex items-center justify-between text-xs text-gray-500"
+      >
+        <span>
+          0
+          % Complete
+        </span>
+        <div
+          class="flex items-center space-x-2"
+        >
+          <button
+            class="h-6 text-xs"
+            data-size="sm"
+            data-testid="button"
+            data-variant="default"
+          >
+            Tree
+          </button>
+          <button
+            class="h-6 text-xs"
+            data-size="sm"
+            data-testid="button"
+            data-variant="outline"
+          >
+            Flat
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="pt-0"
+    data-testid="card-content"
+  >
+    <div
+      class="space-y-1 max-h-96 overflow-y-auto"
+    />
+    <div
+      class="text-center py-8"
+    >
+      <div
+        class="h-8 w-8 mx-auto text-gray-400 mb-2"
+        data-testid="file-text"
+      />
+      <p
+        class="text-sm text-gray-500"
+      >
+        No sections found
+      </p>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`HierarchicalNavigator > Visual Snapshots > matches snapshot with progress and interactive elements 1`] = `
+<div
+  class="h-fit"
+  data-testid="card"
+>
+  <div
+    class="pb-4"
+    data-testid="card-header"
+  >
+    <div
+      class="text-lg font-semibold"
+      data-testid="card-title"
+    >
+      Content Navigation
+    </div>
+    <div
+      class="relative"
+    >
+      <div
+        class="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+        data-testid="search-icon"
+      />
+      <input
+        class="pl-10"
+        data-testid="input"
+        placeholder="Search sections..."
+        value=""
+      />
+    </div>
+    <div
+      class="space-y-2"
+    >
+      <div
+        class="flex items-center justify-between text-sm"
+      >
+        <span
+          class="text-gray-600 dark:text-gray-400"
+        >
+          Overall Progress
+        </span>
+        <span
+          class="font-medium"
+        >
+          2
+          /
+          11
+        </span>
+      </div>
+      <div
+        class="h-2"
+        data-testid="progress"
+        data-value="18.181818181818183"
+      />
+      <div
+        class="flex items-center justify-between text-xs text-gray-500"
+      >
+        <span>
+          18
+          % Complete
+        </span>
+        <div
+          class="flex items-center space-x-2"
+        >
+          <button
+            class="h-6 text-xs"
+            data-size="sm"
+            data-testid="button"
+            data-variant="default"
+          >
+            Tree
+          </button>
+          <button
+            class="h-6 text-xs"
+            data-size="sm"
+            data-testid="button"
+            data-variant="outline"
+          >
+            Flat
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div
+    class="pt-0"
+    data-testid="card-content"
+  >
+    <div
+      class="space-y-1 max-h-96 overflow-y-auto"
+    >
+      <div
+        class="transition-all duration-200 border-l-2 border-l-blue-500"
+      >
+        <div
+          class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          role="button"
+          tabindex="0"
+        >
+          <button
+            class="p-0 h-4 w-4"
+            data-size="sm"
+            data-testid="button"
+            data-variant="ghost"
+          >
+            <div
+              class="h-3 w-3"
+              data-testid="chevron-down"
+            />
+          </button>
+          <div
+            class="flex-shrink-0"
+          >
+            <div
+              class="h-4 w-4 text-gray-500"
+              data-testid="book-open"
+            />
+          </div>
+          <div
+            class="flex-1 min-w-0"
+          >
+            <div
+              class="flex items-center space-x-2"
+            >
+              <span
+                class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+              >
+                Introduction to AI
+              </span>
+              <div
+                class="h-3 w-3 text-yellow-500"
+                data-testid="star"
+              />
+            </div>
+            <div
+              class="mt-1"
+            >
+              <div
+                class="h-1"
+                data-testid="progress"
+                data-value="25"
+              />
+            </div>
+          </div>
+          <div
+            class="flex-shrink-0 flex items-center space-x-1"
+          >
+            <div
+              class="h-4 w-4 text-yellow-500"
+              data-testid="clock"
+            />
+            <span
+              class="text-xs"
+              data-testid="badge"
+              data-variant="outline"
+            >
+              2
+            </span>
+          </div>
+        </div>
+        <div
+          class="ml-2 mt-1 space-y-1"
+        >
+          <div
+            class="transition-all duration-200 border-l-2 border-l-yellow-500"
+          >
+            <div
+              class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ml-4"
+              role="button"
+              tabindex="0"
+            >
+              <button
+                class="p-0 h-4 w-4"
+                data-size="sm"
+                data-testid="button"
+                data-variant="ghost"
+              >
+                <div
+                  class="h-3 w-3"
+                  data-testid="chevron-right"
+                />
+              </button>
+              <div
+                class="flex-shrink-0"
+              >
+                <div
+                  class="h-4 w-4 text-purple-500"
+                  data-testid="play-icon"
+                />
+              </div>
+              <div
+                class="flex-1 min-w-0"
+              >
+                <div
+                  class="flex items-center space-x-2"
+                >
+                  <span
+                    class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+                  >
+                    What is AI?
+                  </span>
+                  <span
+                    class="text-xs bg-purple-100 text-purple-700"
+                    data-testid="badge"
+                    data-variant="secondary"
+                  >
+                    Interactive
+                  </span>
+                </div>
+                <div
+                  class="mt-1"
+                >
+                  <div
+                    class="h-1"
+                    data-testid="progress"
+                    data-value="100"
+                  />
+                </div>
+              </div>
+              <div
+                class="flex-shrink-0 flex items-center space-x-1"
+              >
+                <div
+                  class="h-4 w-4 text-green-500"
+                  data-testid="check-circle"
+                />
+                <span
+                  class="text-xs"
+                  data-testid="badge"
+                  data-variant="outline"
+                >
+                  2
+                </span>
+              </div>
+            </div>
+          </div>
+          <div
+            class="transition-all duration-200 border-l-2 border-l-gray-300"
+          >
+            <div
+              class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ml-4"
+              role="button"
+              tabindex="0"
+            >
+              <button
+                class="p-0 h-4 w-4"
+                data-size="sm"
+                data-testid="button"
+                data-variant="ghost"
+              >
+                <div
+                  class="h-3 w-3"
+                  data-testid="chevron-right"
+                />
+              </button>
+              <div
+                class="flex-shrink-0"
+              >
+                <div
+                  class="h-4 w-4 text-gray-500"
+                  data-testid="book-open"
+                />
+              </div>
+              <div
+                class="flex-1 min-w-0"
+              >
+                <div
+                  class="flex items-center space-x-2"
+                >
+                  <span
+                    class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+                  >
+                    History of AI
+                  </span>
+                </div>
+              </div>
+              <div
+                class="flex-shrink-0 flex items-center space-x-1"
+              >
+                <div
+                  class="h-4 w-4 text-gray-300"
+                  data-testid="circle"
+                />
+                <span
+                  class="text-xs"
+                  data-testid="badge"
+                  data-variant="outline"
+                >
+                  1
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="transition-all duration-200 border-l-2 border-l-blue-500"
+      >
+        <div
+          class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          role="button"
+          tabindex="0"
+        >
+          <button
+            class="p-0 h-4 w-4"
+            data-size="sm"
+            data-testid="button"
+            data-variant="ghost"
+          >
+            <div
+              class="h-3 w-3"
+              data-testid="chevron-down"
+            />
+          </button>
+          <div
+            class="flex-shrink-0"
+          >
+            <div
+              class="h-4 w-4 text-green-500"
+              data-testid="code-icon"
+            />
+          </div>
+          <div
+            class="flex-1 min-w-0"
+          >
+            <div
+              class="flex items-center space-x-2"
+            >
+              <span
+                class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+              >
+                Machine Learning Basics
+              </span>
+              <div
+                class="h-3 w-3 text-yellow-500"
+                data-testid="star"
+              />
+            </div>
+            <div
+              class="mt-1"
+            >
+              <div
+                class="h-1"
+                data-testid="progress"
+                data-value="50"
+              />
+            </div>
+          </div>
+          <div
+            class="flex-shrink-0 flex items-center space-x-1"
+          >
+            <div
+              class="h-4 w-4 text-yellow-500"
+              data-testid="clock"
+            />
+            <span
+              class="text-xs"
+              data-testid="badge"
+              data-variant="outline"
+            >
+              2
+            </span>
+          </div>
+        </div>
+        <div
+          class="ml-2 mt-1 space-y-1"
+        >
+          <div
+            class="transition-all duration-200 border-l-2 border-l-yellow-500"
+          >
+            <div
+              class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ml-4"
+              role="button"
+              tabindex="0"
+            >
+              <div
+                class="flex-shrink-0"
+              >
+                <div
+                  class="h-4 w-4 text-purple-500"
+                  data-testid="play-icon"
+                />
+              </div>
+              <div
+                class="flex-1 min-w-0"
+              >
+                <div
+                  class="flex items-center space-x-2"
+                >
+                  <span
+                    class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+                  >
+                    Supervised Learning
+                  </span>
+                  <span
+                    class="text-xs bg-purple-100 text-purple-700"
+                    data-testid="badge"
+                    data-variant="secondary"
+                  >
+                    Interactive
+                  </span>
+                </div>
+                <div
+                  class="mt-1"
+                >
+                  <div
+                    class="h-1"
+                    data-testid="progress"
+                    data-value="100"
+                  />
+                </div>
+              </div>
+              <div
+                class="flex-shrink-0 flex items-center space-x-1"
+              >
+                <div
+                  class="h-4 w-4 text-green-500"
+                  data-testid="check-circle"
+                />
+              </div>
+            </div>
+          </div>
+          <div
+            class="transition-all duration-200 border-l-2 border-l-yellow-500"
+          >
+            <div
+              class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ml-4"
+              role="button"
+              tabindex="0"
+            >
+              <div
+                class="flex-shrink-0"
+              >
+                <div
+                  class="h-4 w-4 text-green-500"
+                  data-testid="code-icon"
+                />
+              </div>
+              <div
+                class="flex-1 min-w-0"
+              >
+                <div
+                  class="flex items-center space-x-2"
+                >
+                  <span
+                    class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+                  >
+                    Unsupervised Learning
+                  </span>
+                </div>
+                <div
+                  class="mt-1"
+                >
+                  <div
+                    class="h-1"
+                    data-testid="progress"
+                    data-value="30"
+                  />
+                </div>
+              </div>
+              <div
+                class="flex-shrink-0 flex items-center space-x-1"
+              >
+                <div
+                  class="h-4 w-4 text-yellow-500"
+                  data-testid="clock"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        class="transition-all duration-200 border-l-2 border-l-blue-500"
+      >
+        <div
+          class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
+          role="button"
+          tabindex="0"
+        >
+          <button
+            class="p-0 h-4 w-4"
+            data-size="sm"
+            data-testid="button"
+            data-variant="ghost"
+          >
+            <div
+              class="h-3 w-3"
+              data-testid="chevron-down"
+            />
+          </button>
+          <div
+            class="flex-shrink-0"
+          >
+            <div
+              class="h-4 w-4 text-gray-500"
+              data-testid="book-open"
+            />
+          </div>
+          <div
+            class="flex-1 min-w-0"
+          >
+            <div
+              class="flex items-center space-x-2"
+            >
+              <span
+                class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+              >
+                Deep Learning
+              </span>
+              <div
+                class="h-3 w-3 text-yellow-500"
+                data-testid="star"
+              />
+            </div>
+          </div>
+          <div
+            class="flex-shrink-0 flex items-center space-x-1"
+          >
+            <div
+              class="h-4 w-4 text-gray-300"
+              data-testid="circle"
+            />
+            <span
+              class="text-xs"
+              data-testid="badge"
+              data-variant="outline"
+            >
+              1
+            </span>
+          </div>
+        </div>
+        <div
+          class="ml-2 mt-1 space-y-1"
+        >
+          <div
+            class="transition-all duration-200 border-l-2 border-l-blue-500"
+          >
+            <div
+              class="flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors ml-4"
+              role="button"
+              tabindex="0"
+            >
+              <div
+                class="flex-shrink-0"
+              >
+                <div
+                  class="h-4 w-4 text-purple-500"
+                  data-testid="play-icon"
+                />
+              </div>
+              <div
+                class="flex-1 min-w-0"
+              >
+                <div
+                  class="flex items-center space-x-2"
+                >
+                  <span
+                    class="text-sm font-medium truncate text-gray-700 dark:text-gray-300"
+                  >
+                    Neural Networks
+                  </span>
+                  <span
+                    class="text-xs bg-purple-100 text-purple-700"
+                    data-testid="badge"
+                    data-variant="secondary"
+                  >
+                    Interactive
+                  </span>
+                  <div
+                    class="h-3 w-3 text-yellow-500"
+                    data-testid="star"
+                  />
+                </div>
+              </div>
+              <div
+                class="flex-shrink-0 flex items-center space-x-1"
+              >
+                <div
+                  class="h-4 w-4 text-gray-300"
+                  data-testid="circle"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+`;

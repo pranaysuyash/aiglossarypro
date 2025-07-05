@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -53,7 +53,9 @@ const OutlineNode: React.FC<{
   }>;
   showProgress: boolean;
   showInteractiveElements: boolean;
-}> = ({ 
+  expandedNodes: Set<string>;
+  currentPath: string;
+}> = React.memo(({ 
   node, 
   path, 
   depth, 
@@ -63,36 +65,43 @@ const OutlineNode: React.FC<{
   onNodeClick, 
   userProgress,
   showProgress,
-  showInteractiveElements
+  showInteractiveElements,
+  expandedNodes,
+  currentPath
 }) => {
   const hasChildren = node.subsections && node.subsections.length > 0;
   const nodeProgress = userProgress?.[path];
-  const isInteractive = node.metadata?.isInteractive || 
-                       node.contentType === 'interactive' || 
-                       node.name.toLowerCase().includes('interactive element');
+  
+  // Memoize expensive calculations
+  const isInteractive = useMemo(() => 
+    node.metadata?.isInteractive || 
+    node.contentType === 'interactive' || 
+    node.name.toLowerCase().includes('interactive element'),
+    [node.metadata?.isInteractive, node.contentType, node.name]
+  );
   
   // Calculate completion status
   const isCompleted = nodeProgress?.isCompleted || node.isCompleted;
   const progress = nodeProgress?.progress || node.progress || 0;
   
   // Get appropriate icon based on content type and metadata
-  const getIcon = () => {
+  const getIcon = useMemo(() => {
     if (isInteractive) return <Play className="h-4 w-4 text-purple-500" />;
     if (node.contentType === 'code') return <Code className="h-4 w-4 text-green-500" />;
     if (node.contentType === 'mermaid') return <Target className="h-4 w-4 text-blue-500" />;
     if (node.metadata?.displayType === 'interactive') return <Play className="h-4 w-4 text-purple-500" />;
     return <BookOpen className="h-4 w-4 text-gray-500" />;
-  };
+  }, [isInteractive, node.contentType, node.metadata?.displayType]);
 
   // Get priority styling
-  const getPriorityStyle = () => {
+  const getPriorityStyle = useMemo(() => {
     if (node.metadata?.priority === 'high') return 'border-l-2 border-l-blue-500';
     if (node.metadata?.priority === 'medium') return 'border-l-2 border-l-yellow-500';
     return 'border-l-2 border-l-gray-300';
-  };
+  }, [node.metadata?.priority]);
 
   return (
-    <div className={cn('transition-all duration-200', getPriorityStyle())}>
+    <div className={cn('transition-all duration-200', getPriorityStyle)}>
       <div
         className={cn(
           'flex items-center space-x-2 p-2 rounded-md cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors',
@@ -126,7 +135,7 @@ const OutlineNode: React.FC<{
         
         {/* Content Icon */}
         <div className="flex-shrink-0">
-          {getIcon()}
+          {getIcon}
         </div>
         
         {/* Node Title */}
@@ -188,20 +197,22 @@ const OutlineNode: React.FC<{
                node={child}
                path={`${path}.${index}`}
                depth={depth + 1}
-               isActive={isActive}
-               isExpanded={isExpanded}
+               isActive={currentPath === `${path}.${index}`}
+               isExpanded={expandedNodes.has(`${path}.${index}`)}
                onToggle={onToggle}
                onNodeClick={onNodeClick}
                userProgress={userProgress}
                showProgress={showProgress}
                showInteractiveElements={showInteractiveElements}
+               expandedNodes={expandedNodes}
+               currentPath={currentPath}
              />
            ))}
          </div>
        )}
     </div>
   );
-};
+});
 
 export const HierarchicalNavigator: React.FC<HierarchicalNavigatorProps> = ({
   sections,
@@ -234,22 +245,32 @@ export const HierarchicalNavigator: React.FC<HierarchicalNavigatorProps> = ({
   }, [collapsible]);
 
   // Filter sections based on search
-  const filteredSections = searchTerm
-    ? sections.filter(section => 
-        section.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        (section.subsections && section.subsections.some(sub => 
-          sub.name.toLowerCase().includes(searchTerm.toLowerCase())
-        ))
-      )
-    : sections;
+  const filteredSections = useMemo(() => {
+    if (!searchTerm) return sections;
+    
+    const searchLower = searchTerm.toLowerCase();
+    return sections.filter(section => 
+      section.name.toLowerCase().includes(searchLower) ||
+      (section.subsections && section.subsections.some(sub => 
+        sub.name.toLowerCase().includes(searchLower)
+      ))
+    );
+  }, [sections, searchTerm]);
 
   // Calculate overall progress
-  const totalNodes = flattenStructure(sections).length;
-  const completedNodes = Object.values(userProgress).filter(p => p.isCompleted).length;
-  const overallProgress = totalNodes > 0 ? (completedNodes / totalNodes) * 100 : 0;
+  const { totalNodes, completedNodes, overallProgress } = useMemo(() => {
+    const flattened = flattenStructure(sections);
+    const total = flattened.length;
+    const completed = flattened.filter(item => userProgress[item.path]?.isCompleted).length;
+    const progress = total > 0 ? (completed / total) * 100 : 0;
+    return { totalNodes: total, completedNodes: completed, overallProgress: progress };
+  }, [sections, userProgress]);
 
   // Get breadcrumb for current path
-  const breadcrumbs = currentPath ? getBreadcrumbPath(sections, currentPath) : [];
+  const breadcrumbs = useMemo(() => 
+    currentPath ? getBreadcrumbPath(sections, currentPath) : [],
+    [sections, currentPath]
+  );
 
   return (
     <Card className={cn('h-fit', className)}>
@@ -332,6 +353,8 @@ export const HierarchicalNavigator: React.FC<HierarchicalNavigatorProps> = ({
                  userProgress={userProgress}
                  showProgress={showProgress}
                  showInteractiveElements={showInteractiveElements}
+                 expandedNodes={expandedNodes}
+                 currentPath={currentPath}
                />
              ))}
            </div>

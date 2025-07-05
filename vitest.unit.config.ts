@@ -9,7 +9,11 @@ export default defineConfig({
     globals: true,
     environment: 'jsdom',
     setupFiles: ['./tests/setup-env.ts'],
-    include: ['tests/component/TermCard.test.tsx'],
+    include: [
+      'tests/component/TermCard.test.tsx',
+      'client/src/types/__tests__/**/*.test.{ts,tsx}',
+      'client/src/components/sections/__tests__/**/*.test.{ts,tsx}'
+    ],
     exclude: ['node_modules', 'dist', '.idea', '.git', '.cache', 'tests/visual/**/*'],
   },
   resolve: {

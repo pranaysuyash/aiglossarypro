@@ -30,6 +30,9 @@ import loggingMiddleware from "./middleware/loggingMiddleware";
 import { responseLoggingMiddleware } from "./middleware/responseLogging";
 import { log as logger } from "./utils/logger";
 import { performanceMiddleware } from "./middleware/compression";
+import { setupCacheMonitoring } from "./monitoring/cacheMonitoring";
+import { cacheStatsMiddleware } from "./middleware/queryCache";
+import { cdnCacheMiddleware } from "./middleware/cdnCache";
 
 const app = express();
 const wsInstance = expressWs(app);
@@ -64,6 +67,12 @@ app.use(systemHealthMiddleware());
 
 // Apply compression and performance middleware
 app.use(performanceMiddleware());
+
+// Apply CDN cache middleware for static assets
+app.use(cdnCacheMiddleware);
+
+// Apply cache stats middleware
+app.use(cacheStatsMiddleware);
 
 // Apply response logging middleware
 app.use(responseLoggingMiddleware);
@@ -158,6 +167,10 @@ app.use(responseLoggingMiddleware);
   
   // Initialize analytics system
   await initializeAnalytics();
+  
+  // Initialize cache monitoring
+  setupCacheMonitoring(app);
+  logger.info("✅ Cache monitoring system initialized");
   
   // Start listening - use 0.0.0.0 in production for external access
   const host = serverConfig.nodeEnv === 'production' ? '0.0.0.0' : '127.0.0.1';

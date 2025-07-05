@@ -130,7 +130,7 @@ const AdminNewsletterDashboard: React.FC = () => {
     setFilters(prev => ({
       ...prev,
       [key]: value,
-      page: key === 'page' ? value : 1 // Reset page when other filters change
+      page: key === 'page' ? Number(value) : 1 // Reset page when other filters change
     }));
   };
 

@@ -2,7 +2,7 @@ import React, { Suspense } from "react";
 import { createRoot } from "react-dom/client";
 import App from "./App";
 import "./index.css";
-import { initAnalytics } from "./lib/analytics";
+import { initAnalytics, initReactScanIntegration } from "./lib/analytics";
 
 // Performance monitoring
 const startTime = performance.now();
@@ -51,6 +51,9 @@ class ErrorBoundary extends React.Component<
 
 // Initialize analytics
 initAnalytics();
+
+// Initialize React Scan integration
+initReactScanIntegration();
 
 const root = createRoot(document.getElementById("root")!);
 

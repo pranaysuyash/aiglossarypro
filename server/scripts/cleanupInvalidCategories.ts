@@ -6,7 +6,7 @@
  */
 
 import { db } from '../db';
-import { categories, subcategories, terms, termSubcategories } from '../../shared/enhancedSchema';
+import { categories, subcategories, terms, termSubcategories } from '../../shared/schema';
 import { eq, like, ilike, sql, inArray } from 'drizzle-orm';
 import { log } from '../utils/logger';
 
@@ -268,7 +268,7 @@ async function cleanupInvalidCategories(): Promise<CleanupStats> {
 export { cleanupInvalidCategories, identifyInvalidCategories };
 
 // Run if called directly
-if (require.main === module) {
+if (import.meta.url === `file://${process.argv[1]}`) {
   cleanupInvalidCategories()
     .then(stats => {
       console.log('\n🎉 Cleanup completed successfully!');

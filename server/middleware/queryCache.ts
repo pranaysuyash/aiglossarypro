@@ -5,6 +5,7 @@
  * and improve response times. Uses LRU cache with TTL support.
  */
 import { TIME_CONSTANTS } from '../utils/constants';
+import { metricsCollector } from '../cache/CacheMetrics';
 
 interface QueryCacheOptions {
   maxItems?: number;
@@ -26,19 +27,31 @@ class QueryCache {
   private readonly enabled: boolean;
   private hitCount = 0;
   private missCount = 0;
+  private evictionCount = 0;
+  private readonly cacheType: string;
   
-  constructor(options: QueryCacheOptions = {}) {
+  constructor(options: QueryCacheOptions & { cacheType?: string } = {}) {
     this.maxItems = options.maxItems || 1000;
     this.defaultTtlMs = options.defaultTtlMs || 5 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 12; // 5 minutes
     this.enabled = options.enabled !== false;
+    this.cacheType = options.cacheType || 'query';
   }
   
   get<T>(key: string): T | undefined {
     if (!this.enabled) return undefined;
     
+    const startTime = Date.now();
     const entry = this.cache.get(key);
+    
     if (!entry) {
       this.missCount++;
+      const duration = Date.now() - startTime;
+      metricsCollector.recordOperation({
+        type: 'miss',
+        key,
+        duration,
+        timestamp: new Date()
+      });
       return undefined;
     }
     
@@ -46,6 +59,13 @@ class QueryCache {
     if (Date.now() - entry.timestamp > entry.ttl) {
       this.cache.delete(key);
       this.missCount++;
+      const duration = Date.now() - startTime;
+      metricsCollector.recordOperation({
+        type: 'miss',
+        key,
+        duration,
+        timestamp: new Date()
+      });
       return undefined;
     }
     
@@ -56,6 +76,14 @@ class QueryCache {
     // Move to end (LRU)
     this.cache.delete(key);
     this.cache.set(key, entry);
+    
+    const duration = Date.now() - startTime;
+    metricsCollector.recordOperation({
+      type: 'hit',
+      key,
+      duration,
+      timestamp: new Date()
+    });
     
     return entry.data;
   }
@@ -68,6 +96,12 @@ class QueryCache {
       const firstKey = this.cache.keys().next().value;
       if (firstKey !== undefined) {
         this.cache.delete(firstKey);
+        this.evictionCount++;
+        metricsCollector.recordOperation({
+          type: 'eviction',
+          key: firstKey,
+          timestamp: new Date()
+        });
       }
     }
     
@@ -79,6 +113,15 @@ class QueryCache {
     };
     
     this.cache.set(key, entry);
+    
+    // Calculate approximate size
+    const size = JSON.stringify(value).length;
+    metricsCollector.recordOperation({
+      type: 'set',
+      key,
+      size,
+      timestamp: new Date()
+    });
   }
   
   invalidate(pattern: string): number {
@@ -89,6 +132,11 @@ class QueryCache {
       if (this.matchesPattern(key, pattern)) {
         this.cache.delete(key);
         deletedCount++;
+        metricsCollector.recordOperation({
+          type: 'invalidation',
+          key,
+          timestamp: new Date()
+        });
       }
     }
     return deletedCount;
@@ -102,14 +150,23 @@ class QueryCache {
   
   getStats() {
     const totalRequests = this.hitCount + this.missCount;
-    return {
+    const stats = {
       size: this.cache.size,
       maxItems: this.maxItems,
       hitCount: this.hitCount,
       missCount: this.missCount,
+      evictionCount: this.evictionCount,
       hitRate: totalRequests > 0 ? (this.hitCount / totalRequests) : 0,
-      enabled: this.enabled
+      enabled: this.enabled,
+      cacheType: this.cacheType
     };
+    
+    // Update metrics collector with current cache size
+    const snapshot = metricsCollector.generateSnapshot();
+    snapshot.cacheSize = this.cache.size;
+    snapshot.maxCacheSize = this.maxItems;
+    
+    return stats;
   }
   
   private matchesPattern(key: string, pattern: string): boolean {
@@ -141,19 +198,22 @@ class QueryCache {
 export const queryCache = new QueryCache({
   maxItems: 2000,
   defaultTtlMs: 10 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 6, // 10 minutes
-  enabled: process.env.NODE_ENV !== 'test'
+  enabled: process.env.NODE_ENV !== 'test',
+  cacheType: 'query'
 });
 
 export const searchCache = new QueryCache({
   maxItems: 500,
   defaultTtlMs: 5 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 12, // 5 minutes
-  enabled: process.env.NODE_ENV !== 'test'
+  enabled: process.env.NODE_ENV !== 'test',
+  cacheType: 'search'
 });
 
 export const userCache = new QueryCache({
   maxItems: 1000,
   defaultTtlMs: 15 * TIME_CONSTANTS.MILLISECONDS_IN_HOUR / 4, // 15 minutes
-  enabled: process.env.NODE_ENV !== 'test'
+  enabled: process.env.NODE_ENV !== 'test',
+  cacheType: 'user'
 });
 
 // Cache wrapper function
@@ -392,13 +452,28 @@ export async function clearCache(): Promise<void> {
   searchCache.invalidateAll();
 }
 
-export function getCacheStats(): { hitRate: number; hits: number; misses: number; averageResponseTime?: number } {
-  const stats = queryCache.getStats();
+export function getCacheStats(): { hitRate: number; hits: number; misses: number; evictions: number; averageResponseTime?: number; cacheTypes: any } {
+  const stats = {
+    query: queryCache.getStats(),
+    search: searchCache.getStats(),
+    user: userCache.getStats()
+  };
+  
+  const totalHits = stats.query.hitCount + stats.search.hitCount + stats.user.hitCount;
+  const totalMisses = stats.query.missCount + stats.search.missCount + stats.user.missCount;
+  const totalEvictions = stats.query.evictionCount + stats.search.evictionCount + stats.user.evictionCount;
+  const totalRequests = totalHits + totalMisses;
+  
+  // Get real-time metrics from collector
+  const realTimeMetrics = metricsCollector.getRealTimeMetrics();
+  
   return {
-    hitRate: stats.hitRate,
-    hits: stats.hitCount,
-    misses: stats.missCount,
-    averageResponseTime: 50 // Mock average response time
+    hitRate: totalRequests > 0 ? totalHits / totalRequests : 0,
+    hits: totalHits,
+    misses: totalMisses,
+    evictions: totalEvictions,
+    averageResponseTime: realTimeMetrics.avgResponseTime,
+    cacheTypes: stats
   };
 }
 

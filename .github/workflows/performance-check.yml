@@ -1,0 +1,158 @@
+name: Performance Check
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  performance-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Run TypeScript check
+      run: npm run check
+
+    - name: Run performance check
+      id: perf-check
+      run: npm run perf:ci
+      continue-on-error: true
+
+    - name: Upload performance report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-report
+        path: ci-performance-reports/
+        retention-days: 30
+
+    - name: Comment PR with performance results
+      uses: actions/github-script@v7
+      if: github.event_name == 'pull_request'
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          try {
+            const reportDir = 'ci-performance-reports';
+            const files = fs.readdirSync(reportDir);
+            const latestReport = files
+              .filter(f => f.startsWith('ci-performance-'))
+              .sort()
+              .pop();
+            
+            if (latestReport) {
+              const reportPath = path.join(reportDir, latestReport);
+              const report = JSON.parse(fs.readFileSync(reportPath, 'utf8'));
+              
+              const passed = report.passed ? '✅ PASSED' : '❌ FAILED';
+              const metrics = report.metrics;
+              
+              let comment = `## 🚀 Performance Check Results\n\n`;
+              comment += `**Status:** ${passed}\n\n`;
+              comment += `### 📊 Metrics\n`;
+              comment += `- **Average Render Time:** ${metrics.averageRenderTime.toFixed(2)}ms\n`;
+              comment += `- **Max Render Time:** ${metrics.maxRenderTime.toFixed(2)}ms\n`;
+              comment += `- **Slow Render %:** ${metrics.slowRenderPercentage.toFixed(2)}%\n`;
+              comment += `- **Memory Usage:** ${metrics.memoryUsage.toFixed(2)}MB\n`;
+              comment += `- **Bundle Size:** ${metrics.bundleSize.toFixed(2)}MB\n`;
+              comment += `- **Build Time:** ${metrics.buildTime}ms\n\n`;
+              
+              if (report.violations.length > 0) {
+                comment += `### ❌ Performance Violations\n`;
+                report.violations.forEach(violation => {
+                  comment += `- ${violation}\n`;
+                });
+                comment += `\n`;
+              }
+              
+              if (report.recommendations.length > 0) {
+                comment += `### 💡 Recommendations\n`;
+                report.recommendations.forEach(rec => {
+                  comment += `- ${rec}\n`;
+                });
+              }
+              
+              await github.rest.issues.createComment({
+                issue_number: context.issue.number,
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                body: comment
+              });
+            }
+          } catch (error) {
+            console.error('Error posting performance results:', error);
+          }
+
+    - name: Fail job if performance check failed
+      if: steps.perf-check.outcome == 'failure'
+      run: |
+        echo "Performance check failed. See report for details."
+        exit 1
+
+  react-scan-analysis:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Build application
+      run: npm run build
+
+    - name: Start application
+      run: |
+        npm run start &
+        sleep 10
+      env:
+        NODE_ENV: production
+
+    - name: Run React Scan analysis
+      run: |
+        npx react-scan@latest http://localhost:3001 --timeout 30000 --output react-scan-report.json
+      continue-on-error: true
+
+    - name: Upload React Scan report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: react-scan-report
+        path: react-scan-report.json
+        retention-days: 30
+
+    - name: Generate performance insights
+      run: npm run perf:analyze
+      continue-on-error: true
+
+    - name: Upload performance insights
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: performance-insights
+        path: performance-analysis/
+        retention-days: 30

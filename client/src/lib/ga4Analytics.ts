@@ -28,7 +28,7 @@ export interface GA4ConversionEvent extends GA4Event {
 }
 
 export interface GA4EngagementEvent extends GA4Event {
-  engagement_type: 'scroll_depth' | 'time_on_page' | 'section_view' | 'cta_click';
+  engagement_type: 'scroll_depth' | 'time_on_page' | 'section_view' | 'cta_click' | 'performance_alert' | 'performance_summary';
   engagement_value: number;
   page_location: string;
   page_title: string;

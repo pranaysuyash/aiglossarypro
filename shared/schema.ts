@@ -305,3 +305,26 @@ export const earlyBirdStatus = pgTable("early_bird_status", {
 
 export type EarlyBirdStatus = typeof earlyBirdStatus.$inferSelect;
 export type InsertEarlyBirdStatus = typeof earlyBirdStatus.$inferInsert;
+
+// Cache metrics table for performance monitoring
+export const cacheMetrics = pgTable("cache_metrics", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  timestamp: timestamp("timestamp").notNull(),
+  cacheType: varchar("cache_type", { length: 50 }).notNull(), // query, search, user
+  hitCount: integer("hit_count").notNull().default(0),
+  missCount: integer("miss_count").notNull().default(0),
+  evictionCount: integer("eviction_count").notNull().default(0),
+  hitRate: integer("hit_rate").notNull(), // Stored as percentage * 100 (e.g., 85.5% = 8550)
+  avgResponseTime: integer("avg_response_time"), // in microseconds
+  cacheSize: integer("cache_size").notNull(),
+  memoryUsage: integer("memory_usage"), // in bytes
+  metadata: jsonb("metadata"), // Additional metrics like hot keys, cold keys, etc.
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  timestampIdx: index("cache_metrics_timestamp_idx").on(table.timestamp),
+  cacheTypeIdx: index("cache_metrics_cache_type_idx").on(table.cacheType),
+  createdAtIdx: index("cache_metrics_created_at_idx").on(table.createdAt),
+}));
+
+export type CacheMetric = typeof cacheMetrics.$inferSelect;
+export type InsertCacheMetric = typeof cacheMetrics.$inferInsert;

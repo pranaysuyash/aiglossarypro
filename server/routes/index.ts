@@ -31,6 +31,7 @@ import abTestRoutes from "./abTestsSimplified";
 
 // Import existing specialized route modules
 import cacheRoutes from "./cache";
+import cacheAnalyticsRoutes from "./cacheAnalytics";
 import s3Routes from "../s3Routes";
 import s3RoutesOptimized from "../s3RoutesOptimized";
 import s3MonitoringRoutes from "../s3MonitoringRoutes";
@@ -126,6 +127,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Register cache management routes
   app.use('/api/cache', cacheRoutes);
   logger.info("✅ Cache management routes registered");
+  
+  // Register cache analytics routes
+  app.use('/api/cache-analytics', cacheAnalyticsRoutes);
+  logger.info("✅ Cache analytics routes registered");
   
   // Register job management routes
   registerJobRoutes(app);

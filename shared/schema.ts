@@ -221,7 +221,7 @@ export const insertNewsletterSubscriptionSchema = createInsertSchema(newsletterS
   id: true,
   createdAt: true,
   unsubscribedAt: true,
-});
+} as const);
 
 export type NewsletterSubscription = typeof newsletterSubscriptions.$inferSelect;
 export type InsertNewsletterSubscription = z.infer<typeof insertNewsletterSubscriptionSchema>;
@@ -254,7 +254,7 @@ export const insertContactSubmissionSchema = createInsertSchema(contactSubmissio
   id: true,
   createdAt: true,
   updatedAt: true,
-});
+} as const);
 
 export type ContactSubmission = typeof contactSubmissions.$inferSelect;
 export type InsertContactSubmission = z.infer<typeof insertContactSubmissionSchema>;

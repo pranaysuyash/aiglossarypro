@@ -15,6 +15,11 @@ export interface IUser {
   createdAt: Date;
   preferences?: UserPreferences;
   isAdmin?: boolean;
+  lifetimeAccess?: boolean;
+  subscriptionTier?: string;
+  purchaseDate?: Date;
+  dailyViews?: number;
+  lastViewReset?: Date;
 }
 
 export interface UserPreferences {

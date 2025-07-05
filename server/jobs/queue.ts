@@ -434,6 +434,13 @@ export class JobQueueManager extends EventEmitter {
   }
 
   /**
+   * Get a specific queue by type
+   */
+  getQueue(type: JobType): Queue | undefined {
+    return this.queues.get(type);
+  }
+
+  /**
    * Get queue statistics
    */
   async getQueueStats(type: JobType): Promise<any> {

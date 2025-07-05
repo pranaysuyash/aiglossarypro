@@ -209,16 +209,16 @@ async function handleTermsBatch(
           set: {
             name: record.name,
             definition: record.definition,
-            categories: record.categories,
-            updated_at: new Date(),
+            categoryId: record.categoryId,
+            updatedAt: new Date(),
           },
         })
         .returning();
       
       if (result.length > 0) {
         // Check if this was an insert or update by checking created_at vs updated_at
-        const createdAt = new Date(result[0].created_at);
-        const updatedAt = new Date(result[0].updated_at);
+        const createdAt = new Date(result[0].createdAt);
+        const updatedAt = new Date(result[0].updatedAt);
         
         if (Math.abs(createdAt.getTime() - updatedAt.getTime()) < 1000) {
           inserted++;

@@ -37,6 +37,11 @@ export enum JobType {
   // System Jobs
   SYSTEM_CLEANUP = 'system_cleanup',
   SYSTEM_BACKUP = 'system_backup',
+  
+  // Admin Jobs
+  BULK_TERM_UPDATE = 'bulk_term_update',
+  DATA_EXPORT = 'data_export',
+  CACHE_CLEANUP = 'cache_cleanup',
 }
 
 // Job Priority Levels

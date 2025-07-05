@@ -1,5 +1,6 @@
 import type { Express, Request, Response } from "express";
-import { jobQueue } from "../../jobs/queue";
+import type { Job } from "bullmq";
+import { jobQueue, jobQueueManager } from "../../jobs/queue";
 import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
 import { requireAdmin } from "../../middleware/adminAuth";
 import { log as logger } from "../../utils/logger";
@@ -17,7 +18,7 @@ export function registerAdminJobRoutes(app: Express): void {
   app.get('/api/admin/jobs/imports', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
       // Get active and recent jobs
-      const excelQueue = jobQueue.getQueue(JobType.EXCEL_IMPORT);
+      const excelQueue = jobQueueManager.getQueue(JobType.EXCEL_IMPORT);
       if (!excelQueue) {
         return res.json({
           success: true,
@@ -34,7 +35,7 @@ export function registerAdminJobRoutes(app: Express): void {
       ]);
 
       // Format jobs for response
-      const formatJob = (job: any, status: string) => {
+      const formatJob = (job: Job, status: string) => {
         const progress = job.progress || 0;
         const data = job.data || {};
         const returnValue = job.returnvalue || {};
@@ -54,10 +55,10 @@ export function registerAdminJobRoutes(app: Express): void {
       };
 
       const allJobs = [
-        ...waiting.map(job => formatJob(job, 'pending')),
-        ...active.map(job => formatJob(job, 'processing')),
-        ...completed.map(job => formatJob(job, 'completed')),
-        ...failed.map(job => formatJob(job, 'failed'))
+        ...waiting.map((job: Job) => formatJob(job, 'pending')),
+        ...active.map((job: Job) => formatJob(job, 'processing')),
+        ...completed.map((job: Job) => formatJob(job, 'completed')),
+        ...failed.map((job: Job) => formatJob(job, 'failed'))
       ];
 
       // Sort by startedAt descending
@@ -94,7 +95,7 @@ export function registerAdminJobRoutes(app: Express): void {
       let jobType = null;
 
       for (const type of queues) {
-        const queue = jobQueue.getQueue(type);
+        const queue = jobQueueManager.getQueue(type);
         if (queue) {
           const job = await queue.getJob(jobId);
           if (job) {
@@ -158,7 +159,7 @@ export function registerAdminJobRoutes(app: Express): void {
       let cancelled = false;
 
       for (const type of queues) {
-        const queue = jobQueue.getQueue(type);
+        const queue = jobQueueManager.getQueue(type);
         if (queue) {
           const job = await queue.getJob(jobId);
           if (job) {
@@ -207,7 +208,7 @@ export function registerAdminJobRoutes(app: Express): void {
       let retried = false;
 
       for (const type of queues) {
-        const queue = jobQueue.getQueue(type);
+        const queue = jobQueueManager.getQueue(type);
         if (queue) {
           const job = await queue.getJob(jobId);
           if (job) {
@@ -256,7 +257,7 @@ export function registerAdminJobRoutes(app: Express): void {
       ];
 
       for (const { type, name } of queues) {
-        const queue = jobQueue.getQueue(type);
+        const queue = jobQueueManager.getQueue(type);
         if (queue) {
           const counts = await queue.getJobCounts();
           stats[type] = {

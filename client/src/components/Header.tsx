@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
 import { useFocusTrap, useFocusLock } from "@/hooks/useFocusTrap";
 import { useTheme } from "@/components/ThemeProvider";
@@ -148,7 +149,7 @@ export default function Header({
             </Button>
 
             {/* Premium Status or Upgrade Button */}
-            {accessStatus?.lifetimeAccess ? (
+            {user?.lifetimeAccess ? (
               <Badge 
                 variant="secondary" 
                 className="hidden lg:flex bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 px-4 py-2 font-medium"
@@ -224,7 +225,7 @@ export default function Header({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     {/* Premium Status Header */}
-                    {accessStatus?.lifetimeAccess && (
+                    {user?.lifetimeAccess && (
                       <>
                         <div className="px-2 py-1.5 text-sm font-medium text-yellow-600 dark:text-yellow-400 flex items-center">
                           <Crown className="w-4 h-4 mr-2" />
@@ -244,7 +245,7 @@ export default function Header({
                     {userObj?.isAdmin && <DropdownMenuItem onClick={() => navigate("/admin")}>Admin</DropdownMenuItem>}
                     
                     {/* Upgrade Option for Free Users */}
-                    {!accessStatus?.lifetimeAccess && (
+                    {!user?.lifetimeAccess && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
@@ -398,7 +399,7 @@ export default function Header({
                 <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div className="space-y-3">
                     {/* Premium Status or Upgrade Button */}
-                    {accessStatus?.lifetimeAccess ? (
+                    {user?.lifetimeAccess ? (
                       <div className="flex items-center w-full px-4 py-4 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-medium text-base min-h-[48px]">
                         <Crown className="mr-3 h-5 w-5 flex-shrink-0" />
                         <div className="flex-1">

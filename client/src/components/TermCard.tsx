@@ -16,7 +16,11 @@ import { BaseComponentProps, SizeVariant, StyleVariant } from "@/types/common-pr
 import { cn } from "@/lib/utils";
 
 interface TermCardProps extends BaseComponentProps {
-  term: ITerm;
+  term: ITerm & {
+    highlightedName?: string;
+    highlightedDefinition?: string;
+    searchQuery?: string;
+  };
   isFavorite?: boolean;
   isLearned?: boolean;
   variant?: 'default' | 'compact' | 'minimal';
@@ -27,6 +31,23 @@ interface TermCardProps extends BaseComponentProps {
   onFavoriteToggle?: (termId: string, isFavorite: boolean) => void;
   onLearnedToggle?: (termId: string, isLearned: boolean) => void;
 }
+
+// Helper component for rendering highlighted text safely
+const HighlightedText = memo(({ text, htmlText, className = "" }: { 
+  text: string; 
+  htmlText?: string; 
+  className?: string 
+}) => {
+  if (htmlText && htmlText !== text) {
+    return (
+      <span 
+        className={cn("search-highlighted", className)}
+        dangerouslySetInnerHTML={{ __html: htmlText }}
+      />
+    );
+  }
+  return <span className={className}>{text}</span>;
+});
 
 // Helper component for rendering category and subcategory badges
 const CategoryBadges = memo(({ term, variant }: { term: ITerm; variant: string }) => {
@@ -223,7 +244,10 @@ const TermCard = memo(function TermCard({
       >
         <div className="flex items-center justify-between">
           <Link href={`/term/${term.id}`} onClick={handleTermClick} className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 font-medium flex-1">
-            {term.name}
+            <HighlightedText 
+              text={term.name} 
+              htmlText={term.highlightedName}
+            />
           </Link>
           {showActions && (
             <Button 
@@ -272,10 +296,18 @@ const TermCard = memo(function TermCard({
             )}
           </div>
           
-          <h3 className="font-semibold text-base sm:text-lg mb-1 line-clamp-2">{term.name}</h3>
+          <h3 className="font-semibold text-base sm:text-lg mb-1 line-clamp-2">
+            <HighlightedText 
+              text={term.name} 
+              htmlText={term.highlightedName}
+            />
+          </h3>
           
           <p className="text-gray-600 dark:text-gray-400 text-sm mb-2 line-clamp-2">
-            {truncatedDefinition}
+            <HighlightedText 
+              text={truncatedDefinition} 
+              htmlText={term.highlightedDefinition}
+            />
           </p>
         </CardContent>
         
@@ -357,10 +389,18 @@ const TermCard = memo(function TermCard({
           )}
         </div>
         
-        <h3 className="font-semibold text-lg mb-2">{term.name}</h3>
+        <h3 className="font-semibold text-lg mb-2">
+          <HighlightedText 
+            text={term.name} 
+            htmlText={term.highlightedName}
+          />
+        </h3>
         
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-4 flex-1">
-          {truncatedDefinition}
+          <HighlightedText 
+            text={truncatedDefinition} 
+            htmlText={term.highlightedDefinition}
+          />
         </p>
       </CardContent>
       

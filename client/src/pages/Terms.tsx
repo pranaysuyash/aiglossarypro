@@ -40,9 +40,12 @@ export function Terms() {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [selectedDifficulty, setSelectedDifficulty] = useState<string>('');
   const [sortBy, setSortBy] = useState<'name' | 'viewCount' | 'createdAt'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [showFilters, setShowFilters] = useState(false);
+  const [onlyWithVisuals, setOnlyWithVisuals] = useState(false);
+  const [onlyWithMath, setOnlyWithMath] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const { announce } = useLiveRegion();
 
@@ -76,8 +79,11 @@ export function Terms() {
       currentPage,
       debouncedSearch,
       selectedCategory,
+      selectedDifficulty,
       sortBy,
       sortOrder,
+      onlyWithVisuals,
+      onlyWithMath,
     ],
     queryFn: async (): Promise<TermsApiResponse> => {
       const params = new URLSearchParams({
@@ -93,6 +99,18 @@ export function Terms() {
 
       if (selectedCategory) {
         params.append('categories', selectedCategory);
+      }
+
+      if (selectedDifficulty) {
+        params.append('difficulty', selectedDifficulty);
+      }
+
+      if (onlyWithVisuals) {
+        params.append('hasVisuals', 'true');
+      }
+
+      if (onlyWithMath) {
+        params.append('hasMath', 'true');
       }
 
       const response = await fetch(`/api/enhanced/search?${params}`);
@@ -125,8 +143,11 @@ export function Terms() {
       currentPage,
       debouncedSearch,
       selectedCategory,
+      selectedDifficulty,
       sortBy,
       sortOrder,
+      onlyWithVisuals,
+      onlyWithMath,
     ],
     queryFn: async (): Promise<TermsApiResponse> => {
       const params = new URLSearchParams({
@@ -142,6 +163,18 @@ export function Terms() {
 
       if (selectedCategory) {
         params.append('category', selectedCategory);
+      }
+
+      if (selectedDifficulty) {
+        params.append('difficulty', selectedDifficulty);
+      }
+
+      if (onlyWithVisuals) {
+        params.append('hasVisuals', 'true');
+      }
+
+      if (onlyWithMath) {
+        params.append('hasMath', 'true');
       }
 
       const response = await fetch(`/api/terms?${params}`);
@@ -219,8 +252,11 @@ export function Terms() {
   const clearFilters = useCallback(() => {
     setSearchQuery('');
     setSelectedCategory('');
+    setSelectedDifficulty('');
     setSortBy('name');
     setSortOrder('asc');
+    setOnlyWithVisuals(false);
+    setOnlyWithMath(false);
     setCurrentPage(1);
   }, []);
 
@@ -230,9 +266,13 @@ export function Terms() {
   }, []);
 
   const categories = categoriesData?.data || [];
-  const activeFiltersCount = [searchQuery, selectedCategory].filter(
-    Boolean
-  ).length;
+  const activeFiltersCount = [
+    searchQuery, 
+    selectedCategory, 
+    selectedDifficulty,
+    onlyWithVisuals && 'hasVisuals',
+    onlyWithMath && 'hasMath'
+  ].filter(Boolean).length;
 
   if (error) {
     return (
@@ -292,7 +332,7 @@ export function Terms() {
         {showFilters && (
           <Card>
             <CardContent className="p-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
                   <label
                     htmlFor="category-select"
@@ -317,6 +357,30 @@ export function Terms() {
                     </SelectContent>
                   </Select>
                 </div>
+
+                <div>
+                  <label
+                    htmlFor="difficulty-select"
+                    className="block text-sm font-medium mb-2"
+                  >
+                    Difficulty Level
+                  </label>
+                  <Select
+                    value={selectedDifficulty || 'all'}
+                    onValueChange={(value) => setSelectedDifficulty(value === 'all' ? '' : value)}
+                  >
+                    <SelectTrigger id="difficulty-select">
+                      <SelectValue placeholder="All levels" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All levels</SelectItem>
+                      <SelectItem value="beginner">Beginner</SelectItem>
+                      <SelectItem value="intermediate">Intermediate</SelectItem>
+                      <SelectItem value="advanced">Advanced</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
                 <div>
                   <label
                     htmlFor="sort-by-select"
@@ -338,10 +402,40 @@ export function Terms() {
                     </SelectContent>
                   </Select>
                 </div>
+
                 <div className="flex items-end">
-                  <Button onClick={clearFilters} variant="ghost">
+                  <Button onClick={clearFilters} variant="ghost" className="w-full">
                     Clear Filters
                   </Button>
+                </div>
+              </div>
+
+              {/* Additional filter checkboxes */}
+              <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                <div className="flex flex-wrap gap-4">
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={onlyWithVisuals}
+                      onChange={(e) => setOnlyWithVisuals(e.target.checked)}
+                      className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      Only terms with visuals
+                    </span>
+                  </label>
+
+                  <label className="flex items-center space-x-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={onlyWithMath}
+                      onChange={(e) => setOnlyWithMath(e.target.checked)}
+                      className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
+                    />
+                    <span className="text-sm text-gray-700 dark:text-gray-300">
+                      Only terms with math formulations
+                    </span>
+                  </label>
                 </div>
               </div>
             </CardContent>

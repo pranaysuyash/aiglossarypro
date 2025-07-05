@@ -19,6 +19,7 @@ interface SearchSuggestion {
   name: string;
   category?: string;
   type: 'term' | 'category';
+  highlightedName?: string;
 }
 
 const SearchBar = memo(function SearchBar({ 
@@ -262,7 +263,14 @@ const SearchBar = memo(function SearchBar({
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium text-gray-900 dark:text-gray-100">
-                      {suggestion.name}
+                      {suggestion.highlightedName ? (
+                        <span 
+                          className="search-highlighted"
+                          dangerouslySetInnerHTML={{ __html: suggestion.highlightedName }}
+                        />
+                      ) : (
+                        suggestion.name
+                      )}
                     </div>
                     {suggestion.category && (
                       <div className="text-xs text-gray-500 dark:text-gray-400">

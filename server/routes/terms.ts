@@ -389,16 +389,52 @@ export function registerTermRoutes(app: Express): void {
         });
       }
 
+      // Check if preview mode is enabled (from rate limiting middleware)
+      const previewMode = (req as any).previewMode;
+      const limitInfo = (req as any).limitInfo;
+      
+      if (previewMode) {
+        // Return preview version with upgrade prompt
+        const previewTerm = {
+          ...term,
+          definition: term.definition ? term.definition.substring(0, 250) + "..." : "",
+          shortDefinition: term.shortDefinition ? term.shortDefinition.substring(0, 150) + "..." : "",
+          isPreview: true,
+          requiresUpgrade: true,
+          limitInfo: limitInfo
+        };
+        
+        const response: ApiResponse<any> = {
+          success: true,
+          data: previewTerm,
+          message: "You've reached your daily viewing limit. Upgrade to continue reading or try again tomorrow."
+        };
+        
+        return res.json(response);
+      }
+
       const accessCheck = canViewTerm(user, id);
       
       if (!accessCheck.canView) {
-        // User is authenticated but hit limits
+        // User is authenticated but hit limits - fallback to old behavior
         if (accessCheck.reason === 'daily_limit_reached') {
-          return res.status(429).json({
-            success: false,
-            error: 'Daily viewing limit reached. Please try again tomorrow or upgrade your account.',
-            metadata: accessCheck.metadata
-          });
+          // Return preview version instead of blocking
+          const previewTerm = {
+            ...term,
+            definition: term.definition ? term.definition.substring(0, 250) + "..." : "",
+            shortDefinition: term.shortDefinition ? term.shortDefinition.substring(0, 150) + "..." : "",
+            isPreview: true,
+            requiresUpgrade: true,
+            limitInfo: accessCheck.metadata
+          };
+          
+          const response: ApiResponse<any> = {
+            success: true,
+            data: previewTerm,
+            message: "You've reached your daily viewing limit. Upgrade to continue reading or try again tomorrow."
+          };
+          
+          return res.json(response);
         }
         
         return res.status(403).json({

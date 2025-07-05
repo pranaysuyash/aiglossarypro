@@ -55,7 +55,14 @@ export function registerSearchRoutes(app: Express): void {
         includeDefinition: true
       });
       
-      // Transform search response to match shared types
+      // Helper function to highlight search terms
+      const highlightSearchTerms = (text: string, query: string): string => {
+        if (!text || !query) return text;
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+      };
+
+      // Transform search response to match shared types with highlighting
       const searchResult: SearchResult = {
         terms: searchResponse.results.map(result => ({
           id: result.id,
@@ -68,11 +75,16 @@ export function registerSearchRoutes(app: Express): void {
           createdAt: result.createdAt,
           updatedAt: result.updatedAt,
           characteristics: result.characteristics?.[0] || undefined,
+          // Add highlighted versions for search results
+          highlightedName: highlightSearchTerms(result.name, q as string),
+          highlightedDefinition: highlightSearchTerms(result.shortDefinition || result.definition?.substring(0, 200) || '', q as string),
+          searchQuery: q as string
         })),
         total: searchResponse.total,
         page: searchResponse.page,
         limit: searchResponse.limit,
-        hasMore: searchResponse.page < searchResponse.totalPages
+        hasMore: searchResponse.page < searchResponse.totalPages,
+        query: q as string
       };
       
       const response: ApiResponse<SearchResult> = {
@@ -115,19 +127,28 @@ export function registerSearchRoutes(app: Express): void {
         .slice(0, 3)
         .map(cat => ({ name: cat.name }));
       
-      // Combine suggestions in a more structured format
+      // Helper function to highlight search terms
+      const highlightSearchTerms = (text: string, query: string): string => {
+        if (!text || !query) return text;
+        const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+        return text.replace(regex, '<mark>$1</mark>');
+      };
+
+      // Combine suggestions in a more structured format with highlighting
       const allSuggestions = [
         ...termSuggestions.map(name => ({ 
           id: `term-${name}`, 
           name, 
           type: 'term',
-          category: null 
+          category: null,
+          highlightedName: highlightSearchTerms(name, query)
         })),
         ...categorySuggestions.map((cat: any) => ({ 
           id: `category-${cat.name}`, 
           name: cat.name, 
           type: 'category',
-          category: null 
+          category: null,
+          highlightedName: highlightSearchTerms(cat.name, query)
         }))
       ];
       

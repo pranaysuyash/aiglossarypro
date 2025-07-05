@@ -21,6 +21,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { AUTH_MESSAGES, FAVORITES_MESSAGES, CLIPBOARD_MESSAGES, ERROR_MESSAGES } from "@/constants/messages";
 import { TermHeaderSkeleton, TermContentSkeleton } from "@/components/ui/skeleton";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
+import { UpgradePrompt } from "@/components/UpgradePrompt";
 
 export default function EnhancedTermDetail() {
   // Support both route patterns: /term/:id and /enhanced/terms/:id
@@ -182,6 +183,44 @@ export default function EnhancedTermDetail() {
             onCopyLink={copyLink}
             onShareMenuToggle={setShareMenuOpen}
           />
+
+          {/* Preview Mode Upgrade Prompt */}
+          {(term as any)?.isPreview && (term as any)?.requiresUpgrade && (
+            <div className="mb-6">
+              <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-6">
+                <div className="flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                      <span className="text-white text-xl">🔒</span>
+                    </div>
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-2">
+                      Preview Mode - Daily Limit Reached
+                    </h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-4">
+                      You're viewing a preview of this definition. You've reached your daily limit of free term views. 
+                      Upgrade to get unlimited access to all {10372} AI/ML definitions.
+                    </p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                      <Button 
+                        onClick={() => window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank')}
+                        className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                      >
+                        Upgrade to Lifetime Access - $129
+                      </Button>
+                      <Button variant="outline" className="text-gray-600 dark:text-gray-300">
+                        Try Again Tomorrow
+                      </Button>
+                    </div>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 mt-3">
+                      One-time payment • Regional pricing available • 7-day money-back guarantee
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Content Tabs */}
           <TermContentTabs

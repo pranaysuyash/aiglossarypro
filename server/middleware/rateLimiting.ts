@@ -81,14 +81,17 @@ export function rateLimitMiddleware(req: Request, res: Response, next: NextFunct
   
   trackTermView(userId, termId).then(allowed => {
     if (!allowed) {
-      return res.status(429).json({
-        success: false,
-        error: 'Daily viewing limit reached. Please try again tomorrow or upgrade your account.',
-        limit: DEFAULT_CONFIG.dailyLimit,
-        resetTime: 'tomorrow'
-      });
+      // Instead of blocking, set a flag to indicate preview mode
+      (req as any).previewMode = true;
+      (req as any).limitInfo = {
+        dailyLimit: DEFAULT_CONFIG.dailyLimit,
+        resetTime: 'tomorrow',
+        reason: 'daily_limit_reached'
+      };
+      next();
+    } else {
+      next();
     }
-    next();
   }).catch(error => {
     console.error('Rate limit middleware error:', error);
     next(); // Fail open

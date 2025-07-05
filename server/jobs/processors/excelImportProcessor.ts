@@ -134,7 +134,7 @@ export async function excelImportProcessor(
               });
             }
           } catch (error) {
-            logger.error(`Error importing batch ${i / batchSize + 1}:`, error);
+            logger.error(`Error importing batch ${i / batchSize + 1}:`, { error: error instanceof Error ? error.message : String(error) });
             result.errors.push({
               row: i + 1,
               error: error instanceof Error ? error.message : 'Unknown error',
@@ -205,7 +205,7 @@ export async function excelImportProcessor(
     return result;
 
   } catch (error) {
-    logger.error(`Excel import job ${job.id} failed:`, error);
+    logger.error(`Excel import job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
     
     // Save error state to checkpoint
     if (checkpointManager) {

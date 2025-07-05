@@ -1,0 +1,28 @@
+./complete_terms_import.ts:import { terms } from './shared/schema';
+./server/middleware/adminAuth.ts:import { users } from "../../shared/schema";
+./server/streamingImporter.ts:import { categories, subcategories, terms, termSubcategories } from '../shared/schema';
+./server/storage.ts:import type { User, UpsertUser } from "@shared/schema";
+./server/batchedImporter.ts:import { categories, subcategories, terms, termSubcategories } from '../shared/schema';
+./server/utils/authUtils.ts:import { users } from "../../shared/schema";
+./server/chunkedImporter.ts:import { categories, subcategories, terms, termSubcategories } from '../shared/schema';
+./server/routes/search.ts:import { terms, categories } from "../../shared/schema";
+./server/routes/admin.ts:import { terms, categories } from '../../shared/schema';
+./server/routes/admin.ts:            .from(schema.terms)
+./shared/enhancedSchema.ts:} from './schema';
+./fix_database_import.ts:import { categories, subcategories, terms, termSubcategories } from './shared/schema';
+./check_db_status.ts:import { categories, subcategories, terms } from './shared/schema';
+./test_single_chunk_import.ts:import { terms, categories, subcategories, termSubcategories } from './shared/schema';
+./complete_terms_import.ts:import { enhancedTerms } from './shared/enhancedSchema';
+./server/pythonProcessor.ts:import { categories, subcategories, terms, termSubcategories } from '@shared/enhancedSchema';
+./server/storage.ts:} from "@shared/enhancedSchema";
+./server/seed.ts:import { categories, subcategories, terms, termSubcategories } from '../shared/enhancedSchema';
+./server/quickSeed.ts:import { terms, categories, subcategories, termSubcategories } from "@shared/enhancedSchema";
+./server/importCleanData.ts:import { categories, subcategories, terms, termSubcategories } from '@shared/enhancedSchema';
+./server/excelStreamer.ts:import { categories, subcategories, terms, termSubcategories } from '@shared/enhancedSchema';
+./server/excelParser.ts:import { terms, categories, subcategories, termSubcategories } from '../shared/enhancedSchema';
+./server/manualImport.ts:import { categories, terms, subcategories, termSubcategories } from '@shared/enhancedSchema';
+./server/enhancedStorage.ts:} from "@shared/enhancedSchema";
+./server/db.ts:import * as schema from "@shared/enhancedSchema";
+./server/dataTransformationPipeline.ts:} from '../shared/enhancedSchema';
+./fix_database_import.ts:import { enhancedTerms } from './shared/enhancedSchema';
+./check_db_status.ts:import { enhancedTerms, termSections } from './shared/enhancedSchema';

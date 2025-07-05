@@ -49,7 +49,7 @@ interface ContentSection {
 }
 
 // Import the complete 42-section configuration
-import COMPLETE_CONTENT_SECTIONS from '../complete_42_sections_config';
+import COMPLETE_CONTENT_SECTIONS from '../scripts/complete_42_sections_config.js';
 
 // Use the complete 42 sections
 const CONTENT_SECTIONS = COMPLETE_CONTENT_SECTIONS;
@@ -98,7 +98,7 @@ class AdvancedExcelParser {
         logger.info('No existing AI parse cache found, starting fresh');
       }
     } catch (error) {
-      logger.error('Error initializing cache:', error);
+      logger.error('Error initializing cache:', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -137,7 +137,7 @@ class AdvancedExcelParser {
     
     // Log sample headers for verification
     const sampleHeaders = Array.from(this.headers.keys()).slice(0, 5);
-    logger.info('📋 Sample headers:', sampleHeaders);
+    logger.info('📋 Sample headers:', { headers: sampleHeaders });
 
     // Initialize checkpoint if not exists
     const totalRows = worksheet.rowCount - 1; // Exclude header row
@@ -220,7 +220,7 @@ class AdvancedExcelParser {
               logger.info(`✅ Parsed ${termName} in ${processingTime}ms`);
             }
           } catch (error) {
-            logger.error(`❌ Error parsing term ${termName}:`, error);
+            logger.error(`❌ Error parsing term ${termName}:`, { error: error instanceof Error ? error.message : String(error) });
             // Log error in checkpoint
             this.checkpointManager!.logError(rowNumber, 1, termName, 'term_parsing', error instanceof Error ? error.message : String(error));
             // Continue with other terms
@@ -289,7 +289,7 @@ class AdvancedExcelParser {
       };
       await fs.writeFile(cacheFile, JSON.stringify(serializable, null, 2));
     } catch (error) {
-      logger.error(`Error saving cache for ${parsedTerm.name}:`, error);
+      logger.error(`Error saving cache for ${parsedTerm.name}:`, { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -300,7 +300,7 @@ class AdvancedExcelParser {
       await fs.writeFile(cacheFile, JSON.stringify(cacheObj, null, 2));
       logger.info(`Saved ${this.aiParseCache.size} AI parse results to cache`);
     } catch (error) {
-      logger.error('Error saving AI parse cache:', error);
+      logger.error('Error saving AI parse cache:', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -387,7 +387,7 @@ class AdvancedExcelParser {
           }
         }
       } catch (error) {
-        logger.error(`❌ Error parsing section ${section.sectionName} for ${termName}:`, error);
+        logger.error(`❌ Error parsing section ${section.sectionName} for ${termName}:`, { error: error instanceof Error ? error.message : String(error) });
         
         // Log error for each column in this section
         for (const columnName of section.columns) {
@@ -409,7 +409,7 @@ class AdvancedExcelParser {
     try {
       await this.parseCategories(row, parsedTerm);
     } catch (error) {
-      logger.error(`❌ Error parsing categories for ${termName}:`, error);
+      logger.error(`❌ Error parsing categories for ${termName}:`, { error: error instanceof Error ? error.message : String(error) });
       this.checkpointManager!.logError(rowNumber, 1, termName, 'categories', error instanceof Error ? error.message : String(error));
     }
 
@@ -460,7 +460,7 @@ class AdvancedExcelParser {
             continue;
           }
         } catch (error) {
-          logger.error(`❌ AI generation failed for ${termName} → ${columnName}:`, error);
+          logger.error(`❌ AI generation failed for ${termName} → ${columnName}:`, { error: error instanceof Error ? error.message : String(error) });
           this.checkpointManager!.logError(
             rowNumber, 
             colIdx, 
@@ -507,7 +507,7 @@ class AdvancedExcelParser {
         this.checkpointManager!.markCellCompleted(rowNumber, colIdx, processingTime);
         
       } catch (error) {
-        logger.error(`❌ Error processing ${columnName} for ${termName}:`, error);
+        logger.error(`❌ Error processing ${columnName} for ${termName}:`, { error: error instanceof Error ? error.message : String(error) });
         this.checkpointManager!.logError(
           rowNumber, 
           colIdx, 
@@ -608,11 +608,11 @@ class AdvancedExcelParser {
     // Fallback: if no proper categories found, try to extract from combined tag data
     if (parsedTerm.categories.main.length === 0 && parsedTerm.categories.sub.length === 0) {
       await this.extractCategoriesFromTags(parsedTerm, {
-        mainTags: mainTagsValue,
-        subTags: subTagsValue,
-        relatedTags: relatedTagsValue,
-        domainTags: domainTagsValue,
-        techniqueTags: techniqueTagsValue
+        mainTags: mainTagsValue || undefined,
+        subTags: subTagsValue || undefined,
+        relatedTags: relatedTagsValue || undefined,
+        domainTags: domainTagsValue || undefined,
+        techniqueTags: techniqueTagsValue || undefined
       });
     }
   }
@@ -800,7 +800,7 @@ Return clean, structured data that can be easily used in a web application.
         }
       }
     } catch (error) {
-      logger.error('AI parsing error:', error);
+      logger.error('AI parsing error:', { error: error instanceof Error ? error.message : String(error) });
     }
 
     return {};
@@ -929,7 +929,7 @@ Return clean, structured data that can be easily used in a web application.
       
       return null;
     } catch (error) {
-      logger.error(`Error generating AI content for ${termName} -> ${sectionName}:`, error);
+      logger.error(`Error generating AI content for ${termName} -> ${sectionName}:`, { error: error instanceof Error ? error.message : String(error) });
       return null;
     }
   }
@@ -1157,7 +1157,7 @@ export async function importComplexTerms(parsedTerms: ParsedTerm[], enableVersio
       successCount++;
 
     } catch (error) {
-      logger.error(`❌ Error importing term ${term.name}:`, error);
+      logger.error(`❌ Error importing term ${term.name}:`, { error: error instanceof Error ? error.message : String(error) });
       errorCount++;
       // Continue with other terms instead of throwing
     }

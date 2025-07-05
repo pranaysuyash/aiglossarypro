@@ -280,7 +280,7 @@ async function processWithNodeStreaming(filePath: string, options: ProcessingOpt
     }
     
     // Import the CSV streaming processor class
-    const CSVStreamingProcessor = (await import('../csv_streaming_processor') as any).default;
+    const CSVStreamingProcessor = (await import('../scripts/csv_streaming_processor.js') as any).default;
     
     const processor = new (CSVStreamingProcessor as any)({
       batchSize: options.chunkSize || DEFAULT_CHUNK_SIZE,

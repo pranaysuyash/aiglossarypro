@@ -54,7 +54,7 @@ export async function cacheWarmProcessor(
         await warmCacheKey(key, ttl);
         result.warmedKeys.push(key);
       } catch (error) {
-        logger.error(`Failed to warm cache for key ${key}:`, error);
+        logger.error(`Failed to warm cache for key ${key}:`, { error: error instanceof Error ? error.message : String(error) });
         result.failedKeys.push(key);
         result.errors.push({
           key,
@@ -85,7 +85,7 @@ export async function cacheWarmProcessor(
     return result;
 
   } catch (error) {
-    logger.error(`Cache warm job ${job.id} failed:`, error);
+    logger.error(`Cache warm job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 }

@@ -16,6 +16,7 @@ interface CachePrecomputeJobResult {
   dataSize: number;
   duration: number;
   success: boolean;
+  [key: string]: unknown;
 }
 
 export async function cachePrecomputeProcessor(
@@ -82,7 +83,7 @@ export async function cachePrecomputeProcessor(
     return result;
 
   } catch (error) {
-    logger.error(`Cache precompute job ${job.id} failed:`, error);
+    logger.error(`Cache precompute job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
     result.duration = Date.now() - startTime;
     throw error;
   }
@@ -150,7 +151,7 @@ async function precomputeSearchResults(
 
       processedQueries++;
     } catch (error) {
-      logger.error(`Error precomputing search for query "${query}":`, error);
+      logger.error(`Error precomputing search for query "${query}":`, { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -182,7 +183,7 @@ async function precomputeTermRelationships(
   });
 
   // Get all terms if no specific IDs provided
-  const terms = termIds || await enhancedStorage.getAllTermIds();
+  const terms = termIds || (await enhancedStorage.getAllTerms()).map(term => term.id);
   
   let processedTerms = 0;
   const relationshipData: Record<string, any> = {};
@@ -209,7 +210,7 @@ async function precomputeTermRelationships(
 
       processedTerms++;
     } catch (error) {
-      logger.error(`Error computing relationships for term ${termId}:`, error);
+      logger.error(`Error computing relationships for term ${termId}:`, { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -268,7 +269,7 @@ async function precomputeUserRecommendations(
 
       processedUsers++;
     } catch (error) {
-      logger.error(`Error computing recommendations for user ${userId}:`, error);
+      logger.error(`Error computing recommendations for user ${userId}:`, { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -326,7 +327,7 @@ async function precomputeAnalytics(
 
         processedMetrics++;
       } catch (error) {
-        logger.error(`Error computing analytics for ${metric} - ${timeframe}:`, error);
+        logger.error(`Error computing analytics for ${metric} - ${timeframe}:`, { error: error instanceof Error ? error.message : String(error) });
       }
     }
   }

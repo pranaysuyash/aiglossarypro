@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { useState, useEffect } from "react";
 import { 
   Card, 
   CardContent,
@@ -14,10 +15,15 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, ArrowRight, Calendar, Star, Clock, TrendingUp } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { BookOpen, ArrowRight, Calendar, Star, Clock, TrendingUp, Crown, Gift, X, Sparkles } from "lucide-react";
 import { BarChart } from "@/components/ui/chart";
 import TermCard from "@/components/TermCard";
 import { useAuth } from "@/hooks/useAuth";
+import { useAccess } from "@/hooks/useAccess";
+import { useToast } from "@/hooks/use-toast";
 import { ITerm } from "@/interfaces/interfaces";
 
 interface ProgressData {
@@ -42,6 +48,38 @@ interface StreakData {
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { accessStatus } = useAccess();
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [showPremiumWelcome, setShowPremiumWelcome] = useState(false);
+  
+  // Check for welcome parameters in URL
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const welcomeParam = urlParams.get('welcome');
+    
+    if (welcomeParam === 'premium') {
+      setShowPremiumWelcome(true);
+      // Clean up URL
+      window.history.replaceState({}, '', '/dashboard');
+    } else if (welcomeParam === 'true') {
+      setShowWelcome(true);
+      // Clean up URL
+      window.history.replaceState({}, '', '/dashboard');
+    }
+  }, []);
+  
+  // Auto-dismiss welcome messages after 10 seconds
+  useEffect(() => {
+    if (showWelcome || showPremiumWelcome) {
+      const timer = setTimeout(() => {
+        setShowWelcome(false);
+        setShowPremiumWelcome(false);
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [showWelcome, showPremiumWelcome]);
   
   // Fetch user progress data
   const { data: progressData, isLoading: progressLoading } = useQuery<ProgressData>({
@@ -83,15 +121,131 @@ export default function Dashboard() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <h1 className="text-3xl font-bold mb-6">Dashboard</h1>
+      {/* Premium Welcome Message */}
+      {showPremiumWelcome && (
+        <Alert className="mb-6 border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <Crown className="h-6 w-6 text-green-600 dark:text-green-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-green-800 dark:text-green-200 mb-1">
+                  🎉 Welcome to Premium!
+                </h3>
+                <AlertDescription className="text-green-700 dark:text-green-300">
+                  Thank you for upgrading! You now have unlimited access to all 10,000+ AI/ML definitions, 
+                  advanced features, and lifetime updates. Start exploring without limits!
+                </AlertDescription>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  <Button 
+                    size="sm" 
+                    onClick={() => setLocation('/categories')}
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                  >
+                    <BookOpen className="w-4 h-4 mr-1" />
+                    Explore All Categories
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => setLocation('/ai-tools')}
+                    className="border-green-300 text-green-700 hover:bg-green-100 dark:border-green-600 dark:text-green-300"
+                  >
+                    <Sparkles className="w-4 h-4 mr-1" />
+                    Discover AI Tools
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowPremiumWelcome(false)}
+              className="text-green-600 hover:text-green-700 dark:text-green-400"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </Alert>
+      )}
+      
+      {/* Regular Welcome Message */}
+      {showWelcome && !showPremiumWelcome && (
+        <Alert className="mb-6 border-blue-200 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950">
+          <div className="flex items-start justify-between">
+            <div className="flex items-start space-x-3">
+              <div className="flex-shrink-0">
+                <Gift className="h-6 w-6 text-blue-600 dark:text-blue-400" />
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-1">
+                  Welcome to AI/ML Glossary!
+                </h3>
+                <AlertDescription className="text-blue-700 dark:text-blue-300">
+                  You have {accessStatus?.dailyLimit || 50} free daily views to explore our comprehensive AI/ML dictionary. 
+                  Start learning and track your progress below!
+                </AlertDescription>
+                <div className="mt-3">
+                  <Button 
+                    size="sm" 
+                    onClick={() => setLocation('/categories')}
+                    className="bg-blue-600 hover:bg-blue-700 text-white"
+                  >
+                    <BookOpen className="w-4 h-4 mr-1" />
+                    Start Exploring
+                  </Button>
+                </div>
+              </div>
+            </div>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowWelcome(false)}
+              className="text-blue-600 hover:text-blue-700 dark:text-blue-400"
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
+        </Alert>
+      )}
+      
+      {/* Header with Premium Badge */}
+      <div className="flex items-center justify-between mb-6">
+        <div className="flex items-center space-x-3">
+          <h1 className="text-3xl font-bold">Dashboard</h1>
+          {accessStatus?.lifetimeAccess && (
+            <Badge variant="secondary" className="bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 px-3 py-1">
+              <Crown className="w-4 h-4 mr-1" />
+              Premium
+            </Badge>
+          )}
+        </div>
+        {!accessStatus?.lifetimeAccess && (
+          <Link href="/lifetime">
+            <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
+              <Crown className="w-4 h-4 mr-2" />
+              Upgrade to Premium
+            </Button>
+          </Link>
+        )}
+      </div>
       
       <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-3 xs:gap-4 mb-6">
         {/* Progress Card */}
-        <Card>
+        <Card className={accessStatus?.lifetimeAccess ? "border-yellow-200 dark:border-yellow-800" : ""}>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl flex items-center">
-              <BookOpen className="mr-2 h-5 w-5 text-primary" /> 
-              Learning Progress
+            <CardTitle className="text-xl flex items-center justify-between">
+              <div className="flex items-center">
+                <BookOpen className="mr-2 h-5 w-5 text-primary" /> 
+                Learning Progress
+              </div>
+              {accessStatus?.lifetimeAccess && (
+                <Badge variant="outline" className="text-yellow-600 border-yellow-400">
+                  <Crown className="w-3 h-3 mr-1" />
+                  Unlimited
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -113,12 +267,14 @@ export default function Dashboard() {
                   value={progressData?.termsLearned && progressData?.totalTerms 
                     ? (progressData.termsLearned / progressData.totalTerms) * 100 
                     : 0} 
-                  className="h-2 mb-4" 
+                  className={`h-2 mb-4 ${accessStatus?.lifetimeAccess ? '[&>div]:bg-gradient-to-r [&>div]:from-yellow-400 [&>div]:to-orange-500' : ''}`}
                 />
                 <p className="text-sm text-gray-500 dark:text-gray-400">
                   {progressData?.termsLearned && progressData?.totalTerms && progressData.termsLearned > 0 
                     ? `You've learned ${Math.round((progressData.termsLearned / progressData.totalTerms) * 100)}% of all terms`
-                    : "Start learning terms to track your progress"}
+                    : accessStatus?.lifetimeAccess 
+                      ? "Start exploring unlimited AI/ML definitions!"
+                      : "Start learning terms to track your progress"}
                 </p>
               </>
             )}
@@ -173,9 +329,16 @@ export default function Dashboard() {
         {/* Stats Card */}
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-xl flex items-center">
-              <TrendingUp className="mr-2 h-5 w-5 text-green-500" /> 
-              Your Statistics
+            <CardTitle className="text-xl flex items-center justify-between">
+              <div className="flex items-center">
+                <TrendingUp className="mr-2 h-5 w-5 text-green-500" /> 
+                Your Statistics
+              </div>
+              {accessStatus?.subscriptionTier && (
+                <Badge variant={accessStatus.lifetimeAccess ? "default" : "secondary"}>
+                  {accessStatus.lifetimeAccess ? 'Premium' : 'Free'}
+                </Badge>
+              )}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -199,10 +362,26 @@ export default function Dashboard() {
                   <span className="text-sm text-gray-500 dark:text-gray-400">Categories explored:</span>
                   <span className="font-medium">{activityData?.categoriesExplored || 0}</span>
                 </div>
+                {!accessStatus?.lifetimeAccess && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Daily views remaining:</span>
+                    <span className={`font-medium ${(accessStatus?.remainingViews || 0) <= 10 ? 'text-red-500' : 'text-green-500'}`}>
+                      {accessStatus?.remainingViews || 0}
+                    </span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span className="text-sm text-gray-500 dark:text-gray-400">Last activity:</span>
                   <span className="font-medium">{activityData?.lastActivity || 'Never'}</span>
                 </div>
+                {accessStatus?.lifetimeAccess && accessStatus.purchaseDate && (
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-500 dark:text-gray-400">Premium since:</span>
+                    <span className="font-medium text-yellow-600">
+                      {new Date(accessStatus.purchaseDate).toLocaleDateString()}
+                    </span>
+                  </div>
+                )}
               </div>
             )}
           </CardContent>

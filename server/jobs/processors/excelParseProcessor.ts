@@ -105,7 +105,7 @@ export async function excelParseProcessor(
     }
 
   } catch (error) {
-    logger.error(`Excel parse job ${job.id} failed:`, error);
+    logger.error(`Excel parse job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 }

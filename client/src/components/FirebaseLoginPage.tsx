@@ -82,9 +82,15 @@ export default function FirebaseLoginPage() {
       setLoading(true);
       setError(null);
 
+      // Provide immediate feedback
+      announce(`Initiating ${provider} sign-in...`, 'polite');
+      
       // Sign in with Firebase
       const { idToken } = await signInWithProvider(provider);
 
+      // Show progress feedback
+      announce('Completing authentication...', 'polite');
+      
       // Exchange Firebase token for JWT
       const response = await api.post('/api/auth/firebase/login', { idToken });
 
@@ -92,15 +98,28 @@ export default function FirebaseLoginPage() {
         // Store token in localStorage for API calls
         localStorage.setItem('authToken', response.data.token);
         
+        // Check for premium status
+        const userType = response.data.user.lifetimeAccess ? 'Premium' : 'Free';
+        const welcomeMessage = response.data.user.lifetimeAccess 
+          ? `Welcome back, ${response.data.user.email}! Your premium access is active.`
+          : `Welcome back, ${response.data.user.email}!`;
+        
         toast({
-          title: 'Welcome back!',
-          description: `Signed in as ${response.data.user.email}`,
+          title: `${userType} User - Welcome back!`,
+          description: welcomeMessage,
+          duration: 5000,
         });
         
-        announce(`Successfully signed in as ${response.data.user.email}`, 'polite');
+        announce(`Successfully signed in as ${response.data.user.email}${response.data.user.lifetimeAccess ? ' with premium access' : ''}`, 'polite');
 
-        // Redirect to dashboard or home
-        navigate(response.data.user.isAdmin ? '/admin' : '/dashboard');
+        // Redirect based on user type and status
+        if (response.data.user.isAdmin) {
+          navigate('/admin');
+        } else if (response.data.user.lifetimeAccess) {
+          navigate('/dashboard?welcome=premium');
+        } else {
+          navigate('/dashboard?welcome=true');
+        }
       }
     } catch (err: any) {
       console.error(`${provider} OAuth error:`, err);
@@ -124,6 +143,9 @@ export default function FirebaseLoginPage() {
           case 'auth/network-request-failed':
             errorMessage = 'Network error. Please check your connection and try again.';
             break;
+          case 'auth/account-exists-with-different-credential':
+            errorMessage = 'An account with this email already exists. Please try signing in with a different method.';
+            break;
           default:
             errorMessage = err.message || errorMessage;
         }
@@ -133,6 +155,14 @@ export default function FirebaseLoginPage() {
       
       setError(errorMessage);
       announce(`OAuth sign-in error: ${errorMessage}`, 'assertive');
+      
+      // Show error toast as well
+      toast({
+        title: 'Sign-in Failed',
+        description: errorMessage,
+        variant: 'destructive',
+        duration: 7000,
+      });
     } finally {
       setLoading(false);
     }
@@ -145,21 +175,43 @@ export default function FirebaseLoginPage() {
       setLoading(true);
       setError(null);
 
+      // Provide immediate feedback
+      announce('Signing in...', 'polite');
+      
       // Sign in with Firebase
       const { idToken } = await signInWithEmail(email, password);
 
+      // Show progress feedback
+      announce('Completing authentication...', 'polite');
+      
       // Exchange Firebase token for JWT
       const response = await api.post('/api/auth/firebase/login', { idToken });
 
       if (response.success) {
         localStorage.setItem('authToken', response.data.token);
         
+        // Check for premium status
+        const userType = response.data.user.lifetimeAccess ? 'Premium' : 'Free';
+        const welcomeMessage = response.data.user.lifetimeAccess 
+          ? `Welcome back! Your premium access is active.`
+          : `Welcome back!`;
+        
         toast({
-          title: 'Welcome back!',
-          description: `Signed in as ${response.data.user.email}`,
+          title: `${userType} User - Welcome back!`,
+          description: welcomeMessage,
+          duration: 5000,
         });
+        
+        announce(`Successfully signed in as ${response.data.user.email}${response.data.user.lifetimeAccess ? ' with premium access' : ''}`, 'polite');
 
-        navigate(response.data.user.isAdmin ? '/admin' : '/dashboard');
+        // Redirect based on user type and status
+        if (response.data.user.isAdmin) {
+          navigate('/admin');
+        } else if (response.data.user.lifetimeAccess) {
+          navigate('/dashboard?welcome=premium');
+        } else {
+          navigate('/dashboard?welcome=true');
+        }
       }
     } catch (err: any) {
       console.error('Email login error:', err);
@@ -186,6 +238,9 @@ export default function FirebaseLoginPage() {
           case 'auth/internal-error':
             errorMessage = 'Authentication service is temporarily unavailable. Please try again in a moment.';
             break;
+          case 'auth/invalid-login-credentials':
+            errorMessage = 'Invalid email or password. Please check your credentials and try again.';
+            break;
           default:
             errorMessage = err.message || errorMessage;
         }
@@ -194,6 +249,15 @@ export default function FirebaseLoginPage() {
       }
       
       setError(errorMessage);
+      announce(`Sign-in error: ${errorMessage}`, 'assertive');
+      
+      // Show error toast as well
+      toast({
+        title: 'Sign-in Failed',
+        description: errorMessage,
+        variant: 'destructive',
+        duration: 7000,
+      });
     } finally {
       setLoading(false);
     }
@@ -206,6 +270,9 @@ export default function FirebaseLoginPage() {
       setLoading(true);
       setError(null);
 
+      // Provide immediate feedback
+      announce('Creating your account...', 'polite');
+      
       // Create account in backend (which creates Firebase user)
       const response = await api.post('/api/auth/firebase/register', {
         email,
@@ -216,10 +283,19 @@ export default function FirebaseLoginPage() {
 
       if (response.success) {
         toast({
-          title: 'Account created!',
-          description: 'Please sign in with your new account.',
+          title: 'Account created successfully!',
+          description: 'Welcome to AI/ML Glossary! You can now sign in with your new account.',
+          duration: 6000,
         });
+        
+        announce('Account created successfully! Please sign in to continue.', 'polite');
 
+        // Clear form
+        setEmail('');
+        setPassword('');
+        setFirstName('');
+        setLastName('');
+        
         // Switch to login tab
         const loginTab = document.querySelector('[value="login"]') as HTMLElement;
         loginTab?.click();
@@ -235,7 +311,7 @@ export default function FirebaseLoginPage() {
             errorMessage = 'An account with this email already exists. Please sign in instead.';
             break;
           case 'auth/weak-password':
-            errorMessage = 'Password is too weak. Please choose a stronger password.';
+            errorMessage = 'Password is too weak. Please choose a stronger password (at least 6 characters).';
             break;
           case 'auth/invalid-email':
             errorMessage = 'Invalid email address format.';
@@ -254,6 +330,15 @@ export default function FirebaseLoginPage() {
       }
       
       setError(errorMessage);
+      announce(`Registration error: ${errorMessage}`, 'assertive');
+      
+      // Show error toast as well
+      toast({
+        title: 'Registration Failed',
+        description: errorMessage,
+        variant: 'destructive',
+        duration: 7000,
+      });
     } finally {
       setLoading(false);
     }
@@ -292,7 +377,10 @@ export default function FirebaseLoginPage() {
                 aria-label="Sign in with Google"
               >
                 {loading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    <span className="sr-only">Signing in with Google...</span>
+                  </>
                 ) : (
                   <OptimizedImage 
                     src="https://www.google.com/favicon.ico" 
@@ -304,7 +392,7 @@ export default function FirebaseLoginPage() {
                     aria-hidden="true"
                   />
                 )}
-                Continue with Google
+                {loading ? 'Signing in...' : 'Continue with Google'}
               </Button>
               
               <Button
@@ -315,13 +403,16 @@ export default function FirebaseLoginPage() {
                 aria-label="Sign in with GitHub"
               >
                 {loading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    <span className="sr-only">Signing in with GitHub...</span>
+                  </>
                 ) : (
                   <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24" aria-hidden="true">
                     <path fill="currentColor" d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
                   </svg>
                 )}
-                Continue with GitHub
+                {loading ? 'Signing in...' : 'Continue with GitHub'}
               </Button>
             </div>
 
@@ -381,8 +472,13 @@ export default function FirebaseLoginPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading} aria-describedby={error ? "login-error" : undefined}>
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-                Sign In
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    <span className="sr-only">Signing in...</span>
+                  </>
+                ) : null}
+                {loading ? 'Signing in...' : 'Sign In'}
               </Button>
             </form>
           </TabsContent>
@@ -464,8 +560,13 @@ export default function FirebaseLoginPage() {
               </div>
 
               <Button type="submit" className="w-full" disabled={loading} aria-describedby={error ? "register-error" : undefined}>
-                {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" /> : null}
-                Create Account
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+                    <span className="sr-only">Creating account...</span>
+                  </>
+                ) : null}
+                {loading ? 'Creating Account...' : 'Create Account'}
               </Button>
             </form>
           </TabsContent>

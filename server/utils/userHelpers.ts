@@ -45,11 +45,11 @@ export function transformUserForAdmin(user: UserForTransformation): Partial<IAdm
     role: (user.role as string) || 'user',
     isActive: user.isActive !== false,
     isAdmin: user.isAdmin || false,
-    lifetimeAccess: user.lifetimeAccess || (user.lifetime_access as boolean | undefined) || false,
-    subscriptionTier: user.subscriptionTier || (user.subscription_tier as string | undefined),
-    purchaseDate: user.purchaseDate || (user.purchase_date as Date | string | undefined),
-    createdAt: user.createdAt || (user.created_at as Date | undefined),
-    lastLoginAt: user.lastLoginAt || (user.last_login_at as Date | string | undefined),
+    lifetimeAccess: user.lifetimeAccess || Boolean(user.lifetime_access) || false,
+    subscriptionTier: user.subscriptionTier || (typeof user.subscription_tier === 'string' ? user.subscription_tier : undefined),
+    purchaseDate: user.purchaseDate || (user.purchase_date && typeof user.purchase_date !== 'object' ? user.purchase_date as Date | string : undefined),
+    createdAt: user.createdAt || (user.created_at && typeof user.created_at !== 'object' ? user.created_at as Date : undefined),
+    lastLoginAt: user.lastLoginAt || (user.last_login_at && typeof user.last_login_at !== 'object' ? user.last_login_at as Date | string : undefined),
     termsViewed: (user.termsViewed as number | undefined) || (user.terms_viewed as number | undefined) || 0,
     favoriteTerms: (user.favoriteTerms as number | undefined) || (user.favorite_terms as number | undefined) || 0
   };

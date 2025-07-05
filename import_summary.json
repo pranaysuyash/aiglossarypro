@@ -1,8 +1,0 @@
-{
-  "input_file": "test_sample.csv",
-  "sql_file": "aiml_import_2025-06-30_15-01-42.sql",
-  "total_terms": 5,
-  "processed_terms": 5,
-  "changed_terms": 5,
-  "timestamp": "2025-06-30T15:01:42.310923"
-}

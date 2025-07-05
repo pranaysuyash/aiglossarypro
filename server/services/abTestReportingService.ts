@@ -47,7 +47,7 @@ class ABTestReportingService {
         await this.generateReport(test, 'daily');
       }
     } catch (error) {
-      logger.error('Error generating daily reports:', error);
+      logger.error('Error generating daily reports:', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -64,7 +64,7 @@ class ABTestReportingService {
         await this.generateReport(test, 'weekly');
       }
     } catch (error) {
-      logger.error('Error generating weekly reports:', error);
+      logger.error('Error generating weekly reports:', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -84,7 +84,7 @@ class ABTestReportingService {
 
       await this.generateReport(test, 'final');
     } catch (error) {
-      logger.error('Error generating final report:', error);
+      logger.error('Error generating final report:', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -182,7 +182,7 @@ class ABTestReportingService {
     return {
       conversionRates,
       statisticalSignificance,
-      winner
+      winner: winner || undefined
     };
   }
 
@@ -312,7 +312,7 @@ class ABTestReportingService {
 
       logger.info(`Sent ${data.period.type} report for test ${data.test.id} to ${recipients.length} recipients`);
     } catch (error) {
-      logger.error('Error sending report email:', error);
+      logger.error('Error sending report email:', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 

@@ -124,13 +124,13 @@ export async function aiContentGenerationProcessor(
             result.tokensUsed += sectionTokens;
 
             // Parse and structure the content
-            const structuredContent = parseGeneratedContent(section, content);
+            const structuredContent = parseGeneratedContent(section, content || '');
             result.generatedSections[section] = structuredContent;
 
             logger.info(`Generated content for section ${section} of term ${termName}`);
           } catch (error) {
             attempts++;
-            logger.error(`Attempt ${attempts} failed for section ${section}:`, error);
+            logger.error(`Attempt ${attempts} failed for section ${section}:`, { error: error instanceof Error ? error.message : String(error) });
             
             if (attempts >= maxRetries) {
               throw error;
@@ -143,7 +143,7 @@ export async function aiContentGenerationProcessor(
 
         processedSections++;
       } catch (sectionError) {
-        logger.error(`Failed to generate content for section ${section}:`, sectionError);
+        logger.error(`Failed to generate content for section ${section}:`, { error: sectionError instanceof Error ? sectionError.message : String(sectionError) });
         result.generatedSections[section] = {
           error: sectionError instanceof Error ? sectionError.message : 'Generation failed',
         };
@@ -160,7 +160,10 @@ export async function aiContentGenerationProcessor(
       stage: 'saving',
     } as JobProgressUpdate);
 
-    await enhancedStorage.updateTermSections(termId, result.generatedSections);
+    // Update each section individually
+    for (const [sectionId, sectionData] of Object.entries(result.generatedSections)) {
+      await enhancedStorage.updateTermSection(termId, sectionId, sectionData);
+    }
 
     result.duration = Date.now() - startTime;
 
@@ -186,7 +189,7 @@ export async function aiContentGenerationProcessor(
     return result;
 
   } catch (error) {
-    logger.error(`AI content generation job ${job.id} failed:`, error);
+    logger.error(`AI content generation job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 }

@@ -240,7 +240,7 @@ export class IncrementalImporter {
           const termId = await this.updateTerm(term, changes, client);
           
           // Update term hash
-          await this.updateTerm(termId, term);
+          await this.storeTermHash(termId, term);
           
           // Log import action
           await this.logImportAction(sessionId, termId, term['Term'] || term['Name'], 'update', undefined, changes);

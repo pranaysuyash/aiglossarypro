@@ -1,4 +1,4 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import fetch from 'node-fetch';
 
 interface CDNMetrics {
@@ -116,13 +116,18 @@ export class CDNMonitoringService {
     const startTime = Date.now();
     
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      
       const response = await fetch(url, {
         method: 'HEAD',
-        timeout: 10000, // 10 second timeout
+        signal: controller.signal,
         headers: {
           'User-Agent': 'AIGlossaryPro-HealthCheck/1.0'
         }
       });
+      
+      clearTimeout(timeoutId);
       
       const responseTime = Date.now() - startTime;
       
@@ -188,7 +193,7 @@ export class CDNMonitoringService {
         }
       );
       
-      const data = await response.json();
+      const data = await response.json() as any;
       
       if (!data.success) {
         throw new Error(`Cloudflare API error: ${data.errors?.[0]?.message}`);

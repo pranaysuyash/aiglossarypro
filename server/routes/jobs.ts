@@ -41,7 +41,7 @@ export function registerJobRoutes(app: Express): void {
         data: jobStatus,
       });
     } catch (error) {
-      logger.error('Error fetching job status:', error);
+      logger.error('Error fetching job status:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch job status',
@@ -61,7 +61,7 @@ export function registerJobRoutes(app: Express): void {
         data: stats,
       });
     } catch (error) {
-      logger.error('Error fetching queue stats:', error);
+      logger.error('Error fetching queue stats:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch queue statistics',
@@ -90,7 +90,7 @@ export function registerJobRoutes(app: Express): void {
         data: stats,
       });
     } catch (error) {
-      logger.error('Error fetching queue stats:', error);
+      logger.error('Error fetching queue stats:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch queue statistics',
@@ -142,7 +142,7 @@ export function registerJobRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      logger.error('Error creating Excel import job:', error);
+      logger.error('Error creating Excel import job:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to create Excel import job',
@@ -192,7 +192,7 @@ export function registerJobRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      logger.error('Error creating AI content job:', error);
+      logger.error('Error creating AI content job:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to create AI content generation job',
@@ -237,7 +237,7 @@ export function registerJobRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      logger.error('Error creating cache warm job:', error);
+      logger.error('Error creating cache warm job:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to create cache warm job',
@@ -287,7 +287,7 @@ export function registerJobRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      logger.error('Error creating email job:', error);
+      logger.error('Error creating email job:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to create email job',
@@ -323,7 +323,7 @@ export function registerJobRoutes(app: Express): void {
         message: 'Job cancelled successfully',
       });
     } catch (error) {
-      logger.error('Error cancelling job:', error);
+      logger.error('Error cancelling job:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to cancel job',
@@ -352,7 +352,7 @@ export function registerJobRoutes(app: Express): void {
         message: `Queue ${type} paused successfully`,
       });
     } catch (error) {
-      logger.error('Error pausing queue:', error);
+      logger.error('Error pausing queue:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to pause queue',
@@ -381,7 +381,7 @@ export function registerJobRoutes(app: Express): void {
         message: `Queue ${type} resumed successfully`,
       });
     } catch (error) {
-      logger.error('Error resuming queue:', error);
+      logger.error('Error resuming queue:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to resume queue',
@@ -420,7 +420,7 @@ export function registerJobRoutes(app: Express): void {
         message: `Cleaned ${cleanedJobs.length} jobs from queue ${type}`,
       });
     } catch (error) {
-      logger.error('Error cleaning queue:', error);
+      logger.error('Error cleaning queue:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to clean queue',
@@ -471,7 +471,7 @@ export function registerJobRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      logger.error('Error creating AI batch job:', error);
+      logger.error('Error creating AI batch job:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to create AI batch processing job',
@@ -519,7 +519,7 @@ export function registerJobRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      logger.error('Error creating DB batch job:', error);
+      logger.error('Error creating DB batch job:', { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         error: 'Failed to create database batch insert job',

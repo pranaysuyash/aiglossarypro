@@ -96,7 +96,7 @@ export async function analyticsAggregateProcessor(
     return result;
 
   } catch (error) {
-    logger.error(`Analytics aggregate job ${job.id} failed:`, error);
+    logger.error(`Analytics aggregate job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 }
@@ -118,7 +118,7 @@ async function aggregateSearchAnalytics(
   });
 
   // Mock implementation - replace with actual database queries
-  const searchData = {
+  const searchData: Record<string, any> = {
     totalSearches: await getSearchCount(timeRange),
     uniqueUsers: await getUniqueSearchUsers(timeRange),
     topQueries: await getTopSearchQueries(timeRange, 10),
@@ -163,7 +163,7 @@ async function aggregateUserEngagement(
     stage: 'processing',
   });
 
-  const engagementData = {
+  const engagementData: Record<string, any> = {
     activeUsers: await getActiveUsers(timeRange),
     newUsers: await getNewUsers(timeRange),
     returningUsers: await getReturningUsers(timeRange),

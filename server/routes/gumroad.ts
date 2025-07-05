@@ -61,13 +61,15 @@ export function registerGumroadRoutes(app: Express): void {
       
       // Handle successful purchase
       if (data.sale && data.sale.email) {
-        const { email, order_id, amount_cents, currency } = data.sale;
+        const { email, order_id, amount_cents, currency, purchaser_id, product_name } = data.sale;
         
         log.info('Processing purchase', {
           email: email.substring(0, 3) + '***',
           orderId: order_id,
           amount: amount_cents,
-          currency
+          currency,
+          purchaserId: purchaser_id,
+          productName: product_name
         });
         
         // Use UserService to grant lifetime access
@@ -76,15 +78,34 @@ export function registerGumroadRoutes(app: Express): void {
           orderId: order_id,
           amount: amount_cents,
           currency,
-          purchaseData: data.sale
+          purchaseData: {
+            ...data.sale,
+            webhook_processed_at: new Date().toISOString(),
+            source: 'gumroad_webhook'
+          }
         });
 
         log.info('Successfully processed Gumroad purchase', {
           email: email.substring(0, 3) + '***',
           orderId: order_id,
           userId: result.userId,
-          wasExistingUser: result.wasExistingUser
+          wasExistingUser: result.wasExistingUser,
+          productName: product_name
         });
+        
+        // Send success response with additional data for potential client-side handling
+        res.status(HTTP_STATUS.OK).json({ 
+          success: true,
+          message: 'Purchase processed successfully',
+          data: {
+            userId: result.userId,
+            email: result.email,
+            wasExistingUser: result.wasExistingUser,
+            orderId: order_id,
+            processedAt: new Date().toISOString()
+          }
+        });
+        return;
       } else {
         log.warn('Invalid webhook data - missing sale or email', {
           hasSale: !!data.sale,
@@ -92,7 +113,11 @@ export function registerGumroadRoutes(app: Express): void {
         });
       }
 
-      res.status(HTTP_STATUS.OK).json({ success: true });
+      // If we get here, the webhook was valid but didn't contain sale data
+      res.status(HTTP_STATUS.OK).json({ 
+        success: true,
+        message: 'Webhook received but no sale data processed'
+      });
     } catch (error) {
       log.error('Gumroad webhook processing error', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -105,7 +130,11 @@ export function registerGumroadRoutes(app: Express): void {
         body: req.body
       });
       
-      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ error: 'Webhook processing failed' });
+      res.status(HTTP_STATUS.INTERNAL_SERVER_ERROR).json({ 
+        error: 'Webhook processing failed',
+        message: 'An error occurred while processing the purchase. Please contact support if the issue persists.',
+        timestamp: new Date().toISOString()
+      });
     }
   });
   

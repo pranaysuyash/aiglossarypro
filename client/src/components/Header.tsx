@@ -147,25 +147,37 @@ export default function Header({
               )}
             </Button>
 
-            {/* Lifetime Access Button */}
-            <Link href="/lifetime">
-              <Button
-                variant="default"
-                size="sm"
-                className="hidden lg:flex bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-4 py-2"
+            {/* Premium Status or Upgrade Button */}
+            {accessStatus?.lifetimeAccess ? (
+              <Badge 
+                variant="secondary" 
+                className="hidden lg:flex bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 px-4 py-2 font-medium"
               >
-                Get Lifetime Access
-              </Button>
-            </Link>
-            <Link href="/lifetime">
-                <Button
+                <Crown className="w-4 h-4 mr-2" />
+                Premium
+              </Badge>
+            ) : (
+              <>
+                <Link href="/lifetime">
+                  <Button
                     variant="default"
                     size="sm"
-                    className="hidden md:flex lg:hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-3 py-2"
-                >
-                    Upgrade
-                </Button>
-            </Link>
+                    className="hidden lg:flex bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-4 py-2"
+                  >
+                    Get Lifetime Access
+                  </Button>
+                </Link>
+                <Link href="/lifetime">
+                    <Button
+                        variant="default"
+                        size="sm"
+                        className="hidden md:flex lg:hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-3 py-2"
+                    >
+                        Upgrade
+                    </Button>
+                </Link>
+              </>
+            )}
 
             {/* Mobile Search Toggle */}
             <button
@@ -210,7 +222,18 @@ export default function Header({
                       <ChevronDown className="ml-1 h-4 w-4 text-gray-500 dark:text-gray-400" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
+                  <DropdownMenuContent align="end" className="w-56">
+                    {/* Premium Status Header */}
+                    {accessStatus?.lifetimeAccess && (
+                      <>
+                        <div className="px-2 py-1.5 text-sm font-medium text-yellow-600 dark:text-yellow-400 flex items-center">
+                          <Crown className="w-4 h-4 mr-2" />
+                          Premium Member
+                        </div>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+                    
                     <DropdownMenuItem onClick={() => navigate("/profile")}>Profile</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/dashboard")}>Dashboard</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/categories")}>Categories</DropdownMenuItem>
@@ -219,6 +242,21 @@ export default function Header({
                     <DropdownMenuItem onClick={() => navigate("/ai-tools")}>AI Tools</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/settings")}>Settings</DropdownMenuItem>
                     {userObj?.isAdmin && <DropdownMenuItem onClick={() => navigate("/admin")}>Admin</DropdownMenuItem>}
+                    
+                    {/* Upgrade Option for Free Users */}
+                    {!accessStatus?.lifetimeAccess && (
+                      <>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem 
+                          onClick={() => navigate("/lifetime")}
+                          className="text-blue-600 hover:text-blue-700 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"
+                        >
+                          <Crown className="w-4 h-4 mr-2" />
+                          Upgrade to Premium
+                        </DropdownMenuItem>
+                      </>
+                    )}
+                    
                     <DropdownMenuSeparator />
                     <DropdownMenuItem onClick={handleLogout}>Sign out</DropdownMenuItem>
                   </DropdownMenuContent>
@@ -359,10 +397,21 @@ export default function Header({
                 {/* Action Buttons */}
                 <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
                   <div className="space-y-3">
-                    <Link href="/lifetime" onClick={() => setMobileMenuOpen(false)} className="flex items-center w-full px-4 py-4 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium transition-all duration-150 text-base min-h-[48px]">
-                      <Crown className="mr-3 h-5 w-5 flex-shrink-0" />
-                      <span className="whitespace-nowrap">Get Lifetime Access</span>
-                    </Link>
+                    {/* Premium Status or Upgrade Button */}
+                    {accessStatus?.lifetimeAccess ? (
+                      <div className="flex items-center w-full px-4 py-4 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-medium text-base min-h-[48px]">
+                        <Crown className="mr-3 h-5 w-5 flex-shrink-0" />
+                        <div className="flex-1">
+                          <div className="font-semibold">Premium Member</div>
+                          <div className="text-sm opacity-90">Unlimited Access Active</div>
+                        </div>
+                      </div>
+                    ) : (
+                      <Link href="/lifetime" onClick={() => setMobileMenuOpen(false)} className="flex items-center w-full px-4 py-4 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium transition-all duration-150 text-base min-h-[48px]">
+                        <Crown className="mr-3 h-5 w-5 flex-shrink-0" />
+                        <span className="whitespace-nowrap">Get Lifetime Access</span>
+                      </Link>
+                    )}
                     {!isAuthenticated ? (
                       <Button variant="default" size="lg" onClick={() => { handleLogin(); setMobileMenuOpen(false); }} className="w-full justify-center min-h-[48px]">
                         <User className="mr-3 h-5 w-5" /> Sign In

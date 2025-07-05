@@ -97,7 +97,7 @@ seoRouter.get('/sitemap.xml', async (req: Request, res: Response) => {
     res.setHeader('Content-Type', 'application/xml');
     res.send(sitemap);
   } catch (error) {
-    logger.error('Sitemap generation error:', error);
+    logger.error('Sitemap generation error:', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).send('<?xml version="1.0" encoding="UTF-8"?><error>Sitemap generation failed</error>');
   }
 });
@@ -199,7 +199,7 @@ seoRouter.get('/meta/term/:id', async (req: Request, res: Response<ApiResponse<a
       data: seoData
     });
   } catch (error) {
-    logger.error('SEO meta generation error:', error);
+    logger.error('SEO meta generation error:', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({
       success: false,
       error: 'Failed to generate SEO metadata'
@@ -321,7 +321,7 @@ seoRouter.get('/structured-data/term/:id', async (req: Request, res: Response<Ap
       }
     });
   } catch (error) {
-    logger.error('Structured data generation error:', error);
+    logger.error('Structured data generation error:', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({
       success: false,
       error: 'Failed to generate structured data'
@@ -382,7 +382,7 @@ seoRouter.get('/analytics', async (req: Request, res: Response<ApiResponse<any>>
       data: analytics
     });
   } catch (error) {
-    logger.error('SEO analytics error:', error);
+    logger.error('SEO analytics error:', { error: error instanceof Error ? error.message : String(error) });
     res.status(500).json({
       success: false,
       error: 'Failed to generate SEO analytics'

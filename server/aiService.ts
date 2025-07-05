@@ -174,7 +174,7 @@ class AIService {
       await fs.rename(tmpFile, this.CACHE_FILE);
       logger.info(`Saved ${this.persistentCache.size} AI results to cache`);
     } catch (error) {
-      logger.error('Failed to save persistent cache:', error);
+      logger.error('Failed to save persistent cache:', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -227,7 +227,7 @@ class AIService {
         timestamp: new Date().toISOString()
       });
     } catch (error) {
-      logger.error('Failed to log AI usage to database:', error);
+      logger.error('Failed to log AI usage to database:', { error: error instanceof Error ? error.message : String(error) });
       // Fallback to console only
       logger.info('AI Usage (fallback):', {
         ...metrics,
@@ -253,7 +253,7 @@ class AIService {
           errorMessage.includes('timeout');
         
         if (isLastAttempt) {
-          logger.error(`AI operation failed after ${this.MAX_RETRIES} attempts:`, error instanceof Error ? error : new Error(String(error)));
+          logger.error(`AI operation failed after ${this.MAX_RETRIES} attempts:`, { error: error instanceof Error ? error.message : String(error) });
           
           // If we have a fallback, use it
           if (fallback !== undefined) {
@@ -273,7 +273,7 @@ class AIService {
         
         // Exponential backoff with jitter from smart_processor.cjs
         const delay = this.RETRY_DELAY * (attempt + 1) + Math.random() * 1000;
-        logger.info(`AI operation attempt ${attempt} failed, retrying in ${delay}ms:`, errorMessage);
+        logger.info(`AI operation attempt ${attempt} failed, retrying in ${delay}ms:`, { error: errorMessage });
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
@@ -428,7 +428,7 @@ Your definitions will be marked as AI-generated and subject to expert review. Pr
         errorMessage: error instanceof Error ? error.message : 'Unknown error'
       }, userId);
 
-      logger.error('Error generating definition:', error);
+      logger.error('Error generating definition:', { error: error instanceof Error ? error.message : String(error) });
       throw new Error('Failed to generate definition');
     }
   }
@@ -482,7 +482,7 @@ Your definitions will be marked as AI-generated and subject to expert review. Pr
       
       return result;
     } catch (error) {
-      logger.error('Error generating suggestions:', error);
+      logger.error('Error generating suggestions:', { error: error instanceof Error ? error.message : String(error) });
       throw new Error('Failed to generate term suggestions');
     }
   }
@@ -532,7 +532,7 @@ Your definitions will be marked as AI-generated and subject to expert review. Pr
       
       return result;
     } catch (error) {
-      logger.error('Error categorizing term:', error);
+      logger.error('Error categorizing term:', { error: error instanceof Error ? error.message : String(error) });
       throw new Error('Failed to categorize term');
     }
   }
@@ -616,7 +616,7 @@ Your definitions will be marked as AI-generated and subject to expert review. Pr
         errorMessage: error instanceof Error ? error.message : 'Unknown error'
       }, userId);
 
-      logger.error('Error in semantic search:', error);
+      logger.error('Error in semantic search:', { error: error instanceof Error ? error.message : String(error) });
       throw new Error('Failed to perform semantic search');
     }
   }
@@ -666,7 +666,7 @@ Your definitions will be marked as AI-generated and subject to expert review. Pr
       
       return result;
     } catch (error) {
-      logger.error('Error improving definition:', error);
+      logger.error('Error improving definition:', { error: error instanceof Error ? error.message : String(error) });
       throw new Error('Failed to improve definition');
     }
   }
@@ -876,7 +876,7 @@ Keep the core meaning intact while enhancing clarity and usefulness.
         errorMessage: error instanceof Error ? error.message : 'Unknown error'
       }, userId);
 
-      logger.error(`Error generating section content for ${term} → ${section}:`, error);
+      logger.error(`Error generating section content for ${term} → ${section}:`, { error: error instanceof Error ? error.message : String(error) });
       throw new Error('Failed to generate section content');
     }
   }

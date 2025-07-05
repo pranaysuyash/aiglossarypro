@@ -89,7 +89,7 @@ export async function dbBatchInsertProcessor(
         });
 
       } catch (batchError) {
-        logger.error(`Batch ${batchIndex + 1} failed:`, batchError);
+        logger.error(`Batch ${batchIndex + 1} failed:`, { error: batchError instanceof Error ? batchError.message : String(batchError) });
         
         // Try to process records individually to identify specific failures
         for (const record of batch) {
@@ -133,7 +133,7 @@ export async function dbBatchInsertProcessor(
     return result;
 
   } catch (error) {
-    logger.error(`DB batch insert job ${job.id} failed:`, error);
+    logger.error(`DB batch insert job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 }
@@ -184,7 +184,7 @@ async function handleTermsBatch(
   records: any[],
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
-  const { terms } = await import('../../db');
+  const { terms } = await import('../../../shared/enhancedSchema');
   
   if (conflictResolution === 'ignore') {
     // Insert only new records, ignore conflicts
@@ -250,7 +250,7 @@ async function handleCategoriesBatch(
   records: any[],
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
-  const { categories } = await import('../../db');
+  const { categories } = await import('../../../shared/enhancedSchema');
   
   if (conflictResolution === 'ignore') {
     const insertedRecords = await db.insert(categories)
@@ -274,7 +274,7 @@ async function handleTermSectionsBatch(
   records: any[],
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
-  const { termSections } = await import('../../db');
+  const { termSections } = await import('../../../shared/enhancedSchema');
   
   if (conflictResolution === 'ignore') {
     const insertedRecords = await db.insert(termSections)

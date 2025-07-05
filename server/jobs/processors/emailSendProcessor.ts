@@ -6,7 +6,7 @@
 import { Job } from 'bullmq';
 import { EmailSendJobData } from '../types';
 import { log as logger } from '../../utils/logger';
-import nodemailer from 'nodemailer';
+import * as nodemailer from 'nodemailer';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 
@@ -75,13 +75,13 @@ function getEmailTemplates() {
     subject: 'AI Content Generation Completed',
     html: `
       <h1>AI Content Generation Completed</h1>
-      <p>Hello {{name}},</p>
+      <p>Hello \{{name}},</p>
       <p>Your AI content generation has been completed.</p>
       <ul>
-        <li>Terms processed: {{termsProcessed}}</li>
-        <li>Sections generated: {{sectionsGenerated}}</li>
-        <li>Tokens used: {{tokensUsed}}</li>
-        <li>Cost: ${{cost}}</li>
+        <li>Terms processed: \{{termsProcessed}}</li>
+        <li>Sections generated: \{{sectionsGenerated}}</li>
+        <li>Tokens used: \{{tokensUsed}}</li>
+        <li>Cost: $\{{cost}}</li>
       </ul>
       <p>You can now review the generated content in your dashboard.</p>
       <p>Best regards,<br>The AI Glossary Pro Team</p>
@@ -89,14 +89,14 @@ function getEmailTemplates() {
     text: `
       AI Content Generation Completed
       
-      Hello {{name}},
+      Hello \{{name}},
       
       Your AI content generation has been completed.
       
-      Terms processed: {{termsProcessed}}
-      Sections generated: {{sectionsGenerated}}
-      Tokens used: {{tokensUsed}}
-      Cost: ${{cost}}
+      Terms processed: \{{termsProcessed}}
+      Sections generated: \{{sectionsGenerated}}
+      Tokens used: \{{tokensUsed}}
+      Cost: $\{{cost}}
       
       You can now review the generated content in your dashboard.
       
@@ -147,14 +147,14 @@ const createTransporter = () => {
   // In development, use Ethereal for testing
   if (process.env.NODE_ENV === 'development' && !process.env.SMTP_USER) {
     logger.info('Using mock email transport for development');
-    return nodemailer.createTransporter({
+    return nodemailer.createTransport({
       streamTransport: true,
       newline: 'unix',
       buffer: true,
     });
   }
 
-  return nodemailer.createTransporter(emailConfig);
+  return nodemailer.createTransport(emailConfig);
 };
 
 export async function emailSendProcessor(
@@ -205,7 +205,7 @@ export async function emailSendProcessor(
       await transporter.verify();
       logger.info('Email transporter verified successfully');
     } catch (error) {
-      logger.warn('Email transporter verification failed:', error);
+      logger.warn('Email transporter verification failed:', { error: error instanceof Error ? error.message : String(error) });
       // Continue anyway in case verification fails but sending works
     }
 
@@ -255,7 +255,7 @@ export async function emailSendProcessor(
     return result;
 
   } catch (error) {
-    logger.error(`Email send job ${job.id} failed:`, error);
+    logger.error(`Email send job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
     
     result.error = error instanceof Error ? error.message : 'Unknown error';
     result.duration = Date.now() - startTime;

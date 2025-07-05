@@ -272,8 +272,8 @@ export class VersioningService {
         content: v.content,
         qualityMetrics: v.qualityMetrics as ContentQualityMetrics,
         isActive: v.isActive ?? false,
-        createdAt: v.createdAt,
-        updatedAt: v.updatedAt,
+        createdAt: v.createdAt || new Date(),
+        updatedAt: v.updatedAt || new Date(),
         metadata: v.metadata as any
       }));
 

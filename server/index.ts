@@ -33,6 +33,7 @@ import { performanceMiddleware } from "./middleware/compression";
 import { setupCacheMonitoring } from "./monitoring/cacheMonitoring";
 import { cacheStatsMiddleware } from "./middleware/queryCache";
 import { cdnCacheMiddleware } from "./middleware/cdnCache";
+import { setupSwagger } from "./swagger/setup";
 
 const app = express();
 const wsInstance = expressWs(app);
@@ -109,6 +110,11 @@ app.use(responseLoggingMiddleware);
   }
   
   await registerRoutes(app);
+  logger.info("✅ API routes registered");
+
+  // Setup Swagger API documentation
+  setupSwagger(app);
+  logger.info("✅ Swagger API documentation available at /api/docs");
 
   // Get server configuration
   const serverConfig = getServerConfig();

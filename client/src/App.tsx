@@ -33,6 +33,7 @@ import {
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import FirebaseLoginPage from "@/components/FirebaseLoginPage";
+import PurchaseSuccess from "@/pages/PurchaseSuccess";
 import SkipLinks from "@/components/accessibility/SkipLinks";
 import CookieConsentBanner from "@/components/CookieConsentBanner";
 import { useAuth } from "@/hooks/useAuth";
@@ -147,6 +148,7 @@ function Router() {
           <Route path="/app" component={Home} />
           <Route path="/browse" component={Home} />
           <Route path="/login" component={FirebaseLoginPage} />
+          <Route path="/purchase-success" component={PurchaseSuccess} />
           <Route path="/lifetime" component={LazyLifetimePage} />
           <Route path="/term/:id" component={SmartTermDetail} />
           <Route path="/enhanced/terms/:id" component={SmartTermDetail} />

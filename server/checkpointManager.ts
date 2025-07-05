@@ -142,7 +142,7 @@ export class CheckpointManager {
       await this.saveCheckpoint();
       logger.info(`✅ Checkpoint initialized and saved: ${this.checkpointFile}`);
     } catch (error) {
-      logger.error('❌ Failed to initialize checkpoint:', error);
+      logger.error('❌ Failed to initialize checkpoint:', { error: error instanceof Error ? error.message : String(error) });
       throw error;
     }
   }
@@ -189,7 +189,7 @@ export class CheckpointManager {
       // Keep only last 5 checkpoint backups
       await this.rotateBackups();
     } catch (error) {
-      logger.error('❌ Failed to save checkpoint:', error);
+      logger.error('❌ Failed to save checkpoint:', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 
@@ -409,7 +409,7 @@ export class CheckpointManager {
         }
       }
     } catch (error) {
-      logger.warn('⚠️  Failed to rotate checkpoint backups:', error);
+      logger.warn('⚠️  Failed to rotate checkpoint backups:', { error: error instanceof Error ? error.message : String(error) });
     }
   }
 

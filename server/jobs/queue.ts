@@ -75,7 +75,7 @@ export class JobQueueManager extends EventEmitter {
       this.isInitialized = true;
       logger.info('Job queue manager initialized successfully');
     } catch (error) {
-      logger.error('Failed to initialize job queue manager:', error);
+      logger.error('Failed to initialize job queue manager:', { error: error instanceof Error ? error.message : String(error) });
       throw error;
     }
   }
@@ -256,7 +256,7 @@ export class JobQueueManager extends EventEmitter {
             logger.info(`Job ${job.id} completed successfully`);
             return result;
           } catch (error) {
-            logger.error(`Job ${job.id} failed:`, error);
+            logger.error(`Job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
             throw error;
           }
         },

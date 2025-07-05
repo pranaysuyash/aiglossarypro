@@ -1,3 +1,0 @@
-import { registerSeoRoutes } from "./seo";
-import { registerContentRoutes } from "./content";
-import { registerGumroadRoutes } from "./gumroad";

@@ -13,6 +13,11 @@ interface UpgradePromptProps {
 export function UpgradePrompt({ variant = 'card', className = '', onClose }: UpgradePromptProps) {
   const { accessStatus } = useAccess();
   
+  // Don't show upgrade prompt for premium users
+  if (accessStatus?.lifetimeAccess) {
+    return null;
+  }
+  
   const handleUpgrade = () => {
     // Navigate to Gumroad checkout with Purchasing Power Parity
     window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');

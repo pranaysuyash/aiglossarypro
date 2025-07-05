@@ -137,6 +137,7 @@ export interface DBBatchInsertJobResult {
   failed: number;
   errors: Array<{ record: any; error: string }>;
   duration: number;
+  [key: string]: unknown;
 }
 
 // Email Job Types

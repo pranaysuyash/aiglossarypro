@@ -1,5 +1,4 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
+import * as React from 'react';
 import { 
   BookOpen, 
   Code, 
@@ -61,9 +60,9 @@ export function WhatYouGet() {
     <section className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8 bg-white">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-16">
-          <Badge variant="outline" className="mb-4 text-purple-600 border-purple-200">
+          <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 border border-purple-200 mb-4">
             One-Time Payment, Lifetime Access
-          </Badge>
+          </div>
           <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-6">
             Pay once, access forever. No recurring fees.
           </h2>
@@ -74,9 +73,9 @@ export function WhatYouGet() {
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {features.map((feature, index) => (
-            <Card key={index} className="border-2 hover:border-purple-200 transition-colors duration-300 hover:shadow-lg">
-              <CardContent className="p-6">
+          {features.map((feature) => (
+            <div key={feature.title} className="border-2 hover:border-purple-200 transition-colors duration-300 hover:shadow-lg bg-white rounded-lg">
+              <div className="p-6">
                 <div className="flex items-start gap-4">
                   <div className={`p-3 rounded-lg bg-gray-50 ${feature.color}`}>
                     <feature.icon className="w-6 h-6" />
@@ -87,8 +86,8 @@ export function WhatYouGet() {
                     <p className="text-gray-500 text-xs">{feature.details}</p>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </div>
 

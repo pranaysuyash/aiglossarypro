@@ -189,8 +189,9 @@ export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<an
           
           total = Math.min(topResults.length, 100); // Cap total for performance
         } else {
-          // Standard query for specific terms
-          let mainQuery = db
+          // Standard query for specific terms - build the complete query
+          let mainQuery;
+          const baseQuery = db
             .select(selectFields)
             .from(terms)
             .leftJoin(categories, eq(terms.categoryId, categories.id))
@@ -199,16 +200,19 @@ export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<an
           // Apply sorting
           switch (sort) {
             case 'relevance':
-              mainQuery = mainQuery.orderBy(desc(relevanceScore), desc(terms.viewCount));
+              mainQuery = baseQuery.orderBy(desc(relevanceScore), desc(terms.viewCount));
               break;
             case 'name':
-              mainQuery = mainQuery.orderBy(asc(terms.name));
+              mainQuery = baseQuery.orderBy(asc(terms.name));
               break;
             case 'popularity':
-              mainQuery = mainQuery.orderBy(desc(terms.viewCount), desc(relevanceScore));
+              mainQuery = baseQuery.orderBy(desc(terms.viewCount), desc(relevanceScore));
               break;
             case 'recent':
-              mainQuery = mainQuery.orderBy(desc(terms.updatedAt));
+              mainQuery = baseQuery.orderBy(desc(terms.updatedAt));
+              break;
+            default:
+              mainQuery = baseQuery.orderBy(desc(relevanceScore), desc(terms.viewCount));
               break;
           }
           

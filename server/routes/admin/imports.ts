@@ -166,7 +166,7 @@ export function registerAdminImportRoutes(app: Express): void {
         res.json(response);
       }
     } catch (error) {
-      logger.error("Error importing Excel file:", error);
+      logger.error("Error importing Excel file:", { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         message: "Failed to import Excel file",
@@ -269,7 +269,7 @@ export function registerAdminImportRoutes(app: Express): void {
         res.json(response);
       }
     } catch (error) {
-      logger.error("Error during force reprocessing:", error);
+      logger.error("Error during force reprocessing:", { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         message: "Failed to force reprocess file",
@@ -334,7 +334,7 @@ export function registerAdminImportRoutes(app: Express): void {
 
       res.json(response);
     } catch (error) {
-      logger.error("Error in advanced processing:", error);
+      logger.error("Error in advanced processing:", { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         message: "Failed to process file with advanced options",
@@ -367,7 +367,7 @@ export function registerAdminImportRoutes(app: Express): void {
         data: result
       });
     } catch (error) {
-      logger.error("Error clearing data:", error);
+      logger.error("Error clearing data:", { error: error instanceof Error ? error.message : String(error) });
       res.status(500).json({
         success: false,
         message: "Failed to clear data"

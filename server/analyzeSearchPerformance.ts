@@ -32,7 +32,7 @@ async function analyzeQueryPerformance() {
     `);
     
     const queryTime = Date.now() - startTime;
-    const count = result.rows[0].count;
+    const count = Number(result.rows[0].count);
     
     console.log(`\n"${term}" (${type}):`);
     console.log(`  Matches: ${count}`);
@@ -79,7 +79,7 @@ async function analyzeQueryPerformance() {
     `);
     
     const queryTime = Date.now() - startTime;
-    console.log(`  "${term}*": ${result.rows[0].count} matches in ${queryTime}ms`);
+    console.log(`  "${term}*": ${Number(result.rows[0].count)} matches in ${queryTime}ms`);
   }
   
   // Strategy 2: Limit early for high-match queries

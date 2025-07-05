@@ -16,6 +16,7 @@ interface AIBatchProcessingJobResult {
   totalTokensUsed: number;
   totalCost: number;
   duration: number;
+  [key: string]: unknown;
 }
 
 export async function aiBatchProcessingProcessor(
@@ -99,7 +100,7 @@ export async function aiBatchProcessingProcessor(
           result.subJobIds.push(jobId);
           return jobId;
         } catch (error) {
-          logger.error(`Failed to create AI job for term ${term.id}:`, error);
+          logger.error(`Failed to create AI job for term ${term.id}:`, { error: error instanceof Error ? error.message : String(error) });
           result.failedTerms++;
           return null;
         }
@@ -180,7 +181,7 @@ export async function aiBatchProcessingProcessor(
     return result;
 
   } catch (error) {
-    logger.error(`AI batch processing job ${job.id} failed:`, error);
+    logger.error(`AI batch processing job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
     throw error;
   }
 }

@@ -1,4 +1,5 @@
 /// <reference types="vitest/config" />
+/// <reference types="./tests/vitest" />
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
@@ -8,7 +9,10 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    setupFiles: ['./tests/setup-env.ts'],
+    setupFiles: [
+      './tests/setup-env.ts',
+      './client/src/components/sections/__tests__/setup.ts'
+    ],
     include: [
       'tests/component/TermCard.test.tsx',
       'client/src/types/__tests__/**/*.test.{ts,tsx}',

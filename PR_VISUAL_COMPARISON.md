@@ -1,8 +1,8 @@
-# Visual Comparison: Current vs PR Implementation
+# Visual Comparison: Current vs Hierarchical Navigation Implementation
 
 ## Current SectionNavigator (Flat List)
 
-```
+```text
 ┌─────────────────────────────────┐
 │ Learning Progress               │
 │ ════════════════════════ 4/42   │
@@ -20,15 +20,16 @@
 ```
 
 **Limitations**:
+
 - Only shows 42 section names
 - No subsections visible
 - 295 columns completely hidden
 - No search functionality
 - No way to see content hierarchy
 
-## PR HierarchicalNavigator (Tree Structure)
+## New HierarchicalNavigator (Tree Structure)
 
-```
+```text
 ┌─────────────────────────────────────────────┐
 │ Content Navigation                          │
 │ 🔍 Search sections...                       │
@@ -65,6 +66,7 @@
 ```
 
 **Features**:
+
 - ✓ Full 295 subsections visible
 - ✓ Expandable/collapsible tree
 - ✓ Search functionality

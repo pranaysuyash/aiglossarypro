@@ -443,39 +443,46 @@ export const mockSearchableContent: ContentNode[] = [
   }
 ];
 
-export const mockLargeDataset: ContentNode[] = Array.from({ length: 100 }, (_, i) => ({
-  name: `Section ${i + 1}`,
-  slug: `section-${i + 1}`,
-  content: `Content for section ${i + 1}`,
-  contentType: 'markdown' as const,
-  metadata: {
-    isInteractive: i % 5 === 0,
-    displayType: 'main' as const,
-    parseType: 'simple' as const,
-    priority: (i % 3 === 0 ? 'high' : i % 3 === 1 ? 'medium' : 'low') as const,
-    estimatedReadTime: Math.floor(Math.random() * 20) + 1,
-    prerequisites: [],
-    relatedTopics: []
-  },
-  isCompleted: i % 4 === 0,
-  progress: Math.floor(Math.random() * 100),
-  subsections: i % 10 === 0 ? [
-    {
-      name: `Subsection ${i + 1}.1`,
-      slug: `subsection-${i + 1}-1`,
-      content: `Subsection content for ${i + 1}.1`,
-      contentType: 'markdown',
-      metadata: {
-        isInteractive: false,
-        displayType: 'main',
-        parseType: 'simple',
-        priority: 'medium',
-        estimatedReadTime: 5,
-        prerequisites: [],
-        relatedTopics: []
-      },
-      isCompleted: false,
-      progress: 0
-    }
-  ] : undefined
-}));
+export const mockLargeDataset: ContentNode[] = Array.from({ length: 100 }, (_, i) => {
+  const contentType: ContentNode['contentType'] = 'markdown';
+  const displayType: NonNullable<ContentNode['metadata']>['displayType'] = 'main';
+  const parseType: NonNullable<ContentNode['metadata']>['parseType'] = 'simple';
+  const priority: NonNullable<ContentNode['metadata']>['priority'] = i % 3 === 0 ? 'high' : i % 3 === 1 ? 'medium' : 'low';
+  
+  return {
+    name: `Section ${i + 1}`,
+    slug: `section-${i + 1}`,
+    content: `Content for section ${i + 1}`,
+    contentType: contentType,
+    metadata: {
+      isInteractive: i % 5 === 0,
+      displayType: displayType,
+      parseType: parseType,
+      priority: priority,
+      estimatedReadTime: Math.floor(Math.random() * 20) + 1,
+      prerequisites: [],
+      relatedTopics: []
+    },
+    isCompleted: i % 4 === 0,
+    progress: Math.floor(Math.random() * 100),
+    subsections: i % 10 === 0 ? [
+      {
+        name: `Subsection ${i + 1}.1`,
+        slug: `subsection-${i + 1}-1`,
+        content: `Subsection content for ${i + 1}.1`,
+        contentType: 'markdown',
+        metadata: {
+          isInteractive: false,
+          displayType: 'main',
+          parseType: 'simple',
+          priority: 'medium',
+          estimatedReadTime: 5,
+          prerequisites: [],
+          relatedTopics: []
+        },
+        isCompleted: false,
+        progress: 0
+      }
+    ] : undefined
+  };
+});

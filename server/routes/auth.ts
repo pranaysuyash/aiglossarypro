@@ -49,7 +49,11 @@ export function registerAuthRoutes(app: Express): void {
           ? `${dbUser.firstName} ${dbUser.lastName}`
           : userInfo.name || 'Unknown User',
         avatar: dbUser.profileImageUrl || undefined,
-        createdAt: dbUser.createdAt || new Date()
+        createdAt: dbUser.createdAt || new Date(),
+        isAdmin: dbUser.isAdmin || false,
+        lifetimeAccess: dbUser.lifetimeAccess || false,
+        subscriptionTier: dbUser.subscriptionTier || 'free',
+        purchaseDate: dbUser.purchaseDate || undefined
       } : undefined;
       
       const response: ApiResponse<IUser> = {

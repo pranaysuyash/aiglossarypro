@@ -306,6 +306,132 @@ export const earlyBirdStatus = pgTable("early_bird_status", {
 export type EarlyBirdStatus = typeof earlyBirdStatus.$inferSelect;
 export type InsertEarlyBirdStatus = typeof earlyBirdStatus.$inferInsert;
 
+// Learning Paths system tables
+export const learningPaths = pgTable("learning_paths", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: varchar("name", { length: 200 }).notNull(),
+  description: text("description"),
+  difficulty_level: varchar("difficulty_level", { length: 20 }).default("beginner"), // beginner, intermediate, advanced
+  estimated_duration: integer("estimated_duration"), // in minutes
+  category_id: uuid("category_id").references(() => categories.id),
+  prerequisites: text("prerequisites").array(), // array of prerequisite concept names
+  learning_objectives: text("learning_objectives").array(),
+  created_by: varchar("created_by").references(() => users.id),
+  is_official: boolean("is_official").default(false),
+  is_published: boolean("is_published").default(false),
+  view_count: integer("view_count").default(0),
+  completion_count: integer("completion_count").default(0),
+  rating: integer("rating"), // Stored as percentage * 100 (e.g., 4.5 = 450)
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  nameIdx: index("learning_paths_name_idx").on(table.name),
+  categoryIdx: index("learning_paths_category_idx").on(table.category_id),
+  difficultyIdx: index("learning_paths_difficulty_idx").on(table.difficulty_level),
+  publishedIdx: index("learning_paths_published_idx").on(table.is_published),
+}));
+
+export const learningPathSteps = pgTable("learning_path_steps", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  learning_path_id: uuid("learning_path_id").notNull().references(() => learningPaths.id, { onDelete: "cascade" }),
+  term_id: uuid("term_id").notNull().references(() => terms.id, { onDelete: "cascade" }),
+  step_order: integer("step_order").notNull(),
+  is_optional: boolean("is_optional").default(false),
+  estimated_time: integer("estimated_time"), // in minutes
+  step_type: varchar("step_type", { length: 20 }).default("concept"), // concept, practice, assessment
+  content: jsonb("content"), // additional step-specific content
+  created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  pathIdx: index("learning_path_steps_path_idx").on(table.learning_path_id),
+  orderIdx: index("learning_path_steps_order_idx").on(table.learning_path_id, table.step_order),
+}));
+
+export const userLearningProgress = pgTable("user_learning_progress", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  learning_path_id: uuid("learning_path_id").notNull().references(() => learningPaths.id, { onDelete: "cascade" }),
+  current_step_id: uuid("current_step_id").references(() => learningPathSteps.id),
+  started_at: timestamp("started_at").defaultNow(),
+  completed_at: timestamp("completed_at"),
+  completion_percentage: integer("completion_percentage").default(0), // 0-100
+  last_accessed_at: timestamp("last_accessed_at").defaultNow(),
+  time_spent: integer("time_spent").default(0), // in minutes
+}, (table) => ({
+  userPathIdx: index("user_learning_progress_user_path_idx").on(table.user_id, table.learning_path_id),
+  userIdx: index("user_learning_progress_user_idx").on(table.user_id),
+  uniqueUserPath: index("user_learning_progress_unique").on(table.user_id, table.learning_path_id),
+}));
+
+export const stepCompletions = pgTable("step_completions", {
+  user_id: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  step_id: uuid("step_id").notNull().references(() => learningPathSteps.id, { onDelete: "cascade" }),
+  completed_at: timestamp("completed_at").defaultNow(),
+  time_spent: integer("time_spent"), // in minutes
+  notes: text("notes"), // user notes for this step
+}, (table) => ({
+  pk: primaryKey(table.user_id, table.step_id),
+  userIdx: index("step_completions_user_idx").on(table.user_id),
+  stepIdx: index("step_completions_step_idx").on(table.step_id),
+}));
+
+// Code Examples system tables
+export const codeExamples = pgTable("code_examples", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  term_id: uuid("term_id").references(() => terms.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  language: varchar("language", { length: 50 }).notNull(), // python, r, sql, javascript, etc.
+  code: text("code").notNull(),
+  expected_output: text("expected_output"),
+  libraries: jsonb("libraries"), // required libraries/dependencies
+  difficulty_level: varchar("difficulty_level", { length: 20 }).default("beginner"),
+  example_type: varchar("example_type", { length: 30 }).default("implementation"), // implementation, visualization, exercise
+  is_runnable: boolean("is_runnable").default(false),
+  external_url: text("external_url"), // Colab, Jupyter nbviewer, etc.
+  created_by: varchar("created_by").references(() => users.id),
+  is_verified: boolean("is_verified").default(false),
+  upvotes: integer("upvotes").default(0),
+  downvotes: integer("downvotes").default(0),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  termIdx: index("code_examples_term_idx").on(table.term_id),
+  languageIdx: index("code_examples_language_idx").on(table.language),
+  difficultyIdx: index("code_examples_difficulty_idx").on(table.difficulty_level),
+  verifiedIdx: index("code_examples_verified_idx").on(table.is_verified),
+}));
+
+export const codeExampleRuns = pgTable("code_example_runs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  example_id: uuid("example_id").notNull().references(() => codeExamples.id, { onDelete: "cascade" }),
+  user_id: varchar("user_id").references(() => users.id),
+  execution_time: integer("execution_time"), // in milliseconds
+  success: boolean("success"),
+  output: text("output"),
+  error_message: text("error_message"),
+  timestamp: timestamp("timestamp").defaultNow(),
+}, (table) => ({
+  exampleIdx: index("code_example_runs_example_idx").on(table.example_id),
+  userIdx: index("code_example_runs_user_idx").on(table.user_id),
+  timestampIdx: index("code_example_runs_timestamp_idx").on(table.timestamp),
+}));
+
+// Type exports for Learning Paths
+export type LearningPath = typeof learningPaths.$inferSelect;
+export type InsertLearningPath = typeof learningPaths.$inferInsert;
+export type LearningPathStep = typeof learningPathSteps.$inferSelect;
+export type InsertLearningPathStep = typeof learningPathSteps.$inferInsert;
+export type UserLearningProgress = typeof userLearningProgress.$inferSelect;
+export type InsertUserLearningProgress = typeof userLearningProgress.$inferInsert;
+export type StepCompletion = typeof stepCompletions.$inferSelect;
+export type InsertStepCompletion = typeof stepCompletions.$inferInsert;
+
+// Type exports for Code Examples
+export type CodeExample = typeof codeExamples.$inferSelect;
+export type InsertCodeExample = typeof codeExamples.$inferInsert;
+export type CodeExampleRun = typeof codeExampleRuns.$inferSelect;
+export type InsertCodeExampleRun = typeof codeExampleRuns.$inferInsert;
+
 // Cache metrics table for performance monitoring
 export const cacheMetrics = pgTable("cache_metrics", {
   id: uuid("id").primaryKey().defaultRandom(),

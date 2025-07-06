@@ -21,6 +21,8 @@ import { registerContentRoutes } from "./content";
 import { registerGumroadRoutes } from "./gumroad";
 import { registerEarlyBirdRoutes } from "./earlyBird";
 import { registerJobRoutes } from "./jobs";
+import { registerLearningPathsRoutes } from "./learningPaths";
+import { registerCodeExamplesRoutes } from "./codeExamples";
 import { log as logger } from "../utils/logger";
 
 // Import newsletter routes
@@ -135,6 +137,14 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Register job management routes
   registerJobRoutes(app);
   logger.info("✅ Job management routes registered");
+  
+  // Register Learning Paths routes
+  registerLearningPathsRoutes(app);
+  logger.info("✅ Learning Paths routes registered");
+  
+  // Register Code Examples routes
+  registerCodeExamplesRoutes(app);
+  logger.info("✅ Code Examples routes registered");
   
   // Health check endpoint
   app.get('/api/health', (_, res) => {

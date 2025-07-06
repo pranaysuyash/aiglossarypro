@@ -39,6 +39,9 @@ export const LazyLifetime = lazy(() => import('@/pages/Lifetime'));
 export const LazyProfile = lazy(() => import('@/pages/Profile'));
 export const LazyLanding = lazy(() => import('@/pages/LandingPage'));
 export const LazyAbout = lazy(() => import('@/pages/About'));
+export const LazyLearningPaths = lazy(() => import('@/pages/LearningPaths'));
+export const LazyLearningPathDetail = lazy(() => import('@/pages/LearningPathDetail'));
+export const LazyCodeExamples = lazy(() => import('@/pages/CodeExamples'));
 
 // Legal pages
 export const LazyPrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
@@ -75,6 +78,10 @@ export const LazyLifetimePage = withLazyLoading(LazyLifetime);
 export const LazyProfilePage = withLazyLoading(LazyProfile);
 export const LazyLandingPage = withLazyLoading(LazyLanding);
 export const LazyAboutPage = withLazyLoading(LazyAbout);
+
+export const LazyLearningPathsPage = withLazyLoading(LazyLearningPaths);
+export const LazyLearningPathDetailPage = withLazyLoading(LazyLearningPathDetail);
+export const LazyCodeExamplesPage = withLazyLoading(LazyCodeExamples);
 
 // Legal pages
 export const LazyPrivacyPolicyPage = withLazyLoading(LazyPrivacyPolicy);

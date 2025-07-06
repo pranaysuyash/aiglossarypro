@@ -30,6 +30,12 @@ import {
   userSettings,
   newsletterSubscriptions,
   contactSubmissions,
+  learningPaths,
+  learningPathSteps,
+  userLearningProgress,
+  stepCompletions,
+  codeExamples,
+  codeExampleRuns,
 } from './schema';
 
 // Enhanced schema for complex term structure with 42 sections
@@ -433,6 +439,28 @@ export type InsertSection = z.infer<typeof insertSectionSchema>;
 
 export type SectionItem = typeof sectionItems.$inferSelect;
 export type InsertSectionItem = z.infer<typeof insertSectionItemSchema>;
+
+// Re-export Learning Paths and Code Examples tables
+export {
+  learningPaths,
+  learningPathSteps,
+  userLearningProgress,
+  stepCompletions,
+  codeExamples,
+  codeExampleRuns,
+  type LearningPath,
+  type InsertLearningPath,
+  type LearningPathStep,
+  type InsertLearningPathStep,
+  type UserLearningProgress,
+  type InsertUserLearningProgress,
+  type StepCompletion,
+  type InsertStepCompletion,
+  type CodeExample,
+  type InsertCodeExample,
+  type CodeExampleRun,
+  type InsertCodeExampleRun
+};
 
 // Re-export A/B testing tables
 export {

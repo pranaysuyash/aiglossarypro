@@ -124,7 +124,10 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         name: `${user.firstName} ${user.lastName}`.trim() || 'Unknown User',
         avatar: user.profileImageUrl || undefined,
         createdAt: user.createdAt || new Date(),
-        isAdmin: user.isAdmin || false
+        isAdmin: user.isAdmin || false,
+        lifetimeAccess: user.lifetimeAccess || false,
+        subscriptionTier: user.subscriptionTier || 'free',
+        purchaseDate: user.purchaseDate || undefined
       };
 
       const response: ApiResponse<{ user: IUser; token: string }> = {
@@ -301,7 +304,10 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         name: `${user.firstName} ${user.lastName}`.trim() || 'Unknown User',
         avatar: user.profileImageUrl || undefined,
         createdAt: user.createdAt || new Date(),
-        isAdmin: user.isAdmin || false
+        isAdmin: user.isAdmin || false,
+        lifetimeAccess: user.lifetimeAccess || false,
+        subscriptionTier: user.subscriptionTier || 'free',
+        purchaseDate: user.purchaseDate || undefined
       };
 
       res.json({

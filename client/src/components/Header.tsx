@@ -238,6 +238,8 @@ export default function Header({
                     <DropdownMenuItem onClick={() => navigate("/profile")}>Profile</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/dashboard")}>Dashboard</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/categories")}>Categories</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/learning-paths")}>Learning Paths</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/code-examples")}>Code Examples</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/trending")}>Trending</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/favorites")}>My Favorites</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/ai-tools")}>AI Tools</DropdownMenuItem>
@@ -351,6 +353,12 @@ export default function Header({
                     </Link>
                     <Link href="/categories" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                       <Grid3X3 className="mr-3 h-5 w-5" /> Categories
+                    </Link>
+                    <Link href="/learning-paths" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                      <Bookmark className="mr-3 h-5 w-5" /> Learning Paths
+                    </Link>
+                    <Link href="/code-examples" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                      <Settings className="mr-3 h-5 w-5" /> Code Examples
                     </Link>
                     <Link href="/trending" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                       <BarChart3 className="mr-3 h-5 w-5" /> Trending

@@ -27,7 +27,10 @@ import {
   LazyLandingPage,
   LazyAboutPage,
   LazyPrivacyPolicyPage,
-  LazyTermsOfServicePage
+  LazyTermsOfServicePage,
+  LazyLearningPathsPage,
+  LazyLearningPathDetailPage,
+  LazyCodeExamplesPage
 } from "@/components/lazy/LazyPages";
 
 import Header from "@/components/Header";
@@ -187,6 +190,9 @@ function Router() {
           <Route path="/ai-tools">
             <LazyAIToolsPage />
           </Route>
+          <Route path="/learning-paths" component={LazyLearningPathsPage} />
+          <Route path="/learning-paths/:id" component={LazyLearningPathDetailPage} />
+          <Route path="/code-examples" component={LazyCodeExamplesPage} />
           <Route path="/progress">
             <ProtectedRoute>
               <LazyProgressPage />

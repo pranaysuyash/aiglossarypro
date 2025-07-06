@@ -457,3 +457,51 @@ npm run dev 2>&1 | grep -E "(database|error|connection)"
 - Always create a separate review doc if you feel a second set of eyes would be helpful, especially while working with multiple agents in parallel
 - Follow the branching strategy outlined above to prevent conflicts between agents
 - **Always update CLAUDE.md with session progress and accomplishments**
+
+## Documentation Management Best Practices
+
+### Critical Documentation Preservation Rules
+
+- **NEVER delete existing documentation** - historical content has significant value for learning, debugging, and understanding system evolution
+- **Always preserve original content** when updating documentation files by:
+  - Creating backup files with descriptive names (e.g., `ENHANCED_API_IMPLEMENTATION_SUMMARY.md` for historical Enhanced API docs)
+  - Moving old content to separate historical files rather than overwriting
+  - Using clear naming conventions to distinguish between different implementation phases
+  - Creating comprehensive overview/index files that link all documentation
+
+### Historical Documentation Value
+
+Historical implementation documentation provides:
+- **Implementation patterns** for future development reference
+- **Technical decisions and trade-offs** that inform future architectural choices
+- **Learning material** for understanding how the system evolved over time
+- **Debugging reference** for understanding why certain approaches were taken
+- **Best practices examples** from previous successful implementations
+
+### Documentation Organization Strategy
+
+When restructuring or updating documentation:
+1. **Create an overview file** (like `IMPLEMENTATION_OVERVIEW.md`) that serves as a master index
+2. **Maintain clear separation** between different project phases and implementations
+3. **Document the reasoning** behind changes and explain where content was preserved
+4. **Use descriptive file names** that clearly indicate the purpose and timeframe of each document
+5. **Preserve development history** - even "outdated" content has educational and reference value
+
+### Implementation Lessons Learned
+
+Key lessons from recent project experience:
+- **Always validate implementations** in actual codebase before making claims about feature completeness
+- **Use direct testing scripts** rather than relying solely on documentation analysis
+- **Test functionality end-to-end** to ensure proper integration with existing systems
+- **Document not just what was built**, but why certain approaches were chosen
+- **Preserve all working code and documentation** - content that seems outdated today may be valuable tomorrow
+- **Create comprehensive test suites** that validate actual functionality rather than just checking for file existence
+- **Maintain detailed implementation logs** that can serve as reference for future development
+
+### Content Migration Guidelines
+
+When migrating or reorganizing content:
+- **Always create backups** before making changes to existing documentation
+- **Test that nothing is lost** by verifying all original content is accessible in the new structure
+- **Update cross-references** to ensure links between documents remain functional
+- **Maintain chronological context** so the development timeline remains clear

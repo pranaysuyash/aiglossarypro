@@ -8,13 +8,17 @@ import { db } from '../db';
 import { 
   codeExamples,
   codeExampleRuns,
+  codeExampleVotes,
   type CodeExample,
   type InsertCodeExample,
   type CodeExampleRun,
-  type InsertCodeExampleRun
+  type InsertCodeExampleRun,
+  type CodeExampleVote,
+  type InsertCodeExampleVote
 } from '../../shared/schema';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { eq, and, desc, sql, asc } from 'drizzle-orm';
+import { CODE_EXAMPLES_LIMITS } from '../constants/pagination';
 
 export function registerCodeExamplesRoutes(app: Express): void {
 
@@ -25,9 +29,38 @@ export function registerCodeExamplesRoutes(app: Express): void {
   app.get('/api/terms/:termId/code-examples', async (req: Request, res: Response) => {
     try {
       const { termId } = req.params;
-      const { language, difficulty, limit = 10 } = req.query;
+      const { 
+        language, 
+        difficulty, 
+        limit = CODE_EXAMPLES_LIMITS.BY_TERM_DEFAULT_LIMIT, 
+        offset = 0 
+      } = req.query;
 
-      let query = db.select({
+      const parsedLimit = Math.min(Number(limit), CODE_EXAMPLES_LIMITS.MAX_LIMIT);
+      const parsedOffset = Math.max(Number(offset), 0);
+
+      let baseWhere = eq(codeExamples.term_id, termId);
+      let conditions = [baseWhere];
+
+      if (language) {
+        conditions.push(eq(codeExamples.language, language as string));
+      }
+
+      if (difficulty) {
+        conditions.push(eq(codeExamples.difficulty_level, difficulty as string));
+      }
+
+      const whereClause = conditions.length > 1 ? and(...conditions) : baseWhere;
+
+      // Get total count for pagination
+      const totalCountResult = await db.select({ count: sql<number>`count(*)` })
+        .from(codeExamples)
+        .where(whereClause);
+      
+      const totalCount = totalCountResult[0]?.count || 0;
+
+      // Get examples with pagination
+      const examples = await db.select({
         id: codeExamples.id,
         title: codeExamples.title,
         description: codeExamples.description,
@@ -45,23 +78,24 @@ export function registerCodeExamplesRoutes(app: Express): void {
         created_at: codeExamples.created_at,
         updated_at: codeExamples.updated_at
       }).from(codeExamples)
-      .where(eq(codeExamples.term_id, termId));
+      .where(whereClause)
+      .orderBy(desc(codeExamples.is_verified), desc(codeExamples.upvotes))
+      .limit(parsedLimit)
+      .offset(parsedOffset);
 
-      if (language) {
-        query = query.where(eq(codeExamples.language, language as string));
-      }
-
-      if (difficulty) {
-        query = query.where(eq(codeExamples.difficulty_level, difficulty as string));
-      }
-
-      const examples = await query
-        .orderBy(desc(codeExamples.is_verified), desc(codeExamples.upvotes))
-        .limit(Number(limit));
+      const hasMore = parsedOffset + parsedLimit < totalCount;
+      const nextOffset = hasMore ? parsedOffset + parsedLimit : null;
 
       res.json({
         success: true,
-        data: examples
+        data: examples,
+        pagination: {
+          total: totalCount,
+          limit: parsedLimit,
+          offset: parsedOffset,
+          hasMore,
+          nextOffset
+        }
       });
     } catch (error) {
       console.error('Get code examples error:', error);
@@ -78,7 +112,10 @@ export function registerCodeExamplesRoutes(app: Express): void {
    */
   app.get('/api/code-examples', async (req: Request, res: Response) => {
     try {
-      const { language, difficulty, type, limit = 20, offset = 0 } = req.query;
+      const { language, difficulty, type, limit = CODE_EXAMPLES_LIMITS.DEFAULT_LIMIT, offset = 0 } = req.query;
+
+      const parsedLimit = Math.min(Number(limit), CODE_EXAMPLES_LIMITS.MAX_LIMIT);
+      const parsedOffset = Math.max(Number(offset), 0);
 
       let query = db.select({
         id: codeExamples.id,
@@ -113,18 +150,46 @@ export function registerCodeExamplesRoutes(app: Express): void {
         query = query.where(eq(codeExamples.example_type, type as string));
       }
 
+      // Get total count for pagination
+      let countQuery = db.select({ count: sql<number>`count(*)` }).from(codeExamples);
+      let conditions = [];
+
+      if (language) {
+        conditions.push(eq(codeExamples.language, language as string));
+      }
+      
+      if (difficulty) {
+        conditions.push(eq(codeExamples.difficulty_level, difficulty as string));
+      }
+      
+      if (type) {
+        conditions.push(eq(codeExamples.example_type, type as string));
+      }
+
+      if (conditions.length > 0) {
+        countQuery = countQuery.where(and(...conditions));
+      }
+
+      const totalCountResult = await countQuery;
+      const totalCount = totalCountResult[0]?.count || 0;
+
       const examples = await query
         .orderBy(desc(codeExamples.is_verified), desc(codeExamples.upvotes))
-        .limit(Number(limit))
-        .offset(Number(offset));
+        .limit(parsedLimit)
+        .offset(parsedOffset);
+
+      const hasMore = parsedOffset + parsedLimit < totalCount;
+      const nextOffset = hasMore ? parsedOffset + parsedLimit : null;
 
       res.json({
         success: true,
         data: examples,
         pagination: {
-          limit: Number(limit),
-          offset: Number(offset),
-          total: examples.length
+          total: totalCount,
+          limit: parsedLimit,
+          offset: parsedOffset,
+          hasMore,
+          nextOffset
         }
       });
     } catch (error) {
@@ -345,11 +410,54 @@ export function registerCodeExamplesRoutes(app: Express): void {
         });
       }
 
-      // Update vote count
-      const updateField = vote === 'up' ? 'upvotes' : 'downvotes';
+      // Check if user has already voted on this example
+      const existingVote = await db.select()
+        .from(codeExampleVotes)
+        .where(and(
+          eq(codeExampleVotes.user_id, user.id),
+          eq(codeExampleVotes.code_example_id, id)
+        ))
+        .limit(1);
+
+      let voteChange = { upvotes: 0, downvotes: 0 };
+      
+      if (existingVote.length > 0) {
+        const currentVote = existingVote[0];
+        
+        if (currentVote.vote_type === vote) {
+          // User is clicking the same vote again - remove the vote
+          await db.delete(codeExampleVotes)
+            .where(eq(codeExampleVotes.id, currentVote.id));
+          
+          voteChange = vote === 'up' ? { upvotes: -1, downvotes: 0 } : { upvotes: 0, downvotes: -1 };
+        } else {
+          // User is changing their vote
+          await db.update(codeExampleVotes)
+            .set({ 
+              vote_type: vote,
+              updated_at: new Date()
+            })
+            .where(eq(codeExampleVotes.id, currentVote.id));
+          
+          voteChange = vote === 'up' ? { upvotes: 1, downvotes: -1 } : { upvotes: -1, downvotes: 1 };
+        }
+      } else {
+        // New vote
+        await db.insert(codeExampleVotes)
+          .values({
+            user_id: user.id,
+            code_example_id: id,
+            vote_type: vote
+          });
+        
+        voteChange = vote === 'up' ? { upvotes: 1, downvotes: 0 } : { upvotes: 0, downvotes: 1 };
+      }
+
+      // Update vote counts in the code example
       const [updatedExample] = await db.update(codeExamples)
         .set({
-          [updateField]: sql`${codeExamples[updateField]} + 1`,
+          upvotes: sql`${codeExamples.upvotes} + ${voteChange.upvotes}`,
+          downvotes: sql`${codeExamples.downvotes} + ${voteChange.downvotes}`,
           updated_at: new Date()
         })
         .where(eq(codeExamples.id, id))
@@ -359,9 +467,12 @@ export function registerCodeExamplesRoutes(app: Express): void {
         success: true,
         data: {
           upvotes: updatedExample.upvotes,
-          downvotes: updatedExample.downvotes
+          downvotes: updatedExample.downvotes,
+          userVote: voteChange.upvotes === 0 && voteChange.downvotes === 0 ? null : vote
         },
-        message: `Vote ${vote} recorded successfully`
+        message: voteChange.upvotes === 0 && voteChange.downvotes === 0 ? 
+          'Vote removed successfully' : 
+          `Vote ${vote} recorded successfully`
       });
     } catch (error) {
       console.error('Vote code example error:', error);
@@ -445,7 +556,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
     try {
       const user = (req as any).user;
       const { id } = req.params;
-      const { limit = 10 } = req.query;
+      const { limit = CODE_EXAMPLES_LIMITS.BY_TERM_DEFAULT_LIMIT } = req.query;
 
       if (!user) {
         return res.status(401).json({

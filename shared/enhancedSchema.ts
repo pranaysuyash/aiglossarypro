@@ -459,7 +459,10 @@ export {
   type CodeExample,
   type InsertCodeExample,
   type CodeExampleRun,
-  type InsertCodeExampleRun
+  type InsertCodeExampleRun,
+  codeExampleVotes,
+  type CodeExampleVote,
+  type InsertCodeExampleVote
 };
 
 // Re-export A/B testing tables

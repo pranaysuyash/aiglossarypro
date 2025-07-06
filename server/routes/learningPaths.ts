@@ -20,7 +20,8 @@ import {
   type InsertStepCompletion
 } from '../../shared/schema';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
-import { eq, and, desc, sql, asc } from 'drizzle-orm';
+import { eq, and, desc, sql, asc, isNull } from 'drizzle-orm';
+import { LEARNING_PATHS_LIMITS } from '../constants/pagination';
 
 export function registerLearningPathsRoutes(app: Express): void {
 
@@ -30,7 +31,28 @@ export function registerLearningPathsRoutes(app: Express): void {
    */
   app.get('/api/learning-paths', async (req: Request, res: Response) => {
     try {
-      const { category, difficulty, limit = 20, offset = 0 } = req.query;
+      const { category, difficulty, limit = LEARNING_PATHS_LIMITS.DEFAULT_LIMIT, offset = 0 } = req.query;
+      
+      const parsedLimit = Math.min(Number(limit), LEARNING_PATHS_LIMITS.MAX_LIMIT);
+      const parsedOffset = Math.max(Number(offset), 0);
+      
+      // Build conditions for both count and data queries
+      let conditions = [eq(learningPaths.is_published, true)];
+      
+      if (category) {
+        conditions.push(eq(learningPaths.category_id, category as string));
+      }
+      
+      if (difficulty) {
+        conditions.push(eq(learningPaths.difficulty_level, difficulty as string));
+      }
+
+      const whereClause = and(...conditions);
+
+      // Get total count for pagination
+      const countQuery = db.select({ count: sql<number>`count(*)` })
+        .from(learningPaths)
+        .where(whereClause);
       
       let query = db.select({
         id: learningPaths.id,
@@ -48,28 +70,28 @@ export function registerLearningPathsRoutes(app: Express): void {
         created_at: learningPaths.created_at,
         updated_at: learningPaths.updated_at,
       }).from(learningPaths)
-      .where(eq(learningPaths.is_published, true));
-
-      if (category) {
-        query = query.where(eq(learningPaths.category_id, category as string));
-      }
+      .where(whereClause);
       
-      if (difficulty) {
-        query = query.where(eq(learningPaths.difficulty_level, difficulty as string));
-      }
+      const totalCountResult = await countQuery;
+      const totalCount = totalCountResult[0]?.count || 0;
 
       const paths = await query
         .orderBy(desc(learningPaths.is_official), desc(learningPaths.view_count))
-        .limit(Number(limit))
-        .offset(Number(offset));
+        .limit(parsedLimit)
+        .offset(parsedOffset);
+
+      const hasMore = parsedOffset + parsedLimit < totalCount;
+      const nextOffset = hasMore ? parsedOffset + parsedLimit : null;
 
       res.json({
         success: true,
         data: paths,
         pagination: {
-          limit: Number(limit),
-          offset: Number(offset),
-          total: paths.length
+          total: totalCount,
+          limit: parsedLimit,
+          offset: parsedOffset,
+          hasMore,
+          nextOffset
         }
       });
     } catch (error) {
@@ -469,7 +491,7 @@ export function registerLearningPathsRoutes(app: Express): void {
         .from(learningPaths)
         .where(eq(learningPaths.is_published, true))
         .orderBy(desc(learningPaths.completion_count), desc(learningPaths.view_count))
-        .limit(10);
+        .limit(LEARNING_PATHS_LIMITS.RECOMMENDED_LIMIT);
 
       res.json({
         success: true,
@@ -481,6 +503,466 @@ export function registerLearningPathsRoutes(app: Express): void {
       res.status(500).json({
         success: false,
         message: 'Failed to fetch recommended paths'
+      });
+    }
+  });
+
+  /**
+   * Update a learning path
+   * PUT /api/learning-paths/:id
+   */
+  app.put('/api/learning-paths/:id', multiAuthMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = (req as any).user;
+      const { id } = req.params;
+      const {
+        name,
+        description,
+        difficulty_level,
+        estimated_duration,
+        category_id,
+        prerequisites,
+        learning_objectives,
+        is_published
+      } = req.body;
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+
+      // Check if learning path exists and user has permission to update it
+      const existingPath = await db.select()
+        .from(learningPaths)
+        .where(eq(learningPaths.id, id))
+        .limit(1);
+
+      if (existingPath.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Learning path not found'
+        });
+      }
+
+      // Only the creator or admin can update
+      if (existingPath[0].created_by !== user.id && !user.isAdmin) {
+        return res.status(403).json({
+          success: false,
+          message: 'Permission denied. Only the creator or admin can update this learning path.'
+        });
+      }
+
+      // Prepare update data (only include fields that are provided)
+      const updateData: Partial<InsertLearningPath> = {
+        updated_at: new Date()
+      };
+
+      if (name !== undefined) updateData.name = name;
+      if (description !== undefined) updateData.description = description;
+      if (difficulty_level !== undefined) updateData.difficulty_level = difficulty_level;
+      if (estimated_duration !== undefined) updateData.estimated_duration = estimated_duration;
+      if (category_id !== undefined) updateData.category_id = category_id;
+      if (prerequisites !== undefined) updateData.prerequisites = prerequisites;
+      if (learning_objectives !== undefined) updateData.learning_objectives = learning_objectives;
+      if (is_published !== undefined) updateData.is_published = is_published;
+
+      const [updatedPath] = await db.update(learningPaths)
+        .set(updateData)
+        .where(eq(learningPaths.id, id))
+        .returning();
+
+      res.json({
+        success: true,
+        data: updatedPath,
+        message: 'Learning path updated successfully'
+      });
+    } catch (error) {
+      console.error('Update learning path error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update learning path'
+      });
+    }
+  });
+
+  /**
+   * Delete a learning path
+   * DELETE /api/learning-paths/:id
+   */
+  app.delete('/api/learning-paths/:id', multiAuthMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = (req as any).user;
+      const { id } = req.params;
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+
+      // Check if learning path exists and user has permission to delete it
+      const existingPath = await db.select()
+        .from(learningPaths)
+        .where(eq(learningPaths.id, id))
+        .limit(1);
+
+      if (existingPath.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Learning path not found'
+        });
+      }
+
+      // Only the creator or admin can delete
+      if (existingPath[0].created_by !== user.id && !user.isAdmin) {
+        return res.status(403).json({
+          success: false,
+          message: 'Permission denied. Only the creator or admin can delete this learning path.'
+        });
+      }
+
+      // Check if there are users currently enrolled in this path
+      const activeUsers = await db.select()
+        .from(userLearningProgress)
+        .where(and(
+          eq(userLearningProgress.learning_path_id, id),
+          isNull(userLearningProgress.completed_at)
+        ))
+        .limit(1);
+
+      if (activeUsers.length > 0) {
+        return res.status(409).json({
+          success: false,
+          message: 'Cannot delete learning path. Users are currently enrolled in this path.'
+        });
+      }
+
+      // Delete the learning path (cascade will handle related records)
+      await db.delete(learningPaths)
+        .where(eq(learningPaths.id, id));
+
+      res.json({
+        success: true,
+        message: 'Learning path deleted successfully'
+      });
+    } catch (error) {
+      console.error('Delete learning path error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to delete learning path'
+      });
+    }
+  });
+
+  /**
+   * Add a step to a learning path
+   * POST /api/learning-paths/:pathId/steps
+   */
+  app.post('/api/learning-paths/:pathId/steps', multiAuthMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = (req as any).user;
+      const { pathId } = req.params;
+      const {
+        term_id,
+        step_order,
+        is_optional,
+        estimated_time,
+        step_type,
+        content
+      } = req.body;
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+
+      // Check if learning path exists and user has permission to modify it
+      const existingPath = await db.select()
+        .from(learningPaths)
+        .where(eq(learningPaths.id, pathId))
+        .limit(1);
+
+      if (existingPath.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Learning path not found'
+        });
+      }
+
+      // Only the creator or admin can add steps
+      if (existingPath[0].created_by !== user.id && !user.isAdmin) {
+        return res.status(403).json({
+          success: false,
+          message: 'Permission denied. Only the creator or admin can add steps to this learning path.'
+        });
+      }
+
+      // If step_order is not provided, get the next order number
+      let finalStepOrder = step_order;
+      if (!finalStepOrder) {
+        const maxOrderResult = await db.select({ maxOrder: sql<number>`MAX(${learningPathSteps.step_order})` })
+          .from(learningPathSteps)
+          .where(eq(learningPathSteps.learning_path_id, pathId));
+        
+        finalStepOrder = (maxOrderResult[0]?.maxOrder || 0) + 1;
+      }
+
+      const stepData: InsertLearningPathStep = {
+        learning_path_id: pathId,
+        term_id,
+        step_order: finalStepOrder,
+        is_optional: is_optional || false,
+        estimated_time,
+        step_type: step_type || 'concept',
+        content: content || {}
+      };
+
+      const [createdStep] = await db.insert(learningPathSteps)
+        .values(stepData)
+        .returning();
+
+      res.status(201).json({
+        success: true,
+        data: createdStep,
+        message: 'Step added successfully'
+      });
+    } catch (error) {
+      console.error('Add step error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to add step'
+      });
+    }
+  });
+
+  /**
+   * Update a learning path step
+   * PUT /api/learning-paths/:pathId/steps/:stepId
+   */
+  app.put('/api/learning-paths/:pathId/steps/:stepId', multiAuthMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = (req as any).user;
+      const { pathId, stepId } = req.params;
+      const {
+        term_id,
+        step_order,
+        is_optional,
+        estimated_time,
+        step_type,
+        content
+      } = req.body;
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+
+      // Check if learning path exists and user has permission to modify it
+      const existingPath = await db.select()
+        .from(learningPaths)
+        .where(eq(learningPaths.id, pathId))
+        .limit(1);
+
+      if (existingPath.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Learning path not found'
+        });
+      }
+
+      // Only the creator or admin can update steps
+      if (existingPath[0].created_by !== user.id && !user.isAdmin) {
+        return res.status(403).json({
+          success: false,
+          message: 'Permission denied. Only the creator or admin can update steps in this learning path.'
+        });
+      }
+
+      // Check if step exists
+      const existingStep = await db.select()
+        .from(learningPathSteps)
+        .where(and(
+          eq(learningPathSteps.id, stepId),
+          eq(learningPathSteps.learning_path_id, pathId)
+        ))
+        .limit(1);
+
+      if (existingStep.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Step not found'
+        });
+      }
+
+      // Prepare update data
+      const updateData: Partial<InsertLearningPathStep> = {};
+      if (term_id !== undefined) updateData.term_id = term_id;
+      if (step_order !== undefined) updateData.step_order = step_order;
+      if (is_optional !== undefined) updateData.is_optional = is_optional;
+      if (estimated_time !== undefined) updateData.estimated_time = estimated_time;
+      if (step_type !== undefined) updateData.step_type = step_type;
+      if (content !== undefined) updateData.content = content;
+
+      const [updatedStep] = await db.update(learningPathSteps)
+        .set(updateData)
+        .where(eq(learningPathSteps.id, stepId))
+        .returning();
+
+      res.json({
+        success: true,
+        data: updatedStep,
+        message: 'Step updated successfully'
+      });
+    } catch (error) {
+      console.error('Update step error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to update step'
+      });
+    }
+  });
+
+  /**
+   * Delete a learning path step
+   * DELETE /api/learning-paths/:pathId/steps/:stepId
+   */
+  app.delete('/api/learning-paths/:pathId/steps/:stepId', multiAuthMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = (req as any).user;
+      const { pathId, stepId } = req.params;
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+
+      // Check if learning path exists and user has permission to modify it
+      const existingPath = await db.select()
+        .from(learningPaths)
+        .where(eq(learningPaths.id, pathId))
+        .limit(1);
+
+      if (existingPath.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Learning path not found'
+        });
+      }
+
+      // Only the creator or admin can delete steps
+      if (existingPath[0].created_by !== user.id && !user.isAdmin) {
+        return res.status(403).json({
+          success: false,
+          message: 'Permission denied. Only the creator or admin can delete steps from this learning path.'
+        });
+      }
+
+      // Check if step exists
+      const existingStep = await db.select()
+        .from(learningPathSteps)
+        .where(and(
+          eq(learningPathSteps.id, stepId),
+          eq(learningPathSteps.learning_path_id, pathId)
+        ))
+        .limit(1);
+
+      if (existingStep.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Step not found'
+        });
+      }
+
+      // Delete the step
+      await db.delete(learningPathSteps)
+        .where(eq(learningPathSteps.id, stepId));
+
+      res.json({
+        success: true,
+        message: 'Step deleted successfully'
+      });
+    } catch (error) {
+      console.error('Delete step error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to delete step'
+      });
+    }
+  });
+
+  /**
+   * Reorder learning path steps
+   * PATCH /api/learning-paths/:pathId/steps/reorder
+   */
+  app.patch('/api/learning-paths/:pathId/steps/reorder', multiAuthMiddleware, async (req: Request, res: Response) => {
+    try {
+      const user = (req as any).user;
+      const { pathId } = req.params;
+      const { stepOrders } = req.body; // Array of { stepId, order }
+
+      if (!user) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required'
+        });
+      }
+
+      if (!Array.isArray(stepOrders)) {
+        return res.status(400).json({
+          success: false,
+          message: 'stepOrders must be an array'
+        });
+      }
+
+      // Check if learning path exists and user has permission to modify it
+      const existingPath = await db.select()
+        .from(learningPaths)
+        .where(eq(learningPaths.id, pathId))
+        .limit(1);
+
+      if (existingPath.length === 0) {
+        return res.status(404).json({
+          success: false,
+          message: 'Learning path not found'
+        });
+      }
+
+      // Only the creator or admin can reorder steps
+      if (existingPath[0].created_by !== user.id && !user.isAdmin) {
+        return res.status(403).json({
+          success: false,
+          message: 'Permission denied. Only the creator or admin can reorder steps in this learning path.'
+        });
+      }
+
+      // Update each step's order
+      for (const { stepId, order } of stepOrders) {
+        await db.update(learningPathSteps)
+          .set({ step_order: order })
+          .where(and(
+            eq(learningPathSteps.id, stepId),
+            eq(learningPathSteps.learning_path_id, pathId)
+          ));
+      }
+
+      res.json({
+        success: true,
+        message: 'Steps reordered successfully'
+      });
+    } catch (error) {
+      console.error('Reorder steps error:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to reorder steps'
       });
     }
   });

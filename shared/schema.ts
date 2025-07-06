@@ -432,6 +432,23 @@ export type InsertCodeExample = typeof codeExamples.$inferInsert;
 export type CodeExampleRun = typeof codeExampleRuns.$inferSelect;
 export type InsertCodeExampleRun = typeof codeExampleRuns.$inferInsert;
 
+// Code example votes table for tracking user votes
+export const codeExampleVotes = pgTable("code_example_votes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  code_example_id: uuid("code_example_id").notNull().references(() => codeExamples.id, { onDelete: "cascade" }),
+  vote_type: varchar("vote_type", { length: 10 }).notNull(), // 'up' or 'down'
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userExampleIdx: index("code_example_votes_user_example_idx").on(table.user_id, table.code_example_id),
+  uniqueUserExample: unique("unique_user_code_example_vote").on(table.user_id, table.code_example_id),
+  createdAtIdx: index("code_example_votes_created_at_idx").on(table.created_at),
+}));
+
+export type CodeExampleVote = typeof codeExampleVotes.$inferSelect;
+export type InsertCodeExampleVote = typeof codeExampleVotes.$inferInsert;
+
 // Cache metrics table for performance monitoring
 export const cacheMetrics = pgTable("cache_metrics", {
   id: uuid("id").primaryKey().defaultRandom(),

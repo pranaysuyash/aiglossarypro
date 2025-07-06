@@ -15,10 +15,21 @@ export function initializeFirebaseAdmin() {
 
   try {
     // Use service account credentials from environment
+    let privateKey: string;
+    
+    // Check if using base64 encoded private key
+    if (process.env.FIREBASE_PRIVATE_KEY_BASE64) {
+      privateKey = Buffer.from(process.env.FIREBASE_PRIVATE_KEY_BASE64, 'base64').toString('utf8');
+    } else if (process.env.FIREBASE_PRIVATE_KEY) {
+      privateKey = process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
+    } else {
+      throw new Error('No Firebase private key found in environment variables');
+    }
+    
     const serviceAccount: ServiceAccount = {
       projectId: process.env.FIREBASE_PROJECT_ID!,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY?.replace(/\\n/g, '\n')!,
+      privateKey,
     };
 
     initializeApp({

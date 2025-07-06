@@ -1,0 +1,1475 @@
+{
+  "timestamp": "2025-07-06T09:48:13.060Z",
+  "summary": {
+    "totalTests": 30,
+    "pagesAudited": 14,
+    "breakpointsTested": 28,
+    "userFlowsTested": 14,
+    "accessibilityTests": 1,
+    "videosRecorded": 30,
+    "totalScreenshots": 30,
+    "criticalIssues": 31,
+    "warnings": 0,
+    "passedChecks": 2
+  },
+  "configurations": [
+    {
+      "name": "homepage-desktop",
+      "url": "/",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "hero-interaction",
+          "steps": [
+            {
+              "type": "hover",
+              "selector": ".hero-section button, main button, [role=\"button\"]"
+            },
+            {
+              "type": "click",
+              "selector": ".hero-section button, main button, [role=\"button\"]"
+            },
+            {
+              "type": "wait",
+              "value": 2000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "homepage-mobile",
+      "url": "/",
+      "device": "iPhone 13",
+      "recordVideo": true,
+      "actions": [
+        {
+          "type": "wait",
+          "value": 2000
+        },
+        {
+          "type": "click",
+          "selector": "button[aria-label*=\"menu\"], .mobile-menu-button, .hamburger"
+        },
+        {
+          "type": "wait",
+          "value": 1000,
+          "screenshot": true
+        }
+      ]
+    },
+    {
+      "name": "homepage-tablet",
+      "url": "/",
+      "device": "iPad Pro",
+      "recordVideo": true
+    },
+    {
+      "name": "terms-page",
+      "url": "/terms",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "search-and-filter",
+          "steps": [
+            {
+              "type": "type",
+              "selector": "input[type=\"text\"]",
+              "value": "neural network"
+            },
+            {
+              "type": "wait",
+              "value": 2000
+            },
+            {
+              "type": "click",
+              "selector": "button:has-text(\"Filter\"), .filter-button"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "click",
+              "selector": "[role=\"combobox\"], select"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "categories-page",
+      "url": "/categories",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "browse-categories",
+          "steps": [
+            {
+              "type": "click",
+              "selector": ".category-card:first-child, .category:first-child"
+            },
+            {
+              "type": "wait",
+              "value": 2000
+            },
+            {
+              "type": "scroll",
+              "value": 500
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "trending-page",
+      "url": "/trending",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "favorites-page",
+      "url": "/favorites",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "dashboard-page",
+      "url": "/dashboard",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "dashboard-navigation",
+          "steps": [
+            {
+              "type": "click",
+              "selector": ".dashboard-card:first-child, .metric-card:first-child"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "hover",
+              "selector": ".chart, .progress-bar"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "settings-page",
+      "url": "/settings",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "settings-interaction",
+          "steps": [
+            {
+              "type": "click",
+              "selector": "button, .toggle, input[type=\"checkbox\"]"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "type",
+              "selector": "input[type=\"text\"], input[type=\"email\"]",
+              "value": "test@example.com"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "ai-tools-page",
+      "url": "/ai-tools",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "login-page",
+      "url": "/login",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "oauth-login-flow",
+          "steps": [
+            {
+              "type": "click",
+              "selector": "button:has-text(\"Google\"), .google-login, .oauth-button"
+            },
+            {
+              "type": "wait",
+              "value": 2000
+            },
+            {
+              "type": "click",
+              "selector": "button:has-text(\"GitHub\"), .github-login"
+            },
+            {
+              "type": "wait",
+              "value": 2000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "profile-page",
+      "url": "/profile",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "progress-page",
+      "url": "/progress",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "lifetime-page",
+      "url": "/lifetime",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "search-comprehensive",
+      "url": "/",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "complete-search-flow",
+          "steps": [
+            {
+              "type": "click",
+              "selector": "input[type=\"text\"], .search-input"
+            },
+            {
+              "type": "type",
+              "selector": "input[type=\"text\"]",
+              "value": "machine"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "keyboard",
+              "key": "ArrowDown"
+            },
+            {
+              "type": "keyboard",
+              "key": "Enter"
+            },
+            {
+              "type": "wait",
+              "value": 2000
+            },
+            {
+              "type": "type",
+              "selector": "input[type=\"text\"]",
+              "value": "deep learning"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "keyboard",
+              "key": "Escape"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "mobile-portrait-320",
+      "url": "/",
+      "viewport": {
+        "width": 320,
+        "height": 568
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "mobile-portrait-375",
+      "url": "/",
+      "viewport": {
+        "width": 375,
+        "height": 812
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "mobile-landscape",
+      "url": "/",
+      "viewport": {
+        "width": 812,
+        "height": 375
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "tablet-portrait",
+      "url": "/",
+      "viewport": {
+        "width": 768,
+        "height": 1024
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "tablet-landscape",
+      "url": "/",
+      "viewport": {
+        "width": 1024,
+        "height": 768
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "desktop-small",
+      "url": "/",
+      "viewport": {
+        "width": 1366,
+        "height": 768
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "desktop-large",
+      "url": "/",
+      "viewport": {
+        "width": 2560,
+        "height": 1440
+      },
+      "recordVideo": true
+    },
+    {
+      "name": "accessibility-keyboard-navigation",
+      "url": "/",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "accessibility": {
+        "focusTest": true,
+        "keyboardNavigation": true
+      },
+      "userFlows": [
+        {
+          "name": "full-keyboard-navigation",
+          "steps": [
+            {
+              "type": "keyboard",
+              "key": "Tab"
+            },
+            {
+              "type": "wait",
+              "value": 500,
+              "screenshot": true
+            },
+            {
+              "type": "keyboard",
+              "key": "Tab"
+            },
+            {
+              "type": "wait",
+              "value": 500,
+              "screenshot": true
+            },
+            {
+              "type": "keyboard",
+              "key": "Tab"
+            },
+            {
+              "type": "wait",
+              "value": 500,
+              "screenshot": true
+            },
+            {
+              "type": "keyboard",
+              "key": "Enter"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "keyboard",
+              "key": "Escape"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "dark-mode-complete",
+      "url": "/",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "dark-mode-all-pages",
+          "steps": [
+            {
+              "type": "screenshot",
+              "description": "Light mode homepage"
+            },
+            {
+              "type": "click",
+              "selector": "button[aria-label*=\"mode\"], button[aria-label*=\"theme\"]"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Dark mode homepage"
+            },
+            {
+              "type": "click",
+              "selector": "a[href=\"/terms\"], .nav-link:has-text(\"Terms\")"
+            },
+            {
+              "type": "wait",
+              "value": 2000,
+              "screenshot": true,
+              "description": "Dark mode terms page"
+            },
+            {
+              "type": "click",
+              "selector": "a[href=\"/categories\"]"
+            },
+            {
+              "type": "wait",
+              "value": 2000,
+              "screenshot": true,
+              "description": "Dark mode categories page"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "authentication-and-characteristic-function",
+      "url": "/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "test-full-term-view-with-auth",
+          "steps": [
+            {
+              "type": "wait",
+              "value": 2000,
+              "screenshot": true,
+              "description": "Initial preview state"
+            },
+            {
+              "type": "click",
+              "selector": "button:has-text(\"Sign In\"), .oauth-button, button[aria-label*=\"Sign\"]"
+            },
+            {
+              "type": "wait",
+              "value": 3000,
+              "screenshot": true,
+              "description": "After sign in attempt"
+            },
+            {
+              "type": "click",
+              "selector": "[data-testid=\"term-card\"] button[aria-label*=\"favorite\"], .heart-button"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "After favorite click"
+            },
+            {
+              "type": "click",
+              "selector": "[data-testid=\"term-card\"] button[aria-label*=\"copy\"], button:has(svg[data-lucide=\"copy\"])"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "After copy click"
+            },
+            {
+              "type": "click",
+              "selector": "[data-testid=\"term-card\"] button[aria-label*=\"share\"], button:has(svg[data-lucide=\"share\"])"
+            },
+            {
+              "type": "wait",
+              "value": 2000,
+              "screenshot": true,
+              "description": "After share click"
+            },
+            {
+              "type": "keyboard",
+              "key": "Escape"
+            },
+            {
+              "type": "click",
+              "selector": "a:has-text(\"Read more\"), .read-more-link"
+            },
+            {
+              "type": "wait",
+              "value": 2000,
+              "screenshot": true,
+              "description": "After read more click"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "all-42-sections-comprehensive",
+      "url": "/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "test-all-sections-and-interactive-elements",
+          "steps": [
+            {
+              "type": "wait",
+              "value": 3000,
+              "screenshot": true,
+              "description": "Full term page loaded"
+            },
+            {
+              "type": "scroll",
+              "value": 500
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "After scroll to content"
+            },
+            {
+              "type": "click",
+              "selector": ".mermaid-container, [class*=\"mermaid\"], [data-testid*=\"diagram\"]"
+            },
+            {
+              "type": "wait",
+              "value": 2000,
+              "screenshot": true,
+              "description": "Mermaid diagram interaction"
+            },
+            {
+              "type": "click",
+              "selector": "button[aria-label*=\"zoom\"], button:has(svg[data-lucide=\"zoom-in\"])"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Mermaid zoom in"
+            },
+            {
+              "type": "click",
+              "selector": "button[aria-label*=\"copy\"], button:has(svg[data-lucide=\"copy\"])"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Mermaid copy"
+            },
+            {
+              "type": "click",
+              "selector": "button[aria-label*=\"download\"], button:has(svg[data-lucide=\"download\"])"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Mermaid download"
+            },
+            {
+              "type": "click",
+              "selector": ".code-block, pre, [class*=\"code\"], [data-testid*=\"code\"]"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Code block interaction"
+            },
+            {
+              "type": "click",
+              "selector": "button:has-text(\"Copy\"), button[aria-label*=\"copy\"]"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Code copy"
+            },
+            {
+              "type": "click",
+              "selector": ".quiz-container, [data-testid*=\"quiz\"], [class*=\"quiz\"]"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Quiz interaction"
+            },
+            {
+              "type": "click",
+              "selector": "input[type=\"radio\"]:first-of-type, .quiz-option:first-child"
+            },
+            {
+              "type": "wait",
+              "value": 500,
+              "screenshot": true,
+              "description": "Quiz option selected"
+            },
+            {
+              "type": "click",
+              "selector": "button:has-text(\"Submit\"), button:has-text(\"Next\"), .quiz-submit"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Quiz submitted"
+            },
+            {
+              "type": "click",
+              "selector": "[data-radix-collection-item]:first-child button, .accordion-trigger:first-child"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "First accordion opened"
+            },
+            {
+              "type": "click",
+              "selector": "[data-radix-collection-item]:nth-child(2) button, .accordion-trigger:nth-child(2)"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Second accordion opened"
+            },
+            {
+              "type": "click",
+              "selector": "[role=\"tab\"]:nth-child(2), .tab-trigger:nth-child(2)"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Second tab selected"
+            },
+            {
+              "type": "click",
+              "selector": "[role=\"tab\"]:nth-child(3), .tab-trigger:nth-child(3)"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Third tab selected"
+            },
+            {
+              "type": "click",
+              "selector": "button:has-text(\"Cards\"), .display-mode-cards"
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Cards mode selected"
+            },
+            {
+              "type": "click",
+              "selector": ".ai-improver button, [data-testid*=\"ai\"] button"
+            },
+            {
+              "type": "wait",
+              "value": 2000,
+              "screenshot": true,
+              "description": "AI improver interaction"
+            },
+            {
+              "type": "scroll",
+              "value": 1000
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Scrolled further down"
+            },
+            {
+              "type": "scroll",
+              "value": 1000
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Scrolled to bottom content"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "all-button-interactions",
+      "url": "/",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "test-all-buttons",
+          "steps": [
+            {
+              "type": "hover",
+              "selector": "button:nth-child(1)"
+            },
+            {
+              "type": "wait",
+              "value": 500,
+              "screenshot": true
+            },
+            {
+              "type": "hover",
+              "selector": "button:nth-child(2)"
+            },
+            {
+              "type": "wait",
+              "value": 500,
+              "screenshot": true
+            },
+            {
+              "type": "click",
+              "selector": "button:first-of-type"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "all-form-interactions",
+      "url": "/settings",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "test-all-forms",
+          "steps": [
+            {
+              "type": "click",
+              "selector": "input[type=\"text\"]:first-of-type"
+            },
+            {
+              "type": "type",
+              "selector": "input[type=\"text\"]:first-of-type",
+              "value": "Test User"
+            },
+            {
+              "type": "click",
+              "selector": "input[type=\"email\"]"
+            },
+            {
+              "type": "type",
+              "selector": "input[type=\"email\"]",
+              "value": "test@example.com"
+            },
+            {
+              "type": "click",
+              "selector": "input[type=\"checkbox\"]"
+            },
+            {
+              "type": "wait",
+              "value": 500
+            },
+            {
+              "type": "click",
+              "selector": "select, [role=\"combobox\"]"
+            },
+            {
+              "type": "wait",
+              "value": 1000
+            },
+            {
+              "type": "click",
+              "selector": "textarea"
+            },
+            {
+              "type": "type",
+              "selector": "textarea",
+              "value": "This is a test message for comprehensive form testing."
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Form filled out"
+            },
+            {
+              "type": "click",
+              "selector": "button[type=\"submit\"], button:has-text(\"Save\"), button:has-text(\"Update\")"
+            },
+            {
+              "type": "wait",
+              "value": 2000,
+              "screenshot": true,
+              "description": "Form submitted"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "contact-form-comprehensive",
+      "url": "/",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "userFlows": [
+        {
+          "name": "find-and-test-contact-forms",
+          "steps": [
+            {
+              "type": "scroll",
+              "value": 2000
+            },
+            {
+              "type": "wait",
+              "value": 1000,
+              "screenshot": true,
+              "description": "Scrolled to footer"
+            },
+            {
+              "type": "click",
+              "selector": "a[href*=\"contact\"], a:has-text(\"Contact\"), .contact-link"
+            },
+            {
+              "type": "wait",
+              "value": 3000,
+              "screenshot": true,
+              "description": "Contact page or modal opened"
+            },
+            {
+              "type": "click",
+              "selector": "input[name=\"name\"], input[placeholder*=\"name\"], input[type=\"text\"]:first-of-type"
+            },
+            {
+              "type": "type",
+              "selector": "input[name=\"name\"], input[placeholder*=\"name\"], input[type=\"text\"]:first-of-type",
+              "value": "John Doe"
+            },
+            {
+              "type": "click",
+              "selector": "input[name=\"email\"], input[placeholder*=\"email\"], input[type=\"email\"]"
+            },
+            {
+              "type": "type",
+              "selector": "input[name=\"email\"], input[placeholder*=\"email\"], input[type=\"email\"]",
+              "value": "john.doe@example.com"
+            },
+            {
+              "type": "click",
+              "selector": "input[name=\"subject\"], input[placeholder*=\"subject\"]"
+            },
+            {
+              "type": "type",
+              "selector": "input[name=\"subject\"], input[placeholder*=\"subject\"]",
+              "value": "Test Subject"
+            },
+            {
+              "type": "click",
+              "selector": "textarea[name=\"message\"], textarea[placeholder*=\"message\"], textarea"
+            },
+            {
+              "type": "type",
+              "selector": "textarea[name=\"message\"], textarea[placeholder*=\"message\"], textarea",
+              "value": "This is a comprehensive test message to validate the contact form functionality. Testing all aspects of the user interaction."
+            },
+            {
+              "type": "wait",
+              "value": 2000,
+              "screenshot": true,
+              "description": "Contact form filled"
+            },
+            {
+              "type": "click",
+              "selector": "button[type=\"submit\"], button:has-text(\"Send\"), button:has-text(\"Submit\")"
+            },
+            {
+              "type": "wait",
+              "value": 3000,
+              "screenshot": true,
+              "description": "Contact form submitted"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "error-states",
+      "url": "/nonexistent-page",
+      "viewport": {
+        "width": 1920,
+        "height": 1080
+      },
+      "recordVideo": true,
+      "actions": [
+        {
+          "type": "wait",
+          "value": 3000,
+          "screenshot": true,
+          "description": "404 error page"
+        }
+      ]
+    }
+  ],
+  "analysis": {
+    "totalScreenshots": 30,
+    "criticalIssues": [
+      {
+        "type": "Page Load Error",
+        "file": "accessibility-keyboard-navigation-error.png",
+        "description": "Page failed to load properly: accessibility-keyboard-navigation",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "ai-tools-page-error.png",
+        "description": "Page failed to load properly: ai-tools-page",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "all-42-sections-comprehensive-error.png",
+        "description": "Page failed to load properly: all-42-sections-comprehensive",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "all-button-interactions-error.png",
+        "description": "Page failed to load properly: all-button-interactions",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "all-form-interactions-error.png",
+        "description": "Page failed to load properly: all-form-interactions",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "authentication-and-characteristic-function-error.png",
+        "description": "Page failed to load properly: authentication-and-characteristic-function",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "categories-page-error.png",
+        "description": "Page failed to load properly: categories-page",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "contact-form-comprehensive-error.png",
+        "description": "Page failed to load properly: contact-form-comprehensive",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "dark-mode-complete-error.png",
+        "description": "Page failed to load properly: dark-mode-complete",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "dashboard-page-error.png",
+        "description": "Page failed to load properly: dashboard-page",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "desktop-large-error.png",
+        "description": "Page failed to load properly: desktop-large",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "desktop-small-error.png",
+        "description": "Page failed to load properly: desktop-small",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "error-states-error.png",
+        "description": "Page failed to load properly: error-states",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "favorites-page-error.png",
+        "description": "Page failed to load properly: favorites-page",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "homepage-desktop-error.png",
+        "description": "Page failed to load properly: homepage-desktop",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "homepage-mobile-error.png",
+        "description": "Page failed to load properly: homepage-mobile",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "homepage-tablet-error.png",
+        "description": "Page failed to load properly: homepage-tablet",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "lifetime-page-error.png",
+        "description": "Page failed to load properly: lifetime-page",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "login-page-error.png",
+        "description": "Page failed to load properly: login-page",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "mobile-landscape-error.png",
+        "description": "Page failed to load properly: mobile-landscape",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "mobile-portrait-320-error.png",
+        "description": "Page failed to load properly: mobile-portrait-320",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "mobile-portrait-375-error.png",
+        "description": "Page failed to load properly: mobile-portrait-375",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "profile-page-error.png",
+        "description": "Page failed to load properly: profile-page",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "progress-page-error.png",
+        "description": "Page failed to load properly: progress-page",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "search-comprehensive-error.png",
+        "description": "Page failed to load properly: search-comprehensive",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "settings-page-error.png",
+        "description": "Page failed to load properly: settings-page",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "tablet-landscape-error.png",
+        "description": "Page failed to load properly: tablet-landscape",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "tablet-portrait-error.png",
+        "description": "Page failed to load properly: tablet-portrait",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "terms-page-error.png",
+        "description": "Page failed to load properly: terms-page",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Page Load Error",
+        "file": "trending-page-error.png",
+        "description": "Page failed to load properly: trending-page",
+        "severity": "critical",
+        "recommendation": "Check server logs and route configuration"
+      },
+      {
+        "type": "Data Loading Failure",
+        "file": "categories-page-error.png",
+        "description": "Categories page shows skeleton loading state with no content",
+        "severity": "critical",
+        "recommendation": "Debug categories API endpoint and data loading logic"
+      }
+    ],
+    "warnings": [],
+    "passedChecks": [
+      {
+        "type": "Accessibility Testing",
+        "file": "accessibility-keyboard-navigation-error.png",
+        "description": "Keyboard navigation and accessibility features tested"
+      },
+      {
+        "type": "Dark Mode",
+        "file": "dark-mode-complete-error.png",
+        "description": "Dark mode functionality tested"
+      }
+    ],
+    "detectedComponents": [],
+    "responsiveIssues": [],
+    "accessibilityIssues": []
+  },
+  "issues": [
+    {
+      "type": "Page Load Error",
+      "file": "accessibility-keyboard-navigation-error.png",
+      "description": "Page failed to load properly: accessibility-keyboard-navigation",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "ai-tools-page-error.png",
+      "description": "Page failed to load properly: ai-tools-page",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "all-42-sections-comprehensive-error.png",
+      "description": "Page failed to load properly: all-42-sections-comprehensive",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "all-button-interactions-error.png",
+      "description": "Page failed to load properly: all-button-interactions",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "all-form-interactions-error.png",
+      "description": "Page failed to load properly: all-form-interactions",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "authentication-and-characteristic-function-error.png",
+      "description": "Page failed to load properly: authentication-and-characteristic-function",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "categories-page-error.png",
+      "description": "Page failed to load properly: categories-page",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "contact-form-comprehensive-error.png",
+      "description": "Page failed to load properly: contact-form-comprehensive",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "dark-mode-complete-error.png",
+      "description": "Page failed to load properly: dark-mode-complete",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "dashboard-page-error.png",
+      "description": "Page failed to load properly: dashboard-page",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "desktop-large-error.png",
+      "description": "Page failed to load properly: desktop-large",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "desktop-small-error.png",
+      "description": "Page failed to load properly: desktop-small",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "error-states-error.png",
+      "description": "Page failed to load properly: error-states",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "favorites-page-error.png",
+      "description": "Page failed to load properly: favorites-page",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "homepage-desktop-error.png",
+      "description": "Page failed to load properly: homepage-desktop",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "homepage-mobile-error.png",
+      "description": "Page failed to load properly: homepage-mobile",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "homepage-tablet-error.png",
+      "description": "Page failed to load properly: homepage-tablet",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "lifetime-page-error.png",
+      "description": "Page failed to load properly: lifetime-page",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "login-page-error.png",
+      "description": "Page failed to load properly: login-page",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "mobile-landscape-error.png",
+      "description": "Page failed to load properly: mobile-landscape",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "mobile-portrait-320-error.png",
+      "description": "Page failed to load properly: mobile-portrait-320",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "mobile-portrait-375-error.png",
+      "description": "Page failed to load properly: mobile-portrait-375",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "profile-page-error.png",
+      "description": "Page failed to load properly: profile-page",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "progress-page-error.png",
+      "description": "Page failed to load properly: progress-page",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "search-comprehensive-error.png",
+      "description": "Page failed to load properly: search-comprehensive",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "settings-page-error.png",
+      "description": "Page failed to load properly: settings-page",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "tablet-landscape-error.png",
+      "description": "Page failed to load properly: tablet-landscape",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "tablet-portrait-error.png",
+      "description": "Page failed to load properly: tablet-portrait",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "terms-page-error.png",
+      "description": "Page failed to load properly: terms-page",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Page Load Error",
+      "file": "trending-page-error.png",
+      "description": "Page failed to load properly: trending-page",
+      "severity": "critical",
+      "recommendation": "Check server logs and route configuration"
+    },
+    {
+      "type": "Data Loading Failure",
+      "file": "categories-page-error.png",
+      "description": "Categories page shows skeleton loading state with no content",
+      "severity": "critical",
+      "recommendation": "Debug categories API endpoint and data loading logic"
+    }
+  ]
+}

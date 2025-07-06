@@ -3,6 +3,7 @@ import type { AuthenticatedRequest } from "../../shared/types";
 import { db } from "../db";
 import { users } from "../../shared/schema";
 import { eq } from "drizzle-orm";
+import { verifyToken } from "../auth/simpleAuth";
 
 /**
  * Authentication token middleware - validates user is authenticated
@@ -13,16 +14,42 @@ export async function authenticateToken(
   next: NextFunction
 ): Promise<void> {
   try {
-    // Check if user is authenticated via passport session
-    if (!req.isAuthenticated?.() || !req.user?.id) {
-      res.status(401).json({
-        success: false,
-        message: "Authentication required"
-      });
+    // First check for JWT token in Authorization header or cookies
+    const token = req.headers.authorization?.replace('Bearer ', '') || 
+                  req.cookies?.auth_token;
+
+    if (token) {
+      const decoded = verifyToken(token);
+      if (decoded) {
+        // Set user on request from JWT token
+        (req as AuthenticatedRequest).user = {
+          id: decoded.sub,
+          email: decoded.email,
+          firstName: decoded.firstName || null,
+          lastName: decoded.lastName || null,
+          profileImageUrl: decoded.profileImageUrl || null,
+          claims: {
+            sub: decoded.sub,
+            email: decoded.email,
+            name: decoded.name
+          },
+          isAdmin: decoded.isAdmin
+        };
+        next();
+        return;
+      }
+    }
+
+    // Fallback to passport session authentication
+    if (req.isAuthenticated?.() && req.user?.id) {
+      next();
       return;
     }
 
-    next();
+    res.status(401).json({
+      success: false,
+      message: "Authentication required"
+    });
   } catch (error) {
     console.error("Error in authentication middleware:", error);
     res.status(500).json({

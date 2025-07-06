@@ -1,0 +1,461 @@
+{
+  "metadata": {
+    "timestamp": "2025-07-06T09-07-25-665Z",
+    "date": "2025-07-06T09:09:06.658Z",
+    "baseUrl": "http://localhost:5173",
+    "breakpoints": [
+      {
+        "name": "mobile-portrait",
+        "width": 375,
+        "height": 812
+      },
+      {
+        "name": "desktop-large",
+        "width": 1920,
+        "height": 1080
+      }
+    ],
+    "pages": 4,
+    "totalTests": 11
+  },
+  "summary": {
+    "total": 11,
+    "successful": 9,
+    "failed": 2,
+    "withIssues": 8
+  },
+  "results": [
+    {
+      "page": "homepage",
+      "breakpoint": "mobile-portrait",
+      "screenshot": "/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/visual-audit-results/2025-07-06T09-07-25-665Z/screenshots/homepage-mobile-portrait.png",
+      "issues": [
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "timestamp": "2025-07-06T09:07:27.256Z"
+    },
+    {
+      "page": "homepage",
+      "breakpoint": "desktop-large",
+      "screenshot": "/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/visual-audit-results/2025-07-06T09-07-25-665Z/screenshots/homepage-desktop-large.png",
+      "issues": [
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "timestamp": "2025-07-06T09:07:28.232Z"
+    },
+    {
+      "page": "terms",
+      "breakpoint": "mobile-portrait",
+      "screenshot": "/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/visual-audit-results/2025-07-06T09-07-25-665Z/screenshots/terms-mobile-portrait.png",
+      "issues": [
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "timestamp": "2025-07-06T09:07:29.245Z"
+    },
+    {
+      "page": "terms",
+      "breakpoint": "desktop-large",
+      "screenshot": "/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/visual-audit-results/2025-07-06T09-07-25-665Z/screenshots/terms-desktop-large.png",
+      "issues": [
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "timestamp": "2025-07-06T09:07:30.240Z"
+    },
+    {
+      "page": "categories",
+      "breakpoint": "mobile-portrait",
+      "screenshot": "/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/visual-audit-results/2025-07-06T09-07-25-665Z/screenshots/categories-mobile-portrait.png",
+      "issues": [
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "timestamp": "2025-07-06T09:07:31.195Z"
+    },
+    {
+      "page": "categories",
+      "breakpoint": "desktop-large",
+      "screenshot": "/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/visual-audit-results/2025-07-06T09-07-25-665Z/screenshots/categories-desktop-large.png",
+      "issues": [
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "timestamp": "2025-07-06T09:07:32.177Z"
+    },
+    {
+      "page": "login",
+      "breakpoint": "mobile-portrait",
+      "screenshot": "/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/visual-audit-results/2025-07-06T09-07-25-665Z/screenshots/login-mobile-portrait.png",
+      "issues": [
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "timestamp": "2025-07-06T09:07:33.217Z"
+    },
+    {
+      "page": "login",
+      "breakpoint": "desktop-large",
+      "screenshot": "/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/visual-audit-results/2025-07-06T09-07-25-665Z/screenshots/login-desktop-large.png",
+      "issues": [
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        },
+        {
+          "type": "console-error",
+          "message": "Failed to load resource: the server responded with a status of 500 (Internal Server Error)"
+        }
+      ],
+      "timestamp": "2025-07-06T09:07:34.256Z"
+    },
+    {
+      "test": "authentication",
+      "success": false,
+      "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/login\", waiting until \"networkidle\"\u001b[22m\n"
+    },
+    {
+      "test": "search",
+      "success": false,
+      "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/terms\", waiting until \"networkidle\"\u001b[22m\n"
+    },
+    {
+      "test": "interactions",
+      "results": [
+        {
+          "component": "unknown",
+          "success": false,
+          "error": "page.goto: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - navigating to \"http://localhost:5173/\", waiting until \"networkidle\"\u001b[22m\n"
+        }
+      ]
+    }
+  ]
+}

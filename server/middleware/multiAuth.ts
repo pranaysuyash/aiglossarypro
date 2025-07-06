@@ -7,6 +7,7 @@ import { features } from '../config';
 import { log } from '../utils/logger';
 import { captureAuthEvent } from '../utils/sentry';
 import { AuthenticatedRequest } from '../types/express';
+import { verifyToken } from '../auth/simpleAuth';
 
 // OAuth provider configurations
 interface OAuthConfig {
@@ -236,6 +237,33 @@ export async function setupMultiAuth(app: Express) {
 
 // Enhanced authentication middleware that works with all providers
 export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
+  // First check for JWT token authentication
+  const token = req.headers.authorization?.replace('Bearer ', '') || 
+                req.cookies?.auth_token;
+
+  if (token) {
+    const decoded = verifyToken(token);
+    if (decoded) {
+      // Set user on request from JWT token
+      (req as any).user = {
+        id: decoded.sub,
+        email: decoded.email,
+        firstName: decoded.firstName || null,
+        lastName: decoded.lastName || null,
+        profileImageUrl: decoded.profileImageUrl || null,
+        provider: 'jwt',
+        claims: {
+          sub: decoded.sub,
+          email: decoded.email,
+          name: decoded.name
+        },
+        isAdmin: decoded.isAdmin
+      };
+      return next();
+    }
+  }
+
+  // Fallback to Passport session authentication
   if (!req.isAuthenticated?.() || !req.user) {
     return res.status(401).json({ 
       success: false,
@@ -250,7 +278,7 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
   const user = req.user as any;
   
   // For OAuth providers (Google/GitHub), check if user still exists in database
-  if (user.provider) {
+  if (user.provider && user.provider !== 'jwt') {
     try {
       const dbUser = await storage.getUser(user.id);
       if (!dbUser) {
@@ -270,7 +298,6 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
       });
     }
   }
-  
   
   next();
 };

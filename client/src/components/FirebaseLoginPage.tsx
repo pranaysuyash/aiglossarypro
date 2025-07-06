@@ -92,7 +92,7 @@ export default function FirebaseLoginPage() {
       announce('Completing authentication...', 'polite');
       
       // Exchange Firebase token for JWT
-      const response = await api.post('/api/auth/firebase/login', { idToken });
+      const response = await api.post('/auth/firebase/login', { idToken });
 
       if (response.success) {
         // Store token in localStorage for API calls
@@ -185,7 +185,7 @@ export default function FirebaseLoginPage() {
       announce('Completing authentication...', 'polite');
       
       // Exchange Firebase token for JWT
-      const response = await api.post('/api/auth/firebase/login', { idToken });
+      const response = await api.post('/auth/firebase/login', { idToken });
 
       if (response.success) {
         localStorage.setItem('authToken', response.data.token);
@@ -598,11 +598,48 @@ export default function FirebaseLoginPage() {
                       setEmail('test@aimlglossary.com');
                       setPassword('testpass123');
                       // Switch to login tab
-                      const loginTab = document.querySelector('[value="login"]') as HTMLElement;
-                      loginTab?.click();
+                      setTimeout(() => {
+                        const loginTab = document.querySelector('[role="tab"][value="login"]') as HTMLElement;
+                        if (loginTab) {
+                          loginTab.click();
+                          loginTab.focus();
+                        }
+                      }, 100);
                     }}
                     disabled={loading}
                     aria-label="Use test regular user account"
+                  >
+                    Use This Account
+                  </Button>
+                </div>
+                
+                <div className="p-4 border rounded-lg space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-medium">Premium User</span>
+                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">PREMIUM</span>
+                  </div>
+                  <div className="text-sm text-muted-foreground space-y-1">
+                    <div><strong>Email:</strong> premium@aimlglossary.com</div>
+                    <div><strong>Password:</strong> premiumpass123</div>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      setEmail('premium@aimlglossary.com');
+                      setPassword('premiumpass123');
+                      // Switch to login tab
+                      setTimeout(() => {
+                        const loginTab = document.querySelector('[role="tab"][value="login"]') as HTMLElement;
+                        if (loginTab) {
+                          loginTab.click();
+                          loginTab.focus();
+                        }
+                      }, 100);
+                    }}
+                    disabled={loading}
+                    aria-label="Use test premium account"
                   >
                     Use This Account
                   </Button>
@@ -625,8 +662,13 @@ export default function FirebaseLoginPage() {
                       setEmail('admin@aimlglossary.com');
                       setPassword('adminpass123');
                       // Switch to login tab
-                      const loginTab = document.querySelector('[value="login"]') as HTMLElement;
-                      loginTab?.click();
+                      setTimeout(() => {
+                        const loginTab = document.querySelector('[role="tab"][value="login"]') as HTMLElement;
+                        if (loginTab) {
+                          loginTab.click();
+                          loginTab.focus();
+                        }
+                      }, 100);
                     }}
                     disabled={loading}
                     aria-label="Use test admin user account"

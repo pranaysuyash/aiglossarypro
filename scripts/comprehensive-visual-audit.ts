@@ -59,7 +59,7 @@ interface TestConfig {
 class ComprehensiveVisualAuditor {
   private browser: Browser | null = null;
   private viteProcess: any = null;
-  private baseUrl = process.env.BASE_URL || 'http://localhost:3001';
+  private baseUrl = process.env.BASE_URL || 'http://localhost:5173';
   private screenshotDir: string;
   private videoDir: string;
   private reportDir: string;

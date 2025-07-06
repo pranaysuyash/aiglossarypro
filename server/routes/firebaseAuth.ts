@@ -42,7 +42,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       if (!user) {
         // Create new user
         const nameParts = (decodedToken.name || '').split(' ');
-        user = await storage.upsertUser({
+        const userData: any = {
           id: decodedToken.uid, // Use Firebase UID as the primary key
           email: decodedToken.email!,
           firstName: nameParts[0] || '',
@@ -50,11 +50,52 @@ export function registerFirebaseAuthRoutes(app: Express): void {
           profileImageUrl: decodedToken.picture || undefined,
           authProvider: decodedToken.firebase.sign_in_provider || 'firebase',
           firebaseUid: decodedToken.uid,
-        });
+        };
+
+        // Set special properties for test users in development
+        if (process.env.NODE_ENV === 'development') {
+          if (decodedToken.email === 'admin@aimlglossary.com') {
+            userData.isAdmin = true;
+            userData.subscriptionTier = 'lifetime';
+            userData.lifetimeAccess = true;
+            userData.purchaseDate = new Date();
+          } else if (decodedToken.email === 'premium@aimlglossary.com') {
+            userData.subscriptionTier = 'lifetime';
+            userData.lifetimeAccess = true;
+            userData.purchaseDate = new Date();
+          } else if (decodedToken.email === 'test@aimlglossary.com') {
+            // Regular user remains with default free tier for testing
+          }
+        }
+
+        user = await storage.upsertUser(userData);
       } else {
         // Update Firebase UID if not set
         if (!user.firebaseUid) {
           await storage.updateUser(user.id, { firebaseUid: decodedToken.uid });
+        }
+
+        // Update test user properties in development if they don't have them
+        if (process.env.NODE_ENV === 'development') {
+          let needsUpdate = false;
+          const updateData: any = {};
+
+          if (decodedToken.email === 'admin@aimlglossary.com' && !user.isAdmin) {
+            updateData.isAdmin = true;
+            updateData.subscriptionTier = 'lifetime';
+            updateData.lifetimeAccess = true;
+            updateData.purchaseDate = new Date();
+            needsUpdate = true;
+          } else if (decodedToken.email === 'premium@aimlglossary.com' && !user.lifetimeAccess) {
+            updateData.subscriptionTier = 'lifetime';
+            updateData.lifetimeAccess = true;
+            updateData.purchaseDate = new Date();
+            needsUpdate = true;
+          }
+
+          if (needsUpdate) {
+            user = await storage.updateUser(user.id, updateData);
+          }
         }
       }
 
@@ -69,7 +110,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       const jwtToken = generateToken(user);
 
       // Set cookie for session
-      res.cookie('authToken', jwtToken, {
+      res.cookie('auth_token', jwtToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',

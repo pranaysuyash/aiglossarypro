@@ -344,6 +344,36 @@ export const insertTermAnalyticsSchema = createInsertSchema(termAnalytics).omit(
 export type TermAnalytics = typeof termAnalytics.$inferSelect;
 export type InsertTermAnalytics = z.infer<typeof insertTermAnalyticsSchema>;
 
+// User profiles table for AI-powered personalization
+export const userProfiles = pgTable("user_profiles", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).unique(),
+  skillLevel: varchar("skill_level", { length: 20 }).default("beginner"), // beginner, intermediate, advanced, expert
+  learningStyle: varchar("learning_style", { length: 20 }).default("mixed"), // visual, theoretical, practical, mixed
+  activityLevel: varchar("activity_level", { length: 20 }).default("moderate"), // low, moderate, high
+  interests: jsonb("interests").default([]), // Array of category interests with scores
+  preferredContentTypes: jsonb("preferred_content_types").default([]), // Array of preferred interaction types
+  recentTopics: jsonb("recent_topics").default([]), // Array of recent topic names
+  engagementScore: integer("engagement_score").default(0), // 0-100 engagement score
+  personalityVector: jsonb("personality_vector").default([]), // ML vector for recommendations
+  lastCalculated: timestamp("last_calculated").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userIdIdx: index("user_profiles_user_id_idx").on(table.userId),
+  skillLevelIdx: index("user_profiles_skill_level_idx").on(table.skillLevel),
+  engagementScoreIdx: index("user_profiles_engagement_score_idx").on(table.engagementScore),
+  lastCalculatedIdx: index("user_profiles_last_calculated_idx").on(table.lastCalculated),
+}));
+
+export const insertUserProfileSchema = createInsertSchema(userProfiles).omit({
+  id: true,
+  lastCalculated: true,
+  updatedAt: true,
+} as const);
+
+export type UserProfile = typeof userProfiles.$inferSelect;
+export type InsertUserProfile = z.infer<typeof insertUserProfileSchema>;
+
 // Early bird status tracking table
 export const earlyBirdStatus = pgTable("early_bird_status", {
   id: uuid("id").primaryKey().defaultRandom(),

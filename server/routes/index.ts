@@ -26,6 +26,7 @@ import { registerCodeExamplesRoutes } from "./codeExamples";
 import { registerPersonalizationRoutes } from "./personalization";
 import { registerRelationshipRoutes } from "./relationships";
 import { registerTrendingRoutes } from "./trending";
+import { registerPersonalizedHomepageRoutes } from "./personalizedHomepage";
 import { log as logger } from "../utils/logger";
 
 // Import newsletter routes
@@ -163,6 +164,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Register Trending Analytics routes
   registerTrendingRoutes(app);
   logger.info("✅ Trending Analytics routes registered");
+  
+  // Register Personalized Homepage routes
+  registerPersonalizedHomepageRoutes(app);
+  logger.info("✅ Personalized Homepage routes registered");
   
   // Register Surprise Discovery routes
   app.use('/api/surprise-discovery', surpriseDiscoveryRoutes);

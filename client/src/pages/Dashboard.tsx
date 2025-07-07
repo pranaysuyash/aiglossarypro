@@ -22,6 +22,8 @@ import { BookOpen, ArrowRight, Calendar, Star, Clock, TrendingUp, Crown, Gift, X
 import { BarChart } from "@/components/ui/chart";
 import TermCard from "@/components/TermCard";
 import SurpriseMe from "@/components/SurpriseMe";
+import RecommendedForYou from "@/components/RecommendedForYou";
+import TrendingWidget from "@/components/TrendingWidget";
 import { useAuth } from "@/hooks/useAuth";
 import { useAccess } from "@/hooks/useAccess";
 import { useToast } from "@/hooks/use-toast";
@@ -415,6 +417,25 @@ export default function Dashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Personalized Content Widgets */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Recommended For You */}
+        <div>
+          <RecommendedForYou 
+            limit={3}
+            showHeader={true}
+          />
+        </div>
+        
+        {/* Trending Widget */}
+        <div>
+          <TrendingWidget 
+            limit={5}
+            showHeader={true}
+          />
+        </div>
+      </div>
 
       {/* Surprise Me Widget */}
       <div className="mb-6">

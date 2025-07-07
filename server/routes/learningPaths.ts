@@ -44,6 +44,7 @@ import {
   CommonErrors, 
   ErrorCode 
 } from '../utils/errorHandler';
+import { aiRecommendationService } from '../services/aiRecommendationService';
 
 export function registerLearningPathsRoutes(app: Express): void {
 
@@ -497,25 +498,70 @@ export function registerLearningPathsRoutes(app: Express): void {
   app.get('/api/learning-paths/recommended', multiAuthMiddleware, async (req: Request, res: Response) => {
     try {
       const user = (req as any).user;
+      const { limit = LEARNING_PATHS_LIMITS.RECOMMENDED_LIMIT } = req.query;
+      
+      const recommendationLimit = Math.min(Number(limit), LEARNING_PATHS_LIMITS.MAX_LIMIT);
 
-      // For now, return popular paths. TODO: Implement AI-based recommendations
-      const recommendedPaths = await db.select()
-        .from(learningPaths)
-        .where(eq(learningPaths.is_published, true))
-        .orderBy(desc(learningPaths.completion_count), desc(learningPaths.view_count))
-        .limit(LEARNING_PATHS_LIMITS.RECOMMENDED_LIMIT);
+      if (!user) {
+        // For anonymous users, return popular paths
+        const popularPaths = await db.select()
+          .from(learningPaths)
+          .where(eq(learningPaths.is_published, true))
+          .orderBy(desc(learningPaths.completion_count), desc(learningPaths.view_count))
+          .limit(recommendationLimit);
+
+        return res.json({
+          success: true,
+          data: popularPaths,
+          message: 'Popular learning paths'
+        });
+      }
+
+      // Use AI-based recommendations for authenticated users
+      const recommendedPaths = await aiRecommendationService.getPersonalizedRecommendations(
+        user.id, 
+        recommendationLimit
+      );
 
       res.json({
         success: true,
         data: recommendedPaths,
-        message: 'Recommended learning paths based on popularity'
+        message: 'AI-powered personalized recommendations',
+        metadata: {
+          personalized: true,
+          totalRecommendations: recommendedPaths.length,
+          avgScore: recommendedPaths.length > 0 
+            ? Math.round(recommendedPaths.reduce((sum, p) => sum + p.recommendationScore, 0) / recommendedPaths.length)
+            : 0
+        }
       });
     } catch (error) {
       console.error('Get recommended paths error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch recommended paths'
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
+    }
+  });
+
+  /**
+   * Get trending learning paths
+   * GET /api/learning-paths/trending
+   */
+  app.get('/api/learning-paths/trending', async (req: Request, res: Response) => {
+    try {
+      const { limit = 5 } = req.query;
+      const trendingLimit = Math.min(Number(limit), 20);
+
+      const trendingPaths = await aiRecommendationService.getTrendingPaths(trendingLimit);
+
+      res.json({
+        success: true,
+        data: trendingPaths,
+        message: 'Trending learning paths from the last 30 days'
       });
+    } catch (error) {
+      console.error('Get trending paths error:', error);
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 

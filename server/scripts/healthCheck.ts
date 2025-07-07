@@ -10,6 +10,8 @@ import { users, terms, categories } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
+import { S3Client, HeadBucketCommand } from '@aws-sdk/client-s3';
+import OpenAI from 'openai';
 
 interface HealthCheckResult {
   service: string;
@@ -204,10 +206,107 @@ class HealthChecker {
     };
   }
 
+  async checkS3Service(): Promise<HealthCheckResult> {
+    const start = Date.now();
+    
+    try {
+      if (!process.env.AWS_S3_BUCKET_NAME || !process.env.AWS_REGION) {
+        return {
+          service: 'S3 Service',
+          status: 'warning',
+          message: 'S3 not configured (optional service)',
+          details: { configured: false }
+        };
+      }
+
+      const s3Client = new S3Client({
+        region: process.env.AWS_REGION,
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
+        }
+      });
+
+      await s3Client.send(new HeadBucketCommand({
+        Bucket: process.env.AWS_S3_BUCKET_NAME
+      }));
+
+      const responseTime = Date.now() - start;
+      return {
+        service: 'S3 Service',
+        status: 'healthy',
+        message: `S3 bucket '${process.env.AWS_S3_BUCKET_NAME}' accessible`,
+        responseTime,
+        details: { bucketName: process.env.AWS_S3_BUCKET_NAME, responseTimeMs: responseTime }
+      };
+    } catch (error) {
+      return {
+        service: 'S3 Service',
+        status: 'unhealthy',
+        message: `S3 check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        responseTime: Date.now() - start
+      };
+    }
+  }
+
+  async checkOpenAIService(): Promise<HealthCheckResult> {
+    const start = Date.now();
+    
+    try {
+      if (!process.env.OPENAI_API_KEY) {
+        return {
+          service: 'OpenAI Service',
+          status: 'warning',
+          message: 'OpenAI API not configured (optional service)',
+          details: { configured: false }
+        };
+      }
+
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY
+      });
+
+      const models = await openai.models.list();
+      const responseTime = Date.now() - start;
+      
+      return {
+        service: 'OpenAI Service',
+        status: 'healthy',
+        message: 'OpenAI API accessible',
+        responseTime,
+        details: { 
+          modelsCount: models.data?.length || 0,
+          responseTimeMs: responseTime 
+        }
+      };
+    } catch (error) {
+      let status: 'unhealthy' | 'warning' = 'unhealthy';
+      let message = 'OpenAI API check failed';
+      
+      if (error instanceof Error) {
+        if (error.message.includes('401')) {
+          message = 'OpenAI API key invalid';
+        } else if (error.message.includes('429')) {
+          status = 'warning';
+          message = 'OpenAI API rate limit exceeded';
+        } else {
+          message = `OpenAI API error: ${error.message}`;
+        }
+      }
+      
+      return {
+        service: 'OpenAI Service',
+        status,
+        message,
+        responseTime: Date.now() - start
+      };
+    }
+  }
+
   async runAllChecks(): Promise<HealthCheckResult[]> {
     console.log('🏥 Running production health checks...\n');
     
-    const checks = [
+    const coreChecks = [
       this.checkEnvironmentVariables(),
       this.checkDatabase(),
       this.checkDataIntegrity(),
@@ -215,7 +314,19 @@ class HealthChecker {
       this.checkMemoryUsage()
     ];
     
-    this.results = await Promise.all(checks);
+    const externalChecks = [
+      this.checkS3Service(),
+      this.checkOpenAIService()
+    ];
+    
+    // Run core checks first, then external services
+    const coreResults = await Promise.all(coreChecks);
+    console.log('✅ Core system checks completed\n');
+    
+    console.log('🔗 Checking external services...\n');
+    const externalResults = await Promise.all(externalChecks);
+    
+    this.results = [...coreResults, ...externalResults];
     return this.results;
   }
 

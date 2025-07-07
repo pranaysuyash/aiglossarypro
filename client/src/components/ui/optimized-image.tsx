@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import { cn } from "@/lib/utils";
+import { imageOptimizationService, ImageOptimizationService } from "@/services/imageOptimizationService";
 
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -65,65 +66,35 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
     return () => observer.disconnect();
   }, [lazy, priority, isInView]);
 
-  // Generate optimized source URLs
+  // Generate optimized source URLs using the optimization service
   const generateOptimizedSrc = (originalSrc: string, format?: string) => {
     if (!originalSrc) return "";
     
-    // If it's already a data URL or external URL, return as-is
-    if (originalSrc.startsWith("data:") || originalSrc.startsWith("http")) {
-      return originalSrc;
-    }
-
-    // For local images, we could integrate with an image optimization service
-    // For now, we'll return the original src
-    // TODO: Integrate with image optimization service or build-time optimization
-    if (format) {
-      // Replace extension with the desired format
-      const extensionRegex = /\.(jpg|jpeg|png|gif)$/i;
-      if (extensionRegex.test(originalSrc)) {
-        return originalSrc.replace(extensionRegex, `.${format}`);
-      }
-    }
+    const params = {
+      width,
+      height,
+      quality,
+      format: format as 'webp' | 'avif' | 'jpeg' | 'png' | undefined,
+      blur: blur ? 5 : undefined,
+    };
     
-    return originalSrc;
+    return imageOptimizationService.generateOptimizedUrl(originalSrc, params);
   };
 
-  // Check WebP and AVIF support
-  const supportsWebP = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1;
-    canvas.height = 1;
-    return canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
-  };
+  // Use the optimization service's format detection
+  const [optimalFormat, setOptimalFormat] = useState<'avif' | 'webp' | 'jpeg'>('jpeg');
+  
+  useEffect(() => {
+    ImageOptimizationService.getOptimalFormat().then(setOptimalFormat);
+  }, []);
 
-  const supportsAVIF = () => {
-    const canvas = document.createElement('canvas');
-    canvas.width = 1;
-    canvas.height = 1;
-    return canvas.toDataURL('image/avif').indexOf('data:image/avif') === 0;
-  };
-
-  // Prioritize format based on browser support
+  // Generate optimized source based on optimal format
   useEffect(() => {
     if (!isInView) return;
 
-    let optimizedSrc = src;
-    
-    // Try AVIF first (best compression)
-    if (supportsAVIF()) {
-      optimizedSrc = generateOptimizedSrc(src, 'avif');
-    } 
-    // Fallback to WebP (good compression)
-    else if (supportsWebP()) {
-      optimizedSrc = generateOptimizedSrc(src, 'webp');
-    }
-    // Fallback to original format
-    else {
-      optimizedSrc = src;
-    }
-
+    const optimizedSrc = generateOptimizedSrc(src, optimalFormat);
     setCurrentSrc(optimizedSrc);
-  }, [src, isInView]);
+  }, [src, isInView, optimalFormat, width, height, quality, blur]);
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -248,30 +219,27 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 };
 
 /**
- * Hook to preload critical images
+ * Hook to preload critical images using the optimization service
  */
-export const useImagePreload = (src: string, priority = false) => {
+export const useImagePreload = (src: string, priority = false, params?: { width?: number; height?: number; quality?: number }) => {
   useEffect(() => {
     if (!priority || !src) return;
 
-    const link = document.createElement("link");
-    link.rel = "preload";
-    link.as = "image";
-    link.href = src;
-    
-    // Add WebP preload if supported
-    if (src.includes('.jpg') || src.includes('.png')) {
-      const webpSrc = src.replace(/\.(jpg|jpeg|png)$/i, '.webp');
-      link.href = webpSrc;
-      link.type = "image/webp";
-    }
-    
-    document.head.appendChild(link);
-
-    return () => {
-      document.head.removeChild(link);
+    // Use the optimization service for preloading
+    const preloadImage = async () => {
+      try {
+        const optimalFormat = await ImageOptimizationService.getOptimalFormat();
+        await imageOptimizationService.preloadImage(src, {
+          format: optimalFormat,
+          ...params
+        });
+      } catch (error) {
+        console.warn('Failed to preload image:', src, error);
+      }
     };
-  }, [src, priority]);
+    
+    preloadImage();
+  }, [src, priority, params]);
 };
 
 export default OptimizedImage;

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "wouter";
 import { ChevronRight, Heart, Copy, Share2 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -27,6 +27,74 @@ export default function TermDetail() {
   const { isAuthenticated } = useAuth();
   const { accessStatus, isFreeTier } = useAccess();
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
+
+  // Add CSS for section highlighting
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .highlight-section {
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+        border-left: 4px solid #3b82f6;
+        padding-left: 16px;
+        margin-left: -20px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+      }
+      .dark .highlight-section {
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Function to handle section navigation
+  const handleSectionNavigation = (path: string, node: any) => {
+    console.log('Navigated to:', path, node);
+    
+    // Generate section ID from path and node
+    const sectionId = generateSectionId(path, node);
+    
+    // Scroll to the specific section
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest'
+      });
+      
+      // Add visual highlight
+      element.classList.add('highlight-section');
+      setTimeout(() => {
+        element.classList.remove('highlight-section');
+      }, 2000);
+      
+      toast({
+        title: "Navigated to section",
+        description: `Jumped to: ${node.title || node.name}`,
+      });
+    } else {
+      toast({
+        title: "Section not found",
+        description: "This section may not be loaded yet or doesn't exist.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Generate consistent section ID from path and node
+  const generateSectionId = (path: string, node: any) => {
+    const baseName = (node.title || node.name || '').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    return `section-${path.replace(/\./g, '-')}-${baseName}`;
+  };
   
   // Fetch term details
   const { data: term, isLoading } = useQuery({
@@ -256,7 +324,7 @@ export default function TermDetail() {
               </div>
 
               {/* Definition */}
-              <div className="mb-8">
+              <div id="section-0-0-definition" className="mb-8 scroll-mt-20">
                 <h2 className="text-xl font-semibold mb-3">Definition</h2>
                 
                 {/* Check if this is a preview version */}
@@ -300,10 +368,7 @@ export default function TermDetail() {
                   <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border">
                     <HierarchicalNavigator
                       sections={contentOutline.sections}
-                      onNodeClick={(path, node) => {
-                        console.log('Navigated to:', path, node);
-                        // TODO: Implement navigation logic to jump to specific content sections
-                      }}
+                      onNodeClick={handleSectionNavigation}
                       searchable={true}
                       collapsible={true}
                       showProgress={true}
@@ -318,7 +383,7 @@ export default function TermDetail() {
               {/* Key Characteristics */}
               {!term.isPreview && term.characteristics && term.characteristics.length > 0 && (
                 <FreeTierGate termId={id}>
-                  <div className="mb-8">
+                  <div id="section-1-0-key-characteristics" className="mb-8 scroll-mt-20">
                     <h2 className="text-xl font-semibold mb-3">Key Characteristics</h2>
                     <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
                       {term.characteristics.map((characteristic: string, index: number) => (
@@ -332,7 +397,7 @@ export default function TermDetail() {
               {/* Types */}
               {!term.isPreview && term.types && term.types.length > 0 && (
                 <FreeTierGate termId={id}>
-                  <div className="mb-8">
+                  <div id="section-2-0-types" className="mb-8 scroll-mt-20">
                     <h2 className="text-xl font-semibold mb-3">Types of {term.name}</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {term.types.map((type: any, index: number) => (

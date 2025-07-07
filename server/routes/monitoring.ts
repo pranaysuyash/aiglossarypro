@@ -7,21 +7,114 @@ import type { Express, Request, Response } from 'express';
 import { errorLogger, ErrorCategory } from '../middleware/errorHandler';
 import { analyticsService } from '../services/analyticsService';
 import { enhancedStorage as storage } from '../enhancedStorage';
-// TODO: Phase 2 - Remove direct db usage after storage layer implementation
-// import { db } from '../db';
-// import { sql } from 'drizzle-orm';
 import fs from 'fs';
 import path from 'path';
 import { requireAdmin } from '../middleware/adminAuth';
+import { S3Client, HeadBucketCommand } from '@aws-sdk/client-s3';
+import OpenAI from 'openai';
+
+/**
+ * Health check helper functions
+ */
+async function checkS3Health(): Promise<{ healthy: boolean; message: string; responseTime?: number }> {
+  const start = Date.now();
+  
+  try {
+    if (!process.env.AWS_S3_BUCKET_NAME || !process.env.AWS_REGION) {
+      return {
+        healthy: false,
+        message: 'S3 configuration missing (bucket name or region)'
+      };
+    }
+
+    const s3Client = new S3Client({
+      region: process.env.AWS_REGION,
+      credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || ''
+      }
+    });
+
+    // Test bucket access
+    await s3Client.send(new HeadBucketCommand({
+      Bucket: process.env.AWS_S3_BUCKET_NAME
+    }));
+
+    const responseTime = Date.now() - start;
+    return {
+      healthy: true,
+      message: 'S3 bucket accessible',
+      responseTime
+    };
+  } catch (error) {
+    const responseTime = Date.now() - start;
+    return {
+      healthy: false,
+      message: `S3 health check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      responseTime
+    };
+  }
+}
+
+async function checkOpenAIHealth(): Promise<{ healthy: boolean; message: string; responseTime?: number }> {
+  const start = Date.now();
+  
+  try {
+    if (!process.env.OPENAI_API_KEY) {
+      return {
+        healthy: false,
+        message: 'OpenAI API key not configured'
+      };
+    }
+
+    const openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+
+    // Test with a minimal request to check API connectivity
+    await openai.models.list();
+
+    const responseTime = Date.now() - start;
+    return {
+      healthy: true,
+      message: 'OpenAI API accessible',
+      responseTime
+    };
+  } catch (error) {
+    const responseTime = Date.now() - start;
+    let message = 'OpenAI API check failed';
+    
+    if (error instanceof Error) {
+      if (error.message.includes('401')) {
+        message = 'OpenAI API key invalid or unauthorized';
+      } else if (error.message.includes('429')) {
+        message = 'OpenAI API rate limit exceeded';
+      } else if (error.message.includes('timeout')) {
+        message = 'OpenAI API timeout';
+      } else {
+        message = `OpenAI API error: ${error.message}`;
+      }
+    }
+    
+    return {
+      healthy: false,
+      message,
+      responseTime
+    };
+  }
+}
 
 export function registerMonitoringRoutes(app: Express): void {
 
   /**
    * Get system health status
-   * GET /api/monitoring/health
+   * GET /api/monitoring/health?extended=true
    */
   app.get('/api/monitoring/health', async (req: Request, res: Response) => {
     try {
+      const { extended } = req.query;
+      const includeExtended = extended === 'true';
+      
       const healthChecks = {
         database: false,
         filesystem: false,
@@ -30,21 +123,29 @@ export function registerMonitoringRoutes(app: Express): void {
         timestamp: new Date().toISOString()
       };
 
+      const externalServices: Record<string, any> = {};
+      const responseTimes: Record<string, number> = {};
+
       // Check database connectivity
       try {
-        // Use enhanced storage health check
+        const dbStart = Date.now();
         healthChecks.database = await storage.checkDatabaseHealth();
+        responseTimes.database = Date.now() - dbStart;
       } catch (dbError) {
         console.error('Database health check failed:', dbError);
+        responseTimes.database = -1;
       }
 
       // Check filesystem
       try {
+        const fsStart = Date.now();
         const logDir = path.join(process.cwd(), 'logs');
         fs.accessSync(logDir, fs.constants.R_OK | fs.constants.W_OK);
         healthChecks.filesystem = true;
+        responseTimes.filesystem = Date.now() - fsStart;
       } catch (fsError) {
         console.error('Filesystem health check failed:', fsError);
+        responseTimes.filesystem = -1;
       }
 
       // Check memory usage
@@ -59,23 +160,132 @@ export function registerMonitoringRoutes(app: Express): void {
       // Consider memory healthy if heap usage is under 500MB
       healthChecks.memory = memUsageMB.heapUsed < 500;
 
-      const overallHealth = healthChecks.database && healthChecks.filesystem && healthChecks.memory;
+      // Extended health checks (S3 and AI services)
+      if (includeExtended) {
+        // Check S3 connectivity
+        try {
+          const s3Health = await checkS3Health();
+          externalServices.s3 = s3Health;
+          if (s3Health.responseTime) {
+            responseTimes.s3 = s3Health.responseTime;
+          }
+        } catch (s3Error) {
+          console.error('S3 health check failed:', s3Error);
+          externalServices.s3 = {
+            healthy: false,
+            message: 'S3 health check error'
+          };
+        }
 
-      res.json({
+        // Check OpenAI connectivity  
+        try {
+          const openaiHealth = await checkOpenAIHealth();
+          externalServices.openai = openaiHealth;
+          if (openaiHealth.responseTime) {
+            responseTimes.openai = openaiHealth.responseTime;
+          }
+        } catch (aiError) {
+          console.error('OpenAI health check failed:', aiError);
+          externalServices.openai = {
+            healthy: false,
+            message: 'OpenAI health check error'
+          };
+        }
+      }
+
+      const coreHealth = healthChecks.database && healthChecks.filesystem && healthChecks.memory;
+      
+      // Overall health includes external services if extended check
+      let overallHealth = coreHealth;
+      if (includeExtended && Object.keys(externalServices).length > 0) {
+        const externalHealthy = Object.values(externalServices).every((service: any) => service.healthy);
+        overallHealth = coreHealth && externalHealthy;
+      }
+
+      const response: any = {
         success: true,
         healthy: overallHealth,
         checks: healthChecks,
         memory: memUsageMB,
+        responseTimes,
         nodeVersion: process.version,
         platform: process.platform,
         environment: process.env.NODE_ENV || 'development'
-      });
+      };
+
+      if (includeExtended) {
+        response.externalServices = externalServices;
+        response.extendedCheck = true;
+      }
+
+      res.json(response);
 
     } catch (error) {
       res.status(500).json({
         success: false,
         healthy: false,
         message: 'Health check failed',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
+    }
+  });
+
+  /**
+   * Get external services health status (admin only)
+   * GET /api/monitoring/services
+   */
+  app.get('/api/monitoring/services', requireAdmin, async (req: Request, res: Response) => {
+    try {
+      const services = {};
+      const responseTimes = {};
+      
+      // Check all external services in parallel
+      const [s3Health, openaiHealth] = await Promise.allSettled([
+        checkS3Health(),
+        checkOpenAIHealth()
+      ]);
+      
+      // Process S3 results
+      if (s3Health.status === 'fulfilled') {
+        services.s3 = s3Health.value;
+        if (s3Health.value.responseTime) {
+          responseTimes.s3 = s3Health.value.responseTime;
+        }
+      } else {
+        services.s3 = {
+          healthy: false,
+          message: 'S3 health check failed to execute'
+        };
+      }
+      
+      // Process OpenAI results
+      if (openaiHealth.status === 'fulfilled') {
+        services.openai = openaiHealth.value;
+        if (openaiHealth.value.responseTime) {
+          responseTimes.openai = openaiHealth.value.responseTime;
+        }
+      } else {
+        services.openai = {
+          healthy: false,
+          message: 'OpenAI health check failed to execute'
+        };
+      }
+      
+      const allHealthy = Object.values(services).every((service: any) => service.healthy);
+      
+      res.json({
+        success: true,
+        healthy: allHealthy,
+        services,
+        responseTimes,
+        timestamp: new Date().toISOString()
+      });
+      
+    } catch (error) {
+      res.status(500).json({
+        success: false,
+        healthy: false,
+        message: 'Services health check failed',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
     }

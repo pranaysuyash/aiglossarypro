@@ -32,6 +32,74 @@ export default function EnhancedTermDetail() {
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+
+  // Add CSS for section highlighting
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.textContent = `
+      .highlight-section {
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+        border-left: 4px solid #3b82f6;
+        padding-left: 16px;
+        margin-left: -20px;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+      }
+      .dark .highlight-section {
+        background: linear-gradient(90deg, rgba(59, 130, 246, 0.2) 0%, rgba(59, 130, 246, 0.1) 100%);
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+      }
+    `;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+
+  // Function to handle section navigation
+  const handleSectionNavigation = (path: string, node: any) => {
+    console.log('Navigated to:', path, node);
+    
+    // Generate section ID from path and node
+    const sectionId = generateSectionId(path, node);
+    
+    // Scroll to the specific section
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'start',
+        inline: 'nearest'
+      });
+      
+      // Add visual highlight
+      element.classList.add('highlight-section');
+      setTimeout(() => {
+        element.classList.remove('highlight-section');
+      }, 2000);
+      
+      toast({
+        title: "Navigated to section",
+        description: `Jumped to: ${node.title || node.name}`,
+      });
+    } else {
+      toast({
+        title: "Section not found",
+        description: "This section may not be loaded yet or doesn't exist.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  // Generate consistent section ID from path and node
+  const generateSectionId = (path: string, node: any) => {
+    const baseName = (node.title || node.name || '').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+    return `section-${path.replace(/\./g, '-')}-${baseName}`;
+  };
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   
@@ -246,10 +314,7 @@ export default function EnhancedTermDetail() {
                 <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border">
                   <HierarchicalNavigator
                     sections={contentOutline.sections}
-                    onNodeClick={(path, node) => {
-                      console.log('Navigated to:', path, node);
-                      // TODO: Implement navigation logic
-                    }}
+                    onNodeClick={handleSectionNavigation}
                     searchable={true}
                     collapsible={true}
                     showProgress={true}

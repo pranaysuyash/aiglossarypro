@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "wouter";
 import { Menu, X, Search, ChevronDown, User, Sun, Moon, Settings, Home, BarChart3, Bookmark, Zap, Crown, LogOut, Grid3X3, GitBranch, Sparkles } from "@/components/ui/icons";
 import {
@@ -18,6 +18,8 @@ import SearchBar from "./SearchBar";
 import { BaseComponentProps } from "@/types/common-props";
 import { queryClient } from "@/lib/queryClient";
 import { signOutUser } from "@/lib/firebase";
+import { useAccess } from "@/hooks/useAccess";
+import { useRef } from "react";
 
 interface HeaderProps extends BaseComponentProps {
   onSearch?: (query: string) => void;
@@ -36,6 +38,7 @@ export default function Header({
   const [, navigate] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { accessStatus, isFreeTier, hasAccess: hasAccessToContent } = useAccess();
 
   // Focus trap for mobile menu
   const mobileMenuRef = useFocusTrap(mobileMenuOpen);
@@ -43,14 +46,22 @@ export default function Header({
 
   // Handle escape key to close mobile menu
   const handleEscapeClose = () => {
-    setMobileMenuOpen(false);
+    console.log('Escape key pressed, closing mobile menu'); // Debug log
+    handleMobileMenuClose();
   };
 
   // Close mobile menu when clicking outside
   const handleOutsideClick = (e: React.MouseEvent) => {
+    console.log('Overlay clicked, closing mobile menu'); // Debug log
     if (e.target === e.currentTarget) {
-      setMobileMenuOpen(false);
+      handleMobileMenuClose();
     }
+  };
+
+  // Handle mobile menu close - ensure it always works
+  const handleMobileMenuClose = () => {
+    console.log('Mobile menu close clicked'); // Debug log
+    setMobileMenuOpen(false);
   };
 
   const toggleTheme = () => {
@@ -96,6 +107,21 @@ export default function Header({
   const initials = userObj?.firstName && userObj?.lastName
     ? `${userObj.firstName[0]}${userObj.lastName[0]}`
     : userObj?.email?.substring(0, 2).toUpperCase() || "ML";
+
+  // Debug user data
+  useEffect(() => {
+    if (userObj) {
+      console.log('Current user data:', {
+        email: userObj.email,
+        subscriptionTier: userObj.subscriptionTier,
+        lifetimeAccess: userObj.lifetimeAccess,
+        isAdmin: userObj.isAdmin,
+        accessStatus: accessStatus,
+        isFreeTier: isFreeTier,
+        hasAccessToContent: hasAccessToContent
+      });
+    }
+  }, [userObj, accessStatus, isFreeTier, hasAccessToContent]);
 
   return (
     <header id="navigation" className={`bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-800 transition-all duration-200 ${className || ''}`}>
@@ -234,7 +260,7 @@ export default function Header({
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
                     {/* Premium Status Header */}
-                    {user?.lifetimeAccess && (
+                    {accessStatus?.lifetimeAccess && (
                       <>
                         <div className="px-2 py-1.5 text-sm font-medium text-yellow-600 dark:text-yellow-400 flex items-center">
                           <Crown className="w-4 h-4 mr-2" />
@@ -261,7 +287,7 @@ export default function Header({
                     {userObj?.isAdmin && <DropdownMenuItem onClick={() => navigate("/admin")}>Admin</DropdownMenuItem>}
                     
                     {/* Upgrade Option for Free Users */}
-                    {!user?.lifetimeAccess && (
+                    {!accessStatus?.lifetimeAccess && (
                       <>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem 
@@ -284,7 +310,7 @@ export default function Header({
                 type="button"
                 variant="default"
                 size="sm"
-                onClick={handleLogin}
+                onClick={() => { handleLogin(); handleMobileMenuClose(); }}
                 className="hidden lg:flex"
               >
                 <User className="mr-2 h-4 w-4" />
@@ -346,12 +372,15 @@ export default function Header({
           <div
             className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50"
             onClick={handleOutsideClick}
+            onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); handleEscapeClose(); } }}
+            role="button"
+            tabIndex={0}
+            aria-label="Close mobile menu"
           >
             <div
               id="mobile-navigation-menu"
               ref={mobileMenuRef as React.RefObject<HTMLDivElement>}
               className="absolute top-0 right-0 w-80 max-w-[85vw] h-full bg-white dark:bg-gray-800 shadow-xl animate-in slide-in-from-right-2 duration-300 overflow-y-auto"
-              onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); handleEscapeClose(); } }}
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-modal="true"
@@ -392,7 +421,7 @@ export default function Header({
                 </div>
                 <button
                   type="button"
-                  onClick={() => setMobileMenuOpen(false)}
+                  onClick={handleMobileMenuClose}
                   className="h-8 w-8 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center"
                   aria-label="Close mobile menu"
                 >
@@ -405,28 +434,28 @@ export default function Header({
                 <div className="mb-6">
                   <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Navigation</div>
                   <div className="space-y-1">
-                    <Link href="/" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                       <Home className="mr-3 h-5 w-5" /> Home
                     </Link>
-                    <Link href="/dashboard" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/dashboard" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                       <BarChart3 className="mr-3 h-5 w-5" /> Dashboard
                     </Link>
-                    <Link href="/categories" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/categories" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                       <Grid3X3 className="mr-3 h-5 w-5" /> Categories
                     </Link>
-                    <Link href="/learning-paths" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/learning-paths" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                       <Bookmark className="mr-3 h-5 w-5" /> Learning Paths
                     </Link>
-                    <Link href="/discovery" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/discovery" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                       <GitBranch className="mr-3 h-5 w-5" /> Discovery
                     </Link>
-                    <Link href="/surprise-me" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/20 transition-colors min-h-[44px] text-purple-600 dark:text-purple-400">
+                    <Link href="/surprise-me" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/20 transition-colors min-h-[44px] text-purple-600 dark:text-purple-400">
                       <Sparkles className="mr-3 h-5 w-5" /> Surprise Me
                     </Link>
-                    <Link href="/code-examples" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/code-examples" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                       <Settings className="mr-3 h-5 w-5" /> Code Examples
                     </Link>
-                    <Link href="/trending" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/trending" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                       <BarChart3 className="mr-3 h-5 w-5" /> Trending
                     </Link>
                   </div>
@@ -437,13 +466,13 @@ export default function Header({
                   <div className="mb-6">
                     <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Your Account</div>
                     <div className="space-y-1">
-                      <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                      <Link href="/profile" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                         <User className="mr-3 h-5 w-5" /> Profile
                       </Link>
-                      <Link href="/favorites" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                      <Link href="/favorites" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                         <Bookmark className="mr-3 h-5 w-5" /> My Favorites
                       </Link>
-                      <Link href="/settings" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                      <Link href="/settings" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                         <Settings className="mr-3 h-5 w-5" /> Settings
                       </Link>
                     </div>
@@ -457,16 +486,16 @@ export default function Header({
                         <button 
                           type="button"
                           className="mobile-nav-item w-full flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] text-left" 
-                          onClick={() => { toggleTheme(); setMobileMenuOpen(false); }}
+                          onClick={() => { toggleTheme(); handleMobileMenuClose(); }}
                         >
                             {theme === 'dark' ? <Sun className="mr-3 h-5 w-5" /> : <Moon className="mr-3 h-5 w-5" />}
                             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                         </button>
-                        <Link href="/ai-tools" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                        <Link href="/ai-tools" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                             <Zap className="mr-3 h-5 w-5" /> AI Tools
                         </Link>
                         {isAuthenticated && userObj?.isAdmin && (
-                            <Link href="/admin" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                            <Link href="/admin" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                                 <Settings className="mr-3 h-5 w-5" /> Admin
                             </Link>
                         )}
@@ -476,7 +505,7 @@ export default function Header({
                 {/* Action Buttons */}
                 <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
                     {/* Premium Status for Authenticated Users */}
-                    {isAuthenticated && user?.lifetimeAccess && (
+                    {isAuthenticated && accessStatus?.lifetimeAccess && (
                       <div className="flex items-center justify-center py-2 px-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400">
                         <Crown className="w-4 h-4 mr-2" />
                         <span className="text-sm font-medium">Premium Member</span>
@@ -484,12 +513,12 @@ export default function Header({
                     )}
                     
                     {/* Upgrade Button for Free Users */}
-                    {isAuthenticated && !user?.lifetimeAccess && (
+                    {isAuthenticated && !accessStatus?.lifetimeAccess && (
                       <Button 
                         type="button"
                         variant="default" 
                         size="lg" 
-                        onClick={() => { navigate("/lifetime"); setMobileMenuOpen(false); }} 
+                        onClick={() => { navigate("/lifetime"); handleMobileMenuClose(); }} 
                         className="w-full justify-center min-h-[48px] bg-blue-600 hover:bg-blue-700 text-white"
                       >
                         <Crown className="mr-3 h-5 w-5" /> Upgrade to Premium
@@ -501,7 +530,7 @@ export default function Header({
                         type="button"
                         variant="default" 
                         size="lg" 
-                        onClick={() => { handleLogin(); setMobileMenuOpen(false); }} 
+                        onClick={() => { handleLogin(); handleMobileMenuClose(); }} 
                         className="w-full justify-center min-h-[48px]"
                       >
                         <User className="mr-3 h-5 w-5" /> Sign In
@@ -511,7 +540,7 @@ export default function Header({
                         type="button"
                         variant="ghost" 
                         size="lg" 
-                        onClick={() => { handleLogout(); setMobileMenuOpen(false); }} 
+                        onClick={() => { handleLogout(); handleMobileMenuClose(); }} 
                         className="w-full justify-center text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 min-h-[48px]"
                       >
                         <LogOut className="mr-3 h-5 w-5" /> Sign Out

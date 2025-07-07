@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import { Menu, X, Search, ChevronDown, User, Sun, Moon, Settings, Home, BarChart3, Bookmark, Zap, Crown, LogOut, Grid3X3, GitBranch, Sparkles } from "@/components/ui/icons";
 import {
@@ -59,10 +59,10 @@ export default function Header({
   };
 
   // Handle mobile menu close - ensure it always works
-  const handleMobileMenuClose = () => {
+  const handleMobileMenuClose = useCallback(() => {
     console.log('Mobile menu close clicked'); // Debug log
     setMobileMenuOpen(false);
-  };
+  }, []);
 
   const toggleTheme = () => {
     setTheme(theme === 'light' ? 'dark' : 'light');
@@ -122,6 +122,28 @@ export default function Header({
       });
     }
   }, [userObj, accessStatus, isFreeTier, hasAccessToContent]);
+
+  // Handle escape key globally for mobile menu
+  useEffect(() => {
+    const handleEscapeKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && mobileMenuOpen) {
+        handleMobileMenuClose();
+      }
+    };
+
+    if (mobileMenuOpen) {
+      document.addEventListener('keydown', handleEscapeKey);
+      // Prevent body scroll when menu is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = 'unset';
+    }
+
+    return () => {
+      document.removeEventListener('keydown', handleEscapeKey);
+      document.body.style.overflow = 'unset';
+    };
+  }, [mobileMenuOpen, handleMobileMenuClose]);
 
   return (
     <header id="navigation" className={`bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-800 transition-all duration-200 ${className || ''}`}>
@@ -369,19 +391,20 @@ export default function Header({
 
         {/* Mobile menu panel */}
         {mobileMenuOpen && (
-          <div
-            className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50"
-            onClick={handleOutsideClick}
-            onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); handleEscapeClose(); } }}
-            role="button"
-            tabIndex={0}
-            aria-label="Close mobile menu"
-          >
+          <>
+            {/* Backdrop */}
+            <div
+              className="lg:hidden fixed inset-0 z-40 bg-black bg-opacity-50"
+              onClick={handleMobileMenuClose}
+              aria-hidden="true"
+            />
+            
+            {/* Menu Panel */}
             <div
               id="mobile-navigation-menu"
               ref={mobileMenuRef as React.RefObject<HTMLDivElement>}
-              className="absolute top-0 right-0 w-80 max-w-[85vw] h-full bg-white dark:bg-gray-800 shadow-xl animate-in slide-in-from-right-2 duration-300 overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
+              className="lg:hidden fixed top-0 right-0 z-50 w-80 max-w-[85vw] h-full bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out overflow-y-auto"
+              onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); handleEscapeClose(); } }}
               role="dialog"
               aria-modal="true"
               aria-label="Mobile navigation menu"
@@ -549,7 +572,7 @@ export default function Header({
                   </div>
               </nav>
             </div>
-          </div>
+          </>
         )}
       </div>
     </header>

@@ -206,9 +206,9 @@ export default function Header({
               }`} />
             </button>
 
-            {/* User Dropdown or Sign In Button - Hide on mobile, show mobile menu instead */}
+            {/* User Dropdown or Sign In Button - Hide on mobile and tablet, show only on desktop */}
             {isAuthenticated ? (
-              <div className="hidden md:flex">
+              <div className="hidden lg:flex">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -285,17 +285,17 @@ export default function Header({
                 variant="default"
                 size="sm"
                 onClick={handleLogin}
-                className="hidden md:flex"
+                className="hidden lg:flex"
               >
                 <User className="mr-2 h-4 w-4" />
                 Sign In
               </Button>
             )}
 
-            {/* Mobile Menu Toggle (Hamburger) - Always visible on mobile */}
+            {/* Mobile Menu Toggle (Hamburger) - Visible on mobile and tablet */}
             <button
               type="button"
-              className={`md:hidden h-10 w-10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center ${
+              className={`lg:hidden h-10 w-10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center ${
                 mobileMenuOpen
                   ? 'bg-gray-100 dark:bg-gray-700 rotate-90'
                   : 'hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -344,7 +344,7 @@ export default function Header({
         {/* Mobile menu panel */}
         {mobileMenuOpen && (
           <div
-            className="md:hidden fixed inset-0 z-50 bg-black bg-opacity-50"
+            className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50"
             onClick={handleOutsideClick}
           >
             <div

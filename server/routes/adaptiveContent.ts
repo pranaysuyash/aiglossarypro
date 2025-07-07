@@ -201,7 +201,8 @@ export function registerAdaptiveContentRoutes(app: Express): void {
 
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return sendErrorResponse(res, ErrorCode.VALIDATION_ERROR, 'Invalid query parameters', error.errors);
+        return sendErrorResponse(res, ErrorCode.VALIDATION_ERROR, 'Invalid query parameters', 
+          error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', '));
       }
 
       console.error('Get adaptive recommendations error:', error);
@@ -475,7 +476,8 @@ export function registerAdaptiveContentRoutes(app: Express): void {
 
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return sendErrorResponse(res, ErrorCode.VALIDATION_ERROR, 'Invalid feedback data', error.errors);
+        return sendErrorResponse(res, ErrorCode.VALIDATION_ERROR, 'Invalid feedback data', 
+          error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', '));
       }
 
       console.error('Process adaptive feedback error:', error);

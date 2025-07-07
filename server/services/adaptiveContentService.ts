@@ -12,7 +12,7 @@ import {
   userProfiles,
   type UserInteraction 
 } from '../../shared/schema';
-import { eq, and, gte, desc, sql, count, avg, sum, inArray } from 'drizzle-orm';
+import { eq, and, gte, desc, sql, count, avg, sum, inArray, not } from 'drizzle-orm';
 
 export interface LearningPattern {
   userId: string;
@@ -291,7 +291,8 @@ class AdaptiveContentService {
     const sessions = new Map<string, UserInteraction[]>();
     
     interactions.forEach(interaction => {
-      const sessionId = interaction.metadata?.sessionId as string;
+      const metadata = interaction.metadata as any;
+      const sessionId = metadata?.sessionId as string;
       if (sessionId) {
         if (!sessions.has(sessionId)) {
           sessions.set(sessionId, []);
@@ -343,7 +344,7 @@ class AdaptiveContentService {
 
   private async analyzeCategoryAffinities(userId: string, interactions: UserInteraction[]) {
     // Get term categories from interactions
-    const termIds = [...new Set(interactions.map(i => i.termId).filter(Boolean))];
+    const termIds = [...new Set(interactions.map(i => i.termId).filter((id): id is string => Boolean(id)))];
     
     if (termIds.length === 0) return [];
     
@@ -356,7 +357,7 @@ class AdaptiveContentService {
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
-      .where(inArray(terms.id, termIds));
+      .where(termIds.length > 0 ? inArray(terms.id, termIds) : sql`1=0`);
 
     // Calculate category engagement
     const categoryStats = new Map<string, { 
@@ -420,7 +421,7 @@ class AdaptiveContentService {
   private analyzeProgressionPatterns(interactions: UserInteraction[]) {
     const viewInteractions = interactions.filter(i => i.interactionType === 'view');
     const uniqueTerms = new Set(viewInteractions.map(i => i.termId));
-    const sessionCount = new Set(interactions.map(i => i.metadata?.sessionId)).size;
+    const sessionCount = new Set(interactions.map(i => (i.metadata as any)?.sessionId)).size;
     
     return {
       averageTermsPerSession: viewInteractions.length / Math.max(sessionCount, 1),
@@ -451,7 +452,7 @@ class AdaptiveContentService {
         eq(userInteractions.interactionType, 'view')
       ));
 
-    const viewedIds = viewedTermIds.map(v => v.termId).filter(Boolean);
+    const viewedIds = viewedTermIds.map(v => v.termId).filter((id): id is string => Boolean(id));
     
     // Get candidate terms from preferred categories
     const candidateTerms = await db
@@ -460,11 +461,11 @@ class AdaptiveContentService {
         name: terms.name,
         categoryId: terms.categoryId,
         categoryName: categories.name,
-        difficulty: sql<number>`COALESCE(${terms.difficulty}, 0.5)`.as('difficulty')
+        difficulty: sql<number>`0.5`.as('difficulty') // Default difficulty since not in schema
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
-      .where(viewedIds.length > 0 ? sql`${terms.id} NOT IN (${viewedIds.join(',')})` : sql`1=1`)
+      .where(viewedIds.length > 0 ? not(inArray(terms.id, viewedIds)) : sql`1=1`)
       .limit(50);
 
     return candidateTerms;

@@ -347,6 +347,8 @@ const ThreeDKnowledgeGraph: React.FC<ThreeDKnowledgeGraphProps> = ({
   const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(true);
   const [filterByCategory, setFilterByCategory] = useState<string[]>([]);
+  const [focusedNodeIndex, setFocusedNodeIndex] = useState(0);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   // Generate sample nodes if none provided
   useEffect(() => {
@@ -419,6 +421,93 @@ const ThreeDKnowledgeGraph: React.FC<ThreeDKnowledgeGraphProps> = ({
     setHighlightedNodes(new Set());
   };
 
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!canvasRef.current?.contains(document.activeElement)) return;
+      
+      const visibleNodes = filteredNodes;
+      if (visibleNodes.length === 0) return;
+
+      switch (event.key) {
+        case 'ArrowRight':
+        case 'd':
+        case 'D':
+          event.preventDefault();
+          setFocusedNodeIndex((prev) => (prev + 1) % visibleNodes.length);
+          break;
+        case 'ArrowLeft':
+        case 'a':
+        case 'A':
+          event.preventDefault();
+          setFocusedNodeIndex((prev) => (prev - 1 + visibleNodes.length) % visibleNodes.length);
+          break;
+        case 'ArrowUp':
+        case 'w':
+        case 'W':
+          event.preventDefault();
+          // Navigate to connected nodes
+          if (selectedNode) {
+            const connectedNodes = visibleNodes.filter(node => 
+              selectedNode.connections.includes(node.id)
+            );
+            if (connectedNodes.length > 0) {
+              setFocusedNodeIndex(visibleNodes.indexOf(connectedNodes[0]));
+            }
+          }
+          break;
+        case 'ArrowDown':
+        case 's':
+        case 'S':
+          event.preventDefault();
+          // Navigate to parent nodes (nodes that connect to current)
+          if (selectedNode) {
+            const parentNodes = visibleNodes.filter(node => 
+              node.connections.includes(selectedNode.id)
+            );
+            if (parentNodes.length > 0) {
+              setFocusedNodeIndex(visibleNodes.indexOf(parentNodes[0]));
+            }
+          }
+          break;
+        case 'Enter':
+        case ' ':
+          event.preventDefault();
+          if (visibleNodes[focusedNodeIndex]) {
+            handleNodeSelect(visibleNodes[focusedNodeIndex]);
+          }
+          break;
+        case 'Escape':
+          event.preventDefault();
+          resetView();
+          break;
+        case '?':
+          event.preventDefault();
+          // Show keyboard shortcuts help
+          alert(`Keyboard Shortcuts:
+→ / D: Next node
+← / A: Previous node  
+↑ / W: Connected node
+↓ / S: Parent node
+Enter/Space: Select node
+Escape: Reset view
+?: Show this help`);
+          break;
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [filteredNodes, focusedNodeIndex, selectedNode, handleNodeSelect]);
+
+  // Update selected node when focus changes
+  useEffect(() => {
+    if (filteredNodes[focusedNodeIndex] && filteredNodes[focusedNodeIndex] !== selectedNode) {
+      const focusedNode = filteredNodes[focusedNodeIndex];
+      setHighlightedNodes(new Set([focusedNode.id]));
+    }
+  }, [focusedNodeIndex, filteredNodes, selectedNode]);
+
   const filteredNodes = useMemo(() => {
     if (filterByCategory.length === 0) return nodes;
     return nodes.filter(node => filterByCategory.includes(node.category));
@@ -447,15 +536,18 @@ const ThreeDKnowledgeGraph: React.FC<ThreeDKnowledgeGraphProps> = ({
             variant="outline"
             size="sm"
             onClick={() => setShowControls(!showControls)}
+            aria-label={`${showControls ? 'Hide' : 'Show'} control panel`}
+            aria-expanded={showControls}
           >
-            <Settings className="h-4 w-4" />
+            <Settings className="h-4 w-4" aria-hidden="true" />
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={resetView}
+            aria-label="Reset view and clear selection"
           >
-            <RotateCcw className="h-4 w-4" />
+            <RotateCcw className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
       </div>
@@ -465,7 +557,26 @@ const ThreeDKnowledgeGraph: React.FC<ThreeDKnowledgeGraphProps> = ({
         <div className="lg:col-span-3">
           <Card>
             <CardContent className="p-0">
-              <div className="h-96 w-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden">
+              <div 
+                ref={canvasRef}
+                className="h-96 w-full bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg overflow-hidden"
+                tabIndex={0}
+                role="application"
+                aria-label="3D Knowledge Graph - Interactive visualization of AI/ML concepts. Use arrow keys or WASD to navigate, Enter/Space to select, Escape to reset, ? for help"
+                aria-describedby="graph-instructions"
+                onFocus={() => {
+                  // Ensure focused node is visible when canvas gets focus
+                  if (filteredNodes[focusedNodeIndex]) {
+                    setHighlightedNodes(new Set([filteredNodes[focusedNodeIndex].id]));
+                  }
+                }}
+              >
+                <div id="graph-instructions" className="sr-only">
+                  Use keyboard navigation: Arrow keys or WASD to move between nodes, 
+                  Enter or Space to select a node, Escape to reset view, 
+                  Question mark for help. {selectedNode ? `Currently selected: ${selectedNode.name}` : 'No node selected'}
+                  {filteredNodes[focusedNodeIndex] ? `, Currently focused: ${filteredNodes[focusedNodeIndex].name}` : ''}
+                </div>
                 <Canvas
                   camera={{ position: [0, 0, 15], fov: 75 }}
                   style={{ width: '100%', height: '100%' }}
@@ -499,23 +610,31 @@ const ThreeDKnowledgeGraph: React.FC<ThreeDKnowledgeGraphProps> = ({
                     variant="outline"
                     size="sm"
                     onClick={() => setIsPlaying(!isPlaying)}
+                    aria-label={`${isPlaying ? 'Pause' : 'Play'} camera animation`}
+                    aria-pressed={isPlaying}
                   >
-                    {isPlaying ? <Pause className="h-3 w-3" /> : <Play className="h-3 w-3" />}
+                    {isPlaying ? <Pause className="h-3 w-3" aria-hidden="true" /> : <Play className="h-3 w-3" aria-hidden="true" />}
                   </Button>
-                  <span className="text-xs text-gray-600">
+                  <span className="text-xs text-gray-600" aria-live="polite">
                     {isPlaying ? 'Playing' : 'Paused'}
                   </span>
                 </div>
                 
                 <div className="space-y-2">
-                  <Label className="text-xs">Speed: {animationSpeed[0]}x</Label>
+                  <Label htmlFor="animation-speed" className="text-xs">Speed: {animationSpeed[0]}x</Label>
                   <Slider
+                    id="animation-speed"
                     value={animationSpeed}
                     onValueChange={setAnimationSpeed}
                     max={3}
                     min={0.1}
                     step={0.1}
                     className="w-full"
+                    aria-label="Animation speed control"
+                    aria-valuemin={0.1}
+                    aria-valuemax={3}
+                    aria-valuenow={animationSpeed[0]}
+                    aria-valuetext={`${animationSpeed[0]}x speed`}
                   />
                 </div>
               </CardContent>

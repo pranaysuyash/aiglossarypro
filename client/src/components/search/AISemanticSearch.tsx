@@ -22,7 +22,7 @@ import {
   Target, 
   TrendingUp,
   Clock,
-  AlphabeticalSort,
+  ArrowUpDown,
   BarChart,
   X,
   ArrowRight,
@@ -259,23 +259,37 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
           <div className="space-y-4">
             {/* Main Search Bar */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Label htmlFor="semantic-search-input" className="sr-only">
+                Search AI/ML concepts with natural language
+              </Label>
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" aria-hidden="true" />
               <Input
+                id="semantic-search-input"
                 type="text"
                 placeholder="Search AI/ML concepts with natural language..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 className="pl-10 pr-12 text-lg"
                 autoFocus
+                aria-describedby="search-instructions"
+                aria-autocomplete="list"
+                role="searchbox"
+                aria-expanded={!!searchResults && searchResults.results.length > 0}
+                aria-label="AI semantic search input"
               />
+              <div id="search-instructions" className="sr-only">
+                Enter search terms to find AI and machine learning concepts. Use natural language for best results.
+                {searchResults && `Found ${searchResults.total} results`}
+              </div>
               {query && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => setQuery('')}
                   className="absolute right-2 top-1/2 transform -translate-y-1/2 h-6 w-6 p-0"
+                  aria-label="Clear search query"
                 >
-                  <X className="h-3 w-3" />
+                  <X className="h-3 w-3" aria-hidden="true" />
                 </Button>
               )}
             </div>
@@ -377,7 +391,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
                     { value: 'relevance', label: 'Relevance', icon: Target },
                     { value: 'popularity', label: 'Popularity', icon: TrendingUp },
                     { value: 'recent', label: 'Most Recent', icon: Clock },
-                    { value: 'name', label: 'Alphabetical', icon: AlphabeticalSort }
+                    { value: 'name', label: 'Alphabetical', icon: ArrowUpDown }
                   ].map(({ value, label, icon: Icon }) => (
                     <div key={value} className="flex items-center space-x-2">
                       <Checkbox

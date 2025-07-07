@@ -348,6 +348,52 @@ class ServiceWorkerManager {
     this.installListeners.forEach(listener => listener());
   }
 
+  /**
+   * Check content freshness and refresh if needed
+   */
+  public async checkContentFreshness(): Promise<void> {
+    if (!this.swRegistration?.active) {
+      return;
+    }
+
+    try {
+      this.swRegistration.active.postMessage({ type: 'CHECK_CONTENT_FRESHNESS' });
+    } catch (error) {
+      console.error('Failed to check content freshness:', error);
+    }
+  }
+
+  /**
+   * Force refresh pre-cached content
+   */
+  public async forceRefreshContent(): Promise<number> {
+    if (!this.swRegistration?.active) {
+      return 0;
+    }
+
+    try {
+      return new Promise((resolve) => {
+        const messageChannel = new MessageChannel();
+        messageChannel.port1.onmessage = (event) => {
+          if (event.data.type === 'REFRESH_COMPLETE') {
+            resolve(event.data.count || 0);
+          }
+        };
+
+        this.swRegistration!.active!.postMessage(
+          { type: 'FORCE_REFRESH_CONTENT' },
+          [messageChannel.port2]
+        );
+
+        // Timeout after 30 seconds
+        setTimeout(() => resolve(0), 30000);
+      });
+    } catch (error) {
+      console.error('Failed to force refresh content:', error);
+      return 0;
+    }
+  }
+
   // Getters
   public get isOffline(): boolean {
     return !this.isOnline;

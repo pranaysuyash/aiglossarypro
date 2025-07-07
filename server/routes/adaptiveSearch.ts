@@ -6,6 +6,7 @@
 import type { Express, Request, Response } from "express";
 import { adaptiveSearch, type AdaptiveSearchOptions } from "../adaptiveSearchService";
 import { searchQuerySchema, paginationSchema } from "../middleware/security";
+import DOMPurify from 'isomorphic-dompurify';
 
 /**
  * Register adaptive search routes
@@ -381,8 +382,21 @@ function calculateSuggestionScore(result: any, query: string): number {
 function highlightSearchTerms(text: string, query: string): string {
   if (!text || !query) return text;
   
-  const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
-  return text.replace(regex, '<mark>$1</mark>');
+  // Sanitize the input text first
+  const sanitizedText = DOMPurify.sanitize(text, { ALLOWED_TAGS: [] });
+  
+  // Escape special regex characters in the query
+  const escapedQuery = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  const regex = new RegExp(`(${escapedQuery})`, 'gi');
+  
+  // Replace matches with mark tags
+  const highlighted = sanitizedText.replace(regex, '<mark>$1</mark>');
+  
+  // Sanitize the final output to ensure only safe HTML is returned
+  return DOMPurify.sanitize(highlighted, { 
+    ALLOWED_TAGS: ['mark'],
+    ALLOWED_ATTR: [] 
+  });
 }
 
 function calculateRelationshipType(result: any): string {

@@ -21,7 +21,7 @@ import {
   Target,
   Map,
   Sparkles,
-  Cube,
+  Box,
   RotateCcw
 } from 'lucide-react';
 
@@ -75,7 +75,7 @@ const ThreeDVisualizationPage: React.FC = () => {
               
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 flex items-center">
-                  <Cube className="h-8 w-8 mr-3 text-blue-600" />
+                  <Box className="h-8 w-8 mr-3 text-blue-600" />
                   3D Knowledge Visualization
                 </h1>
                 <p className="text-gray-600 mt-1">

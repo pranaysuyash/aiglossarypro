@@ -161,6 +161,16 @@ export const usePWA = () => {
     return serviceWorkerManager.isStandaloneMode();
   }, []);
 
+  // Check content freshness and refresh if needed
+  const checkContentFreshness = useCallback(async () => {
+    await serviceWorkerManager.checkContentFreshness();
+  }, []);
+
+  // Force refresh pre-cached content
+  const refreshContent = useCallback(async (): Promise<number> => {
+    return await serviceWorkerManager.forceRefreshContent();
+  }, []);
+
   // Initialize PWA functionality
   useEffect(() => {
     // Set up capabilities using serviceWorkerManager
@@ -203,8 +213,11 @@ export const usePWA = () => {
     // Get initial cache info
     getCacheInfo();
 
+    // Check content freshness when the hook initializes
+    checkContentFreshness();
+
     // No cleanup needed as serviceWorkerManager handles its own event listeners
-  }, [getCacheInfo]);
+  }, [getCacheInfo, checkContentFreshness]);
 
   return {
     // State
@@ -223,6 +236,8 @@ export const usePWA = () => {
     // Utilities
     formatCacheSize,
     isStandaloneMode,
+    checkContentFreshness,
+    refreshContent,
   };
 };
 

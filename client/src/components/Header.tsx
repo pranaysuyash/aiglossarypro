@@ -39,9 +39,10 @@ export default function Header({
   const { theme, setTheme } = useTheme();
   const { accessStatus, isFreeTier, hasAccess: hasAccessToContent } = useAccess();
 
-  // Focus trap for mobile menu
-  const mobileMenuRef = useFocusTrap(mobileMenuOpen);
-  useFocusLock(mobileMenuOpen);
+  // Focus trap for mobile menu - temporarily disabled for debugging
+  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  // const mobileMenuRef = useFocusTrap(mobileMenuOpen);
+  // useFocusLock(mobileMenuOpen);
 
   // Handle escape key to close mobile menu
   const handleEscapeClose = () => {
@@ -402,11 +403,23 @@ export default function Header({
             <div
               id="mobile-navigation-menu"
               ref={mobileMenuRef as React.RefObject<HTMLDivElement>}
-              className="lg:hidden fixed top-0 right-0 z-50 w-80 max-w-[85vw] h-full bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out overflow-y-auto"
-              onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); handleEscapeClose(); } }}
+              className="lg:hidden fixed top-0 right-0 z-50 w-80 max-w-[85vw] h-full bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out"
               role="dialog"
               aria-modal="true"
               aria-label="Mobile navigation menu"
+              style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
+              onClick={(e) => {
+                // Prevent clicks inside the menu from bubbling to the backdrop
+                e.stopPropagation();
+                console.log('Menu panel clicked');
+              }}
+              onKeyDown={(e) => {
+                // Handle keyboard events for accessibility
+                if (e.key === 'Escape') {
+                  e.preventDefault();
+                  handleEscapeClose();
+                }
+              }}
             >
               {/* Mobile Menu Header */}
               <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
@@ -456,28 +469,28 @@ export default function Header({
                 <div className="mb-6">
                   <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Navigation</div>
                   <div className="space-y-1">
-                    <Link href="/" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/" onClick={(e) => { console.log('Home clicked'); handleMobileMenuClose(); }} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] cursor-pointer">
                       <Home className="mr-3 h-5 w-5" /> Home
                     </Link>
-                    <Link href="/dashboard" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/dashboard" onClick={(e) => { console.log('Dashboard clicked'); handleMobileMenuClose(); }} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] cursor-pointer">
                       <BarChart3 className="mr-3 h-5 w-5" /> Dashboard
                     </Link>
-                    <Link href="/categories" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/categories" onClick={(e) => { console.log('Categories clicked'); handleMobileMenuClose(); }} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] cursor-pointer">
                       <Grid3X3 className="mr-3 h-5 w-5" /> Categories
                     </Link>
-                    <Link href="/learning-paths" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/learning-paths" onClick={(e) => { console.log('Learning Paths clicked'); handleMobileMenuClose(); }} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] cursor-pointer">
                       <Bookmark className="mr-3 h-5 w-5" /> Learning Paths
                     </Link>
-                    <Link href="/discovery" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/discovery" onClick={(e) => { console.log('Discovery clicked'); handleMobileMenuClose(); }} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] cursor-pointer">
                       <GitBranch className="mr-3 h-5 w-5" /> Discovery
                     </Link>
-                    <Link href="/surprise-me" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/20 transition-colors min-h-[44px] text-purple-600 dark:text-purple-400">
+                    <Link href="/surprise-me" onClick={(e) => { console.log('Surprise Me clicked'); handleMobileMenuClose(); }} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/20 transition-colors min-h-[44px] text-purple-600 dark:text-purple-400 cursor-pointer">
                       <Sparkles className="mr-3 h-5 w-5" /> Surprise Me
                     </Link>
-                    <Link href="/code-examples" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/code-examples" onClick={(e) => { console.log('Code Examples clicked'); handleMobileMenuClose(); }} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] cursor-pointer">
                       <Settings className="mr-3 h-5 w-5" /> Code Examples
                     </Link>
-                    <Link href="/trending" onClick={handleMobileMenuClose} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                    <Link href="/trending" onClick={(e) => { console.log('Trending clicked'); handleMobileMenuClose(); }} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] cursor-pointer">
                       <BarChart3 className="mr-3 h-5 w-5" /> Trending
                     </Link>
                   </div>
@@ -507,8 +520,14 @@ export default function Header({
                     <div className="space-y-1">
                         <button 
                           type="button"
-                          className="mobile-nav-item w-full flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] text-left" 
-                          onClick={() => { toggleTheme(); handleMobileMenuClose(); }}
+                          className="mobile-nav-item w-full flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] text-left cursor-pointer" 
+                          onClick={(e) => { 
+                            e.preventDefault(); 
+                            e.stopPropagation(); 
+                            console.log('Theme toggle clicked'); 
+                            toggleTheme(); 
+                            handleMobileMenuClose(); 
+                          }}
                         >
                             {theme === 'dark' ? <Sun className="mr-3 h-5 w-5" /> : <Moon className="mr-3 h-5 w-5" />}
                             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}

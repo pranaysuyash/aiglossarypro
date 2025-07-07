@@ -25,56 +25,101 @@ export function registerTermRoutes(app: Express): void {
   const authMiddleware = mockIsAuthenticated;
   
   /**
-   * @swagger
+   * @openapi
    * /api/terms:
    *   get:
    *     tags:
    *       - Terms
    *     summary: Get paginated list of AI/ML terms
-   *     description: Retrieve a paginated list of AI/ML terms with optional filtering and sorting
+   *     description: Retrieve a paginated list of AI/ML terms with optional filtering and sorting. Supports field selection for optimized responses.
    *     parameters:
-   *       - name: page
-   *         in: query
+   *       - in: query
+   *         name: page
    *         schema:
    *           type: integer
    *           minimum: 1
    *           default: 1
-   *       - name: limit
-   *         in: query
+   *         description: Page number for pagination
+   *       - in: query
+   *         name: limit
    *         schema:
    *           type: integer
    *           minimum: 1
-   *           maximum: 50
-   *           default: 12
-   *       - name: search
-   *         in: query
+   *           maximum: 100
+   *           default: 24
+   *         description: Number of terms per page
+   *       - in: query
+   *         name: search
    *         schema:
    *           type: string
-   *       - name: category
-   *         in: query
+   *         description: Search query to filter terms by name or definition
+   *       - in: query
+   *         name: category
    *         schema:
    *           type: string
-   *       - name: sortBy
-   *         in: query
+   *         description: Filter terms by category ID
+   *       - in: query
+   *         name: sortBy
    *         schema:
    *           type: string
    *           enum: [name, viewCount, createdAt]
    *           default: name
-   *       - name: sortOrder
-   *         in: query
+   *         description: Field to sort by
+   *       - in: query
+   *         name: sortOrder
    *         schema:
    *           type: string
    *           enum: [asc, desc]
    *           default: asc
+   *         description: Sort order
+   *       - in: query
+   *         name: fields
+   *         schema:
+   *           type: string
+   *           default: "id,name,shortDefinition,definition,viewCount,categoryId,category"
+   *         description: Comma-separated list of fields to include in response
    *     responses:
    *       200:
    *         description: Successfully retrieved terms
    *         content:
    *           application/json:
    *             schema:
-   *               $ref: '#/components/schemas/PaginatedResponse'
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Term'
+   *                 total:
+   *                   type: integer
+   *                   description: Total number of terms matching the criteria
+   *                 page:
+   *                   type: integer
+   *                   description: Current page number
+   *                 limit:
+   *                   type: integer
+   *                   description: Number of terms per page
+   *                 hasMore:
+   *                   type: boolean
+   *                   description: Whether there are more pages available
+   *                 pagination:
+   *                   type: object
+   *                   properties:
+   *                     totalPages:
+   *                       type: integer
+   *                     hasNext:
+   *                       type: boolean
+   *                     hasPrev:
+   *                       type: boolean
    *       500:
    *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
    */
   // Get all terms with optimized pagination and field selection
   app.get('/api/terms', async (req, res) => {
@@ -251,6 +296,54 @@ export function registerTermRoutes(app: Express): void {
       });
     }
   });
+
+  /**
+   * @openapi
+   * /api/terms/recently-viewed:
+   *   get:
+   *     tags:
+   *       - Terms
+   *     summary: Get recently viewed terms
+   *     description: Retrieve terms that the authenticated user has recently viewed
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 50
+   *           default: 10
+   *         description: Maximum number of recently viewed terms to return
+   *     responses:
+   *       200:
+   *         description: Recently viewed terms retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Term'
+   *       401:
+   *         description: Authentication required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
 
   /**
    * @openapi
@@ -614,6 +707,93 @@ export function registerTermRoutes(app: Express): void {
     }
   });
 
+  /**
+   * @openapi
+   * /api/terms/{id}:
+   *   get:
+   *     tags:
+   *       - Terms
+   *     summary: Get term by ID
+   *     description: Retrieve a specific term by its ID with smart access control and preview functionality for unauthenticated users
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The term ID
+   *     responses:
+   *       200:
+   *         description: Term retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   allOf:
+   *                     - $ref: '#/components/schemas/Term'
+   *                     - type: object
+   *                       properties:
+   *                         isPreview:
+   *                           type: boolean
+   *                           description: Whether this is a preview version
+   *                         requiresAuth:
+   *                           type: boolean
+   *                           description: Whether authentication is required for full access
+   *                         requiresUpgrade:
+   *                           type: boolean
+   *                           description: Whether upgrade is required
+   *                         accessType:
+   *                           type: string
+   *                           description: Type of access granted
+   *                         userLimits:
+   *                           type: object
+   *                           description: User access limit information
+   *                         limitInfo:
+   *                           type: object
+   *                           description: Current limit status
+   *                 message:
+   *                   type: string
+   *                   description: Additional message about access status
+   *       400:
+   *         description: Invalid term ID format
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Access denied
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: false
+   *                 error:
+   *                   type: string
+   *                   example: "Access denied"
+   *                 reason:
+   *                   type: string
+   *                   description: Specific reason for access denial
+   *       404:
+   *         description: Term not found
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   // Get single term by ID with smart access control (must be last to avoid conflicts with named routes)
   app.get('/api/terms/:id', (req, res, next) => {
     try {
@@ -753,6 +933,57 @@ export function registerTermRoutes(app: Express): void {
     }
   });
 
+  /**
+   * @openapi
+   * /api/terms/{id}/recommendations:
+   *   get:
+   *     tags:
+   *       - Terms
+   *     summary: Get term recommendations
+   *     description: Retrieve recommended terms related to a specific term
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The term ID to get recommendations for
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 50
+   *           default: 5
+   *         description: Maximum number of recommendations to return
+   *     responses:
+   *       200:
+   *         description: Recommendations retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Term'
+   *       400:
+   *         description: Invalid term ID format
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   // Get term recommendations
   app.get('/api/terms/:id/recommendations', (req, res, next) => {
     try {

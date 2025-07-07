@@ -28,6 +28,8 @@ import { registerRelationshipRoutes } from "./relationships";
 import { registerTrendingRoutes } from "./trending";
 import { registerPersonalizedHomepageRoutes } from "./personalizedHomepage";
 import { registerEngagementRoutes } from "./engagement";
+import { registerAdaptiveContentRoutes } from "./adaptiveContent";
+import predictiveAnalyticsRoutes from "./predictiveAnalytics";
 import { log as logger } from "../utils/logger";
 
 // Import newsletter routes
@@ -177,6 +179,14 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Register Surprise Discovery routes
   app.use('/api/surprise-discovery', surpriseDiscoveryRoutes);
   logger.info("✅ Surprise Discovery routes registered");
+  
+  // Register Adaptive Content routes
+  registerAdaptiveContentRoutes(app);
+  logger.info("✅ Adaptive Content routes registered");
+  
+  // Register Predictive Analytics routes
+  app.use('/api/predictive-analytics', predictiveAnalyticsRoutes);
+  logger.info("✅ Predictive Analytics routes registered");
   
   // Health check endpoint
   app.get('/api/health', (_, res) => {

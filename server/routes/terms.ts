@@ -134,7 +134,45 @@ export function registerTermRoutes(app: Express): void {
     }
   });
 
-  // Get featured terms
+  /**
+   * @openapi
+   * /api/terms/featured:
+   *   get:
+   *     tags:
+   *       - Terms
+   *     summary: Get featured terms
+   *     description: Retrieve a list of featured AI/ML terms selected for prominence
+   *     parameters:
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 50
+   *           default: 10
+   *         description: Maximum number of featured terms to return
+   *     responses:
+   *       200:
+   *         description: Featured terms retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Term'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.get('/api/terms/featured', async (req: Request, res: Response) => {
     try {
       const limit = parseLimit(typeof req.query.limit === 'string' ? req.query.limit : String(req.query.limit || DEFAULT_LIMITS.FEATURED_TERMS), DEFAULT_LIMITS.FEATURED_TERMS, DEFAULT_LIMITS.TERMS);
@@ -155,7 +193,45 @@ export function registerTermRoutes(app: Express): void {
     }
   });
 
-  // Get trending terms
+  /**
+   * @openapi
+   * /api/terms/trending:
+   *   get:
+   *     tags:
+   *       - Terms
+   *     summary: Get trending terms
+   *     description: Retrieve terms that are currently trending based on view count and engagement
+   *     parameters:
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 50
+   *           default: 10
+   *         description: Maximum number of trending terms to return
+   *     responses:
+   *       200:
+   *         description: Trending terms retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Term'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.get('/api/terms/trending', async (req: Request, res: Response) => {
     try {
       const limit = parseLimit(typeof req.query.limit === 'string' ? req.query.limit : String(req.query.limit || DEFAULT_LIMITS.FEATURED_TERMS), DEFAULT_LIMITS.FEATURED_TERMS, DEFAULT_LIMITS.TERMS);
@@ -176,7 +252,53 @@ export function registerTermRoutes(app: Express): void {
     }
   });
 
-  // Get recently viewed terms (user-specific)
+  /**
+   * @openapi
+   * /api/terms/recently-viewed:
+   *   get:
+   *     tags:
+   *       - Terms
+   *     summary: Get recently viewed terms
+   *     description: Retrieve terms that the authenticated user has recently viewed
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 50
+   *           default: 10
+   *         description: Maximum number of recently viewed terms to return
+   *     responses:
+   *       200:
+   *         description: Recently viewed terms retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Term'
+   *       401:
+   *         description: Authentication required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.get('/api/terms/recently-viewed', authMiddleware, async (req: any, res: Response) => {
     try {
       const userId = req.user?.claims?.sub;
@@ -215,7 +337,45 @@ export function registerTermRoutes(app: Express): void {
     }
   });
 
-  // Get recent terms (general recent terms, not user-specific)
+  /**
+   * @openapi
+   * /api/terms/recent:
+   *   get:
+   *     tags:
+   *       - Terms
+   *     summary: Get recent terms
+   *     description: Retrieve the most recently created terms in the system
+   *     parameters:
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 50
+   *           default: 10
+   *         description: Maximum number of recent terms to return
+   *     responses:
+   *       200:
+   *         description: Recent terms retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Term'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.get('/api/terms/recent', async (req: Request, res: Response) => {
     try {
       const { limit = DEFAULT_LIMITS.FEATURED_TERMS } = req.query;
@@ -244,7 +404,45 @@ export function registerTermRoutes(app: Express): void {
     }
   });
 
-  // Get recommended terms (general recommendations)
+  /**
+   * @openapi
+   * /api/terms/recommended:
+   *   get:
+   *     tags:
+   *       - Terms
+   *     summary: Get recommended terms
+   *     description: Retrieve general term recommendations based on popularity and quality
+   *     parameters:
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 50
+   *           default: 10
+   *         description: Maximum number of recommended terms to return
+   *     responses:
+   *       200:
+   *         description: Recommended terms retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Term'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.get('/api/terms/recommended', async (req: Request, res: Response) => {
     try {
       const { limit = DEFAULT_LIMITS.FEATURED_TERMS } = req.query;
@@ -269,7 +467,87 @@ export function registerTermRoutes(app: Express): void {
     }
   });
 
-  // Search terms with advanced filters and database-level pagination
+  /**
+   * @openapi
+   * /api/terms/search:
+   *   get:
+   *     tags:
+   *       - Terms
+   *     summary: Search terms with advanced filters
+   *     description: Search for terms using full-text search with optional category filtering and pagination
+   *     parameters:
+   *       - in: query
+   *         name: q
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: Search query string
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           default: 1
+   *         description: Page number for pagination
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: integer
+   *           minimum: 1
+   *           maximum: 50
+   *           default: 12
+   *         description: Number of results per page
+   *       - in: query
+   *         name: category
+   *         schema:
+   *           type: string
+   *         description: Filter results by category
+   *       - in: query
+   *         name: fields
+   *         schema:
+   *           type: string
+   *           default: "id,name,shortDefinition,viewCount"
+   *         description: Comma-separated list of fields to return
+   *     responses:
+   *       200:
+   *         description: Search results retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/Term'
+   *                 total:
+   *                   type: integer
+   *                   example: 25
+   *                 page:
+   *                   type: integer
+   *                   example: 1
+   *                 limit:
+   *                   type: integer
+   *                   example: 12
+   *                 hasMore:
+   *                   type: boolean
+   *                   example: true
+   *       400:
+   *         description: Search query is required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.get('/api/terms/search', async (req: Request, res: Response) => {
     try {
       const {
@@ -507,7 +785,56 @@ export function registerTermRoutes(app: Express): void {
     }
   });
 
-  // Track term view
+  /**
+   * @openapi
+   * /api/terms/{id}/view:
+   *   post:
+   *     tags:
+   *       - Terms
+   *     summary: Track term view
+   *     description: Record that an authenticated user has viewed a specific term
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: id
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The ID of the term being viewed
+   *     responses:
+   *       200:
+   *         description: View tracked successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "View tracked successfully"
+   *       400:
+   *         description: Invalid term ID format
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       401:
+   *         description: User not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.post('/api/terms/:id/view', authMiddleware, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;

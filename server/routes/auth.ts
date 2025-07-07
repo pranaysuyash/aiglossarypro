@@ -20,7 +20,75 @@ export function registerAuthRoutes(app: Express): void {
     ? authenticateToken 
     : mockAuthenticateToken;
   
-  // Get current authenticated user
+  /**
+   * @openapi
+   * /api/auth/user:
+   *   get:
+   *     tags:
+   *       - Authentication
+   *     summary: Get current authenticated user
+   *     description: Retrieves the current authenticated user's information including profile data and subscription details
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: User information retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                       example: "user123"
+   *                     email:
+   *                       type: string
+   *                       example: "user@example.com"
+   *                     name:
+   *                       type: string
+   *                       example: "John Doe"
+   *                     avatar:
+   *                       type: string
+   *                       nullable: true
+   *                       example: "https://example.com/avatar.jpg"
+   *                     createdAt:
+   *                       type: string
+   *                       format: date-time
+   *                       example: "2023-01-01T00:00:00.000Z"
+   *                     isAdmin:
+   *                       type: boolean
+   *                       example: false
+   *                     lifetimeAccess:
+   *                       type: boolean
+   *                       example: false
+   *                     subscriptionTier:
+   *                       type: string
+   *                       enum: [free, premium, enterprise]
+   *                       example: "free"
+   *                     purchaseDate:
+   *                       type: string
+   *                       format: date-time
+   *                       nullable: true
+   *                       example: "2023-01-01T00:00:00.000Z"
+   *       401:
+   *         description: User not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.get('/api/auth/user', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
       // Check if user is logged out (for development mock auth)
@@ -72,7 +140,44 @@ export function registerAuthRoutes(app: Express): void {
     }
   });
 
-  // User settings routes
+  /**
+   * @openapi
+   * /api/settings:
+   *   get:
+   *     tags:
+   *       - User Settings
+   *     summary: Get user settings
+   *     description: Retrieves the current user's application settings and preferences
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: User settings retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   description: User settings object with various preference keys
+   *                   additionalProperties: true
+   *       401:
+   *         description: User not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.get('/api/settings', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
       const userInfo = getUserInfo(req);
@@ -98,6 +203,55 @@ export function registerAuthRoutes(app: Express): void {
     }
   });
 
+  /**
+   * @openapi
+   * /api/settings:
+   *   put:
+   *     tags:
+   *       - User Settings
+   *     summary: Update user settings
+   *     description: Updates the current user's application settings and preferences
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             description: User settings object with various preference keys
+   *             additionalProperties: true
+   *             example:
+   *               theme: "dark"
+   *               notifications: true
+   *               language: "en"
+   *     responses:
+   *       200:
+   *         description: User settings updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Settings updated successfully"
+   *       401:
+   *         description: User not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.put('/api/settings', authMiddleware, tokenMiddleware, async (req: Request, res: Response) => {
     try {
       const userInfo = getUserInfo(req);
@@ -125,7 +279,44 @@ export function registerAuthRoutes(app: Express): void {
     }
   });
 
-  // User data export
+  /**
+   * @openapi
+   * /api/user/export:
+   *   get:
+   *     tags:
+   *       - User Data
+   *     summary: Export user data
+   *     description: Exports all user data in JSON format for GDPR compliance and data portability
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: User data exported successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               description: Complete user data export including profile, settings, and activity
+   *               additionalProperties: true
+   *         headers:
+   *           Content-Disposition:
+   *             description: Attachment filename for download
+   *             schema:
+   *               type: string
+   *               example: 'attachment; filename="user-data-user123.json"'
+   *       401:
+   *         description: User not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.get('/api/user/export', authMiddleware, async (req: Request, res: Response) => {
     try {
       const userInfo = getUserInfo(req);
@@ -149,7 +340,43 @@ export function registerAuthRoutes(app: Express): void {
     }
   });
 
-  // Delete user data (GDPR compliance)
+  /**
+   * @openapi
+   * /api/user/data:
+   *   delete:
+   *     tags:
+   *       - User Data
+   *     summary: Delete user data
+   *     description: Permanently deletes all user data for GDPR compliance (right to be forgotten)
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: User data deleted successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "User data deleted successfully"
+   *       401:
+   *         description: User not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.delete('/api/user/data', authMiddleware, async (req: Request, res: Response) => {
     try {
       const userInfo = getUserInfo(req);

@@ -9,7 +9,113 @@ import { aiService } from "../../aiService";
 
 export function registerAdminTermsRoutes(app: Express): void {
   
-  // Get terms with admin filters and enhanced data
+  /**
+   * @openapi
+   * /api/admin/terms:
+   *   get:
+   *     tags:
+   *       - Admin Terms
+   *     summary: Get terms with admin filters and enhanced data
+   *     description: Retrieve terms with advanced filtering, sorting, and pagination for admin interface
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: query
+   *         name: search
+   *         schema:
+   *           type: string
+   *         description: Search terms by name or definition
+   *       - in: query
+   *         name: category
+   *         schema:
+   *           type: string
+   *         description: Filter by category
+   *       - in: query
+   *         name: verificationStatus
+   *         schema:
+   *           type: string
+   *           enum: [all, verified, unverified, flagged]
+   *         description: Filter by verification status
+   *       - in: query
+   *         name: aiGenerated
+   *         schema:
+   *           type: string
+   *           enum: [all, true, false]
+   *         description: Filter by AI generation status
+   *       - in: query
+   *         name: minQuality
+   *         schema:
+   *           type: string
+   *         description: Minimum quality score
+   *       - in: query
+   *         name: maxQuality
+   *         schema:
+   *           type: string
+   *         description: Maximum quality score
+   *       - in: query
+   *         name: page
+   *         schema:
+   *           type: string
+   *           default: "1"
+   *         description: Page number
+   *       - in: query
+   *         name: limit
+   *         schema:
+   *           type: string
+   *           default: "50"
+   *         description: Items per page
+   *       - in: query
+   *         name: sort
+   *         schema:
+   *           type: string
+   *           enum: [name, category, verificationStatus, qualityScore, createdAt, updatedAt]
+   *         description: Sort field
+   *       - in: query
+   *         name: order
+   *         schema:
+   *           type: string
+   *           enum: [asc, desc]
+   *           default: "desc"
+   *         description: Sort order
+   *     responses:
+   *       200:
+   *         description: Terms retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: array
+   *                   items:
+   *                     $ref: '#/components/schemas/AdminTerm'
+   *                 pagination:
+   *                   type: object
+   *                   properties:
+   *                     page:
+   *                       type: number
+   *                     limit:
+   *                       type: number
+   *                     total:
+   *                       type: number
+   *                     pages:
+   *                       type: number
+   *       403:
+   *         description: Admin privileges required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.get('/api/admin/terms', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -148,7 +254,100 @@ export function registerAdminTermsRoutes(app: Express): void {
     }
   });
 
-  // Bulk update terms
+  /**
+   * @openapi
+   * /api/admin/terms/bulk-update:
+   *   post:
+   *     tags:
+   *       - Admin Terms
+   *     summary: Bulk update terms
+   *     description: Update multiple terms in a single operation with comprehensive data changes
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               changes:
+   *                 type: array
+   *                 items:
+   *                   type: object
+   *                   properties:
+   *                     id:
+   *                       type: string
+   *                     name:
+   *                       type: string
+   *                     shortDefinition:
+   *                       type: string
+   *                     definition:
+   *                       type: string
+   *                     category:
+   *                       type: string
+   *                     subcategory:
+   *                       type: string
+   *                     characteristics:
+   *                       type: array
+   *                       items:
+   *                         type: string
+   *                     applications:
+   *                       type: array
+   *                       items:
+   *                         type: object
+   *                     mathFormulation:
+   *                       type: string
+   *                     relatedTerms:
+   *                       type: array
+   *                       items:
+   *                         type: string
+   *                     verificationStatus:
+   *                       type: string
+   *                       enum: [verified, unverified, flagged]
+   *                   required:
+   *                     - id
+   *               example:
+   *                 changes:
+   *                   - id: "term123"
+   *                     name: "Updated Term Name"
+   *                     verificationStatus: "verified"
+   *     responses:
+   *       200:
+   *         description: Terms updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Successfully updated 5 terms"
+   *                 updatedCount:
+   *                   type: number
+   *                   example: 5
+   *       400:
+   *         description: Invalid request - changes array required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Admin privileges required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.post('/api/admin/terms/bulk-update', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -225,7 +424,73 @@ export function registerAdminTermsRoutes(app: Express): void {
     }
   });
 
-  // Bulk verification status update
+  /**
+   * @openapi
+   * /api/admin/terms/bulk-verify:
+   *   post:
+   *     tags:
+   *       - Admin Terms
+   *     summary: Bulk verification status update
+   *     description: Update verification status for multiple terms simultaneously
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               termIds:
+   *                 type: array
+   *                 items:
+   *                   type: string
+   *                 description: Array of term IDs to update
+   *               verified:
+   *                 type: boolean
+   *                 description: Whether to mark terms as verified or unverified
+   *             required:
+   *               - termIds
+   *               - verified
+   *             example:
+   *               termIds: ["term123", "term456", "term789"]
+   *               verified: true
+   *     responses:
+   *       200:
+   *         description: Verification status updated successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Successfully marked 3 terms as verified"
+   *                 updatedCount:
+   *                   type: number
+   *                   example: 3
+   *       400:
+   *         description: Invalid request - term IDs array required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Admin privileges required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.post('/api/admin/terms/bulk-verify', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -353,7 +618,114 @@ export function registerAdminTermsRoutes(app: Express): void {
     }
   });
 
-  // Get term analytics and insights
+  /**
+   * @openapi
+   * /api/admin/terms/analytics:
+   *   get:
+   *     tags:
+   *       - Admin Terms
+   *     summary: Get term analytics and insights
+   *     description: Retrieve comprehensive analytics and insights about terms including statistics, breakdowns, and trends
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Analytics retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     overview:
+   *                       type: object
+   *                       properties:
+   *                         totalTerms:
+   *                           type: number
+   *                           example: 1250
+   *                         aiGenerated:
+   *                           type: number
+   *                           example: 450
+   *                         verified:
+   *                           type: number
+   *                           example: 800
+   *                         unverified:
+   *                           type: number
+   *                           example: 350
+   *                         flagged:
+   *                           type: number
+   *                           example: 100
+   *                         highQuality:
+   *                           type: number
+   *                           example: 500
+   *                         mediumQuality:
+   *                           type: number
+   *                           example: 600
+   *                         lowQuality:
+   *                           type: number
+   *                           example: 150
+   *                         avgQualityScore:
+   *                           type: number
+   *                           example: 72.5
+   *                         avgRating:
+   *                           type: number
+   *                           example: 4.2
+   *                     categoryBreakdown:
+   *                       type: array
+   *                       items:
+   *                         type: object
+   *                         properties:
+   *                           category:
+   *                             type: string
+   *                           count:
+   *                             type: number
+   *                           aiGenerated:
+   *                             type: number
+   *                           verified:
+   *                             type: number
+   *                           avgQuality:
+   *                             type: number
+   *                     recentActivity:
+   *                       type: array
+   *                       items:
+   *                         type: object
+   *                         properties:
+   *                           id:
+   *                             type: string
+   *                           name:
+   *                             type: string
+   *                           category:
+   *                             type: string
+   *                           aiGenerated:
+   *                             type: boolean
+   *                           verificationStatus:
+   *                             type: string
+   *                           qualityScore:
+   *                             type: number
+   *                           createdAt:
+   *                             type: string
+   *                             format: date-time
+   *                           updatedAt:
+   *                             type: string
+   *                             format: date-time
+   *       403:
+   *         description: Admin privileges required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.get('/api/admin/terms/analytics', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -525,7 +897,83 @@ export function registerAdminTermsRoutes(app: Express): void {
     }
   });
 
-  // Create single term with AI assistance
+  /**
+   * @openapi
+   * /api/admin/terms/create-single:
+   *   post:
+   *     tags:
+   *       - Admin Terms
+   *     summary: Create single term with AI assistance
+   *     description: Create a new term with optional AI-powered content generation for enhanced definitions and metadata
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               name:
+   *                 type: string
+   *                 description: The name of the term
+   *               shortDefinition:
+   *                 type: string
+   *                 description: A brief definition of the term
+   *               definition:
+   *                 type: string
+   *                 description: A detailed definition of the term
+   *               category:
+   *                 type: string
+   *                 description: The category the term belongs to
+   *               useAI:
+   *                 type: boolean
+   *                 description: Whether to use AI for content generation
+   *                 default: false
+   *             required:
+   *               - name
+   *               - category
+   *             example:
+   *               name: "Neural Network"
+   *               category: "Machine Learning"
+   *               useAI: true
+   *     responses:
+   *       200:
+   *         description: Term created successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   description: The created term with all generated content
+   *                   additionalProperties: true
+   *                 message:
+   *                   type: string
+   *                   example: "Successfully created term \"Neural Network\" with AI enhancement"
+   *       400:
+   *         description: Invalid request - name and category required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Admin privileges required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.post('/api/admin/terms/create-single', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;
@@ -636,7 +1084,50 @@ export function registerAdminTermsRoutes(app: Express): void {
     }
   });
 
-  // Delete term
+  /**
+   * @openapi
+   * /api/admin/terms/{termId}:
+   *   delete:
+   *     tags:
+   *       - Admin Terms
+   *     summary: Delete term
+   *     description: Permanently delete a term from the system
+   *     security:
+   *       - bearerAuth: []
+   *     parameters:
+   *       - in: path
+   *         name: termId
+   *         required: true
+   *         schema:
+   *           type: string
+   *         description: The ID of the term to delete
+   *     responses:
+   *       200:
+   *         description: Term deleted successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "Term deleted successfully"
+   *       403:
+   *         description: Admin privileges required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   app.delete('/api/admin/terms/:termId', mockIsAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.claims.sub;

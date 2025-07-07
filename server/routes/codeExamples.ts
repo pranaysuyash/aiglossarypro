@@ -19,6 +19,12 @@ import {
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { eq, and, desc, sql, asc } from 'drizzle-orm';
 import { CODE_EXAMPLES_LIMITS } from '../constants/pagination';
+import { 
+  sendErrorResponse, 
+  handleDatabaseError, 
+  CommonErrors, 
+  ErrorCode 
+} from '../utils/errorHandler';
 
 export function registerCodeExamplesRoutes(app: Express): void {
 
@@ -99,10 +105,8 @@ export function registerCodeExamplesRoutes(app: Express): void {
       });
     } catch (error) {
       console.error('Get code examples error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch code examples'
-      });
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 
@@ -194,10 +198,8 @@ export function registerCodeExamplesRoutes(app: Express): void {
       });
     } catch (error) {
       console.error('Get all code examples error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch code examples'
-      });
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 
@@ -215,10 +217,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
         .limit(1);
 
       if (!example || example.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Code example not found'
-        });
+        return sendErrorResponse(res, ErrorCode.RESOURCE_NOT_FOUND, 'Code example not found');
       }
 
       res.json({
@@ -227,10 +226,8 @@ export function registerCodeExamplesRoutes(app: Express): void {
       });
     } catch (error) {
       console.error('Get code example error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch code example'
-      });
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 
@@ -243,10 +240,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
       const user = (req as any).user;
       
       if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: 'Authentication required'
-        });
+        return sendErrorResponse(res, ErrorCode.UNAUTHORIZED, 'Authentication required');
       }
 
       const {
@@ -264,10 +258,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
       } = req.body;
 
       if (!title || !language || !code) {
-        return res.status(400).json({
-          success: false,
-          message: 'Title, language, and code are required'
-        });
+        return sendErrorResponse(res, ErrorCode.VALIDATION_ERROR, 'Title, language, and code are required');
       }
 
       const exampleData: InsertCodeExample = {
@@ -299,10 +290,8 @@ export function registerCodeExamplesRoutes(app: Express): void {
       });
     } catch (error) {
       console.error('Create code example error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to create code example'
-      });
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 
@@ -316,10 +305,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
       const { id } = req.params;
 
       if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: 'Authentication required'
-        });
+        return sendErrorResponse(res, ErrorCode.UNAUTHORIZED, 'Authentication required');
       }
 
       // Check if example exists and user owns it or is admin
@@ -329,17 +315,11 @@ export function registerCodeExamplesRoutes(app: Express): void {
         .limit(1);
 
       if (!existing || existing.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Code example not found'
-        });
+        return sendErrorResponse(res, ErrorCode.RESOURCE_NOT_FOUND, 'Code example not found');
       }
 
       if (existing[0].created_by !== user.id && !user.isAdmin) {
-        return res.status(403).json({
-          success: false,
-          message: 'Not authorized to update this code example'
-        });
+        return sendErrorResponse(res, ErrorCode.FORBIDDEN, 'Not authorized to update this code example');
       }
 
       const updateData = {
@@ -366,10 +346,8 @@ export function registerCodeExamplesRoutes(app: Express): void {
       });
     } catch (error) {
       console.error('Update code example error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to update code example'
-      });
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 
@@ -384,17 +362,11 @@ export function registerCodeExamplesRoutes(app: Express): void {
       const { vote } = req.body; // 'up' or 'down'
 
       if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: 'Authentication required'
-        });
+        return sendErrorResponse(res, ErrorCode.UNAUTHORIZED, 'Authentication required');
       }
 
       if (!vote || !['up', 'down'].includes(vote)) {
-        return res.status(400).json({
-          success: false,
-          message: 'Vote must be "up" or "down"'
-        });
+        return sendErrorResponse(res, ErrorCode.VALIDATION_ERROR, 'Vote must be "up" or "down"');
       }
 
       // Check if example exists
@@ -404,10 +376,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
         .limit(1);
 
       if (!example || example.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Code example not found'
-        });
+        return sendErrorResponse(res, ErrorCode.RESOURCE_NOT_FOUND, 'Code example not found');
       }
 
       // Check if user has already voted on this example
@@ -476,10 +445,8 @@ export function registerCodeExamplesRoutes(app: Express): void {
       });
     } catch (error) {
       console.error('Vote code example error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to record vote'
-      });
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 
@@ -494,10 +461,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
       const { execution_time, success, output, error_message } = req.body;
 
       if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: 'Authentication required'
-        });
+        return sendErrorResponse(res, ErrorCode.UNAUTHORIZED, 'Authentication required');
       }
 
       // Check if example exists and is runnable
@@ -507,17 +471,11 @@ export function registerCodeExamplesRoutes(app: Express): void {
         .limit(1);
 
       if (!example || example.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Code example not found'
-        });
+        return sendErrorResponse(res, ErrorCode.RESOURCE_NOT_FOUND, 'Code example not found');
       }
 
       if (!example[0].is_runnable) {
-        return res.status(400).json({
-          success: false,
-          message: 'This code example is not runnable'
-        });
+        return sendErrorResponse(res, ErrorCode.OPERATION_NOT_ALLOWED, 'This code example is not runnable');
       }
 
       // Record execution
@@ -541,10 +499,8 @@ export function registerCodeExamplesRoutes(app: Express): void {
       });
     } catch (error) {
       console.error('Record code run error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to record code execution'
-      });
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 
@@ -559,10 +515,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
       const { limit = CODE_EXAMPLES_LIMITS.BY_TERM_DEFAULT_LIMIT } = req.query;
 
       if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: 'Authentication required'
-        });
+        return sendErrorResponse(res, ErrorCode.UNAUTHORIZED, 'Authentication required');
       }
 
       // Get user's runs for this example
@@ -588,10 +541,8 @@ export function registerCodeExamplesRoutes(app: Express): void {
       });
     } catch (error) {
       console.error('Get code runs error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch execution history'
-      });
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 
@@ -605,10 +556,7 @@ export function registerCodeExamplesRoutes(app: Express): void {
       const { id } = req.params;
 
       if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: 'Authentication required'
-        });
+        return sendErrorResponse(res, ErrorCode.UNAUTHORIZED, 'Authentication required');
       }
 
       // Check if example exists and user owns it or is admin
@@ -618,17 +566,11 @@ export function registerCodeExamplesRoutes(app: Express): void {
         .limit(1);
 
       if (!existing || existing.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Code example not found'
-        });
+        return sendErrorResponse(res, ErrorCode.RESOURCE_NOT_FOUND, 'Code example not found');
       }
 
       if (existing[0].created_by !== user.id && !user.isAdmin) {
-        return res.status(403).json({
-          success: false,
-          message: 'Not authorized to delete this code example'
-        });
+        return sendErrorResponse(res, ErrorCode.FORBIDDEN, 'Not authorized to delete this code example');
       }
 
       await db.delete(codeExamples)
@@ -640,10 +582,8 @@ export function registerCodeExamplesRoutes(app: Express): void {
       });
     } catch (error) {
       console.error('Delete code example error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to delete code example'
-      });
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 }

@@ -30,7 +30,9 @@ import {
   LazyTermsOfServicePage,
   LazyLearningPathsPage,
   LazyLearningPathDetailPage,
-  LazyCodeExamplesPage
+  LazyCodeExamplesPage,
+  LazyDiscoveryPage,
+  LazySurpriseMePage
 } from "@/components/lazy/LazyPages";
 
 import Header from "@/components/Header";
@@ -193,6 +195,9 @@ function Router() {
           <Route path="/learning-paths" component={LazyLearningPathsPage} />
           <Route path="/learning-paths/:id" component={LazyLearningPathDetailPage} />
           <Route path="/code-examples" component={LazyCodeExamplesPage} />
+          <Route path="/discovery" component={LazyDiscoveryPage} />
+          <Route path="/discovery/:termId" component={LazyDiscoveryPage} />
+          <Route path="/surprise-me" component={LazySurpriseMePage} />
           <Route path="/progress">
             <ProtectedRoute>
               <LazyProgressPage />

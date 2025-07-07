@@ -22,6 +22,28 @@ import {
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { eq, and, desc, sql, asc, isNull } from 'drizzle-orm';
 import { LEARNING_PATHS_LIMITS } from '../constants/pagination';
+import { 
+  validateBody, 
+  validateQuery, 
+  validateParams, 
+  ValidatedRequest 
+} from '../middleware/validation';
+import {
+  createLearningPathSchema,
+  updateLearningPathSchema,
+  learningPathsQuerySchema,
+  pathIdParamSchema,
+  CreateLearningPathInput,
+  UpdateLearningPathInput,
+  LearningPathsQuery,
+  PathIdParam
+} from '../validation/learningPaths';
+import { 
+  sendErrorResponse, 
+  handleDatabaseError, 
+  CommonErrors, 
+  ErrorCode 
+} from '../utils/errorHandler';
 
 export function registerLearningPathsRoutes(app: Express): void {
 
@@ -29,9 +51,11 @@ export function registerLearningPathsRoutes(app: Express): void {
    * Get all learning paths with filtering and pagination
    * GET /api/learning-paths?category={id}&difficulty={level}&limit={n}&offset={n}
    */
-  app.get('/api/learning-paths', async (req: Request, res: Response) => {
+  app.get('/api/learning-paths', 
+    validateQuery(learningPathsQuerySchema),
+    async (req: ValidatedRequest<any, LearningPathsQuery>, res: Response) => {
     try {
-      const { category, difficulty, limit = LEARNING_PATHS_LIMITS.DEFAULT_LIMIT, offset = 0 } = req.query;
+      const { category, difficulty, limit = LEARNING_PATHS_LIMITS.DEFAULT_LIMIT, offset = 0 } = req.validatedQuery || {};
       
       const parsedLimit = Math.min(Number(limit), LEARNING_PATHS_LIMITS.MAX_LIMIT);
       const parsedOffset = Math.max(Number(offset), 0);
@@ -96,10 +120,8 @@ export function registerLearningPathsRoutes(app: Express): void {
       });
     } catch (error) {
       console.error('Get learning paths error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch learning paths'
-      });
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 
@@ -118,10 +140,7 @@ export function registerLearningPathsRoutes(app: Express): void {
         .limit(1);
 
       if (!path || path.length === 0) {
-        return res.status(404).json({
-          success: false,
-          message: 'Learning path not found'
-        });
+        return sendErrorResponse(res, ErrorCode.RESOURCE_NOT_FOUND, 'Learning path not found');
       }
 
       // Get the steps with term information
@@ -152,10 +171,8 @@ export function registerLearningPathsRoutes(app: Express): void {
       });
     } catch (error) {
       console.error('Get learning path error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch learning path'
-      });
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 
@@ -163,22 +180,24 @@ export function registerLearningPathsRoutes(app: Express): void {
    * Create a new learning path (admin/premium users only)
    * POST /api/learning-paths
    */
-  app.post('/api/learning-paths', multiAuthMiddleware, async (req: Request, res: Response) => {
+  app.post('/api/learning-paths', 
+    multiAuthMiddleware,
+    validateBody(createLearningPathSchema),
+    async (req: ValidatedRequest<CreateLearningPathInput>, res: Response) => {
     try {
       const user = (req as any).user;
       if (!user) {
-        return res.status(401).json({
-          success: false,
-          message: 'Authentication required'
-        });
+        return sendErrorResponse(res, ErrorCode.UNAUTHORIZED, 'Authentication required');
       }
 
       // Check if user can create learning paths (admin or premium)
       if (!user.isAdmin && !user.lifetimeAccess) {
-        return res.status(403).json({
-          success: false,
-          message: 'Premium access required to create learning paths'
-        });
+        return sendErrorResponse(
+          res, 
+          ErrorCode.INSUFFICIENT_PERMISSIONS, 
+          'Premium access required to create learning paths',
+          'Only admin users or users with lifetime access can create learning paths'
+        );
       }
 
       const {
@@ -190,14 +209,9 @@ export function registerLearningPathsRoutes(app: Express): void {
         prerequisites,
         learning_objectives,
         steps
-      } = req.body;
+      } = req.validatedBody!;
 
-      if (!name || !description) {
-        return res.status(400).json({
-          success: false,
-          message: 'Name and description are required'
-        });
-      }
+      // Validation is now handled by Zod middleware, no need for manual checks
 
       // Create the learning path
       const pathData: InsertLearningPath = {
@@ -240,10 +254,8 @@ export function registerLearningPathsRoutes(app: Express): void {
       });
     } catch (error) {
       console.error('Create learning path error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to create learning path'
-      });
+      const dbError = handleDatabaseError(error);
+      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
   });
 

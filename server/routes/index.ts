@@ -23,10 +23,16 @@ import { registerEarlyBirdRoutes } from "./earlyBird";
 import { registerJobRoutes } from "./jobs";
 import { registerLearningPathsRoutes } from "./learningPaths";
 import { registerCodeExamplesRoutes } from "./codeExamples";
+import { registerPersonalizationRoutes } from "./personalization";
+import { registerRelationshipRoutes } from "./relationships";
+import { registerTrendingRoutes } from "./trending";
 import { log as logger } from "../utils/logger";
 
 // Import newsletter routes
 import newsletterRoutes from "./newsletter";
+
+// Import surprise discovery routes
+import surpriseDiscoveryRoutes from "./surpriseDiscovery";
 
 // Import A/B testing routes (simplified version)
 import abTestRoutes from "./abTestsSimplified";
@@ -87,6 +93,14 @@ export async function registerRoutes(app: Express): Promise<void> {
   registerAnalyticsRoutes(app);
   logger.info("✅ Analytics routes registered");
   
+  // Register personalization routes (for AI-powered recommendations)
+  registerPersonalizationRoutes(app);
+  logger.info("✅ Personalization routes registered");
+  
+  // Register relationship routes (for concept discovery and visual relationships)
+  registerRelationshipRoutes(app);
+  logger.info("✅ Relationship discovery routes registered");
+  
   // Register media routes (for rich content support)
   registerMediaRoutes(app);
   logger.info("✅ Media routes registered");
@@ -145,6 +159,14 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Register Code Examples routes
   registerCodeExamplesRoutes(app);
   logger.info("✅ Code Examples routes registered");
+  
+  // Register Trending Analytics routes
+  registerTrendingRoutes(app);
+  logger.info("✅ Trending Analytics routes registered");
+  
+  // Register Surprise Discovery routes
+  app.use('/api/surprise-discovery', surpriseDiscoveryRoutes);
+  logger.info("✅ Surprise Discovery routes registered");
   
   // Health check endpoint
   app.get('/api/health', (_, res) => {

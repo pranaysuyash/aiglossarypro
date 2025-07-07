@@ -21,6 +21,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { BookOpen, ArrowRight, Calendar, Star, Clock, TrendingUp, Crown, Gift, X, Sparkles } from "lucide-react";
 import { BarChart } from "@/components/ui/chart";
 import TermCard from "@/components/TermCard";
+import SurpriseMe from "@/components/SurpriseMe";
 import { useAuth } from "@/hooks/useAuth";
 import { useAccess } from "@/hooks/useAccess";
 import { useToast } from "@/hooks/use-toast";
@@ -118,6 +119,10 @@ export default function Dashboard() {
       viewed: activityData.views?.[index] || 0,
       learned: activityData.learned?.[index] || 0,
     })) : [];
+
+  const handleSurpriseTermSelect = (term: ITerm) => {
+    setLocation(`/terms/${term.id}`);
+  };
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -410,6 +415,16 @@ export default function Dashboard() {
           )}
         </CardContent>
       </Card>
+
+      {/* Surprise Me Widget */}
+      <div className="mb-6">
+        <SurpriseMe 
+          compact={true}
+          showModeSelector={false}
+          maxResults={1}
+          onTermSelect={handleSurpriseTermSelect}
+        />
+      </div>
       
       {/* Tabs for Recently Viewed, Favorites, and Recommendations */}
       <Tabs defaultValue="recent" className="w-full">

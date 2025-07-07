@@ -293,6 +293,57 @@ export const insertEarlyBirdCustomerSchema = createInsertSchema(earlyBirdCustome
 export type EarlyBirdCustomer = typeof earlyBirdCustomers.$inferSelect;
 export type InsertEarlyBirdCustomer = z.infer<typeof insertEarlyBirdCustomerSchema>;
 
+// User interactions table for trending analytics
+export const userInteractions = pgTable("user_interactions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
+  termId: uuid("term_id").references(() => terms.id, { onDelete: "cascade" }),
+  interactionType: varchar("interaction_type", { length: 50 }).notNull(), // view, share, bookmark, search
+  duration: integer("duration"), // Time spent in seconds
+  metadata: jsonb("metadata").default({}), // Additional interaction data
+  timestamp: timestamp("timestamp").defaultNow().notNull(),
+}, (table) => ({
+  userIdIdx: index("user_interactions_user_id_idx").on(table.userId),
+  termIdIdx: index("user_interactions_term_id_idx").on(table.termId),
+  interactionTypeIdx: index("user_interactions_type_idx").on(table.interactionType),
+  timestampIdx: index("user_interactions_timestamp_idx").on(table.timestamp),
+  userTermIdx: index("user_interactions_user_term_idx").on(table.userId, table.termId),
+}));
+
+export const insertUserInteractionSchema = createInsertSchema(userInteractions).omit({
+  id: true,
+  timestamp: true,
+} as const);
+
+export type UserInteraction = typeof userInteractions.$inferSelect;
+export type InsertUserInteraction = z.infer<typeof insertUserInteractionSchema>;
+
+// Term analytics table for caching trending data
+export const termAnalytics = pgTable("term_analytics", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  termId: uuid("term_id").references(() => terms.id, { onDelete: "cascade" }).unique(),
+  viewCount: integer("view_count").default(0),
+  shareCount: integer("share_count").default(0),
+  bookmarkCount: integer("bookmark_count").default(0),
+  searchCount: integer("search_count").default(0),
+  averageTimeSpent: integer("average_time_spent").default(0), // in seconds
+  lastCalculated: timestamp("last_calculated").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  termIdIdx: index("term_analytics_term_id_idx").on(table.termId),
+  viewCountIdx: index("term_analytics_view_count_idx").on(table.viewCount),
+  lastCalculatedIdx: index("term_analytics_last_calculated_idx").on(table.lastCalculated),
+}));
+
+export const insertTermAnalyticsSchema = createInsertSchema(termAnalytics).omit({
+  id: true,
+  lastCalculated: true,
+  updatedAt: true,
+} as const);
+
+export type TermAnalytics = typeof termAnalytics.$inferSelect;
+export type InsertTermAnalytics = z.infer<typeof insertTermAnalyticsSchema>;
+
 // Early bird status tracking table
 export const earlyBirdStatus = pgTable("early_bird_status", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -431,6 +482,192 @@ export type CodeExample = typeof codeExamples.$inferSelect;
 export type InsertCodeExample = typeof codeExamples.$inferInsert;
 export type CodeExampleRun = typeof codeExampleRuns.$inferSelect;
 export type InsertCodeExampleRun = typeof codeExampleRuns.$inferInsert;
+
+// User Behavior Tracking Tables for Personalization
+export const userBehaviorEvents = pgTable("user_behavior_events", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  event_type: varchar("event_type", { length: 50 }).notNull(), // view, search, favorite, share, download, etc.
+  entity_type: varchar("entity_type", { length: 50 }).notNull(), // term, category, learning_path, etc.
+  entity_id: varchar("entity_id", { length: 255 }).notNull(),
+  context: jsonb("context"), // Additional context like search query, referrer, etc.
+  session_id: varchar("session_id", { length: 255 }),
+  user_agent: text("user_agent"),
+  ip_address: varchar("ip_address", { length: 64 }), // Hashed for privacy
+  created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userEventIdx: index("user_behavior_events_user_idx").on(table.user_id),
+  eventTypeIdx: index("user_behavior_events_event_type_idx").on(table.event_type),
+  entityIdx: index("user_behavior_events_entity_idx").on(table.entity_type, table.entity_id),
+  sessionIdx: index("user_behavior_events_session_idx").on(table.session_id),
+  createdAtIdx: index("user_behavior_events_created_at_idx").on(table.created_at),
+}));
+
+export const userInteractionPatterns = pgTable("user_interaction_patterns", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  pattern_type: varchar("pattern_type", { length: 50 }).notNull(), // learning_style, content_preference, time_pattern, etc.
+  pattern_data: jsonb("pattern_data").notNull(), // Structured pattern data
+  confidence_score: integer("confidence_score"), // 0-100, confidence in this pattern
+  last_updated: timestamp("last_updated").defaultNow(),
+  created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userPatternIdx: index("user_interaction_patterns_user_idx").on(table.user_id),
+  patternTypeIdx: index("user_interaction_patterns_type_idx").on(table.pattern_type),
+  confidenceIdx: index("user_interaction_patterns_confidence_idx").on(table.confidence_score),
+  lastUpdatedIdx: index("user_interaction_patterns_updated_idx").on(table.last_updated),
+}));
+
+export const userRecommendations = pgTable("user_recommendations", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  recommendation_type: varchar("recommendation_type", { length: 50 }).notNull(), // term, category, learning_path, content_section
+  entity_id: varchar("entity_id", { length: 255 }).notNull(),
+  score: integer("score").notNull(), // 0-100, recommendation strength
+  reasoning: jsonb("reasoning"), // Why this was recommended
+  algorithm_version: varchar("algorithm_version", { length: 50 }), // Track which version generated this
+  shown_at: timestamp("shown_at"),
+  clicked_at: timestamp("clicked_at"),
+  dismissed_at: timestamp("dismissed_at"),
+  feedback_score: integer("feedback_score"), // User feedback: -1 (negative), 0 (neutral), 1 (positive)
+  expires_at: timestamp("expires_at"), // When this recommendation expires
+  created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userRecommendationIdx: index("user_recommendations_user_idx").on(table.user_id),
+  typeIdx: index("user_recommendations_type_idx").on(table.recommendation_type),
+  scoreIdx: index("user_recommendations_score_idx").on(table.score),
+  shownIdx: index("user_recommendations_shown_idx").on(table.shown_at),
+  expiresIdx: index("user_recommendations_expires_idx").on(table.expires_at),
+  createdAtIdx: index("user_recommendations_created_at_idx").on(table.created_at),
+}));
+
+export const userLearningProfile = pgTable("user_learning_profile", {
+  user_id: varchar("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  learning_style: varchar("learning_style", { length: 50 }), // visual, auditory, kinesthetic, reading_writing
+  preferred_complexity: varchar("preferred_complexity", { length: 20 }), // beginner, intermediate, advanced, expert
+  preferred_content_types: text("preferred_content_types").array(), // ["mathematical", "practical", "theoretical", "examples"]
+  active_learning_goals: jsonb("active_learning_goals"), // Current learning objectives
+  skill_assessments: jsonb("skill_assessments"), // Self-assessed or system-assessed skill levels
+  engagement_patterns: jsonb("engagement_patterns"), // Time of day, session length, content preferences
+  personalization_consent: boolean("personalization_consent").default(true),
+  last_profile_update: timestamp("last_profile_update").defaultNow(),
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  learningStyleIdx: index("user_learning_profile_style_idx").on(table.learning_style),
+  complexityIdx: index("user_learning_profile_complexity_idx").on(table.preferred_complexity),
+  updatedIdx: index("user_learning_profile_updated_idx").on(table.updated_at),
+}));
+
+export const personalizationMetrics = pgTable("personalization_metrics", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
+  metric_type: varchar("metric_type", { length: 50 }).notNull(), // engagement_score, satisfaction_score, learning_velocity
+  metric_value: integer("metric_value").notNull(), // Normalized to 0-100 scale
+  context: jsonb("context"), // Additional context for the metric
+  measurement_period: varchar("measurement_period", { length: 20 }), // daily, weekly, monthly
+  algorithm_version: varchar("algorithm_version", { length: 50 }),
+  created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userMetricIdx: index("personalization_metrics_user_idx").on(table.user_id),
+  metricTypeIdx: index("personalization_metrics_type_idx").on(table.metric_type),
+  createdAtIdx: index("personalization_metrics_created_at_idx").on(table.created_at),
+  periodIdx: index("personalization_metrics_period_idx").on(table.measurement_period),
+}));
+
+export const contentRecommendationCache = pgTable("content_recommendation_cache", {
+  cache_key: varchar("cache_key", { length: 255 }).primaryKey(),
+  user_id: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
+  recommendation_data: jsonb("recommendation_data").notNull(),
+  algorithm_version: varchar("algorithm_version", { length: 50 }),
+  cache_created_at: timestamp("cache_created_at").defaultNow(),
+  expires_at: timestamp("expires_at").notNull(),
+  hit_count: integer("hit_count").default(0),
+}, (table) => ({
+  userCacheIdx: index("content_recommendation_cache_user_idx").on(table.user_id),
+  expiresIdx: index("content_recommendation_cache_expires_idx").on(table.expires_at),
+  hitCountIdx: index("content_recommendation_cache_hits_idx").on(table.hit_count),
+}));
+
+// Type exports for User Behavior and Personalization
+export type UserBehaviorEvent = typeof userBehaviorEvents.$inferSelect;
+export type InsertUserBehaviorEvent = typeof userBehaviorEvents.$inferInsert;
+export type UserInteractionPattern = typeof userInteractionPatterns.$inferSelect;
+export type InsertUserInteractionPattern = typeof userInteractionPatterns.$inferInsert;
+export type UserRecommendation = typeof userRecommendations.$inferSelect;
+export type InsertUserRecommendation = typeof userRecommendations.$inferInsert;
+export type UserLearningProfile = typeof userLearningProfile.$inferSelect;
+export type InsertUserLearningProfile = typeof userLearningProfile.$inferInsert;
+export type PersonalizationMetric = typeof personalizationMetrics.$inferSelect;
+export type InsertPersonalizationMetric = typeof personalizationMetrics.$inferInsert;
+export type ContentRecommendationCache = typeof contentRecommendationCache.$inferSelect;
+export type InsertContentRecommendationCache = typeof contentRecommendationCache.$inferInsert;
+
+// Discovery sessions table for tracking surprise me analytics
+export const discoverySessions = pgTable("discovery_sessions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  user_id: varchar("user_id").references(() => users.id, { onDelete: "cascade" }),
+  session_id: varchar("session_id", { length: 255 }).notNull(),
+  discovery_mode: varchar("discovery_mode", { length: 50 }).notNull(), // random_adventure, guided_discovery, challenge_mode, connection_quest
+  term_id: uuid("term_id").references(() => terms.id, { onDelete: "cascade" }),
+  algorithm_version: varchar("algorithm_version", { length: 50 }),
+  discovery_context: jsonb("discovery_context"), // User's current interests, recent views, etc.
+  user_engagement: jsonb("user_engagement"), // Time spent, actions taken, feedback
+  surprise_rating: integer("surprise_rating"), // 1-5 scale for how surprising the discovery was
+  relevance_rating: integer("relevance_rating"), // 1-5 scale for how relevant the discovery was
+  created_at: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userSessionIdx: index("discovery_sessions_user_idx").on(table.user_id),
+  sessionIdx: index("discovery_sessions_session_idx").on(table.session_id),
+  modeIdx: index("discovery_sessions_mode_idx").on(table.discovery_mode),
+  termIdx: index("discovery_sessions_term_idx").on(table.term_id),
+  createdAtIdx: index("discovery_sessions_created_at_idx").on(table.created_at),
+}));
+
+export const discoveryPreferences = pgTable("discovery_preferences", {
+  user_id: varchar("user_id").primaryKey().references(() => users.id, { onDelete: "cascade" }),
+  preferred_modes: text("preferred_modes").array(), // Preferred discovery modes
+  excluded_categories: text("excluded_categories").array(), // Categories to avoid
+  difficulty_preference: varchar("difficulty_preference", { length: 20 }), // beginner, intermediate, advanced, adaptive
+  exploration_frequency: varchar("exploration_frequency", { length: 20 }), // conservative, moderate, adventurous
+  feedback_enabled: boolean("feedback_enabled").default(true),
+  surprise_tolerance: integer("surprise_tolerance").default(50), // 0-100 scale
+  personalization_level: varchar("personalization_level", { length: 20 }).default("medium"), // low, medium, high
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  difficultyIdx: index("discovery_preferences_difficulty_idx").on(table.difficulty_preference),
+  frequencyIdx: index("discovery_preferences_frequency_idx").on(table.exploration_frequency),
+  updatedIdx: index("discovery_preferences_updated_idx").on(table.updated_at),
+}));
+
+export const surpriseMetrics = pgTable("surprise_metrics", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  term_id: uuid("term_id").notNull().references(() => terms.id, { onDelete: "cascade" }),
+  discovery_count: integer("discovery_count").default(0),
+  average_surprise_rating: integer("average_surprise_rating"), // Stored as rating * 100 (e.g., 4.5 = 450)
+  average_relevance_rating: integer("average_relevance_rating"), // Stored as rating * 100
+  connection_strength: jsonb("connection_strength"), // Connections to other terms with weights
+  serendipity_score: integer("serendipity_score"), // Algorithm-calculated surprise potential
+  last_discovery: timestamp("last_discovery"),
+  popularity_trend: varchar("popularity_trend", { length: 20 }), // trending_up, stable, trending_down
+  created_at: timestamp("created_at").defaultNow(),
+  updated_at: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  termIdx: index("surprise_metrics_term_idx").on(table.term_id),
+  discoveryCountIdx: index("surprise_metrics_discovery_count_idx").on(table.discovery_count),
+  serendipityIdx: index("surprise_metrics_serendipity_idx").on(table.serendipity_score),
+  lastDiscoveryIdx: index("surprise_metrics_last_discovery_idx").on(table.last_discovery),
+  updatedIdx: index("surprise_metrics_updated_idx").on(table.updated_at),
+}));
+
+// Type exports for Discovery and Surprise Me
+export type DiscoverySession = typeof discoverySessions.$inferSelect;
+export type InsertDiscoverySession = typeof discoverySessions.$inferInsert;
+export type DiscoveryPreferences = typeof discoveryPreferences.$inferSelect;
+export type InsertDiscoveryPreferences = typeof discoveryPreferences.$inferInsert;
+export type SurpriseMetrics = typeof surpriseMetrics.$inferSelect;
+export type InsertSurpriseMetrics = typeof surpriseMetrics.$inferInsert;
 
 // Code example votes table for tracking user votes
 export const codeExampleVotes = pgTable("code_example_votes", {

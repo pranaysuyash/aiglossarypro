@@ -16,6 +16,7 @@ import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useLocation } from 'wouter';
 import { TermCardSkeleton } from '@/components/ui/skeleton';
 import { useLiveRegion } from '@/components/accessibility/LiveRegion';
+import SurpriseMe from '@/components/SurpriseMe';
 import type {
   IEnhancedTerm,
   ApiResponse,
@@ -265,6 +266,10 @@ export function Terms() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
+  const handleSurpriseTermSelect = useCallback((term: any) => {
+    setLocation(`/terms/${term.id}`);
+  }, [setLocation]);
+
   const categories = categoriesData?.data || [];
   const activeFiltersCount = [
     searchQuery, 
@@ -449,6 +454,49 @@ export function Terms() {
           {Array.from({ length: TERMS_PER_PAGE }).map((_, index) => (
             <TermCardSkeleton key={index} />
           ))}
+        </div>
+      ) : terms.length === 0 ? (
+        /* Empty State with Surprise Me */
+        <div className="text-center py-12">
+          <div className="max-w-2xl mx-auto">
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
+              {debouncedSearch 
+                ? `No terms found for "${debouncedSearch}"` 
+                : selectedCategory 
+                  ? "No terms found in this category"
+                  : "No terms found with current filters"
+              }
+            </h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-8">
+              {debouncedSearch 
+                ? "Try adjusting your search terms or discover something unexpected!" 
+                : "Try removing some filters or let us surprise you with a random discovery!"
+              }
+            </p>
+            
+            {/* Surprise Me Fallback */}
+            <div className="max-w-md mx-auto">
+              <SurpriseMe 
+                compact={true}
+                showModeSelector={false}
+                maxResults={3}
+                onTermSelect={handleSurpriseTermSelect}
+              />
+            </div>
+            
+            {/* Clear Filters Option */}
+            {activeFiltersCount > 0 && (
+              <div className="mt-6">
+                <Button 
+                  variant="outline" 
+                  onClick={clearFilters}
+                  className="mr-4"
+                >
+                  Clear All Filters
+                </Button>
+              </div>
+            )}
+          </div>
         </div>
       ) : (
         <>

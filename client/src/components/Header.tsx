@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
-import { Menu, X, Search, ChevronDown, User, Sun, Moon, Settings, Home, BarChart3, Bookmark, Zap, Crown, LogOut, Grid3X3 } from "@/components/ui/icons";
+import { Menu, X, Search, ChevronDown, User, Sun, Moon, Settings, Home, BarChart3, Bookmark, Zap, Crown, LogOut, Grid3X3, GitBranch, Sparkles } from "@/components/ui/icons";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -148,6 +148,19 @@ export default function Header({
               )}
             </Button>
 
+            {/* Surprise Me Button */}
+            <Link href="/surprise-me">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="hidden md:flex bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium px-3 py-2"
+                title="Discover amazing AI/ML terms you never knew existed!"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Surprise Me
+              </Button>
+            </Link>
+
             {/* Premium Status or Upgrade Button */}
             {user?.lifetimeAccess ? (
               <Badge 
@@ -239,6 +252,11 @@ export default function Header({
                     <DropdownMenuItem onClick={() => navigate("/dashboard")}>Dashboard</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/categories")}>Categories</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/learning-paths")}>Learning Paths</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/discovery")}>Discovery</DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => navigate("/surprise-me")} className="text-purple-600 hover:text-purple-700 hover:bg-purple-50 dark:text-purple-400 dark:hover:bg-purple-900/20">
+                      <Sparkles className="w-4 h-4 mr-2" />
+                      Surprise Me
+                    </DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/code-examples")}>Code Examples</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/trending")}>Trending</DropdownMenuItem>
                     <DropdownMenuItem onClick={() => navigate("/favorites")}>My Favorites</DropdownMenuItem>
@@ -356,6 +374,12 @@ export default function Header({
                     </Link>
                     <Link href="/learning-paths" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                       <Bookmark className="mr-3 h-5 w-5" /> Learning Paths
+                    </Link>
+                    <Link href="/discovery" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
+                      <GitBranch className="mr-3 h-5 w-5" /> Discovery
+                    </Link>
+                    <Link href="/surprise-me" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-purple-100 dark:hover:bg-purple-900/20 transition-colors min-h-[44px] text-purple-600 dark:text-purple-400">
+                      <Sparkles className="mr-3 h-5 w-5" /> Surprise Me
                     </Link>
                     <Link href="/code-examples" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                       <Settings className="mr-3 h-5 w-5" /> Code Examples

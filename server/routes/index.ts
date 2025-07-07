@@ -29,6 +29,7 @@ import { registerTrendingRoutes } from "./trending";
 import { registerPersonalizedHomepageRoutes } from "./personalizedHomepage";
 import { registerEngagementRoutes } from "./engagement";
 import { registerAdaptiveContentRoutes } from "./adaptiveContent";
+import { registerAdaptiveSearchRoutes } from "./adaptiveSearch";
 import predictiveAnalyticsRoutes from "./predictiveAnalytics";
 import { log as logger } from "../utils/logger";
 
@@ -75,6 +76,8 @@ export async function registerRoutes(app: Express): Promise<void> {
   registerSectionRoutes(app);
   logger.info("✅ Section routes registered - 42-section content API now available");
   registerSearchRoutes(app);
+  registerAdaptiveSearchRoutes(app);
+  logger.info("✅ Adaptive search routes registered - AI-powered semantic search now available");
   registerUserRoutes(app);
   registerUserProgressRoutes(app);
   

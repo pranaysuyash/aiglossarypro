@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { Menu, X, Search, ChevronDown, User, Sun, Moon, Settings, Home, BarChart3, Bookmark, Zap, Crown, LogOut, Grid3X3, GitBranch, Sparkles } from "@/components/ui/icons";
 import {
@@ -8,18 +8,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/hooks/useAuth";
-import { useFocusTrap, useFocusLock } from "@/hooks/useFocusTrap";
+import { useAccess } from "@/hooks/useAccess";
 import { useTheme } from "@/components/ThemeProvider";
-import SearchBar from "./SearchBar";
+import SearchBar from "@/components/SearchBar";
 import { BaseComponentProps } from "@/types/common-props";
 import { queryClient } from "@/lib/queryClient";
 import { signOutUser } from "@/lib/firebase";
-import { useAccess } from "@/hooks/useAccess";
-import { useRef } from "react";
+import { useFocusTrap, useFocusLock } from "@/hooks/useFocusTrap";
 
 interface HeaderProps extends BaseComponentProps {
   onSearch?: (query: string) => void;

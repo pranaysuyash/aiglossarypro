@@ -34,7 +34,7 @@ export default function Header({
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const [, navigate] = useLocation();
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const { theme, setTheme } = useTheme();
 
   // Focus trap for mobile menu
@@ -62,20 +62,14 @@ export default function Header({
       onLogout();
     } else {
       try {
-        await signOutUser();
-        await fetch("/api/auth/logout", {
-          method: "POST",
-          credentials: "include"
-        });
-        queryClient.clear();
-        localStorage.clear();
-        sessionStorage.clear();
+        // Use the improved logout function from useAuth hook
+        await logout();
+        
+        // Navigate to landing page after successful logout
         window.location.assign("/");
       } catch (error) {
         console.error("Logout error:", error);
-        queryClient.clear();
-        localStorage.clear();
-        sessionStorage.clear();
+        // Fallback: force navigation to landing page even if logout fails
         window.location.assign("/");
       }
     }
@@ -104,7 +98,7 @@ export default function Header({
     : userObj?.email?.substring(0, 2).toUpperCase() || "ML";
 
   return (
-    <header id="navigation" className={`bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-800 transition-all duration-200 ${className || ''}`} role="banner">
+    <header id="navigation" className={`bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-800 transition-all duration-200 ${className || ''}`}>
       <div className="container mx-auto px-3 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center py-3 sm:py-4 gap-2 sm:gap-4">
           {/* Logo and Branding */}
@@ -195,6 +189,7 @@ export default function Header({
 
             {/* Mobile Search Toggle */}
             <button
+              type="button"
               className={`sm:hidden h-10 w-10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center ${
                 mobileSearchOpen
                   ? 'bg-primary text-primary-foreground'
@@ -211,12 +206,13 @@ export default function Header({
               }`} />
             </button>
 
-            {/* User Dropdown or Sign In Button */}
+            {/* User Dropdown or Sign In Button - Hide on mobile, show mobile menu instead */}
             {isAuthenticated ? (
-              <div className="hidden sm:flex">
+              <div className="hidden md:flex">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
+                      type="button"
                       variant="ghost"
                       className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 h-10 w-10"
                       aria-label={`User menu for ${userObj?.firstName || 'User'}`}
@@ -285,19 +281,21 @@ export default function Header({
               </div>
             ) : (
               <Button
+                type="button"
                 variant="default"
                 size="sm"
                 onClick={handleLogin}
-                className="hidden sm:flex"
+                className="hidden md:flex"
               >
                 <User className="mr-2 h-4 w-4" />
                 Sign In
               </Button>
             )}
 
-            {/* Mobile Menu Toggle (Hamburger) */}
+            {/* Mobile Menu Toggle (Hamburger) - Always visible on mobile */}
             <button
-              className={`lg:hidden h-10 w-10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center ${
+              type="button"
+              className={`md:hidden h-10 w-10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center ${
                 mobileMenuOpen
                   ? 'bg-gray-100 dark:bg-gray-700 rotate-90'
                   : 'hover:bg-gray-100 dark:hover:bg-gray-700'
@@ -328,6 +326,7 @@ export default function Header({
                       Search AI/ML Terms
                     </h3>
                     <button
+                      type="button"
                       onClick={() => setMobileSearchOpen(false)}
                       className="h-8 w-8 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center"
                       aria-label="Close search"
@@ -345,24 +344,67 @@ export default function Header({
         {/* Mobile menu panel */}
         {mobileMenuOpen && (
           <div
-            className="lg:hidden fixed inset-0 z-50 bg-black bg-opacity-50"
+            className="md:hidden fixed inset-0 z-50 bg-black bg-opacity-50"
             onClick={handleOutsideClick}
           >
             <div
               id="mobile-navigation-menu"
               ref={mobileMenuRef as React.RefObject<HTMLDivElement>}
-              className="bg-white dark:bg-gray-800 py-4 px-4 border-t border-gray-100 dark:border-gray-700 animate-in slide-in-from-top-2 duration-200 max-h-[calc(100vh-80px)] overflow-y-auto relative"
+              className="absolute top-0 right-0 w-80 max-w-[85vw] h-full bg-white dark:bg-gray-800 shadow-xl animate-in slide-in-from-right-2 duration-300 overflow-y-auto"
               onKeyDown={(e) => { if (e.key === 'Escape') { e.preventDefault(); handleEscapeClose(); } }}
               onClick={(e) => e.stopPropagation()}
               role="dialog"
               aria-modal="true"
               aria-label="Mobile navigation menu"
             >
-              <nav aria-label="Mobile navigation menu" role="navigation">
+              {/* Mobile Menu Header */}
+              <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between">
+                <div className="flex items-center space-x-3">
+                  {isAuthenticated && (
+                    <>
+                      <Avatar className="h-8 w-8">
+                        {userObj?.profileImageUrl && (
+                          <AvatarImage
+                            src={userObj.profileImageUrl}
+                            alt={userObj.firstName || "User"}
+                            className="object-cover"
+                          />
+                        )}
+                        <AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300">
+                          {initials}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium text-gray-900 dark:text-gray-100">
+                          {userObj?.firstName || 'User'}
+                        </div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {userObj?.email}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                  {!isAuthenticated && (
+                    <div className="font-medium text-gray-900 dark:text-gray-100">
+                      AI Glossary Pro
+                    </div>
+                  )}
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="h-8 w-8 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center"
+                  aria-label="Close mobile menu"
+                >
+                  <X className="h-5 w-5 text-gray-500 dark:text-gray-400" />
+                </button>
+              </div>
+
+              <nav className="p-4" aria-label="Mobile navigation menu">
                 {/* Main Navigation */}
-                <div className="mb-4">
+                <div className="mb-6">
                   <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Navigation</div>
-                  <div className="space-y-2">
+                  <div className="space-y-1">
                     <Link href="/" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                       <Home className="mr-3 h-5 w-5" /> Home
                     </Link>
@@ -392,9 +434,9 @@ export default function Header({
 
                 {/* User Section */}
                 {isAuthenticated && (
-                  <div className="mb-4">
+                  <div className="mb-6">
                     <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Your Account</div>
-                    <div className="space-y-2">
+                    <div className="space-y-1">
                       <Link href="/profile" onClick={() => setMobileMenuOpen(false)} className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px]">
                         <User className="mr-3 h-5 w-5" /> Profile
                       </Link>
@@ -409,10 +451,14 @@ export default function Header({
                 )}
 
                 {/* Tools Section */}
-                <div className="mb-4">
+                <div className="mb-6">
                     <div className="px-3 py-2 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Tools & Features</div>
-                    <div className="space-y-2">
-                        <button className="mobile-nav-item w-full flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] text-left" onClick={() => { toggleTheme(); setMobileMenuOpen(false); }}>
+                    <div className="space-y-1">
+                        <button 
+                          type="button"
+                          className="mobile-nav-item w-full flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] text-left" 
+                          onClick={() => { toggleTheme(); setMobileMenuOpen(false); }}
+                        >
                             {theme === 'dark' ? <Sun className="mr-3 h-5 w-5" /> : <Moon className="mr-3 h-5 w-5" />}
                             {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
                         </button>
@@ -428,34 +474,50 @@ export default function Header({
                 </div>
 
                 {/* Action Buttons */}
-                <div className="pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <div className="space-y-3">
-                    {/* Premium Status or Upgrade Button */}
-                    {user?.lifetimeAccess ? (
-                      <div className="flex items-center w-full px-4 py-4 rounded-lg bg-gradient-to-r from-yellow-400 to-orange-500 text-white font-medium text-base min-h-[48px]">
-                        <Crown className="mr-3 h-5 w-5 flex-shrink-0" />
-                        <div className="flex-1">
-                          <div className="font-semibold">Premium Member</div>
-                          <div className="text-sm opacity-90">Unlimited Access Active</div>
-                        </div>
+                <div className="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    {/* Premium Status for Authenticated Users */}
+                    {isAuthenticated && user?.lifetimeAccess && (
+                      <div className="flex items-center justify-center py-2 px-3 rounded-lg bg-yellow-50 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400">
+                        <Crown className="w-4 h-4 mr-2" />
+                        <span className="text-sm font-medium">Premium Member</span>
                       </div>
-                    ) : (
-                      <Link href="/lifetime" onClick={() => setMobileMenuOpen(false)} className="flex items-center w-full px-4 py-4 rounded-lg bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium transition-all duration-150 text-base min-h-[48px]">
-                        <Crown className="mr-3 h-5 w-5 flex-shrink-0" />
-                        <span className="whitespace-nowrap">Get Lifetime Access</span>
-                      </Link>
                     )}
+                    
+                    {/* Upgrade Button for Free Users */}
+                    {isAuthenticated && !user?.lifetimeAccess && (
+                      <Button 
+                        type="button"
+                        variant="default" 
+                        size="lg" 
+                        onClick={() => { navigate("/lifetime"); setMobileMenuOpen(false); }} 
+                        className="w-full justify-center min-h-[48px] bg-blue-600 hover:bg-blue-700 text-white"
+                      >
+                        <Crown className="mr-3 h-5 w-5" /> Upgrade to Premium
+                      </Button>
+                    )}
+
                     {!isAuthenticated ? (
-                      <Button variant="default" size="lg" onClick={() => { handleLogin(); setMobileMenuOpen(false); }} className="w-full justify-center min-h-[48px]">
+                      <Button 
+                        type="button"
+                        variant="default" 
+                        size="lg" 
+                        onClick={() => { handleLogin(); setMobileMenuOpen(false); }} 
+                        className="w-full justify-center min-h-[48px]"
+                      >
                         <User className="mr-3 h-5 w-5" /> Sign In
                       </Button>
                     ) : (
-                      <Button variant="ghost" size="lg" onClick={() => { handleLogout(); setMobileMenuOpen(false); }} className="w-full justify-center text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 min-h-[48px]">
+                      <Button 
+                        type="button"
+                        variant="ghost" 
+                        size="lg" 
+                        onClick={() => { handleLogout(); setMobileMenuOpen(false); }} 
+                        className="w-full justify-center text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-900/20 min-h-[48px]"
+                      >
                         <LogOut className="mr-3 h-5 w-5" /> Sign Out
                       </Button>
                     )}
                   </div>
-                </div>
               </nav>
             </div>
           </div>

@@ -217,21 +217,21 @@ class ImageOptimizationService {
 // Create default instance
 const imageOptimizationService = new ImageOptimizationService({
   // Default configuration - can be overridden by environment variables
-  baseUrl: process.env.NEXT_PUBLIC_IMAGE_OPTIMIZATION_ENDPOINT || '/api/images/optimize',
+  baseUrl: import.meta.env.VITE_IMAGE_OPTIMIZATION_ENDPOINT || '/api/images/optimize',
   
   // Cloudinary configuration (if available)
-  ...(process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME && {
+  ...(import.meta.env.VITE_CLOUDINARY_CLOUD_NAME && {
     cloudinary: {
-      cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME,
-      apiKey: process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY || '',
+      cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+      apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY || '',
     }
   }),
   
   // ImageKit configuration (if available)
-  ...(process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY && {
+  ...(import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY && {
     imagekit: {
-      publicKey: process.env.NEXT_PUBLIC_IMAGEKIT_PUBLIC_KEY,
-      urlEndpoint: process.env.NEXT_PUBLIC_IMAGEKIT_URL_ENDPOINT || '',
+      publicKey: import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY,
+      urlEndpoint: import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT || '',
     }
   }),
 });

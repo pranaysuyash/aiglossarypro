@@ -46,7 +46,7 @@ import CookieConsentBanner from "@/components/CookieConsentBanner";
 import { useAuth } from "@/hooks/useAuth";
 import { preloadOnIdle, preloadForAuthenticatedUser, preloadForAdmin } from "@/utils/preloadComponents";
 import "@/utils/bundleAnalyzer"; // Initialize bundle analyzer
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 
 // Smart Term Detail component that chooses between enhanced and regular view
 function SmartTermDetail() {
@@ -83,13 +83,19 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function SmartLandingPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+  const [hasRedirected, setHasRedirected] = useState(false);
   
-  // Handle authenticated user redirect
+  // Handle authenticated user redirect with better state management
   useEffect(() => {
-    if (!isLoading && isAuthenticated) {
+    if (!isLoading && isAuthenticated && !hasRedirected) {
+      setHasRedirected(true);
       setLocation("/app");
     }
-  }, [isAuthenticated, isLoading, setLocation]);
+    // Reset redirect flag when user becomes unauthenticated
+    if (!isAuthenticated) {
+      setHasRedirected(false);
+    }
+  }, [isAuthenticated, isLoading, setLocation, hasRedirected]);
   
   // Show loading while checking auth status
   if (isLoading) {
@@ -101,7 +107,7 @@ function SmartLandingPage() {
   }
   
   // Don't render anything while redirecting authenticated users
-  if (isAuthenticated) {
+  if (isAuthenticated && hasRedirected) {
     return null;
   }
   

@@ -126,7 +126,7 @@ export const features = {
   openaiEnabled: !!config.OPENAI_API_KEY,
   googleDriveEnabled: !!config.GOOGLE_DRIVE_API_KEY,
   simpleAuthEnabled: !!(config.JWT_SECRET && (config.GOOGLE_CLIENT_ID || config.GITHUB_CLIENT_ID)),
-  firebaseAuthEnabled: !!(process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY),
+  firebaseAuthEnabled: !!(process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && (process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY_BASE64)),
   analyticsEnabled: true, // Analytics is always enabled for now
   isDevelopment: config.NODE_ENV === 'development',
   isProduction: config.NODE_ENV === 'production'

@@ -37,6 +37,7 @@ export const mockIsAuthenticated = (req: Request, res: Response, next: NextFunct
   if (mockLoggedOut) {
     console.log("🔓 Mock authentication: User is logged out");
     // Don't set user, proceed without authentication
+    req.user = undefined;
     next();
     return;
   }
@@ -78,6 +79,7 @@ export const mockAuthenticateToken = (req: Request, res: Response, next: NextFun
     if (mockLoggedOut) {
       console.log("🔓 Mock token auth: User is logged out");
       // Don't set user, proceed without authentication
+      req.user = undefined;
       next();
       return;
     }
@@ -153,23 +155,37 @@ export function setupMockAuth(app: any) {
   
   // Mock login endpoint
   app.get("/api/login", (req: Request, res: Response) => {
+    mockLoggedOut = false; // Reset logout state
     req.user = DEV_USER as any;
     console.log("🔓 Mock login: User logged in");
-    res.redirect("/");
+    res.redirect("/app");
   });
 
   // Mock logout endpoint  
   app.get("/api/logout", (req: Request, res: Response) => {
+    mockLoggedOut = true; // Set logout state
     req.user = undefined;
     console.log("🔓 Mock logout: User logged out");
     res.redirect("/");
   });
+  
+  // Mock logout POST endpoint (for compatibility with frontend)
+  app.post("/api/auth/logout", (req: Request, res: Response) => {
+    mockLoggedOut = true; // Set logout state
+    req.user = undefined;
+    console.log("🔓 Mock logout (POST): User logged out");
+    res.json({
+      success: true,
+      message: "Logged out successfully"
+    });
+  });
 
   // Mock callback endpoint
   app.get("/api/callback", (req: Request, res: Response) => {
+    mockLoggedOut = false; // Reset logout state
     req.user = DEV_USER as any;
     console.log("🔓 Mock callback: User authenticated");
-    res.redirect("/");
+    res.redirect("/app");
   });
 }
 

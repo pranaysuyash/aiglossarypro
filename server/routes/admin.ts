@@ -48,6 +48,71 @@ export function registerAdminRoutes(app: Express): void {
   const authMiddleware = mockIsAuthenticated;
   const tokenMiddleware = mockAuthenticateToken;
   
+  /**
+   * @openapi
+   * /api/admin/stats:
+   *   get:
+   *     tags:
+   *       - Admin
+   *     summary: Get admin dashboard statistics
+   *     description: Retrieves comprehensive statistics for the admin dashboard including user counts, term counts, and recent activity
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: Admin statistics retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     userCount:
+   *                       type: integer
+   *                       example: 1250
+   *                     termCount:
+   *                       type: integer
+   *                       example: 847
+   *                     categoryCount:
+   *                       type: integer
+   *                       example: 23
+   *                     recentActivity:
+   *                       type: array
+   *                       items:
+   *                         type: object
+   *                         properties:
+   *                           type:
+   *                             type: string
+   *                             example: "user_registration"
+   *                           timestamp:
+   *                             type: string
+   *                             format: date-time
+   *                           details:
+   *                             type: object
+   *       401:
+   *         description: User not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Access denied - admin privileges required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   // Admin dashboard statistics
   app.get('/api/admin/stats', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
@@ -71,6 +136,82 @@ export function registerAdminRoutes(app: Express): void {
     }
   });
 
+  /**
+   * @openapi
+   * /api/admin/import:
+   *   post:
+   *     tags:
+   *       - Admin
+   *     summary: Import terms from Excel file
+   *     description: Uploads and imports AI/ML terms from an Excel file into the database
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         multipart/form-data:
+   *           schema:
+   *             type: object
+   *             properties:
+   *               file:
+   *                 type: string
+   *                 format: binary
+   *                 description: Excel file containing terms data (.xlsx or .xls)
+   *     responses:
+   *       200:
+   *         description: File imported successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     importedCount:
+   *                       type: integer
+   *                       example: 145
+   *                     skippedCount:
+   *                       type: integer
+   *                       example: 3
+   *                     errorCount:
+   *                       type: integer
+   *                       example: 0
+   *                     errors:
+   *                       type: array
+   *                       items:
+   *                         type: string
+   *                 message:
+   *                   type: string
+   *                   example: "Successfully imported 145 terms"
+   *       400:
+   *         description: Bad request - invalid file or no file uploaded
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       401:
+   *         description: User not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Access denied - admin privileges required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   // Import Excel file
   app.post('/api/admin/import', authMiddleware, tokenMiddleware, requireAdmin, upload.single('file'), async (req: Request, res: Response) => {
     try {
@@ -189,6 +330,68 @@ export function registerAdminRoutes(app: Express): void {
     }
   });
 
+  /**
+   * @openapi
+   * /api/admin/clear-data:
+   *   delete:
+   *     tags:
+   *       - Admin
+   *     summary: Clear all database data
+   *     description: Dangerous operation that clears all terms and categories from the database. Requires explicit confirmation.
+   *     security:
+   *       - bearerAuth: []
+   *     requestBody:
+   *       required: true
+   *       content:
+   *         application/json:
+   *           schema:
+   *             type: object
+   *             required:
+   *               - confirm
+   *             properties:
+   *               confirm:
+   *                 type: string
+   *                 enum: ["DELETE_ALL_DATA"]
+   *                 description: Must be exactly "DELETE_ALL_DATA" to confirm the operation
+   *     responses:
+   *       200:
+   *         description: Data cleared successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 message:
+   *                   type: string
+   *                   example: "All data cleared successfully"
+   *       400:
+   *         description: Bad request - confirmation required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       401:
+   *         description: User not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Access denied - admin privileges required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   // Clear all data (dangerous operation)
   app.delete('/api/admin/clear-data', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {
@@ -223,6 +426,70 @@ export function registerAdminRoutes(app: Express): void {
     }
   });
 
+  /**
+   * @openapi
+   * /api/admin/health:
+   *   get:
+   *     tags:
+   *       - Admin
+   *     summary: System health check
+   *     description: Retrieves the health status of all system components including database, storage, and AI services
+   *     security:
+   *       - bearerAuth: []
+   *     responses:
+   *       200:
+   *         description: System health status retrieved successfully
+   *         content:
+   *           application/json:
+   *             schema:
+   *               type: object
+   *               properties:
+   *                 success:
+   *                   type: boolean
+   *                   example: true
+   *                 data:
+   *                   type: object
+   *                   properties:
+   *                     database:
+   *                       type: string
+   *                       enum: [healthy, degraded, unhealthy]
+   *                       example: "healthy"
+   *                     s3:
+   *                       type: string
+   *                       enum: [healthy, degraded, unhealthy]
+   *                       example: "healthy"
+   *                     ai:
+   *                       type: string
+   *                       enum: [healthy, degraded, unhealthy]
+   *                       example: "healthy"
+   *                     termCount:
+   *                       type: string
+   *                       example: "847"
+   *                     uptime:
+   *                       type: string
+   *                       example: "2d 14h 32m"
+   *                     lastCheck:
+   *                       type: string
+   *                       format: date-time
+   *       401:
+   *         description: User not authenticated
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       403:
+   *         description: Access denied - admin privileges required
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   *       500:
+   *         description: Internal server error
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/ErrorResponse'
+   */
   // System health check
   app.get('/api/admin/health', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
     try {

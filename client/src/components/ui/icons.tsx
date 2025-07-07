@@ -23,6 +23,7 @@ export {
   Crown,
   LogOut,
   Grid3X3,
+  GitBranch,
   Copy,
   Share2,
   CheckCircle,

@@ -1,8 +1,8 @@
 import { Router } from "express";
 import { SurpriseDiscoveryService } from "../services/surpriseDiscoveryService";
-import { logger } from "../utils/logger";
+import logger from "../utils/logger";
 import { z } from "zod";
-import { firebaseAuth } from "../middleware/firebaseAuth";
+import { optionalFirebaseAuth } from "../middleware/firebaseAuth";
 import { validateRequest } from "../middleware/validateRequest";
 
 const router = Router();
@@ -38,7 +38,7 @@ const preferencesSchema = z.object({
  */
 router.get(
   "/",
-  firebaseAuth,
+  optionalFirebaseAuth,
   validateRequest({ query: surpriseDiscoverySchema }),
   async (req, res) => {
     try {
@@ -89,7 +89,7 @@ router.get(
  */
 router.post(
   "/feedback",
-  firebaseAuth,
+  optionalFirebaseAuth,
   validateRequest({ body: feedbackSchema }),
   async (req, res) => {
     try {
@@ -140,7 +140,7 @@ router.post(
  */
 router.get(
   "/preferences",
-  firebaseAuth,
+  optionalFirebaseAuth,
   async (req, res) => {
     try {
       const userId = req.user?.uid;
@@ -175,7 +175,7 @@ router.get(
  */
 router.put(
   "/preferences",
-  firebaseAuth,
+  optionalFirebaseAuth,
   validateRequest({ body: preferencesSchema }),
   async (req, res) => {
     try {
@@ -260,7 +260,7 @@ router.get("/modes", (req, res) => {
  */
 router.get(
   "/analytics",
-  firebaseAuth,
+  optionalFirebaseAuth,
   async (req, res) => {
     try {
       const userId = req.user?.uid;

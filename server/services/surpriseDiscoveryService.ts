@@ -12,7 +12,7 @@ import {
   favorites
 } from "../../shared/schema";
 import { eq, sql, desc, asc, and, or, not, inArray, isNull, gt, lt } from "drizzle-orm";
-import { logger } from "../utils/logger";
+import logger from "../utils/logger";
 
 export interface SurpriseDiscoveryRequest {
   userId?: string;

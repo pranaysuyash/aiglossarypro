@@ -1,6 +1,14 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+// Debug: Check Firebase environment variables at server startup
+console.log('🔍 Server Startup - Firebase Environment Check:');
+console.log('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '✅ Set' : '❌ Missing');
+console.log('- FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL ? '✅ Set' : '❌ Missing');
+console.log('- FIREBASE_PRIVATE_KEY_BASE64:', process.env.FIREBASE_PRIVATE_KEY_BASE64 ? '✅ Set' : '❌ Missing');
+const firebaseEnabled = !!(process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && (process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY_BASE64));
+console.log('- Firebase Auth Enabled:', firebaseEnabled ? '✅ TRUE' : '❌ FALSE');
+
 // Initialize error monitoring first
 import { initSentry, sentryRequestHandler, sentryTracingHandler, sentryErrorHandler } from "./utils/sentry";
 initSentry();

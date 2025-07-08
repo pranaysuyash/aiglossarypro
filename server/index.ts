@@ -1,6 +1,10 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+console.log('FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID);
+console.log('FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL);
+console.log('FIREBASE_PRIVATE_KEY_BASE64:', process.env.FIREBASE_PRIVATE_KEY_BASE64 ? 'set' : 'not set');
+
 // Debug: Check Firebase environment variables at server startup
 console.log('🔍 Server Startup - Firebase Environment Check:');
 console.log('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '✅ Set' : '❌ Missing');

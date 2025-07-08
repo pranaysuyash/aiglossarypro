@@ -1,6 +1,6 @@
-import { db } from './server/db';
-import { categories, subcategories, terms } from './shared/schema';
-import { enhancedTerms, termSections } from './shared/enhancedSchema';
+import { db } from '../server/db';
+import { categories, subcategories, terms } from '../shared/schema';
+import { enhancedTerms, termSections } from '../shared/enhancedSchema';
 
 async function checkDatabaseStatus() {
   try {

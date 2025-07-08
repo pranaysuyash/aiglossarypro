@@ -8,6 +8,8 @@ import { verifyFirebaseToken, getUserByEmail, createFirebaseUser } from '../conf
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { generateToken } from '../auth/simpleAuth';
 import type { ApiResponse, IUser } from '../../shared/types';
+import { sendWelcomeEmail } from '../utils/email';
+import { log as logger } from '../utils/logger';
 
 export function registerFirebaseAuthRoutes(app: Express): void {
   
@@ -69,6 +71,18 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         }
 
         user = await storage.upsertUser(userData);
+        
+        // Send welcome email to new users
+        try {
+          await sendWelcomeEmail(userData.email, userData.firstName);
+          logger.info('Welcome email sent to new user', { email: userData.email });
+        } catch (emailError) {
+          // Don't fail registration if email fails
+          logger.error('Failed to send welcome email', { 
+            error: emailError instanceof Error ? emailError.message : String(emailError),
+            email: userData.email 
+          });
+        }
       } else {
         // Update Firebase UID if not set
         if (!user.firebaseUid) {

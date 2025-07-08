@@ -147,7 +147,8 @@ async function startDevelopmentServers() {
   
   const serverProcess = spawnWithLogging('npm', ['run', 'dev:server'], {
     prefix: 'dev:server',
-    cwd: process.cwd()
+    cwd: process.cwd(),
+    env: process.env
   });
   
   // Step 3: Wait for backend to be ready

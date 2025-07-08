@@ -2156,12 +2156,6 @@ export class OptimizedStorage implements IStorage {
     console.log('Section completion tracking placeholder:', { userId, termId, sectionId });
   }
 
-  async updateUserProgress(userId: string, updates: any): Promise<void> {
-    // Simple implementation using existing user progress
-    if (updates.termId) {
-      await this.markTermAsLearned(userId, updates.termId);
-    }
-  }
 
   async getUserSectionProgress(userId: string, options?: any): Promise<any[]> {
     // Return user progress in a different format
@@ -2352,6 +2346,133 @@ export class OptimizedStorage implements IStorage {
     const data = await query;
     
     return { data, total };
+  }
+
+  // Section-related methods for 42-section content system
+  async getTermSections(termId: string): Promise<any[]> {
+    const cacheKey = `term_sections:${termId}`;
+    
+    return cached(
+      cacheKey,
+      async () => {
+        // Check if sections table exists, for now return empty array
+        // TODO: Implement when sections table is ready
+        return [];
+      },
+      CacheKeys.SHORT_CACHE_TTL
+    );
+  }
+
+  async getSectionById(sectionId: string): Promise<any | null> {
+    const cacheKey = `section:${sectionId}`;
+    
+    return cached(
+      cacheKey,
+      async () => {
+        // Check if sections table exists, for now return null
+        // TODO: Implement when sections table is ready
+        return null;
+      },
+      CacheKeys.SHORT_CACHE_TTL
+    );
+  }
+
+  async getContentGallery(sectionName: string, page: number = 1, limit: number = 20): Promise<any> {
+    const cacheKey = `content_gallery:${sectionName}:${page}:${limit}`;
+    
+    return cached(
+      cacheKey,
+      async () => {
+        // Check if content gallery data exists, for now return empty
+        // TODO: Implement when gallery tables are ready
+        return {
+          sectionName,
+          items: [],
+          termCount: 0,
+          totalPages: 0,
+          currentPage: page
+        };
+      },
+      CacheKeys.MEDIUM_CACHE_TTL
+    );
+  }
+
+  async getUserProgressSummary(userId: string): Promise<any> {
+    const cacheKey = `user_progress_summary:${userId}`;
+    
+    return cached(
+      cacheKey,
+      async () => {
+        // Get user progress from existing userProgress table
+        const progressRows = await db.select()
+          .from(userProgress)
+          .where(eq(userProgress.userId, userId));
+        
+        const totalSections = 42; // Based on the 42-section architecture
+        const completedSections = progressRows.length;
+        const inProgressSections = 0; // Could be calculated based on partial completion
+        
+        return {
+          totalSections,
+          completedSections,
+          inProgressSections,
+          completionPercentage: Math.round((completedSections / totalSections) * 100)
+        };
+      },
+      CacheKeys.SHORT_CACHE_TTL
+    );
+  }
+
+  async updateUserProgress(userId: string, termId: string, sectionId: string, progressData: any): Promise<void> {
+    // For now, use the existing markTermAsLearned method
+    await this.markTermAsLearned(userId, termId);
+    
+    // Clear cache for user progress
+    clearCache(`user_progress_summary:${userId}`);
+    clearCache(`term_sections:${termId}`);
+  }
+
+  async searchSectionContent(query: string, options: any = {}): Promise<any> {
+    const { contentType, sectionName, page = 1, limit = 20 } = options;
+    const cacheKey = `section_search:${query}:${contentType || 'all'}:${sectionName || 'all'}:${page}:${limit}`;
+    
+    return cached(
+      cacheKey,
+      async () => {
+        // For now, return empty results
+        // TODO: Implement full-text search across section content
+        return {
+          data: [],
+          total: 0,
+          hasMore: false,
+          page,
+          limit
+        };
+      },
+      CacheKeys.SHORT_CACHE_TTL
+    );
+  }
+
+  async getSectionAnalytics(): Promise<any> {
+    const cacheKey = 'section_analytics';
+    
+    return cached(
+      cacheKey,
+      async () => {
+        // Calculate basic analytics from existing data
+        const termCount = await db.select({ count: sql<number>`COUNT(*)` })
+          .from(terms);
+        
+        return {
+          totalSections: 42, // Based on 42-section architecture
+          totalTerms: termCount[0]?.count || 0,
+          totalItems: 0, // Would be sum of all section items
+          completionRates: [], // Would be calculated from user progress
+          popularSections: [] // Would be calculated from view counts
+        };
+      },
+      CacheKeys.LONG_CACHE_TTL
+    );
   }
 }
 

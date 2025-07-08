@@ -9,7 +9,7 @@ import { eq, sql } from 'drizzle-orm';
 import crypto from 'crypto';
 
 // Import the 42-section configuration
-import COMPLETE_CONTENT_SECTIONS from '../complete_42_sections_config';
+import COMPLETE_CONTENT_SECTIONS from './complete_42_sections_config';
 
 interface ParsedRow {
   termName: string;
@@ -150,20 +150,26 @@ async function importTermToDatabase(termName: string, columns: Map<string, any>,
   
   // Import all sections
   let sectionIndex = 0;
+  console.log(`  📥 Importing ${sections.size} sections to database...`);
+  
   for (const [sectionName, sectionContent] of sections) {
-    const sectionId = `${sectionName.toLowerCase().replace(/\s+/g, '_')}_${sectionIndex}`;
-    
-    await db.insert(termSections).values({
-      id: crypto.randomUUID(),
-      termId,
-      sectionId,
-      sectionName,
-      content: sectionContent,
-      displayType: COMPLETE_CONTENT_SECTIONS.find(s => s.sectionName === sectionName)?.displayType || 'main',
-      orderIndex: sectionIndex++,
-      isRequired: ['Introduction', 'Prerequisites', 'How It Works'].includes(sectionName),
-      version: 1
-    });
+    try {
+      console.log(`    💾 Importing section: ${sectionName} (${Object.keys(sectionContent).length} fields)`);
+      
+      await db.insert(termSections).values({
+        id: crypto.randomUUID(),
+        termId,
+        sectionName,
+        sectionData: sectionContent,
+        displayType: COMPLETE_CONTENT_SECTIONS.find(s => s.sectionName === sectionName)?.displayType || 'main',
+        priority: sectionIndex + 1
+      });
+      
+      sectionIndex++;
+      console.log(`      ✅ Success`);
+    } catch (error) {
+      console.log(`      ❌ Error importing ${sectionName}:`, error.message);
+    }
   }
   
   console.log(`  ✅ ${sectionIndex} sections imported`);
@@ -177,10 +183,10 @@ async function importTermToDatabase(termName: string, columns: Map<string, any>,
     await db.insert(interactiveElements).values({
       id: crypto.randomUUID(),
       termId,
+      sectionName: 'Introduction',
       elementType: 'mermaid_diagram',
-      content: { diagram: mermaidContent },
-      sectionId: 'introduction',
-      orderIndex: elementCount++
+      elementData: { diagram: mermaidContent },
+      displayOrder: elementCount++
     });
   }
   
@@ -190,10 +196,10 @@ async function importTermToDatabase(termName: string, columns: Map<string, any>,
     await db.insert(interactiveElements).values({
       id: crypto.randomUUID(),
       termId,
+      sectionName: 'Implementation',
       elementType: 'code_example',
-      content: { code: codeContent, language: 'python' },
-      sectionId: 'implementation',
-      orderIndex: elementCount++
+      elementData: { code: codeContent, language: 'python' },
+      displayOrder: elementCount++
     });
   }
   
@@ -203,10 +209,10 @@ async function importTermToDatabase(termName: string, columns: Map<string, any>,
     await db.insert(interactiveElements).values({
       id: crypto.randomUUID(),
       termId,
+      sectionName: 'Quick Quiz',
       elementType: 'quiz',
-      content: { quiz: quizContent },
-      sectionId: 'quick_quiz',
-      orderIndex: elementCount++
+      elementData: { quiz: quizContent },
+      displayOrder: elementCount++
     });
   }
   
@@ -220,7 +226,7 @@ async function main() {
   console.log('================================\n');
   
   try {
-    const filePath = path.join(process.cwd(), 'data', 'row1.xlsx');
+    const filePath = path.join(process.cwd(), 'data', 'aiml2.xlsx');
     
     // Parse the Excel file
     const parsedRows = await parseExcelFile(filePath);
@@ -258,17 +264,11 @@ async function main() {
     console.log('\n📋 Sample Terms Check:');
     
     for (const termName of checkTerms) {
-      const result = await db
-        .select({
-          name: enhancedTerms.name,
-          sectionCount: sql<number>`(SELECT COUNT(*) FROM ${termSections} WHERE term_id = ${enhancedTerms.id})`
-        })
-        .from(enhancedTerms)
-        .where(eq(enhancedTerms.name, termName))
-        .limit(1);
+      const term = await db.select().from(enhancedTerms).where(eq(enhancedTerms.name, termName)).limit(1);
       
-      if (result.length > 0) {
-        console.log(`  ✅ ${result[0].name}: ${result[0].sectionCount} sections`);
+      if (term.length > 0) {
+        const sections = await db.select().from(termSections).where(eq(termSections.termId, term[0].id));
+        console.log(`  ✅ ${term[0].name}: ${sections.length} sections`);
       } else {
         console.log(`  ❌ ${termName}: Not found`);
       }

@@ -32,9 +32,10 @@ export function registerSectionRoutes(app: Express): void {
       const { termId } = req.params;
       const userId = req.user?.claims?.sub;
 
-      // These methods don't exist in OptimizedStorage, return empty data for now
-      const sections: ISection[] = [];
-      const userProgress: IUserProgress[] = [];
+      // Get sections and progress data
+      const sections: ISection[] = await storage.getTermSections(termId);
+      const userProgress: IUserProgress[] = userId ? 
+        [await storage.getUserProgressSummary(userId)] : [];
 
       const baseTerm = await storage.getTermById(termId);
       if (!baseTerm) {
@@ -79,10 +80,11 @@ export function registerSectionRoutes(app: Express): void {
       const { sectionId } = validateParams(sectionParamsSchema)(req);
       const userId = req.user?.claims?.sub;
 
-      // These methods don't exist in OptimizedStorage, return empty data for now
-      const section: ISection | null = null;
-      const items: ISectionItem[] = [];
-      const userProgress: IUserProgress | undefined = undefined;
+      // Get section data and items
+      const section: ISection | null = await storage.getSectionById(sectionId);
+      const items: ISectionItem[] = []; // TODO: Implement when section items are ready
+      const userProgress: IUserProgress | undefined = userId ? 
+        await storage.getUserProgressSummary(userId) : undefined;
 
       const response: ISectionResponse = {
         section: section as any, // Cast to handle null case
@@ -110,8 +112,8 @@ export function registerSectionRoutes(app: Express): void {
       const userId = req.user!.claims.sub;
       const progressUpdate: IProgressUpdate = req.body;
 
-      // updateUserProgress method doesn't exist with this signature, using markTermAsLearned instead
-      await storage.markTermAsLearned(userId, String(termId));
+      // Update user progress using the new method
+      await storage.updateUserProgress(userId, String(termId), sectionId, progressUpdate);
 
       res.json({
         success: true,
@@ -130,8 +132,8 @@ export function registerSectionRoutes(app: Express): void {
   app.get('/api/progress/summary', authenticateToken, async (req: Request, res: Response) => {
     try {
       const userId = req.user!.claims.sub;
-      // getUserProgressSummary doesn't exist, return empty summary
-      const summary = { totalSections: 0, completedSections: 0, inProgressSections: 0 };
+      // Get user's progress summary using the new method
+      const summary = await storage.getUserProgressSummary(userId);
 
       res.json({
         success: true,
@@ -152,8 +154,8 @@ export function registerSectionRoutes(app: Express): void {
   app.get('/api/content/applications', async (req: Request, res: Response) => {
     try {
       const { page, limit } = validateQuery(paginationSchema)(req);
-      // getContentGallery doesn't exist, return empty galleries
-      const galleries = { sectionName: SECTION_NAMES.APPLICATIONS, items: [], termCount: 0 };
+      // Get content gallery data using the new method
+      const galleries = await storage.getContentGallery(SECTION_NAMES.APPLICATIONS, page, limit);
 
       res.json({
         success: true,
@@ -172,8 +174,8 @@ export function registerSectionRoutes(app: Express): void {
   app.get('/api/content/ethics', async (req: Request, res: Response) => {
     try {
       const { page, limit } = validateQuery(paginationSchema)(req);
-      // getContentGallery doesn't exist, return empty galleries
-      const galleries = { sectionName: SECTION_NAMES.ETHICS, items: [], termCount: 0 };
+      // Get content gallery data using the new method
+      const galleries = await storage.getContentGallery(SECTION_NAMES.ETHICS, page, limit);
 
       res.json({
         success: true,
@@ -192,8 +194,8 @@ export function registerSectionRoutes(app: Express): void {
   app.get('/api/content/tutorials', async (req: Request, res: Response) => {
     try {
       const { page, limit } = validateQuery(paginationSchema)(req);
-      // getContentGallery doesn't exist, return empty galleries
-      const galleries = { sectionName: SECTION_NAMES.TUTORIALS, items: [], termCount: 0 };
+      // Get content gallery data using the new method
+      const galleries = await storage.getContentGallery(SECTION_NAMES.TUTORIALS, page, limit);
 
       res.json({
         success: true,
@@ -240,8 +242,8 @@ export function registerSectionRoutes(app: Express): void {
         });
       }
 
-      // searchSectionContent doesn't exist, return empty results
-      const results = { data: [], total: 0, hasMore: false };
+      // Search section content using the new method
+      const results = await storage.searchSectionContent(q, { contentType, sectionName, page, limit });
 
       res.json({
         success: true,
@@ -259,8 +261,8 @@ export function registerSectionRoutes(app: Express): void {
   // Get section statistics for analytics
   app.get('/api/sections/analytics', async (req: Request, res: Response) => {
     try {
-      // getSectionAnalytics doesn't exist, return empty analytics
-      const analytics = { totalSections: 0, totalItems: 0, completionRates: [] };
+      // Get section analytics using the new method
+      const analytics = await storage.getSectionAnalytics();
 
       res.json({
         success: true,

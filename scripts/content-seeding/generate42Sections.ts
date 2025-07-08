@@ -23,6 +23,7 @@
 import { db } from '../../server/db';
 import { aiService } from '../../server/aiService';
 import { terms, categories } from '../../shared/schema';
+import { termSections } from '../../shared/enhancedSchema';
 import { eq, sql, and, not, isNull } from 'drizzle-orm';
 import { COMPLETE_CONTENT_SECTIONS } from '../complete_42_sections_config';
 import { log as logger } from '../../server/utils/logger';
@@ -492,29 +493,64 @@ function assessContentQuality(content: string, section: ContentSection): 'excell
 }
 
 /**
- * Save generated content (placeholder - would integrate with actual storage)
+ * Get priority value for a section
+ */
+function getPriorityValue(sectionName: string): number {
+  if (SECTION_PRIORITIES.high.includes(sectionName)) return 1;
+  if (SECTION_PRIORITIES.medium.includes(sectionName)) return 5;
+  if (SECTION_PRIORITIES.low.includes(sectionName)) return 9;
+  return 5; // Default priority
+}
+
+/**
+ * Save generated content to the database
  */
 async function saveGeneratedContent(generatedContent: GeneratedContent): Promise<void> {
-  // In a full implementation, this would save to a sections table or extend the terms table
-  // For now, we'll log the content structure
-  
-  logger.info(`💾 Saving section: ${generatedContent.sectionName} for term: ${generatedContent.termName}`);
-  
-  // Here you would typically:
-  // 1. Insert into a term_sections table
-  // 2. Update the terms table with section data
-  // 3. Cache the content for fast retrieval
-  // 4. Index the content for search
-  
-  // Example structure for a sections table:
-  // await db.insert(termSections).values({
-  //   termId: generatedContent.termId,
-  //   sectionName: generatedContent.sectionName,
-  //   content: generatedContent.content,
-  //   wordCount: generatedContent.wordCount,
-  //   quality: generatedContent.quality,
-  //   generatedAt: new Date()
-  // });
+  try {
+    logger.info(`💾 Saving section: ${generatedContent.sectionName} for term: ${generatedContent.termName}`);
+    
+    // Find the section configuration to get display type and priority
+    const sectionConfig = COMPLETE_CONTENT_SECTIONS.find(
+      section => section.sectionName === generatedContent.sectionName
+    );
+    
+    if (!sectionConfig) {
+      logger.warn(`⚠️  Section configuration not found for: ${generatedContent.sectionName}`);
+      return;
+    }
+    
+    // Prepare section data
+    const sectionData = {
+      content: generatedContent.content,
+      wordCount: generatedContent.wordCount,
+      quality: generatedContent.quality,
+      generationTime: generatedContent.generationTime,
+      generatedAt: new Date().toISOString(),
+      metadata: {
+        parseType: sectionConfig.parseType,
+        columns: sectionConfig.columns,
+        contentLength: generatedContent.content.length
+      }
+    };
+    
+    // Insert into term_sections table
+    await db.insert(termSections).values({
+      termId: generatedContent.termId,
+      sectionName: generatedContent.sectionName,
+      sectionData: sectionData,
+      displayType: sectionConfig.displayType,
+      priority: getPriorityValue(generatedContent.sectionName),
+      isInteractive: sectionConfig.displayType === 'interactive',
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+    
+    logger.info(`✅ Saved section: ${generatedContent.sectionName} (${generatedContent.wordCount} words)`);
+    
+  } catch (error) {
+    logger.error(`❌ Error saving section ${generatedContent.sectionName}:`, error);
+    throw error;
+  }
 }
 
 /**
@@ -523,9 +559,7 @@ async function saveGeneratedContent(generatedContent: GeneratedContent): Promise
 async function validateExistingSections(): Promise<void> {
   logger.info('🔍 Validating existing section content...');
   
-  // This would validate existing comprehensive content
-  // For now, we'll check what basic content exists
-  
+  // Check basic terms content
   const existingTerms = await db.select().from(terms);
   
   let termsWithContent = 0;
@@ -548,6 +582,24 @@ async function validateExistingSections(): Promise<void> {
     }
   }
   
+  // Check term_sections table
+  const sectionStats = await db.execute(sql`
+    SELECT 
+      COUNT(*) as total_sections,
+      COUNT(DISTINCT term_id) as terms_with_sections,
+      COUNT(*) / NULLIF(COUNT(DISTINCT term_id), 0) as avg_sections_per_term
+    FROM term_sections
+  `);
+  
+  const sectionsByType = await db.execute(sql`
+    SELECT 
+      section_name,
+      COUNT(*) as count
+    FROM term_sections
+    GROUP BY section_name
+    ORDER BY count DESC
+  `);
+  
   logger.info(`📊 Content Validation Results:`);
   logger.info(`  Total terms: ${existingTerms.length}`);
   logger.info(`  Terms with content: ${termsWithContent}`);
@@ -559,6 +611,21 @@ async function validateExistingSections(): Promise<void> {
   
   logger.info(`  Content coverage: ${contentCoverage}%`);
   logger.info(`  Comprehensive coverage: ${comprehensiveCoverage}%`);
+  
+  if (sectionStats.rows.length > 0) {
+    const stats = sectionStats.rows[0];
+    logger.info(`\n📊 42-Section System Status:`);
+    logger.info(`  Total sections: ${stats.total_sections}`);
+    logger.info(`  Terms with sections: ${stats.terms_with_sections}`);
+    logger.info(`  Avg sections per term: ${stats.avg_sections_per_term ? Number(stats.avg_sections_per_term).toFixed(1) : '0'}`);
+  }
+  
+  if (sectionsByType.rows.length > 0) {
+    logger.info(`\n📊 Section Distribution (Top 10):`);
+    sectionsByType.rows.slice(0, 10).forEach((row: any) => {
+      logger.info(`  ${row.section_name}: ${row.count} terms`);
+    });
+  }
   
   if (comprehensiveCoverage < '20') {
     logger.warn('⚠️  Low comprehensive content coverage. Consider running section generation.');

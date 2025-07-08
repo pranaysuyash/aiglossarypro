@@ -8,6 +8,7 @@ import { mockIsAuthenticated, mockAuthenticateToken } from '../middleware/dev/mo
 import { features } from '../config';
 import { UserService } from '../services/userService';
 import { PRICING_CONSTANTS, HTTP_STATUS, ORDER_CONSTANTS, ENVIRONMENT_CONSTANTS } from '../utils/constants';
+import { sendSystemNotificationEmail } from '../utils/email';
 
 // Gumroad webhook verification
 function verifyGumroadWebhook(body: string, signature: string): boolean {
@@ -92,6 +93,30 @@ export function registerGumroadRoutes(app: Express): void {
           wasExistingUser: result.wasExistingUser,
           productName: product_name
         });
+        
+        // Send purchase confirmation email
+        try {
+          await sendSystemNotificationEmail(
+            email,
+            'Payment Confirmation - AI Glossary Pro',
+            `Thank you for your purchase! Your lifetime access to AI Glossary Pro has been activated.
+            
+            Order ID: ${order_id}
+            Product: ${product_name}
+            Amount: ${currency} ${amount_cents / 100}
+            
+            You now have access to all premium features. Start exploring the comprehensive AI/ML glossary!`,
+            process.env.BASE_URL || 'https://aimlglossary.com',
+            'Access Your Account'
+          );
+          log.info('Purchase confirmation email sent', { email: email.substring(0, 3) + '***' });
+        } catch (emailError) {
+          // Don't fail the purchase if email fails
+          log.error('Failed to send purchase confirmation email', {
+            error: emailError instanceof Error ? emailError.message : String(emailError),
+            email: email.substring(0, 3) + '***'
+          });
+        }
         
         // Send success response with additional data for potential client-side handling
         res.status(HTTP_STATUS.OK).json({ 

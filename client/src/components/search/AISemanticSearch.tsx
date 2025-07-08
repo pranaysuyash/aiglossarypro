@@ -149,7 +149,8 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
         throw new Error('Search failed');
       }
 
-      return response.json();
+      const result = await response.json();
+      return result.data || result;
     },
     enabled: debouncedQuery.length >= 2,
     refetchOnWindowFocus: false,

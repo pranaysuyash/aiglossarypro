@@ -85,33 +85,6 @@ export class JobQueueManager extends EventEmitter {
    */
   private async initializeQueues(): Promise<void> {
     const queueConfigs: Array<{ type: JobType; config: QueueConfig }> = [
-      // Excel Import Queues
-      {
-        type: JobType.EXCEL_IMPORT,
-        config: {
-          name: 'excel-import',
-          defaultJobOptions: {
-            attempts: 3,
-            backoff: { type: 'exponential', delay: 30000 },
-            timeout: 300000, // 5 minutes
-            removeOnComplete: 100,
-            removeOnFail: 500,
-          },
-          concurrency: 2, // Limit concurrent Excel imports
-        },
-      },
-      {
-        type: JobType.EXCEL_PARSE,
-        config: {
-          name: 'excel-parse',
-          defaultJobOptions: {
-            attempts: 3,
-            backoff: { type: 'exponential', delay: 5000 },
-            timeout: 120000, // 2 minutes
-          },
-          concurrency: 5,
-        },
-      },
       // AI Processing Queues
       {
         type: JobType.AI_CONTENT_GENERATION,
@@ -231,8 +204,6 @@ export class JobQueueManager extends EventEmitter {
 
     // Map job types to their processors
     const processorMap = new Map([
-      [JobType.EXCEL_IMPORT, processors.excelImportProcessor],
-      [JobType.EXCEL_PARSE, processors.excelParseProcessor],
       [JobType.AI_CONTENT_GENERATION, processors.aiContentGenerationProcessor],
       [JobType.AI_BATCH_PROCESSING, processors.aiBatchProcessingProcessor],
       [JobType.DB_BATCH_INSERT, processors.dbBatchInsertProcessor],
@@ -564,8 +535,6 @@ export class JobQueueManager extends EventEmitter {
    */
   private getWorkerConcurrency(type: JobType): number {
     const concurrencyMap: Record<JobType, number> = {
-      [JobType.EXCEL_IMPORT]: 2,
-      [JobType.EXCEL_PARSE]: 5,
       [JobType.AI_CONTENT_GENERATION]: 10,
       [JobType.AI_BATCH_PROCESSING]: 2,
       [JobType.DB_BATCH_INSERT]: 5,
@@ -573,7 +542,6 @@ export class JobQueueManager extends EventEmitter {
       [JobType.CACHE_WARM]: 20,
       [JobType.CACHE_PRECOMPUTE]: 5,
       [JobType.ANALYTICS_AGGREGATE]: 3,
-      [JobType.EXCEL_BATCH_IMPORT]: 3,
       [JobType.AI_CONTENT_PARSING]: 5,
       [JobType.DB_BATCH_UPDATE]: 5,
       [JobType.DB_CLEANUP]: 1,
@@ -613,13 +581,6 @@ export const jobQueueManager = new JobQueueManager();
 
 // Helper functions for easy job creation
 export const jobQueue = {
-  /**
-   * Add an Excel import job
-   */
-  async addExcelImportJob(data: any, options?: JobOptions): Promise<string> {
-    return jobQueueManager.addJob(JobType.EXCEL_IMPORT, data, options);
-  },
-
   /**
    * Add an AI content generation job
    */

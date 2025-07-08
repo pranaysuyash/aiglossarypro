@@ -2,7 +2,8 @@ import { google } from 'googleapis';
 import fs from 'fs';
 import path from 'path';
 import { Readable } from 'stream';
-import { parseExcelFile, importToDatabase } from './excelParser';
+// Note: Excel processing functionality has been removed
+// import { parseExcelFile, importToDatabase } from './excelParser';
 
 // Scope for accessing files in Google Drive
 const SCOPES = ['https://www.googleapis.com/auth/drive.readonly'];
@@ -142,6 +143,7 @@ export async function downloadFile(
 
 /**
  * Process Excel file from Google Drive directly
+ * Note: Excel processing functionality has been removed
  */
 export async function processExcelFromDrive(
   auth: GoogleDriveAuth,
@@ -149,26 +151,29 @@ export async function processExcelFromDrive(
   fileId: string
 ): Promise<any> {
   try {
-    // Download to temporary file
-    const tempDir = path.join(process.cwd(), 'temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
+    console.log('⚠️  Excel processing functionality has been removed');
+    throw new Error('Excel processing functionality has been removed');
     
-    const tempFile = path.join(tempDir, `${fileId}.xlsx`);
-    await downloadFile(auth, credentials, fileId, tempFile);
+    // Download to temporary file
+    // const tempDir = path.join(process.cwd(), 'temp');
+    // if (!fs.existsSync(tempDir)) {
+    //   fs.mkdirSync(tempDir, { recursive: true });
+    // }
+    
+    // const tempFile = path.join(tempDir, `${fileId}.xlsx`);
+    // await downloadFile(auth, credentials, fileId, tempFile);
     
     // Read the file
-    const buffer = fs.readFileSync(tempFile);
+    // const buffer = fs.readFileSync(tempFile);
     
     // Parse and import
-    const parsedData = await parseExcelFile(buffer);
-    const result = await importToDatabase(parsedData);
+    // const parsedData = await parseExcelFile(buffer);
+    // const result = await importToDatabase(parsedData);
     
     // Clean up temporary file
-    fs.unlinkSync(tempFile);
+    // fs.unlinkSync(tempFile);
     
-    return result;
+    // return result;
   } catch (error) {
     console.error('Error processing Excel from Drive:', error);
     throw error;
@@ -209,8 +214,10 @@ export async function streamExcelFromDrive(
     await downloadFile(auth, credentials, fileId, tempFile);
     
     // Use the excelStreamer to process the large file
-    const { streamExcelFile } = require('./excelStreamer');
-    const result = await streamExcelFile(tempFile, 500); // Process 500 rows at a time
+    // const { streamExcelFile } = require('./excelStreamer');
+    // const result = await streamExcelFile(tempFile, 500); // Process 500 rows at a time
+    console.log('⚠️  Excel streaming functionality has been removed');
+    throw new Error('Excel streaming functionality has been removed');
     
     // Clean up
     fs.unlinkSync(tempFile);
@@ -218,6 +225,8 @@ export async function streamExcelFromDrive(
     return result;
   } else {
     // For smaller files, process directly
-    return await processExcelFromDrive(auth, credentials, fileId);
+    console.log('⚠️  Excel processing functionality has been removed');
+    throw new Error('Excel processing functionality has been removed');
+    // return await processExcelFromDrive(auth, credentials, fileId);
   }
 }

@@ -2,34 +2,41 @@
 
 import { readFile } from 'fs/promises';
 import path from 'path';
-import { AdvancedExcelParser } from '../server/advancedExcelParser';
+// Note: Excel processing functionality has been removed
+// import { AdvancedExcelParser } from '../server/advancedExcelParser';
 import { enhancedStorage } from '../server/enhancedStorage';
 import { log } from '../server/utils/logger';
 
 async function importAllTerms() {
-  console.log('🚀 Starting full import of all 29 terms from row1.xlsx\n');
+  console.log('🚀 Starting full import - Excel processing functionality has been removed\n');
   
   try {
-    // Read the Excel file
-    const filePath = path.join(process.cwd(), 'data', 'row1.xlsx');
-    const buffer = await readFile(filePath);
+    // Excel processing functionality has been removed
+    console.log('⚠️  Excel processing functionality has been removed');
+    console.log('This script is no longer functional and should be replaced with alternative data processing methods');
+    
+    // const filePath = path.join(process.cwd(), 'data', 'row1.xlsx');
+    // const buffer = await readFile(filePath);
     
     // Initialize parser
-    const parser = new AdvancedExcelParser();
+    // const parser = new AdvancedExcelParser();
     
     // Parse with AI disabled for now (to speed up the process)
-    console.log('📊 Parsing Excel file with 295 columns...');
-    const parsedTerms = await parser.parseComplexExcel(
-      buffer, 
-      { 
-        enableAI: false, 
-        mode: 'none', 
-        costOptimization: true 
-      },
-      'row1.xlsx'
-    );
+    // console.log('📊 Parsing Excel file with 295 columns...');
+    // const parsedTerms = await parser.parseComplexExcel(
+    //   buffer, 
+    //   { 
+    //     enableAI: false, 
+    //     mode: 'none', 
+    //     costOptimization: true 
+    //   },
+    //   'row1.xlsx'
+    // );
     
-    console.log(`\n✅ Successfully parsed ${parsedTerms.length} terms\n`);
+    // console.log(`\n✅ Successfully parsed ${parsedTerms.length} terms\n`);
+    
+    // Mock empty array for now
+    const parsedTerms: any[] = [];
     
     // Import each term
     for (let i = 0; i < parsedTerms.length; i++) {

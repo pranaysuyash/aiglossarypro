@@ -1,5 +1,21 @@
-import { AdvancedExcelParser, type ParsedTerm } from './advancedExcelParser';
+// Note: Excel processing functionality has been removed
+// import { AdvancedExcelParser, type ParsedTerm } from './advancedExcelParser';
+
 import { ContentOrganizer } from './displayCategorization';
+
+// Define ParsedTerm type locally since it's no longer imported
+interface ParsedTerm {
+  name: string;
+  sections: Map<string, any>;
+  categories: {
+    main: string[];
+    sub: string[];
+    related: string[];
+    domains: string[];
+    techniques: string[];
+  };
+  parseHash: string;
+}
 import { 
   enhancedTerms, 
   termSections, 
@@ -19,25 +35,30 @@ interface TransformedTermData {
 }
 
 export class DataTransformationPipeline {
-  private parser: AdvancedExcelParser;
+  // private parser: AdvancedExcelParser;
 
   constructor() {
-    this.parser = new AdvancedExcelParser();
+    // Excel processing functionality has been removed
+    // this.parser = new AdvancedExcelParser();
   }
 
   /**
    * Complete pipeline: Parse Excel → Transform → Save to Database
+   * Note: Excel processing functionality has been removed
    */
   async processExcelFile(buffer: Buffer): Promise<{
     processed: number;
     cached: number;
     errors: string[];
   }> {
-    console.log('Starting Excel processing pipeline...');
+    console.log('⚠️  Excel processing functionality has been removed');
     
     // Step 1: Parse the complex Excel structure
-    const parsedTerms = await this.parser.parseComplexExcel(buffer);
-    console.log(`Parsed ${parsedTerms.length} terms from Excel`);
+    // const parsedTerms = await this.parser.parseComplexExcel(buffer);
+    // console.log(`Parsed ${parsedTerms.length} terms from Excel`);
+
+    // Mock empty array for now
+    const parsedTerms: ParsedTerm[] = [];
 
     // Step 2: Transform parsed data for database storage
     const transformedData = await this.transformParsedData(parsedTerms);
@@ -49,7 +70,7 @@ export class DataTransformationPipeline {
     return {
       processed: results.success,
       cached: results.cached,
-      errors: results.errors
+      errors: ['Excel processing functionality has been removed']
     };
   }
 
@@ -516,7 +537,9 @@ export class DataTransformationPipeline {
 }
 
 // Export function for use in API routes
+// Note: Excel processing functionality has been removed
 export async function processExcelUpload(buffer: Buffer) {
+  console.log('⚠️  Excel processing functionality has been removed');
   const pipeline = new DataTransformationPipeline();
   return await pipeline.processExcelFile(buffer);
 }

@@ -1,4 +1,4 @@
-// Complete 42-section configuration for AdvancedExcelParser
+// Complete 42-section configuration (originally for AdvancedExcelParser)
 // Based on the comprehensive content structure provided
 
 interface ContentSection {

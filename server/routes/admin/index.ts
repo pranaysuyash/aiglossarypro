@@ -1,6 +1,5 @@
 import type { Express } from "express";
 import { registerAdminStatsRoutes } from "./stats";
-import { registerAdminImportRoutes } from "./imports";
 import { registerAdminUserRoutes } from "./users";
 import { registerAdminMaintenanceRoutes } from "./maintenance";
 import { registerAdminContentRoutes } from "./content";
@@ -20,7 +19,6 @@ export function registerAdminRoutes(app: Express): void {
   
   // Register all admin sub-modules
   registerAdminStatsRoutes(app);
-  registerAdminImportRoutes(app);
   registerAdminUserRoutes(app);
   registerAdminMaintenanceRoutes(app);
   registerAdminContentRoutes(app);

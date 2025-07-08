@@ -4,11 +4,6 @@
  */
 
 export enum JobType {
-  // Excel Import Jobs
-  EXCEL_IMPORT = 'excel_import',
-  EXCEL_PARSE = 'excel_parse',
-  EXCEL_BATCH_IMPORT = 'excel_batch_import',
-  
   // AI Processing Jobs
   AI_CONTENT_GENERATION = 'ai_content_generation',
   AI_CONTENT_PARSING = 'ai_content_parsing',
@@ -75,29 +70,6 @@ export interface BaseJobData {
   metadata?: Record<string, any>;
 }
 
-// Excel Import Job Types
-export interface ExcelImportJobData extends BaseJobData {
-  fileBuffer: Buffer;
-  fileName: string;
-  fileSize: number;
-  importOptions: {
-    mode: 'basic' | 'advanced' | 'streaming';
-    enableAI: boolean;
-    aiMode?: 'none' | 'basic' | 'full' | 'selective';
-    batchSize?: number;
-    checkpointEnabled?: boolean;
-  };
-}
-
-export interface ExcelImportJobResult {
-  termsImported: number;
-  categoriesImported: number;
-  sectionsProcessed: number;
-  errors: Array<{ row: number; error: string }>;
-  warnings: Array<{ row: number; warning: string }>;
-  duration: number;
-  checkpointId?: string;
-}
 
 // AI Processing Job Types
 export interface AIContentGenerationJobData extends BaseJobData {

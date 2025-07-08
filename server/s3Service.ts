@@ -7,8 +7,6 @@ import {
 } from '@aws-sdk/client-s3';
 import fs from 'fs';
 import path from 'path';
-import { parseExcelFile, importToDatabase } from './excelParser';
-import { streamExcelFile } from './excelStreamer';
 import { getS3MonitoringService } from './s3MonitoringService';
 import { getS3Config, features } from './config';
 
@@ -61,9 +59,9 @@ export function getS3BucketName(): string {
 }
 
 /**
- * List Excel files in S3 bucket
+ * List files in S3 bucket
  */
-export async function listExcelFiles(bucketName: string, prefix: string = '') {
+export async function listFiles(bucketName: string, prefix: string = '') {
   const monitoringService = getS3MonitoringService();
   const logId = monitoringService.logOperationStart('list', prefix || 'root');
   const startTime = Date.now();
@@ -78,10 +76,8 @@ export async function listExcelFiles(bucketName: string, prefix: string = '') {
     
     const response = await s3.send(command);
     
-    // Filter for Excel files
-    const excelFiles = response.Contents?.filter(item => 
-      item.Key?.endsWith('.xlsx') || item.Key?.endsWith('.xls')
-    ).map(item => ({
+    // Return all files
+    const files = response.Contents?.map(item => ({
       key: item.Key,
       size: item.Size,
       lastModified: item.LastModified
@@ -89,10 +85,10 @@ export async function listExcelFiles(bucketName: string, prefix: string = '') {
     
     const duration = Date.now() - startTime;
     monitoringService.logOperationComplete(logId, 'success', duration, undefined, undefined, {
-      filesFound: excelFiles.length
+      filesFound: files.length
     });
     
-    return excelFiles;
+    return files;
   } catch (error) {
     const duration = Date.now() - startTime;
     monitoringService.logOperationComplete(logId, 'error', duration, undefined, 
@@ -242,57 +238,6 @@ export async function deleteFileFromS3(bucketName: string, key: string) {
   }
 }
 
-/**
- * Process Excel file from S3
- * Downloads file to temporary location, processes it, then deletes the temp file
- */
-export async function processExcelFromS3(
-  bucketName: string, 
-  key: string, 
-  useStreaming: boolean = false
-) {
-  try {
-    // Create temp directory if it doesn't exist
-    const tempDir = path.join(process.cwd(), 'temp');
-    if (!fs.existsSync(tempDir)) {
-      fs.mkdirSync(tempDir, { recursive: true });
-    }
-    
-    // Generate a unique temp file path
-    const tempFilePath = path.join(tempDir, `s3_${Date.now()}_${path.basename(key)}`);
-    
-    // Download the file
-    await downloadFileFromS3(bucketName, key, tempFilePath);
-    
-    let result;
-    
-    // Process based on file size and streaming preference
-    const fileStats = fs.statSync(tempFilePath);
-    const fileSizeMB = fileStats.size / (1024 * 1024);
-    console.log(`File size: ${fileSizeMB.toFixed(2)} MB`);
-    
-    if (fileSizeMB > 100 || useStreaming) {
-      // Use streaming for large files
-      console.log(`Using streaming processor for large file (${fileSizeMB.toFixed(2)} MB)`);
-      result = await streamExcelFile(tempFilePath, 500); // Process 500 rows at a time
-    } else {
-      // Use standard processor for smaller files
-      console.log('Using standard processor for file');
-      const buffer = fs.readFileSync(tempFilePath);
-      const parsedData = await parseExcelFile(buffer);
-      result = await importToDatabase(parsedData);
-    }
-    
-    // Clean up the temp file
-    fs.unlinkSync(tempFilePath);
-    console.log('Temporary file deleted');
-    
-    return result;
-  } catch (error) {
-    console.error('Error processing Excel from S3:', error);
-    throw error;
-  }
-}
 
 /**
  * Get file size from S3 (in bytes)

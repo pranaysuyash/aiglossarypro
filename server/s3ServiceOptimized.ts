@@ -18,8 +18,6 @@ import path from 'path';
 import { createGzip, createGunzip } from 'zlib';
 import { pipeline } from 'stream/promises';
 import archiver from 'archiver';
-import { parseExcelFile, importToDatabase } from './excelParser';
-import { streamExcelFile } from './excelStreamer';
 
 export interface S3FileMetadata {
   key: string;
@@ -484,15 +482,13 @@ class OptimizedS3Client {
     
     // Basic file type validation
     const allowedTypes = [
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      'application/vnd.ms-excel',
       'text/csv',
       'application/json',
       'text/plain'
     ];
     
     const fileExtension = path.extname(key).toLowerCase();
-    const allowedExtensions = ['.xlsx', '.xls', '.csv', '.json', '.txt'];
+    const allowedExtensions = ['.csv', '.json', '.txt'];
     
     if (!allowedExtensions.includes(fileExtension)) {
       issues.push(`File extension ${fileExtension} is not allowed`);

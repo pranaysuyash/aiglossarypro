@@ -1,7 +1,6 @@
 import { Router } from 'express';
 import { 
-  listExcelFiles, 
-  processExcelFromS3,
+  listFiles, 
   getS3Client,
   initS3Client
 } from './s3Service';
@@ -58,7 +57,7 @@ router.get('/setup', authMiddleware, tokenMiddleware, adminMiddleware, async (re
   }
 });
 
-// List Excel files in S3 bucket - REQUIRES ADMIN
+// List files in S3 bucket - REQUIRES ADMIN
 router.get('/list-files', authMiddleware, tokenMiddleware, adminMiddleware, async (req, res) => {
   try {
     const bucketName = process.env.S3_BUCKET_NAME;
@@ -71,7 +70,7 @@ router.get('/list-files', authMiddleware, tokenMiddleware, adminMiddleware, asyn
     }
     
     const prefix = req.query.prefix || '';
-    const files = await listExcelFiles(bucketName, prefix as string);
+    const files = await listFiles(bucketName, prefix as string);
     
     res.json({
       success: true,
@@ -91,8 +90,8 @@ router.get('/list-files', authMiddleware, tokenMiddleware, adminMiddleware, asyn
   }
 });
 
-// Python-based Excel processing - REQUIRES ADMIN
-router.get('/python-import', authMiddleware, tokenMiddleware, adminMiddleware, async (req, res) => {
+// General file processing - REQUIRES ADMIN
+router.get('/process-file', authMiddleware, tokenMiddleware, adminMiddleware, async (req, res) => {
   try {
     const bucketName = process.env.S3_BUCKET_NAME;
     const fileKey = req.query.fileKey as string | undefined;
@@ -115,10 +114,10 @@ router.get('/python-import', authMiddleware, tokenMiddleware, adminMiddleware, a
     const result = await processAndImportFromS3(bucketName, fileKey, 'ap-south-1', maxChunks);
     return res.json(result);
   } catch (error) {
-    console.error('Error in Python Excel processing:', error);
+    console.error('Error in file processing:', error);
     return res.status(500).json({
       success: false,
-      message: 'Error during Python Excel processing',
+      message: 'Error during file processing',
       error: error instanceof Error ? error.message : String(error)
     });
   }

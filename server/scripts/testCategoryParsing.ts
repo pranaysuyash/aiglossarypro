@@ -2,7 +2,7 @@
  * Test the improved category parsing logic
  */
 
-// Simulate the improved category validation functions from excelParser.ts
+// Simulate the improved category validation functions (original logic was from excelParser.ts)
 function isValidCategoryValue(value: string): boolean {
   const invalidPatterns = [
     /^introduction/i,

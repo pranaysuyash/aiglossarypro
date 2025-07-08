@@ -10,7 +10,8 @@ import { createReadStream } from 'fs';
 import { parse } from 'csv-parse';
 import path from 'path';
 import fs from 'fs/promises';
-import { importComplexTerms } from '../server/advancedExcelParser';
+// Note: Excel processing functionality has been removed
+// import { importComplexTerms } from '../server/advancedExcelParser';
 import { COMPLETE_CONTENT_SECTIONS } from './complete_42_sections_config';
 
 interface CSVProcessorOptions {
@@ -220,7 +221,9 @@ class CSVStreamingProcessor {
     console.log(`\n🚀 Processing batch of ${batchSize} terms...`);
     
     try {
-      await importComplexTerms(this.currentBatch);
+      // Excel processing functionality has been removed
+      // await importComplexTerms(this.currentBatch);
+      console.log('⚠️  Excel processing functionality has been removed');
       
       this.successfulImports += batchSize;
       const batchTime = (Date.now() - batchStartTime) / 1000;

@@ -26,12 +26,13 @@ describe('Adaptive Search API', () => {
   let app: express.Application;
   let mockAdaptiveSearch: any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     app = express();
     app.use(express.json());
     registerAdaptiveSearchRoutes(app);
     
-    mockAdaptiveSearch = vi.mocked(require('../../server/adaptiveSearchService').adaptiveSearch);
+    const { adaptiveSearch } = await import('../../server/adaptiveSearchService');
+    mockAdaptiveSearch = vi.mocked(adaptiveSearch);
   });
 
   afterEach(() => {
@@ -49,8 +50,8 @@ describe('Adaptive Search API', () => {
             category: { id: '1', name: 'Deep Learning' },
             viewCount: 100,
             relevanceScore: 95,
-            createdAt: new Date(),
-            updatedAt: new Date()
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           }
         ],
         total: 1,
@@ -309,8 +310,8 @@ describe('Adaptive Search API', () => {
             category: { name: 'Test' },
             relevanceScore: 50,
             viewCount: 10,
-            createdAt: new Date(),
-            updatedAt: new Date()
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
           }
         ],
         total: 1,

@@ -28,11 +28,13 @@ const MockedKnowledgeGraph = ({ data }: { data: any }) => {
   return (
     <div data-testid="3d-knowledge-graph">
       <div data-testid="canvas">
-        {data.nodes.map((node: any) => (
-          <div key={node.id} data-testid="node">{node.name}</div>
+        {data.nodes.map((node: any, index: number) => (
+          <div key={node.id || `node-${index}`} data-testid="node">
+            {node.name || `Node ${node.id || index}`}
+          </div>
         ))}
         {data.edges.map((edge: any, index: number) => (
-          <div key={index} data-testid="edge" />
+          <div key={`edge-${index}`} data-testid="edge" />
         ))}
       </div>
     </div>

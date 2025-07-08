@@ -92,9 +92,12 @@ export function registerAdaptiveSearchRoutes(app: Express): void {
       // Execute adaptive search
       const searchResponse = await adaptiveSearch(searchOptions);
       
-      // Transform results to include additional AI metadata
+      // Transform results to include additional AI metadata and sanitize HTML
       const enhancedResults = searchResponse.results.map(result => ({
         ...result,
+        // Sanitize HTML content in name and shortDefinition
+        name: DOMPurify.sanitize(result.name || ''),
+        shortDefinition: DOMPurify.sanitize(result.shortDefinition || ''),
         // Add semantic similarity score based on relevance
         semanticSimilarity: result.relevanceScore > 50 ? 0.9 : 
                            result.relevanceScore > 25 ? 0.7 :

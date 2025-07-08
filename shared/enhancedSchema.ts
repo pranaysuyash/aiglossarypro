@@ -365,6 +365,58 @@ export const sectionItems = pgTable("section_items", {
   verificationIdx: index("idx_section_items_verification").on(table.verificationStatus),
 }));
 
+// Model content versions table - stores different model outputs for comparison
+export const modelContentVersions = pgTable("model_content_versions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  termId: uuid("term_id").notNull().references(() => enhancedTerms.id, { onDelete: "cascade" }),
+  sectionName: varchar("section_name", { length: 100 }).notNull(),
+  
+  // Model information
+  model: varchar("model", { length: 50 }).notNull(), // 'gpt-4', 'gpt-3.5-turbo', 'claude-3', etc.
+  modelVersion: varchar("model_version", { length: 50 }), // '4.0', '3.5-turbo-1106', etc.
+  
+  // Generation parameters
+  temperature: decimal("temperature", { precision: 3, scale: 2 }).default("0.7"),
+  maxTokens: integer("max_tokens").default(1000),
+  templateId: varchar("template_id", { length: 100 }),
+  
+  // Content
+  content: text("content").notNull(),
+  
+  // Metrics
+  promptTokens: integer("prompt_tokens").default(0),
+  completionTokens: integer("completion_tokens").default(0),
+  totalTokens: integer("total_tokens").default(0),
+  cost: decimal("cost", { precision: 10, scale: 6 }).default("0"),
+  processingTime: integer("processing_time_ms").default(0),
+  
+  // Quality metrics (if evaluated)
+  qualityScore: decimal("quality_score", { precision: 3, scale: 1 }), // 1-10 scale
+  qualityMetrics: jsonb("quality_metrics"), // Detailed quality breakdown
+  
+  // User interaction
+  isSelected: boolean("is_selected").default(false), // User's current choice
+  userRating: integer("user_rating"), // 1-5 stars from user
+  userNotes: text("user_notes"), // Admin notes about this version
+  
+  // Status
+  status: varchar("status", { length: 20 }).default("generated"), // 'generated', 'evaluated', 'selected', 'archived'
+  
+  // Metadata
+  generatedBy: varchar("generated_by").references(() => users.id),
+  metadata: jsonb("metadata"), // Additional context, generation settings, etc.
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  termSectionIdx: index("idx_model_versions_term_section").on(table.termId, table.sectionName),
+  modelIdx: index("idx_model_versions_model").on(table.model),
+  selectedIdx: index("idx_model_versions_selected").on(table.isSelected),
+  qualityIdx: index("idx_model_versions_quality").on(table.qualityScore),
+  statusIdx: index("idx_model_versions_status").on(table.status),
+  createdAtIdx: index("idx_model_versions_created").on(table.createdAt),
+}));
+
 // Re-export original tables to maintain compatibility
 export {
   sessions,
@@ -418,6 +470,12 @@ export const insertSectionItemSchema = createInsertSchema(sectionItems).omit({
   updatedAt: true,
 } as const);
 
+export const insertModelContentVersionSchema = createInsertSchema(modelContentVersions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
 // Types
 export type TermSection = typeof termSections.$inferSelect;
 export type InsertTermSection = z.infer<typeof insertTermSectionSchema>;
@@ -440,6 +498,9 @@ export type InsertSection = z.infer<typeof insertSectionSchema>;
 export type SectionItem = typeof sectionItems.$inferSelect;
 export type InsertSectionItem = z.infer<typeof insertSectionItemSchema>;
 
+export type ModelContentVersion = typeof modelContentVersions.$inferSelect;
+export type InsertModelContentVersion = z.infer<typeof insertModelContentVersionSchema>;
+
 // Re-export Learning Paths and Code Examples tables
 export {
   learningPaths,
@@ -448,22 +509,8 @@ export {
   stepCompletions,
   codeExamples,
   codeExampleRuns,
-  type LearningPath,
-  type InsertLearningPath,
-  type LearningPathStep,
-  type InsertLearningPathStep,
-  type UserLearningProgress,
-  type InsertUserLearningProgress,
-  type StepCompletion,
-  type InsertStepCompletion,
-  type CodeExample,
-  type InsertCodeExample,
-  type CodeExampleRun,
-  type InsertCodeExampleRun,
-  codeExampleVotes,
-  type CodeExampleVote,
-  type InsertCodeExampleVote
-};
+  codeExampleVotes
+} from './schema';
 
 // Re-export A/B testing tables
 export {

@@ -114,6 +114,55 @@ export class JobQueueManager extends EventEmitter {
           concurrency: 2,
         },
       },
+      // Phase 2: Column Batch Processing Queues
+      {
+        type: JobType.COLUMN_BATCH_PROCESSING,
+        config: {
+          name: 'column-batch-processing',
+          defaultJobOptions: {
+            attempts: 2,
+            backoff: { type: 'exponential', delay: 60000 },
+            timeout: 86400000, // 24 hours for large operations
+          },
+          concurrency: 1, // One major batch operation at a time
+        },
+      },
+      {
+        type: JobType.COLUMN_BATCH_ESTIMATION,
+        config: {
+          name: 'column-batch-estimation',
+          defaultJobOptions: {
+            attempts: 3,
+            backoff: { type: 'exponential', delay: 5000 },
+            timeout: 300000, // 5 minutes
+          },
+          concurrency: 5,
+        },
+      },
+      {
+        type: JobType.COLUMN_BATCH_MONITORING,
+        config: {
+          name: 'column-batch-monitoring',
+          defaultJobOptions: {
+            attempts: 2,
+            backoff: { type: 'fixed', delay: 10000 },
+            timeout: 600000, // 10 minutes
+          },
+          concurrency: 3,
+        },
+      },
+      {
+        type: JobType.COLUMN_BATCH_CLEANUP,
+        config: {
+          name: 'column-batch-cleanup',
+          defaultJobOptions: {
+            attempts: 2,
+            backoff: { type: 'exponential', delay: 30000 },
+            timeout: 1800000, // 30 minutes
+          },
+          concurrency: 1, // One cleanup operation at a time
+        },
+      },
       // Database Queues
       {
         type: JobType.DB_BATCH_INSERT,
@@ -206,6 +255,10 @@ export class JobQueueManager extends EventEmitter {
     const processorMap = new Map([
       [JobType.AI_CONTENT_GENERATION, processors.aiContentGenerationProcessor],
       [JobType.AI_BATCH_PROCESSING, processors.aiBatchProcessingProcessor],
+      [JobType.COLUMN_BATCH_PROCESSING, processors.columnBatchProcessingProcessor],
+      [JobType.COLUMN_BATCH_ESTIMATION, processors.columnBatchEstimationProcessor],
+      [JobType.COLUMN_BATCH_MONITORING, processors.columnBatchMonitoringProcessor],
+      [JobType.COLUMN_BATCH_CLEANUP, processors.columnBatchCleanupProcessor],
       [JobType.DB_BATCH_INSERT, processors.dbBatchInsertProcessor],
       [JobType.EMAIL_SEND, processors.emailSendProcessor],
       [JobType.CACHE_WARM, processors.cacheWarmProcessor],

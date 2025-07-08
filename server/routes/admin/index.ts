@@ -8,6 +8,8 @@ import { registerAdminRevenueRoutes } from "./revenue";
 import { registerAdminNewsletterRoutes } from "./newsletter";
 import { registerAdminTermsRoutes } from "./terms";
 import { registerAdminJobRoutes } from "./jobs";
+import aiGenerationRoutes from "./aiGeneration";
+import columnBatchProcessingRoutes from "./columnBatchProcessing";
 import { log as logger } from "../../utils/logger";
 
 /**
@@ -27,6 +29,14 @@ export function registerAdminRoutes(app: Express): void {
   registerAdminNewsletterRoutes(app);
   registerAdminTermsRoutes(app);
   registerAdminJobRoutes(app);
+  
+  // Register AI generation routes
+  app.use('/api/admin/ai', aiGenerationRoutes);
+  logger.info('✅ AI generation routes registered at /api/admin/ai');
+  
+  // Register column batch processing routes
+  app.use('/api/admin/column-batch', columnBatchProcessingRoutes);
+  logger.info('✅ Column batch processing routes registered at /api/admin/column-batch');
   
   logger.info('✅ All admin routes registered successfully');
 } 

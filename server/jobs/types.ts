@@ -9,6 +9,12 @@ export enum JobType {
   AI_CONTENT_PARSING = 'ai_content_parsing',
   AI_BATCH_PROCESSING = 'ai_batch_processing',
   
+  // Phase 2: Column Batch Processing Jobs
+  COLUMN_BATCH_PROCESSING = 'column_batch_processing',
+  COLUMN_BATCH_ESTIMATION = 'column_batch_estimation',
+  COLUMN_BATCH_MONITORING = 'column_batch_monitoring',
+  COLUMN_BATCH_CLEANUP = 'column_batch_cleanup',
+  
   // Database Jobs
   DB_BATCH_INSERT = 'db_batch_insert',
   DB_BATCH_UPDATE = 'db_batch_update',
@@ -212,4 +218,175 @@ export interface JobResult<T = any> {
   data?: T;
   error?: string;
   metadata?: Record<string, any>;
+}
+
+// Phase 2: Column Batch Processing Job Types
+export interface ColumnBatchProcessingJobData extends BaseJobData {
+  operationId: string;
+  sectionName: string;
+  termIds: string[];
+  batchConfiguration: {
+    batchSize: number;
+    model?: string;
+    temperature?: number;
+    maxTokens?: number;
+    regenerateExisting?: boolean;
+    pauseOnError?: boolean;
+    maxConcurrentBatches?: number;
+  };
+  costLimits?: {
+    maxTotalCost?: number;
+    maxCostPerTerm?: number;
+    warningThreshold?: number;
+  };
+  notificationOptions?: {
+    emailOnCompletion?: boolean;
+    webhookUrl?: string;
+    notifyOnMilestones?: number[];
+  };
+}
+
+export interface ColumnBatchProcessingJobResult {
+  operationId: string;
+  sectionName: string;
+  totalTerms: number;
+  processedTerms: number;
+  failedTerms: number;
+  skippedTerms: number;
+  totalCost: number;
+  totalTokens: number;
+  processingTime: number;
+  subJobIds: string[];
+  costBreakdown: {
+    [model: string]: {
+      tokens: number;
+      cost: number;
+      requests: number;
+    };
+  };
+  qualityMetrics?: {
+    averageContentLength: number;
+    contentQualityScore?: number;
+  };
+  errors: Array<{
+    termId: string;
+    termName: string;
+    error: string;
+    timestamp: Date;
+    retryCount: number;
+  }>;
+}
+
+export interface ColumnBatchEstimationJobData extends BaseJobData {
+  sectionName: string;
+  termIds?: string[];
+  categories?: string[];
+  filterOptions?: {
+    hasContent?: boolean;
+    isAiGenerated?: boolean;
+    verificationStatus?: 'verified' | 'unverified' | 'needs_review';
+    lastUpdatedBefore?: Date;
+    lastUpdatedAfter?: Date;
+  };
+  model?: string;
+  temperature?: number;
+  maxTokens?: number;
+}
+
+export interface ColumnBatchEstimationJobResult {
+  sectionName: string;
+  totalTerms: number;
+  estimatedCost: number;
+  estimatedTokens: number;
+  estimatedProcessingTime: number;
+  costBreakdown: {
+    [model: string]: {
+      tokensPerTerm: number;
+      costPerTerm: number;
+      totalCost: number;
+    };
+  };
+  recommendations: string[];
+  confidence: 'high' | 'medium' | 'low';
+  basedOn: string;
+}
+
+export interface ColumnBatchMonitoringJobData extends BaseJobData {
+  operationIds: string[];
+  checkInterval?: number;
+  alertThresholds?: {
+    staleTimeMinutes: number;
+    costWarningThreshold: number;
+    errorRateThreshold: number;
+  };
+}
+
+export interface ColumnBatchMonitoringJobResult {
+  monitoredOperations: number;
+  activeOperations: number;
+  completedOperations: number;
+  failedOperations: number;
+  alertsTriggered: number;
+  systemHealth: 'healthy' | 'warning' | 'critical';
+  recommendations: string[];
+}
+
+export interface ColumnBatchCleanupJobData extends BaseJobData {
+  maxAge?: number; // Days to keep completed operations
+  maxOperations?: number; // Maximum number of operations to keep
+  cleanupTypes?: Array<'completed' | 'failed' | 'cancelled'>;
+}
+
+export interface ColumnBatchCleanupJobResult {
+  operationsRemoved: number;
+  alertsRemoved: number;
+  spaceFreed: number; // Bytes
+  errors: string[];
+}
+
+// Enhanced Progress Tracking for Column Batch Operations
+export interface ColumnBatchProgressUpdate extends JobProgressUpdate {
+  operationId: string;
+  currentBatch?: number;
+  totalBatches?: number;
+  processedTerms?: number;
+  totalTerms?: number;
+  currentCost?: number;
+  estimatedCost?: number;
+  averageTimePerTerm?: number;
+  estimatedCompletion?: Date;
+  recentErrors?: Array<{
+    termId: string;
+    error: string;
+    timestamp: Date;
+  }>;
+}
+
+// Batch Operation Status Tracking
+export interface BatchOperationStatus {
+  operationId: string;
+  status: 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
+  progress: ColumnBatchProgressUpdate;
+  timing: {
+    startedAt?: Date;
+    estimatedCompletion?: Date;
+    actualCompletion?: Date;
+    pausedAt?: Date;
+    lastActivity?: Date;
+  };
+  costs: {
+    estimatedCost: number;
+    actualCost: number;
+    budgetUsed: number;
+    costPerTerm: number;
+  };
+  subJobs: Array<{
+    jobId: string;
+    termId: string;
+    termName: string;
+    status: string;
+    cost?: number;
+    tokens?: number;
+    error?: string;
+  }>;
 }

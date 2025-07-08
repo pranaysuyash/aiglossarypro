@@ -42,6 +42,9 @@ import surpriseDiscoveryRoutes from "./surpriseDiscovery";
 // Import A/B testing routes (simplified version)
 import abTestRoutes from "./abTestsSimplified";
 
+// Import quality evaluation routes
+import qualityEvaluationRoutes from "./qualityEvaluation";
+
 // Import existing specialized route modules
 import cacheRoutes from "./cache";
 import cacheAnalyticsRoutes from "./cacheAnalytics";
@@ -135,6 +138,10 @@ export async function registerRoutes(app: Express): Promise<void> {
   // Register A/B testing routes
   app.use('/api/ab-tests', abTestRoutes);
   logger.info("✅ A/B testing routes registered");
+  
+  // Register Quality Evaluation routes
+  app.use('/api/quality', qualityEvaluationRoutes);
+  logger.info("✅ Quality Evaluation routes registered");
   
   // Mount S3 routes
   app.use('/api/s3', s3Routes);

@@ -96,7 +96,7 @@ function createTransporter(): Transporter {
       break;
   }
 
-  transporter = nodemailer.createTransporter(config);
+  transporter = nodemailer.createTransport(config);
   
   return transporter;
 }

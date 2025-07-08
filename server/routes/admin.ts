@@ -844,6 +844,15 @@ Provide an enhanced definition following the guidelines above.`
     }
   });
 
+  // Enhanced Content Generation routes
+  import enhancedContentGenerationRoutes from './admin/enhancedContentGeneration';
+  import templateManagementRoutes from './admin/templateManagement';
+  
+  app.use('/api/admin/enhanced-triplet', enhancedContentGenerationRoutes);
+  app.use('/api/admin/content', enhancedContentGenerationRoutes);
+  app.use('/api/admin/templates', templateManagementRoutes);
+  app.use('/api/admin/generation', enhancedContentGenerationRoutes);
+
   logger.info("✅ Admin routes registered successfully");
 }
 

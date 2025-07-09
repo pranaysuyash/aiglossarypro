@@ -53,16 +53,16 @@ export function FinalCTA() {
               size="lg"
               className="bg-green-600 hover:bg-green-700 text-white px-8 sm:px-12 py-4 sm:py-6 text-lg sm:text-xl font-bold rounded-xl shadow-2xl transition-all transform hover:scale-105 w-full sm:w-auto min-h-[56px] sm:min-h-[64px] touch-manipulation"
               onClick={() => {
-                trackCTAClick('final', 'Start Free Forever');
+                trackCTAClick('final', 'Start for Free');
                 trackConversion('final_free_cta_click', {
-                  button_text: 'Start Free Forever',
+                  button_text: 'Start for Free',
                   position: 'final_cta'
                 });
                 window.location.href = '/login';
               }}
             >
               <span className="flex items-center justify-center gap-3">
-                <span>Start Free Forever</span>
+                <span>Start for Free</span>
                 <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
               </span>
             </Button>
@@ -90,7 +90,7 @@ export function FinalCTA() {
           </div>
           
           <p className="text-gray-400 text-base sm:text-lg">
-            Start free instantly. Upgrade anytime for premium features.
+            Access 50 AI/ML terms daily for free. Upgrade anytime for unlimited access.
           </p>
         </div>
 
@@ -99,7 +99,7 @@ export function FinalCTA() {
           <div className="flex flex-col sm:flex-row flex-wrap justify-center gap-4 sm:gap-6 text-sm sm:text-base text-gray-400 px-4 sm:px-0">
             <div className="flex items-center justify-center gap-2 min-h-[44px]">
               <Shield className="w-4 h-4 text-green-400" />
-              <span>Free forever • No credit card required</span>
+              <span>50 terms daily free • No credit card required</span>
             </div>
             <div className="flex items-center justify-center gap-2 min-h-[44px]">
               <Clock className="w-4 h-4 text-blue-400" />
@@ -117,8 +117,8 @@ export function FinalCTA() {
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-sm sm:text-base">
               <div className="text-center p-3 sm:p-0 bg-green-500/20 rounded-lg">
                 <div className="text-green-400 font-bold text-lg sm:text-xl">$0</div>
-                <div className="text-gray-400">Our free tier</div>
-                <div className="text-green-300 text-xs">10,000+ terms</div>
+                <div className="text-gray-400">Free tier</div>
+                <div className="text-green-300 text-xs">50 terms daily</div>
               </div>
               <div className="text-center p-3 sm:p-0 bg-purple-500/20 rounded-lg">
                 <div className="text-purple-400 font-bold text-lg sm:text-xl">$179</div>
@@ -145,7 +145,7 @@ export function FinalCTA() {
         {/* Final Reassurance */}
         <div className="mt-12 text-gray-400 text-sm sm:text-base max-w-2xl mx-auto px-4 sm:px-0">
           <p className="leading-relaxed">
-            <strong className="text-white">Start free forever:</strong> Access all 10,000+ terms with no barriers. Upgrade anytime to premium features for enhanced learning. We're confident you'll find this invaluable for your AI/ML journey.
+            <strong className="text-white">Start with 50 free terms daily:</strong> That's 1,500+ terms monthly at no cost. Upgrade to unlimited access (10,000+ terms) plus premium features for just $179. Perfect for your AI/ML learning journey.
           </p>
         </div>
       </div>

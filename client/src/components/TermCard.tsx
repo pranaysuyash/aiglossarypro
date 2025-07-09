@@ -122,6 +122,26 @@ const TermCard = memo(function TermCard({
     [term.subcategories]
   );
 
+  // Track term interaction when card is clicked
+  const handleTermClick = useCallback(async () => {
+    if (isAuthenticated) {
+      try {
+        // Track term interaction for progress tracking
+        await apiRequest("POST", "/api/progress/track-interaction", {
+          termId: term.id,
+          sectionsViewed: ["overview"], // Card view counts as overview section
+          timeSpentSeconds: 5 // Estimate for card view
+        });
+      } catch (error) {
+        // Silent fail - don't interrupt user experience
+        console.warn("Failed to track term interaction:", error);
+      }
+    }
+    
+    // Call the provided click handler
+    onTermClick?.(term.id);
+  }, [isAuthenticated, term.id, onTermClick]);
+
   const handleToggleFavorite = useCallback(async () => {
     if (!isAuthenticated) {
       toast({
@@ -134,29 +154,31 @@ const TermCard = memo(function TermCard({
 
     setIsSubmitting(true);
     try {
-      await apiRequest(
-        favorite ? "DELETE" : "POST", 
-        `/api/favorites/${term.id}`,
-      );
+      // Use the new bookmark API for progress tracking
+      await apiRequest("POST", "/api/progress/bookmark", {
+        termId: term.id,
+        isBookmarked: !favorite
+      });
       
       const newFavoriteState = !favorite;
       setFavorite(newFavoriteState);
       onFavoriteToggle?.(term.id, newFavoriteState);
       queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/progress/stats'] });
       
-      const actionText = newFavoriteState ? "Added to favorites" : "Removed from favorites";
+      const actionText = newFavoriteState ? "Added to bookmarks" : "Removed from bookmarks";
       announce(`${term.name} ${actionText.toLowerCase()}`, 'polite');
       
       toast({
         title: actionText,
         description: newFavoriteState 
-          ? `${term.name} has been added to your favorites` 
-          : `${term.name} has been removed from your favorites`,
+          ? `${term.name} has been bookmarked` 
+          : `${term.name} has been removed from bookmarks`,
       });
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to update favorites. Please try again.",
+        description: "Failed to update bookmark. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -224,7 +246,7 @@ const TermCard = memo(function TermCard({
   }, [termUrl, toast]);
 
   // Track term view
-  const handleTermClick = useCallback(async () => {
+  const handleTermViewClick = useCallback(async () => {
     try {
       await apiRequest("POST", `/api/terms/${term.id}/view`, null);
       onTermClick?.(term.id);

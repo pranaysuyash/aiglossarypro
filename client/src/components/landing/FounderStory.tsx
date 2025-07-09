@@ -115,11 +115,11 @@ export function FounderStory() {
               
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl mx-auto">
                 <p className="text-blue-800 font-medium mb-2">
-                  Why Free Forever?
+                  Why a Free Tier?
                 </p>
                 <p className="text-blue-700 text-sm leading-relaxed">
-                  AI/ML Glossary Pro bridges the gap between academic complexity and practical understanding - built by someone who knows what it's like to feel behind in a rapidly moving field. That's why the core platform is free forever. 
-                  Premium features help support continued development while keeping the essentials accessible to everyone.
+                  AI/ML Glossary Pro bridges the gap between academic complexity and practical understanding - built by someone who knows what it's like to feel behind in a rapidly moving field. That's why we offer 50 terms daily completely free. 
+                  For those who need unlimited access, our premium tier provides full access to all 10,000+ terms plus advanced features - all for a one-time payment.
                 </p>
               </div>
             </div>

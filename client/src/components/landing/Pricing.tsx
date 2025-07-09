@@ -10,7 +10,7 @@ import { trackPurchaseIntent } from '@/types/analytics';
 import { useBackgroundABTest } from '@/hooks/useBackgroundABTest';
 import { useABTestTracking } from '@/services/abTestingService';
 import { PricingCountdown } from './PricingCountdown';
-import { FreeForeverMessaging } from './FreeForeverMessaging';
+import { FreeTierMessaging } from './FreeTierMessaging';
 
 export function Pricing() {
   const pricing = useCountryPricing();
@@ -61,10 +61,10 @@ export function Pricing() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
-            Free Forever + Premium Preview
+            Free Tier + Premium Option
           </h2>
           <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto px-4 sm:px-0">
-            Start free with full access. Upgrade only if you want premium features.
+            Start with 50 terms daily. Upgrade for unlimited access plus premium features.
           </p>
         </div>
 
@@ -73,9 +73,9 @@ export function Pricing() {
           <PricingCountdown />
         </div>
 
-        {/* Free Forever Messaging */}
+        {/* Free Tier Messaging */}
         <div className="mb-12 sm:mb-16 max-w-4xl mx-auto">
-          <FreeForeverMessaging variant="compact" />
+          <FreeTierMessaging variant="compact" />
         </div>
 
         {/* PPP Banner */}
@@ -115,19 +115,19 @@ export function Pricing() {
           {/* Free Tier */}
           <Card className="border-2 border-green-200 shadow-lg">
             <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-1">
-              Always Free
+              Free Tier
             </Badge>
             <CardHeader className="bg-green-50">
               <CardTitle className="text-center">
-                <div className="text-2xl font-bold text-green-900">Free Forever</div>
+                <div className="text-2xl font-bold text-green-900">Free Tier</div>
                 <div className="text-3xl font-bold text-green-900 mt-2">$0</div>
-                <div className="text-sm text-green-600">No credit card required</div>
+                <div className="text-sm text-green-600">50 terms daily • No credit card</div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-6">
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-green-500" />
-                <span>All 10,000+ AI/ML terms</span>
+                <span>50 AI/ML terms daily</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-green-500" />
@@ -143,7 +143,7 @@ export function Pricing() {
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-green-500" />
-                <span>Forever access</span>
+                <span>1,500+ terms monthly</span>
               </div>
               <div className="pt-4">
                 <Button 
@@ -235,7 +235,7 @@ export function Pricing() {
             <CardContent className="space-y-3 pt-6">
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-green-500" />
-                <span>Everything in Free Forever</span>
+                <span>Unlimited access to 10,000+ terms</span>
               </div>
               <div className="flex items-center gap-2 text-sm">
                 <Check className="w-4 h-4 text-green-500" />
@@ -334,7 +334,7 @@ export function Pricing() {
               </div>
             </div>
             <p className="text-gray-600 dark:text-gray-400 mt-6">
-              <strong>Start free with no barriers.</strong> Get lifetime value for less than one year of competitors.
+              <strong>Start with 50 terms daily free.</strong> Get lifetime unlimited access for less than one year of competitors.
             </p>
             <p className="text-sm text-gray-500 mt-2">
               * Launch special pricing limited to first 500 customers • No recurring fees • Lifetime updates included

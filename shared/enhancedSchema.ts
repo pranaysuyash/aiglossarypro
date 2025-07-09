@@ -487,6 +487,7 @@ export const insertModelContentVersionSchema = createInsertSchema(modelContentVe
   updatedAt: true,
 } as const);
 
+
 // Types
 export type TermSection = typeof termSections.$inferSelect;
 export type InsertTermSection = z.infer<typeof insertTermSectionSchema>;
@@ -512,6 +513,16 @@ export type InsertSectionItem = z.infer<typeof insertSectionItemSchema>;
 export type ModelContentVersion = typeof modelContentVersions.$inferSelect;
 export type InsertModelContentVersion = z.infer<typeof insertModelContentVersionSchema>;
 
+// Types for gamification tables
+export type UserTermHistory = typeof userTermHistory.$inferSelect;
+export type InsertUserTermHistory = z.infer<typeof insertUserTermHistorySchema>;
+
+export type UserAchievements = typeof userAchievements.$inferSelect;
+export type InsertUserAchievements = z.infer<typeof insertUserAchievementsSchema>;
+
+export type DailyTermSelections = typeof dailyTermSelections.$inferSelect;
+export type InsertDailyTermSelections = z.infer<typeof insertDailyTermSelectionsSchema>;
+
 // Re-export Learning Paths and Code Examples tables
 export {
   learningPaths,
@@ -522,6 +533,141 @@ export {
   codeExampleRuns,
   codeExampleVotes
 } from './schema';
+
+// User Progress Tracking and Gamification Tables
+// These tables support the "Smart Persistence with Natural Upgrade Pressure" strategy
+
+// User Term History - tracks all term interactions (never deleted)
+// This creates user investment by showing their learning journey
+export const userTermHistory = pgTable("user_term_history", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  termId: uuid("term_id").notNull().references(() => enhancedTerms.id, { onDelete: "cascade" }),
+  
+  // Core tracking fields
+  firstViewedAt: timestamp("first_viewed_at").defaultNow(),
+  lastAccessedAt: timestamp("last_accessed_at").defaultNow(),
+  viewCount: integer("view_count").default(1),
+  
+  // Section engagement tracking
+  sectionsViewed: text("sections_viewed").array().default([]), // Array of section names viewed
+  
+  // Bookmarking functionality
+  isBookmarked: boolean("is_bookmarked").default(false),
+  bookmarkDate: timestamp("bookmark_date"),
+  
+  // Progress indicators
+  timeSpentSeconds: integer("time_spent_seconds").default(0),
+  completionPercentage: integer("completion_percentage").default(0), // 0-100
+  
+  // Metadata
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userTermIdx: index("user_term_history_user_term_idx").on(table.userId, table.termId),
+  userIdx: index("user_term_history_user_idx").on(table.userId),
+  termIdx: index("user_term_history_term_idx").on(table.termId),
+  lastAccessedIdx: index("user_term_history_last_accessed_idx").on(table.lastAccessedAt),
+  bookmarkedIdx: index("user_term_history_bookmarked_idx").on(table.isBookmarked),
+  viewCountIdx: index("user_term_history_view_count_idx").on(table.viewCount),
+  // Unique constraint to prevent duplicate entries
+  uniqueUserTerm: unique("user_term_history_unique").on(table.userId, table.termId),
+}));
+
+// User Achievements - tracks streaks, milestones, badges
+// This gamifies the experience and creates reasons to maintain engagement
+export const userAchievements = pgTable("user_achievements", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  
+  // Achievement details
+  achievementType: varchar("achievement_type", { length: 50 }).notNull(), 
+  // Types: 'daily_streak', 'weekly_streak', 'monthly_streak', 'terms_viewed', 'sections_completed', 'bookmarks_created', 'categories_explored'
+  achievementValue: integer("achievement_value").notNull(), // The milestone value (e.g., 7 for 7-day streak)
+  
+  // Streak tracking
+  currentStreak: integer("current_streak").default(0),
+  bestStreak: integer("best_streak").default(0),
+  lastStreakDate: timestamp("last_streak_date"),
+  
+  // Achievement status
+  isActive: boolean("is_active").default(true), // For streak-based achievements
+  unlockedAt: timestamp("unlocked_at").defaultNow(),
+  
+  // Progress tracking
+  progress: integer("progress").default(0), // Current progress toward next milestone
+  nextMilestone: integer("next_milestone"), // Next achievement value to unlock
+  
+  // Metadata
+  metadata: jsonb("metadata"), // Additional achievement-specific data
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => ({
+  userIdx: index("user_achievements_user_idx").on(table.userId),
+  typeIdx: index("user_achievements_type_idx").on(table.achievementType),
+  activeIdx: index("user_achievements_active_idx").on(table.isActive),
+  streakIdx: index("user_achievements_streak_idx").on(table.currentStreak),
+  unlockedIdx: index("user_achievements_unlocked_idx").on(table.unlockedAt),
+  // Unique constraint for each achievement type per user
+  uniqueUserAchievement: unique("user_achievements_unique").on(table.userId, table.achievementType),
+}));
+
+// Daily Term Selections - tracks daily algorithm selections
+// This supports personalized content delivery and upgrade pressure through analytics
+export const dailyTermSelections = pgTable("daily_term_selections", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  termId: uuid("term_id").notNull().references(() => enhancedTerms.id, { onDelete: "cascade" }),
+  
+  // Selection details
+  selectionDate: timestamp("selection_date").defaultNow(),
+  positionInDailyList: integer("position_in_daily_list").notNull(), // 1-based position (1 = first)
+  
+  // Algorithm details
+  algorithmReason: varchar("algorithm_reason", { length: 100 }).notNull(),
+  // Reasons: 'trending', 'personalized', 'difficulty_matched', 'category_preference', 'streak_motivation', 'random_discovery'
+  
+  // Engagement tracking
+  wasViewed: boolean("was_viewed").default(false),
+  wasBookmarked: boolean("was_bookmarked").default(false),
+  timeSpentSeconds: integer("time_spent_seconds").default(0),
+  
+  // User interaction
+  userRating: integer("user_rating"), // 1-5 stars if user rates the selection
+  wasSkipped: boolean("was_skipped").default(false),
+  
+  // Metadata
+  metadata: jsonb("metadata"), // Algorithm-specific data, user preferences at time of selection
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => ({
+  userDateIdx: index("daily_term_selections_user_date_idx").on(table.userId, table.selectionDate),
+  userIdx: index("daily_term_selections_user_idx").on(table.userId),
+  termIdx: index("daily_term_selections_term_idx").on(table.termId),
+  dateIdx: index("daily_term_selections_date_idx").on(table.selectionDate),
+  algorithmIdx: index("daily_term_selections_algorithm_idx").on(table.algorithmReason),
+  viewedIdx: index("daily_term_selections_viewed_idx").on(table.wasViewed),
+  positionIdx: index("daily_term_selections_position_idx").on(table.positionInDailyList),
+  // Unique constraint to prevent duplicate selections for same user/term/date
+  uniqueUserTermDate: unique("daily_term_selections_unique").on(table.userId, table.termId, table.selectionDate),
+}));
+
+// Insert schemas for gamification tables
+export const insertUserTermHistorySchema = createInsertSchema(userTermHistory).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertUserAchievementsSchema = createInsertSchema(userAchievements).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertDailyTermSelectionsSchema = createInsertSchema(dailyTermSelections).omit({
+  id: true,
+  createdAt: true,
+} as const);
 
 // Re-export A/B testing tables
 export {

@@ -2,18 +2,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Check, Gift, Users, Zap, Shield } from "lucide-react";
 
-interface FreeForeverMessagingProps {
+interface FreeTierMessagingProps {
   className?: string;
   variant?: 'full' | 'compact' | 'inline';
 }
 
-export function FreeForeverMessaging({ className = "", variant = 'full' }: FreeForeverMessagingProps) {
+export function FreeTierMessaging({ className = "", variant = 'full' }: FreeTierMessagingProps) {
   
   const freeFeatures = [
     {
       icon: <Users className="w-4 h-4 text-green-500" />,
-      title: "Full Access",
-      description: "Browse all 10,000+ AI/ML terms with definitions"
+      title: "50 Terms Daily",
+      description: "Access 50 AI/ML terms per day - 1,500+ monthly"
     },
     {
       icon: <Zap className="w-4 h-4 text-blue-500" />,
@@ -27,8 +27,8 @@ export function FreeForeverMessaging({ className = "", variant = 'full' }: FreeF
     },
     {
       icon: <Shield className="w-4 h-4 text-indigo-500" />,
-      title: "No Limits",
-      description: "Use as much as you want, forever"
+      title: "Free Forever",
+      description: "Your daily 50 terms remain free forever"
     }
   ];
 
@@ -46,13 +46,13 @@ export function FreeForeverMessaging({ className = "", variant = 'full' }: FreeF
       <div className={`bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 ${className}`}>
         <div className="flex items-center gap-2 mb-2">
           <Badge variant="secondary" className="bg-green-100 text-green-800">
-            Free Forever
+            Free Tier
           </Badge>
           <span className="text-sm text-gray-600">No credit card required</span>
         </div>
         <div className="text-sm text-gray-700">
-          <strong>Start free</strong> with full access to all 10,000+ terms. 
-          Upgrade anytime for premium features like personalized learning paths and advanced AI explanations.
+          <strong>Start free</strong> with 50 AI/ML terms daily (1,500+ monthly). 
+          Upgrade anytime for unlimited access to all 10,000+ terms plus premium features.
         </div>
       </div>
     );
@@ -65,14 +65,14 @@ export function FreeForeverMessaging({ className = "", variant = 'full' }: FreeF
           <div className="flex items-center gap-2 mb-3">
             <Gift className="w-5 h-5 text-green-600" />
             <div>
-              <div className="font-semibold text-green-900">Free Forever Model</div>
+              <div className="font-semibold text-green-900">Free Tier - 50 Terms Daily</div>
               <div className="text-sm text-green-700">No credit card required</div>
             </div>
           </div>
           <div className="grid grid-cols-2 gap-2 text-sm">
             <div className="flex items-center gap-1">
               <Check className="w-3 h-3 text-green-600" />
-              <span>All 10,000+ terms</span>
+              <span>50 terms daily</span>
             </div>
             <div className="flex items-center gap-1">
               <Check className="w-3 h-3 text-green-600" />
@@ -84,7 +84,7 @@ export function FreeForeverMessaging({ className = "", variant = 'full' }: FreeF
             </div>
             <div className="flex items-center gap-1">
               <Check className="w-3 h-3 text-green-600" />
-              <span>Forever access</span>
+              <span>Free forever</span>
             </div>
           </div>
         </CardContent>
@@ -99,14 +99,14 @@ export function FreeForeverMessaging({ className = "", variant = 'full' }: FreeF
           <div>
             <CardTitle className="text-xl text-green-900 flex items-center gap-2">
               <Gift className="w-5 h-5 text-green-600" />
-              Free Forever Model
+              Free Tier - 50 Terms Daily
             </CardTitle>
             <div className="text-sm text-green-700 mt-1">
-              No credit card required • Start immediately
+              No credit card required • 1,500+ terms monthly
             </div>
           </div>
           <Badge variant="secondary" className="bg-green-600 text-white">
-            Always Free
+            50 Free Daily
           </Badge>
         </div>
       </CardHeader>
@@ -114,7 +114,7 @@ export function FreeForeverMessaging({ className = "", variant = 'full' }: FreeF
       <CardContent className="p-6">
         <div className="mb-6">
           <h3 className="font-semibold text-gray-900 mb-3">
-            What's Free Forever:
+            What's Included in Free Tier:
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {freeFeatures.map((feature, index) => (
@@ -150,8 +150,8 @@ export function FreeForeverMessaging({ className = "", variant = 'full' }: FreeF
           </div>
           <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
             <div className="text-sm text-purple-900">
-              <strong>Early Bird Special:</strong> Get lifetime access to all premium features 
-              for just $179 (originally $249). Limited to first 500 customers.
+              <strong>Early Bird Special:</strong> Get unlimited lifetime access to all 10,000+ terms 
+              plus premium features for just $179 (originally $249). Limited to first 500 customers.
             </div>
           </div>
         </div>
@@ -164,10 +164,10 @@ export function FreeForeverMessaging({ className = "", variant = 'full' }: FreeF
                 Why This Model Works
               </div>
               <div className="text-xs text-blue-700 space-y-1">
-                <p>• You get real value immediately with no barriers</p>
-                <p>• Only pay if you want advanced features</p>
+                <p>• 50 free terms daily - 1,500+ monthly at no cost</p>
+                <p>• Upgrade only if you need unlimited access</p>
                 <p>• No recurring subscriptions or hidden fees</p>
-                <p>• Fair pricing with lifetime access</p>
+                <p>• One-time $179 for lifetime unlimited access</p>
               </div>
             </div>
           </div>

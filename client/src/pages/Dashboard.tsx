@@ -24,6 +24,8 @@ import TermCard from "@/components/TermCard";
 import SurpriseMe from "@/components/SurpriseMe";
 import RecommendedForYou from "@/components/RecommendedForYou";
 import TrendingWidget from "@/components/TrendingWidget";
+import ProgressVisualization from "@/components/ProgressVisualization";
+import { UpgradePrompt } from "@/components/UpgradePrompt";
 import { useAuth } from "@/hooks/useAuth";
 import { useAccess } from "@/hooks/useAccess";
 import { useToast } from "@/hooks/use-toast";
@@ -395,6 +397,9 @@ export default function Dashboard() {
         </Card>
       </div>
       
+      {/* Progress Visualization */}
+      <ProgressVisualization className="mb-6" />
+
       {/* Activity Chart */}
       <Card className="mb-6">
         <CardHeader>

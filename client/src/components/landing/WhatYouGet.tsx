@@ -49,9 +49,9 @@ export function WhatYouGet() {
     },
     {
       icon: Shield,
-      title: "Free Forever Access",
-      description: "Start free, upgrade optionally to premium",
-      details: "Full access with no barriers. Premium features available.",
+      title: "Free Tier Available",
+      description: "50 AI/ML terms daily - forever free",
+      details: "1,500+ terms monthly at no cost. Upgrade for unlimited access.",
       color: "text-green-600"
     }
   ];
@@ -107,8 +107,8 @@ export function WhatYouGet() {
           
           <div className="text-center p-6 bg-purple-50 rounded-xl border border-purple-200">
             <Shield className="w-8 h-8 text-purple-600 mx-auto mb-4" />
-            <h3 className="font-bold text-purple-900 mb-2">Always Free</h3>
-            <p className="text-purple-700 text-sm">Start free forever. No credit card required.</p>
+            <h3 className="font-bold text-purple-900 mb-2">Free Tier</h3>
+            <p className="text-purple-700 text-sm">50 terms daily free. Upgrade for unlimited.</p>
           </div>
         </div>
       </div>

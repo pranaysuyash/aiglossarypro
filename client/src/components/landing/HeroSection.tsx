@@ -62,12 +62,12 @@ export function HeroSection() {
     
     // Track conversion with A/B testing service
     trackConversion('hero_cta_click', {
-      button_text: 'Start Free Forever',
+      button_text: 'Start for Free',
       position: 'hero_main'
     });
     
     // Track with GA4
-    trackCTAClick('Start Free Forever', 'hero_main', 'hero');
+    trackCTAClick('Start for Free', 'hero_main', 'hero');
     
     // Track funnel progression
     trackLandingPageFunnel('cta_click');
@@ -158,7 +158,7 @@ export function HeroSection() {
             onClick={handleCTAClick}
           >
             <span className="flex items-center justify-center gap-2">
-              <span>Start Free Forever</span>
+              <span>Start for Free</span>
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
             </span>
           </Button>
@@ -190,11 +190,11 @@ export function HeroSection() {
         {/* Trust signals */}
         <div className="mt-8 text-gray-400 text-sm sm:text-base px-4 sm:px-0">
           <p className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-            <span>✅ Free forever access</span>
+            <span>✅ 50 terms daily free</span>
             <span className="hidden sm:inline">•</span>
             <span>✅ No credit card required</span>
             <span className="hidden sm:inline">•</span>
-            <span>✅ Early bird: $179 (save $70)</span>
+            <span>✅ Unlimited access: $179</span>
           </p>
         </div>
       </div>

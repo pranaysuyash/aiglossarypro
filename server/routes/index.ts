@@ -10,6 +10,7 @@ import { registerSectionRoutes } from "./sections";
 import { registerSearchRoutes } from "./search";
 import { registerUserRoutes } from "./user";
 import { registerUserProgressRoutes } from "./user/progress";
+import { registerProgressRoutes } from "./progress";
 import { registerAdminRoutes } from "./admin/index";
 import { registerMonitoringRoutes } from "./monitoring";
 import { registerFeedbackRoutes } from "./feedback";
@@ -83,6 +84,8 @@ export async function registerRoutes(app: Express): Promise<void> {
   logger.info("✅ Adaptive search routes registered - AI-powered semantic search now available");
   registerUserRoutes(app);
   registerUserProgressRoutes(app);
+  registerProgressRoutes(app);
+  logger.info("✅ Progress tracking routes registered");
   
   // Register admin routes (with proper role checking in production)
   registerAdminRoutes(app);

@@ -133,12 +133,12 @@ export function HeroSection() {
         </Badge>
 
         {/* Main headline */}
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight mb-6 leading-tight sm:leading-tight md:leading-tight lg:leading-tight">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight mb-6 leading-tight sm:leading-tight md:leading-tight lg:leading-tight drop-shadow-lg">
           Master AI & Machine Learning
         </h1>
 
         {/* Subheadline */}
-        <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed px-4 sm:px-0">
+        <p className="text-xl sm:text-2xl md:text-3xl text-gray-200 mb-8 max-w-4xl mx-auto leading-relaxed px-4 sm:px-0 drop-shadow">
           The most comprehensive AI/ML reference with{' '}
           <span className="text-purple-300 font-semibold">10,000+ terms</span>, code examples, and
           real-world applications.
@@ -164,12 +164,13 @@ export function HeroSection() {
         <div className="space-y-4 px-4 sm:px-0">
           <Button
             size="lg"
-            className="bg-purple-600 hover:bg-purple-700 text-white px-6 sm:px-8 py-4 sm:py-4 text-base sm:text-lg font-semibold rounded-lg shadow-xl transition-all transform hover:scale-105 w-full sm:w-auto min-h-[48px] sm:min-h-[52px] touch-manipulation"
+            className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-8 sm:px-10 py-4 sm:py-5 text-lg sm:text-xl font-bold rounded-xl shadow-2xl transition-all transform hover:scale-105 hover:shadow-purple-500/25 w-full sm:w-auto min-h-[56px] sm:min-h-[60px] touch-manipulation focus:ring-4 focus:ring-purple-500/50 focus:outline-none"
             onClick={handleCTAClick}
+            aria-label="Start your free AI/ML learning journey"
           >
             <span className="flex items-center justify-center gap-2">
               <span>Start for Free</span>
-              <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+              <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
             </span>
           </Button>
 
@@ -181,7 +182,7 @@ export function HeroSection() {
             <Button
               variant="outline"
               size="lg"
-              className="border-2 border-white bg-transparent text-white hover:bg-white hover:text-purple-900 px-6 sm:px-8 py-3 sm:py-3 font-medium transition-all duration-200 shadow-lg w-full sm:w-auto min-h-[48px] sm:min-h-[52px] touch-manipulation"
+              className="border-2 border-white/80 bg-white/10 text-white hover:bg-white hover:text-purple-900 px-6 sm:px-8 py-3 sm:py-4 font-semibold transition-all duration-300 shadow-lg backdrop-blur-sm w-full sm:w-auto min-h-[48px] sm:min-h-[52px] touch-manipulation focus:ring-4 focus:ring-white/50 focus:outline-none"
               onClick={handleSecondaryClick}
             >
               See What's Inside
@@ -190,13 +191,13 @@ export function HeroSection() {
         </div>
 
         {/* Trust signals */}
-        <div className="mt-8 text-gray-400 text-sm sm:text-base px-4 sm:px-0">
+        <div className="mt-8 text-gray-300 text-sm sm:text-base px-4 sm:px-0">
           <p className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-            <span>✅ 50 terms daily free</span>
+            <span className="flex items-center gap-1"><span className="text-green-400">✅</span> 50 terms daily free</span>
             <span className="hidden sm:inline">•</span>
-            <span>✅ No credit card required</span>
+            <span className="flex items-center gap-1"><span className="text-green-400">✅</span> No credit card required</span>
             <span className="hidden sm:inline">•</span>
-            <span>✅ Premium access available</span>
+            <span className="flex items-center gap-1"><span className="text-green-400">✅</span> Premium access available</span>
           </p>
         </div>
       </div>

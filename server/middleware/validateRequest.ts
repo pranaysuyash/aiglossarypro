@@ -99,3 +99,52 @@ export function validateParams<T>(schema: z.ZodSchema<T>) {
     }
   };
 }
+
+/**
+ * Generic validation middleware that can validate different parts of the request
+ */
+export function validateInput(options: {
+  body?: z.ZodSchema<any>;
+  query?: z.ZodSchema<any>;
+  params?: z.ZodSchema<any>;
+}) {
+  return (req: Request, res: Response, next: NextFunction) => {
+    try {
+      // Validate body if schema provided
+      if (options.body) {
+        const validatedBody = options.body.parse(req.body);
+        req.body = validatedBody;
+      }
+
+      // Validate query if schema provided
+      if (options.query) {
+        const validatedQuery = options.query.parse(req.query);
+        req.query = validatedQuery as any;
+      }
+
+      // Validate params if schema provided
+      if (options.params) {
+        const validatedParams = options.params.parse(req.params);
+        req.params = validatedParams as any;
+      }
+
+      next();
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          success: false,
+          message: 'Validation error',
+          errors: error.errors.map((err) => ({
+            field: err.path.join('.'),
+            message: err.message,
+          })),
+        });
+      }
+
+      return res.status(500).json({
+        success: false,
+        message: 'Internal server error during validation',
+      });
+    }
+  };
+}

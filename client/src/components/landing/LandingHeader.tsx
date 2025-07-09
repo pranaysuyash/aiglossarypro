@@ -6,7 +6,7 @@ export function LandingHeader() {
   const pricing = useCountryPricing();
 
   return (
-    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-200">
+    <header className="sticky top-0 z-50 bg-gradient-to-b from-white/95 to-transparent backdrop-blur-sm border-b border-gray-200/50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16 sm:h-20">
           {/* Logo */}
@@ -20,7 +20,7 @@ export function LandingHeader() {
           </div>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
+          <nav className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Main navigation">
             <a
               href="#preview"
               className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
@@ -63,7 +63,7 @@ export function LandingHeader() {
                 </Button>
               </Link>
               <Button
-                className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 font-medium"
+                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-6 py-2.5 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all transform hover:scale-105 focus:ring-4 focus:ring-purple-500/50 focus:outline-none"
                 onClick={() => {
                   // Track analytics
                   if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -85,7 +85,7 @@ export function LandingHeader() {
             <div className="md:hidden">
               <Button
                 size="sm"
-                className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 font-medium min-h-[44px] touch-manipulation"
+                className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-4 py-2 font-semibold rounded-lg shadow-lg hover:shadow-xl transition-all min-h-[44px] touch-manipulation focus:ring-4 focus:ring-purple-500/50 focus:outline-none"
                 onClick={() => {
                   // Track analytics
                   if (typeof window !== 'undefined' && (window as any).gtag) {

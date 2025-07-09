@@ -1,9 +1,9 @@
-import { Router } from "express";
-import { SurpriseDiscoveryService } from "../services/surpriseDiscoveryService";
-import logger from "../utils/logger";
-import { z } from "zod";
-import { optionalFirebaseAuth } from "../middleware/firebaseAuth";
-import { validateRequest } from "../middleware/validateRequest";
+import { Router } from 'express';
+import { z } from 'zod';
+import { optionalFirebaseAuth } from '../middleware/firebaseAuth';
+import { validateRequest } from '../middleware/validateRequest';
+import { SurpriseDiscoveryService } from '../services/surpriseDiscoveryService';
+import logger from '../utils/logger';
 
 const router = Router();
 
@@ -12,24 +12,26 @@ const surpriseDiscoverySchema = z.object({
   mode: z.enum(['random_adventure', 'guided_discovery', 'challenge_mode', 'connection_quest']),
   currentTermId: z.string().uuid().optional(),
   excludeRecentlyViewed: z.boolean().optional().default(true),
-  maxResults: z.number().min(1).max(10).optional().default(3)
+  maxResults: z.number().min(1).max(10).optional().default(3),
 });
 
 const feedbackSchema = z.object({
   sessionId: z.string().min(1),
   termId: z.string().uuid(),
   surpriseRating: z.number().min(1).max(5),
-  relevanceRating: z.number().min(1).max(5)
+  relevanceRating: z.number().min(1).max(5),
 });
 
 const preferencesSchema = z.object({
-  preferred_modes: z.array(z.enum(['random_adventure', 'guided_discovery', 'challenge_mode', 'connection_quest'])).optional(),
+  preferred_modes: z
+    .array(z.enum(['random_adventure', 'guided_discovery', 'challenge_mode', 'connection_quest']))
+    .optional(),
   excluded_categories: z.array(z.string()).optional(),
   difficulty_preference: z.enum(['beginner', 'intermediate', 'advanced', 'adaptive']).optional(),
   exploration_frequency: z.enum(['conservative', 'moderate', 'adventurous']).optional(),
   feedback_enabled: z.boolean().optional(),
   surprise_tolerance: z.number().min(0).max(100).optional(),
-  personalization_level: z.enum(['low', 'medium', 'high']).optional()
+  personalization_level: z.enum(['low', 'medium', 'high']).optional(),
 });
 
 /**
@@ -37,14 +39,14 @@ const preferencesSchema = z.object({
  * Get surprise term discoveries based on mode and user preferences
  */
 router.get(
-  "/",
+  '/',
   optionalFirebaseAuth,
   validateRequest({ query: surpriseDiscoverySchema }),
   async (req, res) => {
     try {
       const { mode, currentTermId, excludeRecentlyViewed, maxResults } = req.query as any;
       const userId = req.user?.uid;
-      
+
       // Generate session ID for tracking
       const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
@@ -54,7 +56,7 @@ router.get(
         mode,
         currentTermId,
         excludeRecentlyViewed,
-        maxResults
+        maxResults,
       };
 
       const results = await SurpriseDiscoveryService.discoverSurprise(discoveryRequest);
@@ -62,7 +64,7 @@ router.get(
       logger.info(`Surprise discovery completed for user ${userId}`, {
         mode,
         resultsCount: results.length,
-        sessionId
+        sessionId,
       });
 
       res.json({
@@ -70,14 +72,13 @@ router.get(
         sessionId,
         mode,
         results,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
-      logger.error("Error in surprise discovery endpoint:", error);
+      logger.error('Error in surprise discovery endpoint:', error);
       res.status(500).json({
         success: false,
-        error: "Failed to generate surprise discoveries"
+        error: 'Failed to generate surprise discoveries',
       });
     }
   }
@@ -88,7 +89,7 @@ router.get(
  * Provide feedback on a discovery result
  */
 router.post(
-  "/feedback",
+  '/feedback',
   optionalFirebaseAuth,
   validateRequest({ body: feedbackSchema }),
   async (req, res) => {
@@ -99,7 +100,7 @@ router.post(
       if (!userId) {
         return res.status(401).json({
           success: false,
-          error: "Authentication required"
+          error: 'Authentication required',
         });
       }
 
@@ -116,19 +117,18 @@ router.post(
         sessionId,
         termId,
         surpriseRating,
-        relevanceRating
+        relevanceRating,
       });
 
       res.json({
         success: true,
-        message: "Feedback recorded successfully"
+        message: 'Feedback recorded successfully',
       });
-
     } catch (error) {
-      logger.error("Error recording discovery feedback:", error);
+      logger.error('Error recording discovery feedback:', error);
       res.status(500).json({
         success: false,
-        error: "Failed to record feedback"
+        error: 'Failed to record feedback',
       });
     }
   }
@@ -138,43 +138,38 @@ router.post(
  * GET /api/surprise-discovery/preferences
  * Get user's discovery preferences
  */
-router.get(
-  "/preferences",
-  optionalFirebaseAuth,
-  async (req, res) => {
-    try {
-      const userId = req.user?.uid;
+router.get('/preferences', optionalFirebaseAuth, async (req, res) => {
+  try {
+    const userId = req.user?.uid;
 
-      if (!userId) {
-        return res.status(401).json({
-          success: false,
-          error: "Authentication required"
-        });
-      }
-
-      const preferences = await SurpriseDiscoveryService.getDiscoveryPreferences(userId);
-
-      res.json({
-        success: true,
-        preferences
-      });
-
-    } catch (error) {
-      logger.error("Error getting discovery preferences:", error);
-      res.status(500).json({
+    if (!userId) {
+      return res.status(401).json({
         success: false,
-        error: "Failed to get preferences"
+        error: 'Authentication required',
       });
     }
+
+    const preferences = await SurpriseDiscoveryService.getDiscoveryPreferences(userId);
+
+    res.json({
+      success: true,
+      preferences,
+    });
+  } catch (error) {
+    logger.error('Error getting discovery preferences:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get preferences',
+    });
   }
-);
+});
 
 /**
  * PUT /api/surprise-discovery/preferences
  * Update user's discovery preferences
  */
 router.put(
-  "/preferences",
+  '/preferences',
   optionalFirebaseAuth,
   validateRequest({ body: preferencesSchema }),
   async (req, res) => {
@@ -185,7 +180,7 @@ router.put(
       if (!userId) {
         return res.status(401).json({
           success: false,
-          error: "Authentication required"
+          error: 'Authentication required',
         });
       }
 
@@ -195,14 +190,13 @@ router.put(
 
       res.json({
         success: true,
-        message: "Preferences updated successfully"
+        message: 'Preferences updated successfully',
       });
-
     } catch (error) {
-      logger.error("Error updating discovery preferences:", error);
+      logger.error('Error updating discovery preferences:', error);
       res.status(500).json({
         success: false,
-        error: "Failed to update preferences"
+        error: 'Failed to update preferences',
       });
     }
   }
@@ -212,45 +206,45 @@ router.put(
  * GET /api/surprise-discovery/modes
  * Get available discovery modes and their descriptions
  */
-router.get("/modes", (req, res) => {
+router.get('/modes', (_req, res) => {
   const modes = [
     {
-      id: "random_adventure",
-      name: "Random Adventure",
-      description: "Completely random exploration - adventure awaits!",
-      icon: "🎲",
-      difficulty: "any",
-      surpriseLevel: "high"
+      id: 'random_adventure',
+      name: 'Random Adventure',
+      description: 'Completely random exploration - adventure awaits!',
+      icon: '🎲',
+      difficulty: 'any',
+      surpriseLevel: 'high',
     },
     {
-      id: "guided_discovery",
-      name: "Guided Discovery",
-      description: "Random terms within your interest areas",
-      icon: "🧭",
-      difficulty: "adaptive",
-      surpriseLevel: "medium"
+      id: 'guided_discovery',
+      name: 'Guided Discovery',
+      description: 'Random terms within your interest areas',
+      icon: '🧭',
+      difficulty: 'adaptive',
+      surpriseLevel: 'medium',
     },
     {
-      id: "challenge_mode",
-      name: "Challenge Mode",
-      description: "Advanced concepts to push your boundaries",
-      icon: "🎯",
-      difficulty: "advanced",
-      surpriseLevel: "medium"
+      id: 'challenge_mode',
+      name: 'Challenge Mode',
+      description: 'Advanced concepts to push your boundaries',
+      icon: '🎯',
+      difficulty: 'advanced',
+      surpriseLevel: 'medium',
     },
     {
-      id: "connection_quest",
-      name: "Connection Quest",
-      description: "Discover terms related to your recent learning",
-      icon: "🔗",
-      difficulty: "adaptive",
-      surpriseLevel: "low"
-    }
+      id: 'connection_quest',
+      name: 'Connection Quest',
+      description: 'Discover terms related to your recent learning',
+      icon: '🔗',
+      difficulty: 'adaptive',
+      surpriseLevel: 'low',
+    },
   ];
 
   res.json({
     success: true,
-    modes
+    modes,
   });
 });
 
@@ -258,36 +252,31 @@ router.get("/modes", (req, res) => {
  * GET /api/surprise-discovery/analytics
  * Get discovery analytics for the user (optional admin endpoint)
  */
-router.get(
-  "/analytics",
-  optionalFirebaseAuth,
-  async (req, res) => {
-    try {
-      const userId = req.user?.uid;
+router.get('/analytics', optionalFirebaseAuth, async (req, res) => {
+  try {
+    const userId = req.user?.uid;
 
-      if (!userId) {
-        return res.status(401).json({
-          success: false,
-          error: "Authentication required"
-        });
-      }
-
-      // This could be expanded to show user's discovery history, patterns, etc.
-      // For now, just return basic info
-      res.json({
-        success: true,
-        message: "Analytics endpoint - to be implemented",
-        userId
-      });
-
-    } catch (error) {
-      logger.error("Error getting discovery analytics:", error);
-      res.status(500).json({
+    if (!userId) {
+      return res.status(401).json({
         success: false,
-        error: "Failed to get analytics"
+        error: 'Authentication required',
       });
     }
+
+    // This could be expanded to show user's discovery history, patterns, etc.
+    // For now, just return basic info
+    res.json({
+      success: true,
+      message: 'Analytics endpoint - to be implemented',
+      userId,
+    });
+  } catch (error) {
+    logger.error('Error getting discovery analytics:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to get analytics',
+    });
   }
-);
+});
 
 export default router;

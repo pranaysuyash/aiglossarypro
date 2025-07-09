@@ -3,13 +3,12 @@
  * Handles importing massive JSON files by streaming and parsing them incrementally
  */
 
-import fs from 'fs';
-import path from 'path';
-import { Transform } from 'stream';
+import fs from 'node:fs';
+import path from 'node:path';
+import { Transform } from 'node:stream';
+import { and, eq } from 'drizzle-orm';
+import { categories, subcategories, termSubcategories, terms } from '../shared/schema';
 import { db } from './db';
-import { optimizedStorage as storage } from "./optimizedStorage";
-import {  categories, subcategories, terms, termSubcategories  } from "../shared/schema";
-import { eq, and } from 'drizzle-orm';
 
 interface StreamingImportOptions {
   batchSize?: number;
@@ -45,7 +44,7 @@ class StreamingJSONParser extends Transform {
     super({ objectMode: true });
   }
 
-  _transform(chunk: Buffer, encoding: string, callback: Function) {
+  _transform(chunk: Buffer, _encoding: string, callback: Function) {
     this.buffer += chunk.toString();
     this.parseBuffer();
     callback();
@@ -55,10 +54,12 @@ class StreamingJSONParser extends Transform {
     let i = 0;
     while (i < this.buffer.length) {
       const char = this.buffer[i];
-      
-      if (char === '"' && this.buffer[i-1] !== '\\') {
+
+      if (char === '"' && this.buffer[i - 1] !== '\\') {
         // Look for array names
-        const match = this.buffer.substring(i).match(/^"(categories|subcategories|terms)"\s*:\s*\[/);
+        const match = this.buffer
+          .substring(i)
+          .match(/^"(categories|subcategories|terms)"\s*:\s*\[/);
         if (match) {
           this.arrayName = match[1];
           this.inArray = true;
@@ -67,7 +68,7 @@ class StreamingJSONParser extends Transform {
           continue;
         }
       }
-      
+
       if (this.inArray) {
         if (char === '{') {
           this.objectDepth++;
@@ -75,11 +76,11 @@ class StreamingJSONParser extends Transform {
             this.currentObject = '';
           }
         }
-        
+
         if (this.objectDepth > 0) {
           this.currentObject += char;
         }
-        
+
         if (char === '}') {
           this.objectDepth--;
           if (this.objectDepth === 0) {
@@ -88,7 +89,7 @@ class StreamingJSONParser extends Transform {
               const obj = JSON.parse(this.currentObject);
               this.onData(this.arrayName, obj);
               this.objectCount++;
-              
+
               if (this.objectCount % 100 === 0) {
                 console.log(`   📈 Parsed ${this.objectCount} ${this.arrayName}`);
               }
@@ -98,17 +99,17 @@ class StreamingJSONParser extends Transform {
             this.currentObject = '';
           }
         }
-        
+
         if (char === ']' && this.objectDepth === 0) {
           this.inArray = false;
           this.arrayName = '';
           console.log(`✅ Completed parsing ${this.objectCount} ${this.arrayName}`);
         }
       }
-      
+
       i++;
     }
-    
+
     // Keep only the last part of the buffer that might contain incomplete data
     if (this.inArray && this.objectDepth === 0) {
       const lastBrace = this.buffer.lastIndexOf('}');
@@ -138,7 +139,7 @@ export async function streamingImportProcessedData(
     success: false,
     imported: { categories: 0, subcategories: 0, terms: 0 },
     errors: [],
-    duration: 0
+    duration: 0,
   };
 
   try {
@@ -152,7 +153,7 @@ export async function streamingImportProcessedData(
 
     // Create category ID mapping for reference integrity
     const categoryIdMap = new Map<string, string>();
-    
+
     // Batch storage
     let categoriesBatch: any[] = [];
     let subcategoriesBatch: any[] = [];
@@ -163,7 +164,11 @@ export async function streamingImportProcessedData(
       if (type === 'categories') {
         categoriesBatch.push(data);
         if (categoriesBatch.length >= batchSize) {
-          const imported = await processCategoriesBatch(categoriesBatch, skipExisting, categoryIdMap);
+          const imported = await processCategoriesBatch(
+            categoriesBatch,
+            skipExisting,
+            categoryIdMap
+          );
           result.imported.categories += imported.count;
           result.errors.push(...imported.errors);
           categoriesBatch = [];
@@ -171,7 +176,11 @@ export async function streamingImportProcessedData(
       } else if (type === 'subcategories') {
         subcategoriesBatch.push(data);
         if (subcategoriesBatch.length >= batchSize) {
-          const imported = await processSubcategoriesBatch(subcategoriesBatch, skipExisting, categoryIdMap);
+          const imported = await processSubcategoriesBatch(
+            subcategoriesBatch,
+            skipExisting,
+            categoryIdMap
+          );
           result.imported.subcategories += imported.count;
           result.errors.push(...imported.errors);
           subcategoriesBatch = [];
@@ -189,15 +198,15 @@ export async function streamingImportProcessedData(
 
     // Create streaming parser
     const parser = new StreamingJSONParser(handleData);
-    
+
     // Process the file in streaming mode
     await new Promise<void>((resolve, reject) => {
       const readStream = fs.createReadStream(filePath, { encoding: 'utf8' });
-      
+
       readStream.on('error', reject);
       parser.on('error', reject);
       parser.on('finish', resolve);
-      
+
       readStream.pipe(parser);
     });
 
@@ -209,7 +218,11 @@ export async function streamingImportProcessedData(
     }
 
     if (subcategoriesBatch.length > 0) {
-      const imported = await processSubcategoriesBatch(subcategoriesBatch, skipExisting, categoryIdMap);
+      const imported = await processSubcategoriesBatch(
+        subcategoriesBatch,
+        skipExisting,
+        categoryIdMap
+      );
       result.imported.subcategories += imported.count;
       result.errors.push(...imported.errors);
     }
@@ -230,13 +243,12 @@ export async function streamingImportProcessedData(
     console.log(`   ❌ ${result.errors.length} errors`);
 
     return result;
-
   } catch (error) {
     result.success = false;
     result.duration = Date.now() - startTime;
     const errorMessage = error instanceof Error ? error.message : String(error);
     result.errors.push(errorMessage);
-    
+
     console.error(`❌ Streaming import failed: ${errorMessage}`);
     return result;
   }
@@ -258,7 +270,8 @@ async function processCategoriesBatch(
   for (const category of batch) {
     try {
       if (skipExisting) {
-        const existing = await db.select()
+        const existing = await db
+          .select()
           .from(categories)
           .where(eq(categories.name, category.name))
           .limit(1);
@@ -269,15 +282,17 @@ async function processCategoriesBatch(
         }
       }
 
-      const [inserted] = await db.insert(categories).values({
-        id: category.id,
-        name: category.name,
-        description: category.description || null
-      }).returning({ id: categories.id });
+      const [inserted] = await db
+        .insert(categories)
+        .values({
+          id: category.id,
+          name: category.name,
+          description: category.description || null,
+        })
+        .returning({ id: categories.id });
 
       categoryIdMap.set(category.id, inserted.id);
       count++;
-
     } catch (error) {
       const errorMsg = `Category ${category.name}: ${error instanceof Error ? error.message : String(error)}`;
       errors.push(errorMsg);
@@ -304,12 +319,15 @@ async function processSubcategoriesBatch(
     try {
       const mappedCategoryId = categoryIdMap.get(subcategory.categoryId);
       if (!mappedCategoryId) {
-        errors.push(`Subcategory ${subcategory.name}: category ID ${subcategory.categoryId} not found`);
+        errors.push(
+          `Subcategory ${subcategory.name}: category ID ${subcategory.categoryId} not found`
+        );
         continue;
       }
 
       if (skipExisting) {
-        const existing = await db.select()
+        const existing = await db
+          .select()
           .from(subcategories)
           .where(
             and(
@@ -327,11 +345,10 @@ async function processSubcategoriesBatch(
       await db.insert(subcategories).values({
         id: subcategory.id,
         name: subcategory.name,
-        categoryId: mappedCategoryId
+        categoryId: mappedCategoryId,
       });
 
       count++;
-
     } catch (error) {
       const errorMsg = `Subcategory ${subcategory.name}: ${error instanceof Error ? error.message : String(error)}`;
       errors.push(errorMsg);
@@ -356,10 +373,7 @@ async function processTermsBatch(
   for (const term of batch) {
     try {
       if (skipExisting) {
-        const existing = await db.select()
-          .from(terms)
-          .where(eq(terms.name, term.name))
-          .limit(1);
+        const existing = await db.select().from(terms).where(eq(terms.name, term.name)).limit(1);
 
         if (existing.length > 0) {
           continue;
@@ -376,7 +390,7 @@ async function processTermsBatch(
         characteristics: term.characteristics ? [term.characteristics] : null,
         visualUrl: term.visualUrl || null,
         visualCaption: term.visualCaption || null,
-        mathFormulation: term.mathFormulation || null
+        mathFormulation: term.mathFormulation || null,
       };
 
       // Insert the term
@@ -388,17 +402,18 @@ async function processTermsBatch(
           try {
             await db.insert(termSubcategories).values({
               termId: term.id,
-              subcategoryId: subcategoryId
+              subcategoryId: subcategoryId,
             });
-          } catch (subError) {
+          } catch (_subError) {
             // Log but don't fail the entire term import
-            console.warn(`Warning: Could not link term ${term.name} to subcategory ${subcategoryId}`);
+            console.warn(
+              `Warning: Could not link term ${term.name} to subcategory ${subcategoryId}`
+            );
           }
         }
       }
 
       count++;
-
     } catch (error) {
       const errorMsg = `Term ${term.name}: ${error instanceof Error ? error.message : String(error)}`;
       errors.push(errorMsg);
@@ -411,30 +426,33 @@ async function processTermsBatch(
 /**
  * Import the latest processed file using streaming
  */
-export async function streamingImportLatestProcessedFile(options: StreamingImportOptions = {}): Promise<StreamingImportResult> {
+export async function streamingImportLatestProcessedFile(
+  options: StreamingImportOptions = {}
+): Promise<StreamingImportResult> {
   const tempDir = path.join(process.cwd(), 'temp');
-  
+
   if (!fs.existsSync(tempDir)) {
     throw new Error('No temp directory found');
   }
-  
+
   // Find the latest processed file
-  const processedFiles = fs.readdirSync(tempDir)
-    .filter(f => f.includes('processed_chunked_') && f.endsWith('.json'))
-    .map(f => ({
+  const processedFiles = fs
+    .readdirSync(tempDir)
+    .filter((f) => f.includes('processed_chunked_') && f.endsWith('.json'))
+    .map((f) => ({
       name: f,
       path: path.join(tempDir, f),
-      stats: fs.statSync(path.join(tempDir, f))
+      stats: fs.statSync(path.join(tempDir, f)),
     }))
     .sort((a, b) => b.stats.mtime.getTime() - a.stats.mtime.getTime());
-  
+
   if (processedFiles.length === 0) {
     throw new Error('No processed files found');
   }
-  
+
   const latestFile = processedFiles[0];
   console.log(`📁 Using latest processed file: ${latestFile.name}`);
   console.log(`📊 File size: ${(latestFile.stats.size / (1024 * 1024)).toFixed(2)} MB`);
-  
+
   return await streamingImportProcessedData(latestFile.path, options);
-} 
+}

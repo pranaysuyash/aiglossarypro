@@ -35,7 +35,7 @@ export class AIChangeDetector {
         changeScore: 100,
         changeDescription: 'Force reprocess requested',
         recommendedAction: 'reprocess',
-        changedSections: ['all']
+        changedSections: ['all'],
       };
     }
 
@@ -47,21 +47,21 @@ export class AIChangeDetector {
         changeScore: 100,
         changeDescription: 'No cache found, initial processing required',
         recommendedAction: 'reprocess',
-        changedSections: ['all']
+        changedSections: ['all'],
       };
     }
 
     // Check cache age - if older than 7 days, recommend reprocessing
     const cacheAge = Date.now() - cacheInfo.processedAt;
     const daysOld = cacheAge / (1000 * 60 * 60 * 24);
-    
+
     if (daysOld > 7) {
       return {
         hasSignificantChanges: true,
         changeScore: 75,
         changeDescription: `Cache is ${Math.round(daysOld)} days old, recommended refresh`,
         recommendedAction: 'reprocess',
-        changedSections: ['all']
+        changedSections: ['all'],
       };
     }
 
@@ -81,10 +81,7 @@ export class AIChangeDetector {
   /**
    * Perform AI-powered content analysis
    */
-  private async performAIAnalysis(
-    cacheInfo: any,
-    newDataSample: any
-  ): Promise<ChangeAnalysis> {
+  private async performAIAnalysis(cacheInfo: any, newDataSample: any): Promise<ChangeAnalysis> {
     if (!this.openai) {
       throw new Error('OpenAI not configured');
     }
@@ -132,15 +129,16 @@ Consider minor changes:
       messages: [
         {
           role: 'system',
-          content: 'You are an AI system analyzing changes in educational content data. Respond only with valid JSON.'
+          content:
+            'You are an AI system analyzing changes in educational content data. Respond only with valid JSON.',
         },
         {
           role: 'user',
-          content: prompt
-        }
+          content: prompt,
+        },
       ],
       temperature: 0.1,
-      max_tokens: 500
+      max_tokens: 500,
     });
 
     const content = response.choices[0].message.content;
@@ -161,26 +159,28 @@ Consider minor changes:
   /**
    * Perform basic analysis without AI
    */
-  private performBasicAnalysis(
-    cacheInfo: any,
-    newDataSample: any
-  ): ChangeAnalysis {
+  private performBasicAnalysis(cacheInfo: any, newDataSample: any): ChangeAnalysis {
     const termsDiff = Math.abs((newDataSample.terms?.length || 0) - cacheInfo.termCount);
-    const categoriesDiff = Math.abs((newDataSample.categories?.length || 0) - cacheInfo.categoryCount);
-    const subcategoriesDiff = Math.abs((newDataSample.subcategories?.length || 0) - cacheInfo.subcategoryCount);
+    const categoriesDiff = Math.abs(
+      (newDataSample.categories?.length || 0) - cacheInfo.categoryCount
+    );
+    const subcategoriesDiff = Math.abs(
+      (newDataSample.subcategories?.length || 0) - cacheInfo.subcategoryCount
+    );
 
     const totalCached = cacheInfo.termCount + cacheInfo.categoryCount + cacheInfo.subcategoryCount;
-    const totalNew = (newDataSample.terms?.length || 0) + 
-                    (newDataSample.categories?.length || 0) + 
-                    (newDataSample.subcategories?.length || 0);
+    const totalNew =
+      (newDataSample.terms?.length || 0) +
+      (newDataSample.categories?.length || 0) +
+      (newDataSample.subcategories?.length || 0);
 
     const totalDiff = Math.abs(totalNew - totalCached);
     const changePercentage = totalCached > 0 ? (totalDiff / totalCached) * 100 : 100;
 
-    let changeScore = Math.min(changePercentage, 100);
-    let hasSignificantChanges = changeScore > 5; // 5% threshold
+    const changeScore = Math.min(changePercentage, 100);
+    const hasSignificantChanges = changeScore > 5; // 5% threshold
     let recommendedAction: 'skip' | 'reprocess' | 'partial_update' = 'skip';
-    let changedSections: string[] = [];
+    const changedSections: string[] = [];
 
     if (termsDiff > 0) changedSections.push('terms');
     if (categoriesDiff > 0) changedSections.push('categories');
@@ -192,7 +192,8 @@ Consider minor changes:
       recommendedAction = 'partial_update';
     }
 
-    const changeDescription = `${Math.round(changePercentage)}% change detected. ` +
+    const changeDescription =
+      `${Math.round(changePercentage)}% change detected. ` +
       `Terms: ${termsDiff > 0 ? '+' : ''}${termsDiff}, ` +
       `Categories: ${categoriesDiff > 0 ? '+' : ''}${categoriesDiff}, ` +
       `Subcategories: ${subcategoriesDiff > 0 ? '+' : ''}${subcategoriesDiff}`;
@@ -202,7 +203,7 @@ Consider minor changes:
       changeScore: Math.round(changeScore),
       changeDescription,
       recommendedAction,
-      changedSections
+      changedSections,
     });
 
     return {
@@ -210,7 +211,7 @@ Consider minor changes:
       changeScore: Math.round(changeScore),
       changeDescription,
       recommendedAction,
-      changedSections
+      changedSections,
     };
   }
 
@@ -226,7 +227,7 @@ Consider minor changes:
       return {
         shouldProcess: false,
         strategy: 'skip',
-        reason: 'No significant changes detected'
+        reason: 'No significant changes detected',
       };
     }
 
@@ -234,7 +235,7 @@ Consider minor changes:
       return {
         shouldProcess: true,
         strategy: 'full',
-        reason: 'Significant changes require full reprocessing'
+        reason: 'Significant changes require full reprocessing',
       };
     }
 
@@ -242,16 +243,16 @@ Consider minor changes:
       return {
         shouldProcess: true,
         strategy: 'incremental',
-        reason: 'Minor changes, incremental update recommended'
+        reason: 'Minor changes, incremental update recommended',
       };
     }
 
     return {
       shouldProcess: false,
       strategy: 'skip',
-      reason: 'Changes too minor to warrant reprocessing'
+      reason: 'Changes too minor to warrant reprocessing',
     };
   }
 }
 
-export const aiChangeDetector = new AIChangeDetector(); 
+export const aiChangeDetector = new AIChangeDetector();

@@ -1,13 +1,12 @@
+
+import path from 'node:path';
 import type { Express, Request, Response } from "express";
-import { enhancedStorage as storage } from "../enhancedStorage";
-import { authenticateFirebaseToken, requireFirebaseAdmin } from "../middleware/firebaseAuth";
-import { features } from "../config";
-import type { AuthenticatedRequest, AdminStats, ApiResponse } from "../../shared/types";
 import express from 'express';
+import type { AdminStats, ApiResponse, } from "../../shared/types";
 import { cacheManager } from '../cacheManager';
-import path from 'path';
-import fs from 'fs';
-import { inArray, eq } from 'drizzle-orm';
+import { enhancedStorage as storage } from "../enhancedStorage";
+import { authenticateToken, requireAdmin } from "../middleware/adminAuth";
+import { authenticateFirebaseToken, requireFirebaseAdmin } from "../middleware/firebaseAuth";
 import { log as logger } from '../utils/logger';
 
 
@@ -85,7 +84,7 @@ export function registerAdminRoutes(app: Express): void {
    *               $ref: '#/components/schemas/ErrorResponse'
    */
   // Admin dashboard statistics
-  app.get('/api/admin/stats', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/stats', authenticateFirebaseToken, requireFirebaseAdmin, async (_req: Request, res: Response) => {
     try {
       const stats = await storage.getAdminStats();
       
@@ -264,7 +263,7 @@ export function registerAdminRoutes(app: Express): void {
    *               $ref: '#/components/schemas/ErrorResponse'
    */
   // System health check
-  app.get('/api/admin/health', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/health', authenticateFirebaseToken, requireFirebaseAdmin, async (_req: Request, res: Response) => {
     try {
       const [systemHealth, contentMetrics] = await Promise.all([
         storage.getSystemHealth(),
@@ -369,7 +368,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Content moderation
-  app.get('/api/admin/content/pending', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/content/pending', authenticateFirebaseToken, requireFirebaseAdmin, async (_req: Request, res: Response) => {
     try {
       const pendingContent = await storage.getPendingContent();
       
@@ -427,7 +426,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Get cache status and information
-  router.get('/cache/status', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+  router.get('/cache/status', authenticateToken, requireAdmin, async (_req, res) => {
     try {
       const cacheEntries = await cacheManager.listCache();
       
@@ -457,7 +456,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Clear specific cache entry
-  router.delete('/cache/:fileName', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+  router.delete('/cache/:fileName', authenticateToken, requireAdmin, async (req, res) => {
     try {
       const { fileName } = req.params;
       const dataDir = path.join(process.cwd(), 'data');
@@ -479,7 +478,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Clear all cache entries
-  router.delete('/cache', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+  router.delete('/cache', authMiddleware, tokenMiddleware, requireAdmin, async (_req, res) => {
     try {
       await cacheManager.clearAllCache();
       
@@ -552,7 +551,7 @@ export function registerAdminRoutes(app: Express): void {
         const batch = termIds.slice(i, i + 5);
         
         try {
-          const termsBatch = await storage.getTermsByIds(batch);
+          const _termsBatch = await storage.getTermsByIds(batch);
           
           /* TODO: Phase 2 - Implement AI categorization
           // Process each term with AI categorization

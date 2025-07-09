@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { BackgroundType } from '@/components/landing/backgrounds';
 
 interface ABTestConfig {
@@ -12,37 +12,39 @@ const DEFAULT_CONFIG: ABTestConfig = {
   enabled: true,
   variants: ['neural', 'code', 'geometric', 'default'],
   sessionKey: 'hero_background_variant',
-  cycleInterval: 30000 // 30 seconds
+  cycleInterval: 30000, // 30 seconds
 };
 
 // Check if browser supports advanced features
 const isBrowserSupported = (): boolean => {
   if (typeof window === 'undefined') return false;
-  
+
   // Check for Canvas support
   const canvas = document.createElement('canvas');
-  const canvasSupported = !!(canvas.getContext && canvas.getContext('2d'));
-  
+  const canvasSupported = !!canvas.getContext?.('2d');
+
   // Check for requestAnimationFrame
-  const rafSupported = !!(window.requestAnimationFrame || (window as any).webkitRequestAnimationFrame);
-  
+  const rafSupported = !!(
+    window.requestAnimationFrame || (window as any).webkitRequestAnimationFrame
+  );
+
   // Check for modern JavaScript features
   const modernJSSupported = !!(
-    typeof Promise !== 'undefined' && 
-    typeof Symbol !== 'undefined' && 
+    typeof Promise !== 'undefined' &&
+    typeof Symbol !== 'undefined' &&
     typeof Array.prototype.includes === 'function' &&
     typeof Object.assign === 'function'
   );
-  
+
   // Check device capabilities for mobile optimization
   const isMobile = window.innerWidth < 768;
   const isLowPower = navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2;
-  
+
   // Use fallback on low-power mobile devices
   if (isMobile && isLowPower) {
     return false;
   }
-  
+
   return canvasSupported && rafSupported && modernJSSupported;
 };
 
@@ -60,7 +62,7 @@ export function useBackgroundABTest(config: Partial<ABTestConfig> = {}) {
 
     // Check browser compatibility
     const browserSupported = isBrowserSupported();
-    
+
     // If browser doesn't support advanced features, use fallback
     if (!browserSupported) {
       setCurrentVariant('fallback');
@@ -73,7 +75,8 @@ export function useBackgroundABTest(config: Partial<ABTestConfig> = {}) {
       setCurrentVariant(storedVariant as BackgroundType);
     } else {
       // Assign random variant and store it
-      const randomVariant = finalConfig.variants[Math.floor(Math.random() * finalConfig.variants.length)];
+      const randomVariant =
+        finalConfig.variants[Math.floor(Math.random() * finalConfig.variants.length)];
       setCurrentVariant(randomVariant);
       sessionStorage.setItem(finalConfig.sessionKey, randomVariant);
     }
@@ -81,7 +84,7 @@ export function useBackgroundABTest(config: Partial<ABTestConfig> = {}) {
     // Optional: Set up cycling through variants (for testing purposes)
     if (finalConfig.cycleInterval && process.env.NODE_ENV === 'development') {
       const interval = setInterval(() => {
-        setCurrentVariant(prev => {
+        setCurrentVariant((prev) => {
           const currentIndex = finalConfig.variants.indexOf(prev);
           const nextIndex = (currentIndex + 1) % finalConfig.variants.length;
           const nextVariant = finalConfig.variants[nextIndex];
@@ -109,8 +112,8 @@ export function useBackgroundABTest(config: Partial<ABTestConfig> = {}) {
         event_label: currentVariant,
         action: action,
         custom_map: {
-          background_variant: currentVariant
-        }
+          background_variant: currentVariant,
+        },
       });
     }
 
@@ -126,6 +129,6 @@ export function useBackgroundABTest(config: Partial<ABTestConfig> = {}) {
     trackInteraction,
     isClient,
     variants: finalConfig.variants,
-    enabled: finalConfig.enabled
+    enabled: finalConfig.enabled,
   };
 }

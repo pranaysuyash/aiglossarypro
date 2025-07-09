@@ -3,25 +3,20 @@
  * Handles batch database operations with conflict resolution
  */
 
-import { Job } from 'bullmq';
-import { DBBatchInsertJobData, DBBatchInsertJobResult } from '../types';
+import type { Job } from 'bullmq';
 import { db } from '../../db';
 import { log as logger } from '../../utils/logger';
-import { sql } from 'drizzle-orm';
+import type { DBBatchInsertJobData, DBBatchInsertJobResult } from '../types';
 
 export async function dbBatchInsertProcessor(
   job: Job<DBBatchInsertJobData>
 ): Promise<DBBatchInsertJobResult> {
   const startTime = Date.now();
-  const { 
-    table, 
-    records, 
-    conflictResolution = 'ignore', 
-    batchSize = 1000,
-    userId 
-  } = job.data;
+  const { table, records, conflictResolution = 'ignore', batchSize = 1000, userId } = job.data;
 
-  logger.info(`Starting DB batch insert job ${job.id} for table: ${table} with ${records.length} records`);
+  logger.info(
+    `Starting DB batch insert job ${job.id} for table: ${table} with ${records.length} records`
+  );
 
   const result: DBBatchInsertJobResult = {
     inserted: 0,
@@ -71,11 +66,7 @@ export async function dbBatchInsertProcessor(
 
       try {
         // Execute batch operation based on conflict resolution strategy
-        const batchResult = await executeBatchOperation(
-          table,
-          batch,
-          conflictResolution
-        );
+        const batchResult = await executeBatchOperation(table, batch, conflictResolution);
 
         result.inserted += batchResult.inserted;
         result.updated += batchResult.updated;
@@ -87,10 +78,11 @@ export async function dbBatchInsertProcessor(
           processed: processedRecords,
           total: records.length,
         });
-
       } catch (batchError) {
-        logger.error(`Batch ${batchIndex + 1} failed:`, { error: batchError instanceof Error ? batchError.message : String(batchError) });
-        
+        logger.error(`Batch ${batchIndex + 1} failed:`, {
+          error: batchError instanceof Error ? batchError.message : String(batchError),
+        });
+
         // Try to process records individually to identify specific failures
         for (const record of batch) {
           try {
@@ -131,9 +123,10 @@ export async function dbBatchInsertProcessor(
 
     logger.info(`DB batch insert job ${job.id} completed`, result);
     return result;
-
   } catch (error) {
-    logger.error(`DB batch insert job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
+    logger.error(`DB batch insert job ${job.id} failed:`, {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }
@@ -146,32 +139,31 @@ async function executeBatchOperation(
   records: any[],
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
-  
   switch (table) {
     case 'terms':
       return await handleTermsBatch(records, conflictResolution);
-    
+
     case 'categories':
       return await handleCategoriesBatch(records, conflictResolution);
-    
+
     case 'term_sections':
       return await handleTermSectionsBatch(records, conflictResolution);
-    
+
     case 'enhanced_terms':
       return await handleEnhancedTermsBatch(records, conflictResolution);
-    
+
     case 'enhanced_term_sections':
       return await handleEnhancedTermSectionsBatch(records, conflictResolution);
-    
+
     case 'user_progress':
       return await handleUserProgressBatch(records, conflictResolution);
-    
+
     case 'analytics_events':
       return await handleAnalyticsEventsBatch(records, conflictResolution);
-    
+
     case 'search_queries':
       return await handleSearchQueriesBatch(records, conflictResolution);
-    
+
     default:
       throw new Error(`Unsupported table: ${table}`);
   }
@@ -185,24 +177,26 @@ async function handleTermsBatch(
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   const { terms } = await import('../../../shared/enhancedSchema');
-  
+
   if (conflictResolution === 'ignore') {
     // Insert only new records, ignore conflicts
-    const insertedRecords = await db.insert(terms)
+    const insertedRecords = await db
+      .insert(terms)
       .values(records)
       .onConflictDoNothing()
       .returning();
-    
+
     return { inserted: insertedRecords.length, updated: 0 };
   }
-  
+
   if (conflictResolution === 'update') {
     // Upsert: insert new, update existing
     let inserted = 0;
     let updated = 0;
-    
+
     for (const record of records) {
-      const result = await db.insert(terms)
+      const result = await db
+        .insert(terms)
         .values(record)
         .onConflictDoUpdate({
           target: [terms.id],
@@ -214,12 +208,12 @@ async function handleTermsBatch(
           },
         })
         .returning();
-      
+
       if (result.length > 0) {
         // Check if this was an insert or update by checking created_at vs updated_at
         const createdAt = new Date(result[0].createdAt);
         const updatedAt = new Date(result[0].updatedAt);
-        
+
         if (Math.abs(createdAt.getTime() - updatedAt.getTime()) < 1000) {
           inserted++;
         } else {
@@ -227,19 +221,17 @@ async function handleTermsBatch(
         }
       }
     }
-    
+
     return { inserted, updated };
   }
-  
+
   if (conflictResolution === 'error') {
     // Strict insert, fail on conflicts
-    const insertedRecords = await db.insert(terms)
-      .values(records)
-      .returning();
-    
+    const insertedRecords = await db.insert(terms).values(records).returning();
+
     return { inserted: insertedRecords.length, updated: 0 };
   }
-  
+
   throw new Error(`Unsupported conflict resolution: ${conflictResolution}`);
 }
 
@@ -251,19 +243,20 @@ async function handleCategoriesBatch(
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   const { categories } = await import('../../../shared/enhancedSchema');
-  
+
   if (conflictResolution === 'ignore') {
-    const insertedRecords = await db.insert(categories)
+    const insertedRecords = await db
+      .insert(categories)
       .values(records)
       .onConflictDoNothing()
       .returning();
-    
+
     return { inserted: insertedRecords.length, updated: 0 };
   }
-  
+
   // Add similar logic for other conflict resolution strategies
   // ... (implement as needed)
-  
+
   return { inserted: 0, updated: 0 };
 }
 
@@ -275,19 +268,20 @@ async function handleTermSectionsBatch(
   conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   const { termSections } = await import('../../../shared/enhancedSchema');
-  
+
   if (conflictResolution === 'ignore') {
-    const insertedRecords = await db.insert(termSections)
+    const insertedRecords = await db
+      .insert(termSections)
       .values(records)
       .onConflictDoNothing()
       .returning();
-    
+
     return { inserted: insertedRecords.length, updated: 0 };
   }
-  
+
   // Add similar logic for other conflict resolution strategies
   // ... (implement as needed)
-  
+
   return { inserted: 0, updated: 0 };
 }
 
@@ -295,8 +289,8 @@ async function handleTermSectionsBatch(
  * Handle enhanced_terms table batch operations
  */
 async function handleEnhancedTermsBatch(
-  records: any[],
-  conflictResolution: 'ignore' | 'update' | 'error'
+  _records: any[],
+  _conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   // Implementation for enhanced terms
   return { inserted: 0, updated: 0 };
@@ -306,8 +300,8 @@ async function handleEnhancedTermsBatch(
  * Handle enhanced_term_sections table batch operations
  */
 async function handleEnhancedTermSectionsBatch(
-  records: any[],
-  conflictResolution: 'ignore' | 'update' | 'error'
+  _records: any[],
+  _conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   // Implementation for enhanced term sections
   return { inserted: 0, updated: 0 };
@@ -317,8 +311,8 @@ async function handleEnhancedTermSectionsBatch(
  * Handle user_progress table batch operations
  */
 async function handleUserProgressBatch(
-  records: any[],
-  conflictResolution: 'ignore' | 'update' | 'error'
+  _records: any[],
+  _conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   // Implementation for user progress
   return { inserted: 0, updated: 0 };
@@ -328,8 +322,8 @@ async function handleUserProgressBatch(
  * Handle analytics_events table batch operations
  */
 async function handleAnalyticsEventsBatch(
-  records: any[],
-  conflictResolution: 'ignore' | 'update' | 'error'
+  _records: any[],
+  _conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   // Implementation for analytics events
   return { inserted: 0, updated: 0 };
@@ -339,8 +333,8 @@ async function handleAnalyticsEventsBatch(
  * Handle search_queries table batch operations
  */
 async function handleSearchQueriesBatch(
-  records: any[],
-  conflictResolution: 'ignore' | 'update' | 'error'
+  _records: any[],
+  _conflictResolution: 'ignore' | 'update' | 'error'
 ): Promise<{ inserted: number; updated: number }> {
   // Implementation for search queries
   return { inserted: 0, updated: 0 };

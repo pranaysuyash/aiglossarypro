@@ -8,7 +8,8 @@ const meta: Meta<typeof InteractiveQuiz> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Interactive quiz component for testing understanding of AI/ML concepts with various question types and immediate feedback.',
+        component:
+          'Interactive quiz component for testing understanding of AI/ML concepts with various question types and immediate feedback.',
       },
     },
   },
@@ -34,7 +35,8 @@ const basicQuizData = {
         'To normalize inputs',
       ],
       correctAnswer: 1,
-      explanation: 'Activation functions introduce non-linearity into the network, allowing it to learn complex patterns and relationships in the data.',
+      explanation:
+        'Activation functions introduce non-linearity into the network, allowing it to learn complex patterns and relationships in the data.',
       points: 10,
     },
     {
@@ -43,15 +45,18 @@ const basicQuizData = {
       question: 'Gradient descent always finds the global minimum of a loss function.',
       options: ['True', 'False'],
       correctAnswer: 1,
-      explanation: 'Gradient descent can get stuck in local minima, especially in non-convex optimization landscapes common in deep learning.',
+      explanation:
+        'Gradient descent can get stuck in local minima, especially in non-convex optimization landscapes common in deep learning.',
       points: 15,
     },
     {
       id: '3',
       type: 'fill-blank' as const,
-      question: 'The process of adjusting weights in a neural network based on the error is called ___.',
+      question:
+        'The process of adjusting weights in a neural network based on the error is called ___.',
       correctAnswer: 'backpropagation',
-      explanation: 'Backpropagation is the algorithm used to calculate gradients and update weights in neural networks.',
+      explanation:
+        'Backpropagation is the algorithm used to calculate gradients and update weights in neural networks.',
       points: 15,
     },
   ],
@@ -67,7 +72,8 @@ const advancedQuizData = {
     {
       id: '1',
       type: 'multiple-choice' as const,
-      question: 'Which technique is most effective for preventing overfitting in deep neural networks?',
+      question:
+        'Which technique is most effective for preventing overfitting in deep neural networks?',
       options: [
         'Increasing learning rate',
         'Adding more layers',
@@ -75,7 +81,8 @@ const advancedQuizData = {
         'Using smaller batch sizes',
       ],
       correctAnswer: 2,
-      explanation: 'Dropout randomly sets some neurons to zero during training, preventing the network from becoming too dependent on specific neurons.',
+      explanation:
+        'Dropout randomly sets some neurons to zero during training, preventing the network from becoming too dependent on specific neurons.',
       points: 20,
     },
     {
@@ -89,7 +96,8 @@ const advancedQuizData = {
         'Eliminates the need for activation functions',
       ],
       correctAnswer: ['0', '1', '2'],
-      explanation: 'Batch normalization provides faster convergence, reduces initialization sensitivity, and has regularization effects, but doesn\'t eliminate the need for activation functions.',
+      explanation:
+        "Batch normalization provides faster convergence, reduces initialization sensitivity, and has regularization effects, but doesn't eliminate the need for activation functions.",
       points: 25,
     },
     {
@@ -119,9 +127,11 @@ const mathQuizData = {
     {
       id: '1',
       type: 'fill-blank' as const,
-      question: 'If a dataset has 1000 samples and we use 80% for training, how many samples are in the test set?',
+      question:
+        'If a dataset has 1000 samples and we use 80% for training, how many samples are in the test set?',
       correctAnswer: '200',
-      explanation: 'With 80% for training (800 samples), the remaining 20% (200 samples) are used for testing.',
+      explanation:
+        'With 80% for training (800 samples), the remaining 20% (200 samples) are used for testing.',
       points: 10,
     },
     {
@@ -129,7 +139,8 @@ const mathQuizData = {
       type: 'fill-blank' as const,
       question: 'What does MSE stand for in machine learning?',
       correctAnswer: 'Mean Squared Error',
-      explanation: 'MSE calculates the average of squared differences between actual and predicted values.',
+      explanation:
+        'MSE calculates the average of squared differences between actual and predicted values.',
       points: 20,
     },
   ],
@@ -245,7 +256,7 @@ export const WithHints: Story = {
 export const LoadingState: Story = {
   args: {
     questions: [],
-    title: "Loading Quiz...",
+    title: 'Loading Quiz...',
     onComplete: (results: any) => console.log('Quiz completed:', results),
   },
 };
@@ -253,7 +264,7 @@ export const LoadingState: Story = {
 export const ErrorState: Story = {
   args: {
     questions: [],
-    title: "Quiz Error",
+    title: 'Quiz Error',
     onComplete: (results: any) => console.log('Quiz completed:', results),
   },
 };

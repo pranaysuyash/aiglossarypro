@@ -1,13 +1,28 @@
-import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Zap, Globe, Clock, Star, BookmarkIcon, TrophyIcon, FlameIcon, BarChartIcon, CalendarDaysIcon } from 'lucide-react';
+import {
+  BarChartIcon,
+  BookmarkIcon,
+  CalendarDaysIcon,
+  Clock,
+  FlameIcon,
+  Globe,
+  Star,
+  TrophyIcon,
+  Zap,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useAccess } from '../hooks/useAccess';
 import { useAuth } from '../hooks/useAuth';
-import { useState, useEffect } from 'react';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
 interface UpgradePromptTrigger {
-  type: 'bookmark_limit' | 'high_engagement' | 'streak_milestone' | 'category_exploration' | 'historical_access';
+  type:
+    | 'bookmark_limit'
+    | 'high_engagement'
+    | 'streak_milestone'
+    | 'category_exploration'
+    | 'historical_access';
   severity: 'low' | 'medium' | 'high';
   message: string;
   metadata?: any;
@@ -31,12 +46,18 @@ interface UpgradePromptProps {
   progressStats?: ProgressStats;
 }
 
-export function UpgradePrompt({ variant = 'card', className = '', onClose, trigger, progressStats }: UpgradePromptProps) {
+export function UpgradePrompt({
+  variant = 'card',
+  className = '',
+  onClose,
+  trigger,
+  progressStats,
+}: UpgradePromptProps) {
   const { accessStatus } = useAccess();
   const { user } = useAuth();
   const [stats, setStats] = useState<ProgressStats | null>(progressStats || null);
-  const [loading, setLoading] = useState(false);
-  
+  const [_loading, setLoading] = useState(false);
+
   // Don't show upgrade prompt for premium users
   if (accessStatus?.lifetimeAccess) {
     return null;
@@ -46,15 +67,15 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
     if (user && !progressStats && (variant === 'smart' || trigger)) {
       fetchProgressStats();
     }
-  }, [user, progressStats, variant, trigger]);
+  }, [user, progressStats, variant, trigger, fetchProgressStats]);
 
   const fetchProgressStats = async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/progress/stats', {
         headers: {
-          'Authorization': `Bearer ${user?.token}`
-        }
+          Authorization: `Bearer ${user?.token}`,
+        },
       });
 
       if (response.ok) {
@@ -67,7 +88,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
       setLoading(false);
     }
   };
-  
+
   const handleUpgrade = () => {
     // Navigate to Gumroad checkout with Purchasing Power Parity
     window.open('https://gumroad.com/l/aiml-glossary-pro', '_blank');
@@ -81,39 +102,51 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
   const getTriggerContent = (triggerData: UpgradePromptTrigger) => {
     const getIcon = () => {
       switch (triggerData.type) {
-        case 'bookmark_limit': return <BookmarkIcon className="h-6 w-6 text-purple-500" />;
-        case 'high_engagement': return <TrophyIcon className="h-6 w-6 text-yellow-500" />;
-        case 'streak_milestone': return <FlameIcon className="h-6 w-6 text-orange-500" />;
-        case 'category_exploration': return <BarChartIcon className="h-6 w-6 text-blue-500" />;
-        case 'historical_access': return <CalendarDaysIcon className="h-6 w-6 text-green-500" />;
-        default: return <Star className="h-6 w-6 text-blue-500" />;
+        case 'bookmark_limit':
+          return <BookmarkIcon className="h-6 w-6 text-purple-500" />;
+        case 'high_engagement':
+          return <TrophyIcon className="h-6 w-6 text-yellow-500" />;
+        case 'streak_milestone':
+          return <FlameIcon className="h-6 w-6 text-orange-500" />;
+        case 'category_exploration':
+          return <BarChartIcon className="h-6 w-6 text-blue-500" />;
+        case 'historical_access':
+          return <CalendarDaysIcon className="h-6 w-6 text-green-500" />;
+        default:
+          return <Star className="h-6 w-6 text-blue-500" />;
       }
     };
 
     const getTitle = () => {
       switch (triggerData.type) {
-        case 'bookmark_limit': return 'Bookmark Limit Reached';
-        case 'high_engagement': return 'You\'re a Power User!';
-        case 'streak_milestone': return 'Streak Milestone Achieved!';
-        case 'category_exploration': return 'Category Explorer';
-        case 'historical_access': return 'Loyal Learner';
-        default: return 'Upgrade Available';
+        case 'bookmark_limit':
+          return 'Bookmark Limit Reached';
+        case 'high_engagement':
+          return "You're a Power User!";
+        case 'streak_milestone':
+          return 'Streak Milestone Achieved!';
+        case 'category_exploration':
+          return 'Category Explorer';
+        case 'historical_access':
+          return 'Loyal Learner';
+        default:
+          return 'Upgrade Available';
       }
     };
 
     const getDescription = () => {
       switch (triggerData.type) {
-        case 'bookmark_limit': 
+        case 'bookmark_limit':
           return `You've reached your ${triggerData.metadata?.limit || 50} bookmark limit. Upgrade to save unlimited terms and build your personal AI/ML knowledge base.`;
-        case 'high_engagement': 
+        case 'high_engagement':
           return `You've explored ${triggerData.metadata?.termsViewed || 0} terms and spent ${triggerData.metadata?.timeSpent || 0} minutes learning. Unlock advanced features to accelerate your AI journey.`;
-        case 'streak_milestone': 
+        case 'streak_milestone':
           return `Congratulations on your ${triggerData.metadata?.streak || 0}-day learning streak! Keep the momentum going with premium features designed for dedicated learners.`;
-        case 'category_exploration': 
+        case 'category_exploration':
           return `You've explored ${triggerData.metadata?.categoriesExplored || 0} different AI/ML categories. Dive deeper with premium content and advanced search capabilities.`;
-        case 'historical_access': 
+        case 'historical_access':
           return `You've been learning with us for ${triggerData.metadata?.daysSinceFirst || 0} days. Ready to unlock the full potential of your AI/ML education?`;
-        default: 
+        default:
           return triggerData.message;
       }
     };
@@ -124,7 +157,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
   // Smart variant uses behavioral triggers
   if (variant === 'smart' && (trigger || stats?.upgradePromptTriggers?.length)) {
     const currentTrigger = trigger || stats?.upgradePromptTriggers?.[0];
-    
+
     if (!currentTrigger) {
       return null;
     }
@@ -133,7 +166,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
     const severityColors = {
       low: 'from-blue-50 to-cyan-50 border-blue-200',
       medium: 'from-orange-50 to-yellow-50 border-orange-200',
-      high: 'from-red-50 to-pink-50 border-red-200'
+      high: 'from-red-50 to-pink-50 border-red-200',
     };
 
     return (
@@ -143,9 +176,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
             {triggerContent.icon}
           </div>
           <CardTitle className="text-xl">{triggerContent.title}</CardTitle>
-          <CardDescription className="text-sm">
-            {triggerContent.description}
-          </CardDescription>
+          <CardDescription className="text-sm">{triggerContent.description}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {stats && (
@@ -168,7 +199,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
               </div>
             </div>
           )}
-          
+
           <div className="border rounded-lg p-3 bg-gradient-to-r from-blue-50 to-purple-50">
             <div className="text-center">
               <div className="text-2xl font-bold text-blue-600">$129</div>
@@ -180,7 +211,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
           </div>
 
           <div className="flex gap-2">
-            <Button 
+            <Button
               onClick={handleUpgrade}
               className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
@@ -192,7 +223,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
               </Button>
             )}
           </div>
-          
+
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="flex items-center gap-2">
               <Globe className="h-4 w-4 text-green-500" />
@@ -203,7 +234,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
               <span>Instant Access</span>
             </div>
           </div>
-          
+
           <p className="text-xs text-center text-gray-500 dark:text-gray-400">
             7-day money-back guarantee • No subscription • One-time payment
           </p>
@@ -214,23 +245,24 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
 
   if (variant === 'banner') {
     return (
-      <div className={`bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 ${className}`}>
+      <div
+        className={`bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-3 ${className}`}
+      >
         <div className="container mx-auto flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Zap className="h-5 w-5" />
             <span className="font-medium">
-              {remainingViews > 0 
-                ? `${remainingViews} views remaining today` 
-                : 'Daily limit reached'
-              }
+              {remainingViews > 0
+                ? `${remainingViews} views remaining today`
+                : 'Daily limit reached'}
             </span>
             <Badge variant="secondary" className="bg-white/20 text-white">
               Free Tier
             </Badge>
           </div>
           <div className="flex items-center gap-3">
-            <Button 
-              variant="secondary" 
+            <Button
+              variant="secondary"
               size="sm"
               onClick={handleUpgrade}
               className="bg-white text-blue-600 hover:bg-gray-100"
@@ -262,8 +294,8 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
             </div>
             <CardTitle className="text-xl">Daily Limit Reached</CardTitle>
             <CardDescription>
-              You've viewed {viewsUsed} out of {dailyLimit} free terms today. 
-              Upgrade for unlimited access to all {10372} AI/ML definitions.
+              You've viewed {viewsUsed} out of {dailyLimit} free terms today. Upgrade for unlimited
+              access to all {10372} AI/ML definitions.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -277,7 +309,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
                 <span>Instant Access</span>
               </div>
             </div>
-            
+
             <div className="border rounded-lg p-3 bg-gradient-to-r from-blue-50 to-purple-50">
               <div className="text-center">
                 <div className="text-2xl font-bold text-blue-600">$129</div>
@@ -289,7 +321,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
             </div>
 
             <div className="flex gap-2">
-              <Button 
+              <Button
                 onClick={handleUpgrade}
                 className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
               >
@@ -301,7 +333,7 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
                 </Button>
               )}
             </div>
-            
+
             <p className="text-xs text-center text-gray-500 dark:text-gray-400">
               7-day money-back guarantee • No subscription • One-time payment
             </p>
@@ -322,13 +354,12 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
               Usage Limit
             </CardTitle>
             <CardDescription>
-              {remainingViews > 0 
+              {remainingViews > 0
                 ? `${remainingViews} of ${dailyLimit} free views remaining today`
-                : `You've used all ${dailyLimit} free views today`
-              }
+                : `You've used all ${dailyLimit} free views today`}
             </CardDescription>
           </div>
-          <Badge variant={remainingViews > 10 ? "secondary" : "destructive"}>
+          <Badge variant={remainingViews > 10 ? 'secondary' : 'destructive'}>
             {Math.round((viewsUsed / dailyLimit) * 100)}% used
           </Badge>
         </div>
@@ -336,26 +367,26 @@ export function UpgradePrompt({ variant = 'card', className = '', onClose, trigg
       <CardContent>
         <div className="space-y-3">
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-            <div 
+            <div
               className={`h-2 rounded-full transition-all duration-300 ${
-                remainingViews > 10 
-                  ? 'bg-green-500' 
-                  : remainingViews > 0 
-                    ? 'bg-yellow-500' 
+                remainingViews > 10
+                  ? 'bg-green-500'
+                  : remainingViews > 0
+                    ? 'bg-yellow-500'
                     : 'bg-red-500'
               }`}
               style={{ width: `${(viewsUsed / dailyLimit) * 100}%` }}
             />
           </div>
-          
-          <Button 
+
+          <Button
             onClick={handleUpgrade}
             className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             size="sm"
           >
             Upgrade for Unlimited Access
           </Button>
-          
+
           <p className="text-xs text-center text-gray-500 dark:text-gray-400">
             One-time payment • Regional pricing • 7-day guarantee
           </p>

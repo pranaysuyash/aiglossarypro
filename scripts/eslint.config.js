@@ -1,9 +1,8 @@
-import js from '@eslint/js';
 import typescript from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
+import cypress from 'eslint-plugin-cypress';
 import jsxA11y from 'eslint-plugin-jsx-a11y';
 import globals from 'globals';
-import cypress from 'eslint-plugin-cypress';
 
 export default [
   // Global ignores
@@ -62,7 +61,13 @@ export default [
   // General configuration for other JS/TS files (e.g., scripts, cypress)
   {
     files: ['**/*.{js,ts,jsx,tsx}'],
-    ignores: ['client/src/**/*.ts', 'client/src/**/*.tsx', 'server/**/*.ts', 'shared/**/*.ts', 'cypress/**/*.cy.{js,jsx,ts,tsx}'],
+    ignores: [
+      'client/src/**/*.ts',
+      'client/src/**/*.tsx',
+      'server/**/*.ts',
+      'shared/**/*.ts',
+      'cypress/**/*.cy.{js,jsx,ts,tsx}',
+    ],
     languageOptions: {
       parser: typescriptParser,
       parserOptions: {
@@ -95,7 +100,7 @@ export default [
       'no-console': 'warn',
     },
   },
-  
+
   // Cypress-specific configuration
   {
     ...cypress.configs.recommended,

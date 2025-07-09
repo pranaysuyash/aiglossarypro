@@ -1,52 +1,36 @@
-import { useState, useEffect, memo, useMemo, useCallback } from "react";
-import { Link, useLocation } from "wouter";
-import { 
-  Heart, 
-  Copy, 
-  Share2, 
-  Code, 
-  Play, 
-  TestTube, 
-  Brain,
-  Eye,
-  Clock,
-  TrendingUp,
-  ChevronRight,
-  Star,
-  Bookmark,
-  ExternalLink
-} from "lucide-react";
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
-import { queryClient } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/useAuth";
-import { IEnhancedTerm, ITerm, ITermCardProps } from "@/interfaces/interfaces";
-import ShareMenu from "./ShareMenu";
-import AIContentFeedback from './AIContentFeedback';
-import { getDifficultyColor, getProgressPercentage } from '@/utils/termUtils';
+import { Brain, ChevronRight, Code, Copy, Eye, Heart, Play, Share2, TestTube } from 'lucide-react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import { useLocation } from 'wouter';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import type { IEnhancedTerm, ITerm, ITermCardProps } from '@/interfaces/interfaces';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 import { usePerformanceMonitor } from '@/utils/performanceMonitor';
+import { getDifficultyColor, getProgressPercentage } from '@/utils/termUtils';
+import AIContentFeedback from './AIContentFeedback';
+import ShareMenu from './ShareMenu';
 
 // Type guard to check if term is enhanced
 const isEnhancedTerm = (term: IEnhancedTerm | ITerm): term is IEnhancedTerm => {
   return 'mainCategories' in term && 'difficultyLevel' in term;
 };
 
-const EnhancedTermCard = memo(function EnhancedTermCard({ 
-  term, 
+const EnhancedTermCard = memo(function EnhancedTermCard({
+  term,
   displayMode = 'default',
   showInteractive = true,
   userSettings,
-  isFavorite = false 
+  isFavorite = false,
 }: ITermCardProps) {
   const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
   const [favorite, setFavorite] = useState(isFavorite);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
+  const [_isExpanded, _setIsExpanded] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const { measure } = usePerformanceMonitor('EnhancedTermCard');
@@ -55,54 +39,52 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
   const enhanced = isEnhancedTerm(term);
 
   // Memoize expensive calculations
-  const termUrl = useMemo(() => 
-    `${window.location.origin}/term/${term.id}`, 
-    [term.id]
-  );
+  const termUrl = useMemo(() => `${window.location.origin}/term/${term.id}`, [term.id]);
 
   const featureIcons = useMemo(() => {
     if (!enhanced) return [];
-    
+
     const features = [];
-    if (term.hasCodeExamples) features.push({ icon: Code, label: "Code Examples", color: "text-blue-500" });
-    if (term.hasInteractiveElements) features.push({ icon: Play, label: "Interactive", color: "text-purple-500" });
-    if (term.hasCaseStudies) features.push({ icon: TestTube, label: "Case Studies", color: "text-green-500" });
-    if (term.hasImplementation) features.push({ icon: Brain, label: "Implementation", color: "text-orange-500" });
-    
+    if (term.hasCodeExamples)
+      features.push({ icon: Code, label: 'Code Examples', color: 'text-blue-500' });
+    if (term.hasInteractiveElements)
+      features.push({ icon: Play, label: 'Interactive', color: 'text-purple-500' });
+    if (term.hasCaseStudies)
+      features.push({ icon: TestTube, label: 'Case Studies', color: 'text-green-500' });
+    if (term.hasImplementation)
+      features.push({ icon: Brain, label: 'Implementation', color: 'text-orange-500' });
+
     return features;
   }, [enhanced, term]);
 
   const handleToggleFavorite = useCallback(async () => {
     if (!isAuthenticated) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to save favorites",
-        variant: "destructive",
+        title: 'Authentication required',
+        description: 'Please sign in to save favorites',
+        variant: 'destructive',
       });
       return;
     }
 
     setIsSubmitting(true);
     try {
-      await apiRequest(
-        favorite ? "DELETE" : "POST", 
-        `/api/favorites/${term.id}`, 
-      );
-      
+      await apiRequest(favorite ? 'DELETE' : 'POST', `/api/favorites/${term.id}`);
+
       setFavorite(!favorite);
       queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
-      
+
       toast({
-        title: favorite ? "Removed from favorites" : "Added to favorites",
-        description: favorite 
-          ? `${term.name} has been removed from your favorites` 
+        title: favorite ? 'Removed from favorites' : 'Added to favorites',
+        description: favorite
+          ? `${term.name} has been removed from your favorites`
           : `${term.name} has been added to your favorites`,
       });
     } catch (_error) {
       toast({
-        title: "Error",
-        description: "Failed to update favorites. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update favorites. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
@@ -113,23 +95,23 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
     try {
       await navigator.clipboard.writeText(termUrl);
       toast({
-        title: "Link copied",
-        description: "Link has been copied to clipboard",
+        title: 'Link copied',
+        description: 'Link has been copied to clipboard',
       });
     } catch (_error) {
       toast({
-        title: "Failed to copy",
-        description: "Please try again or copy manually",
-        variant: "destructive",
+        title: 'Failed to copy',
+        description: 'Please try again or copy manually',
+        variant: 'destructive',
       });
     }
   }, [termUrl, toast]);
 
   const handleTermClick = useCallback(async () => {
     try {
-      await apiRequest("POST", `/api/terms/${term.id}/view`, null);
+      await apiRequest('POST', `/api/terms/${term.id}/view`, null);
     } catch (_error) {
-      console.error("Failed to log term view", _error);
+      console.error('Failed to log term view', _error);
     }
   }, [term.id]);
 
@@ -139,19 +121,20 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
     navigate(termPath);
   }, [term.id, handleTermClick, navigate]);
 
-
   // Performance monitoring for render
   useEffect(() => {
-    measure(() => {
-      // Component render logic measurement
-    }, { 
-      termId: term.id, 
-      displayMode, 
-      enhanced,
-      featureCount: featureIcons.length
-    });
+    measure(
+      () => {
+        // Component render logic measurement
+      },
+      {
+        termId: term.id,
+        displayMode,
+        enhanced,
+        featureCount: featureIcons.length,
+      }
+    );
   });
-
 
   const renderCompactCard = () => (
     <Card className="h-full transition-all duration-200 hover:shadow-md hover:-translate-y-1">
@@ -165,9 +148,9 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
               </Badge>
             )}
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className={`h-6 w-6 flex-shrink-0 ml-2 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
             onClick={handleToggleFavorite}
             disabled={isSubmitting}
@@ -175,11 +158,11 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
             <Heart className={favorite ? 'fill-current' : ''} size={14} />
           </Button>
         </div>
-        
+
         <p className="text-xs text-gray-600 dark:text-gray-400 line-clamp-2 mb-2">
           {enhanced ? term.shortDefinition || term.fullDefinition : term.shortDefinition}
         </p>
-        
+
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-1">
             {featureIcons.slice(0, 2).map((feature, index) => (
@@ -195,9 +178,9 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
               </TooltipProvider>
             ))}
           </div>
-          <Button 
-            variant="ghost" 
-            size="sm" 
+          <Button
+            variant="ghost"
+            size="sm"
             className="text-xs h-6 px-2"
             onClick={handleNavigateToTerm}
           >
@@ -252,9 +235,9 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
               </div>
             )}
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className={`h-8 w-8 flex-shrink-0 ml-2 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
             onClick={handleToggleFavorite}
             disabled={isSubmitting}
@@ -353,7 +336,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
           )}
         </div>
       </CardContent>
-      
+
       <CardFooter className="border-t border-gray-100 dark:border-gray-800 pt-3 pb-3 flex justify-between items-center">
         <Button
           variant="default"
@@ -364,7 +347,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
           <span>Learn More</span>
           <ChevronRight size={14} />
         </Button>
-        
+
         <div className="flex space-x-1">
           <TooltipProvider>
             <Tooltip>
@@ -382,10 +365,10 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
-                  className="h-8 w-8" 
+                  className="h-8 w-8"
                   onClick={() => setIsShareMenuOpen(true)}
                 >
                   <Share2 size={14} className="text-gray-500 dark:text-gray-400" />
@@ -397,8 +380,8 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
             </Tooltip>
           </TooltipProvider>
 
-          <ShareMenu 
-            isOpen={isShareMenuOpen} 
+          <ShareMenu
+            isOpen={isShareMenuOpen}
             onClose={() => setIsShareMenuOpen(false)}
             title={term.name}
             url={termUrl}
@@ -426,11 +409,17 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
         <div className="flex items-center justify-between mb-2">
           <div className="flex items-center space-x-2">
             {enhanced && term.mainCategories.length > 0 ? (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300">
+              <Badge
+                variant="secondary"
+                className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300"
+              >
                 {term.mainCategories[0]}
               </Badge>
             ) : (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300">
+              <Badge
+                variant="secondary"
+                className="bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-300"
+              >
                 {term.category}
               </Badge>
             )}
@@ -440,9 +429,9 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
               </Badge>
             )}
           </div>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className={`h-8 w-8 ${favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}`}
             onClick={handleToggleFavorite}
             disabled={isSubmitting}
@@ -450,13 +439,13 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
             <Heart className={favorite ? 'fill-current' : ''} size={20} />
           </Button>
         </div>
-        
+
         <h3 className="font-semibold text-lg mb-1">{term.name}</h3>
-        
+
         <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-3">
-          {enhanced ? (term.shortDefinition || term.fullDefinition) : term.shortDefinition}
+          {enhanced ? term.shortDefinition || term.fullDefinition : term.shortDefinition}
         </p>
-        
+
         {/* Feature indicators */}
         {showInteractive && featureIcons.length > 0 && (
           <div className="flex items-center space-x-2 mb-3">
@@ -484,7 +473,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
           </div>
         )}
       </CardContent>
-      
+
       <CardFooter className="border-t border-gray-100 dark:border-gray-800 p-3 flex justify-between items-center">
         <div
           className="text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium cursor-pointer"
@@ -492,7 +481,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
         >
           Read more
         </div>
-        
+
         <div className="flex space-x-2">
           <TooltipProvider>
             <Tooltip>
@@ -510,10 +499,10 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   size="icon"
-                  className="h-8 w-8" 
+                  className="h-8 w-8"
                   onClick={() => setIsShareMenuOpen(true)}
                 >
                   <Share2 size={16} className="text-gray-500 dark:text-gray-400" />
@@ -525,8 +514,8 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
             </Tooltip>
           </TooltipProvider>
 
-          <ShareMenu 
-            isOpen={isShareMenuOpen} 
+          <ShareMenu
+            isOpen={isShareMenuOpen}
             onClose={() => setIsShareMenuOpen(false)}
             title={term.name}
             url={termUrl}
@@ -554,7 +543,6 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
       return renderCompactCard();
     case 'detailed':
       return renderDetailedCard();
-    case 'default':
     default:
       return renderDefaultCard();
   }

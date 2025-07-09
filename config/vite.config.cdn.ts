@@ -1,39 +1,39 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
+import path from 'node:path';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
 // CDN Configuration
 const CDN_CONFIG = {
   // Cloudflare CDN Configuration
   cloudflare: {
-    baseUrl: process.env.CLOUDFLARE_CDN_URL || "https://cdn.aiglossarypro.com",
-    enabled: process.env.USE_CLOUDFLARE_CDN === "true",
+    baseUrl: process.env.CLOUDFLARE_CDN_URL || 'https://cdn.aiglossarypro.com',
+    enabled: process.env.USE_CLOUDFLARE_CDN === 'true',
     zones: {
-      assets: "/assets/",
-      images: "/images/",
-      fonts: "/fonts/"
-    }
+      assets: '/assets/',
+      images: '/images/',
+      fonts: '/fonts/',
+    },
   },
   // AWS CloudFront Configuration
   cloudfront: {
-    baseUrl: process.env.CLOUDFRONT_CDN_URL || "https://d1234567890.cloudfront.net",
-    enabled: process.env.USE_CLOUDFRONT_CDN === "true",
+    baseUrl: process.env.CLOUDFRONT_CDN_URL || 'https://d1234567890.cloudfront.net',
+    enabled: process.env.USE_CLOUDFRONT_CDN === 'true',
     zones: {
-      assets: "/assets/",
-      images: "/images/",
-      fonts: "/fonts/"
-    }
+      assets: '/assets/',
+      images: '/images/',
+      fonts: '/fonts/',
+    },
   },
   // Fallback to local serving
   local: {
-    baseUrl: "",
+    baseUrl: '',
     enabled: !process.env.USE_CLOUDFLARE_CDN && !process.env.USE_CLOUDFRONT_CDN,
     zones: {
-      assets: "/assets/",
-      images: "/images/",
-      fonts: "/fonts/"
-    }
-  }
+      assets: '/assets/',
+      images: '/images/',
+      fonts: '/fonts/',
+    },
+  },
 };
 
 // Determine active CDN configuration
@@ -44,20 +44,20 @@ const getActiveCDN = () => {
 };
 
 const activeCDN = getActiveCDN();
-const isProd = process.env.NODE_ENV === "production";
+const isProd = process.env.NODE_ENV === 'production';
 const useCDN = isProd && (CDN_CONFIG.cloudflare.enabled || CDN_CONFIG.cloudfront.enabled);
 
 // CDN Asset URL Builder
 const buildCDNUrl = (assetPath: string) => {
   if (!useCDN) return assetPath;
-  
+
   // Don't modify absolute URLs
-  if (assetPath.startsWith("http")) return assetPath;
-  
+  if (assetPath.startsWith('http')) return assetPath;
+
   // Build CDN URL
-  const cdnBase = activeCDN.baseUrl.replace(/\/$/, "");
-  const cleanPath = assetPath.startsWith("/") ? assetPath : `/${assetPath}`;
-  
+  const cdnBase = activeCDN.baseUrl.replace(/\/$/, '');
+  const cleanPath = assetPath.startsWith('/') ? assetPath : `/${assetPath}`;
+
   return `${cdnBase}${cleanPath}`;
 };
 
@@ -65,138 +65,48 @@ export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      '@': path.resolve(import.meta.dirname, 'client', 'src'),
+      '@shared': path.resolve(import.meta.dirname, 'shared'),
+      '@assets': path.resolve(import.meta.dirname, 'attached_assets'),
     },
   },
-  root: path.resolve(import.meta.dirname, "client"),
-  
+  root: path.resolve(import.meta.dirname, 'client'),
+
   // CDN Configuration
-  base: useCDN ? activeCDN.baseUrl : "/",
-  
+  base: useCDN ? activeCDN.baseUrl : '/',
+
   define: {
     // Make CDN config available at runtime
     __CDN_CONFIG__: JSON.stringify({
       enabled: useCDN,
       baseUrl: activeCDN.baseUrl,
       zones: activeCDN.zones,
-      provider: CDN_CONFIG.cloudflare.enabled ? "cloudflare" : 
-                CDN_CONFIG.cloudfront.enabled ? "cloudfront" : "local"
+      provider: CDN_CONFIG.cloudflare.enabled
+        ? 'cloudflare'
+        : CDN_CONFIG.cloudfront.enabled
+          ? 'cloudfront'
+          : 'local',
     }),
-    __PRODUCTION__: JSON.stringify(isProd)
+    __PRODUCTION__: JSON.stringify(isProd),
   },
-  
+
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
-    
+
     // CDN-optimized build settings
-    assetsDir: "assets",
+    assetsDir: 'assets',
     assetsInlineLimit: 4096, // Inline small assets
-    
-    rollupOptions: {
-      output: {
-        // Optimized chunk strategy for CDN
-        manualChunks: {
-          // React core libraries - high priority for CDN caching
-          react: ['react', 'react-dom'],
-          
-          // Router and state management - medium priority
-          router: ['wouter', '@tanstack/react-query'],
-          
-          // UI component libraries - medium priority
-          ui: [
-            '@radix-ui/react-dialog',
-            '@radix-ui/react-dropdown-menu',
-            '@radix-ui/react-popover',
-            '@radix-ui/react-toast',
-            '@radix-ui/react-tooltip',
-            '@radix-ui/react-accordion',
-            '@radix-ui/react-avatar',
-            '@radix-ui/react-checkbox',
-            '@radix-ui/react-label',
-            '@radix-ui/react-select',
-            '@radix-ui/react-separator',
-            '@radix-ui/react-switch',
-            '@radix-ui/react-tabs'
-          ],
-          
-          // Utilities - high priority for CDN caching
-          utils: ['lucide-react', 'clsx', 'tailwind-merge', 'class-variance-authority'],
-          
-          // Analytics and vendor libs - medium priority
-          vendor: ['posthog-js', 'next-themes', 'date-fns', 'dompurify'],
-          
-          // Heavy libraries - separate chunks for better caching
-          charts: ['recharts'],
-          katex: ['katex'],
-          mermaid: ['mermaid'],
-          cytoscape: ['cytoscape']
-        },
-        
-        // CDN-optimized file naming with content hashing
-        chunkFileNames: (chunkInfo) => {
-          const facadeModuleId = chunkInfo.facadeModuleId ? 
-            chunkInfo.facadeModuleId.split('/').pop()?.replace(/\.\w+$/, '') : 
-            'chunk';
-          
-          // Use shorter hashes for CDN efficiency
-          return `assets/js/[name]-[hash:8].js`;
-        },
-        
-        entryFileNames: `assets/js/[name]-[hash:8].js`,
-        
-        assetFileNames: (assetInfo) => {
-          const name = assetInfo.name || 'asset';
-          const extType = name.split('.').pop()?.toLowerCase();
-          
-          // Organize assets by type for CDN optimization
-          const assetTypeMap: Record<string, string> = {
-            // Images
-            'png': 'images',
-            'jpg': 'images',
-            'jpeg': 'images',
-            'gif': 'images',
-            'svg': 'images',
-            'webp': 'images',
-            'avif': 'images',
-            'ico': 'images',
-            
-            // Fonts
-            'woff': 'fonts',
-            'woff2': 'fonts',
-            'eot': 'fonts',
-            'ttf': 'fonts',
-            'otf': 'fonts',
-            
-            // Styles
-            'css': 'css',
-            
-            // Other
-            'json': 'data',
-            'txt': 'data',
-            'xml': 'data'
-          };
-          
-          const assetType = assetTypeMap[extType || ''] || 'misc';
-          return `assets/${assetType}/[name]-[hash:8].[ext]`;
-        },
-      },
-      
-      // External dependencies that should be loaded from CDN
-      external: useCDN ? [] : [], // Add external CDN dependencies here if needed
-    },
-    
+
     // Production optimizations
     target: 'es2022',
     minify: 'esbuild',
     cssMinify: 'esbuild',
     cssCodeSplit: true,
-    sourcemap: isProd ? false : true, // No sourcemaps in production for CDN
+    sourcemap: !isProd, // No sourcemaps in production for CDN
     reportCompressedSize: false,
     chunkSizeWarningLimit: 500, // Stricter limits for CDN optimization
-    
+
     // Rollup options for CDN optimization
     rollupOptions: {
       ...((useCDN && {
@@ -208,12 +118,13 @@ export default defineConfig({
           paths: {
             // Map external modules to CDN URLs
             // 'react': 'https://unpkg.com/react@18/umd/react.production.min.js'
-          }
-        }
-      }) || {})
-    }
+          },
+        },
+      }) ||
+        {}),
+    },
   },
-  
+
   server: {
     port: 5173,
     strictPort: true,
@@ -224,7 +135,7 @@ export default defineConfig({
       },
     },
   },
-  
+
   // Preview server configuration (for testing CDN setup)
   preview: {
     port: 4173,
@@ -236,7 +147,7 @@ export default defineConfig({
       },
     },
   },
-  
+
   // Experimental features for CDN optimization
   experimental: {
     renderBuiltUrl(filename, { hostType }) {
@@ -247,27 +158,32 @@ export default defineConfig({
       return { relative: true };
     },
   },
-  
+
   // CSS optimization for CDN
   css: {
     postcss: {
       plugins: [
         // Add PostCSS plugins for CDN optimization
-        ...(isProd ? [
-          require('autoprefixer'),
-          require('cssnano')({
-            preset: ['default', {
-              discardComments: { removeAll: true },
-              normalizeWhitespace: true,
-              minifyFontValues: true,
-              minifySelectors: true,
-            }]
-          })
-        ] : [])
-      ]
-    }
+        ...(isProd
+          ? [
+              require('autoprefixer'),
+              require('cssnano')({
+                preset: [
+                  'default',
+                  {
+                    discardComments: { removeAll: true },
+                    normalizeWhitespace: true,
+                    minifyFontValues: true,
+                    minifySelectors: true,
+                  },
+                ],
+              }),
+            ]
+          : []),
+      ],
+    },
   },
-  
+
   // Optimizations for CDN delivery
   optimizeDeps: {
     include: [
@@ -277,14 +193,14 @@ export default defineConfig({
       '@radix-ui/react-dropdown-menu',
       'lucide-react',
       'clsx',
-      'tailwind-merge'
+      'tailwind-merge',
     ],
     exclude: [
       // Exclude heavy libraries from pre-bundling for better chunking
       'recharts',
       'mermaid',
       'cytoscape',
-      'katex'
-    ]
+      'katex',
+    ],
   },
 });

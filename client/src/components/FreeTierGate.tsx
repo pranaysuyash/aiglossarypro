@@ -1,9 +1,9 @@
-import { ReactNode, useState } from 'react';
+import { Eye, Lock, Zap } from 'lucide-react';
+import { type ReactNode, useState } from 'react';
 import { useTermAccess } from '../hooks/useAccess';
 import { UpgradePrompt } from './UpgradePrompt';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Lock, Eye, Zap } from 'lucide-react';
 
 interface FreeTierGateProps {
   termId?: string;
@@ -13,12 +13,12 @@ interface FreeTierGateProps {
   previewLength?: number;
 }
 
-export function FreeTierGate({ 
-  termId, 
-  children, 
-  fallback, 
-  showPreview = true, 
-  previewLength = 200 
+export function FreeTierGate({
+  termId,
+  children,
+  fallback,
+  showPreview = true,
+  previewLength = 200,
 }: FreeTierGateProps) {
   const { canViewTerm, isLoading, accessStatus } = useTermAccess(termId);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
@@ -46,11 +46,9 @@ export function FreeTierGate({
   // Extract preview text from children if showPreview is true
   const getPreviewText = (content: ReactNode): string => {
     if (typeof content === 'string') {
-      return content.length > previewLength 
-        ? content.substring(0, previewLength) + '...'
-        : content;
+      return content.length > previewLength ? `${content.substring(0, previewLength)}...` : content;
     }
-    
+
     // For React elements, try to extract text content
     if (content && typeof content === 'object' && 'props' in content) {
       const props = (content as any).props;
@@ -58,7 +56,7 @@ export function FreeTierGate({
         return getPreviewText(props.children);
       }
     }
-    
+
     return 'Premium content preview not available...';
   };
 
@@ -71,9 +69,7 @@ export function FreeTierGate({
       {/* Show preview if requested */}
       {showPreview && (
         <div className="relative">
-          <div className="text-gray-600">
-            {getPreviewText(children)}
-          </div>
+          <div className="text-gray-600">{getPreviewText(children)}</div>
           <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/80 to-white pointer-events-none" />
         </div>
       )}
@@ -84,21 +80,21 @@ export function FreeTierGate({
           <div className="mx-auto w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-3">
             <Lock className="h-6 w-6 text-white" />
           </div>
-          
+
           <CardTitle className="text-lg">
             {hasReachedLimit ? 'Daily Limit Reached' : 'Premium Content'}
           </CardTitle>
-          
+
           <CardDescription className="text-center max-w-md mx-auto">
             {hasReachedLimit ? (
               <>
-                You've viewed all {accessStatus?.dailyLimit || 50} free terms today. 
-                Upgrade for unlimited access to our complete AI/ML glossary.
+                You've viewed all {accessStatus?.dailyLimit || 50} free terms today. Upgrade for
+                unlimited access to our complete AI/ML glossary.
               </>
             ) : (
               <>
-                This content is part of our comprehensive AI/ML glossary. 
-                Get unlimited access to all {10372} definitions.
+                This content is part of our comprehensive AI/ML glossary. Get unlimited access to
+                all {10372} definitions.
               </>
             )}
           </CardDescription>
@@ -116,10 +112,10 @@ export function FreeTierGate({
                 <span className="font-medium">{remainingViews}</span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
+                <div
                   className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-                  style={{ 
-                    width: `${Math.max(0, (remainingViews / (accessStatus?.dailyLimit || 50)) * 100)}%` 
+                  style={{
+                    width: `${Math.max(0, (remainingViews / (accessStatus?.dailyLimit || 50)) * 100)}%`,
                   }}
                 />
               </div>
@@ -157,7 +153,7 @@ export function FreeTierGate({
 
           {/* Action buttons */}
           <div className="flex gap-3">
-            <Button 
+            <Button
               onClick={() => setShowUpgradeModal(true)}
               className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
             >
@@ -174,10 +170,7 @@ export function FreeTierGate({
 
       {/* Upgrade modal */}
       {showUpgradeModal && (
-        <UpgradePrompt 
-          variant="modal" 
-          onClose={() => setShowUpgradeModal(false)} 
-        />
+        <UpgradePrompt variant="modal" onClose={() => setShowUpgradeModal(false)} />
       )}
     </div>
   );
@@ -192,7 +185,7 @@ export function withFreeTierGate<P extends object>(
 ) {
   return function WrappedComponent(props: P & { termId?: string }) {
     const { termId, ...componentProps } = props;
-    
+
     return (
       <FreeTierGate termId={termId} {...gateProps}>
         <Component {...(componentProps as P)} />

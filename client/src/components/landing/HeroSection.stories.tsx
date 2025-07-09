@@ -1,8 +1,7 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { HeroSection } from './HeroSection';
-
+import React from 'react';
 import { setMockCountryPricing } from '@/hooks/__mocks__/useCountryPricing';
+import { HeroSection } from './HeroSection';
 
 const createMockPricing = (overrides = {}) => ({
   basePrice: 299,
@@ -33,13 +32,12 @@ const meta: Meta<typeof HeroSection> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Hero section component for the landing page with compelling headlines, social proof, and clear call-to-action.',
+        component:
+          'Hero section component for the landing page with compelling headlines, social proof, and clear call-to-action.',
       },
     },
   },
-  decorators: [
-    HeroSectionDecorator,
-  ],
+  decorators: [HeroSectionDecorator],
 };
 
 export default meta;
@@ -49,7 +47,8 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Default hero section with gradient background, compelling copy, and prominent CTA button.',
+        story:
+          'Default hero section with gradient background, compelling copy, and prominent CTA button.',
       },
     },
   },
@@ -141,17 +140,17 @@ export const WithCustomContent: Story = {
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
               Your AI/ML Knowledge Hub
             </h1>
-            
+
             <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
-              The ultimate reference for AI professionals with comprehensive definitions, 
-              practical examples, and cutting-edge insights.
+              The ultimate reference for AI professionals with comprehensive definitions, practical
+              examples, and cutting-edge insights.
             </p>
-            
+
             <div className="space-y-4">
               <button className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-xl transition-all transform hover:scale-105">
                 Get Instant Access
               </button>
-              
+
               <p className="text-gray-400 text-sm">
                 Join thousands of professionals • Lifetime access for $299
               </p>
@@ -160,7 +159,7 @@ export const WithCustomContent: Story = {
         </section>
       );
     };
-    
+
     return <CustomHeroSection />;
   },
   parameters: {
@@ -176,7 +175,7 @@ export const InteractiveDemo: Story = {
   render: () => {
     const [ctaClicked, setCtaClicked] = React.useState(false);
     const [previewClicked, setPreviewClicked] = React.useState(false);
-    
+
     const InteractiveHero = () => {
       return (
         <div className="space-y-8">
@@ -190,42 +189,43 @@ export const InteractiveDemo: Story = {
               <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
                 Master AI & Machine Learning
               </h1>
-              
+
               <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
-                The most comprehensive AI/ML reference with <span className="text-purple-300 font-semibold">10,000+ terms</span>, 
-                code examples, and real-world applications.
+                The most comprehensive AI/ML reference with{' '}
+                <span className="text-purple-300 font-semibold">10,000+ terms</span>, code examples,
+                and real-world applications.
               </p>
-              
+
               <div className="space-y-4">
-                <button 
+                <button
                   onClick={() => setCtaClicked(!ctaClicked)}
                   className={`px-8 py-4 text-lg font-semibold rounded-lg shadow-xl transition-all transform hover:scale-105 ${
-                    ctaClicked 
-                      ? 'bg-green-600 hover:bg-green-700' 
+                    ctaClicked
+                      ? 'bg-green-600 hover:bg-green-700'
                       : 'bg-purple-600 hover:bg-purple-700'
                   } text-white`}
                 >
                   {ctaClicked ? 'Clicked! ✓' : 'Start Your 7-Day Free Trial'}
                 </button>
-                
+
                 <p className="text-gray-400 text-sm">
                   No credit card required • Instant access • Then $249 one-time for lifetime access
                 </p>
-                
+
                 <div className="pt-4">
-                  <button 
+                  <button
                     onClick={() => setPreviewClicked(!previewClicked)}
                     className={`border text-white hover:bg-white/10 px-6 py-3 rounded-lg transition-all ${
                       previewClicked ? 'border-green-400 bg-green-400/10' : 'border-white/30'
                     }`}
                   >
-                    {previewClicked ? 'Preview Clicked! ✓' : 'See What\'s Inside'}
+                    {previewClicked ? 'Preview Clicked! ✓' : "See What's Inside"}
                   </button>
                 </div>
               </div>
             </div>
           </section>
-          
+
           {/* Interaction feedback */}
           <div className="max-w-2xl mx-auto p-4 bg-gray-50 rounded-lg">
             <h3 className="font-semibold mb-2">Interaction Status:</h3>
@@ -237,7 +237,7 @@ export const InteractiveDemo: Story = {
         </div>
       );
     };
-    
+
     return <InteractiveHero />;
   },
   parameters: {
@@ -253,13 +253,13 @@ export const A11yOptimized: Story = {
   render: () => {
     const AccessibleHeroSection = () => {
       return (
-        <section 
+        <section
           className="bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 text-white py-20 px-4"
           aria-labelledby="hero-heading"
           role="banner"
         >
           <div className="max-w-7xl mx-auto text-center">
-            <div 
+            <div
               className="mb-6 px-4 py-2 text-sm font-medium bg-white/10 text-white rounded-full inline-block"
               role="status"
               aria-label="Social proof: Join 1,000+ AI/ML professionals"
@@ -267,23 +267,26 @@ export const A11yOptimized: Story = {
               👥 Join 1,000+ AI/ML professionals
             </div>
 
-            <h1 
+            <h1
               id="hero-heading"
               className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6"
             >
               Master AI & Machine Learning
             </h1>
-            
-            <p 
+
+            <p
               className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed"
               aria-describedby="hero-description"
             >
               The most comprehensive AI/ML reference with{' '}
-              <span className="text-purple-300 font-semibold">10,000+ terms</span>, 
-              code examples, and real-world applications.
+              <span className="text-purple-300 font-semibold">10,000+ terms</span>, code examples,
+              and real-world applications.
             </p>
-            
-            <ul className="flex flex-wrap justify-center gap-6 mb-10 text-sm text-gray-300" aria-label="Key features">
+
+            <ul
+              className="flex flex-wrap justify-center gap-6 mb-10 text-sm text-gray-300"
+              aria-label="Key features"
+            >
               <li className="flex items-center gap-2">
                 <span aria-hidden="true">📚</span>
                 <span>10,000+ Definitions</span>
@@ -299,20 +302,22 @@ export const A11yOptimized: Story = {
             </ul>
 
             <div className="space-y-4" role="group" aria-label="Call to action buttons">
-              <button 
+              <button
                 className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-xl transition-all transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-purple-300 focus:ring-opacity-50"
                 aria-describedby="cta-description"
               >
                 Start Your 7-Day Free Trial
-                <span className="ml-2" aria-hidden="true">→</span>
+                <span className="ml-2" aria-hidden="true">
+                  →
+                </span>
               </button>
-              
+
               <p id="cta-description" className="text-gray-400 text-sm">
                 No credit card required • Instant access • Then $249 one-time for lifetime access
               </p>
-              
+
               <div className="pt-4">
-                <button 
+                <button
                   className="border-white/30 text-white hover:bg-white/10 px-6 py-3 border rounded-lg transition-all focus:outline-none focus:ring-4 focus:ring-white focus:ring-opacity-30"
                   aria-label="See what's inside the AI/ML Glossary"
                 >
@@ -328,13 +333,14 @@ export const A11yOptimized: Story = {
         </section>
       );
     };
-    
+
     return <AccessibleHeroSection />;
   },
   parameters: {
     docs: {
       description: {
-        story: 'Hero section with enhanced accessibility features including ARIA labels, roles, and focus management.',
+        story:
+          'Hero section with enhanced accessibility features including ARIA labels, roles, and focus management.',
       },
     },
   },
@@ -355,13 +361,13 @@ export const PerformanceOptimized: Story = {
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight mb-6">
               Master AI & Machine Learning
             </h1>
-            
+
             <p className="text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto leading-relaxed">
               The most comprehensive AI/ML reference with{' '}
-              <strong className="text-purple-300">10,000+ terms</strong>, 
-              code examples, and real-world applications.
+              <strong className="text-purple-300">10,000+ terms</strong>, code examples, and
+              real-world applications.
             </p>
-            
+
             {/* Optimized list structure */}
             <ul className="flex flex-wrap justify-center gap-6 mb-10 text-sm text-gray-300">
               <li>📚 10,000+ Definitions</li>
@@ -374,11 +380,11 @@ export const PerformanceOptimized: Story = {
               <button className="bg-purple-600 hover:bg-purple-700 text-white px-8 py-4 text-lg font-semibold rounded-lg shadow-xl transition-colors">
                 Start Your 7-Day Free Trial →
               </button>
-              
+
               <p className="text-gray-400 text-sm">
                 No credit card required • Instant access • Then $249 one-time
               </p>
-              
+
               <button className="border-white/30 text-white hover:bg-white/10 px-6 py-3 border rounded-lg transition-colors">
                 See What's Inside
               </button>
@@ -391,13 +397,14 @@ export const PerformanceOptimized: Story = {
         </section>
       );
     };
-    
+
     return <OptimizedHeroSection />;
   },
   parameters: {
     docs: {
       description: {
-        story: 'Performance-optimized hero section with minimal DOM manipulation and efficient rendering.',
+        story:
+          'Performance-optimized hero section with minimal DOM manipulation and efficient rendering.',
       },
     },
   },
@@ -411,25 +418,21 @@ export const ComparisonVariants: Story = {
         <h3 className="text-lg font-semibold mb-4 px-4">Variant A: Standard Hero</h3>
         <HeroSection />
       </div>
-      
+
       {/* Variant B: Minimal */}
       <div>
         <h3 className="text-lg font-semibold mb-4 px-4">Variant B: Minimal Hero</h3>
         <section className="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-16 px-4">
           <div className="max-w-4xl mx-auto text-center">
-            <h1 className="text-4xl md:text-5xl font-bold mb-6">
-              AI/ML Glossary Pro
-            </h1>
-            <p className="text-xl mb-8">
-              10,000+ AI/ML terms in one place
-            </p>
+            <h1 className="text-4xl md:text-5xl font-bold mb-6">AI/ML Glossary Pro</h1>
+            <p className="text-xl mb-8">10,000+ AI/ML terms in one place</p>
             <button className="bg-white text-blue-600 px-8 py-3 text-lg font-semibold rounded-lg hover:bg-gray-100">
               Get Started - $249
             </button>
           </div>
         </section>
       </div>
-      
+
       {/* Variant C: Feature-Heavy */}
       <div>
         <h3 className="text-lg font-semibold mb-4 px-4">Variant C: Feature-Heavy Hero</h3>
@@ -438,18 +441,18 @@ export const ComparisonVariants: Story = {
             <div className="mb-8 px-6 py-3 text-sm font-medium bg-gradient-to-r from-purple-500 to-pink-500 text-white rounded-full inline-block">
               🔥 Limited Time: 50% Off Launch Price
             </div>
-            
+
             <h1 className="text-5xl md:text-7xl font-bold tracking-tight mb-8">
               The Complete AI/ML Reference
             </h1>
-            
+
             <p className="text-2xl md:text-3xl text-gray-300 mb-12 max-w-5xl mx-auto">
               Master every AI concept with our comprehensive glossary featuring{' '}
               <span className="text-purple-300 font-bold">10,000+ terms</span>,{' '}
               <span className="text-blue-300 font-bold">practical examples</span>, and{' '}
               <span className="text-green-300 font-bold">real-world applications</span>
             </p>
-            
+
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-12 max-w-4xl mx-auto">
               <div className="text-center">
                 <div className="text-3xl font-bold text-purple-300">10,000+</div>
@@ -468,12 +471,12 @@ export const ComparisonVariants: Story = {
                 <div className="text-sm">Access</div>
               </div>
             </div>
-            
+
             <div className="space-y-6">
               <button className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white px-12 py-5 text-xl font-bold rounded-xl shadow-2xl transition-all transform hover:scale-105">
                 Get Lifetime Access - Only $149 (50% Off)
               </button>
-              
+
               <p className="text-gray-300">
                 ⏰ Offer expires in 24 hours • 💳 No subscription • 🔄 30-day refund
               </p>

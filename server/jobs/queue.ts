@@ -3,14 +3,15 @@
  * Configures BullMQ queues, workers, and event listeners
  */
 
-import { Queue, Worker, QueueEvents, Job, ConnectionOptions } from 'bullmq';
+import { type ConnectionOptions, type Job, Queue, QueueEvents, Worker } from 'bullmq';
 import Redis from 'ioredis';
 import { log as logger } from '../utils/logger';
-import { JobType, JobOptions, JobProgressUpdate, RetryPolicy, JobPriority } from './types';
+import { type JobOptions, JobPriority, type JobProgressUpdate, JobType } from './types';
 
 // Re-export types for convenience
 export { JobType, JobPriority };
-import { EventEmitter } from 'events';
+
+import { EventEmitter } from 'node:events';
 
 // Redis connection configuration
 const redisConnection: ConnectionOptions = {
@@ -65,17 +66,19 @@ export class JobQueueManager extends EventEmitter {
 
       // Initialize queues for each job type
       await this.initializeQueues();
-      
+
       // Initialize workers
       await this.initializeWorkers();
-      
+
       // Initialize queue event listeners
       await this.initializeQueueEvents();
 
       this.isInitialized = true;
       logger.info('Job queue manager initialized successfully');
     } catch (error) {
-      logger.error('Failed to initialize job queue manager:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Failed to initialize job queue manager:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -280,7 +283,9 @@ export class JobQueueManager extends EventEmitter {
             logger.info(`Job ${job.id} completed successfully`);
             return result;
           } catch (error) {
-            logger.error(`Job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
+            logger.error(`Job ${job.id} failed:`, {
+              error: error instanceof Error ? error.message : String(error),
+            });
             throw error;
           }
         },
@@ -341,11 +346,7 @@ export class JobQueueManager extends EventEmitter {
   /**
    * Add a job to the queue
    */
-  async addJob<T = any>(
-    type: JobType,
-    data: T,
-    options?: JobOptions
-  ): Promise<string> {
+  async addJob<T = any>(type: JobType, data: T, options?: JobOptions): Promise<string> {
     const queue = this.queues.get(type);
     if (!queue) {
       throw new Error(`Queue not found for job type: ${type}`);
@@ -382,7 +383,7 @@ export class JobQueueManager extends EventEmitter {
     }));
 
     const addedJobs = await queue.addBulk(bulkJobs);
-    const jobIds = addedJobs.map(job => job.id!);
+    const jobIds = addedJobs.map((job) => job.id!);
 
     logger.info(`Added ${jobIds.length} jobs to queue ${queue.name}`);
     return jobIds;
@@ -500,7 +501,7 @@ export class JobQueueManager extends EventEmitter {
   async getAllQueueStats(): Promise<Record<string, any>> {
     const stats: Record<string, any> = {};
 
-    for (const [type, queue] of this.queues) {
+    for (const [type, _queue] of this.queues) {
       stats[type] = await this.getQueueStats(type);
     }
 

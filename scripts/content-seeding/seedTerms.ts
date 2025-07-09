@@ -2,13 +2,13 @@
 
 /**
  * Content Seeding Script for AI/ML Glossary
- * 
+ *
  * This script generates high-quality AI/ML terms using the existing AI service
  * and populates the database with comprehensive content including all 42 sections.
- * 
+ *
  * Usage:
  * npm run seed:terms [options]
- * 
+ *
  * Options:
  * --category <category>   Generate terms for specific category
  * --count <number>        Number of terms to generate (default: 10)
@@ -16,14 +16,13 @@
  * --validate-only        Only validate existing terms without generating new ones
  */
 
-import { db } from '../../server/db';
+import { performance } from 'node:perf_hooks';
+import { eq } from 'drizzle-orm';
 import { aiService } from '../../server/aiService';
-import { categories, terms, termSubcategories } from '../../shared/schema';
-import { eq, and, not, inArray } from 'drizzle-orm';
-import { ESSENTIAL_AI_TERMS } from './data/essentialTerms';
-import { COMPLETE_CONTENT_SECTIONS } from '../complete_42_sections_config';
+import { db } from '../../server/db';
 import { log as logger } from '../../server/utils/logger';
-import { performance } from 'perf_hooks';
+import { categories, terms } from '../../shared/schema';
+import { ESSENTIAL_AI_TERMS } from './data/essentialTerms';
 
 // Command line arguments
 const args = process.argv.slice(2);
@@ -73,7 +72,7 @@ async function seedTerms(): Promise<void> {
     skipped: 0,
     totalTime: 0,
     averageTimePerTerm: 0,
-    categoriesProcessed: []
+    categoriesProcessed: [],
   };
 
   try {
@@ -85,8 +84,10 @@ async function seedTerms(): Promise<void> {
     // Step 1: Load existing categories and terms
     const existingCategories = await db.select().from(categories);
     const existingTerms = await db.select().from(terms);
-    
-    logger.info(`Found ${existingCategories.length} categories and ${existingTerms.length} existing terms`);
+
+    logger.info(
+      `Found ${existingCategories.length} categories and ${existingTerms.length} existing terms`
+    );
 
     if (isValidateOnly) {
       await validateExistingTerms(existingTerms);
@@ -107,11 +108,11 @@ async function seedTerms(): Promise<void> {
     for (const config of termConfigs) {
       try {
         const termStart = performance.now();
-        
+
         logger.info(`🎯 Generating term for category: ${config.category}`);
-        
+
         const newTerm = await generateSingleTerm(config, existingTerms);
-        
+
         if (newTerm) {
           if (!isDryRun) {
             await saveTerm(newTerm, config);
@@ -125,11 +126,10 @@ async function seedTerms(): Promise<void> {
 
         stats.totalGenerated++;
         stats.totalTime += performance.now() - termStart;
-        
+
         if (!stats.categoriesProcessed.includes(config.category)) {
           stats.categoriesProcessed.push(config.category);
         }
-
       } catch (error) {
         logger.error(`Error generating term for ${config.category}:`, error);
         stats.errors++;
@@ -147,7 +147,6 @@ async function seedTerms(): Promise<void> {
     stats.averageTimePerTerm = stats.totalTime / Math.max(stats.totalGenerated, 1);
 
     reportResults(stats);
-
   } catch (error) {
     logger.error('Fatal error in seeding process:', error);
     process.exit(1);
@@ -164,13 +163,15 @@ async function determineTermsToGenerate(
   count: number
 ): Promise<TermGenerationConfig[]> {
   const configs: TermGenerationConfig[] = [];
-  
+
   // Get existing term names for deduplication
-  const existingTermNames = new Set(existingTerms.map(t => t.name.toLowerCase()));
-  
+  const existingTermNames = new Set(existingTerms.map((t) => t.name.toLowerCase()));
+
   // Filter categories
-  const categoriesToProcess = targetCategory 
-    ? existingCategories.filter(cat => cat.name.toLowerCase().includes(targetCategory.toLowerCase()))
+  const categoriesToProcess = targetCategory
+    ? existingCategories.filter((cat) =>
+        cat.name.toLowerCase().includes(targetCategory.toLowerCase())
+      )
     : existingCategories;
 
   if (categoriesToProcess.length === 0) {
@@ -180,21 +181,21 @@ async function determineTermsToGenerate(
   // Get essential terms for each category
   for (const category of categoriesToProcess) {
     const categoryTerms = ESSENTIAL_AI_TERMS[category.name] || [];
-    
+
     // Filter out terms that already exist
-    const missingTerms = categoryTerms.filter(term => 
-      !existingTermNames.has(term.name.toLowerCase())
+    const missingTerms = categoryTerms.filter(
+      (term) => !existingTermNames.has(term.name.toLowerCase())
     );
 
     // Add configurations for missing terms
     const termsToAdd = missingTerms.slice(0, Math.ceil(count / categoriesToProcess.length));
-    
+
     for (const term of termsToAdd) {
       configs.push({
         category: category.name,
         priority: term.priority,
         complexity: term.complexity,
-        focusAreas: term.focusAreas || []
+        focusAreas: term.focusAreas || [],
       });
     }
   }
@@ -203,7 +204,7 @@ async function determineTermsToGenerate(
   if (configs.length < count) {
     const remainingCount = count - configs.length;
     const additionalConfigs = await generateTermSuggestions(
-      existingTerms.map(t => t.name),
+      existingTerms.map((t) => t.name),
       existingCategories,
       remainingCount,
       targetCategory
@@ -230,11 +231,11 @@ async function generateTermSuggestions(
       focusCategory
     );
 
-    return suggestions.suggestions.slice(0, count).map(suggestion => ({
+    return suggestions.suggestions.slice(0, count).map((suggestion) => ({
       category: suggestion.category,
       priority: 'medium' as const,
       complexity: 'intermediate' as const,
-      focusAreas: [suggestion.term]
+      focusAreas: [suggestion.term],
     }));
   } catch (error) {
     logger.error('Error generating term suggestions:', error);
@@ -252,7 +253,7 @@ async function generateSingleTerm(
   try {
     // First, generate the basic term definition
     const termSuggestion = await aiService.generateTermSuggestions(
-      existingTerms.map(t => t.name),
+      existingTerms.map((t) => t.name),
       [{ name: config.category, id: 'temp' }],
       config.category
     );
@@ -263,7 +264,7 @@ async function generateSingleTerm(
     }
 
     const suggestion = termSuggestion.suggestions[0];
-    
+
     // Generate comprehensive definition
     const definition = await aiService.generateDefinition(
       suggestion.term,
@@ -280,12 +281,11 @@ async function generateSingleTerm(
       applications: definition.applications || [],
       mathFormulation: definition.mathFormulation || null,
       references: [],
-      viewCount: 0
+      viewCount: 0,
     };
 
     logger.info(`✅ Generated term: ${newTerm.name}`);
     return newTerm;
-
   } catch (error) {
     logger.error(`Error generating term for ${config.category}:`, error);
     return null;
@@ -311,13 +311,15 @@ async function saveTerm(termData: any, config: TermGenerationConfig): Promise<vo
     const categoryId = categoryResult[0].id;
 
     // Insert the term
-    const insertedTerm = await db.insert(terms).values({
-      ...termData,
-      categoryId
-    }).returning();
+    const insertedTerm = await db
+      .insert(terms)
+      .values({
+        ...termData,
+        categoryId,
+      })
+      .returning();
 
     logger.info(`💾 Saved term: ${termData.name} (ID: ${insertedTerm[0].id})`);
-
   } catch (error) {
     logger.error(`Error saving term ${termData.name}:`, error);
     throw error;
@@ -329,21 +331,17 @@ async function saveTerm(termData: any, config: TermGenerationConfig): Promise<vo
  */
 async function generateComprehensiveContent(newTermCount: number): Promise<void> {
   logger.info(`🔄 Generating comprehensive content for ${newTermCount} new terms`);
-  
+
   try {
     // Get the most recently created terms
-    const recentTerms = await db
-      .select()
-      .from(terms)
-      .orderBy(terms.createdAt)
-      .limit(newTermCount);
+    const recentTerms = await db.select().from(terms).orderBy(terms.createdAt).limit(newTermCount);
 
     let processedCount = 0;
-    
+
     for (const term of recentTerms) {
       try {
         logger.info(`📝 Generating 42-section content for: ${term.name}`);
-        
+
         // Generate content for selected important sections
         const prioritySections = [
           'How It Works',
@@ -351,35 +349,29 @@ async function generateComprehensiveContent(newTermCount: number): Promise<void>
           'Advantages and Disadvantages',
           'Common Challenges and Pitfalls',
           'Best Practices',
-          'Related Concepts'
+          'Related Concepts',
         ];
 
         for (const sectionName of prioritySections) {
           try {
-            const content = await aiService.generateSectionContent(
-              term.name,
-              sectionName
-            );
-            
+            const content = await aiService.generateSectionContent(term.name, sectionName);
+
             logger.info(`  ✅ Generated ${sectionName}: ${content.length} chars`);
-            
+
             // For now, we'll log this content. In a full implementation,
             // you'd want to store this in a sections table or extend the terms table
-            
           } catch (error) {
             logger.error(`  ❌ Failed to generate ${sectionName}:`, error);
           }
         }
 
         processedCount++;
-        
       } catch (error) {
         logger.error(`Error generating content for ${term.name}:`, error);
       }
     }
 
     logger.info(`📊 Generated comprehensive content for ${processedCount}/${newTermCount} terms`);
-    
   } catch (error) {
     logger.error('Error in comprehensive content generation:', error);
   }
@@ -390,33 +382,33 @@ async function generateComprehensiveContent(newTermCount: number): Promise<void>
  */
 async function validateExistingTerms(existingTerms: any[]): Promise<void> {
   logger.info('🔍 Validating existing terms...');
-  
+
   let validCount = 0;
   let invalidCount = 0;
   const issues: string[] = [];
-  
+
   for (const term of existingTerms) {
     const validation = validateTerm(term);
-    
+
     if (validation.isValid) {
       validCount++;
     } else {
       invalidCount++;
       issues.push(`${term.name}: ${validation.issues.join(', ')}`);
     }
-    
+
     if (validation.completeness < 70) {
       logger.warn(`Low completeness for ${term.name}: ${validation.completeness}%`);
     }
   }
-  
+
   logger.info(`📊 Validation Results:`);
   logger.info(`  Valid terms: ${validCount}`);
   logger.info(`  Invalid terms: ${invalidCount}`);
-  
+
   if (issues.length > 0) {
     logger.warn(`Top issues:`);
-    issues.slice(0, 10).forEach(issue => logger.warn(`  - ${issue}`));
+    issues.slice(0, 10).forEach((issue) => logger.warn(`  - ${issue}`));
   }
 }
 
@@ -426,52 +418,62 @@ async function validateExistingTerms(existingTerms: any[]): Promise<void> {
 function validateTerm(term: any): TermValidationResult {
   const issues: string[] = [];
   const recommendations: string[] = [];
-  
+
   // Check basic requirements
   if (!term.name || term.name.trim().length < 2) {
     issues.push('Name is too short or missing');
   }
-  
+
   if (!term.definition || term.definition.trim().length < 50) {
     issues.push('Definition is too short or missing');
   }
-  
+
   if (!term.shortDefinition || term.shortDefinition.trim().length < 20) {
     issues.push('Short definition is too short or missing');
   }
-  
+
   if (!term.categoryId) {
     issues.push('Category is not assigned');
   }
-  
+
   // Check for completeness
   let completeness = 0;
-  const fields = ['name', 'definition', 'shortDefinition', 'categoryId', 'characteristics', 'applications'];
-  
+  const fields = [
+    'name',
+    'definition',
+    'shortDefinition',
+    'categoryId',
+    'characteristics',
+    'applications',
+  ];
+
   for (const field of fields) {
-    if (term[field] && (typeof term[field] === 'string' ? term[field].trim().length > 0 : term[field].length > 0)) {
+    if (
+      term[field] &&
+      (typeof term[field] === 'string' ? term[field].trim().length > 0 : term[field].length > 0)
+    ) {
       completeness += 100 / fields.length;
     }
   }
-  
+
   // Add recommendations
   if (completeness < 80) {
     recommendations.push('Add more detailed content');
   }
-  
+
   if (!term.characteristics || term.characteristics.length === 0) {
     recommendations.push('Add key characteristics');
   }
-  
+
   if (!term.applications || term.applications.length === 0) {
     recommendations.push('Add practical applications');
   }
-  
+
   return {
     isValid: issues.length === 0,
     issues,
     recommendations,
-    completeness: Math.round(completeness)
+    completeness: Math.round(completeness),
   };
 }
 
@@ -488,14 +490,17 @@ function reportResults(stats: GenerationStats): void {
   logger.info(`Total Time: ${(stats.totalTime / 1000).toFixed(2)}s`);
   logger.info(`Average Time per Term: ${(stats.averageTimePerTerm / 1000).toFixed(2)}s`);
   logger.info(`Categories Processed: ${stats.categoriesProcessed.join(', ')}`);
-  
-  const successRate = ((stats.successfullyCreated / Math.max(stats.totalGenerated, 1)) * 100).toFixed(1);
+
+  const successRate = (
+    (stats.successfullyCreated / Math.max(stats.totalGenerated, 1)) *
+    100
+  ).toFixed(1);
   logger.info(`Success Rate: ${successRate}%`);
-  
+
   if (stats.errors > 0) {
     logger.warn(`⚠️  ${stats.errors} errors occurred during generation`);
   }
-  
+
   if (stats.successfullyCreated > 0) {
     logger.info(`✅ Successfully populated ${stats.successfullyCreated} new terms!`);
   }
@@ -505,10 +510,10 @@ function reportResults(stats: GenerationStats): void {
  * Main execution
  */
 if (require.main === module) {
-  seedTerms().catch(error => {
+  seedTerms().catch((error) => {
     logger.error('Seeding failed:', error);
     process.exit(1);
   });
 }
 
-export { seedTerms, validateTerm, TermValidationResult };
+export { seedTerms, validateTerm, type TermValidationResult };

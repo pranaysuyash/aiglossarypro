@@ -2,10 +2,10 @@
 
 /**
  * Rollback Script: Revert Hierarchical Migration
- * 
+ *
  * This script rolls back the hierarchical migration by restoring data from backup tables
  * and reverting the database to its previous flat structure state.
- * 
+ *
  * Key operations:
  * 1. Identify backup tables from migration
  * 2. Restore sections, section_items, and user_progress from backups
@@ -14,13 +14,14 @@
  * 5. Verify rollback integrity
  */
 
-import * as dotenv from "dotenv";
+import * as dotenv from 'dotenv';
+
 dotenv.config();
 
 import { Pool } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { sql } from 'drizzle-orm';
 import * as schema from '@shared/enhancedSchema';
+import { sql } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 
 interface BackupTable {
   tableName: string;
@@ -44,7 +45,7 @@ class HierarchicalRollback {
 
   constructor(dryRun: boolean = false) {
     if (!process.env.DATABASE_URL) {
-      throw new Error("DATABASE_URL must be set");
+      throw new Error('DATABASE_URL must be set');
     }
 
     this.pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -58,11 +59,11 @@ class HierarchicalRollback {
   async rollback(backupTimestamp?: string): Promise<void> {
     console.log('🔄 Starting hierarchical migration rollback...');
     console.log(`📊 Mode: ${this.isDryRun ? 'DRY RUN' : 'LIVE ROLLBACK'}`);
-    
+
     try {
       // Step 1: Validate current state and find backup tables
       const backupTables = await this.findBackupTables(backupTimestamp);
-      
+
       if (backupTables.length === 0) {
         throw new Error('No backup tables found. Cannot perform rollback.');
       }
@@ -92,7 +93,6 @@ class HierarchicalRollback {
 
       console.log('✅ Rollback completed successfully!');
       console.log(`📁 Rollback log saved to: ${this.logFile}`);
-
     } catch (error) {
       console.error('❌ Rollback failed:', error);
       this.logError('Rollback failed', error);
@@ -130,10 +130,12 @@ class HierarchicalRollback {
 
     for (const row of result.rows) {
       const tableName = row.table_name as string;
-      
+
       // Determine original table name
-      const originalTable = tableName.includes('sections_backup_') 
-        ? (tableName.includes('section_items_backup_') ? 'section_items' : 'sections')
+      const originalTable = tableName.includes('sections_backup_')
+        ? tableName.includes('section_items_backup_')
+          ? 'section_items'
+          : 'sections'
         : 'user_progress';
 
       // Get record count
@@ -144,7 +146,7 @@ class HierarchicalRollback {
       backupTables.push({
         tableName: originalTable,
         backupTableName: tableName,
-        recordCount: parseInt(countResult.rows[0].count as string)
+        recordCount: parseInt(countResult.rows[0].count as string),
       });
 
       this.logInfo(`Found backup table: ${tableName} (${countResult.rows[0].count} records)`);
@@ -160,7 +162,7 @@ class HierarchicalRollback {
     console.log('🔍 Validating backup table integrity...');
 
     const requiredTables = ['sections', 'section_items', 'user_progress'];
-    const foundTables = [...new Set(backupTables.map(bt => bt.tableName))];
+    const foundTables = [...new Set(backupTables.map((bt) => bt.tableName))];
 
     for (const requiredTable of requiredTables) {
       if (!foundTables.includes(requiredTable)) {
@@ -169,8 +171,8 @@ class HierarchicalRollback {
     }
 
     // Check for orphaned section_items in backup
-    const sectionsBackup = backupTables.find(bt => bt.tableName === 'sections');
-    const sectionItemsBackup = backupTables.find(bt => bt.tableName === 'section_items');
+    const sectionsBackup = backupTables.find((bt) => bt.tableName === 'sections');
+    const sectionItemsBackup = backupTables.find((bt) => bt.tableName === 'section_items');
 
     if (sectionsBackup && sectionItemsBackup) {
       const orphanedItems = await this.db.execute(
@@ -201,13 +203,13 @@ class HierarchicalRollback {
 
     for (const table of hierarchicalTables) {
       const safetyBackupName = `${table}_rollback_safety_${timestamp}`;
-      
+
       if (!this.isDryRun) {
         await this.db.execute(
           sql`CREATE TABLE ${sql.identifier(safetyBackupName)} AS SELECT * FROM ${sql.identifier(table)}`
         );
       }
-      
+
       this.logInfo(`Created safety backup: ${safetyBackupName}`);
     }
   }
@@ -223,9 +225,7 @@ class HierarchicalRollback {
 
       if (!this.isDryRun) {
         // Truncate current table
-        await this.db.execute(
-          sql`TRUNCATE TABLE ${sql.identifier(backup.tableName)} CASCADE`
-        );
+        await this.db.execute(sql`TRUNCATE TABLE ${sql.identifier(backup.tableName)} CASCADE`);
 
         // Restore from backup
         await this.db.execute(
@@ -238,11 +238,11 @@ class HierarchicalRollback {
         );
 
         const restoredRecords = parseInt(restoredCount.rows[0].count as string);
-        
+
         if (restoredRecords !== backup.recordCount) {
           throw new Error(
             `Restoration verification failed for ${backup.tableName}: ` +
-            `expected ${backup.recordCount}, got ${restoredRecords}`
+              `expected ${backup.recordCount}, got ${restoredRecords}`
           );
         }
       }
@@ -261,21 +261,19 @@ class HierarchicalRollback {
       'term_sections',
       'interactive_elements',
       'term_relationships',
-      'display_configs'
+      'display_configs',
     ];
 
     for (const table of hierarchicalTables) {
       if (!this.isDryRun) {
-        const deleteResult = await this.db.execute(
-          sql`DELETE FROM ${sql.identifier(table)}`
-        );
-        
+        const deleteResult = await this.db.execute(sql`DELETE FROM ${sql.identifier(table)}`);
+
         this.logInfo(`Cleaned up ${table}: ${deleteResult.rowsAffected || 0} records removed`);
       } else {
         const countResult = await this.db.execute(
           sql`SELECT COUNT(*) as count FROM ${sql.identifier(table)}`
         );
-        
+
         this.logInfo(`Would clean up ${table}: ${countResult.rows[0].count} records`);
       }
     }
@@ -311,9 +309,7 @@ class HierarchicalRollback {
     console.log('🔍 Verifying rollback integrity...');
 
     // Check that flat structure is restored
-    const sectionsCount = await this.db.execute(
-      sql`SELECT COUNT(*) as count FROM sections`
-    );
+    const sectionsCount = await this.db.execute(sql`SELECT COUNT(*) as count FROM sections`);
 
     const sectionItemsCount = await this.db.execute(
       sql`SELECT COUNT(*) as count FROM section_items`
@@ -334,7 +330,9 @@ class HierarchicalRollback {
     );
 
     if (parseInt(termSectionsCount.rows[0].count as string) > 0) {
-      this.logWarning(`term_sections table still contains ${termSectionsCount.rows[0].count} records`);
+      this.logWarning(
+        `term_sections table still contains ${termSectionsCount.rows[0].count} records`
+      );
     } else {
       this.logSuccess('Hierarchical structures successfully cleaned');
     }
@@ -427,7 +425,7 @@ class HierarchicalRollback {
       type: 'info',
       message,
       timestamp: new Date().toISOString(),
-      data
+      data,
     });
     console.log(`ℹ️  ${message}`);
   }
@@ -437,7 +435,7 @@ class HierarchicalRollback {
       type: 'success',
       message,
       timestamp: new Date().toISOString(),
-      data
+      data,
     });
     console.log(`✅ ${message}`);
   }
@@ -447,7 +445,7 @@ class HierarchicalRollback {
       type: 'warning',
       message,
       timestamp: new Date().toISOString(),
-      data
+      data,
     });
     console.warn(`⚠️  ${message}`);
   }
@@ -457,7 +455,7 @@ class HierarchicalRollback {
       type: 'error',
       message,
       timestamp: new Date().toISOString(),
-      data: { error: error.message, stack: error.stack }
+      data: { error: error.message, stack: error.stack },
     });
     console.error(`❌ ${message}`);
   }
@@ -466,15 +464,15 @@ class HierarchicalRollback {
    * Save rollback log to file
    */
   private async saveRollbackLog(): Promise<void> {
-    const fs = require('fs');
+    const fs = require('node:fs');
     const logData = {
       timestamp: new Date().toISOString(),
       isDryRun: this.isDryRun,
       totalLogs: this.rollbackLog.length,
-      successCount: this.rollbackLog.filter(l => l.type === 'success').length,
-      warningCount: this.rollbackLog.filter(l => l.type === 'warning').length,
-      errorCount: this.rollbackLog.filter(l => l.type === 'error').length,
-      logs: this.rollbackLog
+      successCount: this.rollbackLog.filter((l) => l.type === 'success').length,
+      warningCount: this.rollbackLog.filter((l) => l.type === 'warning').length,
+      errorCount: this.rollbackLog.filter((l) => l.type === 'error').length,
+      logs: this.rollbackLog,
     };
 
     fs.writeFileSync(this.logFile, JSON.stringify(logData, null, 2));
@@ -494,11 +492,10 @@ async function main() {
   const isDryRun = args.includes('--dry-run');
   const skipConfirmation = args.includes('--yes');
   const listBackups = args.includes('--list-backups');
-  
-  const timestampIndex = args.findIndex(arg => arg === '--timestamp');
-  const backupTimestamp = timestampIndex !== -1 && args[timestampIndex + 1] 
-    ? args[timestampIndex + 1] 
-    : undefined;
+
+  const timestampIndex = args.findIndex((arg) => arg === '--timestamp');
+  const backupTimestamp =
+    timestampIndex !== -1 && args[timestampIndex + 1] ? args[timestampIndex + 1] : undefined;
 
   const rollback = new HierarchicalRollback(isDryRun);
 
@@ -514,16 +511,16 @@ async function main() {
     console.log('🔒 A safety backup of current hierarchical state will be created.');
     console.log('💡 Use --dry-run to test without making changes.');
     console.log('📋 Use --list-backups to see available backup timestamps.');
-    
+
     if (backupTimestamp) {
       console.log(`🕒 Using backup timestamp: ${backupTimestamp}`);
     }
-    
+
     console.log('');
-    
-    const readline = require('readline').createInterface({
+
+    const readline = require('node:readline').createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
 
     const answer = await new Promise<string>((resolve) => {
@@ -543,7 +540,7 @@ async function main() {
 
 // Run if called directly
 if (require.main === module) {
-  main().catch(error => {
+  main().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);
   });

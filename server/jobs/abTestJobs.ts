@@ -13,7 +13,9 @@ export function initABTestJobs(): void {
       await runDailyReports();
       logger.info('Daily A/B test reports completed');
     } catch (error) {
-      logger.error('Error running daily A/B test reports:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error running daily A/B test reports:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   });
 
@@ -24,7 +26,9 @@ export function initABTestJobs(): void {
       await runWeeklyReports();
       logger.info('Weekly A/B test reports completed');
     } catch (error) {
-      logger.error('Error running weekly A/B test reports:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error running weekly A/B test reports:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   });
 

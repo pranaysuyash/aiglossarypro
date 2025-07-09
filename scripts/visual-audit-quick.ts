@@ -4,10 +4,10 @@
  * Quick Visual Audit Script (assumes server is already running)
  */
 
-import { chromium, Browser, Page } from 'playwright';
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import chalk from 'chalk';
+import { type Browser, chromium, type Page } from 'playwright';
 
 interface PageConfig {
   name: string;
@@ -50,37 +50,37 @@ class QuickVisualAuditor {
       {
         name: 'homepage',
         url: '/',
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
       {
         name: 'homepage-mobile',
         url: '/',
-        viewport: { width: 375, height: 812 }
+        viewport: { width: 375, height: 812 },
       },
       {
         name: 'homepage-tablet',
         url: '/',
-        viewport: { width: 768, height: 1024 }
+        viewport: { width: 768, height: 1024 },
       },
       {
         name: 'favorites',
         url: '/favorites',
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
       {
         name: 'profile',
         url: '/profile',
-        viewport: { width: 1920, height: 1080 }
-      }
+        viewport: { width: 1920, height: 1080 },
+      },
     ];
 
     console.log(chalk.yellow(`📸 Capturing ${pages.length} page configurations...`));
 
     for (const pageConfig of pages) {
       console.log(chalk.gray(`  Capturing ${pageConfig.name}...`));
-      
+
       const page = await this.browser.newPage();
-      
+
       if (pageConfig.viewport) {
         await page.setViewportSize(pageConfig.viewport);
       }
@@ -88,7 +88,7 @@ class QuickVisualAuditor {
       try {
         await page.goto(`${this.baseUrl}${pageConfig.url}`, {
           waitUntil: 'networkidle',
-          timeout: 30000
+          timeout: 30000,
         });
 
         // Wait for content to load
@@ -105,11 +105,10 @@ class QuickVisualAuditor {
         const screenshotPath = path.join(this.screenshotDir, `${pageConfig.name}.png`);
         await page.screenshot({
           path: screenshotPath,
-          fullPage: pageConfig.name.includes('mobile') ? false : true
+          fullPage: !pageConfig.name.includes('mobile'),
         });
 
         console.log(chalk.green(`    ✓ ${pageConfig.name} captured`));
-
       } catch (error) {
         console.error(chalk.red(`    ✗ Error capturing ${pageConfig.name}:`), error);
       }
@@ -147,10 +146,9 @@ class QuickVisualAuditor {
       await this.initialize();
       await this.launchBrowser();
       await this.captureScreenshots();
-      
+
       console.log(chalk.green('✨ Quick visual audit complete!'));
       console.log(chalk.blue(`\nScreenshots saved to: ${this.screenshotDir}`));
-      
     } catch (error) {
       console.error(chalk.red('❌ Error during visual audit:'), error);
       throw error;

@@ -2,7 +2,7 @@
 
 /**
  * Enhanced Visual Audit Script with Comprehensive Testing
- * 
+ *
  * Features:
  * - Interactive testing (clicks, hovers, form fills)
  * - Component-level analysis
@@ -15,13 +15,13 @@
  * - Automated issue categorization
  */
 
-import { chromium, Browser, Page, BrowserContext, devices } from 'playwright';
-import { exec, spawn } from 'child_process';
-import { promisify } from 'util';
-import fs from 'fs/promises';
-import path from 'path';
+import { exec, spawn } from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { promisify } from 'node:util';
 import chalk from 'chalk';
 import { config } from 'dotenv';
+import { type Browser, type BrowserContext, chromium, devices, type Page } from 'playwright';
 
 // Load environment variables from .env file
 config();
@@ -47,16 +47,17 @@ let chromeLauncher: any;
 
 // Initialize with mock implementations first
 AxeBuilder = class MockAxeBuilder {
-  constructor() {}
-  withTags() { return this; }
-  analyze() { 
+  withTags() {
+    return this;
+  }
+  analyze() {
     return Promise.resolve({ violations: [] });
   }
 };
 
 lighthouse = () => Promise.resolve({ lhr: null });
 chromeLauncher = {
-  launch: () => Promise.resolve({ port: 9222, kill: () => {} })
+  launch: () => Promise.resolve({ port: 9222, kill: () => {} }),
 };
 
 // Function to initialize optional dependencies
@@ -68,7 +69,7 @@ async function initializeOptionalDependencies() {
     } else {
       console.warn('⚠️  @axe-core/playwright not installed - accessibility tests will be limited');
     }
-  } catch (e) {
+  } catch (_e) {
     console.warn('⚠️  @axe-core/playwright not available - accessibility tests will be limited');
   }
 
@@ -81,7 +82,7 @@ async function initializeOptionalDependencies() {
     } else {
       console.warn('⚠️  lighthouse not installed - performance tests will be limited');
     }
-  } catch (e) {
+  } catch (_e) {
     console.warn('⚠️  lighthouse not available - performance tests will be limited');
   }
 }
@@ -144,7 +145,15 @@ interface VisualIssue {
   page: string;
   component?: string;
   severity: 'critical' | 'high' | 'medium' | 'low';
-  category: 'layout' | 'color' | 'typography' | 'accessibility' | 'responsiveness' | 'consistency' | 'interaction' | 'performance';
+  category:
+    | 'layout'
+    | 'color'
+    | 'typography'
+    | 'accessibility'
+    | 'responsiveness'
+    | 'consistency'
+    | 'interaction'
+    | 'performance';
   description: string;
   recommendation: string;
   screenshot?: string;
@@ -188,7 +197,7 @@ class EnhancedVisualAuditor {
   async initialize() {
     // Initialize optional dependencies first
     await initializeOptionalDependencies();
-    
+
     await fs.mkdir(this.screenshotDir, { recursive: true });
     await fs.mkdir(this.reportDir, { recursive: true });
     await fs.mkdir(path.join(this.screenshotDir, 'components'), { recursive: true });
@@ -209,14 +218,14 @@ class EnhancedVisualAuditor {
       await execAsync(`lsof -i :${port}`);
       console.log(chalk.green('✅ Vite server is already running'));
       return;
-    } catch (error) {
+    } catch (_error) {
       console.log(chalk.yellow('⚡ Starting Vite development server...'));
     }
 
     return new Promise((resolve, reject) => {
       this.viteProcess = spawn('npm', ['run', 'dev:client'], {
         stdio: 'pipe',
-        shell: true
+        shell: true,
       });
 
       this.viteProcess.stdout.on('data', (data: Buffer) => {
@@ -238,22 +247,22 @@ class EnhancedVisualAuditor {
 
   async waitForServer(): Promise<void> {
     console.log(chalk.gray('    Waiting for server to be ready...'));
-    
+
     for (let i = 0; i < 10; i++) {
       try {
         const response = await fetch(`${this.baseUrl}/api/health`).catch(() => null);
-        if (response && response.ok) {
+        if (response?.ok) {
           console.log(chalk.green('    ✓ Server is ready'));
           return;
         }
-      } catch (error) {
+      } catch (_error) {
         // Server not ready yet
       }
-      
+
       // Wait before retrying
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
-    
+
     console.warn(chalk.yellow('    ⚠ Server health check timeout, proceeding anyway...'));
   }
 
@@ -261,15 +270,15 @@ class EnhancedVisualAuditor {
     console.log(chalk.yellow('🌐 Launching browser...'));
     this.browser = await chromium.launch({
       headless: process.env.HEADLESS !== 'false',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox'],
     });
-    
+
     this.context = await this.browser.newContext({
       ignoreHTTPSErrors: true,
       recordVideo: {
         dir: path.join(this.reportDir, 'videos'),
-        size: { width: 1920, height: 1080 }
-      }
+        size: { width: 1920, height: 1080 },
+      },
     });
   }
 
@@ -285,23 +294,24 @@ class EnhancedVisualAuditor {
         components: [
           {
             name: 'hero-section',
-            selector: 'main section:first-child, .hero-section, section[data-testid="hero"], section:has(h1)',
+            selector:
+              'main section:first-child, .hero-section, section[data-testid="hero"], section:has(h1)',
             states: ['default', 'animated'],
             interactions: [
-              { type: 'hover', selector: 'button, .btn, [role="button"]', screenshot: true }
-            ]
+              { type: 'hover', selector: 'button, .btn, [role="button"]', screenshot: true },
+            ],
           },
           {
             name: 'navigation',
             selector: 'header, nav, [role="navigation"], .header, .navigation',
             states: ['default', 'scrolled'],
             interactions: [
-              { type: 'hover', selector: 'nav a, header a, .nav-link', screenshot: true }
-            ]
-          }
-        ]
+              { type: 'hover', selector: 'nav a, header a, .nav-link', screenshot: true },
+            ],
+          },
+        ],
       },
-      
+
       // Mobile Tests
       {
         name: 'homepage-mobile',
@@ -309,35 +319,50 @@ class EnhancedVisualAuditor {
         device: 'iPhone 13',
         actions: [
           { type: 'wait', value: 2000 },
-          { type: 'click', selector: 'button[aria-label*="menu"], button[aria-label*="navigation"], .mobile-menu-toggle, .hamburger, button:has(svg)', description: 'Open mobile menu' },
+          {
+            type: 'click',
+            selector:
+              'button[aria-label*="menu"], button[aria-label*="navigation"], .mobile-menu-toggle, .hamburger, button:has(svg)',
+            description: 'Open mobile menu',
+          },
           { type: 'wait', value: 500 },
-          { type: 'screenshot', description: 'Mobile menu opened' }
-        ]
+          { type: 'screenshot', description: 'Mobile menu opened' },
+        ],
       },
-      
+
       // Tablet Tests
       {
         name: 'homepage-tablet',
         url: '/',
         device: 'iPad Pro',
-        darkMode: true
+        darkMode: true,
       },
-      
+
       // Search Interaction Test
       {
         name: 'search-interaction',
         url: '/',
         viewport: { width: 1920, height: 1080 },
         actions: [
-          { type: 'click', selector: 'input[type="text"], input[placeholder*="Search"], input[placeholder*="search"], .search-input', description: 'Focus search input' },
+          {
+            type: 'click',
+            selector:
+              'input[type="text"], input[placeholder*="Search"], input[placeholder*="search"], .search-input',
+            description: 'Focus search input',
+          },
           { type: 'wait', value: 500 },
-          { type: 'type', selector: 'input[type="text"], input[placeholder*="Search"], input[placeholder*="search"], .search-input', value: 'machine learning' },
+          {
+            type: 'type',
+            selector:
+              'input[type="text"], input[placeholder*="Search"], input[placeholder*="search"], .search-input',
+            value: 'machine learning',
+          },
           { type: 'wait', value: 1000, screenshot: true },
           { type: 'keyboard', key: 'Enter' },
-          { type: 'wait', value: 2000, screenshot: true }
-        ]
+          { type: 'wait', value: 2000, screenshot: true },
+        ],
       },
-      
+
       // Auth Testing (OAuth login page)
       {
         name: 'login-page',
@@ -346,15 +371,15 @@ class EnhancedVisualAuditor {
         actions: [
           { type: 'wait', value: 2000, screenshot: true, description: 'Login page loaded' },
           { type: 'focus', selector: 'button, .btn, [role="button"], input[type="submit"]' },
-          { type: 'screenshot', description: 'Login button focused' }
+          { type: 'screenshot', description: 'Login button focused' },
         ],
         accessibility: {
           focusTest: true,
           keyboardNavigation: true,
-          contrastCheck: true
-        }
+          contrastCheck: true,
+        },
       },
-      
+
       // Terms Listing with Filters
       {
         name: 'terms-listing',
@@ -362,26 +387,35 @@ class EnhancedVisualAuditor {
         viewport: { width: 1920, height: 1080 },
         actions: [
           { type: 'wait', value: 3000 },
-          { type: 'click', selector: 'button:contains("Filters"), button[aria-label*="filter"], .filter-button, button:has([data-lucide="filter"])', description: 'Open filters' },
+          {
+            type: 'click',
+            selector:
+              'button:contains("Filters"), button[aria-label*="filter"], .filter-button, button:has([data-lucide="filter"])',
+            description: 'Open filters',
+          },
           { type: 'wait', value: 1000 },
           { type: 'screenshot', description: 'Filters panel opened' },
-          { type: 'click', selector: '[role="combobox"], button[role="combobox"], select, .select', description: 'Open category select' },
-          { type: 'wait', value: 1000, screenshot: true }
+          {
+            type: 'click',
+            selector: '[role="combobox"], button[role="combobox"], select, .select',
+            description: 'Open category select',
+          },
+          { type: 'wait', value: 1000, screenshot: true },
         ],
         states: [
           {
             name: 'loading',
             setup: [{ type: 'wait', value: 100 }],
-            screenshot: true
+            screenshot: true,
           },
           {
             name: 'loaded',
             setup: [{ type: 'wait', value: 2000 }],
-            screenshot: true
-          }
-        ]
+            screenshot: true,
+          },
+        ],
       },
-      
+
       // Accessibility Focus Test
       {
         name: 'accessibility-keyboard-nav',
@@ -392,15 +426,15 @@ class EnhancedVisualAuditor {
           { type: 'keyboard', key: 'Tab', screenshot: true },
           { type: 'keyboard', key: 'Tab', screenshot: true },
           { type: 'keyboard', key: 'Enter' },
-          { type: 'wait', value: 1000, screenshot: true }
+          { type: 'wait', value: 1000, screenshot: true },
         ],
         accessibility: {
           focusTest: true,
           keyboardNavigation: true,
-          rules: ['color-contrast', 'focus-visible', 'keyboard-access']
-        }
+          rules: ['color-contrast', 'focus-visible', 'keyboard-access'],
+        },
       },
-      
+
       // Dark Mode Testing
       {
         name: 'dark-mode-toggle',
@@ -410,10 +444,10 @@ class EnhancedVisualAuditor {
           { type: 'screenshot', description: 'Light mode default' },
           { type: 'click', selector: 'button[aria-label*="mode"], button[aria-label*="theme"]' },
           { type: 'wait', value: 1000 },
-          { type: 'screenshot', description: 'Dark mode activated' }
-        ]
+          { type: 'screenshot', description: 'Dark mode activated' },
+        ],
       },
-      
+
       // Component States Testing
       {
         name: 'component-states',
@@ -426,8 +460,8 @@ class EnhancedVisualAuditor {
             states: ['default', 'hover', 'focus', 'active', 'disabled'],
             interactions: [
               { type: 'hover', selector: '.btn:not(:disabled)', screenshot: true },
-              { type: 'focus', selector: '.btn:not(:disabled)', screenshot: true }
-            ]
+              { type: 'focus', selector: '.btn:not(:disabled)', screenshot: true },
+            ],
           },
           {
             name: 'card',
@@ -435,11 +469,11 @@ class EnhancedVisualAuditor {
             states: ['default', 'hover', 'selected'],
             interactions: [
               { type: 'hover', selector: '[data-testid="term-card"]', screenshot: true },
-              { type: 'click', selector: '[data-testid="term-card"]', screenshot: true }
-            ]
-          }
-        ]
-      }
+              { type: 'click', selector: '[data-testid="term-card"]', screenshot: true },
+            ],
+          },
+        ],
+      },
     ];
   }
 
@@ -457,14 +491,16 @@ class EnhancedVisualAuditor {
     if (!this.context) throw new Error('Browser context not initialized');
 
     const page = await this.context.newPage();
-    
+
     try {
       // Set viewport or device
       if (config.device) {
         const device = devices[config.device];
-        if (device && device.viewport) {
+        if (device?.viewport) {
           await page.setViewportSize(device.viewport);
-          await page.setExtraHTTPHeaders(device.userAgent ? { 'User-Agent': device.userAgent } : {});
+          await page.setExtraHTTPHeaders(
+            device.userAgent ? { 'User-Agent': device.userAgent } : {}
+          );
         } else {
           console.warn(`Device "${config.device}" not found, using default viewport`);
           await page.setViewportSize({ width: 1920, height: 1080 });
@@ -483,29 +519,31 @@ class EnhancedVisualAuditor {
       try {
         // Wait for the server to be ready first
         await this.waitForServer();
-        
+
         await page.goto(`${this.baseUrl}${config.url}`, {
           waitUntil: 'networkidle',
-          timeout: 30000
+          timeout: 30000,
         });
-        
+
         // Wait for React components to render and initial content to load
         await page.waitForSelector('body', { timeout: 10000 });
         await page.waitForTimeout(3000);
-        
+
         console.log(chalk.green(`    ✓ Successfully loaded ${config.url}`));
       } catch (error) {
-        console.warn(chalk.yellow(`    Warning: Navigation issues for ${config.url}. Attempting recovery...`));
-        
+        console.warn(
+          chalk.yellow(`    Warning: Navigation issues for ${config.url}. Attempting recovery...`)
+        );
+
         // Try a simpler navigation approach
         try {
           await page.goto(`${this.baseUrl}${config.url}`, {
             waitUntil: 'domcontentloaded',
-            timeout: 15000
+            timeout: 15000,
           });
           await page.waitForTimeout(2000);
           console.log(chalk.yellow(`    ⚠ Partial recovery for ${config.url}`));
-        } catch (recoveryError) {
+        } catch (_recoveryError) {
           console.error(chalk.red(`    ✗ Failed to load ${config.url}: ${error.message}`));
           // Continue with whatever page state we have
         }
@@ -547,12 +585,11 @@ class EnhancedVisualAuditor {
       const screenshotPath = path.join(this.screenshotDir, `${config.name}-final.png`);
       await page.screenshot({
         path: screenshotPath,
-        fullPage: true
+        fullPage: true,
       });
 
       // Analyze screenshot with AI
       await this.analyzeScreenshot(screenshotPath, config.name);
-
     } catch (error) {
       console.error(chalk.red(`  Error in ${config.name}:`), error);
       this.issues.push({
@@ -560,7 +597,7 @@ class EnhancedVisualAuditor {
         severity: 'critical',
         category: 'interaction',
         description: `Test failed: ${error.message}`,
-        recommendation: 'Fix the error preventing the test from completing'
+        recommendation: 'Fix the error preventing the test from completing',
       });
     } finally {
       await page.close();
@@ -569,7 +606,7 @@ class EnhancedVisualAuditor {
 
   private async performAction(page: Page, action: TestAction, config: TestConfig) {
     console.log(chalk.gray(`    Action: ${action.type} ${action.description || ''}`));
-    
+
     switch (action.type) {
       case 'click':
         if (action.selector) {
@@ -577,7 +614,7 @@ class EnhancedVisualAuditor {
             // Try multiple selector strategies
             const selectors = action.selector.split(', ');
             let clicked = false;
-            
+
             for (const selector of selectors) {
               try {
                 await page.waitForSelector(selector.trim(), { state: 'visible', timeout: 5000 });
@@ -585,101 +622,118 @@ class EnhancedVisualAuditor {
                 clicked = true;
                 console.log(chalk.green(`    ✓ Clicked element with selector: ${selector.trim()}`));
                 break;
-              } catch (e) {
-                // Try next selector
-                continue;
-              }
+              } catch (_e) {}
             }
-            
+
             if (!clicked) {
-              console.warn(chalk.yellow(`    Warning: Could not find any clickable element from "${action.selector}". Skipping...`));
+              console.warn(
+                chalk.yellow(
+                  `    Warning: Could not find any clickable element from "${action.selector}". Skipping...`
+                )
+              );
             }
-          } catch (error) {
-            console.warn(chalk.yellow(`    Warning: Click action failed for "${action.selector}". Skipping...`));
+          } catch (_error) {
+            console.warn(
+              chalk.yellow(`    Warning: Click action failed for "${action.selector}". Skipping...`)
+            );
           }
         }
         break;
-        
+
       case 'hover':
         if (action.selector) {
           try {
             await page.waitForSelector(action.selector, { state: 'visible', timeout: 15000 });
             await page.hover(action.selector);
-          } catch (error) {
-            console.warn(chalk.yellow(`    Warning: Could not find hoverable element "${action.selector}". Skipping...`));
+          } catch (_error) {
+            console.warn(
+              chalk.yellow(
+                `    Warning: Could not find hoverable element "${action.selector}". Skipping...`
+              )
+            );
             return;
           }
         }
         break;
-        
+
       case 'type':
         if (action.selector && action.value) {
           try {
             const selectors = action.selector.split(', ');
             let typed = false;
-            
+
             for (const selector of selectors) {
               try {
                 await page.waitForSelector(selector.trim(), { state: 'visible', timeout: 5000 });
                 await page.fill(selector.trim(), String(action.value));
                 typed = true;
-                console.log(chalk.green(`    ✓ Typed in element with selector: ${selector.trim()}`));
+                console.log(
+                  chalk.green(`    ✓ Typed in element with selector: ${selector.trim()}`)
+                );
                 break;
-              } catch (e) {
-                continue;
-              }
+              } catch (_e) {}
             }
-            
+
             if (!typed) {
-              console.warn(chalk.yellow(`    Warning: Could not find any input element from "${action.selector}". Skipping...`));
+              console.warn(
+                chalk.yellow(
+                  `    Warning: Could not find any input element from "${action.selector}". Skipping...`
+                )
+              );
             }
-          } catch (error) {
-            console.warn(chalk.yellow(`    Warning: Type action failed for "${action.selector}". Skipping...`));
+          } catch (_error) {
+            console.warn(
+              chalk.yellow(`    Warning: Type action failed for "${action.selector}". Skipping...`)
+            );
           }
         }
         break;
-        
+
       case 'scroll':
         await page.evaluate((pixels) => {
           window.scrollBy(0, pixels as number);
         }, action.value || 100);
         break;
-        
+
       case 'wait':
         await page.waitForTimeout(Number(action.value) || 1000);
         break;
-        
+
       case 'keyboard':
         if (action.key) {
           await page.keyboard.press(action.key);
         }
         break;
-        
+
       case 'select':
         if (action.selector && action.value) {
           await page.selectOption(action.selector, String(action.value));
         }
         break;
-        
+
       case 'check':
         if (action.selector) {
           await page.check(action.selector);
         }
         break;
-        
+
       case 'focus':
         if (action.selector) {
           try {
             await page.waitForSelector(action.selector, { state: 'visible', timeout: 15000 });
             await page.focus(action.selector);
-          } catch (error) {
-            console.warn(chalk.yellow(`    Warning: Could not find focusable element "${action.selector}". Skipping...`));
+          } catch (_error) {
+            console.warn(
+              chalk.yellow(
+                `    Warning: Could not find focusable element "${action.selector}". Skipping...`
+              )
+            );
             return;
           }
         }
         break;
-        
-      case 'screenshot':
+
+      case 'screenshot': {
         const screenshotPath = path.join(
           this.screenshotDir,
           'interactions',
@@ -687,6 +741,7 @@ class EnhancedVisualAuditor {
         );
         await page.screenshot({ path: screenshotPath });
         break;
+      }
     }
 
     // Take screenshot after action if requested
@@ -702,20 +757,20 @@ class EnhancedVisualAuditor {
 
   private async testComponent(page: Page, component: ComponentTest, config: TestConfig) {
     console.log(chalk.gray(`  Testing component: ${component.name}`));
-    
+
     try {
       await page.waitForSelector(component.selector, { state: 'visible', timeout: 15000 });
-      
+
       // Test each interaction
       for (const interaction of component.interactions) {
         await this.performAction(page, interaction, config);
-        
+
         const screenshotPath = path.join(
           this.screenshotDir,
           'components',
           `${config.name}-${component.name}-${interaction.type}.png`
         );
-        
+
         // Take component-specific screenshot
         const element = await page.$(component.selector);
         if (element) {
@@ -723,8 +778,12 @@ class EnhancedVisualAuditor {
           await this.analyzeComponentScreenshot(screenshotPath, component.name, interaction.type);
         }
       }
-    } catch (error) {
-      console.warn(chalk.yellow(`    Component test skipped for ${component.name}: Component not found or not visible`));
+    } catch (_error) {
+      console.warn(
+        chalk.yellow(
+          `    Component test skipped for ${component.name}: Component not found or not visible`
+        )
+      );
       // Take a full page screenshot as fallback
       const fallbackScreenshotPath = path.join(
         this.screenshotDir,
@@ -737,55 +796,61 @@ class EnhancedVisualAuditor {
 
   private async testState(page: Page, state: TestState, config: TestConfig) {
     console.log(chalk.gray(`  Testing state: ${state.name}`));
-    
+
     // Setup state
     for (const setup of state.setup) {
       await this.performAction(page, setup, config);
     }
-    
+
     // Run assertions
     if (state.assertions) {
       for (const assertion of state.assertions) {
         await this.runAssertion(page, assertion, config, state);
       }
     }
-    
+
     // Take screenshot
     if (state.screenshot !== false) {
-      const screenshotPath = path.join(
-        this.screenshotDir,
-        `${config.name}-${state.name}.png`
-      );
+      const screenshotPath = path.join(this.screenshotDir, `${config.name}-${state.name}.png`);
       await page.screenshot({ path: screenshotPath });
     }
   }
 
-  private async runAssertion(page: Page, assertion: StateAssertion, config: TestConfig, state: TestState) {
+  private async runAssertion(
+    page: Page,
+    assertion: StateAssertion,
+    config: TestConfig,
+    state: TestState
+  ) {
     try {
       switch (assertion.type) {
         case 'visible':
           await page.waitForSelector(assertion.selector, { state: 'visible', timeout: 5000 });
           break;
-          
+
         case 'hidden':
           await page.waitForSelector(assertion.selector, { state: 'hidden', timeout: 5000 });
           break;
-          
-        case 'text':
+
+        case 'text': {
           const textContent = await page.textContent(assertion.selector);
           if (textContent !== assertion.expected) {
             throw new Error(`Expected text "${assertion.expected}" but got "${textContent}"`);
           }
           break;
-          
-        case 'attribute':
+        }
+
+        case 'attribute': {
           const attrValue = await page.getAttribute(assertion.selector, assertion.attribute || '');
           if (attrValue !== assertion.expected) {
-            throw new Error(`Expected attribute "${assertion.attribute}" to be "${assertion.expected}" but got "${attrValue}"`);
+            throw new Error(
+              `Expected attribute "${assertion.attribute}" to be "${assertion.expected}" but got "${attrValue}"`
+            );
           }
           break;
-          
-        case 'class':
+        }
+
+        case 'class': {
           const hasClass = await page.evaluate(
             ({ selector, className }) => {
               const element = document.querySelector(selector);
@@ -797,6 +862,7 @@ class EnhancedVisualAuditor {
             throw new Error(`Element does not have class "${assertion.expected}"`);
           }
           break;
+        }
       }
     } catch (error) {
       this.issues.push({
@@ -804,53 +870,59 @@ class EnhancedVisualAuditor {
         severity: 'high',
         category: 'interaction',
         description: `State assertion failed in ${state.name}: ${error.message}`,
-        recommendation: 'Fix the state management or update the assertion'
+        recommendation: 'Fix the state management or update the assertion',
       });
     }
   }
 
   private async runAccessibilityTests(page: Page, config: TestConfig) {
     console.log(chalk.gray('  Running accessibility tests...'));
-    
+
     try {
       // Run axe-core accessibility tests
       const accessibilityResults = await new AxeBuilder({ page })
         .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
         .analyze();
-      
+
       // Process violations
       for (const violation of accessibilityResults.violations) {
         this.issues.push({
           page: config.name,
-          severity: violation.impact === 'critical' ? 'critical' : 
-                   violation.impact === 'serious' ? 'high' : 
-                   violation.impact === 'moderate' ? 'medium' : 'low',
+          severity:
+            violation.impact === 'critical'
+              ? 'critical'
+              : violation.impact === 'serious'
+                ? 'high'
+                : violation.impact === 'moderate'
+                  ? 'medium'
+                  : 'low',
           category: 'accessibility',
           description: `${violation.description} (${violation.nodes.length} instances)`,
           recommendation: violation.help,
           wcagViolation: violation.tags.join(', '),
           affectedUsers: violation.nodes[0]?.impact ? [violation.nodes[0].impact] : [],
-          codeSnippet: violation.nodes[0]?.html
+          codeSnippet: violation.nodes[0]?.html,
         });
       }
-      
+
       // Focus visibility test
       if (config.accessibility?.focusTest) {
         await this.testFocusVisibility(page, config);
       }
-      
+
       // Keyboard navigation test
       if (config.accessibility?.keyboardNavigation) {
         await this.testKeyboardNavigation(page, config);
       }
-      
+
       // Color contrast test
       if (config.accessibility?.contrastCheck) {
         await this.testColorContrast(page, config);
       }
-      
-      console.log(chalk.green(`    Found ${accessibilityResults.violations.length} accessibility issues`));
-      
+
+      console.log(
+        chalk.green(`    Found ${accessibilityResults.violations.length} accessibility issues`)
+      );
     } catch (error) {
       console.error(chalk.red('    Accessibility test failed:'), error);
     }
@@ -863,27 +935,27 @@ class EnhancedVisualAuditor {
       'input:not([disabled])',
       'select:not([disabled])',
       'textarea:not([disabled])',
-      '[tabindex]:not([tabindex="-1"])'
+      '[tabindex]:not([tabindex="-1"])',
     ];
-    
+
     for (const selector of focusableSelectors) {
       const elements = await page.$$(selector);
-      
+
       for (let i = 0; i < Math.min(elements.length, 3); i++) {
         const element = elements[i];
         await element.focus();
-        
+
         const hasFocusIndicator = await element.evaluate((el) => {
           const styles = window.getComputedStyle(el);
           const focusStyles = window.getComputedStyle(el, ':focus');
-          
+
           return (
             styles.outline !== 'none' ||
             styles.boxShadow !== 'none' ||
             styles.border !== focusStyles.border
           );
         });
-        
+
         if (!hasFocusIndicator) {
           this.issues.push({
             page: config.name,
@@ -891,7 +963,7 @@ class EnhancedVisualAuditor {
             category: 'accessibility',
             description: `Missing focus indicator on ${selector}`,
             recommendation: 'Add visible focus styles (outline, box-shadow, or border change)',
-            wcagViolation: '2.4.7 Focus Visible'
+            wcagViolation: '2.4.7 Focus Visible',
           });
         }
       }
@@ -901,19 +973,19 @@ class EnhancedVisualAuditor {
   private async testKeyboardNavigation(page: Page, config: TestConfig) {
     // Test tab order
     const tabOrder: string[] = [];
-    
+
     for (let i = 0; i < 10; i++) {
       await page.keyboard.press('Tab');
       const focusedElement = await page.evaluate(() => {
         const el = document.activeElement;
         return el ? el.tagName + (el.id ? `#${el.id}` : '') : null;
       });
-      
+
       if (focusedElement) {
         tabOrder.push(focusedElement);
       }
     }
-    
+
     // Check if tab order makes sense
     if (tabOrder.length < 3) {
       this.issues.push({
@@ -922,7 +994,7 @@ class EnhancedVisualAuditor {
         category: 'accessibility',
         description: 'Limited keyboard navigation - too few focusable elements',
         recommendation: 'Ensure all interactive elements are keyboard accessible',
-        wcagViolation: '2.1.1 Keyboard'
+        wcagViolation: '2.1.1 Keyboard',
       });
     }
   }
@@ -931,31 +1003,31 @@ class EnhancedVisualAuditor {
     const contrastIssues = await page.evaluate(() => {
       const issues: any[] = [];
       const elements = document.querySelectorAll('*');
-      
+
       elements.forEach((element: Element) => {
         const styles = window.getComputedStyle(element);
         const bgColor = styles.backgroundColor;
         const textColor = styles.color;
-        
+
         // Simple contrast check (would need a proper algorithm in production)
         if (bgColor !== 'transparent' && textColor !== 'transparent') {
           // This is a placeholder - you'd need to implement actual contrast calculation
           const mockContrastRatio = 4.5; // Would calculate actual ratio
-          
+
           if (mockContrastRatio < 4.5) {
             issues.push({
               selector: element.tagName,
               bgColor,
               textColor,
-              ratio: mockContrastRatio
+              ratio: mockContrastRatio,
             });
           }
         }
       });
-      
+
       return issues.slice(0, 5); // Limit to 5 issues
     });
-    
+
     for (const issue of contrastIssues) {
       this.issues.push({
         page: config.name,
@@ -963,57 +1035,58 @@ class EnhancedVisualAuditor {
         category: 'accessibility',
         description: `Low color contrast on ${issue.selector}`,
         recommendation: `Improve contrast ratio between ${issue.bgColor} and ${issue.textColor}`,
-        wcagViolation: '1.4.3 Contrast (Minimum)'
+        wcagViolation: '1.4.3 Contrast (Minimum)',
       });
     }
   }
 
   private async runPerformanceAnalysis(page: Page, config: TestConfig) {
     console.log(chalk.gray('  Running performance analysis...'));
-    
+
     try {
       // Get Chrome DevTools performance metrics
-      const metrics = await page.evaluate(() => {
+      const _metrics = await page.evaluate(() => {
         return new Promise((resolve) => {
           const observer = new PerformanceObserver((list) => {
             const entries = list.getEntries();
-            const navEntry = entries.find(entry => entry.entryType === 'navigation') as any;
+            const navEntry = entries.find((entry) => entry.entryType === 'navigation') as any;
             const paintEntries = performance.getEntriesByType('paint');
-            
+
             resolve({
               domContentLoaded: navEntry?.domContentLoadedEventEnd || 0,
               loadComplete: navEntry?.loadEventEnd || 0,
-              firstPaint: paintEntries.find(e => e.name === 'first-paint')?.startTime || 0,
-              firstContentfulPaint: paintEntries.find(e => e.name === 'first-contentful-paint')?.startTime || 0
+              firstPaint: paintEntries.find((e) => e.name === 'first-paint')?.startTime || 0,
+              firstContentfulPaint:
+                paintEntries.find((e) => e.name === 'first-contentful-paint')?.startTime || 0,
             });
           });
-          
+
           observer.observe({ entryTypes: ['navigation', 'paint'] });
-          
+
           // Fallback
           setTimeout(() => resolve({}), 5000);
         });
       });
-      
+
       // Run Lighthouse for comprehensive metrics
       const chrome = await chromeLauncher.launch({ chromeFlags: ['--headless'] });
       const options = {
         logLevel: 'error',
         output: 'json',
-        port: chrome.port
+        port: chrome.port,
       };
-      
+
       const runnerResult = await lighthouse(`${this.baseUrl}${config.url}`, options);
       await chrome.kill();
-      
+
       if (runnerResult?.lhr) {
         const lhr = runnerResult.lhr;
-        
+
         this.performanceMetrics.push({
           page: config.name,
           fcp: lhr.audits['first-contentful-paint']?.numericValue || 0,
           lcp: lhr.audits['largest-contentful-paint']?.numericValue || 0,
-          tti: lhr.audits['interactive']?.numericValue || 0,
+          tti: lhr.audits.interactive?.numericValue || 0,
           cls: lhr.audits['cumulative-layout-shift']?.numericValue || 0,
           fid: lhr.audits['max-potential-fid']?.numericValue || 0,
           totalBlockingTime: lhr.audits['total-blocking-time']?.numericValue || 0,
@@ -1022,10 +1095,10 @@ class EnhancedVisualAuditor {
             performance: lhr.categories.performance?.score || 0,
             accessibility: lhr.categories.accessibility?.score || 0,
             bestPractices: lhr.categories['best-practices']?.score || 0,
-            seo: lhr.categories.seo?.score || 0
-          }
+            seo: lhr.categories.seo?.score || 0,
+          },
         });
-        
+
         // Add performance issues
         if (lhr.categories.performance?.score < 0.9) {
           this.issues.push({
@@ -1033,12 +1106,12 @@ class EnhancedVisualAuditor {
             severity: lhr.categories.performance?.score < 0.5 ? 'critical' : 'high',
             category: 'performance',
             description: `Low performance score: ${(lhr.categories.performance?.score * 100).toFixed(0)}%`,
-            recommendation: 'Optimize images, reduce JavaScript execution time, and improve caching',
-            performanceImpact: 1 - lhr.categories.performance?.score
+            recommendation:
+              'Optimize images, reduce JavaScript execution time, and improve caching',
+            performanceImpact: 1 - lhr.categories.performance?.score,
           });
         }
       }
-      
     } catch (error) {
       console.error(chalk.red('    Performance analysis failed:'), error);
     }
@@ -1049,37 +1122,38 @@ class EnhancedVisualAuditor {
       console.log(chalk.yellow('    Skipping AI analysis (no API key)'));
       return;
     }
-    
+
     console.log(chalk.gray('    Analyzing with Claude AI...'));
-    
+
     try {
       const imageBuffer = await fs.readFile(screenshotPath);
       const base64Image = imageBuffer.toString('base64');
-      
+
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'x-api-key': this.claudeApiKey,
-          'anthropic-version': '2023-06-01'
+          'anthropic-version': '2023-06-01',
         },
         body: JSON.stringify({
           model: 'claude-3-opus-20240229',
           max_tokens: 1000,
-          messages: [{
-            role: 'user',
-            content: [
-              {
-                type: 'image',
-                source: {
-                  type: 'base64',
-                  media_type: 'image/png',
-                  data: base64Image
-                }
-              },
-              {
-                type: 'text',
-                text: `Analyze this screenshot for visual, UX, and accessibility issues. For each issue provide:
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'image',
+                  source: {
+                    type: 'base64',
+                    media_type: 'image/png',
+                    data: base64Image,
+                  },
+                },
+                {
+                  type: 'text',
+                  text: `Analyze this screenshot for visual, UX, and accessibility issues. For each issue provide:
                 - Severity: critical/high/medium/low
                 - Category: layout/color/typography/accessibility/responsiveness/consistency/interaction
                 - Clear description
@@ -1094,13 +1168,14 @@ class EnhancedVisualAuditor {
                 6. Missing or unclear UI elements
                 7. User experience problems
                 
-                Format your response as a JSON array of issues.`
-              }
-            ]
-          }]
-        })
+                Format your response as a JSON array of issues.`,
+                },
+              ],
+            },
+          ],
+        }),
       });
-      
+
       const data = await response.json();
       if (data.content?.[0]?.text) {
         try {
@@ -1109,39 +1184,42 @@ class EnhancedVisualAuditor {
             this.issues.push({
               page: pageName,
               ...issue,
-              screenshot: path.basename(screenshotPath)
+              screenshot: path.basename(screenshotPath),
             });
           }
-        } catch (parseError) {
+        } catch (_parseError) {
           console.error(chalk.red('    Failed to parse AI response'));
         }
       }
-      
     } catch (error) {
       console.error(chalk.red('    AI analysis failed:'), error);
     }
   }
 
-  private async analyzeComponentScreenshot(screenshotPath: string, componentName: string, interaction: string) {
+  private async analyzeComponentScreenshot(
+    _screenshotPath: string,
+    _componentName: string,
+    _interaction: string
+  ) {
     // Similar to analyzeScreenshot but focused on component-specific issues
     // Implementation would be similar but with component-specific prompts
   }
 
   async generateReport() {
     console.log(chalk.yellow('\n📝 Generating comprehensive report...'));
-    
+
     // Generate HTML report
     await this.generateHTMLReport();
-    
+
     // Generate Markdown report
     await this.generateMarkdownReport();
-    
+
     // Generate JSON report
     await this.generateJSONReport();
-    
+
     // Generate task list
     await this.generateTaskList();
-    
+
     console.log(chalk.green('✅ Reports generated successfully!'));
   }
 
@@ -1267,11 +1345,11 @@ class EnhancedVisualAuditor {
                 <div class="metric-label">Total Issues</div>
             </div>
             <div class="metric">
-                <div class="metric-value">${this.issues.filter(i => i.severity === 'critical').length}</div>
+                <div class="metric-value">${this.issues.filter((i) => i.severity === 'critical').length}</div>
                 <div class="metric-label">Critical Issues</div>
             </div>
             <div class="metric">
-                <div class="metric-value">${this.issues.filter(i => i.severity === 'high').length}</div>
+                <div class="metric-value">${this.issues.filter((i) => i.severity === 'high').length}</div>
                 <div class="metric-label">High Priority</div>
             </div>
             <div class="metric">
@@ -1329,7 +1407,9 @@ class EnhancedVisualAuditor {
       return severityOrder[a.severity] - severityOrder[b.severity];
     });
 
-    return sortedIssues.map(issue => `
+    return sortedIssues
+      .map(
+        (issue) => `
         <div class="issue ${issue.severity}">
             <h3><span class="severity-${issue.severity}">[${issue.severity.toUpperCase()}]</span> ${issue.description}</h3>
             <p><strong>Page:</strong> ${issue.page}</p>
@@ -1338,11 +1418,15 @@ class EnhancedVisualAuditor {
             ${issue.wcagViolation ? `<p><strong>WCAG:</strong> ${issue.wcagViolation}</p>` : ''}
             ${issue.codeSnippet ? `<div class="code-snippet">${this.escapeHtml(issue.codeSnippet)}</div>` : ''}
         </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   private generateHTMLPerformance(): string {
-    return this.performanceMetrics.map(metric => `
+    return this.performanceMetrics
+      .map(
+        (metric) => `
         <div class="performance-chart">
             <h3>${metric.page}</h3>
             <div class="summary">
@@ -1363,7 +1447,9 @@ class EnhancedVisualAuditor {
                     <div class="metric-label">Cumulative Layout Shift</div>
                 </div>
             </div>
-            ${metric.lighthouse ? `
+            ${
+              metric.lighthouse
+                ? `
                 <h4>Lighthouse Scores</h4>
                 <div class="summary">
                     <div class="metric">
@@ -1383,15 +1469,21 @@ class EnhancedVisualAuditor {
                         <div class="metric-label">SEO</div>
                     </div>
                 </div>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   private generateHTMLAccessibility(): string {
-    const accessibilityIssues = this.issues.filter(i => i.category === 'accessibility');
-    
-    return accessibilityIssues.map(issue => `
+    const accessibilityIssues = this.issues.filter((i) => i.category === 'accessibility');
+
+    return accessibilityIssues
+      .map(
+        (issue) => `
         <div class="issue ${issue.severity}">
             <h3><span class="severity-${issue.severity}">[${issue.severity.toUpperCase()}]</span> ${issue.description}</h3>
             <p><strong>Page:</strong> ${issue.page}</p>
@@ -1400,40 +1492,46 @@ class EnhancedVisualAuditor {
             ${issue.affectedUsers?.length ? `<p><strong>Affected Users:</strong> ${issue.affectedUsers.join(', ')}</p>` : ''}
             ${issue.codeSnippet ? `<div class="code-snippet">${this.escapeHtml(issue.codeSnippet)}</div>` : ''}
         </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   private async generateHTMLScreenshots(): Promise<string> {
     const screenshots = await this.getAllScreenshots();
-    
-    return screenshots.map(screenshot => `
+
+    return screenshots
+      .map(
+        (screenshot) => `
         <div style="margin: 20px 0;">
             <h3>${screenshot.name}</h3>
             <img src="screenshots/${screenshot.path}" alt="${screenshot.name}" class="screenshot" />
         </div>
-    `).join('');
+    `
+      )
+      .join('');
   }
 
   private async getAllScreenshots(): Promise<{ name: string; path: string }[]> {
     const screenshots: { name: string; path: string }[] = [];
-    
+
     const addScreenshots = async (dir: string, prefix = '') => {
       const files = await fs.readdir(dir);
       for (const file of files) {
         const filePath = path.join(dir, file);
         const stat = await fs.stat(filePath);
-        
+
         if (stat.isDirectory()) {
           await addScreenshots(filePath, `${prefix}${file}/`);
         } else if (file.endsWith('.png')) {
           screenshots.push({
             name: `${prefix}${file}`,
-            path: `${prefix}${file}`
+            path: `${prefix}${file}`,
           });
         }
       }
     };
-    
+
     await addScreenshots(this.screenshotDir);
     return screenshots;
   }
@@ -1444,9 +1542,9 @@ class EnhancedVisualAuditor {
       '<': '&lt;',
       '>': '&gt;',
       '"': '&quot;',
-      "'": '&#039;'
+      "'": '&#039;',
     };
-    return text.replace(/[&<>"']/g, m => map[m]);
+    return text.replace(/[&<>"']/g, (m) => map[m]);
   }
 
   private async generateMarkdownReport() {
@@ -1456,43 +1554,61 @@ Generated: ${new Date().toISOString()}
 ## Executive Summary
 
 - **Total Issues Found:** ${this.issues.length}
-- **Critical Issues:** ${this.issues.filter(i => i.severity === 'critical').length}
-- **High Priority Issues:** ${this.issues.filter(i => i.severity === 'high').length}
-- **Medium Priority Issues:** ${this.issues.filter(i => i.severity === 'medium').length}
-- **Low Priority Issues:** ${this.issues.filter(i => i.severity === 'low').length}
+- **Critical Issues:** ${this.issues.filter((i) => i.severity === 'critical').length}
+- **High Priority Issues:** ${this.issues.filter((i) => i.severity === 'high').length}
+- **Medium Priority Issues:** ${this.issues.filter((i) => i.severity === 'medium').length}
+- **Low Priority Issues:** ${this.issues.filter((i) => i.severity === 'low').length}
 
 ## Performance Summary
 
-${this.performanceMetrics.map(m => `
+${this.performanceMetrics
+  .map(
+    (m) => `
 ### ${m.page}
 - First Contentful Paint: ${(m.fcp / 1000).toFixed(2)}s
 - Largest Contentful Paint: ${(m.lcp / 1000).toFixed(2)}s
 - Time to Interactive: ${(m.tti / 1000).toFixed(2)}s
 - Cumulative Layout Shift: ${m.cls.toFixed(3)}
-${m.lighthouse ? `
+${
+  m.lighthouse
+    ? `
 - Lighthouse Performance Score: ${(m.lighthouse.performance * 100).toFixed(0)}%
 - Lighthouse Accessibility Score: ${(m.lighthouse.accessibility * 100).toFixed(0)}%
-` : ''}
-`).join('')}
+`
+    : ''
+}
+`
+  )
+  .join('')}
 
 ## Critical Issues
 
-${this.issues.filter(i => i.severity === 'critical').map(issue => `
+${this.issues
+  .filter((i) => i.severity === 'critical')
+  .map(
+    (issue) => `
 ### ${issue.description}
 - **Page:** ${issue.page}
 - **Category:** ${issue.category}
 - **Recommendation:** ${issue.recommendation}
 ${issue.wcagViolation ? `- **WCAG:** ${issue.wcagViolation}` : ''}
-`).join('')}
+`
+  )
+  .join('')}
 
 ## High Priority Issues
 
-${this.issues.filter(i => i.severity === 'high').map(issue => `
+${this.issues
+  .filter((i) => i.severity === 'high')
+  .map(
+    (issue) => `
 ### ${issue.description}
 - **Page:** ${issue.page}
 - **Category:** ${issue.category}
 - **Recommendation:** ${issue.recommendation}
-`).join('')}
+`
+  )
+  .join('')}
 
 ## Action Items
 
@@ -1514,9 +1630,14 @@ Full HTML report available at: \`index.html\`
 
     return prioritizedIssues
       .slice(0, 15)
-      .map((issue, index) => `${index + 1}. **[${issue.severity.toUpperCase()}]** ${issue.recommendation}
+      .map(
+        (
+          issue,
+          index
+        ) => `${index + 1}. **[${issue.severity.toUpperCase()}]** ${issue.recommendation}
    - Page: ${issue.page}
-   - Issue: ${issue.description}`)
+   - Issue: ${issue.description}`
+      )
       .join('\n\n');
   }
 
@@ -1525,34 +1646,31 @@ Full HTML report available at: \`index.html\`
       timestamp: this.timestamp,
       summary: {
         totalIssues: this.issues.length,
-        criticalIssues: this.issues.filter(i => i.severity === 'critical').length,
-        highPriorityIssues: this.issues.filter(i => i.severity === 'high').length,
-        mediumPriorityIssues: this.issues.filter(i => i.severity === 'medium').length,
-        lowPriorityIssues: this.issues.filter(i => i.severity === 'low').length,
-        pagesAudited: new Set(this.issues.map(i => i.page)).size
+        criticalIssues: this.issues.filter((i) => i.severity === 'critical').length,
+        highPriorityIssues: this.issues.filter((i) => i.severity === 'high').length,
+        mediumPriorityIssues: this.issues.filter((i) => i.severity === 'medium').length,
+        lowPriorityIssues: this.issues.filter((i) => i.severity === 'low').length,
+        pagesAudited: new Set(this.issues.map((i) => i.page)).size,
       },
       issues: this.issues,
       performanceMetrics: this.performanceMetrics,
-      screenshotDirectory: this.screenshotDir
+      screenshotDirectory: this.screenshotDir,
     };
 
-    await fs.writeFile(
-      path.join(this.reportDir, 'report.json'),
-      JSON.stringify(report, null, 2)
-    );
+    await fs.writeFile(path.join(this.reportDir, 'report.json'), JSON.stringify(report, null, 2));
   }
 
   private async generateTaskList() {
     const tasks = this.issues
-      .filter(i => i.severity === 'critical' || i.severity === 'high')
-      .map(issue => ({
+      .filter((i) => i.severity === 'critical' || i.severity === 'high')
+      .map((issue) => ({
         title: issue.description,
         page: issue.page,
         severity: issue.severity,
         category: issue.category,
         recommendation: issue.recommendation,
         wcag: issue.wcagViolation,
-        estimatedEffort: this.estimateEffort(issue)
+        estimatedEffort: this.estimateEffort(issue),
       }));
 
     const taskListContent = `# Visual Audit Task List
@@ -1560,7 +1678,9 @@ Generated: ${new Date().toISOString()}
 
 ## High Priority Tasks
 
-${tasks.map((task, index) => `
+${tasks
+  .map(
+    (task, index) => `
 ### ${index + 1}. ${task.title}
 
 - **Severity:** ${task.severity}
@@ -1573,13 +1693,15 @@ ${task.wcag ? `- **WCAG Guideline:** ${task.wcag}` : ''}
 ${task.recommendation}
 
 ---
-`).join('')}
+`
+  )
+  .join('')}
 
 ## Task Summary
 
 - Total High Priority Tasks: ${tasks.length}
 - Estimated Total Effort: ${this.calculateTotalEffort(tasks)}
-- Categories: ${[...new Set(tasks.map(t => t.category))].join(', ')}
+- Categories: ${[...new Set(tasks.map((t) => t.category))].join(', ')}
 `;
 
     await fs.writeFile(path.join(this.reportDir, 'task-list.md'), taskListContent);
@@ -1595,7 +1717,7 @@ ${task.recommendation}
         responsiveness: '4-8 hours',
         consistency: '2-4 hours',
         interaction: '4-8 hours',
-        performance: '8-16 hours'
+        performance: '8-16 hours',
       },
       high: {
         layout: '2-4 hours',
@@ -1605,7 +1727,7 @@ ${task.recommendation}
         responsiveness: '2-4 hours',
         consistency: '1-2 hours',
         interaction: '2-4 hours',
-        performance: '4-8 hours'
+        performance: '4-8 hours',
       },
       medium: {
         layout: '1-2 hours',
@@ -1615,7 +1737,7 @@ ${task.recommendation}
         responsiveness: '1-2 hours',
         consistency: '30 min - 1 hour',
         interaction: '1-2 hours',
-        performance: '2-4 hours'
+        performance: '2-4 hours',
       },
       low: {
         layout: '30 min - 1 hour',
@@ -1625,8 +1747,8 @@ ${task.recommendation}
         responsiveness: '30 min - 1 hour',
         consistency: '15-30 min',
         interaction: '30 min - 1 hour',
-        performance: '1-2 hours'
-      }
+        performance: '1-2 hours',
+      },
     };
 
     return effortMap[issue.severity]?.[issue.category] || '1-2 hours';
@@ -1650,15 +1772,15 @@ ${task.recommendation}
 
   async cleanup() {
     console.log(chalk.yellow('\n🧹 Cleaning up...'));
-    
+
     if (this.context) {
       await this.context.close();
     }
-    
+
     if (this.browser) {
       await this.browser.close();
     }
-    
+
     if (this.viteProcess) {
       this.viteProcess.kill();
     }
@@ -1671,10 +1793,9 @@ ${task.recommendation}
       await this.launchBrowser();
       await this.runTests();
       await this.generateReport();
-      
+
       console.log(chalk.green('\n✨ Enhanced visual audit complete!'));
       console.log(chalk.blue(`📁 View report: ${path.join(this.reportDir, 'index.html')}`));
-      
     } catch (error) {
       console.error(chalk.red('❌ Error during visual audit:'), error);
       throw error;
@@ -1691,4 +1812,4 @@ if (isMainModule) {
   auditor.run().catch(console.error);
 }
 
-export { EnhancedVisualAuditor, VisualIssue, PerformanceMetrics };
+export { EnhancedVisualAuditor, type VisualIssue, type PerformanceMetrics };

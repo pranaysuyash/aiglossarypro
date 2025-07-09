@@ -1,8 +1,8 @@
-import { Link } from "wouter";
-import { Lightbulb, ArrowRight, Book, Plus, Repeat, GitBranch } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { ITerm } from "@/interfaces/interfaces";
+import { ArrowRight, Book, GitBranch, Lightbulb, Plus, Repeat } from 'lucide-react';
+import { Link } from 'wouter';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { ITerm } from '@/interfaces/interfaces';
 
 interface TermRelationshipsProps {
   relationships: ITerm[];
@@ -26,34 +26,34 @@ export default function TermRelationships({ relationships }: TermRelationshipsPr
   }
 
   const relationshipTypes = [
-    { 
-      key: 'prerequisite', 
-      title: 'Prerequisites', 
+    {
+      key: 'prerequisite',
+      title: 'Prerequisites',
       description: 'Terms you should understand first',
       icon: Book,
-      color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300'
+      color: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300',
     },
-    { 
-      key: 'related', 
-      title: 'Related Terms', 
+    {
+      key: 'related',
+      title: 'Related Terms',
       description: 'Conceptually connected terms',
       icon: GitBranch,
-      color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+      color: 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300',
     },
-    { 
-      key: 'extends', 
-      title: 'Advanced Topics', 
+    {
+      key: 'extends',
+      title: 'Advanced Topics',
       description: 'Terms that build upon this concept',
       icon: Plus,
-      color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+      color: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300',
     },
-    { 
-      key: 'alternative', 
-      title: 'Alternatives', 
+    {
+      key: 'alternative',
+      title: 'Alternatives',
       description: 'Similar or competing approaches',
       icon: Repeat,
-      color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300'
-    }
+      color: 'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300',
+    },
   ];
 
   const getStrengthBadge = (strength: number) => {
@@ -64,8 +64,10 @@ export default function TermRelationships({ relationships }: TermRelationshipsPr
 
   return (
     <div className="space-y-6">
-      {relationshipTypes.map(relType => {
-        const relatedTerms = relationships.filter((rel: any) => rel.relationshipType === relType.key);
+      {relationshipTypes.map((relType) => {
+        const relatedTerms = relationships.filter(
+          (rel: any) => rel.relationshipType === relType.key
+        );
         if (relatedTerms.length === 0) return null;
 
         const IconComponent = relType.icon;
@@ -101,23 +103,23 @@ export default function TermRelationships({ relationships }: TermRelationshipsPr
                         </Link>
                         <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-blue-500 transition-colors" />
                       </div>
-                      
+
                       {(rel.toTerm?.shortDefinition || rel.shortDefinition) && (
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-3 line-clamp-2">
                           {rel.toTerm?.shortDefinition || rel.shortDefinition}
                         </p>
                       )}
-                      
+
                       <div className="flex items-center justify-between">
                         {rel.strength && (
-                          <Badge 
+                          <Badge
                             variant={getStrengthBadge(rel.strength).variant as any}
                             className="text-xs"
                           >
                             {getStrengthBadge(rel.strength).text}
                           </Badge>
                         )}
-                        
+
                         {(rel.toTerm?.category || rel.category) && (
                           <span className="text-xs text-gray-500 dark:text-gray-400">
                             {rel.toTerm?.category || rel.category}

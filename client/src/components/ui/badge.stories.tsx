@@ -8,7 +8,8 @@ const meta: Meta<typeof Badge> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A versatile badge component for displaying status, categories, counts, and other short pieces of information.',
+        component:
+          'A versatile badge component for displaying status, categories, counts, and other short pieces of information.',
       },
     },
   },

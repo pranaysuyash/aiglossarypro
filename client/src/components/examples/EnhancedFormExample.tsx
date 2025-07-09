@@ -1,10 +1,9 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
 import * as z from 'zod';
+import { useLiveRegion } from '@/components/accessibility/LiveRegion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import {
   Form,
   FormControl,
@@ -14,16 +13,18 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form';
-import { useLiveRegion } from '@/components/accessibility/LiveRegion';
+import { Input } from '@/components/ui/input';
 
-const formSchema = z.object({
-  email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const formSchema = z
+  .object({
+    email: z.string().email('Please enter a valid email address'),
+    password: z.string().min(8, 'Password must be at least 8 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
 type FormData = z.infer<typeof formSchema>;
 
@@ -32,7 +33,7 @@ type FormData = z.infer<typeof formSchema>;
  */
 export function EnhancedFormExample() {
   const { announce } = useLiveRegion();
-  
+
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -50,7 +51,10 @@ export function EnhancedFormExample() {
   const handleFormError = () => {
     const errors = Object.keys(form.formState.errors);
     if (errors.length > 0) {
-      announce(`Form has ${errors.length} validation error${errors.length > 1 ? 's' : ''}`, 'assertive');
+      announce(
+        `Form has ${errors.length} validation error${errors.length > 1 ? 's' : ''}`,
+        'assertive'
+      );
     }
   };
 
@@ -69,21 +73,19 @@ export function EnhancedFormExample() {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Enter your email" 
+                    <Input
+                      placeholder="Enter your email"
                       type="email"
                       autoComplete="email"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    We'll never share your email with anyone else.
-                  </FormDescription>
+                  <FormDescription>We'll never share your email with anyone else.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="password"
@@ -91,21 +93,19 @@ export function EnhancedFormExample() {
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Enter your password" 
+                    <Input
+                      placeholder="Enter your password"
                       type="password"
                       autoComplete="new-password"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
-                  <FormDescription>
-                    Password must be at least 8 characters long.
-                  </FormDescription>
+                  <FormDescription>Password must be at least 8 characters long.</FormDescription>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <FormField
               control={form.control}
               name="confirmPassword"
@@ -113,18 +113,18 @@ export function EnhancedFormExample() {
                 <FormItem>
                   <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
-                    <Input 
-                      placeholder="Confirm your password" 
+                    <Input
+                      placeholder="Confirm your password"
                       type="password"
                       autoComplete="new-password"
-                      {...field} 
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-            
+
             <Button type="submit" className="w-full">
               Submit Form
             </Button>

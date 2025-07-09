@@ -1,33 +1,41 @@
-import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
-import { 
-  BarChart3, 
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Clock,
-  CheckCircle,
-  AlertCircle,
-  RefreshCw,
-  Calendar,
-  Target,
-  Brain,
-  Zap,
+import {
   Activity,
-  PieChart,
-  LineChart,
-  Star,
-  Users,
+  BarChart3,
+  Calendar,
+  CheckCircle,
+  DollarSign,
   FileText,
-  Layers
+  LineChart,
+  PieChart,
+  RefreshCw,
+  Star,
+  Target,
+  TrendingDown,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface GenerationStats {
   summary: {
@@ -134,21 +142,25 @@ interface CostAnalytics {
 
 export function GenerationStatsDashboard() {
   const [timeframe, setTimeframe] = useState<'today' | 'week' | 'month'>('week');
-  const [selectedModel, setSelectedModel] = useState<string>('all');
+  const [selectedModel, _setSelectedModel] = useState<string>('all');
 
   // Query for generation statistics
-  const { data: statsData, isLoading: isLoadingStats, refetch } = useQuery({
+  const {
+    data: statsData,
+    isLoading: isLoadingStats,
+    refetch,
+  } = useQuery({
     queryKey: ['generation-statistics', timeframe, selectedModel],
     queryFn: async () => {
       const params = new URLSearchParams({
         timeframe,
-        ...(selectedModel !== 'all' && { model: selectedModel })
+        ...(selectedModel !== 'all' && { model: selectedModel }),
       });
       const response = await fetch(`/api/admin/generation/stats?${params}`);
       if (!response.ok) throw new Error('Failed to fetch generation statistics');
       return response.json();
     },
-    refetchInterval: 60000 // Refetch every minute
+    refetchInterval: 60000, // Refetch every minute
   });
 
   const stats = statsData?.data as GenerationStats | undefined;
@@ -157,7 +169,7 @@ export function GenerationStatsDashboard() {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 4
+      minimumFractionDigits: 4,
     }).format(amount);
   };
 
@@ -180,7 +192,7 @@ export function GenerationStatsDashboard() {
     return status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
   };
 
-  const getTrendIcon = (current: number, previous: number) => {
+  const _getTrendIcon = (current: number, previous: number) => {
     if (current > previous) return <TrendingUp className="w-4 h-4 text-green-600" />;
     if (current < previous) return <TrendingDown className="w-4 h-4 text-red-600" />;
     return <Activity className="w-4 h-4 text-gray-600" />;
@@ -188,10 +200,14 @@ export function GenerationStatsDashboard() {
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
-      case 'simple': return 'bg-green-100 text-green-800';
-      case 'moderate': return 'bg-yellow-100 text-yellow-800';
-      case 'complex': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'simple':
+        return 'bg-green-100 text-green-800';
+      case 'moderate':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'complex':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -264,9 +280,7 @@ export function GenerationStatsDashboard() {
                   <div className="text-2xl font-bold text-green-600">
                     {formatPercentage(stats?.summary.successRate || 0)}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    AI generation success
-                  </p>
+                  <p className="text-xs text-muted-foreground">AI generation success</p>
                 </CardContent>
               </Card>
 
@@ -291,12 +305,12 @@ export function GenerationStatsDashboard() {
                   <Star className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                  <div className={`text-2xl font-bold ${getQualityColor(stats?.qualityMetrics.averageScore || 0)}`}>
+                  <div
+                    className={`text-2xl font-bold ${getQualityColor(stats?.qualityMetrics.averageScore || 0)}`}
+                  >
                     {(stats?.qualityMetrics.averageScore || 0).toFixed(1)}/10
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Content quality score
-                  </p>
+                  <p className="text-xs text-muted-foreground">Content quality score</p>
                 </CardContent>
               </Card>
             </div>
@@ -314,19 +328,27 @@ export function GenerationStatsDashboard() {
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Average Cost per Generation</span>
-                      <span className="text-sm font-mono">{formatCurrency(stats?.summary.averageCost || 0)}</span>
+                      <span className="text-sm font-mono">
+                        {formatCurrency(stats?.summary.averageCost || 0)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Average Tokens</span>
-                      <span className="text-sm font-mono">{formatNumber(stats?.summary.averageTokens || 0)}</span>
+                      <span className="text-sm font-mono">
+                        {formatNumber(stats?.summary.averageTokens || 0)}
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Average Latency</span>
-                      <span className="text-sm font-mono">{stats?.summary.averageLatency || 0}ms</span>
+                      <span className="text-sm font-mono">
+                        {stats?.summary.averageLatency || 0}ms
+                      </span>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Improvement Rate</span>
-                      <span className="text-sm font-mono">{formatPercentage(stats?.qualityMetrics.improvementRate || 0)}</span>
+                      <span className="text-sm font-mono">
+                        {formatPercentage(stats?.qualityMetrics.improvementRate || 0)}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -344,41 +366,49 @@ export function GenerationStatsDashboard() {
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Excellent (9-10)</span>
                       <div className="flex items-center space-x-2">
-                        <Progress 
-                          value={(stats?.qualityMetrics.scoreDistribution.excellent || 0)} 
-                          className="w-16" 
+                        <Progress
+                          value={stats?.qualityMetrics.scoreDistribution.excellent || 0}
+                          className="w-16"
                         />
-                        <span className="text-sm font-mono w-12">{stats?.qualityMetrics.scoreDistribution.excellent || 0}</span>
+                        <span className="text-sm font-mono w-12">
+                          {stats?.qualityMetrics.scoreDistribution.excellent || 0}
+                        </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Good (7-8)</span>
                       <div className="flex items-center space-x-2">
-                        <Progress 
-                          value={(stats?.qualityMetrics.scoreDistribution.good || 0)} 
-                          className="w-16" 
+                        <Progress
+                          value={stats?.qualityMetrics.scoreDistribution.good || 0}
+                          className="w-16"
                         />
-                        <span className="text-sm font-mono w-12">{stats?.qualityMetrics.scoreDistribution.good || 0}</span>
+                        <span className="text-sm font-mono w-12">
+                          {stats?.qualityMetrics.scoreDistribution.good || 0}
+                        </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Needs Work (5-6)</span>
                       <div className="flex items-center space-x-2">
-                        <Progress 
-                          value={(stats?.qualityMetrics.scoreDistribution.needsWork || 0)} 
-                          className="w-16" 
+                        <Progress
+                          value={stats?.qualityMetrics.scoreDistribution.needsWork || 0}
+                          className="w-16"
                         />
-                        <span className="text-sm font-mono w-12">{stats?.qualityMetrics.scoreDistribution.needsWork || 0}</span>
+                        <span className="text-sm font-mono w-12">
+                          {stats?.qualityMetrics.scoreDistribution.needsWork || 0}
+                        </span>
                       </div>
                     </div>
                     <div className="flex justify-between items-center">
                       <span className="text-sm font-medium">Poor (1-4)</span>
                       <div className="flex items-center space-x-2">
-                        <Progress 
-                          value={(stats?.qualityMetrics.scoreDistribution.poor || 0)} 
-                          className="w-16" 
+                        <Progress
+                          value={stats?.qualityMetrics.scoreDistribution.poor || 0}
+                          className="w-16"
                         />
-                        <span className="text-sm font-mono w-12">{stats?.qualityMetrics.scoreDistribution.poor || 0}</span>
+                        <span className="text-sm font-mono w-12">
+                          {stats?.qualityMetrics.scoreDistribution.poor || 0}
+                        </span>
                       </div>
                     </div>
                   </div>
@@ -409,22 +439,31 @@ export function GenerationStatsDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {stats?.byModel && Object.entries(stats.byModel).map(([model, data]) => (
-                      <TableRow key={model}>
-                        <TableCell className="font-medium">{model}</TableCell>
-                        <TableCell>{formatNumber(data.count)}</TableCell>
-                        <TableCell>
-                          <Badge className={data.successRate > 0.95 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
-                            {formatPercentage(data.successRate)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className={getQualityColor(data.averageQuality)}>
-                          {data.averageQuality.toFixed(1)}/10
-                        </TableCell>
-                        <TableCell className="font-mono">{formatCurrency(data.cost / data.count)}</TableCell>
-                        <TableCell className="font-mono">{data.averageLatency}ms</TableCell>
-                      </TableRow>
-                    ))}
+                    {stats?.byModel &&
+                      Object.entries(stats.byModel).map(([model, data]) => (
+                        <TableRow key={model}>
+                          <TableCell className="font-medium">{model}</TableCell>
+                          <TableCell>{formatNumber(data.count)}</TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                data.successRate > 0.95
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }
+                            >
+                              {formatPercentage(data.successRate)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className={getQualityColor(data.averageQuality)}>
+                            {data.averageQuality.toFixed(1)}/10
+                          </TableCell>
+                          <TableCell className="font-mono">
+                            {formatCurrency(data.cost / data.count)}
+                          </TableCell>
+                          <TableCell className="font-mono">{data.averageLatency}ms</TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -434,9 +473,7 @@ export function GenerationStatsDashboard() {
             <Card>
               <CardHeader>
                 <CardTitle>Section Performance</CardTitle>
-                <CardDescription>
-                  Performance metrics by content section type
-                </CardDescription>
+                <CardDescription>Performance metrics by content section type</CardDescription>
               </CardHeader>
               <CardContent>
                 <Table>
@@ -451,24 +488,31 @@ export function GenerationStatsDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {stats?.bySection && Object.entries(stats.bySection).map(([section, data]) => (
-                      <TableRow key={section}>
-                        <TableCell className="font-medium">
-                          {section.replace('_', ' ')}
-                        </TableCell>
-                        <TableCell>{formatNumber(data.count)}</TableCell>
-                        <TableCell>
-                          <Badge className={data.successRate > 0.95 ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}>
-                            {formatPercentage(data.successRate)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className={getQualityColor(data.averageQuality)}>
-                          {data.averageQuality.toFixed(1)}/10
-                        </TableCell>
-                        <TableCell className="font-mono">{formatNumber(data.averageTokens)}</TableCell>
-                        <TableCell className="font-mono">{formatCurrency(data.cost)}</TableCell>
-                      </TableRow>
-                    ))}
+                    {stats?.bySection &&
+                      Object.entries(stats.bySection).map(([section, data]) => (
+                        <TableRow key={section}>
+                          <TableCell className="font-medium">{section.replace('_', ' ')}</TableCell>
+                          <TableCell>{formatNumber(data.count)}</TableCell>
+                          <TableCell>
+                            <Badge
+                              className={
+                                data.successRate > 0.95
+                                  ? 'bg-green-100 text-green-800'
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }
+                            >
+                              {formatPercentage(data.successRate)}
+                            </Badge>
+                          </TableCell>
+                          <TableCell className={getQualityColor(data.averageQuality)}>
+                            {data.averageQuality.toFixed(1)}/10
+                          </TableCell>
+                          <TableCell className="font-mono">
+                            {formatNumber(data.averageTokens)}
+                          </TableCell>
+                          <TableCell className="font-mono">{formatCurrency(data.cost)}</TableCell>
+                        </TableRow>
+                      ))}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -487,9 +531,7 @@ export function GenerationStatsDashboard() {
                   <div className="text-2xl font-bold">
                     {formatCurrency(stats?.costAnalytics.projectedMonthlyCost || 0)}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Based on current usage
-                  </p>
+                  <p className="text-xs text-muted-foreground">Based on current usage</p>
                 </CardContent>
               </Card>
 
@@ -502,9 +544,7 @@ export function GenerationStatsDashboard() {
                   <div className="text-2xl font-bold text-green-600">
                     {formatPercentage(stats?.costAnalytics.costEfficiency || 0)}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Efficiency score
-                  </p>
+                  <p className="text-xs text-muted-foreground">Efficiency score</p>
                 </CardContent>
               </Card>
 
@@ -517,9 +557,7 @@ export function GenerationStatsDashboard() {
                   <div className="text-2xl font-bold text-blue-600">
                     {formatCurrency(stats?.costAnalytics.savingsFromBatching || 0)}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Saved through batching
-                  </p>
+                  <p className="text-xs text-muted-foreground">Saved through batching</p>
                 </CardContent>
               </Card>
 
@@ -532,9 +570,7 @@ export function GenerationStatsDashboard() {
                   <div className="text-2xl font-bold">
                     {formatCurrency(stats?.summary.costThisMonth || 0)}
                   </div>
-                  <p className="text-xs text-muted-foreground">
-                    Month-to-date spend
-                  </p>
+                  <p className="text-xs text-muted-foreground">Month-to-date spend</p>
                 </CardContent>
               </Card>
             </div>
@@ -549,22 +585,25 @@ export function GenerationStatsDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {stats?.costAnalytics.costByComplexity && Object.entries(stats.costAnalytics.costByComplexity).map(([complexity, cost]) => (
-                    <div key={complexity} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <Badge className={getComplexityColor(complexity)}>
-                          {complexity}
-                        </Badge>
-                        <span className="text-sm font-medium capitalize">{complexity} Content</span>
-                      </div>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{formatCurrency(cost)}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {formatPercentage(cost / (stats?.summary.totalCost || 1))} of total
+                  {stats?.costAnalytics.costByComplexity &&
+                    Object.entries(stats.costAnalytics.costByComplexity).map(
+                      ([complexity, cost]) => (
+                        <div key={complexity} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <Badge className={getComplexityColor(complexity)}>{complexity}</Badge>
+                            <span className="text-sm font-medium capitalize">
+                              {complexity} Content
+                            </span>
+                          </div>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">{formatCurrency(cost)}</div>
+                            <div className="text-xs text-muted-foreground">
+                              {formatPercentage(cost / (stats?.summary.totalCost || 1))} of total
+                            </div>
+                          </div>
                         </div>
-                      </div>
-                    </div>
-                  ))}
+                      )
+                    )}
                 </div>
               </CardContent>
             </Card>
@@ -582,20 +621,32 @@ export function GenerationStatsDashboard() {
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <h4 className="font-medium">Quality Score Distribution</h4>
-                    {stats?.qualityMetrics.scoreDistribution && Object.entries(stats.qualityMetrics.scoreDistribution).map(([category, count]) => (
-                      <div key={category} className="flex items-center justify-between">
-                        <span className="text-sm font-medium capitalize">{category.replace(/([A-Z])/g, ' $1')}</span>
-                        <div className="flex items-center space-x-2">
-                          <Progress 
-                            value={(count / Object.values(stats.qualityMetrics.scoreDistribution).reduce((a, b) => a + b, 0)) * 100} 
-                            className="w-24" 
-                          />
-                          <span className="text-sm font-mono w-8">{count}</span>
-                        </div>
-                      </div>
-                    ))}
+                    {stats?.qualityMetrics.scoreDistribution &&
+                      Object.entries(stats.qualityMetrics.scoreDistribution).map(
+                        ([category, count]) => (
+                          <div key={category} className="flex items-center justify-between">
+                            <span className="text-sm font-medium capitalize">
+                              {category.replace(/([A-Z])/g, ' $1')}
+                            </span>
+                            <div className="flex items-center space-x-2">
+                              <Progress
+                                value={
+                                  (count /
+                                    Object.values(stats.qualityMetrics.scoreDistribution).reduce(
+                                      (a, b) => a + b,
+                                      0
+                                    )) *
+                                  100
+                                }
+                                className="w-24"
+                              />
+                              <span className="text-sm font-mono w-8">{count}</span>
+                            </div>
+                          </div>
+                        )
+                      )}
                   </div>
-                  
+
                   <div className="space-y-4">
                     <h4 className="font-medium">Quality Trends</h4>
                     <div className="text-center py-8 text-muted-foreground">
@@ -650,7 +701,9 @@ export function GenerationStatsDashboard() {
                             <span className="text-muted-foreground">-</span>
                           )}
                         </TableCell>
-                        <TableCell className="font-mono">{formatCurrency(generation.cost)}</TableCell>
+                        <TableCell className="font-mono">
+                          {formatCurrency(generation.cost)}
+                        </TableCell>
                         <TableCell className="font-mono">{generation.processingTime}ms</TableCell>
                         <TableCell className="text-sm text-muted-foreground">
                           {new Date(generation.createdAt).toLocaleDateString()}

@@ -1,16 +1,15 @@
 /**
  * Batch Progress Tracking Service - Phase 2 Enhanced Content Generation System
- * 
+ *
  * Provides real-time progress tracking, status reporting, and analytics
  * for column batch processing operations.
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
+import { jobQueueManager } from '../jobs/queue';
 import { log as logger } from '../utils/logger';
 import { columnBatchProcessorService } from './columnBatchProcessorService';
 import { costManagementService } from './costManagementService';
-import { jobQueueManager } from '../jobs/queue';
-import { JobType } from '../jobs/types';
 
 // Progress tracking interfaces
 export interface ProgressSnapshot {
@@ -133,7 +132,7 @@ export interface DashboardData {
 
 /**
  * Batch Progress Tracking Service
- * 
+ *
  * Comprehensive service for tracking and reporting on batch operation progress
  * with real-time analytics and performance monitoring.
  */
@@ -156,11 +155,14 @@ export class BatchProgressTrackingService extends EventEmitter {
   /**
    * Start monitoring a batch operation
    */
-  async startMonitoring(operationId: string, monitoringOptions?: {
-    snapshotInterval?: number;
-    alertThresholds?: Partial<typeof this.alertThresholds>;
-    reportMilestones?: number[];
-  }): Promise<void> {
+  async startMonitoring(
+    operationId: string,
+    monitoringOptions?: {
+      snapshotInterval?: number;
+      alertThresholds?: Partial<typeof this.alertThresholds>;
+      reportMilestones?: number[];
+    }
+  ): Promise<void> {
     const interval = monitoringOptions?.snapshotInterval || 30000; // 30 seconds default
     const milestones = monitoringOptions?.reportMilestones || [25, 50, 75, 90];
 
@@ -181,8 +183,8 @@ export class BatchProgressTrackingService extends EventEmitter {
         await this.captureProgressSnapshot(operationId);
         await this.analyzeProgress(operationId, milestones);
       } catch (error) {
-        logger.error(`Error monitoring operation ${operationId}:`, { 
-          error: error instanceof Error ? error.message : String(error) 
+        logger.error(`Error monitoring operation ${operationId}:`, {
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }, interval);
@@ -201,10 +203,10 @@ export class BatchProgressTrackingService extends EventEmitter {
     if (monitor) {
       clearInterval(monitor);
       this.activeMonitors.delete(operationId);
-      
+
       // Generate final report
       await this.generateFinalReport(operationId);
-      
+
       logger.info(`Stopped progress monitoring for operation ${operationId}`);
       this.emit('monitoring:stopped', { operationId });
     }
@@ -231,7 +233,7 @@ export class BatchProgressTrackingService extends EventEmitter {
    */
   getStatusReports(operationId: string, reportType?: string): StatusReport[] {
     const reports = this.statusReports.get(operationId) || [];
-    return reportType ? reports.filter(r => r.reportType === reportType) : reports;
+    return reportType ? reports.filter((r) => r.reportType === reportType) : reports;
   }
 
   /**
@@ -243,10 +245,10 @@ export class BatchProgressTrackingService extends EventEmitter {
     const queueStats = await jobQueueManager.getAllQueueStats();
 
     // Calculate active operations data
-    const activeOpsData = activeOperations.map(op => {
-      const currentProgress = this.getCurrentProgress(op.id);
+    const activeOpsData = activeOperations.map((op) => {
+      const _currentProgress = this.getCurrentProgress(op.id);
       const health = this.calculateOperationHealth(op.id);
-      
+
       return {
         operationId: op.id,
         sectionName: op.sectionName,
@@ -254,13 +256,19 @@ export class BatchProgressTrackingService extends EventEmitter {
         completionPercentage: op.progress.completionPercentage,
         currentCost: op.costs.actualCost,
         estimatedTimeRemaining: this.calculateEstimatedTimeRemaining(op.id),
-        health
+        health,
       };
     });
 
     // Calculate system metrics
-    const totalQueueJobs = Object.values(queueStats).reduce((sum, stat: any) => sum + stat.total, 0);
-    const processingCapacity = Object.values(queueStats).reduce((sum, stat: any) => sum + stat.active, 0);
+    const totalQueueJobs = Object.values(queueStats).reduce(
+      (sum, stat: any) => sum + stat.total,
+      0
+    );
+    const processingCapacity = Object.values(queueStats).reduce(
+      (sum, stat: any) => sum + stat.active,
+      0
+    );
     const maxCapacity = 50; // Estimated max concurrent jobs
 
     const systemMetrics = {
@@ -269,7 +277,7 @@ export class BatchProgressTrackingService extends EventEmitter {
       averageCompletionTime: await this.calculateAverageCompletionTime(),
       systemHealthScore: this.calculateSystemHealthScore(),
       queueDepth: totalQueueJobs,
-      processingCapacityUtilization: (processingCapacity / maxCapacity) * 100
+      processingCapacityUtilization: (processingCapacity / maxCapacity) * 100,
     };
 
     // Get alerts
@@ -282,7 +290,7 @@ export class BatchProgressTrackingService extends EventEmitter {
       activeOperations: activeOpsData,
       systemMetrics,
       alerts,
-      recentActivity
+      recentActivity,
     };
   }
 
@@ -292,7 +300,7 @@ export class BatchProgressTrackingService extends EventEmitter {
   async getDetailedMetrics(operationId: string): Promise<ProgressMetrics | null> {
     const operation = columnBatchProcessorService.getOperationStatus(operationId);
     const snapshots = this.getProgressHistory(operationId);
-    
+
     if (!operation || snapshots.length === 0) {
       return null;
     }
@@ -302,10 +310,11 @@ export class BatchProgressTrackingService extends EventEmitter {
     const totalDuration = endTime - startTime;
 
     // Calculate processing rates
-    const processingRates = snapshots.map(s => s.processingRate).filter(r => r > 0);
-    const averageProcessingRate = processingRates.length > 0 
-      ? processingRates.reduce((sum, rate) => sum + rate, 0) / processingRates.length 
-      : 0;
+    const processingRates = snapshots.map((s) => s.processingRate).filter((r) => r > 0);
+    const averageProcessingRate =
+      processingRates.length > 0
+        ? processingRates.reduce((sum, rate) => sum + rate, 0) / processingRates.length
+        : 0;
     const peakProcessingRate = Math.max(...processingRates, 0);
 
     // Calculate cost efficiency
@@ -325,14 +334,15 @@ export class BatchProgressTrackingService extends EventEmitter {
       peakProcessingRate,
       totalCost: operation.costs.actualCost,
       costEfficiency,
-      errorRate: operation.progress.totalTerms > 0 
-        ? operation.progress.failedTerms / operation.progress.totalTerms 
-        : 0,
+      errorRate:
+        operation.progress.totalTerms > 0
+          ? operation.progress.failedTerms / operation.progress.totalTerms
+          : 0,
       throughputAnalysis: {
         hourlyBreakdown,
-        performanceTrends
+        performanceTrends,
       },
-      qualityMetrics: operation.result?.qualityMetrics
+      qualityMetrics: operation.result?.qualityMetrics,
     };
   }
 
@@ -380,7 +390,7 @@ export class BatchProgressTrackingService extends EventEmitter {
       processingRate,
       estimatedTimeRemaining,
       errorRate,
-      recentErrors: operation.errors.slice(-5) // Last 5 errors
+      recentErrors: operation.errors.slice(-5), // Last 5 errors
     };
 
     previousSnapshots.push(snapshot);
@@ -396,7 +406,7 @@ export class BatchProgressTrackingService extends EventEmitter {
   private async analyzeProgress(operationId: string, milestones: number[]): Promise<void> {
     const operation = columnBatchProcessorService.getOperationStatus(operationId);
     const currentSnapshot = this.getCurrentProgress(operationId);
-    
+
     if (!operation || !currentSnapshot) {
       return;
     }
@@ -405,9 +415,7 @@ export class BatchProgressTrackingService extends EventEmitter {
     for (const milestone of milestones) {
       if (currentSnapshot.completionPercentage >= milestone) {
         const reports = this.getStatusReports(operationId, 'milestone');
-        const alreadyReported = reports.some(r => 
-          r.milestoneReached?.percentage === milestone
-        );
+        const alreadyReported = reports.some((r) => r.milestoneReached?.percentage === milestone);
 
         if (!alreadyReported) {
           await this.generateMilestoneReport(operationId, milestone, currentSnapshot);
@@ -423,8 +431,8 @@ export class BatchProgressTrackingService extends EventEmitter {
    * Generate milestone report
    */
   private async generateMilestoneReport(
-    operationId: string, 
-    milestone: number, 
+    operationId: string,
+    milestone: number,
     snapshot: ProgressSnapshot
   ): Promise<void> {
     const operation = columnBatchProcessorService.getOperationStatus(operationId);
@@ -440,18 +448,17 @@ export class BatchProgressTrackingService extends EventEmitter {
         processedTerms: snapshot.processedTerms,
         totalTerms: snapshot.totalTerms,
         currentCost: snapshot.currentCost,
-        timeElapsed: operation.timing.startedAt 
-          ? Date.now() - operation.timing.startedAt.getTime() 
+        timeElapsed: operation.timing.startedAt
+          ? Date.now() - operation.timing.startedAt.getTime()
           : 0,
-        estimatedTimeRemaining: snapshot.estimatedTimeRemaining
+        estimatedTimeRemaining: snapshot.estimatedTimeRemaining,
       },
       performance: {
         processingRate: snapshot.processingRate,
-        costEfficiency: snapshot.processedTerms > 0 
-          ? snapshot.currentCost / snapshot.processedTerms 
-          : 0,
+        costEfficiency:
+          snapshot.processedTerms > 0 ? snapshot.currentCost / snapshot.processedTerms : 0,
         errorRate: snapshot.errorRate,
-        systemHealth: this.calculateOperationHealth(operationId)
+        systemHealth: this.calculateOperationHealth(operationId),
       },
       milestoneReached: {
         percentage: milestone,
@@ -460,9 +467,9 @@ export class BatchProgressTrackingService extends EventEmitter {
           actualRate: snapshot.processingRate,
           expectedRate: this.calculateExpectedRate(operationId),
           costAtMilestone: snapshot.currentCost,
-          expectedCost: (snapshot.estimatedCost * milestone) / 100
-        }
-      }
+          expectedCost: (snapshot.estimatedCost * milestone) / 100,
+        },
+      },
     };
 
     const reports = this.statusReports.get(operationId) || [];
@@ -480,11 +487,14 @@ export class BatchProgressTrackingService extends EventEmitter {
     const alerts: Array<{ type: string; severity: string; message: string }> = [];
 
     // Check processing rate
-    if (snapshot.processingRate > 0 && snapshot.processingRate < this.alertThresholds.slowProcessingRate) {
+    if (
+      snapshot.processingRate > 0 &&
+      snapshot.processingRate < this.alertThresholds.slowProcessingRate
+    ) {
       alerts.push({
         type: 'performance',
         severity: 'medium',
-        message: `Slow processing rate: ${snapshot.processingRate.toFixed(1)} terms/min (threshold: ${this.alertThresholds.slowProcessingRate})`
+        message: `Slow processing rate: ${snapshot.processingRate.toFixed(1)} terms/min (threshold: ${this.alertThresholds.slowProcessingRate})`,
       });
     }
 
@@ -493,7 +503,7 @@ export class BatchProgressTrackingService extends EventEmitter {
       alerts.push({
         type: 'error',
         severity: 'high',
-        message: `High error rate: ${(snapshot.errorRate * 100).toFixed(1)}% (threshold: ${(this.alertThresholds.highErrorRate * 100).toFixed(1)}%)`
+        message: `High error rate: ${(snapshot.errorRate * 100).toFixed(1)}% (threshold: ${(this.alertThresholds.highErrorRate * 100).toFixed(1)}%)`,
       });
     }
 
@@ -502,7 +512,7 @@ export class BatchProgressTrackingService extends EventEmitter {
       alerts.push({
         type: 'cost',
         severity: 'high',
-        message: `Cost overrun: $${snapshot.currentCost.toFixed(2)} vs estimated $${snapshot.estimatedCost.toFixed(2)}`
+        message: `Cost overrun: $${snapshot.currentCost.toFixed(2)} vs estimated $${snapshot.estimatedCost.toFixed(2)}`,
       });
     }
 
@@ -518,7 +528,7 @@ export class BatchProgressTrackingService extends EventEmitter {
   private async generateFinalReport(operationId: string): Promise<void> {
     const operation = columnBatchProcessorService.getOperationStatus(operationId);
     const metrics = await this.getDetailedMetrics(operationId);
-    
+
     if (!operation || !metrics) {
       return;
     }
@@ -534,14 +544,14 @@ export class BatchProgressTrackingService extends EventEmitter {
         totalTerms: operation.progress.totalTerms,
         currentCost: operation.costs.actualCost,
         timeElapsed: metrics.totalDuration,
-        estimatedTimeRemaining: 0
+        estimatedTimeRemaining: 0,
       },
       performance: {
         processingRate: metrics.averageProcessingRate,
         costEfficiency: metrics.costEfficiency,
         errorRate: metrics.errorRate,
-        systemHealth: this.calculateOperationHealth(operationId)
-      }
+        systemHealth: this.calculateOperationHealth(operationId),
+      },
     };
 
     const reports = this.statusReports.get(operationId) || [];
@@ -583,7 +593,7 @@ export class BatchProgressTrackingService extends EventEmitter {
   /**
    * Calculate expected processing rate
    */
-  private calculateExpectedRate(operationId: string): number {
+  private calculateExpectedRate(_operationId: string): number {
     // Simple estimate: 1 term per 30 seconds = 2 terms per minute
     return 2;
   }
@@ -606,16 +616,16 @@ export class BatchProgressTrackingService extends EventEmitter {
 
     // Group snapshots by hour
     const hourlyGroups = new Map<string, ProgressSnapshot[]>();
-    
+
     for (const snapshot of snapshots) {
       const hour = new Date(snapshot.timestamp);
       hour.setMinutes(0, 0, 0);
       const hourKey = hour.toISOString();
-      
+
       if (!hourlyGroups.has(hourKey)) {
         hourlyGroups.set(hourKey, []);
       }
-      hourlyGroups.get(hourKey)!.push(snapshot);
+      hourlyGroups.get(hourKey)?.push(snapshot);
     }
 
     // Calculate metrics for each hour
@@ -623,12 +633,12 @@ export class BatchProgressTrackingService extends EventEmitter {
       const hour = new Date(hourKey);
       const firstSnapshot = hourSnapshots[0];
       const lastSnapshot = hourSnapshots[hourSnapshots.length - 1];
-      
+
       breakdown.push({
         hour,
         termsProcessed: lastSnapshot.processedTerms - firstSnapshot.processedTerms,
         cost: lastSnapshot.currentCost - firstSnapshot.currentCost,
-        errorCount: lastSnapshot.recentErrors.length
+        errorCount: lastSnapshot.recentErrors.length,
       });
     }
 
@@ -650,24 +660,27 @@ export class BatchProgressTrackingService extends EventEmitter {
     const firstHalf = snapshots.slice(0, Math.floor(snapshots.length / 2));
     const secondHalf = snapshots.slice(Math.floor(snapshots.length / 2));
 
-    const firstHalfAvgRate = firstHalf.reduce((sum, s) => sum + s.processingRate, 0) / firstHalf.length;
-    const secondHalfAvgRate = secondHalf.reduce((sum, s) => sum + s.processingRate, 0) / secondHalf.length;
+    const firstHalfAvgRate =
+      firstHalf.reduce((sum, s) => sum + s.processingRate, 0) / firstHalf.length;
+    const secondHalfAvgRate =
+      secondHalf.reduce((sum, s) => sum + s.processingRate, 0) / secondHalf.length;
 
     const firstHalfAvgError = firstHalf.reduce((sum, s) => sum + s.errorRate, 0) / firstHalf.length;
-    const secondHalfAvgError = secondHalf.reduce((sum, s) => sum + s.errorRate, 0) / secondHalf.length;
+    const secondHalfAvgError =
+      secondHalf.reduce((sum, s) => sum + s.errorRate, 0) / secondHalf.length;
 
-    const processingRateChange = firstHalfAvgRate > 0 
-      ? ((secondHalfAvgRate - firstHalfAvgRate) / firstHalfAvgRate) * 100 
-      : 0;
+    const processingRateChange =
+      firstHalfAvgRate > 0 ? ((secondHalfAvgRate - firstHalfAvgRate) / firstHalfAvgRate) * 100 : 0;
 
-    const errorRateChange = firstHalfAvgError > 0 
-      ? ((secondHalfAvgError - firstHalfAvgError) / firstHalfAvgError) * 100 
-      : 0;
+    const errorRateChange =
+      firstHalfAvgError > 0
+        ? ((secondHalfAvgError - firstHalfAvgError) / firstHalfAvgError) * 100
+        : 0;
 
     return {
       processingRateChange,
       costRateChange: 0, // Simplified for now
-      errorRateChange
+      errorRateChange,
     };
   }
 
@@ -676,14 +689,14 @@ export class BatchProgressTrackingService extends EventEmitter {
    */
   private async calculateAverageCompletionTime(): Promise<number> {
     const history = columnBatchProcessorService.getOperationHistory(100);
-    const completedOps = history.filter(op => 
-      op.status === 'completed' && op.timing.startedAt && op.timing.actualCompletion
+    const completedOps = history.filter(
+      (op) => op.status === 'completed' && op.timing.startedAt && op.timing.actualCompletion
     );
 
     if (completedOps.length === 0) return 0;
 
     const totalTime = completedOps.reduce((sum, op) => {
-      const duration = op.timing.actualCompletion!.getTime() - op.timing.startedAt!.getTime();
+      const duration = op.timing.actualCompletion?.getTime() - op.timing.startedAt?.getTime();
       return sum + duration;
     }, 0);
 
@@ -738,7 +751,7 @@ export class BatchProgressTrackingService extends EventEmitter {
           severity: 'high',
           message: `Operation ${op.sectionName} is in critical state`,
           operationId: op.id,
-          triggeredAt: new Date()
+          triggeredAt: new Date(),
         });
       }
     }
@@ -790,9 +803,12 @@ export class BatchProgressTrackingService extends EventEmitter {
     });
 
     // Cleanup old data periodically
-    setInterval(() => {
-      this.cleanupOldData();
-    }, 24 * 60 * 60 * 1000); // Daily cleanup
+    setInterval(
+      () => {
+        this.cleanupOldData();
+      },
+      24 * 60 * 60 * 1000
+    ); // Daily cleanup
   }
 
   /**
@@ -800,16 +816,16 @@ export class BatchProgressTrackingService extends EventEmitter {
    */
   private cleanupOldData(): void {
     const cutoffDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
-    
+
     for (const [operationId, snapshots] of this.progressSnapshots.entries()) {
-      const filteredSnapshots = snapshots.filter(s => s.timestamp > cutoffDate);
+      const filteredSnapshots = snapshots.filter((s) => s.timestamp > cutoffDate);
       if (filteredSnapshots.length !== snapshots.length) {
         this.progressSnapshots.set(operationId, filteredSnapshots);
       }
     }
 
     for (const [operationId, reports] of this.statusReports.entries()) {
-      const filteredReports = reports.filter(r => r.timestamp > cutoffDate);
+      const filteredReports = reports.filter((r) => r.timestamp > cutoffDate);
       if (filteredReports.length !== reports.length) {
         this.statusReports.set(operationId, filteredReports);
       }

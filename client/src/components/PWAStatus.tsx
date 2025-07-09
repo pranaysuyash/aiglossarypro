@@ -3,29 +3,29 @@
  * Displays PWA installation status, offline capabilities, and cache management
  */
 
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Progress } from './ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { 
-  Download, 
-  Wifi, 
-  WifiOff, 
-  HardDrive, 
-  Bell, 
-  Share2, 
-  RefreshCw, 
-  Trash2,
-  Smartphone,
-  Monitor,
-  CheckCircle,
-  XCircle,
+import {
   AlertCircle,
-  Info
+  Bell,
+  CheckCircle,
+  Download,
+  HardDrive,
+  Info,
+  Monitor,
+  RefreshCw,
+  Share2,
+  Smartphone,
+  Trash2,
+  Wifi,
+  WifiOff,
+  XCircle,
 } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import usePWA from '../hooks/usePWA';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface PWAStatusProps {
   className?: string;
@@ -48,14 +48,14 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
     getCacheInfo,
     clearCache,
     formatCacheSize,
-    isStandaloneMode
+    isStandaloneMode,
   } = usePWA();
 
   const handleInstallPWA = async () => {
     setIsLoading(true);
     const success = await installPWA();
     setIsLoading(false);
-    
+
     if (success) {
       // Show success message or redirect
       console.log('PWA installed successfully');
@@ -79,7 +79,7 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
     await shareContent({
       title: 'AI Glossary Pro',
       text: 'Comprehensive AI/ML terminology and learning platform',
-      url: window.location.origin
+      url: window.location.origin,
     });
   };
 
@@ -94,7 +94,7 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
       setIsLoading(true);
       const success = await clearCache();
       setIsLoading(false);
-      
+
       if (success) {
         console.log('Cache cleared successfully');
       }
@@ -111,19 +111,12 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
           ) : (
             <Wifi className="h-4 w-4 text-green-500" />
           )}
-          <span className="text-xs text-gray-600">
-            {isOffline ? 'Offline' : 'Online'}
-          </span>
+          <span className="text-xs text-gray-600">{isOffline ? 'Offline' : 'Online'}</span>
         </div>
 
         {/* Install Status */}
         {isInstallable && (
-          <Button 
-            size="sm" 
-            variant="outline" 
-            onClick={handleInstallPWA}
-            disabled={isLoading}
-          >
+          <Button size="sm" variant="outline" onClick={handleInstallPWA} disabled={isLoading}>
             <Download className="h-3 w-3 mr-1" />
             Install
           </Button>
@@ -131,9 +124,9 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
 
         {/* Update Available */}
         {isUpdateAvailable && (
-          <Button 
-            size="sm" 
-            variant="outline" 
+          <Button
+            size="sm"
+            variant="outline"
             onClick={handleUpdateApp}
             className="text-blue-600 border-blue-600"
           >
@@ -156,14 +149,14 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
           </h2>
           <p className="text-gray-600">App installation and offline capabilities</p>
         </div>
-        
+
         {/* Quick Status */}
         <div className="flex items-center gap-2">
-          <Badge variant={isOffline ? "destructive" : "default"}>
+          <Badge variant={isOffline ? 'destructive' : 'default'}>
             {isOffline ? <WifiOff className="h-3 w-3 mr-1" /> : <Wifi className="h-3 w-3 mr-1" />}
             {isOffline ? 'Offline' : 'Online'}
           </Badge>
-          
+
           {isInstalled && (
             <Badge variant="secondary">
               <CheckCircle className="h-3 w-3 mr-1" />
@@ -199,7 +192,7 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
                       <XCircle className="h-5 w-5 text-gray-400" />
                     )}
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Standalone Mode</span>
                     {isStandaloneMode() ? (
@@ -208,7 +201,7 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
                       <XCircle className="h-5 w-5 text-gray-400" />
                     )}
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Service Worker</span>
                     {capabilities.hasServiceWorker ? (
@@ -217,7 +210,7 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
                       <XCircle className="h-5 w-5 text-gray-400" />
                     )}
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Offline Ready</span>
                     {capabilities.hasServiceWorker ? (
@@ -242,25 +235,17 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
                     {capabilities.canNotify ? (
                       <CheckCircle className="h-5 w-5 text-green-500" />
                     ) : (
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={handleRequestNotifications}
-                      >
+                      <Button size="sm" variant="outline" onClick={handleRequestNotifications}>
                         <Bell className="h-3 w-3 mr-1" />
                         Enable
                       </Button>
                     )}
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Web Share</span>
                     {capabilities.canShare ? (
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={handleShare}
-                      >
+                      <Button size="sm" variant="outline" onClick={handleShare}>
                         <Share2 className="h-3 w-3 mr-1" />
                         Share
                       </Button>
@@ -268,7 +253,7 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
                       <XCircle className="h-5 w-5 text-gray-400" />
                     )}
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">Background Sync</span>
                     {capabilities.canSync ? (
@@ -277,7 +262,7 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
                       <XCircle className="h-5 w-5 text-gray-400" />
                     )}
                   </div>
-                  
+
                   <div className="flex items-center justify-between">
                     <span className="text-sm text-gray-600">App Installation</span>
                     {capabilities.canInstall ? (
@@ -300,7 +285,9 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
                     <AlertCircle className="h-5 w-5 text-blue-600" />
                     <div>
                       <h4 className="font-medium text-blue-900">Update Available</h4>
-                      <p className="text-sm text-blue-700">A new version of the app is ready to install.</p>
+                      <p className="text-sm text-blue-700">
+                        A new version of the app is ready to install.
+                      </p>
                     </div>
                   </div>
                   <Button onClick={handleUpdateApp} disabled={isLoading}>
@@ -330,7 +317,8 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
                     App Installed Successfully!
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    AI Glossary Pro is now installed on your device and available from your home screen.
+                    AI Glossary Pro is now installed on your device and available from your home
+                    screen.
                   </p>
                   {isStandaloneMode() && (
                     <Badge variant="secondary">Running in standalone mode</Badge>
@@ -339,11 +327,10 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
               ) : isInstallable ? (
                 <div className="text-center py-8">
                   <Smartphone className="h-16 w-16 text-blue-600 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    Install as App
-                  </h3>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">Install as App</h3>
                   <p className="text-gray-600 mb-6">
-                    Install AI Glossary Pro for faster access, offline capability, and native app experience.
+                    Install AI Glossary Pro for faster access, offline capability, and native app
+                    experience.
                   </p>
                   <Button onClick={handleInstallPWA} disabled={isLoading} size="lg">
                     <Download className="h-4 w-4 mr-2" />
@@ -357,8 +344,8 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
                     Installation Not Available
                   </h3>
                   <p className="text-gray-600">
-                    App installation is not supported on this browser or device. 
-                    You can still use all features through your web browser.
+                    App installation is not supported on this browser or device. You can still use
+                    all features through your web browser.
                   </p>
                 </div>
               )}
@@ -404,16 +391,19 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
                 <div className="p-4 border rounded-lg">
                   <div className="flex items-center justify-between mb-2">
                     <h4 className="font-medium">Connection Status</h4>
-                    <Badge variant={isOffline ? "destructive" : "default"}>
-                      {isOffline ? <WifiOff className="h-3 w-3 mr-1" /> : <Wifi className="h-3 w-3 mr-1" />}
+                    <Badge variant={isOffline ? 'destructive' : 'default'}>
+                      {isOffline ? (
+                        <WifiOff className="h-3 w-3 mr-1" />
+                      ) : (
+                        <Wifi className="h-3 w-3 mr-1" />
+                      )}
                       {isOffline ? 'Offline' : 'Online'}
                     </Badge>
                   </div>
                   <p className="text-sm text-gray-600">
-                    {isOffline 
+                    {isOffline
                       ? 'You are currently offline. Cached content is available for viewing.'
-                      : 'You are online. New content will be cached automatically for offline access.'
-                    }
+                      : 'You are online. New content will be cached automatically for offline access.'}
                   </p>
                 </div>
 
@@ -476,9 +466,7 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
           <Card>
             <CardHeader>
               <CardTitle>Cache Management</CardTitle>
-              <p className="text-sm text-gray-600">
-                Manage cached content and storage usage
-              </p>
+              <p className="text-sm text-gray-600">Manage cached content and storage usage</p>
             </CardHeader>
             <CardContent>
               <div className="space-y-6">
@@ -491,14 +479,14 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
                     </div>
                     <div className="text-sm text-gray-600">Total Cache Size</div>
                   </div>
-                  
+
                   <div className="p-4 border rounded-lg text-center">
                     <div className="text-2xl font-bold text-gray-900">
                       {formatCacheSize(cacheInfo.staticCacheSize)}
                     </div>
                     <div className="text-sm text-gray-600">Static Assets</div>
                   </div>
-                  
+
                   <div className="p-4 border rounded-lg text-center">
                     <div className="text-2xl font-bold text-gray-900">
                       {formatCacheSize(cacheInfo.dynamicCacheSize)}
@@ -509,17 +497,13 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
 
                 {/* Cache Actions */}
                 <div className="flex gap-2">
-                  <Button 
-                    variant="outline" 
-                    onClick={handleRefreshCache}
-                    disabled={isLoading}
-                  >
+                  <Button variant="outline" onClick={handleRefreshCache} disabled={isLoading}>
                     <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
                     Refresh Stats
                   </Button>
-                  
-                  <Button 
-                    variant="outline" 
+
+                  <Button
+                    variant="outline"
                     onClick={handleClearCache}
                     disabled={isLoading}
                     className="text-red-600 border-red-600 hover:bg-red-50"
@@ -543,8 +527,8 @@ const PWAStatus: React.FC<PWAStatusProps> = ({ className = '', compact = false }
                     <div>
                       <h4 className="font-medium text-yellow-900 mb-1">Cache Notice</h4>
                       <p className="text-sm text-yellow-800">
-                        Clearing the cache will remove all offline content and may require re-downloading 
-                        when you visit pages again.
+                        Clearing the cache will remove all offline content and may require
+                        re-downloading when you visit pages again.
                       </p>
                     </div>
                   </div>

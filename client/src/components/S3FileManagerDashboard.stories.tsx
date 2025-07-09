@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import S3FileManagerDashboard from './S3FileManagerDashboard';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import S3FileManagerDashboard from './S3FileManagerDashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,7 +25,8 @@ const meta: Meta<typeof S3FileManagerDashboard> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'S3 file management dashboard for uploading, organizing, and managing content assets, data files, and media resources.',
+        component:
+          'S3 file management dashboard for uploading, organizing, and managing content assets, data files, and media resources.',
       },
     },
   },
@@ -187,14 +188,15 @@ export const BulkOperations: Story = {
     bulkOperationsMode: true,
     onFileSelect: (fileId: string) => console.log('File selected:', fileId),
     onBulkDelete: (fileIds: string[]) => console.log('Bulk delete:', fileIds),
-    onBulkMove: (fileIds: string[], destination: string) => console.log('Bulk move:', fileIds, destination),
+    onBulkMove: (fileIds: string[], destination: string) =>
+      console.log('Bulk move:', fileIds, destination),
     onBulkTag: (fileIds: string[], tags: string[]) => console.log('Bulk tag:', fileIds, tags),
   },
 };
 
 export const SearchAndFilter: Story = {
   args: {
-    files: mockFiles.filter(f => f.type.includes('csv') || f.name.includes('analysis')),
+    files: mockFiles.filter((f) => f.type.includes('csv') || f.name.includes('analysis')),
     folders: mockFolders,
     storageStats: mockStorageStats,
     currentPath: '',
@@ -276,7 +278,7 @@ export const StorageAnalytics: Story = {
 
 export const AccessManagement: Story = {
   args: {
-    files: mockFiles.map(file => ({
+    files: mockFiles.map((file) => ({
       ...file,
       permissions: {
         owner: 'admin@example.com',
@@ -290,7 +292,8 @@ export const AccessManagement: Story = {
     currentPath: '',
     showPermissions: true,
     onFileSelect: (fileId: string) => console.log('File selected:', fileId),
-    onPermissionChange: (fileId: string, permissions: any) => console.log('Update permissions:', fileId, permissions),
+    onPermissionChange: (fileId: string, permissions: any) =>
+      console.log('Update permissions:', fileId, permissions),
     onShareLink: (fileId: string) => console.log('Generate share link:', fileId),
   },
 };
@@ -327,7 +330,7 @@ export const BackupAndSync: Story = {
 
 export const CDNManagement: Story = {
   args: {
-    files: mockFiles.map(file => ({
+    files: mockFiles.map((file) => ({
       ...file,
       cdn: {
         isEnabled: file.type.startsWith('image/') || file.type.includes('svg'),

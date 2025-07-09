@@ -1,5 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import type React from 'react';
 import { PriceDisplay } from './PriceDisplay';
 
 // Helper to create mock pricing data
@@ -18,7 +18,7 @@ const createMockPricing = (overrides = {}) => ({
 });
 
 // Simple mock decorator that doesn't rely on jest
-const MockPricingDecorator = (Story: any, context: any) => {
+const MockPricingDecorator = (Story: any, _context: any) => {
   return (
     <div className="p-6 bg-white rounded-lg shadow-sm">
       <Story />
@@ -27,7 +27,13 @@ const MockPricingDecorator = (Story: any, context: any) => {
 };
 
 // Helper component to wrap stories that need specific mock data
-const MockPricingWrapper = ({ children, mockPricing }: { children: React.ReactNode; mockPricing: any }) => {
+const MockPricingWrapper = ({
+  children,
+  mockPricing,
+}: {
+  children: React.ReactNode;
+  mockPricing: any;
+}) => {
   return <>{children}</>;
 };
 
@@ -38,7 +44,8 @@ const meta: Meta<typeof PriceDisplay> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A flexible price display component that shows localized pricing with discounts, comparisons, and loading states.',
+        component:
+          'A flexible price display component that shows localized pricing with discounts, comparisons, and loading states.',
       },
     },
   },
@@ -193,16 +200,14 @@ export const InternationalPricing: Story = {
       { name: 'Nigeria', code: 'NG', price: 149, discount: 50, basePrice: 299 },
       { name: 'Germany', code: 'DE', price: 229, discount: 23, basePrice: 299 },
     ];
-    
+
     return (
       <div className="space-y-6">
-        <h3 className="text-lg font-semibold text-center mb-6">
-          International Pricing Examples
-        </h3>
+        <h3 className="text-lg font-semibold text-center mb-6">International Pricing Examples</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {countries.map((country) => (
-            <MockPricingWrapper 
-              key={country.code} 
+            <MockPricingWrapper
+              key={country.code}
               mockPricing={createMockPricing({
                 localPrice: country.price,
                 basePrice: country.basePrice,
@@ -214,11 +219,7 @@ export const InternationalPricing: Story = {
             >
               <div className="p-4 border rounded-lg text-center">
                 <h4 className="font-medium mb-2">{country.name}</h4>
-                <PriceDisplay 
-                  size="md" 
-                  showComparison={true}
-                  showSavings={true}
-                />
+                <PriceDisplay size="md" showComparison={true} showSavings={true} />
               </div>
             </MockPricingWrapper>
           ))}
@@ -278,12 +279,12 @@ export const PricingCards: Story = {
         popular: false,
       },
     ];
-    
+
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
         {plans.map((plan) => (
-          <MockPricingWrapper 
-            key={plan.name} 
+          <MockPricingWrapper
+            key={plan.name}
             mockPricing={createMockPricing({
               localPrice: plan.price,
               basePrice: plan.price + 50,
@@ -291,21 +292,19 @@ export const PricingCards: Story = {
               annualSavings: plan.price * 1.2,
             })}
           >
-            <div className={`p-6 border rounded-xl ${plan.popular ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}>
+            <div
+              className={`p-6 border rounded-xl ${plan.popular ? 'border-purple-500 bg-purple-50' : 'border-gray-200'}`}
+            >
               {plan.popular && (
                 <div className="bg-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full text-center mb-4">
                   MOST POPULAR
                 </div>
               )}
-              
+
               <h3 className="text-xl font-bold text-center mb-2">{plan.name}</h3>
-              
-              <PriceDisplay 
-                size="lg"
-                showComparison={plan.popular}
-                className="mb-6"
-              />
-              
+
+              <PriceDisplay size="lg" showComparison={plan.popular} className="mb-6" />
+
               <ul className="space-y-2 mb-6">
                 {plan.features.map((feature, index) => (
                   <li key={index} className="flex items-center text-sm">
@@ -314,12 +313,14 @@ export const PricingCards: Story = {
                   </li>
                 ))}
               </ul>
-              
-              <button className={`w-full py-3 rounded-lg font-semibold ${
-                plan.popular 
-                  ? 'bg-purple-500 text-white hover:bg-purple-600' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}>
+
+              <button
+                className={`w-full py-3 rounded-lg font-semibold ${
+                  plan.popular
+                    ? 'bg-purple-500 text-white hover:bg-purple-600'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+              >
                 Get Started
               </button>
             </div>
@@ -350,19 +351,17 @@ export const InlineUsage: Story = {
           Get Started Now
         </button>
       </div>
-      
+
       <div className="border-t pt-6">
         <div className="text-center">
-          <p className="text-gray-600 mb-2">
-            Special pricing available in your region
-          </p>
+          <p className="text-gray-600 mb-2">Special pricing available in your region</p>
           <PriceDisplay size="md" showComparison={false} />
           <p className="text-sm text-gray-500 mt-2">
             One-time payment • Lifetime access • No subscriptions
           </p>
         </div>
       </div>
-      
+
       <div className="bg-gray-50 p-4 rounded-lg">
         <div className="flex justify-between items-center">
           <div>
@@ -389,23 +388,23 @@ export const CustomStyling: Story = {
       <div className="text-center">
         <h3 className="text-lg font-semibold mb-4">Custom Styled Variants</h3>
       </div>
-      
+
       {/* Gradient background */}
       <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-6 rounded-lg text-white text-center">
         <h4 className="font-semibold mb-2">Hero Section Style</h4>
-        <PriceDisplay 
-          size="xl" 
+        <PriceDisplay
+          size="xl"
           showComparison={true}
           className="text-white [&_.text-purple-900]:text-white [&_.bg-green-100]:bg-white/20 [&_.text-green-800]:text-white"
         />
       </div>
-      
+
       {/* Bordered */}
       <div className="border-2 border-purple-200 p-6 rounded-lg text-center bg-purple-50">
         <h4 className="font-semibold mb-2 text-purple-900">Highlighted Pricing</h4>
         <PriceDisplay size="lg" showComparison={true} showSavings={true} />
       </div>
-      
+
       {/* Minimal */}
       <div className="text-center">
         <h4 className="font-semibold mb-2">Minimal Style</h4>

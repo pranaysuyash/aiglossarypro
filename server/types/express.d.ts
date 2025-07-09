@@ -32,5 +32,3 @@ export interface AdminRequest extends AuthenticatedRequest {
     isAdmin: true;
   };
 }
-
-export {};

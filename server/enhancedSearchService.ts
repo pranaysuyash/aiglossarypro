@@ -3,9 +3,9 @@
  * Provides advanced search features including fuzzy matching, ranking, and filtering
  */
 
+import { and, asc, desc, eq, ilike, or, sql } from 'drizzle-orm';
+import { categories, terms } from '../shared/schema';
 import { db } from './db';
-import { terms, categories } from '../shared/schema';
-import { eq, and, or, sql, ilike, desc, asc } from 'drizzle-orm';
 
 export interface SearchOptions {
   query: string;
@@ -49,7 +49,7 @@ export interface SearchResponse {
  */
 export async function enhancedSearch(options: SearchOptions): Promise<SearchResponse> {
   const startTime = Date.now();
-  
+
   const {
     query,
     page = 1,
@@ -57,7 +57,7 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
     category,
     sort = 'relevance',
     fuzzy = false,
-    threshold = 0.3
+    threshold = 0.3,
   } = options;
 
   try {
@@ -75,7 +75,7 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
         categoryId: categories.id,
         categoryName: categories.name,
         // Calculate basic relevance score
-        relevanceScore: sql<number>`1`.as('relevance_score')
+        relevanceScore: sql<number>`1`.as('relevance_score'),
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id));
@@ -105,10 +105,7 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
     // Apply sorting
     switch (sort) {
       case 'relevance':
-        searchQuery = (searchQuery as any).orderBy(
-          desc(terms.viewCount),
-          asc(terms.name)
-        );
+        searchQuery = (searchQuery as any).orderBy(desc(terms.viewCount), asc(terms.name));
         break;
       case 'name':
         searchQuery = (searchQuery as any).orderBy(asc(terms.name));
@@ -134,7 +131,7 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
     // Execute queries
     const [results, countResult] = await Promise.all([
       (searchQuery as any).limit(limit).offset((page - 1) * limit),
-      countQuery
+      countQuery,
     ]);
 
     const total = Number((countResult[0] as any)?.count || 0);
@@ -147,14 +144,16 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
       shortDefinition: result.shortDefinition || undefined,
       characteristics: result.characteristics || undefined,
       references: result.references || undefined,
-      category: result.categoryId ? {
-        id: result.categoryId,
-        name: result.categoryName!
-      } : undefined,
+      category: result.categoryId
+        ? {
+            id: result.categoryId,
+            name: result.categoryName!,
+          }
+        : undefined,
       viewCount: result.viewCount || 0,
       relevanceScore: result.relevance_score || 0,
       createdAt: result.createdAt || new Date(),
-      updatedAt: result.updatedAt || new Date()
+      updatedAt: result.updatedAt || new Date(),
     }));
 
     const searchTime = Date.now() - startTime;
@@ -167,9 +166,8 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
       limit,
       totalPages,
       searchTime,
-      query
+      query,
     };
-
   } catch (error) {
     console.error('Enhanced search error:', error);
     throw new Error(`Search failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -193,7 +191,7 @@ export async function getPopularTerms(limit: number = 10): Promise<SearchResult[
         createdAt: terms.createdAt,
         updatedAt: terms.updatedAt,
         categoryId: categories.id,
-        categoryName: categories.name
+        categoryName: categories.name,
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
@@ -207,16 +205,17 @@ export async function getPopularTerms(limit: number = 10): Promise<SearchResult[
       shortDefinition: result.shortDefinition || undefined,
       characteristics: result.characteristics || undefined,
       references: result.references || undefined,
-      category: result.categoryId ? {
-        id: result.categoryId,
-        name: result.categoryName!
-      } : undefined,
+      category: result.categoryId
+        ? {
+            id: result.categoryId,
+            name: result.categoryName!,
+          }
+        : undefined,
       viewCount: result.viewCount || 0,
       relevanceScore: 0,
       createdAt: result.createdAt || new Date(),
-      updatedAt: result.updatedAt || new Date()
+      updatedAt: result.updatedAt || new Date(),
     }));
-
   } catch (error) {
     console.error('Get popular terms error:', error);
     return [];
@@ -240,7 +239,6 @@ export async function getSearchSuggestions(query: string, limit: number = 5): Pr
       .limit(limit);
 
     return (results as any[]).map((result: any) => result.name);
-
   } catch (error) {
     console.error('Get search suggestions error:', error);
     return [];

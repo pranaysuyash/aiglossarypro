@@ -8,41 +8,42 @@ export enum JobType {
   AI_CONTENT_GENERATION = 'ai_content_generation',
   AI_CONTENT_PARSING = 'ai_content_parsing',
   AI_BATCH_PROCESSING = 'ai_batch_processing',
-  
+
   // Phase 2: Column Batch Processing Jobs
   COLUMN_BATCH_PROCESSING = 'column_batch_processing',
   COLUMN_BATCH_ESTIMATION = 'column_batch_estimation',
   COLUMN_BATCH_MONITORING = 'column_batch_monitoring',
   COLUMN_BATCH_CLEANUP = 'column_batch_cleanup',
-  
+
   // Database Jobs
   DB_BATCH_INSERT = 'db_batch_insert',
   DB_BATCH_UPDATE = 'db_batch_update',
   DB_CLEANUP = 'db_cleanup',
   DB_INDEX_OPTIMIZATION = 'db_index_optimization',
-  
+
   // Email Jobs
   EMAIL_SEND = 'email_send',
   EMAIL_BATCH_SEND = 'email_batch_send',
   EMAIL_NEWSLETTER = 'email_newsletter',
-  
+
   // Cache Jobs
   CACHE_WARM = 'cache_warm',
   CACHE_INVALIDATE = 'cache_invalidate',
   CACHE_PRECOMPUTE = 'cache_precompute',
-  
+
   // Analytics Jobs
   ANALYTICS_AGGREGATE = 'analytics_aggregate',
   ANALYTICS_REPORT = 'analytics_report',
-  
+
   // System Jobs
   SYSTEM_CLEANUP = 'system_cleanup',
   SYSTEM_BACKUP = 'system_backup',
-  
+
   // Admin Jobs
   BULK_TERM_UPDATE = 'bulk_term_update',
   DATA_EXPORT = 'data_export',
   CACHE_CLEANUP = 'cache_cleanup',
+  EXCEL_IMPORT = 'excel_import',
 }
 
 // Job Priority Levels
@@ -75,7 +76,6 @@ export interface BaseJobData {
   requestId?: string;
   metadata?: Record<string, any>;
 }
-
 
 // AI Processing Job Types
 export interface AIContentGenerationJobData extends BaseJobData {

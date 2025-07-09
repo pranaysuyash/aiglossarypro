@@ -8,7 +8,8 @@ const meta: Meta<typeof Footer> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'The main footer component with navigation links, social media, and company information.',
+        component:
+          'The main footer component with navigation links, social media, and company information.',
       },
     },
   },
@@ -26,13 +27,13 @@ const meta: Meta<typeof Footer> = {
   argTypes: {
     className: {
       control: 'text',
-      description: 'Additional CSS classes'
+      description: 'Additional CSS classes',
     },
     onSubscribe: {
       action: 'subscribed',
-      description: 'Callback when user subscribes to newsletter'
-    }
-  }
+      description: 'Callback when user subscribes to newsletter',
+    },
+  },
 };
 
 export default meta;
@@ -118,7 +119,9 @@ export const WithLongContent: Story = {
             {Array.from({ length: 20 }, (_, i) => (
               <div key={i} className="p-4 bg-white rounded shadow">
                 <h3 className="font-semibold">Content Block {i + 1}</h3>
-                <p className="text-gray-600">This is some sample content to demonstrate the footer positioning.</p>
+                <p className="text-gray-600">
+                  This is some sample content to demonstrate the footer positioning.
+                </p>
               </div>
             ))}
           </div>
@@ -127,4 +130,4 @@ export const WithLongContent: Story = {
       </div>
     ),
   ],
-}; 
+};

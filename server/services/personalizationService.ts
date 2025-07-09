@@ -1,30 +1,20 @@
-import { db } from '../db';
-import { 
-  userBehaviorEvents, 
-  userInteractionPatterns, 
-  userRecommendations, 
-  userLearningProfile, 
-  personalizationMetrics,
-  contentRecommendationCache,
-  terms,
-  categories,
-  learningPaths,
-  termViews,
-  favorites,
-  users,
-  UserBehaviorEvent,
-  UserInteractionPattern,
-  UserRecommendation,
-  UserLearningProfile,
-  InsertUserBehaviorEvent,
-  InsertUserRecommendation,
-  InsertPersonalizationMetric,
-  InsertContentRecommendationCache
-} from '../../shared/schema';
-import { eq, and, gte, desc, sql, inArray, exists, notExists } from 'drizzle-orm';
-import { log as logger } from '../utils/logger';
-import OpenAI from 'openai';
+import { and, desc, eq, gte, inArray, notExists, sql } from 'drizzle-orm';
 import NodeCache from 'node-cache';
+import OpenAI from 'openai';
+import {
+  categories,
+  contentRecommendationCache,
+  favorites,
+  type InsertUserBehaviorEvent,
+  terms,
+  termViews,
+  type UserBehaviorEvent,
+  type UserInteractionPattern,
+  userBehaviorEvents,
+  userLearningProfile,
+} from '../../shared/schema';
+import { db } from '../db';
+import { log as logger } from '../utils/logger';
 
 // Types for personalization
 export interface PersonalizedRecommendation {
@@ -73,24 +63,26 @@ class PersonalizationService {
 
   constructor() {
     this.openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY || ''
+      apiKey: process.env.OPENAI_API_KEY || '',
     });
-    
+
     // Cache recommendations for 30 minutes
-    this.cache = new NodeCache({ 
+    this.cache = new NodeCache({
       stdTTL: 1800, // 30 minutes
-      maxKeys: 10000 
+      maxKeys: 10000,
     });
   }
 
   /**
    * Track user behavior event for personalization
    */
-  async trackBehaviorEvent(event: Omit<InsertUserBehaviorEvent, 'id' | 'created_at'>): Promise<void> {
+  async trackBehaviorEvent(
+    event: Omit<InsertUserBehaviorEvent, 'id' | 'created_at'>
+  ): Promise<void> {
     try {
       await db.insert(userBehaviorEvents).values({
         ...event,
-        created_at: new Date()
+        created_at: new Date(),
       });
 
       // Asynchronously update user patterns
@@ -103,10 +95,12 @@ class PersonalizationService {
   /**
    * Get personalized recommendations for a user
    */
-  async getPersonalizedRecommendations(request: RecommendationRequest): Promise<PersonalizedRecommendation[]> {
+  async getPersonalizedRecommendations(
+    request: RecommendationRequest
+  ): Promise<PersonalizedRecommendation[]> {
     const cacheKey = this.generateCacheKey(request);
     const cached = this.cache.get<PersonalizedRecommendation[]>(cacheKey);
-    
+
     if (cached) {
       await this.updateCacheHitCount(cacheKey);
       return cached;
@@ -116,7 +110,7 @@ class PersonalizationService {
       // Get user profile and behavior patterns
       const userProfile = await this.getUserPersonalizationProfile(request.userId);
       const recentBehavior = await this.getRecentUserBehavior(request.userId, 7); // Last 7 days
-      
+
       // Generate recommendations using multiple algorithms
       const recommendations = await this.generateRecommendations(
         userProfile,
@@ -131,7 +125,7 @@ class PersonalizationService {
       return recommendations;
     } catch (error) {
       logger.error('Error generating personalized recommendations', { error, request });
-      
+
       // Fallback to popular content
       return this.getFallbackRecommendations(request);
     }
@@ -157,10 +151,10 @@ class PersonalizationService {
         learningStyle: profile.learning_style || 'mixed',
         preferredComplexity: profile.preferred_complexity || 'intermediate',
         interestCategories: [],
-        engagementPatterns: profile.engagement_patterns as Record<string, any> || {},
-        skillLevel: profile.skill_assessments as Record<string, number> || {},
+        engagementPatterns: (profile.engagement_patterns as Record<string, any>) || {},
+        skillLevel: (profile.skill_assessments as Record<string, number>) || {},
         activeGoals: (profile.active_learning_goals as any)?.goals || [],
-        lastUpdated: profile.updated_at || new Date()
+        lastUpdated: profile.updated_at || new Date(),
       };
     } catch (error) {
       logger.error('Error getting user profile', { error, userId });
@@ -213,7 +207,7 @@ class PersonalizationService {
       patterns.push({
         pattern_type: 'time_preference',
         pattern_data: timePattern,
-        confidence_score: this.calculateConfidence(events.length, 'time')
+        confidence_score: this.calculateConfidence(events.length, 'time'),
       });
     }
 
@@ -223,7 +217,7 @@ class PersonalizationService {
       patterns.push({
         pattern_type: 'content_preference',
         pattern_data: contentPattern,
-        confidence_score: this.calculateConfidence(events.length, 'content')
+        confidence_score: this.calculateConfidence(events.length, 'content'),
       });
     }
 
@@ -233,7 +227,7 @@ class PersonalizationService {
       patterns.push({
         pattern_type: 'learning_velocity',
         pattern_data: velocityPattern,
-        confidence_score: this.calculateConfidence(events.length, 'velocity')
+        confidence_score: this.calculateConfidence(events.length, 'velocity'),
       });
     }
 
@@ -255,7 +249,11 @@ class PersonalizationService {
     recommendations.push(...collaborativeRecs);
 
     // Algorithm 2: Content-Based Filtering
-    const contentRecs = await this.getContentBasedRecommendations(userProfile, recentBehavior, request);
+    const contentRecs = await this.getContentBasedRecommendations(
+      userProfile,
+      recentBehavior,
+      request
+    );
     recommendations.push(...contentRecs);
 
     // Algorithm 3: Hybrid AI-Enhanced Recommendations
@@ -278,12 +276,12 @@ class PersonalizationService {
    */
   private async getCollaborativeRecommendations(
     userProfile: UserPersonalizationProfile,
-    request: RecommendationRequest
+    _request: RecommendationRequest
   ): Promise<PersonalizedRecommendation[]> {
     try {
       // Find users with similar behavior patterns
       const similarUsers = await this.findSimilarUsers(userProfile.userId);
-      
+
       if (similarUsers.length === 0) {
         return [];
       }
@@ -295,24 +293,24 @@ class PersonalizationService {
           termName: terms.name,
           termDescription: terms.shortDefinition,
           viewCount: sql<number>`count(*)`,
-          avgRating: sql<number>`avg(coalesce(${favorites}.created_at is not null, 0)::int * 100)`
+          avgRating: sql<number>`avg(coalesce(${favorites}.created_at is not null, 0)::int * 100)`,
         })
         .from(termViews)
         .innerJoin(terms, eq(termViews.termId, terms.id))
-        .leftJoin(favorites, and(
-          eq(favorites.termId, terms.id),
-          inArray(favorites.userId, similarUsers)
-        ))
+        .leftJoin(
+          favorites,
+          and(eq(favorites.termId, terms.id), inArray(favorites.userId, similarUsers))
+        )
         .where(
           and(
             inArray(termViews.userId, similarUsers),
             notExists(
-              db.select().from(termViews).where(
-                and(
-                  eq(termViews.userId, userProfile.userId),
-                  eq(termViews.termId, terms.id)
+              db
+                .select()
+                .from(termViews)
+                .where(
+                  and(eq(termViews.userId, userProfile.userId), eq(termViews.termId, terms.id))
                 )
-              )
             )
           )
         )
@@ -320,23 +318,23 @@ class PersonalizationService {
         .orderBy(desc(sql`count(*)`))
         .limit(10);
 
-      return recommendations.map(rec => ({
+      return recommendations.map((rec) => ({
         id: rec.termId,
         type: 'term' as const,
         entityId: rec.termId,
         title: rec.termName,
         description: rec.termDescription || '',
-        score: Math.min(95, 60 + (rec.viewCount * 5)),
+        score: Math.min(95, 60 + rec.viewCount * 5),
         reasoning: [
           'Users with similar interests viewed this',
           `${rec.viewCount} similar users engaged with this content`,
-          `Average satisfaction: ${Math.round(rec.avgRating || 0)}%`
+          `Average satisfaction: ${Math.round(rec.avgRating || 0)}%`,
         ],
         metadata: {
           algorithm: 'collaborative_filtering',
           similarUsers: similarUsers.length,
-          engagement: rec.viewCount
-        }
+          engagement: rec.viewCount,
+        },
       }));
     } catch (error) {
       logger.error('Error in collaborative recommendations', { error });
@@ -350,15 +348,15 @@ class PersonalizationService {
   private async getContentBasedRecommendations(
     userProfile: UserPersonalizationProfile,
     recentBehavior: UserBehaviorEvent[],
-    request: RecommendationRequest
+    _request: RecommendationRequest
   ): Promise<PersonalizedRecommendation[]> {
     try {
       // Analyze user's content preferences from recent behavior
       const viewedCategories = recentBehavior
-        .filter(event => event.event_type === 'view' && event.entity_type === 'term')
-        .map(event => event.context as any)
-        .filter(context => context?.categoryId)
-        .map(context => context.categoryId);
+        .filter((event) => event.event_type === 'view' && event.entity_type === 'term')
+        .map((event) => event.context as any)
+        .filter((context) => context?.categoryId)
+        .map((context) => context.categoryId);
 
       if (viewedCategories.length === 0) {
         return [];
@@ -372,26 +370,26 @@ class PersonalizationService {
           shortDefinition: terms.shortDefinition,
           categoryId: terms.categoryId,
           viewCount: terms.viewCount,
-          categoryName: sql<string>`(SELECT name FROM ${categories} WHERE id = ${terms.categoryId})`
+          categoryName: sql<string>`(SELECT name FROM ${categories} WHERE id = ${terms.categoryId})`,
         })
         .from(terms)
         .where(
           and(
             inArray(terms.categoryId, viewedCategories),
             notExists(
-              db.select().from(termViews).where(
-                and(
-                  eq(termViews.userId, userProfile.userId),
-                  eq(termViews.termId, terms.id)
+              db
+                .select()
+                .from(termViews)
+                .where(
+                  and(eq(termViews.userId, userProfile.userId), eq(termViews.termId, terms.id))
                 )
-              )
             )
           )
         )
         .orderBy(desc(terms.viewCount))
         .limit(15);
 
-      return recommendations.map(rec => ({
+      return recommendations.map((rec) => ({
         id: rec.id,
         type: 'term' as const,
         entityId: rec.id,
@@ -401,13 +399,13 @@ class PersonalizationService {
         reasoning: [
           `Similar to content you've viewed in ${rec.categoryName}`,
           'Matches your content preferences',
-          `Popular content (${rec.viewCount || 0} views)`
+          `Popular content (${rec.viewCount || 0} views)`,
         ],
         metadata: {
           algorithm: 'content_based',
           category: rec.categoryName,
-          popularity: rec.viewCount
-        }
+          popularity: rec.viewCount,
+        },
       }));
     } catch (error) {
       logger.error('Error in content-based recommendations', { error });
@@ -430,7 +428,7 @@ class PersonalizationService {
 
       // Prepare user context for AI
       const userContext = this.prepareUserContextForAI(userProfile, recentBehavior);
-      
+
       const completion = await this.openai.chat.completions.create({
         model: 'gpt-3.5-turbo',
         messages: [
@@ -446,24 +444,24 @@ class PersonalizationService {
                   "category": "category_name"
                 }
               ]
-            }`
+            }`,
           },
           {
             role: 'user',
             content: `User Profile: ${JSON.stringify(userContext)}. 
             Context: ${request.recommendationType} page, ${request.context.timeOfDay} session.
-            Please recommend ${Math.min(5, request.limit)} AI/ML terms or topics.`
-          }
+            Please recommend ${Math.min(5, request.limit)} AI/ML terms or topics.`,
+          },
         ],
         temperature: 0.7,
-        max_tokens: 1000
+        max_tokens: 1000,
       });
 
       const aiResponse = completion.choices[0]?.message?.content;
       if (!aiResponse) return [];
 
       const parsed = JSON.parse(aiResponse);
-      
+
       // Convert AI recommendations to our format
       return this.convertAIRecommendations(parsed.recommendations || []);
     } catch (error) {
@@ -484,16 +482,16 @@ class PersonalizationService {
     // Time-based recommendations
     if (request.context.timeOfDay === 'morning') {
       // Suggest foundational topics in the morning
-      contextRecs.push(...await this.getFoundationalTopics(userProfile));
+      contextRecs.push(...(await this.getFoundationalTopics(userProfile)));
     } else if (request.context.timeOfDay === 'afternoon') {
       // Suggest practical applications in the afternoon
-      contextRecs.push(...await this.getPracticalApplications(userProfile));
+      contextRecs.push(...(await this.getPracticalApplications(userProfile)));
     }
 
     // Device-based recommendations
     if (request.context.deviceType === 'mobile') {
       // Suggest shorter, more digestible content for mobile
-      contextRecs.push(...await this.getMobileOptimizedContent(userProfile));
+      contextRecs.push(...(await this.getMobileOptimizedContent(userProfile)));
     }
 
     return contextRecs;
@@ -511,7 +509,7 @@ class PersonalizationService {
       engagementPatterns: {},
       skillLevel: {},
       activeGoals: [],
-      lastUpdated: new Date()
+      lastUpdated: new Date(),
     };
 
     // Create in database
@@ -523,7 +521,7 @@ class PersonalizationService {
         preferred_content_types: ['practical', 'examples'],
         engagement_patterns: {},
         skill_assessments: {},
-        active_learning_goals: { goals: [] }
+        active_learning_goals: { goals: [] },
       });
     } catch (error) {
       logger.error('Error creating default profile', { error, userId });
@@ -554,29 +552,34 @@ class PersonalizationService {
   ): Promise<void> {
     try {
       const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
-      
-      await db.insert(contentRecommendationCache).values({
-        cache_key: cacheKey,
-        user_id: userId,
-        recommendation_data: recommendations,
-        algorithm_version: this.algorithmVersion,
-        expires_at: expiresAt,
-        hit_count: 0
-      }).onConflictDoUpdate({
-        target: contentRecommendationCache.cache_key,
-        set: {
+
+      await db
+        .insert(contentRecommendationCache)
+        .values({
+          cache_key: cacheKey,
+          user_id: userId,
           recommendation_data: recommendations,
-          cache_created_at: new Date(),
+          algorithm_version: this.algorithmVersion,
           expires_at: expiresAt,
-          hit_count: 0
-        }
-      });
+          hit_count: 0,
+        })
+        .onConflictDoUpdate({
+          target: contentRecommendationCache.cache_key,
+          set: {
+            recommendation_data: recommendations,
+            cache_created_at: new Date(),
+            expires_at: expiresAt,
+            hit_count: 0,
+          },
+        });
     } catch (error) {
       logger.error('Error caching recommendations', { error, cacheKey });
     }
   }
 
-  private async getFallbackRecommendations(request: RecommendationRequest): Promise<PersonalizedRecommendation[]> {
+  private async getFallbackRecommendations(
+    request: RecommendationRequest
+  ): Promise<PersonalizedRecommendation[]> {
     try {
       // Return popular content as fallback
       const popular = await db
@@ -584,13 +587,13 @@ class PersonalizationService {
           id: terms.id,
           name: terms.name,
           shortDefinition: terms.shortDefinition,
-          viewCount: terms.viewCount
+          viewCount: terms.viewCount,
         })
         .from(terms)
         .orderBy(desc(terms.viewCount))
         .limit(request.limit);
 
-      return popular.map(term => ({
+      return popular.map((term) => ({
         id: term.id,
         type: 'term' as const,
         entityId: term.id,
@@ -600,8 +603,8 @@ class PersonalizationService {
         reasoning: ['Popular content', 'Trending in AI/ML community'],
         metadata: {
           algorithm: 'fallback',
-          popularity: term.viewCount
-        }
+          popularity: term.viewCount,
+        },
       }));
     } catch (error) {
       logger.error('Error getting fallback recommendations', { error });
@@ -610,71 +613,80 @@ class PersonalizationService {
   }
 
   // Additional helper methods would go here...
-  private analyzeTimePatterns(events: UserBehaviorEvent[]): Record<string, any> | null {
+  private analyzeTimePatterns(_events: UserBehaviorEvent[]): Record<string, any> | null {
     // Implementation for time pattern analysis
     return null;
   }
 
-  private analyzeContentPatterns(events: UserBehaviorEvent[]): Record<string, any> | null {
+  private analyzeContentPatterns(_events: UserBehaviorEvent[]): Record<string, any> | null {
     // Implementation for content pattern analysis
     return null;
   }
 
-  private analyzeLearningVelocity(events: UserBehaviorEvent[]): Record<string, any> | null {
+  private analyzeLearningVelocity(_events: UserBehaviorEvent[]): Record<string, any> | null {
     // Implementation for learning velocity analysis
     return null;
   }
 
-  private calculateConfidence(eventCount: number, patternType: string): number {
+  private calculateConfidence(eventCount: number, _patternType: string): number {
     // Calculate confidence score based on data volume and pattern type
     const baseConfidence = Math.min(90, eventCount * 2);
     return Math.max(10, baseConfidence);
   }
 
-  private async upsertUserPattern(userId: string, pattern: Partial<UserInteractionPattern>): Promise<void> {
+  private async upsertUserPattern(
+    _userId: string,
+    _pattern: Partial<UserInteractionPattern>
+  ): Promise<void> {
     // Implementation for upserting user patterns
   }
 
-  private async updateLearningProfile(userId: string, events: UserBehaviorEvent[]): Promise<void> {
+  private async updateLearningProfile(
+    _userId: string,
+    _events: UserBehaviorEvent[]
+  ): Promise<void> {
     // Implementation for updating learning profile
   }
 
   private async getRecentUserBehavior(userId: string, days: number): Promise<UserBehaviorEvent[]> {
     const startDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
-    
+
     return db
       .select()
       .from(userBehaviorEvents)
       .where(
-        and(
-          eq(userBehaviorEvents.user_id, userId),
-          gte(userBehaviorEvents.created_at, startDate)
-        )
+        and(eq(userBehaviorEvents.user_id, userId), gte(userBehaviorEvents.created_at, startDate))
       )
       .orderBy(desc(userBehaviorEvents.created_at));
   }
 
-  private async findSimilarUsers(userId: string): Promise<string[]> {
+  private async findSimilarUsers(_userId: string): Promise<string[]> {
     // Implementation for finding similar users
     return [];
   }
 
-  private calculateContentBasedScore(content: any, userProfile: UserPersonalizationProfile): number {
+  private calculateContentBasedScore(
+    _content: any,
+    _userProfile: UserPersonalizationProfile
+  ): number {
     // Implementation for content-based scoring
     return 75;
   }
 
-  private prepareUserContextForAI(userProfile: UserPersonalizationProfile, recentBehavior: UserBehaviorEvent[]): any {
+  private prepareUserContextForAI(
+    userProfile: UserPersonalizationProfile,
+    recentBehavior: UserBehaviorEvent[]
+  ): any {
     return {
       learningStyle: userProfile.learningStyle,
       complexity: userProfile.preferredComplexity,
-      recentTopics: recentBehavior.slice(0, 10).map(e => e.entity_type),
-      goals: userProfile.activeGoals
+      recentTopics: recentBehavior.slice(0, 10).map((e) => e.entity_type),
+      goals: userProfile.activeGoals,
     };
   }
 
   private convertAIRecommendations(aiRecs: any[]): PersonalizedRecommendation[] {
-    return aiRecs.map(rec => ({
+    return aiRecs.map((rec) => ({
       id: `ai_${rec.topic}`,
       type: 'term' as const,
       entityId: rec.topic,
@@ -684,29 +696,37 @@ class PersonalizationService {
       reasoning: [rec.reasoning],
       metadata: {
         algorithm: 'ai_enhanced',
-        category: rec.category
-      }
+        category: rec.category,
+      },
     }));
   }
 
-  private async getFoundationalTopics(userProfile: UserPersonalizationProfile): Promise<PersonalizedRecommendation[]> {
+  private async getFoundationalTopics(
+    _userProfile: UserPersonalizationProfile
+  ): Promise<PersonalizedRecommendation[]> {
     // Implementation for foundational topics
     return [];
   }
 
-  private async getPracticalApplications(userProfile: UserPersonalizationProfile): Promise<PersonalizedRecommendation[]> {
+  private async getPracticalApplications(
+    _userProfile: UserPersonalizationProfile
+  ): Promise<PersonalizedRecommendation[]> {
     // Implementation for practical applications
     return [];
   }
 
-  private async getMobileOptimizedContent(userProfile: UserPersonalizationProfile): Promise<PersonalizedRecommendation[]> {
+  private async getMobileOptimizedContent(
+    _userProfile: UserPersonalizationProfile
+  ): Promise<PersonalizedRecommendation[]> {
     // Implementation for mobile-optimized content
     return [];
   }
 
-  private deduplicateRecommendations(recommendations: PersonalizedRecommendation[]): PersonalizedRecommendation[] {
+  private deduplicateRecommendations(
+    recommendations: PersonalizedRecommendation[]
+  ): PersonalizedRecommendation[] {
     const seen = new Set();
-    return recommendations.filter(rec => {
+    return recommendations.filter((rec) => {
       if (seen.has(rec.entityId)) return false;
       seen.add(rec.entityId);
       return true;

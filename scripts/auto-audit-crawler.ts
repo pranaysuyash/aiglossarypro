@@ -8,20 +8,20 @@
  * - Generates summary and invokes AI for comprehensive visual analysis
  */
 
-import { chromium, Browser, Page, BrowserContext, devices } from 'playwright';
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import chalk from 'chalk';
 import { config } from 'dotenv';
+import { type Browser, chromium, devices, type Page } from 'playwright';
 
 config();
 
 // -------------------- Types --------------------
-interface RunConfig { 
-  name: string; 
-  route: string; 
-  device?: string; 
-  viewport?: { width: number; height: number }; 
+interface RunConfig {
+  name: string;
+  route: string;
+  device?: string;
+  viewport?: { width: number; height: number };
 }
 
 interface InteractionResult {
@@ -68,13 +68,17 @@ interface AuditReport {
 
 // -------------------- Constants --------------------
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3001';
-const OUTDIR = path.join(process.cwd(), 'auto-audit', new Date().toISOString().replace(/[:.]/g,'-'));
+const OUTDIR = path.join(
+  process.cwd(),
+  'auto-audit',
+  new Date().toISOString().replace(/[:.]/g, '-')
+);
 
 // -------------------- Helpers --------------------
 async function mkdirs() {
-  await fs.mkdir(path.join(OUTDIR,'screenshots'), { recursive: true });
-  await fs.mkdir(path.join(OUTDIR,'videos'), { recursive: true });
-  await fs.mkdir(path.join(OUTDIR,'analysis'), { recursive: true });
+  await fs.mkdir(path.join(OUTDIR, 'screenshots'), { recursive: true });
+  await fs.mkdir(path.join(OUTDIR, 'videos'), { recursive: true });
+  await fs.mkdir(path.join(OUTDIR, 'analysis'), { recursive: true });
 }
 
 async function discoverRoutes(): Promise<string[]> {
@@ -85,55 +89,57 @@ async function discoverRoutes(): Promise<string[]> {
       path.join(process.cwd(), 'src', 'App.tsx'),
       path.join(process.cwd(), 'client', 'src', 'main.tsx'),
     ];
-    
+
     let src = '';
     for (const filePath of possiblePaths) {
       try {
         src = await fs.readFile(filePath, 'utf8');
         console.log(chalk.blue(`📄 Reading routes from: ${filePath}`));
         break;
-      } catch (e) {
-        continue;
-      }
+      } catch (_e) {}
     }
-    
+
     if (!src) {
       console.log(chalk.yellow('⚠️  Could not find App.tsx, using default routes'));
       return ['/', '/terms', '/categories', '/dashboard', '/settings', '/login', '/profile'];
     }
-    
+
     // Extract routes from React Router config
     const routePatterns = [
-      /<Route\s+path=['\"]([^'\"]+)['\"]/g,
-      /path:\s*['\"]([^'\"]+)['\"]/g,
-      /href=['\"]\/([^'\"]*?)['\"]/g,
+      /<Route\s+path=['"]([^'"]+)['"]/g,
+      /path:\s*['"]([^'"]+)['"]/g,
+      /href=['"]\/([^'"]*?)['"]/g,
     ];
-    
+
     const paths = new Set<string>();
     for (const pattern of routePatterns) {
       const matches = [...src.matchAll(pattern)];
-      matches.forEach(m => {
+      matches.forEach((m) => {
         let path = m[1];
-        if (!path.startsWith('/')) path = '/' + path;
-        if (!path.includes(':') && !path.includes('*')) { // Skip dynamic routes for now
+        if (!path.startsWith('/')) path = `/${path}`;
+        if (!path.includes(':') && !path.includes('*')) {
+          // Skip dynamic routes for now
           paths.add(path);
         }
       });
     }
-    
+
     // Add common routes that might be missed
     paths.add('/');
     paths.add('/terms');
     paths.add('/categories');
-    
-    return Array.from(paths).filter(p => p && p.length > 0);
-  } catch (error) {
+
+    return Array.from(paths).filter((p) => p && p.length > 0);
+  } catch (_error) {
     console.log(chalk.yellow('⚠️  Route discovery failed, using defaults'));
     return ['/', '/terms', '/categories', '/dashboard', '/settings', '/login'];
   }
 }
 
-async function performComprehensiveInteractions(page: Page, routeName: string): Promise<InteractionResult[]> {
+async function performComprehensiveInteractions(
+  page: Page,
+  routeName: string
+): Promise<InteractionResult[]> {
   const interactions: InteractionResult[] = [];
   let interactionIndex = 0;
 
@@ -154,16 +160,20 @@ async function performComprehensiveInteractions(page: Page, routeName: string): 
       window.scrollTo(0, document.body.scrollHeight);
     });
     await page.waitForTimeout(1000);
-    
-    const screenshot = path.join(OUTDIR, 'screenshots', `${routeName}-scroll-${interactionIndex++}.png`);
+
+    const screenshot = path.join(
+      OUTDIR,
+      'screenshots',
+      `${routeName}-scroll-${interactionIndex++}.png`
+    );
     await page.screenshot({ path: screenshot, fullPage: true });
-    
+
     interactions.push({
       type: 'scroll',
       element: 'full-page-scroll',
       screenshot,
       success: true,
-      timing: Date.now() - startTime
+      timing: Date.now() - startTime,
     });
   } catch (error) {
     interactions.push({
@@ -172,7 +182,7 @@ async function performComprehensiveInteractions(page: Page, routeName: string): 
       screenshot: '',
       success: false,
       error: error instanceof Error ? error.message : 'Unknown scroll error',
-      timing: 0
+      timing: 0,
     });
   }
 
@@ -190,40 +200,49 @@ async function performComprehensiveInteractions(page: Page, routeName: string): 
     '.btn',
     '.button',
     '.clickable',
-    '[onclick]'
+    '[onclick]',
   ];
 
   for (const selector of clickableSelectors) {
     try {
       const elements = await page.$$(selector);
       console.log(chalk.gray(`    Found ${elements.length} ${selector} elements`));
-      
-      for (let i = 0; i < Math.min(elements.length, 10); i++) { // Limit to prevent infinite interactions
+
+      for (let i = 0; i < Math.min(elements.length, 10); i++) {
+        // Limit to prevent infinite interactions
         const element = elements[i];
         const startTime = Date.now();
-        
+
         try {
           await element.scrollIntoViewIfNeeded();
           await element.hover();
           await page.waitForTimeout(200);
-          
-          const screenshot = path.join(OUTDIR, 'screenshots', `${routeName}-hover-${selector.replace(/[^a-zA-Z0-9]/g, '_')}-${i}.png`);
+
+          const screenshot = path.join(
+            OUTDIR,
+            'screenshots',
+            `${routeName}-hover-${selector.replace(/[^a-zA-Z0-9]/g, '_')}-${i}.png`
+          );
           await page.screenshot({ path: screenshot, fullPage: true });
-          
+
           await element.click({ force: true, timeout: 5000 });
           await page.waitForLoadState('networkidle', { timeout: 10000 });
-          
-          const clickScreenshot = path.join(OUTDIR, 'screenshots', `${routeName}-click-${selector.replace(/[^a-zA-Z0-9]/g, '_')}-${i}.png`);
+
+          const clickScreenshot = path.join(
+            OUTDIR,
+            'screenshots',
+            `${routeName}-click-${selector.replace(/[^a-zA-Z0-9]/g, '_')}-${i}.png`
+          );
           await page.screenshot({ path: clickScreenshot, fullPage: true });
-          
+
           interactions.push({
             type: 'click',
             element: `${selector}[${i}]`,
             screenshot: clickScreenshot,
             success: true,
-            timing: Date.now() - startTime
+            timing: Date.now() - startTime,
           });
-          
+
           // Navigate back if we're on a different page
           if (page.url() !== `${BASE_URL}${routeName === 'root' ? '/' : routeName}`) {
             await page.goBack({ waitUntil: 'networkidle', timeout: 10000 });
@@ -235,11 +254,11 @@ async function performComprehensiveInteractions(page: Page, routeName: string): 
             screenshot: '',
             success: false,
             error: clickError instanceof Error ? clickError.message : 'Click failed',
-            timing: Date.now() - startTime
+            timing: Date.now() - startTime,
           });
         }
       }
-    } catch (selectorError) {
+    } catch (_selectorError) {
       console.warn(chalk.yellow(`⚠️  Could not find elements for selector: ${selector}`));
     }
   }
@@ -248,20 +267,22 @@ async function performComprehensiveInteractions(page: Page, routeName: string): 
   try {
     const forms = await page.$$('form');
     console.log(chalk.gray(`    Found ${forms.length} forms`));
-    
+
     for (let formIndex = 0; formIndex < forms.length; formIndex++) {
       const form = forms[formIndex];
       const startTime = Date.now();
-      
+
       try {
         await form.scrollIntoViewIfNeeded();
-        
+
         // Fill text inputs
-        const textInputs = await form.$$('input[type="text"], input[type="email"], input[type="search"], input[type="url"], input[type="tel"], input:not([type]), textarea');
+        const textInputs = await form.$$(
+          'input[type="text"], input[type="email"], input[type="search"], input[type="url"], input[type="tel"], input:not([type]), textarea'
+        );
         for (const input of textInputs) {
-          const inputType = await input.getAttribute('type') || 'text';
-          const placeholder = await input.getAttribute('placeholder') || '';
-          
+          const inputType = (await input.getAttribute('type')) || 'text';
+          const placeholder = (await input.getAttribute('placeholder')) || '';
+
           let testValue = 'test';
           if (inputType === 'email' || placeholder.toLowerCase().includes('email')) {
             testValue = 'test@example.com';
@@ -270,29 +291,29 @@ async function performComprehensiveInteractions(page: Page, routeName: string): 
           } else if (placeholder.toLowerCase().includes('name')) {
             testValue = 'John Doe';
           }
-          
+
           await input.fill(testValue);
         }
-        
+
         // Handle checkboxes and radio buttons
         const checkboxes = await form.$$('input[type="checkbox"]');
         for (const checkbox of checkboxes) {
           try {
             await checkbox.check();
-          } catch (e) {
+          } catch (_e) {
             // Some checkboxes might be disabled
           }
         }
-        
+
         const radios = await form.$$('input[type="radio"]');
         if (radios.length > 0) {
           try {
             await radios[0].check();
-          } catch (e) {
+          } catch (_e) {
             // Some radios might be disabled
           }
         }
-        
+
         // Handle selects
         const selects = await form.$$('select');
         for (const select of selects) {
@@ -301,36 +322,46 @@ async function performComprehensiveInteractions(page: Page, routeName: string): 
             if (options.length > 1) {
               await select.selectOption({ index: 1 });
             }
-          } catch (e) {
+          } catch (_e) {
             // Some selects might be disabled
           }
         }
-        
-        const formScreenshot = path.join(OUTDIR, 'screenshots', `${routeName}-form-filled-${formIndex}.png`);
+
+        const formScreenshot = path.join(
+          OUTDIR,
+          'screenshots',
+          `${routeName}-form-filled-${formIndex}.png`
+        );
         await page.screenshot({ path: formScreenshot, fullPage: true });
-        
+
         // Try to submit the form
         try {
-          const submitButton = await form.$('input[type="submit"], button[type="submit"], button:not([type])');
+          const submitButton = await form.$(
+            'input[type="submit"], button[type="submit"], button:not([type])'
+          );
           if (submitButton) {
             await submitButton.click();
           } else {
-            await form.evaluate(f => (f as HTMLFormElement).submit());
+            await form.evaluate((f) => (f as HTMLFormElement).submit());
           }
-          
+
           await page.waitForLoadState('networkidle', { timeout: 10000 });
-          
-          const submitScreenshot = path.join(OUTDIR, 'screenshots', `${routeName}-form-submit-${formIndex}.png`);
+
+          const submitScreenshot = path.join(
+            OUTDIR,
+            'screenshots',
+            `${routeName}-form-submit-${formIndex}.png`
+          );
           await page.screenshot({ path: submitScreenshot, fullPage: true });
-          
+
           interactions.push({
             type: 'form',
             element: `form[${formIndex}]`,
             screenshot: submitScreenshot,
             success: true,
-            timing: Date.now() - startTime
+            timing: Date.now() - startTime,
           });
-          
+
           // Navigate back
           await page.goBack({ waitUntil: 'networkidle', timeout: 10000 });
         } catch (submitError) {
@@ -340,7 +371,7 @@ async function performComprehensiveInteractions(page: Page, routeName: string): 
             screenshot: formScreenshot,
             success: false,
             error: submitError instanceof Error ? submitError.message : 'Form submit failed',
-            timing: Date.now() - startTime
+            timing: Date.now() - startTime,
           });
         }
       } catch (formError) {
@@ -350,7 +381,7 @@ async function performComprehensiveInteractions(page: Page, routeName: string): 
           screenshot: '',
           success: false,
           error: formError instanceof Error ? formError.message : 'Form interaction failed',
-          timing: Date.now() - startTime
+          timing: Date.now() - startTime,
         });
       }
     }
@@ -361,22 +392,22 @@ async function performComprehensiveInteractions(page: Page, routeName: string): 
   // 4. KEYBOARD NAVIGATION - Accessibility testing
   try {
     const startTime = Date.now();
-    
+
     // Tab through focusable elements
     for (let i = 0; i < 10; i++) {
       await page.keyboard.press('Tab');
       await page.waitForTimeout(200);
     }
-    
+
     const keyboardScreenshot = path.join(OUTDIR, 'screenshots', `${routeName}-keyboard-nav.png`);
     await page.screenshot({ path: keyboardScreenshot, fullPage: true });
-    
+
     interactions.push({
       type: 'keyboard',
       element: 'tab-navigation',
       screenshot: keyboardScreenshot,
       success: true,
-      timing: Date.now() - startTime
+      timing: Date.now() - startTime,
     });
   } catch (error) {
     interactions.push({
@@ -385,7 +416,7 @@ async function performComprehensiveInteractions(page: Page, routeName: string): 
       screenshot: '',
       success: false,
       error: error instanceof Error ? error.message : 'Keyboard navigation failed',
-      timing: 0
+      timing: 0,
     });
   }
 
@@ -396,45 +427,47 @@ async function getPageMetrics(page: Page): Promise<RouteResult['pageMetrics']> {
   try {
     const metrics = await page.evaluate(() => {
       return {
-        buttons: document.querySelectorAll('button, [role="button"], input[type="button"], input[type="submit"]').length,
+        buttons: document.querySelectorAll(
+          'button, [role="button"], input[type="button"], input[type="submit"]'
+        ).length,
         links: document.querySelectorAll('a[href]').length,
         forms: document.querySelectorAll('form').length,
         images: document.querySelectorAll('img').length,
         inputs: document.querySelectorAll('input, textarea, select').length,
       };
     });
-    
+
     // Get console errors and warnings
     const errors: string[] = [];
     const warnings: string[] = [];
-    
-    page.on('console', msg => {
+
+    page.on('console', (msg) => {
       if (msg.type() === 'error') {
         errors.push(msg.text());
       } else if (msg.type() === 'warning') {
         warnings.push(msg.text());
       }
     });
-    
+
     return {
       loadTime: 0, // Will be filled by caller
       elements: metrics,
       errors,
-      warnings
+      warnings,
     };
   } catch (error) {
     return {
       loadTime: 0,
       elements: { buttons: 0, links: 0, forms: 0, images: 0, inputs: 0 },
       errors: [`Failed to get page metrics: ${error}`],
-      warnings: []
+      warnings: [],
     };
   }
 }
 
 async function analyzeWithAI(report: AuditReport): Promise<void> {
   console.log(chalk.yellow('🤖 Performing AI-powered visual analysis...'));
-  
+
   try {
     // For now, create a comprehensive analysis based on the data we have
     // This would be replaced with actual AI API calls to GPT-4 Vision or Claude
@@ -443,29 +476,29 @@ async function analyzeWithAI(report: AuditReport): Promise<void> {
       overall_assessment: {
         score: calculateOverallScore(report),
         critical_issues: findCriticalIssues(report),
-        recommendations: generateRecommendations(report)
+        recommendations: generateRecommendations(report),
       },
-      route_analysis: report.routes.map(route => ({
+      route_analysis: report.routes.map((route) => ({
         route: route.route,
         ui_issues: analyzeUIIssues(route),
         ux_issues: analyzeUXIssues(route),
         accessibility_issues: analyzeAccessibilityIssues(route),
-        performance_issues: analyzePerformanceIssues(route)
+        performance_issues: analyzePerformanceIssues(route),
       })),
       visual_regression_detected: [],
       interaction_flow_issues: analyzeInteractionFlows(report),
       responsive_design_issues: [],
-      form_usability_issues: analyzeFormUsability(report)
+      form_usability_issues: analyzeFormUsability(report),
     };
-    
+
     await fs.writeFile(
-      path.join(OUTDIR, 'analysis', 'ai-analysis.json'), 
+      path.join(OUTDIR, 'analysis', 'ai-analysis.json'),
       JSON.stringify(analysis, null, 2)
     );
-    
+
     // Generate HTML report
     await generateHTMLReport(report, analysis);
-    
+
     console.log(chalk.green('✅ AI analysis completed'));
   } catch (error) {
     console.error(chalk.red(`❌ AI analysis failed: ${error}`));
@@ -474,127 +507,132 @@ async function analyzeWithAI(report: AuditReport): Promise<void> {
 
 function calculateOverallScore(report: AuditReport): number {
   const totalInteractions = report.summary.totalInteractions;
-  const successfulInteractions = report.routes.reduce((acc, route) => 
-    acc + route.interactions.filter(i => i.success).length, 0
+  const successfulInteractions = report.routes.reduce(
+    (acc, route) => acc + route.interactions.filter((i) => i.success).length,
+    0
   );
-  
+
   return totalInteractions > 0 ? Math.round((successfulInteractions / totalInteractions) * 100) : 0;
 }
 
 function findCriticalIssues(report: AuditReport): string[] {
   const issues: string[] = [];
-  
+
   // Check for high error rates
   if (report.summary.successRate < 80) {
     issues.push(`Low interaction success rate: ${report.summary.successRate}%`);
   }
-  
+
   // Check for console errors
-  report.routes.forEach(route => {
+  report.routes.forEach((route) => {
     if (route.pageMetrics.errors.length > 0) {
       issues.push(`Console errors on ${route.route}: ${route.pageMetrics.errors.length} errors`);
     }
   });
-  
+
   // Check for missing interactive elements
-  report.routes.forEach(route => {
+  report.routes.forEach((route) => {
     if (route.pageMetrics.elements.buttons === 0 && route.pageMetrics.elements.links === 0) {
       issues.push(`No interactive elements found on ${route.route}`);
     }
   });
-  
+
   return issues;
 }
 
 function generateRecommendations(report: AuditReport): string[] {
   const recommendations: string[] = [];
-  
+
   if (report.summary.avgLoadTime > 3000) {
     recommendations.push('Optimize page load times - average load time exceeds 3 seconds');
   }
-  
-  const routesWithForms = report.routes.filter(r => r.pageMetrics.elements.forms > 0);
-  const formsWithErrors = routesWithForms.filter(r => 
-    r.interactions.some(i => i.type === 'form' && !i.success)
+
+  const routesWithForms = report.routes.filter((r) => r.pageMetrics.elements.forms > 0);
+  const formsWithErrors = routesWithForms.filter((r) =>
+    r.interactions.some((i) => i.type === 'form' && !i.success)
   );
-  
+
   if (formsWithErrors.length > 0) {
     recommendations.push('Review form validation and error handling');
   }
-  
+
   return recommendations;
 }
 
 function analyzeUIIssues(route: RouteResult): string[] {
   const issues: string[] = [];
-  
+
   if (route.pageMetrics.elements.images > 10) {
     issues.push('High number of images may impact performance');
   }
-  
+
   return issues;
 }
 
 function analyzeUXIssues(route: RouteResult): string[] {
   const issues: string[] = [];
-  
-  const failedClicks = route.interactions.filter(i => i.type === 'click' && !i.success);
+
+  const failedClicks = route.interactions.filter((i) => i.type === 'click' && !i.success);
   if (failedClicks.length > 0) {
     issues.push(`${failedClicks.length} clickable elements failed to respond`);
   }
-  
+
   return issues;
 }
 
 function analyzeAccessibilityIssues(route: RouteResult): string[] {
   const issues: string[] = [];
-  
-  const keyboardNav = route.interactions.find(i => i.type === 'keyboard');
+
+  const keyboardNav = route.interactions.find((i) => i.type === 'keyboard');
   if (!keyboardNav || !keyboardNav.success) {
     issues.push('Keyboard navigation may be problematic');
   }
-  
+
   return issues;
 }
 
 function analyzePerformanceIssues(route: RouteResult): string[] {
   const issues: string[] = [];
-  
+
   if (route.pageMetrics.loadTime > 3000) {
     issues.push(`Slow page load: ${route.pageMetrics.loadTime}ms`);
   }
-  
+
   return issues;
 }
 
 function analyzeInteractionFlows(report: AuditReport): string[] {
   const issues: string[] = [];
-  
-  report.routes.forEach(route => {
+
+  report.routes.forEach((route) => {
     const interactions = route.interactions;
-    const clickInteractions = interactions.filter(i => i.type === 'click');
-    const failedClicks = clickInteractions.filter(i => !i.success);
-    
+    const clickInteractions = interactions.filter((i) => i.type === 'click');
+    const failedClicks = clickInteractions.filter((i) => !i.success);
+
     if (failedClicks.length > clickInteractions.length * 0.3) {
-      issues.push(`High click failure rate on ${route.route}: ${failedClicks.length}/${clickInteractions.length}`);
+      issues.push(
+        `High click failure rate on ${route.route}: ${failedClicks.length}/${clickInteractions.length}`
+      );
     }
   });
-  
+
   return issues;
 }
 
 function analyzeFormUsability(report: AuditReport): string[] {
   const issues: string[] = [];
-  
-  report.routes.forEach(route => {
-    const formInteractions = route.interactions.filter(i => i.type === 'form');
-    const failedForms = formInteractions.filter(i => !i.success);
-    
+
+  report.routes.forEach((route) => {
+    const formInteractions = route.interactions.filter((i) => i.type === 'form');
+    const failedForms = formInteractions.filter((i) => !i.success);
+
     if (failedForms.length > 0) {
-      issues.push(`Form submission issues on ${route.route}: ${failedForms.length} failed submissions`);
+      issues.push(
+        `Form submission issues on ${route.route}: ${failedForms.length} failed submissions`
+      );
     }
   });
-  
+
   return issues;
 }
 
@@ -686,7 +724,9 @@ async function generateHTMLReport(report: AuditReport, analysis: any): Promise<v
 
             <div class="section">
                 <h2>📊 Route Analysis</h2>
-                ${report.routes.map(route => `
+                ${report.routes
+                  .map(
+                    (route) => `
                     <div class="route-card">
                         <div class="route-header">
                             <h3>${route.route}</h3>
@@ -706,27 +746,38 @@ async function generateHTMLReport(report: AuditReport, analysis: any): Promise<v
                                 </div>
                                 <div>
                                     <h4>Issues Found</h4>
-                                    ${route.pageMetrics.errors.length > 0 ? 
-                                        `<div class="issue critical">Console Errors: ${route.pageMetrics.errors.length}</div>` : ''
+                                    ${
+                                      route.pageMetrics.errors.length > 0
+                                        ? `<div class="issue critical">Console Errors: ${route.pageMetrics.errors.length}</div>`
+                                        : ''
                                     }
-                                    ${route.pageMetrics.warnings.length > 0 ? 
-                                        `<div class="issue">Console Warnings: ${route.pageMetrics.warnings.length}</div>` : ''
+                                    ${
+                                      route.pageMetrics.warnings.length > 0
+                                        ? `<div class="issue">Console Warnings: ${route.pageMetrics.warnings.length}</div>`
+                                        : ''
                                     }
                                 </div>
                             </div>
                             
                             <div class="interaction-grid">
-                                ${route.interactions.slice(0, 6).map(interaction => `
+                                ${route.interactions
+                                  .slice(0, 6)
+                                  .map(
+                                    (interaction) => `
                                     <div class="interaction ${interaction.success ? 'success' : 'failed'}">
                                         <strong>${interaction.type}</strong>: ${interaction.element}
                                         <br><small>${interaction.success ? '✅ Success' : '❌ Failed'} (${interaction.timing}ms)</small>
                                         ${interaction.error ? `<br><small style="color: red;">${interaction.error}</small>` : ''}
                                     </div>
-                                `).join('')}
+                                `
+                                  )
+                                  .join('')}
                             </div>
                         </div>
                     </div>
-                `).join('')}
+                `
+                  )
+                  .join('')}
             </div>
 
             <div class="section">
@@ -742,7 +793,7 @@ async function generateHTMLReport(report: AuditReport, analysis: any): Promise<v
     </div>
 </body>
 </html>`;
-  
+
   await fs.writeFile(path.join(OUTDIR, 'comprehensive-report.html'), html);
 }
 
@@ -754,11 +805,11 @@ class AutoAuditor {
     await mkdirs();
     console.log(chalk.blue('🚀 Starting AutoAudit Comprehensive Crawler...'));
     console.log(chalk.gray(`📁 Output directory: ${OUTDIR}`));
-    
+
     this.browser = await chromium.launch({
       headless: false,
       devtools: false,
-      slowMo: 50
+      slowMo: 50,
     });
   }
 
@@ -773,15 +824,15 @@ class AutoAuditor {
     let successfulInteractions = 0;
 
     for (const route of routes) {
-      const routeName = route === '/' ? 'root' : route.replace(/[\/\\]/g, '_');
+      const routeName = route === '/' ? 'root' : route.replace(/[/\\]/g, '_');
       console.log(chalk.blue(`\n🔄 Testing route: ${route}`));
 
       const context = await this.browser.newContext({
         ...devices['Desktop Chrome'],
         recordVideo: {
           dir: path.join(OUTDIR, 'videos'),
-          size: { width: 1280, height: 720 }
-        }
+          size: { width: 1280, height: 720 },
+        },
       });
 
       const page = await context.newPage();
@@ -807,7 +858,7 @@ class AutoAuditor {
         await page.screenshot({ path: finalScreenshot, fullPage: true });
 
         totalInteractions += interactions.length;
-        successfulInteractions += interactions.filter(i => i.success).length;
+        successfulInteractions += interactions.filter((i) => i.success).length;
 
         results.push({
           route,
@@ -815,11 +866,14 @@ class AutoAuditor {
           screenshot: finalScreenshot,
           video: path.join(OUTDIR, 'videos', `${routeName}.webm`),
           interactions,
-          pageMetrics
+          pageMetrics,
         });
 
-        console.log(chalk.green(`  ✅ Completed ${route}: ${interactions.length} interactions, ${interactions.filter(i => i.success).length} successful`));
-
+        console.log(
+          chalk.green(
+            `  ✅ Completed ${route}: ${interactions.length} interactions, ${interactions.filter((i) => i.success).length} successful`
+          )
+        );
       } catch (error) {
         console.error(chalk.red(`  ❌ Failed to test ${route}: ${error}`));
         results.push({
@@ -831,8 +885,8 @@ class AutoAuditor {
             loadTime: 0,
             elements: { buttons: 0, links: 0, forms: 0, images: 0, inputs: 0 },
             errors: [error instanceof Error ? error.message : 'Unknown error'],
-            warnings: []
-          }
+            warnings: [],
+          },
         });
       } finally {
         await context.close();
@@ -844,12 +898,20 @@ class AutoAuditor {
       summary: {
         totalRoutes: routes.length,
         totalInteractions,
-        successRate: totalInteractions > 0 ? Math.round((successfulInteractions / totalInteractions) * 100) : 0,
-        avgLoadTime: Math.round(results.reduce((acc, r) => acc + r.pageMetrics.loadTime, 0) / results.length),
-        issuesFound: results.reduce((acc, r) => acc + r.pageMetrics.errors.length + r.pageMetrics.warnings.length, 0)
+        successRate:
+          totalInteractions > 0
+            ? Math.round((successfulInteractions / totalInteractions) * 100)
+            : 0,
+        avgLoadTime: Math.round(
+          results.reduce((acc, r) => acc + r.pageMetrics.loadTime, 0) / results.length
+        ),
+        issuesFound: results.reduce(
+          (acc, r) => acc + r.pageMetrics.errors.length + r.pageMetrics.warnings.length,
+          0
+        ),
       },
       routes: results,
-      globalIssues: []
+      globalIssues: [],
     };
   }
 
@@ -863,17 +925,20 @@ class AutoAuditor {
     try {
       await this.initialize();
       const report = await this.crawlAndAudit();
-      
+
       // Save raw report
       await fs.writeFile(path.join(OUTDIR, 'report.json'), JSON.stringify(report, null, 2));
-      
+
       // Perform AI analysis
       await analyzeWithAI(report);
-      
+
       console.log(chalk.green('\n✨ AutoAudit completed successfully!'));
-      console.log(chalk.blue(`📊 View comprehensive report: ${path.join(OUTDIR, 'comprehensive-report.html')}`));
+      console.log(
+        chalk.blue(
+          `📊 View comprehensive report: ${path.join(OUTDIR, 'comprehensive-report.html')}`
+        )
+      );
       console.log(chalk.blue(`📁 All artifacts saved to: ${OUTDIR}`));
-      
     } catch (error) {
       console.error(chalk.red('❌ AutoAudit failed:'), error);
     } finally {

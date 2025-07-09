@@ -64,14 +64,14 @@ const AI_ML_CODE_SNIPPETS = [
   'kmeans = KMeans(n_clusters=3)',
   'clusters = kmeans.fit_predict(X_scaled)',
   'from sklearn.metrics import classification_report',
-  'print(classification_report(y_test, predictions))'
+  'print(classification_report(y_test, predictions))',
 ];
 
 export function CodeTypingBackground({
   className = '',
   opacity = 0.3,
   linesCount = 15,
-  typingSpeed = 50
+  typingSpeed = 50,
 }: CodeTypingBackgroundProps) {
   // Reduce complexity on mobile devices
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -86,13 +86,13 @@ export function CodeTypingBackground({
     // Check for reduced motion preference
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     isReducedMotion.current = mediaQuery.matches;
-    
+
     const handleMotionChange = (e: MediaQueryListEvent) => {
       isReducedMotion.current = e.matches;
     };
-    
+
     mediaQuery.addEventListener('change', handleMotionChange);
-    
+
     return () => {
       mediaQuery.removeEventListener('change', handleMotionChange);
     };
@@ -105,7 +105,7 @@ export function CodeTypingBackground({
     const initializeLines = () => {
       const containerRect = container.getBoundingClientRect();
       const newLines: CodeLine[] = [];
-      
+
       for (let i = 0; i < adjustedLinesCount; i++) {
         const snippet = AI_ML_CODE_SNIPPETS[Math.floor(Math.random() * AI_ML_CODE_SNIPPETS.length)];
         const line: CodeLine = {
@@ -116,39 +116,40 @@ export function CodeTypingBackground({
           progress: 0,
           speed: isReducedMotion.current ? 1000 : adjustedTypingSpeed + Math.random() * 30,
           delay: Math.random() * 5000,
-          isComplete: false
+          isComplete: false,
         };
         newLines.push(line);
       }
-      
+
       setLines(newLines);
     };
 
     const animate = () => {
-      setLines(prevLines => 
-        prevLines.map(line => {
+      setLines((prevLines) =>
+        prevLines.map((line) => {
           if (line.delay > 0) {
             return { ...line, delay: line.delay - 16 };
           }
-          
+
           if (!line.isComplete) {
-            const newProgress = isReducedMotion.current 
-              ? line.text.length 
-              : Math.min(line.progress + (16 / line.speed), line.text.length);
-            
+            const newProgress = isReducedMotion.current
+              ? line.text.length
+              : Math.min(line.progress + 16 / line.speed, line.text.length);
+
             return {
               ...line,
               progress: newProgress,
-              isComplete: newProgress >= line.text.length
+              isComplete: newProgress >= line.text.length,
             };
           }
-          
+
           // Restart the line after completion
           if (line.isComplete && Math.random() < 0.0005) {
-            const snippet = AI_ML_CODE_SNIPPETS[Math.floor(Math.random() * AI_ML_CODE_SNIPPETS.length)];
+            const snippet =
+              AI_ML_CODE_SNIPPETS[Math.floor(Math.random() * AI_ML_CODE_SNIPPETS.length)];
             const container = containerRef.current;
             const containerRect = container?.getBoundingClientRect();
-            
+
             return {
               ...line,
               text: snippet,
@@ -158,14 +159,14 @@ export function CodeTypingBackground({
               progress: 0,
               speed: isReducedMotion.current ? 1000 : adjustedTypingSpeed + Math.random() * 30,
               delay: Math.random() * 2000,
-              isComplete: false
+              isComplete: false,
             };
           }
-          
+
           return line;
         })
       );
-      
+
       animationRef.current = requestAnimationFrame(animate);
     };
 
@@ -202,15 +203,15 @@ export function CodeTypingBackground({
             top: `${line.y}px`,
             opacity: line.opacity * opacity,
             transform: `translateZ(0)`, // Force GPU acceleration
-            willChange: 'opacity'
+            willChange: 'opacity',
           }}
         >
           {line.text.slice(0, Math.floor(line.progress))}
           {!line.isComplete && line.delay <= 0 && (
-            <span 
+            <span
               className="animate-pulse"
               style={{
-                animation: isReducedMotion.current ? 'none' : undefined
+                animation: isReducedMotion.current ? 'none' : undefined,
               }}
             >
               |
@@ -218,13 +219,13 @@ export function CodeTypingBackground({
           )}
         </div>
       ))}
-      
+
       {/* Gradient overlay to fade edges */}
-      <div 
+      <div
         className="absolute inset-0 bg-gradient-to-r from-transparent via-transparent to-slate-900/20"
         style={{ pointerEvents: 'none' }}
       />
-      <div 
+      <div
         className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-slate-900/20"
         style={{ pointerEvents: 'none' }}
       />

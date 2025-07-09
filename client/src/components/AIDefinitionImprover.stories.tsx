@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { AIDefinitionImprover } from './AIDefinitionImprover';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AIDefinitionImprover } from './AIDefinitionImprover';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,7 +25,8 @@ const meta: Meta<typeof AIDefinitionImprover> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'AI-powered component for improving existing definitions with enhanced clarity, examples, and technical accuracy.',
+        component:
+          'AI-powered component for improving existing definitions with enhanced clarity, examples, and technical accuracy.',
       },
     },
   },
@@ -73,7 +74,7 @@ export const Default: Story = {
       viewCount: 100,
       isAiGenerated: true,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     },
   },
 };
@@ -88,7 +89,7 @@ export const WithLongDefinition: Story = {
       viewCount: 250,
       isAiGenerated: true,
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     },
   },
 };
@@ -103,7 +104,7 @@ export const ImprovingState: Story = {
       viewCount: 180,
       isAiGenerated: true,
       createdAt: new Date(Date.now() - 86400000), // 1 day ago
-      updatedAt: new Date()
+      updatedAt: new Date(),
     },
     onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
@@ -130,7 +131,7 @@ export const WithImprovements: Story = {
       viewCount: 350,
       isAiGenerated: true,
       createdAt: new Date(Date.now() - 172800000), // 2 days ago
-      updatedAt: new Date()
+      updatedAt: new Date(),
     },
     onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
@@ -186,7 +187,7 @@ export const WithCustomImprovementTypes: Story = {
       viewCount: 420,
       isAiGenerated: false,
       createdAt: new Date(Date.now() - 259200000), // 3 days ago
-      updatedAt: new Date(Date.now() - 86400000) // 1 day ago
+      updatedAt: new Date(Date.now() - 86400000), // 1 day ago
     },
     onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
@@ -202,7 +203,7 @@ export const ComparisonMode: Story = {
       viewCount: 290,
       isAiGenerated: true,
       createdAt: new Date(Date.now() - 345600000), // 4 days ago
-      updatedAt: new Date(Date.now() - 43200000) // 12 hours ago
+      updatedAt: new Date(Date.now() - 43200000), // 12 hours ago
     },
     onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
@@ -243,7 +244,7 @@ export const MultipleVersions: Story = {
       viewCount: 520,
       isAiGenerated: true,
       createdAt: new Date(Date.now() - 432000000), // 5 days ago
-      updatedAt: new Date(Date.now() - 21600000) // 6 hours ago
+      updatedAt: new Date(Date.now() - 21600000), // 6 hours ago
     },
     onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
@@ -294,7 +295,7 @@ export const ErrorState: Story = {
       viewCount: 95,
       isAiGenerated: true,
       createdAt: new Date(Date.now() - 518400000), // 6 days ago
-      updatedAt: new Date(Date.now() - 172800000) // 2 days ago
+      updatedAt: new Date(Date.now() - 172800000), // 2 days ago
     },
     onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
@@ -320,7 +321,7 @@ export const WithFeedback: Story = {
       viewCount: 240,
       isAiGenerated: true,
       createdAt: new Date(Date.now() - 604800000), // 7 days ago
-      updatedAt: new Date(Date.now() - 10800000) // 3 hours ago
+      updatedAt: new Date(Date.now() - 10800000), // 3 hours ago
     },
     onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
@@ -356,7 +357,7 @@ export const DarkMode: Story = {
       viewCount: 160,
       isAiGenerated: true,
       createdAt: new Date(Date.now() - 691200000), // 8 days ago
-      updatedAt: new Date(Date.now() - 7200000) // 2 hours ago
+      updatedAt: new Date(Date.now() - 7200000), // 2 hours ago
     },
     onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },
@@ -377,7 +378,7 @@ export const MobileView: Story = {
       viewCount: 210,
       isAiGenerated: true,
       createdAt: new Date(Date.now() - 777600000), // 9 days ago
-      updatedAt: new Date(Date.now() - 3600000) // 1 hour ago
+      updatedAt: new Date(Date.now() - 3600000), // 1 hour ago
     },
     onImprovementApplied: (improvedTerm: any) => console.log('Accepted improvement:', improvedTerm),
   },

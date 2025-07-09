@@ -6,25 +6,28 @@ const testCases = [
     device: 'iPhone 14 Pro',
     browser: 'Safari iOS',
     viewport: { width: 393, height: 852 },
-    userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+    userAgent:
+      'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
     touchSupport: true,
-    paymentMethods: ['Apple Pay', 'Credit Card', 'PayPal']
+    paymentMethods: ['Apple Pay', 'Credit Card', 'PayPal'],
   },
   {
     device: 'Samsung Galaxy S23',
     browser: 'Chrome Android',
     viewport: { width: 384, height: 854 },
-    userAgent: 'Mozilla/5.0 (Linux; Android 13; SM-S911B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
+    userAgent:
+      'Mozilla/5.0 (Linux; Android 13; SM-S911B) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/112.0.0.0 Mobile Safari/537.36',
     touchSupport: true,
-    paymentMethods: ['Google Pay', 'Credit Card', 'PayPal']
+    paymentMethods: ['Google Pay', 'Credit Card', 'PayPal'],
   },
   {
     device: 'iPad Pro 12.9"',
     browser: 'Safari iPadOS',
     viewport: { width: 1024, height: 1366 },
-    userAgent: 'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
+    userAgent:
+      'Mozilla/5.0 (iPad; CPU OS 16_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.0 Mobile/15E148 Safari/604.1',
     touchSupport: true,
-    paymentMethods: ['Apple Pay', 'Credit Card', 'PayPal']
+    paymentMethods: ['Apple Pay', 'Credit Card', 'PayPal'],
   },
   {
     device: 'Google Pixel 7',
@@ -32,8 +35,8 @@ const testCases = [
     viewport: { width: 412, height: 915 },
     userAgent: 'Mozilla/5.0 (Mobile; rv:109.0) Gecko/109.0 Firefox/115.0',
     touchSupport: true,
-    paymentMethods: ['Credit Card', 'PayPal']
-  }
+    paymentMethods: ['Credit Card', 'PayPal'],
+  },
 ];
 
 const purchaseFlowSteps = [
@@ -46,8 +49,8 @@ const purchaseFlowSteps = [
       'Pricing section visible',
       'EARLY500 discount displayed',
       'Mobile-responsive layout',
-      'Touch targets >= 44px'
-    ]
+      'Touch targets >= 44px',
+    ],
   },
   {
     step: 2,
@@ -57,8 +60,8 @@ const purchaseFlowSteps = [
       'Smooth scrolling behavior',
       'Launch pricing counter visible (237/500)',
       'Button responds to touch',
-      'No layout shifts on interaction'
-    ]
+      'No layout shifts on interaction',
+    ],
   },
   {
     step: 3,
@@ -68,8 +71,8 @@ const purchaseFlowSteps = [
       'Successful redirect to Gumroad',
       'EARLY500 discount applied automatically',
       'Price shows $179 (not $249)',
-      'Mobile-optimized Gumroad checkout'
-    ]
+      'Mobile-optimized Gumroad checkout',
+    ],
   },
   {
     step: 4,
@@ -78,10 +81,10 @@ const purchaseFlowSteps = [
     checks: [
       'Email field autofocus',
       'Payment form fields accessible',
-      'Virtual keyboard doesn\'t break layout',
+      "Virtual keyboard doesn't break layout",
       'Form validation works',
-      'Payment method selection available'
-    ]
+      'Payment method selection available',
+    ],
   },
   {
     step: 5,
@@ -91,8 +94,8 @@ const purchaseFlowSteps = [
       'Purchase success page loads',
       'Download/access instructions clear',
       'Email confirmation sent',
-      'Webhook processed successfully'
-    ]
+      'Webhook processed successfully',
+    ],
   },
   {
     step: 6,
@@ -102,21 +105,21 @@ const purchaseFlowSteps = [
       'Can verify purchase by email',
       'Lifetime access granted',
       'Premium features unlocked',
-      'No mobile UX issues'
-    ]
-  }
+      'No mobile UX issues',
+    ],
+  },
 ];
 
 function generateMobileTestReport() {
   console.log('📱 AI/ML Glossary Pro - Mobile Purchase Flow Test Report\n');
-  console.log('=' .repeat(80));
-  
+  console.log('='.repeat(80));
+
   console.log('\n🎯 Test Objectives:');
   console.log('   • Verify purchase flow works on mobile devices');
   console.log('   • Test across different browsers and screen sizes');
   console.log('   • Ensure EARLY500 discount functions properly');
   console.log('   • Validate mobile UX and payment experience');
-  
+
   console.log('\n📱 Test Devices:');
   testCases.forEach((testCase, index) => {
     console.log(`\n   ${index + 1}. ${testCase.device} - ${testCase.browser}`);
@@ -124,38 +127,38 @@ function generateMobileTestReport() {
     console.log(`      Touch Support: ${testCase.touchSupport ? '✅' : '❌'}`);
     console.log(`      Payment Methods: ${testCase.paymentMethods.join(', ')}`);
   });
-  
+
   console.log('\n🔄 Purchase Flow Steps:');
-  purchaseFlowSteps.forEach(step => {
+  purchaseFlowSteps.forEach((step) => {
     console.log(`\n   Step ${step.step}: ${step.name}`);
     if (step.url) console.log(`      URL: ${step.url}`);
     if (step.action) console.log(`      Action: ${step.action}`);
     console.log(`      Checks:`);
-    step.checks.forEach(check => {
+    step.checks.forEach((check) => {
       console.log(`        • ${check}`);
     });
   });
-  
-  console.log('\n' + '=' .repeat(80));
+
+  console.log(`\n${'='.repeat(80)}`);
   console.log('\n🧪 Manual Testing Instructions:');
-  
-  testCases.forEach((testCase, deviceIndex) => {
+
+  testCases.forEach((testCase, _deviceIndex) => {
     console.log(`\n📱 ${testCase.device} Testing:`);
     console.log(`   1. Open ${testCase.browser}`);
     console.log(`   2. Set viewport to ${testCase.viewport.width}x${testCase.viewport.height}`);
     console.log(`   3. Navigate to: https://aimlglossary.com`);
     console.log(`   4. Follow the complete purchase flow:`);
-    
-    purchaseFlowSteps.forEach(step => {
+
+    purchaseFlowSteps.forEach((step) => {
       console.log(`      ${step.step}. ${step.name}`);
       if (step.action) console.log(`         Action: ${step.action}`);
       if (step.url && step.step > 1) console.log(`         Expected URL: ${step.url}`);
     });
-    
+
     console.log(`   5. Document any issues or UX problems`);
     console.log(`   6. Verify payment methods: ${testCase.paymentMethods.join(', ')}`);
   });
-  
+
   console.log('\n📊 Key Metrics to Track:');
   console.log('   • Page load times (target: <3s)');
   console.log('   • Touch target sizes (target: >=44px)');
@@ -163,7 +166,7 @@ function generateMobileTestReport() {
   console.log('   • Payment method success rates');
   console.log('   • Layout shift incidents');
   console.log('   • Form completion rates');
-  
+
   console.log('\n⚠️  Common Mobile Issues to Watch For:');
   console.log('   • Virtual keyboard covering form fields');
   console.log('   • Touch targets too small');
@@ -171,7 +174,7 @@ function generateMobileTestReport() {
   console.log('   • Payment form not responsive');
   console.log('   • Slow Gumroad redirect');
   console.log('   • Email verification flow broken');
-  
+
   console.log('\n✅ Success Criteria:');
   console.log('   • All devices complete purchase flow successfully');
   console.log('   • EARLY500 discount applied correctly on all devices');
@@ -179,20 +182,20 @@ function generateMobileTestReport() {
   console.log('   • Payment forms work with virtual keyboards');
   console.log('   • Webhook processing works for mobile purchases');
   console.log('   • Email verification works on mobile browsers');
-  
+
   console.log('\n🔗 Quick Test URLs:');
   console.log('   • Landing: https://aimlglossary.com');
   console.log('   • Pricing: https://aimlglossary.com#pricing');
   console.log('   • Purchase: https://pranaysuyash.gumroad.com/l/ggczfy/EARLY500');
   console.log('   • Verify: https://aimlglossary.com/lifetime');
-  
+
   console.log('\n📝 Recommended Tools:');
   console.log('   • Chrome DevTools Device Simulation');
   console.log('   • BrowserStack for real device testing');
   console.log('   • Lighthouse Mobile Performance Audit');
   console.log('   • Gumroad Test Mode for safe purchase testing');
-  
-  console.log('\n' + '=' .repeat(80));
+
+  console.log(`\n${'='.repeat(80)}`);
   console.log('\n✨ This test validates the complete mobile purchase experience');
   console.log('   ensuring users can successfully purchase on any mobile device!');
 }

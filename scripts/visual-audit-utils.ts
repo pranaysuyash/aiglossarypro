@@ -1,6 +1,6 @@
 /**
  * Visual Audit Utilities
- * 
+ *
  * Common utility functions for visual testing including:
  * - Screenshot comparison
  * - Color contrast calculation
@@ -8,21 +8,22 @@
  * - Report generation helpers
  */
 
-import { Page } from 'playwright';
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import type { Page } from 'playwright';
+
 // Optional dependency - handle gracefully if not installed
 let sharp: any;
 try {
   sharp = require('sharp');
-} catch (e) {
+} catch (_e) {
   console.warn('⚠️  sharp not installed - image processing features will be limited');
   sharp = {
     // Mock implementation for when sharp is not available
-    mockMode: true
+    mockMode: true,
   };
 }
-import { createHash } from 'crypto';
+
+import { createHash } from 'node:crypto';
 
 export interface ColorInfo {
   hex: string;
@@ -54,8 +55,8 @@ export function calculateContrast(color1: ColorInfo, color2: ColorInfo): Contras
       aa: ratio >= 4.5, // Normal text
       aaa: ratio >= 7, // Normal text enhanced
       aaLarge: ratio >= 3, // Large text
-      aaaLarge: ratio >= 4.5 // Large text enhanced
-    }
+      aaaLarge: ratio >= 4.5, // Large text enhanced
+    },
   };
 }
 
@@ -64,11 +65,11 @@ export function calculateContrast(color1: ColorInfo, color2: ColorInfo): Contras
  */
 export function calculateLuminance(rgb: { r: number; g: number; b: number }): number {
   const { r, g, b } = rgb;
-  const [rs, gs, bs] = [r, g, b].map(c => {
+  const [rs, gs, bs] = [r, g, b].map((c) => {
     c = c / 255;
-    return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
   });
-  
+
   return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
 }
 
@@ -77,28 +78,33 @@ export function calculateLuminance(rgb: { r: number; g: number; b: number }): nu
  */
 export function hexToRgb(hex: string): { r: number; g: number; b: number } {
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? {
-    r: parseInt(result[1], 16),
-    g: parseInt(result[2], 16),
-    b: parseInt(result[3], 16)
-  } : { r: 0, g: 0, b: 0 };
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : { r: 0, g: 0, b: 0 };
 }
 
 /**
  * Extract colors from a page element
  */
-export async function extractColors(page: Page, selector: string): Promise<{
+export async function extractColors(
+  page: Page,
+  selector: string
+): Promise<{
   background: ColorInfo;
   foreground: ColorInfo;
 }> {
   const colors = await page.evaluate((sel) => {
     const element = document.querySelector(sel);
     if (!element) return null;
-    
+
     const styles = window.getComputedStyle(element);
     return {
       background: styles.backgroundColor,
-      foreground: styles.color
+      foreground: styles.color,
     };
   }, selector);
 
@@ -114,13 +120,13 @@ export async function extractColors(page: Page, selector: string): Promise<{
     background: {
       hex: rgbToHex(bgRgb),
       rgb: bgRgb,
-      luminance: calculateLuminance(bgRgb)
+      luminance: calculateLuminance(bgRgb),
     },
     foreground: {
       hex: rgbToHex(fgRgb),
       rgb: fgRgb,
-      luminance: calculateLuminance(fgRgb)
-    }
+      luminance: calculateLuminance(fgRgb),
+    },
   };
 }
 
@@ -133,15 +139,15 @@ function parseRgbString(rgbString: string): { r: number; g: number; b: number } 
     return {
       r: parseInt(match[1]),
       g: parseInt(match[2]),
-      b: parseInt(match[3])
+      b: parseInt(match[3]),
     };
   }
-  
+
   // If it's already a hex color
   if (rgbString.startsWith('#')) {
     return hexToRgb(rgbString);
   }
-  
+
   // Default to white
   return { r: 255, g: 255, b: 255 };
 }
@@ -150,9 +156,7 @@ function parseRgbString(rgbString: string): { r: number; g: number; b: number } 
  * Convert RGB to hex color
  */
 function rgbToHex(rgb: { r: number; g: number; b: number }): string {
-  return '#' + [rgb.r, rgb.g, rgb.b]
-    .map(x => x.toString(16).padStart(2, '0'))
-    .join('');
+  return `#${[rgb.r, rgb.g, rgb.b].map((x) => x.toString(16).padStart(2, '0')).join('')}`;
 }
 
 /**
@@ -167,24 +171,18 @@ export async function compareScreenshots(
     console.warn('Sharp not available - returning mock comparison result');
     return { difference: 0, pixels: 0 };
   }
-  
+
   try {
     const img1 = sharp(baseline);
     const img2 = sharp(current);
-    
-    const [meta1, meta2] = await Promise.all([
-      img1.metadata(),
-      img2.metadata()
-    ]);
+
+    const [meta1, meta2] = await Promise.all([img1.metadata(), img2.metadata()]);
 
     if (meta1.width !== meta2.width || meta1.height !== meta2.height) {
       throw new Error('Images have different dimensions');
     }
 
-    const [buffer1, buffer2] = await Promise.all([
-      img1.raw().toBuffer(),
-      img2.raw().toBuffer()
-    ]);
+    const [buffer1, buffer2] = await Promise.all([img1.raw().toBuffer(), img2.raw().toBuffer()]);
 
     let diffPixels = 0;
     const totalPixels = meta1.width! * meta1.height!;
@@ -194,14 +192,15 @@ export async function compareScreenshots(
       const r1 = buffer1[i];
       const g1 = buffer1[i + 1];
       const b1 = buffer1[i + 2];
-      
+
       const r2 = buffer2[i];
       const g2 = buffer2[i + 1];
       const b2 = buffer2[i + 2];
-      
+
       const diff = Math.abs(r1 - r2) + Math.abs(g1 - g2) + Math.abs(b1 - b2);
-      
-      if (diff > 10) { // Threshold for difference
+
+      if (diff > 10) {
+        // Threshold for difference
         diffPixels++;
         // Highlight differences in red
         diffBuffer[i] = 255;
@@ -220,16 +219,16 @@ export async function compareScreenshots(
         raw: {
           width: meta1.width!,
           height: meta1.height!,
-          channels: 3
-        }
+          channels: 3,
+        },
       }).toFile(outputDiff);
     }
 
     const difference = (diffPixels / totalPixels) * 100;
-    
+
     return {
       difference,
-      pixels: diffPixels
+      pixels: diffPixels,
     };
   } catch (error) {
     console.error('Error comparing screenshots:', error);
@@ -297,21 +296,19 @@ export async function extractTextHierarchy(page: Page): Promise<{
   links: { text: string; href: string }[];
 }> {
   return await page.evaluate(() => {
-    const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6'))
-      .map(h => ({
-        level: parseInt(h.tagName[1]),
-        text: h.textContent?.trim() || ''
-      }));
+    const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6')).map((h) => ({
+      level: parseInt(h.tagName[1]),
+      text: h.textContent?.trim() || '',
+    }));
 
     const paragraphs = Array.from(document.querySelectorAll('p'))
-      .map(p => p.textContent?.trim() || '')
-      .filter(text => text.length > 0);
+      .map((p) => p.textContent?.trim() || '')
+      .filter((text) => text.length > 0);
 
-    const links = Array.from(document.querySelectorAll('a[href]'))
-      .map(a => ({
-        text: a.textContent?.trim() || '',
-        href: (a as HTMLAnchorElement).href
-      }));
+    const links = Array.from(document.querySelectorAll('a[href]')).map((a) => ({
+      text: a.textContent?.trim() || '',
+      href: (a as HTMLAnchorElement).href,
+    }));
 
     return { headings, paragraphs, links };
   });
@@ -331,7 +328,7 @@ export async function checkAnimationPerformance(page: Page): Promise<{
       fps: [],
       longTasks: 0,
       rafTime: 0,
-      frameCount: 0
+      frameCount: 0,
     };
 
     // Monitor FPS
@@ -343,7 +340,7 @@ export async function checkAnimationPerformance(page: Page): Promise<{
       (window as any).__performanceMetrics.fps.push(fps);
       lastTime = currentTime;
       (window as any).__performanceMetrics.frameCount++;
-      
+
       if ((window as any).__performanceMetrics.frameCount < 60) {
         requestAnimationFrame(measureFPS);
       }
@@ -371,11 +368,11 @@ export async function checkAnimationPerformance(page: Page): Promise<{
     const data = (window as any).__performanceMetrics;
     const avgFPS = data.fps.reduce((a: number, b: number) => a + b, 0) / data.fps.length;
     const jank = data.fps.filter((fps: number) => fps < 50).length / data.fps.length;
-    
+
     return {
       fps: avgFPS,
       jank: jank * 100, // Percentage of janky frames
-      longTasks: data.longTasks
+      longTasks: data.longTasks,
     };
   });
 
@@ -390,21 +387,21 @@ export async function measureElementTiming(
   selector: string
 ): Promise<{ renderTime: number; visible: boolean }> {
   const startTime = Date.now();
-  
+
   try {
     await page.waitForSelector(selector, { state: 'visible', timeout: 10000 });
     const renderTime = Date.now() - startTime;
-    
+
     const isVisible = await page.evaluate((sel) => {
       const element = document.querySelector(sel);
       if (!element) return false;
-      
+
       const rect = element.getBoundingClientRect();
       return rect.width > 0 && rect.height > 0 && rect.top < window.innerHeight;
     }, selector);
-    
+
     return { renderTime, visible: isVisible };
-  } catch (error) {
+  } catch (_error) {
     return { renderTime: -1, visible: false };
   }
 }
@@ -416,7 +413,7 @@ export function generatePerformanceSummary(metrics: any[]): string {
   const avgFCP = metrics.reduce((sum, m) => sum + m.fcp, 0) / metrics.length;
   const avgLCP = metrics.reduce((sum, m) => sum + m.lcp, 0) / metrics.length;
   const avgTTI = metrics.reduce((sum, m) => sum + m.tti, 0) / metrics.length;
-  
+
   return `
 ## Performance Summary
 
@@ -426,9 +423,9 @@ export function generatePerformanceSummary(metrics: any[]): string {
 - Time to Interactive: ${(avgTTI / 1000).toFixed(2)}s
 
 ### Performance Distribution
-- Excellent (< 1.8s FCP): ${metrics.filter(m => m.fcp < 1800).length}
-- Good (1.8s - 3s FCP): ${metrics.filter(m => m.fcp >= 1800 && m.fcp < 3000).length}
-- Needs Improvement (> 3s FCP): ${metrics.filter(m => m.fcp >= 3000).length}
+- Excellent (< 1.8s FCP): ${metrics.filter((m) => m.fcp < 1800).length}
+- Good (1.8s - 3s FCP): ${metrics.filter((m) => m.fcp >= 1800 && m.fcp < 3000).length}
+- Needs Improvement (> 3s FCP): ${metrics.filter((m) => m.fcp >= 3000).length}
 `;
 }
 
@@ -439,7 +436,7 @@ export function formatFileSize(bytes: number): string {
   const sizes = ['B', 'KB', 'MB', 'GB'];
   if (bytes === 0) return '0 B';
   const i = Math.floor(Math.log(bytes) / Math.log(1024));
-  return `${(bytes / Math.pow(1024, i)).toFixed(2)} ${sizes[i]}`;
+  return `${(bytes / 1024 ** i).toFixed(2)} ${sizes[i]}`;
 }
 
 /**
@@ -472,7 +469,9 @@ export async function createVisualDiffReport(
 </head>
 <body>
     <h1>Visual Regression Report</h1>
-    ${diffs.map(diff => `
+    ${diffs
+      .map(
+        (diff) => `
         <div class="diff-container">
             <div class="diff-header">
                 <h2>${diff.name}</h2>
@@ -495,7 +494,9 @@ export async function createVisualDiffReport(
                 </div>
             </div>
         </div>
-    `).join('')}
+    `
+      )
+      .join('')}
 </body>
 </html>`;
 
@@ -515,5 +516,5 @@ export default {
   measureElementTiming,
   generatePerformanceSummary,
   formatFileSize,
-  createVisualDiffReport
+  createVisualDiffReport,
 };

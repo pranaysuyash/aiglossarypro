@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Alert, AlertTitle, AlertDescription } from './alert';
 import { AlertTriangle, CheckCircle, Info, XCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from './alert';
 
 const meta: Meta<typeof Alert> = {
   title: 'UI/Alert',
@@ -38,9 +38,7 @@ export const Default: Story = {
     <Alert>
       <Info className="h-4 w-4" />
       <AlertTitle>Information</AlertTitle>
-      <AlertDescription>
-        This is a general informational alert message.
-      </AlertDescription>
+      <AlertDescription>This is a general informational alert message.</AlertDescription>
     </Alert>
   ),
   parameters: {
@@ -76,9 +74,7 @@ export const Success: Story = {
     <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-400">
       <CheckCircle className="h-4 w-4" />
       <AlertTitle>Success</AlertTitle>
-      <AlertDescription>
-        Your action was completed successfully!
-      </AlertDescription>
+      <AlertDescription>Your action was completed successfully!</AlertDescription>
     </Alert>
   ),
   parameters: {
@@ -95,9 +91,7 @@ export const Warning: Story = {
     <Alert className="border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-400">
       <AlertTriangle className="h-4 w-4" />
       <AlertTitle>Warning</AlertTitle>
-      <AlertDescription>
-        Please review your input before proceeding.
-      </AlertDescription>
+      <AlertDescription>Please review your input before proceeding.</AlertDescription>
     </Alert>
   ),
   parameters: {
@@ -131,9 +125,7 @@ export const OnlyDescription: Story = {
   render: () => (
     <Alert>
       <Info className="h-4 w-4" />
-      <AlertDescription>
-        This alert has only a description without a title.
-      </AlertDescription>
+      <AlertDescription>This alert has only a description without a title.</AlertDescription>
     </Alert>
   ),
   parameters: {
@@ -167,11 +159,10 @@ export const LongContent: Story = {
       <Info className="h-4 w-4" />
       <AlertTitle>Detailed Information</AlertTitle>
       <AlertDescription>
-        This is a longer alert description that contains multiple lines of text 
-        to demonstrate how the alert component handles longer content. It includes 
-        detailed explanations and multiple sentences to show proper text wrapping 
-        and spacing. The alert should maintain its visual hierarchy and readability 
-        even with extended content.
+        This is a longer alert description that contains multiple lines of text to demonstrate how
+        the alert component handles longer content. It includes detailed explanations and multiple
+        sentences to show proper text wrapping and spacing. The alert should maintain its visual
+        hierarchy and readability even with extended content.
       </AlertDescription>
     </Alert>
   ),
@@ -213,33 +204,25 @@ export const AllVariants: Story = {
       <Alert>
         <Info className="h-4 w-4" />
         <AlertTitle>Default Alert</AlertTitle>
-        <AlertDescription>
-          This is the default alert variant.
-        </AlertDescription>
+        <AlertDescription>This is the default alert variant.</AlertDescription>
       </Alert>
-      
+
       <Alert variant="destructive">
         <XCircle className="h-4 w-4" />
         <AlertTitle>Destructive Alert</AlertTitle>
-        <AlertDescription>
-          This is the destructive alert variant.
-        </AlertDescription>
+        <AlertDescription>This is the destructive alert variant.</AlertDescription>
       </Alert>
-      
+
       <Alert className="border-green-200 bg-green-50 text-green-800 dark:border-green-800 dark:bg-green-950 dark:text-green-400">
         <CheckCircle className="h-4 w-4" />
         <AlertTitle>Success Alert</AlertTitle>
-        <AlertDescription>
-          This is a custom success alert.
-        </AlertDescription>
+        <AlertDescription>This is a custom success alert.</AlertDescription>
       </Alert>
-      
+
       <Alert className="border-yellow-200 bg-yellow-50 text-yellow-800 dark:border-yellow-800 dark:bg-yellow-950 dark:text-yellow-400">
         <AlertTriangle className="h-4 w-4" />
         <AlertTitle>Warning Alert</AlertTitle>
-        <AlertDescription>
-          This is a custom warning alert.
-        </AlertDescription>
+        <AlertDescription>This is a custom warning alert.</AlertDescription>
       </Alert>
     </div>
   ),
@@ -258,11 +241,9 @@ export const DarkMode: Story = {
       <Alert>
         <Info className="h-4 w-4" />
         <AlertTitle>Default in Dark Mode</AlertTitle>
-        <AlertDescription>
-          This shows how the default alert appears in dark mode.
-        </AlertDescription>
+        <AlertDescription>This shows how the default alert appears in dark mode.</AlertDescription>
       </Alert>
-      
+
       <Alert variant="destructive">
         <XCircle className="h-4 w-4" />
         <AlertTitle>Destructive in Dark Mode</AlertTitle>

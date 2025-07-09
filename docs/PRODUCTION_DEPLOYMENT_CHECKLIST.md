@@ -1,459 +1,420 @@
 # Production Deployment Checklist
 
-## Overview
+## Pre-Deployment Setup
 
-This comprehensive checklist ensures a secure, stable, and performant deployment of AI/ML Glossary Pro to production. Complete all sections before going live.
+### 1. Environment Configuration ✅
 
-## 🔧 Environment Configuration Validation
+#### Required Environment Variables
+- [ ] **DATABASE_URL** - PostgreSQL connection string
+- [ ] **SESSION_SECRET** - 32+ character secure secret
+- [ ] **NODE_ENV** - Set to "production"
+- [ ] **PORT** - Application port (default: 3000)
+- [ ] **BASE_URL** - Your production domain URL
 
-### Run Configuration Checker First
+#### Analytics & Monitoring (Required)
+- [ ] **VITE_POSTHOG_KEY** - PostHog project API key
+- [ ] **POSTHOG_HOST** - PostHog host URL (default: https://app.posthog.com)
+- [ ] **VITE_GA4_MEASUREMENT_ID** - Google Analytics 4 measurement ID (G-XXXXXXXXXX)
+- [ ] **VITE_GA4_API_SECRET** - GA4 Measurement Protocol API secret
+- [ ] **SENTRY_DSN** - Sentry error tracking DSN URL
+
+#### Email Service (Required)
+- [ ] **EMAIL_ENABLED** - Set to "true"
+- [ ] **EMAIL_FROM** - From email address
+- [ ] **EMAIL_FROM_NAME** - From name (e.g., "AI Glossary Pro")
+- [ ] **EMAIL_SERVICE** - Service type (gmail, smtp, etc.)
+
+**For SMTP (Recommended):**
+- [ ] **SMTP_HOST** - SMTP server hostname
+- [ ] **SMTP_PORT** - SMTP port (usually 587)
+- [ ] **SMTP_USER** - SMTP username
+- [ ] **SMTP_PASSWORD** - SMTP password
+- [ ] **SMTP_SECURE** - Set to "false" for port 587, "true" for port 465
+
+**For Gmail:**
+- [ ] **EMAIL_USER** - Gmail address
+- [ ] **EMAIL_APP_PASSWORD** - Gmail app password (16 characters)
+
+#### Payment Processing (Required)
+- [ ] **GUMROAD_WEBHOOK_SECRET** - Gumroad webhook secret key (16+ characters)
+
+#### Security Configuration (Recommended)
+- [ ] **RATE_LIMIT_WINDOW_MS** - Rate limiting window (default: 900000)
+- [ ] **RATE_LIMIT_MAX_REQUESTS** - Max requests per window (default: 100)
+- [ ] **MAX_FILE_SIZE** - Maximum file upload size (default: 10485760)
+- [ ] **CORS_ORIGIN** - CORS allowed origin URL
+
+#### Optional Services
+- [ ] **REDIS_URL** - Redis connection URL for job queues
+- [ ] **OPENAI_API_KEY** - OpenAI API key for AI features
+- [ ] **AWS_ACCESS_KEY_ID** - AWS access key for S3
+- [ ] **AWS_SECRET_ACCESS_KEY** - AWS secret key for S3
+- [ ] **AWS_REGION** - AWS region (default: us-east-1)
+- [ ] **S3_BUCKET_NAME** - S3 bucket name for file storage
+
+### 2. Service Setup
+
+#### Database Setup
+- [ ] PostgreSQL database created
+- [ ] Database migrations run
+- [ ] Database connection tested
+- [ ] SSL enabled for production database
+- [ ] Database backup strategy implemented
+
+#### Email Service Setup
+Choose one of the following:
+
+**Option A: SendGrid (Recommended for Production)**
+- [ ] SendGrid account created
+- [ ] SendGrid API key generated
+- [ ] Domain authentication configured
+- [ ] Test email sent successfully
+
+**Option B: Gmail (Good for Testing)**
+- [ ] Gmail account set up
+- [ ] 2-factor authentication enabled
+- [ ] App password generated
+- [ ] Test email sent successfully
+
+**Option C: Custom SMTP**
+- [ ] SMTP server configured
+- [ ] Authentication credentials set up
+- [ ] Test email sent successfully
+
+#### Analytics Setup
+
+**PostHog Analytics**
+- [ ] PostHog account created
+- [ ] Project created and API key obtained
+- [ ] Test event tracked successfully
+- [ ] Dashboard configured
+
+**Google Analytics 4**
+- [ ] GA4 property created
+- [ ] Measurement ID obtained
+- [ ] Measurement Protocol API secret generated
+- [ ] Test event sent successfully
+- [ ] Goals and conversions configured
+
+#### Error Monitoring Setup
+- [ ] Sentry account created
+- [ ] Sentry project created
+- [ ] Sentry DSN obtained
+- [ ] Test error captured successfully
+- [ ] Notification rules configured
+
+#### Payment Processing Setup
+- [ ] Gumroad account set up
+- [ ] Product created in Gumroad
+- [ ] Webhook URL configured in Gumroad
+- [ ] Webhook secret generated
+- [ ] Test purchase completed successfully
+
+### 3. Security Configuration
+
+#### SSL/TLS Setup
+- [ ] SSL certificate obtained
+- [ ] SSL certificate installed
+- [ ] HTTPS redirect configured
+- [ ] Security headers implemented
+
+#### Authentication Setup
+- [ ] Firebase project created (if using Firebase Auth)
+- [ ] Authentication providers configured
+- [ ] Service account credentials set up
+- [ ] Test authentication flow completed
+
+#### Rate Limiting
+- [ ] Rate limiting middleware configured
+- [ ] Rate limiting rules tested
+- [ ] IP blocking strategy implemented
+
+### 4. Performance Optimization
+
+#### CDN Setup
+- [ ] Static assets configured for CDN
+- [ ] Image optimization enabled
+- [ ] Cache headers configured
+
+#### Database Optimization
+- [ ] Database indexes created
+- [ ] Query performance analyzed
+- [ ] Connection pooling configured
+
+#### Application Optimization
+- [ ] Code minification enabled
+- [ ] Gzip compression enabled
+- [ ] Bundle size analyzed and optimized
+
+## Pre-Deployment Validation
+
+### 5. Environment Validation
+
+Run the production setup checker:
 ```bash
-# Validate entire production setup
-npm run setup:production-check
+npm run check:production
 ```
-- [ ] All critical checks pass
-- [ ] No security warnings
-- [ ] Database connectivity verified
-- [ ] External API connections tested
 
-### Core Environment Variables ✅
-- [ ] `NODE_ENV=production` is set
-- [ ] `DATABASE_URL` points to production database with SSL
-- [ ] `SESSION_SECRET` is production-grade (32+ chars)
-- [ ] `PORT` is configured (default: 5000)
-- [ ] `HOST=0.0.0.0` for container compatibility
-- [ ] `CORS_ORIGIN` matches production domain
-- [ ] `BASE_URL` matches production URL
+- [ ] All critical environment variables configured
+- [ ] Database connection successful
+- [ ] Email service functional
+- [ ] Analytics services connected
+- [ ] Error monitoring active
+- [ ] Payment processing ready
 
-### Platform-Specific Configuration
-#### For Replit Deployment
-- [ ] `REPLIT_DOMAINS` is configured with production domain
-- [ ] `REPL_ID` is set correctly
-- [ ] `ISSUER_URL` points to correct OAuth provider
+### 6. Service Validation
 
-#### For General Cloud Deployment
-- [ ] SSL certificates are valid and current
-- [ ] Domain DNS is properly configured
-- [ ] Load balancer is configured (if applicable)
-- [ ] CDN is configured (if applicable)
-
-## 🔒 Security Configuration
-
-### Authentication & Authorization ✅
-- [ ] Mock authentication is **disabled** (no dev middleware active)
-- [ ] Production OAuth is **enabled** and tested (Replit/Google/GitHub)
-- [ ] Session configuration is production-ready
-- [ ] Admin users are properly configured in database
-- [ ] HTTPS is enforced for all traffic
-- [ ] CSRF protection is enabled
-- [ ] Rate limiting is configured and tested
-
-### Security Headers & Protection ✅
-- [ ] CORS configuration is restrictive and correct
-- [ ] Security headers middleware is active
-- [ ] Input validation and sanitization enabled
-- [ ] SQL injection protection verified
-- [ ] XSS protection enabled
-- [ ] File upload security configured
-- [ ] API endpoints properly secured
-
-### External Service Security ✅
-- [ ] OpenAI API key is valid and secure
-- [ ] Gumroad webhook secret is configured
-- [ ] Sentry DSN is configured for error tracking
-- [ ] All API keys have proper permissions (least privilege)
-- [ ] Third-party integrations use secure connections
-
-## 🗄️ Database & Storage Configuration
-
-### Database Setup ✅
-- [ ] Production database is accessible with SSL
-- [ ] All migrations have been applied successfully
-- [ ] Database connection pooling is configured
-- [ ] Performance indexes are created and optimized
-- [ ] User table has proper indexes and constraints
-- [ ] Session table is configured and accessible
-- [ ] Admin users have correct permissions
-- [ ] Database backup strategy is implemented
-
-### Database Performance ✅
+Run the production validation script:
 ```bash
-# Run database optimizations
-npm run db:indexes-enhanced
-npm run db:status
-
-# Verify database performance
-npm run db:test-performance
-```
-- [ ] Query performance is optimized
-- [ ] Connection pooling is working
-- [ ] Slow query logging is enabled
-- [ ] Database monitoring is active
-
-### Storage Configuration ✅
-- [ ] S3 credentials (if used) are production-ready
-- [ ] File upload limits are configured
-- [ ] Storage backup strategy is implemented
-- [ ] CDN is configured for static assets
-- [ ] File security policies are in place
-
-## 📊 Monitoring, Analytics & Performance
-
-### Error Tracking & Logging ✅
-- [ ] Sentry error tracking is configured
-- [ ] Application logging is properly configured
-- [ ] Log retention policies are set
-- [ ] Log aggregation is working
-- [ ] Alert thresholds are configured
-
-### Performance Monitoring ✅
-- [ ] PostHog analytics is configured
-- [ ] Performance metrics are being collected
-- [ ] Cache performance is monitored
-- [ ] API response times are tracked
-- [ ] Database query performance is monitored
-
-### Health Checks & Monitoring ✅
-- [ ] Health check endpoints are accessible
-- [ ] Uptime monitoring is configured
-- [ ] Alert systems are functional
-- [ ] Performance baseline is established
-- [ ] Monitoring dashboards are configured
-
-## 🧪 Pre-Deployment Testing
-
-### Build & Code Quality ✅
-```bash
-# Clean build verification
-npm run build
-
-# TypeScript check
-npm run check
-
-# Performance check
-npm run perf:ci
-
-# Security audit
-npm audit
-```
-- [ ] Build completes without errors
-- [ ] No TypeScript errors
-- [ ] Performance metrics are acceptable
-- [ ] No high-severity security vulnerabilities
-
-### Authentication Testing ✅
-- [ ] OAuth flow works end-to-end
-- [ ] User login/logout functions correctly
-- [ ] Session persistence works across requests
-- [ ] Admin access control is functional
-- [ ] API endpoints require proper authentication
-- [ ] No development users exist in production
-
-### Functional Testing ✅
-- [ ] Core application features work
-- [ ] Search functionality is operational
-- [ ] Content management works
-- [ ] User registration and management work
-- [ ] Payment processing works (if enabled)
-- [ ] Email notifications work (if enabled)
-
-## 🚀 Deployment Execution
-
-### Final Pre-Deployment Check
-```bash
-# Run comprehensive production check
-npm run setup:production-check
-
-# Verify all critical systems
-npm run build
-npm run check
-npm run perf:ci
-```
-- [ ] All systems green
-- [ ] No critical failures
-- [ ] Performance within acceptable limits
-
-### 🔒 Authentication Mode Verification
-
-#### Expected Console Output (Production)
-```
-✅ Production authentication setup complete
-✅ Database connection established
-✅ External services connected
-✅ All routes registered successfully
-🚀 Server running on https://your-domain.com in production mode
+npm run validate:production
 ```
 
-#### ❌ Red Flags (Must Not See)
-```
-⚠️ Mock authentication setup complete (development mode)
-🔓 Development user ensured in database
-🔓 Mock authentication: User logged in
-⚠️ Redis connection failed - using mock
-⚠️ OpenAI API key not configured
-```
-
-### Deployment Commands
-```bash
-# Standard deployment
-npm run build
-npm run start
-
-# With process manager (recommended)
-pm2 start dist/index.js --name "aiglossary-prod"
-pm2 save
-pm2 startup
-
-# Container deployment
-docker build -t aiglossary-prod .
-docker run -p 5000:5000 --env-file .env.production aiglossary-prod
-```
-
-## 🧪 Production Testing Protocol
-
-### 1. System Health Tests
-```bash
-# Health check
-curl https://your-domain.com/api/health
-
-# Database connectivity
-curl https://your-domain.com/api/health/database
-
-# External service connectivity  
-curl https://your-domain.com/api/health/services
-
-# Performance baseline
-curl -w "@curl-format.txt" https://your-domain.com/
-```
-- [ ] Health endpoints respond correctly
 - [ ] Database connectivity confirmed
-- [ ] External services accessible
-- [ ] Response times within acceptable limits
+- [ ] Database schema validated
+- [ ] Email delivery tested
+- [ ] PostHog event tracking verified
+- [ ] GA4 measurement protocol working
+- [ ] Sentry error tracking functional
+- [ ] Gumroad webhook security tested
+- [ ] Redis connection verified (if configured)
 
-### 2. Authentication Flow Tests
-```bash
-# Authentication endpoint (should redirect to OAuth)
-curl -v https://your-domain.com/api/login
+### 7. Application Testing
 
-# Verify no development endpoints
-curl https://your-domain.com/api/auth/user
-# Should return 401 or redirect, NOT dev user data
+#### Functionality Tests
+- [ ] User registration working
+- [ ] User authentication working
+- [ ] Search functionality working
+- [ ] Content loading properly
+- [ ] Admin dashboard accessible
+- [ ] Payment flow functional
 
-# Test protected endpoints
-curl https://your-domain.com/api/admin/users
-# Should require authentication
-```
+#### Performance Tests
+- [ ] Page load times acceptable (< 3 seconds)
+- [ ] API response times acceptable (< 500ms)
+- [ ] Database queries optimized
+- [ ] Memory usage within limits
 
-#### OAuth Flow Verification
-1. Visit production URL
-2. Click login/authenticate
-3. Should redirect to configured OAuth provider
-4. Complete OAuth flow
-5. Should redirect back to app
-6. Verify user session is created
-7. Test logout functionality
-8. Verify session is destroyed
+#### Security Tests
+- [ ] Authentication security tested
+- [ ] Input validation working
+- [ ] XSS protection enabled
+- [ ] CSRF protection enabled
+- [ ] SQL injection protection active
 
-### 3. API Security Tests
-```bash
-# Test rate limiting
-for i in {1..20}; do curl https://your-domain.com/api/search; done
+## Deployment Process
 
-# Test CORS
-curl -H "Origin: https://malicious-site.com" https://your-domain.com/api/health
+### 8. Pre-Deployment Steps
 
-# Test security headers
-curl -I https://your-domain.com/
+#### Code Preparation
+- [ ] Latest code committed to main branch
+- [ ] Version tagged in git
+- [ ] Build process tested locally
+- [ ] Dependencies updated and tested
 
-# Test input validation
-curl -X POST https://your-domain.com/api/search -d '{"query": "<script>alert(1)</script>"}'
-```
+#### Environment Setup
+- [ ] Production environment file created
+- [ ] Environment variables set on hosting platform
+- [ ] Database migrations prepared
+- [ ] SSL certificates installed
 
-### 4. Performance Tests
-```bash
-# Load testing (basic)
-ab -n 100 -c 10 https://your-domain.com/
+### 9. Deployment Execution
 
-# Database query performance
-curl https://your-domain.com/api/search?q=machine+learning
+#### Build & Deploy
+- [ ] Application built successfully
+- [ ] Static assets uploaded to CDN
+- [ ] Database migrations executed
+- [ ] Application deployed to production
+- [ ] Health checks passing
 
-# Cache performance
-curl https://your-domain.com/api/terms/popular
-```
+#### Service Activation
+- [ ] DNS records updated
+- [ ] SSL certificate active
+- [ ] CDN configured and active
+- [ ] Monitoring systems activated
 
-### 5. External Service Integration Tests
-```bash
-# OpenAI API (if configured)
-curl -X POST https://your-domain.com/api/ai/explain -d '{"term": "neural network"}'
+### 10. Post-Deployment Verification
 
-# Payment webhook (if configured)
-curl -X POST https://your-domain.com/api/webhooks/gumroad -d '{"test": "data"}'
+#### Immediate Checks (within 5 minutes)
+- [ ] Application accessible via HTTPS
+- [ ] Database connections working
+- [ ] User authentication functional
+- [ ] Search functionality working
+- [ ] Admin dashboard accessible
 
-# Email service (if configured)
-curl -X POST https://your-domain.com/api/admin/newsletter/test
-```
+#### Extended Checks (within 30 minutes)
+- [ ] Email notifications working
+- [ ] Analytics tracking events
+- [ ] Error monitoring capturing issues
+- [ ] Payment processing functional
+- [ ] Background jobs processing
 
-## 🔄 Emergency Rollback Procedures
+#### Monitoring Setup
+- [ ] Uptime monitoring configured
+- [ ] Performance monitoring active
+- [ ] Error rate alerts configured
+- [ ] Usage analytics tracking
+- [ ] Security monitoring enabled
 
-### Critical System Failure Response
+## Production Monitoring
 
-#### Immediate Actions (0-5 minutes)
-```bash
-# Check system status
-npm run setup:production-check
+### 11. Ongoing Monitoring
 
-# Verify environment variables
-echo $NODE_ENV
-echo $DATABASE_URL
-echo $CORS_ORIGIN
+#### Performance Metrics
+- [ ] Response time monitoring
+- [ ] Error rate monitoring
+- [ ] Memory usage tracking
+- [ ] Database performance monitoring
+- [ ] CDN performance tracking
 
-# Quick health check
-curl https://your-domain.com/api/health
+#### Business Metrics
+- [ ] User engagement tracking
+- [ ] Conversion rate monitoring
+- [ ] Revenue tracking
+- [ ] Feature usage analytics
+- [ ] User satisfaction metrics
 
-# Check process status
-ps aux | grep node
-```
+#### Security Monitoring
+- [ ] Failed login attempts
+- [ ] Unusual traffic patterns
+- [ ] Security vulnerability scanning
+- [ ] Certificate expiration monitoring
+- [ ] Dependency vulnerability tracking
 
-#### Emergency Rollback Options (5-15 minutes)
+### 12. Incident Response
 
-##### Option 1: Git Revert
-```bash
-# Revert to previous working deployment
-git revert <failed-commit-hash>
-npm run build
-npm run start
+#### Preparation
+- [ ] Incident response plan documented
+- [ ] Contact information updated
+- [ ] Backup and recovery procedures tested
+- [ ] Rollback procedures documented
+- [ ] Communication plan established
 
-# Or with PM2
-pm2 restart aiglossary-prod
-```
+#### Response Procedures
+- [ ] Incident detection process
+- [ ] Escalation procedures
+- [ ] Communication protocols
+- [ ] Recovery procedures
+- [ ] Post-incident analysis process
 
-##### Option 2: Environment Fix
-```bash
-# Correct environment variables
-cp .env.production.backup .env.production
-npm run setup:production-check
-pm2 restart aiglossary-prod
-```
+## Production Maintenance
 
-##### Option 3: Emergency Maintenance Mode
-```bash
-# Temporarily redirect traffic to maintenance page
-# Update load balancer/reverse proxy configuration
-# Or serve static maintenance page
-```
+### 13. Regular Maintenance
 
-### Database Rollback (if needed)
-```bash
-# Restore from backup
-pg_restore -d production_db backup_file.sql
+#### Daily Tasks
+- [ ] Monitor application health
+- [ ] Check error logs
+- [ ] Verify backup completion
+- [ ] Monitor performance metrics
+- [ ] Review security alerts
 
-# Or rollback specific migrations
-npm run db:rollback
-```
+#### Weekly Tasks
+- [ ] Review analytics reports
+- [ ] Check system resource usage
+- [ ] Verify SSL certificate status
+- [ ] Test backup restoration
+- [ ] Review user feedback
 
-### Rollback Verification
-- [ ] Application starts without errors
-- [ ] Database connectivity restored
-- [ ] Authentication working
-- [ ] Core features functional
-- [ ] No data loss confirmed
+#### Monthly Tasks
+- [ ] Security vulnerability assessment
+- [ ] Performance optimization review
+- [ ] Dependency updates
+- [ ] Capacity planning review
+- [ ] Disaster recovery testing
 
-## ⚠️ Common Deployment Mistakes
+### 14. Documentation
 
-### Configuration Errors
-- **Missing REPLIT_DOMAINS**: Results in mock auth being used
-- **Wrong REPL_ID**: OAuth flow fails
-- **Development SESSION_SECRET**: Security vulnerability
-- **Mixed environment variables**: Unpredictable behavior
+#### Technical Documentation
+- [ ] Deployment procedures documented
+- [ ] Configuration settings documented
+- [ ] Troubleshooting guides created
+- [ ] API documentation updated
+- [ ] Architecture diagrams current
 
-### Database Issues
-- **Missing admin users**: No admin access post-deployment
-- **Wrong database URL**: Authentication data loss
-- **Missing migrations**: User/session tables not ready
+#### Operational Documentation
+- [ ] Runbook created
+- [ ] Contact information updated
+- [ ] Change management procedures
+- [ ] Backup and recovery procedures
+- [ ] Incident response procedures
 
-### Security Oversights
-- **HTTP instead of HTTPS**: Session hijacking risk
-- **Weak session secret**: Session compromise
-- **Mock auth in production**: Major security breach
-- **Missing CSRF protection**: Cross-site attacks
+## Success Criteria
 
-## 📊 Post-Deployment Monitoring
+### 15. Launch Readiness
 
-### Key Metrics to Watch (First 24 Hours)
-- Authentication success rate > 95%
-- Average login time < 3 seconds
-- Session duration matches expectations
-- No 401 errors for authenticated users
-- Admin functions accessible to authorized users
+The application is ready for production launch when:
 
-### Alerts to Configure
-- Auth success rate drops below 90%
-- More than 10 consecutive auth failures
-- Development user detected in production
-- Session store errors
-- OAuth provider errors
+#### Technical Readiness
+- [ ] All critical services are functional
+- [ ] Performance meets requirements
+- [ ] Security measures are in place
+- [ ] Monitoring systems are active
+- [ ] Backup systems are operational
 
-## 🔧 Quick Fixes for Common Issues
+#### Business Readiness
+- [ ] Payment processing is functional
+- [ ] Analytics tracking is working
+- [ ] User authentication is secure
+- [ ] Content is properly managed
+- [ ] Support processes are in place
 
-### OAuth Redirect URI Mismatch
-```bash
-# Check Replit OAuth app settings
-# Ensure callback URL matches: https://your-domain.replit.app/api/callback
-# Update domain in OAuth app if changed
-```
+#### Operational Readiness
+- [ ] Team is trained on production procedures
+- [ ] Incident response plan is tested
+- [ ] Documentation is complete
+- [ ] Monitoring alerts are configured
+- [ ] Communication channels are established
 
-### Session Store Issues
-```sql
--- Check session table
-SELECT COUNT(*) FROM sessions;
+## Emergency Procedures
 
--- Clear old sessions if needed
-DELETE FROM sessions WHERE expire < NOW();
-```
+### 16. Rollback Plan
 
-### Missing Admin Access
-```sql
--- Grant admin rights to user
-UPDATE users SET is_admin = true WHERE email = 'admin@yourdomain.com';
-```
+If critical issues arise:
 
-## 📝 Post-Deployment Documentation
+#### Immediate Actions
+1. [ ] Assess the severity of the issue
+2. [ ] Notify stakeholders
+3. [ ] Implement temporary fixes if possible
+4. [ ] Document the issue and actions taken
 
-### Required Updates After Each Deployment
-- [ ] Update production URL in documentation
-- [ ] Record any configuration changes
-- [ ] Document any issues encountered and solutions
-- [ ] Update monitoring dashboards
-- [ ] Verify backup procedures are working
+#### Rollback Procedures
+1. [ ] Revert to previous application version
+2. [ ] Restore database from backup if needed
+3. [ ] Update DNS records if necessary
+4. [ ] Verify system functionality
+5. [ ] Communicate status to users
 
-### Success Criteria
-✅ **All users can authenticate successfully**
-✅ **Admin panel is accessible to authorized users**
-✅ **No development artifacts in production**
-✅ **All API endpoints require proper authentication**
-✅ **Session management works correctly**
-✅ **Performance meets baseline expectations**
-
----
-
-## 🆘 Emergency Contacts
-
-### Primary
-- **DevOps Lead**: [Contact info]
-- **Technical Lead**: [Contact info]
-
-### Secondary  
-- **Product Owner**: [Contact info]
-- **Platform Team**: [Contact info]
-
-### External
-- **Replit Support**: support@replit.com
-- **Database Provider**: [Support contact]
+#### Recovery Actions
+1. [ ] Identify root cause
+2. [ ] Develop permanent fix
+3. [ ] Test fix in staging environment
+4. [ ] Plan re-deployment
+5. [ ] Implement lessons learned
 
 ---
 
-*Checklist Version: 2.0.0*
-*Last Updated: June 22, 2025*
-*Next Review: July 22, 2025*
+## Quick Reference
 
-**⚠️ CRITICAL**: Never skip authentication verification steps. A failed authentication deployment can lock out all users.
+### Environment Files
+- `.env.production` - Production environment variables
+- `.env.example` - Template with all variables
+
+### Scripts
+- `npm run check:production` - Validate environment configuration
+- `npm run validate:production` - Test all production services
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+
+### Key URLs
+- Production: `https://your-domain.com`
+- Admin: `https://your-domain.com/admin`
+- API: `https://your-domain.com/api`
+- Health: `https://your-domain.com/health`
+
+### Support Contacts
+- Technical Lead: [Your Name]
+- DevOps: [DevOps Contact]
+- Emergency: [Emergency Contact]
+
+---
+
+**Note:** This checklist should be customized based on your specific hosting platform and requirements. Always test in a staging environment before deploying to production.

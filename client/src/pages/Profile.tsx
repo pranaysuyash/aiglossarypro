@@ -1,23 +1,23 @@
-import { useState } from "react";
-import { useAuth } from "@/hooks/useAuth";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { User, Mail, Calendar, Edit3, Save, X } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { Calendar, Edit3, Mail, Save, User, X } from 'lucide-react';
+import { useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function Profile() {
   const { user, isAuthenticated } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
+    firstName: '',
+    lastName: '',
+    email: '',
   });
 
   // Redirect if not authenticated (this should be handled by the router, but double-check)
@@ -29,9 +29,7 @@ export default function Profile() {
             <div className="text-center">
               <User className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
               <h2 className="text-xl font-semibold mb-2">Authentication Required</h2>
-              <p className="text-muted-foreground">
-                Please sign in to view your profile.
-              </p>
+              <p className="text-muted-foreground">Please sign in to view your profile.</p>
             </div>
           </CardContent>
         </Card>
@@ -40,15 +38,16 @@ export default function Profile() {
   }
 
   const userObj = user as any;
-  const initials = userObj?.firstName && userObj?.lastName 
-    ? `${userObj.firstName[0]}${userObj.lastName[0]}`
-    : userObj?.email?.substring(0, 2).toUpperCase() || "ML";
+  const initials =
+    userObj?.firstName && userObj?.lastName
+      ? `${userObj.firstName[0]}${userObj.lastName[0]}`
+      : userObj?.email?.substring(0, 2).toUpperCase() || 'ML';
 
   const handleEdit = () => {
     setFormData({
-      firstName: userObj?.firstName || "",
-      lastName: userObj?.lastName || "",
-      email: userObj?.email || "",
+      firstName: userObj?.firstName || '',
+      lastName: userObj?.lastName || '',
+      email: userObj?.email || '',
     });
     setIsEditing(true);
   };
@@ -56,9 +55,9 @@ export default function Profile() {
   const handleCancel = () => {
     setIsEditing(false);
     setFormData({
-      firstName: "",
-      lastName: "",
-      email: "",
+      firstName: '',
+      lastName: '',
+      email: '',
     });
   };
 
@@ -67,23 +66,23 @@ export default function Profile() {
       // This would typically make an API call to update the user profile
       // For now, we'll just show a success message
       toast({
-        title: "Profile Updated",
-        description: "Your profile has been updated successfully.",
+        title: 'Profile Updated',
+        description: 'Your profile has been updated successfully.',
       });
       setIsEditing(false);
-    } catch (error) {
+    } catch (_error) {
       toast({
-        title: "Error",
-        description: "Failed to update profile. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update profile. Please try again.',
+        variant: 'destructive',
       });
     }
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [field]: value
+      [field]: value,
     }));
   };
 
@@ -93,9 +92,7 @@ export default function Profile() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
-            <p className="text-muted-foreground">
-              Manage your account settings and preferences
-            </p>
+            <p className="text-muted-foreground">Manage your account settings and preferences</p>
           </div>
           {!isEditing && (
             <Button onClick={handleEdit} variant="outline">
@@ -112,9 +109,9 @@ export default function Profile() {
               <div className="flex justify-center">
                 <Avatar className="h-24 w-24">
                   {userObj?.profileImageUrl && (
-                    <AvatarImage 
-                      src={userObj.profileImageUrl} 
-                      alt={userObj.firstName || "User"}
+                    <AvatarImage
+                      src={userObj.profileImageUrl}
+                      alt={userObj.firstName || 'User'}
                       className="object-cover"
                     />
                   )}
@@ -124,10 +121,9 @@ export default function Profile() {
                 </Avatar>
               </div>
               <CardTitle className="mt-4">
-                {userObj?.firstName && userObj?.lastName 
+                {userObj?.firstName && userObj?.lastName
                   ? `${userObj.firstName} ${userObj.lastName}`
-                  : userObj?.email || "User"
-                }
+                  : userObj?.email || 'User'}
               </CardTitle>
               <CardDescription>
                 {userObj?.role && (
@@ -146,9 +142,7 @@ export default function Profile() {
                 {userObj?.createdAt && (
                   <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                     <Calendar className="h-4 w-4" />
-                    <span>
-                      Joined {new Date(userObj.createdAt).toLocaleDateString()}
-                    </span>
+                    <span>Joined {new Date(userObj.createdAt).toLocaleDateString()}</span>
                   </div>
                 )}
               </div>
@@ -172,7 +166,7 @@ export default function Profile() {
                       <Input
                         id="firstName"
                         value={formData.firstName}
-                        onChange={(e) => handleInputChange("firstName", e.target.value)}
+                        onChange={(e) => handleInputChange('firstName', e.target.value)}
                         placeholder="Enter your first name"
                         autoComplete="given-name"
                       />
@@ -182,7 +176,7 @@ export default function Profile() {
                       <Input
                         id="lastName"
                         value={formData.lastName}
-                        onChange={(e) => handleInputChange("lastName", e.target.value)}
+                        onChange={(e) => handleInputChange('lastName', e.target.value)}
                         placeholder="Enter your last name"
                         autoComplete="family-name"
                       />
@@ -194,7 +188,7 @@ export default function Profile() {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      onChange={(e) => handleInputChange('email', e.target.value)}
                       placeholder="Enter your email"
                       autoComplete="email"
                     />
@@ -218,35 +212,25 @@ export default function Profile() {
                       <Label className="text-sm font-medium text-muted-foreground">
                         First Name
                       </Label>
-                      <p className="mt-1 text-sm">
-                        {userObj?.firstName || "Not provided"}
-                      </p>
+                      <p className="mt-1 text-sm">{userObj?.firstName || 'Not provided'}</p>
                     </div>
                     <div>
-                      <Label className="text-sm font-medium text-muted-foreground">
-                        Last Name
-                      </Label>
-                      <p className="mt-1 text-sm">
-                        {userObj?.lastName || "Not provided"}
-                      </p>
+                      <Label className="text-sm font-medium text-muted-foreground">Last Name</Label>
+                      <p className="mt-1 text-sm">{userObj?.lastName || 'Not provided'}</p>
                     </div>
                   </div>
                   <div>
                     <Label className="text-sm font-medium text-muted-foreground">
                       Email Address
                     </Label>
-                    <p className="mt-1 text-sm">
-                      {userObj?.email || "Not provided"}
-                    </p>
+                    <p className="mt-1 text-sm">{userObj?.email || 'Not provided'}</p>
                   </div>
                   {userObj?.role && (
                     <div>
                       <Label className="text-sm font-medium text-muted-foreground">
                         Account Type
                       </Label>
-                      <p className="mt-1 text-sm">
-                        {userObj.role}
-                      </p>
+                      <p className="mt-1 text-sm">{userObj.role}</p>
                     </div>
                   )}
                 </div>
@@ -259,9 +243,7 @@ export default function Profile() {
         <Card>
           <CardHeader>
             <CardTitle>Account Settings</CardTitle>
-            <CardDescription>
-              Manage your account preferences and security settings
-            </CardDescription>
+            <CardDescription>Manage your account preferences and security settings</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -292,9 +274,7 @@ export default function Profile() {
               <div className="flex justify-between items-center">
                 <div>
                   <h4 className="text-sm font-medium">Change Password</h4>
-                  <p className="text-sm text-muted-foreground">
-                    Update your account password
-                  </p>
+                  <p className="text-sm text-muted-foreground">Update your account password</p>
                 </div>
                 <Button variant="outline" size="sm">
                   Change

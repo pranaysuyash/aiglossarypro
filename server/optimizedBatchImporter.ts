@@ -3,11 +3,10 @@
  * Enhanced version with bulk inserts, transactions, and better memory management
  */
 
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import { eq } from 'drizzle-orm';
+import { categories, subcategories, termSubcategories, terms } from '../shared/schema';
 import { db } from './db';
-import { categories, subcategories, terms, termSubcategories } from "../shared/schema";
-import { eq, and } from 'drizzle-orm';
 
 interface OptimizedImportOptions {
   batchSize?: number;
@@ -36,7 +35,7 @@ interface ImportResult {
 
 export class OptimizedBatchImporter {
   private options: Required<OptimizedImportOptions>;
-  
+
   constructor(options: OptimizedImportOptions = {}) {
     this.options = {
       batchSize: options.batchSize ?? 1000,
@@ -44,7 +43,7 @@ export class OptimizedBatchImporter {
       skipExisting: options.skipExisting ?? true,
       enableProgress: options.enableProgress ?? true,
       useTransactions: options.useTransactions ?? true,
-      maxConcurrentOperations: options.maxConcurrentOperations ?? 3
+      maxConcurrentOperations: options.maxConcurrentOperations ?? 3,
     };
   }
 
@@ -67,8 +66,8 @@ export class OptimizedBatchImporter {
       performance: {
         categoriesPerSecond: 0,
         termsPerSecond: 0,
-        memoryUsage: process.memoryUsage()
-      }
+        memoryUsage: process.memoryUsage(),
+      },
     };
 
     try {
@@ -96,17 +95,27 @@ export class OptimizedBatchImporter {
       if (data.categories && data.categories.length > 0) {
         console.log(`\n📂 Importing categories with bulk inserts...`);
         const categoryStart = Date.now();
-        result.imported.categories = await this.bulkImportCategories(data.categories, categoryIdMap);
+        result.imported.categories = await this.bulkImportCategories(
+          data.categories,
+          categoryIdMap
+        );
         const categoryDuration = Date.now() - categoryStart;
-        result.performance.categoriesPerSecond = result.imported.categories / (categoryDuration / 1000);
-        console.log(`✅ Categories imported: ${result.imported.categories} (${result.performance.categoriesPerSecond.toFixed(1)}/sec)`);
+        result.performance.categoriesPerSecond =
+          result.imported.categories / (categoryDuration / 1000);
+        console.log(
+          `✅ Categories imported: ${result.imported.categories} (${result.performance.categoriesPerSecond.toFixed(1)}/sec)`
+        );
       }
 
       // Import subcategories with optimizations
       const subcategoryIdMap = new Map<string, string>();
       if (data.subcategories && data.subcategories.length > 0) {
         console.log(`\n📋 Importing subcategories...`);
-        result.imported.subcategories = await this.bulkImportSubcategories(data.subcategories, categoryIdMap, subcategoryIdMap);
+        result.imported.subcategories = await this.bulkImportSubcategories(
+          data.subcategories,
+          categoryIdMap,
+          subcategoryIdMap
+        );
         console.log(`✅ Subcategories imported: ${result.imported.subcategories}`);
       }
 
@@ -114,10 +123,16 @@ export class OptimizedBatchImporter {
       if (data.terms && data.terms.length > 0) {
         console.log(`\n📄 Importing terms with optimized batching...`);
         const termsStart = Date.now();
-        result.imported.terms = await this.bulkImportTerms(data.terms, categoryIdMap, subcategoryIdMap);
+        result.imported.terms = await this.bulkImportTerms(
+          data.terms,
+          categoryIdMap,
+          subcategoryIdMap
+        );
         const termsDuration = Date.now() - termsStart;
         result.performance.termsPerSecond = result.imported.terms / (termsDuration / 1000);
-        console.log(`✅ Terms imported: ${result.imported.terms} (${result.performance.termsPerSecond.toFixed(1)}/sec)`);
+        console.log(
+          `✅ Terms imported: ${result.imported.terms} (${result.performance.termsPerSecond.toFixed(1)}/sec)`
+        );
       }
 
       result.success = true;
@@ -129,8 +144,9 @@ export class OptimizedBatchImporter {
       console.log(`📈 Performance summary:`);
       console.log(`   📂 Categories: ${result.performance.categoriesPerSecond.toFixed(1)}/sec`);
       console.log(`   📄 Terms: ${result.performance.termsPerSecond.toFixed(1)}/sec`);
-      console.log(`💾 Memory usage: ${Math.round(result.performance.memoryUsage.heapUsed / 1024 / 1024)}MB`);
-
+      console.log(
+        `💾 Memory usage: ${Math.round(result.performance.memoryUsage.heapUsed / 1024 / 1024)}MB`
+      );
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : String(error);
       console.error('❌ Import failed:', errorMessage);
@@ -149,9 +165,9 @@ export class OptimizedBatchImporter {
     // For now, use optimized synchronous loading with memory monitoring
     const stats = fs.statSync(filePath);
     const fileSizeMB = stats.size / 1024 / 1024;
-    
+
     console.log(`📁 File size: ${fileSizeMB.toFixed(1)}MB`);
-    
+
     if (fileSizeMB > 100) {
       console.log(`⚠️  Large file detected. Consider using streaming parser for files > 100MB`);
     }
@@ -163,7 +179,10 @@ export class OptimizedBatchImporter {
   /**
    * Bulk import categories with optimized insertions
    */
-  private async bulkImportCategories(categoriesData: any[], categoryIdMap: Map<string, string>): Promise<number> {
+  private async bulkImportCategories(
+    categoriesData: any[],
+    categoryIdMap: Map<string, string>
+  ): Promise<number> {
     let imported = 0;
     const { batchSize, bulkInsertSize } = this.options;
 
@@ -180,7 +199,11 @@ export class OptimizedBatchImporter {
 
         // Check if exists (if skipExisting is enabled)
         if (this.options.skipExisting) {
-          const existing = await db.select().from(categories).where(eq(categories.name, category.name)).limit(1);
+          const existing = await db
+            .select()
+            .from(categories)
+            .where(eq(categories.name, category.name))
+            .limit(1);
           if (existing.length > 0) {
             categoryIdMap.set(category.name, existing[0].id);
             continue;
@@ -195,7 +218,7 @@ export class OptimizedBatchImporter {
           icon: category.icon || null,
           color: category.color || null,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
       }
 
@@ -205,16 +228,19 @@ export class OptimizedBatchImporter {
           await db.transaction(async (tx) => {
             for (let j = 0; j < validCategories.length; j += bulkInsertSize) {
               const chunk = validCategories.slice(j, j + bulkInsertSize);
-              const inserted = await tx.insert(categories).values(chunk).returning({ id: categories.id, name: categories.name });
-              
+              const inserted = await tx
+                .insert(categories)
+                .values(chunk)
+                .returning({ id: categories.id, name: categories.name });
+
               // Update ID mapping
               for (const cat of inserted) {
-                const original = chunk.find(c => c.name === cat.name);
+                const original = chunk.find((c) => c.name === cat.name);
                 if (original) {
                   categoryIdMap.set(cat.name, cat.id);
                 }
               }
-              
+
               imported += chunk.length;
             }
           });
@@ -222,22 +248,27 @@ export class OptimizedBatchImporter {
           // Non-transactional bulk insert
           for (let j = 0; j < validCategories.length; j += bulkInsertSize) {
             const chunk = validCategories.slice(j, j + bulkInsertSize);
-            const inserted = await db.insert(categories).values(chunk).returning({ id: categories.id, name: categories.name });
-            
+            const inserted = await db
+              .insert(categories)
+              .values(chunk)
+              .returning({ id: categories.id, name: categories.name });
+
             for (const cat of inserted) {
-              const original = chunk.find(c => c.name === cat.name);
+              const original = chunk.find((c) => c.name === cat.name);
               if (original) {
                 categoryIdMap.set(cat.name, cat.id);
               }
             }
-            
+
             imported += chunk.length;
           }
         }
       }
 
       if (this.options.enableProgress && i % (batchSize * 10) === 0) {
-        console.log(`📂 Categories progress: ${i}/${categoriesData.length} (${((i / categoriesData.length) * 100).toFixed(1)}%)`);
+        console.log(
+          `📂 Categories progress: ${i}/${categoriesData.length} (${((i / categoriesData.length) * 100).toFixed(1)}%)`
+        );
       }
     }
 
@@ -247,7 +278,11 @@ export class OptimizedBatchImporter {
   /**
    * Bulk import subcategories with optimized insertions
    */
-  private async bulkImportSubcategories(subcategoriesData: any[], categoryIdMap: Map<string, string>, subcategoryIdMap: Map<string, string>): Promise<number> {
+  private async bulkImportSubcategories(
+    subcategoriesData: any[],
+    categoryIdMap: Map<string, string>,
+    subcategoryIdMap: Map<string, string>
+  ): Promise<number> {
     let imported = 0;
     const { batchSize, bulkInsertSize } = this.options;
 
@@ -263,12 +298,18 @@ export class OptimizedBatchImporter {
 
         const categoryId = categoryIdMap.get(subcategory.categorySlug);
         if (!categoryId) {
-          console.warn(`⚠️  Category not found for subcategory: ${subcategory.name} (${subcategory.categorySlug})`);
+          console.warn(
+            `⚠️  Category not found for subcategory: ${subcategory.name} (${subcategory.categorySlug})`
+          );
           continue;
         }
 
         if (this.options.skipExisting) {
-          const existing = await db.select().from(subcategories).where(eq(subcategories.name, subcategory.name)).limit(1);
+          const existing = await db
+            .select()
+            .from(subcategories)
+            .where(eq(subcategories.name, subcategory.name))
+            .limit(1);
           if (existing.length > 0) {
             subcategoryIdMap.set(subcategory.name, existing[0].id);
             continue;
@@ -282,7 +323,7 @@ export class OptimizedBatchImporter {
           slug: subcategory.slug,
           description: subcategory.description || null,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
       }
 
@@ -292,37 +333,45 @@ export class OptimizedBatchImporter {
           await db.transaction(async (tx) => {
             for (let j = 0; j < validSubcategories.length; j += bulkInsertSize) {
               const chunk = validSubcategories.slice(j, j + bulkInsertSize);
-              const inserted = await tx.insert(subcategories).values(chunk).returning({ id: subcategories.id, name: subcategories.name });
-              
+              const inserted = await tx
+                .insert(subcategories)
+                .values(chunk)
+                .returning({ id: subcategories.id, name: subcategories.name });
+
               for (const sub of inserted) {
-                const original = chunk.find(s => s.name === sub.name);
+                const original = chunk.find((s) => s.name === sub.name);
                 if (original) {
                   subcategoryIdMap.set(sub.name, sub.id);
                 }
               }
-              
+
               imported += chunk.length;
             }
           });
         } else {
           for (let j = 0; j < validSubcategories.length; j += bulkInsertSize) {
             const chunk = validSubcategories.slice(j, j + bulkInsertSize);
-            const inserted = await db.insert(subcategories).values(chunk).returning({ id: subcategories.id, name: subcategories.name });
-            
+            const inserted = await db
+              .insert(subcategories)
+              .values(chunk)
+              .returning({ id: subcategories.id, name: subcategories.name });
+
             for (const sub of inserted) {
-              const original = chunk.find(s => s.name === sub.name);
+              const original = chunk.find((s) => s.name === sub.name);
               if (original) {
                 subcategoryIdMap.set(sub.name, sub.id);
               }
             }
-            
+
             imported += chunk.length;
           }
         }
       }
 
       if (this.options.enableProgress && i % (batchSize * 10) === 0) {
-        console.log(`📋 Subcategories progress: ${i}/${subcategoriesData.length} (${((i / subcategoriesData.length) * 100).toFixed(1)}%)`);
+        console.log(
+          `📋 Subcategories progress: ${i}/${subcategoriesData.length} (${((i / subcategoriesData.length) * 100).toFixed(1)}%)`
+        );
       }
     }
 
@@ -332,7 +381,11 @@ export class OptimizedBatchImporter {
   /**
    * Bulk import terms with optimized insertions and relationship handling
    */
-  private async bulkImportTerms(termsData: any[], categoryIdMap: Map<string, string>, subcategoryIdMap: Map<string, string>): Promise<number> {
+  private async bulkImportTerms(
+    termsData: any[],
+    _categoryIdMap: Map<string, string>,
+    subcategoryIdMap: Map<string, string>
+  ): Promise<number> {
     let imported = 0;
     const { batchSize, bulkInsertSize } = this.options;
 
@@ -355,7 +408,7 @@ export class OptimizedBatchImporter {
         }
 
         const termId = term.id || crypto.randomUUID();
-        
+
         validTerms.push({
           id: termId,
           name: term.name,
@@ -367,7 +420,7 @@ export class OptimizedBatchImporter {
           difficulty: term.difficulty || 'beginner',
           tags: term.tags || null,
           createdAt: new Date(),
-          updatedAt: new Date()
+          updatedAt: new Date(),
         });
 
         // Prepare subcategory relationships
@@ -377,7 +430,7 @@ export class OptimizedBatchImporter {
             if (subcategoryId) {
               termSubcategoryRelations.push({
                 termId,
-                subcategoryId
+                subcategoryId,
               });
             }
           }
@@ -421,14 +474,17 @@ export class OptimizedBatchImporter {
       }
 
       if (this.options.enableProgress && i % (batchSize * 5) === 0) {
-        console.log(`📄 Terms progress: ${i}/${termsData.length} (${((i / termsData.length) * 100).toFixed(1)}%)`);
-        
+        console.log(
+          `📄 Terms progress: ${i}/${termsData.length} (${((i / termsData.length) * 100).toFixed(1)}%)`
+        );
+
         // Memory monitoring during large imports
         const currentMemory = process.memoryUsage();
         console.log(`💾 Current memory: ${Math.round(currentMemory.heapUsed / 1024 / 1024)}MB`);
-        
+
         // Force garbage collection if memory usage is high
-        if (currentMemory.heapUsed > 500 * 1024 * 1024) { // 500MB
+        if (currentMemory.heapUsed > 500 * 1024 * 1024) {
+          // 500MB
           if (global.gc) {
             global.gc();
             console.log(`🗑️  Garbage collection triggered`);
@@ -442,7 +498,10 @@ export class OptimizedBatchImporter {
 }
 
 // Export for use in other modules
-export async function optimizedImportFromFile(filePath: string, options: OptimizedImportOptions = {}): Promise<ImportResult> {
+export async function optimizedImportFromFile(
+  filePath: string,
+  options: OptimizedImportOptions = {}
+): Promise<ImportResult> {
   const importer = new OptimizedBatchImporter(options);
   return importer.importFromFile(filePath);
 }

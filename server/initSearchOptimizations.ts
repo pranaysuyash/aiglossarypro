@@ -3,13 +3,13 @@
  * This should be run once to set up the optimized search infrastructure
  */
 
-import { createSearchIndexes } from './optimizedSearchService';
 import { sql } from 'drizzle-orm';
 import { db } from './db';
+import { createSearchIndexes } from './optimizedSearchService';
 
 export async function initializeSearchOptimizations(): Promise<void> {
   console.log('🔧 Initializing search optimizations...');
-  
+
   try {
     // 1. Enable required PostgreSQL extensions
     console.log('📦 Enabling PostgreSQL extensions...');
@@ -17,28 +17,37 @@ export async function initializeSearchOptimizations(): Promise<void> {
       await db.execute(sql`CREATE EXTENSION IF NOT EXISTS pg_trgm`);
       console.log('✓ pg_trgm extension enabled');
     } catch (error) {
-      console.warn('⚠ pg_trgm extension setup:', error instanceof Error ? error.message : 'Unknown error');
+      console.warn(
+        '⚠ pg_trgm extension setup:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
     }
-    
+
     try {
       await db.execute(sql`CREATE EXTENSION IF NOT EXISTS unaccent`);
       console.log('✓ unaccent extension enabled');
     } catch (error) {
-      console.warn('⚠ unaccent extension setup:', error instanceof Error ? error.message : 'Unknown error');
+      console.warn(
+        '⚠ unaccent extension setup:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
     }
-    
+
     // 2. Create optimized search indexes
     await createSearchIndexes();
-    
+
     // 3. Update table statistics for better query planning
     console.log('📊 Updating database statistics...');
     try {
       await db.execute(sql`ANALYZE terms, categories`);
       console.log('✓ Database statistics updated');
     } catch (error) {
-      console.warn('⚠ Statistics update:', error instanceof Error ? error.message : 'Unknown error');
+      console.warn(
+        '⚠ Statistics update:',
+        error instanceof Error ? error.message : 'Unknown error'
+      );
     }
-    
+
     console.log('✅ Search optimizations initialized successfully');
   } catch (error) {
     console.error('❌ Failed to initialize search optimizations:', error);

@@ -3,8 +3,8 @@
  * Provides consistent validation error handling across all routes
  */
 
-import { Request, Response, NextFunction } from 'express';
-import { z, ZodSchema } from 'zod';
+import type { NextFunction, Request, Response } from 'express';
+import { type ZodSchema, z } from 'zod';
 import { fromZodError } from 'zod-validation-error';
 
 export interface ValidationError {
@@ -13,11 +13,7 @@ export interface ValidationError {
   code: string;
 }
 
-export interface ValidatedRequest<
-  TBody = any,
-  TQuery = any,
-  TParams = any
-> extends Request {
+export interface ValidatedRequest<TBody = any, TQuery = any, TParams = any> extends Request {
   validatedBody?: TBody;
   validatedQuery?: TQuery;
   validatedParams?: TParams;
@@ -40,18 +36,18 @@ export function validateBody<T>(schema: ZodSchema<T>) {
           error: 'VALIDATION_ERROR',
           message: 'Invalid request data',
           details: validationError.message,
-          errors: error.errors.map(err => ({
+          errors: error.errors.map((err) => ({
             field: err.path.join('.'),
             message: err.message,
-            code: err.code
-          }))
+            code: err.code,
+          })),
         });
       }
-      
+
       return res.status(500).json({
         success: false,
         error: 'INTERNAL_ERROR',
-        message: 'Internal server error during validation'
+        message: 'Internal server error during validation',
       });
     }
   };
@@ -74,18 +70,18 @@ export function validateQuery<T>(schema: ZodSchema<T>) {
           error: 'VALIDATION_ERROR',
           message: 'Invalid query parameters',
           details: validationError.message,
-          errors: error.errors.map(err => ({
+          errors: error.errors.map((err) => ({
             field: err.path.join('.'),
             message: err.message,
-            code: err.code
-          }))
+            code: err.code,
+          })),
         });
       }
-      
+
       return res.status(500).json({
         success: false,
         error: 'INTERNAL_ERROR',
-        message: 'Internal server error during validation'
+        message: 'Internal server error during validation',
       });
     }
   };
@@ -108,18 +104,18 @@ export function validateParams<T>(schema: ZodSchema<T>) {
           error: 'VALIDATION_ERROR',
           message: 'Invalid URL parameters',
           details: validationError.message,
-          errors: error.errors.map(err => ({
+          errors: error.errors.map((err) => ({
             field: err.path.join('.'),
             message: err.message,
-            code: err.code
-          }))
+            code: err.code,
+          })),
         });
       }
-      
+
       return res.status(500).json({
         success: false,
         error: 'INTERNAL_ERROR',
-        message: 'Internal server error during validation'
+        message: 'Internal server error during validation',
       });
     }
   };
@@ -136,7 +132,7 @@ export function validateRequest<TBody = any, TQuery = any, TParams = any>(option
   return [
     ...(options.params ? [validateParams(options.params)] : []),
     ...(options.query ? [validateQuery(options.query)] : []),
-    ...(options.body ? [validateBody(options.body)] : [])
+    ...(options.body ? [validateBody(options.body)] : []),
   ];
 }
 
@@ -148,7 +144,7 @@ export function createValidationError(message: string, errors?: ValidationError[
     success: false,
     error: 'VALIDATION_ERROR',
     message,
-    errors: errors || []
+    errors: errors || [],
   };
 }
 
@@ -156,7 +152,9 @@ export function createValidationError(message: string, errors?: ValidationError[
  * Validate UUID parameter helper
  */
 export const validateUUID = (paramName: string) => {
-  return validateParams(z.object({
-    [paramName]: z.string().uuid(`Invalid ${paramName} format`)
-  }));
+  return validateParams(
+    z.object({
+      [paramName]: z.string().uuid(`Invalid ${paramName} format`),
+    })
+  );
 };

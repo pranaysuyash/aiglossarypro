@@ -1,9 +1,9 @@
-import type { Request, Response, NextFunction } from "express";
-import type { AuthenticatedRequest } from "../../shared/types";
-import { db } from "../db";
-import { users } from "../../shared/schema";
-import { eq } from "drizzle-orm";
-import { verifyToken } from "../auth/simpleAuth";
+import { eq } from 'drizzle-orm';
+import type { NextFunction, Request, Response } from 'express';
+import { users } from '../../shared/schema';
+import type { AuthenticatedRequest } from '../../shared/types';
+import { verifyToken } from '../auth/simpleAuth';
+import { db } from '../db';
 
 /**
  * Authentication token middleware - validates user is authenticated
@@ -15,8 +15,7 @@ export async function authenticateToken(
 ): Promise<void> {
   try {
     // First check for JWT token in Authorization header or cookies
-    const token = req.headers.authorization?.replace('Bearer ', '') || 
-                  req.cookies?.auth_token;
+    const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.auth_token;
 
     if (token) {
       const decoded = verifyToken(token);
@@ -31,9 +30,9 @@ export async function authenticateToken(
           claims: {
             sub: decoded.sub,
             email: decoded.email,
-            name: decoded.name
+            name: decoded.name,
           },
-          isAdmin: decoded.isAdmin
+          isAdmin: decoded.isAdmin,
         };
         next();
         return;
@@ -48,13 +47,13 @@ export async function authenticateToken(
 
     res.status(401).json({
       success: false,
-      message: "Authentication required"
+      message: 'Authentication required',
     });
   } catch (error) {
-    console.error("Error in authentication middleware:", error);
+    console.error('Error in authentication middleware:', error);
     res.status(500).json({
       success: false,
-      message: "Authentication verification failed"
+      message: 'Authentication verification failed',
     });
   }
 }
@@ -62,23 +61,19 @@ export async function authenticateToken(
 /**
  * Middleware to check if the authenticated user has admin privileges
  */
-export async function requireAdmin(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
+export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
     if (!req.user?.id) {
       res.status(401).json({
         success: false,
-        message: "Authentication required"
+        message: 'Authentication required',
       });
       return;
     }
 
     // In development mode with mock auth, allow admin access for dev user
-    if (req.user.id === "dev-user-123") {
-      console.log("🔓 Development mode: Granting admin access to dev user");
+    if (req.user.id === 'dev-user-123') {
+      console.log('🔓 Development mode: Granting admin access to dev user');
       next();
       return;
     }
@@ -93,17 +88,17 @@ export async function requireAdmin(
     if (!user.length || !user[0].isAdmin) {
       res.status(403).json({
         success: false,
-        message: "Admin privileges required"
+        message: 'Admin privileges required',
       });
       return;
     }
 
     next();
   } catch (error) {
-    console.error("Error checking admin privileges:", error);
+    console.error('Error checking admin privileges:', error);
     res.status(500).json({
       success: false,
-      message: "Failed to verify admin privileges"
+      message: 'Failed to verify admin privileges',
     });
   }
 }
@@ -121,7 +116,7 @@ export async function isUserAdmin(userId: string): Promise<boolean> {
 
     return user.length > 0 && user[0].isAdmin === true;
   } catch (error) {
-    console.error("Error checking if user is admin:", error);
+    console.error('Error checking if user is admin:', error);
     return false;
   }
-} 
+}

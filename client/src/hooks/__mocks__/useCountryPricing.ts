@@ -1,5 +1,3 @@
-import { useState, useEffect } from 'react';
-
 interface CountryPricing {
   basePrice: number;
   localPrice: number;

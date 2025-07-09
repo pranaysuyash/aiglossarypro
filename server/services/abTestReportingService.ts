@@ -1,17 +1,16 @@
-import { db } from '../db';
-import { eq, and, gte, lte, desc } from 'drizzle-orm';
+import { eq } from 'drizzle-orm';
 import {
-  abTests,
-  abTestMetrics,
-  abTestEvents,
-  abTestReports,
   type ABTest,
   type ABTestMetrics as ABTestMetricsType,
-  type ABTestReport
+  type ABTestReport,
+  abTestMetrics,
+  abTestReports,
+  abTests,
 } from '../../shared/abTestingSchema';
-import { calculateStatisticalSignificance, determineWinner } from '../utils/statistics';
+import { db } from '../db';
 import { sendEmail } from '../utils/email';
 import { log as logger } from '../utils/logger';
+import { calculateStatisticalSignificance, determineWinner } from '../utils/statistics';
 
 interface ReportData {
   test: ABTest;
@@ -39,15 +38,15 @@ class ABTestReportingService {
    */
   async generateDailyReports(): Promise<void> {
     try {
-      const activeTests = await db.select()
-        .from(abTests)
-        .where(eq(abTests.status, 'active'));
+      const activeTests = await db.select().from(abTests).where(eq(abTests.status, 'active'));
 
       for (const test of activeTests) {
         await this.generateReport(test, 'daily');
       }
     } catch (error) {
-      logger.error('Error generating daily reports:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error generating daily reports:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -56,15 +55,15 @@ class ABTestReportingService {
    */
   async generateWeeklyReports(): Promise<void> {
     try {
-      const activeTests = await db.select()
-        .from(abTests)
-        .where(eq(abTests.status, 'active'));
+      const activeTests = await db.select().from(abTests).where(eq(abTests.status, 'active'));
 
       for (const test of activeTests) {
         await this.generateReport(test, 'weekly');
       }
     } catch (error) {
-      logger.error('Error generating weekly reports:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error generating weekly reports:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -73,10 +72,7 @@ class ABTestReportingService {
    */
   async generateFinalReport(testId: string): Promise<void> {
     try {
-      const [test] = await db.select()
-        .from(abTests)
-        .where(eq(abTests.id, testId))
-        .limit(1);
+      const [test] = await db.select().from(abTests).where(eq(abTests.id, testId)).limit(1);
 
       if (!test) {
         throw new Error(`Test ${testId} not found`);
@@ -84,7 +80,9 @@ class ABTestReportingService {
 
       await this.generateReport(test, 'final');
     } catch (error) {
-      logger.error('Error generating final report:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error generating final report:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -96,9 +94,7 @@ class ABTestReportingService {
     const period = this.getReportPeriod(type, test.startDate!, now);
 
     // Get metrics for the test
-    const metrics = await db.select()
-      .from(abTestMetrics)
-      .where(eq(abTestMetrics.testId, test.id));
+    const metrics = await db.select().from(abTestMetrics).where(eq(abTestMetrics.testId, test.id));
 
     if (!metrics.length) {
       logger.warn(`No metrics found for test ${test.id}`);
@@ -117,22 +113,25 @@ class ABTestReportingService {
       metrics,
       analysis: {
         ...analysis,
-        recommendations
+        recommendations,
       },
-      period
+      period,
     };
 
     // Save report to database
-    const [report] = await db.insert(abTestReports).values({
-      testId: test.id,
-      reportType: type,
-      reportDate: now,
-      metricsSnapshot: reportData,
-      statisticalAnalysis: analysis,
-      recommendations: recommendations.join('\n'),
-      isAutomated: true,
-      sentTo: []
-    }).returning();
+    const [report] = await db
+      .insert(abTestReports)
+      .values({
+        testId: test.id,
+        reportType: type,
+        reportDate: now,
+        metricsSnapshot: reportData,
+        statisticalAnalysis: analysis,
+        recommendations: recommendations.join('\n'),
+        isAutomated: true,
+        sentTo: [],
+      })
+      .returning();
 
     // Send report via email (if configured)
     await this.sendReportEmail(report, reportData);
@@ -148,17 +147,16 @@ class ABTestReportingService {
     const statisticalSignificance: Record<string, any> = {};
 
     // Calculate conversion rates
-    metrics.forEach(metric => {
-      conversionRates[metric.variant] = metric.pageViews > 0
-        ? (metric.trialSignups / metric.pageViews) * 100
-        : 0;
+    metrics.forEach((metric) => {
+      conversionRates[metric.variant] =
+        metric.pageViews > 0 ? (metric.trialSignups / metric.pageViews) * 100 : 0;
     });
 
     // Calculate statistical significance between variants
     if (metrics.length >= 2) {
-      const control = metrics.find(m => m.variant === 'default') || metrics[0];
-      
-      metrics.forEach(metric => {
+      const control = metrics.find((m) => m.variant === 'default') || metrics[0];
+
+      metrics.forEach((metric) => {
         if (metric.variant !== control.variant) {
           statisticalSignificance[metric.variant] = calculateStatisticalSignificance(
             control.trialSignups,
@@ -172,9 +170,9 @@ class ABTestReportingService {
 
     // Determine winner
     const winner = determineWinner(
-      metrics.map(m => ({
+      metrics.map((m) => ({
         variant: m.variant,
-        conversionRate: conversionRates[m.variant]
+        conversionRate: conversionRates[m.variant],
       })),
       'conversionRate'
     );
@@ -182,17 +180,14 @@ class ABTestReportingService {
     return {
       conversionRates,
       statisticalSignificance,
-      winner: winner || undefined
+      winner: winner || undefined,
     };
   }
 
   /**
    * Generate recommendations based on analysis
    */
-  private generateRecommendations(
-    analysis: any,
-    metrics: ABTestMetricsType[]
-  ): string[] {
+  private generateRecommendations(analysis: any, metrics: ABTestMetricsType[]): string[] {
     const recommendations: string[] = [];
 
     // Check if we have enough data
@@ -204,14 +199,15 @@ class ABTestReportingService {
     }
 
     // Check for statistical significance
-    const hasSignificantResults = Object.values(analysis.statisticalSignificance)
-      .some((sig: any) => sig.isSignificant);
+    const hasSignificantResults = Object.values(analysis.statisticalSignificance).some(
+      (sig: any) => sig.isSignificant
+    );
 
     if (hasSignificantResults && analysis.winner) {
       recommendations.push(
         `Statistical winner found: ${analysis.winner.variant} variant shows ${analysis.winner.improvement.toFixed(1)}% improvement.`
       );
-      
+
       if (analysis.winner.confidence >= 95) {
         recommendations.push(
           `High confidence (${analysis.winner.confidence}%): Consider implementing ${analysis.winner.variant} as the default.`
@@ -228,10 +224,10 @@ class ABTestReportingService {
     }
 
     // Device-specific insights
-    metrics.forEach(metric => {
+    metrics.forEach((metric) => {
       const deviceBreakdown = metric.deviceBreakdown as Record<string, number>;
-      const mobilePercentage = (deviceBreakdown.mobile || 0) / metric.totalSessions * 100;
-      
+      const mobilePercentage = ((deviceBreakdown.mobile || 0) / metric.totalSessions) * 100;
+
       if (mobilePercentage > 60) {
         recommendations.push(
           `${metric.variant} variant: ${mobilePercentage.toFixed(0)}% mobile traffic. Ensure mobile optimization.`
@@ -240,7 +236,7 @@ class ABTestReportingService {
     });
 
     // Bounce rate insights
-    metrics.forEach(metric => {
+    metrics.forEach((metric) => {
       if (metric.bounceRate && metric.bounceRate > 0.7) {
         recommendations.push(
           `${metric.variant} variant has high bounce rate (${(metric.bounceRate * 100).toFixed(0)}%). Consider improving engagement.`
@@ -264,19 +260,19 @@ class ABTestReportingService {
         return {
           start: new Date(now.getTime() - 24 * 60 * 60 * 1000),
           end: now,
-          type
+          type,
         };
       case 'weekly':
         return {
           start: new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000),
           end: now,
-          type
+          type,
         };
       case 'final':
         return {
           start: testStart,
           end: now,
-          type
+          type,
         };
     }
   }
@@ -302,17 +298,22 @@ class ABTestReportingService {
       await sendEmail({
         to: recipients,
         subject,
-        html
+        html,
       });
 
       // Update report with sent recipients
-      await db.update(abTestReports)
+      await db
+        .update(abTestReports)
         .set({ sentTo: recipients })
         .where(eq(abTestReports.id, report.id));
 
-      logger.info(`Sent ${data.period.type} report for test ${data.test.id} to ${recipients.length} recipients`);
+      logger.info(
+        `Sent ${data.period.type} report for test ${data.test.id} to ${recipients.length} recipients`
+      );
     } catch (error) {
-      logger.error('Error sending report email:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error sending report email:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -365,7 +366,9 @@ class ABTestReportingService {
         </tr>
       </thead>
       <tbody>
-        ${metrics.map(m => `
+        ${metrics
+          .map(
+            (m) => `
         <tr>
           <td>${m.variant}</td>
           <td>${m.pageViews.toLocaleString()}</td>
@@ -373,24 +376,36 @@ class ABTestReportingService {
           <td>${analysis.conversionRates[m.variant].toFixed(2)}%</td>
           <td>${m.totalSessions}</td>
         </tr>
-        `).join('')}
+        `
+          )
+          .join('')}
       </tbody>
     </table>
     
-    ${analysis.winner ? `
+    ${
+      analysis.winner
+        ? `
     <div class="winner">
       <h3>🏆 Winner: ${analysis.winner.variant}</h3>
       <p>Shows ${analysis.winner.improvement.toFixed(1)}% improvement with ${analysis.winner.confidence}% confidence</p>
     </div>
-    ` : ''}
+    `
+        : ''
+    }
     
     <h2>Recommendations</h2>
-    ${analysis.recommendations.map(rec => `
+    ${analysis.recommendations
+      .map(
+        (rec) => `
     <div class="recommendation">${rec}</div>
-    `).join('')}
+    `
+      )
+      .join('')}
     
     <h2>Detailed Metrics</h2>
-    ${metrics.map(m => `
+    ${metrics
+      .map(
+        (m) => `
     <div class="metric-card">
       <h3>${m.variant} Variant</h3>
       <p><strong>CTA Clicks:</strong> ${m.ctaClicks}</p>
@@ -399,7 +414,9 @@ class ABTestReportingService {
       <p><strong>Avg Session Duration:</strong> ${Math.floor((m.avgSessionDuration || 0) / 60)}m ${Math.floor((m.avgSessionDuration || 0) % 60)}s</p>
       <p><strong>Bounce Rate:</strong> ${((m.bounceRate || 0) * 100).toFixed(1)}%</p>
     </div>
-    `).join('')}
+    `
+      )
+      .join('')}
     
     <div class="footer">
       <p>This is an automated report generated by the A/B Testing System.</p>

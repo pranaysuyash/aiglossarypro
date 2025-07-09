@@ -3,23 +3,24 @@
  * Real-time analytics and trending content discovery
  */
 
-import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  TrendingUp, 
-  TrendingDown, 
-  Minus, 
-  Eye, 
-  Clock, 
-  Share2, 
-  Bookmark,
+import {
   BarChart3,
+  Bookmark,
+  Clock,
+  Eye,
   Filter,
-  RefreshCw
+  Minus,
+  RefreshCw,
+  Share2,
+  TrendingDown,
+  TrendingUp,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import type React from 'react';
+import { useState } from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
@@ -55,25 +56,29 @@ interface TrendingAnalytics {
 const TrendingDashboard: React.FC = () => {
   const [filters, setFilters] = useState<TrendingFilters>({
     timeRange: 'day',
-    trendType: 'popular'
+    trendType: 'popular',
   });
 
   // Fetch trending terms
-  const { data: trendingData, isLoading: termsLoading, refetch: refetchTerms } = useQuery({
+  const {
+    data: trendingData,
+    isLoading: termsLoading,
+    refetch: refetchTerms,
+  } = useQuery({
     queryKey: ['trending-terms', filters],
     queryFn: async () => {
       const params = new URLSearchParams({
         timeRange: filters.timeRange,
         trendType: filters.trendType,
         ...(filters.category && { category: filters.category }),
-        limit: '20'
+        limit: '20',
       });
-      
+
       const response = await fetch(`/api/trending/terms?${params}`);
       if (!response.ok) throw new Error('Failed to fetch trending terms');
       return response.json();
     },
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Fetch trending analytics
@@ -84,7 +89,7 @@ const TrendingDashboard: React.FC = () => {
       if (!response.ok) throw new Error('Failed to fetch trending analytics');
       return response.json();
     },
-    refetchInterval: 60000 // Refresh every minute
+    refetchInterval: 60000, // Refresh every minute
   });
 
   // Fetch trending categories
@@ -95,7 +100,7 @@ const TrendingDashboard: React.FC = () => {
       if (!response.ok) throw new Error('Failed to fetch trending categories');
       return response.json();
     },
-    refetchInterval: 60000
+    refetchInterval: 60000,
   });
 
   const trendingTerms: TrendingTerm[] = trendingData?.data || [];
@@ -103,7 +108,7 @@ const TrendingDashboard: React.FC = () => {
     totalTrendingTerms: 0,
     averageVelocityScore: 0,
     topCategories: [],
-    trendingChangeFromPrevious: 0
+    trendingChangeFromPrevious: 0,
   };
 
   const formatTimeSpent = (seconds: number): string => {
@@ -117,17 +122,23 @@ const TrendingDashboard: React.FC = () => {
 
   const getTrendIcon = (direction: string) => {
     switch (direction) {
-      case 'up': return <TrendingUp className="w-4 h-4 text-green-500" />;
-      case 'down': return <TrendingDown className="w-4 h-4 text-red-500" />;
-      default: return <Minus className="w-4 h-4 text-gray-500" />;
+      case 'up':
+        return <TrendingUp className="w-4 h-4 text-green-500" />;
+      case 'down':
+        return <TrendingDown className="w-4 h-4 text-red-500" />;
+      default:
+        return <Minus className="w-4 h-4 text-gray-500" />;
     }
   };
 
   const getTrendColor = (direction: string): string => {
     switch (direction) {
-      case 'up': return 'text-green-600 bg-green-50';
-      case 'down': return 'text-red-600 bg-red-50';
-      default: return 'text-gray-600 bg-gray-50';
+      case 'up':
+        return 'text-green-600 bg-green-50';
+      case 'down':
+        return 'text-red-600 bg-red-50';
+      default:
+        return 'text-gray-600 bg-gray-50';
     }
   };
 
@@ -137,10 +148,12 @@ const TrendingDashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Trending Dashboard</h1>
-          <p className="text-gray-600 mt-2">Real-time insights into content popularity and engagement</p>
+          <p className="text-gray-600 mt-2">
+            Real-time insights into content popularity and engagement
+          </p>
         </div>
-        <Button 
-          onClick={() => refetchTerms()} 
+        <Button
+          onClick={() => refetchTerms()}
           variant="outline"
           className="flex items-center gap-2"
         >
@@ -161,9 +174,11 @@ const TrendingDashboard: React.FC = () => {
           <div className="flex flex-wrap gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium">Time Range</label>
-              <Select 
-                value={filters.timeRange} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, timeRange: value as any }))}
+              <Select
+                value={filters.timeRange}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, timeRange: value as any }))
+                }
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -179,9 +194,11 @@ const TrendingDashboard: React.FC = () => {
 
             <div className="space-y-2">
               <label className="text-sm font-medium">Trend Type</label>
-              <Select 
-                value={filters.trendType} 
-                onValueChange={(value) => setFilters(prev => ({ ...prev, trendType: value as any }))}
+              <Select
+                value={filters.trendType}
+                onValueChange={(value) =>
+                  setFilters((prev) => ({ ...prev, trendType: value as any }))
+                }
               >
                 <SelectTrigger className="w-40">
                   <SelectValue />
@@ -241,9 +258,17 @@ const TrendingDashboard: React.FC = () => {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm font-medium text-gray-600">Change</p>
-                <p className="text-2xl font-bold">{formatPercentage(analytics.trendingChangeFromPrevious)}</p>
+                <p className="text-2xl font-bold">
+                  {formatPercentage(analytics.trendingChangeFromPrevious)}
+                </p>
               </div>
-              {getTrendIcon(analytics.trendingChangeFromPrevious > 0 ? 'up' : analytics.trendingChangeFromPrevious < 0 ? 'down' : 'stable')}
+              {getTrendIcon(
+                analytics.trendingChangeFromPrevious > 0
+                  ? 'up'
+                  : analytics.trendingChangeFromPrevious < 0
+                    ? 'down'
+                    : 'stable'
+              )}
             </div>
           </CardContent>
         </Card>
@@ -281,8 +306,8 @@ const TrendingDashboard: React.FC = () => {
               ) : (
                 <div className="space-y-4">
                   {trendingTerms.map((term, index) => (
-                    <div 
-                      key={term.id} 
+                    <div
+                      key={term.id}
                       className="border rounded-lg p-4 hover:bg-gray-50 transition-colors cursor-pointer"
                       onClick={() => window.open(`/term/${term.id}`, '_blank')}
                     >
@@ -298,7 +323,7 @@ const TrendingDashboard: React.FC = () => {
                             </Badge>
                           </div>
                           <p className="text-gray-600 mb-3">{term.shortDefinition}</p>
-                          
+
                           <div className="flex items-center gap-4 text-sm text-gray-500">
                             <div className="flex items-center gap-1">
                               <Eye className="w-4 h-4" />
@@ -318,7 +343,7 @@ const TrendingDashboard: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                        
+
                         <div className="text-right">
                           <div className="text-2xl font-bold text-blue-600">
                             {Math.round(term.engagementScore)}
@@ -338,7 +363,9 @@ const TrendingDashboard: React.FC = () => {
           <Card>
             <CardHeader>
               <CardTitle>Trending Categories</CardTitle>
-              <CardDescription>Categories with the most engagement in the selected time period</CardDescription>
+              <CardDescription>
+                Categories with the most engagement in the selected time period
+              </CardDescription>
             </CardHeader>
             <CardContent>
               {categoriesLoading ? (
@@ -350,7 +377,10 @@ const TrendingDashboard: React.FC = () => {
               ) : (
                 <div className="space-y-4">
                   {categoriesData?.data?.map((category: any, index: number) => (
-                    <div key={category.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
+                    <div
+                      key={category.id}
+                      className="border rounded-lg p-4 hover:bg-gray-50 transition-colors"
+                    >
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="flex items-center gap-3 mb-1">

@@ -2,15 +2,15 @@
 
 /**
  * Bulk Content Import System
- * 
+ *
  * This script provides bulk import capabilities for populating the database
  * with content from various sources including CSV files, JSON data,
  * and structured content files. It leverages the existing AI service
  * to enhance and validate imported content.
- * 
+ *
  * Usage:
  * npm run import:bulk [options]
- * 
+ *
  * Options:
  * --source <path>         Path to source file (CSV, JSON, or text)
  * --type <format>         Import format (csv|json|essential|excel)
@@ -21,18 +21,18 @@
  * --category <name>       Import only specific category
  */
 
-import { db } from '../../server/db';
+import { createReadStream } from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { performance } from 'node:perf_hooks';
+import csv from 'csv-parser';
+import { eq } from 'drizzle-orm';
 import { aiService } from '../../server/aiService';
-import { terms, categories, termSubcategories } from '../../shared/schema';
-import { eq, sql, and, not, inArray } from 'drizzle-orm';
+import { db } from '../../server/db';
+import { log as logger } from '../../server/utils/logger';
+import { categories, terms } from '../../shared/schema';
 import { ESSENTIAL_AI_TERMS, getAllEssentialTerms } from './data/essentialTerms';
 import { validateTerm } from './validateContent';
-import { log as logger } from '../../server/utils/logger';
-import { performance } from 'perf_hooks';
-import fs from 'fs/promises';
-import path from 'path';
-import csv from 'csv-parser';
-import { createReadStream } from 'fs';
 
 // Command line arguments
 const args = process.argv.slice(2);
@@ -95,7 +95,7 @@ async function bulkImport(): Promise<void> {
     totalTime: 0,
     averageTimePerRecord: 0,
     categoriesCreated: 0,
-    categoriesUsed: []
+    categoriesUsed: [],
   };
 
   try {
@@ -110,7 +110,7 @@ async function bulkImport(): Promise<void> {
 
     // Step 1: Load import data
     const importRecords = await loadImportData(importType as ImportFormat, sourcePath);
-    
+
     if (importRecords.length === 0) {
       logger.warn('No records found to import');
       return;
@@ -119,8 +119,8 @@ async function bulkImport(): Promise<void> {
     logger.info(`Loaded ${importRecords.length} records for import`);
 
     // Step 2: Filter by category if specified
-    const filteredRecords = targetCategory 
-      ? importRecords.filter(record => 
+    const filteredRecords = targetCategory
+      ? importRecords.filter((record) =>
           record.category?.toLowerCase().includes(targetCategory.toLowerCase())
         )
       : importRecords;
@@ -129,19 +129,21 @@ async function bulkImport(): Promise<void> {
 
     // Step 3: Get existing data for deduplication
     const existingTerms = await db.select().from(terms);
-    const existingTermNames = new Set(existingTerms.map(t => t.name.toLowerCase()));
+    const existingTermNames = new Set(existingTerms.map((t) => t.name.toLowerCase()));
     const existingCategories = await db.select().from(categories);
-    
-    logger.info(`Found ${existingTerms.length} existing terms, ${existingCategories.length} categories`);
+
+    logger.info(
+      `Found ${existingTerms.length} existing terms, ${existingCategories.length} categories`
+    );
 
     // Step 4: Process records in batches
     const batches = chunkArray(filteredRecords, batchSize);
-    
+
     for (let i = 0; i < batches.length; i++) {
       const batch = batches[i];
-      
+
       logger.info(`\n📦 Processing batch ${i + 1}/${batches.length} (${batch.length} records)`);
-      
+
       const batchResults = await processBatch(
         batch,
         existingTermNames,
@@ -150,7 +152,7 @@ async function bulkImport(): Promise<void> {
         shouldValidate,
         isDryRun
       );
-      
+
       // Update stats
       stats.totalRecords += batchResults.processed;
       stats.successfulImports += batchResults.imported;
@@ -159,15 +161,17 @@ async function bulkImport(): Promise<void> {
       stats.enhanced += batchResults.enhanced;
       stats.validated += batchResults.validated;
       stats.categoriesCreated += batchResults.categoriesCreated;
-      
+
       // Update categories used
       for (const category of batchResults.categoriesUsed) {
         if (!stats.categoriesUsed.includes(category)) {
           stats.categoriesUsed.push(category);
         }
       }
-      
-      logger.info(`  ✅ Batch completed: ${batchResults.imported} imported, ${batchResults.skipped} skipped, ${batchResults.errors} errors`);
+
+      logger.info(
+        `  ✅ Batch completed: ${batchResults.imported} imported, ${batchResults.skipped} skipped, ${batchResults.errors} errors`
+      );
     }
 
     // Step 5: Report results
@@ -176,7 +180,6 @@ async function bulkImport(): Promise<void> {
     stats.averageTimePerRecord = stats.totalTime / Math.max(stats.totalRecords, 1);
 
     reportImportStats(stats);
-
   } catch (error) {
     logger.error('Fatal error in bulk import:', error);
     process.exit(1);
@@ -206,14 +209,14 @@ async function loadImportData(format: ImportFormat, sourcePath: string): Promise
  */
 async function loadEssentialTerms(): Promise<ImportRecord[]> {
   const essentialTerms = getAllEssentialTerms();
-  
-  return essentialTerms.map(term => ({
+
+  return essentialTerms.map((term) => ({
     name: term.name,
     category: getCategoryForTerm(term.name),
     priority: term.priority,
     complexity: term.complexity,
     aliases: term.aliases,
-    relatedTerms: term.relatedTerms
+    relatedTerms: term.relatedTerms,
   }));
 }
 
@@ -222,7 +225,7 @@ async function loadEssentialTerms(): Promise<ImportRecord[]> {
  */
 function getCategoryForTerm(termName: string): string {
   for (const [category, terms] of Object.entries(ESSENTIAL_AI_TERMS)) {
-    if (terms.some(t => t.name === termName || t.aliases?.includes(termName))) {
+    if (terms.some((t) => t.name === termName || t.aliases?.includes(termName))) {
       return category;
     }
   }
@@ -239,7 +242,7 @@ async function loadCSVData(csvPath: string): Promise<ImportRecord[]> {
 
   return new Promise((resolve, reject) => {
     const records: ImportRecord[] = [];
-    
+
     createReadStream(csvPath)
       .pipe(csv())
       .on('data', (row) => {
@@ -249,26 +252,26 @@ async function loadCSVData(csvPath: string): Promise<ImportRecord[]> {
             shortDefinition: row.shortDefinition || row.short_definition,
             definition: row.definition || row.description,
             category: row.category,
-            mathFormulation: row.mathFormulation || row.math_formulation
+            mathFormulation: row.mathFormulation || row.math_formulation,
           };
 
           // Parse arrays from CSV
           if (row.characteristics) {
             record.characteristics = parseCSVArray(row.characteristics);
           }
-          
+
           if (row.applications) {
             record.applications = parseCSVApplications(row.applications);
           }
-          
+
           if (row.references) {
             record.references = parseCSVArray(row.references);
           }
-          
+
           if (row.aliases) {
             record.aliases = parseCSVArray(row.aliases);
           }
-          
+
           if (row.relatedTerms) {
             record.relatedTerms = parseCSVArray(row.relatedTerms);
           }
@@ -299,7 +302,7 @@ async function loadJSONData(jsonPath: string): Promise<ImportRecord[]> {
   try {
     const content = await fs.readFile(jsonPath, 'utf-8');
     const data = JSON.parse(content);
-    
+
     // Handle different JSON structures
     if (Array.isArray(data)) {
       return data.map(normalizeRecord);
@@ -319,7 +322,7 @@ async function loadJSONData(jsonPath: string): Promise<ImportRecord[]> {
       }
       return records;
     }
-    
+
     throw new Error('Unsupported JSON structure');
   } catch (error) {
     logger.error('Error loading JSON data:', error);
@@ -357,7 +360,7 @@ function normalizeRecord(record: any): ImportRecord {
     priority: record.priority,
     complexity: record.complexity,
     aliases: Array.isArray(record.aliases) ? record.aliases : undefined,
-    relatedTerms: Array.isArray(record.relatedTerms) ? record.relatedTerms : undefined
+    relatedTerms: Array.isArray(record.relatedTerms) ? record.relatedTerms : undefined,
   };
 }
 
@@ -366,11 +369,11 @@ function normalizeRecord(record: any): ImportRecord {
  */
 function parseCSVArray(value: string): string[] {
   if (!value || typeof value !== 'string') return [];
-  
+
   return value
     .split(',')
-    .map(item => item.trim().replace(/^["']|["']$/g, ''))
-    .filter(item => item.length > 0);
+    .map((item) => item.trim().replace(/^["']|["']$/g, ''))
+    .filter((item) => item.length > 0);
 }
 
 /**
@@ -378,13 +381,13 @@ function parseCSVArray(value: string): string[] {
  */
 function parseCSVApplications(value: string): Array<{ name: string; description: string }> {
   if (!value || typeof value !== 'string') return [];
-  
+
   const items = parseCSVArray(value);
-  return items.map(item => {
+  return items.map((item) => {
     const [name, ...descParts] = item.split(':');
     return {
       name: name.trim(),
-      description: descParts.join(':').trim() || name.trim()
+      description: descParts.join(':').trim() || name.trim(),
     };
   });
 }
@@ -417,13 +420,13 @@ async function processBatch(
     enhanced: 0,
     validated: 0,
     categoriesCreated: 0,
-    categoriesUsed: [] as string[]
+    categoriesUsed: [] as string[],
   };
 
   for (const record of batch) {
     try {
       results.processed++;
-      
+
       // Check if term already exists
       if (existingTermNames.has(record.name.toLowerCase())) {
         logger.info(`  ⏭️  Skipping existing term: ${record.name}`);
@@ -449,7 +452,7 @@ async function processBatch(
       // Import the term
       if (!dryRun) {
         const termId = await importTerm(record, categoryId);
-        
+
         // Validate if requested
         if (validate && termId) {
           const term = await db.select().from(terms).where(eq(terms.id, termId)).limit(1);
@@ -460,14 +463,15 @@ async function processBatch(
             }
           }
         }
-        
+
         results.imported++;
         logger.info(`  ✅ Imported: ${record.name} (Category: ${record.category || 'None'})`);
       } else {
         results.imported++;
-        logger.info(`  [DRY RUN] Would import: ${record.name} (Category: ${record.category || 'None'})`);
+        logger.info(
+          `  [DRY RUN] Would import: ${record.name} (Category: ${record.category || 'None'})`
+        );
       }
-
     } catch (error) {
       results.errors++;
       logger.error(`  ❌ Error importing ${record.name}:`, error);
@@ -481,15 +485,15 @@ async function processBatch(
  * Ensure category exists, create if necessary
  */
 async function ensureCategoryExists(
-  categoryName: string, 
-  existingCategories: any[], 
+  categoryName: string,
+  existingCategories: any[],
   dryRun: boolean
 ): Promise<string | null> {
   // Check if category already exists
-  const existing = existingCategories.find(cat => 
-    cat.name.toLowerCase() === categoryName.toLowerCase()
+  const existing = existingCategories.find(
+    (cat) => cat.name.toLowerCase() === categoryName.toLowerCase()
   );
-  
+
   if (existing) {
     return existing.id;
   }
@@ -497,14 +501,17 @@ async function ensureCategoryExists(
   // Create new category
   if (!dryRun) {
     try {
-      const newCategory = await db.insert(categories).values({
-        name: categoryName,
-        description: `AI/ML category for ${categoryName} related terms`
-      }).returning();
-      
+      const newCategory = await db
+        .insert(categories)
+        .values({
+          name: categoryName,
+          description: `AI/ML category for ${categoryName} related terms`,
+        })
+        .returning();
+
       // Add to existing categories list
       existingCategories.push(newCategory[0]);
-      
+
       logger.info(`  📁 Created category: ${categoryName}`);
       return newCategory[0].id;
     } catch (error) {
@@ -529,7 +536,7 @@ async function enhanceRecord(record: ImportRecord): Promise<void> {
         record.category,
         `Priority: ${record.priority || 'medium'}, Complexity: ${record.complexity || 'intermediate'}`
       );
-      
+
       record.definition = aiDefinition.definition;
       record.shortDefinition = record.shortDefinition || aiDefinition.shortDefinition;
       record.characteristics = record.characteristics || aiDefinition.characteristics;
@@ -547,15 +554,15 @@ async function enhanceRecord(record: ImportRecord): Promise<void> {
     if (!record.characteristics || record.characteristics.length === 0) {
       try {
         const content = await aiService.generateSectionContent(record.name, 'Key Characteristics');
-        record.characteristics = content.split('\n')
-          .map(line => line.replace(/^[•\-\d\.]\s*/, '').trim())
-          .filter(line => line.length > 0)
+        record.characteristics = content
+          .split('\n')
+          .map((line) => line.replace(/^[•\-\d.]\s*/, '').trim())
+          .filter((line) => line.length > 0)
           .slice(0, 5);
-      } catch (error) {
+      } catch (_error) {
         // Non-critical error
       }
     }
-
   } catch (error) {
     logger.warn(`Failed to enhance record ${record.name}:`, error);
   }
@@ -573,7 +580,7 @@ async function importTerm(record: ImportRecord, categoryId: string | null): Prom
     characteristics: record.characteristics || [],
     applications: record.applications || [],
     mathFormulation: record.mathFormulation || null,
-    references: record.references || []
+    references: record.references || [],
   };
 
   const insertedTerm = await db.insert(terms).values(termData).returning();
@@ -605,29 +612,31 @@ function reportImportStats(stats: ImportStats): void {
   logger.info(`Validated: ${stats.validated}`);
   logger.info(`Total Time: ${(stats.totalTime / 1000).toFixed(2)}s`);
   logger.info(`Average Time per Record: ${(stats.averageTimePerRecord / 1000).toFixed(2)}s`);
-  
+
   logger.info('\n📁 Categories:');
   logger.info(`  Categories Created: ${stats.categoriesCreated}`);
   logger.info(`  Categories Used: ${stats.categoriesUsed.length}`);
   if (stats.categoriesUsed.length > 0) {
     logger.info(`  Category List: ${stats.categoriesUsed.join(', ')}`);
   }
-  
-  const successRate = stats.totalRecords > 0 ? 
-    ((stats.successfulImports / stats.totalRecords) * 100).toFixed(1) : '0';
+
+  const successRate =
+    stats.totalRecords > 0
+      ? ((stats.successfulImports / stats.totalRecords) * 100).toFixed(1)
+      : '0';
   logger.info(`\n✅ Success Rate: ${successRate}%`);
-  
+
   if (stats.errors > 0) {
     logger.warn(`⚠️  ${stats.errors} errors occurred during import`);
   }
-  
+
   if (stats.successfulImports > 0) {
     logger.info(`🎉 Successfully imported ${stats.successfulImports} new terms!`);
-    
+
     if (shouldEnhance && stats.enhanced > 0) {
       logger.info(`🤖 Enhanced ${stats.enhanced} terms with AI-generated content`);
     }
-    
+
     if (shouldValidate && stats.validated > 0) {
       logger.info(`✅ Validated ${stats.validated} terms with high quality scores`);
     }
@@ -652,22 +661,30 @@ async function createSampleFiles(): Promise<void> {
   const jsonContent = {
     terms: [
       {
-        name: "Deep Learning",
-        category: "Deep Learning",
-        shortDefinition: "A subset of machine learning based on artificial neural networks",
-        definition: "Deep learning is part of a broader family of machine learning methods based on artificial neural networks with representation learning. Learning can be supervised, semi-supervised or unsupervised.",
-        characteristics: ["multiple layers", "automatic feature extraction", "hierarchical learning"],
+        name: 'Deep Learning',
+        category: 'Deep Learning',
+        shortDefinition: 'A subset of machine learning based on artificial neural networks',
+        definition:
+          'Deep learning is part of a broader family of machine learning methods based on artificial neural networks with representation learning. Learning can be supervised, semi-supervised or unsupervised.',
+        characteristics: [
+          'multiple layers',
+          'automatic feature extraction',
+          'hierarchical learning',
+        ],
         applications: [
-          { name: "computer vision", description: "Object detection and image classification" },
-          { name: "natural language processing", description: "Language translation and text analysis" }
-        ]
-      }
-    ]
+          { name: 'computer vision', description: 'Object detection and image classification' },
+          {
+            name: 'natural language processing',
+            description: 'Language translation and text analysis',
+          },
+        ],
+      },
+    ],
   };
 
   await fs.writeFile(
-    path.join(samplesDir, 'sample_terms.json'), 
-    JSON.stringify(jsonContent, null, 2), 
+    path.join(samplesDir, 'sample_terms.json'),
+    JSON.stringify(jsonContent, null, 2),
     'utf-8'
   );
 
@@ -682,16 +699,16 @@ async function createSampleFiles(): Promise<void> {
 if (require.main === module) {
   // Check if user wants to create sample files
   if (args.includes('--create-samples')) {
-    createSampleFiles().catch(error => {
+    createSampleFiles().catch((error) => {
       logger.error('Failed to create sample files:', error);
       process.exit(1);
     });
   } else {
-    bulkImport().catch(error => {
+    bulkImport().catch((error) => {
       logger.error('Bulk import failed:', error);
       process.exit(1);
     });
   }
 }
 
-export { bulkImport, loadImportData, ImportRecord, ImportStats };
+export { bulkImport, loadImportData, type ImportRecord, type ImportStats };

@@ -1,5 +1,8 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
+import { Badge } from './badge';
+import { Button } from './button';
+import { Checkbox } from './checkbox';
 import {
   Table,
   TableBody,
@@ -10,9 +13,6 @@ import {
   TableHeader,
   TableRow,
 } from './table';
-import { Badge } from './badge';
-import { Button } from './button';
-import { Checkbox } from './checkbox';
 
 const meta: Meta<typeof Table> = {
   title: 'UI/Table',
@@ -168,8 +168,12 @@ export const WithActions: Story = {
             </TableCell>
             <TableCell className="text-right">
               <div className="flex gap-2 justify-end">
-                <Button variant="outline" size="sm">Review</Button>
-                <Button variant="default" size="sm">Approve</Button>
+                <Button variant="outline" size="sm">
+                  Review
+                </Button>
+                <Button variant="default" size="sm">
+                  Approve
+                </Button>
               </div>
             </TableCell>
           </TableRow>
@@ -183,7 +187,9 @@ export const WithActions: Story = {
             </TableCell>
             <TableCell className="text-right">
               <div className="flex gap-2 justify-end">
-                <Button variant="outline" size="sm">View</Button>
+                <Button variant="outline" size="sm">
+                  View
+                </Button>
               </div>
             </TableCell>
           </TableRow>
@@ -197,7 +203,9 @@ export const WithActions: Story = {
             </TableCell>
             <TableCell className="text-right">
               <div className="flex gap-2 justify-end">
-                <Button variant="outline" size="sm">Feedback</Button>
+                <Button variant="outline" size="sm">
+                  Feedback
+                </Button>
               </div>
             </TableCell>
           </TableRow>
@@ -210,19 +218,15 @@ export const WithActions: Story = {
 export const WithSelection: Story = {
   render: () => {
     const [selectedRows, setSelectedRows] = React.useState<string[]>([]);
-    
+
     const toggleRow = (id: string) => {
-      setSelectedRows(prev => 
-        prev.includes(id) 
-          ? prev.filter(rowId => rowId !== id)
-          : [...prev, id]
+      setSelectedRows((prev) =>
+        prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
       );
     };
 
     const toggleAll = () => {
-      setSelectedRows(prev => 
-        prev.length === 5 ? [] : ['1', '2', '3', '4', '5']
-      );
+      setSelectedRows((prev) => (prev.length === 5 ? [] : ['1', '2', '3', '4', '5']));
     };
 
     return (
@@ -232,10 +236,7 @@ export const WithSelection: Story = {
           <TableHeader>
             <TableRow>
               <TableHead className="w-12">
-                <Checkbox
-                  checked={selectedRows.length === 5}
-                  onCheckedChange={toggleAll}
-                />
+                <Checkbox checked={selectedRows.length === 5} onCheckedChange={toggleAll} />
               </TableHead>
               <TableHead>Term</TableHead>
               <TableHead>Category</TableHead>
@@ -245,13 +246,43 @@ export const WithSelection: Story = {
           </TableHeader>
           <TableBody>
             {[
-              { id: '1', term: 'Attention Mechanism', category: 'Deep Learning', date: '2024-01-15', score: 95 },
-              { id: '2', term: 'Gradient Descent', category: 'Optimization', date: '2024-01-14', score: 92 },
-              { id: '3', term: 'Backpropagation', category: 'Neural Networks', date: '2024-01-13', score: 98 },
-              { id: '4', term: 'Overfitting', category: 'Model Training', date: '2024-01-12', score: 89 },
-              { id: '5', term: 'Cross-Validation', category: 'Evaluation', date: '2024-01-11', score: 94 },
+              {
+                id: '1',
+                term: 'Attention Mechanism',
+                category: 'Deep Learning',
+                date: '2024-01-15',
+                score: 95,
+              },
+              {
+                id: '2',
+                term: 'Gradient Descent',
+                category: 'Optimization',
+                date: '2024-01-14',
+                score: 92,
+              },
+              {
+                id: '3',
+                term: 'Backpropagation',
+                category: 'Neural Networks',
+                date: '2024-01-13',
+                score: 98,
+              },
+              {
+                id: '4',
+                term: 'Overfitting',
+                category: 'Model Training',
+                date: '2024-01-12',
+                score: 89,
+              },
+              {
+                id: '5',
+                term: 'Cross-Validation',
+                category: 'Evaluation',
+                date: '2024-01-11',
+                score: 94,
+              },
             ].map((row) => (
-              <TableRow key={row.id} data-state={selectedRows.includes(row.id) ? "selected" : ""}>
+              <TableRow key={row.id} data-state={selectedRows.includes(row.id) ? 'selected' : ''}>
                 <TableCell>
                   <Checkbox
                     checked={selectedRows.includes(row.id)}
@@ -264,8 +295,8 @@ export const WithSelection: Story = {
                 <TableCell>
                   <div className="flex items-center gap-2">
                     <div className="flex-1 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-green-600 h-2 rounded-full" 
+                      <div
+                        className="bg-green-600 h-2 rounded-full"
                         style={{ width: `${row.score}%` }}
                       />
                     </div>
@@ -279,7 +310,7 @@ export const WithSelection: Story = {
         {selectedRows.length > 0 && (
           <div className="mt-4 p-3 bg-blue-50 rounded-lg">
             <p className="text-sm text-blue-800">
-              {selectedRows.length} term(s) selected. 
+              {selectedRows.length} term(s) selected.
               <Button variant="link" className="p-0 ml-2 h-auto">
                 Bulk Edit
               </Button>
@@ -316,7 +347,9 @@ export const DataTable: Story = {
             <TableCell className="text-right">9.8</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell className="font-medium">BERT: Pre-training of Deep Bidirectional Transformers</TableCell>
+            <TableCell className="font-medium">
+              BERT: Pre-training of Deep Bidirectional Transformers
+            </TableCell>
             <TableCell>Devlin et al.</TableCell>
             <TableCell>NAACL</TableCell>
             <TableCell>2019</TableCell>
@@ -324,7 +357,9 @@ export const DataTable: Story = {
             <TableCell className="text-right">8.7</TableCell>
           </TableRow>
           <TableRow>
-            <TableCell className="font-medium">ResNet: Deep Residual Learning for Image Recognition</TableCell>
+            <TableCell className="font-medium">
+              ResNet: Deep Residual Learning for Image Recognition
+            </TableCell>
             <TableCell>He et al.</TableCell>
             <TableCell>CVPR</TableCell>
             <TableCell>2016</TableCell>

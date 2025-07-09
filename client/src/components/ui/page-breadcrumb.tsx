@@ -1,6 +1,13 @@
-import { Link } from "wouter";
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { BaseComponentProps } from "@/types/common-props";
+import { Link } from 'wouter';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import type { BaseComponentProps } from '@/types/common-props';
 
 interface BreadcrumbItem {
   label: string;
@@ -21,14 +28,10 @@ export default function PageBreadcrumb({ items, className }: PageBreadcrumbProps
             {index > 0 && <BreadcrumbSeparator />}
             <BreadcrumbItem>
               {item.isCurrentPage ? (
-                <BreadcrumbPage>
-                  {item.label}
-                </BreadcrumbPage>
+                <BreadcrumbPage>{item.label}</BreadcrumbPage>
               ) : (
                 <BreadcrumbLink asChild>
-                  <Link href={item.href || "#"}>
-                    {item.label}
-                  </Link>
+                  <Link href={item.href || '#'}>{item.label}</Link>
                 </BreadcrumbLink>
               )}
             </BreadcrumbItem>

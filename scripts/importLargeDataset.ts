@@ -1,39 +1,39 @@
+import fs from 'node:fs';
 import { importProcessedData } from './server/pythonProcessor';
-import fs from 'fs';
 
 async function importLargeDataset() {
   try {
     const largeFile = 'temp/processed_1750505973480.json';
-    
+
     console.log('🔍 Checking for large processed dataset...');
-    
+
     if (!fs.existsSync(largeFile)) {
       console.error(`❌ Large dataset file not found: ${largeFile}`);
       console.log('💡 To generate the dataset, run the Excel processor on data/aiml.xlsx');
       console.log('   This will process the 286MB Excel file with 10k+ terms');
       return;
     }
-    
+
     console.log('📊 Loading large processed dataset...');
     const data = JSON.parse(fs.readFileSync(largeFile, 'utf8'));
-    
+
     console.log(`📈 Dataset summary:`);
     console.log(`   📂 Categories: ${data.categories?.length || 0}`);
     console.log(`   📋 Subcategories: ${data.subcategories?.length || 0}`);
     console.log(`   📊 Terms: ${data.terms?.length || 0}`);
-    
+
     if (data.terms?.length < 5000) {
       console.warn('⚠️  Dataset seems smaller than expected. Proceeding anyway...');
     }
-    
+
     console.log('💾 Importing into database (this may take a few minutes)...');
     const startTime = Date.now();
-    
+
     const result = await importProcessedData(data);
-    
+
     const endTime = Date.now();
     const duration = (endTime - startTime) / 1000;
-    
+
     if (result.success) {
       console.log('✅ Large dataset import successful!');
       console.log(`   ⏱️  Import time: ${duration.toFixed(2)} seconds`);
@@ -59,4 +59,4 @@ console.log('📋 This script imports the complete 10k+ term dataset from proces
 console.log('🔒 Large files remain in gitignore to keep repository size manageable');
 console.log('');
 
-importLargeDataset(); 
+importLargeDataset();

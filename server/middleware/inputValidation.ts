@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { DEFAULT_LIMITS } from '../constants';
 
 /**
@@ -29,10 +29,10 @@ export function parsePagination(req: Request, res: Response, next: NextFunction)
     // Add parsed values to request
     (req as any).pagination = { page, limit, offset } as ParsedPaginationQuery;
     next();
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({
       success: false,
-      message: 'Invalid pagination parameters'
+      message: 'Invalid pagination parameters',
     });
   }
 }
@@ -44,11 +44,11 @@ export function parseId(paramName: string = 'id') {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {
       const id = req.params[paramName];
-      
+
       if (!id || typeof id !== 'string' || id.trim() === '') {
         res.status(400).json({
           success: false,
-          message: `Invalid ${paramName} parameter`
+          message: `Invalid ${paramName} parameter`,
         });
         return;
       }
@@ -56,10 +56,10 @@ export function parseId(paramName: string = 'id') {
       // Add parsed ID to request
       (req as any).parsedId = id.trim();
       next();
-    } catch (error) {
+    } catch (_error) {
       res.status(400).json({
         success: false,
-        message: `Invalid ${paramName} parameter`
+        message: `Invalid ${paramName} parameter`,
       });
     }
   };
@@ -68,7 +68,12 @@ export function parseId(paramName: string = 'id') {
 /**
  * Parse and validate numeric query parameters
  */
-export function parseNumericQuery(fieldName: string, defaultValue?: number, min?: number, max?: number) {
+export function parseNumericQuery(
+  fieldName: string,
+  defaultValue?: number,
+  min?: number,
+  max?: number
+) {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {
       const value = req.query[fieldName] as string;
@@ -76,11 +81,11 @@ export function parseNumericQuery(fieldName: string, defaultValue?: number, min?
 
       if (value !== undefined) {
         parsed = parseInt(value);
-        
-        if (isNaN(parsed)) {
+
+        if (Number.isNaN(parsed)) {
           res.status(400).json({
             success: false,
-            message: `Invalid ${fieldName} parameter: must be a number`
+            message: `Invalid ${fieldName} parameter: must be a number`,
           });
           return;
         }
@@ -100,10 +105,10 @@ export function parseNumericQuery(fieldName: string, defaultValue?: number, min?
       }
       (req.query as any).parsed[fieldName] = parsed;
       next();
-    } catch (error) {
+    } catch (_error) {
       res.status(400).json({
         success: false,
-        message: `Invalid ${fieldName} parameter`
+        message: `Invalid ${fieldName} parameter`,
       });
     }
   };
@@ -115,13 +120,13 @@ export function parseNumericQuery(fieldName: string, defaultValue?: number, min?
 export function parseSorting(allowedFields: string[] = ['createdAt', 'updatedAt', 'name']) {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {
-      const sortBy = req.query.sortBy as string || allowedFields[0];
+      const sortBy = (req.query.sortBy as string) || allowedFields[0];
       const sortOrder = (req.query.sortOrder as string)?.toLowerCase() === 'asc' ? 'asc' : 'desc';
 
       if (!allowedFields.includes(sortBy)) {
         res.status(400).json({
           success: false,
-          message: `Invalid sortBy field. Allowed values: ${allowedFields.join(', ')}`
+          message: `Invalid sortBy field. Allowed values: ${allowedFields.join(', ')}`,
         });
         return;
       }
@@ -133,10 +138,10 @@ export function parseSorting(allowedFields: string[] = ['createdAt', 'updatedAt'
       (req.query as any).parsed.sortBy = sortBy;
       (req.query as any).parsed.sortOrder = sortOrder as 'asc' | 'desc';
       next();
-    } catch (error) {
+    } catch (_error) {
       res.status(400).json({
         success: false,
-        message: 'Invalid sorting parameters'
+        message: 'Invalid sorting parameters',
       });
     }
   };
@@ -156,10 +161,10 @@ export function parseSearch(req: Request, res: Response, next: NextFunction): vo
     }
     (req.query as any).parsed.search = trimmedSearch || undefined;
     next();
-  } catch (error) {
+  } catch (_error) {
     res.status(400).json({
       success: false,
-      message: 'Invalid search parameter'
+      message: 'Invalid search parameter',
     });
   }
 }
@@ -170,11 +175,11 @@ export function parseSearch(req: Request, res: Response, next: NextFunction): vo
 export const userRouteValidation = [
   parsePagination,
   parseSearch,
-  parseSorting(['name', 'category', 'viewCount', 'createdAt', 'updatedAt'])
+  parseSorting(['name', 'category', 'viewCount', 'createdAt', 'updatedAt']),
 ];
 
 export const adminRouteValidation = [
   parsePagination,
   parseSearch,
-  parseSorting(['name', 'category', 'viewCount', 'createdAt', 'updatedAt', 'status'])
+  parseSorting(['name', 'category', 'viewCount', 'createdAt', 'updatedAt', 'status']),
 ];

@@ -40,7 +40,7 @@ class ABTestingService {
     'trial_signup',
     'newsletter_signup',
     'pricing_cta_click',
-    'final_cta_click'
+    'final_cta_click',
   ];
 
   constructor() {
@@ -60,7 +60,7 @@ class ABTestingService {
       utm_source: this.getUTMParam('utm_source'),
       utm_medium: this.getUTMParam('utm_medium'),
       utm_campaign: this.getUTMParam('utm_campaign'),
-      ...properties
+      ...properties,
     };
 
     // Track with PostHog
@@ -73,17 +73,14 @@ class ABTestingService {
         event_label: variant,
         custom_map: {
           test_id: this.testId,
-          background_variant: variant
-        }
+          background_variant: variant,
+        },
       });
     }
 
     // Track with GA4
     ga4Analytics.trackABTestView(this.testId, variant, 'background_test');
-    ga4Analytics.trackPageView(
-      `Landing Page - ${variant}`,
-      window.location.href
-    );
+    ga4Analytics.trackPageView(`Landing Page - ${variant}`, window.location.href);
 
     // Store session data
     this.storeSessionData(variant);
@@ -99,7 +96,7 @@ class ABTestingService {
       time_to_conversion: this.getTimeToConversion(),
       session_duration: this.getSessionDuration(),
       device_type: this.getDeviceType(),
-      ...properties
+      ...properties,
     };
 
     // Track with PostHog
@@ -114,8 +111,8 @@ class ABTestingService {
         custom_map: {
           test_id: this.testId,
           background_variant: variant,
-          conversion_type: this.getConversionType(eventName)
-        }
+          conversion_type: this.getConversionType(eventName),
+        },
       });
     }
 
@@ -124,7 +121,8 @@ class ABTestingService {
     if (conversionType === 'trial_conversion' || conversionType === 'primary_cta') {
       ga4Analytics.trackConversion({
         event_name: eventName,
-        conversion_type: conversionType === 'trial_conversion' ? 'trial_signup' : 'premium_purchase',
+        conversion_type:
+          conversionType === 'trial_conversion' ? 'trial_signup' : 'premium_purchase',
         funnel_stage: eventName,
         value: properties.value || 1,
         currency: properties.currency || 'USD',
@@ -134,11 +132,16 @@ class ABTestingService {
           variant,
           test_id: this.testId,
           background_variant: variant,
-          time_to_conversion: this.getTimeToConversion()
-        }
+          time_to_conversion: this.getTimeToConversion(),
+        },
       });
     } else {
-      ga4Analytics.trackCTAClick(eventName, properties.location || 'landing', variant, properties.value || 1);
+      ga4Analytics.trackCTAClick(
+        eventName,
+        properties.location || 'landing',
+        variant,
+        properties.value || 1
+      );
     }
 
     // Update session conversion data
@@ -152,7 +155,7 @@ class ABTestingService {
       variant,
       engagement_type: engagementType,
       value,
-      session_duration: this.getSessionDuration()
+      session_duration: this.getSessionDuration(),
     };
 
     // Track with PostHog
@@ -174,8 +177,8 @@ class ABTestingService {
           variant,
           test_id: this.testId,
           background_variant: variant,
-          session_duration: this.getSessionDuration()
-        }
+          session_duration: this.getSessionDuration(),
+        },
       });
     }
   }
@@ -184,13 +187,13 @@ class ABTestingService {
   getConversionFunnel(variant: string): Record<string, number> {
     const sessionData = this.getSessionData();
     const variantData = sessionData.variants[variant] || {};
-    
+
     return {
       pageViews: variantData.pageViews || 0,
       seeWhatsInsideClicks: variantData.seeWhatsInsideClicks || 0,
       ctaClicks: variantData.ctaClicks || 0,
       trialSignups: variantData.trialSignups || 0,
-      newsletterSignups: variantData.newsletterSignups || 0
+      newsletterSignups: variantData.newsletterSignups || 0,
     };
   }
 
@@ -199,7 +202,7 @@ class ABTestingService {
     const funnel = this.getConversionFunnel(variant);
     const views = funnel.pageViews || 1; // Avoid division by zero
     const conversions = funnel[goal] || 0;
-    
+
     return (conversions / views) * 100;
   }
 
@@ -230,14 +233,14 @@ class ABTestingService {
   // Get conversion type from event name
   private getConversionType(eventName: string): string {
     const conversionMap: Record<string, string> = {
-      'hero_cta_click': 'primary_cta',
-      'see_whats_inside_click': 'secondary_cta',
-      'trial_signup': 'trial_conversion',
-      'newsletter_signup': 'newsletter_conversion',
-      'pricing_cta_click': 'pricing_interaction',
-      'final_cta_click': 'final_conversion'
+      hero_cta_click: 'primary_cta',
+      see_whats_inside_click: 'secondary_cta',
+      trial_signup: 'trial_conversion',
+      newsletter_signup: 'newsletter_conversion',
+      pricing_cta_click: 'pricing_interaction',
+      final_cta_click: 'final_conversion',
     };
-    
+
     return conversionMap[eventName] || 'other';
   }
 
@@ -245,7 +248,7 @@ class ABTestingService {
   private getTimeToConversion(): number {
     const sessionStart = parseInt(sessionStorage.getItem('ab_test_start_time') || '0');
     if (!sessionStart) return 0;
-    
+
     return Math.floor((Date.now() - sessionStart) / 1000); // Return in seconds
   }
 
@@ -253,49 +256,49 @@ class ABTestingService {
   private getSessionDuration(): number {
     const sessionStart = parseInt(sessionStorage.getItem('session_start_time') || '0');
     if (!sessionStart) return 0;
-    
+
     return Math.floor((Date.now() - sessionStart) / 1000); // Return in seconds
   }
 
   // Store session data
   private storeSessionData(variant: string) {
     const existingData = this.getSessionData();
-    
+
     if (!existingData.startTime) {
       existingData.startTime = Date.now();
       sessionStorage.setItem('ab_test_start_time', existingData.startTime.toString());
       sessionStorage.setItem('session_start_time', existingData.startTime.toString());
     }
-    
+
     if (!existingData.variants[variant]) {
       existingData.variants[variant] = {
         pageViews: 0,
         seeWhatsInsideClicks: 0,
         ctaClicks: 0,
         trialSignups: 0,
-        newsletterSignups: 0
+        newsletterSignups: 0,
       };
     }
-    
+
     existingData.variants[variant].pageViews++;
-    
+
     sessionStorage.setItem('ab_test_data', JSON.stringify(existingData));
   }
 
   // Update conversion data
   private updateConversionData(eventName: string, variant: string) {
     const data = this.getSessionData();
-    
+
     if (!data.variants[variant]) {
       data.variants[variant] = {
         pageViews: 0,
         seeWhatsInsideClicks: 0,
         ctaClicks: 0,
         trialSignups: 0,
-        newsletterSignups: 0
+        newsletterSignups: 0,
       };
     }
-    
+
     switch (eventName) {
       case 'see_whats_inside_click':
         data.variants[variant].seeWhatsInsideClicks++;
@@ -312,7 +315,7 @@ class ABTestingService {
         data.variants[variant].newsletterSignups++;
         break;
     }
-    
+
     sessionStorage.setItem('ab_test_data', JSON.stringify(data));
   }
 
@@ -326,14 +329,14 @@ class ABTestingService {
   async syncWithServer(variant: string) {
     const sessionData = this.getSessionData();
     const variantData = sessionData.variants[variant];
-    
+
     if (!variantData) return;
-    
+
     try {
       const response = await fetch('/api/ab-tests/sync', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           testId: this.testId,
@@ -342,10 +345,10 @@ class ABTestingService {
           sessionDuration: this.getSessionDuration(),
           deviceType: this.getDeviceType(),
           browser: this.getBrowserInfo(),
-          timestamp: new Date().toISOString()
-        })
+          timestamp: new Date().toISOString(),
+        }),
       });
-      
+
       if (!response.ok) {
         console.error('Failed to sync A/B test data');
       }
@@ -361,15 +364,13 @@ export const abTestingService = new ABTestingService();
 // Export hooks for React components
 export function useABTestTracking(variant: string) {
   return {
-    trackPageView: (properties?: Record<string, any>) => 
+    trackPageView: (properties?: Record<string, any>) =>
       abTestingService.trackPageView(variant, properties),
-    trackConversion: (eventName: string, properties?: Record<string, any>) => 
+    trackConversion: (eventName: string, properties?: Record<string, any>) =>
       abTestingService.trackConversion(eventName, variant, properties),
-    trackEngagement: (type: string, value: number) => 
+    trackEngagement: (type: string, value: number) =>
       abTestingService.trackEngagement(variant, type, value),
-    getConversionFunnel: () => 
-      abTestingService.getConversionFunnel(variant),
-    syncWithServer: () => 
-      abTestingService.syncWithServer(variant)
+    getConversionFunnel: () => abTestingService.getConversionFunnel(variant),
+    syncWithServer: () => abTestingService.syncWithServer(variant),
   };
 }

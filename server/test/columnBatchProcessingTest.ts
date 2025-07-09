@@ -1,17 +1,17 @@
 /**
  * Column Batch Processing Test Suite - Phase 2 Enhanced Content Generation System
- * 
+ *
  * Comprehensive test suite for validating batch processing functionality,
  * safety controls, cost management, and system reliability.
  */
 
-import { describe, it, expect, beforeAll, afterAll, beforeEach, afterEach } from 'vitest';
-import { columnBatchProcessorService } from '../services/columnBatchProcessorService';
-import { costManagementService } from '../services/costManagementService';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { jobQueueManager } from '../jobs/queue';
+import { batchAnalyticsService } from '../services/batchAnalyticsService';
 import { batchProgressTrackingService } from '../services/batchProgressTrackingService';
 import { batchSafetyControlsService } from '../services/batchSafetyControlsService';
-import { batchAnalyticsService } from '../services/batchAnalyticsService';
-import { jobQueueManager } from '../jobs/queue';
+import { columnBatchProcessorService } from '../services/columnBatchProcessorService';
+import { costManagementService } from '../services/costManagementService';
 import { log as logger } from '../utils/logger';
 
 // Test data
@@ -44,7 +44,7 @@ describe('Column Batch Processing System', () => {
     if (testOperationId) {
       try {
         await columnBatchProcessorService.cancelBatchOperation(testOperationId);
-      } catch (error) {
+      } catch (_error) {
         // Ignore errors during cleanup
       }
     }
@@ -63,12 +63,12 @@ describe('Column Batch Processing System', () => {
           maxTokens: 1000,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 2
+          maxConcurrentBatches: 2,
         },
         metadata: {
           initiatedBy: testUser,
-          reason: 'Test cost estimation'
-        }
+          reason: 'Test cost estimation',
+        },
       };
 
       const estimate = await columnBatchProcessorService.estimateBatchCosts(request);
@@ -92,20 +92,20 @@ describe('Column Batch Processing System', () => {
           maxTokens: 1000,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 2
+          maxConcurrentBatches: 2,
         },
         metadata: {
           initiatedBy: testUser,
-          reason: 'Test cost estimation GPT-3.5'
-        }
+          reason: 'Test cost estimation GPT-3.5',
+        },
       };
 
       const gpt4Request = {
         ...gpt35Request,
         processingOptions: {
           ...gpt35Request.processingOptions,
-          model: 'gpt-4'
-        }
+          model: 'gpt-4',
+        },
       };
 
       const gpt35Estimate = await columnBatchProcessorService.estimateBatchCosts(gpt35Request);
@@ -123,21 +123,24 @@ describe('Column Batch Processing System', () => {
         sectionName: testSection,
         termCount: 100,
         estimatedCost: 50,
-        estimatedDuration: 60
+        estimatedDuration: 60,
       };
 
       // First operation should be allowed
-      const firstCheck = await batchSafetyControlsService.checkOperationPermission(testUser, operationRequest);
+      const firstCheck = await batchSafetyControlsService.checkOperationPermission(
+        testUser,
+        operationRequest
+      );
       expect(firstCheck.allowed).toBe(true);
 
       // Simulate multiple rapid requests
-      const rapidRequests = Array.from({ length: 20 }, (_, i) => 
+      const rapidRequests = Array.from({ length: 20 }, (_, i) =>
         batchSafetyControlsService.checkOperationPermission(`${testUser}-${i}`, operationRequest)
       );
 
       const results = await Promise.all(rapidRequests);
-      const allowedCount = results.filter(r => r.allowed).length;
-      const deniedCount = results.filter(r => !r.allowed).length;
+      const allowedCount = results.filter((r) => r.allowed).length;
+      const deniedCount = results.filter((r) => !r.allowed).length;
 
       expect(deniedCount).toBeGreaterThan(0); // Some should be denied due to rate limits
       expect(allowedCount).toBeLessThan(20); // Not all should be allowed
@@ -148,10 +151,13 @@ describe('Column Batch Processing System', () => {
         sectionName: testSection,
         termCount: 10000,
         estimatedCost: 2000, // Very high cost
-        estimatedDuration: 60
+        estimatedDuration: 60,
       };
 
-      const permission = await batchSafetyControlsService.checkOperationPermission(testUser, highCostRequest);
+      const permission = await batchSafetyControlsService.checkOperationPermission(
+        testUser,
+        highCostRequest
+      );
       expect(permission.allowed).toBe(false);
       expect(permission.reason).toContain('cost');
     });
@@ -165,10 +171,13 @@ describe('Column Batch Processing System', () => {
         sectionName: testSection,
         termCount: 10,
         estimatedCost: 5,
-        estimatedDuration: 30
+        estimatedDuration: 30,
       };
 
-      const permission = await batchSafetyControlsService.checkOperationPermission(testUser, operationRequest);
+      const permission = await batchSafetyControlsService.checkOperationPermission(
+        testUser,
+        operationRequest
+      );
       expect(permission.allowed).toBe(false);
       expect(permission.reason).toContain('emergency');
 
@@ -176,7 +185,10 @@ describe('Column Batch Processing System', () => {
       await batchSafetyControlsService.deactivateEmergencyStop(testUser);
 
       // Now operation should be allowed
-      const newPermission = await batchSafetyControlsService.checkOperationPermission(testUser, operationRequest);
+      const newPermission = await batchSafetyControlsService.checkOperationPermission(
+        testUser,
+        operationRequest
+      );
       expect(newPermission.allowed).toBe(true);
     });
   });
@@ -193,17 +205,17 @@ describe('Column Batch Processing System', () => {
           maxTokens: 500,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 1
+          maxConcurrentBatches: 1,
         },
         metadata: {
           initiatedBy: testUser,
-          reason: 'Test batch operation'
-        }
+          reason: 'Test batch operation',
+        },
       };
 
       // Mock the actual processing by providing test data
       // Note: In a real test, you might want to mock the OpenAI API calls
-      
+
       testOperationId = await columnBatchProcessorService.startBatchOperation(request);
       expect(testOperationId).toBeDefined();
       expect(testOperationId).toMatch(/^col-batch-/);
@@ -211,8 +223,8 @@ describe('Column Batch Processing System', () => {
       // Check operation status
       const operation = columnBatchProcessorService.getOperationStatus(testOperationId);
       expect(operation).toBeDefined();
-      expect(operation!.sectionName).toBe(testSection);
-      expect(operation!.status).toBe('pending');
+      expect(operation?.sectionName).toBe(testSection);
+      expect(operation?.status).toBe('pending');
     });
 
     it('should handle operation pause and resume', async () => {
@@ -226,32 +238,32 @@ describe('Column Batch Processing System', () => {
           maxTokens: 500,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 1
+          maxConcurrentBatches: 1,
         },
         metadata: {
           initiatedBy: testUser,
-          reason: 'Test pause/resume'
-        }
+          reason: 'Test pause/resume',
+        },
       };
 
       testOperationId = await columnBatchProcessorService.startBatchOperation(request);
-      
+
       // Wait a bit for operation to start
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
 
       // Pause operation
       const pauseResult = await columnBatchProcessorService.pauseBatchOperation(testOperationId);
       expect(pauseResult).toBe(true);
 
       const pausedOperation = columnBatchProcessorService.getOperationStatus(testOperationId);
-      expect(pausedOperation!.status).toBe('paused');
+      expect(pausedOperation?.status).toBe('paused');
 
       // Resume operation
       const resumeResult = await columnBatchProcessorService.resumeBatchOperation(testOperationId);
       expect(resumeResult).toBe(true);
 
       const resumedOperation = columnBatchProcessorService.getOperationStatus(testOperationId);
-      expect(resumedOperation!.status).toBe('running');
+      expect(resumedOperation?.status).toBe('running');
     });
 
     it('should handle operation cancellation', async () => {
@@ -265,22 +277,22 @@ describe('Column Batch Processing System', () => {
           maxTokens: 500,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 1
+          maxConcurrentBatches: 1,
         },
         metadata: {
           initiatedBy: testUser,
-          reason: 'Test cancellation'
-        }
+          reason: 'Test cancellation',
+        },
       };
 
       testOperationId = await columnBatchProcessorService.startBatchOperation(request);
-      
+
       // Cancel operation
       const cancelResult = await columnBatchProcessorService.cancelBatchOperation(testOperationId);
       expect(cancelResult).toBe(true);
 
       const cancelledOperation = columnBatchProcessorService.getOperationStatus(testOperationId);
-      expect(cancelledOperation!.status).toBe('cancelled');
+      expect(cancelledOperation?.status).toBe('cancelled');
     });
   });
 
@@ -296,27 +308,27 @@ describe('Column Batch Processing System', () => {
           maxTokens: 500,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 1
+          maxConcurrentBatches: 1,
         },
         metadata: {
           initiatedBy: testUser,
-          reason: 'Test progress tracking'
-        }
+          reason: 'Test progress tracking',
+        },
       };
 
       testOperationId = await columnBatchProcessorService.startBatchOperation(request);
-      
+
       // Start monitoring
       await batchProgressTrackingService.startMonitoring(testOperationId);
 
       // Wait for some progress
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       // Check progress snapshot
       const progress = batchProgressTrackingService.getCurrentProgress(testOperationId);
       expect(progress).toBeDefined();
-      expect(progress!.operationId).toBe(testOperationId);
-      expect(progress!.sectionName).toBe(testSection);
+      expect(progress?.operationId).toBe(testOperationId);
+      expect(progress?.sectionName).toBe(testSection);
 
       // Stop monitoring
       await batchProgressTrackingService.stopMonitoring(testOperationId);
@@ -333,23 +345,23 @@ describe('Column Batch Processing System', () => {
           maxTokens: 500,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 1
+          maxConcurrentBatches: 1,
         },
         metadata: {
           initiatedBy: testUser,
-          reason: 'Test progress reports'
-        }
+          reason: 'Test progress reports',
+        },
       };
 
       testOperationId = await columnBatchProcessorService.startBatchOperation(request);
-      
+
       // Start monitoring with milestone reporting
       await batchProgressTrackingService.startMonitoring(testOperationId, {
-        reportMilestones: [50, 100]
+        reportMilestones: [50, 100],
       });
 
       // Wait for completion
-      await new Promise(resolve => setTimeout(resolve, 5000));
+      await new Promise((resolve) => setTimeout(resolve, 5000));
 
       // Check for reports
       const reports = batchProgressTrackingService.getStatusReports(testOperationId);
@@ -383,17 +395,17 @@ describe('Column Batch Processing System', () => {
         categories: ['test_operation'],
         alertThresholds: {
           warning: 75,
-          critical: 90
+          critical: 90,
         },
-        createdBy: testUser
+        createdBy: testUser,
       });
 
       expect(budgetId).toBeDefined();
 
       const budget = costManagementService.getBudget(budgetId);
       expect(budget).toBeDefined();
-      expect(budget!.name).toBe('Test Budget');
-      expect(budget!.totalBudget).toBe(100);
+      expect(budget?.name).toBe('Test Budget');
+      expect(budget?.totalBudget).toBe(100);
     });
 
     it('should provide cost analytics', async () => {
@@ -401,7 +413,7 @@ describe('Column Batch Processing System', () => {
       const endDate = new Date();
 
       const analytics = await costManagementService.getCostAnalytics(startDate, endDate);
-      
+
       expect(analytics).toBeDefined();
       expect(analytics.period.start).toEqual(startDate);
       expect(analytics.period.end).toEqual(endDate);
@@ -417,7 +429,7 @@ describe('Column Batch Processing System', () => {
       const endDate = new Date();
 
       const report = await batchAnalyticsService.generatePerformanceReport(startDate, endDate);
-      
+
       expect(report).toBeDefined();
       expect(report.period.start).toEqual(startDate);
       expect(report.period.end).toEqual(endDate);
@@ -432,7 +444,7 @@ describe('Column Batch Processing System', () => {
       const endDate = new Date();
 
       const report = await batchAnalyticsService.generateCostOptimizationReport(startDate, endDate);
-      
+
       expect(report).toBeDefined();
       expect(report.period.start).toEqual(startDate);
       expect(report.period.end).toEqual(endDate);
@@ -443,7 +455,7 @@ describe('Column Batch Processing System', () => {
 
     it('should generate business intelligence reports', async () => {
       const report = await batchAnalyticsService.generateBusinessIntelligenceReport();
-      
+
       expect(report).toBeDefined();
       expect(report.operationalMetrics).toBeDefined();
       expect(report.businessImpact).toBeDefined();
@@ -453,7 +465,7 @@ describe('Column Batch Processing System', () => {
 
     it('should provide real-time metrics', async () => {
       const metrics = await batchAnalyticsService.getRealTimeMetrics();
-      
+
       expect(metrics).toBeDefined();
       expect(metrics.timestamp).toBeInstanceOf(Date);
       expect(metrics.activeOperations).toBeGreaterThanOrEqual(0);
@@ -475,20 +487,20 @@ describe('Column Batch Processing System', () => {
           maxTokens: 500,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 1
+          maxConcurrentBatches: 1,
         },
         metadata: {
           initiatedBy: `${testUser}-${i}`,
-          reason: `Test concurrent operation ${i}`
-        }
+          reason: `Test concurrent operation ${i}`,
+        },
       }));
 
       const operationIds = await Promise.all(
-        requests.map(req => columnBatchProcessorService.startBatchOperation(req))
+        requests.map((req) => columnBatchProcessorService.startBatchOperation(req))
       );
 
       expect(operationIds.length).toBe(3);
-      expect(operationIds.every(id => id.startsWith('col-batch-'))).toBe(true);
+      expect(operationIds.every((id) => id.startsWith('col-batch-'))).toBe(true);
 
       // Check that all operations are tracked
       const activeOps = columnBatchProcessorService.getActiveOperations();
@@ -496,14 +508,14 @@ describe('Column Batch Processing System', () => {
 
       // Cleanup
       await Promise.all(
-        operationIds.map(id => columnBatchProcessorService.cancelBatchOperation(id))
+        operationIds.map((id) => columnBatchProcessorService.cancelBatchOperation(id))
       );
     });
 
     it('should maintain data consistency during operations', async () => {
       // This test would verify that the system maintains data consistency
       // during concurrent operations, failures, and recovery scenarios
-      
+
       const request = {
         sectionName: testSection,
         termIds: testTermIds.slice(0, 2),
@@ -514,30 +526,30 @@ describe('Column Batch Processing System', () => {
           maxTokens: 500,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 1
+          maxConcurrentBatches: 1,
         },
         metadata: {
           initiatedBy: testUser,
-          reason: 'Test data consistency'
-        }
+          reason: 'Test data consistency',
+        },
       };
 
       testOperationId = await columnBatchProcessorService.startBatchOperation(request);
-      
+
       // Simulate monitoring during operation
       await batchProgressTrackingService.startMonitoring(testOperationId);
-      
+
       // Wait for some progress
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       // Check system state consistency
       const operation = columnBatchProcessorService.getOperationStatus(testOperationId);
       const progress = batchProgressTrackingService.getCurrentProgress(testOperationId);
-      
+
       expect(operation).toBeDefined();
       expect(progress).toBeDefined();
-      expect(progress!.operationId).toBe(testOperationId);
-      expect(progress!.sectionName).toBe(operation!.sectionName);
+      expect(progress?.operationId).toBe(testOperationId);
+      expect(progress?.sectionName).toBe(operation?.sectionName);
     });
   });
 
@@ -553,12 +565,12 @@ describe('Column Batch Processing System', () => {
           maxTokens: 500,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 1
+          maxConcurrentBatches: 1,
         },
         metadata: {
           initiatedBy: testUser,
-          reason: 'Test error handling'
-        }
+          reason: 'Test error handling',
+        },
       };
 
       await expect(
@@ -568,7 +580,7 @@ describe('Column Batch Processing System', () => {
 
     it('should handle operation not found scenarios', async () => {
       const nonExistentId = 'non-existent-operation-id';
-      
+
       const operation = columnBatchProcessorService.getOperationStatus(nonExistentId);
       expect(operation).toBeNull();
 
@@ -580,7 +592,7 @@ describe('Column Batch Processing System', () => {
     it('should handle service failures gracefully', async () => {
       // Test that the system can handle various failure scenarios
       // This would typically involve mocking service failures
-      
+
       const request = {
         sectionName: testSection,
         termIds: testTermIds.slice(0, 1),
@@ -591,17 +603,15 @@ describe('Column Batch Processing System', () => {
           maxTokens: 500,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 1
+          maxConcurrentBatches: 1,
         },
         metadata: {
           initiatedBy: testUser,
-          reason: 'Test service failure'
-        }
+          reason: 'Test service failure',
+        },
       };
 
-      await expect(
-        columnBatchProcessorService.startBatchOperation(request)
-      ).rejects.toThrow();
+      await expect(columnBatchProcessorService.startBatchOperation(request)).rejects.toThrow();
     });
   });
 
@@ -617,12 +627,12 @@ describe('Column Batch Processing System', () => {
           maxTokens: 500,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 2
+          maxConcurrentBatches: 2,
         },
         metadata: {
           initiatedBy: testUser,
-          reason: 'Test performance with large batch'
-        }
+          reason: 'Test performance with large batch',
+        },
       };
 
       const startTime = Date.now();
@@ -645,23 +655,23 @@ describe('Column Batch Processing System', () => {
           maxTokens: 500,
           regenerateExisting: false,
           pauseOnError: false,
-          maxConcurrentBatches: 1
+          maxConcurrentBatches: 1,
         },
         metadata: {
           initiatedBy: `load-test-user-${i}`,
-          reason: `Load test ${i}`
-        }
+          reason: `Load test ${i}`,
+        },
       }));
 
       const startTime = Date.now();
       const estimates = await Promise.all(
-        concurrentRequests.map(req => columnBatchProcessorService.estimateBatchCosts(req))
+        concurrentRequests.map((req) => columnBatchProcessorService.estimateBatchCosts(req))
       );
       const totalTime = Date.now() - startTime;
 
       expect(estimates.length).toBe(10);
       expect(totalTime).toBeLessThan(10000); // Should complete within 10 seconds
-      expect(estimates.every(est => est.totalTerms > 0)).toBe(true);
+      expect(estimates.every((est) => est.totalTerms > 0)).toBe(true);
     });
   });
 });
@@ -679,13 +689,13 @@ export const testHelpers = {
         maxTokens: 500,
         regenerateExisting: false,
         pauseOnError: false,
-        maxConcurrentBatches: 1
+        maxConcurrentBatches: 1,
       },
       metadata: {
         initiatedBy: testUser,
-        reason: 'Test helper operation'
+        reason: 'Test helper operation',
       },
-      ...options
+      ...options,
     };
 
     return await columnBatchProcessorService.startBatchOperation(defaultRequest);
@@ -693,15 +703,20 @@ export const testHelpers = {
 
   waitForOperationCompletion: async (operationId: string, timeout: number = 10000) => {
     const startTime = Date.now();
-    
+
     while (Date.now() - startTime < timeout) {
       const operation = columnBatchProcessorService.getOperationStatus(operationId);
-      if (operation && (operation.status === 'completed' || operation.status === 'failed' || operation.status === 'cancelled')) {
+      if (
+        operation &&
+        (operation.status === 'completed' ||
+          operation.status === 'failed' ||
+          operation.status === 'cancelled')
+      ) {
         return operation;
       }
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
-    
+
     throw new Error(`Operation ${operationId} did not complete within ${timeout}ms`);
   },
 
@@ -710,9 +725,9 @@ export const testHelpers = {
       id: `mock-term-${i}`,
       name: `Mock Term ${i}`,
       definition: `Definition for mock term ${i}`,
-      category: 'mock-category'
+      category: 'mock-category',
     }));
-  }
+  },
 };
 
 export default testHelpers;

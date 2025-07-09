@@ -3,11 +3,12 @@
  * Comprehensive mobile-optimized layout with enhanced touch interactions
  */
 
-import React, { ReactNode, useEffect } from 'react';
+import type React from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { useDeviceDetection } from '../../hooks/useDeviceDetection';
+import { cn } from '../../lib/utils';
 import MobileNavigation from './MobileNavigation';
 import TouchOptimizedScroll from './TouchOptimizedScroll';
-import { cn } from '../../lib/utils';
 
 interface MobileLayoutWrapperProps {
   children: ReactNode;
@@ -28,7 +29,7 @@ const MobileLayoutWrapper: React.FC<MobileLayoutWrapperProps> = ({
   enablePullToRefresh = false,
   onPullToRefresh,
   showGestureHints = true,
-  fullHeight = true
+  fullHeight = true,
 }) => {
   const device = useDeviceDetection();
 
@@ -37,7 +38,7 @@ const MobileLayoutWrapper: React.FC<MobileLayoutWrapperProps> = ({
     if (typeof window === 'undefined') return;
 
     const root = document.documentElement;
-    
+
     // Set device-specific CSS variables
     root.style.setProperty('--viewport-width', `${device.viewportWidth}px`);
     root.style.setProperty('--viewport-height', `${device.viewportHeight}px`);
@@ -67,17 +68,19 @@ const MobileLayoutWrapper: React.FC<MobileLayoutWrapperProps> = ({
         viewport.setAttribute('name', 'viewport');
         document.head.appendChild(viewport);
       }
-      
-      viewport.setAttribute('content', 
+
+      viewport.setAttribute(
+        'content',
         'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover'
       );
 
       // Prevent zoom on input focus (iOS)
       if (device.isIOS) {
         const inputs = document.querySelectorAll('input, textarea, select');
-        inputs.forEach(input => {
+        inputs.forEach((input) => {
           input.addEventListener('focus', () => {
-            viewport!.setAttribute('content', 
+            viewport?.setAttribute(
+              'content',
               'width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover'
             );
           });
@@ -94,9 +97,15 @@ const MobileLayoutWrapper: React.FC<MobileLayoutWrapperProps> = ({
     return () => {
       // Cleanup device classes
       body.classList.remove(
-        'is-mobile', 'is-tablet', 'is-desktop', 'is-touch-device',
-        'is-ios', 'is-android', 'has-notch',
-        `screen-${device.screenSize}`, `orientation-${device.orientation}`
+        'is-mobile',
+        'is-tablet',
+        'is-desktop',
+        'is-touch-device',
+        'is-ios',
+        'is-android',
+        'has-notch',
+        `screen-${device.screenSize}`,
+        `orientation-${device.orientation}`
       );
     };
   }, [device]);
@@ -136,7 +145,7 @@ const MobileLayoutWrapper: React.FC<MobileLayoutWrapperProps> = ({
   if (useMobileLayout) {
     const content = enableTouchScroll ? (
       <TouchOptimizedScroll
-        className={cn("flex-1", fullHeight && "h-full")}
+        className={cn('flex-1', fullHeight && 'h-full')}
         onScroll={handleScroll}
         enableMomentum={!device.shouldUseNativeScroll()}
         bounceEffect={device.isIOS}
@@ -145,26 +154,24 @@ const MobileLayoutWrapper: React.FC<MobileLayoutWrapperProps> = ({
         showScrollIndicator={device.isMobile}
         autoHideScrollbar={true}
       >
-        <div className={contentClasses}>
-          {children}
-        </div>
+        <div className={contentClasses}>{children}</div>
       </TouchOptimizedScroll>
     ) : (
-      <div className={cn(contentClasses, "overflow-auto")}>
-        {children}
-      </div>
+      <div className={cn(contentClasses, 'overflow-auto')}>{children}</div>
     );
 
     return (
-      <div className={cn(
-        "flex flex-col",
-        fullHeight && "h-screen max-h-screen",
-        "bg-white dark:bg-gray-900"
-      )}>
+      <div
+        className={cn(
+          'flex flex-col',
+          fullHeight && 'h-screen max-h-screen',
+          'bg-white dark:bg-gray-900'
+        )}
+      >
         {content}
-        
+
         {enableMobileNav && (
-          <MobileNavigation 
+          <MobileNavigation
             className="transition-transform duration-300 ease-in-out"
             data-mobile-nav
             showGestureHints={showGestureHints}
@@ -175,11 +182,7 @@ const MobileLayoutWrapper: React.FC<MobileLayoutWrapperProps> = ({
   }
 
   // Render desktop layout
-  return (
-    <div className={contentClasses}>
-      {children}
-    </div>
-  );
+  return <div className={contentClasses}>{children}</div>;
 };
 
 export default MobileLayoutWrapper;

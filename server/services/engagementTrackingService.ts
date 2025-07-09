@@ -3,16 +3,14 @@
  * Advanced analytics beyond page views to measure true user engagement
  */
 
-import { db } from '../db';
-import { 
-  userInteractions, 
-  terms, 
-  categories, 
-  users,
-  type UserInteraction,
-  type InsertUserInteraction 
+import { and, avg, count, desc, eq, gte, sql, sum } from 'drizzle-orm';
+import {
+  categories,
+  type InsertUserInteraction,
+  terms,
+  userInteractions,
 } from '../../shared/schema';
-import { eq, and, gte, desc, sql, count, avg, sum } from 'drizzle-orm';
+import { db } from '../db';
 
 export interface EngagementMetrics {
   sessionId: string;
@@ -75,7 +73,6 @@ export interface EngagementInsights {
 }
 
 class EngagementTrackingService {
-  
   /**
    * Track user interaction with detailed engagement metrics
    */
@@ -108,8 +105,8 @@ class EngagementTrackingService {
         timestamp: new Date().toISOString(),
         deviceInfo: data.deviceInfo,
         contentInfo: data.contentInfo,
-        ...data.metadata
-      }
+        ...data.metadata,
+      },
     };
 
     await db.insert(userInteractions).values(interaction);
@@ -137,33 +134,33 @@ class EngagementTrackingService {
     const totalDuration = (endTime.getTime() - startTime.getTime()) / 1000;
 
     // Calculate various engagement metrics
-    const pageViews = interactions.filter(i => i.interactionType === 'view').length;
-    const uniqueTermsViewed = new Set(
-      interactions.filter(i => i.termId).map(i => i.termId)
-    ).size;
+    const pageViews = interactions.filter((i) => i.interactionType === 'view').length;
+    const uniqueTermsViewed = new Set(interactions.filter((i) => i.termId).map((i) => i.termId))
+      .size;
 
     const totalReadTime = interactions
-      .filter(i => i.duration)
+      .filter((i) => i.duration)
       .reduce((sum, i) => sum + (i.duration || 0), 0);
 
     const averageTimePerTerm = uniqueTermsViewed > 0 ? totalReadTime / uniqueTermsViewed : 0;
 
     // Calculate scroll depth (average from content interactions)
     const scrollDepths = interactions
-      .map(i => i.metadata?.contentInfo?.scrollDepth)
-      .filter(depth => typeof depth === 'number');
-    const scrollDepth = scrollDepths.length > 0 
-      ? scrollDepths.reduce((sum, depth) => sum + depth, 0) / scrollDepths.length 
-      : 0;
+      .map((i) => i.metadata?.contentInfo?.scrollDepth)
+      .filter((depth) => typeof depth === 'number');
+    const scrollDepth =
+      scrollDepths.length > 0
+        ? scrollDepths.reduce((sum, depth) => sum + depth, 0) / scrollDepths.length
+        : 0;
 
     const interactionCount = interactions.length;
-    const searchQueries = interactions.filter(i => i.interactionType === 'search').length;
-    const favoritesAdded = interactions.filter(i => i.interactionType === 'favorite').length;
-    const sharesCount = interactions.filter(i => i.interactionType === 'share').length;
+    const searchQueries = interactions.filter((i) => i.interactionType === 'search').length;
+    const favoritesAdded = interactions.filter((i) => i.interactionType === 'favorite').length;
+    const sharesCount = interactions.filter((i) => i.interactionType === 'share').length;
 
     // Calculate reading velocity
     const wordsRead = interactions
-      .map(i => i.metadata?.contentInfo?.wordsRead || 0)
+      .map((i) => i.metadata?.contentInfo?.wordsRead || 0)
       .reduce((sum, words) => sum + words, 0);
     const readingVelocity = totalReadTime > 0 ? (wordsRead / totalReadTime) * 60 : 0;
 
@@ -177,7 +174,7 @@ class EngagementTrackingService {
       searchQueries,
       favoritesAdded,
       sharesCount,
-      readingVelocity
+      readingVelocity,
     });
 
     // Calculate quality score based on meaningful interactions
@@ -187,7 +184,7 @@ class EngagementTrackingService {
       favoritesAdded,
       sharesCount,
       searchQueries,
-      pageViews
+      pageViews,
     });
 
     const bounceRate = pageViews <= 1 && totalDuration < 30;
@@ -218,7 +215,7 @@ class EngagementTrackingService {
       bounceRate,
       returnVisitor,
       deviceType,
-      referrerType
+      referrerType,
     };
   }
 
@@ -236,7 +233,7 @@ class EngagementTrackingService {
         viewCount: sql<number>`COUNT(CASE WHEN ${userInteractions.interactionType} = 'view' THEN 1 END)`,
         favoriteCount: sql<number>`COUNT(CASE WHEN ${userInteractions.interactionType} = 'favorite' THEN 1 END)`,
         shareCount: sql<number>`COUNT(CASE WHEN ${userInteractions.interactionType} = 'share' THEN 1 END)`,
-        uniqueUsers: sql<number>`COUNT(DISTINCT ${userInteractions.userId})`
+        uniqueUsers: sql<number>`COUNT(DISTINCT ${userInteractions.userId})`,
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
@@ -244,22 +241,25 @@ class EngagementTrackingService {
       .groupBy(terms.id, terms.name, categories.name);
 
     if (termIds && termIds.length > 0) {
-      query = query.where(sql`${terms.id} IN (${termIds.map(id => `'${id}'`).join(',')})`);
+      query = query.where(sql`${terms.id} IN (${termIds.map((id) => `'${id}'`).join(',')})`);
     }
 
     const results = await query.limit(100);
 
-    return results.map(result => {
-      const averageReadTime = result.totalDuration && result.viewCount 
-        ? Number(result.totalDuration) / Number(result.viewCount) 
-        : 0;
+    return results.map((result) => {
+      const averageReadTime =
+        result.totalDuration && result.viewCount
+          ? Number(result.totalDuration) / Number(result.viewCount)
+          : 0;
 
-      const engagementRate = result.viewCount 
-        ? (Number(result.interactionCount) - Number(result.viewCount)) / Number(result.viewCount) 
+      const engagementRate = result.viewCount
+        ? (Number(result.interactionCount) - Number(result.viewCount)) / Number(result.viewCount)
         : 0;
 
       const shareRate = result.viewCount ? Number(result.shareCount) / Number(result.viewCount) : 0;
-      const favoriteRate = result.viewCount ? Number(result.favoriteCount) / Number(result.viewCount) : 0;
+      const favoriteRate = result.viewCount
+        ? Number(result.favoriteCount) / Number(result.viewCount)
+        : 0;
 
       return {
         termId: result.termId,
@@ -273,7 +273,10 @@ class EngagementTrackingService {
         returnRate: 0.3, // This would need session-based calculation
         difficultyAlignment: 0.8, // This would need user skill level analysis
         popularityTrend: 'stable' as const,
-        userSatisfactionScore: Math.min(100, (engagementRate * 50) + (averageReadTime / 60 * 25) + 25)
+        userSatisfactionScore: Math.min(
+          100,
+          engagementRate * 50 + (averageReadTime / 60) * 25 + 25
+        ),
       };
     });
   }
@@ -281,7 +284,9 @@ class EngagementTrackingService {
   /**
    * Get comprehensive engagement insights
    */
-  async getEngagementInsights(timeRange: '7d' | '30d' | '90d' = '30d'): Promise<EngagementInsights> {
+  async getEngagementInsights(
+    timeRange: '7d' | '30d' | '90d' = '30d'
+  ): Promise<EngagementInsights> {
     const daysBack = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysBack);
@@ -298,10 +303,12 @@ class EngagementTrackingService {
     const avgDurationResult = await db
       .select({ avgDuration: avg(userInteractions.duration) })
       .from(userInteractions)
-      .where(and(
-        gte(userInteractions.timestamp, startDate),
-        eq(userInteractions.interactionType, 'view')
-      ));
+      .where(
+        and(
+          gte(userInteractions.timestamp, startDate),
+          eq(userInteractions.interactionType, 'view')
+        )
+      );
 
     const averageSessionDuration = Number(avgDurationResult[0]?.avgDuration || 0);
 
@@ -312,7 +319,7 @@ class EngagementTrackingService {
     const userEngagementSegments = {
       highlyEngaged: Math.floor(totalEngagedUsers * 0.2),
       moderatelyEngaged: Math.floor(totalEngagedUsers * 0.5),
-      lowEngaged: Math.floor(totalEngagedUsers * 0.3)
+      lowEngaged: Math.floor(totalEngagedUsers * 0.3),
     };
 
     // Mock engagement trends (would need daily aggregation)
@@ -322,16 +329,18 @@ class EngagementTrackingService {
       return {
         date: date.toISOString().split('T')[0],
         avgEngagement: 65 + Math.random() * 20,
-        totalSessions: Math.floor(Math.random() * 100) + 50
+        totalSessions: Math.floor(Math.random() * 100) + 50,
       };
     });
 
     // Categorize content performance
-    const sortedContent = topEngagingContent.sort((a, b) => b.userSatisfactionScore - a.userSatisfactionScore);
+    const sortedContent = topEngagingContent.sort(
+      (a, b) => b.userSatisfactionScore - a.userSatisfactionScore
+    );
     const contentPerformanceMetrics = {
       mostEngaging: sortedContent.slice(0, 5),
       needsImprovement: sortedContent.slice(-5).reverse(),
-      trending: sortedContent.filter(c => c.popularityTrend === 'rising').slice(0, 5)
+      trending: sortedContent.filter((c) => c.popularityTrend === 'rising').slice(0, 5),
     };
 
     return {
@@ -341,7 +350,7 @@ class EngagementTrackingService {
       topEngagingContent: sortedContent.slice(0, 10),
       userEngagementSegments,
       engagementTrends,
-      contentPerformanceMetrics
+      contentPerformanceMetrics,
     };
   }
 
@@ -359,7 +368,7 @@ class EngagementTrackingService {
     readingVelocity: number;
   }): Promise<void> {
     const scrollDepth = (data.scrollPosition / data.totalHeight) * 100;
-    
+
     await this.trackInteraction({
       userId: data.userId,
       sessionId: data.sessionId,
@@ -370,13 +379,13 @@ class EngagementTrackingService {
         scrollDepth,
         readingProgress: scrollDepth,
         timeOnContent: data.timeSpent,
-        wordsRead: data.wordsRead
+        wordsRead: data.wordsRead,
       },
       metadata: {
         readingVelocity: data.readingVelocity,
         scrollPosition: data.scrollPosition,
-        totalHeight: data.totalHeight
-      }
+        totalHeight: data.totalHeight,
+      },
     });
   }
 
@@ -388,7 +397,7 @@ class EngagementTrackingService {
     return significantTypes.includes(interactionType);
   }
 
-  private async updateSessionMetrics(sessionId: string, userId?: string): Promise<void> {
+  private async updateSessionMetrics(_sessionId: string, _userId?: string): Promise<void> {
     // This would update real-time session metrics in a cache or separate table
     // For now, we'll skip this implementation but it would be useful for live dashboards
   }
@@ -424,7 +433,7 @@ class EngagementTrackingService {
       searchQueries,
       favoritesAdded,
       sharesCount,
-      readingVelocity
+      readingVelocity,
     } = metrics;
 
     // Weighted scoring system
@@ -432,10 +441,13 @@ class EngagementTrackingService {
     const depthScore = Math.min(20, (uniqueTermsViewed / 5) * 20); // Up to 20 points for 5+ terms
     const scrollScore = Math.min(15, (scrollDepth / 100) * 15); // Up to 15 points for full scroll
     const interactionScore = Math.min(20, (interactionCount / 10) * 20); // Up to 20 points for 10+ interactions
-    const intentScore = (searchQueries * 5) + (favoritesAdded * 3) + (sharesCount * 7); // Up to 15 points
+    const intentScore = searchQueries * 5 + favoritesAdded * 3 + sharesCount * 7; // Up to 15 points
     const qualityScore = Math.min(15, (readingVelocity / 200) * 15); // Up to 15 points for good reading pace
 
-    return Math.min(100, timeScore + depthScore + scrollScore + interactionScore + intentScore + qualityScore);
+    return Math.min(
+      100,
+      timeScore + depthScore + scrollScore + interactionScore + intentScore + qualityScore
+    );
   }
 
   private calculateQualityScore(metrics: {
@@ -452,7 +464,7 @@ class EngagementTrackingService {
       favoritesAdded,
       sharesCount,
       searchQueries,
-      pageViews
+      pageViews,
     } = metrics;
 
     // Quality indicates meaningful engagement vs. random browsing

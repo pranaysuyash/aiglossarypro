@@ -1,7 +1,7 @@
-import { Heart, Copy, Share2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import ShareMenu from "@/components/ShareMenu";
-import { IEnhancedTerm, ITerm } from "@/interfaces/interfaces";
+import { Copy, Heart, Share2 } from 'lucide-react';
+import ShareMenu from '@/components/ShareMenu';
+import { Button } from '@/components/ui/button';
+import type { IEnhancedTerm, ITerm } from '@/interfaces/interfaces';
 
 interface TermActionsProps {
   term: IEnhancedTerm | ITerm;
@@ -20,38 +20,30 @@ export default function TermActions({
   shareMenuOpen,
   onToggleFavorite,
   onCopyLink,
-  onShareMenuToggle
+  onShareMenuToggle,
 }: TermActionsProps) {
   return (
     <div className="flex items-center space-x-2 flex-shrink-0">
-      <Button 
-        variant="ghost" 
+      <Button
+        variant="ghost"
         size="icon"
         onClick={onToggleFavorite}
         disabled={favoriteLoading}
-        className={favorite ? "text-accent-500" : "text-gray-400 hover:text-accent-500"}
+        className={favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}
       >
-        <Heart className={favorite ? "fill-current" : ""} />
+        <Heart className={favorite ? 'fill-current' : ''} />
       </Button>
-      
-      <Button 
-        variant="ghost" 
-        size="icon"
-        onClick={onCopyLink}
-      >
+
+      <Button variant="ghost" size="icon" onClick={onCopyLink}>
         <Copy />
       </Button>
-      
-      <Button 
-        variant="ghost" 
-        size="icon"
-        onClick={() => onShareMenuToggle(true)}
-      >
+
+      <Button variant="ghost" size="icon" onClick={() => onShareMenuToggle(true)}>
         <Share2 />
       </Button>
-      
-      <ShareMenu 
-        isOpen={shareMenuOpen} 
+
+      <ShareMenu
+        isOpen={shareMenuOpen}
         onClose={() => onShareMenuToggle(false)}
         title={term?.name || 'AI/ML Term'}
         url={window.location.href}

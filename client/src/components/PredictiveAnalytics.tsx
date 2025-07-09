@@ -3,36 +3,32 @@
  * Displays learning outcome predictions, insights, and personalized recommendations
  */
 
-import React, { useState } from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
-import { Button } from './ui/button';
+import {
+  AlertTriangle,
+  Award,
+  BarChart3,
+  BookOpen,
+  Brain,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Lightbulb,
+  RefreshCw,
+  Shield,
+  Target,
+  TrendingUp,
+  User,
+  Zap,
+} from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import usePredictiveAnalytics from '../hooks/usePredictiveAnalytics';
+import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Alert, AlertDescription } from './ui/alert';
-import {
-  TrendingUp,
-  TrendingDown,
-  Target,
-  Clock,
-  Brain,
-  BarChart3,
-  AlertTriangle,
-  CheckCircle,
-  Lightbulb,
-  Calendar,
-  RefreshCw,
-  User,
-  Award,
-  BookOpen,
-  Zap,
-  Shield,
-  ArrowUp,
-  ArrowDown,
-  Minus,
-  Info
-} from 'lucide-react';
-import usePredictiveAnalytics from '../hooks/usePredictiveAnalytics';
 
 interface PredictiveAnalyticsProps {
   userId: string;
@@ -43,7 +39,7 @@ interface PredictiveAnalyticsProps {
 const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
   userId,
   className = '',
-  compact = false
+  compact = false,
 }) => {
   const [selectedTimeframe, setSelectedTimeframe] = useState<'7d' | '30d' | '90d'>('30d');
   const [refreshing, setRefreshing] = useState(false);
@@ -64,12 +60,12 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
     getScoreColor,
     getScoreLabel,
     getSeverityColor,
-    getPriorityColor
+    getPriorityColor,
   } = usePredictiveAnalytics(userId, {
     includeInsights: true,
     includeRecommendations: true,
     includeMilestones: true,
-    timeframe: selectedTimeframe
+    timeframe: selectedTimeframe,
   });
 
   const handleRefresh = async () => {
@@ -114,7 +110,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                 <RefreshCw className={`h-3 w-3 ${refreshing ? 'animate-spin' : ''}`} />
               </Button>
             </div>
-            
+
             {isLoadingOutcomes ? (
               <div className="space-y-2">
                 <div className="h-4 bg-gray-200 rounded animate-pulse" />
@@ -130,7 +126,9 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-gray-600">Engagement</span>
-                  <span className={`text-sm font-medium ${getScoreColor(outcomes.engagementScore)}`}>
+                  <span
+                    className={`text-sm font-medium ${getScoreColor(outcomes.engagementScore)}`}
+                  >
                     {getScoreLabel(outcomes.engagementScore)}
                   </span>
                 </div>
@@ -159,7 +157,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
           </h2>
           <p className="text-gray-600">AI-powered insights into your learning journey</p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <select
             value={selectedTimeframe}
@@ -170,7 +168,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
             <option value="30d">Last 30 days</option>
             <option value="90d">Last 90 days</option>
           </select>
-          
+
           <Button
             variant="outline"
             onClick={handleRefresh}
@@ -293,12 +291,9 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                             {formatPercentage(outcomes.difficultyAlignment)}
                           </span>
                         </div>
-                        <Progress 
-                          value={outcomes.difficultyAlignment * 100} 
-                          className="h-2 mt-1"
-                        />
+                        <Progress value={outcomes.difficultyAlignment * 100} className="h-2 mt-1" />
                       </div>
-                      
+
                       <div>
                         <div className="flex justify-between text-sm">
                           <span>Prediction Confidence</span>
@@ -306,10 +301,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                             {formatPercentage(outcomes.confidenceScore)}
                           </span>
                         </div>
-                        <Progress 
-                          value={outcomes.confidenceScore * 100} 
-                          className="h-2 mt-1"
-                        />
+                        <Progress value={outcomes.confidenceScore * 100} className="h-2 mt-1" />
                       </div>
                     </div>
                   </CardContent>
@@ -331,9 +323,11 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                           ))}
                         </div>
                       </div>
-                      
+
                       <div>
-                        <h4 className="text-sm font-medium text-orange-700 mb-2">Improvement Areas</h4>
+                        <h4 className="text-sm font-medium text-orange-700 mb-2">
+                          Improvement Areas
+                        </h4>
                         <div className="flex flex-wrap gap-1">
                           {outcomes.improvementAreas.map((area, index) => (
                             <Badge key={index} variant="outline" className="text-xs">
@@ -379,7 +373,9 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-lg font-medium text-gray-900">{outcomes.recommendedLearningPath}</p>
+                    <p className="text-lg font-medium text-gray-900">
+                      {outcomes.recommendedLearningPath}
+                    </p>
                     <p className="text-sm text-gray-600 mt-1">
                       This path is optimized for your learning style and current progress.
                     </p>
@@ -426,25 +422,25 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                         {formatTime(profile.sessionPatterns.averageSessionLength)}
                       </span>
                     </div>
-                    
+
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Sessions/Week</span>
                       <span className="font-medium">
                         {profile.sessionPatterns.sessionsPerWeek.toFixed(1)}
                       </span>
                     </div>
-                    
+
                     <div>
                       <span className="text-sm text-gray-600">Consistency Score</span>
-                      <Progress 
-                        value={profile.sessionPatterns.consistencyScore * 100} 
+                      <Progress
+                        value={profile.sessionPatterns.consistencyScore * 100}
                         className="h-2 mt-1"
                       />
                       <span className="text-xs text-gray-500">
                         {formatPercentage(profile.sessionPatterns.consistencyScore)}
                       </span>
                     </div>
-                    
+
                     <div>
                       <span className="text-sm text-gray-600 block mb-2">Preferred Times</span>
                       <div className="flex flex-wrap gap-1">
@@ -468,34 +464,27 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                   <div className="space-y-4">
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Difficulty Level</span>
-                      <Badge variant="secondary">
-                        {profile.preferredDifficulty}
-                      </Badge>
+                      <Badge variant="secondary">{profile.preferredDifficulty}</Badge>
                     </div>
-                    
+
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Learning Velocity</span>
                       <span className="font-medium">
                         {profile.learningVelocity.toFixed(1)} terms/session
                       </span>
                     </div>
-                    
+
                     <div>
                       <span className="text-sm text-gray-600">Comprehension Rate</span>
-                      <Progress 
-                        value={profile.comprehensionRate * 100} 
-                        className="h-2 mt-1"
-                      />
+                      <Progress value={profile.comprehensionRate * 100} className="h-2 mt-1" />
                       <span className="text-xs text-gray-500">
                         {formatPercentage(profile.comprehensionRate)}
                       </span>
                     </div>
-                    
+
                     <div className="flex justify-between">
                       <span className="text-sm text-gray-600">Session Duration</span>
-                      <span className="font-medium">
-                        {profile.sessionDurationPreference} min
-                      </span>
+                      <span className="font-medium">{profile.sessionDurationPreference} min</span>
                     </div>
                   </div>
                 </CardContent>
@@ -512,8 +501,8 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                       <div key={index} className="flex items-center justify-between">
                         <span className="text-sm text-gray-700">{area}</span>
                         <div className="w-16 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-blue-600 h-2 rounded-full" 
+                          <div
+                            className="bg-blue-600 h-2 rounded-full"
                             style={{ width: `${Math.max(30, 100 - index * 20)}%` }}
                           />
                         </div>
@@ -577,7 +566,10 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                   {insights.riskFactors.length > 0 ? (
                     <div className="space-y-3">
                       {insights.riskFactors.map((risk, index) => (
-                        <div key={index} className={`p-3 border rounded-lg ${getSeverityColor(risk.severity)}`}>
+                        <div
+                          key={index}
+                          className={`p-3 border rounded-lg ${getSeverityColor(risk.severity)}`}
+                        >
                           <div className="flex items-center justify-between mb-1">
                             <h4 className="font-medium">{risk.factor}</h4>
                             <Badge variant="outline" className={getSeverityColor(risk.severity)}>
@@ -590,7 +582,9 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                       ))}
                     </div>
                   ) : (
-                    <p className="text-green-600 text-sm">No significant risk factors identified!</p>
+                    <p className="text-green-600 text-sm">
+                      No significant risk factors identified!
+                    </p>
                   )}
                 </CardContent>
               </Card>
@@ -607,7 +601,10 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                   {insights.opportunityFactors.length > 0 ? (
                     <div className="space-y-3">
                       {insights.opportunityFactors.map((opportunity, index) => (
-                        <div key={index} className="p-3 border rounded-lg bg-green-50 border-green-200">
+                        <div
+                          key={index}
+                          className="p-3 border rounded-lg bg-green-50 border-green-200"
+                        >
                           <div className="flex items-center justify-between mb-1">
                             <h4 className="font-medium text-green-900">{opportunity.factor}</h4>
                             <Badge variant="outline" className="text-green-600 border-green-300">
@@ -615,7 +612,9 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                             </Badge>
                           </div>
                           <p className="text-sm text-green-800 mb-2">{opportunity.description}</p>
-                          <p className="text-xs font-medium text-green-900">Action: {opportunity.action}</p>
+                          <p className="text-xs font-medium text-green-900">
+                            Action: {opportunity.action}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -636,20 +635,20 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                 <CardContent>
                   <div className="flex items-center">
                     <div className="flex-1">
-                      <Progress 
-                        value={insights.learningEfficiencyScore * 100} 
-                        className="h-4"
-                      />
+                      <Progress value={insights.learningEfficiencyScore * 100} className="h-4" />
                     </div>
                     <div className="ml-4">
-                      <span className={`text-lg font-bold ${getScoreColor(insights.learningEfficiencyScore)}`}>
+                      <span
+                        className={`text-lg font-bold ${getScoreColor(insights.learningEfficiencyScore)}`}
+                      >
                         {formatPercentage(insights.learningEfficiencyScore)}
                       </span>
                       <p className="text-xs text-gray-500">efficiency</p>
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 mt-2">
-                    Your learning efficiency measures how effectively you absorb and retain information relative to time invested.
+                    Your learning efficiency measures how effectively you absorb and retain
+                    information relative to time invested.
                   </p>
                 </CardContent>
               </Card>
@@ -671,9 +670,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                   <CardContent className="p-4">
                     <div className="flex items-start justify-between mb-2">
                       <h4 className="font-medium text-gray-900">{rec.title}</h4>
-                      <Badge className={getPriorityColor(rec.priority)}>
-                        {rec.priority}
-                      </Badge>
+                      <Badge className={getPriorityColor(rec.priority)}>{rec.priority}</Badge>
                     </div>
                     <p className="text-sm text-gray-600 mb-3">{rec.description}</p>
                     <div className="text-xs text-green-700 bg-green-50 p-2 rounded">
@@ -707,7 +704,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                         </span>
                       </div>
                     </div>
-                    
+
                     <div className="mb-3">
                       <div className="flex justify-between text-sm mb-1">
                         <span>Success Probability</span>
@@ -717,7 +714,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
                       </div>
                       <Progress value={milestone.probability * 100} className="h-2" />
                     </div>
-                    
+
                     <div>
                       <p className="text-xs text-gray-600 mb-1">Requirements:</p>
                       <ul className="text-xs text-gray-700 space-y-1">

@@ -2,7 +2,7 @@
 
 /**
  * Firebase Comprehensive Visual Audit Script
- * 
+ *
  * This script tests:
  * 1. Unauthenticated flows
  * 2. Authenticated flows with Firebase test users
@@ -10,13 +10,13 @@
  * 4. No artificial timeouts for local testing
  */
 
-import { chromium, Browser, Page, BrowserContext, devices } from 'playwright';
-import { exec } from 'child_process';
-import { promisify } from 'util';
-import fs from 'fs/promises';
-import path from 'path';
+import { exec } from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { promisify } from 'node:util';
 import chalk from 'chalk';
 import { config } from 'dotenv';
+import { type Browser, type BrowserContext, chromium, devices, type Page } from 'playwright';
 
 // Load environment variables
 config();
@@ -38,7 +38,16 @@ interface TestConfig {
   viewport?: { width: number; height: number };
   device?: string;
   actions?: Array<{
-    type: 'click' | 'hover' | 'type' | 'scroll' | 'wait' | 'keyboard' | 'screenshot' | 'focus' | 'select';
+    type:
+      | 'click'
+      | 'hover'
+      | 'type'
+      | 'scroll'
+      | 'wait'
+      | 'keyboard'
+      | 'screenshot'
+      | 'focus'
+      | 'select';
     selector?: string;
     value?: string | number;
     key?: string;
@@ -58,20 +67,20 @@ class FirebaseVisualAuditor {
       email: 'test.user@example.com',
       password: 'TestUser123!',
       displayName: 'Test User',
-      role: 'user'
+      role: 'user',
     },
     {
-      email: 'premium.user@example.com', 
+      email: 'premium.user@example.com',
       password: 'PremiumUser123!',
       displayName: 'Premium User',
-      role: 'premium'
+      role: 'premium',
     },
     {
       email: 'admin.user@example.com',
-      password: 'AdminUser123!', 
+      password: 'AdminUser123!',
       displayName: 'Admin User',
-      role: 'admin'
-    }
+      role: 'admin',
+    },
   ];
 
   constructor() {
@@ -94,55 +103,55 @@ class FirebaseVisualAuditor {
     this.browser = await chromium.launch({
       headless: false, // Keep visible for local testing
       devtools: true,
-      args: [
-        '--disable-web-security',
-        '--disable-features=VizDisplayCompositor',
-        '--no-sandbox'
-      ]
+      args: ['--disable-web-security', '--disable-features=VizDisplayCompositor', '--no-sandbox'],
     });
   }
 
   async checkServer(): Promise<void> {
     console.log(chalk.yellow('⚡ Checking if servers are running...'));
-    
+
     try {
       await execAsync(`curl -f ${this.baseUrl} > /dev/null 2>&1`);
       console.log(chalk.green('✅ Frontend server is ready'));
-    } catch (error) {
+    } catch (_error) {
       throw new Error(`Frontend server not accessible at ${this.baseUrl}`);
     }
 
     try {
-      await execAsync(`curl -f ${this.baseUrl.replace('5173', '3001')}/api/health > /dev/null 2>&1`);
+      await execAsync(
+        `curl -f ${this.baseUrl.replace('5173', '3001')}/api/health > /dev/null 2>&1`
+      );
       console.log(chalk.green('✅ Backend server is ready'));
-    } catch (error) {
+    } catch (_error) {
       console.log(chalk.yellow('⚠️ Backend server health check failed, but continuing...'));
     }
   }
 
   async authenticateUser(page: Page, user: TestUser): Promise<boolean> {
     console.log(chalk.blue(`🔐 Authenticating as ${user.displayName} (${user.role})`));
-    
+
     try {
       // Navigate to login page
       await page.goto(`${this.baseUrl}/login`, { waitUntil: 'networkidle' });
-      
+
       // Wait for Firebase to load
       await page.waitForTimeout(2000);
-      
+
       // Try email/password login
       const emailInput = page.locator('input[type="email"], input[name="email"]');
       const passwordInput = page.locator('input[type="password"], input[name="password"]');
-      const loginButton = page.locator('button:has-text("Sign in"), button:has-text("Login"), button[type="submit"]');
-      
-      if (await emailInput.count() > 0) {
+      const loginButton = page.locator(
+        'button:has-text("Sign in"), button:has-text("Login"), button[type="submit"]'
+      );
+
+      if ((await emailInput.count()) > 0) {
         await emailInput.fill(user.email);
         await passwordInput.fill(user.password);
         await loginButton.click();
-        
+
         // Wait for redirect after login
-        await page.waitForURL(url => !url.includes('/login'), { timeout: 10000 });
-        
+        await page.waitForURL((url) => !url.includes('/login'), { timeout: 10000 });
+
         console.log(chalk.green(`✅ Successfully authenticated as ${user.displayName}`));
         return true;
       } else {
@@ -157,21 +166,21 @@ class FirebaseVisualAuditor {
 
   async runTest(config: TestConfig): Promise<void> {
     console.log(chalk.cyan(`\n🧪 Testing: ${config.name}`));
-    
+
     if (!this.browser) {
       throw new Error('Browser not initialized');
     }
 
     const context: BrowserContext = await this.browser.newContext({
       viewport: config.viewport || { width: 1920, height: 1080 },
-      ...(config.device ? devices[config.device] : {})
+      ...(config.device ? devices[config.device] : {}),
     });
 
     const page = await context.newPage();
-    
+
     // Listen for console errors
     const consoleErrors: string[] = [];
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       if (msg.type() === 'error') {
         consoleErrors.push(msg.text());
       }
@@ -179,7 +188,7 @@ class FirebaseVisualAuditor {
 
     // Listen for page errors
     const pageErrors: string[] = [];
-    page.on('pageerror', error => {
+    page.on('pageerror', (error) => {
       pageErrors.push(error.message);
     });
 
@@ -191,7 +200,7 @@ class FirebaseVisualAuditor {
           this.issues.push({
             type: 'authentication_failure',
             test: config.name,
-            message: `Failed to authenticate user ${config.testUser.displayName}`
+            message: `Failed to authenticate user ${config.testUser.displayName}`,
           });
           return;
         }
@@ -199,9 +208,9 @@ class FirebaseVisualAuditor {
 
       // Navigate to the test URL
       console.log(chalk.gray(`📍 Navigating to: ${config.url}`));
-      await page.goto(`${this.baseUrl}${config.url}`, { 
+      await page.goto(`${this.baseUrl}${config.url}`, {
         waitUntil: 'networkidle',
-        timeout: 30000 // No artificial timeout for local testing
+        timeout: 30000, // No artificial timeout for local testing
       });
 
       // Wait for page to stabilize
@@ -212,7 +221,7 @@ class FirebaseVisualAuditor {
         for (const action of config.actions) {
           try {
             await this.executeAction(page, action);
-          } catch (error) {
+          } catch (_error) {
             console.log(chalk.yellow(`⚠️ Action failed: ${action.description || action.type}`));
           }
         }
@@ -220,19 +229,21 @@ class FirebaseVisualAuditor {
 
       // Take screenshot
       const screenshotPath = path.join(this.screenshotDir, `${config.name}.png`);
-      await page.screenshot({ 
-        path: screenshotPath, 
-        fullPage: true 
+      await page.screenshot({
+        path: screenshotPath,
+        fullPage: true,
       });
 
       // Check for loading states that indicate problems
-      const loadingElements = await page.locator('[data-testid*="loading"], .loading, .spinner, .skeleton').count();
+      const loadingElements = await page
+        .locator('[data-testid*="loading"], .loading, .spinner, .skeleton')
+        .count();
       if (loadingElements > 0) {
         this.issues.push({
           type: 'stuck_loading',
           test: config.name,
           message: 'Page appears to be stuck in loading state',
-          file: `${config.name}.png`
+          file: `${config.name}.png`,
         });
       }
 
@@ -242,30 +253,29 @@ class FirebaseVisualAuditor {
           type: 'console_errors',
           test: config.name,
           message: `Console errors: ${consoleErrors.join('; ')}`,
-          file: `${config.name}.png`
+          file: `${config.name}.png`,
         });
       }
 
       if (pageErrors.length > 0) {
         this.issues.push({
-          type: 'page_errors', 
+          type: 'page_errors',
           test: config.name,
           message: `Page errors: ${pageErrors.join('; ')}`,
-          file: `${config.name}.png`
+          file: `${config.name}.png`,
         });
       }
 
       console.log(chalk.green(`✅ Test completed: ${config.name}`));
-
     } catch (error) {
       console.log(chalk.red(`❌ Test failed: ${config.name} - ${error}`));
-      
+
       // Still take screenshot on failure
       try {
         const errorScreenshotPath = path.join(this.screenshotDir, `${config.name}-error.png`);
-        await page.screenshot({ 
-          path: errorScreenshotPath, 
-          fullPage: true 
+        await page.screenshot({
+          path: errorScreenshotPath,
+          fullPage: true,
         });
       } catch (screenshotError) {
         console.log(chalk.red(`❌ Failed to take error screenshot: ${screenshotError}`));
@@ -275,7 +285,7 @@ class FirebaseVisualAuditor {
         type: 'test_failure',
         test: config.name,
         message: error instanceof Error ? error.message : String(error),
-        file: `${config.name}-error.png`
+        file: `${config.name}-error.png`,
       });
     } finally {
       await context.close();
@@ -298,11 +308,14 @@ class FirebaseVisualAuditor {
         await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
         break;
       case 'wait':
-        await page.waitForTimeout(action.value as number || 1000);
+        await page.waitForTimeout((action.value as number) || 1000);
         break;
       case 'screenshot':
         if (action.description) {
-          const actionScreenshotPath = path.join(this.screenshotDir, `action-${action.description}.png`);
+          const actionScreenshotPath = path.join(
+            this.screenshotDir,
+            `action-${action.description}.png`
+          );
           await page.screenshot({ path: actionScreenshotPath });
         }
         break;
@@ -311,20 +324,20 @@ class FirebaseVisualAuditor {
 
   async generateTestConfigs(): Promise<TestConfig[]> {
     const configs: TestConfig[] = [];
-    
+
     // Basic page tests (unauthenticated)
     const basicPages = [
       { url: '/', name: 'homepage' },
       { url: '/terms', name: 'terms-page' },
       { url: '/categories', name: 'categories-page' },
       { url: '/trending', name: 'trending-page' },
-      { url: '/login', name: 'login-page' }
+      { url: '/login', name: 'login-page' },
     ];
 
     for (const page of basicPages) {
       configs.push({
         name: `${page.name}-unauthenticated`,
-        url: page.url
+        url: page.url,
       });
     }
 
@@ -333,7 +346,7 @@ class FirebaseVisualAuditor {
       { url: '/dashboard', name: 'dashboard' },
       { url: '/favorites', name: 'favorites' },
       { url: '/settings', name: 'settings' },
-      { url: '/profile', name: 'profile' }
+      { url: '/profile', name: 'profile' },
     ];
 
     for (const user of this.testUsers) {
@@ -342,7 +355,7 @@ class FirebaseVisualAuditor {
           name: `${page.name}-${user.role}`,
           url: page.url,
           authenticated: true,
-          testUser: user
+          testUser: user,
         });
       }
     }
@@ -351,7 +364,7 @@ class FirebaseVisualAuditor {
     configs.push({
       name: 'homepage-mobile',
       url: '/',
-      device: 'iPhone 13'
+      device: 'iPhone 13',
     });
 
     configs.push({
@@ -359,7 +372,7 @@ class FirebaseVisualAuditor {
       url: '/dashboard',
       device: 'iPhone 13',
       authenticated: true,
-      testUser: this.testUsers[0] // Regular user
+      testUser: this.testUsers[0], // Regular user
     });
 
     return configs;
@@ -372,11 +385,11 @@ class FirebaseVisualAuditor {
       totalTests: 0,
       totalIssues: this.issues.length,
       issues: this.issues,
-      testUsers: this.testUsers.map(u => ({ 
-        email: u.email, 
-        role: u.role, 
-        displayName: u.displayName 
-      }))
+      testUsers: this.testUsers.map((u) => ({
+        email: u.email,
+        role: u.role,
+        displayName: u.displayName,
+      })),
     };
 
     // Save JSON report
@@ -429,23 +442,35 @@ class FirebaseVisualAuditor {
 
   <div class="test-users">
     <h2>👤 Test Users</h2>
-    ${data.testUsers.map((user: any) => `
+    ${data.testUsers
+      .map(
+        (user: any) => `
       <div style="margin: 10px 0;">
         <strong>${user.displayName}</strong> (${user.role})<br>
         <small>${user.email}</small>
       </div>
-    `).join('')}
+    `
+      )
+      .join('')}
   </div>
 
   <h2>🚨 Issues Found</h2>
-  ${data.issues.length === 0 ? '<p>✅ No issues found!</p>' : data.issues.map((issue: any) => `
+  ${
+    data.issues.length === 0
+      ? '<p>✅ No issues found!</p>'
+      : data.issues
+          .map(
+            (issue: any) => `
     <div class="issue">
       <strong>${issue.type.replace(/_/g, ' ').toUpperCase()}</strong><br>
       Test: ${issue.test}<br>
       ${issue.message}<br>
       ${issue.file ? `<small>Screenshot: ${issue.file}</small>` : ''}
     </div>
-  `).join('')}
+  `
+          )
+          .join('')
+  }
 
   <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
     <h2>📁 File Locations</h2>
@@ -467,7 +492,7 @@ class FirebaseVisualAuditor {
       await this.initialize();
       await this.checkServer();
       await this.startBrowser();
-      
+
       const testConfigs = await this.generateTestConfigs();
       console.log(chalk.blue(`📋 Running ${testConfigs.length} tests...`));
 
@@ -476,7 +501,6 @@ class FirebaseVisualAuditor {
       }
 
       await this.generateReport();
-      
     } catch (error) {
       console.error(chalk.red('❌ Audit failed:'), error);
       throw error;

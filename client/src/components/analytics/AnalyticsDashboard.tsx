@@ -1,22 +1,22 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { 
-  BarChart3, 
-  Activity, 
-  Eye, 
-  MousePointer, 
-  FileText, 
-  Settings, 
-  RefreshCw,
+import {
+  Activity,
+  AlertCircle,
+  BarChart3,
   CheckCircle,
+  Eye,
+  FileText,
+  MousePointer,
+  RefreshCw,
+  Settings,
   XCircle,
-  AlertCircle
-} from "lucide-react";
-import { ga4Analytics } from '@/lib/ga4Analytics';
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { isCookieAllowed } from '@/components/CookieConsentBanner';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { ga4Analytics } from '@/lib/ga4Analytics';
 
 interface AnalyticsDebugInfo {
   isGA4Enabled: boolean;
@@ -33,7 +33,7 @@ export default function AnalyticsDashboard() {
 
   useEffect(() => {
     loadDebugInfo();
-  }, []);
+  }, [loadDebugInfo]);
 
   const loadDebugInfo = async () => {
     setIsLoading(true);
@@ -43,7 +43,7 @@ export default function AnalyticsDashboard() {
         hasAnalyticsConsent: isCookieAllowed('analytics'),
         measurementId: import.meta.env.VITE_GA4_MEASUREMENT_ID || 'Not configured',
         sessionInfo: ga4Analytics.getSessionInfo(),
-        environment: import.meta.env.NODE_ENV || 'unknown'
+        environment: import.meta.env.NODE_ENV || 'unknown',
       };
       setDebugInfo(info);
     } catch (error) {
@@ -108,7 +108,7 @@ export default function AnalyticsDashboard() {
         business_metric: 'ab_test_view',
         event_category: 'testing',
         event_label: 'dashboard_test',
-        value: 1
+        value: 1,
       });
       results.businessEventTracking = true;
     } catch (error) {
@@ -121,9 +121,11 @@ export default function AnalyticsDashboard() {
 
   const getStatusIcon = (status: boolean | null) => {
     if (status === null) return <AlertCircle className="h-4 w-4 text-yellow-500" />;
-    return status ? 
-      <CheckCircle className="h-4 w-4 text-green-500" /> : 
-      <XCircle className="h-4 w-4 text-red-500" />;
+    return status ? (
+      <CheckCircle className="h-4 w-4 text-green-500" />
+    ) : (
+      <XCircle className="h-4 w-4 text-red-500" />
+    );
   };
 
   const getStatusColor = (status: boolean | null) => {
@@ -170,22 +172,22 @@ export default function AnalyticsDashboard() {
                 <span className="ml-2">{debugInfo?.isGA4Enabled ? 'Yes' : 'No'}</span>
               </Badge>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <span>Analytics Consent</span>
               <Badge variant={getStatusColor(debugInfo?.hasAnalyticsConsent || false)}>
                 {getStatusIcon(debugInfo?.hasAnalyticsConsent || false)}
-                <span className="ml-2">{debugInfo?.hasAnalyticsConsent ? 'Granted' : 'Denied'}</span>
+                <span className="ml-2">
+                  {debugInfo?.hasAnalyticsConsent ? 'Granted' : 'Denied'}
+                </span>
               </Badge>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <span>Environment</span>
-              <Badge variant="outline">
-                {debugInfo?.environment}
-              </Badge>
+              <Badge variant="outline">{debugInfo?.environment}</Badge>
             </div>
-            
+
             <div className="flex items-center justify-between">
               <span>Measurement ID</span>
               <Badge variant="outline" className="font-mono text-xs">
@@ -248,7 +250,7 @@ export default function AnalyticsDashboard() {
           <Button onClick={runAnalyticsTests} className="w-full">
             Run Analytics Tests
           </Button>
-          
+
           {Object.keys(testResults).length > 0 && (
             <>
               <Separator />
@@ -291,7 +293,7 @@ export default function AnalyticsDashboard() {
               <Eye className="h-4 w-4 mr-2" />
               Track Page View
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -300,16 +302,12 @@ export default function AnalyticsDashboard() {
               <MousePointer className="h-4 w-4 mr-2" />
               Track CTA Click
             </Button>
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => ga4Analytics.trackScrollDepth(75)}
-            >
+
+            <Button variant="outline" size="sm" onClick={() => ga4Analytics.trackScrollDepth(75)}>
               <Activity className="h-4 w-4 mr-2" />
               Track Scroll Depth
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -318,7 +316,7 @@ export default function AnalyticsDashboard() {
               <FileText className="h-4 w-4 mr-2" />
               Track Section View
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"
@@ -327,7 +325,7 @@ export default function AnalyticsDashboard() {
               <FileText className="h-4 w-4 mr-2" />
               Track Form Submit
             </Button>
-            
+
             <Button
               variant="outline"
               size="sm"

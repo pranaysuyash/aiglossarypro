@@ -1,7 +1,7 @@
 /**
  * Simple JWT + OAuth Authentication System
  * Simple authentication using Google/GitHub OAuth
- * 
+ *
  * Features:
  * - JWT tokens for sessions
  * - Google OAuth (free)
@@ -10,10 +10,10 @@
  * - Admin user management
  */
 
+import type { Express, NextFunction, Request, Response } from 'express';
 import jwt from 'jsonwebtoken';
-import type { Request, Response, NextFunction, Express } from 'express';
-import { optimizedStorage as storage } from '../optimizedStorage';
 import type { AuthenticatedRequest } from '../../shared/types';
+import { optimizedStorage as storage } from '../optimizedStorage';
 
 // OAuth configurations
 interface OAuthConfig {
@@ -43,7 +43,7 @@ export function generateToken(user: any): string {
       email: user.email,
       name: `${user.firstName || ''} ${user.lastName || ''}`.trim(),
       isAdmin: user.isAdmin || false,
-      iat: Math.floor(Date.now() / 1000)
+      iat: Math.floor(Date.now() / 1000),
     },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
@@ -56,7 +56,7 @@ export function generateToken(user: any): string {
 export function verifyToken(token: string): any {
   try {
     return jwt.verify(token, JWT_SECRET);
-  } catch (error) {
+  } catch (_error) {
     return null;
   }
 }
@@ -65,13 +65,12 @@ export function verifyToken(token: string): any {
  * Authentication middleware
  */
 export function authenticate(req: Request, res: Response, next: NextFunction) {
-  const token = req.headers.authorization?.replace('Bearer ', '') || 
-                req.cookies?.auth_token;
+  const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.auth_token;
 
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: 'Authentication required'
+      message: 'Authentication required',
     });
   }
 
@@ -79,7 +78,7 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
   if (!decoded) {
     return res.status(401).json({
       success: false,
-      message: 'Invalid or expired token'
+      message: 'Invalid or expired token',
     });
   }
 
@@ -93,9 +92,9 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
     claims: {
       sub: decoded.sub,
       email: decoded.email,
-      name: decoded.name
+      name: decoded.name,
     },
-    isAdmin: decoded.isAdmin
+    isAdmin: decoded.isAdmin,
   };
 
   next();
@@ -104,9 +103,8 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
 /**
  * Optional authentication middleware (doesn't fail if no token)
  */
-export function optionalAuth(req: Request, res: Response, next: NextFunction) {
-  const token = req.headers.authorization?.replace('Bearer ', '') || 
-                req.cookies?.auth_token;
+export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
+  const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.auth_token;
 
   if (token) {
     const decoded = verifyToken(token);
@@ -120,9 +118,9 @@ export function optionalAuth(req: Request, res: Response, next: NextFunction) {
         claims: {
           sub: decoded.sub,
           email: decoded.email,
-          name: decoded.name
+          name: decoded.name,
         },
-        isAdmin: decoded.isAdmin
+        isAdmin: decoded.isAdmin,
       };
     }
   }
@@ -135,11 +133,11 @@ export function optionalAuth(req: Request, res: Response, next: NextFunction) {
  */
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const authReq = req as AuthenticatedRequest;
-  
+
   if (!authReq.user || !authReq.user.isAdmin) {
     return res.status(403).json({
       success: false,
-      message: 'Admin access required'
+      message: 'Admin access required',
     });
   }
 
@@ -159,19 +157,19 @@ export async function googleOAuthLogin(code: string): Promise<{ user: any; token
       client_id: process.env.GOOGLE_CLIENT_ID,
       client_secret: process.env.GOOGLE_CLIENT_SECRET,
       redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-      grant_type: 'authorization_code'
-    })
+      grant_type: 'authorization_code',
+    }),
   });
 
   const tokens = await tokenResponse.json();
-  
+
   if (!tokens.access_token) {
     throw new Error('Failed to get access token from Google');
   }
 
   // Get user info from Google
   const userResponse = await fetch('https://www.googleapis.com/oauth2/v2/userinfo', {
-    headers: { Authorization: `Bearer ${tokens.access_token}` }
+    headers: { Authorization: `Bearer ${tokens.access_token}` },
   });
 
   const googleUser = await userResponse.json();
@@ -182,7 +180,7 @@ export async function googleOAuthLogin(code: string): Promise<{ user: any; token
     email: googleUser.email,
     firstName: googleUser.given_name,
     lastName: googleUser.family_name,
-    profileImageUrl: googleUser.picture
+    profileImageUrl: googleUser.picture,
   });
 
   // Generate our JWT token
@@ -199,25 +197,25 @@ export async function githubOAuthLogin(code: string): Promise<{ user: any; token
   const tokenResponse = await fetch('https://github.com/login/oauth/access_token', {
     method: 'POST',
     headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
       client_id: process.env.GITHUB_CLIENT_ID,
       client_secret: process.env.GITHUB_CLIENT_SECRET,
-      code
-    })
+      code,
+    }),
   });
 
   const tokens = await tokenResponse.json();
-  
+
   if (!tokens.access_token) {
     throw new Error('Failed to get access token from GitHub');
   }
 
   // Get user info from GitHub
   const userResponse = await fetch('https://api.github.com/user', {
-    headers: { Authorization: `Bearer ${tokens.access_token}` }
+    headers: { Authorization: `Bearer ${tokens.access_token}` },
   });
 
   const githubUser = await userResponse.json();
@@ -228,7 +226,7 @@ export async function githubOAuthLogin(code: string): Promise<{ user: any; token
     email: githubUser.email,
     firstName: githubUser.name?.split(' ')[0] || githubUser.login,
     lastName: githubUser.name?.split(' ').slice(1).join(' ') || '',
-    profileImageUrl: githubUser.avatar_url
+    profileImageUrl: githubUser.avatar_url,
   });
 
   // Generate our JWT token
@@ -247,22 +245,22 @@ export function setupSimpleAuth(app: Express) {
   app.get('/api/auth/google/callback', async (req: Request, res: Response) => {
     try {
       const { code } = req.query;
-      
+
       if (!code) {
         return res.status(400).json({
           success: false,
-          message: 'Authorization code required'
+          message: 'Authorization code required',
         });
       }
 
       const { user, token } = await googleOAuthLogin(code as string);
-      
+
       // Set JWT as HTTP-only cookie
       res.cookie('auth_token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
       });
 
       res.redirect('/?auth=success');
@@ -276,22 +274,22 @@ export function setupSimpleAuth(app: Express) {
   app.get('/api/auth/github/callback', async (req: Request, res: Response) => {
     try {
       const { code } = req.query;
-      
+
       if (!code) {
         return res.status(400).json({
           success: false,
-          message: 'Authorization code required'
+          message: 'Authorization code required',
         });
       }
 
       const { user, token } = await githubOAuthLogin(code as string);
-      
+
       // Set JWT as HTTP-only cookie
       res.cookie('auth_token', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 1 week
       });
 
       res.redirect('/?auth=success');
@@ -302,27 +300,29 @@ export function setupSimpleAuth(app: Express) {
   });
 
   // Login initiation routes
-  app.get('/api/auth/google', (req: Request, res: Response) => {
-    const googleAuthUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+  app.get('/api/auth/google', (_req: Request, res: Response) => {
+    const googleAuthUrl =
+      `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${process.env.GOOGLE_CLIENT_ID}&` +
       `redirect_uri=${encodeURIComponent(process.env.GOOGLE_REDIRECT_URI!)}&` +
       `response_type=code&` +
       `scope=openid%20email%20profile`;
-    
+
     res.redirect(googleAuthUrl);
   });
 
-  app.get('/api/auth/github', (req: Request, res: Response) => {
-    const githubAuthUrl = `https://github.com/login/oauth/authorize?` +
+  app.get('/api/auth/github', (_req: Request, res: Response) => {
+    const githubAuthUrl =
+      `https://github.com/login/oauth/authorize?` +
       `client_id=${process.env.GITHUB_CLIENT_ID}&` +
       `redirect_uri=${encodeURIComponent(process.env.GITHUB_REDIRECT_URI!)}&` +
       `scope=user:email`;
-    
+
     res.redirect(githubAuthUrl);
   });
 
   // Logout
-  app.post('/api/auth/logout', (req: Request, res: Response) => {
+  app.post('/api/auth/logout', (_req: Request, res: Response) => {
     res.clearCookie('auth_token');
     res.json({ success: true, message: 'Logged out successfully' });
   });
@@ -336,8 +336,8 @@ export function setupSimpleAuth(app: Express) {
         id: authReq.user.claims.sub,
         email: authReq.user.claims.email,
         name: authReq.user.claims.name,
-        isAdmin: authReq.user.isAdmin
-      }
+        isAdmin: authReq.user.isAdmin,
+      },
     });
   });
 }

@@ -1,7 +1,7 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Client } from 'pg';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -17,7 +17,7 @@ async function fixForeignKey() {
 
     // Read and execute the SQL file
     const sqlContent = readFileSync(join(__dirname, 'remove-foreign-key-constraint.sql'), 'utf8');
-    
+
     console.log('🔧 Removing foreign key constraints...');
     await client.query(sqlContent);
     console.log('✅ Foreign key constraints removed successfully');
@@ -38,7 +38,6 @@ async function fixForeignKey() {
         console.log(`  ${row.constraint_name} on ${row.table_name}.${row.column_name}`);
       });
     }
-
   } catch (error) {
     console.error('❌ Error:', error);
   } finally {

@@ -1,8 +1,8 @@
 #!/usr/bin/env node
 
-import { initializeApp, cert } from 'firebase-admin/app';
-import { getAuth } from 'firebase-admin/auth';
 import dotenv from 'dotenv';
+import { cert, initializeApp } from 'firebase-admin/app';
+import { getAuth } from 'firebase-admin/auth';
 
 // Load environment variables
 dotenv.config();
@@ -14,7 +14,7 @@ function initializeFirebaseAdmin() {
 
   try {
     let privateKey;
-    
+
     if (process.env.FIREBASE_PRIVATE_KEY_BASE64) {
       privateKey = Buffer.from(process.env.FIREBASE_PRIVATE_KEY_BASE64, 'base64').toString('utf8');
     } else if (process.env.FIREBASE_PRIVATE_KEY) {
@@ -22,7 +22,7 @@ function initializeFirebaseAdmin() {
     } else {
       throw new Error('No Firebase private key found');
     }
-    
+
     const serviceAccount = {
       projectId: process.env.FIREBASE_PROJECT_ID,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
@@ -47,7 +47,7 @@ async function getUserByEmail(email) {
     if (!adminInitialized) {
       initializeFirebaseAdmin();
     }
-    
+
     const userRecord = await getAuth().getUserByEmail(email);
     return userRecord;
   } catch (_error) {
@@ -60,14 +60,14 @@ async function createFirebaseUser(email, password, displayName) {
     if (!adminInitialized) {
       initializeFirebaseAdmin();
     }
-    
+
     const userRecord = await getAuth().createUser({
       email,
       password,
       displayName,
       emailVerified: true, // Set to true for test users
     });
-    
+
     return userRecord;
   } catch (error) {
     console.error('Error creating Firebase user:', error);
@@ -80,26 +80,26 @@ const testUsers = [
     email: 'admin@aimlglossary.com',
     password: 'admin123',
     displayName: 'Admin User',
-    type: 'admin'
+    type: 'admin',
   },
   {
     email: 'premium@aimlglossary.com',
     password: 'premium123',
     displayName: 'Premium User',
-    type: 'premium'
+    type: 'premium',
   },
   {
     email: 'test@aimlglossary.com',
     password: 'test123',
     displayName: 'Test User',
-    type: 'free'
-  }
+    type: 'free',
+  },
 ];
 
 async function setupFirebaseUsers() {
   try {
     console.log('🔧 Setting up Firebase test users...');
-    
+
     // Initialize Firebase Admin
     initializeFirebaseAdmin();
 
@@ -107,7 +107,7 @@ async function setupFirebaseUsers() {
       try {
         // Check if user already exists
         const existingUser = await getUserByEmail(testUser.email);
-        
+
         if (existingUser) {
           console.log(`✅ User ${testUser.email} already exists (UID: ${existingUser.uid})`);
           continue;
@@ -115,8 +115,8 @@ async function setupFirebaseUsers() {
 
         // Create new user
         const firebaseUser = await createFirebaseUser(
-          testUser.email, 
-          testUser.password, 
+          testUser.email,
+          testUser.password,
           testUser.displayName
         );
 
@@ -138,7 +138,6 @@ async function setupFirebaseUsers() {
     console.log('2. premium@aimlglossary.com / premium123 (Premium user with lifetime access)');
     console.log('3. test@aimlglossary.com / test123 (Free tier user)');
     console.log('\nYou can now use these credentials to test Firebase authentication.');
-
   } catch (error) {
     console.error('❌ Error setting up Firebase users:', error);
     process.exit(1);
@@ -146,4 +145,4 @@ async function setupFirebaseUsers() {
 }
 
 // Run the setup
-setupFirebaseUsers(); 
+setupFirebaseUsers();

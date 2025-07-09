@@ -5,18 +5,18 @@ import { useAuth } from '../hooks/useAuth';
 
 export default function PurchaseSuccess() {
   const { refetch } = useAuth();
-  const [, navigate] = useLocation();
+  const [, _navigate] = useLocation();
 
   useEffect(() => {
     // Immediately refetch user data to check for premium status
     refetch();
-    
+
     // Track successful purchase
     if (typeof window !== 'undefined' && window.gtag) {
       window.gtag('event', 'purchase_success', {
         event_category: 'ecommerce',
         event_label: 'lifetime_access',
-        value: 249
+        value: 249,
       });
     }
   }, [refetch]);

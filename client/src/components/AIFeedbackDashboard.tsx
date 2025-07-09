@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { AlertTriangle, CheckCircle, Flag, MessageSquare, TrendingUp, Users, Clock, Activity } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Activity, AlertTriangle, CheckCircle, Flag, TrendingUp, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useToast } from '../hooks/use-toast';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 import { Textarea } from './ui/textarea';
-import { useToast } from '../hooks/use-toast';
 
 interface AIFeedback {
   id: string;
@@ -56,7 +56,7 @@ export function AIFeedbackDashboard() {
 
   useEffect(() => {
     loadDashboardData();
-  }, []);
+  }, [loadDashboardData]);
 
   const loadDashboardData = async () => {
     setLoading(true);
@@ -74,14 +74,20 @@ export function AIFeedbackDashboard() {
             feedbackType: item.type,
             section: 'general',
             description: item.message || 'No description provided',
-            severity: item.rating ? (item.rating <= 2 ? 'high' : item.rating <= 3 ? 'medium' : 'low') : 'medium',
+            severity: item.rating
+              ? item.rating <= 2
+                ? 'high'
+                : item.rating <= 3
+                  ? 'medium'
+                  : 'low'
+              : 'medium',
             status: item.status,
             userId: item.user_id,
             userAgent: item.user_agent,
             createdAt: item.created_at,
             reviewedBy: item.reviewed_by,
             reviewedAt: item.reviewed_at,
-            reviewNotes: item.admin_notes
+            reviewNotes: item.admin_notes,
           }));
           setFeedbackList(transformedFeedback);
         }
@@ -105,8 +111,8 @@ export function AIFeedbackDashboard() {
             timeline: analyticsData.data.pageViewsByDay.map((item: any) => ({
               date: item.day,
               requests: item.total_views,
-              cost: 0
-            }))
+              cost: 0,
+            })),
           });
         }
       }
@@ -119,14 +125,14 @@ export function AIFeedbackDashboard() {
         verified: Math.floor(totalTerms * 0.65),
         flagged: Math.floor(totalTerms * 0.03),
         needsReview: Math.floor(totalTerms * 0.05),
-        expertReviewed: Math.floor(totalTerms * 0.02)
+        expertReviewed: Math.floor(totalTerms * 0.02),
       });
     } catch (error) {
       console.error('Error loading dashboard data:', error);
       toast({
-        title: "Error",
-        description: "Failed to load dashboard data",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to load dashboard data',
+        variant: 'destructive',
       });
     } finally {
       setLoading(false);
@@ -138,7 +144,7 @@ export function AIFeedbackDashboard() {
       const response = await fetch(`/api/feedback/${feedbackId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, adminNotes: notes })
+        body: JSON.stringify({ status, adminNotes: notes }),
       });
 
       if (!response.ok) {
@@ -146,17 +152,22 @@ export function AIFeedbackDashboard() {
       }
 
       // Update local state
-      setFeedbackList(prev => 
-        prev.map(feedback => 
-          feedback.id === feedbackId 
-            ? { ...feedback, status: status as any, reviewNotes: notes, reviewedAt: new Date().toISOString() }
+      setFeedbackList((prev) =>
+        prev.map((feedback) =>
+          feedback.id === feedbackId
+            ? {
+                ...feedback,
+                status: status as any,
+                reviewNotes: notes,
+                reviewedAt: new Date().toISOString(),
+              }
             : feedback
         )
       );
 
       toast({
-        title: "Status Updated",
-        description: "Feedback status has been updated successfully"
+        title: 'Status Updated',
+        description: 'Feedback status has been updated successfully',
       });
 
       setSelectedFeedback(null);
@@ -165,30 +176,40 @@ export function AIFeedbackDashboard() {
     } catch (error) {
       console.error('Error updating feedback:', error);
       toast({
-        title: "Error",
-        description: "Failed to update feedback status",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to update feedback status',
+        variant: 'destructive',
       });
     }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800 border-red-200';
-      case 'high': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'low': return 'bg-blue-100 text-blue-800 border-blue-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      case 'critical':
+        return 'bg-red-100 text-red-800 border-red-200';
+      case 'high':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'low':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'reviewing': return 'bg-blue-100 text-blue-800';
-      case 'resolved': return 'bg-green-100 text-green-800';
-      case 'dismissed': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'reviewing':
+        return 'bg-blue-100 text-blue-800';
+      case 'resolved':
+        return 'bg-green-100 text-green-800';
+      case 'dismissed':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -228,11 +249,9 @@ export function AIFeedbackDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {feedbackList.filter(f => f.status === 'pending').length}
+                  {feedbackList.filter((f) => f.status === 'pending').length}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Requires review
-                </p>
+                <p className="text-xs text-muted-foreground">Requires review</p>
               </CardContent>
             </Card>
 
@@ -243,9 +262,7 @@ export function AIFeedbackDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{verificationStats?.unverified || 0}</div>
-                <p className="text-xs text-muted-foreground">
-                  AI-generated terms
-                </p>
+                <p className="text-xs text-muted-foreground">AI-generated terms</p>
               </CardContent>
             </Card>
 
@@ -256,9 +273,7 @@ export function AIFeedbackDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{analytics?.successRate || 0}%</div>
-                <p className="text-xs text-muted-foreground">
-                  AI operation success
-                </p>
+                <p className="text-xs text-muted-foreground">AI operation success</p>
               </CardContent>
             </Card>
 
@@ -268,10 +283,10 @@ export function AIFeedbackDashboard() {
                 <Users className="h-4 w-4 text-blue-500" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">${analytics?.totalCost?.toFixed(2) || '0.00'}</div>
-                <p className="text-xs text-muted-foreground">
-                  AI API usage
-                </p>
+                <div className="text-2xl font-bold">
+                  ${analytics?.totalCost?.toFixed(2) || '0.00'}
+                </div>
+                <p className="text-xs text-muted-foreground">AI API usage</p>
               </CardContent>
             </Card>
           </div>
@@ -287,7 +302,7 @@ export function AIFeedbackDashboard() {
                 <Flag className="h-6 w-6" />
                 <span>Review Flagged Content</span>
                 <span className="text-xs text-muted-foreground">
-                  {feedbackList.filter(f => f.status === 'pending').length} pending
+                  {feedbackList.filter((f) => f.status === 'pending').length} pending
                 </span>
               </Button>
               <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
@@ -388,7 +403,7 @@ export function AIFeedbackDashboard() {
                     </Select>
                   </div>
                 </div>
-                
+
                 <div>
                   <label className="text-sm font-medium">Review Notes</label>
                   <Textarea
@@ -411,7 +426,9 @@ export function AIFeedbackDashboard() {
                     Cancel
                   </Button>
                   <Button
-                    onClick={() => updateFeedbackStatus(selectedFeedback.id, newStatus, reviewNotes)}
+                    onClick={() =>
+                      updateFeedbackStatus(selectedFeedback.id, newStatus, reviewNotes)
+                    }
                   >
                     Update Status
                   </Button>
@@ -432,27 +449,37 @@ export function AIFeedbackDashboard() {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-yellow-600">{verificationStats?.unverified}</div>
+                  <div className="text-2xl font-bold text-yellow-600">
+                    {verificationStats?.unverified}
+                  </div>
                   <div className="text-sm text-gray-500">Unverified</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-green-600">{verificationStats?.verified}</div>
+                  <div className="text-2xl font-bold text-green-600">
+                    {verificationStats?.verified}
+                  </div>
                   <div className="text-sm text-gray-500">Verified</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-red-600">{verificationStats?.flagged}</div>
+                  <div className="text-2xl font-bold text-red-600">
+                    {verificationStats?.flagged}
+                  </div>
                   <div className="text-sm text-gray-500">Flagged</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-orange-600">{verificationStats?.needsReview}</div>
+                  <div className="text-2xl font-bold text-orange-600">
+                    {verificationStats?.needsReview}
+                  </div>
                   <div className="text-sm text-gray-500">Needs Review</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
-                  <div className="text-2xl font-bold text-blue-600">{verificationStats?.expertReviewed}</div>
+                  <div className="text-2xl font-bold text-blue-600">
+                    {verificationStats?.expertReviewed}
+                  </div>
                   <div className="text-sm text-gray-500">Expert Reviewed</div>
                 </div>
               </div>
-              
+
               <div className="text-center text-gray-500">
                 Detailed verification management interface would be implemented here
               </div>
@@ -492,24 +519,26 @@ export function AIFeedbackDashboard() {
                 <div>
                   <h4 className="font-medium mb-3">Requests by Operation</h4>
                   <div className="space-y-2">
-                    {analytics && Object.entries(analytics.byOperation).map(([operation, count]) => (
-                      <div key={operation} className="flex justify-between items-center">
-                        <span className="text-sm">{operation.replace('_', ' ')}</span>
-                        <span className="font-medium">{count}</span>
-                      </div>
-                    ))}
+                    {analytics &&
+                      Object.entries(analytics.byOperation).map(([operation, count]) => (
+                        <div key={operation} className="flex justify-between items-center">
+                          <span className="text-sm">{operation.replace('_', ' ')}</span>
+                          <span className="font-medium">{count}</span>
+                        </div>
+                      ))}
                   </div>
                 </div>
 
                 <div>
                   <h4 className="font-medium mb-3">Requests by Model</h4>
                   <div className="space-y-2">
-                    {analytics && Object.entries(analytics.byModel).map(([model, count]) => (
-                      <div key={model} className="flex justify-between items-center">
-                        <span className="text-sm">{model}</span>
-                        <span className="font-medium">{count}</span>
-                      </div>
-                    ))}
+                    {analytics &&
+                      Object.entries(analytics.byModel).map(([model, count]) => (
+                        <div key={model} className="flex justify-between items-center">
+                          <span className="text-sm">{model}</span>
+                          <span className="font-medium">{count}</span>
+                        </div>
+                      ))}
                   </div>
                 </div>
               </div>
@@ -521,4 +550,4 @@ export function AIFeedbackDashboard() {
   );
 }
 
-export default AIFeedbackDashboard; 
+export default AIFeedbackDashboard;

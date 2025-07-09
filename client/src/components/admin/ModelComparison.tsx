@@ -1,36 +1,31 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { Input } from '@/components/ui/input';
-import { 
-  Bot, 
-  CheckCircle, 
-  AlertCircle,
-  Star,
-  DollarSign,
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  BarChart3,
+  Bot,
+  CheckCircle,
   Clock,
-  Zap,
   Copy,
-  Check,
+  DollarSign,
   Eye,
   EyeOff,
-  ThumbsUp,
-  ThumbsDown,
+  Loader2,
   Sparkles,
-  BarChart3,
+  Star,
   Users,
-  RefreshCw,
-  Loader2
+  Zap,
 } from 'lucide-react';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 
 interface ModelVersion {
@@ -56,64 +51,68 @@ interface Term {
 }
 
 const AVAILABLE_MODELS = [
-  { 
-    value: 'gpt-4.1', 
-    label: 'GPT-4.1', 
-    cost: '$25/1M tokens', 
+  {
+    value: 'gpt-4.1',
+    label: 'GPT-4.1',
+    cost: '$25/1M tokens',
     use: 'Latest flagship model, superior coding & instruction following',
-    color: 'bg-emerald-100 text-emerald-800'
+    color: 'bg-emerald-100 text-emerald-800',
   },
-  { 
-    value: 'gpt-4.1-mini', 
-    label: 'GPT-4.1 Mini', 
-    cost: '$0.20/1M tokens', 
+  {
+    value: 'gpt-4.1-mini',
+    label: 'GPT-4.1 Mini',
+    cost: '$0.20/1M tokens',
     use: 'Small model with GPT-4o level performance',
-    color: 'bg-teal-100 text-teal-800'
+    color: 'bg-teal-100 text-teal-800',
   },
-  { 
-    value: 'gpt-4.1-nano', 
-    label: 'GPT-4.1 Nano', 
-    cost: '$0.05/1M tokens', 
+  {
+    value: 'gpt-4.1-nano',
+    label: 'GPT-4.1 Nano',
+    cost: '$0.05/1M tokens',
     use: 'Fastest, cheapest for classification & autocompletion',
-    color: 'bg-cyan-100 text-cyan-800'
+    color: 'bg-cyan-100 text-cyan-800',
   },
-  { 
-    value: 'o1-mini', 
-    label: 'OpenAI o1-mini', 
-    cost: '$3/1M tokens', 
+  {
+    value: 'o1-mini',
+    label: 'OpenAI o1-mini',
+    cost: '$3/1M tokens',
     use: 'Advanced reasoning for complex problems',
-    color: 'bg-indigo-100 text-indigo-800'
+    color: 'bg-indigo-100 text-indigo-800',
   },
-  { 
-    value: 'gpt-4o-mini', 
-    label: 'GPT-4o Mini', 
-    cost: '$0.15/1M tokens', 
+  {
+    value: 'gpt-4o-mini',
+    label: 'GPT-4o Mini',
+    cost: '$0.15/1M tokens',
     use: 'Multimodal, fast & cost-effective',
-    color: 'bg-orange-100 text-orange-800'
-  }
+    color: 'bg-orange-100 text-orange-800',
+  },
 ];
 
 const ESSENTIAL_COLUMNS = [
-  { id: 'definition_overview', name: 'Definition & Overview', description: 'Clear, comprehensive definition' },
+  {
+    id: 'definition_overview',
+    name: 'Definition & Overview',
+    description: 'Clear, comprehensive definition',
+  },
   { id: 'key_concepts', name: 'Key Concepts', description: 'Essential understanding points' },
   { id: 'basic_examples', name: 'Basic Examples', description: 'Concrete examples for clarity' },
   { id: 'advantages', name: 'Advantages', description: 'Benefits and use cases' },
   { id: 'disadvantages', name: 'Disadvantages', description: 'Limitations and challenges' },
   { id: 'applications', name: 'Applications', description: 'Real-world use cases' },
   { id: 'implementation', name: 'Implementation', description: 'How to implement or use' },
-  { id: 'best_practices', name: 'Best Practices', description: 'Recommended approaches' }
+  { id: 'best_practices', name: 'Best Practices', description: 'Recommended approaches' },
 ];
 
 export function ModelComparison() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  
+  const _queryClient = useQueryClient();
+
   const [selectedTerm, setSelectedTerm] = useState<Term | null>(null);
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [selectedModels, setSelectedModels] = useState<string[]>(['gpt-4.1-mini', 'gpt-4o-mini']);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showContent, setShowContent] = useState<Record<string, boolean>>({});
-  const [activeTab, setActiveTab] = useState<string>('comparison');
+  const [_activeTab, _setActiveTab] = useState<string>('comparison');
 
   // Query for terms
   const { data: termsData, isLoading: isLoadingTerms } = useQuery({
@@ -122,20 +121,26 @@ export function ModelComparison() {
       const response = await fetch('/api/terms');
       if (!response.ok) throw new Error('Failed to fetch terms');
       return response.json();
-    }
+    },
   });
 
   // Query for model versions
-  const { data: modelVersions, isLoading: isLoadingVersions, refetch: refetchVersions } = useQuery({
+  const {
+    data: modelVersions,
+    isLoading: isLoadingVersions,
+    refetch: refetchVersions,
+  } = useQuery({
     queryKey: ['model-versions', selectedTerm?.id, selectedSection],
     queryFn: async () => {
       if (!selectedTerm || !selectedSection) return [];
-      const response = await fetch(`/api/admin/enhanced-triplet/model-versions/${selectedTerm.id}/${selectedSection}`);
+      const response = await fetch(
+        `/api/admin/enhanced-triplet/model-versions/${selectedTerm.id}/${selectedSection}`
+      );
       if (!response.ok) throw new Error('Failed to fetch model versions');
       const result = await response.json();
       return result.data || [];
     },
-    enabled: !!selectedTerm && !!selectedSection
+    enabled: !!selectedTerm && !!selectedSection,
   });
 
   // Multi-model generation mutation
@@ -150,25 +155,25 @@ export function ModelComparison() {
       const response = await fetch('/api/admin/enhanced-triplet/generate-multi-model', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error('Failed to generate multi-model content');
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Multi-model generation completed",
-        description: "Content has been generated with selected models",
+        title: 'Multi-model generation completed',
+        description: 'Content has been generated with selected models',
       });
       refetchVersions();
     },
     onError: (error) => {
       toast({
-        title: "Generation failed",
+        title: 'Generation failed',
         description: error instanceof Error ? error.message : 'Unknown error',
-        variant: "destructive",
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Select model version mutation
@@ -177,25 +182,25 @@ export function ModelComparison() {
       const response = await fetch('/api/admin/enhanced-triplet/select-model-version', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ versionId })
+        body: JSON.stringify({ versionId }),
       });
       if (!response.ok) throw new Error('Failed to select model version');
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Model version selected",
-        description: "This version is now the active content",
+        title: 'Model version selected',
+        description: 'This version is now the active content',
       });
       refetchVersions();
     },
     onError: (error) => {
       toast({
-        title: "Selection failed",
+        title: 'Selection failed',
         description: error instanceof Error ? error.message : 'Unknown error',
-        variant: "destructive",
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Rate model version mutation
@@ -204,33 +209,33 @@ export function ModelComparison() {
       const response = await fetch('/api/admin/enhanced-triplet/rate-model-version', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
+        body: JSON.stringify(data),
       });
       if (!response.ok) throw new Error('Failed to rate model version');
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Rating saved",
-        description: "Your rating has been saved",
+        title: 'Rating saved',
+        description: 'Your rating has been saved',
       });
       refetchVersions();
     },
     onError: (error) => {
       toast({
-        title: "Rating failed",
+        title: 'Rating failed',
         description: error instanceof Error ? error.message : 'Unknown error',
-        variant: "destructive",
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   const handleGenerateMultiModel = async () => {
     if (!selectedTerm || !selectedSection || selectedModels.length === 0) {
       toast({
-        title: "Missing selection",
-        description: "Please select a term, section, and at least one model",
-        variant: "destructive",
+        title: 'Missing selection',
+        description: 'Please select a term, section, and at least one model',
+        variant: 'destructive',
       });
       return;
     }
@@ -242,7 +247,7 @@ export function ModelComparison() {
         sectionName: selectedSection,
         models: selectedModels,
         temperature: 0.7,
-        maxTokens: 1000
+        maxTokens: 1000,
       });
     } finally {
       setIsGenerating(false);
@@ -260,24 +265,24 @@ export function ModelComparison() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     toast({
-      title: "Copied to clipboard",
-      description: "Content has been copied to your clipboard",
+      title: 'Copied to clipboard',
+      description: 'Content has been copied to your clipboard',
     });
   };
 
   const toggleContentVisibility = (versionId: string) => {
-    setShowContent(prev => ({ ...prev, [versionId]: !prev[versionId] }));
+    setShowContent((prev) => ({ ...prev, [versionId]: !prev[versionId] }));
   };
 
   const getModelInfo = (modelName: string) => {
-    return AVAILABLE_MODELS.find(m => m.value === modelName) || AVAILABLE_MODELS[0];
+    return AVAILABLE_MODELS.find((m) => m.value === modelName) || AVAILABLE_MODELS[0];
   };
 
   const formatCost = (cost: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 4
+      minimumFractionDigits: 4,
     }).format(cost);
   };
 
@@ -339,9 +344,7 @@ export function ModelComparison() {
             <Bot className="w-5 h-5 mr-2" />
             Generation Setup
           </CardTitle>
-          <CardDescription>
-            Select term, section, and models to compare
-          </CardDescription>
+          <CardDescription>Select term, section, and models to compare</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -371,10 +374,7 @@ export function ModelComparison() {
             {/* Section Selection */}
             <div className="space-y-2">
               <Label htmlFor="section">Section</Label>
-              <Select
-                value={selectedSection}
-                onValueChange={setSelectedSection}
-              >
+              <Select value={selectedSection} onValueChange={setSelectedSection}>
                 <SelectTrigger>
                   <SelectValue placeholder="Select section" />
                 </SelectTrigger>
@@ -399,9 +399,9 @@ export function ModelComparison() {
                       checked={selectedModels.includes(model.value)}
                       onChange={(e) => {
                         if (e.target.checked) {
-                          setSelectedModels(prev => [...prev, model.value]);
+                          setSelectedModels((prev) => [...prev, model.value]);
                         } else {
-                          setSelectedModels(prev => prev.filter(m => m !== model.value));
+                          setSelectedModels((prev) => prev.filter((m) => m !== model.value));
                         }
                       }}
                       className="rounded border-gray-300"
@@ -417,7 +417,9 @@ export function ModelComparison() {
           <div className="flex justify-center pt-4">
             <Button
               onClick={handleGenerateMultiModel}
-              disabled={!selectedTerm || !selectedSection || selectedModels.length === 0 || isGenerating}
+              disabled={
+                !selectedTerm || !selectedSection || selectedModels.length === 0 || isGenerating
+              }
               className="bg-blue-600 hover:bg-blue-700"
             >
               {isGenerating ? (
@@ -444,24 +446,20 @@ export function ModelComparison() {
               <Users className="w-5 h-5 mr-2" />
               Model Comparison Results
             </CardTitle>
-            <CardDescription>
-              Compare outputs from different AI models
-            </CardDescription>
+            <CardDescription>Compare outputs from different AI models</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               {modelVersions.map((version: ModelVersion) => {
                 const modelInfo = getModelInfo(version.model);
                 const isVisible = showContent[version.id];
-                
+
                 return (
                   <div key={version.id} className="border rounded-lg p-4 space-y-3">
                     {/* Version Header */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center space-x-3">
-                        <Badge className={modelInfo.color}>
-                          {modelInfo.label}
-                        </Badge>
+                        <Badge className={modelInfo.color}>{modelInfo.label}</Badge>
                         {version.isSelected && (
                           <Badge className="bg-green-100 text-green-800">
                             <CheckCircle className="w-3 h-3 mr-1" />
@@ -480,11 +478,7 @@ export function ModelComparison() {
                           size="sm"
                           onClick={() => toggleContentVisibility(version.id)}
                         >
-                          {isVisible ? (
-                            <EyeOff className="w-4 h-4" />
-                          ) : (
-                            <Eye className="w-4 h-4" />
-                          )}
+                          {isVisible ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                         </Button>
                         <Button
                           variant="ghost"
@@ -520,11 +514,9 @@ export function ModelComparison() {
                     {isVisible && (
                       <div className="space-y-3">
                         <div className="bg-gray-50 p-3 rounded border">
-                          <div className="prose max-w-none">
-                            {version.content}
-                          </div>
+                          <div className="prose max-w-none">{version.content}</div>
                         </div>
-                        
+
                         {/* Actions */}
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
@@ -554,15 +546,20 @@ export function ModelComparison() {
       )}
 
       {/* Empty State */}
-      {selectedTerm && selectedSection && (!modelVersions || modelVersions.length === 0) && !isLoadingVersions && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <Bot className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No model versions found for this term and section.</p>
-            <p className="text-sm text-gray-500 mt-1">Generate content with multiple models to compare results.</p>
-          </CardContent>
-        </Card>
-      )}
+      {selectedTerm &&
+        selectedSection &&
+        (!modelVersions || modelVersions.length === 0) &&
+        !isLoadingVersions && (
+          <Card>
+            <CardContent className="text-center py-8">
+              <Bot className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No model versions found for this term and section.</p>
+              <p className="text-sm text-gray-500 mt-1">
+                Generate content with multiple models to compare results.
+              </p>
+            </CardContent>
+          </Card>
+        )}
     </div>
   );
 }

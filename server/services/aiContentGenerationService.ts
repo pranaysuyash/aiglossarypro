@@ -1,17 +1,16 @@
-import { db } from '../db';
-import { 
-  enhancedTerms, 
-  sections, 
-  sectionItems, 
-  aiUsageAnalytics,
-  aiContentVerification,
-  modelContentVersions
-} from '../../shared/enhancedSchema';
-import { eq, and } from 'drizzle-orm';
-import { aiService } from '../aiService';
-import { promptTemplateService, GenerationRequest } from './promptTemplateService';
-import { log as logger } from '../utils/logger';
+import { and, eq } from 'drizzle-orm';
 import OpenAI from 'openai';
+import {
+  aiContentVerification,
+  aiUsageAnalytics,
+  enhancedTerms,
+  modelContentVersions,
+  sectionItems,
+  sections,
+} from '../../shared/enhancedSchema';
+import { db } from '../db';
+import { log as logger } from '../utils/logger';
+import { promptTemplateService } from './promptTemplateService';
 
 export interface ContentGenerationRequest {
   termId: string;
@@ -100,13 +99,13 @@ export class AIContentGenerationService {
   private readonly DEFAULT_MODEL = 'gpt-4.1-mini';
   private readonly DEFAULT_TEMPERATURE = 0.7;
   private readonly DEFAULT_MAX_TOKENS = 1000;
-  
+
   private readonly MODEL_COSTS = {
-    'gpt-4.1': { input: 0.025, output: 0.10 }, // Per 1K tokens
+    'gpt-4.1': { input: 0.025, output: 0.1 }, // Per 1K tokens
     'gpt-4.1-mini': { input: 0.0002, output: 0.0008 }, // Per 1K tokens
     'gpt-4.1-nano': { input: 0.00005, output: 0.0002 }, // Per 1K tokens
     'o1-mini': { input: 0.003, output: 0.012 }, // Per 1K tokens
-    'gpt-4o-mini': { input: 0.00015, output: 0.0006 } // Per 1K tokens
+    'gpt-4o-mini': { input: 0.00015, output: 0.0006 }, // Per 1K tokens
   };
 
   constructor() {
@@ -124,7 +123,7 @@ export class AIContentGenerationService {
    */
   async generateContent(request: ContentGenerationRequest): Promise<ContentGenerationResponse> {
     const startTime = Date.now();
-    
+
     try {
       // Validate request
       await this.validateRequest(request);
@@ -154,8 +153,8 @@ export class AIContentGenerationService {
               totalTokens: 0,
               cost: 0,
               generatedAt: existingContent.updatedAt || new Date(),
-              processingTime: Date.now() - startTime
-            }
+              processingTime: Date.now() - startTime,
+            },
           };
         }
       }
@@ -167,7 +166,7 @@ export class AIContentGenerationService {
         templateId: request.templateId,
         model: request.model || this.DEFAULT_MODEL,
         temperature: request.temperature || this.DEFAULT_TEMPERATURE,
-        maxTokens: request.maxTokens || this.DEFAULT_MAX_TOKENS
+        maxTokens: request.maxTokens || this.DEFAULT_MAX_TOKENS,
       });
 
       // Call OpenAI API
@@ -176,12 +175,12 @@ export class AIContentGenerationService {
         messages: [
           {
             role: 'system',
-            content: this.getSystemPrompt()
+            content: this.getSystemPrompt(),
           },
           {
             role: 'user',
-            content: prompt
-          }
+            content: prompt,
+          },
         ],
         temperature: request.temperature || this.DEFAULT_TEMPERATURE,
         max_tokens: request.maxTokens || this.DEFAULT_MAX_TOKENS,
@@ -197,7 +196,11 @@ export class AIContentGenerationService {
       const promptTokens = completion.usage?.prompt_tokens || 0;
       const completionTokens = completion.usage?.completion_tokens || 0;
       const totalTokens = promptTokens + completionTokens;
-      const cost = this.calculateCost(request.model || this.DEFAULT_MODEL, promptTokens, completionTokens);
+      const cost = this.calculateCost(
+        request.model || this.DEFAULT_MODEL,
+        promptTokens,
+        completionTokens
+      );
 
       // Store content in database
       if (request.storeAsVersion) {
@@ -208,7 +211,7 @@ export class AIContentGenerationService {
           completionTokens,
           cost,
           userId: request.userId,
-          processingTime
+          processingTime,
         });
       } else {
         await this.storeGeneratedContent(request.termId, request.sectionName, content, {
@@ -217,7 +220,7 @@ export class AIContentGenerationService {
           promptTokens,
           completionTokens,
           cost,
-          userId: request.userId
+          userId: request.userId,
         });
       }
 
@@ -231,7 +234,7 @@ export class AIContentGenerationService {
         outputTokens: completionTokens,
         cost,
         latency: processingTime,
-        success: true
+        success: true,
       });
 
       // Create AI content verification record
@@ -251,21 +254,20 @@ export class AIContentGenerationService {
           totalTokens,
           cost,
           generatedAt: new Date(),
-          processingTime
-        }
+          processingTime,
+        },
       };
 
       logger.info(`✅ Generated content for ${termData.name} - ${request.sectionName}`, {
         tokens: totalTokens,
         cost,
-        processingTime
+        processingTime,
       });
 
       return response;
-
     } catch (error) {
       const processingTime = Date.now() - startTime;
-      
+
       // Log failed usage
       await this.logUsageAnalytics({
         operation: 'generate_content',
@@ -275,19 +277,19 @@ export class AIContentGenerationService {
         latency: processingTime,
         success: false,
         errorType: error instanceof Error ? error.constructor.name : 'UnknownError',
-        errorMessage: error instanceof Error ? error.message : 'Unknown error'
+        errorMessage: error instanceof Error ? error.message : 'Unknown error',
       });
 
       logger.error('Error generating content:', {
         error: error instanceof Error ? error.message : String(error),
         termId: request.termId,
         sectionName: request.sectionName,
-        processingTime
+        processingTime,
       });
 
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -330,11 +332,15 @@ export class AIContentGenerationService {
             maxTokens: request.maxTokens,
             userId: request.userId,
             regenerate: true, // Always regenerate for comparison
-            storeAsVersion: true // Store as version for comparison
+            storeAsVersion: true, // Store as version for comparison
           });
 
           if (modelResult.success && modelResult.metadata) {
-            const versionData = await this.getLatestModelVersion(request.termId, request.sectionName, model);
+            const versionData = await this.getLatestModelVersion(
+              request.termId,
+              request.sectionName,
+              model
+            );
             if (versionData) {
               versions.push(versionData);
               successCount++;
@@ -343,16 +349,17 @@ export class AIContentGenerationService {
             }
           } else {
             failureCount++;
-            logger.error(`Failed to generate content with model ${model}:`, modelResult.error);
+            logger.error(`Failed to generate content with model ${model}:`, {
+              error: modelResult.error,
+            });
           }
 
           // Add delay between requests to avoid rate limits
-          await new Promise(resolve => setTimeout(resolve, 200));
-
+          await new Promise((resolve) => setTimeout(resolve, 200));
         } catch (error) {
           failureCount++;
           logger.error(`Error generating content with model ${model}:`, {
-            error: error instanceof Error ? error.message : String(error)
+            error: error instanceof Error ? error.message : String(error),
           });
         }
       }
@@ -368,13 +375,12 @@ export class AIContentGenerationService {
           failureCount,
           totalCost,
           totalTokens,
-          processingTime
-        }
+          processingTime,
+        },
       };
-
     } catch (error) {
       logger.error('Error in multi-model generation:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
 
       return {
@@ -386,9 +392,9 @@ export class AIContentGenerationService {
           failureCount: request.models.length,
           totalCost: 0,
           totalTokens: 0,
-          processingTime: Date.now() - startTime
+          processingTime: Date.now() - startTime,
         },
-        error: error instanceof Error ? error.message : 'Unknown error occurred'
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -415,7 +421,7 @@ export class AIContentGenerationService {
           templateId: request.templateId,
           model: request.model,
           userId: request.userId,
-          regenerate: request.regenerate
+          regenerate: request.regenerate,
         });
 
         results.push(sectionResult);
@@ -431,17 +437,16 @@ export class AIContentGenerationService {
         }
 
         // Add small delay between requests to avoid rate limits
-        await new Promise(resolve => setTimeout(resolve, 100));
-
+        await new Promise((resolve) => setTimeout(resolve, 100));
       } catch (error) {
         failureCount++;
         results.push({
           success: false,
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: error instanceof Error ? error.message : 'Unknown error',
         });
 
         logger.error(`Error in bulk generation for section ${sectionName}:`, {
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
@@ -454,7 +459,7 @@ export class AIContentGenerationService {
       failureCount,
       totalCost,
       totalTokens,
-      processingTime
+      processingTime,
     });
 
     return {
@@ -466,8 +471,8 @@ export class AIContentGenerationService {
         failureCount,
         totalCost,
         totalTokens,
-        processingTime
-      }
+        processingTime,
+      },
     };
   }
 
@@ -477,12 +482,10 @@ export class AIContentGenerationService {
   private async getExistingContent(termId: string, sectionName: string) {
     try {
       // First get the section
-      const sectionData = await db.select()
+      const sectionData = await db
+        .select()
         .from(sections)
-        .where(and(
-          eq(sections.termId, termId),
-          eq(sections.name, sectionName)
-        ))
+        .where(and(eq(sections.termId, termId), eq(sections.name, sectionName)))
         .limit(1);
 
       if (sectionData.length === 0) {
@@ -490,12 +493,12 @@ export class AIContentGenerationService {
       }
 
       // Get the section items
-      const sectionItemData = await db.select()
+      const sectionItemData = await db
+        .select()
         .from(sectionItems)
-        .where(and(
-          eq(sectionItems.sectionId, sectionData[0].id),
-          eq(sectionItems.label, sectionName)
-        ))
+        .where(
+          and(eq(sectionItems.sectionId, sectionData[0].id), eq(sectionItems.label, sectionName))
+        )
         .limit(1);
 
       return sectionItemData.length > 0 ? sectionItemData[0] : null;
@@ -503,7 +506,7 @@ export class AIContentGenerationService {
       logger.error('Error getting existing content:', {
         error: error instanceof Error ? error.message : String(error),
         termId,
-        sectionName
+        sectionName,
       });
       return null;
     }
@@ -527,25 +530,24 @@ export class AIContentGenerationService {
     }
   ) {
     try {
-      await db.insert(modelContentVersions)
-        .values({
-          termId,
-          sectionName,
-          model: metadata.model,
-          content,
-          templateId: metadata.templateUsed,
-          promptTokens: metadata.promptTokens,
-          completionTokens: metadata.completionTokens,
-          totalTokens: metadata.promptTokens + metadata.completionTokens,
-          cost: metadata.cost.toString(),
-          processingTime: metadata.processingTime,
-          generatedBy: metadata.userId,
-          status: 'generated',
-          metadata: {
-            templateUsed: metadata.templateUsed,
-            generatedAt: new Date().toISOString()
-          }
-        });
+      await db.insert(modelContentVersions).values({
+        termId,
+        sectionName,
+        model: metadata.model,
+        content,
+        templateId: metadata.templateUsed,
+        promptTokens: metadata.promptTokens,
+        completionTokens: metadata.completionTokens,
+        totalTokens: metadata.promptTokens + metadata.completionTokens,
+        cost: metadata.cost.toString(),
+        processingTime: metadata.processingTime,
+        generatedBy: metadata.userId,
+        status: 'generated',
+        metadata: {
+          templateUsed: metadata.templateUsed,
+          generatedAt: new Date().toISOString(),
+        },
+      });
 
       logger.info(`Stored model version for ${termId} - ${sectionName} - ${metadata.model}`);
     } catch (error) {
@@ -553,7 +555,7 @@ export class AIContentGenerationService {
         error: error instanceof Error ? error.message : String(error),
         termId,
         sectionName,
-        model: metadata.model
+        model: metadata.model,
       });
       throw error;
     }
@@ -562,15 +564,22 @@ export class AIContentGenerationService {
   /**
    * Get latest model version for a term/section/model combination
    */
-  private async getLatestModelVersion(termId: string, sectionName: string, model: string): Promise<ModelVersionResponse | null> {
+  private async getLatestModelVersion(
+    termId: string,
+    sectionName: string,
+    model: string
+  ): Promise<ModelVersionResponse | null> {
     try {
-      const versions = await db.select()
+      const versions = await db
+        .select()
         .from(modelContentVersions)
-        .where(and(
-          eq(modelContentVersions.termId, termId),
-          eq(modelContentVersions.sectionName, sectionName),
-          eq(modelContentVersions.model, model)
-        ))
+        .where(
+          and(
+            eq(modelContentVersions.termId, termId),
+            eq(modelContentVersions.sectionName, sectionName),
+            eq(modelContentVersions.model, model)
+          )
+        )
         .orderBy(modelContentVersions.createdAt)
         .limit(1);
 
@@ -579,25 +588,25 @@ export class AIContentGenerationService {
       const version = versions[0];
       return {
         id: version.id,
-        model: version.model,
+        model: version.model || '',
         content: version.content,
         qualityScore: version.qualityScore ? parseFloat(version.qualityScore) : undefined,
         cost: parseFloat(version.cost),
-        processingTime: version.processingTime,
-        promptTokens: version.promptTokens,
-        completionTokens: version.completionTokens,
-        totalTokens: version.totalTokens,
-        createdAt: version.createdAt,
-        isSelected: version.isSelected,
-        userRating: version.userRating,
-        userNotes: version.userNotes
+        processingTime: version.processingTime || 0,
+        promptTokens: version.promptTokens || 0,
+        completionTokens: version.completionTokens || 0,
+        totalTokens: version.totalTokens || 0,
+        createdAt: version.createdAt || new Date(),
+        isSelected: version.isSelected || false,
+        userRating: version.userRating || undefined,
+        userNotes: version.userNotes || undefined,
       };
     } catch (error) {
       logger.error('Error getting latest model version:', {
         error: error instanceof Error ? error.message : String(error),
         termId,
         sectionName,
-        model
+        model,
       });
       return null;
     }
@@ -608,34 +617,37 @@ export class AIContentGenerationService {
    */
   async getModelVersions(termId: string, sectionName: string): Promise<ModelVersionResponse[]> {
     try {
-      const versions = await db.select()
+      const versions = await db
+        .select()
         .from(modelContentVersions)
-        .where(and(
-          eq(modelContentVersions.termId, termId),
-          eq(modelContentVersions.sectionName, sectionName)
-        ))
+        .where(
+          and(
+            eq(modelContentVersions.termId, termId),
+            eq(modelContentVersions.sectionName, sectionName)
+          )
+        )
         .orderBy(modelContentVersions.createdAt);
 
-      return versions.map(version => ({
+      return versions.map((version) => ({
         id: version.id,
-        model: version.model,
+        model: version.model || '',
         content: version.content,
         qualityScore: version.qualityScore ? parseFloat(version.qualityScore) : undefined,
         cost: parseFloat(version.cost),
-        processingTime: version.processingTime,
-        promptTokens: version.promptTokens,
-        completionTokens: version.completionTokens,
-        totalTokens: version.totalTokens,
-        createdAt: version.createdAt,
-        isSelected: version.isSelected,
-        userRating: version.userRating,
-        userNotes: version.userNotes
+        processingTime: version.processingTime || 0,
+        promptTokens: version.promptTokens || 0,
+        completionTokens: version.completionTokens || 0,
+        totalTokens: version.totalTokens || 0,
+        createdAt: version.createdAt || new Date(),
+        isSelected: version.isSelected || false,
+        userRating: version.userRating || undefined,
+        userNotes: version.userNotes || undefined,
       }));
     } catch (error) {
       logger.error('Error getting model versions:', {
         error: error instanceof Error ? error.message : String(error),
         termId,
-        sectionName
+        sectionName,
       });
       return [];
     }
@@ -644,10 +656,14 @@ export class AIContentGenerationService {
   /**
    * Select a model version as the chosen one
    */
-  async selectModelVersion(versionId: string, userId?: string): Promise<{ success: boolean; error?: string }> {
+  async selectModelVersion(
+    versionId: string,
+    userId?: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       // Get the version to select
-      const version = await db.select()
+      const version = await db
+        .select()
         .from(modelContentVersions)
         .where(eq(modelContentVersions.id, versionId))
         .limit(1);
@@ -659,19 +675,23 @@ export class AIContentGenerationService {
       const selectedVersion = version[0];
 
       // Unselect all other versions for this term/section
-      await db.update(modelContentVersions)
+      await db
+        .update(modelContentVersions)
         .set({ isSelected: false })
-        .where(and(
-          eq(modelContentVersions.termId, selectedVersion.termId),
-          eq(modelContentVersions.sectionName, selectedVersion.sectionName)
-        ));
+        .where(
+          and(
+            eq(modelContentVersions.termId, selectedVersion.termId),
+            eq(modelContentVersions.sectionName, selectedVersion.sectionName)
+          )
+        );
 
       // Select the chosen version
-      await db.update(modelContentVersions)
-        .set({ 
+      await db
+        .update(modelContentVersions)
+        .set({
           isSelected: true,
           status: 'selected',
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(modelContentVersions.id, versionId));
 
@@ -686,20 +706,22 @@ export class AIContentGenerationService {
           promptTokens: selectedVersion.promptTokens,
           completionTokens: selectedVersion.completionTokens,
           cost: parseFloat(selectedVersion.cost),
-          userId
+          userId,
         }
       );
 
-      logger.info(`Selected model version ${versionId} for ${selectedVersion.termId} - ${selectedVersion.sectionName}`);
+      logger.info(
+        `Selected model version ${versionId} for ${selectedVersion.termId} - ${selectedVersion.sectionName}`
+      );
       return { success: true };
     } catch (error) {
       logger.error('Error selecting model version:', {
         error: error instanceof Error ? error.message : String(error),
-        versionId
+        versionId,
       });
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -707,17 +729,23 @@ export class AIContentGenerationService {
   /**
    * Rate a model version
    */
-  async rateModelVersion(versionId: string, rating: number, notes?: string, userId?: string): Promise<{ success: boolean; error?: string }> {
+  async rateModelVersion(
+    versionId: string,
+    rating: number,
+    notes?: string,
+    _userId?: string
+  ): Promise<{ success: boolean; error?: string }> {
     try {
       if (rating < 1 || rating > 5) {
         return { success: false, error: 'Rating must be between 1 and 5' };
       }
 
-      await db.update(modelContentVersions)
-        .set({ 
+      await db
+        .update(modelContentVersions)
+        .set({
           userRating: rating,
           userNotes: notes,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(modelContentVersions.id, versionId));
 
@@ -727,11 +755,11 @@ export class AIContentGenerationService {
       logger.error('Error rating model version:', {
         error: error instanceof Error ? error.message : String(error),
         versionId,
-        rating
+        rating,
       });
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error occurred',
       };
     }
   }
@@ -740,8 +768,8 @@ export class AIContentGenerationService {
    * Store generated content in database
    */
   private async storeGeneratedContent(
-    termId: string, 
-    sectionName: string, 
+    termId: string,
+    sectionName: string,
     content: string,
     metadata: {
       templateUsed: string;
@@ -754,23 +782,22 @@ export class AIContentGenerationService {
   ) {
     try {
       // Get or create section
-      let sectionData = await db.select()
+      const sectionData = await db
+        .select()
         .from(sections)
-        .where(and(
-          eq(sections.termId, termId),
-          eq(sections.name, sectionName)
-        ))
+        .where(and(eq(sections.termId, termId), eq(sections.name, sectionName)))
         .limit(1);
 
       let sectionId: number;
       if (sectionData.length === 0) {
         // Create new section
-        const newSection = await db.insert(sections)
+        const newSection = await db
+          .insert(sections)
           .values({
             termId,
             name: sectionName,
             displayOrder: 0,
-            isCompleted: true
+            isCompleted: true,
           })
           .returning();
         sectionId = newSection[0].id;
@@ -779,12 +806,10 @@ export class AIContentGenerationService {
       }
 
       // Check if section item exists
-      const existingItem = await db.select()
+      const existingItem = await db
+        .select()
         .from(sectionItems)
-        .where(and(
-          eq(sectionItems.sectionId, sectionId),
-          eq(sectionItems.label, sectionName)
-        ))
+        .where(and(eq(sectionItems.sectionId, sectionId), eq(sectionItems.label, sectionName)))
         .limit(1);
 
       const itemData = {
@@ -802,19 +827,16 @@ export class AIContentGenerationService {
           completionTokens: metadata.completionTokens,
           cost: metadata.cost,
           generatedAt: new Date().toISOString(),
-          generatedBy: metadata.userId
-        }
+          generatedBy: metadata.userId,
+        },
       };
 
       if (existingItem.length > 0) {
         // Update existing item
-        await db.update(sectionItems)
-          .set(itemData)
-          .where(eq(sectionItems.id, existingItem[0].id));
+        await db.update(sectionItems).set(itemData).where(eq(sectionItems.id, existingItem[0].id));
       } else {
         // Create new item
-        await db.insert(sectionItems)
-          .values(itemData);
+        await db.insert(sectionItems).values(itemData);
       }
 
       logger.info(`Stored generated content for ${termId} - ${sectionName}`);
@@ -822,7 +844,7 @@ export class AIContentGenerationService {
       logger.error('Error storing generated content:', {
         error: error instanceof Error ? error.message : String(error),
         termId,
-        sectionName
+        sectionName,
       });
       throw error;
     }
@@ -834,33 +856,34 @@ export class AIContentGenerationService {
   private async createVerificationRecord(termId: string, userId?: string) {
     try {
       // Check if verification record exists
-      const existing = await db.select()
+      const existing = await db
+        .select()
         .from(aiContentVerification)
         .where(eq(aiContentVerification.termId, termId))
         .limit(1);
 
       if (existing.length === 0) {
         // Create new verification record
-        await db.insert(aiContentVerification)
-          .values({
-            termId,
-            isAiGenerated: true,
-            aiModel: this.DEFAULT_MODEL,
-            generatedAt: new Date(),
-            generatedBy: userId,
-            verificationStatus: 'unverified',
-            confidenceLevel: 'medium'
-          });
+        await db.insert(aiContentVerification).values({
+          termId,
+          isAiGenerated: true,
+          aiModel: this.DEFAULT_MODEL,
+          generatedAt: new Date(),
+          generatedBy: userId,
+          verificationStatus: 'unverified',
+          confidenceLevel: 'medium',
+        });
       } else {
         // Update existing record
-        await db.update(aiContentVerification)
+        await db
+          .update(aiContentVerification)
           .set({
             isAiGenerated: true,
             aiModel: this.DEFAULT_MODEL,
             generatedAt: new Date(),
             generatedBy: userId,
             verificationStatus: 'unverified',
-            lastReviewedAt: new Date()
+            lastReviewedAt: new Date(),
           })
           .where(eq(aiContentVerification.id, existing[0].id));
       }
@@ -868,7 +891,7 @@ export class AIContentGenerationService {
       logger.error('Error creating verification record:', {
         error: error instanceof Error ? error.message : String(error),
         termId,
-        userId
+        userId,
       });
       // Don't throw - this is non-critical
     }
@@ -891,23 +914,22 @@ export class AIContentGenerationService {
     errorMessage?: string;
   }) {
     try {
-      await db.insert(aiUsageAnalytics)
-        .values({
-          operation: data.operation,
-          model: data.model,
-          userId: data.userId,
-          termId: data.termId,
-          inputTokens: data.inputTokens,
-          outputTokens: data.outputTokens,
-          latency: data.latency,
-          cost: data.cost?.toString(),
-          success: data.success,
-          errorType: data.errorType,
-          errorMessage: data.errorMessage
-        });
+      await db.insert(aiUsageAnalytics).values({
+        operation: data.operation,
+        model: data.model,
+        userId: data.userId,
+        termId: data.termId,
+        inputTokens: data.inputTokens,
+        outputTokens: data.outputTokens,
+        latency: data.latency,
+        cost: data.cost?.toString(),
+        success: data.success,
+        errorType: data.errorType,
+        errorMessage: data.errorMessage,
+      });
     } catch (error) {
       logger.error('Error logging usage analytics:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       // Don't throw - this is non-critical
     }
@@ -918,7 +940,8 @@ export class AIContentGenerationService {
    */
   private async getTermData(termId: string) {
     try {
-      const termData = await db.select()
+      const termData = await db
+        .select()
         .from(enhancedTerms)
         .where(eq(enhancedTerms.id, termId))
         .limit(1);
@@ -927,7 +950,7 @@ export class AIContentGenerationService {
     } catch (error) {
       logger.error('Error getting term data:', {
         error: error instanceof Error ? error.message : String(error),
-        termId
+        termId,
       });
       return null;
     }
@@ -943,7 +966,7 @@ export class AIContentGenerationService {
       return 0;
     }
 
-    return (promptTokens / 1000 * costs.input) + (completionTokens / 1000 * costs.output);
+    return (promptTokens / 1000) * costs.input + (completionTokens / 1000) * costs.output;
   }
 
   /**
@@ -999,7 +1022,7 @@ Your content will be marked as AI-generated and subject to expert review. Priori
   /**
    * Get generation statistics
    */
-  async getGenerationStats(termId?: string): Promise<{
+  async getGenerationStats(_termId?: string): Promise<{
     totalGenerations: number;
     successRate: number;
     totalCost: number;
@@ -1016,11 +1039,11 @@ Your content will be marked as AI-generated and subject to expert review. Priori
         totalCost: 0,
         averageCost: 0,
         averageTokens: 0,
-        modelUsage: {}
+        modelUsage: {},
       };
     } catch (error) {
       logger.error('Error getting generation stats:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }

@@ -1,11 +1,20 @@
-import React, { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  BarChart3,
+  Brain,
+  Loader2,
+  RefreshCw,
+  Settings,
+  Trash2,
+  TrendingUp,
+  Zap,
+} from 'lucide-react';
+import { useState } from 'react';
+import { useToast } from '../hooks/use-toast';
+import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
 import { Progress } from './ui/progress';
-import { Loader2, Brain, Trash2, RefreshCw, BarChart3, Settings, Zap, TrendingUp } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useToast } from '../hooks/use-toast';
 
 interface AIStatusData {
   status: string;
@@ -46,12 +55,16 @@ interface ContentSuggestionsData {
 }
 
 export function AIAdminDashboard() {
-  const [isClearingCache, setIsClearingCache] = useState(false);
+  const [_isClearingCache, _setIsClearingCache] = useState(false);
   const { toast } = useToast();
-  const queryClient = useQueryClient();
+  const _queryClient = useQueryClient();
 
   // Fetch AI service status
-  const { data: aiStatus, isLoading: statusLoading, refetch: refetchStatus } = useQuery<AIStatusData>({
+  const {
+    data: aiStatus,
+    isLoading: statusLoading,
+    refetch: refetchStatus,
+  } = useQuery<AIStatusData>({
     queryKey: ['ai-status'],
     queryFn: async () => {
       const response = await fetch('/api/ai/status');
@@ -84,16 +97,16 @@ export function AIAdminDashboard() {
     },
     onSuccess: () => {
       toast({
-        title: "Success",
-        description: "AI cache cleared successfully",
+        title: 'Success',
+        description: 'AI cache cleared successfully',
       });
       refetchStatus();
     },
     onError: (error) => {
       toast({
-        title: "Error",
+        title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to clear cache',
-        variant: "destructive"
+        variant: 'destructive',
       });
     },
   });
@@ -137,13 +150,9 @@ export function AIAdminDashboard() {
           </h2>
           <p className="text-gray-600">Monitor and manage AI-powered features</p>
         </div>
-        
+
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            onClick={() => refetchStatus()}
-            disabled={statusLoading}
-          >
+          <Button variant="outline" onClick={() => refetchStatus()} disabled={statusLoading}>
             <RefreshCw className={`h-4 w-4 mr-2 ${statusLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
@@ -159,11 +168,14 @@ export function AIAdminDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold flex items-center gap-2">
-              <div className={`w-3 h-3 rounded-full ${aiStatus?.status === 'operational' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+              <div
+                className={`w-3 h-3 rounded-full ${aiStatus?.status === 'operational' ? 'bg-green-500' : 'bg-red-500'}`}
+              ></div>
               {aiStatus?.status || 'Unknown'}
             </div>
             <p className="text-xs text-muted-foreground">
-              Last updated: {aiStatus?.timestamp ? new Date(aiStatus.timestamp).toLocaleString() : 'Never'}
+              Last updated:{' '}
+              {aiStatus?.timestamp ? new Date(aiStatus.timestamp).toLocaleString() : 'Never'}
             </p>
           </CardContent>
         </Card>
@@ -202,9 +214,7 @@ export function AIAdminDashboard() {
             <BarChart3 className="h-5 w-5" />
             API Rate Limits
           </CardTitle>
-          <CardDescription>
-            Current usage against OpenAI API rate limits
-          </CardDescription>
+          <CardDescription>Current usage against OpenAI API rate limits</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {aiStatus?.rateLimit && (
@@ -212,12 +222,23 @@ export function AIAdminDashboard() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Requests per minute</span>
-                  <span className={getRateLimitColor(getRateLimitProgress(aiStatus.rateLimit.requestsLastMinute, aiStatus.rateLimit.limits.maxRequestsPerMinute))}>
-                    {aiStatus.rateLimit.requestsLastMinute} / {aiStatus.rateLimit.limits.maxRequestsPerMinute}
+                  <span
+                    className={getRateLimitColor(
+                      getRateLimitProgress(
+                        aiStatus.rateLimit.requestsLastMinute,
+                        aiStatus.rateLimit.limits.maxRequestsPerMinute
+                      )
+                    )}
+                  >
+                    {aiStatus.rateLimit.requestsLastMinute} /{' '}
+                    {aiStatus.rateLimit.limits.maxRequestsPerMinute}
                   </span>
                 </div>
-                <Progress 
-                  value={getRateLimitProgress(aiStatus.rateLimit.requestsLastMinute, aiStatus.rateLimit.limits.maxRequestsPerMinute)} 
+                <Progress
+                  value={getRateLimitProgress(
+                    aiStatus.rateLimit.requestsLastMinute,
+                    aiStatus.rateLimit.limits.maxRequestsPerMinute
+                  )}
                   className="h-2"
                 />
               </div>
@@ -225,12 +246,23 @@ export function AIAdminDashboard() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Requests per hour</span>
-                  <span className={getRateLimitColor(getRateLimitProgress(aiStatus.rateLimit.requestsLastHour, aiStatus.rateLimit.limits.maxRequestsPerHour))}>
-                    {aiStatus.rateLimit.requestsLastHour} / {aiStatus.rateLimit.limits.maxRequestsPerHour}
+                  <span
+                    className={getRateLimitColor(
+                      getRateLimitProgress(
+                        aiStatus.rateLimit.requestsLastHour,
+                        aiStatus.rateLimit.limits.maxRequestsPerHour
+                      )
+                    )}
+                  >
+                    {aiStatus.rateLimit.requestsLastHour} /{' '}
+                    {aiStatus.rateLimit.limits.maxRequestsPerHour}
                   </span>
                 </div>
-                <Progress 
-                  value={getRateLimitProgress(aiStatus.rateLimit.requestsLastHour, aiStatus.rateLimit.limits.maxRequestsPerHour)} 
+                <Progress
+                  value={getRateLimitProgress(
+                    aiStatus.rateLimit.requestsLastHour,
+                    aiStatus.rateLimit.limits.maxRequestsPerHour
+                  )}
                   className="h-2"
                 />
               </div>
@@ -238,12 +270,23 @@ export function AIAdminDashboard() {
               <div className="space-y-2">
                 <div className="flex justify-between text-sm">
                   <span>Requests per day</span>
-                  <span className={getRateLimitColor(getRateLimitProgress(aiStatus.rateLimit.requestsLastDay, aiStatus.rateLimit.limits.maxRequestsPerDay))}>
-                    {aiStatus.rateLimit.requestsLastDay} / {aiStatus.rateLimit.limits.maxRequestsPerDay}
+                  <span
+                    className={getRateLimitColor(
+                      getRateLimitProgress(
+                        aiStatus.rateLimit.requestsLastDay,
+                        aiStatus.rateLimit.limits.maxRequestsPerDay
+                      )
+                    )}
+                  >
+                    {aiStatus.rateLimit.requestsLastDay} /{' '}
+                    {aiStatus.rateLimit.limits.maxRequestsPerDay}
                   </span>
                 </div>
-                <Progress 
-                  value={getRateLimitProgress(aiStatus.rateLimit.requestsLastDay, aiStatus.rateLimit.limits.maxRequestsPerDay)} 
+                <Progress
+                  value={getRateLimitProgress(
+                    aiStatus.rateLimit.requestsLastDay,
+                    aiStatus.rateLimit.limits.maxRequestsPerDay
+                  )}
                   className="h-2"
                 />
               </div>
@@ -256,9 +299,7 @@ export function AIAdminDashboard() {
       <Card>
         <CardHeader>
           <CardTitle>Content Recommendations</CardTitle>
-          <CardDescription>
-            AI-powered suggestions for improving your glossary
-          </CardDescription>
+          <CardDescription>AI-powered suggestions for improving your glossary</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {suggestions?.recommendations?.map((rec, index) => (
@@ -267,9 +308,7 @@ export function AIAdminDashboard() {
                 <Badge variant="outline" className="text-xs">
                   {rec.type}
                 </Badge>
-                <p className="text-sm text-blue-800 flex-1">
-                  {rec.message}
-                </p>
+                <p className="text-sm text-blue-800 flex-1">{rec.message}</p>
               </div>
             </div>
           ))}
@@ -280,17 +319,11 @@ export function AIAdminDashboard() {
       <Card>
         <CardHeader>
           <CardTitle>Management Actions</CardTitle>
-          <CardDescription>
-            Administrative controls for the AI system
-          </CardDescription>
+          <CardDescription>Administrative controls for the AI system</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex gap-4">
-            <Button
-              variant="outline"
-              onClick={clearCache}
-              disabled={clearCacheMutation.isPending}
-            >
+            <Button variant="outline" onClick={clearCache} disabled={clearCacheMutation.isPending}>
               {clearCacheMutation.isPending ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -303,7 +336,7 @@ export function AIAdminDashboard() {
                 </>
               )}
             </Button>
-            
+
             <Button variant="outline" disabled>
               <Settings className="mr-2 h-4 w-4" />
               AI Settings
@@ -317,9 +350,7 @@ export function AIAdminDashboard() {
         <Card>
           <CardHeader>
             <CardTitle>Latest Term Suggestions</CardTitle>
-            <CardDescription>
-              Recent AI-generated term suggestions for your review
-            </CardDescription>
+            <CardDescription>Recent AI-generated term suggestions for your review</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -328,9 +359,7 @@ export function AIAdminDashboard() {
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <h4 className="font-medium">{suggestion.term}</h4>
-                      <p className="text-sm text-gray-600 mt-1">
-                        {suggestion.shortDefinition}
-                      </p>
+                      <p className="text-sm text-gray-600 mt-1">{suggestion.shortDefinition}</p>
                       <div className="flex items-center gap-2 mt-2">
                         <Badge variant="outline" className="text-xs">
                           {suggestion.category}

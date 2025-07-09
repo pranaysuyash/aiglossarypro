@@ -3,22 +3,23 @@
  * Personalized content recommendations based on user behavior analysis
  */
 
-import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Target, 
-  BookOpen, 
-  TrendingUp, 
-  Compass, 
-  ChevronRight, 
+import {
+  BookOpen,
+  ChevronRight,
+  Compass,
   RefreshCw,
-  ThumbsUp,
+  Target,
   ThumbsDown,
-  X
+  ThumbsUp,
+  TrendingUp,
+  X,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import type React from 'react';
+import { useState } from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Skeleton } from './ui/skeleton';
 
 interface PersonalizedRecommendation {
@@ -44,7 +45,7 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
   type = 'all',
   showHeader = true,
   className = '',
-  onRecommendationClick
+  onRecommendationClick,
 }) => {
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [feedbackGiven, setFeedbackGiven] = useState<Set<string>>(new Set());
@@ -54,9 +55,9 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
     queryFn: async () => {
       const params = new URLSearchParams({
         type,
-        limit: limit.toString()
+        limit: limit.toString(),
       });
-      
+
       const response = await fetch(`/api/personalized/recommendations?${params}`);
       if (!response.ok) {
         if (response.status === 401) {
@@ -70,19 +71,24 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
     retry: (failureCount, error) => {
       if (error.message === 'Authentication required') return false;
       return failureCount < 2;
-    }
+    },
   });
 
   const recommendations: PersonalizedRecommendation[] = data?.data || [];
-  const filteredRecommendations = recommendations.filter(rec => !dismissedIds.has(rec.id));
+  const filteredRecommendations = recommendations.filter((rec) => !dismissedIds.has(rec.id));
 
   const handleRecommendationClick = (recommendation: PersonalizedRecommendation) => {
     if (onRecommendationClick) {
       onRecommendationClick(recommendation);
     } else {
-      const path = recommendation.type === 'term' ? '/term' : 
-                  recommendation.type === 'learning_path' ? '/learning-paths' :
-                  recommendation.type === 'category' ? '/category' : '/trending';
+      const path =
+        recommendation.type === 'term'
+          ? '/term'
+          : recommendation.type === 'learning_path'
+            ? '/learning-paths'
+            : recommendation.type === 'category'
+              ? '/category'
+              : '/trending';
       window.open(`${path}/${recommendation.id}`, '_blank');
     }
   };
@@ -96,38 +102,48 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
           recommendationId,
           feedback: isPositive ? 'positive' : 'negative',
           rating: isPositive ? 5 : 1,
-          action: 'feedback_click'
-        })
+          action: 'feedback_click',
+        }),
       });
-      
-      setFeedbackGiven(prev => new Set(prev).add(recommendationId));
+
+      setFeedbackGiven((prev) => new Set(prev).add(recommendationId));
     } catch (error) {
       console.error('Error submitting feedback:', error);
     }
   };
 
   const handleDismiss = (recommendationId: string) => {
-    setDismissedIds(prev => new Set(prev).add(recommendationId));
+    setDismissedIds((prev) => new Set(prev).add(recommendationId));
     handleFeedback(recommendationId, false);
   };
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'term': return <BookOpen className="w-4 h-4" />;
-      case 'learning_path': return <Target className="w-4 h-4" />;
-      case 'category': return <Compass className="w-4 h-4" />;
-      case 'trending': return <TrendingUp className="w-4 h-4" />;
-      default: return <BookOpen className="w-4 h-4" />;
+      case 'term':
+        return <BookOpen className="w-4 h-4" />;
+      case 'learning_path':
+        return <Target className="w-4 h-4" />;
+      case 'category':
+        return <Compass className="w-4 h-4" />;
+      case 'trending':
+        return <TrendingUp className="w-4 h-4" />;
+      default:
+        return <BookOpen className="w-4 h-4" />;
     }
   };
 
   const getTypeColor = (type: string): string => {
     switch (type) {
-      case 'term': return 'bg-blue-100 text-blue-700';
-      case 'learning_path': return 'bg-purple-100 text-purple-700';
-      case 'category': return 'bg-green-100 text-green-700';
-      case 'trending': return 'bg-orange-100 text-orange-700';
-      default: return 'bg-gray-100 text-gray-700';
+      case 'term':
+        return 'bg-blue-100 text-blue-700';
+      case 'learning_path':
+        return 'bg-purple-100 text-purple-700';
+      case 'category':
+        return 'bg-green-100 text-green-700';
+      case 'trending':
+        return 'bg-orange-100 text-orange-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
     }
   };
 
@@ -181,7 +197,7 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
           <div className="text-center py-8">
             <Target className="w-12 h-12 text-gray-400 mx-auto mb-4" />
             <p className="text-gray-500 mb-4">
-              {data?.message === 'Authentication required' 
+              {data?.message === 'Authentication required'
                 ? 'Sign in to get personalized recommendations'
                 : 'No recommendations available yet'}
             </p>
@@ -204,9 +220,7 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
                 <Target className="w-5 h-5 text-blue-500" />
                 Recommended For You
               </CardTitle>
-              <CardDescription>
-                Based on your learning patterns and interests
-              </CardDescription>
+              <CardDescription>Based on your learning patterns and interests</CardDescription>
             </div>
             <Button
               variant="ghost"
@@ -220,14 +234,14 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
           </div>
         </CardHeader>
       )}
-      
+
       <CardContent className={!showHeader ? 'pt-6' : ''}>
         {filteredRecommendations.length === 0 ? (
           <div className="text-center py-6">
             <p className="text-sm text-gray-500">All recommendations dismissed</p>
-            <Button 
-              size="sm" 
-              variant="outline" 
+            <Button
+              size="sm"
+              variant="outline"
               className="mt-2"
               onClick={() => setDismissedIds(new Set())}
             >
@@ -236,18 +250,20 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredRecommendations.map((recommendation, index) => (
+            {filteredRecommendations.map((recommendation, _index) => (
               <div
                 key={recommendation.id}
                 className="group relative flex items-start space-x-3 p-3 rounded-lg border hover:bg-gray-50 transition-colors"
               >
                 {/* Type Icon */}
-                <div className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${getTypeColor(recommendation.type)}`}>
+                <div
+                  className={`flex-shrink-0 w-8 h-8 rounded-lg flex items-center justify-center ${getTypeColor(recommendation.type)}`}
+                >
                   {getTypeIcon(recommendation.type)}
                 </div>
-                
+
                 {/* Content */}
-                <div 
+                <div
                   className="flex-1 min-w-0 cursor-pointer"
                   onClick={() => handleRecommendationClick(recommendation)}
                 >
@@ -259,17 +275,19 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
                       <p className="text-xs text-gray-600 line-clamp-2 mt-1">
                         {recommendation.description}
                       </p>
-                      
+
                       <div className="flex items-center gap-2 mt-2">
                         <Badge variant="outline" className="text-xs px-1 py-0">
                           {recommendation.reason}
                         </Badge>
-                        <Badge className={`text-xs px-1 py-0 ${getRelevanceColor(recommendation.relevanceScore)}`}>
+                        <Badge
+                          className={`text-xs px-1 py-0 ${getRelevanceColor(recommendation.relevanceScore)}`}
+                        >
                           {Math.round(recommendation.relevanceScore)}% match
                         </Badge>
                       </div>
                     </div>
-                    
+
                     <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition-colors flex-shrink-0 ml-2" />
                   </div>
                 </div>
@@ -306,7 +324,7 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
                       Thanks!
                     </div>
                   )}
-                  
+
                   <Button
                     variant="ghost"
                     size="sm"
@@ -323,17 +341,19 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
             ))}
           </div>
         )}
-        
+
         {/* Footer */}
         {filteredRecommendations.length > 0 && (
           <div className="mt-4 pt-3 border-t">
             <div className="flex items-center justify-between text-xs text-gray-500">
               <span>
-                {data?.metadata ? `Based on ${data.metadata.userProfile.skillLevel} level` : 'Personalized for you'}
+                {data?.metadata
+                  ? `Based on ${data.metadata.userProfile.skillLevel} level`
+                  : 'Personalized for you'}
               </span>
-              <Button 
-                variant="link" 
-                size="sm" 
+              <Button
+                variant="link"
+                size="sm"
                 className="text-xs p-0 h-auto"
                 onClick={() => window.open('/personalized', '_blank')}
               >

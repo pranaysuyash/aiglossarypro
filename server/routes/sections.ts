@@ -1,31 +1,28 @@
-import { Express, Request, Response } from 'express';
-import { optimizedStorage as storage } from "../optimizedStorage";
-import { authenticateToken } from '../middleware/adminAuth';
-import type { 
-  ISectionResponse, 
-  ITermSectionsResponse, 
-  IProgressUpdate, 
-  IProgressSummary,
-  IContentGalleryResponse,
-  ISection,
-  IUserProgress,
+import type { Express, Request, Response } from 'express';
+import type {
   IEnhancedTerm,
-  ISectionItem
+  IProgressUpdate,
+  ISection,
+  ISectionItem,
+  ISectionResponse,
+  ITermSectionsResponse,
+  IUserProgress,
 } from '../../shared/types';
+import { SECTION_NAMES } from '../constants';
+import { authenticateToken } from '../middleware/adminAuth';
+import { optimizedStorage as storage } from '../optimizedStorage';
 import { log as logger } from '../utils/logger';
-import { SECTION_NAMES, DEFAULT_LIMITS } from '../constants';
-import { 
-  validateParams, 
-  validateQuery, 
-  sectionParamsSchema, 
+import {
+  paginationSchema,
   progressParamsSchema,
   queryParamsSchema,
   quizQuerySchema,
-  paginationSchema 
+  sectionParamsSchema,
+  validateParams,
+  validateQuery,
 } from '../utils/validation';
 
 export function registerSectionRoutes(app: Express): void {
-
   // Get all sections for a term
   app.get('/api/terms/:termId/sections', async (req: Request, res: Response) => {
     try {
@@ -34,14 +31,15 @@ export function registerSectionRoutes(app: Express): void {
 
       // Get sections and progress data
       const sections: ISection[] = await storage.getTermSections(termId);
-      const userProgress: IUserProgress[] = userId ? 
-        [await storage.getUserProgressSummary(userId)] : [];
+      const userProgress: IUserProgress[] = userId
+        ? [await storage.getUserProgressSummary(userId)]
+        : [];
 
       const baseTerm = await storage.getTermById(termId);
       if (!baseTerm) {
         return res.status(404).json({
           success: false,
-          error: 'Term not found'
+          error: 'Term not found',
         });
       }
 
@@ -52,24 +50,27 @@ export function registerSectionRoutes(app: Express): void {
         userProgress,
         completionPercentage: 0,
         totalSections: 0,
-        completedSections: 0
+        completedSections: 0,
       };
 
       const response: ITermSectionsResponse = {
         term,
         sections,
-        userProgress
+        userProgress,
       };
 
       res.json({
         success: true,
-        data: response
+        data: response,
       });
     } catch (error) {
-      logger.error('Error fetching term sections', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching term sections', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch term sections'
+        error: 'Failed to fetch term sections',
       });
     }
   });
@@ -83,67 +84,81 @@ export function registerSectionRoutes(app: Express): void {
       // Get section data and items
       const section: ISection | null = await storage.getSectionById(sectionId);
       const items: ISectionItem[] = []; // TODO: Implement when section items are ready
-      const userProgress: IUserProgress | undefined = userId ? 
-        await storage.getUserProgressSummary(userId) : undefined;
+      const userProgress: IUserProgress | undefined = userId
+        ? await storage.getUserProgressSummary(userId)
+        : undefined;
 
       const response: ISectionResponse = {
         section: section as any, // Cast to handle null case
         items,
-        userProgress
+        userProgress,
       };
 
       res.json({
         success: true,
-        data: response
+        data: response,
       });
     } catch (error) {
-      logger.error('Error fetching section', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching section', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch section'
+        error: 'Failed to fetch section',
       });
     }
   });
 
   // Update user progress for a section
-  app.patch('/api/progress/:termId/:sectionId', authenticateToken, async (req: Request, res: Response) => {
-    try {
-      const { termId, sectionId } = validateParams(progressParamsSchema)(req);
-      const userId = req.user!.claims.sub;
-      const progressUpdate: IProgressUpdate = req.body;
+  app.patch(
+    '/api/progress/:termId/:sectionId',
+    authenticateToken,
+    async (req: Request, res: Response) => {
+      try {
+        const { termId, sectionId } = validateParams(progressParamsSchema)(req);
+        const userId = req.user?.claims.sub;
+        const progressUpdate: IProgressUpdate = req.body;
 
-      // Update user progress using the new method
-      await storage.updateUserProgress(userId, String(termId), sectionId, progressUpdate);
+        // Update user progress using the new method
+        await storage.updateUserProgress(userId, String(termId), sectionId, progressUpdate);
 
-      res.json({
-        success: true,
-        message: 'Progress updated successfully'
-      });
-    } catch (error) {
-      logger.error('Error updating progress', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to update progress'
-      });
+        res.json({
+          success: true,
+          message: 'Progress updated successfully',
+        });
+      } catch (error) {
+        logger.error('Error updating progress', {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        res.status(500).json({
+          success: false,
+          error: 'Failed to update progress',
+        });
+      }
     }
-  });
+  );
 
   // Get user's overall progress summary
   app.get('/api/progress/summary', authenticateToken, async (req: Request, res: Response) => {
     try {
-      const userId = req.user!.claims.sub;
+      const userId = req.user?.claims.sub;
       // Get user's progress summary using the new method
       const summary = await storage.getUserProgressSummary(userId);
 
       res.json({
         success: true,
-        data: summary
+        data: summary,
       });
     } catch (error) {
-      logger.error('Error fetching progress summary', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching progress summary', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch progress summary'
+        error: 'Failed to fetch progress summary',
       });
     }
   });
@@ -159,13 +174,16 @@ export function registerSectionRoutes(app: Express): void {
 
       res.json({
         success: true,
-        data: galleries
+        data: galleries,
       });
     } catch (error) {
-      logger.error('Error fetching applications gallery', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching applications gallery', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch applications gallery'
+        error: 'Failed to fetch applications gallery',
       });
     }
   });
@@ -179,13 +197,16 @@ export function registerSectionRoutes(app: Express): void {
 
       res.json({
         success: true,
-        data: galleries
+        data: galleries,
       });
     } catch (error) {
-      logger.error('Error fetching ethics hub', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching ethics hub', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch ethics hub'
+        error: 'Failed to fetch ethics hub',
       });
     }
   });
@@ -199,13 +220,16 @@ export function registerSectionRoutes(app: Express): void {
 
       res.json({
         success: true,
-        data: galleries
+        data: galleries,
       });
     } catch (error) {
-      logger.error('Error fetching tutorials', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching tutorials', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch tutorials'
+        error: 'Failed to fetch tutorials',
       });
     }
   });
@@ -219,13 +243,16 @@ export function registerSectionRoutes(app: Express): void {
 
       res.json({
         success: true,
-        data: quizzes
+        data: quizzes,
       });
     } catch (error) {
-      logger.error('Error fetching quizzes', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching quizzes', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch quizzes'
+        error: 'Failed to fetch quizzes',
       });
     }
   });
@@ -238,42 +265,53 @@ export function registerSectionRoutes(app: Express): void {
       if (!q) {
         return res.status(400).json({
           success: false,
-          error: 'Search query is required'
+          error: 'Search query is required',
         });
       }
 
       // Search section content using the new method
-      const results = await storage.searchSectionContent(q, { contentType, sectionName, page, limit });
+      const results = await storage.searchSectionContent(q, {
+        contentType,
+        sectionName,
+        page,
+        limit,
+      });
 
       res.json({
         success: true,
-        data: results
+        data: results,
       });
     } catch (error) {
-      logger.error('Error searching section content', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error searching section content', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to search section content'
+        error: 'Failed to search section content',
       });
     }
   });
 
   // Get section statistics for analytics
-  app.get('/api/sections/analytics', async (req: Request, res: Response) => {
+  app.get('/api/sections/analytics', async (_req: Request, res: Response) => {
     try {
       // Get section analytics using the new method
       const analytics = await storage.getSectionAnalytics();
 
       res.json({
         success: true,
-        data: analytics
+        data: analytics,
       });
     } catch (error) {
-      logger.error('Error fetching section analytics', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching section analytics', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch section analytics'
+        error: 'Failed to fetch section analytics',
       });
     }
   });
-} 
+}

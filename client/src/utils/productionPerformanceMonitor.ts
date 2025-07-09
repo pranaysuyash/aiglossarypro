@@ -28,16 +28,18 @@ class ProductionPerformanceMonitor {
 
   private setupWebVitals() {
     // Core Web Vitals tracking
-    import('web-vitals').then(({ onCLS, onFID, onFCP, onLCP, onTTFB }) => {
-      onCLS(this.recordMetric.bind(this));
-      onFID(this.recordMetric.bind(this));
-      onFCP(this.recordMetric.bind(this));
-      onLCP(this.recordMetric.bind(this));
-      onTTFB(this.recordMetric.bind(this));
-    }).catch(() => {
-      // Fallback for environments without web-vitals
-      console.log('Web Vitals not available, using fallback monitoring');
-    });
+    import('web-vitals')
+      .then(({ onCLS, onFID, onFCP, onLCP, onTTFB }) => {
+        onCLS(this.recordMetric.bind(this));
+        onFID(this.recordMetric.bind(this));
+        onFCP(this.recordMetric.bind(this));
+        onLCP(this.recordMetric.bind(this));
+        onTTFB(this.recordMetric.bind(this));
+      })
+      .catch(() => {
+        // Fallback for environments without web-vitals
+        console.log('Web Vitals not available, using fallback monitoring');
+      });
   }
 
   private setupPerformanceObserver() {
@@ -48,8 +50,14 @@ class ProductionPerformanceMonitor {
           if (entry.entryType === 'navigation') {
             const navEntry = entry as PerformanceNavigationTiming;
             this.recordCustomMetric('page-load', navEntry.loadEventEnd - navEntry.loadEventStart);
-            this.recordCustomMetric('dom-content-loaded', navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart);
-            this.recordCustomMetric('time-to-interactive', navEntry.domInteractive - navEntry.fetchStart);
+            this.recordCustomMetric(
+              'dom-content-loaded',
+              navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart
+            );
+            this.recordCustomMetric(
+              'time-to-interactive',
+              navEntry.domInteractive - navEntry.fetchStart
+            );
           }
         });
       });
@@ -73,7 +81,7 @@ class ProductionPerformanceMonitor {
       value: metric.value,
       timestamp: Date.now(),
       url: window.location.href,
-      userAgent: navigator.userAgent
+      userAgent: navigator.userAgent,
     };
 
     this.metrics.push(performanceMetric);
@@ -86,7 +94,7 @@ class ProductionPerformanceMonitor {
       value,
       timestamp: Date.now(),
       url: window.location.href,
-      userAgent: navigator.userAgent
+      userAgent: navigator.userAgent,
     };
 
     this.metrics.push(performanceMetric);
@@ -122,8 +130,8 @@ class ProductionPerformanceMonitor {
         body: JSON.stringify({
           metrics: metricsToSend,
           timestamp: Date.now(),
-          sessionId: this.getSessionId()
-        })
+          sessionId: this.getSessionId(),
+        }),
       });
     } catch (error) {
       console.warn('Failed to send performance metrics:', error);
@@ -163,7 +171,7 @@ class ProductionPerformanceMonitor {
         const data = JSON.stringify({
           metrics: this.metrics,
           timestamp: Date.now(),
-          sessionId: this.getSessionId()
+          sessionId: this.getSessionId(),
         });
         navigator.sendBeacon(this.endpoint, data);
       } else {

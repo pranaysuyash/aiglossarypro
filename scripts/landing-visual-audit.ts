@@ -2,7 +2,7 @@
 
 /**
  * Landing Page Visual Audit Script
- * 
+ *
  * Takes screenshots specifically of the landing page to check:
  * - Header/footer duplication fix
  * - Button spacing and visibility
@@ -11,10 +11,10 @@
  * - Overall UX improvements
  */
 
-import { chromium } from 'playwright';
-import fs from 'fs/promises';
-import path from 'path';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import chalk from 'chalk';
+import { chromium } from 'playwright';
 
 interface ScreenshotConfig {
   name: string;
@@ -32,7 +32,12 @@ class LandingPageAuditor {
   private outputDir: string;
 
   constructor() {
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T').join('_').slice(0, -5);
+    const timestamp = new Date()
+      .toISOString()
+      .replace(/[:.]/g, '-')
+      .split('T')
+      .join('_')
+      .slice(0, -5);
     this.outputDir = path.join(process.cwd(), 'landing-audit-results', timestamp);
   }
 
@@ -44,49 +49,45 @@ class LandingPageAuditor {
 
   async captureScreenshots() {
     const browser = await chromium.launch({ headless: false }); // Show browser for debugging
-    
+
     const configs: ScreenshotConfig[] = [
       // Landing page - desktop
-      { 
-        name: '01-landing-desktop-full', 
-        url: '/', 
-        viewport: { width: 1920, height: 1080 }
+      {
+        name: '01-landing-desktop-full',
+        url: '/',
+        viewport: { width: 1920, height: 1080 },
       },
-      
+
       // Landing page - mobile
-      { 
-        name: '02-landing-mobile-full', 
-        url: '/', 
-        viewport: { width: 375, height: 812 }
+      {
+        name: '02-landing-mobile-full',
+        url: '/',
+        viewport: { width: 375, height: 812 },
       },
-      
+
       // Landing page - tablet
-      { 
-        name: '03-landing-tablet-full', 
-        url: '/', 
-        viewport: { width: 768, height: 1024 }
+      {
+        name: '03-landing-tablet-full',
+        url: '/',
+        viewport: { width: 768, height: 1024 },
       },
-      
+
       // Test header buttons on desktop
       {
         name: '04-header-buttons-desktop',
         url: '/',
         viewport: { width: 1920, height: 1080 },
-        actions: [
-          { type: 'wait', value: 2000 }
-        ]
+        actions: [{ type: 'wait', value: 2000 }],
       },
-      
+
       // Test mobile header and CTA
       {
         name: '05-mobile-header-cta',
         url: '/',
         viewport: { width: 375, height: 812 },
-        actions: [
-          { type: 'wait', value: 2000 }
-        ]
+        actions: [{ type: 'wait', value: 2000 }],
       },
-      
+
       // Test newsletter signup area
       {
         name: '06-newsletter-footer',
@@ -94,20 +95,18 @@ class LandingPageAuditor {
         viewport: { width: 1920, height: 1080 },
         actions: [
           { type: 'scroll', value: 10000 }, // Scroll to bottom
-          { type: 'wait', value: 1000 }
-        ]
+          { type: 'wait', value: 1000 },
+        ],
       },
-      
+
       // Test "See What's Inside" button visibility
       {
         name: '07-see-whats-inside-button',
         url: '/',
         viewport: { width: 1920, height: 1080 },
-        actions: [
-          { type: 'wait', value: 2000 }
-        ]
+        actions: [{ type: 'wait', value: 2000 }],
       },
-      
+
       // Test pricing section scroll navigation
       {
         name: '08-pricing-section',
@@ -115,29 +114,29 @@ class LandingPageAuditor {
         viewport: { width: 1920, height: 1080 },
         actions: [
           { type: 'scroll', value: 3000 }, // Scroll to pricing
-          { type: 'wait', value: 1000 }
-        ]
+          { type: 'wait', value: 1000 },
+        ],
       },
-      
-      // Test FAQ section scroll navigation  
+
+      // Test FAQ section scroll navigation
       {
         name: '09-faq-section',
         url: '/',
         viewport: { width: 1920, height: 1080 },
         actions: [
           { type: 'scroll', value: 5000 }, // Scroll to FAQ
-          { type: 'wait', value: 1000 }
-        ]
-      }
+          { type: 'wait', value: 1000 },
+        ],
+      },
     ];
 
     console.log(chalk.yellow(`Taking ${configs.length} landing page screenshots...`));
 
     for (const config of configs) {
       console.log(chalk.gray(`  📸 ${config.name}...`));
-      
+
       const page = await browser.newPage();
-      
+
       if (config.viewport) {
         await page.setViewportSize(config.viewport);
       }
@@ -145,9 +144,9 @@ class LandingPageAuditor {
       try {
         await page.goto(`${this.baseUrl}${config.url}`, {
           waitUntil: 'domcontentloaded',
-          timeout: 30000
+          timeout: 30000,
         });
-        
+
         // Wait for content to load
         await page.waitForSelector('body', { timeout: 10000 });
         await page.waitForTimeout(2000); // Extra wait for animations
@@ -186,9 +185,8 @@ class LandingPageAuditor {
         // Take screenshot
         await page.screenshot({
           path: path.join(this.outputDir, `${config.name}.png`),
-          fullPage: true
+          fullPage: true,
         });
-
       } catch (error) {
         console.error(chalk.red(`Failed to capture ${config.name}:`), error);
       }
@@ -202,7 +200,7 @@ class LandingPageAuditor {
 
   async generateAnalysisPrompt() {
     const promptPath = path.join(this.outputDir, 'landing-analysis-prompt.md');
-    
+
     const prompt = `# Landing Page Visual Audit Analysis
 
 Please analyze the landing page screenshots and check for the specific issues we've been working on.
@@ -287,12 +285,14 @@ Generate a concise report focusing on these specific areas.
       await this.initialize();
       await this.captureScreenshots();
       await this.generateAnalysisPrompt();
-      
+
       console.log(chalk.green('\n✨ Landing page visual audit complete!\n'));
       console.log(chalk.blue('Next steps:'));
       console.log(chalk.gray('1. Review screenshots in:'), this.outputDir);
-      console.log(chalk.gray('2. Check the analysis prompt:'), path.join(this.outputDir, 'landing-analysis-prompt.md'));
-      
+      console.log(
+        chalk.gray('2. Check the analysis prompt:'),
+        path.join(this.outputDir, 'landing-analysis-prompt.md')
+      );
     } catch (error) {
       console.error(chalk.red('❌ Error:'), error);
       throw error;

@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 import { log, performanceTimer } from '../utils/logger';
-import { captureAPIError, addBreadcrumb } from '../utils/sentry';
+import { addBreadcrumb, captureAPIError } from '../utils/sentry';
 
 // Extend Request interface to include logging context
 declare global {
@@ -19,126 +19,104 @@ export const requestIdMiddleware = (req: Request, res: Response, next: NextFunct
   if (!req.startTime) {
     req.startTime = Date.now();
   }
-  
+
   // Add request ID to response headers for debugging
   res.setHeader('X-Request-ID', req.requestId);
-  
+
   next();
 };
 
 // Request logging middleware
 export const requestLoggingMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const timer = performanceTimer(`${req.method} ${req.path}`);
-  
+
   // Extract user ID from session if available
   req.userId = ((req as any).session as any)?.user?.id || (req.user as any)?.id;
-  
+
   // Log incoming request
-  log.api.request(
-    req.method,
-    req.path,
-    req.userId,
-    {
-      requestId: req.requestId,
-      ip: req.ip,
-      userAgent: req.get('User-Agent'),
-      referer: req.get('Referer'),
-      queryParams: Object.keys(req.query).length > 0 ? req.query : undefined,
-      bodySize: req.get('Content-Length') ? parseInt(req.get('Content-Length')!) : undefined
-    }
-  );
-  
+  log.api.request(req.method, req.path, req.userId, {
+    requestId: req.requestId,
+    ip: req.ip,
+    userAgent: req.get('User-Agent'),
+    referer: req.get('Referer'),
+    queryParams: Object.keys(req.query).length > 0 ? req.query : undefined,
+    bodySize: req.get('Content-Length') ? parseInt(req.get('Content-Length')!) : undefined,
+  });
+
   // Add breadcrumb for Sentry
-  addBreadcrumb(
-    `${req.method} ${req.path}`,
-    'http',
-    'info',
-    {
-      requestId: req.requestId,
-      userId: req.userId
-    }
-  );
-  
+  addBreadcrumb(`${req.method} ${req.path}`, 'http', 'info', {
+    requestId: req.requestId,
+    userId: req.userId,
+  });
+
   // Override res.json to capture response data
   const originalJson = res.json;
-  res.json = function(body: any) {
+  res.json = function (body: any) {
     const duration = timer.end({
       requestId: req.requestId,
       statusCode: res.statusCode,
-      responseSize: Buffer.byteLength(JSON.stringify(body))
+      responseSize: Buffer.byteLength(JSON.stringify(body)),
     });
-    
+
     // Log response
-    log.api.response(
-      req.method,
-      req.path,
-      res.statusCode,
-      duration,
-      {
-        requestId: req.requestId,
-        userId: req.userId,
-        responseSize: Buffer.byteLength(JSON.stringify(body))
-      }
-    );
-    
+    log.api.response(req.method, req.path, res.statusCode, duration, {
+      requestId: req.requestId,
+      userId: req.userId,
+      responseSize: Buffer.byteLength(JSON.stringify(body)),
+    });
+
     return originalJson.call(this, body);
   };
-  
+
   // Override res.send to capture non-JSON responses
   const originalSend = res.send;
-  res.send = function(body: any) {
+  res.send = function (body: any) {
     if (!res.headersSent) {
       const duration = timer.end({
         requestId: req.requestId,
         statusCode: res.statusCode,
-        responseSize: body ? Buffer.byteLength(body.toString()) : 0
+        responseSize: body ? Buffer.byteLength(body.toString()) : 0,
       });
-      
-      log.api.response(
-        req.method,
-        req.path,
-        res.statusCode,
-        duration,
-        {
-          requestId: req.requestId,
-          userId: req.userId,
-          responseSize: body ? Buffer.byteLength(body.toString()) : 0
-        }
-      );
+
+      log.api.response(req.method, req.path, res.statusCode, duration, {
+        requestId: req.requestId,
+        userId: req.userId,
+        responseSize: body ? Buffer.byteLength(body.toString()) : 0,
+      });
     }
-    
+
     return originalSend.call(this, body);
   };
-  
+
   next();
 };
 
 // Error logging middleware
-export const errorLoggingMiddleware = (err: Error, req: Request, res: Response, next: NextFunction) => {
+export const errorLoggingMiddleware = (
+  err: Error,
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) => {
   // Log the error
-  log.api.error(
-    req.method,
-    req.path,
-    err,
-    {
-      requestId: req.requestId,
-      userId: req.userId,
-      stack: err.stack,
-      body: req.body,
-      params: req.params,
-      query: req.query
-    }
-  );
-  
+  log.api.error(req.method, req.path, err, {
+    requestId: req.requestId,
+    userId: req.userId,
+    stack: err.stack,
+    body: req.body,
+    params: req.params,
+    query: req.query,
+  });
+
   // Capture in Sentry
   captureAPIError(err, {
     method: req.method,
     path: req.path,
     userId: req.userId,
     requestId: req.requestId,
-    body: req.body
+    body: req.body,
   });
-  
+
   // Don't call next() here - let the error handler deal with the response
   next(err);
 };
@@ -146,8 +124,8 @@ export const errorLoggingMiddleware = (err: Error, req: Request, res: Response, 
 // Rate limiting logging middleware
 export const rateLimitLoggingMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const originalEnd = res.end.bind(res);
-  
-  (res as any).end = function(chunk?: any, encoding?: BufferEncoding, callback?: () => void): any {
+
+  (res as any).end = function (chunk?: any, encoding?: BufferEncoding, callback?: () => void): any {
     // Check if this was a rate limit response
     if (res.statusCode === 429) {
       log.security.rateLimitExceeded(
@@ -156,28 +134,28 @@ export const rateLimitLoggingMiddleware = (req: Request, res: Response, next: Ne
         parseInt(res.get('X-RateLimit-Limit') || '0')
       );
     }
-    
+
     // Handle different call patterns safely (Type-safe solution following Express signature)
     return originalEnd.call(this, chunk || undefined, encoding as BufferEncoding, callback);
   };
-  
+
   next();
 };
 
 // Security event logging middleware
-export const securityLoggingMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const securityLoggingMiddleware = (req: Request, _res: Response, next: NextFunction) => {
   // Check for suspicious patterns
   const suspiciousPatterns = [
     /\.\.\//g, // Path traversal
     /<script/i, // XSS attempts
     /union.*select/i, // SQL injection
     /eval\(/i, // Code injection
-    /javascript:/i // Javascript protocol
+    /javascript:/i, // Javascript protocol
   ];
-  
+
   const checkString = `${req.url} ${JSON.stringify(req.body)} ${JSON.stringify(req.query)}`;
-  
-  suspiciousPatterns.forEach(pattern => {
+
+  suspiciousPatterns.forEach((pattern) => {
     if (pattern.test(checkString)) {
       log.security.suspiciousActivity(
         req.userId || 'anonymous',
@@ -187,12 +165,12 @@ export const securityLoggingMiddleware = (req: Request, res: Response, next: Nex
           ip: req.ip,
           userAgent: req.get('User-Agent'),
           path: req.path,
-          method: req.method
+          method: req.method,
         }
       );
     }
   });
-  
+
   next();
 };
 
@@ -201,69 +179,64 @@ export const healthCheckLoggingMiddleware = (req: Request, res: Response, next: 
   if (req.path.includes('/health') || req.path.includes('/ping')) {
     // Minimal logging for health checks to avoid noise
     const timer = performanceTimer(`Health Check: ${req.path}`);
-    
+
     const originalJson = res.json;
-    res.json = function(body: any) {
+    res.json = function (body: any) {
       timer.end();
       return originalJson.call(this, body);
     };
   }
-  
+
   next();
 };
 
 // User context middleware (for logging user info)
-export const userContextMiddleware = (req: Request, res: Response, next: NextFunction) => {
+export const userContextMiddleware = (req: Request, _res: Response, next: NextFunction) => {
   const sessionUser = ((req as any).session as any)?.user;
   const authUser = req.user as any;
-  
+
   if (sessionUser || authUser) {
     req.userId = sessionUser?.id || authUser?.id || authUser?.claims?.sub;
-    
+
     // Add user context to logs
-    addBreadcrumb(
-      'User context set',
-      'auth',
-      'info',
-      {
-        userId: req.userId,
-        email: sessionUser?.email || authUser?.email || authUser?.claims?.email
-      }
-    );
+    addBreadcrumb('User context set', 'auth', 'info', {
+      userId: req.userId,
+      email: sessionUser?.email || authUser?.email || authUser?.claims?.email,
+    });
   }
-  
+
   next();
 };
 
 // Performance monitoring middleware
 export const performanceMiddleware = (req: Request, res: Response, next: NextFunction) => {
   const startTime = process.hrtime.bigint();
-  
+
   res.on('finish', () => {
     const endTime = process.hrtime.bigint();
     const duration = Number(endTime - startTime) / 1000000; // Convert to milliseconds
-    
+
     // Log slow requests (>1 second)
     if (duration > 1000) {
       log.warn(`Slow request detected: ${req.method} ${req.path}`, {
         duration,
         requestId: req.requestId,
         userId: req.userId,
-        statusCode: res.statusCode
+        statusCode: res.statusCode,
       });
     }
-    
+
     // Log very slow requests (>5 seconds) as errors
     if (duration > 5000) {
       log.error(`Very slow request: ${req.method} ${req.path}`, {
         duration,
         requestId: req.requestId,
         userId: req.userId,
-        statusCode: res.statusCode
+        statusCode: res.statusCode,
       });
     }
   });
-  
+
   next();
 };
 
@@ -275,5 +248,5 @@ export default {
   securityLogging: securityLoggingMiddleware,
   healthCheckLogging: healthCheckLoggingMiddleware,
   userContext: userContextMiddleware,
-  performance: performanceMiddleware
+  performance: performanceMiddleware,
 };

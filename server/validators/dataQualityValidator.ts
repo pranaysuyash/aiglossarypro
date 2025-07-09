@@ -23,7 +23,6 @@ interface TermData {
 }
 
 export class DataQualityValidator {
-  
   /**
    * Validate category name quality
    */
@@ -31,7 +30,7 @@ export class DataQualityValidator {
     const result: ValidationResult = {
       isValid: true,
       errors: [],
-      warnings: []
+      warnings: [],
     };
 
     // Basic validation rules
@@ -44,7 +43,9 @@ export class DataQualityValidator {
     // Length validation
     if (name.length > 50) {
       result.isValid = false;
-      result.errors.push(`Category name too long (${name.length} chars). Max 50 characters allowed.`);
+      result.errors.push(
+        `Category name too long (${name.length} chars). Max 50 characters allowed.`
+      );
     }
 
     // Format validation
@@ -65,7 +66,7 @@ export class DataQualityValidator {
       'The characteristic function belongs to',
       'Refers To',
       'Techniques:',
-      'Falls Under The Broader Categories'
+      'Falls Under The Broader Categories',
     ];
 
     for (const artifact of aiArtifacts) {
@@ -94,7 +95,7 @@ export class DataQualityValidator {
     const result: ValidationResult = {
       isValid: true,
       errors: [],
-      warnings: []
+      warnings: [],
     };
 
     // Name validation
@@ -116,18 +117,18 @@ export class DataQualityValidator {
 
     // Category validation
     if (term.category) {
-      const categoryValidation = this.validateCategoryName(term.category);
+      const categoryValidation = DataQualityValidator.validateCategoryName(term.category);
       if (!categoryValidation.isValid) {
         result.isValid = false;
-        result.errors.push(...categoryValidation.errors.map(e => `Category: ${e}`));
+        result.errors.push(...categoryValidation.errors.map((e) => `Category: ${e}`));
       }
-      result.warnings.push(...categoryValidation.warnings.map(w => `Category: ${w}`));
+      result.warnings.push(...categoryValidation.warnings.map((w) => `Category: ${w}`));
     }
 
     // Array categories validation
     if (term.mainCategories) {
       for (const category of term.mainCategories) {
-        const categoryValidation = this.validateCategoryName(category);
+        const categoryValidation = DataQualityValidator.validateCategoryName(category);
         if (!categoryValidation.isValid) {
           result.warnings.push(`Main category "${category}" has quality issues`);
         }
@@ -136,7 +137,7 @@ export class DataQualityValidator {
 
     if (term.subCategories) {
       for (const category of term.subCategories) {
-        const categoryValidation = this.validateCategoryName(category);
+        const categoryValidation = DataQualityValidator.validateCategoryName(category);
         if (!categoryValidation.isValid) {
           result.warnings.push(`Sub category "${category}" has quality issues`);
         }
@@ -149,14 +150,11 @@ export class DataQualityValidator {
   /**
    * Validate batch import data
    */
-  static validateBatchData(
-    categories: CategoryData[], 
-    terms: TermData[]
-  ): ValidationResult {
+  static validateBatchData(categories: CategoryData[], terms: TermData[]): ValidationResult {
     const result: ValidationResult = {
       isValid: true,
       errors: [],
-      warnings: []
+      warnings: [],
     };
 
     let validCategories = 0;
@@ -164,24 +162,24 @@ export class DataQualityValidator {
 
     // Validate categories
     for (const category of categories) {
-      const validation = this.validateCategoryName(category.name);
+      const validation = DataQualityValidator.validateCategoryName(category.name);
       if (validation.isValid) {
         validCategories++;
       } else {
         result.errors.push(`Category "${category.name}": ${validation.errors.join(', ')}`);
       }
-      result.warnings.push(...validation.warnings.map(w => `Category "${category.name}": ${w}`));
+      result.warnings.push(...validation.warnings.map((w) => `Category "${category.name}": ${w}`));
     }
 
     // Validate terms
     for (const term of terms) {
-      const validation = this.validateTermData(term);
+      const validation = DataQualityValidator.validateTermData(term);
       if (validation.isValid) {
         validTerms++;
       } else {
         result.errors.push(`Term "${term.name}": ${validation.errors.join(', ')}`);
       }
-      result.warnings.push(...validation.warnings.map(w => `Term "${term.name}": ${w}`));
+      result.warnings.push(...validation.warnings.map((w) => `Term "${term.name}": ${w}`));
     }
 
     // Overall validation
@@ -190,16 +188,24 @@ export class DataQualityValidator {
 
     if (categorySuccessRate < 0.8) {
       result.isValid = false;
-      result.errors.push(`Category validation failure rate too high: ${((1 - categorySuccessRate) * 100).toFixed(1)}%`);
+      result.errors.push(
+        `Category validation failure rate too high: ${((1 - categorySuccessRate) * 100).toFixed(1)}%`
+      );
     }
 
     if (termSuccessRate < 0.9) {
       result.isValid = false;
-      result.errors.push(`Term validation failure rate too high: ${((1 - termSuccessRate) * 100).toFixed(1)}%`);
+      result.errors.push(
+        `Term validation failure rate too high: ${((1 - termSuccessRate) * 100).toFixed(1)}%`
+      );
     }
 
-    result.warnings.push(`Validated ${validCategories}/${categories.length} categories (${(categorySuccessRate * 100).toFixed(1)}%)`);
-    result.warnings.push(`Validated ${validTerms}/${terms.length} terms (${(termSuccessRate * 100).toFixed(1)}%)`);
+    result.warnings.push(
+      `Validated ${validCategories}/${categories.length} categories (${(categorySuccessRate * 100).toFixed(1)}%)`
+    );
+    result.warnings.push(
+      `Validated ${validTerms}/${terms.length} terms (${(termSuccessRate * 100).toFixed(1)}%)`
+    );
 
     return result;
   }
@@ -224,8 +230,9 @@ export class DataQualityValidator {
 
     // Trim and capitalize properly
     fixed = fixed.trim();
-    fixed = fixed.split(' ')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    fixed = fixed
+      .split(' ')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
 
     // Truncate if too long
@@ -246,19 +253,16 @@ export class DataQualityValidator {
   static async validateImportData(data: any): Promise<ValidationResult> {
     console.log('🔍 Running data quality validation...');
 
-    const result = this.validateBatchData(
-      data.categories || [],
-      data.terms || []
-    );
+    const result = DataQualityValidator.validateBatchData(data.categories || [], data.terms || []);
 
     if (!result.isValid) {
       console.error('❌ Data validation failed:');
-      result.errors.forEach(error => console.error(`  - ${error}`));
+      result.errors.forEach((error) => console.error(`  - ${error}`));
     }
 
     if (result.warnings.length > 0) {
       console.warn('⚠️  Data validation warnings:');
-      result.warnings.slice(0, 10).forEach(warning => console.warn(`  - ${warning}`));
+      result.warnings.slice(0, 10).forEach((warning) => console.warn(`  - ${warning}`));
       if (result.warnings.length > 10) {
         console.warn(`  ... and ${result.warnings.length - 10} more warnings`);
       }

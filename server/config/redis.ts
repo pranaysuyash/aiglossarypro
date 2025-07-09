@@ -1,9 +1,9 @@
 /**
  * Redis Configuration for Enhanced Storage
- * 
+ *
  * Provides Redis caching integration for the enhanced storage layer.
  * Recommended by Gemini for scalable caching of 42-section data.
- * 
+ *
  * Phase 2B Implementation
  * Date: June 26, 2025
  */
@@ -79,19 +79,19 @@ class MockRedisClient implements RedisClient {
   async get(key: string): Promise<string | null> {
     const entry = this.cache.get(key);
     if (!entry) return null;
-    
+
     if (entry.expires && Date.now() > entry.expires) {
       this.cache.delete(key);
       return null;
     }
-    
+
     return entry.value;
   }
 
   async set(key: string, value: string, ttl?: number): Promise<void> {
     const entry: { value: string; expires?: number } = { value };
     if (ttl) {
-      entry.expires = Date.now() + (ttl * 1000);
+      entry.expires = Date.now() + ttl * 1000;
     }
     this.cache.set(key, entry);
   }
@@ -103,19 +103,19 @@ class MockRedisClient implements RedisClient {
   async exists(key: string): Promise<boolean> {
     const entry = this.cache.get(key);
     if (!entry) return false;
-    
+
     if (entry.expires && Date.now() > entry.expires) {
       this.cache.delete(key);
       return false;
     }
-    
+
     return true;
   }
 
   async expire(key: string, ttl: number): Promise<void> {
     const entry = this.cache.get(key);
     if (entry) {
-      entry.expires = Date.now() + (ttl * 1000);
+      entry.expires = Date.now() + ttl * 1000;
     }
   }
 
@@ -143,7 +143,7 @@ const redisConfig: RedisConfig = {
   maxRetriesPerRequest: 3,
   connectTimeout: 10000,
   commandTimeout: 5000,
-  enableOfflineQueue: false
+  enableOfflineQueue: false,
 };
 
 // Create Redis client
@@ -151,7 +151,11 @@ let redisClient: RedisClient;
 
 const createRedisClient = (): RedisClient => {
   // Use mock client for development if no Redis URL is provided and REDIS_ENABLED is not true
-  if (process.env.NODE_ENV === 'development' && !process.env.REDIS_URL && process.env.REDIS_ENABLED !== 'true') {
+  if (
+    process.env.NODE_ENV === 'development' &&
+    !process.env.REDIS_URL &&
+    process.env.REDIS_ENABLED !== 'true'
+  ) {
     console.log('[Redis] Using mock Redis client for development');
     return new MockRedisClient();
   }
@@ -160,19 +164,21 @@ const createRedisClient = (): RedisClient => {
   if (process.env.REDIS_URL || process.env.NODE_ENV === 'production') {
     try {
       // Use dynamic import instead of require for ESM compatibility
-      import('ioredis').then(({ default: Redis }) => {
-        console.log('[Redis] Initializing real Redis client');
-        
-        const client = process.env.REDIS_URL 
-          ? new Redis(process.env.REDIS_URL)
-          : new Redis(redisConfig);
-        
-        // Replace the global client with the real one
-        redisClient = new ProductionRedisClient(client);
-      }).catch(error => {
-        console.error('[Redis] Failed to dynamically import ioredis:', error);
-      });
-      
+      import('ioredis')
+        .then(({ default: Redis }) => {
+          console.log('[Redis] Initializing real Redis client');
+
+          const client = process.env.REDIS_URL
+            ? new Redis(process.env.REDIS_URL)
+            : new Redis(redisConfig);
+
+          // Replace the global client with the real one
+          redisClient = new ProductionRedisClient(client);
+        })
+        .catch((error) => {
+          console.error('[Redis] Failed to dynamically import ioredis:', error);
+        });
+
       // Return mock client for immediate use, will be replaced by real client
       console.log('[Redis] Starting with mock client, will upgrade to real Redis when available');
       return new MockRedisClient();
@@ -182,7 +188,7 @@ const createRedisClient = (): RedisClient => {
       return new MockRedisClient();
     }
   }
-  
+
   console.log('[Redis] Using mock Redis client as fallback');
   return new MockRedisClient();
 };
@@ -202,7 +208,7 @@ export class RedisCache {
     try {
       const value = await redisClient.get(this.getKey(key));
       if (!value) return null;
-      
+
       return JSON.parse(value) as T;
     } catch (error) {
       console.error('[RedisCache] Get error:', error);
@@ -271,22 +277,27 @@ export const CacheKeys = {
   termSections: (termId: string) => `term_sections:${termId}`,
   searchResults: (query: string, filters: string) => `search:${query}:${filters}`,
   userPreferences: (userId: string) => `user_prefs:${userId}`,
-  
-  // Analytics caching  
+
+  // Analytics caching
   searchMetrics: (timeframe: string) => `search_metrics:${timeframe}`,
   contentMetrics: () => `content_metrics`,
   systemHealth: () => `system_health`,
-  
+
   // Admin data caching
   adminStats: () => `admin_stats`,
   databaseMetrics: () => `database_metrics`,
-  
+
   // Interactive elements
   interactiveElements: (termId: string) => `interactive:${termId}`,
-  
+
   // Relationships and recommendations
   termRelationships: (termId: string) => `relationships:${termId}`,
-  recommendations: (userId: string) => `recommendations:${userId}`
+  recommendations: (userId: string) => `recommendations:${userId}`,
+
+  // TTL constants (in milliseconds)
+  SHORT_CACHE_TTL: 5 * 60 * 1000, // 5 minutes
+  MEDIUM_CACHE_TTL: 30 * 60 * 1000, // 30 minutes
+  LONG_CACHE_TTL: 60 * 60 * 1000, // 1 hour
 };
 
 export default redis;

@@ -1,17 +1,7 @@
+import { Filter, Grid3x3, List, Maximize, Settings, Sidebar as SidebarIcon } from 'lucide-react';
 import { useState } from 'react';
-import { ITermSection, IEnhancedUserSettings } from '@/interfaces/interfaces';
-import SectionDisplay from './SectionDisplay';
-import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Grid3x3, 
-  List, 
-  Sidebar as SidebarIcon, 
-  Maximize,
-  Settings,
-  Filter
-} from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import {
   Select,
   SelectContent,
@@ -19,6 +9,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import type { IEnhancedUserSettings, ITermSection } from '@/interfaces/interfaces';
+import SectionDisplay from './SectionDisplay';
 
 interface SectionLayoutManagerProps {
   sections: ITermSection[];
@@ -34,7 +27,7 @@ export default function SectionLayoutManager({
   sections,
   userSettings,
   onInteraction,
-  className = ''
+  className = '',
 }: SectionLayoutManagerProps) {
   const [layoutType, setLayoutType] = useState<LayoutType>('list');
   const [filterType, setFilterType] = useState<FilterType>('all');
@@ -43,17 +36,17 @@ export default function SectionLayoutManager({
 
   // Filter sections based on user preferences and current filter
   const filteredSections = sections
-    .filter(section => {
+    .filter((section) => {
       // Filter by display type
       if (filterType !== 'all' && section.displayType !== filterType) {
         return false;
       }
-      
+
       // Filter by user hidden sections
       if (userSettings?.hiddenSections?.includes(section.sectionName)) {
         return false;
       }
-      
+
       return true;
     })
     .sort((a, b) => {
@@ -70,14 +63,17 @@ export default function SectionLayoutManager({
     });
 
   // Group sections by display type
-  const groupedSections = filteredSections.reduce((groups, section) => {
-    const type = section.displayType;
-    if (!groups[type]) {
-      groups[type] = [];
-    }
-    groups[type].push(section);
-    return groups;
-  }, {} as Record<string, ITermSection[]>);
+  const groupedSections = filteredSections.reduce(
+    (groups, section) => {
+      const type = section.displayType;
+      if (!groups[type]) {
+        groups[type] = [];
+      }
+      groups[type].push(section);
+      return groups;
+    },
+    {} as Record<string, ITermSection[]>
+  );
 
   const handleSectionInteraction = (sectionId: string, interactionType: string, data?: any) => {
     if (onInteraction) {
@@ -151,7 +147,10 @@ export default function SectionLayoutManager({
 
         <div className="flex items-center space-x-2">
           <span className="text-sm">Sort:</span>
-          <Select value={sortBy} onValueChange={(value: 'priority' | 'name' | 'type') => setSortBy(value)}>
+          <Select
+            value={sortBy}
+            onValueChange={(value: 'priority' | 'name' | 'type') => setSortBy(value)}
+          >
             <SelectTrigger className="w-24">
               <SelectValue />
             </SelectTrigger>
@@ -165,10 +164,8 @@ export default function SectionLayoutManager({
       </div>
 
       <div className="flex items-center space-x-2">
-        <Badge variant="outline">
-          {filteredSections.length} sections
-        </Badge>
-        {Object.keys(groupedSections).map(type => (
+        <Badge variant="outline">{filteredSections.length} sections</Badge>
+        {Object.keys(groupedSections).map((type) => (
           <Badge key={type} variant="secondary" className="text-xs">
             {type}: {groupedSections[type].length}
           </Badge>
@@ -179,7 +176,7 @@ export default function SectionLayoutManager({
 
   const renderListLayout = () => (
     <div className="space-y-4">
-      {filteredSections.map(section => (
+      {filteredSections.map((section) => (
         <SectionDisplay
           key={section.id}
           section={section}
@@ -194,7 +191,7 @@ export default function SectionLayoutManager({
 
   const renderGridLayout = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {filteredSections.map(section => (
+      {filteredSections.map((section) => (
         <SectionDisplay
           key={section.id}
           section={section}
@@ -210,7 +207,7 @@ export default function SectionLayoutManager({
   const renderSidebarLayout = () => (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <div className="lg:col-span-1 space-y-2">
-        {groupedSections.sidebar?.map(section => (
+        {groupedSections.sidebar?.map((section) => (
           <SectionDisplay
             key={section.id}
             section={section}
@@ -225,8 +222,8 @@ export default function SectionLayoutManager({
         )}
       </div>
       <div className="lg:col-span-3 space-y-4">
-        {['main', 'card', 'modal', 'metadata'].map(type => 
-          groupedSections[type]?.map(section => (
+        {['main', 'card', 'modal', 'metadata'].map((type) =>
+          groupedSections[type]?.map((section) => (
             <SectionDisplay
               key={section.id}
               section={section}
@@ -248,15 +245,15 @@ export default function SectionLayoutManager({
     return (
       <Tabs defaultValue={tabTypes[0]} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
-          {tabTypes.map(type => (
+          {tabTypes.map((type) => (
             <TabsTrigger key={type} value={type} className="capitalize">
               {type} ({groupedSections[type].length})
             </TabsTrigger>
           ))}
         </TabsList>
-        {tabTypes.map(type => (
+        {tabTypes.map((type) => (
           <TabsContent key={type} value={type} className="space-y-4">
-            {groupedSections[type].map(section => (
+            {groupedSections[type].map((section) => (
               <SectionDisplay
                 key={section.id}
                 section={section}
@@ -280,7 +277,6 @@ export default function SectionLayoutManager({
         return renderSidebarLayout();
       case 'tabbed':
         return renderTabbedLayout();
-      case 'list':
       default:
         return renderListLayout();
     }

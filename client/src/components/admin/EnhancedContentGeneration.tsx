@@ -1,39 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { 
-  Bot, 
-  Brain, 
-  Play,
-  Pause,
-  CheckCircle, 
-  AlertCircle,
-  TrendingUp,
-  Star,
-  Settings,
-  Eye,
-  RefreshCw,
-  Zap,
-  Target,
-  DollarSign,
-  Clock,
-  BarChart3,
-  Layers,
-  CheckCircle2,
-  AlertTriangle,
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
   ArrowRight,
-  Sparkles
+  BarChart3,
+  Bot,
+  Brain,
+  Eye,
+  Play,
+  RefreshCw,
+  Sparkles,
+  Star,
+  Target,
+  TrendingUp,
 } from 'lucide-react';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
 interface GenerationRequest {
@@ -104,22 +99,42 @@ interface Term {
 
 const ESSENTIAL_COLUMNS = [
   { id: 'term', name: 'Term Name', description: 'Core term name and variations', priority: 1 },
-  { id: 'definition_overview', name: 'Definition & Overview', description: 'Clear, comprehensive definition', priority: 2 },
-  { id: 'key_concepts', name: 'Key Concepts', description: 'Essential understanding points', priority: 3 },
-  { id: 'basic_examples', name: 'Basic Examples', description: 'Concrete examples for clarity', priority: 4 },
-  { id: 'advantages', name: 'Advantages', description: 'Benefits and use cases', priority: 5 }
+  {
+    id: 'definition_overview',
+    name: 'Definition & Overview',
+    description: 'Clear, comprehensive definition',
+    priority: 2,
+  },
+  {
+    id: 'key_concepts',
+    name: 'Key Concepts',
+    description: 'Essential understanding points',
+    priority: 3,
+  },
+  {
+    id: 'basic_examples',
+    name: 'Basic Examples',
+    description: 'Concrete examples for clarity',
+    priority: 4,
+  },
+  { id: 'advantages', name: 'Advantages', description: 'Benefits and use cases', priority: 5 },
 ];
 
 const AVAILABLE_MODELS = [
   { value: 'gpt-4.1-nano', label: 'GPT-4.1 Nano', cost: '$0.20/1M tokens', use: 'Simple content' },
-  { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini', cost: '$0.80/1M tokens', use: 'Balanced content' },
-  { value: 'o4-mini', label: 'O4 Mini', cost: '$2.20/1M tokens', use: 'Complex reasoning' }
+  {
+    value: 'gpt-4.1-mini',
+    label: 'GPT-4.1 Mini',
+    cost: '$0.80/1M tokens',
+    use: 'Balanced content',
+  },
+  { value: 'o4-mini', label: 'O4 Mini', cost: '$2.20/1M tokens', use: 'Complex reasoning' },
 ];
 
 export function EnhancedContentGeneration() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [selectedTerm, setSelectedTerm] = useState<Term | null>(null);
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [selectedModel, setSelectedModel] = useState<string>('gpt-4.1-nano');
@@ -128,7 +143,7 @@ export function EnhancedContentGeneration() {
   const [regenerate, setRegenerate] = useState<boolean>(false);
   const [generatedContent, setGeneratedContent] = useState<string>('');
   const [showPreview, setShowPreview] = useState<boolean>(false);
-  
+
   // Query for terms
   const { data: termsData, isLoading: isLoadingTerms } = useQuery({
     queryKey: ['terms'],
@@ -136,7 +151,7 @@ export function EnhancedContentGeneration() {
       const response = await fetch('/api/terms');
       if (!response.ok) throw new Error('Failed to fetch terms');
       return response.json();
-    }
+    },
   });
 
   // Query for current processing status
@@ -148,7 +163,7 @@ export function EnhancedContentGeneration() {
       return response.json();
     },
     refetchInterval: 2000, // Refetch every 2 seconds when processing is active
-    enabled: true
+    enabled: true,
   });
 
   // Mutation for single content generation
@@ -157,7 +172,7 @@ export function EnhancedContentGeneration() {
       const response = await fetch('/api/admin/content/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request)
+        body: JSON.stringify(request),
       });
       if (!response.ok) throw new Error('Failed to generate content');
       return response.json();
@@ -174,7 +189,7 @@ export function EnhancedContentGeneration() {
         toast({
           title: 'Generation Failed',
           description: data.error || 'Unknown error occurred',
-          variant: 'destructive'
+          variant: 'destructive',
         });
       }
     },
@@ -182,9 +197,9 @@ export function EnhancedContentGeneration() {
       toast({
         title: 'Generation Error',
         description: error instanceof Error ? error.message : 'Failed to generate content',
-        variant: 'destructive'
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Mutation for starting column batch processing
@@ -200,9 +215,9 @@ export function EnhancedContentGeneration() {
             qualityThreshold: 7,
             batchSize: 10,
             delayBetweenBatches: 2000,
-            skipExisting: true
-          }
-        })
+            skipExisting: true,
+          },
+        }),
       });
       if (!response.ok) throw new Error('Failed to start column processing');
       return response.json();
@@ -218,10 +233,10 @@ export function EnhancedContentGeneration() {
         toast({
           title: 'Failed to Start Processing',
           description: data.message || 'Unknown error',
-          variant: 'destructive'
+          variant: 'destructive',
         });
       }
-    }
+    },
   });
 
   const handleGenerateContent = () => {
@@ -229,7 +244,7 @@ export function EnhancedContentGeneration() {
       toast({
         title: 'Missing Information',
         description: 'Please select both a term and a section',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -240,7 +255,7 @@ export function EnhancedContentGeneration() {
       model: selectedModel,
       temperature,
       maxTokens,
-      regenerate
+      regenerate,
     });
   };
 
@@ -250,12 +265,18 @@ export function EnhancedContentGeneration() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'generating': return 'bg-blue-100 text-blue-800';
-      case 'evaluating': return 'bg-yellow-100 text-yellow-800';
-      case 'improving': return 'bg-purple-100 text-purple-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'generating':
+        return 'bg-blue-100 text-blue-800';
+      case 'evaluating':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'improving':
+        return 'bg-purple-100 text-purple-800';
+      case 'failed':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -308,9 +329,7 @@ export function EnhancedContentGeneration() {
                   <Brain className="w-5 h-5 mr-2" />
                   Content Generation
                 </CardTitle>
-                <CardDescription>
-                  Generate content for a specific term and section
-                </CardDescription>
+                <CardDescription>Generate content for a specific term and section</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -435,9 +454,7 @@ export function EnhancedContentGeneration() {
                   <Eye className="w-5 h-5 mr-2" />
                   Content Preview
                 </CardTitle>
-                <CardDescription>
-                  Generated content and metadata
-                </CardDescription>
+                <CardDescription>Generated content and metadata</CardDescription>
               </CardHeader>
               <CardContent>
                 {showPreview && generatedContent ? (
@@ -451,20 +468,26 @@ export function EnhancedContentGeneration() {
                         placeholder="Generated content will appear here..."
                       />
                     </div>
-                    
+
                     {generateContentMutation.data?.metadata && (
                       <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
                           <Label>Tokens Used</Label>
-                          <p className="font-mono">{generateContentMutation.data.metadata.totalTokens}</p>
+                          <p className="font-mono">
+                            {generateContentMutation.data.metadata.totalTokens}
+                          </p>
                         </div>
                         <div>
                           <Label>Cost</Label>
-                          <p className="font-mono">${generateContentMutation.data.metadata.cost.toFixed(4)}</p>
+                          <p className="font-mono">
+                            ${generateContentMutation.data.metadata.cost.toFixed(4)}
+                          </p>
                         </div>
                         <div>
                           <Label>Processing Time</Label>
-                          <p className="font-mono">{generateContentMutation.data.metadata.processingTime}ms</p>
+                          <p className="font-mono">
+                            {generateContentMutation.data.metadata.processingTime}ms
+                          </p>
                         </div>
                         <div>
                           <Label>Model Used</Label>
@@ -505,22 +528,28 @@ export function EnhancedContentGeneration() {
                       {currentStatus.status}
                     </Badge>
                   </div>
-                  <Progress 
-                    value={(currentStatus.processedTerms / currentStatus.totalTerms) * 100} 
-                    className="w-full" 
+                  <Progress
+                    value={(currentStatus.processedTerms / currentStatus.totalTerms) * 100}
+                    className="w-full"
                   />
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                     <div>
                       <Label>Generated</Label>
-                      <p className="font-mono">{currentStatus.generatedCount}/{currentStatus.totalTerms}</p>
+                      <p className="font-mono">
+                        {currentStatus.generatedCount}/{currentStatus.totalTerms}
+                      </p>
                     </div>
                     <div>
                       <Label>Evaluated</Label>
-                      <p className="font-mono">{currentStatus.evaluatedCount}/{currentStatus.totalTerms}</p>
+                      <p className="font-mono">
+                        {currentStatus.evaluatedCount}/{currentStatus.totalTerms}
+                      </p>
                     </div>
                     <div>
                       <Label>Avg Quality</Label>
-                      <p className={`font-mono ${getQualityColor(currentStatus.averageQualityScore)}`}>
+                      <p
+                        className={`font-mono ${getQualityColor(currentStatus.averageQualityScore)}`}
+                      >
                         {currentStatus.averageQualityScore.toFixed(1)}/10
                       </p>
                     </div>
@@ -651,7 +680,8 @@ export function EnhancedContentGeneration() {
                 <div className="p-4 bg-muted rounded-lg">
                   <h4 className="font-medium mb-2">Quality Threshold: 7/10</h4>
                   <p className="text-sm text-muted-foreground">
-                    Content scoring below this threshold will automatically enter the improvement phase.
+                    Content scoring below this threshold will automatically enter the improvement
+                    phase.
                   </p>
                 </div>
               </div>

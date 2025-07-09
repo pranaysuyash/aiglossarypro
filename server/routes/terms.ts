@@ -1,15 +1,17 @@
-import type { Express, Request, Response } from "express";
-import { optimizedStorage as storage } from "../optimizedStorage";
-import { mockIsAuthenticated } from "../middleware/dev/mockAuth";
-import { features } from "../config";
-import type { ITerm, ApiResponse, PaginatedResponse } from "../../shared/types";
-import { validateInput, termIdSchema, paginationSchema } from "../middleware/security";
-import { rateLimitMiddleware, initializeRateLimiting } from "../middleware/rateLimiting";
-import { log as logger } from "../utils/logger";
-import { parsePaginationParams, calculatePaginationMetadata, parseLimit, applyClientSidePagination } from "../utils/pagination";
-import { SORT_ORDERS, DEFAULT_LIMITS, ERROR_MESSAGES } from "../constants";
-import { PAGINATION_CONSTANTS, DATABASE_CONSTANTS, HTTP_STATUS } from "../utils/constants";
-import { canViewTerm, hasPremiumAccess, isInTrialPeriod, getRemainingDailyViews } from "../utils/accessControl";
+import type { Express, Request, Response } from 'express';
+import type { ApiResponse, ITerm, PaginatedResponse } from '../../shared/types';
+import { DEFAULT_LIMITS, SORT_ORDERS } from '../constants';
+import { mockIsAuthenticated } from '../middleware/dev/mockAuth';
+import { initializeRateLimiting } from '../middleware/rateLimiting';
+import { termIdSchema } from '../middleware/security';
+import { optimizedStorage as storage } from '../optimizedStorage';
+import { canViewTerm } from '../utils/accessControl';
+import { log as logger } from '../utils/logger';
+import {
+  calculatePaginationMetadata,
+  parseLimit,
+  parsePaginationParams,
+} from '../utils/pagination';
 
 // Import AuthenticatedRequest from shared types
 // (Removed duplicate interface definition)
@@ -20,10 +22,10 @@ import { canViewTerm, hasPremiumAccess, isInTrialPeriod, getRemainingDailyViews 
 export function registerTermRoutes(app: Express): void {
   // Initialize rate limiting
   initializeRateLimiting();
-  
+
   // Choose authentication middleware based on environment
   const authMiddleware = mockIsAuthenticated;
-  
+
   /**
    * @openapi
    * /api/terms:
@@ -127,17 +129,21 @@ export function registerTermRoutes(app: Express): void {
       // Parse pagination parameters with increased limits for better data access
       const { page, limit, offset } = parsePaginationParams({
         page: typeof req.query.page === 'string' ? req.query.page : String(req.query.page || 1),
-        limit: typeof req.query.limit === 'string' ? req.query.limit : String(req.query.limit || 24),
+        limit:
+          typeof req.query.limit === 'string' ? req.query.limit : String(req.query.limit || 24),
         defaultLimit: 24,
-        maxLimit: 100
+        maxLimit: 100,
       });
 
       const search = req.query.search as string;
       const category = req.query.category as string;
-      const sortBy = (typeof req.query.sortBy === 'string' ? req.query.sortBy : 'name');
-      const sortOrder = (typeof req.query.sortOrder === 'string' ? req.query.sortOrder : SORT_ORDERS.ASC);
-      const fields = req.query.fields as string || 'id,name,shortDefinition,definition,viewCount,categoryId,category';
-      const fieldList = fields.split(',').map(f => f.trim());
+      const sortBy = typeof req.query.sortBy === 'string' ? req.query.sortBy : 'name';
+      const sortOrder =
+        typeof req.query.sortOrder === 'string' ? req.query.sortOrder : SORT_ORDERS.ASC;
+      const fields =
+        (req.query.fields as string) ||
+        'id,name,shortDefinition,definition,viewCount,categoryId,category';
+      const fieldList = fields.split(',').map((f) => f.trim());
 
       // Use optimized storage method with field selection
       const result = await storage.getAllTerms({
@@ -146,8 +152,8 @@ export function registerTermRoutes(app: Express): void {
         categoryId: category || undefined,
         searchTerm: search || undefined,
         sortBy,
-        sortOrder: (sortOrder === SORT_ORDERS.DESC) ? SORT_ORDERS.DESC : SORT_ORDERS.ASC,
-        fields: fieldList
+        sortOrder: sortOrder === SORT_ORDERS.DESC ? SORT_ORDERS.DESC : SORT_ORDERS.ASC,
+        fields: fieldList,
       });
 
       // Calculate pagination metadata
@@ -156,8 +162,8 @@ export function registerTermRoutes(app: Express): void {
       // Set cache headers for better performance
       res.set({
         'Cache-Control': 'public, max-age=180', // 3 minutes
-        'ETag': `"terms-${page}-${limit}-${sortBy}-${sortOrder}-${fields}"`,
-        'Vary': 'Accept-Encoding'
+        ETag: `"terms-${page}-${limit}-${sortBy}-${sortOrder}-${fields}"`,
+        Vary: 'Accept-Encoding',
       });
 
       res.json({
@@ -167,14 +173,17 @@ export function registerTermRoutes(app: Express): void {
         page: page,
         limit: limit,
         hasMore: pagination.hasMore,
-        pagination
+        pagination,
       });
     } catch (error) {
-      logger.error('Error fetching terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
-      res.status(500).json({ 
-        success: false, 
+      logger.error('Error fetching terms', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
+      res.status(500).json({
+        success: false,
         error: 'Failed to fetch terms',
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       });
     }
   });
@@ -220,20 +229,29 @@ export function registerTermRoutes(app: Express): void {
    */
   app.get('/api/terms/featured', async (req: Request, res: Response) => {
     try {
-      const limit = parseLimit(typeof req.query.limit === 'string' ? req.query.limit : String(req.query.limit || DEFAULT_LIMITS.FEATURED_TERMS), DEFAULT_LIMITS.FEATURED_TERMS, DEFAULT_LIMITS.TERMS);
+      const limit = parseLimit(
+        typeof req.query.limit === 'string'
+          ? req.query.limit
+          : String(req.query.limit || DEFAULT_LIMITS.FEATURED_TERMS),
+        DEFAULT_LIMITS.FEATURED_TERMS,
+        DEFAULT_LIMITS.TERMS
+      );
       const featuredTerms = await storage.getFeaturedTerms();
-      
+
       const response: ApiResponse<ITerm[]> = {
         success: true,
-        data: featuredTerms.slice(0, limit)
+        data: featuredTerms.slice(0, limit),
       };
-      
+
       res.json(response);
     } catch (error) {
-      logger.error('Error fetching featured terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching featured terms', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch featured terms'
+        error: 'Failed to fetch featured terms',
       });
     }
   });
@@ -279,20 +297,29 @@ export function registerTermRoutes(app: Express): void {
    */
   app.get('/api/terms/trending', async (req: Request, res: Response) => {
     try {
-      const limit = parseLimit(typeof req.query.limit === 'string' ? req.query.limit : String(req.query.limit || DEFAULT_LIMITS.FEATURED_TERMS), DEFAULT_LIMITS.FEATURED_TERMS, DEFAULT_LIMITS.TERMS);
+      const limit = parseLimit(
+        typeof req.query.limit === 'string'
+          ? req.query.limit
+          : String(req.query.limit || DEFAULT_LIMITS.FEATURED_TERMS),
+        DEFAULT_LIMITS.FEATURED_TERMS,
+        DEFAULT_LIMITS.TERMS
+      );
       const trendingTerms = await storage.getTrendingTerms(limit);
-      
+
       const response: ApiResponse<ITerm[]> = {
         success: true,
-        data: trendingTerms
+        data: trendingTerms,
       };
-      
+
       res.json(response);
     } catch (error) {
-      logger.error('Error fetching trending terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching trending terms', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch trending terms'
+        error: 'Failed to fetch trending terms',
       });
     }
   });
@@ -396,36 +423,41 @@ export function registerTermRoutes(app: Express): void {
     try {
       const userId = req.user?.claims?.sub;
       const { limit = DEFAULT_LIMITS.FEATURED_TERMS } = req.query;
-      
+
       if (!userId) {
         return res.status(401).json({
           success: false,
-          error: 'Authentication required'
+          error: 'Authentication required',
         });
       }
-      
+
       // For now, return empty array since we may not have this method implemented
       // You can implement storage.getRecentlyViewedTerms later
       const recentlyViewed: ITerm[] = [];
-      
+
       try {
         // Try to get recently viewed terms if method exists
         // const recentlyViewed = await storage.getRecentlyViewedTerms(userId, parseInt(limit as string));
       } catch (error) {
-        logger.warn('Recently viewed terms method not implemented yet', { error: error instanceof Error ? error.message : String(error) });
+        logger.warn('Recently viewed terms method not implemented yet', {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
-      
+
       const response: ApiResponse<ITerm[]> = {
         success: true,
-        data: recentlyViewed
+        data: recentlyViewed,
       };
-      
+
       res.json(response);
     } catch (error) {
-      logger.error('Error fetching recently viewed terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching recently viewed terms', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch recently viewed terms'
+        error: 'Failed to fetch recently viewed terms',
       });
     }
   });
@@ -472,27 +504,30 @@ export function registerTermRoutes(app: Express): void {
   app.get('/api/terms/recent', async (req: Request, res: Response) => {
     try {
       const { limit = DEFAULT_LIMITS.FEATURED_TERMS } = req.query;
-      
+
       // For now, get the most recently created terms
       const limitNum = parseLimit(typeof limit === 'string' ? limit : String(limit), 10, 50);
       const result = await storage.getAllTerms({
         limit: limitNum,
         offset: 0,
         sortBy: 'createdAt',
-        sortOrder: SORT_ORDERS.DESC
+        sortOrder: SORT_ORDERS.DESC,
       });
-      
+
       const response: ApiResponse<ITerm[]> = {
         success: true,
-        data: result.terms
+        data: result.terms,
       };
-      
+
       res.json(response);
     } catch (error) {
-      logger.error('Error fetching recent terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching recent terms', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch recent terms'
+        error: 'Failed to fetch recent terms',
       });
     }
   });
@@ -539,23 +574,26 @@ export function registerTermRoutes(app: Express): void {
   app.get('/api/terms/recommended', async (req: Request, res: Response) => {
     try {
       const { limit = DEFAULT_LIMITS.FEATURED_TERMS } = req.query;
-      
+
       // For now, return featured terms as recommended
       // You can implement more sophisticated recommendation logic later
       const limitNum = parseLimit(typeof limit === 'string' ? limit : String(limit), 10, 50);
       const recommendedTerms = await storage.getFeaturedTerms();
-      
+
       const response: ApiResponse<ITerm[]> = {
         success: true,
-        data: recommendedTerms.slice(0, limitNum)
+        data: recommendedTerms.slice(0, limitNum),
       };
-      
+
       res.json(response);
     } catch (error) {
-      logger.error('Error fetching recommended terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error fetching recommended terms', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch recommended terms'
+        error: 'Failed to fetch recommended terms',
       });
     }
   });
@@ -648,34 +686,38 @@ export function registerTermRoutes(app: Express): void {
         page = 1,
         limit = 12,
         category = '',
-        fields = 'id,name,shortDefinition,viewCount'
+        fields = 'id,name,shortDefinition,viewCount',
       } = req.query;
 
       const searchQuery = (q as string).trim();
       if (!searchQuery) {
         return res.status(400).json({
           success: false,
-          error: 'Search query is required'
+          error: 'Search query is required',
         });
       }
 
       // Parse pagination parameters with increased limits for search
-      const { page: pageNum, limit: limitNum, offset } = parsePaginationParams({
+      const {
+        page: pageNum,
+        limit: limitNum,
+        offset,
+      } = parsePaginationParams({
         page: typeof page === 'string' ? page : String(page),
         limit: typeof limit === 'string' ? limit : String(limit),
         defaultLimit: 20,
-        maxLimit: 50
+        maxLimit: 50,
       });
-      
-      const fieldList = (fields as string).split(',').map(f => f.trim());
-      
+
+      const fieldList = (fields as string).split(',').map((f) => f.trim());
+
       // Use optimized search with database-level pagination
       const searchResults = await storage.searchTermsOptimized({
         query: searchQuery,
-        categoryId: category as string || undefined,
+        categoryId: (category as string) || undefined,
         offset,
         limit: limitNum,
-        fields: fieldList
+        fields: fieldList,
       });
 
       const response: PaginatedResponse<ITerm> = {
@@ -683,26 +725,28 @@ export function registerTermRoutes(app: Express): void {
         total: searchResults.total,
         page: pageNum,
         limit: limitNum,
-        hasMore: offset + searchResults.data.length < searchResults.total
+        hasMore: offset + searchResults.data.length < searchResults.total,
       };
 
       // Set cache headers for search results
       res.set({
         'Cache-Control': 'public, max-age=120', // 2 minutes for search
-        'ETag': `"search-${Buffer.from(searchQuery).toString('base64')}-${pageNum}-${limitNum}"`,
-        'Vary': 'Accept-Encoding'
+        ETag: `"search-${Buffer.from(searchQuery).toString('base64')}-${pageNum}-${limitNum}"`,
+        Vary: 'Accept-Encoding',
       });
 
       res.json({
         success: true,
-        ...response
+        ...response,
       });
-
     } catch (error) {
-      logger.error('Error searching terms', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('Error searching terms', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       res.status(500).json({
         success: false,
-        error: 'Failed to search terms'
+        error: 'Failed to search terms',
       });
     }
   });
@@ -795,143 +839,162 @@ export function registerTermRoutes(app: Express): void {
    *               $ref: '#/components/schemas/ErrorResponse'
    */
   // Get single term by ID with smart access control (must be last to avoid conflicts with named routes)
-  app.get('/api/terms/:id', (req, res, next) => {
-    try {
-      termIdSchema.parse(req.params.id);
-      next();
-    } catch (error) {
-      return res.status(400).json({ error: 'Invalid term ID format' });
-    }
-  }, async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const term = await storage.getTermById(id);
-      
-      if (!term) {
-        return res.status(404).json({
-          success: false,
-          error: 'Term not found'
-        });
+  app.get(
+    '/api/terms/:id',
+    (req, res, next) => {
+      try {
+        termIdSchema.parse(req.params.id);
+        next();
+      } catch (_error) {
+        return res.status(400).json({ error: 'Invalid term ID format' });
       }
+    },
+    async (req: Request, res: Response) => {
+      try {
+        const { id } = req.params;
+        const term = await storage.getTermById(id);
 
-      // Check authentication status
-      const isAuthenticated = !!(req as any).user?.claims?.sub;
-      
-      // If not authenticated, return preview version
-      if (!isAuthenticated) {
-        const previewTerm = {
-          ...term,
-          definition: term.definition ? term.definition.substring(0, 200) + "..." : "",
-          longDefinition: term.longDefinition ? term.longDefinition.substring(0, 300) + "..." : "",
-          isPreview: true,
-          requiresAuth: true
-        };
-        
-        const response: ApiResponse<any> = {
-          success: true,
-          data: previewTerm,
-          message: "Sign in to view full definition"
-        };
-        
-        return res.json(response);
-      }
+        if (!term) {
+          return res.status(404).json({
+            success: false,
+            error: 'Term not found',
+          });
+        }
 
-      // For authenticated users, fetch user data and check access permissions
-      const userId = (req as any).user.claims.sub;
-      const user = await storage.getUser(userId);
-      
-      if (!user) {
-        return res.status(404).json({
-          success: false,
-          error: 'User not found'
-        });
-      }
+        // Check authentication status
+        const isAuthenticated = !!(req as any).user?.claims?.sub;
 
-      // Check if preview mode is enabled (from rate limiting middleware)
-      const previewMode = (req as any).previewMode;
-      const limitInfo = (req as any).limitInfo;
-      
-      if (previewMode) {
-        // Return preview version with upgrade prompt
-        const previewTerm = {
-          ...term,
-          definition: term.definition ? term.definition.substring(0, 250) + "..." : "",
-          shortDefinition: term.shortDefinition ? term.shortDefinition.substring(0, 150) + "..." : "",
-          isPreview: true,
-          requiresUpgrade: true,
-          limitInfo: limitInfo
-        };
-        
-        const response: ApiResponse<any> = {
-          success: true,
-          data: previewTerm,
-          message: "You've reached your daily viewing limit. Upgrade to continue reading or try again tomorrow."
-        };
-        
-        return res.json(response);
-      }
-
-      const accessCheck = canViewTerm(user, id);
-      
-      if (!accessCheck.canView) {
-        // User is authenticated but hit limits - fallback to old behavior
-        if (accessCheck.reason === 'daily_limit_reached') {
-          // Return preview version instead of blocking
+        // If not authenticated, return preview version
+        if (!isAuthenticated) {
           const previewTerm = {
             ...term,
-            definition: term.definition ? term.definition.substring(0, 250) + "..." : "",
-            shortDefinition: term.shortDefinition ? term.shortDefinition.substring(0, 150) + "..." : "",
+            definition: term.definition ? `${term.definition.substring(0, 200)}...` : '',
+            longDefinition: term.longDefinition
+              ? `${term.longDefinition.substring(0, 300)}...`
+              : '',
             isPreview: true,
-            requiresUpgrade: true,
-            limitInfo: accessCheck.metadata
+            requiresAuth: true,
           };
-          
+
           const response: ApiResponse<any> = {
             success: true,
             data: previewTerm,
-            message: "You've reached your daily viewing limit. Upgrade to continue reading or try again tomorrow."
+            message: 'Sign in to view full definition',
           };
-          
+
           return res.json(response);
         }
-        
-        return res.status(403).json({
+
+        // For authenticated users, fetch user data and check access permissions
+        const userId = (req as any).user.claims.sub;
+        const user = await storage.getUser(userId);
+
+        if (!user) {
+          return res.status(404).json({
+            success: false,
+            error: 'User not found',
+          });
+        }
+
+        // Check if preview mode is enabled (from rate limiting middleware)
+        const previewMode = (req as any).previewMode;
+        const limitInfo = (req as any).limitInfo;
+
+        if (previewMode) {
+          // Return preview version with upgrade prompt
+          const previewTerm = {
+            ...term,
+            definition: term.definition ? `${term.definition.substring(0, 250)}...` : '',
+            shortDefinition: term.shortDefinition
+              ? `${term.shortDefinition.substring(0, 150)}...`
+              : '',
+            isPreview: true,
+            requiresUpgrade: true,
+            limitInfo: limitInfo,
+          };
+
+          const response: ApiResponse<any> = {
+            success: true,
+            data: previewTerm,
+            message:
+              "You've reached your daily viewing limit. Upgrade to continue reading or try again tomorrow.",
+          };
+
+          return res.json(response);
+        }
+
+        const accessCheck = canViewTerm(user, id);
+
+        if (!accessCheck.canView) {
+          // User is authenticated but hit limits - fallback to old behavior
+          if (accessCheck.reason === 'daily_limit_reached') {
+            // Return preview version instead of blocking
+            const previewTerm = {
+              ...term,
+              definition: term.definition ? `${term.definition.substring(0, 250)}...` : '',
+              shortDefinition: term.shortDefinition
+                ? `${term.shortDefinition.substring(0, 150)}...`
+                : '',
+              isPreview: true,
+              requiresUpgrade: true,
+              limitInfo: accessCheck.metadata,
+            };
+
+            const response: ApiResponse<any> = {
+              success: true,
+              data: previewTerm,
+              message:
+                "You've reached your daily viewing limit. Upgrade to continue reading or try again tomorrow.",
+            };
+
+            return res.json(response);
+          }
+
+          return res.status(403).json({
+            success: false,
+            error: 'Access denied',
+            reason: accessCheck.reason,
+          });
+        }
+
+        // Record view for authenticated users
+        try {
+          await storage.recordTermView(id, userId);
+
+          // Update user's daily view count (for access control)
+          // This would typically be handled by the recordTermView method
+        } catch (error) {
+          logger.warn('View recording not available', {
+            termId: id,
+            userId,
+            error: error instanceof Error ? error.message : String(error),
+          });
+        }
+
+        // Return full term data with access metadata
+        const response: ApiResponse<any> = {
+          success: true,
+          data: {
+            ...term,
+            isPreview: false,
+            accessType: accessCheck.reason,
+            userLimits: accessCheck.metadata,
+          },
+        };
+
+        res.json(response);
+      } catch (error) {
+        logger.error('Error fetching term', {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        res.status(500).json({
           success: false,
-          error: 'Access denied',
-          reason: accessCheck.reason
+          error: 'Failed to fetch term',
         });
       }
-
-      // Record view for authenticated users
-      try {
-        await storage.recordTermView(id, userId);
-        
-        // Update user's daily view count (for access control)
-        // This would typically be handled by the recordTermView method
-      } catch (error) {
-        logger.warn('View recording not available', { termId: id, userId, error: error instanceof Error ? error.message : String(error) });
-      }
-      
-      // Return full term data with access metadata
-      const response: ApiResponse<any> = {
-        success: true,
-        data: {
-          ...term,
-          isPreview: false,
-          accessType: accessCheck.reason,
-          userLimits: accessCheck.metadata
-        }
-      };
-      
-      res.json(response);
-    } catch (error) {
-      logger.error('Error fetching term', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch term'
-      });
     }
-  });
+  );
 
   /**
    * @openapi
@@ -985,36 +1048,43 @@ export function registerTermRoutes(app: Express): void {
    *               $ref: '#/components/schemas/ErrorResponse'
    */
   // Get term recommendations
-  app.get('/api/terms/:id/recommendations', (req, res, next) => {
-    try {
-      termIdSchema.parse(req.params.id);
-      next();
-    } catch (error) {
-      return res.status(400).json({ error: 'Invalid term ID format' });
+  app.get(
+    '/api/terms/:id/recommendations',
+    (req, res, next) => {
+      try {
+        termIdSchema.parse(req.params.id);
+        next();
+      } catch (_error) {
+        return res.status(400).json({ error: 'Invalid term ID format' });
+      }
+    },
+    async (req: Request, res: Response) => {
+      try {
+        const { id } = req.params;
+        const { limit = 5 } = req.query;
+
+        const limitNum = parseLimit(typeof limit === 'string' ? limit : String(limit), 10, 50);
+        // Since getRecommendedTermsForTerm doesn't exist, use related terms or featured terms
+        const recommendations = await storage.getFeaturedTerms();
+
+        const response: ApiResponse<ITerm[]> = {
+          success: true,
+          data: recommendations.slice(0, limitNum),
+        };
+
+        res.json(response);
+      } catch (error) {
+        logger.error('Error fetching recommendations', {
+          error: error instanceof Error ? error.message : String(error),
+          stack: error instanceof Error ? error.stack : undefined,
+        });
+        res.status(500).json({
+          success: false,
+          error: 'Failed to fetch recommendations',
+        });
+      }
     }
-  }, async (req: Request, res: Response) => {
-    try {
-      const { id } = req.params;
-      const { limit = 5 } = req.query;
-      
-      const limitNum = parseLimit(typeof limit === 'string' ? limit : String(limit), 10, 50);
-      // Since getRecommendedTermsForTerm doesn't exist, use related terms or featured terms
-      const recommendations = await storage.getFeaturedTerms();
-      
-      const response: ApiResponse<ITerm[]> = {
-        success: true,
-        data: recommendations.slice(0, limitNum)
-      };
-      
-      res.json(response);
-    } catch (error) {
-      logger.error('Error fetching recommendations', { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch recommendations'
-      });
-    }
-  });
+  );
 
   /**
    * @openapi
@@ -1070,39 +1140,39 @@ export function registerTermRoutes(app: Express): void {
     try {
       const { id } = req.params;
       const userId = (req as any).user?.id;
-      
+
       if (!userId) {
         return res.status(401).json({
           success: false,
-          error: 'User not authenticated'
+          error: 'User not authenticated',
         });
       }
 
       // Validate term ID
       try {
         termIdSchema.parse(id);
-      } catch (error) {
+      } catch (_error) {
         return res.status(400).json({
           success: false,
-          error: 'Invalid term ID format'
+          error: 'Invalid term ID format',
         });
       }
 
       // Track the view
       await storage.trackTermView(userId, id);
-      
+
       res.json({
         success: true,
-        message: 'View tracked successfully'
+        message: 'View tracked successfully',
       });
     } catch (error) {
-      logger.error('Error tracking term view', { 
-        error: error instanceof Error ? error.message : String(error), 
-        stack: error instanceof Error ? error.stack : undefined 
+      logger.error('Error tracking term view', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
       });
       res.status(500).json({
         success: false,
-        error: 'Failed to track term view'
+        error: 'Failed to track term view',
       });
     }
   });

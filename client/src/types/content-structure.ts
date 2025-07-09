@@ -39,44 +39,49 @@ export function countTotalSubsections(node: ContentNode): number {
   if (!node.subsections || node.subsections.length === 0) {
     return 0;
   }
-  
-  return node.subsections.length + 
-    node.subsections.reduce((sum, subsection) => sum + countTotalSubsections(subsection), 0);
+
+  return (
+    node.subsections.length +
+    node.subsections.reduce((sum, subsection) => sum + countTotalSubsections(subsection), 0)
+  );
 }
 
 // Helper function to flatten structure for search
-export function flattenStructure(nodes: ContentNode[], parentPath: string = ''): Array<{
+export function flattenStructure(
+  nodes: ContentNode[],
+  parentPath: string = ''
+): Array<{
   name: string;
   path: string;
   depth: number;
   node: ContentNode;
 }> {
   const result = [];
-  
+
   for (const [index, node] of nodes.entries()) {
     const currentPath = parentPath ? `${parentPath}.${index}` : `${index}`;
     const depth = parentPath ? parentPath.split('.').length : 0;
-    
+
     result.push({
       name: node.name,
       path: currentPath,
       depth,
-      node
+      node,
     });
-    
+
     if (node.subsections && node.subsections.length > 0) {
       result.push(...flattenStructure(node.subsections, currentPath));
     }
   }
-  
+
   return result;
 }
 
 // Helper function to find node by path
 export function findNodeByPath(nodes: ContentNode[], path: string): ContentNode | null {
-  const pathParts = path.split('.').map(p => parseInt(p));
+  const pathParts = path.split('.').map((p) => parseInt(p));
   let current = nodes;
-  
+
   for (let i = 0; i < pathParts.length; i++) {
     const index = pathParts[i];
     if (!current[index]) return null;
@@ -85,21 +90,21 @@ export function findNodeByPath(nodes: ContentNode[], path: string): ContentNode 
     }
     current = current[index].subsections || [];
   }
-  
+
   return null;
 }
 
 // Helper function to get breadcrumb path
 export function getBreadcrumbPath(nodes: ContentNode[], path: string): string[] {
-  const pathParts = path.split('.').map(p => parseInt(p));
+  const pathParts = path.split('.').map((p) => parseInt(p));
   const breadcrumbs: string[] = [];
   let current = nodes;
-  
+
   for (const index of pathParts) {
     if (!current[index]) break;
     breadcrumbs.push(current[index].name);
     current = current[index].subsections || [];
   }
-  
+
   return breadcrumbs;
 }

@@ -5,9 +5,9 @@
  * Tests performance with large datasets (10,000+ nodes)
  */
 
-import { performance } from 'perf_hooks';
-import { writeFileSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { performance } from 'node:perf_hooks';
 
 // Test configuration
 const TEST_CONFIGS = [
@@ -27,7 +27,7 @@ const NODE_TYPES = [
   'application',
   'dataset',
   'paper',
-  'researcher'
+  'researcher',
 ];
 
 const CATEGORIES = [
@@ -38,7 +38,7 @@ const CATEGORIES = [
   'Reinforcement Learning',
   'Data Science',
   'Statistics',
-  'Neural Networks'
+  'Neural Networks',
 ];
 
 interface TestNode {
@@ -74,7 +74,7 @@ interface PerformanceMetrics {
 }
 
 interface TestResult {
-  config: typeof TEST_CONFIGS[0];
+  config: (typeof TEST_CONFIGS)[0];
   metrics: PerformanceMetrics;
   success: boolean;
   errors: string[];
@@ -87,11 +87,14 @@ class Performance3DGraphTester {
   /**
    * Generate test data for a given configuration
    */
-  private generateTestData(config: typeof TEST_CONFIGS[0]): { nodes: TestNode[], edges: TestEdge[] } {
+  private generateTestData(config: (typeof TEST_CONFIGS)[0]): {
+    nodes: TestNode[];
+    edges: TestEdge[];
+  } {
     const startTime = performance.now();
-    
+
     console.log(`Generating test data: ${config.nodes} nodes, ${config.edges} edges...`);
-    
+
     const nodes: TestNode[] = [];
     const edges: TestEdge[] = [];
 
@@ -99,7 +102,7 @@ class Performance3DGraphTester {
     for (let i = 0; i < config.nodes; i++) {
       const nodeType = NODE_TYPES[Math.floor(Math.random() * NODE_TYPES.length)];
       const category = CATEGORIES[Math.floor(Math.random() * CATEGORIES.length)];
-      
+
       nodes.push({
         id: `node_${i}`,
         name: `${nodeType}_${i}`,
@@ -109,13 +112,13 @@ class Performance3DGraphTester {
         metadata: {
           importance: Math.random(),
           frequency: Math.random() * 100,
-          complexity: Math.random() * 10
-        }
+          complexity: Math.random() * 10,
+        },
       });
     }
 
     // Generate edges with realistic distribution
-    const edgesPerNode = config.edges / config.nodes;
+    const _edgesPerNode = config.edges / config.nodes;
     const usedConnections = new Set<string>();
 
     for (let i = 0; i < config.edges; i++) {
@@ -132,20 +135,26 @@ class Performance3DGraphTester {
 
       usedConnections.add(connectionKey);
 
-      const edgeTypes: TestEdge['type'][] = ['relates_to', 'depends_on', 'implements', 'extends', 'uses'];
+      const edgeTypes: TestEdge['type'][] = [
+        'relates_to',
+        'depends_on',
+        'implements',
+        'extends',
+        'uses',
+      ];
       const edgeType = edgeTypes[Math.floor(Math.random() * edgeTypes.length)];
 
       edges.push({
         source: sourceId,
         target: targetId,
         type: edgeType,
-        weight: Math.random()
+        weight: Math.random(),
       });
 
       // Update node connections
-      const sourceNode = nodes.find(n => n.id === sourceId);
-      const targetNode = nodes.find(n => n.id === targetId);
-      
+      const sourceNode = nodes.find((n) => n.id === sourceId);
+      const targetNode = nodes.find((n) => n.id === targetId);
+
       if (sourceNode) sourceNode.connections.push(targetId);
       if (targetNode) targetNode.connections.push(sourceId);
     }
@@ -159,14 +168,14 @@ class Performance3DGraphTester {
   /**
    * Simulate layout calculation performance
    */
-  private testLayoutCalculation(nodes: TestNode[], edges: TestEdge[]): number {
+  private testLayoutCalculation(nodes: TestNode[], _edges: TestEdge[]): number {
     const startTime = performance.now();
-    
+
     console.log('Testing layout calculation...');
 
     // Simulate force-directed layout calculation
     const iterations = Math.min(100, Math.max(10, Math.floor(10000 / nodes.length)));
-    
+
     for (let iter = 0; iter < iterations; iter++) {
       // Simulate force calculations for each node
       for (const node of nodes) {
@@ -176,7 +185,9 @@ class Performance3DGraphTester {
         if (!node.z) node.z = (Math.random() - 0.5) * 100;
 
         // Simulate force calculations
-        let fx = 0, fy = 0, fz = 0;
+        let fx = 0,
+          fy = 0,
+          fz = 0;
 
         // Repulsion forces (simulated)
         for (const otherNode of nodes) {
@@ -185,7 +196,7 @@ class Performance3DGraphTester {
             const dy = node.y! - (otherNode.y || 0);
             const dz = node.z! - (otherNode.z || 0);
             const distance = Math.sqrt(dx * dx + dy * dy + dz * dz) + 0.1;
-            
+
             const force = 1 / (distance * distance);
             fx += (dx / distance) * force;
             fy += (dy / distance) * force;
@@ -195,12 +206,12 @@ class Performance3DGraphTester {
 
         // Attraction forces for connected nodes (simulated)
         for (const connectionId of node.connections) {
-          const connectedNode = nodes.find(n => n.id === connectionId);
+          const connectedNode = nodes.find((n) => n.id === connectionId);
           if (connectedNode && connectedNode.x !== undefined) {
             const dx = (connectedNode.x - node.x!) * 0.1;
             const dy = (connectedNode.y! - node.y!) * 0.1;
             const dz = (connectedNode.z! - node.z!) * 0.1;
-            
+
             fx += dx;
             fy += dy;
             fz += dz;
@@ -216,7 +227,7 @@ class Performance3DGraphTester {
 
     const endTime = performance.now();
     const duration = endTime - startTime;
-    
+
     console.log(`Layout calculation completed in ${duration.toFixed(2)}ms`);
     return duration;
   }
@@ -226,15 +237,15 @@ class Performance3DGraphTester {
    */
   private testRenderingPerformance(nodes: TestNode[], edges: TestEdge[]): number {
     const startTime = performance.now();
-    
+
     console.log('Testing rendering performance...');
 
     // Simulate rendering operations
     const frames = 60; // Test 60 frames
-    
+
     for (let frame = 0; frame < frames; frame++) {
       // Simulate node rendering
-      for (const node of nodes) {
+      for (const _node of nodes) {
         // Simulate geometry creation and material assignment
         const geometryOps = 3; // Buffer geometry, material, mesh
         for (let op = 0; op < geometryOps; op++) {
@@ -244,7 +255,7 @@ class Performance3DGraphTester {
       }
 
       // Simulate edge rendering
-      for (const edge of edges) {
+      for (const _edge of edges) {
         // Simulate line geometry creation
         const lineOps = 2;
         for (let op = 0; op < lineOps; op++) {
@@ -261,8 +272,10 @@ class Performance3DGraphTester {
     const endTime = performance.now();
     const duration = endTime - startTime;
     const avgFrameTime = duration / frames;
-    
-    console.log(`Rendering test completed in ${duration.toFixed(2)}ms (${avgFrameTime.toFixed(2)}ms per frame)`);
+
+    console.log(
+      `Rendering test completed in ${duration.toFixed(2)}ms (${avgFrameTime.toFixed(2)}ms per frame)`
+    );
     return duration;
   }
 
@@ -272,10 +285,10 @@ class Performance3DGraphTester {
   private estimateMemoryUsage(nodes: TestNode[], edges: TestEdge[]): number {
     // Estimate memory usage based on data structures
     const nodeSize = 200; // bytes per node (including metadata and connections)
-    const edgeSize = 100;  // bytes per edge
-    
-    const estimatedMemory = (nodes.length * nodeSize) + (edges.length * edgeSize);
-    
+    const edgeSize = 100; // bytes per edge
+
+    const estimatedMemory = nodes.length * nodeSize + edges.length * edgeSize;
+
     console.log(`Estimated memory usage: ${(estimatedMemory / 1024 / 1024).toFixed(2)} MB`);
     return estimatedMemory;
   }
@@ -286,7 +299,7 @@ class Performance3DGraphTester {
   private calculateFrameRate(renderingTime: number, frames: number = 60): number {
     const avgFrameTime = renderingTime / frames;
     const frameRate = 1000 / avgFrameTime; // FPS
-    
+
     console.log(`Estimated frame rate: ${frameRate.toFixed(1)} FPS`);
     return frameRate;
   }
@@ -296,7 +309,7 @@ class Performance3DGraphTester {
    */
   private testInteractionLatency(nodes: TestNode[]): number {
     const startTime = performance.now();
-    
+
     console.log('Testing interaction latency...');
 
     // Simulate common interactions
@@ -306,7 +319,7 @@ class Performance3DGraphTester {
       'camera_rotation',
       'zoom',
       'pan',
-      'filter_application'
+      'filter_application',
     ];
 
     for (const interaction of interactions) {
@@ -315,15 +328,13 @@ class Performance3DGraphTester {
         for (let i = 0; i < Math.min(1000, nodes.length); i++) {
           // Simulate ray-sphere intersection tests
           const node = nodes[i];
-          const distance = Math.sqrt(
-            (node.x || 0) ** 2 + (node.y || 0) ** 2 + (node.z || 0) ** 2
-          );
-          
+          const distance = Math.sqrt((node.x || 0) ** 2 + (node.y || 0) ** 2 + (node.z || 0) ** 2);
+
           // Simulate intersection calculation
           Math.sqrt(distance * Math.random());
         }
       }
-      
+
       // Simulate other interactions
       for (let i = 0; i < 100; i++) {
         Math.sqrt(Math.random() * 1000);
@@ -332,7 +343,7 @@ class Performance3DGraphTester {
 
     const endTime = performance.now();
     const duration = endTime - startTime;
-    
+
     console.log(`Interaction latency test completed in ${duration.toFixed(2)}ms`);
     return duration / interactions.length; // Average latency per interaction
   }
@@ -340,7 +351,10 @@ class Performance3DGraphTester {
   /**
    * Generate performance recommendations
    */
-  private generateRecommendations(config: typeof TEST_CONFIGS[0], metrics: PerformanceMetrics): string[] {
+  private generateRecommendations(
+    config: (typeof TEST_CONFIGS)[0],
+    metrics: PerformanceMetrics
+  ): string[] {
     const recommendations: string[] = [];
 
     // Frame rate recommendations
@@ -366,13 +380,17 @@ class Performance3DGraphTester {
 
     // Layout calculation recommendations
     if (metrics.layoutCalculation > 5000) {
-      recommendations.push('Layout calculation is slow. Consider using WebWorkers for force calculations');
+      recommendations.push(
+        'Layout calculation is slow. Consider using WebWorkers for force calculations'
+      );
       recommendations.push('Implement progressive layout with limited iterations');
     }
 
     // Interaction latency recommendations
     if (metrics.interactionLatency > 100) {
-      recommendations.push('Interaction latency is high. Optimize raycasting with spatial indexing');
+      recommendations.push(
+        'Interaction latency is high. Optimize raycasting with spatial indexing'
+      );
       recommendations.push('Consider implementing object pooling for UI elements');
     }
 
@@ -384,7 +402,9 @@ class Performance3DGraphTester {
     }
 
     if (config.nodes > 50000) {
-      recommendations.push('CRITICAL: Node count exceeds recommended limits for real-time 3D rendering');
+      recommendations.push(
+        'CRITICAL: Node count exceeds recommended limits for real-time 3D rendering'
+      );
       recommendations.push('Consider implementing graph summarization techniques');
       recommendations.push('Use 2D mode as fallback for large datasets');
     }
@@ -395,9 +415,11 @@ class Performance3DGraphTester {
   /**
    * Run performance test for a specific configuration
    */
-  private async runTest(config: typeof TEST_CONFIGS[0]): Promise<TestResult> {
-    console.log(`\n🔥 Starting performance test: ${config.name} (${config.nodes} nodes, ${config.edges} edges)`);
-    
+  private async runTest(config: (typeof TEST_CONFIGS)[0]): Promise<TestResult> {
+    console.log(
+      `\n🔥 Starting performance test: ${config.name} (${config.nodes} nodes, ${config.edges} edges)`
+    );
+
     const errors: string[] = [];
     let success = true;
 
@@ -428,7 +450,7 @@ class Performance3DGraphTester {
         renderingTime,
         memoryUsage,
         frameRate,
-        interactionLatency
+        interactionLatency,
       };
 
       // Generate recommendations
@@ -445,9 +467,8 @@ class Performance3DGraphTester {
         metrics,
         success,
         errors,
-        recommendations
+        recommendations,
       };
-
     } catch (error) {
       console.error(`Test failed for ${config.name}:`, error);
       success = false;
@@ -461,11 +482,11 @@ class Performance3DGraphTester {
           renderingTime: 0,
           memoryUsage: 0,
           frameRate: 0,
-          interactionLatency: 0
+          interactionLatency: 0,
         },
         success,
         errors,
-        recommendations: ['Test execution failed']
+        recommendations: ['Test execution failed'],
       };
     }
   }
@@ -475,13 +496,13 @@ class Performance3DGraphTester {
    */
   public async runAllTests(): Promise<TestResult[]> {
     console.log('🚀 Starting 3D Knowledge Graph Performance Testing Suite\n');
-    
+
     for (const config of TEST_CONFIGS) {
       const result = await this.runTest(config);
       this.results.push(result);
-      
+
       // Add delay between tests to allow system recovery
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 1000));
     }
 
     return this.results;
@@ -496,13 +517,13 @@ class Performance3DGraphTester {
       `Generated: ${new Date().toISOString()}`,
       '',
       '## Executive Summary',
-      ''
+      '',
     ];
 
     // Summary statistics
-    const successful = this.results.filter(r => r.success).length;
-    const failed = this.results.filter(r => !r.success).length;
-    
+    const successful = this.results.filter((r) => r.success).length;
+    const failed = this.results.filter((r) => !r.success).length;
+
     report.push(`- Total tests: ${this.results.length}`);
     report.push(`- Successful: ${successful}`);
     report.push(`- Failed: ${failed}`);
@@ -510,13 +531,17 @@ class Performance3DGraphTester {
 
     // Find maximum viable configuration
     const maxViableConfig = this.results
-      .filter(r => r.success && r.metrics.frameRate >= 30)
+      .filter((r) => r.success && r.metrics.frameRate >= 30)
       .sort((a, b) => b.config.nodes - a.config.nodes)[0];
 
     if (maxViableConfig) {
-      report.push(`**Maximum viable configuration:** ${maxViableConfig.config.name} (${maxViableConfig.config.nodes} nodes, ${maxViableConfig.config.edges} edges)`);
+      report.push(
+        `**Maximum viable configuration:** ${maxViableConfig.config.name} (${maxViableConfig.config.nodes} nodes, ${maxViableConfig.config.edges} edges)`
+      );
       report.push(`**Frame rate:** ${maxViableConfig.metrics.frameRate.toFixed(1)} FPS`);
-      report.push(`**Memory usage:** ${(maxViableConfig.metrics.memoryUsage / 1024 / 1024).toFixed(1)} MB`);
+      report.push(
+        `**Memory usage:** ${(maxViableConfig.metrics.memoryUsage / 1024 / 1024).toFixed(1)} MB`
+      );
     } else {
       report.push('**No configuration met optimal performance criteria (30+ FPS)**');
     }
@@ -545,13 +570,13 @@ class Performance3DGraphTester {
 
         if (result.recommendations.length > 0) {
           report.push('**Recommendations:**');
-          result.recommendations.forEach(rec => {
+          result.recommendations.forEach((rec) => {
             report.push(`- ${rec}`);
           });
         }
       } else {
         report.push('**Errors:**');
-        result.errors.forEach(error => {
+        result.errors.forEach((error) => {
           report.push(`- ${error}`);
         });
       }
@@ -564,14 +589,16 @@ class Performance3DGraphTester {
     report.push('');
     report.push('| Configuration | Nodes | FPS | Memory (MB) | Layout (ms) | Status |');
     report.push('|---------------|--------|-----|-------------|-------------|---------|');
-    
+
     for (const result of this.results) {
       const status = result.success ? '✅' : '❌';
       const fps = result.success ? result.metrics.frameRate.toFixed(1) : 'N/A';
       const memory = result.success ? (result.metrics.memoryUsage / 1024 / 1024).toFixed(1) : 'N/A';
       const layout = result.success ? result.metrics.layoutCalculation.toFixed(0) : 'N/A';
-      
-      report.push(`| ${result.config.name} | ${result.config.nodes.toLocaleString()} | ${fps} | ${memory} | ${layout} | ${status} |`);
+
+      report.push(
+        `| ${result.config.name} | ${result.config.nodes.toLocaleString()} | ${fps} | ${memory} | ${layout} | ${status} |`
+      );
     }
 
     report.push('');
@@ -587,10 +614,10 @@ class Performance3DGraphTester {
       '5. **User Controls**: Allow users to adjust detail levels and disable animations',
       '6. **Caching Strategy**: Cache layout calculations for static portions of the graph',
       '7. **Mobile Optimization**: Reduce node count automatically on mobile devices',
-      '8. **WebGL Fallback**: Provide canvas-based fallback for WebGL failures'
+      '8. **WebGL Fallback**: Provide canvas-based fallback for WebGL failures',
     ];
 
-    globalRecommendations.forEach(rec => {
+    globalRecommendations.forEach((rec) => {
       report.push(rec);
     });
 
@@ -602,7 +629,7 @@ class Performance3DGraphTester {
    */
   public saveResults(): void {
     const outputDir = join(process.cwd(), 'reports', 'performance');
-    
+
     try {
       mkdirSync(outputDir, { recursive: true });
     } catch (error) {
@@ -615,12 +642,13 @@ class Performance3DGraphTester {
       results: this.results,
       summary: {
         totalTests: this.results.length,
-        successful: this.results.filter(r => r.success).length,
-        failed: this.results.filter(r => !r.success).length,
-        maxViableNodes: this.results
-          .filter(r => r.success && r.metrics.frameRate >= 30)
-          .sort((a, b) => b.config.nodes - a.config.nodes)[0]?.config.nodes || 0
-      }
+        successful: this.results.filter((r) => r.success).length,
+        failed: this.results.filter((r) => !r.success).length,
+        maxViableNodes:
+          this.results
+            .filter((r) => r.success && r.metrics.frameRate >= 30)
+            .sort((a, b) => b.config.nodes - a.config.nodes)[0]?.config.nodes || 0,
+      },
     };
 
     try {
@@ -628,18 +656,19 @@ class Performance3DGraphTester {
         join(outputDir, 'performance-test-results.json'),
         JSON.stringify(jsonResults, null, 2)
       );
-      console.log(`📊 Detailed results saved to: ${join(outputDir, 'performance-test-results.json')}`);
+      console.log(
+        `📊 Detailed results saved to: ${join(outputDir, 'performance-test-results.json')}`
+      );
     } catch (error) {
       console.warn('Could not save JSON results:', error);
     }
 
     // Save report as markdown
     try {
-      writeFileSync(
-        join(outputDir, 'performance-test-report.md'),
-        this.generateReport()
+      writeFileSync(join(outputDir, 'performance-test-report.md'), this.generateReport());
+      console.log(
+        `📋 Performance report saved to: ${join(outputDir, 'performance-test-report.md')}`
       );
-      console.log(`📋 Performance report saved to: ${join(outputDir, 'performance-test-report.md')}`);
     } catch (error) {
       console.warn('Could not save markdown report:', error);
     }
@@ -649,20 +678,19 @@ class Performance3DGraphTester {
 // Main execution
 async function main() {
   const tester = new Performance3DGraphTester();
-  
+
   try {
     await tester.runAllTests();
-    
+
     // Generate and display summary
     console.log('\n🎯 Performance Testing Complete!');
     console.log('='.repeat(50));
-    
+
     const report = tester.generateReport();
     console.log(report);
-    
+
     // Save results
     tester.saveResults();
-    
   } catch (error) {
     console.error('Performance testing failed:', error);
     process.exit(1);

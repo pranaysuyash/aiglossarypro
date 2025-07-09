@@ -1,19 +1,35 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  BarChart, Bar, LineChart, Line, XAxis, YAxis, CartesianGrid, 
-  Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell 
-} from 'recharts';
-import { 
-  RefreshCw, Activity, TrendingUp, TrendingDown, 
-  AlertCircle, CheckCircle, Clock, Database, Zap
+import {
+  Activity,
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Database,
+  RefreshCw,
+  TrendingDown,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 
 interface CacheStats {
   query: CacheTypeStats;
@@ -149,7 +165,7 @@ export function CacheMonitoring() {
       fetchRealTimeMetrics(),
       fetchHealth(),
       fetchReport(),
-      fetchHistoricalData()
+      fetchHistoricalData(),
     ]);
     setLoading(false);
   }, [fetchStats, fetchRealTimeMetrics, fetchHealth, fetchReport, fetchHistoricalData]);
@@ -177,9 +193,9 @@ export function CacheMonitoring() {
       const response = await fetch('/api/cache-analytics/clear', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cacheType })
+        body: JSON.stringify({ cacheType }),
       });
-      
+
       const data = await response.json();
       if (data.success) {
         toast({
@@ -188,7 +204,7 @@ export function CacheMonitoring() {
         });
         fetchAllData();
       }
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Error',
         description: 'Failed to clear cache',
@@ -199,7 +215,7 @@ export function CacheMonitoring() {
 
   const getHealthBadge = (health: CacheHealth | null) => {
     if (!health) return null;
-    
+
     if (health.healthy) {
       return <Badge className="bg-green-500">Healthy</Badge>;
     } else if (health.warnings.length <= 2) {
@@ -220,11 +236,13 @@ export function CacheMonitoring() {
     );
   }
 
-  const pieData = stats ? [
-    { name: 'Query Cache', value: stats.query.size },
-    { name: 'Search Cache', value: stats.search.size },
-    { name: 'User Cache', value: stats.user.size },
-  ] : [];
+  const pieData = stats
+    ? [
+        { name: 'Query Cache', value: stats.query.size },
+        { name: 'Search Cache', value: stats.search.size },
+        { name: 'User Cache', value: stats.user.size },
+      ]
+    : [];
 
   return (
     <div className="space-y-6">
@@ -235,18 +253,10 @@ export function CacheMonitoring() {
           <p className="text-muted-foreground">Real-time cache analytics and health monitoring</p>
         </div>
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setAutoRefresh(!autoRefresh)}
-          >
+          <Button variant="outline" size="sm" onClick={() => setAutoRefresh(!autoRefresh)}>
             {autoRefresh ? 'Pause' : 'Resume'} Auto-refresh
           </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={fetchAllData}
-          >
+          <Button variant="outline" size="sm" onClick={fetchAllData}>
             <RefreshCw className="h-4 w-4 mr-2" />
             Refresh
           </Button>
@@ -293,7 +303,9 @@ export function CacheMonitoring() {
               {realTimeMetrics ? `${realTimeMetrics.avgResponseTime.toFixed(1)}ms` : '0ms'}
             </div>
             <p className="text-xs text-muted-foreground">
-              {realTimeMetrics && realTimeMetrics.avgResponseTime < 50 ? 'Excellent' : 'Needs optimization'}
+              {realTimeMetrics && realTimeMetrics.avgResponseTime < 50
+                ? 'Excellent'
+                : 'Needs optimization'}
             </p>
           </CardContent>
         </Card>
@@ -307,9 +319,7 @@ export function CacheMonitoring() {
             <div className="text-2xl font-bold">
               {stats ? formatNumber(stats.combined.totalSize) : '0'}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Active entries across all caches
-            </p>
+            <p className="text-xs text-muted-foreground">Active entries across all caches</p>
           </CardContent>
         </Card>
 
@@ -321,7 +331,7 @@ export function CacheMonitoring() {
           <CardContent>
             <div className="flex items-center gap-2">
               {getHealthBadge(health)}
-              {health && health.healthy ? (
+              {health?.healthy ? (
                 <CheckCircle className="h-5 w-5 text-green-500" />
               ) : (
                 <AlertCircle className="h-5 w-5 text-yellow-500" />
@@ -386,18 +396,18 @@ export function CacheMonitoring() {
                     <YAxis yAxisId="right" orientation="right" />
                     <Tooltip />
                     <Legend />
-                    <Line 
+                    <Line
                       yAxisId="left"
-                      type="monotone" 
-                      dataKey="avgHitRate" 
-                      stroke="#82ca9d" 
+                      type="monotone"
+                      dataKey="avgHitRate"
+                      stroke="#82ca9d"
                       name="Hit Rate"
                     />
-                    <Line 
+                    <Line
                       yAxisId="right"
-                      type="monotone" 
-                      dataKey="avgResponseTime" 
-                      stroke="#8884d8" 
+                      type="monotone"
+                      dataKey="avgResponseTime"
+                      stroke="#8884d8"
                       name="Response Time (ms)"
                     />
                   </LineChart>
@@ -428,7 +438,7 @@ export function CacheMonitoring() {
                         fill="#8884d8"
                         dataKey="value"
                       >
-                        {pieData.map((entry, index) => (
+                        {pieData.map((_entry, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                         ))}
                       </Pie>
@@ -445,30 +455,29 @@ export function CacheMonitoring() {
                 <CardDescription>Hit rates and sizes for each cache</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {stats && ['query', 'search', 'user'].map((cacheType) => {
-                  const cache = stats[cacheType as keyof typeof stats] as CacheTypeStats;
-                  return (
-                    <div key={cacheType} className="space-y-2">
-                      <div className="flex justify-between items-center">
-                        <span className="font-medium capitalize">{cacheType} Cache</span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => clearCache(cacheType)}
-                        >
-                          Clear
-                        </Button>
+                {stats &&
+                  ['query', 'search', 'user'].map((cacheType) => {
+                    const cache = stats[cacheType as keyof typeof stats] as CacheTypeStats;
+                    return (
+                      <div key={cacheType} className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="font-medium capitalize">{cacheType} Cache</span>
+                          <Button size="sm" variant="outline" onClick={() => clearCache(cacheType)}>
+                            Clear
+                          </Button>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 text-sm">
+                          <div>Hit Rate: {formatPercentage(cache.hitRate)}</div>
+                          <div>
+                            Size: {cache.size}/{cache.maxItems}
+                          </div>
+                          <div>Hits: {formatNumber(cache.hitCount)}</div>
+                          <div>Misses: {formatNumber(cache.missCount)}</div>
+                        </div>
+                        <Progress value={(cache.size / cache.maxItems) * 100} />
                       </div>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div>Hit Rate: {formatPercentage(cache.hitRate)}</div>
-                        <div>Size: {cache.size}/{cache.maxItems}</div>
-                        <div>Hits: {formatNumber(cache.hitCount)}</div>
-                        <div>Misses: {formatNumber(cache.missCount)}</div>
-                      </div>
-                      <Progress value={(cache.size / cache.maxItems) * 100} />
-                    </div>
-                  );
-                })}
+                    );
+                  })}
               </CardContent>
             </Card>
           </div>
@@ -520,7 +529,9 @@ export function CacheMonitoring() {
             <Card>
               <CardHeader>
                 <CardTitle>Recommendations</CardTitle>
-                <CardDescription>Optimization suggestions based on current performance</CardDescription>
+                <CardDescription>
+                  Optimization suggestions based on current performance
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <ul className="space-y-2">

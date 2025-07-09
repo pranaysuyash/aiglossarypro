@@ -1,24 +1,22 @@
 /**
  * Column Batch Processor Service - Phase 2 Enhanced Content Generation System
- * 
+ *
  * Provides sophisticated batch processing for generating content across multiple terms
  * for specific sections (columns) with comprehensive management and safety features.
  */
 
-import { db } from '../db';
-import { 
-  enhancedTerms, 
-  sections, 
-  sectionItems, 
-  aiUsageAnalytics,
-  aiContentVerification 
-} from '../../shared/enhancedSchema';
-import { eq, and, inArray, sql, isNull } from 'drizzle-orm';
-import { aiContentGenerationService } from './aiContentGenerationService';
-import { jobQueueManager, JobType, JobPriority } from '../jobs/queue';
-import { log as logger } from '../utils/logger';
+import { EventEmitter } from 'node:events';
+import { and, eq, inArray, sql } from 'drizzle-orm';
 import OpenAI from 'openai';
-import { EventEmitter } from 'events';
+import {
+  aiUsageAnalytics,
+  enhancedTerms,
+  sectionItems,
+  sections,
+} from '../../shared/enhancedSchema';
+import { db } from '../db';
+import { JobPriority, JobType, jobQueueManager } from '../jobs/queue';
+import { log as logger } from '../utils/logger';
 
 // Interfaces for batch processing
 export interface ColumnBatchRequest {
@@ -133,7 +131,7 @@ export interface BatchCostEstimate {
 
 /**
  * Column Batch Processor Service
- * 
+ *
  * Main service for handling large-scale batch content generation operations
  * with comprehensive monitoring, cost management, and safety features.
  */
@@ -144,7 +142,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
     'gpt-3.5-turbo': { input: 0.0005, output: 0.0015 },
     'gpt-4': { input: 0.03, output: 0.06 },
     'gpt-4-turbo': { input: 0.01, output: 0.03 },
-    'gpt-4o-mini': { input: 0.00015, output: 0.0006 }
+    'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
   };
 
   // Rate limiting and safety configurations
@@ -159,7 +157,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
 
   constructor() {
     super();
-    
+
     if (!process.env.OPENAI_API_KEY) {
       throw new Error('OPENAI_API_KEY environment variable is required');
     }
@@ -188,7 +186,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
 
     // Estimate tokens per term based on section type and historical data
     const estimatedTokensPerTerm = await this.estimateTokensPerTerm(request.sectionName);
-    
+
     const model = request.processingOptions.model || 'gpt-3.5-turbo';
     const modelCost = this.MODEL_COSTS[model as keyof typeof this.MODEL_COSTS];
 
@@ -200,23 +198,26 @@ export class ColumnBatchProcessorService extends EventEmitter {
     const promptTokens = Math.floor(estimatedTokensPerTerm * 0.3); // 30% for prompt
     const completionTokens = Math.floor(estimatedTokensPerTerm * 0.7); // 70% for completion
 
-    const costPerTerm = (promptTokens / 1000 * modelCost.input) + (completionTokens / 1000 * modelCost.output);
-    
+    const costPerTerm =
+      (promptTokens / 1000) * modelCost.input + (completionTokens / 1000) * modelCost.output;
+
     const totalEstimatedCost = costPerTerm * totalTerms;
     const worstCaseScenario = totalEstimatedCost * 1.5; // 50% buffer
     const bestCaseScenario = totalEstimatedCost * 0.7; // 30% savings
 
     const recommendations: string[] = [];
-    
+
     // Add cost optimization recommendations
     if (totalEstimatedCost > 100) {
       recommendations.push('Consider using gpt-3.5-turbo instead of gpt-4 to reduce costs by ~90%');
     }
-    
+
     if (totalTerms > 500) {
-      recommendations.push('Consider breaking this into multiple smaller batches for better control');
+      recommendations.push(
+        'Consider breaking this into multiple smaller batches for better control'
+      );
     }
-    
+
     if (request.processingOptions.batchSize > 100) {
       recommendations.push('Smaller batch sizes provide better error recovery and monitoring');
     }
@@ -232,16 +233,16 @@ export class ColumnBatchProcessorService extends EventEmitter {
         [model]: {
           tokensPerTerm: estimatedTokensPerTerm,
           costPerTerm,
-          totalCost: totalEstimatedCost
-        }
+          totalCost: totalEstimatedCost,
+        },
       },
-      recommendations
+      recommendations,
     };
 
     logger.info(`Cost estimate completed:`, {
       totalTerms,
       estimatedCost: totalEstimatedCost,
-      worstCase: worstCaseScenario
+      worstCase: worstCaseScenario,
     });
 
     return estimate;
@@ -262,7 +263,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
 
     // Get eligible terms
     const terms = await this.getEligibleTerms(request);
-    
+
     if (terms.length === 0) {
       throw new Error('No eligible terms found for batch processing');
     }
@@ -271,8 +272,13 @@ export class ColumnBatchProcessorService extends EventEmitter {
     const costEstimate = await this.estimateBatchCosts(request);
 
     // Check cost limits
-    if (request.costLimits?.maxTotalCost && costEstimate.totalEstimatedCost > request.costLimits.maxTotalCost) {
-      throw new Error(`Estimated cost (${costEstimate.totalEstimatedCost}) exceeds maximum allowed (${request.costLimits.maxTotalCost})`);
+    if (
+      request.costLimits?.maxTotalCost &&
+      costEstimate.totalEstimatedCost > request.costLimits.maxTotalCost
+    ) {
+      throw new Error(
+        `Estimated cost (${costEstimate.totalEstimatedCost}) exceeds maximum allowed (${request.costLimits.maxTotalCost})`
+      );
     }
 
     // Calculate batches
@@ -290,23 +296,23 @@ export class ColumnBatchProcessorService extends EventEmitter {
         failedTerms: 0,
         skippedTerms: 0,
         totalBatches,
-        completionPercentage: 0
+        completionPercentage: 0,
       },
       costs: {
         estimatedCost: costEstimate.totalEstimatedCost,
         actualCost: 0,
         costPerTerm: costEstimate.estimatedCostPerTerm,
         budgetUsed: 0,
-        costBreakdown: {}
+        costBreakdown: {},
       },
       timing: {
         startedAt: new Date(),
         estimatedCompletion: this.calculateEstimatedCompletion(terms.length, batchSize),
-        lastActivity: new Date()
+        lastActivity: new Date(),
       },
       errors: [],
       subJobs: [],
-      configuration: request
+      configuration: request,
     };
 
     // Store operation
@@ -316,11 +322,11 @@ export class ColumnBatchProcessorService extends EventEmitter {
       sectionName: request.sectionName,
       totalTerms: terms.length,
       estimatedCost: costEstimate.totalEstimatedCost,
-      totalBatches
+      totalBatches,
     });
 
     // Start processing asynchronously
-    this.processBatchOperation(operationId, terms).catch(error => {
+    this.processBatchOperation(operationId, terms).catch((error) => {
       logger.error(`Batch operation ${operationId} failed:`, { error: error.message });
       operation.status = 'failed';
       this.emit('operation:failed', { operationId, error: error.message });
@@ -353,7 +359,9 @@ export class ColumnBatchProcessorService extends EventEmitter {
       try {
         await jobQueueManager.cancelJob(JobType.AI_CONTENT_GENERATION, subJobId);
       } catch (error) {
-        logger.warn(`Failed to cancel sub-job ${subJobId}:`, { error: error instanceof Error ? error.message : String(error) });
+        logger.warn(`Failed to cancel sub-job ${subJobId}:`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -385,10 +393,12 @@ export class ColumnBatchProcessorService extends EventEmitter {
     const remainingTerms = await this.getEligibleTerms(operation.configuration);
     const termsToProcess = remainingTerms.slice(processedTerms);
 
-    logger.info(`Resuming batch operation ${operationId} with ${termsToProcess.length} remaining terms`);
+    logger.info(
+      `Resuming batch operation ${operationId} with ${termsToProcess.length} remaining terms`
+    );
 
     // Continue processing
-    this.processBatchOperation(operationId, termsToProcess, true).catch(error => {
+    this.processBatchOperation(operationId, termsToProcess, true).catch((error) => {
       logger.error(`Resumed batch operation ${operationId} failed:`, { error: error.message });
       operation.status = 'failed';
       this.emit('operation:failed', { operationId, error: error.message });
@@ -420,7 +430,9 @@ export class ColumnBatchProcessorService extends EventEmitter {
       try {
         await jobQueueManager.cancelJob(JobType.AI_CONTENT_GENERATION, subJobId);
       } catch (error) {
-        logger.warn(`Failed to cancel sub-job ${subJobId}:`, { error: error instanceof Error ? error.message : String(error) });
+        logger.warn(`Failed to cancel sub-job ${subJobId}:`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -442,7 +454,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
    */
   getActiveOperations(): ColumnBatchOperation[] {
     return Array.from(this.operations.values()).filter(
-      op => op.status === 'running' || op.status === 'paused' || op.status === 'pending'
+      (op) => op.status === 'running' || op.status === 'paused' || op.status === 'pending'
     );
   }
 
@@ -467,27 +479,30 @@ export class ColumnBatchProcessorService extends EventEmitter {
   }> {
     const now = new Date();
     const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
+
     const allOperations = Array.from(this.operations.values());
-    const todayOperations = allOperations.filter(op => 
-      op.timing.startedAt && op.timing.startedAt >= todayStart
+    const todayOperations = allOperations.filter(
+      (op) => op.timing.startedAt && op.timing.startedAt >= todayStart
     );
 
-    const completedOperations = allOperations.filter(op => op.status === 'completed');
-    const successfulOperations = completedOperations.filter(op => 
-      op.result && op.result.successCount > op.result.failureCount
+    const completedOperations = allOperations.filter((op) => op.status === 'completed');
+    const successfulOperations = completedOperations.filter(
+      (op) => op.result && op.result.successCount > op.result.failureCount
     );
 
-    const averageOperationTime = completedOperations.length > 0
-      ? completedOperations.reduce((sum, op) => sum + (op.result?.processingTime || 0), 0) / completedOperations.length
-      : 0;
+    const averageOperationTime =
+      completedOperations.length > 0
+        ? completedOperations.reduce((sum, op) => sum + (op.result?.processingTime || 0), 0) /
+          completedOperations.length
+        : 0;
 
     return {
       activeOperations: this.getActiveOperations().length,
       totalOperationsToday: todayOperations.length,
       totalCostToday: todayOperations.reduce((sum, op) => sum + op.costs.actualCost, 0),
       averageOperationTime,
-      successRate: allOperations.length > 0 ? successfulOperations.length / allOperations.length : 0
+      successRate:
+        allOperations.length > 0 ? successfulOperations.length / allOperations.length : 0,
     };
   }
 
@@ -495,9 +510,9 @@ export class ColumnBatchProcessorService extends EventEmitter {
    * Process batch operation (private method)
    */
   private async processBatchOperation(
-    operationId: string, 
+    operationId: string,
     terms: Array<{ id: string; name: string }>,
-    isResume: boolean = false
+    _isResume: boolean = false
   ): Promise<void> {
     const operation = this.operations.get(operationId);
     if (!operation) {
@@ -522,7 +537,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
       // Process batches with concurrency control
       for (let i = 0; i < batches.length; i += maxConcurrentBatches) {
         const batchGroup = batches.slice(i, i + maxConcurrentBatches);
-        
+
         // Check if operation is still running
         if (operation.status !== 'running') {
           logger.info(`Operation ${operationId} stopped, status: ${operation.status}`);
@@ -531,7 +546,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
 
         // Process batch group concurrently
         await Promise.all(
-          batchGroup.map((batch, batchIndex) => 
+          batchGroup.map((batch, batchIndex) =>
             this.processBatch(operationId, batch, i + batchIndex)
           )
         );
@@ -542,9 +557,13 @@ export class ColumnBatchProcessorService extends EventEmitter {
         operation.timing.lastActivity = new Date();
 
         // Check cost limits
-        if (operation.configuration.costLimits?.maxTotalCost && 
-            operation.costs.actualCost >= operation.configuration.costLimits.maxTotalCost) {
-          logger.warn(`Cost limit reached for operation ${operationId}: ${operation.costs.actualCost}`);
+        if (
+          operation.configuration.costLimits?.maxTotalCost &&
+          operation.costs.actualCost >= operation.configuration.costLimits.maxTotalCost
+        ) {
+          logger.warn(
+            `Cost limit reached for operation ${operationId}: ${operation.costs.actualCost}`
+          );
           break;
         }
 
@@ -553,7 +572,9 @@ export class ColumnBatchProcessorService extends EventEmitter {
 
         // Delay between batch groups
         if (i + maxConcurrentBatches < batches.length) {
-          await new Promise(resolve => setTimeout(resolve, this.RATE_LIMITS.minDelayBetweenBatches));
+          await new Promise((resolve) =>
+            setTimeout(resolve, this.RATE_LIMITS.minDelayBetweenBatches)
+          );
         }
       }
 
@@ -568,19 +589,25 @@ export class ColumnBatchProcessorService extends EventEmitter {
         failureCount: operation.progress.failedTerms,
         totalTokensUsed: 0, // Will be calculated from sub-jobs
         totalCost: operation.costs.actualCost,
-        processingTime: operation.timing.actualCompletion.getTime() - (operation.timing.startedAt?.getTime() || 0)
+        processingTime:
+          operation.timing.actualCompletion.getTime() -
+          (operation.timing.startedAt?.getTime() || 0),
       };
 
       logger.info(`Batch operation ${operationId} completed:`, operation.result);
       this.emit('operation:completed', { operationId, operation });
-
     } catch (error) {
       operation.status = 'failed';
       operation.timing.actualCompletion = new Date();
-      
-      logger.error(`Batch operation ${operationId} failed:`, { error: error instanceof Error ? error.message : String(error) });
-      this.emit('operation:failed', { operationId, error: error instanceof Error ? error.message : String(error) });
-      
+
+      logger.error(`Batch operation ${operationId} failed:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      this.emit('operation:failed', {
+        operationId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+
       throw error;
     }
   }
@@ -589,14 +616,16 @@ export class ColumnBatchProcessorService extends EventEmitter {
    * Process a single batch of terms
    */
   private async processBatch(
-    operationId: string, 
-    batch: Array<{ id: string; name: string }>, 
+    operationId: string,
+    batch: Array<{ id: string; name: string }>,
     batchIndex: number
   ): Promise<void> {
     const operation = this.operations.get(operationId);
     if (!operation) return;
 
-    logger.info(`Processing batch ${batchIndex} with ${batch.length} terms for operation ${operationId}`);
+    logger.info(
+      `Processing batch ${batchIndex} with ${batch.length} terms for operation ${operationId}`
+    );
 
     const batchStartTime = Date.now();
 
@@ -617,38 +646,37 @@ export class ColumnBatchProcessorService extends EventEmitter {
             metadata: {
               batchOperationId: operationId,
               batchIndex,
-              termIndex: batch.indexOf(term)
-            }
+              termIndex: batch.indexOf(term),
+            },
           },
           {
             priority: JobPriority.NORMAL,
             attempts: 3,
-            timeout: 120000 // 2 minutes per job
+            timeout: 120000, // 2 minutes per job
           }
         );
 
         operation.subJobs.push(jobId);
         return jobId;
-
       } catch (error) {
-        logger.error(`Failed to create job for term ${term.id} in operation ${operationId}:`, { 
-          error: error instanceof Error ? error.message : String(error) 
+        logger.error(`Failed to create job for term ${term.id} in operation ${operationId}:`, {
+          error: error instanceof Error ? error.message : String(error),
         });
-        
+
         operation.errors.push({
           termId: term.id,
           termName: term.name,
           error: error instanceof Error ? error.message : String(error),
           timestamp: new Date(),
-          retryCount: 0
+          retryCount: 0,
         });
-        
+
         operation.progress.failedTerms++;
         return null;
       }
     });
 
-    const jobIds = (await Promise.all(subJobPromises)).filter(id => id !== null) as string[];
+    const jobIds = (await Promise.all(subJobPromises)).filter((id) => id !== null) as string[];
 
     // Wait for batch completion with timeout
     const batchTimeout = 600000; // 10 minutes per batch
@@ -662,11 +690,11 @@ export class ColumnBatchProcessorService extends EventEmitter {
 
       // Check job statuses
       const statusChecks = await Promise.all(
-        jobIds.map(jobId => jobQueueManager.getJobStatus(JobType.AI_CONTENT_GENERATION, jobId))
+        jobIds.map((jobId) => jobQueueManager.getJobStatus(JobType.AI_CONTENT_GENERATION, jobId))
       );
 
-      const completed = statusChecks.filter(status => 
-        status && (status.state === 'completed' || status.state === 'failed')
+      const completed = statusChecks.filter(
+        (status) => status && (status.state === 'completed' || status.state === 'failed')
       );
 
       // Update costs and progress
@@ -678,7 +706,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
         if (status?.state === 'completed' && status.result) {
           processedInBatch++;
           batchCost += status.result.cost || 0;
-          
+
           // Update cost breakdown
           const model = status.result.model || 'unknown';
           if (!operation.costs.costBreakdown[model]) {
@@ -687,7 +715,6 @@ export class ColumnBatchProcessorService extends EventEmitter {
           operation.costs.costBreakdown[model].cost += status.result.cost || 0;
           operation.costs.costBreakdown[model].tokens += status.result.totalTokens || 0;
           operation.costs.costBreakdown[model].requests++;
-          
         } else if (status?.state === 'failed') {
           failedInBatch++;
         }
@@ -697,9 +724,10 @@ export class ColumnBatchProcessorService extends EventEmitter {
       operation.progress.processedTerms += processedInBatch;
       operation.progress.failedTerms += failedInBatch;
       operation.costs.actualCost += batchCost;
-      operation.costs.budgetUsed = operation.costs.estimatedCost > 0 
-        ? (operation.costs.actualCost / operation.costs.estimatedCost) * 100 
-        : 0;
+      operation.costs.budgetUsed =
+        operation.costs.estimatedCost > 0
+          ? (operation.costs.actualCost / operation.costs.estimatedCost) * 100
+          : 0;
 
       // Check if all jobs completed
       if (completed.length === jobIds.length) {
@@ -707,7 +735,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
       }
 
       // Wait before checking again
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
 
     const batchProcessingTime = Date.now() - batchStartTime;
@@ -715,14 +743,16 @@ export class ColumnBatchProcessorService extends EventEmitter {
       processed: operation.progress.processedTerms,
       failed: operation.progress.failedTerms,
       batchCost: operation.costs.actualCost,
-      processingTime: batchProcessingTime
+      processingTime: batchProcessingTime,
     });
   }
 
   /**
    * Get eligible terms for batch processing based on request criteria
    */
-  private async getEligibleTerms(request: ColumnBatchRequest): Promise<Array<{ id: string; name: string }>> {
+  private async getEligibleTerms(
+    request: ColumnBatchRequest
+  ): Promise<Array<{ id: string; name: string }>> {
     const whereConditions = [];
 
     // Filter by specific term IDs if provided
@@ -737,7 +767,8 @@ export class ColumnBatchProcessorService extends EventEmitter {
 
     // Apply filter options
     if (request.filterOptions) {
-      const { hasContent, isAiGenerated, verificationStatus, lastUpdatedBefore, lastUpdatedAfter } = request.filterOptions;
+      const { hasContent, isAiGenerated, verificationStatus, lastUpdatedBefore, lastUpdatedAfter } =
+        request.filterOptions;
 
       // Complex filtering will require joining with sections and sectionItems
       // For now, implement basic term-level filtering
@@ -751,10 +782,12 @@ export class ColumnBatchProcessorService extends EventEmitter {
     }
 
     // Build query
-    let query = db.select({
-      id: enhancedTerms.id,
-      name: enhancedTerms.name
-    }).from(enhancedTerms);
+    let query = db
+      .select({
+        id: enhancedTerms.id,
+        name: enhancedTerms.name,
+      })
+      .from(enhancedTerms);
 
     if (whereConditions.length > 0) {
       query = query.where(and(...whereConditions));
@@ -766,12 +799,18 @@ export class ColumnBatchProcessorService extends EventEmitter {
     const terms = await query;
 
     // Additional filtering based on section content if needed
-    if (request.filterOptions?.hasContent !== undefined || request.filterOptions?.isAiGenerated !== undefined) {
+    if (
+      request.filterOptions?.hasContent !== undefined ||
+      request.filterOptions?.isAiGenerated !== undefined
+    ) {
       const filteredTerms = [];
-      
+
       for (const term of terms) {
-        const hasContentForSection = await this.termHasContentForSection(term.id, request.sectionName);
-        
+        const hasContentForSection = await this.termHasContentForSection(
+          term.id,
+          request.sectionName
+        );
+
         if (request.filterOptions.hasContent !== undefined) {
           if (request.filterOptions.hasContent && !hasContentForSection) continue;
           if (!request.filterOptions.hasContent && hasContentForSection) continue;
@@ -795,14 +834,17 @@ export class ColumnBatchProcessorService extends EventEmitter {
    * Check if term has content for specific section
    */
   private async termHasContentForSection(termId: string, sectionName: string): Promise<boolean> {
-    const sectionData = await db.select()
+    const sectionData = await db
+      .select()
       .from(sections)
       .innerJoin(sectionItems, eq(sections.id, sectionItems.sectionId))
-      .where(and(
-        eq(sections.termId, termId),
-        eq(sections.name, sectionName),
-        sql`${sectionItems.content} IS NOT NULL AND ${sectionItems.content} != ''`
-      ))
+      .where(
+        and(
+          eq(sections.termId, termId),
+          eq(sections.name, sectionName),
+          sql`${sectionItems.content} IS NOT NULL AND ${sectionItems.content} != ''`
+        )
+      )
       .limit(1);
 
     return sectionData.length > 0;
@@ -812,14 +854,17 @@ export class ColumnBatchProcessorService extends EventEmitter {
    * Check if term content is AI generated
    */
   private async isTermContentAiGenerated(termId: string, sectionName: string): Promise<boolean> {
-    const sectionData = await db.select()
+    const sectionData = await db
+      .select()
       .from(sections)
       .innerJoin(sectionItems, eq(sections.id, sectionItems.sectionId))
-      .where(and(
-        eq(sections.termId, termId),
-        eq(sections.name, sectionName),
-        eq(sectionItems.isAiGenerated, true)
-      ))
+      .where(
+        and(
+          eq(sections.termId, termId),
+          eq(sections.name, sectionName),
+          eq(sectionItems.isAiGenerated, true)
+        )
+      )
       .limit(1);
 
     return sectionData.length > 0;
@@ -831,40 +876,45 @@ export class ColumnBatchProcessorService extends EventEmitter {
   private async estimateTokensPerTerm(sectionName: string): Promise<number> {
     // Base estimates by section type
     const sectionEstimates: { [key: string]: number } = {
-      'definition': 150,
-      'explanation': 300,
-      'examples': 250,
-      'applications': 300,
-      'advantages': 200,
-      'disadvantages': 200,
-      'related_concepts': 150,
-      'further_reading': 100,
-      'code_examples': 400,
-      'mathematical_foundation': 350,
-      'history': 250,
-      'practical_implementation': 400
+      definition: 150,
+      explanation: 300,
+      examples: 250,
+      applications: 300,
+      advantages: 200,
+      disadvantages: 200,
+      related_concepts: 150,
+      further_reading: 100,
+      code_examples: 400,
+      mathematical_foundation: 350,
+      history: 250,
+      practical_implementation: 400,
     };
 
     const baseEstimate = sectionEstimates[sectionName.toLowerCase()] || 250;
 
     // Try to get historical data from analytics
     try {
-      const historicalData = await db.select({
-        avgTokens: sql<number>`AVG(CAST(${aiUsageAnalytics.inputTokens} + ${aiUsageAnalytics.outputTokens} AS FLOAT))`
-      })
-      .from(aiUsageAnalytics)
-      .where(and(
-        eq(aiUsageAnalytics.operation, 'generate_content'),
-        eq(aiUsageAnalytics.success, true),
-        sql`${aiUsageAnalytics.metadata}->>'sectionName' = ${sectionName}`
-      ))
-      .limit(1);
+      const historicalData = await db
+        .select({
+          avgTokens: sql<number>`AVG(CAST(${aiUsageAnalytics.inputTokens} + ${aiUsageAnalytics.outputTokens} AS FLOAT))`,
+        })
+        .from(aiUsageAnalytics)
+        .where(
+          and(
+            eq(aiUsageAnalytics.operation, 'generate_content'),
+            eq(aiUsageAnalytics.success, true),
+            sql`${aiUsageAnalytics.metadata}->>'sectionName' = ${sectionName}`
+          )
+        )
+        .limit(1);
 
       if (historicalData.length > 0 && historicalData[0].avgTokens) {
         return Math.max(historicalData[0].avgTokens, baseEstimate);
       }
     } catch (error) {
-      logger.warn('Failed to fetch historical token data:', { error: error instanceof Error ? error.message : String(error) });
+      logger.warn('Failed to fetch historical token data:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
 
     return baseEstimate;
@@ -873,11 +923,11 @@ export class ColumnBatchProcessorService extends EventEmitter {
   /**
    * Calculate estimated completion time
    */
-  private calculateEstimatedCompletion(totalTerms: number, batchSize: number): Date {
+  private calculateEstimatedCompletion(totalTerms: number, _batchSize: number): Date {
     // Estimate 30 seconds per term on average (including queue time)
     const estimatedSecondsPerTerm = 30;
     const totalEstimatedSeconds = totalTerms * estimatedSecondsPerTerm;
-    
+
     // Add buffer for batch processing overhead
     const bufferMultiplier = 1.2;
     const finalEstimate = totalEstimatedSeconds * bufferMultiplier;
@@ -897,21 +947,31 @@ export class ColumnBatchProcessorService extends EventEmitter {
       throw new Error('Processing options are required');
     }
 
-    if (request.processingOptions.batchSize < 1 || request.processingOptions.batchSize > this.RATE_LIMITS.maxBatchSize) {
+    if (
+      request.processingOptions.batchSize < 1 ||
+      request.processingOptions.batchSize > this.RATE_LIMITS.maxBatchSize
+    ) {
       throw new Error(`Batch size must be between 1 and ${this.RATE_LIMITS.maxBatchSize}`);
     }
 
-    if (request.processingOptions.model && !this.MODEL_COSTS[request.processingOptions.model as keyof typeof this.MODEL_COSTS]) {
+    if (
+      request.processingOptions.model &&
+      !this.MODEL_COSTS[request.processingOptions.model as keyof typeof this.MODEL_COSTS]
+    ) {
       throw new Error(`Unsupported model: ${request.processingOptions.model}`);
     }
 
-    if (request.processingOptions.temperature !== undefined && 
-        (request.processingOptions.temperature < 0 || request.processingOptions.temperature > 2)) {
+    if (
+      request.processingOptions.temperature !== undefined &&
+      (request.processingOptions.temperature < 0 || request.processingOptions.temperature > 2)
+    ) {
       throw new Error('Temperature must be between 0 and 2');
     }
 
-    if (request.processingOptions.maxTokens !== undefined && 
-        (request.processingOptions.maxTokens < 1 || request.processingOptions.maxTokens > 4000)) {
+    if (
+      request.processingOptions.maxTokens !== undefined &&
+      (request.processingOptions.maxTokens < 1 || request.processingOptions.maxTokens > 4000)
+    ) {
       throw new Error('Max tokens must be between 1 and 4000');
     }
 
@@ -925,19 +985,23 @@ export class ColumnBatchProcessorService extends EventEmitter {
    */
   private async checkRateLimits(): Promise<void> {
     const activeOps = this.getActiveOperations();
-    
+
     if (activeOps.length >= this.RATE_LIMITS.maxConcurrentOperations) {
-      throw new Error(`Maximum concurrent operations reached (${this.RATE_LIMITS.maxConcurrentOperations}). Please wait for existing operations to complete.`);
+      throw new Error(
+        `Maximum concurrent operations reached (${this.RATE_LIMITS.maxConcurrentOperations}). Please wait for existing operations to complete.`
+      );
     }
 
     // Check hourly limit
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
-    const recentOps = Array.from(this.operations.values()).filter(op => 
-      op.timing.startedAt && op.timing.startedAt > oneHourAgo
+    const recentOps = Array.from(this.operations.values()).filter(
+      (op) => op.timing.startedAt && op.timing.startedAt > oneHourAgo
     );
 
     if (recentOps.length >= this.RATE_LIMITS.maxOperationsPerHour) {
-      throw new Error(`Maximum operations per hour reached (${this.RATE_LIMITS.maxOperationsPerHour}). Please try again later.`);
+      throw new Error(
+        `Maximum operations per hour reached (${this.RATE_LIMITS.maxOperationsPerHour}). Please try again later.`
+      );
     }
   }
 
@@ -951,9 +1015,12 @@ export class ColumnBatchProcessorService extends EventEmitter {
     }, 30000);
 
     // Cleanup old operations daily
-    setInterval(() => {
-      this.cleanupOldOperations();
-    }, 24 * 60 * 60 * 1000);
+    setInterval(
+      () => {
+        this.cleanupOldOperations();
+      },
+      24 * 60 * 60 * 1000
+    );
   }
 
   /**
@@ -961,20 +1028,25 @@ export class ColumnBatchProcessorService extends EventEmitter {
    */
   private async monitorOperations(): Promise<void> {
     const activeOps = this.getActiveOperations();
-    
+
     for (const operation of activeOps) {
       // Check for stalled operations
       const lastActivity = operation.timing.lastActivity;
-      if (lastActivity && Date.now() - lastActivity.getTime() > 300000) { // 5 minutes
+      if (lastActivity && Date.now() - lastActivity.getTime() > 300000) {
+        // 5 minutes
         logger.warn(`Operation ${operation.id} appears stalled, last activity: ${lastActivity}`);
         this.emit('operation:stalled', { operationId: operation.id, operation });
       }
 
       // Check cost limits
       if (operation.configuration.costLimits?.warningThreshold) {
-        const warningCost = operation.costs.estimatedCost * (operation.configuration.costLimits.warningThreshold / 100);
+        const warningCost =
+          operation.costs.estimatedCost *
+          (operation.configuration.costLimits.warningThreshold / 100);
         if (operation.costs.actualCost > warningCost && operation.costs.budgetUsed < 90) {
-          logger.warn(`Operation ${operation.id} approaching cost limit: ${operation.costs.actualCost}/${operation.costs.estimatedCost}`);
+          logger.warn(
+            `Operation ${operation.id} approaching cost limit: ${operation.costs.actualCost}/${operation.costs.estimatedCost}`
+          );
           this.emit('operation:cost-warning', { operationId: operation.id, operation });
         }
       }
@@ -985,8 +1057,9 @@ export class ColumnBatchProcessorService extends EventEmitter {
    * Cleanup old operations (keep last 1000 operations)
    */
   private cleanupOldOperations(): void {
-    const allOps = Array.from(this.operations.entries())
-      .sort(([, a], [, b]) => (b.timing.startedAt?.getTime() || 0) - (a.timing.startedAt?.getTime() || 0));
+    const allOps = Array.from(this.operations.entries()).sort(
+      ([, a], [, b]) => (b.timing.startedAt?.getTime() || 0) - (a.timing.startedAt?.getTime() || 0)
+    );
 
     if (allOps.length > 1000) {
       const toRemove = allOps.slice(1000);

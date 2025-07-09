@@ -3,12 +3,10 @@
  * Handles email sending with templates and attachments
  */
 
-import { Job } from 'bullmq';
-import { EmailSendJobData } from '../types';
-import { log as logger } from '../../utils/logger';
+import type { Job } from 'bullmq';
 import * as nodemailer from 'nodemailer';
-import { readFileSync } from 'fs';
-import { join } from 'path';
+import { log as logger } from '../../utils/logger';
+import type { EmailSendJobData } from '../types';
 
 interface EmailSendJobResult {
   sent: boolean;
@@ -21,15 +19,15 @@ interface EmailSendJobResult {
 // Email templates function
 function getEmailTemplates() {
   return {
-  welcome: {
-    subject: 'Welcome to AI Glossary Pro',
-    html: `
+    welcome: {
+      subject: 'Welcome to AI Glossary Pro',
+      html: `
       <h1>Welcome to AI Glossary Pro!</h1>
       <p>Hello {{name}},</p>
       <p>Thank you for joining AI Glossary Pro. You now have access to our comprehensive AI/ML glossary.</p>
       <p>Best regards,<br>The AI Glossary Pro Team</p>
     `,
-    text: `
+      text: `
       Welcome to AI Glossary Pro!
       
       Hello {{name}},
@@ -39,10 +37,10 @@ function getEmailTemplates() {
       Best regards,
       The AI Glossary Pro Team
     `,
-  },
-  import_complete: {
-    subject: 'Excel Import Completed',
-    html: `
+    },
+    import_complete: {
+      subject: 'Excel Import Completed',
+      html: `
       <h1>Excel Import Completed</h1>
       <p>Hello {{name}},</p>
       <p>Your Excel import has been completed successfully.</p>
@@ -54,7 +52,7 @@ function getEmailTemplates() {
       <p>You can now access your imported data in the dashboard.</p>
       <p>Best regards,<br>The AI Glossary Pro Team</p>
     `,
-    text: `
+      text: `
       Excel Import Completed
       
       Hello {{name}},
@@ -70,10 +68,10 @@ function getEmailTemplates() {
       Best regards,
       The AI Glossary Pro Team
     `,
-  },
-  ai_generation_complete: {
-    subject: 'AI Content Generation Completed',
-    html: `
+    },
+    ai_generation_complete: {
+      subject: 'AI Content Generation Completed',
+      html: `
       <h1>AI Content Generation Completed</h1>
       <p>Hello \{{name}},</p>
       <p>Your AI content generation has been completed.</p>
@@ -86,7 +84,7 @@ function getEmailTemplates() {
       <p>You can now review the generated content in your dashboard.</p>
       <p>Best regards,<br>The AI Glossary Pro Team</p>
     `,
-    text: `
+      text: `
       AI Content Generation Completed
       
       Hello \{{name}},
@@ -103,10 +101,10 @@ function getEmailTemplates() {
       Best regards,
       The AI Glossary Pro Team
     `,
-  },
-  newsletter: {
-    subject: 'AI Glossary Pro Newsletter - {{date}}',
-    html: `
+    },
+    newsletter: {
+      subject: 'AI Glossary Pro Newsletter - {{date}}',
+      html: `
       <h1>AI Glossary Pro Newsletter</h1>
       <p>Hello {{name}},</p>
       <p>Here's what's new in the world of AI/ML:</p>
@@ -114,7 +112,7 @@ function getEmailTemplates() {
       <p>Best regards,<br>The AI Glossary Pro Team</p>
       <p><small><a href="{{unsubscribeUrl}}">Unsubscribe</a></small></p>
     `,
-    text: `
+      text: `
       AI Glossary Pro Newsletter
       
       Hello {{name}},
@@ -128,7 +126,7 @@ function getEmailTemplates() {
       
       Unsubscribe: {{unsubscribeUrl}}
     `,
-  },
+    },
   };
 }
 
@@ -157,9 +155,7 @@ const createTransporter = () => {
   return nodemailer.createTransport(emailConfig);
 };
 
-export async function emailSendProcessor(
-  job: Job<EmailSendJobData>
-): Promise<EmailSendJobResult> {
+export async function emailSendProcessor(job: Job<EmailSendJobData>): Promise<EmailSendJobResult> {
   const startTime = Date.now();
   const { to, subject, template, data, attachments } = job.data;
 
@@ -205,7 +201,9 @@ export async function emailSendProcessor(
       await transporter.verify();
       logger.info('Email transporter verified successfully');
     } catch (error) {
-      logger.warn('Email transporter verification failed:', { error: error instanceof Error ? error.message : String(error) });
+      logger.warn('Email transporter verification failed:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       // Continue anyway in case verification fails but sending works
     }
 
@@ -222,7 +220,7 @@ export async function emailSendProcessor(
       subject: processedSubject,
       html: processedHtml,
       text: processedText,
-      attachments: attachments?.map(att => ({
+      attachments: attachments?.map((att) => ({
         filename: att.filename,
         content: att.content,
       })),
@@ -230,7 +228,7 @@ export async function emailSendProcessor(
 
     // Send email
     const info = await transporter.sendMail(mailOptions);
-    
+
     result.sent = true;
     result.messageId = info.messageId;
     result.duration = Date.now() - startTime;
@@ -253,13 +251,14 @@ export async function emailSendProcessor(
     });
 
     return result;
-
   } catch (error) {
-    logger.error(`Email send job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
-    
+    logger.error(`Email send job ${job.id} failed:`, {
+      error: error instanceof Error ? error.message : String(error),
+    });
+
     result.error = error instanceof Error ? error.message : 'Unknown error';
     result.duration = Date.now() - startTime;
-    
+
     throw error;
   }
 }
@@ -269,35 +268,40 @@ export async function emailSendProcessor(
  */
 function processTemplate(template: string, data: Record<string, any>): string {
   let processed = template;
-  
+
   // Replace placeholders with data
   Object.entries(data).forEach(([key, value]) => {
     const placeholder = new RegExp(`{{${key}}}`, 'g');
     processed = processed.replace(placeholder, String(value));
   });
-  
+
   // Handle conditional blocks
-  processed = processed.replace(/{{#if\s+(\w+)}}(.*?){{\/if}}/gs, (match, condition, content) => {
+  processed = processed.replace(/{{#if\s+(\w+)}}(.*?){{\/if}}/gs, (_match, condition, content) => {
     return data[condition] ? content : '';
   });
-  
+
   // Handle loops
-  processed = processed.replace(/{{#each\s+(\w+)}}(.*?){{\/each}}/gs, (match, arrayName, content) => {
-    const array = data[arrayName];
-    if (!Array.isArray(array)) return '';
-    
-    return array.map(item => {
-      let itemContent = content;
-      if (typeof item === 'object') {
-        Object.entries(item).forEach(([key, value]) => {
-          itemContent = itemContent.replace(new RegExp(`{{${key}}}`, 'g'), String(value));
-        });
-      } else {
-        itemContent = itemContent.replace(/{{this}}/g, String(item));
-      }
-      return itemContent;
-    }).join('');
-  });
-  
+  processed = processed.replace(
+    /{{#each\s+(\w+)}}(.*?){{\/each}}/gs,
+    (_match, arrayName, content) => {
+      const array = data[arrayName];
+      if (!Array.isArray(array)) return '';
+
+      return array
+        .map((item) => {
+          let itemContent = content;
+          if (typeof item === 'object') {
+            Object.entries(item).forEach(([key, value]) => {
+              itemContent = itemContent.replace(new RegExp(`{{${key}}}`, 'g'), String(value));
+            });
+          } else {
+            itemContent = itemContent.replace(/{{this}}/g, String(item));
+          }
+          return itemContent;
+        })
+        .join('');
+    }
+  );
+
   return processed;
 }

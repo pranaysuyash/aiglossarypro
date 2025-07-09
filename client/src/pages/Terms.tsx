@@ -1,8 +1,15 @@
-import React, { useState, useEffect, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import TermCard from '../components/TermCard';
+import { ChevronLeft, ChevronRight, Filter } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useLocation } from 'wouter';
+import { useLiveRegion } from '@/components/accessibility/LiveRegion';
+import SurpriseMe from '@/components/SurpriseMe';
+import { TermCardSkeleton } from '@/components/ui/skeleton';
 import SearchBar from '../components/SearchBar';
+import TermCard from '../components/TermCard';
+import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
+import { Card, CardContent } from '../components/ui/card';
 import {
   Select,
   SelectContent,
@@ -10,18 +17,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { Badge } from '../components/ui/badge';
-import { Card, CardContent } from '../components/ui/card';
-import { Filter, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useLocation } from 'wouter';
-import { TermCardSkeleton } from '@/components/ui/skeleton';
-import { useLiveRegion } from '@/components/accessibility/LiveRegion';
-import SurpriseMe from '@/components/SurpriseMe';
-import type {
-  IEnhancedTerm,
-  ApiResponse,
-  PaginatedResponse,
-} from '../interfaces/interfaces';
+import type { ApiResponse, IEnhancedTerm, PaginatedResponse } from '../interfaces/interfaces';
 
 interface TermsApiResponse extends PaginatedResponse<IEnhancedTerm> {
   success: boolean;
@@ -201,20 +197,13 @@ export function Terms() {
       if (debouncedSearch) filterInfo.push(`search "${debouncedSearch}"`);
       if (selectedCategory) filterInfo.push(`category filter`);
 
-      const filterText =
-        filterInfo.length > 0 ? ` with ${filterInfo.join(' and ')}` : '';
-      const pageText =
-        totalPages > 1 ? ` on page ${currentPage} of ${totalPages}` : '';
+      const filterText = filterInfo.length > 0 ? ` with ${filterInfo.join(' and ')}` : '';
+      const pageText = totalPages > 1 ? ` on page ${currentPage} of ${totalPages}` : '';
 
       if (terms.length === 0) {
         announce(`No terms found${filterText}`, 'polite');
       } else {
-        announce(
-          `Found ${total} term${
-            total !== 1 ? 's' : ''
-          }${filterText}${pageText}`,
-          'polite'
-        );
+        announce(`Found ${total} term${total !== 1 ? 's' : ''}${filterText}${pageText}`, 'polite');
       }
     }
   }, [
@@ -226,6 +215,7 @@ export function Terms() {
     currentPage,
     totalPages,
     announce,
+    termsData,
   ]);
 
   const handleSearch = useCallback((query: string) => {
@@ -266,17 +256,20 @@ export function Terms() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, []);
 
-  const handleSurpriseTermSelect = useCallback((term: any) => {
-    setLocation(`/terms/${term.id}`);
-  }, [setLocation]);
+  const handleSurpriseTermSelect = useCallback(
+    (term: any) => {
+      setLocation(`/terms/${term.id}`);
+    },
+    [setLocation]
+  );
 
   const categories = categoriesData?.data || [];
   const activeFiltersCount = [
-    searchQuery, 
-    selectedCategory, 
+    searchQuery,
+    selectedCategory,
     selectedDifficulty,
     onlyWithVisuals && 'hasVisuals',
-    onlyWithMath && 'hasMath'
+    onlyWithMath && 'hasMath',
   ].filter(Boolean).length;
 
   if (error) {
@@ -285,10 +278,7 @@ export function Terms() {
         <Card>
           <CardContent className="p-6 text-center">
             <p className="text-red-600">Error loading terms. Please try again.</p>
-            <Button
-              onClick={() => window.location.reload()}
-              className="mt-4"
-            >
+            <Button onClick={() => window.location.reload()} className="mt-4">
               Reload Page
             </Button>
           </CardContent>
@@ -301,9 +291,7 @@ export function Terms() {
     <div className="container mx-auto px-4 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">
-          AI Glossary Terms
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-4">AI Glossary Terms</h1>
         <p className="text-gray-600">
           Explore our comprehensive collection of AI and machine learning terms
         </p>
@@ -339,16 +327,10 @@ export function Terms() {
             <CardContent className="p-4">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <div>
-                  <label
-                    htmlFor="category-select"
-                    className="block text-sm font-medium mb-2"
-                  >
+                  <label htmlFor="category-select" className="block text-sm font-medium mb-2">
                     Category
                   </label>
-                  <Select
-                    value={selectedCategory || 'all'}
-                    onValueChange={handleCategoryChange}
-                  >
+                  <Select value={selectedCategory || 'all'} onValueChange={handleCategoryChange}>
                     <SelectTrigger id="category-select">
                       <SelectValue placeholder="All categories" />
                     </SelectTrigger>
@@ -364,10 +346,7 @@ export function Terms() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="difficulty-select"
-                    className="block text-sm font-medium mb-2"
-                  >
+                  <label htmlFor="difficulty-select" className="block text-sm font-medium mb-2">
                     Difficulty Level
                   </label>
                   <Select
@@ -387,16 +366,10 @@ export function Terms() {
                 </div>
 
                 <div>
-                  <label
-                    htmlFor="sort-by-select"
-                    className="block text-sm font-medium mb-2"
-                  >
+                  <label htmlFor="sort-by-select" className="block text-sm font-medium mb-2">
                     Sort by
                   </label>
-                  <Select
-                    value={sortBy}
-                    onValueChange={(value) => handleSortChange(value)}
-                  >
+                  <Select value={sortBy} onValueChange={(value) => handleSortChange(value)}>
                     <SelectTrigger id="sort-by-select">
                       <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
@@ -460,38 +433,32 @@ export function Terms() {
         <div className="text-center py-12">
           <div className="max-w-2xl mx-auto">
             <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">
-              {debouncedSearch 
-                ? `No terms found for "${debouncedSearch}"` 
-                : selectedCategory 
-                  ? "No terms found in this category"
-                  : "No terms found with current filters"
-              }
+              {debouncedSearch
+                ? `No terms found for "${debouncedSearch}"`
+                : selectedCategory
+                  ? 'No terms found in this category'
+                  : 'No terms found with current filters'}
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-8">
-              {debouncedSearch 
-                ? "Try adjusting your search terms or discover something unexpected!" 
-                : "Try removing some filters or let us surprise you with a random discovery!"
-              }
+              {debouncedSearch
+                ? 'Try adjusting your search terms or discover something unexpected!'
+                : 'Try removing some filters or let us surprise you with a random discovery!'}
             </p>
-            
+
             {/* Surprise Me Fallback */}
             <div className="max-w-md mx-auto">
-              <SurpriseMe 
+              <SurpriseMe
                 compact={true}
                 showModeSelector={false}
                 maxResults={3}
                 onTermSelect={handleSurpriseTermSelect}
               />
             </div>
-            
+
             {/* Clear Filters Option */}
             {activeFiltersCount > 0 && (
               <div className="mt-6">
-                <Button 
-                  variant="outline" 
-                  onClick={clearFilters}
-                  className="mr-4"
-                >
+                <Button variant="outline" onClick={clearFilters} className="mr-4">
                   Clear All Filters
                 </Button>
               </div>

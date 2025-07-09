@@ -3,12 +3,12 @@
  * Handles precomputation of complex calculations for caching
  */
 
-import { Job } from 'bullmq';
-import { CachePrecomputeJobData } from '../types';
+import type { Job } from 'bullmq';
 import { redisCache } from '../../config/redis';
 import { enhancedStorage } from '../../enhancedStorage';
 import { optimizedSearch } from '../../optimizedSearchService';
 import { log as logger } from '../../utils/logger';
+import type { CachePrecomputeJobData } from '../types';
 
 interface CachePrecomputeJobResult {
   computationType: string;
@@ -47,19 +47,19 @@ export async function cachePrecomputeProcessor(
       case 'search_results':
         await precomputeSearchResults(job, parameters, ttl, result);
         break;
-      
+
       case 'term_relationships':
         await precomputeTermRelationships(job, parameters, ttl, result);
         break;
-      
+
       case 'user_recommendations':
         await precomputeUserRecommendations(job, parameters, ttl, result);
         break;
-      
+
       case 'analytics':
         await precomputeAnalytics(job, parameters, ttl, result);
         break;
-      
+
       default:
         throw new Error(`Unsupported computation type: ${computationType}`);
     }
@@ -81,9 +81,10 @@ export async function cachePrecomputeProcessor(
 
     logger.info(`Cache precompute job ${job.id} completed`, result);
     return result;
-
   } catch (error) {
-    logger.error(`Cache precompute job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
+    logger.error(`Cache precompute job ${job.id} failed:`, {
+      error: error instanceof Error ? error.message : String(error),
+    });
     result.duration = Date.now() - startTime;
     throw error;
   }
@@ -99,7 +100,7 @@ async function precomputeSearchResults(
   result: CachePrecomputeJobResult
 ): Promise<void> {
   const { popularQueries, categories, limit = 20 } = parameters;
-  
+
   await job.updateProgress({
     progress: 10,
     message: 'Fetching popular search queries',
@@ -107,8 +108,8 @@ async function precomputeSearchResults(
   });
 
   // Get popular queries if not provided
-  const queries = popularQueries || await getPopularSearchQueries(50);
-  
+  const queries = popularQueries || (await getPopularSearchQueries(50));
+
   let processedQueries = 0;
   const computedData: Record<string, any> = {};
 
@@ -138,7 +139,7 @@ async function precomputeSearchResults(
           category,
           limit,
         });
-        
+
         const categoryKey = `search:${query}:${encodeURIComponent(JSON.stringify({ categories: [category] }))}`;
         await redisCache.set(categoryKey, categoryResults, ttl);
         computedData[categoryKey] = categoryResults;
@@ -151,13 +152,15 @@ async function precomputeSearchResults(
 
       processedQueries++;
     } catch (error) {
-      logger.error(`Error precomputing search for query "${query}":`, { error: error instanceof Error ? error.message : String(error) });
+      logger.error(`Error precomputing search for query "${query}":`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
   result.cacheKey = `precomputed_search_results:${Date.now()}`;
   result.dataSize = Object.keys(computedData).length;
-  
+
   await job.updateProgress({
     progress: 85,
     message: 'Saving precomputed results',
@@ -175,7 +178,7 @@ async function precomputeTermRelationships(
   result: CachePrecomputeJobResult
 ): Promise<void> {
   const { termIds, maxRelationships = 10 } = parameters;
-  
+
   await job.updateProgress({
     progress: 10,
     message: 'Fetching terms for relationship analysis',
@@ -184,7 +187,7 @@ async function precomputeTermRelationships(
 
   // Get all terms if no specific IDs provided
   const terms = termIds || (await enhancedStorage.getAllTerms()).map((term: any) => term.id);
-  
+
   let processedTerms = 0;
   const relationshipData: Record<string, any> = {};
 
@@ -203,20 +206,22 @@ async function precomputeTermRelationships(
 
       // Compute relationships using various algorithms
       const relationships = await computeTermRelationships(termId, maxRelationships);
-      
+
       const relationshipKey = `relationships:${termId}`;
       await redisCache.set(relationshipKey, relationships, ttl);
       relationshipData[relationshipKey] = relationships;
 
       processedTerms++;
     } catch (error) {
-      logger.error(`Error computing relationships for term ${termId}:`, { error: error instanceof Error ? error.message : String(error) });
+      logger.error(`Error computing relationships for term ${termId}:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
   result.cacheKey = `precomputed_relationships:${Date.now()}`;
   result.dataSize = Object.keys(relationshipData).length;
-  
+
   await job.updateProgress({
     progress: 90,
     message: 'Relationship computation completed',
@@ -234,7 +239,7 @@ async function precomputeUserRecommendations(
   result: CachePrecomputeJobResult
 ): Promise<void> {
   const { userIds, maxRecommendations = 10 } = parameters;
-  
+
   await job.updateProgress({
     progress: 10,
     message: 'Fetching user data for recommendations',
@@ -242,8 +247,8 @@ async function precomputeUserRecommendations(
   });
 
   // Get active users if no specific IDs provided
-  const users = userIds || await getActiveUsers(100);
-  
+  const users = userIds || (await getActiveUsers(100));
+
   let processedUsers = 0;
   const recommendationData: Record<string, any> = {};
 
@@ -262,20 +267,22 @@ async function precomputeUserRecommendations(
 
       // Compute personalized recommendations
       const recommendations = await computeUserRecommendations(userId, maxRecommendations);
-      
+
       const recommendationKey = `recommendations:${userId}`;
       await redisCache.set(recommendationKey, recommendations, ttl);
       recommendationData[recommendationKey] = recommendations;
 
       processedUsers++;
     } catch (error) {
-      logger.error(`Error computing recommendations for user ${userId}:`, { error: error instanceof Error ? error.message : String(error) });
+      logger.error(`Error computing recommendations for user ${userId}:`, {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
   result.cacheKey = `precomputed_recommendations:${Date.now()}`;
   result.dataSize = Object.keys(recommendationData).length;
-  
+
   await job.updateProgress({
     progress: 90,
     message: 'Recommendation computation completed',
@@ -293,7 +300,7 @@ async function precomputeAnalytics(
   result: CachePrecomputeJobResult
 ): Promise<void> {
   const { timeframes, metrics } = parameters;
-  
+
   await job.updateProgress({
     progress: 10,
     message: 'Initializing analytics computation',
@@ -320,21 +327,23 @@ async function precomputeAnalytics(
         });
 
         const analyticsData = await computeAnalyticsMetric(metric, timeframe);
-        
+
         const analyticsKey = `analytics:${metric}:${timeframe}`;
         await redisCache.set(analyticsKey, analyticsData, ttl);
         computedAnalytics[analyticsKey] = analyticsData;
 
         processedMetrics++;
       } catch (error) {
-        logger.error(`Error computing analytics for ${metric} - ${timeframe}:`, { error: error instanceof Error ? error.message : String(error) });
+        logger.error(`Error computing analytics for ${metric} - ${timeframe}:`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
   }
 
   result.cacheKey = `precomputed_analytics:${Date.now()}`;
   result.dataSize = Object.keys(computedAnalytics).length;
-  
+
   await job.updateProgress({
     progress: 90,
     message: 'Analytics computation completed',
@@ -346,7 +355,7 @@ async function precomputeAnalytics(
  * Helper functions for various computations
  */
 
-async function getPopularSearchQueries(limit: number): Promise<string[]> {
+async function getPopularSearchQueries(_limit: number): Promise<string[]> {
   // Mock implementation - replace with actual analytics query
   return [
     'machine learning',
@@ -389,7 +398,10 @@ async function getActiveUsers(limit: number): Promise<string[]> {
   return Array.from({ length: limit }, (_, i) => `user-${i + 1}`);
 }
 
-async function computeUserRecommendations(userId: string, maxRecommendations: number): Promise<any> {
+async function computeUserRecommendations(
+  userId: string,
+  maxRecommendations: number
+): Promise<any> {
   // Mock implementation - replace with actual recommendation engine
   return {
     userId,

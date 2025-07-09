@@ -1,59 +1,52 @@
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle 
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { BarChart, LineChart, PieChart, ChartConfig } from "@/components/ui/chart";
-import { ArrowRight, Users, Eye, Star, BookOpen, TrendingUp, AlertCircle } from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { useAuth } from "@/hooks/useAuth";
-import { IAnalyticsData } from "@/interfaces/interfaces";
+import { useQuery } from '@tanstack/react-query';
+import { AlertCircle, ArrowRight, BookOpen, Eye, Star, TrendingUp, Users } from 'lucide-react';
+import { Link } from 'wouter';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { BarChart, type ChartConfig, LineChart, PieChart } from '@/components/ui/chart';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/hooks/useAuth';
+import type { IAnalyticsData } from '@/interfaces/interfaces';
 
 export default function AnalyticsDashboard() {
   const { isAuthenticated } = useAuth();
 
   // Fetch analytics data
-  const { data: analytics, isLoading, error } = useQuery<IAnalyticsData>({
-    queryKey: ["/api/analytics"],
+  const {
+    data: analytics,
+    isLoading,
+    error,
+  } = useQuery<IAnalyticsData>({
+    queryKey: ['/api/analytics'],
     enabled: isAuthenticated,
   });
 
   // Chart configurations
   const userActivityConfig: ChartConfig = {
     count: {
-      label: "Daily Activity",
-      color: "hsl(var(--chart-1))",
+      label: 'Daily Activity',
+      color: 'hsl(var(--chart-1))',
     },
   };
 
   const topTermsConfig: ChartConfig = {
     views: {
-      label: "Views",
-      color: "hsl(var(--chart-2))",
+      label: 'Views',
+      color: 'hsl(var(--chart-2))',
     },
   };
 
   const categoryConfig: ChartConfig = {
     count: {
-      label: "Terms",
-      color: "hsl(var(--chart-3))",
+      label: 'Terms',
+      color: 'hsl(var(--chart-3))',
     },
   };
 
   // Prepare chart data
   const prepareUserActivityData = () => {
     if (!analytics?.userActivity) return [];
-    return analytics.userActivity.map(item => ({
+    return analytics.userActivity.map((item) => ({
       date: item.date,
       count: item.count,
     }));
@@ -61,7 +54,7 @@ export default function AnalyticsDashboard() {
 
   const prepareTopTermsData = () => {
     if (!analytics?.topTerms) return [];
-    return analytics.topTerms.map(term => ({
+    return analytics.topTerms.map((term) => ({
       name: term.name,
       views: term.views,
     }));
@@ -69,7 +62,7 @@ export default function AnalyticsDashboard() {
 
   const prepareCategoryDistributionData = () => {
     if (!analytics?.categoriesDistribution) return [];
-    return analytics.categoriesDistribution.map(cat => ({
+    return analytics.categoriesDistribution.map((cat) => ({
       name: cat.name,
       count: cat.count,
     }));
@@ -83,13 +76,11 @@ export default function AnalyticsDashboard() {
             <CardTitle className="text-center">Authentication Required</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-center mb-4">
-              Please sign in to view analytics.
-            </p>
+            <p className="text-center mb-4">Please sign in to view analytics.</p>
             <div className="flex justify-center">
-              <button 
+              <button
                 className="px-4 py-2 bg-primary text-white rounded-lg"
-                onClick={() => window.location.href = "/api/login"}
+                onClick={() => (window.location.href = '/api/login')}
               >
                 Sign In
               </button>
@@ -149,7 +140,7 @@ export default function AnalyticsDashboard() {
                 </p>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center text-gray-500 dark:text-gray-400">
@@ -163,7 +154,7 @@ export default function AnalyticsDashboard() {
                 </p>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center text-gray-500 dark:text-gray-400">
@@ -172,12 +163,10 @@ export default function AnalyticsDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{analytics.totalViews}</div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Term detail page visits
-                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Term detail page visits</p>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium flex items-center text-gray-500 dark:text-gray-400">
@@ -186,9 +175,7 @@ export default function AnalyticsDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{analytics.totalFavorites}</div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Terms saved as favorites
-                </p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">Terms saved as favorites</p>
               </CardContent>
             </Card>
           </div>
@@ -205,18 +192,16 @@ export default function AnalyticsDashboard() {
                 <BookOpen className="mr-2 h-4 w-4" /> Categories Distribution
               </TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="activity">
               <Card>
                 <CardHeader>
                   <CardTitle>User Activity Over Time</CardTitle>
-                  <CardDescription>
-                    Daily user engagement with the glossary
-                  </CardDescription>
+                  <CardDescription>Daily user engagement with the glossary</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-64 xs:h-80 overflow-hidden">
-                    <LineChart 
+                    <LineChart
                       config={userActivityConfig}
                       data={prepareUserActivityData()}
                       xAxisKey="date"
@@ -226,18 +211,16 @@ export default function AnalyticsDashboard() {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="terms">
               <Card>
                 <CardHeader>
                   <CardTitle>Most Viewed Terms</CardTitle>
-                  <CardDescription>
-                    Terms with the highest number of views
-                  </CardDescription>
+                  <CardDescription>Terms with the highest number of views</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="h-64 xs:h-80 overflow-hidden">
-                    <BarChart 
+                    <BarChart
                       config={topTermsConfig}
                       data={prepareTopTermsData()}
                       xAxisKey="name"
@@ -247,7 +230,7 @@ export default function AnalyticsDashboard() {
                 </CardContent>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="categories">
               <Card>
                 <CardHeader>
@@ -258,7 +241,7 @@ export default function AnalyticsDashboard() {
                 </CardHeader>
                 <CardContent className="flex justify-center">
                   <div className="h-64 xs:h-80 w-full max-w-xs xs:max-w-lg overflow-hidden">
-                    <PieChart 
+                    <PieChart
                       config={categoryConfig}
                       data={prepareCategoryDistributionData()}
                       nameKey="name"
@@ -275,7 +258,8 @@ export default function AnalyticsDashboard() {
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>No data available</AlertTitle>
           <AlertDescription>
-            There is no analytics data available yet. Start using the platform to generate analytics.
+            There is no analytics data available yet. Start using the platform to generate
+            analytics.
           </AlertDescription>
         </Alert>
       )}

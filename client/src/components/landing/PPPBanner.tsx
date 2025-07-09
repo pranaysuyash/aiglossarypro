@@ -1,7 +1,7 @@
+import { DollarSign, TrendingDown } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { useCountryPricing } from '@/hooks/useCountryPricing';
-import { TrendingDown, DollarSign } from 'lucide-react';
 
 export function PPPBanner() {
   const pricing = useCountryPricing();
@@ -23,7 +23,7 @@ export function PPPBanner() {
                 Special Pricing for {pricing.countryName}
               </Badge>
             </div>
-            
+
             {/* Discount Information */}
             <div className="text-green-800">
               <div className="text-lg font-semibold mb-1">

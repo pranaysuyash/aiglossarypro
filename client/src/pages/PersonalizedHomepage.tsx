@@ -3,11 +3,9 @@
  * AI-powered adaptive homepage with personalized content and navigation
  */
 
-import React, { useEffect } from 'react';
-import { useQuery } from '@tanstack/react-query';
+import type React from 'react';
+import { useEffect } from 'react';
 import PersonalizedDashboard from '../components/PersonalizedDashboard';
-import RecommendedForYou from '../components/RecommendedForYou';
-import TrendingWidget from '../components/TrendingWidget';
 import { useAuth } from '../hooks/useAuth';
 
 const PersonalizedHomepage: React.FC = () => {

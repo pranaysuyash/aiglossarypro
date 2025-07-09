@@ -1,18 +1,16 @@
-import { db } from "../db";
-import { 
-  terms, 
-  users, 
-  termViews, 
-  userBehaviorEvents, 
-  discoverySessions, 
-  discoveryPreferences, 
-  surpriseMetrics,
-  userLearningProfile,
+import { and, desc, eq, gt, inArray, isNull, lt, not, or, sql } from 'drizzle-orm';
+import {
   categories,
-  favorites
-} from "../../shared/schema";
-import { eq, sql, desc, asc, and, or, not, inArray, isNull, gt, lt } from "drizzle-orm";
-import logger from "../utils/logger";
+  discoveryPreferences,
+  discoverySessions,
+  favorites,
+  surpriseMetrics,
+  terms,
+  termViews,
+  userLearningProfile,
+} from '../../shared/schema';
+import { db } from '../db';
+import logger from '../utils/logger';
 
 export interface SurpriseDiscoveryRequest {
   userId?: string;
@@ -49,7 +47,7 @@ export interface UserDiscoveryContext {
 }
 
 export class SurpriseDiscoveryService {
-  private static readonly ALGORITHM_VERSION = "v1.2.0";
+  private static readonly ALGORITHM_VERSION = 'v1.2.0';
   private static readonly RECENT_TERMS_LOOKBACK_DAYS = 30;
   private static readonly MIN_SURPRISE_SCORE = 20;
   private static readonly MAX_SURPRISE_SCORE = 100;
@@ -57,31 +55,42 @@ export class SurpriseDiscoveryService {
   /**
    * Main entry point for surprise discovery
    */
-  static async discoverSurprise(request: SurpriseDiscoveryRequest): Promise<SurpriseDiscoveryResult[]> {
+  static async discoverSurprise(
+    request: SurpriseDiscoveryRequest
+  ): Promise<SurpriseDiscoveryResult[]> {
     try {
-      logger.info(`Starting surprise discovery with mode: ${request.mode}`, { 
-        userId: request.userId, 
-        sessionId: request.sessionId 
+      logger.info(`Starting surprise discovery with mode: ${request.mode}`, {
+        userId: request.userId,
+        sessionId: request.sessionId,
       });
 
       // Get user context for personalization
-      const userContext = await this.buildUserContext(request.userId);
-      
+      const userContext = await SurpriseDiscoveryService.buildUserContext(request.userId);
+
       // Select algorithm based on discovery mode
       let discoveryResults: SurpriseDiscoveryResult[];
-      
+
       switch (request.mode) {
         case 'random_adventure':
-          discoveryResults = await this.randomAdventureDiscovery(request, userContext);
+          discoveryResults = await SurpriseDiscoveryService.randomAdventureDiscovery(
+            request,
+            userContext
+          );
           break;
         case 'guided_discovery':
-          discoveryResults = await this.guidedDiscovery(request, userContext);
+          discoveryResults = await SurpriseDiscoveryService.guidedDiscovery(request, userContext);
           break;
         case 'challenge_mode':
-          discoveryResults = await this.challengeModeDiscovery(request, userContext);
+          discoveryResults = await SurpriseDiscoveryService.challengeModeDiscovery(
+            request,
+            userContext
+          );
           break;
         case 'connection_quest':
-          discoveryResults = await this.connectionQuestDiscovery(request, userContext);
+          discoveryResults = await SurpriseDiscoveryService.connectionQuestDiscovery(
+            request,
+            userContext
+          );
           break;
         default:
           throw new Error(`Unsupported discovery mode: ${request.mode}`);
@@ -89,14 +98,17 @@ export class SurpriseDiscoveryService {
 
       // Track discovery session
       if (discoveryResults.length > 0) {
-        await this.trackDiscoverySession(request, userContext, discoveryResults);
+        await SurpriseDiscoveryService.trackDiscoverySession(
+          request,
+          userContext,
+          discoveryResults
+        );
       }
 
       logger.info(`Completed surprise discovery, found ${discoveryResults.length} results`);
       return discoveryResults;
-
     } catch (error) {
-      logger.error("Error in surprise discovery:", error);
+      logger.error('Error in surprise discovery:', error);
       throw error;
     }
   }
@@ -105,7 +117,7 @@ export class SurpriseDiscoveryService {
    * Random Adventure: Completely random exploration
    */
   private static async randomAdventureDiscovery(
-    request: SurpriseDiscoveryRequest, 
+    request: SurpriseDiscoveryRequest,
     userContext: UserDiscoveryContext
   ): Promise<SurpriseDiscoveryResult[]> {
     const excludeTermIds = request.excludeRecentlyViewed ? userContext.recentlyViewedTerms : [];
@@ -123,8 +135,8 @@ export class SurpriseDiscoveryService {
         createdAt: terms.createdAt,
         category: {
           id: categories.id,
-          name: categories.name
-        }
+          name: categories.name,
+        },
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
@@ -134,7 +146,10 @@ export class SurpriseDiscoveryService {
           // Bias towards less viewed terms for surprise
           or(
             isNull(terms.viewCount),
-            lt(terms.viewCount, sql`(SELECT AVG(view_count) FROM terms WHERE view_count IS NOT NULL)`)
+            lt(
+              terms.viewCount,
+              sql`(SELECT AVG(view_count) FROM terms WHERE view_count IS NOT NULL)`
+            )
           )
         )
       )
@@ -142,21 +157,21 @@ export class SurpriseDiscoveryService {
       .limit(maxResults * 3); // Get extra to allow for filtering
 
     const results: SurpriseDiscoveryResult[] = [];
-    
+
     for (const term of randomTerms.slice(0, maxResults)) {
       const surpriseScore = Math.floor(Math.random() * 40) + 60; // 60-100 for random adventure
-      
+
       results.push({
         term,
-        surpriseReason: "Completely random discovery - adventure awaits!",
+        surpriseReason: 'Completely random discovery - adventure awaits!',
         confidenceScore: surpriseScore,
         discoveryMode: request.mode,
-        algorithmVersion: this.ALGORITHM_VERSION,
+        algorithmVersion: SurpriseDiscoveryService.ALGORITHM_VERSION,
         metadata: {
           categoryName: term.category?.name,
           isUnexplored: (term.viewCount || 0) < 10,
-          isPopular: (term.viewCount || 0) > 100
-        }
+          isPopular: (term.viewCount || 0) > 100,
+        },
       });
     }
 
@@ -167,7 +182,7 @@ export class SurpriseDiscoveryService {
    * Guided Discovery: Random within user's interest areas
    */
   private static async guidedDiscovery(
-    request: SurpriseDiscoveryRequest, 
+    request: SurpriseDiscoveryRequest,
     userContext: UserDiscoveryContext
   ): Promise<SurpriseDiscoveryResult[]> {
     const excludeTermIds = request.excludeRecentlyViewed ? userContext.recentlyViewedTerms : [];
@@ -175,13 +190,13 @@ export class SurpriseDiscoveryService {
 
     // Get user's favorite categories or fall back to most viewed categories
     let favoriteCategories = userContext.favoriteCategories;
-    
+
     if (favoriteCategories.length === 0) {
       // Infer favorite categories from viewing history
       const categoryViews = await db
         .select({
           categoryId: terms.categoryId,
-          viewCount: sql<number>`COUNT(*)`.as('viewCount')
+          viewCount: sql<number>`COUNT(*)`.as('viewCount'),
         })
         .from(termViews)
         .innerJoin(terms, eq(termViews.termId, terms.id))
@@ -190,9 +205,7 @@ export class SurpriseDiscoveryService {
         .orderBy(desc(sql`COUNT(*)`))
         .limit(3);
 
-      favoriteCategories = categoryViews
-        .map(cv => cv.categoryId)
-        .filter(Boolean) as string[];
+      favoriteCategories = categoryViews.map((cv) => cv.categoryId).filter(Boolean) as string[];
     }
 
     // Find terms in user's interest areas but that they haven't seen
@@ -207,8 +220,8 @@ export class SurpriseDiscoveryService {
         createdAt: terms.createdAt,
         category: {
           id: categories.id,
-          name: categories.name
-        }
+          name: categories.name,
+        },
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
@@ -222,21 +235,21 @@ export class SurpriseDiscoveryService {
       .limit(maxResults);
 
     const results: SurpriseDiscoveryResult[] = [];
-    
+
     for (const term of guidedTerms) {
       const surpriseScore = Math.floor(Math.random() * 30) + 50; // 50-80 for guided discovery
-      
+
       results.push({
         term,
         surpriseReason: `Hidden gem in ${term.category?.name || 'your favorite category'}!`,
         confidenceScore: surpriseScore,
         discoveryMode: request.mode,
-        algorithmVersion: this.ALGORITHM_VERSION,
+        algorithmVersion: SurpriseDiscoveryService.ALGORITHM_VERSION,
         metadata: {
           categoryName: term.category?.name,
           isUnexplored: (term.viewCount || 0) < 5,
-          isPopular: (term.viewCount || 0) > 50
-        }
+          isPopular: (term.viewCount || 0) > 50,
+        },
       });
     }
 
@@ -247,7 +260,7 @@ export class SurpriseDiscoveryService {
    * Challenge Mode: Terms above user's usual difficulty level
    */
   private static async challengeModeDiscovery(
-    request: SurpriseDiscoveryRequest, 
+    request: SurpriseDiscoveryRequest,
     userContext: UserDiscoveryContext
   ): Promise<SurpriseDiscoveryResult[]> {
     const excludeTermIds = request.excludeRecentlyViewed ? userContext.recentlyViewedTerms : [];
@@ -267,8 +280,8 @@ export class SurpriseDiscoveryService {
         createdAt: terms.createdAt,
         category: {
           id: categories.id,
-          name: categories.name
-        }
+          name: categories.name,
+        },
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
@@ -293,29 +306,29 @@ export class SurpriseDiscoveryService {
       .limit(maxResults);
 
     const results: SurpriseDiscoveryResult[] = [];
-    
+
     for (const term of challengingTerms) {
       const surpriseScore = Math.floor(Math.random() * 20) + 70; // 70-90 for challenge mode
-      let challengeReason = "Advanced concept ready for exploration";
-      
+      let challengeReason = 'Advanced concept ready for exploration';
+
       if (term.mathFormulation) {
-        challengeReason = "Mathematical concept to challenge your understanding";
+        challengeReason = 'Mathematical concept to challenge your understanding';
       } else if ((term.definition?.length || 0) > 500) {
-        challengeReason = "Complex topic with rich depth to explore";
+        challengeReason = 'Complex topic with rich depth to explore';
       }
-      
+
       results.push({
         term,
         surpriseReason: challengeReason,
         confidenceScore: surpriseScore,
         discoveryMode: request.mode,
-        algorithmVersion: this.ALGORITHM_VERSION,
+        algorithmVersion: SurpriseDiscoveryService.ALGORITHM_VERSION,
         metadata: {
           categoryName: term.category?.name,
-          difficultyLevel: "advanced",
+          difficultyLevel: 'advanced',
           isUnexplored: (term.viewCount || 0) < 10,
-          isPopular: (term.viewCount || 0) > 100
-        }
+          isPopular: (term.viewCount || 0) > 100,
+        },
       });
     }
 
@@ -326,17 +339,17 @@ export class SurpriseDiscoveryService {
    * Connection Quest: Terms related to recently viewed content
    */
   private static async connectionQuestDiscovery(
-    request: SurpriseDiscoveryRequest, 
+    request: SurpriseDiscoveryRequest,
     userContext: UserDiscoveryContext
   ): Promise<SurpriseDiscoveryResult[]> {
     const maxResults = request.maxResults || 3;
-    
+
     // Start from current term or most recent term
     const baseTermId = request.currentTermId || userContext.recentlyViewedTerms[0];
-    
+
     if (!baseTermId) {
       // Fall back to guided discovery if no base term
-      return this.guidedDiscovery(request, userContext);
+      return SurpriseDiscoveryService.guidedDiscovery(request, userContext);
     }
 
     // Get the base term details
@@ -345,25 +358,25 @@ export class SurpriseDiscoveryService {
         id: terms.id,
         name: terms.name,
         categoryId: terms.categoryId,
-        definition: terms.definition
+        definition: terms.definition,
       })
       .from(terms)
       .where(eq(terms.id, baseTermId))
       .limit(1);
 
     if (!baseTerm.length) {
-      return this.guidedDiscovery(request, userContext);
+      return SurpriseDiscoveryService.guidedDiscovery(request, userContext);
     }
 
     const baseTermData = baseTerm[0];
-    
+
     // Find related terms by:
     // 1. Same category but different subconcepts
     // 2. Terms with overlapping keywords in definitions
     // 3. Terms referenced in applications or related fields
-    
+
     const excludeTermIds = [baseTermId, ...userContext.recentlyViewedTerms];
-    
+
     const relatedTerms = await db
       .select({
         id: terms.id,
@@ -375,8 +388,8 @@ export class SurpriseDiscoveryService {
         createdAt: terms.createdAt,
         category: {
           id: categories.id,
-          name: categories.name
-        }
+          name: categories.name,
+        },
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
@@ -387,7 +400,7 @@ export class SurpriseDiscoveryService {
             // Same category
             eq(terms.categoryId, baseTermData.categoryId),
             // Text similarity (simplified keyword matching)
-            sql`${terms.definition} ILIKE '%' || ${this.extractKeywords(baseTermData.definition).join('%\' OR ')} || '%'`
+            sql`${terms.definition} ILIKE '%' || ${SurpriseDiscoveryService.extractKeywords(baseTermData.definition).join("%' OR ")} || '%'`
           )
         )
       )
@@ -395,29 +408,32 @@ export class SurpriseDiscoveryService {
       .limit(maxResults * 2);
 
     const results: SurpriseDiscoveryResult[] = [];
-    
+
     for (const term of relatedTerms.slice(0, maxResults)) {
-      const connectionStrength = await this.calculateConnectionStrength(baseTermData, term);
+      const connectionStrength = await SurpriseDiscoveryService.calculateConnectionStrength(
+        baseTermData,
+        term
+      );
       const surpriseScore = Math.floor(Math.random() * 25) + 55; // 55-80 for connection quest
-      
+
       let connectionReason = `Connected to "${baseTermData.name}"`;
       if (term.categoryId === baseTermData.categoryId) {
         connectionReason = `Related concept in ${term.category?.name}`;
       }
-      
+
       results.push({
         term,
         surpriseReason: connectionReason,
         confidenceScore: surpriseScore,
         discoveryMode: request.mode,
-        algorithmVersion: this.ALGORITHM_VERSION,
+        algorithmVersion: SurpriseDiscoveryService.ALGORITHM_VERSION,
         connectionPath: [baseTermData.name, term.name],
         metadata: {
           categoryName: term.category?.name,
           connectionStrength,
           isUnexplored: (term.viewCount || 0) < 15,
-          isPopular: (term.viewCount || 0) > 75
-        }
+          isPopular: (term.viewCount || 0) > 75,
+        },
       });
     }
 
@@ -435,7 +451,7 @@ export class SurpriseDiscoveryService {
         skillLevel: 'beginner',
         learningGoals: [],
         explorationHistory: [],
-        preferences: {}
+        preferences: {},
       };
     }
 
@@ -446,7 +462,10 @@ export class SurpriseDiscoveryService {
       .where(
         and(
           eq(termViews.userId, userId),
-          gt(termViews.viewedAt, sql`NOW() - INTERVAL '${this.RECENT_TERMS_LOOKBACK_DAYS} days'`)
+          gt(
+            termViews.viewedAt,
+            sql`NOW() - INTERVAL '${SurpriseDiscoveryService.RECENT_TERMS_LOOKBACK_DAYS} days'`
+          )
         )
       )
       .orderBy(desc(termViews.viewedAt))
@@ -475,12 +494,12 @@ export class SurpriseDiscoveryService {
       .limit(1);
 
     return {
-      recentlyViewedTerms: recentViews.map(rv => rv.termId).filter(Boolean) as string[],
-      favoriteCategories: favCategories.map(fc => fc.categoryId).filter(Boolean) as string[],
+      recentlyViewedTerms: recentViews.map((rv) => rv.termId).filter(Boolean) as string[],
+      favoriteCategories: favCategories.map((fc) => fc.categoryId).filter(Boolean) as string[],
       skillLevel: profile[0]?.preferred_complexity || 'beginner',
-      learningGoals: profile[0]?.active_learning_goals as string[] || [],
+      learningGoals: (profile[0]?.active_learning_goals as string[]) || [],
       explorationHistory: [], // Could be populated from behavior events
-      preferences: preferences[0] || {}
+      preferences: preferences[0] || {},
     };
   }
 
@@ -499,20 +518,20 @@ export class SurpriseDiscoveryService {
           session_id: request.sessionId,
           discovery_mode: request.mode,
           term_id: result.term.id,
-          algorithm_version: this.ALGORITHM_VERSION,
+          algorithm_version: SurpriseDiscoveryService.ALGORITHM_VERSION,
           discovery_context: {
             userSkillLevel: userContext.skillLevel,
             favoriteCategories: userContext.favoriteCategories,
-            recentTermsCount: userContext.recentlyViewedTerms.length
+            recentTermsCount: userContext.recentlyViewedTerms.length,
           },
           user_engagement: {
             confidenceScore: result.confidenceScore,
-            surpriseReason: result.surpriseReason
-          }
+            surpriseReason: result.surpriseReason,
+          },
         });
       }
     } catch (error) {
-      logger.error("Error tracking discovery session:", error);
+      logger.error('Error tracking discovery session:', error);
       // Don't throw - tracking shouldn't break the main functionality
     }
   }
@@ -522,14 +541,30 @@ export class SurpriseDiscoveryService {
    */
   private static extractKeywords(definition: string): string[] {
     if (!definition) return [];
-    
+
     // Simple keyword extraction - can be enhanced with NLP
-    const words = definition.toLowerCase()
+    const words = definition
+      .toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
-      .filter(word => word.length > 4) // Only longer words
-      .filter(word => !['that', 'with', 'this', 'from', 'they', 'have', 'been', 'will', 'used', 'uses', 'using'].includes(word));
-    
+      .filter((word) => word.length > 4) // Only longer words
+      .filter(
+        (word) =>
+          ![
+            'that',
+            'with',
+            'this',
+            'from',
+            'they',
+            'have',
+            'been',
+            'will',
+            'used',
+            'uses',
+            'using',
+          ].includes(word)
+      );
+
     return words.slice(0, 5); // Top 5 keywords
   }
 
@@ -538,24 +573,26 @@ export class SurpriseDiscoveryService {
    */
   private static async calculateConnectionStrength(term1: any, term2: any): Promise<number> {
     let strength = 0;
-    
+
     // Same category = strong connection
     if (term1.categoryId === term2.categoryId) {
       strength += 40;
     }
-    
+
     // Definition similarity (simplified)
-    const keywords1 = this.extractKeywords(term1.definition);
-    const keywords2 = this.extractKeywords(term2.definition);
-    const commonKeywords = keywords1.filter(k => keywords2.includes(k));
+    const keywords1 = SurpriseDiscoveryService.extractKeywords(term1.definition);
+    const keywords2 = SurpriseDiscoveryService.extractKeywords(term2.definition);
+    const commonKeywords = keywords1.filter((k) => keywords2.includes(k));
     strength += Math.min(commonKeywords.length * 10, 30);
-    
+
     // Name similarity
-    if (term1.name.toLowerCase().includes(term2.name.toLowerCase()) || 
-        term2.name.toLowerCase().includes(term1.name.toLowerCase())) {
+    if (
+      term1.name.toLowerCase().includes(term2.name.toLowerCase()) ||
+      term2.name.toLowerCase().includes(term1.name.toLowerCase())
+    ) {
       strength += 20;
     }
-    
+
     return Math.min(strength, 100);
   }
 
@@ -569,15 +606,17 @@ export class SurpriseDiscoveryService {
       .where(eq(discoveryPreferences.user_id, userId))
       .limit(1);
 
-    return preferences[0] || {
-      preferred_modes: ['guided_discovery'],
-      excluded_categories: [],
-      difficulty_preference: 'adaptive',
-      exploration_frequency: 'moderate',
-      feedback_enabled: true,
-      surprise_tolerance: 50,
-      personalization_level: 'medium'
-    };
+    return (
+      preferences[0] || {
+        preferred_modes: ['guided_discovery'],
+        excluded_categories: [],
+        difficulty_preference: 'adaptive',
+        exploration_frequency: 'moderate',
+        feedback_enabled: true,
+        surprise_tolerance: 50,
+        personalization_level: 'medium',
+      }
+    );
   }
 
   /**
@@ -596,9 +635,7 @@ export class SurpriseDiscoveryService {
         .set({ ...preferences, updated_at: new Date() })
         .where(eq(discoveryPreferences.user_id, userId));
     } else {
-      return await db
-        .insert(discoveryPreferences)
-        .values({ user_id: userId, ...preferences });
+      return await db.insert(discoveryPreferences).values({ user_id: userId, ...preferences });
     }
   }
 
@@ -606,17 +643,17 @@ export class SurpriseDiscoveryService {
    * Provide feedback on discovery result
    */
   static async provideFeedback(
-    userId: string, 
-    sessionId: string, 
-    termId: string, 
-    surpriseRating: number, 
+    userId: string,
+    sessionId: string,
+    termId: string,
+    surpriseRating: number,
     relevanceRating: number
   ) {
     await db
       .update(discoverySessions)
-      .set({ 
-        surprise_rating: surpriseRating, 
-        relevance_rating: relevanceRating 
+      .set({
+        surprise_rating: surpriseRating,
+        relevance_rating: relevanceRating,
       })
       .where(
         and(
@@ -627,13 +664,17 @@ export class SurpriseDiscoveryService {
       );
 
     // Update surprise metrics for the term
-    await this.updateSurpriseMetrics(termId, surpriseRating, relevanceRating);
+    await SurpriseDiscoveryService.updateSurpriseMetrics(termId, surpriseRating, relevanceRating);
   }
 
   /**
    * Update surprise metrics for a term
    */
-  private static async updateSurpriseMetrics(termId: string, surpriseRating: number, relevanceRating: number) {
+  private static async updateSurpriseMetrics(
+    termId: string,
+    surpriseRating: number,
+    relevanceRating: number
+  ) {
     const existing = await db
       .select()
       .from(surpriseMetrics)
@@ -644,10 +685,13 @@ export class SurpriseDiscoveryService {
       const current = existing[0];
       const newDiscoveryCount = current.discovery_count + 1;
       const newAvgSurprise = Math.round(
-        ((current.average_surprise_rating || 0) * current.discovery_count + surpriseRating * 100) / newDiscoveryCount
+        ((current.average_surprise_rating || 0) * current.discovery_count + surpriseRating * 100) /
+          newDiscoveryCount
       );
       const newAvgRelevance = Math.round(
-        ((current.average_relevance_rating || 0) * current.discovery_count + relevanceRating * 100) / newDiscoveryCount
+        ((current.average_relevance_rating || 0) * current.discovery_count +
+          relevanceRating * 100) /
+          newDiscoveryCount
       );
 
       await db
@@ -657,20 +701,18 @@ export class SurpriseDiscoveryService {
           average_surprise_rating: newAvgSurprise,
           average_relevance_rating: newAvgRelevance,
           last_discovery: new Date(),
-          updated_at: new Date()
+          updated_at: new Date(),
         })
         .where(eq(surpriseMetrics.term_id, termId));
     } else {
-      await db
-        .insert(surpriseMetrics)
-        .values({
-          term_id: termId,
-          discovery_count: 1,
-          average_surprise_rating: surpriseRating * 100,
-          average_relevance_rating: relevanceRating * 100,
-          last_discovery: new Date(),
-          serendipity_score: Math.floor(Math.random() * 50) + 25 // Initial random score
-        });
+      await db.insert(surpriseMetrics).values({
+        term_id: termId,
+        discovery_count: 1,
+        average_surprise_rating: surpriseRating * 100,
+        average_relevance_rating: relevanceRating * 100,
+        last_discovery: new Date(),
+        serendipity_score: Math.floor(Math.random() * 50) + 25, // Initial random score
+      });
     }
   }
 }

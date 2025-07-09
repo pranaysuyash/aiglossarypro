@@ -3,7 +3,7 @@
  * This ensures consistency in prop naming and types
  */
 
-import { HTMLAttributes, ReactNode } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
 /**
  * Base props that most components should extend

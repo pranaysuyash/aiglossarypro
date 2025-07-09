@@ -1,4 +1,4 @@
-import { ContentNode, ContentOutline } from '@/types/content-structure';
+import type { ContentNode, ContentOutline } from '@/types/content-structure';
 import { contentOutline } from './content-outline';
 
 // Mock progress data generator
@@ -24,7 +24,7 @@ const addMockContent = (node: ContentNode): ContentNode => {
       estimatedReadTime: Math.floor(Math.random() * 15) + 1, // 1-15 minutes
       prerequisites: generateMockPrerequisites(),
       relatedTopics: generateMockRelatedTopics(),
-    }
+    },
   };
 
   if (node.subsections) {
@@ -45,9 +45,9 @@ const generateMockPrerequisites = (): string[] => {
     'Algorithms',
     'Calculus',
     'Python programming',
-    'Deep learning concepts'
+    'Deep learning concepts',
   ];
-  
+
   const count = Math.floor(Math.random() * 4);
   return prerequisites.sort(() => 0.5 - Math.random()).slice(0, count);
 };
@@ -68,9 +68,9 @@ const generateMockRelatedTopics = (): string[] => {
     'Hyperparameter tuning',
     'Ensemble methods',
     'Transfer learning',
-    'Generative models'
+    'Generative models',
   ];
-  
+
   const count = Math.floor(Math.random() * 6) + 1;
   return topics.sort(() => 0.5 - Math.random()).slice(0, count);
 };
@@ -79,7 +79,7 @@ const generateMockRelatedTopics = (): string[] => {
 export const createTestDataset = (): ContentOutline => {
   const testOutline: ContentOutline = {
     ...contentOutline,
-    sections: contentOutline.sections.map(addMockContent)
+    sections: contentOutline.sections.map(addMockContent),
   };
 
   return testOutline;
@@ -88,20 +88,20 @@ export const createTestDataset = (): ContentOutline => {
 // Performance test data with specific scenarios
 export const performanceTestData = {
   smallDataset: {
-    sections: contentOutline.sections.slice(0, 5).map(addMockContent)
+    sections: contentOutline.sections.slice(0, 5).map(addMockContent),
   },
   mediumDataset: {
-    sections: contentOutline.sections.slice(0, 20).map(addMockContent)
+    sections: contentOutline.sections.slice(0, 20).map(addMockContent),
   },
   fullDataset: {
-    sections: contentOutline.sections.map(addMockContent)
+    sections: contentOutline.sections.map(addMockContent),
   },
   deeplyNestedDataset: {
-    sections: contentOutline.sections.map(section => ({
+    sections: contentOutline.sections.map((section) => ({
       ...addMockContent(section),
-      subsections: section.subsections?.map(sub => ({
+      subsections: section.subsections?.map((sub) => ({
         ...addMockContent(sub),
-        subsections: sub.subsections?.map(deepSub => ({
+        subsections: sub.subsections?.map((deepSub) => ({
           ...addMockContent(deepSub),
           subsections: Array.from({ length: 10 }, (_, i) => ({
             name: `Deep Nested Item ${i + 1}`,
@@ -115,18 +115,17 @@ export const performanceTestData = {
               estimatedReadTime: Math.floor(Math.random() * 5) + 1,
               prerequisites: generateMockPrerequisites(),
               relatedTopics: generateMockRelatedTopics(),
-            }
-          }))
-        }))
-      }))
-    }))
-  }
+            },
+          })),
+        })),
+      })),
+    })),
+  },
 };
 
 // Interactive elements test data
 export const interactiveElementsData = contentOutline.sections
-  .map(section => section.subsections?.filter(sub => sub.metadata?.isInteractive))
-  .flat()
+  .flatMap((section) => section.subsections?.filter((sub) => sub.metadata?.isInteractive))
   .filter((item): item is NonNullable<typeof item> => Boolean(item))
   .map(addMockContent);
 
@@ -135,23 +134,23 @@ export const searchTestScenarios = [
   {
     name: 'Common terms',
     queries: ['machine', 'learning', 'neural', 'algorithm', 'data'],
-    expectedMinResults: 5
+    expectedMinResults: 5,
   },
   {
     name: 'Specific concepts',
     queries: ['optimization', 'evaluation', 'implementation', 'security', 'ethics'],
-    expectedMinResults: 3
+    expectedMinResults: 3,
   },
   {
     name: 'Interactive elements',
     queries: ['interactive', 'mermaid', 'diagram', 'visualization', 'calculator'],
-    expectedMinResults: 10
+    expectedMinResults: 10,
   },
   {
     name: 'Edge cases',
     queries: ['', 'xyz123', 'a', 'very-long-query-that-should-not-match-anything'],
-    expectedMinResults: 0
-  }
+    expectedMinResults: 0,
+  },
 ];
 
 // Filter test scenarios
@@ -159,18 +158,18 @@ export const filterTestScenarios = [
   {
     name: 'Display types',
     filters: ['main', 'sidebar', 'interactive', 'card', 'filter', 'metadata'],
-    expectedBehavior: 'Should show only items matching the display type'
+    expectedBehavior: 'Should show only items matching the display type',
   },
   {
     name: 'Priority levels',
     filters: ['high', 'medium', 'low'],
-    expectedBehavior: 'Should show only items matching the priority level'
+    expectedBehavior: 'Should show only items matching the priority level',
   },
   {
     name: 'Interactive elements',
     filters: ['interactive'],
-    expectedBehavior: 'Should show only interactive elements'
-  }
+    expectedBehavior: 'Should show only interactive elements',
+  },
 ];
 
 // Performance benchmarking utilities
@@ -179,21 +178,21 @@ export const createLargeDataset = (multiplier: number = 10): ContentOutline => {
   const enlargedSections: ContentNode[] = [];
 
   for (let i = 0; i < multiplier; i++) {
-    baseOutline.sections.forEach((section, index) => {
+    baseOutline.sections.forEach((section, _index) => {
       enlargedSections.push({
         ...section,
         name: `${section.name} (Copy ${i + 1})`,
         slug: `${section.slug}-copy-${i + 1}`,
-        subsections: section.subsections?.map((sub, subIndex) => ({
+        subsections: section.subsections?.map((sub, _subIndex) => ({
           ...sub,
           name: `${sub.name} (Copy ${i + 1})`,
           slug: `${sub.slug}-copy-${i + 1}`,
-          subsections: sub.subsections?.map((deepSub, deepIndex) => ({
+          subsections: sub.subsections?.map((deepSub, _deepIndex) => ({
             ...deepSub,
             name: `${deepSub.name} (Copy ${i + 1})`,
-            slug: `${deepSub.slug}-copy-${i + 1}`
-          }))
-        }))
+            slug: `${deepSub.slug}-copy-${i + 1}`,
+          })),
+        })),
       });
     });
   }
@@ -202,7 +201,7 @@ export const createLargeDataset = (multiplier: number = 10): ContentOutline => {
     ...baseOutline,
     totalSections: baseOutline.totalSections * multiplier,
     totalSubsections: baseOutline.totalSubsections * multiplier,
-    sections: enlargedSections
+    sections: enlargedSections,
   };
 };
 
@@ -210,7 +209,7 @@ export const createLargeDataset = (multiplier: number = 10): ContentOutline => {
 export const memoryTestData = {
   baseline: createTestDataset(),
   heavy: createLargeDataset(5),
-  extreme: createLargeDataset(20)
+  extreme: createLargeDataset(20),
 };
 
 // Navigation state scenarios for testing
@@ -218,23 +217,23 @@ export const navigationStateScenarios = [
   {
     name: 'All collapsed',
     expandedNodes: new Set<string>(),
-    description: 'Test performance with minimal expanded state'
+    description: 'Test performance with minimal expanded state',
   },
   {
     name: 'Top level expanded',
     expandedNodes: new Set(contentOutline.sections.map((_, i) => `section-${i}`)),
-    description: 'Test with only top-level sections expanded'
+    description: 'Test with only top-level sections expanded',
   },
   {
     name: 'Fully expanded',
     expandedNodes: new Set(['all']), // Special marker for all expanded
-    description: 'Test with all nodes expanded - worst case scenario'
+    description: 'Test with all nodes expanded - worst case scenario',
   },
   {
     name: 'Partial expansion',
     expandedNodes: new Set(['section-0', 'section-1', 'section-5', 'section-10']),
-    description: 'Test with realistic partial expansion'
-  }
+    description: 'Test with realistic partial expansion',
+  },
 ];
 
 // Export default test dataset

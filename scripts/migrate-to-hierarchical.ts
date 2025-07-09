@@ -2,11 +2,11 @@
 
 /**
  * Migration Script: Transform Flat Section Structure to Hierarchical Structure
- * 
- * This script transforms the current flat section structure to the hierarchical 
- * structure based on the 42-section, 295-column architecture defined in 
+ *
+ * This script transforms the current flat section structure to the hierarchical
+ * structure based on the 42-section, 295-column architecture defined in
  * complete_42_sections_config.ts.
- * 
+ *
  * Key operations:
  * 1. Read current terms and sections from database
  * 2. Map flat sections to hierarchical structure
@@ -16,17 +16,16 @@
  * 6. Maintain referential integrity
  */
 
-import * as dotenv from "dotenv";
+import * as dotenv from 'dotenv';
+
 dotenv.config();
 
 import { Pool } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { eq, sql } from 'drizzle-orm';
 import * as schema from '@shared/enhancedSchema';
-import { COMPLETE_CONTENT_SECTIONS } from '../complete_42_sections_config';
+import { sql } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 import { contentOutline } from '@/data/content-outline';
-import { ContentNode } from '@/types/content-structure';
-import crypto from 'crypto';
+import type { ContentNode } from '@/types/content-structure';
 
 // Types for migration
 interface FlatSection {
@@ -86,7 +85,7 @@ class HierarchicalMigrator {
 
   constructor(dryRun: boolean = false) {
     if (!process.env.DATABASE_URL) {
-      throw new Error("DATABASE_URL must be set");
+      throw new Error('DATABASE_URL must be set');
     }
 
     this.pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -100,7 +99,7 @@ class HierarchicalMigrator {
   async migrate(): Promise<void> {
     console.log('🚀 Starting hierarchical migration...');
     console.log(`📊 Mode: ${this.isDryRun ? 'DRY RUN' : 'LIVE MIGRATION'}`);
-    
+
     try {
       // Step 1: Validate current database state
       await this.validateDatabaseState();
@@ -123,7 +122,6 @@ class HierarchicalMigrator {
 
       console.log('✅ Migration completed successfully!');
       console.log(`📁 Migration log saved to: ${this.logFile}`);
-
     } catch (error) {
       console.error('❌ Migration failed:', error);
       throw error;
@@ -168,19 +166,19 @@ class HierarchicalMigrator {
    */
   private async backupCurrentData(): Promise<void> {
     console.log('💾 Creating backup of current data...');
-    
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const backupTables = ['sections', 'section_items', 'user_progress'];
 
     for (const table of backupTables) {
       const backupTableName = `${table}_backup_${timestamp}`;
-      
+
       if (!this.isDryRun) {
         await this.db.execute(
           sql`CREATE TABLE ${sql.identifier(backupTableName)} AS SELECT * FROM ${sql.identifier(table)}`
         );
       }
-      
+
       console.log(`📦 Backed up ${table} to ${backupTableName}`);
     }
   }
@@ -221,13 +219,15 @@ class HierarchicalMigrator {
     const results = [];
     for (let i = 0; i < terms.length; i += this.batchSize) {
       const batch = terms.slice(i, i + this.batchSize);
-      console.log(`📦 Processing batch ${Math.floor(i / this.batchSize) + 1}/${Math.ceil(terms.length / this.batchSize)}`);
-      
+      console.log(
+        `📦 Processing batch ${Math.floor(i / this.batchSize) + 1}/${Math.ceil(terms.length / this.batchSize)}`
+      );
+
       const batchResults = await this.processBatch(batch);
       results.push(...batchResults);
-      
+
       // Add small delay to avoid overwhelming the database
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise((resolve) => setTimeout(resolve, 100));
     }
 
     return results;
@@ -250,7 +250,7 @@ class HierarchicalMigrator {
           termId: term.id,
           termName: term.name,
           error: error.message,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
       }
     }
@@ -266,11 +266,15 @@ class HierarchicalMigrator {
 
     // Get current sections for this term
     const currentSections = await this.getCurrentSections(term.id);
-    const currentSectionItems = await this.getCurrentSectionItems(currentSections.map(s => s.id));
+    const currentSectionItems = await this.getCurrentSectionItems(currentSections.map((s) => s.id));
     const userProgress = await this.getUserProgress(term.id);
 
     // Create hierarchical structure
-    const hierarchicalSections = this.createHierarchicalStructure(term, currentSections, currentSectionItems);
+    const hierarchicalSections = this.createHierarchicalStructure(
+      term,
+      currentSections,
+      currentSectionItems
+    );
 
     // Preserve user progress data
     const migratedProgress = this.migrateUserProgress(userProgress, hierarchicalSections);
@@ -296,14 +300,14 @@ class HierarchicalMigrator {
       oldSectionCount: currentSections.length,
       newSectionCount: hierarchicalSections.length,
       userProgressRecords: migratedProgress.length,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     return {
       termId: term.id,
       termName: term.name,
       migrated: true,
-      hierarchicalSections: hierarchicalSections.length
+      hierarchicalSections: hierarchicalSections.length,
     };
   }
 
@@ -370,7 +374,7 @@ class HierarchicalMigrator {
 
     // Create a map for quick lookups
     const sectionItemsBySection = new Map<string, FlatSectionItem[]>();
-    currentSectionItems.forEach(item => {
+    currentSectionItems.forEach((item) => {
       if (!sectionItemsBySection.has(item.sectionId)) {
         sectionItemsBySection.set(item.sectionId, []);
       }
@@ -380,12 +384,15 @@ class HierarchicalMigrator {
     // Map content outline to hierarchical sections
     const processNode = (node: ContentNode, path: string, depth: number, parentPath?: string) => {
       // Find matching current section or create new one
-      const existingSection = currentSections.find(s => 
-        s.name.toLowerCase() === node.name.toLowerCase() ||
-        s.name.toLowerCase().includes(node.name.toLowerCase())
+      const existingSection = currentSections.find(
+        (s) =>
+          s.name.toLowerCase() === node.name.toLowerCase() ||
+          s.name.toLowerCase().includes(node.name.toLowerCase())
       );
 
-      const sectionItems = existingSection ? sectionItemsBySection.get(existingSection.id) || [] : [];
+      const sectionItems = existingSection
+        ? sectionItemsBySection.get(existingSection.id) || []
+        : [];
 
       // Create hierarchical section
       const hierarchicalSection: HierarchicalSection = {
@@ -396,22 +403,22 @@ class HierarchicalMigrator {
           contentType: node.contentType || 'markdown',
           metadata: node.metadata || {},
           content: existingSection ? this.aggregateContent(sectionItems) : null,
-          items: sectionItems.map(item => ({
+          items: sectionItems.map((item) => ({
             label: item.label,
             content: item.content,
             contentType: item.contentType,
             displayOrder: item.displayOrder,
             metadata: item.metadata,
             isAiGenerated: item.isAiGenerated,
-            verificationStatus: item.verificationStatus
-          }))
+            verificationStatus: item.verificationStatus,
+          })),
         },
         displayType: node.metadata?.displayType || 'main',
         priority: this.getPriority(node.metadata?.priority),
         isInteractive: node.metadata?.isInteractive || false,
         path: path,
         parentPath: parentPath,
-        depth: depth
+        depth: depth,
       };
 
       hierarchicalSections.push(hierarchicalSection);
@@ -439,10 +446,10 @@ class HierarchicalMigrator {
    */
   private aggregateContent(items: FlatSectionItem[]): string {
     if (items.length === 0) return '';
-    
+
     return items
       .sort((a, b) => a.displayOrder - b.displayOrder)
-      .map(item => {
+      .map((item) => {
         if (item.content) {
           return `### ${item.label}\n\n${item.content}`;
         }
@@ -456,10 +463,14 @@ class HierarchicalMigrator {
    */
   private getPriority(priority?: string): number {
     switch (priority?.toLowerCase()) {
-      case 'high': return 1;
-      case 'medium': return 5;
-      case 'low': return 10;
-      default: return 5;
+      case 'high':
+        return 1;
+      case 'medium':
+        return 5;
+      case 'low':
+        return 10;
+      default:
+        return 5;
     }
   }
 
@@ -473,20 +484,20 @@ class HierarchicalMigrator {
     const migratedProgress: UserProgressData[] = [];
 
     // Create mapping from old sections to new hierarchical paths
-    const pathMapping = new Map<string, string>();
-    
+    const _pathMapping = new Map<string, string>();
+
     // For each old progress record, find the best matching new section
-    oldProgress.forEach(progress => {
-      const matchingSection = newSections.find(section => 
-        section.sectionData.items?.some((item: any) => 
-          item.originalSectionId === progress.sectionId
+    oldProgress.forEach((progress) => {
+      const matchingSection = newSections.find((section) =>
+        section.sectionData.items?.some(
+          (item: any) => item.originalSectionId === progress.sectionId
         )
       );
 
       if (matchingSection) {
         migratedProgress.push({
           ...progress,
-          sectionId: matchingSection.path // Use path as new section identifier
+          sectionId: matchingSection.path, // Use path as new section identifier
         });
       }
     });
@@ -498,9 +509,7 @@ class HierarchicalMigrator {
    * Delete old flat sections
    */
   private async deleteOldSections(termId: string): Promise<void> {
-    await this.db.execute(
-      sql`DELETE FROM sections WHERE term_id = ${termId}`
-    );
+    await this.db.execute(sql`DELETE FROM sections WHERE term_id = ${termId}`);
   }
 
   /**
@@ -524,11 +533,9 @@ class HierarchicalMigrator {
   private async updateUserProgress(progress: UserProgressData[]): Promise<void> {
     // Delete old progress records
     if (progress.length > 0) {
-      const termIds = [...new Set(progress.map(p => p.termId))];
+      const termIds = [...new Set(progress.map((p) => p.termId))];
       for (const termId of termIds) {
-        await this.db.execute(
-          sql`DELETE FROM user_progress WHERE term_id = ${termId}`
-        );
+        await this.db.execute(sql`DELETE FROM user_progress WHERE term_id = ${termId}`);
       }
     }
 
@@ -549,13 +556,11 @@ class HierarchicalMigrator {
    * Update enhanced_terms table with hierarchical metadata
    */
   private async updateTermMetadata(termId: string, sections: HierarchicalSection[]): Promise<void> {
-    const hasInteractive = sections.some(s => s.isInteractive);
-    const hasCodeExamples = sections.some(s => 
+    const hasInteractive = sections.some((s) => s.isInteractive);
+    const hasCodeExamples = sections.some((s) =>
       s.sectionData.items?.some((item: any) => item.contentType === 'code')
     );
-    const hasCaseStudies = sections.some(s => 
-      s.sectionName.toLowerCase().includes('case study')
-    );
+    const hasCaseStudies = sections.some((s) => s.sectionName.toLowerCase().includes('case study'));
 
     await this.db.execute(
       sql`
@@ -577,7 +582,7 @@ class HierarchicalMigrator {
     console.log('🔍 Verifying migration integrity...');
 
     const totalTerms = results.length;
-    const successfulMigrations = results.filter(r => r.migrated).length;
+    const successfulMigrations = results.filter((r) => r.migrated).length;
     const failedMigrations = totalTerms - successfulMigrations;
 
     console.log(`📊 Migration Results:`);
@@ -632,14 +637,14 @@ class HierarchicalMigrator {
    * Save migration log to file
    */
   private async saveMigrationLog(): Promise<void> {
-    const fs = require('fs');
+    const fs = require('node:fs');
     const logData = {
       timestamp: new Date().toISOString(),
       isDryRun: this.isDryRun,
       totalRecords: this.migrationLog.length,
-      successCount: this.migrationLog.filter(l => l.type === 'success').length,
-      errorCount: this.migrationLog.filter(l => l.type === 'error').length,
-      logs: this.migrationLog
+      successCount: this.migrationLog.filter((l) => l.type === 'success').length,
+      errorCount: this.migrationLog.filter((l) => l.type === 'error').length,
+      logs: this.migrationLog,
     };
 
     fs.writeFileSync(this.logFile, JSON.stringify(logData, null, 2));
@@ -664,10 +669,10 @@ async function main() {
     console.log('📦 Backup tables will be created automatically.');
     console.log('💡 Use --dry-run to test without making changes.');
     console.log('');
-    
-    const readline = require('readline').createInterface({
+
+    const readline = require('node:readline').createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
 
     const answer = await new Promise<string>((resolve) => {
@@ -688,7 +693,7 @@ async function main() {
 
 // Run if called directly
 if (require.main === module) {
-  main().catch(error => {
+  main().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);
   });

@@ -1,7 +1,7 @@
 /**
  * WebXR Integration Hook
  * Provides foundation for VR/AR experiences in the AI/ML Glossary
- * 
+ *
  * Features:
  * - Device detection and capability checking
  * - VR session management for immersive concept exploration
@@ -9,7 +9,7 @@
  * - Fallback strategies for non-XR devices
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 export interface XRDeviceCapabilities {
   vrSupported: boolean;
@@ -35,18 +35,18 @@ export interface WebXRHook {
   // Device capabilities
   capabilities: XRDeviceCapabilities;
   isXRSupported: boolean;
-  
+
   // Session management
   sessionState: XRSessionState;
   initializeVRSession: () => Promise<void>;
   initializeARSession: () => Promise<void>;
   initializeInlineSession: () => Promise<void>;
   endSession: () => Promise<void>;
-  
+
   // Feature detection
   checkXRSupport: () => Promise<XRDeviceCapabilities>;
   isFeatureSupported: (feature: string) => boolean;
-  
+
   // Utility functions
   getCompatibilityReport: () => {
     supported: boolean;
@@ -72,14 +72,14 @@ export const useWebXR = (): WebXRHook => {
     anchors: false,
     depthSensing: false,
   });
-  
+
   const [sessionState, setSessionState] = useState<XRSessionState>({
     isActive: false,
     mode: null,
     error: null,
     isLoading: false,
   });
-  
+
   const [isXRSupported, setIsXRSupported] = useState(false);
 
   /**
@@ -108,24 +108,24 @@ export const useWebXR = (): WebXRHook => {
 
     try {
       const xr = (navigator as any).xr;
-      
+
       // Check VR support
       if (await xr.isSessionSupported('immersive-vr')) {
         newCapabilities.vrSupported = true;
         newCapabilities.immersiveVRSupported = true;
       }
-      
-      // Check AR support  
+
+      // Check AR support
       if (await xr.isSessionSupported('immersive-ar')) {
         newCapabilities.arSupported = true;
         newCapabilities.immersiveARSupported = true;
       }
-      
+
       // Check inline support (fallback)
       if (await xr.isSessionSupported('inline')) {
         newCapabilities.inlineSupported = true;
       }
-      
+
       // Check for additional features that might be available
       // Note: These would need session to be active to test properly
       // For now, we'll assume they might be available if immersive modes are
@@ -135,18 +135,15 @@ export const useWebXR = (): WebXRHook => {
         newCapabilities.hitTest = newCapabilities.immersiveARSupported; // AR typically supports hit testing
         newCapabilities.anchors = newCapabilities.immersiveARSupported; // AR anchor support
       }
-      
     } catch (error) {
       console.error('Error checking XR support:', error);
     }
-    
+
     setCapabilities(newCapabilities);
     setIsXRSupported(
-      newCapabilities.vrSupported || 
-      newCapabilities.arSupported || 
-      newCapabilities.inlineSupported
+      newCapabilities.vrSupported || newCapabilities.arSupported || newCapabilities.inlineSupported
     );
-    
+
     return newCapabilities;
   }, []);
 
@@ -158,15 +155,15 @@ export const useWebXR = (): WebXRHook => {
       throw new Error('Immersive VR not supported on this device');
     }
 
-    setSessionState(prev => ({ ...prev, isLoading: true, error: null }));
+    setSessionState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const xr = (navigator as any).xr;
-      
+
       // Request VR session with optional features
       const session = await xr.requestSession('immersive-vr', {
         optionalFeatures: ['hand-tracking', 'eye-tracking'],
-        requiredFeatures: []
+        requiredFeatures: [],
       });
 
       setSessionState({
@@ -187,10 +184,10 @@ export const useWebXR = (): WebXRHook => {
       });
 
       console.log('VR session initialized successfully');
-      
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to initialize VR session';
-      setSessionState(prev => ({
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to initialize VR session';
+      setSessionState((prev) => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
@@ -207,15 +204,15 @@ export const useWebXR = (): WebXRHook => {
       throw new Error('Immersive AR not supported on this device');
     }
 
-    setSessionState(prev => ({ ...prev, isLoading: true, error: null }));
+    setSessionState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const xr = (navigator as any).xr;
-      
+
       // Request AR session with hit testing and anchors
       const session = await xr.requestSession('immersive-ar', {
         requiredFeatures: ['hit-test'],
-        optionalFeatures: ['anchors', 'hand-tracking', 'depth-sensing']
+        optionalFeatures: ['anchors', 'hand-tracking', 'depth-sensing'],
       });
 
       setSessionState({
@@ -236,10 +233,10 @@ export const useWebXR = (): WebXRHook => {
       });
 
       console.log('AR session initialized successfully');
-      
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to initialize AR session';
-      setSessionState(prev => ({
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to initialize AR session';
+      setSessionState((prev) => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
@@ -256,11 +253,11 @@ export const useWebXR = (): WebXRHook => {
       throw new Error('Inline XR not supported on this device');
     }
 
-    setSessionState(prev => ({ ...prev, isLoading: true, error: null }));
+    setSessionState((prev) => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const xr = (navigator as any).xr;
-      
+
       const session = await xr.requestSession('inline');
 
       setSessionState({
@@ -280,10 +277,10 @@ export const useWebXR = (): WebXRHook => {
       });
 
       console.log('Inline XR session initialized successfully');
-      
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to initialize inline session';
-      setSessionState(prev => ({
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to initialize inline session';
+      setSessionState((prev) => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
@@ -309,7 +306,7 @@ export const useWebXR = (): WebXRHook => {
         error: null,
         isLoading: false,
       });
-      
+
       console.log('XR session ended');
     } catch (error) {
       console.error('Error ending XR session:', error);
@@ -319,22 +316,25 @@ export const useWebXR = (): WebXRHook => {
   /**
    * Check if a specific XR feature is supported
    */
-  const isFeatureSupported = useCallback((feature: string): boolean => {
-    switch (feature) {
-      case 'hand-tracking':
-        return capabilities.handTracking;
-      case 'eye-tracking':
-        return capabilities.eyeTracking;
-      case 'hit-test':
-        return capabilities.hitTest;
-      case 'anchors':
-        return capabilities.anchors;
-      case 'depth-sensing':
-        return capabilities.depthSensing;
-      default:
-        return false;
-    }
-  }, [capabilities]);
+  const isFeatureSupported = useCallback(
+    (feature: string): boolean => {
+      switch (feature) {
+        case 'hand-tracking':
+          return capabilities.handTracking;
+        case 'eye-tracking':
+          return capabilities.eyeTracking;
+        case 'hit-test':
+          return capabilities.hitTest;
+        case 'anchors':
+          return capabilities.anchors;
+        case 'depth-sensing':
+          return capabilities.depthSensing;
+        default:
+          return false;
+      }
+    },
+    [capabilities]
+  );
 
   /**
    * Get comprehensive compatibility report
@@ -342,26 +342,26 @@ export const useWebXR = (): WebXRHook => {
   const getCompatibilityReport = useCallback(() => {
     const missingFeatures: string[] = [];
     const recommendations: string[] = [];
-    
+
     if (!isXRSupported) {
       missingFeatures.push('WebXR API not available');
       recommendations.push('Use a WebXR-compatible browser (Chrome, Edge, Firefox Reality)');
     }
-    
+
     if (!capabilities.vrSupported) {
       missingFeatures.push('VR not supported');
       recommendations.push('Connect a VR headset for immersive experiences');
     }
-    
+
     if (!capabilities.arSupported) {
       missingFeatures.push('AR not supported');
       recommendations.push('Use an AR-capable device for augmented reality features');
     }
-    
+
     if (!capabilities.handTracking) {
       recommendations.push('Hand tracking may enhance interaction experience');
     }
-    
+
     return {
       supported: isXRSupported,
       missingFeatures,

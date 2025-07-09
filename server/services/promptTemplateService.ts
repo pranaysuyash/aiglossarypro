@@ -1,6 +1,6 @@
-import { db } from '../db';
+import { and, eq } from 'drizzle-orm';
 import { enhancedTerms, sectionItems } from '../../shared/enhancedSchema';
-import { eq, and } from 'drizzle-orm';
+import { db } from '../db';
 import { log as logger } from '../utils/logger';
 
 export interface PromptTemplate {
@@ -28,10 +28,10 @@ export interface EnhancedPromptTemplate {
   category: 'generation' | 'evaluation' | 'improvement' | 'triplet';
   sectionType: string;
   complexity: 'simple' | 'moderate' | 'complex';
-  
+
   // Triplet prompts for Generate→Evaluate→Improve pipeline
   prompts: PromptTriplet;
-  
+
   // Metadata
   metadata: {
     estimatedTokens: number;
@@ -45,7 +45,7 @@ export interface EnhancedPromptTemplate {
     successRate: number;
     averageQuality: number;
   };
-  
+
   // Variables that can be used in prompts
   variables: string[];
 }
@@ -135,7 +135,7 @@ Return the content as clear, well-structured text suitable for educational purpo
         category: 'definition',
         isDefault: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: 'implementation',
@@ -170,7 +170,7 @@ Provide clear, executable code examples with explanations.`,
         category: 'implementation',
         isDefault: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: 'applications',
@@ -205,7 +205,7 @@ Provide concrete, verifiable examples of practical applications.`,
         category: 'applications',
         isDefault: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: 'mathematical',
@@ -237,7 +237,7 @@ Present mathematical concepts with clear explanations and proper notation.`,
         category: 'mathematical',
         isDefault: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: 'prerequisites',
@@ -272,7 +272,7 @@ Structure the prerequisites logically from foundational to advanced concepts.`,
         category: 'prerequisites',
         isDefault: true,
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
       },
       {
         id: 'evaluation',
@@ -304,12 +304,12 @@ Provide comprehensive guidance on measuring and evaluating performance.`,
         category: 'evaluation',
         isDefault: true,
         createdAt: new Date(),
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     ];
 
     // Load default templates
-    defaultTemplates.forEach(template => {
+    defaultTemplates.forEach((template) => {
       this.defaultTemplates.set(template.id, template as PromptTemplate);
       this.templates.set(template.id, template as PromptTemplate);
     });
@@ -343,7 +343,7 @@ Requirements:
 - Length: 150-250 words
 
 Focus on clarity and educational value.`,
-          
+
           evaluative: `Evaluate this definition and overview for quality and educational value.
 
 TERM: {{termName}}
@@ -357,13 +357,13 @@ Rate from 1-10 based on:
 - Appropriate length and structure
 
 OUTPUT: JSON with "score" (1-10) and "feedback" explaining the rating.`,
-          
+
           improvement: `Improve this definition and overview based on the evaluation feedback.
 
 ORIGINAL: {{originalContent}}
 FEEDBACK: {{evaluationFeedback}}
 
-Provide an improved version that addresses the feedback while maintaining clarity and educational value.`
+Provide an improved version that addresses the feedback while maintaining clarity and educational value.`,
         },
         metadata: {
           estimatedTokens: 300,
@@ -375,11 +375,11 @@ Provide an improved version that addresses the feedback while maintaining clarit
           isDefault: true,
           usageCount: 0,
           successRate: 0.95,
-          averageQuality: 8.2
+          averageQuality: 8.2,
         },
-        variables: ['termName', 'termContext', 'content', 'originalContent', 'evaluationFeedback']
+        variables: ['termName', 'termContext', 'content', 'originalContent', 'evaluationFeedback'],
       },
-      
+
       {
         id: 'key_concepts_triplet',
         name: 'Key Concepts Triplet',
@@ -397,7 +397,7 @@ Format as a bulleted list of 4-6 key concepts, each with:
 • Concept Name: Brief explanation (1-2 sentences)
 
 Focus on the most important concepts someone needs to understand this term.`,
-          
+
           evaluative: `Evaluate the key concepts for completeness and educational value.
 
 TERM: {{termName}}
@@ -411,13 +411,13 @@ Rate from 1-10 based on:
 - Relevance to the main term
 
 OUTPUT: JSON with "score" (1-10) and "feedback" explaining the rating.`,
-          
+
           improvement: `Improve the key concepts based on the evaluation feedback.
 
 ORIGINAL: {{originalContent}}
 FEEDBACK: {{evaluationFeedback}}
 
-Provide improved key concepts that address the feedback while maintaining clarity and completeness.`
+Provide improved key concepts that address the feedback while maintaining clarity and completeness.`,
         },
         metadata: {
           estimatedTokens: 250,
@@ -429,11 +429,11 @@ Provide improved key concepts that address the feedback while maintaining clarit
           isDefault: true,
           usageCount: 0,
           successRate: 0.92,
-          averageQuality: 7.8
+          averageQuality: 7.8,
         },
-        variables: ['termName', 'termContext', 'content', 'originalContent', 'evaluationFeedback']
+        variables: ['termName', 'termContext', 'content', 'originalContent', 'evaluationFeedback'],
       },
-      
+
       {
         id: 'basic_examples_triplet',
         name: 'Basic Examples Triplet',
@@ -453,7 +453,7 @@ Provide 2-3 specific, real-world examples that demonstrate the concept:
 3. [Example name]: [Clear explanation]
 
 Use examples that are well-known and easy to understand.`,
-          
+
           evaluative: `Evaluate the examples for clarity and educational effectiveness.
 
 TERM: {{termName}}
@@ -467,13 +467,13 @@ Rate from 1-10 based on:
 - Educational value
 
 OUTPUT: JSON with "score" (1-10) and "feedback" explaining the rating.`,
-          
+
           improvement: `Improve the examples based on the evaluation feedback.
 
 ORIGINAL: {{originalContent}}
 FEEDBACK: {{evaluationFeedback}}
 
-Provide improved examples that address the feedback while maintaining clarity and relevance.`
+Provide improved examples that address the feedback while maintaining clarity and relevance.`,
         },
         metadata: {
           estimatedTokens: 200,
@@ -485,11 +485,11 @@ Provide improved examples that address the feedback while maintaining clarity an
           isDefault: true,
           usageCount: 0,
           successRate: 0.88,
-          averageQuality: 7.5
+          averageQuality: 7.5,
         },
-        variables: ['termName', 'termContext', 'content', 'originalContent', 'evaluationFeedback']
+        variables: ['termName', 'termContext', 'content', 'originalContent', 'evaluationFeedback'],
       },
-      
+
       {
         id: 'complex_reasoning_triplet',
         name: 'Complex Reasoning Triplet',
@@ -511,7 +511,7 @@ Include:
 - Connections to cutting-edge research
 
 Target audience: Advanced practitioners and researchers.`,
-          
+
           evaluative: `Evaluate this advanced content for technical accuracy and completeness.
 
 TERM: {{termName}}
@@ -525,13 +525,13 @@ Rate from 1-10 based on:
 - Appropriate complexity level
 
 OUTPUT: JSON with "score" (1-10) and "feedback" explaining the rating.`,
-          
+
           improvement: `Improve this advanced content based on the evaluation feedback.
 
 ORIGINAL: {{originalContent}}
 FEEDBACK: {{evaluationFeedback}}
 
-Provide an improved version that addresses the feedback while maintaining technical rigor and accuracy.`
+Provide an improved version that addresses the feedback while maintaining technical rigor and accuracy.`,
         },
         metadata: {
           estimatedTokens: 800,
@@ -543,13 +543,13 @@ Provide an improved version that addresses the feedback while maintaining techni
           isDefault: true,
           usageCount: 0,
           successRate: 0.85,
-          averageQuality: 8.8
+          averageQuality: 8.8,
         },
-        variables: ['termName', 'termContext', 'content', 'originalContent', 'evaluationFeedback']
-      }
+        variables: ['termName', 'termContext', 'content', 'originalContent', 'evaluationFeedback'],
+      },
     ];
 
-    tripletTemplates.forEach(template => {
+    tripletTemplates.forEach((template) => {
       this.tripletTemplates.set(template.id, template);
     });
 
@@ -589,23 +589,27 @@ Provide an improved version that addresses the feedback while maintaining techni
    */
   getTripletTemplatesBySection(sectionType: string): EnhancedPromptTemplate[] {
     return Array.from(this.tripletTemplates.values()).filter(
-      template => template.sectionType === sectionType
+      (template) => template.sectionType === sectionType
     );
   }
 
   /**
    * Get triplet templates by complexity
    */
-  getTripletTemplatesByComplexity(complexity: 'simple' | 'moderate' | 'complex'): EnhancedPromptTemplate[] {
+  getTripletTemplatesByComplexity(
+    complexity: 'simple' | 'moderate' | 'complex'
+  ): EnhancedPromptTemplate[] {
     return Array.from(this.tripletTemplates.values()).filter(
-      template => template.complexity === complexity
+      (template) => template.complexity === complexity
     );
   }
 
   /**
    * Create a new triplet template
    */
-  createTripletTemplate(template: Omit<EnhancedPromptTemplate, 'id' | 'metadata'>): EnhancedPromptTemplate {
+  createTripletTemplate(
+    template: Omit<EnhancedPromptTemplate, 'id' | 'metadata'>
+  ): EnhancedPromptTemplate {
     const newTemplate: EnhancedPromptTemplate = {
       ...template,
       id: `triplet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -619,8 +623,8 @@ Provide an improved version that addresses the feedback while maintaining techni
         isDefault: false,
         usageCount: 0,
         successRate: 0,
-        averageQuality: 0
-      }
+        averageQuality: 0,
+      },
     };
 
     this.tripletTemplates.set(newTemplate.id, newTemplate);
@@ -630,7 +634,10 @@ Provide an improved version that addresses the feedback while maintaining techni
   /**
    * Update a triplet template
    */
-  updateTripletTemplate(templateId: string, updates: Partial<EnhancedPromptTemplate>): EnhancedPromptTemplate | null {
+  updateTripletTemplate(
+    templateId: string,
+    updates: Partial<EnhancedPromptTemplate>
+  ): EnhancedPromptTemplate | null {
     const existing = this.tripletTemplates.get(templateId);
     if (!existing) return null;
 
@@ -640,8 +647,8 @@ Provide an improved version that addresses the feedback while maintaining techni
       metadata: {
         ...existing.metadata,
         ...updates.metadata,
-        updatedAt: new Date()
-      }
+        updatedAt: new Date(),
+      },
     };
 
     this.tripletTemplates.set(templateId, updated);
@@ -706,12 +713,12 @@ Provide an improved version that addresses the feedback while maintaining techni
     });
 
     // Handle conditional blocks (basic implementation)
-    rendered = rendered.replace(/{{#if\s+(\w+)}}(.*?){{\/if}}/gs, (match, condition, content) => {
+    rendered = rendered.replace(/{{#if\s+(\w+)}}(.*?){{\/if}}/gs, (_match, condition, content) => {
       return variables[condition] ? content : '';
     });
 
     // Handle array joins
-    rendered = rendered.replace(/{{join\s+(\w+)\s+"([^"]+)"}}/g, (match, arrayName, separator) => {
+    rendered = rendered.replace(/{{join\s+(\w+)\s+"([^"]+)"}}/g, (_match, arrayName, separator) => {
       const array = variables[arrayName];
       return Array.isArray(array) ? array.join(separator) : '';
     });
@@ -730,7 +737,7 @@ Provide an improved version that addresses the feedback while maintaining techni
     if (!template) return;
 
     template.metadata.usageCount++;
-    
+
     if (success) {
       const totalSuccessful = template.metadata.usageCount * template.metadata.successRate;
       template.metadata.successRate = (totalSuccessful + 1) / template.metadata.usageCount;
@@ -738,7 +745,8 @@ Provide an improved version that addresses the feedback while maintaining techni
 
     if (qualityScore !== undefined) {
       const totalQuality = template.metadata.usageCount * template.metadata.averageQuality;
-      template.metadata.averageQuality = (totalQuality + qualityScore) / template.metadata.usageCount;
+      template.metadata.averageQuality =
+        (totalQuality + qualityScore) / template.metadata.usageCount;
     }
 
     template.metadata.updatedAt = new Date();
@@ -748,7 +756,7 @@ Provide an improved version that addresses the feedback while maintaining techni
    * Get templates by category
    */
   getTemplatesByCategory(category: string): PromptTemplate[] {
-    return Array.from(this.templates.values()).filter(t => t.category === category);
+    return Array.from(this.templates.values()).filter((t) => t.category === category);
   }
 
   /**
@@ -757,23 +765,23 @@ Provide an improved version that addresses the feedback while maintaining techni
   getDefaultTemplate(sectionName: string): PromptTemplate | undefined {
     // Map section names to template categories
     const sectionTemplateMap: { [key: string]: string } = {
-      'definition': 'definition',
-      'overview': 'definition',
-      'introduction': 'definition',
-      'implementation': 'implementation',
-      'code_examples': 'implementation',
-      'python_implementation': 'implementation',
-      'applications': 'applications',
-      'use_cases': 'applications',
-      'industry_applications': 'applications',
-      'mathematical_foundation': 'mathematical',
-      'theory': 'mathematical',
-      'mathematics': 'mathematical',
-      'prerequisites': 'prerequisites',
-      'background': 'prerequisites',
-      'evaluation': 'evaluation',
-      'metrics': 'evaluation',
-      'benchmarks': 'evaluation'
+      definition: 'definition',
+      overview: 'definition',
+      introduction: 'definition',
+      implementation: 'implementation',
+      code_examples: 'implementation',
+      python_implementation: 'implementation',
+      applications: 'applications',
+      use_cases: 'applications',
+      industry_applications: 'applications',
+      mathematical_foundation: 'mathematical',
+      theory: 'mathematical',
+      mathematics: 'mathematical',
+      prerequisites: 'prerequisites',
+      background: 'prerequisites',
+      evaluation: 'evaluation',
+      metrics: 'evaluation',
+      benchmarks: 'evaluation',
     };
 
     const templateCategory = sectionTemplateMap[sectionName.toLowerCase()] || 'definition';
@@ -795,12 +803,12 @@ Provide an improved version that addresses the feedback while maintaining techni
     });
 
     // Handle conditional blocks (basic implementation)
-    rendered = rendered.replace(/{{#if\s+(\w+)}}(.*?){{\/if}}/gs, (match, condition, content) => {
+    rendered = rendered.replace(/{{#if\s+(\w+)}}(.*?){{\/if}}/gs, (_match, condition, content) => {
       return variables[condition] ? content : '';
     });
 
     // Handle array joins
-    rendered = rendered.replace(/{{join\s+(\w+)\s+"([^"]+)"}}/g, (match, arrayName, separator) => {
+    rendered = rendered.replace(/{{join\s+(\w+)\s+"([^"]+)"}}/g, (_match, arrayName, separator) => {
       const array = variables[arrayName];
       return Array.isArray(array) ? array.join(separator) : '';
     });
@@ -817,7 +825,8 @@ Provide an improved version that addresses the feedback while maintaining techni
   async generateContent(request: GenerationRequest): Promise<string> {
     try {
       // Get term data from database
-      const termData = await db.select()
+      const termData = await db
+        .select()
         .from(enhancedTerms)
         .where(eq(enhancedTerms.id, request.termId))
         .limit(1);
@@ -829,7 +838,7 @@ Provide an improved version that addresses the feedback while maintaining techni
       const term = termData[0];
 
       // Get template
-      const template = request.templateId 
+      const template = request.templateId
         ? this.getTemplate(request.templateId)
         : this.getDefaultTemplate(request.sectionName);
 
@@ -845,15 +854,16 @@ Provide an improved version that addresses the feedback while maintaining techni
         category: term.mainCategories?.[0] || 'General',
         difficultyLevel: term.difficultyLevel || 'intermediate',
         relatedTerms: term.relatedConcepts || [],
-        ...request.variables
+        ...request.variables,
       };
 
       // Check if we have previous content for this section
-      const existingContent = await db.select()
+      const existingContent = await db
+        .select()
         .from(sectionItems)
         .where(
           and(
-            eq(sectionItems.label, request.sectionName),
+            eq(sectionItems.label, request.sectionName)
             // Note: we'll need to join with sections table to get termId
             // For now, we'll skip this and assume no previous content
           )
@@ -870,17 +880,16 @@ Provide an improved version that addresses the feedback while maintaining techni
       logger.info(`Generated prompt for ${term.name} - ${request.sectionName}`, {
         templateId: template.id,
         promptLength: renderedPrompt.length,
-        variableCount: Object.keys(variables).length
+        variableCount: Object.keys(variables).length,
       });
 
       return renderedPrompt;
-
     } catch (error) {
       logger.error('Error generating content with template:', {
         error: error instanceof Error ? error.message : String(error),
         termId: request.termId,
         sectionName: request.sectionName,
-        templateId: request.templateId
+        templateId: request.templateId,
       });
       throw error;
     }
@@ -894,7 +903,7 @@ Provide an improved version that addresses the feedback while maintaining techni
       ...template,
       id: this.generateTemplateId(template.name),
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.templates.set(newTemplate.id, newTemplate);
@@ -916,7 +925,7 @@ Provide an improved version that addresses the feedback while maintaining techni
       ...existing,
       ...updates,
       id: templateId, // Preserve ID
-      updatedAt: new Date()
+      updatedAt: new Date(),
     };
 
     this.templates.set(templateId, updated);
@@ -945,19 +954,20 @@ Provide an improved version that addresses the feedback while maintaining techni
    * Generate a unique template ID
    */
   private generateTemplateId(name: string): string {
-    const base = name.toLowerCase()
+    const base = name
+      .toLowerCase()
       .replace(/[^a-z0-9]/g, '_')
       .replace(/_+/g, '_')
       .replace(/^_|_$/g, '');
-    
+
     let id = base;
     let counter = 1;
-    
+
     while (this.templates.has(id)) {
       id = `${base}_${counter}`;
       counter++;
     }
-    
+
     return id;
   }
 
@@ -973,7 +983,7 @@ Provide an improved version that addresses the feedback while maintaining techni
     const templates = Array.from(this.templates.values());
     const categories: { [category: string]: number } = {};
 
-    templates.forEach(template => {
+    templates.forEach((template) => {
       categories[template.category] = (categories[template.category] || 0) + 1;
     });
 
@@ -981,7 +991,7 @@ Provide an improved version that addresses the feedback while maintaining techni
       totalTemplates: templates.length,
       defaultTemplates: this.defaultTemplates.size,
       customTemplates: templates.length - this.defaultTemplates.size,
-      categories
+      categories,
     };
   }
 }

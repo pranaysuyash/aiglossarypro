@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
+import { Button } from './button';
 import {
   Dialog,
   DialogContent,
@@ -9,7 +10,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from './dialog';
-import { Button } from './button';
 import { Input } from './input';
 import { Label } from './label';
 import { Textarea } from './textarea';
@@ -21,7 +21,8 @@ const meta: Meta<typeof Dialog> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A modal dialog component built on top of Radix UI primitives with various configurations and use cases.',
+        component:
+          'A modal dialog component built on top of Radix UI primitives with various configurations and use cases.',
       },
     },
   },
@@ -142,8 +143,8 @@ export const ConfirmationDialog: Story = {
           <DialogHeader>
             <DialogTitle>Are you sure?</DialogTitle>
             <DialogDescription>
-              This action cannot be undone. This will permanently delete the item
-              and remove it from our servers.
+              This action cannot be undone. This will permanently delete the item and remove it from
+              our servers.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -169,34 +170,43 @@ export const WithScrollableContent: Story = {
       <DialogContent className="max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Terms of Service</DialogTitle>
-          <DialogDescription>
-            Please read our terms of service carefully.
-          </DialogDescription>
+          <DialogDescription>Please read our terms of service carefully.</DialogDescription>
         </DialogHeader>
         <div className="py-4 space-y-4">
           <h3 className="font-semibold">1. Acceptance of Terms</h3>
           <p className="text-sm text-muted-foreground">
-            By accessing and using this service, you accept and agree to be bound by the terms and provision of this agreement.
+            By accessing and using this service, you accept and agree to be bound by the terms and
+            provision of this agreement.
           </p>
-          
+
           <h3 className="font-semibold">2. Use License</h3>
           <p className="text-sm text-muted-foreground">
-            Permission is granted to temporarily download one copy of the materials on our website for personal, non-commercial transitory viewing only.
+            Permission is granted to temporarily download one copy of the materials on our website
+            for personal, non-commercial transitory viewing only.
           </p>
-          
+
           <h3 className="font-semibold">3. Disclaimer</h3>
           <p className="text-sm text-muted-foreground">
-            The materials on our website are provided on an 'as is' basis. We make no warranties, expressed or implied, and hereby disclaim and negate all other warranties including without limitation, implied warranties or conditions of merchantability, fitness for a particular purpose, or non-infringement of intellectual property or other violation of rights.
+            The materials on our website are provided on an 'as is' basis. We make no warranties,
+            expressed or implied, and hereby disclaim and negate all other warranties including
+            without limitation, implied warranties or conditions of merchantability, fitness for a
+            particular purpose, or non-infringement of intellectual property or other violation of
+            rights.
           </p>
-          
+
           <h3 className="font-semibold">4. Limitations</h3>
           <p className="text-sm text-muted-foreground">
-            In no event shall our company or its suppliers be liable for any damages (including, without limitation, damages for loss of data or profit, or due to business interruption) arising out of the use or inability to use the materials on our website, even if we or our authorized representative has been notified orally or in writing of the possibility of such damage.
+            In no event shall our company or its suppliers be liable for any damages (including,
+            without limitation, damages for loss of data or profit, or due to business interruption)
+            arising out of the use or inability to use the materials on our website, even if we or
+            our authorized representative has been notified orally or in writing of the possibility
+            of such damage.
           </p>
-          
+
           <h3 className="font-semibold">5. Privacy Policy</h3>
           <p className="text-sm text-muted-foreground">
-            Your privacy is important to us. Our Privacy Policy explains how we collect, use, and protect your information when you use our service.
+            Your privacy is important to us. Our Privacy Policy explains how we collect, use, and
+            protect your information when you use our service.
           </p>
         </div>
         <DialogFooter>
@@ -214,9 +224,7 @@ export const WithoutTrigger: Story = {
 
     return (
       <div>
-        <Button onClick={() => setIsOpen(true)}>
-          Open Dialog Programmatically
-        </Button>
+        <Button onClick={() => setIsOpen(true)}>Open Dialog Programmatically</Button>
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
           <DialogContent>
             <DialogHeader>
@@ -244,7 +252,7 @@ export const LoadingDialog: Story = {
     const handleAction = async () => {
       setIsLoading(true);
       // Simulate async action
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       setIsLoading(false);
       setIsOpen(false);
     };
@@ -258,7 +266,9 @@ export const LoadingDialog: Story = {
           <DialogHeader>
             <DialogTitle>Processing Request</DialogTitle>
             <DialogDescription>
-              {isLoading ? 'Please wait while we process your request...' : 'Ready to start processing'}
+              {isLoading
+                ? 'Please wait while we process your request...'
+                : 'Ready to start processing'}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
@@ -297,9 +307,7 @@ export const AlertDialog: Story = {
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <p className="text-sm text-muted-foreground">
-            Before proceeding, please note:
-          </p>
+          <p className="text-sm text-muted-foreground">Before proceeding, please note:</p>
           <ul className="list-disc list-inside text-sm text-muted-foreground mt-2 space-y-1">
             <li>All your saved terms and progress will be deleted</li>
             <li>Your subscription will be cancelled immediately</li>
@@ -371,14 +379,12 @@ export const NestedDialogs: Story = {
               Close Parent
             </Button>
           </DialogFooter>
-          
+
           <Dialog open={childOpen} onOpenChange={setChildOpen}>
             <DialogContent>
               <DialogHeader>
                 <DialogTitle>Child Dialog</DialogTitle>
-                <DialogDescription>
-                  This is a nested dialog within the parent.
-                </DialogDescription>
+                <DialogDescription>This is a nested dialog within the parent.</DialogDescription>
               </DialogHeader>
               <DialogFooter>
                 <Button onClick={() => setChildOpen(false)}>Close Child</Button>
@@ -400,9 +406,7 @@ export const CustomSizedDialog: Story = {
       <DialogContent className="max-w-4xl">
         <DialogHeader>
           <DialogTitle>Large Dialog</DialogTitle>
-          <DialogDescription>
-            This dialog has a custom maximum width.
-          </DialogDescription>
+          <DialogDescription>This dialog has a custom maximum width.</DialogDescription>
         </DialogHeader>
         <div className="py-4">
           <div className="grid grid-cols-2 gap-4">
@@ -442,9 +446,7 @@ export const DarkMode: Story = {
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Dark Mode Dialog</DialogTitle>
-          <DialogDescription>
-            This dialog adapts to dark mode styling.
-          </DialogDescription>
+          <DialogDescription>This dialog adapts to dark mode styling.</DialogDescription>
         </DialogHeader>
         <div className="py-4">
           <p>Dialog content in dark mode.</p>

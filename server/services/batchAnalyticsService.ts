@@ -1,18 +1,15 @@
 /**
  * Batch Analytics Service - Phase 2 Enhanced Content Generation System
- * 
+ *
  * Provides comprehensive analytics and reporting for batch operations
  * with detailed insights, performance metrics, and business intelligence.
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 import { log as logger } from '../utils/logger';
+import { batchProgressTrackingService } from './batchProgressTrackingService';
 import { columnBatchProcessorService } from './columnBatchProcessorService';
 import { costManagementService } from './costManagementService';
-import { batchProgressTrackingService } from './batchProgressTrackingService';
-import { db } from '../db';
-import { aiUsageAnalytics, enhancedTerms } from '../../shared/enhancedSchema';
-import { eq, and, gte, lte, sql, desc, asc } from 'drizzle-orm';
 
 // Analytics interfaces
 export interface BatchPerformanceReport {
@@ -206,7 +203,7 @@ export interface RealTimeMetrics {
 
 /**
  * Batch Analytics Service
- * 
+ *
  * Comprehensive service for analyzing batch operations with detailed
  * reporting, performance optimization, and business intelligence.
  */
@@ -240,39 +237,47 @@ export class BatchAnalyticsService extends EventEmitter {
     try {
       // Get all operations in the period
       const allOperations = columnBatchProcessorService.getOperationHistory(10000);
-      const operations = allOperations.filter(op => {
-        const inPeriod = op.timing.startedAt && 
-          op.timing.startedAt >= startDate && 
-          op.timing.startedAt <= endDate;
-        
+      const operations = allOperations.filter((op) => {
+        const inPeriod =
+          op.timing.startedAt && op.timing.startedAt >= startDate && op.timing.startedAt <= endDate;
+
         if (!inPeriod) return false;
 
         if (filters?.sectionName && op.sectionName !== filters.sectionName) return false;
-        if (filters?.userId && op.configuration.metadata?.initiatedBy !== filters.userId) return false;
-        if (filters?.model && op.configuration.processingOptions.model !== filters.model) return false;
+        if (filters?.userId && op.configuration.metadata?.initiatedBy !== filters.userId)
+          return false;
+        if (filters?.model && op.configuration.processingOptions.model !== filters.model)
+          return false;
 
         return true;
       });
 
       // Calculate overview metrics
       const totalOperations = operations.length;
-      const totalTermsProcessed = operations.reduce((sum, op) => sum + op.progress.processedTerms, 0);
+      const totalTermsProcessed = operations.reduce(
+        (sum, op) => sum + op.progress.processedTerms,
+        0
+      );
       const totalCost = operations.reduce((sum, op) => sum + op.costs.actualCost, 0);
-      
-      const completedOps = operations.filter(op => op.status === 'completed');
-      const avgOperationTime = completedOps.length > 0
-        ? completedOps.reduce((sum, op) => {
-            const duration = op.timing.actualCompletion && op.timing.startedAt
-              ? op.timing.actualCompletion.getTime() - op.timing.startedAt.getTime()
-              : 0;
-            return sum + duration;
-          }, 0) / completedOps.length
-        : 0;
 
-      const totalProcessedAndFailed = operations.reduce((sum, op) => sum + op.progress.processedTerms + op.progress.failedTerms, 0);
-      const successRate = totalProcessedAndFailed > 0 
-        ? totalTermsProcessed / totalProcessedAndFailed 
-        : 0;
+      const completedOps = operations.filter((op) => op.status === 'completed');
+      const avgOperationTime =
+        completedOps.length > 0
+          ? completedOps.reduce((sum, op) => {
+              const duration =
+                op.timing.actualCompletion && op.timing.startedAt
+                  ? op.timing.actualCompletion.getTime() - op.timing.startedAt.getTime()
+                  : 0;
+              return sum + duration;
+            }, 0) / completedOps.length
+          : 0;
+
+      const totalProcessedAndFailed = operations.reduce(
+        (sum, op) => sum + op.progress.processedTerms + op.progress.failedTerms,
+        0
+      );
+      const successRate =
+        totalProcessedAndFailed > 0 ? totalTermsProcessed / totalProcessedAndFailed : 0;
       const errorRate = 1 - successRate;
 
       // Generate daily trends
@@ -295,7 +300,7 @@ export class BatchAnalyticsService extends EventEmitter {
         successRate,
         errorRate,
         avgOperationTime,
-        totalCost
+        totalCost,
       });
 
       const report: BatchPerformanceReport = {
@@ -306,24 +311,23 @@ export class BatchAnalyticsService extends EventEmitter {
           totalCost,
           averageOperationTime: avgOperationTime,
           successRate,
-          errorRate
+          errorRate,
         },
         trends: {
           operationsPerDay,
-          performanceMetrics
+          performanceMetrics,
         },
         sectionAnalysis,
         modelPerformance,
         userActivity,
-        recommendations
+        recommendations,
       };
 
       this.cacheReport(cacheKey, report);
       return report;
-
     } catch (error) {
-      logger.error('Error generating performance report:', { 
-        error: error instanceof Error ? error.message : String(error) 
+      logger.error('Error generating performance report:', {
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -347,17 +351,25 @@ export class BatchAnalyticsService extends EventEmitter {
       }
 
       // Calculate efficiency scores
-      const estimatedTime = operation.timing.estimatedCompletion && operation.timing.startedAt
-        ? operation.timing.estimatedCompletion.getTime() - operation.timing.startedAt.getTime()
-        : metrics.totalDuration;
+      const estimatedTime =
+        operation.timing.estimatedCompletion && operation.timing.startedAt
+          ? operation.timing.estimatedCompletion.getTime() - operation.timing.startedAt.getTime()
+          : metrics.totalDuration;
 
-      const timeEfficiency = estimatedTime > 0 
-        ? Math.max(0, 1 - (metrics.totalDuration - estimatedTime) / estimatedTime) * 100
-        : 100;
+      const timeEfficiency =
+        estimatedTime > 0
+          ? Math.max(0, 1 - (metrics.totalDuration - estimatedTime) / estimatedTime) * 100
+          : 100;
 
-      const costEfficiency = operation.costs.estimatedCost > 0
-        ? Math.max(0, 1 - (operation.costs.actualCost - operation.costs.estimatedCost) / operation.costs.estimatedCost) * 100
-        : 100;
+      const costEfficiency =
+        operation.costs.estimatedCost > 0
+          ? Math.max(
+              0,
+              1 -
+                (operation.costs.actualCost - operation.costs.estimatedCost) /
+                  operation.costs.estimatedCost
+            ) * 100
+          : 100;
 
       const qualityScore = metrics.qualityMetrics?.contentQualityScore || 75; // Default if not available
 
@@ -379,16 +391,15 @@ export class BatchAnalyticsService extends EventEmitter {
           timeEfficiency,
           costEfficiency,
           qualityScore,
-          overallScore
+          overallScore,
         },
         benchmarks,
         bottlenecks,
-        optimizationSuggestions
+        optimizationSuggestions,
       };
-
     } catch (error) {
-      logger.error('Error generating efficiency report:', { 
-        error: error instanceof Error ? error.message : String(error) 
+      logger.error('Error generating efficiency report:', {
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -414,15 +425,21 @@ export class BatchAnalyticsService extends EventEmitter {
       // Calculate current spending breakdown
       const currentSpending = {
         total: costAnalytics.totalCost,
-        byModel: costAnalytics.breakdown.byModel.reduce((acc, item) => {
-          acc[item.model] = item.cost;
-          return acc;
-        }, {} as { [model: string]: number }),
+        byModel: costAnalytics.breakdown.byModel.reduce(
+          (acc, item) => {
+            acc[item.model] = item.cost;
+            return acc;
+          },
+          {} as { [model: string]: number }
+        ),
         bySection: {}, // Would need additional data collection
-        byUser: costAnalytics.breakdown.byUser.reduce((acc, item) => {
-          acc[item.userId] = item.cost;
-          return acc;
-        }, {} as { [userId: string]: number })
+        byUser: costAnalytics.breakdown.byUser.reduce(
+          (acc, item) => {
+            acc[item.userId] = item.cost;
+            return acc;
+          },
+          {} as { [userId: string]: number }
+        ),
       };
 
       // Identify optimization opportunities
@@ -436,13 +453,16 @@ export class BatchAnalyticsService extends EventEmitter {
 
       // Get budget utilization
       const budgets = costManagementService.getBudgets();
-      const activeBudgets = budgets.filter(b => b.status === 'active');
+      const activeBudgets = budgets.filter((b) => b.status === 'active');
       const totalBudget = activeBudgets.reduce((sum, b) => sum + b.totalBudget, 0);
       const usedBudget = activeBudgets.reduce((sum, b) => sum + b.usedBudget, 0);
       const budgetUtilization = totalBudget > 0 ? (usedBudget / totalBudget) * 100 : 0;
 
       // Generate recommendations
-      const recommendations = this.generateCostOptimizationRecommendations(costAnalytics, optimizationOpportunities);
+      const recommendations = this.generateCostOptimizationRecommendations(
+        costAnalytics,
+        optimizationOpportunities
+      );
 
       const report: CostOptimizationReport = {
         period: { start: startDate, end: endDate },
@@ -451,17 +471,16 @@ export class BatchAnalyticsService extends EventEmitter {
         projections: {
           monthlyBurnRate,
           projectedYearlyCost,
-          budgetUtilization
+          budgetUtilization,
         },
-        recommendations
+        recommendations,
       };
 
       this.cacheReport(cacheKey, report);
       return report;
-
     } catch (error) {
-      logger.error('Error generating cost optimization report:', { 
-        error: error instanceof Error ? error.message : String(error) 
+      logger.error('Error generating cost optimization report:', {
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -470,10 +489,7 @@ export class BatchAnalyticsService extends EventEmitter {
   /**
    * Generate quality analysis report
    */
-  async generateQualityReport(
-    startDate: Date,
-    endDate: Date
-  ): Promise<QualityAnalysisReport> {
+  async generateQualityReport(startDate: Date, endDate: Date): Promise<QualityAnalysisReport> {
     const cacheKey = `quality-${startDate.getTime()}-${endDate.getTime()}`;
     const cached = this.getCachedReport(cacheKey);
     if (cached) return cached;
@@ -481,26 +497,28 @@ export class BatchAnalyticsService extends EventEmitter {
     logger.info('Generating quality analysis report:', { startDate, endDate });
 
     try {
-      const operations = columnBatchProcessorService.getOperationHistory(1000)
-        .filter(op => 
-          op.timing.startedAt && 
-          op.timing.startedAt >= startDate && 
-          op.timing.startedAt <= endDate &&
-          op.status === 'completed'
+      const operations = columnBatchProcessorService
+        .getOperationHistory(1000)
+        .filter(
+          (op) =>
+            op.timing.startedAt &&
+            op.timing.startedAt >= startDate &&
+            op.timing.startedAt <= endDate &&
+            op.status === 'completed'
         );
 
       // Calculate overall quality metrics
-      const allMetrics = operations
-        .map(op => op.result?.qualityMetrics)
-        .filter(m => m);
+      const allMetrics = operations.map((op) => op.result?.qualityMetrics).filter((m) => m);
 
       const overallQuality = {
-        averageContentLength: allMetrics.length > 0
-          ? allMetrics.reduce((sum, m) => sum + (m?.averageContentLength || 0), 0) / allMetrics.length
-          : 0,
+        averageContentLength:
+          allMetrics.length > 0
+            ? allMetrics.reduce((sum, m) => sum + (m?.averageContentLength || 0), 0) /
+              allMetrics.length
+            : 0,
         consistencyScore: 85, // Would calculate from actual content analysis
         completenessScore: 90, // Would calculate from section completeness
-        accuracyScore: undefined // Would require manual review data
+        accuracyScore: undefined, // Would require manual review data
       };
 
       // Analyze quality by section
@@ -509,25 +527,25 @@ export class BatchAnalyticsService extends EventEmitter {
         if (!sectionGroups.has(op.sectionName)) {
           sectionGroups.set(op.sectionName, []);
         }
-        sectionGroups.get(op.sectionName)!.push(op);
+        sectionGroups.get(op.sectionName)?.push(op);
       }
 
       const sectionQuality = Array.from(sectionGroups.entries()).map(([sectionName, ops]) => {
-        const sectionMetrics = ops
-          .map(op => op.result?.qualityMetrics)
-          .filter(m => m);
+        const sectionMetrics = ops.map((op) => op.result?.qualityMetrics).filter((m) => m);
 
         return {
           sectionName,
           qualityMetrics: {
-            averageLength: sectionMetrics.length > 0
-              ? sectionMetrics.reduce((sum, m) => sum + (m?.averageContentLength || 0), 0) / sectionMetrics.length
-              : 0,
+            averageLength:
+              sectionMetrics.length > 0
+                ? sectionMetrics.reduce((sum, m) => sum + (m?.averageContentLength || 0), 0) /
+                  sectionMetrics.length
+                : 0,
             consistency: 85, // Would calculate from actual analysis
             completeness: 90, // Would calculate from section analysis
-            userSatisfaction: undefined
+            userSatisfaction: undefined,
           },
-          issuesFound: [] // Would identify from content analysis
+          issuesFound: [], // Would identify from content analysis
         };
       });
 
@@ -538,37 +556,40 @@ export class BatchAnalyticsService extends EventEmitter {
         if (!modelGroups.has(model)) {
           modelGroups.set(model, []);
         }
-        modelGroups.get(model)!.push(op);
+        modelGroups.get(model)?.push(op);
       }
 
       const modelComparison = Array.from(modelGroups.entries()).map(([model, ops]) => {
         const avgQuality = 85; // Would calculate from actual quality analysis
         const avgCost = ops.reduce((sum, op) => sum + op.costs.actualCost, 0) / ops.length;
-        
+
         return {
           model,
           qualityScore: avgQuality,
           cost: avgCost,
-          valueScore: avgCost > 0 ? avgQuality / avgCost : 0
+          valueScore: avgCost > 0 ? avgQuality / avgCost : 0,
         };
       });
 
-      const improvements = this.generateQualityImprovements(overallQuality, sectionQuality, modelComparison);
+      const improvements = this.generateQualityImprovements(
+        overallQuality,
+        sectionQuality,
+        modelComparison
+      );
 
       const report: QualityAnalysisReport = {
         period: { start: startDate, end: endDate },
         overallQuality,
         sectionQuality,
         modelComparison,
-        improvements
+        improvements,
       };
 
       this.cacheReport(cacheKey, report);
       return report;
-
     } catch (error) {
-      logger.error('Error generating quality report:', { 
-        error: error instanceof Error ? error.message : String(error) 
+      logger.error('Error generating quality report:', {
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -592,50 +613,57 @@ export class BatchAnalyticsService extends EventEmitter {
       const scalabilityIndex = 85; // Would calculate from growth trends
 
       // Calculate business impact
-      const contentGenerationRate = systemStats.averageOperationTime > 0 
-        ? 3600000 / systemStats.averageOperationTime // Operations per hour
-        : 0;
-      
+      const contentGenerationRate =
+        systemStats.averageOperationTime > 0
+          ? 3600000 / systemStats.averageOperationTime // Operations per hour
+          : 0;
+
       const timeSavings = 90; // Percentage compared to manual work
       const costSavings = 75; // Percentage compared to outsourcing
       const qualityImprovement = 85; // Percentage improvement in consistency
 
       // Industry benchmarks (would come from external data)
       const industryBenchmarks = {
-        costPerTerm: 0.50,
+        costPerTerm: 0.5,
         processingSpeed: 1.5, // Terms per minute
-        qualityScore: 80
+        qualityScore: 80,
       };
 
       // Compare performance
-      const currentCostPerTerm = systemStats.totalCostToday > 0 && activeOps.length > 0
-        ? systemStats.totalCostToday / (activeOps.reduce((sum, op) => sum + op.progress.totalTerms, 0) || 1)
-        : 0;
+      const currentCostPerTerm =
+        systemStats.totalCostToday > 0 && activeOps.length > 0
+          ? systemStats.totalCostToday /
+            (activeOps.reduce((sum, op) => sum + op.progress.totalTerms, 0) || 1)
+          : 0;
 
       const performanceComparison = {
-        costEfficiency: currentCostPerTerm < industryBenchmarks.costPerTerm ? 'above' : 
-                       currentCostPerTerm === industryBenchmarks.costPerTerm ? 'at' : 'below',
+        costEfficiency:
+          currentCostPerTerm < industryBenchmarks.costPerTerm
+            ? 'above'
+            : currentCostPerTerm === industryBenchmarks.costPerTerm
+              ? 'at'
+              : 'below',
         speedEfficiency: 'above' as const, // Simplified
-        qualityEfficiency: 'at' as const // Simplified
+        qualityEfficiency: 'at' as const, // Simplified
       };
 
       // Growth projections
       const scalingRequirements = [
         'Increase concurrent processing capacity to 20 operations',
         'Implement advanced caching for 50% speed improvement',
-        'Add quality scoring for automated content validation'
+        'Add quality scoring for automated content validation',
       ];
 
       const resourceNeeds = [
         'Additional Redis memory for larger cache',
         'Enhanced monitoring and alerting systems',
-        'Automated cost optimization algorithms'
+        'Automated cost optimization algorithms',
       ];
 
       const budgetRecommendations = [
         'Allocate 20% more budget for peak processing periods',
         'Consider GPT-4 for premium content sections',
-        'Implement tiered pricing based on urgency'
+        'Implement tiered pricing based on urgency',
       ];
 
       return {
@@ -643,28 +671,27 @@ export class BatchAnalyticsService extends EventEmitter {
           systemUtilization,
           processingCapacity,
           resourceEfficiency,
-          scalabilityIndex
+          scalabilityIndex,
         },
         businessImpact: {
           contentGenerationRate,
           timeSavings,
           costSavings,
-          qualityImprovement
+          qualityImprovement,
         },
         competitiveAnalysis: {
           industryBenchmarks,
-          performanceComparison
+          performanceComparison,
         },
         growthProjections: {
           scalingRequirements,
           resourceNeeds,
-          budgetRecommendations
-        }
+          budgetRecommendations,
+        },
       };
-
     } catch (error) {
-      logger.error('Error generating business intelligence report:', { 
-        error: error instanceof Error ? error.message : String(error) 
+      logger.error('Error generating business intelligence report:', {
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -679,13 +706,19 @@ export class BatchAnalyticsService extends EventEmitter {
       const systemStats = await columnBatchProcessorService.getSystemStats();
 
       // Calculate processing rate
-      const totalProcessedToday = activeOps.reduce((sum, op) => sum + op.progress.processedTerms, 0);
+      const totalProcessedToday = activeOps.reduce(
+        (sum, op) => sum + op.progress.processedTerms,
+        0
+      );
       const hoursToday = new Date().getHours() + 1;
       const processingRate = totalProcessedToday / hoursToday;
 
       // Calculate error rate
       const totalErrors = activeOps.reduce((sum, op) => sum + op.progress.failedTerms, 0);
-      const totalProcessed = activeOps.reduce((sum, op) => sum + op.progress.processedTerms + op.progress.failedTerms, 0);
+      const totalProcessed = activeOps.reduce(
+        (sum, op) => sum + op.progress.processedTerms + op.progress.failedTerms,
+        0
+      );
       const errorRate = totalProcessed > 0 ? totalErrors / totalProcessed : 0;
 
       // System health (simplified)
@@ -705,14 +738,13 @@ export class BatchAnalyticsService extends EventEmitter {
         resourceUtilization: {
           cpu: 45, // Would get from system monitoring
           memory: 60,
-          network: 30
+          network: 30,
         },
-        alerts
+        alerts,
       };
-
     } catch (error) {
-      logger.error('Error getting real-time metrics:', { 
-        error: error instanceof Error ? error.message : String(error) 
+      logger.error('Error getting real-time metrics:', {
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -752,10 +784,7 @@ export class BatchAnalyticsService extends EventEmitter {
           break;
 
         case 'quality':
-          reportData = await this.generateQualityReport(
-            parameters.startDate,
-            parameters.endDate
-          );
+          reportData = await this.generateQualityReport(parameters.startDate, parameters.endDate);
           filename = `quality-analysis-report-${new Date().toISOString().split('T')[0]}`;
           break;
 
@@ -774,33 +803,33 @@ export class BatchAnalyticsService extends EventEmitter {
           return {
             data: JSON.stringify(reportData, null, 2),
             filename: `${filename}.json`,
-            mimeType: 'application/json'
+            mimeType: 'application/json',
           };
 
-        case 'csv':
+        case 'csv': {
           // Convert to CSV (simplified - would need proper CSV library)
           const csvData = this.convertToCSV(reportData);
           return {
             data: csvData,
             filename: `${filename}.csv`,
-            mimeType: 'text/csv'
+            mimeType: 'text/csv',
           };
+        }
 
         case 'excel':
           // Would use excel library to generate proper Excel file
           return {
             data: JSON.stringify(reportData, null, 2), // Simplified
             filename: `${filename}.xlsx`,
-            mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            mimeType: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
           };
 
         default:
           throw new Error(`Unsupported format: ${format}`);
       }
-
     } catch (error) {
-      logger.error('Error exporting report:', { 
-        error: error instanceof Error ? error.message : String(error) 
+      logger.error('Error exporting report:', {
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -818,20 +847,24 @@ export class BatchAnalyticsService extends EventEmitter {
 
   private cacheReport(key: string, data: any): void {
     this.reportCache.set(key, { data, timestamp: new Date() });
-    
+
     // Cleanup old cache entries
     if (this.reportCache.size > 100) {
       const oldestEntries = Array.from(this.reportCache.entries())
         .sort(([, a], [, b]) => a.timestamp.getTime() - b.timestamp.getTime())
         .slice(0, 20);
-      
+
       for (const [key] of oldestEntries) {
         this.reportCache.delete(key);
       }
     }
   }
 
-  private generateDailyTrends(operations: any[], startDate: Date, endDate: Date): Array<{
+  private generateDailyTrends(
+    operations: any[],
+    startDate: Date,
+    endDate: Date
+  ): Array<{
     date: Date;
     count: number;
     cost: number;
@@ -845,20 +878,22 @@ export class BatchAnalyticsService extends EventEmitter {
       const dayEnd = new Date(currentDate);
       dayEnd.setHours(23, 59, 59, 999);
 
-      const dayOps = operations.filter(op => 
-        op.timing.startedAt && 
-        op.timing.startedAt >= dayStart && 
-        op.timing.startedAt <= dayEnd
+      const dayOps = operations.filter(
+        (op) =>
+          op.timing.startedAt && op.timing.startedAt >= dayStart && op.timing.startedAt <= dayEnd
       );
 
-      const totalTerms = dayOps.reduce((sum, op) => sum + op.progress.processedTerms + op.progress.failedTerms, 0);
+      const totalTerms = dayOps.reduce(
+        (sum, op) => sum + op.progress.processedTerms + op.progress.failedTerms,
+        0
+      );
       const successfulTerms = dayOps.reduce((sum, op) => sum + op.progress.processedTerms, 0);
 
       trends.push({
         date: new Date(currentDate),
         count: dayOps.length,
         cost: dayOps.reduce((sum, op) => sum + op.costs.actualCost, 0),
-        successRate: totalTerms > 0 ? successfulTerms / totalTerms : 0
+        successRate: totalTerms > 0 ? successfulTerms / totalTerms : 0,
       });
 
       currentDate.setDate(currentDate.getDate() + 1);
@@ -867,7 +902,7 @@ export class BatchAnalyticsService extends EventEmitter {
     return trends;
   }
 
-  private calculatePerformanceTrends(operations: any[]): {
+  private calculatePerformanceTrends(_operations: any[]): {
     processingRateChange: number;
     costEfficiencyChange: number;
     qualityScoreChange: number;
@@ -876,7 +911,7 @@ export class BatchAnalyticsService extends EventEmitter {
     return {
       processingRateChange: 5.2, // 5.2% improvement
       costEfficiencyChange: -2.1, // 2.1% increase in cost
-      qualityScoreChange: 3.8 // 3.8% improvement in quality
+      qualityScoreChange: 3.8, // 3.8% improvement in quality
     };
   }
 
@@ -890,29 +925,34 @@ export class BatchAnalyticsService extends EventEmitter {
     qualityScore?: number;
   }> {
     const sectionGroups = new Map<string, any[]>();
-    
+
     for (const op of operations) {
       if (!sectionGroups.has(op.sectionName)) {
         sectionGroups.set(op.sectionName, []);
       }
-      sectionGroups.get(op.sectionName)!.push(op);
+      sectionGroups.get(op.sectionName)?.push(op);
     }
 
     return Array.from(sectionGroups.entries()).map(([sectionName, ops]) => {
       const totalTerms = ops.reduce((sum, op) => sum + op.progress.processedTerms, 0);
       const totalCost = ops.reduce((sum, op) => sum + op.costs.actualCost, 0);
-      const completedOps = ops.filter(op => op.status === 'completed');
-      
-      const avgTime = completedOps.length > 0
-        ? completedOps.reduce((sum, op) => {
-            const duration = op.timing.actualCompletion && op.timing.startedAt
-              ? op.timing.actualCompletion.getTime() - op.timing.startedAt.getTime()
-              : 0;
-            return sum + duration;
-          }, 0) / completedOps.length
-        : 0;
+      const completedOps = ops.filter((op) => op.status === 'completed');
 
-      const totalProcessedAndFailed = ops.reduce((sum, op) => sum + op.progress.processedTerms + op.progress.failedTerms, 0);
+      const avgTime =
+        completedOps.length > 0
+          ? completedOps.reduce((sum, op) => {
+              const duration =
+                op.timing.actualCompletion && op.timing.startedAt
+                  ? op.timing.actualCompletion.getTime() - op.timing.startedAt.getTime()
+                  : 0;
+              return sum + duration;
+            }, 0) / completedOps.length
+          : 0;
+
+      const totalProcessedAndFailed = ops.reduce(
+        (sum, op) => sum + op.progress.processedTerms + op.progress.failedTerms,
+        0
+      );
       const successRate = totalProcessedAndFailed > 0 ? totalTerms / totalProcessedAndFailed : 0;
 
       return {
@@ -922,41 +962,46 @@ export class BatchAnalyticsService extends EventEmitter {
         averageCost: ops.length > 0 ? totalCost / ops.length : 0,
         averageTime: avgTime,
         successRate,
-        qualityScore: 85 // Would calculate from actual quality metrics
+        qualityScore: 85, // Would calculate from actual quality metrics
       };
     });
   }
 
-  private async analyzeModelPerformance(operations: any[]): Promise<Array<{
-    model: string;
-    usage: number;
-    averageCost: number;
-    averageTokens: number;
-    successRate: number;
-    efficiency: number;
-  }>> {
+  private async analyzeModelPerformance(operations: any[]): Promise<
+    Array<{
+      model: string;
+      usage: number;
+      averageCost: number;
+      averageTokens: number;
+      successRate: number;
+      efficiency: number;
+    }>
+  > {
     const modelGroups = new Map<string, any[]>();
-    
+
     for (const op of operations) {
       const model = op.configuration.processingOptions.model || 'gpt-3.5-turbo';
       if (!modelGroups.has(model)) {
         modelGroups.set(model, []);
       }
-      modelGroups.get(model)!.push(op);
+      modelGroups.get(model)?.push(op);
     }
 
     return Array.from(modelGroups.entries()).map(([model, ops]) => {
       const totalCost = ops.reduce((sum, op) => sum + op.costs.actualCost, 0);
       const totalTerms = ops.reduce((sum, op) => sum + op.progress.processedTerms, 0);
-      const totalProcessedAndFailed = ops.reduce((sum, op) => sum + op.progress.processedTerms + op.progress.failedTerms, 0);
-      
+      const totalProcessedAndFailed = ops.reduce(
+        (sum, op) => sum + op.progress.processedTerms + op.progress.failedTerms,
+        0
+      );
+
       return {
         model,
         usage: ops.length,
         averageCost: ops.length > 0 ? totalCost / ops.length : 0,
         averageTokens: 1000, // Would calculate from actual token usage
         successRate: totalProcessedAndFailed > 0 ? totalTerms / totalProcessedAndFailed : 0,
-        efficiency: totalCost > 0 ? totalTerms / totalCost : 0 // Terms per dollar
+        efficiency: totalCost > 0 ? totalTerms / totalCost : 0, // Terms per dollar
       };
     });
   }
@@ -969,27 +1014,30 @@ export class BatchAnalyticsService extends EventEmitter {
     successRate: number;
   }> {
     const userGroups = new Map<string, any[]>();
-    
+
     for (const op of operations) {
       const userId = op.configuration.metadata?.initiatedBy || 'unknown';
       if (!userGroups.has(userId)) {
         userGroups.set(userId, []);
       }
-      userGroups.get(userId)!.push(op);
+      userGroups.get(userId)?.push(op);
     }
 
     return Array.from(userGroups.entries()).map(([userId, ops]) => {
       const totalCost = ops.reduce((sum, op) => sum + op.costs.actualCost, 0);
       const totalTerms = ops.reduce((sum, op) => sum + op.progress.processedTerms, 0);
-      const totalProcessedAndFailed = ops.reduce((sum, op) => sum + op.progress.processedTerms + op.progress.failedTerms, 0);
+      const totalProcessedAndFailed = ops.reduce(
+        (sum, op) => sum + op.progress.processedTerms + op.progress.failedTerms,
+        0
+      );
       const avgOperationSize = ops.length > 0 ? totalTerms / ops.length : 0;
-      
+
       return {
         userId,
         operationsCount: ops.length,
         totalCost,
         averageOperationSize: avgOperationSize,
-        successRate: totalProcessedAndFailed > 0 ? totalTerms / totalProcessedAndFailed : 0
+        successRate: totalProcessedAndFailed > 0 ? totalTerms / totalProcessedAndFailed : 0,
       };
     });
   }
@@ -998,25 +1046,32 @@ export class BatchAnalyticsService extends EventEmitter {
     const recommendations: string[] = [];
 
     if (metrics.errorRate > 0.1) {
-      recommendations.push('High error rate detected - review data quality and processing parameters');
+      recommendations.push(
+        'High error rate detected - review data quality and processing parameters'
+      );
     }
 
-    if (metrics.avgOperationTime > 7200000) { // 2 hours
+    if (metrics.avgOperationTime > 7200000) {
+      // 2 hours
       recommendations.push('Operations taking longer than expected - consider smaller batch sizes');
     }
 
     if (metrics.totalCost > 1000) {
-      recommendations.push('High costs detected - consider using more cost-effective models for bulk operations');
+      recommendations.push(
+        'High costs detected - consider using more cost-effective models for bulk operations'
+      );
     }
 
     if (operations.length > 50) {
-      recommendations.push('High operation volume - consider automated scheduling during off-peak hours');
+      recommendations.push(
+        'High operation volume - consider automated scheduling during off-peak hours'
+      );
     }
 
     return recommendations;
   }
 
-  private async getBenchmarks(sectionName: string): Promise<{
+  private async getBenchmarks(_sectionName: string): Promise<{
     sectionAverage: number;
     systemAverage: number;
     bestPerformance: number;
@@ -1025,11 +1080,14 @@ export class BatchAnalyticsService extends EventEmitter {
     return {
       sectionAverage: 75,
       systemAverage: 80,
-      bestPerformance: 95
+      bestPerformance: 95,
     };
   }
 
-  private identifyBottlenecks(operation: any, metrics: any): Array<{
+  private identifyBottlenecks(
+    operation: any,
+    metrics: any
+  ): Array<{
     type: 'time' | 'cost' | 'quality' | 'errors';
     severity: 'low' | 'medium' | 'high';
     description: string;
@@ -1050,7 +1108,7 @@ export class BatchAnalyticsService extends EventEmitter {
         severity: 'high',
         description: 'High error rate during processing',
         impact: 'Reduced efficiency and increased costs',
-        recommendation: 'Review input data quality and model parameters'
+        recommendation: 'Review input data quality and model parameters',
       });
     }
 
@@ -1060,7 +1118,7 @@ export class BatchAnalyticsService extends EventEmitter {
         severity: 'medium',
         description: 'Cost significantly exceeded estimates',
         impact: 'Budget overrun and reduced ROI',
-        recommendation: 'Improve cost estimation accuracy and implement cost controls'
+        recommendation: 'Improve cost estimation accuracy and implement cost controls',
       });
     }
 
@@ -1108,19 +1166,24 @@ export class BatchAnalyticsService extends EventEmitter {
         potentialSavings: gpt4Usage.cost * 0.9,
         description: 'Switch from GPT-4 to GPT-3.5-turbo for bulk operations',
         implementation: 'Update default model settings for non-critical content',
-        effort: 'low'
+        effort: 'low',
       });
     }
 
     return opportunities;
   }
 
-  private generateCostOptimizationRecommendations(costAnalytics: any, opportunities: any[]): string[] {
+  private generateCostOptimizationRecommendations(
+    costAnalytics: any,
+    opportunities: any[]
+  ): string[] {
     const recommendations: string[] = [];
 
     if (opportunities.length > 0) {
       const totalSavings = opportunities.reduce((sum, opp) => sum + opp.potentialSavings, 0);
-      recommendations.push(`Implementing identified optimizations could save $${totalSavings.toFixed(2)}`);
+      recommendations.push(
+        `Implementing identified optimizations could save $${totalSavings.toFixed(2)}`
+      );
     }
 
     if (costAnalytics.trends.costTrend === 'increasing') {
@@ -1130,7 +1193,11 @@ export class BatchAnalyticsService extends EventEmitter {
     return recommendations;
   }
 
-  private generateQualityImprovements(overallQuality: any, sectionQuality: any[], modelComparison: any[]): string[] {
+  private generateQualityImprovements(
+    overallQuality: any,
+    _sectionQuality: any[],
+    modelComparison: any[]
+  ): string[] {
     const improvements: string[] = [];
 
     if (overallQuality.consistencyScore < 90) {
@@ -1165,14 +1232,17 @@ export class BatchAnalyticsService extends EventEmitter {
 
   private initializeService(): void {
     // Set up periodic cache cleanup
-    setInterval(() => {
-      const cutoffTime = Date.now() - this.CACHE_TTL;
-      for (const [key, value] of this.reportCache.entries()) {
-        if (value.timestamp.getTime() < cutoffTime) {
-          this.reportCache.delete(key);
+    setInterval(
+      () => {
+        const cutoffTime = Date.now() - this.CACHE_TTL;
+        for (const [key, value] of this.reportCache.entries()) {
+          if (value.timestamp.getTime() < cutoffTime) {
+            this.reportCache.delete(key);
+          }
         }
-      }
-    }, 60 * 60 * 1000); // Cleanup every hour
+      },
+      60 * 60 * 1000
+    ); // Cleanup every hour
   }
 }
 

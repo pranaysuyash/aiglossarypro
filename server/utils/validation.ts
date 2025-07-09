@@ -1,22 +1,22 @@
+import type { NextFunction, Request, Response } from 'express';
 import { z } from 'zod';
 import { BULK_LIMITS } from '../constants';
-import { Request, Response, NextFunction } from 'express';
 
 // Common validation schemas
 export const idSchema = z.string().min(1, 'ID is required');
 export const numericIdSchema = z.coerce.number().int().positive('ID must be a positive integer');
 export const paginationSchema = z.object({
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20)
+  limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
 export const sectionParamsSchema = z.object({
-  sectionId: numericIdSchema
+  sectionId: numericIdSchema,
 });
 
 export const progressParamsSchema = z.object({
   termId: numericIdSchema,
-  sectionId: numericIdSchema
+  sectionId: numericIdSchema,
 });
 
 export const queryParamsSchema = z.object({
@@ -24,28 +24,32 @@ export const queryParamsSchema = z.object({
   contentType: z.string().optional(),
   sectionName: z.string().optional(),
   page: z.coerce.number().int().min(1).default(1),
-  limit: z.coerce.number().int().min(1).max(100).default(20)
+  limit: z.coerce.number().int().min(1).max(100).default(20),
 });
 
 export const quizQuerySchema = z.object({
   termId: z.coerce.number().int().positive().optional(),
-  difficulty: z.enum(['easy', 'medium', 'hard']).optional()
+  difficulty: z.enum(['easy', 'medium', 'hard']).optional(),
 });
 
 // Cross-reference validation schemas
 export const processTextSchema = z.object({
   text: z.string().min(1, 'Text content is required'),
-  excludeTermId: z.string().optional()
+  excludeTermId: z.string().optional(),
 });
 
 export const bulkProcessSchema = z.object({
-  termIds: z.array(z.string().min(1))
+  termIds: z
+    .array(z.string().min(1))
     .min(1, 'At least one term ID is required')
-    .max(BULK_LIMITS.CROSS_REFERENCE_TERMS, `Maximum ${BULK_LIMITS.CROSS_REFERENCE_TERMS} terms can be processed at once`)
+    .max(
+      BULK_LIMITS.CROSS_REFERENCE_TERMS,
+      `Maximum ${BULK_LIMITS.CROSS_REFERENCE_TERMS} terms can be processed at once`
+    ),
 });
 
 export const termIdParamSchema = z.object({
-  termId: z.string().min(1, 'Term ID is required')
+  termId: z.string().min(1, 'Term ID is required'),
 });
 
 // Validation middleware helper
@@ -72,12 +76,12 @@ export function validateBody<T>(schema: z.ZodSchema<T>) {
         return res.status(400).json({
           success: false,
           message: 'Validation error',
-          errors: error.errors
+          errors: error.errors,
         });
       }
       return res.status(400).json({
         success: false,
-        message: 'Invalid request data'
+        message: 'Invalid request data',
       });
     }
   };
@@ -94,12 +98,12 @@ export function validateParamsMiddleware<T>(schema: z.ZodSchema<T>) {
         return res.status(400).json({
           success: false,
           message: 'Invalid parameters',
-          errors: error.errors
+          errors: error.errors,
         });
       }
       return res.status(400).json({
         success: false,
-        message: 'Invalid request parameters'
+        message: 'Invalid request parameters',
       });
     }
   };
@@ -109,7 +113,7 @@ export function validateParamsMiddleware<T>(schema: z.ZodSchema<T>) {
 export function safeParseInt(value: string | unknown, fallback: number = 0): number {
   if (typeof value === 'string') {
     const parsed = parseInt(value, 10);
-    return isNaN(parsed) ? fallback : parsed;
+    return Number.isNaN(parsed) ? fallback : parsed;
   }
   if (typeof value === 'number') {
     return Math.floor(value);

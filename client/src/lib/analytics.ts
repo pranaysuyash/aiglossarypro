@@ -1,5 +1,5 @@
-import posthog from 'posthog-js'
-import { ga4Analytics } from './ga4Analytics'
+import posthog from 'posthog-js';
+import { ga4Analytics } from './ga4Analytics';
 
 // Performance tracking interfaces
 interface PerformanceMetric {
@@ -28,14 +28,14 @@ export const initAnalytics = () => {
       capture_pageview: true,
       capture_pageleave: true,
       loaded: (posthog) => {
-        if (import.meta.env.DEV) posthog.debug()
-      }
-    })
+        if (import.meta.env.DEV) posthog.debug();
+      },
+    });
   }
 
   // GA4 Analytics is automatically initialized in its constructor
   // It will only initialize if consent is given and configuration is valid
-}
+};
 
 // Custom event tracking with dual tracking (PostHog + GA4)
 export const trackTermView = (termId: string, termName: string, section?: string) => {
@@ -44,8 +44,8 @@ export const trackTermView = (termId: string, termName: string, section?: string
     term_id: termId,
     term_name: termName,
     section: section,
-    timestamp: new Date().toISOString()
-  })
+    timestamp: new Date().toISOString(),
+  });
 
   // GA4 tracking
   ga4Analytics.trackEngagement({
@@ -61,10 +61,10 @@ export const trackTermView = (termId: string, termName: string, section?: string
     item_category: section || 'glossary',
     custom_parameters: {
       term_id: termId,
-      section: section || 'glossary'
-    }
-  })
-}
+      section: section || 'glossary',
+    },
+  });
+};
 
 export const trackSearch = (query: string, resultsCount: number, filters?: any) => {
   // PostHog tracking
@@ -72,8 +72,8 @@ export const trackSearch = (query: string, resultsCount: number, filters?: any) 
     query,
     results_count: resultsCount,
     filters: filters || {},
-    timestamp: new Date().toISOString()
-  })
+    timestamp: new Date().toISOString(),
+  });
 
   // GA4 tracking
   ga4Analytics.trackEngagement({
@@ -88,17 +88,17 @@ export const trackSearch = (query: string, resultsCount: number, filters?: any) 
     custom_parameters: {
       search_term: query,
       results_count: resultsCount,
-      filters: JSON.stringify(filters || {})
-    }
-  })
-}
+      filters: JSON.stringify(filters || {}),
+    },
+  });
+};
 
 export const trackUserAction = (action: string, properties: any = {}) => {
   // PostHog tracking
   posthog.capture(action, {
     ...properties,
-    timestamp: new Date().toISOString()
-  })
+    timestamp: new Date().toISOString(),
+  });
 
   // GA4 tracking - determine event type based on action
   if (action.includes('cta') || action.includes('click')) {
@@ -107,7 +107,7 @@ export const trackUserAction = (action: string, properties: any = {}) => {
       properties.location || 'unknown',
       properties.section || 'general',
       properties.value || 1
-    )
+    );
   } else {
     ga4Analytics.trackEngagement({
       event_name: action,
@@ -117,26 +117,26 @@ export const trackUserAction = (action: string, properties: any = {}) => {
       page_title: document.title,
       event_category: properties.category || 'user_action',
       event_label: action,
-      custom_parameters: properties
-    })
+      custom_parameters: properties,
+    });
   }
-}
+};
 
 // Performance tracking functions
 const PERFORMANCE_THRESHOLDS: PerformanceThresholds = {
   renderTime: 16, // 60fps target
   memoryUsage: 50, // 50MB threshold
-  renderCount: 5   // 5 renders per second threshold
-}
+  renderCount: 5, // 5 renders per second threshold
+};
 
 export const trackPerformanceMetric = (metric: PerformanceMetric) => {
   // Only track in development mode
   if (!import.meta.env.DEV) return;
-  
+
   const isSlowRender = metric.renderTime > PERFORMANCE_THRESHOLDS.renderTime;
   const isHighMemoryUsage = metric.memoryUsage > PERFORMANCE_THRESHOLDS.memoryUsage;
   const isFrequentRender = metric.renderCount > PERFORMANCE_THRESHOLDS.renderCount;
-  
+
   // Track to PostHog
   posthog.capture('react_performance_metric', {
     component: metric.component,
@@ -147,9 +147,9 @@ export const trackPerformanceMetric = (metric: PerformanceMetric) => {
     is_slow_render: isSlowRender,
     is_high_memory: isHighMemoryUsage,
     is_frequent_render: isFrequentRender,
-    performance_score: calculatePerformanceScore(metric)
+    performance_score: calculatePerformanceScore(metric),
   });
-  
+
   // Track performance issues to GA4
   if (isSlowRender || isHighMemoryUsage || isFrequentRender) {
     ga4Analytics.trackEngagement({
@@ -164,11 +164,11 @@ export const trackPerformanceMetric = (metric: PerformanceMetric) => {
         component: metric.component,
         render_time: metric.renderTime,
         memory_usage: metric.memoryUsage,
-        issue_type: getIssueType(metric)
-      }
+        issue_type: getIssueType(metric),
+      },
     });
   }
-}
+};
 
 export const trackSlowRender = (component: string, renderTime: number, stackTrace?: string) => {
   // Track to PostHog
@@ -177,9 +177,9 @@ export const trackSlowRender = (component: string, renderTime: number, stackTrac
     render_time: renderTime,
     stack_trace: stackTrace,
     timestamp: new Date().toISOString(),
-    url: window.location.href
+    url: window.location.href,
   });
-  
+
   // Track to GA4
   ga4Analytics.trackEngagement({
     event_name: 'slow_render',
@@ -192,14 +192,14 @@ export const trackSlowRender = (component: string, renderTime: number, stackTrac
     custom_parameters: {
       component,
       render_time: renderTime,
-      has_stack_trace: !!stackTrace
-    }
+      has_stack_trace: !!stackTrace,
+    },
   });
-}
+};
 
 export const trackMemoryLeak = (component: string, memoryUsage: number, previousUsage?: number) => {
   const growthRate = previousUsage ? ((memoryUsage - previousUsage) / previousUsage) * 100 : 0;
-  
+
   // Track to PostHog
   posthog.capture('memory_leak_detected', {
     component,
@@ -207,9 +207,9 @@ export const trackMemoryLeak = (component: string, memoryUsage: number, previous
     previous_usage: previousUsage,
     growth_rate: growthRate,
     timestamp: new Date().toISOString(),
-    url: window.location.href
+    url: window.location.href,
   });
-  
+
   // Track to GA4
   ga4Analytics.trackEngagement({
     event_name: 'memory_leak',
@@ -222,10 +222,10 @@ export const trackMemoryLeak = (component: string, memoryUsage: number, previous
     custom_parameters: {
       component,
       memory_usage: memoryUsage,
-      growth_rate: growthRate
-    }
+      growth_rate: growthRate,
+    },
   });
-}
+};
 
 export const trackPerformanceReport = (report: {
   totalRenders: number;
@@ -244,9 +244,9 @@ export const trackPerformanceReport = (report: {
     memory_usage: report.memoryUsage,
     duration: report.duration,
     timestamp: new Date().toISOString(),
-    url: window.location.href
+    url: window.location.href,
   });
-  
+
   // Track to GA4
   ga4Analytics.trackEngagement({
     event_name: 'performance_report',
@@ -260,50 +260,50 @@ export const trackPerformanceReport = (report: {
       total_renders: report.totalRenders,
       average_render_time: report.averageRenderTime,
       slow_renders: report.slowRenders,
-      performance_score: calculateReportPerformanceScore(report)
-    }
+      performance_score: calculateReportPerformanceScore(report),
+    },
   });
-}
+};
 
 // Helper functions
 const calculatePerformanceScore = (metric: PerformanceMetric): number => {
   let score = 100;
-  
+
   // Deduct points for slow renders
   if (metric.renderTime > 16) {
     score -= Math.min(50, (metric.renderTime - 16) * 2);
   }
-  
+
   // Deduct points for high memory usage
   if (metric.memoryUsage > 50) {
     score -= Math.min(30, (metric.memoryUsage - 50) * 0.5);
   }
-  
+
   // Deduct points for frequent renders
   if (metric.renderCount > 5) {
     score -= Math.min(20, (metric.renderCount - 5) * 2);
   }
-  
+
   return Math.max(0, score);
-}
+};
 
 const getIssueType = (metric: PerformanceMetric): string => {
   const issues = [];
-  
+
   if (metric.renderTime > PERFORMANCE_THRESHOLDS.renderTime) {
     issues.push('slow_render');
   }
-  
+
   if (metric.memoryUsage > PERFORMANCE_THRESHOLDS.memoryUsage) {
     issues.push('high_memory');
   }
-  
+
   if (metric.renderCount > PERFORMANCE_THRESHOLDS.renderCount) {
     issues.push('frequent_render');
   }
-  
+
   return issues.join(',');
-}
+};
 
 const calculateReportPerformanceScore = (report: {
   totalRenders: number;
@@ -311,20 +311,20 @@ const calculateReportPerformanceScore = (report: {
   slowRenders: number;
 }): number => {
   let score = 100;
-  
+
   // Deduct points for slow average render time
   if (report.averageRenderTime > 16) {
     score -= Math.min(40, (report.averageRenderTime - 16) * 2);
   }
-  
+
   // Deduct points for high percentage of slow renders
   const slowRenderPercentage = (report.slowRenders / report.totalRenders) * 100;
   if (slowRenderPercentage > 5) {
     score -= Math.min(30, (slowRenderPercentage - 5) * 2);
   }
-  
+
   return Math.max(0, score);
-}
+};
 
 // Initialize React Scan integration in development
 export const initReactScanIntegration = () => {
@@ -334,19 +334,19 @@ export const initReactScanIntegration = () => {
       const metric = event.detail as PerformanceMetric;
       trackPerformanceMetric(metric);
     });
-    
+
     window.addEventListener('react-scan-slow-render', (event: any) => {
       const { component, renderTime, stackTrace } = event.detail;
       trackSlowRender(component, renderTime, stackTrace);
     });
-    
+
     window.addEventListener('react-scan-memory-leak', (event: any) => {
       const { component, memoryUsage, previousUsage } = event.detail;
       trackMemoryLeak(component, memoryUsage, previousUsage);
     });
-    
+
     console.log('🔍 React Scan analytics integration initialized');
   }
-}
+};
 
-export { posthog }
+export { posthog };

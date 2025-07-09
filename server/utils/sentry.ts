@@ -1,5 +1,5 @@
 import * as Sentry from '@sentry/node';
-import { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 
 // Initialize Sentry for server-side error tracking
 export const initSentry = () => {
@@ -12,7 +12,7 @@ export const initSentry = () => {
   }
 
   const dsn = process.env.SENTRY_DSN || process.env.SENTRY_DSN_DEV;
-  
+
   if (!dsn) {
     console.warn('Sentry DSN not configured - error monitoring disabled');
     return;
@@ -22,13 +22,13 @@ export const initSentry = () => {
     dsn,
     environment: process.env.NODE_ENV || 'development',
     release: process.env.npm_package_version,
-    
+
     // Performance monitoring
     tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-    
+
     // Profiling
     profilesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0,
-    
+
     integrations: [
       // HTTP integration for request tracing
       Sentry.httpIntegration(),
@@ -39,7 +39,7 @@ export const initSentry = () => {
       // Local variables integration
       Sentry.localVariablesIntegration(),
     ],
-    
+
     // Configure which data to send
     beforeSend(event, _hint) {
       // Filter out sensitive data
@@ -47,90 +47,103 @@ export const initSentry = () => {
         const data = event.request.data;
         // Remove password fields
         if (typeof data === 'object') {
-          Object.keys(data).forEach(key => {
-            if (key.toLowerCase().includes('password') || 
-                key.toLowerCase().includes('secret') ||
-                key.toLowerCase().includes('token')) {
+          Object.keys(data).forEach((key) => {
+            if (
+              key.toLowerCase().includes('password') ||
+              key.toLowerCase().includes('secret') ||
+              key.toLowerCase().includes('token')
+            ) {
               (data as Record<string, unknown>)[key] = '[Filtered]';
             }
           });
         }
       }
-      
+
       // Filter out health check errors to reduce noise
       if (event.request?.url?.includes('/health')) {
         return null;
       }
-      
+
       return event;
     },
-    
+
     // Set user context
     beforeSendTransaction(event) {
       return event;
-    }
+    },
   });
-  
+
   console.log(`Sentry initialized for ${process.env.NODE_ENV} environment`);
 };
 
 // Helper functions for common error scenarios
-export const captureAPIError = (error: Error, context: {
-  method: string;
-  path: string;
-  userId?: string;
-  requestId?: string;
-  body?: Record<string, unknown>;
-}) => {
+export const captureAPIError = (
+  error: Error,
+  context: {
+    method: string;
+    path: string;
+    userId?: string;
+    requestId?: string;
+    body?: Record<string, unknown>;
+  }
+) => {
   Sentry.withScope((scope) => {
     scope.setTag('errorType', 'api');
     scope.setContext('api', {
       method: context.method,
       path: context.path,
       userId: context.userId,
-      requestId: context.requestId
+      requestId: context.requestId,
     });
-    
+
     if (context.body && typeof context.body === 'object') {
       // Filter sensitive data before logging
       const sanitizedBody = { ...context.body };
-      Object.keys(sanitizedBody).forEach(key => {
-        if (key.toLowerCase().includes('password') || 
-            key.toLowerCase().includes('secret') ||
-            key.toLowerCase().includes('token')) {
+      Object.keys(sanitizedBody).forEach((key) => {
+        if (
+          key.toLowerCase().includes('password') ||
+          key.toLowerCase().includes('secret') ||
+          key.toLowerCase().includes('token')
+        ) {
           sanitizedBody[key] = '[Filtered]';
         }
       });
       scope.setContext('requestBody', sanitizedBody);
     }
-    
+
     Sentry.captureException(error);
   });
 };
 
-export const captureAuthError = (error: Error, context: {
-  email?: string;
-  provider?: string;
-  action: string;
-}) => {
+export const captureAuthError = (
+  error: Error,
+  context: {
+    email?: string;
+    provider?: string;
+    action: string;
+  }
+) => {
   Sentry.withScope((scope) => {
     scope.setTag('errorType', 'authentication');
     scope.setContext('auth', {
       email: context.email,
       provider: context.provider,
-      action: context.action
+      action: context.action,
     });
-    
+
     Sentry.captureException(error);
   });
 };
 
-export const captureAuthEvent = (action: string, context: {
-  userId?: string;
-  email?: string;
-  provider?: string;
-  error?: string;
-}) => {
+export const captureAuthEvent = (
+  action: string,
+  context: {
+    userId?: string;
+    email?: string;
+    provider?: string;
+    error?: string;
+  }
+) => {
   Sentry.addBreadcrumb({
     message: `Auth event: ${action}`,
     category: 'auth',
@@ -139,59 +152,67 @@ export const captureAuthEvent = (action: string, context: {
       userId: context.userId,
       email: context.email,
       provider: context.provider,
-      error: context.error
-    }
+      error: context.error,
+    },
   });
 };
 
-export const captureDatabaseError = (error: Error, context: {
-  query?: string;
-  operation: string;
-  table?: string;
-}) => {
+export const captureDatabaseError = (
+  error: Error,
+  context: {
+    query?: string;
+    operation: string;
+    table?: string;
+  }
+) => {
   Sentry.withScope((scope) => {
     scope.setTag('errorType', 'database');
     scope.setContext('database', {
       query: context.query?.substring(0, 200), // Truncate long queries
       operation: context.operation,
-      table: context.table
+      table: context.table,
     });
-    
+
     Sentry.captureException(error);
   });
 };
 
 // Performance monitoring
 export const startTransaction = (name: string, operation: string) => {
-  return Sentry.startSpan({
-    name,
-    op: operation
-  }, () => {
-    // Return a span-like object for compatibility
-    return {
-      setData: (key: string, value: Record<string, unknown> | null) => Sentry.setContext(key, value),
-      setTag: (key: string, value: string) => Sentry.setTag(key, value),
-      finish: () => {}, // No-op for compatibility
-    };
-  });
+  return Sentry.startSpan(
+    {
+      name,
+      op: operation,
+    },
+    () => {
+      // Return a span-like object for compatibility
+      return {
+        setData: (key: string, value: Record<string, unknown> | null) =>
+          Sentry.setContext(key, value),
+        setTag: (key: string, value: string) => Sentry.setTag(key, value),
+        finish: () => {}, // No-op for compatibility
+      };
+    }
+  );
 };
 
 // Add breadcrumb for debugging
-export const addBreadcrumb = (message: string, category: string, level: Sentry.SeverityLevel = 'info', data?: Record<string, unknown>) => {
+export const addBreadcrumb = (
+  message: string,
+  category: string,
+  level: Sentry.SeverityLevel = 'info',
+  data?: Record<string, unknown>
+) => {
   Sentry.addBreadcrumb({
     message,
     category,
     level,
-    data
+    data,
   });
 };
 
 // Set user context
-export const setUser = (user: {
-  id: string;
-  email?: string;
-  username?: string;
-}) => {
+export const setUser = (user: { id: string; email?: string; username?: string }) => {
   Sentry.setUser(user);
 };
 
@@ -201,8 +222,10 @@ export const clearUser = () => {
 };
 
 // Express middleware for request tracking
-export const sentryRequestHandler = () => (req: Request, res: Response, next: NextFunction) => next();
-export const sentryTracingHandler = () => (req: Request, res: Response, next: NextFunction) => next();
+export const sentryRequestHandler = () => (_req: Request, _res: Response, next: NextFunction) =>
+  next();
+export const sentryTracingHandler = () => (_req: Request, _res: Response, next: NextFunction) =>
+  next();
 export const sentryErrorHandler = () => Sentry.expressErrorHandler();
 
 export default Sentry;

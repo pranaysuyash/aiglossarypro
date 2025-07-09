@@ -1,17 +1,9 @@
-import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { GitBranch, Maximize2, Minimize2, ZoomIn, ZoomOut } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { 
-  ZoomIn, 
-  ZoomOut, 
-  Maximize2, 
-  Minimize2, 
-  GitBranch,
-  Filter,
-  Layers
-} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 
 interface GraphNode {
@@ -53,7 +45,7 @@ interface FilterState {
 const DEFAULT_FILTERS: FilterState = {
   relationshipTypes: ['prerequisite', 'related', 'extends', 'alternative'],
   nodeTypes: ['term', 'category', 'subcategory'],
-  minStrength: 3
+  minStrength: 3,
 };
 
 export function RelationshipGraph({
@@ -63,7 +55,7 @@ export function RelationshipGraph({
   onNodeClick,
   onFilterChange,
   selectedFilters = DEFAULT_FILTERS,
-  className = ""
+  className = '',
 }: RelationshipGraphProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -77,7 +69,7 @@ export function RelationshipGraph({
     term: '#3B82F6', // blue
     category: '#10B981', // green
     subcategory: '#8B5CF6', // purple
-    concept: '#F59E0B' // yellow
+    concept: '#F59E0B', // yellow
   };
 
   // Color schemes for different link types
@@ -86,7 +78,7 @@ export function RelationshipGraph({
     related: '#3B82F6', // blue
     extends: '#10B981', // green
     alternative: '#8B5CF6', // purple
-    belongs_to: '#6B7280' // gray
+    belongs_to: '#6B7280', // gray
   };
 
   useEffect(() => {
@@ -96,9 +88,9 @@ export function RelationshipGraph({
     const updateDimensions = () => {
       if (containerRef.current) {
         const { width, height } = containerRef.current.getBoundingClientRect();
-        setDimensions({ 
-          width: width || 800, 
-          height: isFullscreen ? window.innerHeight - 100 : (height || 600)
+        setDimensions({
+          width: width || 800,
+          height: isFullscreen ? window.innerHeight - 100 : height || 600,
         });
       }
     };
@@ -110,20 +102,22 @@ export function RelationshipGraph({
     d3.select(svgRef.current).selectAll('*').remove();
 
     // Filter data based on selected filters
-    const filteredLinks = links.filter(link => 
-      selectedFilters.relationshipTypes.includes(link.type) &&
-      link.strength >= selectedFilters.minStrength
+    const filteredLinks = links.filter(
+      (link) =>
+        selectedFilters.relationshipTypes.includes(link.type) &&
+        link.strength >= selectedFilters.minStrength
     );
 
     const connectedNodeIds = new Set<string>();
-    filteredLinks.forEach(link => {
+    filteredLinks.forEach((link) => {
       connectedNodeIds.add(typeof link.source === 'string' ? link.source : link.source.id);
       connectedNodeIds.add(typeof link.target === 'string' ? link.target : link.target.id);
     });
 
-    const filteredNodes = nodes.filter(node => 
-      node.id === centralNodeId || 
-      (connectedNodeIds.has(node.id) && selectedFilters.nodeTypes.includes(node.type))
+    const filteredNodes = nodes.filter(
+      (node) =>
+        node.id === centralNodeId ||
+        (connectedNodeIds.has(node.id) && selectedFilters.nodeTypes.includes(node.type))
     );
 
     // Create SVG elements
@@ -131,7 +125,8 @@ export function RelationshipGraph({
     const g = svg.append('g');
 
     // Add zoom behavior
-    const zoom = d3.zoom<SVGSVGElement, unknown>()
+    const zoom = d3
+      .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 4])
       .on('zoom', (event) => {
         g.attr('transform', event.transform);
@@ -141,11 +136,16 @@ export function RelationshipGraph({
     svg.call(zoom);
 
     // Create force simulation
-    const simulation = d3.forceSimulation<GraphNode>(filteredNodes)
-      .force('link', d3.forceLink<GraphNode, GraphLink>(filteredLinks)
-        .id(d => d.id)
-        .distance(d => 100 / d.strength)
-        .strength(d => d.strength / 10))
+    const simulation = d3
+      .forceSimulation<GraphNode>(filteredNodes)
+      .force(
+        'link',
+        d3
+          .forceLink<GraphNode, GraphLink>(filteredLinks)
+          .id((d) => d.id)
+          .distance((d) => 100 / d.strength)
+          .strength((d) => d.strength / 10)
+      )
       .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(dimensions.width / 2, dimensions.height / 2))
       .force('collision', d3.forceCollide().radius(40));
@@ -153,7 +153,8 @@ export function RelationshipGraph({
     // Add arrow markers for directed links
     const defs = svg.append('defs');
     Object.entries(linkColors).forEach(([type, color]) => {
-      defs.append('marker')
+      defs
+        .append('marker')
         .attr('id', `arrow-${type}`)
         .attr('viewBox', '0 -5 10 10')
         .attr('refX', 25)
@@ -167,18 +168,20 @@ export function RelationshipGraph({
     });
 
     // Create links
-    const link = g.append('g')
+    const link = g
+      .append('g')
       .selectAll('line')
       .data(filteredLinks)
       .enter()
       .append('line')
-      .attr('stroke', d => linkColors[d.type])
-      .attr('stroke-opacity', d => 0.3 + (d.strength / 10) * 0.7)
-      .attr('stroke-width', d => 1 + d.strength / 5)
-      .attr('marker-end', d => `url(#arrow-${d.type})`);
+      .attr('stroke', (d) => linkColors[d.type])
+      .attr('stroke-opacity', (d) => 0.3 + (d.strength / 10) * 0.7)
+      .attr('stroke-width', (d) => 1 + d.strength / 5)
+      .attr('marker-end', (d) => `url(#arrow-${d.type})`);
 
     // Create link labels
-    const linkLabel = g.append('g')
+    const linkLabel = g
+      .append('g')
       .selectAll('text')
       .data(filteredLinks)
       .enter()
@@ -186,74 +189,83 @@ export function RelationshipGraph({
       .attr('font-size', 10)
       .attr('fill', '#666')
       .attr('text-anchor', 'middle')
-      .text(d => d.type);
+      .text((d) => d.type);
 
     // Create nodes
-    const node = g.append('g')
+    const node = g
+      .append('g')
       .selectAll('g')
       .data(filteredNodes)
       .enter()
       .append('g')
       .attr('cursor', 'pointer')
-      .call(d3.drag<SVGGElement, GraphNode>()
-        .on('start', dragstarted)
-        .on('drag', dragged)
-        .on('end', dragended));
+      .call(
+        d3
+          .drag<SVGGElement, GraphNode>()
+          .on('start', dragstarted)
+          .on('drag', dragged)
+          .on('end', dragended)
+      );
 
     // Add circles for nodes
-    node.append('circle')
-      .attr('r', d => d.id === centralNodeId ? 25 : 20)
-      .attr('fill', d => nodeColors[d.type])
-      .attr('stroke', d => d.id === centralNodeId ? '#000' : '#fff')
-      .attr('stroke-width', d => d.id === centralNodeId ? 3 : 2);
+    node
+      .append('circle')
+      .attr('r', (d) => (d.id === centralNodeId ? 25 : 20))
+      .attr('fill', (d) => nodeColors[d.type])
+      .attr('stroke', (d) => (d.id === centralNodeId ? '#000' : '#fff'))
+      .attr('stroke-width', (d) => (d.id === centralNodeId ? 3 : 2));
 
     // Add labels
-    node.append('text')
+    node
+      .append('text')
       .attr('dy', 35)
       .attr('text-anchor', 'middle')
       .attr('font-size', 12)
-      .attr('font-weight', d => d.id === centralNodeId ? 'bold' : 'normal')
-      .text(d => d.name);
+      .attr('font-weight', (d) => (d.id === centralNodeId ? 'bold' : 'normal'))
+      .text((d) => d.name);
 
     // Add hover effects
-    node.on('mouseenter', function(event, d) {
-      d3.select(this).select('circle')
-        .transition()
-        .duration(200)
-        .attr('r', d.id === centralNodeId ? 30 : 25);
-      
-      // Highlight connected links
-      link.style('stroke-opacity', l => {
-        const source = typeof l.source === 'object' ? l.source.id : l.source;
-        const target = typeof l.target === 'object' ? l.target.id : l.target;
-        return source === d.id || target === d.id ? 0.8 : 0.2;
+    node
+      .on('mouseenter', function (_event, d) {
+        d3.select(this)
+          .select('circle')
+          .transition()
+          .duration(200)
+          .attr('r', d.id === centralNodeId ? 30 : 25);
+
+        // Highlight connected links
+        link.style('stroke-opacity', (l) => {
+          const source = typeof l.source === 'object' ? l.source.id : l.source;
+          const target = typeof l.target === 'object' ? l.target.id : l.target;
+          return source === d.id || target === d.id ? 0.8 : 0.2;
+        });
+      })
+      .on('mouseleave', function (_event, d) {
+        d3.select(this)
+          .select('circle')
+          .transition()
+          .duration(200)
+          .attr('r', d.id === centralNodeId ? 25 : 20);
+
+        link.style('stroke-opacity', (l) => 0.3 + (l.strength / 10) * 0.7);
+      })
+      .on('click', (_event, d) => {
+        onNodeClick?.(d);
       });
-    })
-    .on('mouseleave', function(event, d) {
-      d3.select(this).select('circle')
-        .transition()
-        .duration(200)
-        .attr('r', d.id === centralNodeId ? 25 : 20);
-      
-      link.style('stroke-opacity', l => 0.3 + (l.strength / 10) * 0.7);
-    })
-    .on('click', (event, d) => {
-      onNodeClick?.(d);
-    });
 
     // Update positions on tick
     simulation.on('tick', () => {
       link
-        .attr('x1', d => (d.source as GraphNode).x!)
-        .attr('y1', d => (d.source as GraphNode).y!)
-        .attr('x2', d => (d.target as GraphNode).x!)
-        .attr('y2', d => (d.target as GraphNode).y!);
+        .attr('x1', (d) => (d.source as GraphNode).x!)
+        .attr('y1', (d) => (d.source as GraphNode).y!)
+        .attr('x2', (d) => (d.target as GraphNode).x!)
+        .attr('y2', (d) => (d.target as GraphNode).y!);
 
       linkLabel
-        .attr('x', d => ((d.source as GraphNode).x! + (d.target as GraphNode).x!) / 2)
-        .attr('y', d => ((d.source as GraphNode).y! + (d.target as GraphNode).y!) / 2);
+        .attr('x', (d) => ((d.source as GraphNode).x! + (d.target as GraphNode).x!) / 2)
+        .attr('y', (d) => ((d.source as GraphNode).y! + (d.target as GraphNode).y!) / 2);
 
-      node.attr('transform', d => `translate(${d.x},${d.y})`);
+      node.attr('transform', (d) => `translate(${d.x},${d.y})`);
     });
 
     // Drag functions
@@ -278,16 +290,17 @@ export function RelationshipGraph({
       window.removeEventListener('resize', updateDimensions);
       simulation.stop();
     };
-  }, [nodes, links, centralNodeId, selectedFilters, dimensions, isFullscreen]);
+  }, [nodes, links, centralNodeId, selectedFilters, dimensions, isFullscreen, onNodeClick]);
 
   const handleZoom = (direction: 'in' | 'out') => {
     const svg = d3.select(svgRef.current);
     const zoom = d3.zoom<SVGSVGElement, unknown>();
     const newScale = direction === 'in' ? zoomLevel * 1.2 : zoomLevel / 1.2;
-    
-    svg.transition()
+
+    svg
+      .transition()
       .duration(300)
-      .call(zoom.scaleTo, newScale);
+      .call(zoom.scaleTo as any, newScale);
   };
 
   const toggleFullscreen = () => {
@@ -303,27 +316,17 @@ export function RelationshipGraph({
             Concept Relationships
           </CardTitle>
           <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleZoom('out')}
-              title="Zoom Out"
-            >
+            <Button variant="ghost" size="sm" onClick={() => handleZoom('out')} title="Zoom Out">
               <ZoomOut className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => handleZoom('in')}
-              title="Zoom In"
-            >
+            <Button variant="ghost" size="sm" onClick={() => handleZoom('in')} title="Zoom In">
               <ZoomIn className="h-4 w-4" />
             </Button>
             <Button
               variant="ghost"
               size="sm"
               onClick={toggleFullscreen}
-              title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+              title={isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
             >
               {isFullscreen ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
             </Button>
@@ -331,7 +334,7 @@ export function RelationshipGraph({
         </div>
       </CardHeader>
       <CardContent className="p-0">
-        <div 
+        <div
           ref={containerRef}
           className={`relative ${isFullscreen ? 'h-[calc(100vh-8rem)]' : 'h-[600px]'}`}
         >
@@ -341,17 +344,14 @@ export function RelationshipGraph({
             height={dimensions.height}
             className="w-full h-full"
           />
-          
+
           {/* Legend */}
           <div className="absolute bottom-4 left-4 bg-white dark:bg-gray-800 p-3 rounded-lg shadow-lg">
             <h4 className="text-sm font-semibold mb-2">Legend</h4>
             <div className="space-y-1">
               {Object.entries(linkColors).map(([type, color]) => (
                 <div key={type} className="flex items-center gap-2">
-                  <div 
-                    className="w-4 h-1" 
-                    style={{ backgroundColor: color }}
-                  />
+                  <div className="w-4 h-1" style={{ backgroundColor: color }} />
                   <span className="text-xs capitalize">{type.replace('_', ' ')}</span>
                 </div>
               ))}
@@ -360,9 +360,7 @@ export function RelationshipGraph({
 
           {/* Current zoom level */}
           <div className="absolute top-4 right-4">
-            <Badge variant="secondary">
-              {Math.round(zoomLevel * 100)}%
-            </Badge>
+            <Badge variant="secondary">{Math.round(zoomLevel * 100)}%</Badge>
           </div>
         </div>
       </CardContent>

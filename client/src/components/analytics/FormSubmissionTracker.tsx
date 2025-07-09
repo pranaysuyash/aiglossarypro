@@ -32,170 +32,181 @@ export function useFormTracking({
   formLocation,
   formId,
   metadata,
-  onTrackingComplete
+  onTrackingComplete,
 }: FormSubmissionTrackerProps) {
   const { trackFormSubmission: trackFormSubmissionGA4 } = useGA4();
 
   const trackFormStart = useCallback(() => {
     // Track form interaction start
     trackFormSubmissionGA4(formType, `${formLocation}_start`);
-    
+
     if (import.meta.env.NODE_ENV === 'development') {
       console.log(`Form start tracked: ${formType} at ${formLocation}`);
     }
   }, [formType, formLocation, trackFormSubmissionGA4]);
 
-  const trackFieldInteraction = useCallback((fieldName: string, fieldType: string = 'input') => {
-    // Track individual field interactions for funnel analysis
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'form_field_interaction', {
-        event_category: 'form_engagement',
-        event_label: `${formType}_${fieldName}`,
-        custom_parameters: {
-          form_type: formType,
-          form_location: formLocation,
-          field_name: fieldName,
-          field_type: fieldType,
-          form_id: formId
-        }
-      });
-    }
-  }, [formType, formLocation, formId]);
-
-  const trackFormSubmissionData = useCallback(async (data: FormTrackingData) => {
-    const startTime = performance.now();
-    
-    try {
-      // Track with GA4
-      trackFormSubmissionGA4(data.formType, data.formLocation);
-
-      // Enhanced GA4 tracking with detailed data
+  const trackFieldInteraction = useCallback(
+    (fieldName: string, fieldType: string = 'input') => {
+      // Track individual field interactions for funnel analysis
       if (typeof window !== 'undefined' && window.gtag) {
-        window.gtag('event', 'form_submit', {
-          event_category: 'conversion',
-          event_label: `${data.formType}_${data.success ? 'success' : 'error'}`,
-          value: data.success ? 1 : 0,
+        window.gtag('event', 'form_field_interaction', {
+          event_category: 'form_engagement',
+          event_label: `${formType}_${fieldName}`,
           custom_parameters: {
-            form_type: data.formType,
-            form_location: data.formLocation,
-            form_id: data.formId || 'unknown',
+            form_type: formType,
+            form_location: formLocation,
+            field_name: fieldName,
+            field_type: fieldType,
+            form_id: formId,
+          },
+        });
+      }
+    },
+    [formType, formLocation, formId]
+  );
+
+  const trackFormSubmissionData = useCallback(
+    async (data: FormTrackingData) => {
+      const startTime = performance.now();
+
+      try {
+        // Track with GA4
+        trackFormSubmissionGA4(data.formType, data.formLocation);
+
+        // Enhanced GA4 tracking with detailed data
+        if (typeof window !== 'undefined' && window.gtag) {
+          window.gtag('event', 'form_submit', {
+            event_category: 'conversion',
+            event_label: `${data.formType}_${data.success ? 'success' : 'error'}`,
+            value: data.success ? 1 : 0,
+            custom_parameters: {
+              form_type: data.formType,
+              form_location: data.formLocation,
+              form_id: data.formId || 'unknown',
+              success: data.success,
+              error_message: data.errorMessage || '',
+              field_errors: data.fieldErrors?.join(',') || '',
+              submission_time: data.submissionTime || 0,
+              ...data.metadata,
+            },
+          });
+
+          // Track specific form conversion events
+          if (data.success) {
+            switch (data.formType) {
+              case 'newsletter':
+                window.gtag('event', 'newsletter_signup', {
+                  event_category: 'conversion',
+                  event_label: data.formLocation,
+                  value: 1,
+                });
+                break;
+              case 'contact':
+                window.gtag('event', 'contact_form_submit', {
+                  event_category: 'conversion',
+                  event_label: data.formLocation,
+                  value: 1,
+                });
+                break;
+              case 'signup':
+                window.gtag('event', 'signup_complete', {
+                  event_category: 'conversion',
+                  event_label: data.formLocation,
+                  value: 10, // Higher value for signups
+                });
+                break;
+              case 'feedback':
+                window.gtag('event', 'feedback_submit', {
+                  event_category: 'engagement',
+                  event_label: data.formLocation,
+                  value: 1,
+                });
+                break;
+            }
+          }
+        }
+
+        const endTime = performance.now();
+
+        if (import.meta.env.NODE_ENV === 'development') {
+          console.log(`Form submission tracked: ${data.formType} at ${data.formLocation}`, {
             success: data.success,
-            error_message: data.errorMessage || '',
-            field_errors: data.fieldErrors?.join(',') || '',
-            submission_time: data.submissionTime || 0,
-            ...data.metadata
-          }
-        });
-
-        // Track specific form conversion events
-        if (data.success) {
-          switch (data.formType) {
-            case 'newsletter':
-              window.gtag('event', 'newsletter_signup', {
-                event_category: 'conversion',
-                event_label: data.formLocation,
-                value: 1
-              });
-              break;
-            case 'contact':
-              window.gtag('event', 'contact_form_submit', {
-                event_category: 'conversion',
-                event_label: data.formLocation,
-                value: 1
-              });
-              break;
-            case 'signup':
-              window.gtag('event', 'signup_complete', {
-                event_category: 'conversion',
-                event_label: data.formLocation,
-                value: 10 // Higher value for signups
-              });
-              break;
-            case 'feedback':
-              window.gtag('event', 'feedback_submit', {
-                event_category: 'engagement',
-                event_label: data.formLocation,
-                value: 1
-              });
-              break;
-          }
+            trackingTime: endTime - startTime,
+            data,
+          });
         }
+
+        onTrackingComplete?.();
+      } catch (error) {
+        console.error('Error tracking form submission:', error);
+      }
+    },
+    [trackFormSubmissionGA4, onTrackingComplete]
+  );
+
+  const trackFormAbandon = useCallback(
+    (fieldName?: string, timeSpent?: number) => {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'form_abandon', {
+          event_category: 'form_engagement',
+          event_label: `${formType}_abandon`,
+          value: timeSpent || 0,
+          custom_parameters: {
+            form_type: formType,
+            form_location: formLocation,
+            form_id: formId || 'unknown',
+            last_field: fieldName || 'unknown',
+            time_spent: timeSpent || 0,
+            ...metadata,
+          },
+        });
       }
 
-      const endTime = performance.now();
-      
       if (import.meta.env.NODE_ENV === 'development') {
-        console.log(`Form submission tracked: ${data.formType} at ${data.formLocation}`, {
-          success: data.success,
-          trackingTime: endTime - startTime,
-          data
+        console.log(`Form abandon tracked: ${formType} at ${formLocation}`, {
+          lastField: fieldName,
+          timeSpent,
+        });
+      }
+    },
+    [formType, formLocation, formId, metadata]
+  );
+
+  const trackFormError = useCallback(
+    (errorType: string, errorMessage: string, fieldName?: string) => {
+      if (typeof window !== 'undefined' && window.gtag) {
+        window.gtag('event', 'form_error', {
+          event_category: 'form_engagement',
+          event_label: `${formType}_error_${errorType}`,
+          custom_parameters: {
+            form_type: formType,
+            form_location: formLocation,
+            form_id: formId || 'unknown',
+            error_type: errorType,
+            error_message: errorMessage,
+            field_name: fieldName || 'unknown',
+            ...metadata,
+          },
         });
       }
 
-      onTrackingComplete?.(
-      );
-    } catch (error) {
-      console.error('Error tracking form submission:', error);
-    }
-  }, [formType, formLocation, formId, metadata, trackFormSubmissionGA4, onTrackingComplete]);
-
-  const trackFormAbandon = useCallback((fieldName?: string, timeSpent?: number) => {
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'form_abandon', {
-        event_category: 'form_engagement',
-        event_label: `${formType}_abandon`,
-        value: timeSpent || 0,
-        custom_parameters: {
-          form_type: formType,
-          form_location: formLocation,
-          form_id: formId || 'unknown',
-          last_field: fieldName || 'unknown',
-          time_spent: timeSpent || 0,
-          ...metadata
-        }
-      });
-    }
-
-    if (import.meta.env.NODE_ENV === 'development') {
-      console.log(`Form abandon tracked: ${formType} at ${formLocation}`, {
-        lastField: fieldName,
-        timeSpent
-      });
-    }
-  }, [formType, formLocation, formId, metadata]);
-
-  const trackFormError = useCallback((errorType: string, errorMessage: string, fieldName?: string) => {
-    if (typeof window !== 'undefined' && window.gtag) {
-      window.gtag('event', 'form_error', {
-        event_category: 'form_engagement',
-        event_label: `${formType}_error_${errorType}`,
-        custom_parameters: {
-          form_type: formType,
-          form_location: formLocation,
-          form_id: formId || 'unknown',
-          error_type: errorType,
-          error_message: errorMessage,
-          field_name: fieldName || 'unknown',
-          ...metadata
-        }
-      });
-    }
-
-    if (import.meta.env.NODE_ENV === 'development') {
-      console.log(`Form error tracked: ${formType} at ${formLocation}`, {
-        errorType,
-        errorMessage,
-        fieldName
-      });
-    }
-  }, [formType, formLocation, formId, metadata]);
+      if (import.meta.env.NODE_ENV === 'development') {
+        console.log(`Form error tracked: ${formType} at ${formLocation}`, {
+          errorType,
+          errorMessage,
+          fieldName,
+        });
+      }
+    },
+    [formType, formLocation, formId, metadata]
+  );
 
   return {
     trackFormStart,
     trackFieldInteraction,
     trackFormSubmission: trackFormSubmissionData,
     trackFormAbandon,
-    trackFormError
+    trackFormError,
   };
 }
 
@@ -216,18 +227,18 @@ export default function FormSubmissionTracker({
     trackFieldInteraction,
     trackFormSubmission,
     trackFormAbandon,
-    trackFormError
+    trackFormError,
   } = useFormTracking({
     formType,
     formLocation,
     formId,
     metadata,
-    onTrackingComplete
+    onTrackingComplete,
   });
 
   return (
-    <div 
-      onFocusCapture={(e) => {
+    <div
+      onFocusCapture={(_e) => {
         // Track when user first interacts with form
         trackFormStart();
       }}
@@ -236,7 +247,7 @@ export default function FormSubmissionTracker({
         const form = e.target as HTMLFormElement;
         const formData = new FormData(form);
         const data: Record<string, any> = {};
-        
+
         formData.forEach((value, key) => {
           data[key] = value;
         });
@@ -247,7 +258,7 @@ export default function FormSubmissionTracker({
           formId,
           success: true, // Will be updated based on actual result
           formData: data,
-          metadata
+          metadata,
         });
       }}
       {...trackerProps}

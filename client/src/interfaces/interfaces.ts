@@ -2,29 +2,29 @@
 export * from '../../../shared/types';
 
 // Client-specific enhanced interfaces that extend the shared types
-import { ITerm, ICategory, ISubcategory, UserPreferences } from '../../../shared/types';
+import type { ICategory, ISubcategory, ITerm, UserPreferences } from '../../../shared/types';
 
 // Enhanced term interface for the new data structure
 export interface IEnhancedTerm extends ITerm {
   slug: string;
-  
+
   // Enhanced content
   fullDefinition?: string;
-  
+
   // Enhanced categorization
   mainCategories: string[];
   subCategories: string[];
   relatedConcepts: string[];
   applicationDomains: string[];
   techniques: string[];
-  
+
   // Metadata
   difficultyLevel?: 'Beginner' | 'Intermediate' | 'Advanced' | 'Expert';
   hasImplementation: boolean;
   hasInteractiveElements: boolean;
   hasCaseStudies: boolean;
   hasCodeExamples: boolean;
-  
+
   // AI Content Management
   isAiGenerated?: boolean;
   verificationStatus?: 'unverified' | 'verified' | 'flagged' | 'needs_review' | 'expert_reviewed';
@@ -32,18 +32,18 @@ export interface IEnhancedTerm extends ITerm {
   confidenceLevel?: 'low' | 'medium' | 'high';
   lastReviewed?: string;
   expertReviewRequired?: boolean;
-  
+
   // Search and filtering
   searchText?: string;
   keywords: string[];
-  
+
   // Analytics
   lastViewed?: string;
-  
+
   // Metadata
   parseHash?: string;
   parseVersion?: string;
-  
+
   // Relations
   sections?: ITermSection[];
   interactiveElements?: IInteractiveElement[];
@@ -124,16 +124,16 @@ export interface IInteractiveElement {
     title?: string;
     description?: string;
     difficulty?: string;
-    
+
     // For mermaid diagrams
     diagram?: string;
-    
+
     // For code examples
     code?: string;
     language?: string;
     executable?: boolean;
     highlightLines?: number[];
-    
+
     // For quizzes
     questions?: {
       id: string;
@@ -146,7 +146,7 @@ export interface IInteractiveElement {
     timeLimit?: number;
     showExplanations?: boolean;
     allowRetry?: boolean;
-    
+
     // For demos/simulations
     demoUrl?: string;
     simulationConfig?: any;
@@ -164,7 +164,7 @@ export interface ITermRelationship {
   relationshipType: 'prerequisite' | 'related' | 'extends' | 'alternative';
   strength: number; // 1-10
   createdAt: string;
-  
+
   // Additional relationship data
   fromTerm?: {
     id: string;
@@ -200,25 +200,25 @@ export interface IDisplayConfig {
 // Enhanced user settings interface
 export interface IEnhancedUserSettings extends UserPreferences {
   userId: string;
-  
+
   // Display preferences
   experienceLevel: 'beginner' | 'intermediate' | 'advanced' | 'expert';
   preferredSections: string[];
   hiddenSections: string[];
-  
+
   // Content preferences
   showMathematicalDetails: boolean;
   showCodeExamples: boolean;
   showInteractiveElements: boolean;
-  
+
   // Personalization
   favoriteCategories: string[];
   favoriteApplications: string[];
-  
+
   // UI preferences
   compactMode: boolean;
   darkMode: boolean;
-  
+
   createdAt: string;
   updatedAt: string;
 }
@@ -252,16 +252,16 @@ export interface IContentAnalytics {
   id: string;
   termId: string;
   sectionName?: string; // null for overall term analytics
-  
+
   // Engagement metrics
   views: number;
   timeSpent: number; // in seconds
   interactionCount: number;
-  
+
   // Quality metrics
   userRating?: number; // 1-5 stars
   helpfulnessVotes: number;
-  
+
   lastUpdated: string;
   createdAt: string;
 }

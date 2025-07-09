@@ -1,25 +1,23 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { RelationshipGraph } from './RelationshipGraph';
-import { DynamicFilterPanel, DynamicFilter } from './DynamicFilterPanel';
-import { AISemanticSearch } from '../AISemanticSearch';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { useToast } from '@/hooks/use-toast';
-import { Link, useLocation } from 'wouter';
 import {
-  Network,
-  Search,
-  Filter,
-  Sparkles,
-  Info,
   ChevronRight,
+  GitBranch,
+  Info,
   Loader2,
   Map,
-  GitBranch
+  Network,
+  Search,
+  Sparkles,
 } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Link, useLocation } from 'wouter';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+import { AISemanticSearch } from '../AISemanticSearch';
+import { type DynamicFilter, DynamicFilterPanel } from './DynamicFilterPanel';
+import { RelationshipGraph } from './RelationshipGraph';
 
 interface ConceptDiscoveryProps {
   initialTermId?: string;
@@ -49,22 +47,19 @@ const DEFAULT_FILTERS: DynamicFilter = {
   showOrphans: false,
   layoutType: 'force',
   nodeSize: 'uniform',
-  edgeStyle: 'curved'
+  edgeStyle: 'curved',
 };
 
-export function ConceptDiscovery({ 
-  initialTermId,
-  className = "" 
-}: ConceptDiscoveryProps) {
-  const [location, setLocation] = useLocation();
+export function ConceptDiscovery({ initialTermId, className = '' }: ConceptDiscoveryProps) {
+  const [_location, _setLocation] = useLocation();
   const { toast } = useToast();
-  
+
   const [selectedTermId, setSelectedTermId] = useState<string | null>(initialTermId || null);
   const [graphData, setGraphData] = useState<GraphData>({
     nodes: [],
     links: [],
     categories: [],
-    subcategories: []
+    subcategories: [],
   });
   const [filters, setFilters] = useState<DynamicFilter>(DEFAULT_FILTERS);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,50 +68,51 @@ export function ConceptDiscovery({
     totalNodes: 0,
     totalRelationships: 0,
     filteredNodes: 0,
-    filteredRelationships: 0
+    filteredRelationships: 0,
   });
 
   // Fetch relationship data
-  const fetchRelationshipData = useCallback(async (termId: string) => {
-    setIsLoading(true);
-    try {
-      const response = await fetch(
-        `/api/terms/${termId}/relationships?depth=${filters.depth}`
-      );
-      
-      if (!response.ok) {
-        throw new Error('Failed to fetch relationships');
-      }
+  const fetchRelationshipData = useCallback(
+    async (termId: string) => {
+      setIsLoading(true);
+      try {
+        const response = await fetch(`/api/terms/${termId}/relationships?depth=${filters.depth}`);
 
-      const data = await response.json();
-      
-      if (data.success) {
-        setGraphData({
-          nodes: data.data.nodes || [],
-          links: data.data.relationships || [],
-          categories: data.data.categories || [],
-          subcategories: data.data.subcategories || []
+        if (!response.ok) {
+          throw new Error('Failed to fetch relationships');
+        }
+
+        const data = await response.json();
+
+        if (data.success) {
+          setGraphData({
+            nodes: data.data.nodes || [],
+            links: data.data.relationships || [],
+            categories: data.data.categories || [],
+            subcategories: data.data.subcategories || [],
+          });
+
+          // Update stats
+          setFilterStats({
+            totalNodes: data.data.nodes?.length || 0,
+            totalRelationships: data.data.relationships?.length || 0,
+            filteredNodes: data.data.nodes?.length || 0,
+            filteredRelationships: data.data.relationships?.length || 0,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching relationships:', error);
+        toast({
+          title: 'Error',
+          description: 'Failed to load relationship data',
+          variant: 'destructive',
         });
-        
-        // Update stats
-        setFilterStats({
-          totalNodes: data.data.nodes?.length || 0,
-          totalRelationships: data.data.relationships?.length || 0,
-          filteredNodes: data.data.nodes?.length || 0,
-          filteredRelationships: data.data.relationships?.length || 0
-        });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error) {
-      console.error('Error fetching relationships:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load relationship data",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [filters.depth, toast]);
+    },
+    [filters.depth, toast]
+  );
 
   // Fetch initial data if term ID is provided
   useEffect(() => {
@@ -145,38 +141,39 @@ export function ConceptDiscovery({
     if (!graphData.nodes.length) return;
 
     // Apply filters to calculate new stats
-    const filteredLinks = graphData.links.filter(link => 
-      filters.relationshipTypes.includes(link.type) &&
-      link.strength >= filters.relationshipStrength[0] &&
-      link.strength <= filters.relationshipStrength[1]
+    const filteredLinks = graphData.links.filter(
+      (link) =>
+        filters.relationshipTypes.includes(link.type) &&
+        link.strength >= filters.relationshipStrength[0] &&
+        link.strength <= filters.relationshipStrength[1]
     );
 
     const connectedNodeIds = new Set<string>();
-    filteredLinks.forEach(link => {
+    filteredLinks.forEach((link) => {
       connectedNodeIds.add(link.source);
       connectedNodeIds.add(link.target);
     });
 
-    const filteredNodes = graphData.nodes.filter(node => {
+    const filteredNodes = graphData.nodes.filter((node) => {
       // Apply node type filter
       if (!filters.nodeTypes.includes(node.type)) return false;
-      
+
       // Apply category filter
       if (filters.categories.length > 0 && node.category) {
         if (!filters.categories.includes(node.category)) return false;
       }
-      
+
       // Apply search filter
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();
         if (!node.name.toLowerCase().includes(query)) return false;
       }
-      
+
       // Apply connection filter
       if (!filters.showOrphans && !connectedNodeIds.has(node.id) && node.id !== selectedTermId) {
         return false;
       }
-      
+
       return true;
     });
 
@@ -184,23 +181,18 @@ export function ConceptDiscovery({
       totalNodes: graphData.nodes.length,
       totalRelationships: graphData.links.length,
       filteredNodes: filteredNodes.length,
-      filteredRelationships: filteredLinks.length
+      filteredRelationships: filteredLinks.length,
     });
   }, [filters, graphData, selectedTermId]);
 
   const renderEmptyState = () => (
     <div className="text-center py-12">
       <Network className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-      <h3 className="text-lg font-semibold text-gray-600 mb-2">
-        No Term Selected
-      </h3>
+      <h3 className="text-lg font-semibold text-gray-600 mb-2">No Term Selected</h3>
       <p className="text-gray-500 mb-6">
         Search for a term or select one from the glossary to explore its relationships
       </p>
-      <Button
-        variant="outline"
-        onClick={() => setActiveTab('search')}
-      >
+      <Button variant="outline" onClick={() => setActiveTab('search')}>
         <Search className="h-4 w-4 mr-2" />
         Search Terms
       </Button>
@@ -212,13 +204,14 @@ export function ConceptDiscovery({
       <Alert>
         <Info className="h-4 w-4" />
         <AlertDescription>
-          Concept map shows a hierarchical view of all AI/ML concepts organized by category and learning paths.
+          Concept map shows a hierarchical view of all AI/ML concepts organized by category and
+          learning paths.
         </AlertDescription>
       </Alert>
-      
+
       {/* Placeholder for future concept map implementation */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {graphData.categories.map(category => (
+        {graphData.categories.map((category) => (
           <Card key={category} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium">{category}</CardTitle>
@@ -226,9 +219,9 @@ export function ConceptDiscovery({
             <CardContent>
               <div className="space-y-2">
                 {graphData.nodes
-                  .filter(node => node.category === category && node.type === 'term')
+                  .filter((node) => node.category === category && node.type === 'term')
                   .slice(0, 5)
-                  .map(node => (
+                  .map((node) => (
                     <div
                       key={node.id}
                       className="flex items-center justify-between cursor-pointer hover:text-blue-600"
@@ -242,9 +235,9 @@ export function ConceptDiscovery({
                     </div>
                   ))}
               </div>
-              {graphData.nodes.filter(node => node.category === category).length > 5 && (
+              {graphData.nodes.filter((node) => node.category === category).length > 5 && (
                 <p className="text-xs text-gray-500 mt-2">
-                  +{graphData.nodes.filter(node => node.category === category).length - 5} more
+                  +{graphData.nodes.filter((node) => node.category === category).length - 5} more
                 </p>
               )}
             </CardContent>
@@ -268,10 +261,7 @@ export function ConceptDiscovery({
           </p>
         </div>
         {selectedTermId && (
-          <Button
-            variant="outline"
-            asChild
-          >
+          <Button variant="outline" asChild>
             <Link href={`/term/${selectedTermId}`}>
               View Term Details
               <ChevronRight className="h-4 w-4 ml-1" />
@@ -328,14 +318,12 @@ export function ConceptDiscovery({
                   selectedFilters={{
                     relationshipTypes: filters.relationshipTypes,
                     nodeTypes: filters.nodeTypes,
-                    minStrength: filters.relationshipStrength[0]
+                    minStrength: filters.relationshipStrength[0],
                   }}
                 />
               ) : (
                 <Card>
-                  <CardContent className="py-12">
-                    {renderEmptyState()}
-                  </CardContent>
+                  <CardContent className="py-12">{renderEmptyState()}</CardContent>
                 </Card>
               )}
             </TabsContent>
@@ -381,7 +369,7 @@ export function ConceptDiscovery({
                   <div>
                     <p className="text-sm text-gray-500">Categories</p>
                     <p className="text-2xl font-semibold">
-                      {new Set(graphData.nodes.map(n => n.category)).size}
+                      {new Set(graphData.nodes.map((n) => n.category)).size}
                     </p>
                   </div>
                   <div>

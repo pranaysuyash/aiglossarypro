@@ -2,19 +2,19 @@
  * Complete Terms Import - Create Enhanced Terms from Regular Terms
  */
 
-import { db } from './server/db';
-import { terms } from './shared/schema';
-import { enhancedTerms } from './shared/enhancedSchema';
 import { sql } from 'drizzle-orm';
+import { db } from './server/db';
+import { enhancedTerms } from './shared/enhancedSchema';
+import { terms } from './shared/schema';
 
 async function completeTermsImport() {
   console.log('🚀 Completing enhanced terms migration...\n');
-  
+
   try {
     // Check current status
     const [termCount, enhancedCount] = await Promise.all([
       db.select({ count: sql<number>`count(*)` }).from(terms),
-      db.select({ count: sql<number>`count(*)` }).from(enhancedTerms)
+      db.select({ count: sql<number>`count(*)` }).from(enhancedTerms),
     ]);
 
     console.log(`📄 Regular terms: ${termCount[0].count}`);
@@ -28,45 +28,47 @@ async function completeTermsImport() {
     // Get all terms that need migration
     console.log('\n📋 Creating enhanced terms from regular terms...');
     const allTerms = await db.select().from(terms);
-    
-    const enhancedData = allTerms.map(term => ({
+
+    const enhancedData = allTerms.map((term) => ({
       name: term.name,
-      slug: term.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
+      slug: term.name
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/^-|-$/g, ''),
       shortDefinition: term.definition.substring(0, 200),
       fullDefinition: term.definition,
       difficultyLevel: 'intermediate' as const,
-      parseVersion: '2.0'
+      parseVersion: '2.0',
     }));
 
     // Insert in batches with conflict handling
     const batchSize = 100;
     let created = 0;
-    
+
     for (let i = 0; i < enhancedData.length; i += batchSize) {
       const batch = enhancedData.slice(i, i + batchSize);
-      
+
       try {
-        await db.insert(enhancedTerms)
-          .values(batch)
-          .onConflictDoNothing();
-        
+        await db.insert(enhancedTerms).values(batch).onConflictDoNothing();
+
         created += batch.length;
-        
+
         if (i % 1000 === 0) {
           console.log(`   📊 Progress: ${created}/${enhancedData.length} terms processed`);
         }
-      } catch (error) {
+      } catch (_error) {
         console.log(`   ⚠️  Batch ${i}-${i + batch.length} had conflicts, skipping`);
       }
     }
 
     // Final verification
     const finalCount = await db.select({ count: sql<number>`count(*)` }).from(enhancedTerms);
-    
+
     console.log(`\n🎉 Enhanced terms migration completed!`);
     console.log(`✨ Total enhanced terms: ${finalCount[0].count}`);
-    console.log(`📈 Migration rate: ${((finalCount[0].count / termCount[0].count) * 100).toFixed(1)}%`);
-
+    console.log(
+      `📈 Migration rate: ${((finalCount[0].count / termCount[0].count) * 100).toFixed(1)}%`
+    );
   } catch (error) {
     console.error('❌ Enhanced terms migration failed:', error);
     throw error;
@@ -82,4 +84,4 @@ completeTermsImport()
   .catch((error) => {
     console.error('\n❌ Terms import completion failed:', error);
     process.exit(1);
-  }); 
+  });

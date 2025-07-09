@@ -3,24 +3,33 @@
  * API endpoints for learning outcome predictions and insights
  */
 
-import express, { Request, Response } from 'express';
+import express, { type Request, type Response } from 'express';
 import { z } from 'zod';
+import { asyncHandler } from '../middleware/errorHandler';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { predictiveAnalyticsService } from '../services/predictiveAnalyticsService';
-import { asyncHandler } from '../middleware/errorHandler';
 
 const router = express.Router();
 
 // Validation schemas
 const userIdSchema = z.object({
-  userId: z.string().min(1, 'User ID is required')
+  userId: z.string().min(1, 'User ID is required'),
 });
 
 const predictiveAnalyticsQuerySchema = z.object({
-  includeInsights: z.string().optional().transform(val => val === 'true'),
-  includeRecommendations: z.string().optional().transform(val => val === 'true'),
-  includeMilestones: z.string().optional().transform(val => val === 'true'),
-  timeframe: z.enum(['7d', '30d', '90d']).optional().default('30d')
+  includeInsights: z
+    .string()
+    .optional()
+    .transform((val) => val === 'true'),
+  includeRecommendations: z
+    .string()
+    .optional()
+    .transform((val) => val === 'true'),
+  includeMilestones: z
+    .string()
+    .optional()
+    .transform((val) => val === 'true'),
+  timeframe: z.enum(['7d', '30d', '90d']).optional().default('30d'),
 });
 
 /**
@@ -131,40 +140,44 @@ const predictiveAnalyticsQuerySchema = z.object({
  *       500:
  *         description: Internal server error
  */
-router.get('/outcomes/:userId', multiAuthMiddleware, asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const { userId } = userIdSchema.parse(req.params);
-    const options = predictiveAnalyticsQuerySchema.parse(req.query);
-    
-    // Get learning outcome predictions
-    const outcomes = await predictiveAnalyticsService.predictLearningOutcomes(userId);
-    
-    const response: any = {
-      success: true,
-      data: outcomes
-    };
-    
-    // Add optional data based on query parameters
-    if (options.includeInsights) {
-      const insights = await predictiveAnalyticsService.generatePredictiveInsights(userId);
-      response.data.insights = insights;
+router.get(
+  '/outcomes/:userId',
+  multiAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const { userId } = userIdSchema.parse(req.params);
+      const options = predictiveAnalyticsQuerySchema.parse(req.query);
+
+      // Get learning outcome predictions
+      const outcomes = await predictiveAnalyticsService.predictLearningOutcomes(userId);
+
+      const response: any = {
+        success: true,
+        data: outcomes,
+      };
+
+      // Add optional data based on query parameters
+      if (options.includeInsights) {
+        const insights = await predictiveAnalyticsService.generatePredictiveInsights(userId);
+        response.data.insights = insights;
+      }
+
+      if (options.includeRecommendations) {
+        const profile = await predictiveAnalyticsService.generateLearningProfile(userId);
+        response.data.profile = profile;
+      }
+
+      res.json(response);
+    } catch (error) {
+      console.error('Error predicting learning outcomes:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to predict learning outcomes',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
-    
-    if (options.includeRecommendations) {
-      const profile = await predictiveAnalyticsService.generateLearningProfile(userId);
-      response.data.profile = profile;
-    }
-    
-    res.json(response);
-  } catch (error) {
-    console.error('Error predicting learning outcomes:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to predict learning outcomes',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-}));
+  })
+);
 
 /**
  * @openapi
@@ -244,25 +257,29 @@ router.get('/outcomes/:userId', multiAuthMiddleware, asyncHandler(async (req: Re
  *       500:
  *         description: Internal server error
  */
-router.get('/profile/:userId', multiAuthMiddleware, asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const { userId } = userIdSchema.parse(req.params);
-    
-    const profile = await predictiveAnalyticsService.generateLearningProfile(userId);
-    
-    res.json({
-      success: true,
-      data: profile
-    });
-  } catch (error) {
-    console.error('Error generating learning profile:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to generate learning profile',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-}));
+router.get(
+  '/profile/:userId',
+  multiAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const { userId } = userIdSchema.parse(req.params);
+
+      const profile = await predictiveAnalyticsService.generateLearningProfile(userId);
+
+      res.json({
+        success: true,
+        data: profile,
+      });
+    } catch (error) {
+      console.error('Error generating learning profile:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to generate learning profile',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  })
+);
 
 /**
  * @openapi
@@ -368,25 +385,29 @@ router.get('/profile/:userId', multiAuthMiddleware, asyncHandler(async (req: Req
  *       500:
  *         description: Internal server error
  */
-router.get('/insights/:userId', multiAuthMiddleware, asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const { userId } = userIdSchema.parse(req.params);
-    
-    const insights = await predictiveAnalyticsService.generatePredictiveInsights(userId);
-    
-    res.json({
-      success: true,
-      data: insights
-    });
-  } catch (error) {
-    console.error('Error generating predictive insights:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to generate predictive insights',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-}));
+router.get(
+  '/insights/:userId',
+  multiAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const { userId } = userIdSchema.parse(req.params);
+
+      const insights = await predictiveAnalyticsService.generatePredictiveInsights(userId);
+
+      res.json({
+        success: true,
+        data: insights,
+      });
+    } catch (error) {
+      console.error('Error generating predictive insights:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to generate predictive insights',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  })
+);
 
 /**
  * @openapi
@@ -453,36 +474,40 @@ router.get('/insights/:userId', multiAuthMiddleware, asyncHandler(async (req: Re
  *       500:
  *         description: Internal server error
  */
-router.get('/recommendations/:userId', multiAuthMiddleware, asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const { userId } = userIdSchema.parse(req.params);
-    const { type, priority } = req.query;
-    
-    const insights = await predictiveAnalyticsService.generatePredictiveInsights(userId);
-    let recommendations = insights.personalizedRecommendations;
-    
-    // Apply filters
-    if (type) {
-      recommendations = recommendations.filter(rec => rec.type === type);
+router.get(
+  '/recommendations/:userId',
+  multiAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const { userId } = userIdSchema.parse(req.params);
+      const { type, priority } = req.query;
+
+      const insights = await predictiveAnalyticsService.generatePredictiveInsights(userId);
+      let recommendations = insights.personalizedRecommendations;
+
+      // Apply filters
+      if (type) {
+        recommendations = recommendations.filter((rec) => rec.type === type);
+      }
+
+      if (priority) {
+        recommendations = recommendations.filter((rec) => rec.priority === priority);
+      }
+
+      res.json({
+        success: true,
+        data: recommendations,
+      });
+    } catch (error) {
+      console.error('Error generating recommendations:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to generate recommendations',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
     }
-    
-    if (priority) {
-      recommendations = recommendations.filter(rec => rec.priority === priority);
-    }
-    
-    res.json({
-      success: true,
-      data: recommendations
-    });
-  } catch (error) {
-    console.error('Error generating recommendations:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to generate recommendations',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-}));
+  })
+);
 
 /**
  * @openapi
@@ -542,25 +567,29 @@ router.get('/recommendations/:userId', multiAuthMiddleware, asyncHandler(async (
  *       500:
  *         description: Internal server error
  */
-router.get('/milestones/:userId', multiAuthMiddleware, asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const { userId } = userIdSchema.parse(req.params);
-    
-    const insights = await predictiveAnalyticsService.generatePredictiveInsights(userId);
-    
-    res.json({
-      success: true,
-      data: insights.progressMilestones
-    });
-  } catch (error) {
-    console.error('Error generating milestones:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to generate milestones',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-}));
+router.get(
+  '/milestones/:userId',
+  multiAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const { userId } = userIdSchema.parse(req.params);
+
+      const insights = await predictiveAnalyticsService.generatePredictiveInsights(userId);
+
+      res.json({
+        success: true,
+        data: insights.progressMilestones,
+      });
+    } catch (error) {
+      console.error('Error generating milestones:', error);
+      res.status(500).json({
+        success: false,
+        error: 'Failed to generate milestones',
+        message: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
+  })
+);
 
 /**
  * @openapi
@@ -614,75 +643,82 @@ router.get('/milestones/:userId', multiAuthMiddleware, asyncHandler(async (req: 
  *       500:
  *         description: Internal server error
  */
-router.post('/batch-analysis', multiAuthMiddleware, asyncHandler(async (req: Request, res: Response) => {
-  try {
-    const { userIds, metrics = ['outcomes'] } = req.body;
-    
-    if (!Array.isArray(userIds) || userIds.length === 0) {
-      return res.status(400).json({
+router.post(
+  '/batch-analysis',
+  multiAuthMiddleware,
+  asyncHandler(async (req: Request, res: Response) => {
+    try {
+      const { userIds, metrics = ['outcomes'] } = req.body;
+
+      if (!Array.isArray(userIds) || userIds.length === 0) {
+        return res.status(400).json({
+          success: false,
+          error: 'User IDs array is required',
+        });
+      }
+
+      if (userIds.length > 50) {
+        return res.status(400).json({
+          success: false,
+          error: 'Maximum 50 users allowed per batch',
+        });
+      }
+
+      const results: Record<string, any> = {};
+
+      // Process users in parallel (with concurrency limit)
+      const concurrency = 5;
+      for (let i = 0; i < userIds.length; i += concurrency) {
+        const batch = userIds.slice(i, i + concurrency);
+
+        const batchPromises = batch.map(async (userId: string) => {
+          const userResults: any = { userId };
+
+          try {
+            if (metrics.includes('outcomes')) {
+              userResults.outcomes =
+                await predictiveAnalyticsService.predictLearningOutcomes(userId);
+            }
+
+            if (metrics.includes('profile')) {
+              userResults.profile =
+                await predictiveAnalyticsService.generateLearningProfile(userId);
+            }
+
+            if (metrics.includes('insights')) {
+              userResults.insights =
+                await predictiveAnalyticsService.generatePredictiveInsights(userId);
+            }
+
+            return { userId, data: userResults };
+          } catch (error) {
+            console.error(`Error analyzing user ${userId}:`, error);
+            return {
+              userId,
+              error: error instanceof Error ? error.message : 'Analysis failed',
+            };
+          }
+        });
+
+        const batchResults = await Promise.all(batchPromises);
+        batchResults.forEach((result) => {
+          results[result.userId] = result.data || { error: result.error };
+        });
+      }
+
+      res.json({
+        success: true,
+        data: results,
+      });
+    } catch (error) {
+      console.error('Error in batch analysis:', error);
+      res.status(500).json({
         success: false,
-        error: 'User IDs array is required'
+        error: 'Failed to perform batch analysis',
+        message: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-    
-    if (userIds.length > 50) {
-      return res.status(400).json({
-        success: false,
-        error: 'Maximum 50 users allowed per batch'
-      });
-    }
-    
-    const results: Record<string, any> = {};
-    
-    // Process users in parallel (with concurrency limit)
-    const concurrency = 5;
-    for (let i = 0; i < userIds.length; i += concurrency) {
-      const batch = userIds.slice(i, i + concurrency);
-      
-      const batchPromises = batch.map(async (userId: string) => {
-        const userResults: any = { userId };
-        
-        try {
-          if (metrics.includes('outcomes')) {
-            userResults.outcomes = await predictiveAnalyticsService.predictLearningOutcomes(userId);
-          }
-          
-          if (metrics.includes('profile')) {
-            userResults.profile = await predictiveAnalyticsService.generateLearningProfile(userId);
-          }
-          
-          if (metrics.includes('insights')) {
-            userResults.insights = await predictiveAnalyticsService.generatePredictiveInsights(userId);
-          }
-          
-          return { userId, data: userResults };
-        } catch (error) {
-          console.error(`Error analyzing user ${userId}:`, error);
-          return { 
-            userId, 
-            error: error instanceof Error ? error.message : 'Analysis failed' 
-          };
-        }
-      });
-      
-      const batchResults = await Promise.all(batchPromises);
-      batchResults.forEach(result => {
-        results[result.userId] = result.data || { error: result.error };
-      });
-    }
-    
-    res.json({
-      success: true,
-      data: results
-    });
-  } catch (error) {
-    console.error('Error in batch analysis:', error);
-    res.status(500).json({
-      success: false,
-      error: 'Failed to perform batch analysis',
-      message: error instanceof Error ? error.message : 'Unknown error'
-    });
-  }
-}));
+  })
+);
 
 export default router;

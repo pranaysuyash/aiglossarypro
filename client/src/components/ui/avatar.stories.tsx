@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Avatar, AvatarImage, AvatarFallback } from './avatar';
+import { Avatar, AvatarFallback, AvatarImage } from './avatar';
 
 const meta: Meta<typeof Avatar> = {
   title: 'UI/Avatar',
@@ -72,22 +72,22 @@ export const DifferentSizes: Story = {
         <AvatarImage src="https://github.com/shadcn.png" alt="Small Avatar" />
         <AvatarFallback className="text-xs">S</AvatarFallback>
       </Avatar>
-      
+
       <Avatar className="h-8 w-8">
         <AvatarImage src="https://github.com/shadcn.png" alt="Medium Avatar" />
         <AvatarFallback className="text-sm">M</AvatarFallback>
       </Avatar>
-      
+
       <Avatar>
         <AvatarImage src="https://github.com/shadcn.png" alt="Default Avatar" />
         <AvatarFallback>D</AvatarFallback>
       </Avatar>
-      
+
       <Avatar className="h-12 w-12">
         <AvatarImage src="https://github.com/shadcn.png" alt="Large Avatar" />
         <AvatarFallback>L</AvatarFallback>
       </Avatar>
-      
+
       <Avatar className="h-16 w-16">
         <AvatarImage src="https://github.com/shadcn.png" alt="XL Avatar" />
         <AvatarFallback className="text-lg">XL</AvatarFallback>
@@ -107,24 +107,33 @@ export const MultipleUsers: Story = {
   render: () => (
     <div className="flex space-x-2">
       <Avatar>
-        <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face" alt="John" />
+        <AvatarImage
+          src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=32&h=32&fit=crop&crop=face"
+          alt="John"
+        />
         <AvatarFallback>JD</AvatarFallback>
       </Avatar>
-      
+
       <Avatar>
-        <AvatarImage src="https://images.unsplash.com/photo-1494790108755-2616b8b8f36e?w=32&h=32&fit=crop&crop=face" alt="Sarah" />
+        <AvatarImage
+          src="https://images.unsplash.com/photo-1494790108755-2616b8b8f36e?w=32&h=32&fit=crop&crop=face"
+          alt="Sarah"
+        />
         <AvatarFallback>SM</AvatarFallback>
       </Avatar>
-      
+
       <Avatar>
         <AvatarFallback>AB</AvatarFallback>
       </Avatar>
-      
+
       <Avatar>
-        <AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face" alt="Mike" />
+        <AvatarImage
+          src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=32&h=32&fit=crop&crop=face"
+          alt="Mike"
+        />
         <AvatarFallback>MJ</AvatarFallback>
       </Avatar>
-      
+
       <Avatar>
         <AvatarFallback>+3</AvatarFallback>
       </Avatar>
@@ -146,12 +155,12 @@ export const WithBorder: Story = {
         <AvatarImage src="https://github.com/shadcn.png" alt="Bordered Avatar" />
         <AvatarFallback>BA</AvatarFallback>
       </Avatar>
-      
+
       <Avatar className="border-2 border-primary">
         <AvatarImage src="https://github.com/shadcn.png" alt="Primary Border" />
         <AvatarFallback>PB</AvatarFallback>
       </Avatar>
-      
+
       <Avatar className="border-2 border-green-500">
         <AvatarFallback className="bg-green-100 text-green-700">ON</AvatarFallback>
       </Avatar>
@@ -176,7 +185,7 @@ export const StatusIndicators: Story = {
         </Avatar>
         <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-green-500"></div>
       </div>
-      
+
       <div className="relative">
         <Avatar>
           <AvatarImage src="https://github.com/shadcn.png" alt="Away user" />
@@ -184,7 +193,7 @@ export const StatusIndicators: Story = {
         </Avatar>
         <div className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-white bg-yellow-500"></div>
       </div>
-      
+
       <div className="relative">
         <Avatar>
           <AvatarImage src="https://github.com/shadcn.png" alt="Offline user" />
@@ -209,19 +218,19 @@ export const CustomColors: Story = {
       <Avatar>
         <AvatarFallback className="bg-red-500 text-white">R</AvatarFallback>
       </Avatar>
-      
+
       <Avatar>
         <AvatarFallback className="bg-blue-500 text-white">B</AvatarFallback>
       </Avatar>
-      
+
       <Avatar>
         <AvatarFallback className="bg-green-500 text-white">G</AvatarFallback>
       </Avatar>
-      
+
       <Avatar>
         <AvatarFallback className="bg-purple-500 text-white">P</AvatarFallback>
       </Avatar>
-      
+
       <Avatar>
         <AvatarFallback className="bg-orange-500 text-white">O</AvatarFallback>
       </Avatar>
@@ -243,12 +252,12 @@ export const SquareVariant: Story = {
         <AvatarImage src="https://github.com/shadcn.png" alt="Square Avatar" />
         <AvatarFallback>SQ</AvatarFallback>
       </Avatar>
-      
+
       <Avatar className="rounded-md">
         <AvatarImage src="https://github.com/shadcn.png" alt="Rounded Square" />
         <AvatarFallback>RS</AvatarFallback>
       </Avatar>
-      
+
       <Avatar className="rounded-none">
         <AvatarImage src="https://github.com/shadcn.png" alt="Sharp Square" />
         <AvatarFallback>SS</AvatarFallback>
@@ -287,11 +296,11 @@ export const DarkMode: Story = {
         <AvatarImage src="https://github.com/shadcn.png" alt="Dark Mode Avatar" />
         <AvatarFallback>DM</AvatarFallback>
       </Avatar>
-      
+
       <Avatar>
         <AvatarFallback>FB</AvatarFallback>
       </Avatar>
-      
+
       <div className="relative">
         <Avatar>
           <AvatarImage src="https://github.com/shadcn.png" alt="Online in dark" />

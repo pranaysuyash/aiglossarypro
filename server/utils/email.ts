@@ -1,13 +1,13 @@
-import { log as logger } from './logger';
-import nodemailer from 'nodemailer';
 import type { Transporter } from 'nodemailer';
+import nodemailer from 'nodemailer';
 import {
-  getWelcomeEmailTemplate,
-  getPasswordResetEmailTemplate,
   getEmailVerificationTemplate,
   getLearningProgressTemplate,
-  getSystemNotificationTemplate
+  getPasswordResetEmailTemplate,
+  getSystemNotificationTemplate,
+  getWelcomeEmailTemplate,
 } from './emailTemplates';
+import { log as logger } from './logger';
 
 interface EmailOptions {
   to: string[];
@@ -40,10 +40,10 @@ function createTransporter(): Transporter {
   }
 
   const emailService = process.env.EMAIL_SERVICE?.toLowerCase();
-  
+
   // Configuration for different email services
   let config: EmailConfig;
-  
+
   switch (emailService) {
     case 'gmail':
       config = {
@@ -56,7 +56,7 @@ function createTransporter(): Transporter {
         },
       };
       break;
-      
+
     case 'outlook':
     case 'hotmail':
       config = {
@@ -69,7 +69,7 @@ function createTransporter(): Transporter {
         },
       };
       break;
-      
+
     case 'yahoo':
       config = {
         host: 'smtp.mail.yahoo.com',
@@ -81,8 +81,6 @@ function createTransporter(): Transporter {
         },
       };
       break;
-      
-    case 'smtp':
     default:
       config = {
         host: process.env.SMTP_HOST!,
@@ -97,7 +95,7 @@ function createTransporter(): Transporter {
   }
 
   transporter = nodemailer.createTransport(config);
-  
+
   return transporter;
 }
 
@@ -112,7 +110,7 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
   if (!process.env.EMAIL_ENABLED || process.env.EMAIL_ENABLED !== 'true') {
     logger.info('Email service not enabled, skipping email send', {
       to,
-      subject
+      subject,
     });
     return;
   }
@@ -133,7 +131,7 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
       logger.info('Email transporter verified successfully');
     } catch (verifyError) {
       logger.error('Email transporter verification failed', {
-        error: verifyError instanceof Error ? verifyError.message : String(verifyError)
+        error: verifyError instanceof Error ? verifyError.message : String(verifyError),
       });
       throw new Error('Email service configuration is invalid');
     }
@@ -153,20 +151,19 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
 
     // Send the email
     const result = await emailTransporter.sendMail(mailOptions);
-    
+
     logger.info('Email sent successfully', {
       messageId: result.messageId,
       to,
       subject,
-      preview: html.substring(0, 200) + '...'
+      preview: `${html.substring(0, 200)}...`,
     });
-
   } catch (error) {
     logger.error('Error sending email', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
       to,
-      subject
+      subject,
     });
     throw error;
   }
@@ -188,13 +185,13 @@ export async function testEmailConfiguration(testEmail: string): Promise<boolean
         <p><small>Sent at: ${new Date().toISOString()}</small></p>
       `,
     });
-    
+
     logger.info('Test email sent successfully', { testEmail });
     return true;
   } catch (error) {
     logger.error('Test email failed', {
       error: error instanceof Error ? error.message : String(error),
-      testEmail
+      testEmail,
     });
     return false;
   }
@@ -205,7 +202,7 @@ export async function testEmailConfiguration(testEmail: string): Promise<boolean
  */
 export async function sendWelcomeEmail(userEmail: string, userName?: string): Promise<void> {
   const template = getWelcomeEmailTemplate(userName);
-  
+
   await sendEmail({
     to: [userEmail],
     subject: template.subject,
@@ -219,7 +216,7 @@ export async function sendWelcomeEmail(userEmail: string, userName?: string): Pr
  */
 export async function sendPasswordResetEmail(userEmail: string, resetToken: string): Promise<void> {
   const template = getPasswordResetEmailTemplate(resetToken);
-  
+
   await sendEmail({
     to: [userEmail],
     subject: template.subject,
@@ -231,9 +228,13 @@ export async function sendPasswordResetEmail(userEmail: string, resetToken: stri
 /**
  * Send email verification email
  */
-export async function sendEmailVerificationEmail(userEmail: string, verificationToken: string, userName?: string): Promise<void> {
+export async function sendEmailVerificationEmail(
+  userEmail: string,
+  verificationToken: string,
+  userName?: string
+): Promise<void> {
   const template = getEmailVerificationTemplate(verificationToken, userName);
-  
+
   await sendEmail({
     to: [userEmail],
     subject: template.subject,
@@ -245,9 +246,14 @@ export async function sendEmailVerificationEmail(userEmail: string, verification
 /**
  * Send learning progress notification
  */
-export async function sendLearningProgressEmail(userEmail: string, userName: string, milestone: string, progress: number): Promise<void> {
+export async function sendLearningProgressEmail(
+  userEmail: string,
+  userName: string,
+  milestone: string,
+  progress: number
+): Promise<void> {
   const template = getLearningProgressTemplate(userName, milestone, progress);
-  
+
   await sendEmail({
     to: [userEmail],
     subject: template.subject,
@@ -260,14 +266,14 @@ export async function sendLearningProgressEmail(userEmail: string, userName: str
  * Send system notification email
  */
 export async function sendSystemNotificationEmail(
-  userEmail: string, 
-  title: string, 
-  message: string, 
-  actionUrl?: string, 
+  userEmail: string,
+  title: string,
+  message: string,
+  actionUrl?: string,
   actionText?: string
 ): Promise<void> {
   const template = getSystemNotificationTemplate(title, message, actionUrl, actionText);
-  
+
   await sendEmail({
     to: [userEmail],
     subject: template.subject,

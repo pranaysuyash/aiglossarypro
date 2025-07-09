@@ -1,35 +1,51 @@
-import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { 
-  MessageSquare, 
-  Mail, 
-  Clock, 
-  CheckCircle, 
+import {
   AlertCircle,
-  Download, 
-  Search, 
-  Filter, 
-  RefreshCw,
   BarChart3,
-  Globe,
   Calendar,
-  Eye,
+  CheckCircle,
+  Clock,
+  Download,
   Edit,
-  User
+  Eye,
+  Filter,
+  MessageSquare,
+  RefreshCw,
 } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ContactSubmission {
@@ -86,7 +102,7 @@ const AdminContactsDashboard: React.FC = () => {
   const { user } = useAuth();
   const [selectedSubmissions, setSelectedSubmissions] = useState<number[]>([]);
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
-  const [selectedContact, setSelectedContact] = useState<ContactSubmission | null>(null);
+  const [_selectedContact, setSelectedContact] = useState<ContactSubmission | null>(null);
   const [editingContact, setEditingContact] = useState<ContactSubmission | null>(null);
   const [statusNotes, setStatusNotes] = useState('');
   const [filters, setFilters] = useState<ContactFilters>({
@@ -99,15 +115,15 @@ const AdminContactsDashboard: React.FC = () => {
     page: 1,
     limit: 50,
     sort: 'created_at',
-    order: 'desc'
+    order: 'desc',
   });
 
   // Query for contact submissions
-  const { 
-    data: contactData, 
-    isLoading: isLoadingSubmissions, 
+  const {
+    data: contactData,
+    isLoading: isLoadingSubmissions,
     error: submissionsError,
-    refetch: refetchSubmissions
+    refetch: refetchSubmissions,
   } = useQuery({
     queryKey: ['admin-contact-submissions', filters],
     queryFn: async (): Promise<ContactData> => {
@@ -115,20 +131,17 @@ const AdminContactsDashboard: React.FC = () => {
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value.toString());
       });
-      
+
       const response = await fetch(`/api/admin/contact/submissions?${params}`);
       if (!response.ok) throw new Error('Failed to fetch contact submissions');
       const result = await response.json();
       return result.data;
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Query for contact analytics
-  const { 
-    data: analyticsData, 
-    isLoading: isLoadingAnalytics 
-  } = useQuery({
+  const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery({
     queryKey: ['admin-contact-analytics'],
     queryFn: async () => {
       const response = await fetch('/api/admin/contact/analytics');
@@ -136,22 +149,22 @@ const AdminContactsDashboard: React.FC = () => {
       const result = await response.json();
       return result.data;
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Handle filter changes
   const handleFilterChange = (key: keyof ContactFilters, value: string | number) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [key]: value,
-      page: key === 'page' ? Number(value) : 1 // Reset page when other filters change
+      page: key === 'page' ? Number(value) : 1, // Reset page when other filters change
     }));
   };
 
   // Handle bulk selection
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedSubmissions(contactData?.submissions.map(sub => sub.id) || []);
+      setSelectedSubmissions(contactData?.submissions.map((sub) => sub.id) || []);
     } else {
       setSelectedSubmissions([]);
     }
@@ -159,9 +172,9 @@ const AdminContactsDashboard: React.FC = () => {
 
   const handleSelectSubmission = (id: number, checked: boolean) => {
     if (checked) {
-      setSelectedSubmissions(prev => [...prev, id]);
+      setSelectedSubmissions((prev) => [...prev, id]);
     } else {
-      setSelectedSubmissions(prev => prev.filter(subId => subId !== id));
+      setSelectedSubmissions((prev) => prev.filter((subId) => subId !== id));
     }
   };
 
@@ -178,8 +191,8 @@ const AdminContactsDashboard: React.FC = () => {
         },
         body: JSON.stringify({
           action,
-          ids: selectedSubmissions
-        })
+          ids: selectedSubmissions,
+        }),
       });
 
       if (!response.ok) throw new Error('Bulk action failed');
@@ -201,7 +214,7 @@ const AdminContactsDashboard: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ status, notes })
+        body: JSON.stringify({ status, notes }),
       });
 
       if (!response.ok) throw new Error('Status update failed');
@@ -223,10 +236,10 @@ const AdminContactsDashboard: React.FC = () => {
           params.append(key, value.toString());
         }
       });
-      
+
       const response = await fetch(`/api/admin/contact/export?${params}`);
       if (!response.ok) throw new Error('Export failed');
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -247,25 +260,33 @@ const AdminContactsDashboard: React.FC = () => {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'new': return 'bg-blue-100 text-blue-800';
-      case 'in_progress': return 'bg-yellow-100 text-yellow-800';
-      case 'resolved': return 'bg-green-100 text-green-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'new':
+        return 'bg-blue-100 text-blue-800';
+      case 'in_progress':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'resolved':
+        return 'bg-green-100 text-green-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'new': return <AlertCircle className="w-4 h-4" />;
-      case 'in_progress': return <Clock className="w-4 h-4" />;
-      case 'resolved': return <CheckCircle className="w-4 h-4" />;
-      default: return null;
+      case 'new':
+        return <AlertCircle className="w-4 h-4" />;
+      case 'in_progress':
+        return <Clock className="w-4 h-4" />;
+      case 'resolved':
+        return <CheckCircle className="w-4 h-4" />;
+      default:
+        return null;
     }
   };
 
@@ -286,7 +307,9 @@ const AdminContactsDashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Contact Management</h1>
-          <p className="text-gray-600 mt-2">Manage contact form submissions and customer inquiries</p>
+          <p className="text-gray-600 mt-2">
+            Manage contact form submissions and customer inquiries
+          </p>
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -506,7 +529,7 @@ const AdminContactsDashboard: React.FC = () => {
                           <TableCell>
                             <Checkbox
                               checked={selectedSubmissions.includes(submission.id)}
-                              onCheckedChange={(checked) => 
+                              onCheckedChange={(checked) =>
                                 handleSelectSubmission(submission.id, !!checked)
                               }
                             />
@@ -538,7 +561,8 @@ const AdminContactsDashboard: React.FC = () => {
                                   <DialogHeader>
                                     <DialogTitle>Contact Submission Details</DialogTitle>
                                     <DialogDescription>
-                                      Submitted by {submission.name} on {formatDate(submission.created_at)}
+                                      Submitted by {submission.name} on{' '}
+                                      {formatDate(submission.created_at)}
                                     </DialogDescription>
                                   </DialogHeader>
                                   <div className="space-y-4">
@@ -558,7 +582,9 @@ const AdminContactsDashboard: React.FC = () => {
                                     </div>
                                     <div>
                                       <Label>Message</Label>
-                                      <p className="text-sm whitespace-pre-wrap">{submission.message}</p>
+                                      <p className="text-sm whitespace-pre-wrap">
+                                        {submission.message}
+                                      </p>
                                     </div>
                                     <div className="grid grid-cols-2 gap-4">
                                       <div>
@@ -615,7 +641,10 @@ const AdminContactsDashboard: React.FC = () => {
                                         value={editingContact?.status || submission.status}
                                         onValueChange={(value) => {
                                           if (editingContact) {
-                                            setEditingContact({ ...editingContact, status: value as any });
+                                            setEditingContact({
+                                              ...editingContact,
+                                              status: value as any,
+                                            });
                                           }
                                         }}
                                       >
@@ -650,7 +679,11 @@ const AdminContactsDashboard: React.FC = () => {
                                       <Button
                                         onClick={() => {
                                           if (editingContact) {
-                                            handleStatusUpdate(editingContact.id, editingContact.status, statusNotes);
+                                            handleStatusUpdate(
+                                              editingContact.id,
+                                              editingContact.status,
+                                              statusNotes
+                                            );
                                           }
                                         }}
                                       >
@@ -673,9 +706,13 @@ const AdminContactsDashboard: React.FC = () => {
               {contactData?.pagination && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-gray-600">
-                    Showing {((contactData.pagination.page - 1) * contactData.pagination.limit) + 1} to{' '}
-                    {Math.min(contactData.pagination.page * contactData.pagination.limit, contactData.pagination.total)} of{' '}
-                    {contactData.pagination.total} submissions
+                    Showing {(contactData.pagination.page - 1) * contactData.pagination.limit + 1}{' '}
+                    to{' '}
+                    {Math.min(
+                      contactData.pagination.page * contactData.pagination.limit,
+                      contactData.pagination.total
+                    )}{' '}
+                    of {contactData.pagination.total} submissions
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button
@@ -718,24 +755,31 @@ const AdminContactsDashboard: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {analyticsData?.submissionsOverTime?.slice(0, 7).map((item: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between py-2 border-b">
-                        <div className="flex items-center space-x-3">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm font-medium">{item.date}</span>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                          <div className="text-right">
-                            <div className="text-sm font-medium">{item.count}</div>
-                            <div className="text-xs text-gray-500">Total</div>
+                    {analyticsData?.submissionsOverTime
+                      ?.slice(0, 7)
+                      .map((item: any, index: number) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between py-2 border-b"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <Calendar className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm font-medium">{item.date}</span>
                           </div>
-                          <div className="text-right">
-                            <div className="text-sm font-medium text-green-600">{item.resolved_count}</div>
-                            <div className="text-xs text-gray-500">Resolved</div>
+                          <div className="flex items-center space-x-4">
+                            <div className="text-right">
+                              <div className="text-sm font-medium">{item.count}</div>
+                              <div className="text-xs text-gray-500">Total</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-medium text-green-600">
+                                {item.resolved_count}
+                              </div>
+                              <div className="text-xs text-gray-500">Resolved</div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 )}
               </CardContent>
@@ -759,8 +803,10 @@ const AdminContactsDashboard: React.FC = () => {
                     <div className="grid grid-cols-2 gap-4">
                       <div className="text-center">
                         <div className="text-2xl font-bold text-blue-600">
-                          {analyticsData?.responseTimeAnalytics?.avg_response_hours 
-                            ? Math.round(analyticsData.responseTimeAnalytics.avg_response_hours * 10) / 10 
+                          {analyticsData?.responseTimeAnalytics?.avg_response_hours
+                            ? Math.round(
+                                analyticsData.responseTimeAnalytics.avg_response_hours * 10
+                              ) / 10
                             : 0}
                         </div>
                         <div className="text-sm text-gray-500">Avg Response Hours</div>

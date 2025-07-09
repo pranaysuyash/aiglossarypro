@@ -8,7 +8,8 @@ const meta: Meta<typeof FirebaseLoginPage> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Firebase-powered authentication page with email/password login, social providers, and registration flows.',
+        component:
+          'Firebase-powered authentication page with email/password login, social providers, and registration flows.',
       },
     },
   },
@@ -176,7 +177,8 @@ export const FreeTrial: Story = {
 export const MaintenanceMode: Story = {
   args: {
     maintenanceMode: true,
-    maintenanceMessage: 'Our authentication system is currently undergoing maintenance. Please try again in a few minutes.',
+    maintenanceMessage:
+      'Our authentication system is currently undergoing maintenance. Please try again in a few minutes.',
     estimatedDuration: '15 minutes',
     onMaintenanceUpdate: () => console.log('Check for updates'),
   },

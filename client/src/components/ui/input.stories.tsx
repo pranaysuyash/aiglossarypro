@@ -197,7 +197,8 @@ export const Number: Story = {
 
 export const LongValue: Story = {
   args: {
-    value: 'This is a very long input value that tests how the component handles overflow text and maintains proper styling',
+    value:
+      'This is a very long input value that tests how the component handles overflow text and maintains proper styling',
     placeholder: 'Enter text...',
   },
   parameters: {
@@ -244,4 +245,4 @@ export const DarkMode: Story = {
       </div>
     ),
   ],
-}; 
+};

@@ -1,15 +1,22 @@
-import { useState, useEffect } from 'react';
-import { ISearchFilters, IAdvancedSearchProps, ISearchResult } from '@/interfaces/interfaces';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import {
+  Brain,
+  ChevronDown,
+  ChevronRight,
+  RotateCcw,
+  Search,
+  Sliders,
+  SortAsc,
+  SortDesc,
+  X,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Switch } from '@/components/ui/switch';
-import { Separator } from '@/components/ui/separator';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
   Select,
   SelectContent,
@@ -17,23 +24,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Search,
-  Filter,
-  X,
-  ChevronDown,
-  ChevronRight,
-  RotateCcw,
-  Sliders,
-  Brain,
-  SortAsc,
-  SortDesc
-} from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import type { IAdvancedSearchProps, ISearchFilters } from '@/interfaces/interfaces';
 
 export default function AdvancedSearch({
   onSearch,
   initialFilters = {},
-  availableFilters
+  availableFilters,
 }: IAdvancedSearchProps) {
   const [filters, setFilters] = useState<ISearchFilters>(initialFilters);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -50,9 +48,9 @@ export default function AdvancedSearch({
   }, [filters, onSearch]);
 
   const updateFilter = (key: keyof ISearchFilters, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
-      [key]: value
+      [key]: value,
     }));
   };
 
@@ -60,8 +58,8 @@ export default function AdvancedSearch({
     const currentArray = (filters[key] as string[]) || [];
     const newArray = checked
       ? [...currentArray, value]
-      : currentArray.filter(item => item !== value);
-    
+      : currentArray.filter((item) => item !== value);
+
     updateFilter(key, newArray.length > 0 ? newArray : undefined);
   };
 
@@ -112,19 +110,16 @@ export default function AdvancedSearch({
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="pl-4 pr-2 pb-2 space-y-2 max-h-48 overflow-y-auto">
-            {items.map(item => (
+            {items.map((item) => (
               <div key={item} className="flex items-center space-x-2">
                 <Checkbox
                   id={`${filterKey}-${item}`}
                   checked={selectedItems.includes(item)}
-                  onCheckedChange={(checked) => 
+                  onCheckedChange={(checked) =>
                     updateArrayFilter(filterKey, item, checked as boolean)
                   }
                 />
-                <Label 
-                  htmlFor={`${filterKey}-${item}`} 
-                  className="text-sm cursor-pointer flex-1"
-                >
+                <Label htmlFor={`${filterKey}-${item}`} className="text-sm cursor-pointer flex-1">
                   {item}
                 </Label>
               </div>
@@ -154,7 +149,9 @@ export default function AdvancedSearch({
         <Switch
           id="has-interactive"
           checked={filters.hasInteractiveElements || false}
-          onCheckedChange={(checked) => updateFilter('hasInteractiveElements', checked || undefined)}
+          onCheckedChange={(checked) =>
+            updateFilter('hasInteractiveElements', checked || undefined)
+          }
         />
       </div>
       <div className="flex items-center justify-between">
@@ -184,8 +181,8 @@ export default function AdvancedSearch({
     <div className="space-y-3">
       <div className="space-y-2">
         <Label className="text-sm font-medium">Sort By</Label>
-        <Select 
-          value={filters.sortBy || 'relevance'} 
+        <Select
+          value={filters.sortBy || 'relevance'}
           onValueChange={(value) => updateFilter('sortBy', value)}
         >
           <SelectTrigger>
@@ -228,7 +225,10 @@ export default function AdvancedSearch({
             <Search className="h-5 w-5" />
             <span>Advanced Search</span>
             {useAISearch && (
-              <Badge variant="secondary" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">
+              <Badge
+                variant="secondary"
+                className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300"
+              >
                 <Brain className="h-3 w-3 mr-1" />
                 AI
               </Badge>
@@ -262,20 +262,20 @@ export default function AdvancedSearch({
               className="flex items-center space-x-1"
             >
               <Sliders className="h-4 w-4" />
-              <span className="text-xs">
-                {isExpanded ? 'Simple' : 'Advanced'}
-              </span>
+              <span className="text-xs">{isExpanded ? 'Simple' : 'Advanced'}</span>
             </Button>
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {/* Search Input */}
         <div className="relative">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
           <Input
-            placeholder={useAISearch ? "AI-powered semantic search..." : "Search terms, definitions..."}
+            placeholder={
+              useAISearch ? 'AI-powered semantic search...' : 'Search terms, definitions...'
+            }
             value={filters.query || ''}
             onChange={(e) => updateFilter('query', e.target.value)}
             className="pl-10"
@@ -290,9 +290,9 @@ export default function AdvancedSearch({
           <div className="flex flex-wrap gap-2">
             {Object.entries(filters).map(([key, value]) => {
               if (key === 'query' || !value) return null;
-              
+
               if (Array.isArray(value) && value.length > 0) {
-                return value.map(item => (
+                return value.map((item) => (
                   <Badge key={`${key}-${item}`} variant="secondary" className="text-xs">
                     {item}
                     <Button
@@ -306,11 +306,11 @@ export default function AdvancedSearch({
                   </Badge>
                 ));
               }
-              
+
               if (typeof value === 'boolean' && value) {
                 return (
                   <Badge key={key} variant="secondary" className="text-xs">
-                    {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
+                    {key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -322,7 +322,7 @@ export default function AdvancedSearch({
                   </Badge>
                 );
               }
-              
+
               return null;
             })}
           </div>
@@ -332,7 +332,7 @@ export default function AdvancedSearch({
         <Collapsible open={isExpanded} onOpenChange={setIsExpanded}>
           <CollapsibleContent className="space-y-4">
             <Separator />
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Categories */}
               <div className="space-y-3">
@@ -394,9 +394,7 @@ export default function AdvancedSearch({
             <Separator />
 
             {/* Sorting Controls */}
-            <div className="max-w-md">
-              {renderSortingControls()}
-            </div>
+            <div className="max-w-md">{renderSortingControls()}</div>
           </CollapsibleContent>
         </Collapsible>
       </CardContent>

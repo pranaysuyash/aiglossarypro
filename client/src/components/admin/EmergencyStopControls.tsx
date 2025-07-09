@@ -1,25 +1,26 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { 
-  AlertTriangle, 
-  Shield, 
-  StopCircle, 
-  PlayCircle, 
-  Settings, 
-  DollarSign, 
+import {
   Activity,
   AlertCircle,
+  AlertTriangle,
   CheckCircle,
-  XCircle
+  DollarSign,
+  PlayCircle,
+  Settings,
+  Shield,
+  StopCircle,
+  XCircle,
 } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
 
 interface SafetyLimits {
   dailyCostLimit: number;
@@ -74,7 +75,7 @@ export const EmergencyStopControls: React.FC = () => {
 
   const [metrics, setMetrics] = useState<SafetyMetrics>({
     dailySpend: 23.45,
-    monthlySpend: 678.90,
+    monthlySpend: 678.9,
     activeOperations: 2,
     queueSize: 15,
     averageQuality: 7.8,
@@ -118,7 +119,7 @@ export const EmergencyStopControls: React.FC = () => {
   // Simulate real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
-      setMetrics(prev => ({
+      setMetrics((prev) => ({
         ...prev,
         dailySpend: prev.dailySpend + Math.random() * 0.5,
         lastUpdated: new Date().toISOString(),
@@ -131,9 +132,9 @@ export const EmergencyStopControls: React.FC = () => {
   const handleEmergencyStop = async () => {
     if (!emergencyReason.trim()) {
       toast({
-        title: "Error",
-        description: "Please provide a reason for the emergency stop",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Please provide a reason for the emergency stop',
+        variant: 'destructive',
       });
       return;
     }
@@ -141,24 +142,24 @@ export const EmergencyStopControls: React.FC = () => {
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setLimits(prev => ({ ...prev, emergencyStopActive: true }));
-      setSystemStatus(prev => ({ ...prev, emergencyStopActive: true, status: 'emergency' }));
-      setMetrics(prev => ({ ...prev, activeOperations: 0, queueSize: 0 }));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      setLimits((prev) => ({ ...prev, emergencyStopActive: true }));
+      setSystemStatus((prev) => ({ ...prev, emergencyStopActive: true, status: 'emergency' }));
+      setMetrics((prev) => ({ ...prev, activeOperations: 0, queueSize: 0 }));
+
       toast({
-        title: "Emergency Stop Activated",
-        description: "All operations have been stopped successfully",
-        variant: "default",
+        title: 'Emergency Stop Activated',
+        description: 'All operations have been stopped successfully',
+        variant: 'default',
       });
-      
+
       setEmergencyReason('');
-    } catch (error) {
+    } catch (_error) {
       toast({
-        title: "Error",
-        description: "Failed to activate emergency stop",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to activate emergency stop',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -169,21 +170,21 @@ export const EmergencyStopControls: React.FC = () => {
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setLimits(prev => ({ ...prev, emergencyStopActive: false }));
-      setSystemStatus(prev => ({ ...prev, emergencyStopActive: false, status: 'healthy' }));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      setLimits((prev) => ({ ...prev, emergencyStopActive: false }));
+      setSystemStatus((prev) => ({ ...prev, emergencyStopActive: false, status: 'healthy' }));
+
       toast({
-        title: "Operations Resumed",
-        description: "System is now accepting new operations",
-        variant: "default",
+        title: 'Operations Resumed',
+        description: 'System is now accepting new operations',
+        variant: 'default',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
-        title: "Error",
-        description: "Failed to resume operations",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to resume operations',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -191,13 +192,13 @@ export const EmergencyStopControls: React.FC = () => {
   };
 
   const handleAcknowledgeAlert = async (alertId: string) => {
-    setAlerts(prev => prev.map(alert => 
-      alert.id === alertId ? { ...alert, acknowledged: true } : alert
-    ));
+    setAlerts((prev) =>
+      prev.map((alert) => (alert.id === alertId ? { ...alert, acknowledged: true } : alert))
+    );
     toast({
-      title: "Alert Acknowledged",
-      description: "Alert has been marked as acknowledged",
-      variant: "default",
+      title: 'Alert Acknowledged',
+      description: 'Alert has been marked as acknowledged',
+      variant: 'default',
     });
   };
 
@@ -205,18 +206,18 @@ export const EmergencyStopControls: React.FC = () => {
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       toast({
-        title: "Limits Updated",
-        description: "Safety limits have been updated successfully",
-        variant: "default",
+        title: 'Limits Updated',
+        description: 'Safety limits have been updated successfully',
+        variant: 'default',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
-        title: "Error",
-        description: "Failed to update safety limits",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update safety limits',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
@@ -225,35 +226,50 @@ export const EmergencyStopControls: React.FC = () => {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'healthy': return 'bg-green-500';
-      case 'warning': return 'bg-yellow-500';
-      case 'critical': return 'bg-red-500';
-      case 'emergency': return 'bg-red-800';
-      default: return 'bg-gray-500';
+      case 'healthy':
+        return 'bg-green-500';
+      case 'warning':
+        return 'bg-yellow-500';
+      case 'critical':
+        return 'bg-red-500';
+      case 'emergency':
+        return 'bg-red-800';
+      default:
+        return 'bg-gray-500';
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const _getStatusIcon = (status: string) => {
     switch (status) {
-      case 'healthy': return <CheckCircle className="w-4 h-4" />;
-      case 'warning': return <AlertTriangle className="w-4 h-4" />;
-      case 'critical': return <XCircle className="w-4 h-4" />;
-      case 'emergency': return <AlertCircle className="w-4 h-4" />;
-      default: return <Activity className="w-4 h-4" />;
+      case 'healthy':
+        return <CheckCircle className="w-4 h-4" />;
+      case 'warning':
+        return <AlertTriangle className="w-4 h-4" />;
+      case 'critical':
+        return <XCircle className="w-4 h-4" />;
+      case 'emergency':
+        return <AlertCircle className="w-4 h-4" />;
+      default:
+        return <Activity className="w-4 h-4" />;
     }
   };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'low': return 'bg-blue-100 text-blue-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'critical': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'low':
+        return 'bg-blue-100 text-blue-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'high':
+        return 'bg-orange-100 text-orange-800';
+      case 'critical':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const activeAlerts = alerts.filter(alert => !alert.acknowledged);
+  const activeAlerts = alerts.filter((alert) => !alert.acknowledged);
 
   return (
     <div className="space-y-6">
@@ -288,7 +304,9 @@ export const EmergencyStopControls: React.FC = () => {
               ) : (
                 <PlayCircle className="w-4 h-4 text-green-500" />
               )}
-              <span>Emergency Stop: {systemStatus.emergencyStopActive ? 'ACTIVE' : 'INACTIVE'}</span>
+              <span>
+                Emergency Stop: {systemStatus.emergencyStopActive ? 'ACTIVE' : 'INACTIVE'}
+              </span>
             </div>
           </div>
         </CardContent>
@@ -323,14 +341,10 @@ export const EmergencyStopControls: React.FC = () => {
               </div>
             </div>
           )}
-          
+
           <div className="flex gap-2 mt-4">
             {limits.emergencyStopActive ? (
-              <Button
-                onClick={handleResumeOperations}
-                disabled={isLoading}
-                variant="default"
-              >
+              <Button onClick={handleResumeOperations} disabled={isLoading} variant="default">
                 <PlayCircle className="w-4 h-4 mr-2" />
                 Resume Operations
               </Button>
@@ -369,14 +383,18 @@ export const EmergencyStopControls: React.FC = () => {
                 <div>
                   <div className="flex justify-between mb-2">
                     <span>Daily Spend</span>
-                    <span>${metrics.dailySpend.toFixed(2)} / ${limits.dailyCostLimit}</span>
+                    <span>
+                      ${metrics.dailySpend.toFixed(2)} / ${limits.dailyCostLimit}
+                    </span>
                   </div>
                   <Progress value={(metrics.dailySpend / limits.dailyCostLimit) * 100} />
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
                     <span>Monthly Spend</span>
-                    <span>${metrics.monthlySpend.toFixed(2)} / ${limits.monthlyCostLimit}</span>
+                    <span>
+                      ${metrics.monthlySpend.toFixed(2)} / ${limits.monthlyCostLimit}
+                    </span>
                   </div>
                   <Progress value={(metrics.monthlySpend / limits.monthlyCostLimit) * 100} />
                 </div>
@@ -395,14 +413,20 @@ export const EmergencyStopControls: React.FC = () => {
                 <div>
                   <div className="flex justify-between mb-2">
                     <span>Active Operations</span>
-                    <span>{metrics.activeOperations} / {limits.maxConcurrentOperations}</span>
+                    <span>
+                      {metrics.activeOperations} / {limits.maxConcurrentOperations}
+                    </span>
                   </div>
-                  <Progress value={(metrics.activeOperations / limits.maxConcurrentOperations) * 100} />
+                  <Progress
+                    value={(metrics.activeOperations / limits.maxConcurrentOperations) * 100}
+                  />
                 </div>
                 <div>
                   <div className="flex justify-between mb-2">
                     <span>Queue Size</span>
-                    <span>{metrics.queueSize} / {limits.maxQueueSize}</span>
+                    <span>
+                      {metrics.queueSize} / {limits.maxQueueSize}
+                    </span>
                   </div>
                   <Progress value={(metrics.queueSize / limits.maxQueueSize) * 100} />
                 </div>
@@ -432,12 +456,10 @@ export const EmergencyStopControls: React.FC = () => {
             </CardHeader>
             <CardContent>
               {activeAlerts.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No active alerts
-                </div>
+                <div className="text-center py-8 text-gray-500">No active alerts</div>
               ) : (
                 <div className="space-y-3">
-                  {activeAlerts.map(alert => (
+                  {activeAlerts.map((alert) => (
                     <Alert key={alert.id}>
                       <AlertTriangle className="h-4 w-4" />
                       <AlertDescription className="flex items-center justify-between">
@@ -482,7 +504,9 @@ export const EmergencyStopControls: React.FC = () => {
                     id="daily-limit"
                     type="number"
                     value={limits.dailyCostLimit}
-                    onChange={(e) => setLimits(prev => ({ ...prev, dailyCostLimit: parseFloat(e.target.value) }))}
+                    onChange={(e) =>
+                      setLimits((prev) => ({ ...prev, dailyCostLimit: parseFloat(e.target.value) }))
+                    }
                   />
                 </div>
                 <div>
@@ -491,7 +515,12 @@ export const EmergencyStopControls: React.FC = () => {
                     id="monthly-limit"
                     type="number"
                     value={limits.monthlyCostLimit}
-                    onChange={(e) => setLimits(prev => ({ ...prev, monthlyCostLimit: parseFloat(e.target.value) }))}
+                    onChange={(e) =>
+                      setLimits((prev) => ({
+                        ...prev,
+                        monthlyCostLimit: parseFloat(e.target.value),
+                      }))
+                    }
                   />
                 </div>
                 <div>
@@ -500,7 +529,12 @@ export const EmergencyStopControls: React.FC = () => {
                     id="max-concurrent"
                     type="number"
                     value={limits.maxConcurrentOperations}
-                    onChange={(e) => setLimits(prev => ({ ...prev, maxConcurrentOperations: parseInt(e.target.value) }))}
+                    onChange={(e) =>
+                      setLimits((prev) => ({
+                        ...prev,
+                        maxConcurrentOperations: parseInt(e.target.value),
+                      }))
+                    }
                   />
                 </div>
                 <div>
@@ -509,7 +543,9 @@ export const EmergencyStopControls: React.FC = () => {
                     id="max-batch"
                     type="number"
                     value={limits.maxTermsPerBatch}
-                    onChange={(e) => setLimits(prev => ({ ...prev, maxTermsPerBatch: parseInt(e.target.value) }))}
+                    onChange={(e) =>
+                      setLimits((prev) => ({ ...prev, maxTermsPerBatch: parseInt(e.target.value) }))
+                    }
                   />
                 </div>
                 <div>
@@ -519,7 +555,12 @@ export const EmergencyStopControls: React.FC = () => {
                     type="number"
                     step="0.1"
                     value={limits.minQualityThreshold}
-                    onChange={(e) => setLimits(prev => ({ ...prev, minQualityThreshold: parseFloat(e.target.value) }))}
+                    onChange={(e) =>
+                      setLimits((prev) => ({
+                        ...prev,
+                        minQualityThreshold: parseFloat(e.target.value),
+                      }))
+                    }
                   />
                 </div>
                 <div>
@@ -529,7 +570,12 @@ export const EmergencyStopControls: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={limits.maxFailureRate * 100}
-                    onChange={(e) => setLimits(prev => ({ ...prev, maxFailureRate: parseFloat(e.target.value) / 100 }))}
+                    onChange={(e) =>
+                      setLimits((prev) => ({
+                        ...prev,
+                        maxFailureRate: parseFloat(e.target.value) / 100,
+                      }))
+                    }
                   />
                 </div>
               </div>

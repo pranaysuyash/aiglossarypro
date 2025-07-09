@@ -1,7 +1,7 @@
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { Client } from 'pg';
-import { readFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -17,7 +17,7 @@ async function runDirectMigration() {
 
     // Read the SQL file
     const sqlContent = readFileSync(join(__dirname, 'direct-table-creation.sql'), 'utf8');
-    
+
     // Execute the SQL
     console.log('🚀 Creating model_content_versions table...');
     await client.query(sqlContent);
@@ -33,7 +33,7 @@ async function runDirectMigration() {
 
     if (result.rows.length > 0) {
       console.log('✅ Table verification successful');
-      
+
       // Check the table structure
       const columnsResult = await client.query(`
         SELECT column_name, data_type, is_nullable 
@@ -41,15 +41,16 @@ async function runDirectMigration() {
         WHERE table_name = 'model_content_versions'
         ORDER BY ordinal_position
       `);
-      
+
       console.log('📋 Table structure:');
       columnsResult.rows.forEach((row) => {
-        console.log(`  ${row.column_name}: ${row.data_type} ${row.is_nullable === 'NO' ? 'NOT NULL' : 'NULL'}`);
+        console.log(
+          `  ${row.column_name}: ${row.data_type} ${row.is_nullable === 'NO' ? 'NOT NULL' : 'NULL'}`
+        );
       });
     } else {
       console.log('❌ Table verification failed');
     }
-
   } catch (error) {
     console.error('❌ Migration failed:', error);
     process.exit(1);

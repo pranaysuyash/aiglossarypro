@@ -1,17 +1,17 @@
 /**
  * Authentication System Tests
- * 
+ *
  * Tests the dual authentication system (mock dev + production OAuth).
  * Covers session management, middleware, and access control.
  */
 
-import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest';
 import request from 'supertest';
-import { app } from '../../server/index';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import { isAuthenticated } from '../../server/auth/firebaseAuth';
+import { features } from '../../server/config';
+import { app } from '../../server/index';
 import { requireAdmin } from '../../server/middleware/adminAuth';
 import { mockIsAuthenticated } from '../../server/middleware/dev/mockAuth';
-import { features } from '../../server/config';
 
 // Mock Express request/response for middleware testing
 const mockRequest = (overrides = {}) => ({
@@ -19,7 +19,7 @@ const mockRequest = (overrides = {}) => ({
   isAuthenticated: () => false,
   session: {},
   headers: {},
-  ...overrides
+  ...overrides,
 });
 
 const mockResponse = () => {
@@ -27,12 +27,12 @@ const mockResponse = () => {
     status: vi.fn().mockReturnThis(),
     json: vi.fn().mockReturnThis(),
     redirect: vi.fn().mockReturnThis(),
-    send: vi.fn().mockReturnThis()
+    send: vi.fn().mockReturnThis(),
   };
   return res;
 };
 
-const mockNext = vi.fn();
+const _mockNext = vi.fn();
 
 describe('Authentication System', () => {
   beforeAll(() => {
@@ -62,9 +62,7 @@ describe('Authentication System', () => {
 
     it('should provide admin access in development', async () => {
       if (process.env.NODE_ENV === 'development') {
-        const response = await request(app)
-          .get('/api/user')
-          .expect(200);
+        const response = await request(app).get('/api/user').expect(200);
 
         expect(response.body.success).toBe(true);
         expect(response.body.data.isAdmin).toBe(true);
@@ -74,17 +72,13 @@ describe('Authentication System', () => {
 
   describe('Production Authentication (OAuth)', () => {
     it('should redirect to OAuth for login', async () => {
-      const response = await request(app)
-        .get('/api/login')
-        .expect(302);
+      const response = await request(app).get('/api/login').expect(302);
 
       expect(response.headers.location).toBeDefined();
     });
 
     it('should handle logout properly', async () => {
-      const response = await request(app)
-        .post('/api/logout')
-        .expect(200);
+      const response = await request(app).post('/api/logout').expect(200);
 
       expect(response.body).toHaveProperty('success', true);
     });
@@ -94,7 +88,7 @@ describe('Authentication System', () => {
     it('should protect admin endpoints', async () => {
       const req = mockRequest({
         user: { isAdmin: false },
-        isAuthenticated: () => true
+        isAuthenticated: () => true,
       });
       const res = mockResponse();
       const next = vi.fn();
@@ -104,7 +98,7 @@ describe('Authentication System', () => {
       expect(res.status).toHaveBeenCalledWith(403);
       expect(res.json).toHaveBeenCalledWith({
         success: false,
-        message: 'Admin access required'
+        message: 'Admin access required',
       });
       expect(next).not.toHaveBeenCalled();
     });
@@ -112,7 +106,7 @@ describe('Authentication System', () => {
     it('should allow admin users through', async () => {
       const req = mockRequest({
         user: { isAdmin: true },
-        isAuthenticated: () => true
+        isAuthenticated: () => true,
       });
       const res = mockResponse();
       const next = vi.fn();
@@ -126,7 +120,7 @@ describe('Authentication System', () => {
     it('should reject unauthenticated requests', async () => {
       const req = mockRequest({
         user: null,
-        isAuthenticated: () => false
+        isAuthenticated: () => false,
       });
       const res = mockResponse();
       const next = vi.fn();
@@ -140,9 +134,7 @@ describe('Authentication System', () => {
 
   describe('Session Management', () => {
     it('should maintain user session', async () => {
-      const response = await request(app)
-        .get('/api/user')
-        .expect(200);
+      const response = await request(app).get('/api/user').expect(200);
 
       expect(response.body).toHaveProperty('success', true);
       expect(response.body.data).toHaveProperty('email');
@@ -152,7 +144,7 @@ describe('Authentication System', () => {
       // Test with expired session (mock scenario)
       const req = mockRequest({
         user: { expires_at: Math.floor(Date.now() / 1000) - 3600 }, // Expired 1 hour ago
-        isAuthenticated: () => true
+        isAuthenticated: () => true,
       });
       const res = mockResponse();
       const next = vi.fn();
@@ -171,7 +163,7 @@ describe('Authentication System', () => {
     it('should validate authenticated users', async () => {
       const req = mockRequest({
         user: { id: 'test-user', email: 'test@example.com' },
-        isAuthenticated: () => true
+        isAuthenticated: () => true,
       });
       const res = mockResponse();
       const next = vi.fn();
@@ -186,7 +178,7 @@ describe('Authentication System', () => {
     it('should reject invalid authentication', async () => {
       const req = mockRequest({
         user: null,
-        isAuthenticated: () => false
+        isAuthenticated: () => false,
       });
       const res = mockResponse();
       const next = vi.fn();
@@ -200,18 +192,14 @@ describe('Authentication System', () => {
 
   describe('User Authorization', () => {
     it('should provide correct user permissions', async () => {
-      const response = await request(app)
-        .get('/api/user')
-        .expect(200);
+      const response = await request(app).get('/api/user').expect(200);
 
       expect(response.body.data).toHaveProperty('isAdmin');
       expect(typeof response.body.data.isAdmin).toBe('boolean');
     });
 
     it('should handle user data correctly', async () => {
-      const response = await request(app)
-        .get('/api/user')
-        .expect(200);
+      const response = await request(app).get('/api/user').expect(200);
 
       const userData = response.body.data;
       expect(userData).toHaveProperty('id');
@@ -245,9 +233,7 @@ describe('Authentication System', () => {
 
     it('should handle CSRF protection', async () => {
       // Test CSRF protection on state-changing operations
-      const response = await request(app)
-        .post('/api/logout')
-        .expect(200);
+      const response = await request(app).post('/api/logout').expect(200);
 
       expect(response.body).toHaveProperty('success', true);
     });
@@ -256,16 +242,12 @@ describe('Authentication System', () => {
   describe('Authentication Flow Integration', () => {
     it('should handle login flow end-to-end', async () => {
       // Test the complete login flow
-      const loginResponse = await request(app)
-        .get('/api/login')
-        .expect(302);
+      const loginResponse = await request(app).get('/api/login').expect(302);
 
       expect(loginResponse.headers.location).toBeDefined();
-      
+
       // In development, subsequent requests should be authenticated
-      const userResponse = await request(app)
-        .get('/api/user')
-        .expect(200);
+      const userResponse = await request(app).get('/api/user').expect(200);
 
       expect(userResponse.body.success).toBe(true);
     });
@@ -275,12 +257,12 @@ describe('Authentication System', () => {
       const requests = [
         request(app).get('/api/user'),
         request(app).get('/api/terms/featured'),
-        request(app).get('/api/categories')
+        request(app).get('/api/categories'),
       ];
 
       const responses = await Promise.all(requests);
-      
-      responses.forEach(response => {
+
+      responses.forEach((response) => {
         expect(response.status).toBe(200);
       });
     });
@@ -299,7 +281,7 @@ describe('Authentication System', () => {
 
       try {
         // Test error handling in middleware
-        const errorMiddleware = (req: any, res: any, next: any) => {
+        const errorMiddleware = (_req: any, _res: any, _next: any) => {
           throw new Error('Authentication service unavailable');
         };
 
@@ -310,9 +292,7 @@ describe('Authentication System', () => {
     });
 
     it('should provide meaningful error messages', async () => {
-      const response = await request(app)
-        .get('/api/admin/content/dashboard')
-        .expect(401);
+      const response = await request(app).get('/api/admin/content/dashboard').expect(401);
 
       expect(response.body).toHaveProperty('message');
       expect(typeof response.body.message).toBe('string');

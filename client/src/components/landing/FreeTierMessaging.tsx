@@ -1,49 +1,50 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Check, Gift, Users, Zap, Shield } from "lucide-react";
+import { Check, Gift, Shield, Users, Zap } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface FreeTierMessagingProps {
   className?: string;
   variant?: 'full' | 'compact' | 'inline';
 }
 
-export function FreeTierMessaging({ className = "", variant = 'full' }: FreeTierMessagingProps) {
-  
+export function FreeTierMessaging({ className = '', variant = 'full' }: FreeTierMessagingProps) {
   const freeFeatures = [
     {
       icon: <Users className="w-4 h-4 text-green-500" />,
-      title: "50 Terms Daily",
-      description: "Access 50 AI/ML terms per day - 1,500+ monthly"
+      title: '50 Terms Daily',
+      description: 'Access 50 AI/ML terms per day - 1,500+ monthly',
     },
     {
       icon: <Zap className="w-4 h-4 text-blue-500" />,
-      title: "Advanced Search",
-      description: "Find exactly what you need with powerful filters"
+      title: 'Advanced Search',
+      description: 'Find exactly what you need with powerful filters',
     },
     {
       icon: <Gift className="w-4 h-4 text-purple-500" />,
-      title: "Code Examples",
-      description: "Get practical implementation examples"
+      title: 'Code Examples',
+      description: 'Get practical implementation examples',
     },
     {
       icon: <Shield className="w-4 h-4 text-indigo-500" />,
-      title: "Free Forever",
-      description: "Your daily 50 terms remain free forever"
-    }
+      title: 'Free Forever',
+      description: 'Your daily 50 terms remain free forever',
+    },
   ];
 
   const premiumPreview = [
-    "Interactive quizzes and exercises",
-    "Advanced AI-powered explanations",
-    "Personalized learning paths",
-    "Priority support and updates",
-    "Export and offline access",
-    "Advanced progress tracking"
+    'Interactive quizzes and exercises',
+    'Advanced AI-powered explanations',
+    'Personalized learning paths',
+    'Priority support and updates',
+    'Export and offline access',
+    'Advanced progress tracking',
   ];
 
   if (variant === 'inline') {
     return (
-      <div className={`bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 ${className}`}>
+      <div
+        className={`bg-gradient-to-r from-green-50 to-blue-50 border border-green-200 rounded-lg p-4 ${className}`}
+      >
         <div className="flex items-center gap-2 mb-2">
           <Badge variant="secondary" className="bg-green-100 text-green-800">
             Free Tier
@@ -51,8 +52,8 @@ export function FreeTierMessaging({ className = "", variant = 'full' }: FreeTier
           <span className="text-sm text-gray-600">No credit card required</span>
         </div>
         <div className="text-sm text-gray-700">
-          <strong>Start free</strong> with 50 AI/ML terms daily (1,500+ monthly). 
-          Upgrade anytime for unlimited access to all 10,000+ terms plus premium features.
+          <strong>Start free</strong> with 50 AI/ML terms daily (1,500+ monthly). Upgrade anytime
+          for unlimited access to all 10,000+ terms plus premium features.
         </div>
       </div>
     );
@@ -110,25 +111,17 @@ export function FreeTierMessaging({ className = "", variant = 'full' }: FreeTier
           </Badge>
         </div>
       </CardHeader>
-      
+
       <CardContent className="p-6">
         <div className="mb-6">
-          <h3 className="font-semibold text-gray-900 mb-3">
-            What's Included in Free Tier:
-          </h3>
+          <h3 className="font-semibold text-gray-900 mb-3">What's Included in Free Tier:</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {freeFeatures.map((feature, index) => (
               <div key={index} className="flex items-start gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className="flex-shrink-0 mt-0.5">
-                  {feature.icon}
-                </div>
+                <div className="flex-shrink-0 mt-0.5">{feature.icon}</div>
                 <div>
-                  <div className="font-medium text-gray-900 text-sm">
-                    {feature.title}
-                  </div>
-                  <div className="text-xs text-gray-600 mt-1">
-                    {feature.description}
-                  </div>
+                  <div className="font-medium text-gray-900 text-sm">{feature.title}</div>
+                  <div className="text-xs text-gray-600 mt-1">{feature.description}</div>
                 </div>
               </div>
             ))}
@@ -150,8 +143,9 @@ export function FreeTierMessaging({ className = "", variant = 'full' }: FreeTier
           </div>
           <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
             <div className="text-sm text-purple-900">
-              <strong>Early Bird Special:</strong> Get unlimited lifetime access to all 10,000+ terms 
-              plus premium features for just $179 (originally $249). Limited to first 500 customers.
+              <strong>Early Bird Special:</strong> Get unlimited lifetime access to all 10,000+
+              terms plus premium features for just $179 (originally $249). Limited to first 500
+              customers.
             </div>
           </div>
         </div>
@@ -160,9 +154,7 @@ export function FreeTierMessaging({ className = "", variant = 'full' }: FreeTier
           <div className="flex items-start gap-2">
             <Shield className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
             <div>
-              <div className="font-medium text-blue-900 text-sm mb-1">
-                Why This Model Works
-              </div>
+              <div className="font-medium text-blue-900 text-sm mb-1">Why This Model Works</div>
               <div className="text-xs text-blue-700 space-y-1">
                 <p>• 50 free terms daily - 1,500+ monthly at no cost</p>
                 <p>• Upgrade only if you need unlimited access</p>

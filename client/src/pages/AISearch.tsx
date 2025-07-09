@@ -3,23 +3,23 @@
  * Dedicated page for AI-powered semantic search functionality
  */
 
-import React from 'react';
+import {
+  ArrowLeft,
+  Brain,
+  Lightbulb,
+  Map,
+  Network,
+  Search,
+  Sparkles,
+  Target,
+  Zap,
+} from 'lucide-react';
+import type React from 'react';
 import { useLocation } from 'wouter';
 import AISemanticSearch from '../components/search/AISemanticSearch';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
-import { 
-  Brain, 
-  Sparkles, 
-  ArrowLeft, 
-  Target, 
-  Zap, 
-  Search,
-  Lightbulb,
-  Network,
-  Map
-} from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 
 interface SemanticSearchResult {
   id: string;
@@ -67,7 +67,7 @@ const AISearchPage: React.FC = () => {
                 <ArrowLeft className="h-4 w-4" />
                 Back to Home
               </Button>
-              
+
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 flex items-center">
                   <Brain className="h-8 w-8 mr-3 text-blue-600" />
@@ -78,7 +78,7 @@ const AISearchPage: React.FC = () => {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <Badge variant="default" className="flex items-center gap-1">
                 <Sparkles className="h-3 w-3" />
@@ -98,10 +98,7 @@ const AISearchPage: React.FC = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Search Interface */}
           <div className="lg:col-span-3">
-            <AISemanticSearch 
-              onResultSelect={handleResultSelect}
-              className="w-full"
-            />
+            <AISemanticSearch onResultSelect={handleResultSelect} className="w-full" />
           </div>
 
           {/* Sidebar - Features and Tips */}
@@ -125,7 +122,7 @@ const AISearchPage: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3">
                     <Network className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                     <div>
@@ -135,7 +132,7 @@ const AISearchPage: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3">
                     <Zap className="h-5 w-5 text-yellow-500 mt-0.5 flex-shrink-0" />
                     <div>
@@ -145,7 +142,7 @@ const AISearchPage: React.FC = () => {
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex items-start gap-3">
                     <Map className="h-5 w-5 text-purple-500 mt-0.5 flex-shrink-0" />
                     <div>
@@ -175,21 +172,21 @@ const AISearchPage: React.FC = () => {
                       Try: "What is transformer architecture?" or "How does attention work?"
                     </p>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium text-sm mb-1">Concepts vs Keywords</h4>
                     <p className="text-xs text-gray-600">
                       Search for concepts like "learning algorithms" instead of just "algorithm"
                     </p>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium text-sm mb-1">Use Filters</h4>
                     <p className="text-xs text-gray-600">
                       Apply category and complexity filters for more targeted results
                     </p>
                   </div>
-                  
+
                   <div>
                     <h4 className="font-medium text-sm mb-1">Explore Relationships</h4>
                     <p className="text-xs text-gray-600">
@@ -216,7 +213,7 @@ const AISearchPage: React.FC = () => {
                     <Map className="h-4 w-4 mr-2" />
                     Browse Learning Paths
                   </Button>
-                  
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -226,7 +223,7 @@ const AISearchPage: React.FC = () => {
                     <Search className="h-4 w-4 mr-2" />
                     Browse All Terms
                   </Button>
-                  
+
                   <Button
                     variant="outline"
                     size="sm"
@@ -248,8 +245,8 @@ const AISearchPage: React.FC = () => {
                   <div>
                     <h4 className="font-medium text-blue-900 mb-1">Beta Feature</h4>
                     <p className="text-sm text-blue-800">
-                      This AI search is continuously learning and improving. 
-                      Your feedback helps us enhance the search experience.
+                      This AI search is continuously learning and improving. Your feedback helps us
+                      enhance the search experience.
                     </p>
                   </div>
                 </div>

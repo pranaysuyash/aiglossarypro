@@ -1,5 +1,5 @@
-import DOMPurify from 'dompurify';
 import type { Config } from 'dompurify';
+import DOMPurify from 'dompurify';
 
 /**
  * Sanitizes HTML content to prevent XSS attacks
@@ -11,14 +11,53 @@ export function sanitizeHTML(dirty: string, options?: Config): string {
   // Configure DOMPurify with safe defaults
   const defaultConfig: Config = {
     ALLOWED_TAGS: [
-      'p', 'br', 'span', 'div', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-      'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'em', 'strong',
-      'a', 'img', 'table', 'thead', 'tbody', 'tr', 'td', 'th',
-      'sup', 'sub', 'i', 'b', 'u', 'mark', 'del', 'ins'
+      'p',
+      'br',
+      'span',
+      'div',
+      'h1',
+      'h2',
+      'h3',
+      'h4',
+      'h5',
+      'h6',
+      'ul',
+      'ol',
+      'li',
+      'blockquote',
+      'pre',
+      'code',
+      'em',
+      'strong',
+      'a',
+      'img',
+      'table',
+      'thead',
+      'tbody',
+      'tr',
+      'td',
+      'th',
+      'sup',
+      'sub',
+      'i',
+      'b',
+      'u',
+      'mark',
+      'del',
+      'ins',
     ],
     ALLOWED_ATTR: [
-      'href', 'src', 'alt', 'title', 'class', 'id', 'target',
-      'rel', 'width', 'height', 'style'
+      'href',
+      'src',
+      'alt',
+      'title',
+      'class',
+      'id',
+      'target',
+      'rel',
+      'width',
+      'height',
+      'style',
     ],
     // Allow data: URLs for images
     ALLOW_DATA_ATTR: false,
@@ -32,7 +71,7 @@ export function sanitizeHTML(dirty: string, options?: Config): string {
     SAFE_FOR_TEMPLATES: true,
     SANITIZE_DOM: true,
     KEEP_CONTENT: true,
-    ...options
+    ...options,
   };
 
   // Sanitize the HTML
@@ -42,13 +81,13 @@ export function sanitizeHTML(dirty: string, options?: Config): string {
   if (typeof document !== 'undefined') {
     const tempDiv = document.createElement('div');
     tempDiv.innerHTML = clean;
-    
+
     // Add security attributes to all external links
-    tempDiv.querySelectorAll('a[href^="http"]').forEach(link => {
+    tempDiv.querySelectorAll('a[href^="http"]').forEach((link) => {
       link.setAttribute('target', '_blank');
       link.setAttribute('rel', 'noopener noreferrer');
     });
-    
+
     return tempDiv.innerHTML;
   }
 
@@ -61,7 +100,7 @@ export function sanitizeHTML(dirty: string, options?: Config): string {
 export function sanitizeMathHTML(dirty: string): string {
   return sanitizeHTML(dirty, {
     ADD_TAGS: ['math', 'mrow', 'mn', 'mo', 'mi', 'msup', 'msub', 'mfrac', 'mroot', 'msqrt'],
-    ADD_ATTR: ['xmlns', 'display', 'mathvariant']
+    ADD_ATTR: ['xmlns', 'display', 'mathvariant'],
   });
 }
 
@@ -70,7 +109,47 @@ export function sanitizeMathHTML(dirty: string): string {
  */
 export function sanitizeMermaidHTML(dirty: string): string {
   return sanitizeHTML(dirty, {
-    ADD_TAGS: ['svg', 'g', 'path', 'rect', 'circle', 'ellipse', 'line', 'polyline', 'polygon', 'text', 'tspan', 'defs', 'marker'],
-    ADD_ATTR: ['viewBox', 'xmlns', 'd', 'fill', 'stroke', 'stroke-width', 'transform', 'x', 'y', 'x1', 'y1', 'x2', 'y2', 'cx', 'cy', 'r', 'rx', 'ry', 'points', 'markerWidth', 'markerHeight', 'markerUnits', 'refX', 'refY', 'orient']
+    ADD_TAGS: [
+      'svg',
+      'g',
+      'path',
+      'rect',
+      'circle',
+      'ellipse',
+      'line',
+      'polyline',
+      'polygon',
+      'text',
+      'tspan',
+      'defs',
+      'marker',
+    ],
+    ADD_ATTR: [
+      'viewBox',
+      'xmlns',
+      'd',
+      'fill',
+      'stroke',
+      'stroke-width',
+      'transform',
+      'x',
+      'y',
+      'x1',
+      'y1',
+      'x2',
+      'y2',
+      'cx',
+      'cy',
+      'r',
+      'rx',
+      'ry',
+      'points',
+      'markerWidth',
+      'markerHeight',
+      'markerUnits',
+      'refX',
+      'refY',
+      'orient',
+    ],
   });
 }

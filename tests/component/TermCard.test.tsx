@@ -1,11 +1,10 @@
-import React from 'react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import type React from 'react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Router } from 'wouter';
+import { useToast } from '@/hooks/use-toast';
 import TermCard from '../../client/src/components/TermCard';
-import { useAuth } from "@/hooks/useAuth";
-import { useToast } from "@/hooks/use-toast";
 
 // Mock the API module
 vi.mock('../../client/src/lib/api', () => ({
@@ -18,22 +17,22 @@ import * as queryClientModule from '../../client/src/lib/queryClient';
 vi.mock('../../client/src/hooks/useAuth', () => ({
   useAuth: vi.fn().mockReturnValue({
     isAuthenticated: true,
-    user: { id: 'test-user' }
-  })
+    user: { id: 'test-user' },
+  }),
 }));
 
 // Mock the toast hook
 vi.mock('../../client/src/hooks/use-toast', () => ({
   useToast: vi.fn().mockReturnValue({
-    toast: vi.fn()
-  })
+    toast: vi.fn(),
+  }),
 }));
 
 // Mock the live region hook
 vi.mock('../../client/src/components/accessibility/LiveRegion', () => ({
   useLiveRegion: vi.fn().mockReturnValue({
-    announce: vi.fn()
-  })
+    announce: vi.fn(),
+  }),
 }));
 
 // Mock term data
@@ -41,7 +40,8 @@ const mockTerm = {
   id: '1',
   name: 'Machine Learning',
   shortDefinition: 'A method of data analysis that automates analytical model building',
-  definition: 'Machine Learning is a subset of artificial intelligence that provides systems the ability to automatically learn and improve from experience without being explicitly programmed.',
+  definition:
+    'Machine Learning is a subset of artificial intelligence that provides systems the ability to automatically learn and improve from experience without being explicitly programmed.',
   category: 'AI/ML',
   subcategories: ['Supervised Learning', 'Unsupervised Learning'],
   viewCount: 142,
@@ -61,12 +61,10 @@ const TestWrapper = ({ children }: { children: React.ReactNode }) => {
       },
     },
   });
-  
+
   return (
     <QueryClientProvider client={queryClient}>
-      <Router>
-        {children}
-      </Router>
+      <Router>{children}</Router>
     </QueryClientProvider>
   );
 };
@@ -83,7 +81,7 @@ describe('TermCard Component', () => {
           <TermCard term={mockTerm} />
         </TestWrapper>
       );
-      
+
       expect(screen.getByText('Machine Learning')).toBeInTheDocument();
       expect(screen.getByText(/A method of data analysis/)).toBeInTheDocument();
     });
@@ -94,7 +92,7 @@ describe('TermCard Component', () => {
           <TermCard term={mockTerm} />
         </TestWrapper>
       );
-      
+
       // Check for core content that should be displayed
       expect(screen.getByText('Machine Learning')).toBeInTheDocument();
       expect(screen.getByText(/A method of data analysis/)).toBeInTheDocument();
@@ -106,7 +104,7 @@ describe('TermCard Component', () => {
           <TermCard term={mockTerm} />
         </TestWrapper>
       );
-      
+
       expect(screen.getByText('AI/ML')).toBeInTheDocument();
     });
 
@@ -114,7 +112,7 @@ describe('TermCard Component', () => {
       const minimalTerm = {
         id: '2',
         name: 'Minimal Term',
-        definition: 'A minimal definition'
+        definition: 'A minimal definition',
       };
 
       render(
@@ -135,7 +133,7 @@ describe('TermCard Component', () => {
           <TermCard term={favoriteTerm} />
         </TestWrapper>
       );
-      
+
       // Check for favorite indicator (star icon or similar)
       const favoriteIndicator = screen.getByRole('button', { name: /favorite/i });
       expect(favoriteIndicator).toBeInTheDocument();
@@ -170,7 +168,7 @@ describe('TermCard Component', () => {
           <TermCard term={learnedTerm} />
         </TestWrapper>
       );
-      
+
       // Check for learned indicator
       const learnedIndicator = screen.getByRole('button', { name: /learned/i });
       expect(learnedIndicator).toBeInTheDocument();
@@ -209,9 +207,9 @@ describe('TermCard Component', () => {
 
       await waitFor(() => {
         expect(mockToast).toHaveBeenCalledWith({
-          title: "Error",
-          description: "Failed to update favorites. Please try again.",
-          variant: "destructive",
+          title: 'Error',
+          description: 'Failed to update favorites. Please try again.',
+          variant: 'destructive',
         });
       });
 
@@ -222,7 +220,7 @@ describe('TermCard Component', () => {
       const malformedTerm = {
         id: null,
         name: '',
-        definition: null
+        definition: null,
       } as any;
 
       // Should not crash with malformed data
@@ -239,13 +237,13 @@ describe('TermCard Component', () => {
   describe('Performance', () => {
     it('should render efficiently with large datasets', () => {
       const renderStart = performance.now();
-      
+
       render(
         <TestWrapper>
           <TermCard term={mockTerm} />
         </TestWrapper>
       );
-      
+
       const renderTime = performance.now() - renderStart;
       expect(renderTime).toBeLessThan(100); // Should render quickly
     });

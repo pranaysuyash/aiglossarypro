@@ -36,7 +36,7 @@ export function GeometricAIBackground({
   className = '',
   opacity = 0.3,
   shapeCount = 25,
-  animationSpeed = 0.5
+  animationSpeed = 0.5,
 }: GeometricAIBackgroundProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>();
@@ -47,13 +47,13 @@ export function GeometricAIBackground({
     // Check for reduced motion preference
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     isReducedMotion.current = mediaQuery.matches;
-    
+
     const handleMotionChange = (e: MediaQueryListEvent) => {
       isReducedMotion.current = e.matches;
     };
-    
+
     mediaQuery.addEventListener('change', handleMotionChange);
-    
+
     return () => {
       mediaQuery.removeEventListener('change', handleMotionChange);
     };
@@ -78,8 +78,14 @@ export function GeometricAIBackground({
     const initializeShapes = () => {
       const shapes: GeometricShape[] = [];
       const rect = canvas.getBoundingClientRect();
-      const shapeTypes: GeometricShape['type'][] = ['triangle', 'square', 'hexagon', 'circle', 'diamond'];
-      
+      const shapeTypes: GeometricShape['type'][] = [
+        'triangle',
+        'square',
+        'hexagon',
+        'circle',
+        'diamond',
+      ];
+
       for (let i = 0; i < shapeCount; i++) {
         const shape: GeometricShape = {
           type: shapeTypes[Math.floor(Math.random() * shapeTypes.length)],
@@ -94,7 +100,7 @@ export function GeometricAIBackground({
           vy: (Math.random() - 0.5) * animationSpeed * 0.5,
           scale: 0.8 + Math.random() * 0.4,
           scaleDirection: Math.random() > 0.5 ? 1 : -1,
-          scaleSpeed: 0.005 + Math.random() * 0.01
+          scaleSpeed: 0.005 + Math.random() * 0.01,
         };
         shapes.push(shape);
       }
@@ -149,7 +155,7 @@ export function GeometricAIBackground({
       ctx.translate(shape.x, shape.y);
       ctx.rotate(shape.rotation);
       ctx.scale(shape.scale, shape.scale);
-      
+
       const alpha = shape.opacity * opacity;
       ctx.fillStyle = shape.color.replace(/[\d.]+\)$/, `${alpha})`);
       ctx.strokeStyle = shape.color.replace(/[\d.]+\)$/, `${alpha * 0.5})`);
@@ -183,14 +189,14 @@ export function GeometricAIBackground({
       ctx.clearRect(0, 0, rect.width, rect.height);
 
       const shapes = shapesRef.current;
-      
-      shapes.forEach(shape => {
+
+      shapes.forEach((shape) => {
         // Update position if animation is allowed
         if (!isReducedMotion.current) {
           shape.x += shape.vx;
           shape.y += shape.vy;
           shape.rotation += shape.rotationSpeed;
-          
+
           // Update scale with breathing effect
           shape.scale += shape.scaleDirection * shape.scaleSpeed;
           if (shape.scale > 1.2 || shape.scale < 0.6) {
@@ -215,15 +221,13 @@ export function GeometricAIBackground({
       if (!isReducedMotion.current) {
         ctx.strokeStyle = `rgba(147, 51, 234, ${opacity * 0.1})`;
         ctx.lineWidth = 0.5;
-        
+
         for (let i = 0; i < shapes.length; i++) {
           for (let j = i + 1; j < shapes.length; j++) {
             const shape1 = shapes[i];
             const shape2 = shapes[j];
-            const distance = Math.sqrt(
-              Math.pow(shape1.x - shape2.x, 2) + Math.pow(shape1.y - shape2.y, 2)
-            );
-            
+            const distance = Math.sqrt((shape1.x - shape2.x) ** 2 + (shape1.y - shape2.y) ** 2);
+
             if (distance < 100) {
               const alpha = (1 - distance / 100) * opacity * 0.1;
               ctx.strokeStyle = `rgba(147, 51, 234, ${alpha})`;
@@ -264,9 +268,8 @@ export function GeometricAIBackground({
       className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
       style={{
         background: 'transparent',
-        zIndex: 0
+        zIndex: 0,
       }}
-      aria-hidden="true"
     />
   );
 }

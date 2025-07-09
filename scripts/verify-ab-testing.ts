@@ -5,9 +5,9 @@
  * Run this script to verify all A/B testing components are properly configured
  */
 
-import { db } from '../server/db';
-import { abTests, abTestMetrics, abTestEvents } from '../shared/abTestingSchema';
 import { eq } from 'drizzle-orm';
+import { db } from '../server/db';
+import { abTestEvents, abTestMetrics, abTests } from '../shared/abTestingSchema';
 
 interface VerificationResult {
   component: string;
@@ -42,31 +42,26 @@ class ABTestVerifier {
 
       await db.select().from(abTestEvents).limit(1);
       this.addResult('Database Schema', 'pass', 'ab_test_events table exists and accessible');
-
     } catch (error) {
       this.addResult('Database Schema', 'fail', `Database tables not accessible: ${error}`);
     }
   }
 
   private async checkServerRoutes(): Promise<void> {
-    const routes = [
-      '/api/ab-tests/sync',
-      '/api/ab-tests/active',
-      '/api/ab-tests/history'
-    ];
+    const routes = ['/api/ab-tests/sync', '/api/ab-tests/active', '/api/ab-tests/history'];
 
     // This is a simplified check - in a real scenario, you'd make actual HTTP requests
     this.addResult('Server Routes', 'pass', `Routes configured: ${routes.join(', ')}`);
   }
 
   private checkFrontendComponents(): void {
-    const components = [
+    const _components = [
       'useBackgroundABTest hook',
       'abTestingService',
       'ABTestingDashboard',
       'HeroSection tracking',
       'Pricing tracking',
-      'FinalCTA tracking'
+      'FinalCTA tracking',
     ];
 
     // Check if component files exist
@@ -93,16 +88,9 @@ class ABTestVerifier {
   }
 
   private checkEnvironmentConfig(): void {
-    const requiredEnvVars = [
-      'DATABASE_URL',
-      'NODE_ENV'
-    ];
+    const requiredEnvVars = ['DATABASE_URL', 'NODE_ENV'];
 
-    const optionalEnvVars = [
-      'AB_TEST_REPORT_RECIPIENTS',
-      'EMAIL_ENABLED',
-      'VITE_POSTHOG_KEY'
-    ];
+    const optionalEnvVars = ['AB_TEST_REPORT_RECIPIENTS', 'EMAIL_ENABLED', 'VITE_POSTHOG_KEY'];
 
     for (const envVar of requiredEnvVars) {
       if (process.env[envVar]) {
@@ -130,7 +118,7 @@ class ABTestVerifier {
         testType: 'verification',
         variants: ['control', 'variant'],
         successMetric: 'test_conversion',
-        status: 'draft' as const
+        status: 'draft' as const,
       };
 
       // Insert test
@@ -148,7 +136,7 @@ class ABTestVerifier {
         ctaClicks: 15,
         trialSignups: 5,
         newsletterSignups: 8,
-        conversionRate: 5.0
+        conversionRate: 5.0,
       };
 
       await db.insert(abTestMetrics).values(metricsData);
@@ -162,7 +150,7 @@ class ABTestVerifier {
         eventName: 'verification_event',
         properties: { test: true },
         deviceType: 'desktop',
-        browser: 'chrome'
+        browser: 'chrome',
       };
 
       await db.insert(abTestEvents).values(eventData);
@@ -171,13 +159,17 @@ class ABTestVerifier {
       // Clean up test data
       await db.delete(abTests).where(eq(abTests.id, test.id));
       this.addResult('Data Flow', 'pass', 'Successfully cleaned up test data');
-
     } catch (error) {
       this.addResult('Data Flow', 'fail', `Data flow test failed: ${error}`);
     }
   }
 
-  private addResult(component: string, status: 'pass' | 'fail' | 'warning', message: string, details?: any): void {
+  private addResult(
+    component: string,
+    status: 'pass' | 'fail' | 'warning',
+    message: string,
+    details?: any
+  ): void {
     this.results.push({ component, status, message, details });
   }
 
@@ -185,17 +177,20 @@ class ABTestVerifier {
     console.log('\n📊 Verification Results:');
     console.log('========================\n');
 
-    const groupedResults = this.results.reduce((groups, result) => {
-      if (!groups[result.component]) {
-        groups[result.component] = [];
-      }
-      groups[result.component].push(result);
-      return groups;
-    }, {} as Record<string, VerificationResult[]>);
+    const groupedResults = this.results.reduce(
+      (groups, result) => {
+        if (!groups[result.component]) {
+          groups[result.component] = [];
+        }
+        groups[result.component].push(result);
+        return groups;
+      },
+      {} as Record<string, VerificationResult[]>
+    );
 
     for (const [component, results] of Object.entries(groupedResults)) {
       console.log(`🔧 ${component}:`);
-      
+
       for (const result of results) {
         const icon = result.status === 'pass' ? '✅' : result.status === 'fail' ? '❌' : '⚠️';
         console.log(`  ${icon} ${result.message}`);
@@ -208,9 +203,9 @@ class ABTestVerifier {
 
     // Summary
     const totalTests = this.results.length;
-    const passedTests = this.results.filter(r => r.status === 'pass').length;
-    const failedTests = this.results.filter(r => r.status === 'fail').length;
-    const warningTests = this.results.filter(r => r.status === 'warning').length;
+    const passedTests = this.results.filter((r) => r.status === 'pass').length;
+    const failedTests = this.results.filter((r) => r.status === 'fail').length;
+    const warningTests = this.results.filter((r) => r.status === 'warning').length;
 
     console.log('📈 Summary:');
     console.log(`  Total Checks: ${totalTests}`);

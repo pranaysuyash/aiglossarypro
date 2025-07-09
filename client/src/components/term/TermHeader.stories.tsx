@@ -18,7 +18,8 @@ const queryClient = new QueryClient({
 const mockTerm = {
   id: '1',
   name: 'Machine Learning',
-  definition: 'A subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed.',
+  definition:
+    'A subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed.',
   shortDefinition: 'A subset of AI that enables systems to learn from experience.',
   category: 'Core Concepts',
   viewCount: 1250,
@@ -33,7 +34,8 @@ const meta: Meta<typeof TermHeader> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Header component for term detail pages with title, metadata, and action buttons.',
+        component:
+          'Header component for term detail pages with title, metadata, and action buttons.',
       },
     },
   },
@@ -78,7 +80,8 @@ export const WithLongName: Story = {
     term: {
       ...mockTerm,
       name: 'Convolutional Neural Network with Attention Mechanism and Transfer Learning',
-      shortDefinition: 'A very long definition that tests how the header handles overflow text and maintains proper layout with extensive content that might wrap to multiple lines.',
+      shortDefinition:
+        'A very long definition that tests how the header handles overflow text and maintains proper layout with extensive content that might wrap to multiple lines.',
     },
   },
   parameters: {
@@ -186,4 +189,4 @@ export const DarkMode: Story = {
       </QueryClientProvider>
     ),
   ],
-}; 
+};

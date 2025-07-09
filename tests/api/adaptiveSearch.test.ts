@@ -2,24 +2,24 @@
  * Adaptive Search API Tests
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import request from 'supertest';
 import express from 'express';
+import request from 'supertest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { registerAdaptiveSearchRoutes } from '../../server/routes/adaptiveSearch';
 
-// Mock the adaptive search service  
+// Mock the adaptive search service
 vi.mock('../../server/adaptiveSearchService', () => ({
-  adaptiveSearch: vi.fn()
+  adaptiveSearch: vi.fn(),
 }));
 
 // Mock the security middleware
 vi.mock('../../server/middleware/security', () => ({
   searchQuerySchema: {
-    parse: vi.fn()
+    parse: vi.fn(),
   },
   paginationSchema: {
-    parse: vi.fn()
-  }
+    parse: vi.fn(),
+  },
 }));
 
 describe('Adaptive Search API', () => {
@@ -30,7 +30,7 @@ describe('Adaptive Search API', () => {
     app = express();
     app.use(express.json());
     registerAdaptiveSearchRoutes(app);
-    
+
     const { adaptiveSearch } = await import('../../server/adaptiveSearchService');
     mockAdaptiveSearch = vi.mocked(adaptiveSearch);
   });
@@ -51,8 +51,8 @@ describe('Adaptive Search API', () => {
             viewCount: 100,
             relevanceScore: 95,
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
+            updatedAt: new Date().toISOString(),
+          },
         ],
         total: 1,
         page: 1,
@@ -62,7 +62,7 @@ describe('Adaptive Search API', () => {
         query: 'neural network',
         hasMore: false,
         strategy: 'fts',
-        isGeneric: false
+        isGeneric: false,
       };
 
       mockAdaptiveSearch.mockResolvedValueOnce(mockResults);
@@ -76,15 +76,14 @@ describe('Adaptive Search API', () => {
       expect(response.body.data).toMatchObject({
         ...mockResults,
         searchType: 'adaptive',
-        aiEnhanced: true
+        aiEnhanced: true,
       });
       expect(response.body.data.results[0]).toHaveProperty('semanticSimilarity');
       expect(response.body.data.results[0]).toHaveProperty('conceptRelationships');
     });
 
     it('should return 400 for missing query parameter', async () => {
-      const response = await request(app)
-        .get('/api/adaptive-search');
+      const response = await request(app).get('/api/adaptive-search');
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
@@ -92,9 +91,7 @@ describe('Adaptive Search API', () => {
     });
 
     it('should return 400 for empty query parameter', async () => {
-      const response = await request(app)
-        .get('/api/adaptive-search')
-        .query({ query: '' });
+      const response = await request(app).get('/api/adaptive-search').query({ query: '' });
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
@@ -112,25 +109,23 @@ describe('Adaptive Search API', () => {
         query: 'test',
         hasMore: false,
         strategy: 'fts',
-        isGeneric: false
+        isGeneric: false,
       };
 
       mockAdaptiveSearch.mockResolvedValueOnce(mockResults);
 
-      const response = await request(app)
-        .get('/api/adaptive-search')
-        .query({ 
-          query: 'test', 
-          page: '2', 
-          limit: '10' 
-        });
+      const response = await request(app).get('/api/adaptive-search').query({
+        query: 'test',
+        page: '2',
+        limit: '10',
+      });
 
       expect(response.status).toBe(200);
       expect(mockAdaptiveSearch).toHaveBeenCalledWith(
         expect.objectContaining({
           query: 'test',
           page: 2,
-          limit: 10
+          limit: 10,
         })
       );
     });
@@ -146,22 +141,20 @@ describe('Adaptive Search API', () => {
         query: 'test',
         hasMore: false,
         strategy: 'fts',
-        isGeneric: false
+        isGeneric: false,
       };
 
       mockAdaptiveSearch.mockResolvedValueOnce(mockResults);
 
-      const response = await request(app)
-        .get('/api/adaptive-search')
-        .query({ 
-          query: 'test', 
-          limit: '200' 
-        });
+      const response = await request(app).get('/api/adaptive-search').query({
+        query: 'test',
+        limit: '200',
+      });
 
       expect(response.status).toBe(200);
       expect(mockAdaptiveSearch).toHaveBeenCalledWith(
         expect.objectContaining({
-          limit: 100
+          limit: 100,
         })
       );
     });
@@ -169,9 +162,7 @@ describe('Adaptive Search API', () => {
     it('should handle search service errors', async () => {
       mockAdaptiveSearch.mockRejectedValueOnce(new Error('Database connection failed'));
 
-      const response = await request(app)
-        .get('/api/adaptive-search')
-        .query({ query: 'test' });
+      const response = await request(app).get('/api/adaptive-search').query({ query: 'test' });
 
       expect(response.status).toBe(500);
       expect(response.body.success).toBe(false);
@@ -188,9 +179,9 @@ describe('Adaptive Search API', () => {
             name: 'Neural Network',
             category: { name: 'Deep Learning' },
             relevanceScore: 95,
-            viewCount: 100
-          }
-        ]
+            viewCount: 100,
+          },
+        ],
       };
 
       mockAdaptiveSearch.mockResolvedValueOnce(mockResults);
@@ -225,8 +216,8 @@ describe('Adaptive Search API', () => {
           name: `Term ${i}`,
           category: { name: 'Test' },
           relevanceScore: 50,
-          viewCount: 10
-        }))
+          viewCount: 10,
+        })),
       };
 
       mockAdaptiveSearch.mockResolvedValueOnce(mockResults);
@@ -248,9 +239,9 @@ describe('Adaptive Search API', () => {
             id: '2',
             name: 'Deep Learning',
             category: { name: 'Machine Learning' },
-            relevanceScore: 80
-          }
-        ]
+            relevanceScore: 80,
+          },
+        ],
       };
 
       mockAdaptiveSearch.mockResolvedValueOnce(mockResults);
@@ -265,8 +256,7 @@ describe('Adaptive Search API', () => {
     });
 
     it('should return 400 for missing term ID', async () => {
-      const response = await request(app)
-        .get('/api/adaptive-search/related');
+      const response = await request(app).get('/api/adaptive-search/related');
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
@@ -290,8 +280,7 @@ describe('Adaptive Search API', () => {
     });
 
     it('should return 400 for missing query', async () => {
-      const response = await request(app)
-        .get('/api/adaptive-search/analytics');
+      const response = await request(app).get('/api/adaptive-search/analytics');
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
@@ -311,8 +300,8 @@ describe('Adaptive Search API', () => {
             relevanceScore: 50,
             viewCount: 10,
             createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString()
-          }
+            updatedAt: new Date().toISOString(),
+          },
         ],
         total: 1,
         page: 1,
@@ -322,14 +311,12 @@ describe('Adaptive Search API', () => {
         query: 'test',
         hasMore: false,
         strategy: 'fts',
-        isGeneric: false
+        isGeneric: false,
       };
 
       mockAdaptiveSearch.mockResolvedValueOnce(mockResults);
 
-      const response = await request(app)
-        .get('/api/adaptive-search')
-        .query({ query: 'test' });
+      const response = await request(app).get('/api/adaptive-search').query({ query: 'test' });
 
       expect(response.status).toBe(200);
       // Check that script tags are sanitized in the response

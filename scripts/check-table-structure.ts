@@ -19,7 +19,9 @@ async function checkTableStructure() {
 
     console.log('📋 Current table structure:');
     result.rows.forEach((row) => {
-      console.log(`  ${row.column_name}: ${row.data_type} ${row.is_nullable === 'NO' ? 'NOT NULL' : 'NULL'} ${row.column_default ? `DEFAULT ${row.column_default}` : ''}`);
+      console.log(
+        `  ${row.column_name}: ${row.data_type} ${row.is_nullable === 'NO' ? 'NOT NULL' : 'NULL'} ${row.column_default ? `DEFAULT ${row.column_default}` : ''}`
+      );
     });
 
     // Check if there are any rows
@@ -34,14 +36,13 @@ async function checkTableStructure() {
         VALUES ('35aee6a5-6305-420c-9257-2213aef10c8b', 'test_section', 'gpt-4o-mini', 'Test content')
       `);
       console.log('✅ Simple insert successful');
-      
+
       // Clean up the test row
       await client.query(`DELETE FROM model_content_versions WHERE section_name = 'test_section'`);
       console.log('✅ Test row cleaned up');
     } catch (error) {
       console.error('❌ Simple insert failed:', error);
     }
-
   } catch (error) {
     console.error('❌ Error:', error);
   } finally {

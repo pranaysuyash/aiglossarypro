@@ -3,9 +3,9 @@
  * Provides a unified authentication solution with multiple providers
  */
 
-import { initializeApp, cert, type ServiceAccount } from 'firebase-admin/app';
-import { getAuth as getAdminAuth } from 'firebase-admin/auth';
+import { cert, initializeApp, type ServiceAccount } from 'firebase-admin/app';
 import type { DecodedIdToken } from 'firebase-admin/auth';
+import { getAuth as getAdminAuth } from 'firebase-admin/auth';
 
 // Firebase Admin SDK initialization
 let adminInitialized = false;
@@ -16,7 +16,7 @@ export function initializeFirebaseAdmin() {
   try {
     // Use service account credentials from environment
     let privateKey: string;
-    
+
     // Check if using base64 encoded private key
     if (process.env.FIREBASE_PRIVATE_KEY_BASE64) {
       privateKey = Buffer.from(process.env.FIREBASE_PRIVATE_KEY_BASE64, 'base64').toString('utf8');
@@ -25,7 +25,7 @@ export function initializeFirebaseAdmin() {
     } else {
       throw new Error('No Firebase private key found in environment variables');
     }
-    
+
     const serviceAccount: ServiceAccount = {
       projectId: process.env.FIREBASE_PROJECT_ID!,
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL!,
@@ -51,7 +51,7 @@ export async function verifyFirebaseToken(idToken: string): Promise<DecodedIdTok
     if (!adminInitialized) {
       initializeFirebaseAdmin();
     }
-    
+
     const decodedToken = await getAdminAuth().verifyIdToken(idToken);
     return decodedToken;
   } catch (error) {
@@ -66,7 +66,7 @@ export async function createCustomToken(uid: string, claims?: object): Promise<s
     if (!adminInitialized) {
       initializeFirebaseAdmin();
     }
-    
+
     const customToken = await getAdminAuth().createCustomToken(uid, claims);
     return customToken;
   } catch (error) {
@@ -81,7 +81,7 @@ export async function getUserByEmail(email: string) {
     if (!adminInitialized) {
       initializeFirebaseAdmin();
     }
-    
+
     const userRecord = await getAdminAuth().getUserByEmail(email);
     return userRecord;
   } catch (error) {
@@ -96,14 +96,14 @@ export async function createFirebaseUser(email: string, password: string, displa
     if (!adminInitialized) {
       initializeFirebaseAdmin();
     }
-    
+
     const userRecord = await getAdminAuth().createUser({
       email,
       password,
       displayName,
       emailVerified: false,
     });
-    
+
     return userRecord;
   } catch (error) {
     console.error('Error creating Firebase user:', error);
@@ -117,7 +117,7 @@ export async function setCustomUserClaims(uid: string, claims: object) {
     if (!adminInitialized) {
       initializeFirebaseAdmin();
     }
-    
+
     await getAdminAuth().setCustomUserClaims(uid, claims);
     return true;
   } catch (error) {
@@ -132,7 +132,7 @@ export async function deleteFirebaseUser(uid: string) {
     if (!adminInitialized) {
       initializeFirebaseAdmin();
     }
-    
+
     await getAdminAuth().deleteUser(uid);
     return true;
   } catch (error) {

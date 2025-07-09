@@ -1,66 +1,36 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
-import { 
-  Star,
-  TrendingUp,
-  BarChart3,
-  LineChart,
-  PieChart,
-  Target,
-  CheckCircle,
-  AlertCircle,
-  XCircle,
-  Eye,
-  Edit,
-  Save,
-  RefreshCw,
-  Download,
-  Upload,
-  Filter,
-  Search,
-  Calendar,
-  Clock,
-  Users,
-  FileText,
-  Brain,
-  Zap,
-  Award,
-  TrendingDown,
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
   Activity,
-  Gauge,
-  BookOpen,
-  MessageSquare,
-  ThumbsUp,
-  ThumbsDown,
-  RotateCcw,
-  ArrowRight,
-  ArrowLeft,
-  ChevronUp,
-  ChevronDown,
-  Settings,
-  Lightbulb,
-  AlertTriangle,
-  Info,
-  HelpCircle,
-  ExternalLink,
-  Copy,
-  Plus,
-  Minus,
-  X
+  AlertCircle,
+  Award,
+  Brain,
+  CheckCircle,
+  Edit,
+  Eye,
+  FileText,
+  RefreshCw,
+  Star,
+  Target,
+  Users,
+  XCircle,
+  Zap,
 } from 'lucide-react';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 
 // Interfaces for Quality Evaluation System
@@ -89,11 +59,11 @@ interface QualityEvaluation {
   evaluationDate: Date;
   evaluatorId: string;
   evaluatorType: 'ai' | 'human' | 'hybrid';
-  
+
   // Overall scoring
   overallScore: number;
   overallGrade: 'A' | 'B' | 'C' | 'D' | 'F';
-  
+
   // Dimensional scores
   dimensionalScores: {
     accuracy: number;
@@ -105,7 +75,7 @@ interface QualityEvaluation {
     technicalDepth: number;
     examples: number;
   };
-  
+
   // Detailed feedback
   feedback: {
     strengths: string[];
@@ -113,7 +83,7 @@ interface QualityEvaluation {
     suggestions: string[];
     priority: 'low' | 'medium' | 'high' | 'critical';
   };
-  
+
   // Improvement tracking
   improvementStatus: 'pending' | 'in_progress' | 'completed' | 'rejected';
   previousScore?: number;
@@ -122,7 +92,7 @@ interface QualityEvaluation {
     score: number;
     changes: string;
   }>;
-  
+
   // Metadata
   evaluationTime: number;
   confidence: number;
@@ -214,52 +184,52 @@ const QUALITY_METRICS: QualityMetric[] = [
       'Information is factually correct',
       'Technical details are precise',
       'No misleading statements',
-      'Sources are reliable'
+      'Sources are reliable',
     ],
     examples: {
       excellent: 'All facts verified, precise technical language, authoritative sources',
       good: 'Mostly accurate with minor imprecisions',
       average: 'Generally correct but lacks precision',
-      poor: 'Contains factual errors or misleading information'
-    }
+      poor: 'Contains factual errors or misleading information',
+    },
   },
   {
     id: 'clarity',
     name: 'Clarity',
     description: 'Clear communication and understandability',
-    weight: 0.20,
+    weight: 0.2,
     maxScore: 10,
     evaluationCriteria: [
       'Uses clear, concise language',
       'Avoids unnecessary jargon',
       'Logical flow of information',
-      'Easy to understand'
+      'Easy to understand',
     ],
     examples: {
       excellent: 'Crystal clear explanations, perfect flow',
       good: 'Clear with minor ambiguities',
       average: 'Understandable but could be clearer',
-      poor: 'Confusing or difficult to follow'
-    }
+      poor: 'Confusing or difficult to follow',
+    },
   },
   {
     id: 'completeness',
     name: 'Completeness',
     description: 'Covers all essential aspects comprehensively',
-    weight: 0.20,
+    weight: 0.2,
     maxScore: 10,
     evaluationCriteria: [
       'Covers all key points',
       'Appropriate level of detail',
       'No significant gaps',
-      'Comprehensive coverage'
+      'Comprehensive coverage',
     ],
     examples: {
       excellent: 'Thoroughly covers all aspects with appropriate detail',
       good: 'Covers most important aspects',
       average: 'Basic coverage with some gaps',
-      poor: 'Missing significant information'
-    }
+      poor: 'Missing significant information',
+    },
   },
   {
     id: 'relevance',
@@ -271,53 +241,53 @@ const QUALITY_METRICS: QualityMetric[] = [
       'Content matches the section purpose',
       'Appropriate for target audience',
       'Stays on topic',
-      'Contextually relevant'
+      'Contextually relevant',
     ],
     examples: {
       excellent: 'Perfectly relevant and targeted',
       good: 'Mostly relevant with minor tangents',
       average: 'Generally relevant but some off-topic content',
-      poor: 'Contains irrelevant or inappropriate content'
-    }
+      poor: 'Contains irrelevant or inappropriate content',
+    },
   },
   {
     id: 'readability',
     name: 'Readability',
     description: 'Easy to read and well-structured',
-    weight: 0.10,
+    weight: 0.1,
     maxScore: 10,
     evaluationCriteria: [
       'Good sentence structure',
       'Appropriate paragraph length',
       'Smooth transitions',
-      'Engaging style'
+      'Engaging style',
     ],
     examples: {
       excellent: 'Excellent readability and engagement',
       good: 'Easy to read with good flow',
       average: 'Readable but could be more engaging',
-      poor: 'Difficult to read or poorly structured'
-    }
+      poor: 'Difficult to read or poorly structured',
+    },
   },
   {
     id: 'examples',
     name: 'Examples & Illustrations',
     description: 'Quality and relevance of examples provided',
-    weight: 0.10,
+    weight: 0.1,
     maxScore: 10,
     evaluationCriteria: [
       'Provides relevant examples',
       'Examples clarify concepts',
       'Diverse example types',
-      'Real-world applications'
+      'Real-world applications',
     ],
     examples: {
       excellent: 'Perfect examples that illuminate concepts',
       good: 'Good examples with clear relevance',
       average: 'Basic examples that somewhat help',
-      poor: 'Poor or irrelevant examples'
-    }
-  }
+      poor: 'Poor or irrelevant examples',
+    },
+  },
 ];
 
 const QUALITY_TEMPLATES: QualityTemplate[] = [
@@ -333,17 +303,19 @@ const QUALITY_TEMPLATES: QualityTemplate[] = [
     usageCount: 156,
     averageScore: 7.8,
     created: new Date('2025-01-01'),
-    lastUsed: new Date()
+    lastUsed: new Date(),
   },
   {
     id: 'technical-focus',
     name: 'Technical Accuracy Focus',
     description: 'Emphasizes technical accuracy and depth',
     category: 'specialized',
-    metrics: QUALITY_METRICS.map(m => 
-      m.id === 'accuracy' ? { ...m, weight: 0.4 } :
-      m.id === 'technicalDepth' ? { ...m, weight: 0.3 } : 
-      { ...m, weight: 0.075 }
+    metrics: QUALITY_METRICS.map((m) =>
+      m.id === 'accuracy'
+        ? { ...m, weight: 0.4 }
+        : m.id === 'technicalDepth'
+          ? { ...m, weight: 0.3 }
+          : { ...m, weight: 0.075 }
     ),
     thresholds: { excellent: 9, good: 7.5, acceptable: 6, poor: 4 },
     customInstructions: 'Prioritize technical accuracy and depth over other factors',
@@ -351,17 +323,19 @@ const QUALITY_TEMPLATES: QualityTemplate[] = [
     usageCount: 89,
     averageScore: 8.2,
     created: new Date('2025-01-01'),
-    lastUsed: new Date()
+    lastUsed: new Date(),
   },
   {
     id: 'readability-focus',
     name: 'Readability & Clarity Focus',
     description: 'Emphasizes clear communication and readability',
     category: 'specialized',
-    metrics: QUALITY_METRICS.map(m => 
-      m.id === 'clarity' ? { ...m, weight: 0.35 } :
-      m.id === 'readability' ? { ...m, weight: 0.35 } : 
-      { ...m, weight: 0.075 }
+    metrics: QUALITY_METRICS.map((m) =>
+      m.id === 'clarity'
+        ? { ...m, weight: 0.35 }
+        : m.id === 'readability'
+          ? { ...m, weight: 0.35 }
+          : { ...m, weight: 0.075 }
     ),
     thresholds: { excellent: 8.5, good: 7, acceptable: 5.5, poor: 3 },
     customInstructions: 'Focus on clarity and ease of understanding',
@@ -369,29 +343,29 @@ const QUALITY_TEMPLATES: QualityTemplate[] = [
     usageCount: 72,
     averageScore: 7.6,
     created: new Date('2025-01-01'),
-    lastUsed: new Date()
-  }
+    lastUsed: new Date(),
+  },
 ];
 
 export function QualityEvaluationDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // State management
   const [selectedTemplate, setSelectedTemplate] = useState<string>('comprehensive');
   const [selectedSample, setSelectedSample] = useState<ContentSample | null>(null);
   const [evaluationMode, setEvaluationMode] = useState<'ai' | 'human' | 'hybrid'>('ai');
   const [batchEvaluationMode, setBatchEvaluationMode] = useState<boolean>(false);
   const [qualityThreshold, setQualityThreshold] = useState<number>(7);
-  const [showAdvancedFilters, setShowAdvancedFilters] = useState<boolean>(false);
+  const [_showAdvancedFilters, _setShowAdvancedFilters] = useState<boolean>(false);
   const [filterSection, setFilterSection] = useState<string>('all');
-  const [filterScore, setFilterScore] = useState<string>('all');
+  const [filterScore, _setFilterScore] = useState<string>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  
+
   // Template editing state
-  const [editingTemplate, setEditingTemplate] = useState<QualityTemplate | null>(null);
-  const [showTemplateEditor, setShowTemplateEditor] = useState<boolean>(false);
+  const [_editingTemplate, setEditingTemplate] = useState<QualityTemplate | null>(null);
+  const [_showTemplateEditor, setShowTemplateEditor] = useState<boolean>(false);
 
   // Query for quality analytics
   const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery({
@@ -401,7 +375,7 @@ export function QualityEvaluationDashboard() {
       if (!response.ok) throw new Error('Failed to fetch quality analytics');
       return response.json();
     },
-    refetchInterval: 30000
+    refetchInterval: 30000,
   });
 
   // Query for content samples needing evaluation
@@ -413,11 +387,11 @@ export function QualityEvaluationDashboard() {
       if (filterScore !== 'all') params.append('score', filterScore);
       if (filterStatus !== 'all') params.append('status', filterStatus);
       if (searchQuery) params.append('search', searchQuery);
-      
+
       const response = await fetch(`/api/admin/quality/samples?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch content samples');
       return response.json();
-    }
+    },
   });
 
   // Query for recent evaluations
@@ -428,7 +402,7 @@ export function QualityEvaluationDashboard() {
       if (!response.ok) throw new Error('Failed to fetch evaluations');
       return response.json();
     },
-    refetchInterval: 15000
+    refetchInterval: 15000,
   });
 
   // Mutation for running quality evaluation
@@ -441,7 +415,7 @@ export function QualityEvaluationDashboard() {
       const response = await fetch('/api/admin/quality/evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params)
+        body: JSON.stringify(params),
       });
       if (!response.ok) throw new Error('Failed to evaluate content');
       return response.json();
@@ -454,7 +428,7 @@ export function QualityEvaluationDashboard() {
       queryClient.invalidateQueries({ queryKey: ['quality-analytics'] });
       queryClient.invalidateQueries({ queryKey: ['quality-samples'] });
       queryClient.invalidateQueries({ queryKey: ['quality-evaluations'] });
-    }
+    },
   });
 
   // Mutation for batch evaluation
@@ -468,7 +442,7 @@ export function QualityEvaluationDashboard() {
       const response = await fetch('/api/admin/quality/batch-evaluate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params)
+        body: JSON.stringify(params),
       });
       if (!response.ok) throw new Error('Failed to start batch evaluation');
       return response.json();
@@ -479,7 +453,7 @@ export function QualityEvaluationDashboard() {
         description: `Evaluating ${data.totalItems} content pieces`,
       });
       queryClient.invalidateQueries({ queryKey: ['quality-analytics'] });
-    }
+    },
   });
 
   // Helper functions
@@ -492,22 +466,33 @@ export function QualityEvaluationDashboard() {
 
   const getGradeColor = (grade: string) => {
     switch (grade) {
-      case 'A': return 'bg-green-100 text-green-800';
-      case 'B': return 'bg-blue-100 text-blue-800';
-      case 'C': return 'bg-yellow-100 text-yellow-800';
-      case 'D': return 'bg-orange-100 text-orange-800';
-      case 'F': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'A':
+        return 'bg-green-100 text-green-800';
+      case 'B':
+        return 'bg-blue-100 text-blue-800';
+      case 'C':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'D':
+        return 'bg-orange-100 text-orange-800';
+      case 'F':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'approved': return 'bg-green-100 text-green-800';
-      case 'under_review': return 'bg-blue-100 text-blue-800';
-      case 'needs_evaluation': return 'bg-yellow-100 text-yellow-800';
-      case 'flagged': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'approved':
+        return 'bg-green-100 text-green-800';
+      case 'under_review':
+        return 'bg-blue-100 text-blue-800';
+      case 'needs_evaluation':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'flagged':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -567,7 +552,11 @@ export function QualityEvaluationDashboard() {
                     {analytics.scoreDistribution.excellent}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {((analytics.scoreDistribution.excellent / analytics.totalEvaluations) * 100).toFixed(1)}%
+                    {(
+                      (analytics.scoreDistribution.excellent / analytics.totalEvaluations) *
+                      100
+                    ).toFixed(1)}
+                    %
                   </p>
                 </div>
                 <Award className="w-8 h-8 text-green-500" />
@@ -584,7 +573,11 @@ export function QualityEvaluationDashboard() {
                     {analytics.scoreDistribution.good}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {((analytics.scoreDistribution.good / analytics.totalEvaluations) * 100).toFixed(1)}%
+                    {(
+                      (analytics.scoreDistribution.good / analytics.totalEvaluations) *
+                      100
+                    ).toFixed(1)}
+                    %
                   </p>
                 </div>
                 <CheckCircle className="w-8 h-8 text-blue-500" />
@@ -601,7 +594,11 @@ export function QualityEvaluationDashboard() {
                     {analytics.scoreDistribution.acceptable}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {((analytics.scoreDistribution.acceptable / analytics.totalEvaluations) * 100).toFixed(1)}%
+                    {(
+                      (analytics.scoreDistribution.acceptable / analytics.totalEvaluations) *
+                      100
+                    ).toFixed(1)}
+                    %
                   </p>
                 </div>
                 <AlertCircle className="w-8 h-8 text-yellow-500" />
@@ -618,7 +615,11 @@ export function QualityEvaluationDashboard() {
                     {analytics.scoreDistribution.poor}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {((analytics.scoreDistribution.poor / analytics.totalEvaluations) * 100).toFixed(1)}%
+                    {(
+                      (analytics.scoreDistribution.poor / analytics.totalEvaluations) *
+                      100
+                    ).toFixed(1)}
+                    %
                   </p>
                 </div>
                 <XCircle className="w-8 h-8 text-red-500" />
@@ -648,9 +649,7 @@ export function QualityEvaluationDashboard() {
                     <Target className="w-5 h-5 mr-2" />
                     Quality Evaluation Controls
                   </CardTitle>
-                  <CardDescription>
-                    Configure and run content quality evaluations
-                  </CardDescription>
+                  <CardDescription>Configure and run content quality evaluations</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
                   {/* Template Selection */}
@@ -726,7 +725,7 @@ export function QualityEvaluationDashboard() {
                   {batchEvaluationMode && (
                     <div className="p-4 bg-muted rounded-lg space-y-4">
                       <h4 className="font-medium">Batch Evaluation Settings</h4>
-                      
+
                       <div className="grid grid-cols-2 gap-4">
                         <div>
                           <Label>Section Filter</Label>
@@ -760,12 +759,14 @@ export function QualityEvaluationDashboard() {
                       </div>
 
                       <Button
-                        onClick={() => batchEvaluateMutation.mutate({
-                          templateId: selectedTemplate,
-                          filters: { section: filterSection, status: filterStatus },
-                          evaluatorType: evaluationMode,
-                          priority: 'medium'
-                        })}
+                        onClick={() =>
+                          batchEvaluateMutation.mutate({
+                            templateId: selectedTemplate,
+                            filters: { section: filterSection, status: filterStatus },
+                            evaluatorType: evaluationMode,
+                            priority: 'medium',
+                          })
+                        }
                         disabled={batchEvaluateMutation.isPending}
                         className="w-full"
                       >
@@ -789,21 +790,28 @@ export function QualityEvaluationDashboard() {
                     <div className="p-4 bg-muted rounded-lg space-y-4">
                       <h4 className="font-medium">Selected Content</h4>
                       <div className="space-y-2">
-                        <p className="text-sm"><strong>Term:</strong> {selectedSample.termName}</p>
-                        <p className="text-sm"><strong>Section:</strong> {selectedSample.sectionName}</p>
-                        <p className="text-sm"><strong>Current Score:</strong> 
+                        <p className="text-sm">
+                          <strong>Term:</strong> {selectedSample.termName}
+                        </p>
+                        <p className="text-sm">
+                          <strong>Section:</strong> {selectedSample.sectionName}
+                        </p>
+                        <p className="text-sm">
+                          <strong>Current Score:</strong>
                           <span className={getScoreColor(selectedSample.currentScore)}>
                             {selectedSample.currentScore}/10
                           </span>
                         </p>
                       </div>
-                      
+
                       <Button
-                        onClick={() => evaluateContentMutation.mutate({
-                          contentId: selectedSample.id,
-                          templateId: selectedTemplate,
-                          evaluatorType: evaluationMode
-                        })}
+                        onClick={() =>
+                          evaluateContentMutation.mutate({
+                            contentId: selectedSample.id,
+                            templateId: selectedTemplate,
+                            evaluatorType: evaluationMode,
+                          })
+                        }
                         disabled={evaluateContentMutation.isPending}
                         className="w-full"
                       >
@@ -829,12 +837,16 @@ export function QualityEvaluationDashboard() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
-                      <span>Template: {QUALITY_TEMPLATES.find(t => t.id === selectedTemplate)?.name}</span>
+                      <span>
+                        Template: {QUALITY_TEMPLATES.find((t) => t.id === selectedTemplate)?.name}
+                      </span>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setEditingTemplate(QUALITY_TEMPLATES.find(t => t.id === selectedTemplate) || null);
+                          setEditingTemplate(
+                            QUALITY_TEMPLATES.find((t) => t.id === selectedTemplate) || null
+                          );
                           setShowTemplateEditor(true);
                         }}
                       >
@@ -846,33 +858,33 @@ export function QualityEvaluationDashboard() {
                   <CardContent>
                     <div className="space-y-4">
                       <p className="text-sm text-muted-foreground">
-                        {QUALITY_TEMPLATES.find(t => t.id === selectedTemplate)?.description}
+                        {QUALITY_TEMPLATES.find((t) => t.id === selectedTemplate)?.description}
                       </p>
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
                           <Label>Usage Count</Label>
                           <p className="font-mono">
-                            {QUALITY_TEMPLATES.find(t => t.id === selectedTemplate)?.usageCount}
+                            {QUALITY_TEMPLATES.find((t) => t.id === selectedTemplate)?.usageCount}
                           </p>
                         </div>
                         <div>
                           <Label>Average Score</Label>
                           <p className="font-mono">
-                            {QUALITY_TEMPLATES.find(t => t.id === selectedTemplate)?.averageScore.toFixed(1)}
+                            {QUALITY_TEMPLATES.find(
+                              (t) => t.id === selectedTemplate
+                            )?.averageScore.toFixed(1)}
                           </p>
                         </div>
                         <div>
                           <Label>Category</Label>
                           <Badge variant="outline">
-                            {QUALITY_TEMPLATES.find(t => t.id === selectedTemplate)?.category}
+                            {QUALITY_TEMPLATES.find((t) => t.id === selectedTemplate)?.category}
                           </Badge>
                         </div>
                         <div>
                           <Label>Status</Label>
-                          <Badge className="bg-green-100 text-green-800">
-                            Active
-                          </Badge>
+                          <Badge className="bg-green-100 text-green-800">Active</Badge>
                         </div>
                       </div>
 
@@ -880,7 +892,10 @@ export function QualityEvaluationDashboard() {
                         <Label>Quality Metrics</Label>
                         <div className="mt-2 space-y-2">
                           {QUALITY_METRICS.map((metric) => (
-                            <div key={metric.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                            <div
+                              key={metric.id}
+                              className="flex items-center justify-between p-2 bg-muted rounded"
+                            >
                               <div>
                                 <span className="font-medium">{metric.name}</span>
                                 <span className="text-sm text-muted-foreground ml-2">
@@ -906,9 +921,7 @@ export function QualityEvaluationDashboard() {
                     <FileText className="w-5 h-5 mr-2" />
                     Content Selection
                   </CardTitle>
-                  <CardDescription>
-                    Select content for evaluation
-                  </CardDescription>
+                  <CardDescription>Select content for evaluation</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
@@ -920,7 +933,7 @@ export function QualityEvaluationDashboard() {
 
                     <div className="space-y-2 max-h-96 overflow-y-auto">
                       {samples?.slice(0, 10).map((sample) => (
-                        <Card 
+                        <Card
                           key={sample.id}
                           className={`cursor-pointer transition-all hover:shadow-md ${
                             selectedSample?.id === sample.id ? 'ring-2 ring-blue-500' : ''
@@ -933,13 +946,17 @@ export function QualityEvaluationDashboard() {
                                 <Badge className={getStatusColor(sample.status)}>
                                   {sample.status}
                                 </Badge>
-                                <span className={`text-sm font-mono ${getScoreColor(sample.currentScore)}`}>
+                                <span
+                                  className={`text-sm font-mono ${getScoreColor(sample.currentScore)}`}
+                                >
                                   {sample.currentScore}/10
                                 </span>
                               </div>
                               <div>
                                 <p className="font-medium text-sm">{sample.termName}</p>
-                                <p className="text-xs text-muted-foreground">{sample.sectionName}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {sample.sectionName}
+                                </p>
                               </div>
                               <p className="text-xs text-muted-foreground line-clamp-2">
                                 {sample.content.substring(0, 100)}...
@@ -971,7 +988,10 @@ export function QualityEvaluationDashboard() {
                 <CardContent>
                   <div className="space-y-3">
                     {evaluations?.slice(0, 5).map((evaluation) => (
-                      <div key={evaluation.id} className="flex items-center justify-between p-2 bg-muted rounded">
+                      <div
+                        key={evaluation.id}
+                        className="flex items-center justify-between p-2 bg-muted rounded"
+                      >
                         <div className="flex-1">
                           <p className="text-sm font-medium">{evaluation.termName}</p>
                           <p className="text-xs text-muted-foreground">{evaluation.sectionName}</p>
@@ -1001,7 +1021,9 @@ export function QualityEvaluationDashboard() {
               <CardDescription>Detailed quality analytics and trend visualization</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Advanced analytics dashboard will be implemented in Phase 3.2</p>
+              <p className="text-muted-foreground">
+                Advanced analytics dashboard will be implemented in Phase 3.2
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1013,7 +1035,9 @@ export function QualityEvaluationDashboard() {
               <CardDescription>Browse and manage content samples for evaluation</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Content sample management interface will be implemented in Phase 3.3</p>
+              <p className="text-muted-foreground">
+                Content sample management interface will be implemented in Phase 3.3
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1025,7 +1049,9 @@ export function QualityEvaluationDashboard() {
               <CardDescription>Create and manage quality evaluation templates</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Template editor will be implemented in Phase 3.4</p>
+              <p className="text-muted-foreground">
+                Template editor will be implemented in Phase 3.4
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1037,7 +1063,9 @@ export function QualityEvaluationDashboard() {
               <CardDescription>Track improvement suggestions and outcomes</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Improvement tracking interface will be implemented in Phase 3.5</p>
+              <p className="text-muted-foreground">
+                Improvement tracking interface will be implemented in Phase 3.5
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -1049,7 +1077,9 @@ export function QualityEvaluationDashboard() {
               <CardDescription>Configure quality evaluation parameters</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Settings panel will be implemented in Phase 3.6</p>
+              <p className="text-muted-foreground">
+                Settings panel will be implemented in Phase 3.6
+              </p>
             </CardContent>
           </Card>
         </TabsContent>

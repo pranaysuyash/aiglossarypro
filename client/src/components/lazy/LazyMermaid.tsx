@@ -29,7 +29,7 @@ interface LazyMermaidProps {
 export function LazyMermaid({ diagram, title, description, className }: LazyMermaidProps) {
   return (
     <Suspense fallback={<MermaidSkeleton height={200} />}>
-      <MermaidDiagram 
+      <MermaidDiagram
         diagram={diagram}
         title={title}
         description={description}

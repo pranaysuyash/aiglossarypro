@@ -1,9 +1,9 @@
-import { useState, useMemo, useCallback } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
+import { useCallback, useMemo, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Search, Brain, Code, BookOpen, Lightbulb, Sparkles } from '@/components/ui/icons';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { BookOpen, Brain, Code, Lightbulb, Search, Sparkles } from '@/components/ui/icons';
+import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import CodeBlock from './CodeBlock';
 
@@ -30,8 +30,10 @@ const DEMO_TERMS: DemoTerm[] = [
     id: 'neural-network',
     name: 'Neural Network',
     category: 'Deep Learning',
-    technicalDefinition: 'A computational model inspired by biological neural networks, consisting of interconnected nodes (neurons) organized in layers that process information through weighted connections and activation functions.',
-    plainEnglishExplanation: 'Think of a neural network like a simplified version of how your brain processes information. It\'s made up of artificial "neurons" that work together to recognize patterns, make predictions, or solve problems by learning from examples.',
+    technicalDefinition:
+      'A computational model inspired by biological neural networks, consisting of interconnected nodes (neurons) organized in layers that process information through weighted connections and activation functions.',
+    plainEnglishExplanation:
+      'Think of a neural network like a simplified version of how your brain processes information. It\'s made up of artificial "neurons" that work together to recognize patterns, make predictions, or solve problems by learning from examples.',
     codeExample: {
       language: 'python',
       code: `import numpy as np
@@ -58,24 +60,35 @@ neural_net.fit(X_train, y_train)
 # Make predictions
 accuracy = neural_net.score(X_test, y_test)
 print(f"Neural Network Accuracy: {accuracy:.3f}")`,
-      description: 'A simple neural network implementation using scikit-learn for binary classification.'
+      description:
+        'A simple neural network implementation using scikit-learn for binary classification.',
     },
     useCases: [
       'Image recognition and computer vision',
       'Natural language processing and translation',
       'Recommendation systems',
       'Medical diagnosis and drug discovery',
-      'Autonomous vehicles and robotics'
+      'Autonomous vehicles and robotics',
     ],
     relatedTerms: ['Deep Learning', 'Backpropagation', 'Activation Function', 'Gradient Descent'],
-    keywords: ['neural', 'network', 'neurons', 'layers', 'deep learning', 'artificial intelligence', 'machine learning']
+    keywords: [
+      'neural',
+      'network',
+      'neurons',
+      'layers',
+      'deep learning',
+      'artificial intelligence',
+      'machine learning',
+    ],
   },
   {
     id: 'transformer',
     name: 'Transformer',
     category: 'Natural Language Processing',
-    technicalDefinition: 'A neural network architecture that relies entirely on attention mechanisms to draw global dependencies between input and output, eliminating the need for recurrence and convolutions entirely.',
-    plainEnglishExplanation: 'Transformers are like super-smart reading comprehension systems. They can look at all parts of a sentence at once and understand how each word relates to every other word, making them excellent at understanding context and meaning in language.',
+    technicalDefinition:
+      'A neural network architecture that relies entirely on attention mechanisms to draw global dependencies between input and output, eliminating the need for recurrence and convolutions entirely.',
+    plainEnglishExplanation:
+      'Transformers are like super-smart reading comprehension systems. They can look at all parts of a sentence at once and understand how each word relates to every other word, making them excellent at understanding context and meaning in language.',
     codeExample: {
       language: 'python',
       code: `from transformers import AutoTokenizer, AutoModel
@@ -101,24 +114,34 @@ embeddings = outputs.last_hidden_state
 print(f"Text: {text}")
 print(f"Embedding shape: {embeddings.shape}")
 print(f"Each word is represented by a {embeddings.shape[-1]}-dimensional vector")`,
-      description: 'Using a pre-trained BERT transformer to generate contextual word embeddings.'
+      description: 'Using a pre-trained BERT transformer to generate contextual word embeddings.',
     },
     useCases: [
       'Language translation (Google Translate)',
       'Text summarization and generation',
       'Question answering systems',
       'Chatbots and virtual assistants (ChatGPT, GPT-4)',
-      'Code generation and completion'
+      'Code generation and completion',
     ],
     relatedTerms: ['Attention Mechanism', 'BERT', 'GPT', 'Self-Attention', 'Positional Encoding'],
-    keywords: ['transformer', 'attention', 'bert', 'gpt', 'nlp', 'language model', 'self-attention']
+    keywords: [
+      'transformer',
+      'attention',
+      'bert',
+      'gpt',
+      'nlp',
+      'language model',
+      'self-attention',
+    ],
   },
   {
     id: 'gradient-descent',
     name: 'Gradient Descent',
     category: 'Optimization',
-    technicalDefinition: 'An iterative optimization algorithm used to minimize a function by moving in the direction of steepest descent as defined by the negative of the gradient.',
-    plainEnglishExplanation: 'Imagine you\'re lost in the mountains at night and want to get to the bottom of the valley. Gradient descent is like feeling the slope of the ground with your feet and always stepping in the direction that goes downhill the steepest. Eventually, you\'ll reach the bottom.',
+    technicalDefinition:
+      'An iterative optimization algorithm used to minimize a function by moving in the direction of steepest descent as defined by the negative of the gradient.',
+    plainEnglishExplanation:
+      "Imagine you're lost in the mountains at night and want to get to the bottom of the valley. Gradient descent is like feeling the slope of the ground with your feet and always stepping in the direction that goes downhill the steepest. Eventually, you'll reach the bottom.",
     codeExample: {
       language: 'python',
       code: `import numpy as np
@@ -153,24 +176,41 @@ def gradient_descent(starting_point, learning_rate, num_iterations):
 final_x, path = gradient_descent(starting_point=5.0, learning_rate=0.1, num_iterations=10)
 print(f"\\nMinimum found at x = {final_x:.4f}")
 print(f"Minimum cost = {cost_function(final_x):.4f}")`,
-      description: 'A simple implementation of gradient descent to find the minimum of a quadratic function.'
+      description:
+        'A simple implementation of gradient descent to find the minimum of a quadratic function.',
     },
     useCases: [
       'Training neural networks and deep learning models',
       'Linear and logistic regression',
       'Support vector machines',
       'Recommendation system optimization',
-      'Computer vision model training'
+      'Computer vision model training',
     ],
-    relatedTerms: ['Backpropagation', 'Learning Rate', 'Stochastic Gradient Descent', 'Optimization', 'Loss Function'],
-    keywords: ['gradient', 'descent', 'optimization', 'minimize', 'learning rate', 'convergence', 'derivative']
+    relatedTerms: [
+      'Backpropagation',
+      'Learning Rate',
+      'Stochastic Gradient Descent',
+      'Optimization',
+      'Loss Function',
+    ],
+    keywords: [
+      'gradient',
+      'descent',
+      'optimization',
+      'minimize',
+      'learning rate',
+      'convergence',
+      'derivative',
+    ],
   },
   {
     id: 'reinforcement-learning',
     name: 'Reinforcement Learning',
     category: 'Machine Learning',
-    technicalDefinition: 'A type of machine learning where an agent learns to make decisions by performing actions in an environment to maximize cumulative reward through trial and error.',
-    plainEnglishExplanation: 'Reinforcement learning is like training a pet with treats. The AI agent tries different actions, gets rewards for good choices and penalties for bad ones, and gradually learns the best strategy to maximize its rewards over time.',
+    technicalDefinition:
+      'A type of machine learning where an agent learns to make decisions by performing actions in an environment to maximize cumulative reward through trial and error.',
+    plainEnglishExplanation:
+      'Reinforcement learning is like training a pet with treats. The AI agent tries different actions, gets rewards for good choices and penalties for bad ones, and gradually learns the best strategy to maximize its rewards over time.',
     codeExample: {
       language: 'python',
       code: `import numpy as np
@@ -220,24 +260,42 @@ for episode in range(1000):
             break
 
 print("Training completed! Q-table learned optimal policy.")`,
-      description: 'A basic Q-learning implementation for a simple environment where an agent learns to reach a goal.'
+      description:
+        'A basic Q-learning implementation for a simple environment where an agent learns to reach a goal.',
     },
     useCases: [
       'Game AI (AlphaGo, chess engines, video game NPCs)',
       'Autonomous vehicles and robotics',
       'Trading algorithms and financial optimization',
       'Resource allocation and scheduling',
-      'Personalized recommendation systems'
+      'Personalized recommendation systems',
     ],
-    relatedTerms: ['Q-Learning', 'Policy Gradient', 'Markov Decision Process', 'Exploration vs Exploitation', 'Reward Function'],
-    keywords: ['reinforcement', 'learning', 'agent', 'environment', 'reward', 'policy', 'q-learning', 'exploration']
+    relatedTerms: [
+      'Q-Learning',
+      'Policy Gradient',
+      'Markov Decision Process',
+      'Exploration vs Exploitation',
+      'Reward Function',
+    ],
+    keywords: [
+      'reinforcement',
+      'learning',
+      'agent',
+      'environment',
+      'reward',
+      'policy',
+      'q-learning',
+      'exploration',
+    ],
   },
   {
     id: 'convolutional-neural-network',
     name: 'Convolutional Neural Network (CNN)',
     category: 'Computer Vision',
-    technicalDefinition: 'A class of deep neural networks most commonly applied to analyzing visual imagery, using convolution operations to detect local features through learnable filters and pooling layers for spatial dimensionality reduction.',
-    plainEnglishExplanation: 'CNNs are like digital eyes that can "see" and understand images. They work by looking at small parts of an image at a time (like focusing on edges, shapes, or textures) and gradually building up an understanding of what the whole image contains.',
+    technicalDefinition:
+      'A class of deep neural networks most commonly applied to analyzing visual imagery, using convolution operations to detect local features through learnable filters and pooling layers for spatial dimensionality reduction.',
+    plainEnglishExplanation:
+      'CNNs are like digital eyes that can "see" and understand images. They work by looking at small parts of an image at a time (like focusing on edges, shapes, or textures) and gradually building up an understanding of what the whole image contains.',
     codeExample: {
       language: 'python',
       code: `import tensorflow as tf
@@ -283,18 +341,27 @@ model.summary()
 
 # Train the model (uncomment to run)
 # history = model.fit(x_train, y_train, epochs=10, validation_data=(x_test, y_test))`,
-      description: 'A CNN implementation using TensorFlow/Keras for image classification on the CIFAR-10 dataset.'
+      description:
+        'A CNN implementation using TensorFlow/Keras for image classification on the CIFAR-10 dataset.',
     },
     useCases: [
       'Image classification and object detection',
       'Medical image analysis (X-rays, MRIs)',
       'Facial recognition and biometric systems',
       'Autonomous vehicle vision systems',
-      'Quality control in manufacturing'
+      'Quality control in manufacturing',
     ],
     relatedTerms: ['Computer Vision', 'Convolution', 'Pooling', 'Feature Maps', 'Deep Learning'],
-    keywords: ['cnn', 'convolutional', 'computer vision', 'image', 'convolution', 'pooling', 'feature detection']
-  }
+    keywords: [
+      'cnn',
+      'convolutional',
+      'computer vision',
+      'image',
+      'convolution',
+      'pooling',
+      'feature detection',
+    ],
+  },
 ];
 
 interface InteractiveDemoProps {
@@ -308,31 +375,34 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
   // Filter terms based on search query
   const filteredTerms = useMemo(() => {
     if (!searchQuery.trim()) return DEMO_TERMS;
-    
+
     const query = searchQuery.toLowerCase();
-    return DEMO_TERMS.filter(term => 
-      term.name.toLowerCase().includes(query) ||
-      term.category.toLowerCase().includes(query) ||
-      term.technicalDefinition.toLowerCase().includes(query) ||
-      term.plainEnglishExplanation.toLowerCase().includes(query) ||
-      term.keywords.some(keyword => keyword.includes(query)) ||
-      term.useCases.some(useCase => useCase.toLowerCase().includes(query))
+    return DEMO_TERMS.filter(
+      (term) =>
+        term.name.toLowerCase().includes(query) ||
+        term.category.toLowerCase().includes(query) ||
+        term.technicalDefinition.toLowerCase().includes(query) ||
+        term.plainEnglishExplanation.toLowerCase().includes(query) ||
+        term.keywords.some((keyword) => keyword.includes(query)) ||
+        term.useCases.some((useCase) => useCase.toLowerCase().includes(query))
     );
   }, [searchQuery]);
 
   // Highlight matching text
   const highlightText = useCallback((text: string, query: string) => {
     if (!query.trim()) return text;
-    
+
     const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
     const parts = text.split(regex);
-    
-    return parts.map((part, index) => 
+
+    return parts.map((part, index) =>
       regex.test(part) ? (
         <mark key={index} className="bg-yellow-200 dark:bg-yellow-800 px-1 rounded">
           {part}
         </mark>
-      ) : part
+      ) : (
+        part
+      )
     );
   }, []);
 
@@ -346,7 +416,7 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
 
   // Mobile-friendly term card component
   const TermCard = ({ term }: { term: DemoTerm }) => (
-    <Card 
+    <Card
       className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
       onClick={() => handleTermSelect(term)}
     >
@@ -383,11 +453,7 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center gap-4 mb-6">
-        <Button 
-          variant="ghost" 
-          onClick={handleBackToList}
-          className="flex-shrink-0"
-        >
+        <Button variant="ghost" onClick={handleBackToList} className="flex-shrink-0">
           ← Back to Demo
         </Button>
         <div className="flex-1">
@@ -407,9 +473,7 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-700 dark:text-gray-300">
-            {term.technicalDefinition}
-          </p>
+          <p className="text-gray-700 dark:text-gray-300">{term.technicalDefinition}</p>
         </CardContent>
       </Card>
 
@@ -422,9 +486,7 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-700 dark:text-gray-300">
-            {term.plainEnglishExplanation}
-          </p>
+          <p className="text-gray-700 dark:text-gray-300">{term.plainEnglishExplanation}</p>
         </CardContent>
       </Card>
 
@@ -478,7 +540,7 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
   );
 
   return (
-    <div className={cn("w-full max-w-6xl mx-auto p-4", className)}>
+    <div className={cn('w-full max-w-6xl mx-auto p-4', className)}>
       {selectedTerm ? (
         <TermDetail term={selectedTerm} />
       ) : (
@@ -487,8 +549,9 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold mb-2">Interactive AI Glossary Demo</h2>
             <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Explore our comprehensive AI/ML glossary with detailed explanations, code examples, and real-world use cases. 
-              Try searching for any term or concept to see how our search works.
+              Explore our comprehensive AI/ML glossary with detailed explanations, code examples,
+              and real-world use cases. Try searching for any term or concept to see how our search
+              works.
             </p>
           </div>
 
@@ -508,7 +571,8 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
           {searchQuery && (
             <div className="text-center mb-6">
               <p className="text-sm text-gray-600 dark:text-gray-400">
-                Found {filteredTerms.length} result{filteredTerms.length !== 1 ? 's' : ''} for "{searchQuery}"
+                Found {filteredTerms.length} result{filteredTerms.length !== 1 ? 's' : ''} for "
+                {searchQuery}"
               </p>
             </div>
           )}
@@ -530,16 +594,18 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
                   We couldn't find any terms matching "{searchQuery}". Try searching for:
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
-                  {['neural network', 'transformer', 'machine learning', 'deep learning', 'AI'].map((suggestion) => (
-                    <Button
-                      key={suggestion}
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setSearchQuery(suggestion)}
-                    >
-                      {suggestion}
-                    </Button>
-                  ))}
+                  {['neural network', 'transformer', 'machine learning', 'deep learning', 'AI'].map(
+                    (suggestion) => (
+                      <Button
+                        key={suggestion}
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSearchQuery(suggestion)}
+                      >
+                        {suggestion}
+                      </Button>
+                    )
+                  )}
                 </div>
               </CardContent>
             </Card>
@@ -552,11 +618,10 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
                 <CardContent className="pt-6">
                   <h3 className="text-lg font-semibold mb-2">Discover More</h3>
                   <p className="text-gray-600 dark:text-gray-400 mb-4">
-                    This demo shows just 5 terms. Our full glossary contains thousands of AI/ML concepts with detailed explanations, code examples, and interactive elements.
+                    This demo shows just 5 terms. Our full glossary contains thousands of AI/ML
+                    concepts with detailed explanations, code examples, and interactive elements.
                   </p>
-                  <Button className="w-full">
-                    Explore Full Glossary
-                  </Button>
+                  <Button className="w-full">Explore Full Glossary</Button>
                 </CardContent>
               </Card>
             </div>

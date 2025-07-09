@@ -28,14 +28,24 @@ export interface GA4ConversionEvent extends GA4Event {
 }
 
 export interface GA4EngagementEvent extends GA4Event {
-  engagement_type: 'scroll_depth' | 'time_on_page' | 'section_view' | 'cta_click' | 'performance_alert' | 'performance_summary';
+  engagement_type:
+    | 'scroll_depth'
+    | 'time_on_page'
+    | 'section_view'
+    | 'cta_click'
+    | 'performance_alert'
+    | 'performance_summary';
   engagement_value: number;
   page_location: string;
   page_title: string;
 }
 
 export interface GA4BusinessEvent extends GA4Event {
-  business_metric: 'early_bird_signup' | 'pricing_interaction' | 'ab_test_view' | 'feature_discovery';
+  business_metric:
+    | 'early_bird_signup'
+    | 'pricing_interaction'
+    | 'ab_test_view'
+    | 'feature_discovery';
   variant?: string;
   test_id?: string;
   cohort?: string;
@@ -55,7 +65,7 @@ class GA4AnalyticsService {
   constructor() {
     // Get validated configuration
     const { config, validation } = getValidatedAnalyticsConfig();
-    
+
     this.measurementId = config.ga4.measurementId;
     this.apiSecret = import.meta.env.VITE_GA4_API_SECRET || '';
     this.isEnabled = config.ga4.enabled && validation.isValid;
@@ -68,7 +78,7 @@ class GA4AnalyticsService {
     if (!validation.isValid) {
       console.error('GA4 Analytics disabled due to configuration errors:', validation.errors);
     }
-    
+
     if (validation.warnings.length > 0 && this.isDebug) {
       console.warn('GA4 Analytics configuration warnings:', validation.warnings);
     }
@@ -95,7 +105,7 @@ class GA4AnalyticsService {
     document.head.appendChild(script);
 
     // Initialize gtag
-    window.gtag = function() {
+    window.gtag = () => {
       (window as any).dataLayer = (window as any).dataLayer || [];
       (window as any).dataLayer.push(arguments);
     };
@@ -106,32 +116,32 @@ class GA4AnalyticsService {
 
     // Get configuration for GA4 setup
     const { config } = getValidatedAnalyticsConfig();
-    
+
     // Configure GA4 with privacy settings
     if (window.gtag) {
       window.gtag('config', this.measurementId, {
-      // Privacy and consent settings
-      anonymize_ip: config.privacy.anonymizeIp,
-      allow_google_signals: config.privacy.allowGoogleSignals,
-      allow_ad_personalization_signals: config.privacy.allowAdPersonalization,
-      
-      // Enhanced measurement settings
-      send_page_view: false, // We'll handle page views manually
-      
-      // Debug mode based on configuration
-      debug_mode: config.ga4.debugMode,
-      
-      // Custom parameters
-      custom_map: {
-        'custom_user_id': 'user_id',
-        'ab_test_variant': 'variant',
-        'pricing_tier': 'tier',
-        'user_cohort': 'cohort'
-      },
+        // Privacy and consent settings
+        anonymize_ip: config.privacy.anonymizeIp,
+        allow_google_signals: config.privacy.allowGoogleSignals,
+        allow_ad_personalization_signals: config.privacy.allowAdPersonalization,
 
-      // Cookie settings from configuration
-      cookie_flags: config.ga4.cookieFlags,
-      cookie_expires: config.ga4.cookieExpires,
+        // Enhanced measurement settings
+        send_page_view: false, // We'll handle page views manually
+
+        // Debug mode based on configuration
+        debug_mode: config.ga4.debugMode,
+
+        // Custom parameters
+        custom_map: {
+          custom_user_id: 'user_id',
+          ab_test_variant: 'variant',
+          pricing_tier: 'tier',
+          user_cohort: 'cohort',
+        },
+
+        // Cookie settings from configuration
+        cookie_flags: config.ga4.cookieFlags,
+        cookie_expires: config.ga4.cookieExpires,
       });
     }
 
@@ -172,7 +182,7 @@ class GA4AnalyticsService {
     this.userId = userId;
     if (this.isInitialized() && window.gtag) {
       window.gtag('config', this.measurementId, {
-        user_id: userId
+        user_id: userId,
       });
     }
   }
@@ -182,7 +192,7 @@ class GA4AnalyticsService {
     if (!this.hasAnalyticsConsent() || !this.isInitialized()) return;
 
     this.pageViewId = this.generatePageViewId();
-    
+
     const pageViewData = {
       page_title,
       page_location: page_location || window.location.href,
@@ -191,11 +201,11 @@ class GA4AnalyticsService {
       page_view_id: this.pageViewId,
       user_id: this.userId,
       timestamp: new Date().toISOString(),
-      
+
       // Enhanced ecommerce parameters for landing page
       content_group1: this.getContentGroup(page_location),
       content_group2: this.getPageType(page_location),
-      
+
       // Technical details
       screen_resolution: `${window.screen.width}x${window.screen.height}`,
       viewport_size: `${window.innerWidth}x${window.innerHeight}`,
@@ -223,11 +233,11 @@ class GA4AnalyticsService {
       user_id: this.userId,
       timestamp: new Date().toISOString(),
       session_duration: this.getSessionDuration(),
-      
+
       // Conversion funnel tracking
       funnel_stage: event.funnel_stage,
       conversion_type: event.conversion_type,
-      
+
       // Attribution data
       source: event.source || this.getTrafficSource(),
       medium: event.medium || this.getTrafficMedium(),
@@ -242,11 +252,11 @@ class GA4AnalyticsService {
     // Also track specific conversion type
     if (window.gtag) {
       window.gtag('event', event.conversion_type, {
-      event_category: 'conversion',
-      event_label: event.funnel_stage,
-      value: event.value || 1,
-      currency: event.currency || 'USD',
-      ...conversionData
+        event_category: 'conversion',
+        event_label: event.funnel_stage,
+        value: event.value || 1,
+        currency: event.currency || 'USD',
+        ...conversionData,
       });
     }
 
@@ -270,10 +280,10 @@ class GA4AnalyticsService {
 
     if (window.gtag) {
       window.gtag('event', event.engagement_type, {
-      event_category: 'engagement',
-      event_label: event.engagement_type,
-      value: event.engagement_value,
-      ...engagementData
+        event_category: 'engagement',
+        event_label: event.engagement_type,
+        value: event.engagement_value,
+        ...engagementData,
       });
     }
 
@@ -297,15 +307,15 @@ class GA4AnalyticsService {
 
     if (window.gtag) {
       window.gtag('event', event.business_metric, {
-      event_category: 'business_metrics',
-      event_label: event.business_metric,
-      value: event.value || 1,
-      custom_map: {
-        variant: event.variant,
-        test_id: event.test_id,
-        cohort: event.cohort
-      },
-      ...businessData
+        event_category: 'business_metrics',
+        event_label: event.business_metric,
+        value: event.value || 1,
+        custom_map: {
+          variant: event.variant,
+          test_id: event.test_id,
+          cohort: event.cohort,
+        },
+        ...businessData,
       });
     }
 
@@ -328,8 +338,8 @@ class GA4AnalyticsService {
       item_category: section,
       custom_parameters: {
         cta_location,
-        section
-      }
+        section,
+      },
     });
   }
 
@@ -343,7 +353,7 @@ class GA4AnalyticsService {
       page_title: document.title,
       event_category: 'engagement',
       event_label: `${percentage}%`,
-      value: percentage
+      value: percentage,
     });
   }
 
@@ -360,24 +370,37 @@ class GA4AnalyticsService {
       item_name: section_name,
       custom_parameters: {
         section_position: section_position || 0,
-        section_name
-      }
+        section_name,
+      },
     });
   }
 
   // Track form submissions
-  trackFormSubmission(form_type: 'contact' | 'newsletter' | 'signup' | 'feedback', form_location: string): void {
+  trackFormSubmission(
+    form_type: 'contact' | 'newsletter' | 'signup' | 'feedback',
+    form_location: string
+  ): void {
     this.trackConversion({
       event_name: 'form_submit',
-      conversion_type: form_type === 'contact' ? 'contact_form' : form_type === 'feedback' ? 'contact_form' : 'newsletter_signup',
-      funnel_stage: form_type === 'contact' ? 'contact_inquiry' : form_type === 'feedback' ? 'feedback_submission' : 'newsletter_subscribe',
+      conversion_type:
+        form_type === 'contact'
+          ? 'contact_form'
+          : form_type === 'feedback'
+            ? 'contact_form'
+            : 'newsletter_signup',
+      funnel_stage:
+        form_type === 'contact'
+          ? 'contact_inquiry'
+          : form_type === 'feedback'
+            ? 'feedback_submission'
+            : 'newsletter_subscribe',
       event_category: 'conversion',
       event_label: form_type,
       value: 1,
       custom_parameters: {
         form_type,
-        form_location
-      }
+        form_location,
+      },
     });
   }
 
@@ -392,8 +415,8 @@ class GA4AnalyticsService {
       custom_parameters: {
         pricing_tier,
         discount_percentage,
-        offer_type: 'early_bird'
-      }
+        offer_type: 'early_bird',
+      },
     });
   }
 
@@ -410,25 +433,30 @@ class GA4AnalyticsService {
       custom_parameters: {
         test_type,
         variant,
-        test_id
-      }
+        test_id,
+      },
     });
   }
 
   // Enhanced ecommerce tracking for purchases
-  trackPurchase(transaction_id: string, value: number, currency: string = 'USD', items: any[]): void {
+  trackPurchase(
+    transaction_id: string,
+    value: number,
+    currency: string = 'USD',
+    items: any[]
+  ): void {
     if (!this.hasAnalyticsConsent() || !this.isInitialized()) return;
 
     if (window.gtag) {
       window.gtag('event', 'purchase', {
-      transaction_id,
-      value,
-      currency,
-      items,
-      session_id: this.sessionId,
-      user_id: this.userId,
-      event_category: 'ecommerce',
-      event_label: 'premium_purchase'
+        transaction_id,
+        value,
+        currency,
+        items,
+        session_id: this.sessionId,
+        user_id: this.userId,
+        event_category: 'ecommerce',
+        event_label: 'premium_purchase',
       });
     }
 
@@ -441,12 +469,17 @@ class GA4AnalyticsService {
       currency,
       transaction_id,
       event_category: 'conversion',
-      event_label: 'premium_purchase'
+      event_label: 'premium_purchase',
     });
   }
 
   // Conversion funnel tracking
-  trackFunnelStep(funnelName: string, stepName: string, stepPosition: number, value?: number): void {
+  trackFunnelStep(
+    funnelName: string,
+    stepName: string,
+    stepPosition: number,
+    value?: number
+  ): void {
     if (!this.hasAnalyticsConsent() || !this.isInitialized()) return;
 
     const funnelData = {
@@ -458,15 +491,15 @@ class GA4AnalyticsService {
       user_id: this.userId,
       timestamp: new Date().toISOString(),
       session_duration: this.getSessionDuration(),
-      value: value || 1
+      value: value || 1,
     };
 
     if (window.gtag) {
       window.gtag('event', 'funnel_step', {
-      event_category: 'funnel_tracking',
-      event_label: `${funnelName}_step_${stepPosition}`,
-      value: value || 1,
-      custom_parameters: funnelData
+        event_category: 'funnel_tracking',
+        event_label: `${funnelName}_step_${stepPosition}`,
+        value: value || 1,
+        custom_parameters: funnelData,
       });
     }
 
@@ -496,15 +529,15 @@ class GA4AnalyticsService {
       user_id: this.userId,
       timestamp: new Date().toISOString(),
       session_duration: this.getSessionDuration(),
-      ...journey.metadata
+      ...journey.metadata,
     };
 
     if (window.gtag) {
       window.gtag('event', 'user_journey', {
-      event_category: 'user_journey',
-      event_label: `${journey.stage}_${journey.action}`,
-      value: 1,
-      custom_parameters: journeyData
+        event_category: 'user_journey',
+        event_label: `${journey.stage}_${journey.action}`,
+        value: 1,
+        custom_parameters: journeyData,
       });
     }
 
@@ -514,14 +547,22 @@ class GA4AnalyticsService {
   }
 
   // Predefined conversion funnels for the landing page
-  trackLandingPageFunnel(step: 'page_view' | 'hero_engagement' | 'pricing_view' | 'cta_click' | 'signup_start' | 'signup_complete'): void {
+  trackLandingPageFunnel(
+    step:
+      | 'page_view'
+      | 'hero_engagement'
+      | 'pricing_view'
+      | 'cta_click'
+      | 'signup_start'
+      | 'signup_complete'
+  ): void {
     const stepMap = {
-      'page_view': { name: 'Landing Page View', position: 1 },
-      'hero_engagement': { name: 'Hero Section Engagement', position: 2 },
-      'pricing_view': { name: 'Pricing Section View', position: 3 },
-      'cta_click': { name: 'CTA Click', position: 4 },
-      'signup_start': { name: 'Signup Started', position: 5 },
-      'signup_complete': { name: 'Signup Completed', position: 6 }
+      page_view: { name: 'Landing Page View', position: 1 },
+      hero_engagement: { name: 'Hero Section Engagement', position: 2 },
+      pricing_view: { name: 'Pricing Section View', position: 3 },
+      cta_click: { name: 'CTA Click', position: 4 },
+      signup_start: { name: 'Signup Started', position: 5 },
+      signup_complete: { name: 'Signup Completed', position: 6 },
     };
 
     const stepInfo = stepMap[step];
@@ -533,12 +574,12 @@ class GA4AnalyticsService {
     try {
       const storageKey = `ga4_funnel_${funnelName}`;
       const existingData = JSON.parse(sessionStorage.getItem(storageKey) || '{}');
-      
+
       existingData[stepPosition] = {
         stepName,
         timestamp: new Date().toISOString(),
         sessionId: this.sessionId,
-        pageViewId: this.pageViewId
+        pageViewId: this.pageViewId,
       };
 
       sessionStorage.setItem(storageKey, JSON.stringify(existingData));
@@ -582,13 +623,13 @@ class GA4AnalyticsService {
   private getTrafficSource(): string {
     const referrer = document.referrer;
     if (!referrer) return 'direct';
-    
+
     const hostname = new URL(referrer).hostname;
     if (hostname.includes('google')) return 'google';
     if (hostname.includes('facebook')) return 'facebook';
     if (hostname.includes('twitter')) return 'twitter';
     if (hostname.includes('linkedin')) return 'linkedin';
-    
+
     return 'referral';
   }
 
@@ -631,7 +672,7 @@ class GA4AnalyticsService {
       measurementId: this.measurementId,
       isEnabled: this.isEnabled,
       hasConsent: this.hasAnalyticsConsent(),
-      isInitialized: this.isInitialized()
+      isInitialized: this.isInitialized(),
     };
   }
 }
@@ -658,7 +699,7 @@ export const useGA4 = () => {
     trackLandingPageFunnel: ga4Analytics.trackLandingPageFunnel.bind(ga4Analytics),
     getFunnelProgress: ga4Analytics.getFunnelProgress.bind(ga4Analytics),
     setUserId: ga4Analytics.setUserId.bind(ga4Analytics),
-    getSessionInfo: ga4Analytics.getSessionInfo.bind(ga4Analytics)
+    getSessionInfo: ga4Analytics.getSessionInfo.bind(ga4Analytics),
   };
 };
 

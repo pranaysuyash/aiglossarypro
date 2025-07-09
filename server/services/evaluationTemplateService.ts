@@ -58,18 +58,18 @@ export class EvaluationTemplateService {
             'Technical terminology is used correctly',
             'Mathematical notation is accurate',
             'Concepts are technically sound',
-            'No factual errors or misconceptions'
+            'No factual errors or misconceptions',
           ],
           examples: {
             good: [
               'Uses precise technical terminology consistently',
-              'Mathematical formulas are correctly formatted and explained'
+              'Mathematical formulas are correctly formatted and explained',
             ],
             bad: [
               'Confuses similar but distinct concepts',
-              'Contains mathematical errors or typos'
-            ]
-          }
+              'Contains mathematical errors or typos',
+            ],
+          },
         },
         {
           dimension: 'clarity',
@@ -78,51 +78,52 @@ export class EvaluationTemplateService {
             'Complex concepts are broken down effectively',
             'Logical flow from simple to complex',
             'Clear relationship between concepts',
-            'Appropriate use of examples'
+            'Appropriate use of examples',
           ],
           examples: {
             good: [
               'Starts with intuitive explanation before technical details',
-              'Uses analogies to clarify complex concepts'
+              'Uses analogies to clarify complex concepts',
             ],
             bad: [
               'Jumps directly into complex mathematics without context',
-              'Uses jargon without explanation'
-            ]
-          }
+              'Uses jargon without explanation',
+            ],
+          },
         },
         {
           dimension: 'completeness',
-          weight: 0.20,
+          weight: 0.2,
           criteria: [
             'Covers all essential aspects of the concept',
             'Includes necessary mathematical foundations',
             'Addresses common variations or special cases',
-            'Provides sufficient depth for target audience'
+            'Provides sufficient depth for target audience',
           ],
           examples: {
             good: [
               'Includes both intuitive and formal definitions',
-              'Covers edge cases and limitations'
+              'Covers edge cases and limitations',
             ],
             bad: [
               'Only provides surface-level explanation',
-              'Misses critical components of the concept'
-            ]
-          }
-        }
+              'Misses critical components of the concept',
+            ],
+          },
+        },
       ],
       prompts: {
         system: 'You are an expert technical evaluator for AI/ML educational content.',
-        evaluation: 'Evaluate this technical definition based on accuracy, clarity, and completeness.',
-        scoring: 'Provide detailed scores and actionable feedback for improvement.'
+        evaluation:
+          'Evaluate this technical definition based on accuracy, clarity, and completeness.',
+        scoring: 'Provide detailed scores and actionable feedback for improvement.',
       },
       metadata: {
         version: '1.0',
         lastUpdated: new Date(),
         author: 'AI Glossary Pro',
-        tags: ['technical', 'definition', 'ai-ml']
-      }
+        tags: ['technical', 'definition', 'ai-ml'],
+      },
     });
 
     // Practical Application Template
@@ -135,23 +136,20 @@ export class EvaluationTemplateService {
       evaluationCriteria: [
         {
           dimension: 'relevance',
-          weight: 0.30,
+          weight: 0.3,
           criteria: [
             'Examples are industry-relevant',
             'Use cases are realistic and current',
             'Applications demonstrate practical value',
-            'Covers diverse domains appropriately'
+            'Covers diverse domains appropriately',
           ],
           examples: {
             good: [
               'Includes real-world case studies from major companies',
-              'Shows practical implementation challenges and solutions'
+              'Shows practical implementation challenges and solutions',
             ],
-            bad: [
-              'Only theoretical or academic examples',
-              'Outdated or irrelevant use cases'
-            ]
-          }
+            bad: ['Only theoretical or academic examples', 'Outdated or irrelevant use cases'],
+          },
         },
         {
           dimension: 'completeness',
@@ -160,51 +158,49 @@ export class EvaluationTemplateService {
             'Covers implementation details',
             'Includes performance considerations',
             'Addresses common pitfalls',
-            'Provides actionable insights'
+            'Provides actionable insights',
           ],
           examples: {
             good: [
               'Includes code snippets or implementation guidelines',
-              'Discusses trade-offs and decision criteria'
+              'Discusses trade-offs and decision criteria',
             ],
             bad: [
               'Only high-level overview without details',
-              'Missing critical implementation considerations'
-            ]
-          }
+              'Missing critical implementation considerations',
+            ],
+          },
         },
         {
           dimension: 'engagement',
-          weight: 0.20,
+          weight: 0.2,
           criteria: [
             'Examples are compelling and interesting',
             'Content motivates further exploration',
             'Includes interactive elements or exercises',
-            'Connects to reader\'s potential use cases'
+            "Connects to reader's potential use cases",
           ],
           examples: {
             good: [
               'Includes "try it yourself" sections',
-              'Relates to trending technologies or problems'
+              'Relates to trending technologies or problems',
             ],
-            bad: [
-              'Dry, abstract examples only',
-              'No connection to reader\'s context'
-            ]
-          }
-        }
+            bad: ['Dry, abstract examples only', "No connection to reader's context"],
+          },
+        },
       ],
       prompts: {
         system: 'You are an expert in evaluating practical AI/ML applications and use cases.',
-        evaluation: 'Evaluate this practical application content for relevance, completeness, and engagement.',
-        scoring: 'Focus on real-world applicability and actionable insights.'
+        evaluation:
+          'Evaluate this practical application content for relevance, completeness, and engagement.',
+        scoring: 'Focus on real-world applicability and actionable insights.',
       },
       metadata: {
         version: '1.0',
         lastUpdated: new Date(),
         author: 'AI Glossary Pro',
-        tags: ['practical', 'application', 'use-case']
-      }
+        tags: ['practical', 'application', 'use-case'],
+      },
     });
 
     // Implementation Guide Template
@@ -217,43 +213,37 @@ export class EvaluationTemplateService {
       evaluationCriteria: [
         {
           dimension: 'clarity',
-          weight: 0.30,
+          weight: 0.3,
           criteria: [
             'Steps are clearly defined and numbered',
             'Prerequisites are explicitly stated',
             'Code examples are well-commented',
-            'Expected outcomes are clear'
+            'Expected outcomes are clear',
           ],
           examples: {
             good: [
               'Each step has clear input/output expectations',
-              'Includes troubleshooting tips for common errors'
+              'Includes troubleshooting tips for common errors',
             ],
             bad: [
               'Vague instructions like "implement the algorithm"',
-              'Missing critical setup or configuration steps'
-            ]
-          }
+              'Missing critical setup or configuration steps',
+            ],
+          },
         },
         {
           dimension: 'completeness',
-          weight: 0.30,
+          weight: 0.3,
           criteria: [
             'All necessary steps are included',
             'Environment setup is covered',
             'Error handling is addressed',
-            'Testing and validation included'
+            'Testing and validation included',
           ],
           examples: {
-            good: [
-              'Includes full working code examples',
-              'Covers edge cases and error scenarios'
-            ],
-            bad: [
-              'Assumes too much prior knowledge',
-              'Skips important configuration steps'
-            ]
-          }
+            good: ['Includes full working code examples', 'Covers edge cases and error scenarios'],
+            bad: ['Assumes too much prior knowledge', 'Skips important configuration steps'],
+          },
         },
         {
           dimension: 'accuracy',
@@ -262,31 +252,29 @@ export class EvaluationTemplateService {
             'Code examples run without errors',
             'Technical instructions are correct',
             'Version compatibility is specified',
-            'Best practices are followed'
+            'Best practices are followed',
           ],
           examples: {
             good: [
               'Specifies exact library versions used',
-              'Code follows language conventions and best practices'
+              'Code follows language conventions and best practices',
             ],
-            bad: [
-              'Syntax errors in code examples',
-              'Deprecated methods or outdated practices'
-            ]
-          }
-        }
+            bad: ['Syntax errors in code examples', 'Deprecated methods or outdated practices'],
+          },
+        },
       ],
       prompts: {
         system: 'You are an expert in evaluating technical implementation guides and tutorials.',
-        evaluation: 'Evaluate this implementation guide for clarity, completeness, and technical accuracy.',
-        scoring: 'Focus on whether a developer could successfully follow these instructions.'
+        evaluation:
+          'Evaluate this implementation guide for clarity, completeness, and technical accuracy.',
+        scoring: 'Focus on whether a developer could successfully follow these instructions.',
       },
       metadata: {
         version: '1.0',
         lastUpdated: new Date(),
         author: 'AI Glossary Pro',
-        tags: ['implementation', 'tutorial', 'guide']
-      }
+        tags: ['implementation', 'tutorial', 'guide'],
+      },
     });
 
     // Mathematical Formulation Template
@@ -299,23 +287,23 @@ export class EvaluationTemplateService {
       evaluationCriteria: [
         {
           dimension: 'accuracy',
-          weight: 0.40,
+          weight: 0.4,
           criteria: [
             'Mathematical notation is correct',
             'Formulas are properly derived',
             'Proofs are logically sound',
-            'Assumptions are clearly stated'
+            'Assumptions are clearly stated',
           ],
           examples: {
             good: [
               'Uses standard mathematical notation consistently',
-              'Each step in derivation is justified'
+              'Each step in derivation is justified',
             ],
             bad: [
               'Notation conflicts with standard conventions',
-              'Logical gaps in proofs or derivations'
-            ]
-          }
+              'Logical gaps in proofs or derivations',
+            ],
+          },
         },
         {
           dimension: 'clarity',
@@ -324,51 +312,49 @@ export class EvaluationTemplateService {
             'Notation is defined before use',
             'Complex equations are broken down',
             'Intuition is provided alongside formulas',
-            'Visual aids complement equations'
+            'Visual aids complement equations',
           ],
           examples: {
             good: [
               'Includes intuitive explanation before formal proof',
-              'Uses diagrams to illustrate mathematical concepts'
+              'Uses diagrams to illustrate mathematical concepts',
             ],
-            bad: [
-              'Wall of equations without explanation',
-              'Undefined symbols or notation'
-            ]
-          }
+            bad: ['Wall of equations without explanation', 'Undefined symbols or notation'],
+          },
         },
         {
           dimension: 'completeness',
-          weight: 0.20,
+          weight: 0.2,
           criteria: [
             'All necessary definitions provided',
             'Key theorems and lemmas included',
             'Boundary conditions addressed',
-            'Computational complexity discussed'
+            'Computational complexity discussed',
           ],
           examples: {
             good: [
               'Includes convergence conditions and guarantees',
-              'Discusses computational implications'
+              'Discusses computational implications',
             ],
             bad: [
               'Missing critical assumptions or conditions',
-              'No discussion of practical limitations'
-            ]
-          }
-        }
+              'No discussion of practical limitations',
+            ],
+          },
+        },
       ],
       prompts: {
         system: 'You are an expert mathematician specializing in ML/AI theory evaluation.',
-        evaluation: 'Evaluate this mathematical content for correctness, clarity, and completeness.',
-        scoring: 'Pay special attention to mathematical rigor and accessibility.'
+        evaluation:
+          'Evaluate this mathematical content for correctness, clarity, and completeness.',
+        scoring: 'Pay special attention to mathematical rigor and accessibility.',
       },
       metadata: {
         version: '1.0',
         lastUpdated: new Date(),
         author: 'AI Glossary Pro',
-        tags: ['mathematical', 'theory', 'formal']
-      }
+        tags: ['mathematical', 'theory', 'formal'],
+      },
     });
 
     // Prerequisites and Learning Path Template
@@ -381,76 +367,70 @@ export class EvaluationTemplateService {
       evaluationCriteria: [
         {
           dimension: 'relevance',
-          weight: 0.30,
+          weight: 0.3,
           criteria: [
             'Prerequisites are actually necessary',
             'Learning sequence is logical',
             'Difficulty progression is appropriate',
-            'Resources are current and accessible'
+            'Resources are current and accessible',
           ],
           examples: {
             good: [
               'Clear progression from basic to advanced concepts',
-              'Each prerequisite directly supports the main topic'
+              'Each prerequisite directly supports the main topic',
             ],
             bad: [
               'Includes unnecessary or tangential prerequisites',
-              'Jumps in difficulty without intermediate steps'
-            ]
-          }
+              'Jumps in difficulty without intermediate steps',
+            ],
+          },
         },
         {
           dimension: 'completeness',
-          weight: 0.30,
+          weight: 0.3,
           criteria: [
             'All essential prerequisites listed',
             'Alternative learning paths provided',
             'Time estimates are realistic',
-            'Resources cover all prerequisites'
+            'Resources cover all prerequisites',
           ],
           examples: {
             good: [
               'Includes both required and recommended prerequisites',
-              'Provides multiple resource options for each topic'
+              'Provides multiple resource options for each topic',
             ],
-            bad: [
-              'Missing critical foundational concepts',
-              'Only one rigid path provided'
-            ]
-          }
+            bad: ['Missing critical foundational concepts', 'Only one rigid path provided'],
+          },
         },
         {
           dimension: 'engagement',
-          weight: 0.20,
+          weight: 0.2,
           criteria: [
             'Motivates the learning journey',
             'Includes progress checkpoints',
             'Provides practical milestones',
-            'Encourages active learning'
+            'Encourages active learning',
           ],
           examples: {
             good: [
               'Includes mini-projects at each milestone',
-              'Shows clear benefits of completing each step'
+              'Shows clear benefits of completing each step',
             ],
-            bad: [
-              'Just a list of topics without context',
-              'No way to measure progress'
-            ]
-          }
-        }
+            bad: ['Just a list of topics without context', 'No way to measure progress'],
+          },
+        },
       ],
       prompts: {
         system: 'You are an expert in curriculum design and learning path evaluation.',
         evaluation: 'Evaluate this learning path for effectiveness and completeness.',
-        scoring: 'Consider learner motivation and practical progression.'
+        scoring: 'Consider learner motivation and practical progression.',
       },
       metadata: {
         version: '1.0',
         lastUpdated: new Date(),
         author: 'AI Glossary Pro',
-        tags: ['learning', 'prerequisites', 'curriculum']
-      }
+        tags: ['learning', 'prerequisites', 'curriculum'],
+      },
     });
 
     // Industry Use Case Template
@@ -468,18 +448,18 @@ export class EvaluationTemplateService {
             'Use case is current and industry-relevant',
             'Addresses real business problems',
             'Includes measurable outcomes',
-            'Applicable to multiple contexts'
+            'Applicable to multiple contexts',
           ],
           examples: {
             good: [
               'Includes specific metrics and ROI',
-              'References actual company implementations'
+              'References actual company implementations',
             ],
             bad: [
               'Hypothetical scenarios without real examples',
-              'Outdated technology or approaches'
-            ]
-          }
+              'Outdated technology or approaches',
+            ],
+          },
         },
         {
           dimension: 'completeness',
@@ -488,18 +468,18 @@ export class EvaluationTemplateService {
             'Covers problem, solution, and results',
             'Includes implementation challenges',
             'Discusses lessons learned',
-            'Provides technical architecture'
+            'Provides technical architecture',
           ],
           examples: {
             good: [
               'Full case study from problem to solution',
-              'Includes architecture diagrams and tech stack'
+              'Includes architecture diagrams and tech stack',
             ],
             bad: [
               'Only success stories without challenges',
-              'Missing technical implementation details'
-            ]
-          }
+              'Missing technical implementation details',
+            ],
+          },
         },
         {
           dimension: 'accuracy',
@@ -508,31 +488,31 @@ export class EvaluationTemplateService {
             'Facts and figures are verifiable',
             'Technical details are correct',
             'Timeline is realistic',
-            'Claims are substantiated'
+            'Claims are substantiated',
           ],
           examples: {
             good: [
               'Cites sources for statistics and claims',
-              'Technical details match industry standards'
+              'Technical details match industry standards',
             ],
             bad: [
               'Exaggerated or unverifiable claims',
-              'Technical inaccuracies or impossibilities'
-            ]
-          }
-        }
+              'Technical inaccuracies or impossibilities',
+            ],
+          },
+        },
       ],
       prompts: {
         system: 'You are an expert in evaluating industry case studies and business applications.',
         evaluation: 'Evaluate this case study for business relevance and technical accuracy.',
-        scoring: 'Focus on practical value and implementation insights.'
+        scoring: 'Focus on practical value and implementation insights.',
       },
       metadata: {
         version: '1.0',
         lastUpdated: new Date(),
         author: 'AI Glossary Pro',
-        tags: ['industry', 'case-study', 'business']
-      }
+        tags: ['industry', 'case-study', 'business'],
+      },
     });
 
     logger.info(`Initialized ${this.templates.size} evaluation templates`);
@@ -556,16 +536,18 @@ export class EvaluationTemplateService {
    * Get templates by content type
    */
   getTemplatesByContentType(contentType: string): EvaluationTemplate[] {
-    return Array.from(this.templates.values())
-      .filter(template => template.contentType === contentType);
+    return Array.from(this.templates.values()).filter(
+      (template) => template.contentType === contentType
+    );
   }
 
   /**
    * Get templates by target audience
    */
   getTemplatesByAudience(audience: string): EvaluationTemplate[] {
-    return Array.from(this.templates.values())
-      .filter(template => template.targetAudience.includes(audience));
+    return Array.from(this.templates.values()).filter((template) =>
+      template.targetAudience.includes(audience)
+    );
   }
 
   /**
@@ -579,13 +561,11 @@ export class EvaluationTemplateService {
     let candidates = this.getTemplatesByContentType(contentType);
 
     if (targetAudience) {
-      candidates = candidates.filter(t => t.targetAudience.includes(targetAudience));
+      candidates = candidates.filter((t) => t.targetAudience.includes(targetAudience));
     }
 
     if (tags && tags.length > 0) {
-      candidates = candidates.filter(t => 
-        tags.some(tag => t.metadata.tags.includes(tag))
-      );
+      candidates = candidates.filter((t) => tags.some((tag) => t.metadata.tags.includes(tag)));
     }
 
     // Return the first matching template or the most general one
@@ -604,8 +584,8 @@ export class EvaluationTemplateService {
       ...template,
       metadata: {
         ...template.metadata,
-        lastUpdated: new Date()
-      }
+        lastUpdated: new Date(),
+      },
     });
 
     logger.info(`Created custom evaluation template: ${template.id}`);
@@ -627,8 +607,8 @@ export class EvaluationTemplateService {
       metadata: {
         ...existing.metadata,
         ...updates.metadata,
-        lastUpdated: new Date()
-      }
+        lastUpdated: new Date(),
+      },
     });
 
     logger.info(`Updated evaluation template: ${templateId}`);
@@ -670,10 +650,9 @@ export class EvaluationTemplateService {
 
       logger.info(`Imported ${imported} evaluation templates`);
       return imported;
-
     } catch (error) {
       logger.error('Error importing templates:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }

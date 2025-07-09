@@ -1,6 +1,6 @@
-import type { Request, Response, NextFunction } from "express";
-import type { AuthenticatedRequest } from "../../../shared/types";
-import { enhancedStorage as storage } from "../../enhancedStorage";
+import type { NextFunction, Request, Response } from 'express';
+import type { AuthenticatedRequest } from '../../../shared/types';
+import { enhancedStorage as storage } from '../../enhancedStorage';
 
 /**
  * Mock authentication middleware for local development
@@ -12,39 +12,39 @@ let mockLoggedOut = false;
 
 // Test user for local development
 const DEV_USER = {
-  id: "dev-user-123",
-  email: "dev@example.com",
-  firstName: "Development",
-  lastName: "User",
+  id: 'dev-user-123',
+  email: 'dev@example.com',
+  firstName: 'Development',
+  lastName: 'User',
   profileImageUrl: null,
   claims: {
-    sub: "dev-user-123",
-    email: "dev@example.com",
-    name: "Development User",
-    first_name: "Development",
-    last_name: "User"
+    sub: 'dev-user-123',
+    email: 'dev@example.com',
+    name: 'Development User',
+    first_name: 'Development',
+    last_name: 'User',
   },
-  access_token: "dev-token",
+  access_token: 'dev-token',
   expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
-  isAdmin: true // Grant admin access in development
+  isAdmin: true, // Grant admin access in development
 };
 
 /**
  * Mock isAuthenticated middleware for development
  */
-export const mockIsAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+export const mockIsAuthenticated = (req: Request, _res: Response, next: NextFunction) => {
   // Check if user has been logged out
   if (mockLoggedOut) {
-    console.log("🔓 Mock authentication: User is logged out");
+    console.log('🔓 Mock authentication: User is logged out');
     // Don't set user, proceed without authentication
     req.user = undefined;
     next();
     return;
   }
-  
+
   // Simulate authenticated user with proper typing
   (req as AuthenticatedRequest).user = DEV_USER;
-  
+
   // Mock passport methods with correct types
   (req as any).isAuthenticated = () => !mockLoggedOut;
   (req as any).login = (user: any, options?: any, callback?: (err: any) => void) => {
@@ -66,7 +66,7 @@ export const mockIsAuthenticated = (req: Request, res: Response, next: NextFunct
     if (callback) callback(null);
   };
 
-  console.log("🔓 Mock authentication: User logged in as", DEV_USER.claims.email);
+  console.log('🔓 Mock authentication: User logged in as', DEV_USER.claims.email);
   next();
 };
 
@@ -77,13 +77,13 @@ export const mockAuthenticateToken = (req: Request, res: Response, next: NextFun
   try {
     // Check if user has been logged out
     if (mockLoggedOut) {
-      console.log("🔓 Mock token auth: User is logged out");
+      console.log('🔓 Mock token auth: User is logged out');
       // Don't set user, proceed without authentication
       req.user = undefined;
       next();
       return;
     }
-    
+
     // Ensure user is set (should be from mockIsAuthenticated)
     if (!req.user) {
       (req as AuthenticatedRequest).user = DEV_USER;
@@ -92,29 +92,33 @@ export const mockAuthenticateToken = (req: Request, res: Response, next: NextFun
     // Transform to expected format
     const userClaims = (req.user as any).claims || (req.user as any);
     (req as AuthenticatedRequest).user = {
-      id: userClaims.sub || "dev-user-123",
-      email: userClaims.email || "dev@example.com",
-      firstName: userClaims.first_name || "Development",
-      lastName: userClaims.last_name || "User",
+      id: userClaims.sub || 'dev-user-123',
+      email: userClaims.email || 'dev@example.com',
+      firstName: userClaims.first_name || 'Development',
+      lastName: userClaims.last_name || 'User',
       profileImageUrl: null,
       claims: {
-        sub: userClaims.sub || "dev-user-123",
-        email: userClaims.email || "dev@example.com",
-        name: userClaims.name || 
-              (userClaims.first_name && userClaims.last_name 
-                ? `${userClaims.first_name} ${userClaims.last_name}`
-                : "Development User")
+        sub: userClaims.sub || 'dev-user-123',
+        email: userClaims.email || 'dev@example.com',
+        name:
+          userClaims.name ||
+          (userClaims.first_name && userClaims.last_name
+            ? `${userClaims.first_name} ${userClaims.last_name}`
+            : 'Development User'),
       },
-      isAdmin: (req.user as any)?.isAdmin || true // Preserve admin status for development
+      isAdmin: (req.user as any)?.isAdmin || true, // Preserve admin status for development
     };
 
-    console.log("🔓 Mock token auth: Validated user", (req as AuthenticatedRequest).user.claims.email);
+    console.log(
+      '🔓 Mock token auth: Validated user',
+      (req as AuthenticatedRequest).user.claims.email
+    );
     next();
   } catch (error) {
-    console.error("Mock authentication error:", error);
+    console.error('Mock authentication error:', error);
     res.status(500).json({
       success: false,
-      message: "Mock authentication failed"
+      message: 'Mock authentication failed',
     });
   }
 };
@@ -133,59 +137,59 @@ export async function mockRequireAdmin(
       (req as AuthenticatedRequest).user = DEV_USER;
     }
 
-    console.log("🔓 Mock admin auth: Admin access granted to dev user");
+    console.log('🔓 Mock admin auth: Admin access granted to dev user');
     next();
   } catch (error) {
-    console.error("Mock admin authentication error:", error);
+    console.error('Mock admin authentication error:', error);
     res.status(500).json({
       success: false,
-      message: "Mock admin authentication failed"
+      message: 'Mock admin authentication failed',
     });
   }
-};
+}
 
 /**
  * Development auth setup that provides mock login/logout endpoints
  */
 export function setupMockAuth(app: any) {
-  console.log("🔧 Setting up mock authentication for local development");
-  
+  console.log('🔧 Setting up mock authentication for local development');
+
   // Ensure dev user exists in database
   ensureDevUserExists();
-  
+
   // Mock login endpoint
-  app.get("/api/login", (req: Request, res: Response) => {
+  app.get('/api/login', (req: Request, res: Response) => {
     mockLoggedOut = false; // Reset logout state
     req.user = DEV_USER as any;
-    console.log("🔓 Mock login: User logged in");
-    res.redirect("/app");
+    console.log('🔓 Mock login: User logged in');
+    res.redirect('/app');
   });
 
-  // Mock logout endpoint  
-  app.get("/api/logout", (req: Request, res: Response) => {
+  // Mock logout endpoint
+  app.get('/api/logout', (req: Request, res: Response) => {
     mockLoggedOut = true; // Set logout state
     req.user = undefined;
-    console.log("🔓 Mock logout: User logged out");
-    res.redirect("/");
+    console.log('🔓 Mock logout: User logged out');
+    res.redirect('/');
   });
-  
+
   // Mock logout POST endpoint (for compatibility with frontend)
-  app.post("/api/auth/logout", (req: Request, res: Response) => {
+  app.post('/api/auth/logout', (req: Request, res: Response) => {
     mockLoggedOut = true; // Set logout state
     req.user = undefined;
-    console.log("🔓 Mock logout (POST): User logged out");
+    console.log('🔓 Mock logout (POST): User logged out');
     res.json({
       success: true,
-      message: "Logged out successfully"
+      message: 'Logged out successfully',
     });
   });
 
   // Mock callback endpoint
-  app.get("/api/callback", (req: Request, res: Response) => {
+  app.get('/api/callback', (req: Request, res: Response) => {
     mockLoggedOut = false; // Reset logout state
     req.user = DEV_USER as any;
-    console.log("🔓 Mock callback: User authenticated");
-    res.redirect("/app");
+    console.log('🔓 Mock callback: User authenticated');
+    res.redirect('/app');
   });
 }
 
@@ -194,7 +198,6 @@ export function setupMockAuth(app: any) {
  */
 async function ensureDevUserExists() {
   try {
-    
     await storage.upsertUser({
       id: DEV_USER.claims.sub,
       email: DEV_USER.claims.email,
@@ -205,12 +208,12 @@ async function ensureDevUserExists() {
       lifetimeAccess: true,
       purchaseDate: new Date(),
       dailyViews: 0,
-      lastViewReset: new Date()
+      lastViewReset: new Date(),
     });
-    
-    console.log("🔓 Development user ensured in database:", DEV_USER.claims.email);
+
+    console.log('🔓 Development user ensured in database:', DEV_USER.claims.email);
   } catch (error) {
-    console.warn("⚠️  Could not ensure dev user exists:", error);
+    console.warn('⚠️  Could not ensure dev user exists:', error);
   }
 }
 

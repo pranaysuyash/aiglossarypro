@@ -3,10 +3,10 @@
  * Verifies Firebase ID tokens and manages user sessions
  */
 
-import type { Request, Response, NextFunction } from 'express';
-import { verifyFirebaseToken, setCustomUserClaims } from '../config/firebase';
-import { optimizedStorage as storage } from '../optimizedStorage';
+import type { NextFunction, Request, Response } from 'express';
 import type { AuthenticatedRequest } from '../../shared/types';
+import { setCustomUserClaims, verifyFirebaseToken } from '../config/firebase';
+import { optimizedStorage as storage } from '../optimizedStorage';
 
 /**
  * Verify Firebase ID token and attach user to request
@@ -19,32 +19,32 @@ export async function authenticateFirebaseToken(
   try {
     // Get token from Authorization header or cookie
     const authHeader = req.headers.authorization;
-    const token = authHeader?.startsWith('Bearer ') 
-      ? authHeader.substring(7) 
+    const token = authHeader?.startsWith('Bearer ')
+      ? authHeader.substring(7)
       : req.cookies?.firebaseToken;
 
     if (!token) {
       res.status(401).json({
         success: false,
-        message: 'No authentication token provided'
+        message: 'No authentication token provided',
       });
       return;
     }
 
     // Verify the Firebase ID token
     const decodedToken = await verifyFirebaseToken(token);
-    
+
     if (!decodedToken) {
       res.status(401).json({
         success: false,
-        message: 'Invalid authentication token'
+        message: 'Invalid authentication token',
       });
       return;
     }
 
     // Get or create user in our database
     let user = await storage.getUserByEmail(decodedToken.email!);
-    
+
     if (!user) {
       // Create new user from Firebase data
       user = await storage.upsertUser({
@@ -72,7 +72,7 @@ export async function authenticateFirebaseToken(
     console.error('Firebase auth error:', error);
     res.status(500).json({
       success: false,
-      message: 'Authentication failed'
+      message: 'Authentication failed',
     });
   }
 }
@@ -92,14 +92,14 @@ export async function requireFirebaseAdmin(
     if (!firebaseUser || !user) {
       res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: 'Authentication required',
       });
       return;
     }
 
     // Check Firebase custom claims for admin role
     const isFirebaseAdmin = firebaseUser.admin === true;
-    
+
     // Check database for admin role
     const isDbAdmin = user.isAdmin === true;
 
@@ -112,7 +112,7 @@ export async function requireFirebaseAdmin(
     if (!isDbAdmin && !isFirebaseAdmin) {
       res.status(403).json({
         success: false,
-        message: 'Admin privileges required'
+        message: 'Admin privileges required',
       });
       return;
     }
@@ -122,7 +122,7 @@ export async function requireFirebaseAdmin(
     console.error('Admin check error:', error);
     res.status(500).json({
       success: false,
-      message: 'Authorization check failed'
+      message: 'Authorization check failed',
     });
   }
 }
@@ -132,13 +132,13 @@ export async function requireFirebaseAdmin(
  */
 export async function optionalFirebaseAuth(
   req: Request,
-  res: Response,
+  _res: Response,
   next: NextFunction
 ): Promise<void> {
   try {
     const authHeader = req.headers.authorization;
-    const token = authHeader?.startsWith('Bearer ') 
-      ? authHeader.substring(7) 
+    const token = authHeader?.startsWith('Bearer ')
+      ? authHeader.substring(7)
       : req.cookies?.firebaseToken;
 
     if (!token) {
@@ -149,11 +149,11 @@ export async function optionalFirebaseAuth(
 
     // Verify token if provided
     const decodedToken = await verifyFirebaseToken(token);
-    
+
     if (decodedToken) {
       // Get user from database
       const user = await storage.getUserByEmail(decodedToken.email!);
-      
+
       if (user) {
         (req as AuthenticatedRequest).user = user;
         (req as any).firebaseUser = decodedToken;

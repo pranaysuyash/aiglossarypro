@@ -1,22 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Progress } from './ui/progress';
+import {
+  AwardIcon,
+  BarChartIcon,
+  BookmarkIcon,
+  BookOpenIcon,
+  CalendarDaysIcon,
+  ClockIcon,
+  FlameIcon,
+  TrendingUpIcon,
+  TrophyIcon,
+  ZapIcon,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
-import { 
-  BookmarkIcon, 
-  TrendingUpIcon, 
-  CalendarDaysIcon, 
-  StarIcon, 
-  FlameIcon,
-  BookOpenIcon,
-  ClockIcon,
-  BarChartIcon,
-  AwardIcon,
-  TrophyIcon,
-  ZapIcon
-} from 'lucide-react';
-import { useAuth } from '../hooks/useAuth';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Progress } from './ui/progress';
 
 interface UserProgressStats {
   totalTermsViewed: number;
@@ -52,7 +51,12 @@ interface DailyStats {
 }
 
 interface UpgradePromptTrigger {
-  type: 'bookmark_limit' | 'high_engagement' | 'streak_milestone' | 'category_exploration' | 'historical_access';
+  type:
+    | 'bookmark_limit'
+    | 'high_engagement'
+    | 'streak_milestone'
+    | 'category_exploration'
+    | 'historical_access';
   severity: 'low' | 'medium' | 'high';
   message: string;
   metadata?: any;
@@ -64,10 +68,10 @@ interface ProgressVisualizationProps {
   onUpgradeClick?: () => void;
 }
 
-export function ProgressVisualization({ 
-  className = '', 
+export function ProgressVisualization({
+  className = '',
   showUpgradePrompts = true,
-  onUpgradeClick 
+  onUpgradeClick,
 }: ProgressVisualizationProps) {
   const { user } = useAuth();
   const [stats, setStats] = useState<UserProgressStats | null>(null);
@@ -78,15 +82,15 @@ export function ProgressVisualization({
     if (user) {
       fetchProgressStats();
     }
-  }, [user]);
+  }, [user, fetchProgressStats]);
 
   const fetchProgressStats = async () => {
     try {
       setLoading(true);
       const response = await fetch('/api/progress/stats', {
         headers: {
-          'Authorization': `Bearer ${user?.token}`
-        }
+          Authorization: `Bearer ${user?.token}`,
+        },
       });
 
       if (!response.ok) {
@@ -162,22 +166,32 @@ export function ProgressVisualization({
   // Achievement icons mapping
   const getAchievementIcon = (type: string) => {
     switch (type) {
-      case 'daily_streak': return <FlameIcon className="h-5 w-5" />;
-      case 'bookmarks_created': return <BookmarkIcon className="h-5 w-5" />;
-      case 'terms_viewed': return <BookOpenIcon className="h-5 w-5" />;
-      case 'categories_explored': return <BarChartIcon className="h-5 w-5" />;
-      default: return <AwardIcon className="h-5 w-5" />;
+      case 'daily_streak':
+        return <FlameIcon className="h-5 w-5" />;
+      case 'bookmarks_created':
+        return <BookmarkIcon className="h-5 w-5" />;
+      case 'terms_viewed':
+        return <BookOpenIcon className="h-5 w-5" />;
+      case 'categories_explored':
+        return <BarChartIcon className="h-5 w-5" />;
+      default:
+        return <AwardIcon className="h-5 w-5" />;
     }
   };
 
   // Get achievement display name
   const getAchievementName = (type: string) => {
     switch (type) {
-      case 'daily_streak': return 'Daily Streak';
-      case 'bookmarks_created': return 'Bookmarks Created';
-      case 'terms_viewed': return 'Terms Explored';
-      case 'categories_explored': return 'Categories Mastered';
-      default: return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
+      case 'daily_streak':
+        return 'Daily Streak';
+      case 'bookmarks_created':
+        return 'Bookmarks Created';
+      case 'terms_viewed':
+        return 'Terms Explored';
+      case 'categories_explored':
+        return 'Categories Mastered';
+      default:
+        return type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase());
     }
   };
 
@@ -196,14 +210,19 @@ export function ProgressVisualization({
             <div className="space-y-3">
               {stats.upgradePromptTriggers.slice(0, 2).map((trigger, index) => (
                 <div key={index} className="flex items-center gap-3 text-sm">
-                  <div className={`w-2 h-2 rounded-full ${
-                    trigger.severity === 'high' ? 'bg-red-500' : 
-                    trigger.severity === 'medium' ? 'bg-yellow-500' : 'bg-blue-500'
-                  }`} />
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      trigger.severity === 'high'
+                        ? 'bg-red-500'
+                        : trigger.severity === 'medium'
+                          ? 'bg-yellow-500'
+                          : 'bg-blue-500'
+                    }`}
+                  />
                   <span className="text-gray-700">{trigger.message}</span>
                 </div>
               ))}
-              <Button 
+              <Button
                 onClick={handleUpgrade}
                 className="w-full bg-gradient-to-r from-orange-600 to-yellow-600 hover:from-orange-700 hover:to-yellow-700 text-white"
               >
@@ -252,9 +271,7 @@ export function ProgressVisualization({
                 )}
               </div>
             )}
-            {isPremium && (
-              <p className="text-xs text-muted-foreground">Unlimited</p>
-            )}
+            {isPremium && <p className="text-xs text-muted-foreground">Unlimited</p>}
           </CardContent>
         </Card>
 
@@ -265,16 +282,12 @@ export function ProgressVisualization({
             <FlameIcon className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${streakStatus.color}`}>
-              {stats.currentStreak}
-            </div>
+            <div className={`text-2xl font-bold ${streakStatus.color}`}>{stats.currentStreak}</div>
             <div className="flex items-center gap-2">
               <Badge variant="secondary" className="text-xs">
                 {streakStatus.label}
               </Badge>
-              <span className="text-xs text-muted-foreground">
-                Best: {stats.bestStreak}
-              </span>
+              <span className="text-xs text-muted-foreground">Best: {stats.bestStreak}</span>
             </div>
           </CardContent>
         </Card>
@@ -289,9 +302,7 @@ export function ProgressVisualization({
             <div className="text-2xl font-bold text-green-600">
               {Math.floor(stats.timeSpentMinutes / 60)}h {stats.timeSpentMinutes % 60}m
             </div>
-            <p className="text-xs text-muted-foreground">
-              Learning time
-            </p>
+            <p className="text-xs text-muted-foreground">Learning time</p>
           </CardContent>
         </Card>
 
@@ -303,9 +314,7 @@ export function ProgressVisualization({
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-indigo-600">{stats.categoriesExplored}</div>
-            <p className="text-xs text-muted-foreground">
-              AI/ML categories explored
-            </p>
+            <p className="text-xs text-muted-foreground">AI/ML categories explored</p>
           </CardContent>
         </Card>
 
@@ -341,17 +350,16 @@ export function ProgressVisualization({
               <AwardIcon className="h-5 w-5" />
               Achievements
             </CardTitle>
-            <CardDescription>
-              Your learning milestones and accomplishments
-            </CardDescription>
+            <CardDescription>Your learning milestones and accomplishments</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {stats.achievements.map((achievement) => (
-                <div key={achievement.id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                  <div className="text-yellow-600">
-                    {getAchievementIcon(achievement.type)}
-                  </div>
+                <div
+                  key={achievement.id}
+                  className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
+                >
+                  <div className="text-yellow-600">{getAchievementIcon(achievement.type)}</div>
                   <div className="flex-1">
                     <div className="font-medium text-sm">
                       {getAchievementName(achievement.type)}
@@ -366,8 +374,8 @@ export function ProgressVisualization({
                       )}
                     </div>
                     {achievement.progress < achievement.nextMilestone && (
-                      <Progress 
-                        value={(achievement.progress / achievement.nextMilestone) * 100} 
+                      <Progress
+                        value={(achievement.progress / achievement.nextMilestone) * 100}
                         className="h-1 mt-2"
                       />
                     )}
@@ -392,9 +400,7 @@ export function ProgressVisualization({
               <TrendingUpIcon className="h-5 w-5" />
               Recent Activity
             </CardTitle>
-            <CardDescription>
-              Your learning activity over the last 7 days
-            </CardDescription>
+            <CardDescription>Your learning activity over the last 7 days</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">

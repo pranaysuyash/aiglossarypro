@@ -1,5 +1,5 @@
-import { Badge } from "@/components/ui/badge";
-import { IEnhancedTerm, ITerm } from "@/interfaces/interfaces";
+import { Badge } from '@/components/ui/badge';
+import type { IEnhancedTerm, ITerm } from '@/interfaces/interfaces';
 
 interface TermOverviewProps {
   term: IEnhancedTerm | ITerm;
@@ -7,7 +7,7 @@ interface TermOverviewProps {
 }
 
 export default function TermOverview({ term, isEnhanced }: TermOverviewProps) {
-  const enhancedTerm = isEnhanced ? term as IEnhancedTerm : null;
+  const enhancedTerm = isEnhanced ? (term as IEnhancedTerm) : null;
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">

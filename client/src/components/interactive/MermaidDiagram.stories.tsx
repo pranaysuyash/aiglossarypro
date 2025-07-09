@@ -8,7 +8,8 @@ const meta: Meta<typeof MermaidDiagram> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Interactive component for rendering Mermaid diagrams to visualize AI/ML concepts, architectures, and processes.',
+        component:
+          'Interactive component for rendering Mermaid diagrams to visualize AI/ML concepts, architectures, and processes.',
       },
     },
   },

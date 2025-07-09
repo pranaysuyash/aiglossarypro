@@ -52,9 +52,15 @@ export const LazyAIAdminDashboard = lazy(() => import('@/components/AIAdminDashb
 export const LazyAdvancedSearch = lazy(() => import('@/components/search/AdvancedSearch'));
 export const LazyVirtualizedTermList = lazy(() => import('@/components/VirtualizedTermList'));
 export const LazyS3FileManagerDashboard = lazy(() => import('@/components/S3FileManagerDashboard'));
-export const LazyInteractiveElementsManager = lazy(() => import('@/components/interactive/InteractiveElementsManager'));
-export const LazyUserPersonalizationSettings = lazy(() => import('@/components/settings/UserPersonalizationSettings'));
-export const LazyMobileOptimizedLayout = lazy(() => import('@/components/mobile/MobileOptimizedLayout'));
+export const LazyInteractiveElementsManager = lazy(
+  () => import('@/components/interactive/InteractiveElementsManager')
+);
+export const LazyUserPersonalizationSettings = lazy(
+  () => import('@/components/settings/UserPersonalizationSettings')
+);
+export const LazyMobileOptimizedLayout = lazy(
+  () => import('@/components/mobile/MobileOptimizedLayout')
+);
 
 // Analytics components
 export const LazyAnalyticsChart = lazy(() => import('@/components/lazy/LazyChart'));
@@ -96,5 +102,9 @@ export const LazyAIAdminDashboardWrapped = withAdminLoading(LazyAIAdminDashboard
 export const LazyAdvancedSearchWrapped = withSearchLoading(LazyAdvancedSearch);
 export const LazyVirtualizedTermListWrapped = withSearchLoading(LazyVirtualizedTermList);
 export const LazyS3FileManagerDashboardWrapped = withAdminLoading(LazyS3FileManagerDashboard);
-export const LazyInteractiveElementsManagerWrapped = withAdminLoading(LazyInteractiveElementsManager);
-export const LazyUserPersonalizationSettingsWrapped = withDashboardLoading(LazyUserPersonalizationSettings);
+export const LazyInteractiveElementsManagerWrapped = withAdminLoading(
+  LazyInteractiveElementsManager
+);
+export const LazyUserPersonalizationSettingsWrapped = withDashboardLoading(
+  LazyUserPersonalizationSettings
+);

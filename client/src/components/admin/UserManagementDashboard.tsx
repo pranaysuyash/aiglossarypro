@@ -1,21 +1,23 @@
-import { useState } from "react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
+import { useMutation, useQuery } from '@tanstack/react-query';
+import { format } from 'date-fns';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  Activity,
+  ChevronLeft,
+  ChevronRight,
+  Crown,
+  Mail,
+  MoreHorizontal,
+  RefreshCw,
+  Search,
+  Shield,
+  UserCheck,
+  Users,
+  UserX,
+} from 'lucide-react';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -23,7 +25,7 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
+} from '@/components/ui/dialog';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,28 +33,19 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
-import { useToast } from "@/hooks/use-toast";
+} from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
-  Users,
-  Search,
-  MoreHorizontal,
-  UserCheck,
-  UserX,
-  Crown,
-  Shield,
-  Mail,
-  Activity,
-  ChevronLeft,
-  ChevronRight,
-  RefreshCw,
-} from "lucide-react";
-import { format } from "date-fns";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { useToast } from '@/hooks/use-toast';
+import { queryClient } from '@/lib/queryClient';
 
 interface User {
   id: string;
@@ -77,23 +70,27 @@ interface User {
 
 export default function UserManagementDashboard() {
   const { toast } = useToast();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
   const [page, setPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showUserDetails, setShowUserDetails] = useState(false);
   const [showPromoteDialog, setShowPromoteDialog] = useState(false);
 
   // Fetch users
-  const { data: usersData, isLoading, refetch } = useQuery({
-    queryKey: ["/api/admin/users", page, searchTerm],
+  const {
+    data: usersData,
+    isLoading,
+    refetch,
+  } = useQuery({
+    queryKey: ['/api/admin/users', page, searchTerm],
     queryFn: async () => {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: "20",
+        limit: '20',
         ...(searchTerm && { search: searchTerm }),
       });
       const response = await fetch(`/api/admin/users?${params}`);
-      if (!response.ok) throw new Error("Failed to fetch users");
+      if (!response.ok) throw new Error('Failed to fetch users');
       return response.json();
     },
   });
@@ -102,26 +99,26 @@ export default function UserManagementDashboard() {
   const updateUserMutation = useMutation({
     mutationFn: async ({ userId, updates }: { userId: string; updates: any }) => {
       const response = await fetch(`/api/admin/users/${userId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       });
-      if (!response.ok) throw new Error("Failed to update user");
+      if (!response.ok) throw new Error('Failed to update user');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       toast({
-        title: "User updated",
-        description: "User details have been updated successfully.",
+        title: 'User updated',
+        description: 'User details have been updated successfully.',
       });
       setShowPromoteDialog(false);
     },
     onError: (error) => {
       toast({
-        title: "Update failed",
+        title: 'Update failed',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -130,23 +127,23 @@ export default function UserManagementDashboard() {
   const deleteUserMutation = useMutation({
     mutationFn: async (userId: string) => {
       const response = await fetch(`/api/admin/users/${userId}`, {
-        method: "DELETE",
+        method: 'DELETE',
       });
-      if (!response.ok) throw new Error("Failed to delete user");
+      if (!response.ok) throw new Error('Failed to delete user');
       return response.json();
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/admin/users"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/users'] });
       toast({
-        title: "User deleted",
-        description: "User has been deleted successfully.",
+        title: 'User deleted',
+        description: 'User has been deleted successfully.',
       });
     },
     onError: (error) => {
       toast({
-        title: "Delete failed",
+        title: 'Delete failed',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -155,16 +152,16 @@ export default function UserManagementDashboard() {
   const fetchUserActivity = async (userId: string) => {
     try {
       const response = await fetch(`/api/admin/users/${userId}/activity`);
-      if (!response.ok) throw new Error("Failed to fetch user activity");
+      if (!response.ok) throw new Error('Failed to fetch user activity');
       const data = await response.json();
       return data.data;
     } catch (error) {
-      console.error("Error fetching user activity:", error);
+      console.error('Error fetching user activity:', error);
       return null;
     }
   };
 
-  const handlePromoteUser = async (user: User, isAdmin: boolean) => {
+  const handlePromoteUser = async (user: User, _isAdmin: boolean) => {
     setSelectedUser(user);
     setShowPromoteDialog(true);
   };
@@ -172,7 +169,7 @@ export default function UserManagementDashboard() {
   const handleViewDetails = async (user: User) => {
     setSelectedUser(user);
     setShowUserDetails(true);
-    
+
     // Fetch additional activity data
     const activity = await fetchUserActivity(user.id);
     if (activity) {
@@ -182,7 +179,7 @@ export default function UserManagementDashboard() {
 
   const confirmPromoteUser = async () => {
     if (!selectedUser) return;
-    
+
     await updateUserMutation.mutateAsync({
       userId: selectedUser.id,
       updates: {
@@ -192,7 +189,7 @@ export default function UserManagementDashboard() {
   };
 
   const handleDeleteUser = async (userId: string) => {
-    if (confirm("Are you sure you want to delete this user? This action cannot be undone.")) {
+    if (confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
       await deleteUserMutation.mutateAsync(userId);
     }
   };
@@ -295,12 +292,11 @@ export default function UserManagementDashboard() {
                       <TableCell>
                         {user.subscription ? (
                           <div className="text-sm">
-                            <div className="font-medium capitalize">
-                              {user.subscription.plan}
-                            </div>
+                            <div className="font-medium capitalize">{user.subscription.plan}</div>
                             {user.subscription.expiresAt && (
                               <div className="text-gray-500">
-                                Expires {format(new Date(user.subscription.expiresAt), "MMM d, yyyy")}
+                                Expires{' '}
+                                {format(new Date(user.subscription.expiresAt), 'MMM d, yyyy')}
                               </div>
                             )}
                           </div>
@@ -310,14 +306,14 @@ export default function UserManagementDashboard() {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
-                          {format(new Date(user.createdAt), "MMM d, yyyy")}
+                          {format(new Date(user.createdAt), 'MMM d, yyyy')}
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="text-sm">
                           {user.lastLoginAt
-                            ? format(new Date(user.lastLoginAt), "MMM d, yyyy")
-                            : "Never"}
+                            ? format(new Date(user.lastLoginAt), 'MMM d, yyyy')
+                            : 'Never'}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
@@ -377,7 +373,7 @@ export default function UserManagementDashboard() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4">
               <div className="text-sm text-gray-500">
-                Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, usersData?.total || 0)} of{" "}
+                Showing {(page - 1) * 20 + 1} to {Math.min(page * 20, usersData?.total || 0)} of{' '}
                 {usersData?.total || 0} users
               </div>
               <div className="flex gap-2">
@@ -410,9 +406,7 @@ export default function UserManagementDashboard() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>User Details</DialogTitle>
-            <DialogDescription>
-              View detailed information about this user
-            </DialogDescription>
+            <DialogDescription>View detailed information about this user</DialogDescription>
           </DialogHeader>
           {selectedUser && (
             <div className="space-y-4">
@@ -426,21 +420,21 @@ export default function UserManagementDashboard() {
                   <div className="font-medium">
                     {selectedUser.firstName && selectedUser.lastName
                       ? `${selectedUser.firstName} ${selectedUser.lastName}`
-                      : "Not provided"}
+                      : 'Not provided'}
                   </div>
                 </div>
                 <div>
                   <Label>Joined</Label>
                   <div className="font-medium">
-                    {format(new Date(selectedUser.createdAt), "MMMM d, yyyy")}
+                    {format(new Date(selectedUser.createdAt), 'MMMM d, yyyy')}
                   </div>
                 </div>
                 <div>
                   <Label>Last Login</Label>
                   <div className="font-medium">
                     {selectedUser.lastLoginAt
-                      ? format(new Date(selectedUser.lastLoginAt), "MMMM d, yyyy")
-                      : "Never"}
+                      ? format(new Date(selectedUser.lastLoginAt), 'MMMM d, yyyy')
+                      : 'Never'}
                   </div>
                 </div>
               </div>
@@ -451,7 +445,9 @@ export default function UserManagementDashboard() {
                   <div className="mt-2 p-4 bg-gray-50 rounded-lg space-y-2">
                     <div className="flex justify-between">
                       <span>Total Searches:</span>
-                      <span className="font-medium">{selectedUser.activity.totalSearches || 0}</span>
+                      <span className="font-medium">
+                        {selectedUser.activity.totalSearches || 0}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Total Term Views:</span>
@@ -461,7 +457,7 @@ export default function UserManagementDashboard() {
                       <div className="flex justify-between">
                         <span>Last Active:</span>
                         <span className="font-medium">
-                          {format(new Date(selectedUser.activity.lastActive), "MMM d, yyyy h:mm a")}
+                          {format(new Date(selectedUser.activity.lastActive), 'MMM d, yyyy h:mm a')}
                         </span>
                       </div>
                     )}
@@ -493,12 +489,12 @@ export default function UserManagementDashboard() {
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
-              {selectedUser?.isAdmin ? "Remove Admin Privileges" : "Grant Admin Privileges"}
+              {selectedUser?.isAdmin ? 'Remove Admin Privileges' : 'Grant Admin Privileges'}
             </DialogTitle>
             <DialogDescription>
               {selectedUser?.isAdmin
-                ? "Are you sure you want to remove admin privileges from this user?"
-                : "Are you sure you want to grant admin privileges to this user?"}
+                ? 'Are you sure you want to remove admin privileges from this user?'
+                : 'Are you sure you want to grant admin privileges to this user?'}
             </DialogDescription>
           </DialogHeader>
           {selectedUser && (
@@ -514,7 +510,7 @@ export default function UserManagementDashboard() {
               Cancel
             </Button>
             <Button onClick={confirmPromoteUser}>
-              {selectedUser?.isAdmin ? "Remove Admin" : "Make Admin"}
+              {selectedUser?.isAdmin ? 'Remove Admin' : 'Make Admin'}
             </Button>
           </DialogFooter>
         </DialogContent>

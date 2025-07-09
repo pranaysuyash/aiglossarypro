@@ -1,11 +1,11 @@
+import { AlertCircle, CheckCircle, Loader2, TestTube, Zap } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { api } from '../lib/api';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
-import { Loader2, CheckCircle, AlertCircle, TestTube, Zap } from 'lucide-react';
-import { api } from '../lib/api';
+import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Input } from './ui/input';
 
 interface TestPurchaseButtonProps {
   onPurchaseComplete?: () => void;
@@ -28,7 +28,10 @@ interface TestPurchaseResult {
   };
 }
 
-export function TestPurchaseButton({ onPurchaseComplete, className = '' }: TestPurchaseButtonProps) {
+export function TestPurchaseButton({
+  onPurchaseComplete,
+  className = '',
+}: TestPurchaseButtonProps) {
   const [email, setEmail] = useState('dev@example.com'); // Pre-fill with dev user email
   const [isPurchasing, setIsPurchasing] = useState(false);
   const [result, setResult] = useState<TestPurchaseResult | null>(null);
@@ -42,7 +45,7 @@ export function TestPurchaseButton({ onPurchaseComplete, className = '' }: TestP
 
   const handleTestPurchase = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email.trim()) {
       setError('Please enter your email address');
       return;
@@ -59,7 +62,7 @@ export function TestPurchaseButton({ onPurchaseComplete, className = '' }: TestP
 
     try {
       const response = await api.post('/gumroad/test-purchase', { email: email.trim() });
-      
+
       if (response.data.success) {
         setResult({
           success: true,
@@ -67,12 +70,12 @@ export function TestPurchaseButton({ onPurchaseComplete, className = '' }: TestP
           user: response.data.user,
           testData: response.data.testData,
         });
-        
+
         // Call onPurchaseComplete callback if provided
         if (onPurchaseComplete) {
           onPurchaseComplete();
         }
-        
+
         // Refresh the page after a short delay to update the user session
         setTimeout(() => {
           window.location.reload();
@@ -101,7 +104,7 @@ export function TestPurchaseButton({ onPurchaseComplete, className = '' }: TestP
   if (!showForm) {
     return (
       <div className={`${className}`}>
-        <Button 
+        <Button
           onClick={() => setShowForm(true)}
           variant="outline"
           className="bg-yellow-50 border-yellow-300 text-yellow-800 hover:bg-yellow-100 flex items-center gap-2"
@@ -191,9 +194,7 @@ export function TestPurchaseButton({ onPurchaseComplete, className = '' }: TestP
         {error && (
           <Alert className="border-red-200 bg-red-50">
             <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">
-              {error}
-            </AlertDescription>
+            <AlertDescription className="text-red-800">{error}</AlertDescription>
           </Alert>
         )}
 
@@ -220,8 +221,8 @@ export function TestPurchaseButton({ onPurchaseComplete, className = '' }: TestP
             </div>
 
             <div className="flex gap-2">
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 disabled={isPurchasing || !email.trim()}
                 className="flex-1 bg-yellow-600 hover:bg-yellow-700 text-white"
               >
@@ -237,10 +238,10 @@ export function TestPurchaseButton({ onPurchaseComplete, className = '' }: TestP
                   </>
                 )}
               </Button>
-              
-              <Button 
-                type="button" 
-                variant="outline" 
+
+              <Button
+                type="button"
+                variant="outline"
                 onClick={resetForm}
                 disabled={isPurchasing}
                 className="border-yellow-300 text-yellow-700 hover:bg-yellow-100"
@@ -262,11 +263,9 @@ export function TestPurchaseButton({ onPurchaseComplete, className = '' }: TestP
             <li>Records the purchase in the database</li>
             <li>Updates user session automatically</li>
           </ul>
-          <p className="mt-2 font-medium text-yellow-700">
-            ⚠️ This only works in development mode
-          </p>
+          <p className="mt-2 font-medium text-yellow-700">⚠️ This only works in development mode</p>
         </div>
       </CardContent>
     </Card>
   );
-} 
+}

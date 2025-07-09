@@ -18,7 +18,8 @@ const meta: Meta<typeof Header> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'The main header component with search, navigation, and authentication controls.',
+        component:
+          'The main header component with search, navigation, and authentication controls.',
       },
     },
   },
@@ -35,21 +36,21 @@ const meta: Meta<typeof Header> = {
   argTypes: {
     className: {
       control: 'text',
-      description: 'Additional CSS classes'
+      description: 'Additional CSS classes',
     },
     onSearch: {
       action: 'searched',
-      description: 'Callback when user searches'
+      description: 'Callback when user searches',
     },
     onLogout: {
       action: 'logout',
-      description: 'Callback when user logs out'
+      description: 'Callback when user logs out',
     },
     onLogin: {
       action: 'login',
-      description: 'Callback when user logs in'
-    }
-  }
+      description: 'Callback when user logs in',
+    },
+  },
 };
 
 export default meta;
@@ -78,7 +79,8 @@ export const WithLongSearch: Story = {
   play: async ({ canvasElement }) => {
     const searchInput = canvasElement.querySelector('input[type="text"]') as HTMLInputElement;
     if (searchInput) {
-      searchInput.value = 'This is a very long search query that might overflow the search input field';
+      searchInput.value =
+        'This is a very long search query that might overflow the search input field';
     }
   },
 };
@@ -132,4 +134,4 @@ export const DarkMode: Story = {
       </QueryClientProvider>
     ),
   ],
-}; 
+};

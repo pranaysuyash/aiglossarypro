@@ -1,12 +1,12 @@
+import { ArrowRight, BookOpen, CheckCircle, Crown, Gift, Sparkles, Star } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Button } from './ui/button';
-import { Badge } from './ui/badge';
-import { Alert, AlertDescription } from './ui/alert';
-import { CheckCircle, Crown, BookOpen, Sparkles, Star, ArrowRight, Gift } from 'lucide-react';
 import { useToast } from '../hooks/use-toast';
 import { useAuth } from '../hooks/useAuth';
+import { Alert, AlertDescription } from './ui/alert';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
 interface PremiumUpgradeSuccessProps {
   onClose?: () => void;
@@ -14,10 +14,10 @@ interface PremiumUpgradeSuccessProps {
   showAsModal?: boolean;
 }
 
-export function PremiumUpgradeSuccess({ 
-  onClose, 
-  autoRedirect = true, 
-  showAsModal = false 
+export function PremiumUpgradeSuccess({
+  onClose,
+  autoRedirect = true,
+  showAsModal = false,
 }: PremiumUpgradeSuccessProps) {
   const { toast } = useToast();
   const { user, refetch } = useAuth();
@@ -27,7 +27,7 @@ export function PremiumUpgradeSuccess({
   useEffect(() => {
     // Refetch user data to get updated premium status
     refetch();
-    
+
     // Show success toast
     toast({
       title: '🎉 Welcome to Premium!',
@@ -55,37 +55,37 @@ export function PremiumUpgradeSuccess({
   const features = [
     {
       icon: <BookOpen className="w-5 h-5 text-blue-500" />,
-      title: "10,000+ AI/ML Definitions",
-      description: "Access our complete glossary without limits"
+      title: '10,000+ AI/ML Definitions',
+      description: 'Access our complete glossary without limits',
     },
     {
       icon: <Sparkles className="w-5 h-5 text-purple-500" />,
-      title: "Advanced AI Tools",
-      description: "Exclusive access to premium AI tools and resources"
+      title: 'Advanced AI Tools',
+      description: 'Exclusive access to premium AI tools and resources',
     },
     {
       icon: <Star className="w-5 h-5 text-yellow-500" />,
-      title: "Priority Support",
-      description: "Get priority help and feature requests"
+      title: 'Priority Support',
+      description: 'Get priority help and feature requests',
     },
     {
       icon: <Gift className="w-5 h-5 text-green-500" />,
-      title: "Lifetime Updates",
-      description: "Forever access to new terms and features"
-    }
+      title: 'Lifetime Updates',
+      description: 'Forever access to new terms and features',
+    },
   ];
 
-  const containerClass = showAsModal 
-    ? "fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-    : "container mx-auto px-4 py-8";
+  const containerClass = showAsModal
+    ? 'fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4'
+    : 'container mx-auto px-4 py-8';
 
-  const cardClass = showAsModal 
-    ? "max-w-2xl w-full mx-auto"
-    : "max-w-4xl mx-auto";
+  const cardClass = showAsModal ? 'max-w-2xl w-full mx-auto' : 'max-w-4xl mx-auto';
 
   return (
     <div className={containerClass}>
-      <Card className={`${cardClass} border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950`}>
+      <Card
+        className={`${cardClass} border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950 dark:to-emerald-950`}
+      >
         <CardHeader className="text-center pb-4">
           {/* Success Icon */}
           <div className="mx-auto w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center mb-4">
@@ -111,24 +111,24 @@ export function PremiumUpgradeSuccess({
           <Alert className="border-green-300 bg-green-100 dark:bg-green-900/30">
             <CheckCircle className="h-5 w-5 text-green-600" />
             <AlertDescription className="text-green-800 dark:text-green-200 font-medium">
-              🚀 Your payment has been processed successfully. You now have unlimited access to all premium features!
+              🚀 Your payment has been processed successfully. You now have unlimited access to all
+              premium features!
             </AlertDescription>
           </Alert>
 
           {/* Premium Features Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {features.map((feature, index) => (
-              <div key={index} className="flex items-start space-x-3 p-4 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-green-200 dark:border-green-800">
-                <div className="flex-shrink-0 mt-1">
-                  {feature.icon}
-                </div>
+              <div
+                key={index}
+                className="flex items-start space-x-3 p-4 rounded-lg bg-white/50 dark:bg-gray-800/50 border border-green-200 dark:border-green-800"
+              >
+                <div className="flex-shrink-0 mt-1">{feature.icon}</div>
                 <div>
                   <h4 className="font-semibold text-gray-900 dark:text-gray-100 mb-1">
                     {feature.title}
                   </h4>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    {feature.description}
-                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{feature.description}</p>
                 </div>
               </div>
             ))}
@@ -162,7 +162,7 @@ export function PremiumUpgradeSuccess({
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
-            <Button 
+            <Button
               onClick={() => navigate('/dashboard?welcome=premium')}
               className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium"
               size="lg"
@@ -173,8 +173,8 @@ export function PremiumUpgradeSuccess({
                 <span className="ml-2 text-sm opacity-80">({countdown}s)</span>
               )}
             </Button>
-            
-            <Button 
+
+            <Button
               onClick={() => navigate('/categories')}
               variant="outline"
               className="flex-1 border-green-300 text-green-700 hover:bg-green-100 dark:border-green-600 dark:text-green-300 dark:hover:bg-green-900/20"
@@ -185,7 +185,7 @@ export function PremiumUpgradeSuccess({
             </Button>
 
             {showAsModal && onClose && (
-              <Button 
+              <Button
                 onClick={onClose}
                 variant="ghost"
                 className="text-gray-600 hover:text-gray-700 dark:text-gray-400"
@@ -197,7 +197,8 @@ export function PremiumUpgradeSuccess({
 
           {/* Email Confirmation Note */}
           <div className="text-center text-sm text-gray-600 dark:text-gray-400 pt-4 border-t border-green-200 dark:border-green-800">
-            📧 A confirmation email has been sent to your address with your receipt and account details.
+            📧 A confirmation email has been sent to your address with your receipt and account
+            details.
           </div>
         </CardContent>
       </Card>

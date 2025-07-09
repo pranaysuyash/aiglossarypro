@@ -2,7 +2,7 @@
 
 /**
  * Simple Visual Audit Script
- * 
+ *
  * This version:
  * 1. Takes screenshots of your app
  * 2. Saves them to a directory
@@ -10,13 +10,13 @@
  * 4. Creates a template for the audit report
  */
 
-import { chromium } from 'playwright';
-import { spawn, exec } from 'child_process';
-import { promisify } from 'util';
-import fs from 'fs/promises';
-import path from 'path';
+import { exec, spawn } from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { promisify } from 'node:util';
 import chalk from 'chalk';
 import { config } from 'dotenv';
+import { chromium } from 'playwright';
 
 // Load environment variables from .env file
 config();
@@ -57,34 +57,34 @@ class SimpleVisualAuditor {
       await execAsync(`curl -s ${this.baseUrl}/ > /dev/null 2>&1`);
       console.log(chalk.green('✅ Using existing server'));
       return;
-    } catch (error) {
+    } catch (_error) {
       // Server not running, start it
     }
 
     console.log(chalk.yellow('Starting development server...'));
-    
+
     return new Promise((resolve, reject) => {
       this.viteProcess = spawn('npm', ['run', 'dev'], {
         stdio: 'pipe',
-        shell: true
+        shell: true,
       });
 
       let viteUrl = '';
-      
+
       this.viteProcess.stdout.on('data', (data: Buffer) => {
         const output = data.toString();
         console.log(chalk.gray(output.trim()));
-        
+
         // Parse Vite's Local URL if we don't have BASE_URL set
         if (!process.env.BASE_URL && output.includes('Local:')) {
-          const localMatch = output.match(/Local:\s+(http:\/\/localhost:\d+)/); 
+          const localMatch = output.match(/Local:\s+(http:\/\/localhost:\d+)/);
           if (localMatch) {
             viteUrl = localMatch[1];
             this.baseUrl = viteUrl;
             console.log(chalk.cyan(`🔗 Detected Vite URL: ${this.baseUrl}`));
           }
         }
-        
+
         if (output.includes('ready in') || output.includes('Local:')) {
           console.log(chalk.green('✅ Server ready'));
           // Wait longer for Vite proxy to be fully ready
@@ -103,21 +103,25 @@ class SimpleVisualAuditor {
 
   async captureScreenshots() {
     const browser = await chromium.launch({ headless: true });
-    
+
     const configs: ScreenshotConfig[] = [
       // Desktop views
       { name: '01-homepage-desktop', url: '/', viewport: { width: 1920, height: 1080 } },
       { name: '02-terms-desktop', url: '/terms', viewport: { width: 1920, height: 1080 } },
-      { name: '03-categories-desktop', url: '/categories', viewport: { width: 1920, height: 1080 } },
+      {
+        name: '03-categories-desktop',
+        url: '/categories',
+        viewport: { width: 1920, height: 1080 },
+      },
       { name: '04-dashboard-desktop', url: '/dashboard', viewport: { width: 1920, height: 1080 } },
-      
+
       // Mobile views
       { name: '05-homepage-mobile', url: '/', viewport: { width: 375, height: 812 } },
       { name: '06-terms-mobile', url: '/terms', viewport: { width: 375, height: 812 } },
-      
+
       // Tablet views
       { name: '07-homepage-tablet', url: '/', viewport: { width: 768, height: 1024 } },
-      
+
       // Interactive states
       {
         name: '08-search-active',
@@ -126,8 +130,8 @@ class SimpleVisualAuditor {
         actions: [
           { type: 'click', selector: '#search input' },
           { type: 'type', selector: '#search input', value: 'neural' },
-          { type: 'wait', value: 1500 }
-        ]
+          { type: 'wait', value: 1500 },
+        ],
       },
       {
         name: '09-mobile-menu-open',
@@ -136,27 +140,27 @@ class SimpleVisualAuditor {
         actions: [
           { type: 'wait', value: 1000 },
           { type: 'click', selector: 'button[aria-label*="menu"]' },
-          { type: 'wait', value: 500 }
-        ]
-      }
+          { type: 'wait', value: 500 },
+        ],
+      },
     ];
 
     console.log(chalk.yellow(`Taking ${configs.length} screenshots...`));
 
     for (const config of configs) {
       console.log(chalk.gray(`  📸 ${config.name}...`));
-      
+
       const page = await browser.newPage();
-      
+
       if (config.viewport) {
         await page.setViewportSize(config.viewport);
       }
 
       await page.goto(`${this.baseUrl}${config.url}`, {
         waitUntil: 'domcontentloaded',
-        timeout: 30000
+        timeout: 30000,
       });
-      
+
       // Wait for body to ensure page is rendered
       await page.waitForSelector('body', { timeout: 10000 });
 
@@ -190,7 +194,7 @@ class SimpleVisualAuditor {
       // Take screenshot
       await page.screenshot({
         path: path.join(this.outputDir, `${config.name}.png`),
-        fullPage: config.name.includes('mobile') ? false : true
+        fullPage: !config.name.includes('mobile'),
       });
 
       await page.close();
@@ -202,7 +206,7 @@ class SimpleVisualAuditor {
 
   async generateAnalysisPrompt() {
     const promptPath = path.join(this.outputDir, 'claude-analysis-prompt.md');
-    
+
     const prompt = `# Visual Audit Analysis Request
 
 Please analyze the screenshots in this directory and identify UI/UX issues.
@@ -304,7 +308,7 @@ After analyzing all screenshots, please provide:
 
   async generateReportTemplate() {
     const reportPath = path.join(this.outputDir, 'visual-audit-report.md');
-    
+
     const template = `# Visual Audit Report
 Date: ${new Date().toLocaleDateString()}
 Auditor: [Your Name]
@@ -486,13 +490,18 @@ Auditor: [Your Name]
       await this.captureScreenshots();
       await this.generateAnalysisPrompt();
       await this.generateReportTemplate();
-      
+
       console.log(chalk.green('\n✨ Visual audit complete!\n'));
       console.log(chalk.blue('Next steps:'));
       console.log(chalk.gray('1. Review screenshots in:'), this.outputDir);
-      console.log(chalk.gray('2. Use Claude to analyze:'), `claude -p "@${this.outputDir}/ Analyze these UI screenshots"`);
-      console.log(chalk.gray('3. Or manually fill out:'), path.join(this.outputDir, 'visual-audit-report.md'));
-      
+      console.log(
+        chalk.gray('2. Use Claude to analyze:'),
+        `claude -p "@${this.outputDir}/ Analyze these UI screenshots"`
+      );
+      console.log(
+        chalk.gray('3. Or manually fill out:'),
+        path.join(this.outputDir, 'visual-audit-report.md')
+      );
     } catch (error) {
       console.error(chalk.red('❌ Error:'), error);
       throw error;

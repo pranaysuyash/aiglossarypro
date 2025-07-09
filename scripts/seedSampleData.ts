@@ -6,8 +6,13 @@
  */
 
 import { db } from '../server/db';
-import { learningPaths, learningPathSteps, codeExamples, categories, terms } from '../shared/schema';
-import { eq, sql } from 'drizzle-orm';
+import {
+  categories,
+  codeExamples,
+  learningPathSteps,
+  learningPaths,
+  terms,
+} from '../shared/schema';
 
 interface Term {
   id: string;
@@ -28,106 +33,110 @@ async function main() {
     const existingTerms = await db.select({ id: terms.id, name: terms.name }).from(terms).limit(20);
 
     if (existingCategories.length === 0 || existingTerms.length === 0) {
-      console.error('❌ No existing categories or terms found. Please ensure the database has base data.');
+      console.error(
+        '❌ No existing categories or terms found. Please ensure the database has base data.'
+      );
       process.exit(1);
     }
 
-    console.log(`📊 Found ${existingCategories.length} categories and ${existingTerms.length} terms`);
+    console.log(
+      `📊 Found ${existingCategories.length} categories and ${existingTerms.length} terms`
+    );
 
     // Create sample learning paths
     console.log('📚 Creating sample learning paths...');
-    
+
     const sampleLearningPaths = [
       {
-        name: "Machine Learning Fundamentals",
-        description: "A comprehensive introduction to machine learning concepts and algorithms",
-        difficulty_level: "beginner",
+        name: 'Machine Learning Fundamentals',
+        description: 'A comprehensive introduction to machine learning concepts and algorithms',
+        difficulty_level: 'beginner',
         estimated_duration: 480, // 8 hours
         category_id: existingCategories[0]?.id,
-        prerequisites: ["Basic Statistics", "Linear Algebra"],
+        prerequisites: ['Basic Statistics', 'Linear Algebra'],
         learning_objectives: [
-          "Understand supervised vs unsupervised learning",
-          "Implement basic algorithms",
-          "Evaluate model performance"
+          'Understand supervised vs unsupervised learning',
+          'Implement basic algorithms',
+          'Evaluate model performance',
         ],
         is_official: true,
         is_published: true,
         view_count: 1250,
         completion_count: 180,
-        rating: 450 // 4.5 stars
+        rating: 450, // 4.5 stars
       },
       {
-        name: "Deep Learning with Neural Networks",
-        description: "Dive deep into neural networks and deep learning architectures",
-        difficulty_level: "intermediate",
+        name: 'Deep Learning with Neural Networks',
+        description: 'Dive deep into neural networks and deep learning architectures',
+        difficulty_level: 'intermediate',
         estimated_duration: 720, // 12 hours
         category_id: existingCategories[1]?.id,
-        prerequisites: ["Machine Learning Basics", "Python Programming"],
+        prerequisites: ['Machine Learning Basics', 'Python Programming'],
         learning_objectives: [
-          "Build neural networks from scratch",
-          "Understand backpropagation",
-          "Work with CNNs and RNNs"
+          'Build neural networks from scratch',
+          'Understand backpropagation',
+          'Work with CNNs and RNNs',
         ],
         is_official: true,
         is_published: true,
         view_count: 890,
         completion_count: 95,
-        rating: 470 // 4.7 stars
+        rating: 470, // 4.7 stars
       },
       {
-        name: "Natural Language Processing Essentials",
-        description: "Learn to process and analyze text data using modern NLP techniques",
-        difficulty_level: "intermediate",
+        name: 'Natural Language Processing Essentials',
+        description: 'Learn to process and analyze text data using modern NLP techniques',
+        difficulty_level: 'intermediate',
         estimated_duration: 600, // 10 hours
         category_id: existingCategories[2]?.id,
-        prerequisites: ["Python", "Machine Learning Fundamentals"],
+        prerequisites: ['Python', 'Machine Learning Fundamentals'],
         learning_objectives: [
-          "Preprocess text data",
-          "Build sentiment analysis models",
-          "Understand transformers and BERT"
+          'Preprocess text data',
+          'Build sentiment analysis models',
+          'Understand transformers and BERT',
         ],
         is_official: false,
         is_published: true,
         view_count: 567,
         completion_count: 42,
-        rating: 420 // 4.2 stars
+        rating: 420, // 4.2 stars
       },
       {
-        name: "Computer Vision Basics",
-        description: "Introduction to image processing and computer vision techniques",
-        difficulty_level: "beginner",
+        name: 'Computer Vision Basics',
+        description: 'Introduction to image processing and computer vision techniques',
+        difficulty_level: 'beginner',
         estimated_duration: 540, // 9 hours
         category_id: existingCategories[3]?.id,
-        prerequisites: ["Python Programming", "Linear Algebra"],
+        prerequisites: ['Python Programming', 'Linear Algebra'],
         learning_objectives: [
-          "Process and manipulate images",
-          "Implement edge detection",
-          "Build image classifiers"
+          'Process and manipulate images',
+          'Implement edge detection',
+          'Build image classifiers',
         ],
         is_official: true,
         is_published: true,
         view_count: 723,
         completion_count: 67,
-        rating: 440 // 4.4 stars
+        rating: 440, // 4.4 stars
       },
       {
-        name: "Reinforcement Learning Fundamentals",
-        description: "Learn about agents, environments, and reward-based learning",
-        difficulty_level: "advanced",
+        name: 'Reinforcement Learning Fundamentals',
+        description: 'Learn about agents, environments, and reward-based learning',
+        difficulty_level: 'advanced',
         estimated_duration: 840, // 14 hours
         category_id: existingCategories[4]?.id,
-        prerequisites: ["Machine Learning", "Probability Theory", "Dynamic Programming"],
+        prerequisites: ['Machine Learning', 'Probability Theory', 'Dynamic Programming'],
         learning_objectives: [
-          "Understand Markov Decision Processes",
-          "Implement Q-learning",
-          "Build game-playing agents"
+          'Understand Markov Decision Processes',
+          'Implement Q-learning',
+          'Build game-playing agents',
         ],
         is_official: false,
         is_published: true,
         view_count: 234,
         completion_count: 18,
-        rating: 480 // 4.8 stars
-      }
+        rating: 480, // 4.8 stars
+      },
     ];
 
     // Insert learning paths
@@ -136,11 +145,11 @@ async function main() {
 
     // Create learning path steps for each path
     console.log('📖 Creating learning path steps...');
-    
+
     for (let i = 0; i < insertedPaths.length; i++) {
       const path = insertedPaths[i];
       const stepCount = Math.min(5 + i, existingTerms.length); // Varying step counts
-      
+
       const steps = [];
       for (let j = 0; j < stepCount; j++) {
         if (existingTerms[j]) {
@@ -149,31 +158,31 @@ async function main() {
             term_id: existingTerms[j].id,
             step_order: j + 1,
             is_optional: j > 2, // First 3 steps are required
-            estimated_time: 45 + (j * 15), // Increasing time per step
-            step_type: j === stepCount - 1 ? 'assessment' : (j % 3 === 2 ? 'practice' : 'concept'),
+            estimated_time: 45 + j * 15, // Increasing time per step
+            step_type: j === stepCount - 1 ? 'assessment' : j % 3 === 2 ? 'practice' : 'concept',
             content: {
               description: `Learn about ${existingTerms[j].name}`,
               resources: [`https://example.com/resource-${j}`],
-              exercises: j % 3 === 2 ? [`Practice exercise for ${existingTerms[j].name}`] : []
-            }
+              exercises: j % 3 === 2 ? [`Practice exercise for ${existingTerms[j].name}`] : [],
+            },
           });
         }
       }
-      
+
       await db.insert(learningPathSteps).values(steps);
     }
-    
+
     console.log('✅ Created learning path steps');
 
     // Create sample code examples
     console.log('💻 Creating sample code examples...');
-    
+
     const sampleCodeExamples = [
       {
         term_id: existingTerms[0]?.id,
-        title: "Linear Regression Implementation",
-        description: "A simple implementation of linear regression from scratch using NumPy",
-        language: "python",
+        title: 'Linear Regression Implementation',
+        description: 'A simple implementation of linear regression from scratch using NumPy',
+        language: 'python',
         code: `import numpy as np
 import matplotlib.pyplot as plt
 
@@ -211,20 +220,20 @@ predictions = model.predict(X)
 
 print(f"Weights: {model.weights}")
 print(f"Bias: {model.bias}")`,
-        expected_output: "Weights: [1.99...]\nBias: 1.01...",
-        libraries: { python: ["numpy", "matplotlib"] },
-        difficulty_level: "beginner",
-        example_type: "implementation",
+        expected_output: 'Weights: [1.99...]\nBias: 1.01...',
+        libraries: { python: ['numpy', 'matplotlib'] },
+        difficulty_level: 'beginner',
+        example_type: 'implementation',
         is_runnable: true,
         is_verified: true,
         upvotes: 45,
-        downvotes: 2
+        downvotes: 2,
       },
       {
         term_id: existingTerms[1]?.id,
-        title: "Neural Network Forward Pass",
-        description: "Implementation of forward propagation in a simple neural network",
-        language: "python",
+        title: 'Neural Network Forward Pass',
+        description: 'Implementation of forward propagation in a simple neural network',
+        language: 'python',
         code: `import numpy as np
 
 def sigmoid(x):
@@ -258,20 +267,20 @@ X = np.random.randn(5, 3)  # 5 samples, 3 features
 output = nn.forward(X)
 print(f"Output shape: {output.shape}")
 print(f"Sample output: {output[:2]}")`,
-        expected_output: "Output shape: (5, 1)\nSample output: [[0.52...], [0.48...]]",
-        libraries: { python: ["numpy"] },
-        difficulty_level: "intermediate",
-        example_type: "implementation",
+        expected_output: 'Output shape: (5, 1)\nSample output: [[0.52...], [0.48...]]',
+        libraries: { python: ['numpy'] },
+        difficulty_level: 'intermediate',
+        example_type: 'implementation',
         is_runnable: true,
         is_verified: true,
         upvotes: 67,
-        downvotes: 1
+        downvotes: 1,
       },
       {
         term_id: existingTerms[2]?.id,
-        title: "Text Preprocessing Pipeline",
-        description: "Complete text preprocessing pipeline for NLP tasks",
-        language: "python",
+        title: 'Text Preprocessing Pipeline',
+        description: 'Complete text preprocessing pipeline for NLP tasks',
+        language: 'python',
         code: `import re
 import string
 from collections import Counter
@@ -312,20 +321,21 @@ print(f"Cleaned: {cleaned_text}")
 print(f"Tokens: {tokens}")
 print(f"Filtered: {filtered_tokens}")
 print(f"Frequencies: {dict(word_freq)}")`,
-        expected_output: "Original: This is a sample text...\nCleaned: this is a sample text...\nTokens: ['this', 'is', ...]\nFiltered: ['this', 'sample', ...]\nFrequencies: {'this': 1, 'sample': 1, ...}",
-        libraries: { python: ["re", "string", "collections"] },
-        difficulty_level: "beginner",
-        example_type: "implementation",
+        expected_output:
+          "Original: This is a sample text...\nCleaned: this is a sample text...\nTokens: ['this', 'is', ...]\nFiltered: ['this', 'sample', ...]\nFrequencies: {'this': 1, 'sample': 1, ...}",
+        libraries: { python: ['re', 'string', 'collections'] },
+        difficulty_level: 'beginner',
+        example_type: 'implementation',
         is_runnable: true,
         is_verified: true,
         upvotes: 89,
-        downvotes: 3
+        downvotes: 3,
       },
       {
         term_id: existingTerms[3]?.id,
-        title: "K-Means Clustering Visualization",
-        description: "Implementation of K-Means clustering with visualization",
-        language: "python",
+        title: 'K-Means Clustering Visualization',
+        description: 'Implementation of K-Means clustering with visualization',
+        language: 'python',
         code: `import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.datasets import make_blobs
@@ -379,21 +389,21 @@ plt.scatter(kmeans.centroids[:, 0], kmeans.centroids[:, 1],
 plt.title('K-Means Clustering Results')
 plt.legend()
 plt.show()`,
-        expected_output: "Plot showing clustered data points with centroids marked",
-        libraries: { python: ["numpy", "matplotlib", "sklearn"] },
-        difficulty_level: "intermediate",
-        example_type: "visualization",
+        expected_output: 'Plot showing clustered data points with centroids marked',
+        libraries: { python: ['numpy', 'matplotlib', 'sklearn'] },
+        difficulty_level: 'intermediate',
+        example_type: 'visualization',
         is_runnable: true,
-        external_url: "https://colab.research.google.com/drive/example-kmeans",
+        external_url: 'https://colab.research.google.com/drive/example-kmeans',
         is_verified: true,
         upvotes: 123,
-        downvotes: 5
+        downvotes: 5,
       },
       {
         term_id: existingTerms[4]?.id,
-        title: "Decision Tree Classification",
-        description: "Simple decision tree implementation for binary classification",
-        language: "python",
+        title: 'Decision Tree Classification',
+        description: 'Simple decision tree implementation for binary classification',
+        language: 'python',
         code: `import numpy as np
 from collections import Counter
 
@@ -490,15 +500,16 @@ dt.fit(X, y)
 predictions = dt.predict(X[:10])
 print(f"Predictions: {predictions}")
 print(f"Actual: {y[:10].tolist()}")`,
-        expected_output: "Predictions: [1, 0, 1, 0, 1, 0, 0, 1, 1, 0]\nActual: [1, 0, 1, 0, 1, 0, 0, 1, 1, 0]",
-        libraries: { python: ["numpy", "collections", "sklearn"] },
-        difficulty_level: "advanced",
-        example_type: "implementation",
+        expected_output:
+          'Predictions: [1, 0, 1, 0, 1, 0, 0, 1, 1, 0]\nActual: [1, 0, 1, 0, 1, 0, 0, 1, 1, 0]',
+        libraries: { python: ['numpy', 'collections', 'sklearn'] },
+        difficulty_level: 'advanced',
+        example_type: 'implementation',
         is_runnable: true,
         is_verified: true,
         upvotes: 234,
-        downvotes: 12
-      }
+        downvotes: 12,
+      },
     ];
 
     // Insert code examples
@@ -510,7 +521,6 @@ print(f"Actual: {y[:10].tolist()}")`,
     console.log(`  - Learning Paths: ${insertedPaths.length}`);
     console.log(`  - Code Examples: ${insertedExamples.length}`);
     console.log(`  - Learning Path Steps: Created for all paths`);
-
   } catch (error) {
     console.error('❌ Error seeding sample data:', error);
     process.exit(1);

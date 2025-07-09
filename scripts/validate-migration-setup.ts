@@ -2,14 +2,15 @@
 
 /**
  * Validation Script: Check Migration Setup
- * 
+ *
  * This script validates that all dependencies and configurations
  * are properly set up for the hierarchical migration.
  */
 
-import * as dotenv from "dotenv";
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import * as dotenv from 'dotenv';
+
 dotenv.config();
 
 interface ValidationResult {
@@ -50,7 +51,9 @@ class MigrationSetupValidator {
     this.addResult({
       check: 'DATABASE_URL',
       passed: !!process.env.DATABASE_URL,
-      message: process.env.DATABASE_URL ? 'Database URL is configured' : 'DATABASE_URL environment variable is missing'
+      message: process.env.DATABASE_URL
+        ? 'Database URL is configured'
+        : 'DATABASE_URL environment variable is missing',
     });
   }
 
@@ -60,20 +63,20 @@ class MigrationSetupValidator {
     try {
       const { Pool } = await import('@neondatabase/serverless');
       const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-      
-      const result = await pool.query('SELECT 1 as test');
+
+      const _result = await pool.query('SELECT 1 as test');
       await pool.end();
 
       this.addResult({
         check: 'Database Connection',
         passed: true,
-        message: 'Successfully connected to database'
+        message: 'Successfully connected to database',
       });
     } catch (error: any) {
       this.addResult({
         check: 'Database Connection',
         passed: false,
-        message: `Failed to connect to database: ${error.message}`
+        message: `Failed to connect to database: ${error.message}`,
       });
     }
   }
@@ -81,11 +84,7 @@ class MigrationSetupValidator {
   private async checkDependencies(): Promise<void> {
     console.log('📦 Checking required dependencies...');
 
-    const requiredDeps = [
-      '@neondatabase/serverless',
-      'drizzle-orm',
-      'dotenv'
-    ];
+    const requiredDeps = ['@neondatabase/serverless', 'drizzle-orm', 'dotenv'];
 
     for (const dep of requiredDeps) {
       try {
@@ -93,13 +92,13 @@ class MigrationSetupValidator {
         this.addResult({
           check: `Dependency: ${dep}`,
           passed: true,
-          message: `${dep} is available`
+          message: `${dep} is available`,
         });
-      } catch (error) {
+      } catch (_error) {
         this.addResult({
           check: `Dependency: ${dep}`,
           passed: false,
-          message: `${dep} is not installed or not accessible`
+          message: `${dep} is not installed or not accessible`,
         });
       }
     }
@@ -112,17 +111,17 @@ class MigrationSetupValidator {
       'shared/enhancedSchema.ts',
       'complete_42_sections_config.ts',
       'client/src/data/content-outline.ts',
-      'client/src/types/content-structure.ts'
+      'client/src/types/content-structure.ts',
     ];
 
     for (const file of requiredFiles) {
       const filePath = path.resolve(file);
       const exists = fs.existsSync(filePath);
-      
+
       this.addResult({
         check: `File: ${file}`,
         passed: exists,
-        message: exists ? `${file} exists` : `${file} is missing`
+        message: exists ? `${file} exists` : `${file} is missing`,
       });
     }
   }
@@ -136,13 +135,13 @@ class MigrationSetupValidator {
         this.addResult({
           check: 'TypeScript Config',
           passed: false,
-          message: 'tsconfig.json not found'
+          message: 'tsconfig.json not found',
         });
         return;
       }
 
       const tsconfig = JSON.parse(fs.readFileSync(tsconfigPath, 'utf8'));
-      
+
       // Check for path mappings
       const hasPathMappings = tsconfig.compilerOptions?.paths;
       const hasSharedPath = hasPathMappings && tsconfig.compilerOptions.paths['@shared/*'];
@@ -151,21 +150,21 @@ class MigrationSetupValidator {
       this.addResult({
         check: 'TypeScript Path Mappings',
         passed: hasSharedPath && hasClientPath,
-        message: hasSharedPath && hasClientPath 
-          ? 'Path mappings are configured correctly'
-          : 'Path mappings are missing or incomplete',
+        message:
+          hasSharedPath && hasClientPath
+            ? 'Path mappings are configured correctly'
+            : 'Path mappings are missing or incomplete',
         details: {
           hasSharedPath,
           hasClientPath,
-          paths: tsconfig.compilerOptions?.paths
-        }
+          paths: tsconfig.compilerOptions?.paths,
+        },
       });
-
     } catch (error: any) {
       this.addResult({
         check: 'TypeScript Config',
         passed: false,
-        message: `Error reading tsconfig.json: ${error.message}`
+        message: `Error reading tsconfig.json: ${error.message}`,
       });
     }
   }
@@ -180,17 +179,17 @@ class MigrationSetupValidator {
     console.log('\n📊 Validation Summary');
     console.log('====================');
 
-    const passed = this.results.filter(r => r.passed).length;
+    const passed = this.results.filter((r) => r.passed).length;
     const total = this.results.length;
     const percentage = Math.round((passed / total) * 100);
 
     console.log(`\n✅ Passed: ${passed}/${total} (${percentage}%)`);
     console.log(`❌ Failed: ${total - passed}/${total}`);
 
-    const failedChecks = this.results.filter(r => !r.passed);
+    const failedChecks = this.results.filter((r) => !r.passed);
     if (failedChecks.length > 0) {
       console.log('\n❌ Failed Checks:');
-      failedChecks.forEach(check => {
+      failedChecks.forEach((check) => {
         console.log(`  - ${check.check}: ${check.message}`);
       });
 
@@ -205,11 +204,18 @@ class MigrationSetupValidator {
 
     // Save detailed report
     const reportPath = `validation-report-${Date.now()}.json`;
-    fs.writeFileSync(reportPath, JSON.stringify({
-      timestamp: new Date().toISOString(),
-      summary: { passed, total, percentage },
-      results: this.results
-    }, null, 2));
+    fs.writeFileSync(
+      reportPath,
+      JSON.stringify(
+        {
+          timestamp: new Date().toISOString(),
+          summary: { passed, total, percentage },
+          results: this.results,
+        },
+        null,
+        2
+      )
+    );
 
     console.log(`\n📁 Detailed report saved to: ${reportPath}`);
   }
@@ -222,7 +228,7 @@ async function main() {
 }
 
 // Run if this is the main module
-main().catch(error => {
+main().catch((error) => {
   console.error('Fatal error:', error);
   process.exit(1);
 });

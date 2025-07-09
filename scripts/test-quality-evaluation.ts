@@ -2,21 +2,20 @@
 
 /**
  * Test script for Quality Evaluation System
- * 
+ *
  * This script demonstrates the usage of the AI Quality Evaluation system
  * and can be used for testing and validation purposes.
  */
 
 import dotenv from 'dotenv';
+
 dotenv.config();
 
+import { db } from '../server/db';
 import { aiQualityEvaluationService } from '../server/services/aiQualityEvaluationService';
 import { evaluationTemplateService } from '../server/services/evaluationTemplateService';
 import { qualityAnalyticsService } from '../server/services/qualityAnalyticsService';
-import { db } from '../server/db';
 import { enhancedTerms } from '../shared/enhancedSchema';
-import { eq, limit } from 'drizzle-orm';
-import { log as logger } from '../server/utils/logger';
 
 // Sample content for testing
 const SAMPLE_CONTENT = {
@@ -73,7 +72,7 @@ model.compile(optimizer='adam',
 
 Neural networks form the foundation of deep learning and have revolutionized artificial intelligence across numerous domains.
   `,
-  
+
   poorDefinition: `
 # Backprop
 
@@ -85,7 +84,7 @@ The math is complicated but computers can do it fast. Without backprop neural ne
 
 You need labeled data to train with backprop. The network makes predictions and backprop tells it what it did wrong.
   `,
-  
+
   tutorialContent: `
 # Implementing a Simple Neural Network from Scratch
 
@@ -223,7 +222,7 @@ print(f"Accuracy: {accuracy:.2f}")
 - **Slow Convergence**: Adjust learning rate or use adaptive optimizers
 
 This implementation provides a foundation for understanding neural networks. Production systems would use frameworks like TensorFlow or PyTorch for efficiency and additional features.
-  `
+  `,
 };
 
 async function testSingleEvaluation() {
@@ -236,7 +235,7 @@ async function testSingleEvaluation() {
       termId: 'test-term-1',
       content: SAMPLE_CONTENT.goodDefinition,
       contentType: 'definition',
-      targetAudience: 'intermediate'
+      targetAudience: 'intermediate',
     });
 
     console.log(`✅ Good Definition Results:`);
@@ -253,7 +252,7 @@ async function testSingleEvaluation() {
       termId: 'test-term-2',
       content: SAMPLE_CONTENT.poorDefinition,
       contentType: 'definition',
-      targetAudience: 'intermediate'
+      targetAudience: 'intermediate',
     });
 
     console.log(`❌ Poor Definition Results:`);
@@ -262,7 +261,9 @@ async function testSingleEvaluation() {
     console.log(`   Clarity: ${poorResult.dimensions.clarity.score}/10`);
     console.log(`   Completeness: ${poorResult.dimensions.completeness.score}/10`);
     console.log(`   Cost: $${poorResult.metadata.cost.toFixed(4)}`);
-    console.log(`   Issues: ${poorResult.summary.criticalIssues?.slice(0, 2).join(', ') || 'None'}`);
+    console.log(
+      `   Issues: ${poorResult.summary.criticalIssues?.slice(0, 2).join(', ') || 'None'}`
+    );
 
     // Test tutorial content
     console.log('\nEvaluating TUTORIAL content...');
@@ -270,7 +271,7 @@ async function testSingleEvaluation() {
       termId: 'test-term-3',
       content: SAMPLE_CONTENT.tutorialContent,
       contentType: 'tutorial',
-      targetAudience: 'advanced'
+      targetAudience: 'advanced',
     });
 
     console.log(`📚 Tutorial Results:`);
@@ -281,7 +282,6 @@ async function testSingleEvaluation() {
     console.log(`   Cost: $${tutorialResult.metadata.cost.toFixed(4)}`);
 
     return { goodResult, poorResult, tutorialResult };
-
   } catch (error) {
     console.error('❌ Error in single evaluation test:', error);
     throw error;
@@ -298,21 +298,21 @@ async function testBatchEvaluation() {
           termId: 'batch-term-1',
           content: SAMPLE_CONTENT.goodDefinition,
           contentType: 'definition' as const,
-          targetAudience: 'intermediate' as const
+          targetAudience: 'intermediate' as const,
         },
         {
           termId: 'batch-term-2',
           content: SAMPLE_CONTENT.poorDefinition,
           contentType: 'definition' as const,
-          targetAudience: 'beginner' as const
+          targetAudience: 'beginner' as const,
         },
         {
           termId: 'batch-term-3',
           content: SAMPLE_CONTENT.tutorialContent,
           contentType: 'tutorial' as const,
-          targetAudience: 'advanced' as const
-        }
-      ]
+          targetAudience: 'advanced' as const,
+        },
+      ],
     };
 
     const batchResult = await aiQualityEvaluationService.batchEvaluate(batchRequest);
@@ -328,14 +328,15 @@ async function testBatchEvaluation() {
     console.log(`\n📋 Individual Results:`);
     batchResult.results.forEach((result, index) => {
       if (result.success) {
-        console.log(`   ${index + 1}. Score: ${result.overallScore}/10 (${result.metadata?.termName || 'Test Term'})`);
+        console.log(
+          `   ${index + 1}. Score: ${result.overallScore}/10 (${result.metadata?.termName || 'Test Term'})`
+        );
       } else {
         console.log(`   ${index + 1}. Failed: ${result.error}`);
       }
     });
 
     return batchResult;
-
   } catch (error) {
     console.error('❌ Error in batch evaluation test:', error);
     throw error;
@@ -356,10 +357,11 @@ async function testComparisonEvaluation() {
     console.log(`   Similarity Score: ${comparisonResult.similarityScore}/100`);
     console.log(`   Missing Elements: ${comparisonResult.missingElements.slice(0, 3).join(', ')}`);
     console.log(`   Improvements Needed: ${comparisonResult.improvements.slice(0, 3).join(', ')}`);
-    console.log(`   Additional Elements: ${comparisonResult.additionalElements.slice(0, 2).join(', ')}`);
+    console.log(
+      `   Additional Elements: ${comparisonResult.additionalElements.slice(0, 2).join(', ')}`
+    );
 
     return comparisonResult;
-
   } catch (error) {
     console.error('❌ Error in comparison test:', error);
     throw error;
@@ -373,7 +375,7 @@ async function testTemplateSystem() {
     // Get all templates
     const allTemplates = evaluationTemplateService.getAllTemplates();
     console.log(`📚 Available Templates: ${allTemplates.length}`);
-    allTemplates.forEach(template => {
+    allTemplates.forEach((template) => {
       console.log(`   - ${template.name} (${template.contentType})`);
     });
 
@@ -399,21 +401,21 @@ async function testTemplateSystem() {
           criteria: ['Test criterion 1', 'Test criterion 2'],
           examples: {
             good: ['Good example 1'],
-            bad: ['Bad example 1']
-          }
-        }
+            bad: ['Bad example 1'],
+          },
+        },
       ],
       prompts: {
         system: 'Test system prompt',
         evaluation: 'Test evaluation prompt',
-        scoring: 'Test scoring prompt'
+        scoring: 'Test scoring prompt',
       },
       metadata: {
         version: '1.0',
         lastUpdated: new Date(),
         author: 'Test Script',
-        tags: ['test', 'custom']
-      }
+        tags: ['test', 'custom'],
+      },
     };
 
     evaluationTemplateService.createCustomTemplate(customTemplate);
@@ -424,7 +426,6 @@ async function testTemplateSystem() {
     console.log(`🗑️  Deleted custom template: ${customTemplate.id}`);
 
     return { allTemplates, definitionTemplates, recommended };
-
   } catch (error) {
     console.error('❌ Error in template system test:', error);
     throw error;
@@ -439,7 +440,7 @@ async function testQualityAnalytics() {
     const analytics = await qualityAnalyticsService.getQualityAnalytics({
       startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
       endDate: new Date(),
-      groupBy: 'day'
+      groupBy: 'day',
     });
 
     console.log(`📊 Quality Analytics:`);
@@ -450,7 +451,7 @@ async function testQualityAnalytics() {
     console.log(`     Completeness: ${analytics.averageScores.completeness.toFixed(1)}/10`);
 
     console.log(`\n📈 Distribution:`);
-    analytics.distribution.forEach(dist => {
+    analytics.distribution.forEach((dist) => {
       console.log(`     ${dist.scoreRange}: ${dist.count} terms (${dist.percentage}%)`);
     });
 
@@ -463,14 +464,17 @@ async function testQualityAnalytics() {
     const recommendations = await qualityAnalyticsService.getImprovementRecommendations();
     console.log(`\n💡 Improvement Recommendations:`);
     console.log(`   Current Average: ${recommendations.currentState.averageScore.toFixed(1)}/10`);
-    console.log(`   Weakest Dimensions: ${recommendations.currentState.weakestDimensions.join(', ')}`);
+    console.log(
+      `   Weakest Dimensions: ${recommendations.currentState.weakestDimensions.join(', ')}`
+    );
     console.log(`   Top Recommendations:`);
     recommendations.recommendations.slice(0, 3).forEach((rec, index) => {
-      console.log(`     ${index + 1}. ${rec.action} (${rec.priority} priority, +${rec.expectedImpact} impact)`);
+      console.log(
+        `     ${index + 1}. ${rec.action} (${rec.priority} priority, +${rec.expectedImpact} impact)`
+      );
     });
 
     return { analytics, recommendations };
-
   } catch (error) {
     console.error('❌ Error in analytics test:', error);
     throw error;
@@ -482,9 +486,7 @@ async function testRealTermEvaluation() {
 
   try {
     // Get a real term from the database
-    const terms = await db.select()
-      .from(enhancedTerms)
-      .limit(3);
+    const terms = await db.select().from(enhancedTerms).limit(3);
 
     if (terms.length === 0) {
       console.log('⚠️  No terms found in database. Skipping real term evaluation.');
@@ -505,7 +507,7 @@ async function testRealTermEvaluation() {
       termId: term.id,
       content,
       contentType: 'definition',
-      targetAudience: 'intermediate'
+      targetAudience: 'intermediate',
     });
 
     console.log(`📖 Real Term Evaluation: "${term.name}"`);
@@ -527,7 +529,6 @@ async function testRealTermEvaluation() {
     }
 
     return result;
-
   } catch (error) {
     console.error('❌ Error in real term evaluation test:', error);
     throw error;
@@ -559,29 +560,35 @@ async function runComprehensiveTest() {
     // Test 6: Real term evaluation
     results.realTermEvaluation = await testRealTermEvaluation();
 
-    console.log('\n' + '=' * 70);
+    console.log(`\n${'=' * 70}`);
     console.log('✅ ALL TESTS COMPLETED SUCCESSFULLY!');
     console.log('=' * 70);
 
     // Summary
     console.log('\n📊 Test Summary:');
     console.log(`   Single Evaluations: ✅ Completed`);
-    console.log(`   Batch Evaluation: ✅ Completed (${results.batchEvaluation?.summary.successCount}/${results.batchEvaluation?.summary.totalEvaluations} successful)`);
-    console.log(`   Comparison: ✅ Completed (${results.comparisonEvaluation?.similarityScore || 'N/A'}/100 similarity)`);
-    console.log(`   Templates: ✅ Completed (${results.templateSystem?.allTemplates?.length || 0} templates loaded)`);
+    console.log(
+      `   Batch Evaluation: ✅ Completed (${results.batchEvaluation?.summary.successCount}/${results.batchEvaluation?.summary.totalEvaluations} successful)`
+    );
+    console.log(
+      `   Comparison: ✅ Completed (${results.comparisonEvaluation?.similarityScore || 'N/A'}/100 similarity)`
+    );
+    console.log(
+      `   Templates: ✅ Completed (${results.templateSystem?.allTemplates?.length || 0} templates loaded)`
+    );
     console.log(`   Analytics: ✅ Completed`);
     console.log(`   Real Term: ${results.realTermEvaluation ? '✅ Completed' : '⚠️  Skipped'}`);
 
-    const totalCost = (results.singleEvaluation?.goodResult?.metadata?.cost || 0) +
-                     (results.singleEvaluation?.poorResult?.metadata?.cost || 0) +
-                     (results.singleEvaluation?.tutorialResult?.metadata?.cost || 0) +
-                     (results.batchEvaluation?.summary?.totalCost || 0) +
-                     (results.realTermEvaluation?.metadata?.cost || 0);
+    const totalCost =
+      (results.singleEvaluation?.goodResult?.metadata?.cost || 0) +
+      (results.singleEvaluation?.poorResult?.metadata?.cost || 0) +
+      (results.singleEvaluation?.tutorialResult?.metadata?.cost || 0) +
+      (results.batchEvaluation?.summary?.totalCost || 0) +
+      (results.realTermEvaluation?.metadata?.cost || 0);
 
     console.log(`\n💰 Total Test Cost: $${totalCost.toFixed(4)}`);
 
     return results;
-
   } catch (error) {
     console.error('\n❌ TEST FAILED:', error);
     throw error;
@@ -608,5 +615,5 @@ export {
   testTemplateSystem,
   testQualityAnalytics,
   testRealTermEvaluation,
-  runComprehensiveTest
+  runComprehensiveTest,
 };

@@ -1,7 +1,6 @@
-import type { Preview } from '@storybook/react-vite'
 import { withThemeByClassName } from '@storybook/addon-themes';
+import type { Preview } from '@storybook/react-vite';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import React from 'react';
 import { Router } from 'wouter';
 import { Toaster } from '../client/src/components/ui/toaster';
 import '../client/src/index.css'; // Import our Tailwind CSS
@@ -24,17 +23,17 @@ const queryClient = new QueryClient({
       // Mock query function for Storybook
       queryFn: async ({ queryKey }) => {
         const url = queryKey[0] as string;
-        
+
         // Mock auth endpoint
         if (url.includes('/api/auth/user')) {
           return mockUser;
         }
-        
+
         // Mock other endpoints as needed
         if (url.includes('/api/favorites')) {
           return [];
         }
-        
+
         // Default mock response
         return null;
       },
@@ -54,15 +53,15 @@ const preview: Preview = {
   parameters: {
     controls: {
       matchers: {
-       color: /(background|color)$/i,
-       date: /Date$/i,
+        color: /(background|color)$/i,
+        date: /Date$/i,
       },
     },
     a11y: {
       // 'todo' - show a11y violations in the test UI only
       // 'error' - fail CI on a11y violations
       // 'off' - skip a11y checks entirely
-      test: 'todo'
+      test: 'todo',
     },
     backgrounds: {
       default: 'light',

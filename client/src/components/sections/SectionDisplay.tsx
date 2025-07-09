@@ -1,26 +1,24 @@
-import { ITermSection, IEnhancedUserSettings, ISectionDisplayProps } from '@/interfaces/interfaces';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { 
-  Eye, 
-  EyeOff, 
+import {
+  AlertTriangle,
+  BookOpen,
+  ChevronDown,
+  ChevronRight,
+  Code,
+  ExternalLink,
+  FileText,
+  Lightbulb,
   Maximize2,
   Minimize2,
-  ExternalLink,
-  BookOpen,
-  Code,
-  TestTube,
-  Lightbulb,
   Target,
-  FileText,
-  AlertTriangle,
-  ChevronDown,
-  ChevronRight
+  TestTube,
 } from 'lucide-react';
 import { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import type { ISectionDisplayProps } from '@/interfaces/interfaces';
 
 interface SectionDisplayComponentProps extends ISectionDisplayProps {
   isExpanded?: boolean;
@@ -34,7 +32,7 @@ export default function SectionDisplay({
   onInteraction,
   isExpanded = false,
   onToggleExpand,
-  showControls = true
+  showControls = true,
 }: SectionDisplayComponentProps) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
@@ -53,11 +51,13 @@ export default function SectionDisplay({
 
   const getSectionConfig = (sectionName: string) => {
     const key = sectionName.toLowerCase().replace(/\s+/g, '-');
-    return sectionConfigs[key as keyof typeof sectionConfigs] || {
-      icon: FileText,
-      color: 'gray',
-      label: sectionName
-    };
+    return (
+      sectionConfigs[key as keyof typeof sectionConfigs] || {
+        icon: FileText,
+        color: 'gray',
+        label: sectionName,
+      }
+    );
   };
 
   const config = getSectionConfig(section.sectionName);
@@ -69,7 +69,7 @@ export default function SectionDisplay({
     }
   };
 
-  const toggleCollapsed = () => {
+  const _toggleCollapsed = () => {
     setIsCollapsed(!isCollapsed);
     handleInteraction('section_toggled', { collapsed: !isCollapsed });
   };
@@ -140,7 +140,10 @@ export default function SectionDisplay({
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-800">
                 {sectionData.headers.map((header: string, index: number) => (
-                  <th key={index} className="border border-gray-200 dark:border-gray-700 p-2 text-left font-medium">
+                  <th
+                    key={index}
+                    className="border border-gray-200 dark:border-gray-700 p-2 text-left font-medium"
+                  >
                     {header}
                   </th>
                 ))}
@@ -182,17 +185,15 @@ export default function SectionDisplay({
     // Fallback: render as JSON for debugging
     return (
       <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
-        <pre className="text-sm overflow-x-auto">
-          {JSON.stringify(sectionData, null, 2)}
-        </pre>
+        <pre className="text-sm overflow-x-auto">{JSON.stringify(sectionData, null, 2)}</pre>
       </div>
     );
   };
 
   // Get appropriate container based on display type
   const getContainerClassName = () => {
-    const baseClasses = "transition-all duration-200";
-    
+    const baseClasses = 'transition-all duration-200';
+
     if (isFullscreen) {
       return `${baseClasses} fixed inset-0 z-50 bg-white dark:bg-gray-900 overflow-auto p-4`;
     }
@@ -232,10 +233,10 @@ export default function SectionDisplay({
                   <CardTitle className="text-lg">{config.label}</CardTitle>
                 </div>
               </CollapsibleTrigger>
-              
+
               <div className="flex items-center space-x-1">
-                <Badge 
-                  variant="outline" 
+                <Badge
+                  variant="outline"
                   className={`text-${config.color}-600 border-${config.color}-200`}
                 >
                   {section.displayType}
@@ -245,7 +246,7 @@ export default function SectionDisplay({
                     Priority: {section.priority}
                   </Badge>
                 )}
-                
+
                 {showControls && (
                   <>
                     {section.displayType !== 'sidebar' && (
@@ -255,10 +256,14 @@ export default function SectionDisplay({
                         onClick={toggleExpanded}
                         className="h-8 w-8"
                       >
-                        {isExpanded ? <Minimize2 className="h-4 w-4" /> : <Maximize2 className="h-4 w-4" />}
+                        {isExpanded ? (
+                          <Minimize2 className="h-4 w-4" />
+                        ) : (
+                          <Maximize2 className="h-4 w-4" />
+                        )}
                       </Button>
                     )}
-                    
+
                     <Button
                       variant="ghost"
                       size="icon"
@@ -272,7 +277,7 @@ export default function SectionDisplay({
               </div>
             </div>
           </CardHeader>
-          
+
           <CollapsibleContent>
             <CardContent className={isExpanded ? 'px-6 pb-6' : 'px-6 pb-6'}>
               {renderSectionContent()}

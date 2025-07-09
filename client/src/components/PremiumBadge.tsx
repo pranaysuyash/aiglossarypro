@@ -1,6 +1,6 @@
 import { Crown, Star } from 'lucide-react';
-import { Badge } from './ui/badge';
 import { useAccess } from '../hooks/useAccess';
+import { Badge } from './ui/badge';
 
 interface PremiumBadgeProps {
   variant?: 'default' | 'compact' | 'icon-only';
@@ -8,10 +8,10 @@ interface PremiumBadgeProps {
   showFreeStatus?: boolean;
 }
 
-export function PremiumBadge({ 
-  variant = 'default', 
+export function PremiumBadge({
+  variant = 'default',
   className = '',
-  showFreeStatus = false 
+  showFreeStatus = false,
 }: PremiumBadgeProps) {
   const { accessStatus } = useAccess();
 
@@ -25,7 +25,10 @@ export function PremiumBadge({
 
   if (variant === 'icon-only') {
     return (
-      <div className={`inline-flex items-center ${className}`} title={isPremium ? 'Premium Member' : 'Free User'}>
+      <div
+        className={`inline-flex items-center ${className}`}
+        title={isPremium ? 'Premium Member' : 'Free User'}
+      >
         {isPremium ? (
           <Crown className="w-4 h-4 text-yellow-500" />
         ) : (
@@ -37,12 +40,13 @@ export function PremiumBadge({
 
   if (variant === 'compact') {
     return (
-      <Badge 
-        variant={isPremium ? "default" : "secondary"}
+      <Badge
+        variant={isPremium ? 'default' : 'secondary'}
         className={`
-          ${isPremium 
-            ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0' 
-            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+          ${
+            isPremium
+              ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0'
+              : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
           } 
           px-2 py-1 text-xs
           ${className}
@@ -62,12 +66,13 @@ export function PremiumBadge({
 
   // Default variant
   return (
-    <Badge 
-      variant={isPremium ? "default" : "secondary"}
+    <Badge
+      variant={isPremium ? 'default' : 'secondary'}
       className={`
-        ${isPremium 
-          ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 shadow-md' 
-          : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
+        ${
+          isPremium
+            ? 'bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 shadow-md'
+            : 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400'
         } 
         px-3 py-1 font-medium
         ${className}

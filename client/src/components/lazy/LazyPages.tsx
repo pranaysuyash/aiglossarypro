@@ -1,6 +1,6 @@
 import { lazy, Suspense } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Page Loading Skeleton
 const PageSkeleton = () => (

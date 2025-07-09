@@ -3,29 +3,28 @@
  * Displays personalized learning recommendations and organization based on user patterns
  */
 
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardHeader, CardTitle, CardContent } from './ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { Badge } from './ui/badge';
-import { Button } from './ui/button';
-import { Progress } from './ui/progress';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { 
-  Brain, 
-  Target, 
-  TrendingUp, 
-  BookOpen, 
-  Settings, 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  BarChart3,
+  BookOpen,
+  Brain,
   ChevronRight,
   Clock,
   Star,
-  Users,
-  BarChart3,
-  ThumbsUp,
+  Target,
   ThumbsDown,
-  Zap
+  ThumbsUp,
+  TrendingUp,
+  Users,
+  Zap,
 } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Progress } from './ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface LearningPattern {
   userId: string;
@@ -79,11 +78,16 @@ interface LearningInsights {
 
 const AdaptiveLearning: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('dashboard');
-  const [feedbackType, setFeedbackType] = useState<'too_easy' | 'too_hard' | 'just_right' | null>(null);
+  const [_feedbackType, setFeedbackType] = useState<'too_easy' | 'too_hard' | 'just_right' | null>(
+    null
+  );
   const queryClient = useQueryClient();
 
   // Fetch learning patterns
-  const { data: patterns, isLoading: patternsLoading } = useQuery<{ success: boolean; data: LearningPattern }>({
+  const { data: patterns, isLoading: patternsLoading } = useQuery<{
+    success: boolean;
+    data: LearningPattern;
+  }>({
     queryKey: ['adaptiveLearningPatterns'],
     queryFn: async () => {
       const response = await fetch('/api/adaptive/learning-patterns');
@@ -93,7 +97,10 @@ const AdaptiveLearning: React.FC = () => {
   });
 
   // Fetch recommendations
-  const { data: recommendations, isLoading: recommendationsLoading } = useQuery<{ success: boolean; data: AdaptiveRecommendation[] }>({
+  const { data: recommendations, isLoading: recommendationsLoading } = useQuery<{
+    success: boolean;
+    data: AdaptiveRecommendation[];
+  }>({
     queryKey: ['adaptiveRecommendations'],
     queryFn: async () => {
       const response = await fetch('/api/adaptive/recommendations?count=15');
@@ -103,7 +110,10 @@ const AdaptiveLearning: React.FC = () => {
   });
 
   // Fetch learning insights
-  const { data: insights, isLoading: insightsLoading } = useQuery<{ success: boolean; data: LearningInsights }>({
+  const { data: insights, isLoading: insightsLoading } = useQuery<{
+    success: boolean;
+    data: LearningInsights;
+  }>({
     queryKey: ['learningInsights'],
     queryFn: async () => {
       const response = await fetch('/api/adaptive/learning-insights');
@@ -114,7 +124,11 @@ const AdaptiveLearning: React.FC = () => {
 
   // Submit feedback mutation
   const feedbackMutation = useMutation({
-    mutationFn: async (feedback: { feedbackType: string; difficultyAdjustment?: number; paceAdjustment?: number }) => {
+    mutationFn: async (feedback: {
+      feedbackType: string;
+      difficultyAdjustment?: number;
+      paceAdjustment?: number;
+    }) => {
       const response = await fetch('/api/adaptive/feedback', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -134,32 +148,42 @@ const AdaptiveLearning: React.FC = () => {
     const adjustments = {
       too_easy: { difficultyAdjustment: 0.2 },
       too_hard: { difficultyAdjustment: -0.2 },
-      just_right: {}
+      just_right: {},
     };
 
     feedbackMutation.mutate({
       feedbackType: type,
-      ...adjustments[type]
+      ...adjustments[type],
     });
   };
 
   const getRecommendationTypeIcon = (type: AdaptiveRecommendation['recommendationType']) => {
     switch (type) {
-      case 'next_logical': return <ChevronRight className="h-4 w-4" />;
-      case 'fill_gap': return <Target className="h-4 w-4" />;
-      case 'explore_new': return <Zap className="h-4 w-4" />;
-      case 'review_weak': return <TrendingUp className="h-4 w-4" />;
-      default: return <BookOpen className="h-4 w-4" />;
+      case 'next_logical':
+        return <ChevronRight className="h-4 w-4" />;
+      case 'fill_gap':
+        return <Target className="h-4 w-4" />;
+      case 'explore_new':
+        return <Zap className="h-4 w-4" />;
+      case 'review_weak':
+        return <TrendingUp className="h-4 w-4" />;
+      default:
+        return <BookOpen className="h-4 w-4" />;
     }
   };
 
   const getRecommendationTypeColor = (type: AdaptiveRecommendation['recommendationType']) => {
     switch (type) {
-      case 'next_logical': return 'bg-blue-100 text-blue-800';
-      case 'fill_gap': return 'bg-orange-100 text-orange-800';
-      case 'explore_new': return 'bg-green-100 text-green-800';
-      case 'review_weak': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'next_logical':
+        return 'bg-blue-100 text-blue-800';
+      case 'fill_gap':
+        return 'bg-orange-100 text-orange-800';
+      case 'explore_new':
+        return 'bg-green-100 text-green-800';
+      case 'review_weak':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -187,7 +211,7 @@ const AdaptiveLearning: React.FC = () => {
           </h2>
           <p className="text-gray-600">Personalized learning experience powered by AI</p>
         </div>
-        
+
         {/* Feedback Controls */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">How's the difficulty?</span>
@@ -305,12 +329,20 @@ const AdaptiveLearning: React.FC = () => {
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {recommendations.data.slice(0, 6).map((rec) => (
-                    <div key={rec.termId} className="p-4 border rounded-lg hover:shadow-md transition-shadow">
+                    <div
+                      key={rec.termId}
+                      className="p-4 border rounded-lg hover:shadow-md transition-shadow"
+                    >
                       <div className="flex items-start justify-between mb-2">
                         <h4 className="font-medium">{rec.termName}</h4>
-                        <Badge variant="secondary" className={getRecommendationTypeColor(rec.recommendationType)}>
+                        <Badge
+                          variant="secondary"
+                          className={getRecommendationTypeColor(rec.recommendationType)}
+                        >
                           {getRecommendationTypeIcon(rec.recommendationType)}
-                          <span className="ml-1 capitalize">{rec.recommendationType.replace('_', ' ')}</span>
+                          <span className="ml-1 capitalize">
+                            {rec.recommendationType.replace('_', ' ')}
+                          </span>
                         </Badge>
                       </div>
                       <p className="text-sm text-gray-600 mb-2">{rec.categoryName}</p>
@@ -352,18 +384,23 @@ const AdaptiveLearning: React.FC = () => {
                           <p className="text-sm text-gray-600">{rec.categoryName}</p>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className={getRecommendationTypeColor(rec.recommendationType)}>
+                          <Badge
+                            variant="secondary"
+                            className={getRecommendationTypeColor(rec.recommendationType)}
+                          >
                             {getRecommendationTypeIcon(rec.recommendationType)}
-                            <span className="ml-1 capitalize">{rec.recommendationType.replace('_', ' ')}</span>
+                            <span className="ml-1 capitalize">
+                              {rec.recommendationType.replace('_', ' ')}
+                            </span>
                           </Badge>
                           <span className="text-sm font-medium">
                             {Math.round(rec.recommendationScore * 100)}%
                           </span>
                         </div>
                       </div>
-                      
+
                       <p className="text-sm text-gray-700 mb-3">{rec.reasoning}</p>
-                      
+
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         <div>
                           <span className="text-xs text-gray-500">Difficulty</span>
@@ -382,7 +419,7 @@ const AdaptiveLearning: React.FC = () => {
                           <p className="text-sm capitalize">{rec.adaptations.supportLevel}</p>
                         </div>
                       </div>
-                      
+
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           <Clock className="h-4 w-4 text-gray-400" />
@@ -396,9 +433,7 @@ const AdaptiveLearning: React.FC = () => {
                   ))}
                 </div>
               ) : (
-                <div className="text-center py-8 text-gray-500">
-                  No recommendations available
-                </div>
+                <div className="text-center py-8 text-gray-500">No recommendations available</div>
               )}
             </CardContent>
           </Card>
@@ -504,7 +539,11 @@ const AdaptiveLearning: React.FC = () => {
                     {insights.data.strengthAreas.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
                         {insights.data.strengthAreas.map((area, index) => (
-                          <Badge key={index} variant="secondary" className="bg-green-100 text-green-800">
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="bg-green-100 text-green-800"
+                          >
                             {area}
                           </Badge>
                         ))}
@@ -523,7 +562,11 @@ const AdaptiveLearning: React.FC = () => {
                     {insights.data.improvementAreas.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
                         {insights.data.improvementAreas.map((area, index) => (
-                          <Badge key={index} variant="secondary" className="bg-orange-100 text-orange-800">
+                          <Badge
+                            key={index}
+                            variant="secondary"
+                            className="bg-orange-100 text-orange-800"
+                          >
                             {area}
                           </Badge>
                         ))}
@@ -546,7 +589,9 @@ const AdaptiveLearning: React.FC = () => {
                         <span className="text-sm">{new Date(trend.date).toLocaleDateString()}</span>
                         <div className="flex items-center gap-2 flex-1 ml-4">
                           <Progress value={trend.engagementScore * 100} className="flex-1" />
-                          <span className="text-sm">{Math.round(trend.engagementScore * 100)}%</span>
+                          <span className="text-sm">
+                            {Math.round(trend.engagementScore * 100)}%
+                          </span>
                         </div>
                         <div className="flex gap-1 ml-4">
                           {trend.focusAreas.map((area, i) => (

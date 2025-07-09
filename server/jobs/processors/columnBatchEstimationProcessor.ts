@@ -3,25 +3,25 @@
  * Handles cost and time estimation for column batch operations
  */
 
-import { Job } from 'bullmq';
-import { ColumnBatchEstimationJobData, ColumnBatchEstimationJobResult } from '../types';
+import type { Job } from 'bullmq';
 import { columnBatchProcessorService } from '../../services/columnBatchProcessorService';
 import { costManagementService } from '../../services/costManagementService';
 import { log as logger } from '../../utils/logger';
+import type { ColumnBatchEstimationJobData, ColumnBatchEstimationJobResult } from '../types';
 
 export async function columnBatchEstimationProcessor(
   job: Job<ColumnBatchEstimationJobData>
 ): Promise<ColumnBatchEstimationJobResult> {
-  const startTime = Date.now();
-  const { 
-    sectionName, 
-    termIds, 
+  const _startTime = Date.now();
+  const {
+    sectionName,
+    termIds,
     categories,
     filterOptions,
     model = 'gpt-3.5-turbo',
     temperature = 0.7,
     maxTokens = 1000,
-    userId 
+    userId,
   } = job.data;
 
   logger.info(`Starting column batch estimation job ${job.id} for section: ${sectionName}`);
@@ -38,9 +38,9 @@ export async function columnBatchEstimationProcessor(
         filterCriteria: {
           termIds: termIds?.length,
           categories: categories?.length,
-          hasFilterOptions: !!filterOptions
-        }
-      }
+          hasFilterOptions: !!filterOptions,
+        },
+      },
     });
 
     // Create a batch request for estimation
@@ -54,17 +54,17 @@ export async function columnBatchEstimationProcessor(
         model,
         temperature,
         maxTokens,
-        regenerateExisting: false
+        regenerateExisting: false,
       },
       metadata: {
-        initiatedBy: userId || 'system'
-      }
+        initiatedBy: userId || 'system',
+      },
     };
 
     await job.updateProgress({
       progress: 30,
       message: 'Calculating cost estimates',
-      stage: 'cost_calculation'
+      stage: 'cost_calculation',
     });
 
     // Get cost estimate from the batch processor service
@@ -73,7 +73,7 @@ export async function columnBatchEstimationProcessor(
     await job.updateProgress({
       progress: 60,
       message: 'Analyzing historical performance data',
-      stage: 'historical_analysis'
+      stage: 'historical_analysis',
     });
 
     // Get detailed cost estimation from cost management service
@@ -88,36 +88,38 @@ export async function columnBatchEstimationProcessor(
     await job.updateProgress({
       progress: 80,
       message: 'Generating processing time estimates',
-      stage: 'time_estimation'
+      stage: 'time_estimation',
     });
 
     // Calculate processing time estimates
     const averageTimePerTerm = 30; // seconds - base estimate
     const batchOverhead = 0.2; // 20% overhead for batch processing
     const queueTime = Math.min(costEstimate.totalTerms * 2, 300); // Max 5 minutes queue time
-    
+
     const baseProcessingTime = costEstimate.totalTerms * averageTimePerTerm;
-    const estimatedProcessingTime = (baseProcessingTime * (1 + batchOverhead)) + queueTime;
+    const estimatedProcessingTime = baseProcessingTime * (1 + batchOverhead) + queueTime;
 
     await job.updateProgress({
       progress: 95,
       message: 'Finalizing estimation report',
-      stage: 'finalization'
+      stage: 'finalization',
     });
 
     // Combine recommendations
-    const recommendations = [
-      ...costEstimate.recommendations,
-      ...detailedEstimate.recommendations
-    ];
+    const recommendations = [...costEstimate.recommendations, ...detailedEstimate.recommendations];
 
     // Add processing-specific recommendations
     if (costEstimate.totalTerms > 1000) {
-      recommendations.push('Consider processing in multiple smaller batches for better monitoring and control');
+      recommendations.push(
+        'Consider processing in multiple smaller batches for better monitoring and control'
+      );
     }
 
-    if (estimatedProcessingTime > 3600) { // More than 1 hour
-      recommendations.push('This operation will take over 1 hour - consider scheduling during off-peak hours');
+    if (estimatedProcessingTime > 3600) {
+      // More than 1 hour
+      recommendations.push(
+        'This operation will take over 1 hour - consider scheduling during off-peak hours'
+      );
     }
 
     // Determine confidence level
@@ -137,7 +139,7 @@ export async function columnBatchEstimationProcessor(
       costBreakdown: costEstimate.costBreakdown,
       recommendations: [...new Set(recommendations)], // Remove duplicates
       confidence,
-      basedOn: `${costEstimate.totalTerms} terms, ${detailedEstimate.basedOn}`
+      basedOn: `${costEstimate.totalTerms} terms, ${detailedEstimate.basedOn}`,
     };
 
     await job.updateProgress({
@@ -148,8 +150,8 @@ export async function columnBatchEstimationProcessor(
         totalTerms: result.totalTerms,
         estimatedCost: result.estimatedCost,
         estimatedTime: result.estimatedProcessingTime,
-        confidence: result.confidence
-      }
+        confidence: result.confidence,
+      },
     });
 
     logger.info(`Column batch estimation job ${job.id} completed:`, {
@@ -157,18 +159,17 @@ export async function columnBatchEstimationProcessor(
       totalTerms: result.totalTerms,
       estimatedCost: result.estimatedCost,
       estimatedTime: result.estimatedProcessingTime,
-      confidence: result.confidence
+      confidence: result.confidence,
     });
 
     return result;
-
   } catch (error) {
-    logger.error(`Column batch estimation job ${job.id} failed:`, { 
+    logger.error(`Column batch estimation job ${job.id} failed:`, {
       error: error instanceof Error ? error.message : String(error),
       sectionName,
-      model
+      model,
     });
-    
+
     throw error;
   }
 }

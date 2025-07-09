@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
-import { vi, expect } from 'vitest';
 import * as matchers from '@testing-library/jest-dom/matchers';
+import { expect, vi } from 'vitest';
 
 // Extend Vitest's expect with react-testing-library matchers
 expect.extend(matchers);
@@ -9,7 +9,7 @@ expect.extend(matchers);
 if (typeof window !== 'undefined') {
   Object.defineProperty(window, 'matchMedia', {
     writable: true,
-    value: vi.fn().mockImplementation(query => ({
+    value: vi.fn().mockImplementation((query) => ({
       matches: false,
       media: query,
       onchange: null,

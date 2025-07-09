@@ -1,16 +1,16 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
+import { Label } from './label';
 import {
   Select,
   SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
   SelectGroup,
+  SelectItem,
   SelectLabel,
   SelectSeparator,
+  SelectTrigger,
+  SelectValue,
 } from './select';
-import { Label } from './label';
 
 const meta: Meta<typeof Select> = {
   title: 'UI/Select',
@@ -169,7 +169,7 @@ export const Disabled: Story = {
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="space-y-2">
         <Label>Disabled (With Value)</Label>
         <Select disabled defaultValue="option1">
@@ -229,7 +229,8 @@ export const LongOptions: Story = {
           This is a very long option that demonstrates text truncation
         </SelectItem>
         <SelectItem value="extra-long">
-          This is an extremely long option that shows how the select handles very long text content that might overflow
+          This is an extremely long option that shows how the select handles very long text content
+          that might overflow
         </SelectItem>
       </SelectContent>
     </Select>
@@ -290,16 +291,16 @@ export const FormExample: Story = {
       status: '',
       assignee: '',
     });
-    
+
     return (
       <div className="w-full max-w-md space-y-4 p-4 border rounded-lg">
         <h3 className="text-lg font-semibold">Create Task</h3>
-        
+
         <div className="space-y-2">
           <Label htmlFor="category">Category</Label>
           <Select
             value={formData.category}
-            onValueChange={(value) => setFormData(prev => ({ ...prev, category: value }))}
+            onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
@@ -312,12 +313,12 @@ export const FormExample: Story = {
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="priority">Priority</Label>
           <Select
             value={formData.priority}
-            onValueChange={(value) => setFormData(prev => ({ ...prev, priority: value }))}
+            onValueChange={(value) => setFormData((prev) => ({ ...prev, priority: value }))}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select priority" />
@@ -330,12 +331,12 @@ export const FormExample: Story = {
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="status">Status</Label>
           <Select
             value={formData.status}
-            onValueChange={(value) => setFormData(prev => ({ ...prev, status: value }))}
+            onValueChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select status" />
@@ -348,12 +349,12 @@ export const FormExample: Story = {
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="space-y-2">
           <Label htmlFor="assignee">Assignee</Label>
           <Select
             value={formData.assignee}
-            onValueChange={(value) => setFormData(prev => ({ ...prev, assignee: value }))}
+            onValueChange={(value) => setFormData((prev) => ({ ...prev, assignee: value }))}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select assignee" />
@@ -366,12 +367,10 @@ export const FormExample: Story = {
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="mt-4 p-3 bg-gray-50 dark:bg-gray-800 rounded text-sm">
           <strong>Form Data:</strong>
-          <pre className="mt-1 text-xs">
-            {JSON.stringify(formData, null, 2)}
-          </pre>
+          <pre className="mt-1 text-xs">{JSON.stringify(formData, null, 2)}</pre>
         </div>
       </div>
     );
@@ -403,7 +402,7 @@ export const CustomWidth: Story = {
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="space-y-2">
         <Label>Medium (w-48)</Label>
         <Select>
@@ -417,7 +416,7 @@ export const CustomWidth: Story = {
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="space-y-2">
         <Label>Large (w-64)</Label>
         <Select>
@@ -445,7 +444,7 @@ export const CustomWidth: Story = {
 export const Interactive: Story = {
   render: () => {
     const [selectedValue, setSelectedValue] = React.useState('');
-    
+
     return (
       <div className="space-y-4">
         <div className="space-y-2">
@@ -462,7 +461,7 @@ export const Interactive: Story = {
             </SelectContent>
           </Select>
         </div>
-        
+
         <div className="p-3 bg-gray-50 dark:bg-gray-800 rounded">
           <p className="text-sm">
             Selected value: <strong>{selectedValue || 'None'}</strong>
@@ -502,7 +501,7 @@ export const DarkMode: Story = {
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="space-y-2">
         <Label>Framework</Label>
         <Select>
@@ -526,7 +525,7 @@ export const DarkMode: Story = {
           </SelectContent>
         </Select>
       </div>
-      
+
       <div className="space-y-2">
         <Label>Disabled Select</Label>
         <Select disabled defaultValue="option1">

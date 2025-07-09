@@ -3,9 +3,9 @@
  * Provides centralized error handling, logging, and user-friendly error responses
  */
 
-import { Request, Response, NextFunction } from 'express';
-import * as fs from 'fs';
-import * as path from 'path';
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import type { NextFunction, Request, Response } from 'express';
 
 // Error types for better categorization
 export enum ErrorCategory {
@@ -17,7 +17,7 @@ export enum ErrorCategory {
   FILE_SYSTEM = 'FILE_SYSTEM',
   SEARCH = 'SEARCH',
   AI_SERVICE = 'AI_SERVICE',
-  UNKNOWN = 'UNKNOWN'
+  UNKNOWN = 'UNKNOWN',
 }
 
 export interface LoggedError {
@@ -42,7 +42,7 @@ export interface LoggedError {
 class ErrorLogger {
   private logDirectory: string;
   private errorLog: LoggedError[] = [];
-  
+
   constructor() {
     this.logDirectory = path.join(process.cwd(), 'logs');
     this.ensureLogDirectory();
@@ -54,9 +54,14 @@ class ErrorLogger {
     }
   }
 
-  async logError(error: Error | any, req: Request, category: ErrorCategory = ErrorCategory.UNKNOWN, severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'): Promise<string> {
+  async logError(
+    error: Error | any,
+    req: Request,
+    category: ErrorCategory = ErrorCategory.UNKNOWN,
+    severity: 'low' | 'medium' | 'high' | 'critical' = 'medium'
+  ): Promise<string> {
     const errorId = this.generateErrorId();
-    
+
     const loggedError: LoggedError = {
       id: errorId,
       timestamp: new Date(),
@@ -71,9 +76,9 @@ class ErrorLogger {
         ip: req.ip || req.connection.remoteAddress,
         body: this.sanitizeData(req.body),
         query: req.query,
-        params: req.params
+        params: req.params,
       },
-      severity
+      severity,
     };
 
     // Add to in-memory log (keep last 1000 errors)
@@ -102,20 +107,20 @@ class ErrorLogger {
 
   private sanitizeData(data: any): any {
     if (!data) return data;
-    
+
     const sensitiveFields = ['password', 'token', 'secret', 'key', 'auth'];
     const sanitized = JSON.parse(JSON.stringify(data));
-    
+
     const sanitizeObject = (obj: any) => {
       for (const key in obj) {
-        if (sensitiveFields.some(field => key.toLowerCase().includes(field))) {
+        if (sensitiveFields.some((field) => key.toLowerCase().includes(field))) {
           obj[key] = '[REDACTED]';
         } else if (typeof obj[key] === 'object' && obj[key] !== null) {
           sanitizeObject(obj[key]);
         }
       }
     };
-    
+
     sanitizeObject(sanitized);
     return sanitized;
   }
@@ -125,8 +130,8 @@ class ErrorLogger {
       const date = new Date().toISOString().split('T')[0];
       const filename = `errors_${date}.log`;
       const filepath = path.join(this.logDirectory, filename);
-      
-      const logLine = JSON.stringify(error) + '\n';
+
+      const logLine = `${JSON.stringify(error)}\n`;
       fs.appendFileSync(filepath, logLine);
     } catch (writeError) {
       console.error('Failed to write error log:', writeError);
@@ -138,18 +143,18 @@ class ErrorLogger {
   }
 
   getErrorsByCategory(category: ErrorCategory, limit: number = 50): LoggedError[] {
-    return this.errorLog.filter(err => err.category === category).slice(0, limit);
+    return this.errorLog.filter((err) => err.category === category).slice(0, limit);
   }
 
   getErrorStats(): { [key: string]: number } {
     const stats: { [key: string]: number } = {};
-    
+
     // Count by category
-    this.errorLog.forEach(error => {
+    this.errorLog.forEach((error) => {
       const key = `${error.category}_${error.severity}`;
       stats[key] = (stats[key] || 0) + 1;
     });
-    
+
     return stats;
   }
 }
@@ -160,7 +165,9 @@ export const errorLogger = new ErrorLogger();
 /**
  * Async wrapper for route handlers to catch and handle errors
  */
-export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunction) => Promise<any>) => {
+export const asyncHandler = (
+  fn: (req: Request, res: Response, next: NextFunction) => Promise<any>
+) => {
   return (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
@@ -170,48 +177,61 @@ export const asyncHandler = (fn: (req: Request, res: Response, next: NextFunctio
  * Database error handler
  */
 export const handleDatabaseError = async (error: any, req: Request): Promise<string> => {
-  let category = ErrorCategory.DATABASE;
+  const category = ErrorCategory.DATABASE;
   let severity: 'low' | 'medium' | 'high' | 'critical' = 'medium';
-  
+
   // Categorize database errors
-  if (error.code === '23505') { // Unique constraint violation
+  if (error.code === '23505') {
+    // Unique constraint violation
     severity = 'low';
-  } else if (error.code === '23503') { // Foreign key violation
+  } else if (error.code === '23503') {
+    // Foreign key violation
     severity = 'medium';
-  } else if (error.code === 'ECONNREFUSED') { // Connection refused
+  } else if (error.code === 'ECONNREFUSED') {
+    // Connection refused
     severity = 'critical';
   } else if (error.message?.includes('timeout')) {
     severity = 'high';
   }
-  
+
   return await errorLogger.logError(error, req, category, severity);
 };
 
 /**
  * AI/External API error handler
  */
-export const handleExternalAPIError = async (error: any, req: Request, service: string): Promise<string> => {
+export const handleExternalAPIError = async (
+  error: any,
+  req: Request,
+  service: string
+): Promise<string> => {
   let severity: 'low' | 'medium' | 'high' | 'critical' = 'medium';
-  
+
   // Categorize by HTTP status or error type
   if (error.status >= 500) {
     severity = 'high';
-  } else if (error.status === 429) { // Rate limit
+  } else if (error.status === 429) {
+    // Rate limit
     severity = 'medium';
   } else if (error.status >= 400) {
     severity = 'low';
   }
-  
+
   const enhancedError = new Error(`${service}: ${error.message}`);
   enhancedError.stack = error.stack;
-  
+
   return await errorLogger.logError(enhancedError, req, ErrorCategory.EXTERNAL_API, severity);
 };
 
 /**
  * Main error handling middleware
  */
-export const errorHandler = async (error: any, req: Request, res: Response, next: NextFunction) => {
+export const errorHandler = async (
+  error: any,
+  req: Request,
+  res: Response,
+  _next: NextFunction
+) => {
   // Default error response
   let statusCode = 500;
   let userMessage = 'An unexpected error occurred. Please try again later.';
@@ -234,7 +254,8 @@ export const errorHandler = async (error: any, req: Request, res: Response, next
     userMessage = 'Access denied.';
     category = ErrorCategory.AUTHENTICATION;
     severity = 'medium';
-  } else if (error.code?.startsWith('23')) { // PostgreSQL errors
+  } else if (error.code?.startsWith('23')) {
+    // PostgreSQL errors
     statusCode = 400;
     userMessage = 'Database operation failed.';
     category = ErrorCategory.DATABASE;
@@ -258,7 +279,7 @@ export const errorHandler = async (error: any, req: Request, res: Response, next
     success: false,
     message: userMessage,
     errorId,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   };
 
   // Include additional details in development
@@ -267,7 +288,7 @@ export const errorHandler = async (error: any, req: Request, res: Response, next
       message: error.message,
       stack: error.stack,
       category,
-      severity
+      severity,
     };
   }
 
@@ -283,7 +304,7 @@ export const notFoundHandler = (req: Request, res: Response) => {
     message: 'Route not found',
     path: req.path,
     method: req.method,
-    timestamp: new Date().toISOString()
+    timestamp: new Date().toISOString(),
   });
 };
 
@@ -293,7 +314,7 @@ export const notFoundHandler = (req: Request, res: Response) => {
 export const gracefulShutdown = (server: any) => {
   const shutdown = async () => {
     console.log('🔄 Graceful shutdown initiated...');
-    
+
     // Shutdown job queue system first
     try {
       const { jobQueueManager } = await import('../jobs/queue');
@@ -303,13 +324,13 @@ export const gracefulShutdown = (server: any) => {
     } catch (error) {
       console.error('❌ Error shutting down job queue system:', error);
     }
-    
+
     server.close(() => {
       console.log('✅ HTTP server closed');
-      
+
       // Save final error logs
       console.log('💾 Saving final error logs...');
-      
+
       // Exit process
       process.exit(0);
     });
@@ -324,7 +345,7 @@ export const gracefulShutdown = (server: any) => {
   // Listen for termination signals
   process.on('SIGTERM', shutdown);
   process.on('SIGINT', shutdown);
-  
+
   // Handle uncaught exceptions
   process.on('uncaughtException', async (error) => {
     console.error('❌ Uncaught Exception:', error);

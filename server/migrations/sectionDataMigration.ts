@@ -1,8 +1,8 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { eq } from 'drizzle-orm';
+import { enhancedTerms, sections } from '../../shared/enhancedSchema';
 import { db } from '../db';
-import { sql, eq, and } from 'drizzle-orm';
-import { readFileSync } from 'fs';
-import { join } from 'path';
-import { enhancedTerms, sections, sectionItems } from '../../shared/enhancedSchema';
 
 // Load standardized sections from external configuration
 function loadStandardSections() {
@@ -24,10 +24,12 @@ export async function migrateSectionData() {
   return await db.transaction(async (tx) => {
     try {
       // Get all existing terms using Drizzle query builder
-      const termsResult = await tx.select({ 
-        id: enhancedTerms.id, 
-        name: enhancedTerms.name 
-      }).from(enhancedTerms);
+      const termsResult = await tx
+        .select({
+          id: enhancedTerms.id,
+          name: enhancedTerms.name,
+        })
+        .from(enhancedTerms);
       console.log(`Found ${termsResult.length} terms to migrate`);
 
       if (termsResult.length === 0) {
@@ -49,20 +51,23 @@ export async function migrateSectionData() {
 
       // Perform bulk insert for sections using Drizzle query builder
       console.log(`Inserting ${sectionsToInsert.length} sections...`);
-      
+
       // Split into chunks to avoid parameter limits
       const chunkSize = 1000;
       let totalSectionsCreated = 0;
-      
+
       for (let i = 0; i < sectionsToInsert.length; i += chunkSize) {
         const chunk = sectionsToInsert.slice(i, i + chunkSize);
-        
-        await tx.insert(sections)
+
+        await tx
+          .insert(sections)
           .values(chunk)
           .onConflictDoNothing({ target: [sections.termId, sections.name] });
-        
+
         totalSectionsCreated += chunk.length;
-        console.log(`Processed ${Math.min(i + chunkSize, sectionsToInsert.length)}/${sectionsToInsert.length} sections`);
+        console.log(
+          `Processed ${Math.min(i + chunkSize, sectionsToInsert.length)}/${sectionsToInsert.length} sections`
+        );
       }
 
       // Create basic section items for each term
@@ -73,7 +78,6 @@ export async function migrateSectionData() {
 
       console.log(`Migration completed! Created ${totalSectionsCreated} sections total.`);
       return { success: true, sectionsCreated: totalSectionsCreated };
-      
     } catch (error) {
       console.error('Section data migration failed:', error);
       throw error;
@@ -84,19 +88,18 @@ export async function migrateSectionData() {
 async function createBasicSectionItems(tx: any, termId: string) {
   try {
     // Get the term's full data using Drizzle query builder
-    const termData = await tx.select()
-      .from(enhancedTerms)
-      .where(eq(enhancedTerms.id, termId));
-    
+    const termData = await tx.select().from(enhancedTerms).where(eq(enhancedTerms.id, termId));
+
     if (termData.length === 0) return;
-    
+
     const fullTerm = termData[0];
 
     // Get section IDs for this term using Drizzle query builder
-    const sectionsResult = await tx.select({
-      id: sections.id,
-      name: sections.name
-    })
+    const sectionsResult = await tx
+      .select({
+        id: sections.id,
+        name: sections.name,
+      })
       .from(sections)
       .where(eq(sections.termId, termId));
 
@@ -114,15 +117,15 @@ async function createBasicSectionItems(tx: any, termId: string) {
             label: 'Definition and Overview',
             content: fullTerm.fullDefinition || fullTerm.shortDefinition || '',
             contentType: 'markdown',
-            order: 1
+            order: 1,
           },
           {
             label: 'Key Concepts',
             content: fullTerm.keywords?.join(', ') || '',
             contentType: 'markdown',
-            order: 2
-          }
-        ]
+            order: 2,
+          },
+        ],
       },
       {
         sectionName: 'Applications',
@@ -131,9 +134,9 @@ async function createBasicSectionItems(tx: any, termId: string) {
             label: 'Real-world Use Cases',
             content: fullTerm.applicationDomains?.join(', ') || '',
             contentType: 'markdown',
-            order: 1
-          }
-        ]
+            order: 1,
+          },
+        ],
       },
       {
         sectionName: 'Implementation',
@@ -142,9 +145,9 @@ async function createBasicSectionItems(tx: any, termId: string) {
             label: 'Code Examples',
             content: fullTerm.hasCodeExamples ? 'Code examples available' : '',
             contentType: 'code',
-            order: 1
-          }
-        ]
+            order: 1,
+          },
+        ],
       },
       {
         sectionName: 'Related Concepts',
@@ -153,10 +156,10 @@ async function createBasicSectionItems(tx: any, termId: string) {
             label: 'Connected Terms',
             content: fullTerm.relatedConcepts ? JSON.stringify(fullTerm.relatedConcepts) : '',
             contentType: 'json',
-            order: 1
-          }
-        ]
-      }
+            order: 1,
+          },
+        ],
+      },
     ];
 
     // Collect all section items for bulk insert
@@ -167,7 +170,7 @@ async function createBasicSectionItems(tx: any, termId: string) {
 
       for (const item of sectionData.items) {
         if (!item.content) continue; // Skip empty content
-        
+
         itemsToInsert.push({
           sectionId,
           label: item.label,
@@ -175,21 +178,18 @@ async function createBasicSectionItems(tx: any, termId: string) {
           contentType: item.contentType,
           displayOrder: item.order,
           isAiGenerated: false, // Default value since field doesn't exist in current schema
-          verificationStatus: 'unverified' // Default value
+          verificationStatus: 'unverified', // Default value
         });
       }
     }
 
     // Bulk insert section items if any exist using Drizzle query builder
     if (itemsToInsert.length > 0) {
-      await tx.insert(sectionItems)
-        .values(itemsToInsert)
-        .onConflictDoNothing();
+      await tx.insert(sectionItems).values(itemsToInsert).onConflictDoNothing();
     }
-
   } catch (error) {
     console.error(`Error creating section items for term ${termId}:`, error);
   }
 }
 
-// ES module version - no need for require.main check 
+// ES module version - no need for require.main check

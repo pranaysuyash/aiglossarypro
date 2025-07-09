@@ -1,23 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Link } from 'wouter';
-import { BaseComponentProps } from "@/types/common-props";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { Badge } from "@/components/ui/badge";
-import { 
-  Cookie, 
-  Settings, 
-  Shield, 
-  BarChart, 
-  Palette, 
-  X, 
+import {
+  BarChart,
   ChevronDown,
   ChevronUp,
-  Info
-} from "lucide-react";
+  Cookie,
+  Info,
+  Palette,
+  Settings,
+  Shield,
+  X,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link } from 'wouter';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { cn } from '@/lib/utils';
+import type { BaseComponentProps } from '@/types/common-props';
 
 interface CookieConsentBannerProps extends BaseComponentProps {
   onConsentChange?: (consent: CookieConsent) => void;
@@ -34,9 +34,9 @@ export interface CookieConsent {
 const COOKIE_CONSENT_KEY = 'ai-glossary-cookie-consent';
 const COOKIE_CONSENT_VERSION = '1.0';
 
-export default function CookieConsentBanner({ 
-  className, 
-  onConsentChange 
+export default function CookieConsentBanner({
+  className,
+  onConsentChange,
 }: CookieConsentBannerProps = {}) {
   const [isVisible, setIsVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
@@ -45,7 +45,7 @@ export default function CookieConsentBanner({
     analytics: false,
     preferences: false,
     marketing: false,
-    timestamp: Date.now()
+    timestamp: Date.now(),
   });
 
   // Check if user has already given consent
@@ -64,7 +64,7 @@ export default function CookieConsentBanner({
         console.error('Error parsing cookie consent:', error);
       }
     }
-    
+
     // Show banner after a short delay for better UX
     const timer = setTimeout(() => {
       setIsVisible(true);
@@ -77,22 +77,24 @@ export default function CookieConsentBanner({
     const consentData = {
       version: COOKIE_CONSENT_VERSION,
       consent: newConsent,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
-    
+
     localStorage.setItem(COOKIE_CONSENT_KEY, JSON.stringify(consentData));
     setConsent(newConsent);
     setIsVisible(false);
-    
+
     // Notify parent component
     if (onConsentChange) {
       onConsentChange(newConsent);
     }
 
     // Dispatch custom event for other components to listen to
-    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { 
-      detail: newConsent 
-    }));
+    window.dispatchEvent(
+      new CustomEvent('cookieConsentUpdated', {
+        detail: newConsent,
+      })
+    );
   };
 
   const handleAcceptAll = () => {
@@ -101,7 +103,7 @@ export default function CookieConsentBanner({
       analytics: true,
       preferences: true,
       marketing: false, // We don't use marketing cookies
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     saveConsent(newConsent);
   };
@@ -112,7 +114,7 @@ export default function CookieConsentBanner({
       analytics: false,
       preferences: false,
       marketing: false,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
     saveConsent(newConsent);
   };
@@ -120,25 +122,27 @@ export default function CookieConsentBanner({
   const handleSavePreferences = () => {
     saveConsent({
       ...consent,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     });
   };
 
   const updateConsent = (type: keyof CookieConsent, value: boolean) => {
     if (type === 'essential') return; // Essential cookies cannot be disabled
-    setConsent(prev => ({
+    setConsent((prev) => ({
       ...prev,
-      [type]: value
+      [type]: value,
     }));
   };
 
   if (!isVisible) return null;
 
   return (
-    <div className={cn(
-      "fixed bottom-0 left-0 right-0 z-50 p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 shadow-lg",
-      className
-    )}>
+    <div
+      className={cn(
+        'fixed bottom-0 left-0 right-0 z-50 p-4 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 shadow-lg',
+        className
+      )}
+    >
       <div className="container mx-auto max-w-6xl">
         <Card className="border-0 shadow-lg">
           <CardContent className="p-6">
@@ -146,7 +150,7 @@ export default function CookieConsentBanner({
               <div className="flex-shrink-0 mt-1">
                 <Cookie className="h-6 w-6 text-amber-600" />
               </div>
-              
+
               <div className="flex-grow">
                 <div className="flex items-center gap-2 mb-2">
                   <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
@@ -156,10 +160,10 @@ export default function CookieConsentBanner({
                     GDPR Compliant
                   </Badge>
                 </div>
-                
+
                 <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  We use cookies to enhance your experience, analyze site usage, and remember your preferences. 
-                  You can customize your cookie preferences below.
+                  We use cookies to enhance your experience, analyze site usage, and remember your
+                  preferences. You can customize your cookie preferences below.
                 </p>
 
                 {/* Cookie Categories */}
@@ -186,8 +190,8 @@ export default function CookieConsentBanner({
                         <p className="text-xs text-gray-500">Help us improve our service</p>
                       </div>
                     </div>
-                    <Switch 
-                      checked={consent.analytics} 
+                    <Switch
+                      checked={consent.analytics}
                       onCheckedChange={(checked) => updateConsent('analytics', checked)}
                     />
                   </div>
@@ -200,8 +204,8 @@ export default function CookieConsentBanner({
                         <p className="text-xs text-gray-500">Remember your settings</p>
                       </div>
                     </div>
-                    <Switch 
-                      checked={consent.preferences} 
+                    <Switch
+                      checked={consent.preferences}
                       onCheckedChange={(checked) => updateConsent('preferences', checked)}
                     />
                   </div>
@@ -217,9 +221,13 @@ export default function CookieConsentBanner({
                   >
                     <Info className="h-3 w-3 mr-1" />
                     {showDetails ? 'Hide' : 'Show'} detailed information
-                    {showDetails ? <ChevronUp className="h-3 w-3 ml-1" /> : <ChevronDown className="h-3 w-3 ml-1" />}
+                    {showDetails ? (
+                      <ChevronUp className="h-3 w-3 ml-1" />
+                    ) : (
+                      <ChevronDown className="h-3 w-3 ml-1" />
+                    )}
                   </Button>
-                  
+
                   {showDetails && (
                     <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg text-xs">
                       <div className="grid md:grid-cols-2 gap-4">
@@ -228,7 +236,8 @@ export default function CookieConsentBanner({
                             Essential Cookies
                           </h4>
                           <p className="text-blue-700 dark:text-blue-300">
-                            Authentication, security, and basic functionality. These cannot be disabled.
+                            Authentication, security, and basic functionality. These cannot be
+                            disabled.
                           </p>
                         </div>
                         <div>
@@ -236,7 +245,8 @@ export default function CookieConsentBanner({
                             Analytics Cookies
                           </h4>
                           <p className="text-blue-700 dark:text-blue-300">
-                            Anonymous usage statistics via Google Analytics 4 and PostHog to improve our service and understand user behavior.
+                            Anonymous usage statistics via Google Analytics 4 and PostHog to improve
+                            our service and understand user behavior.
                           </p>
                         </div>
                         <div>
@@ -252,7 +262,8 @@ export default function CookieConsentBanner({
                             Data Processing
                           </h4>
                           <p className="text-blue-700 dark:text-blue-300">
-                            Data is processed in accordance with our Privacy Policy and GDPR requirements.
+                            Data is processed in accordance with our Privacy Policy and GDPR
+                            requirements.
                           </p>
                         </div>
                       </div>
@@ -270,23 +281,15 @@ export default function CookieConsentBanner({
                     >
                       Accept All
                     </Button>
-                    <Button
-                      onClick={handleAcceptEssential}
-                      variant="outline"
-                      size="sm"
-                    >
+                    <Button onClick={handleAcceptEssential} variant="outline" size="sm">
                       Essential Only
                     </Button>
-                    <Button
-                      onClick={handleSavePreferences}
-                      variant="outline"
-                      size="sm"
-                    >
+                    <Button onClick={handleSavePreferences} variant="outline" size="sm">
                       <Settings className="h-3 w-3 mr-1" />
                       Save Preferences
                     </Button>
                   </div>
-                  
+
                   <div className="flex items-center gap-2 text-xs">
                     <Link href="/privacy" className="text-blue-600 hover:text-blue-700">
                       Privacy Policy
@@ -355,7 +358,7 @@ export function isCookieAllowed(type: keyof CookieConsent): boolean {
   try {
     const savedConsent = localStorage.getItem(COOKIE_CONSENT_KEY);
     if (!savedConsent) return false;
-    
+
     const parsed = JSON.parse(savedConsent);
     return parsed.consent?.[type] ?? false;
   } catch (error) {

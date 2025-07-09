@@ -1,10 +1,10 @@
-import React from 'react';
+import { AlertCircle, Bot, Database, TrendingUp } from 'lucide-react';
+import type React from 'react';
 import { AdminTermsManager } from '@/components/admin/AdminTermsManager';
-import { CacheMonitoring } from '@/components/admin/CacheMonitoring';
 import { AIContentMonitor } from '@/components/admin/AIContentMonitor';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { CacheMonitoring } from '@/components/admin/CacheMonitoring';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Bot, Database, TrendingUp, AlertCircle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const AdminTermsDashboard: React.FC = () => {
   return (

@@ -1,32 +1,27 @@
-import type { Express, Request, Response } from "express";
-import { db } from "../db";
-import { 
-  terms, 
-  categories, 
-  subcategories,
-  termSubcategories
-} from "../../shared/schema";
-import {
-  enhancedTerms,
-  termRelationships 
-} from "../../shared/enhancedSchema";
-import { eq, sql, and, or, inArray } from "drizzle-orm";
-import { log as logger } from "../utils/logger";
-import { validateInput } from "../middleware/security";
-import { z } from "zod";
-import type { ApiResponse } from "../../shared/types";
+import { and, eq, inArray, or, sql } from 'drizzle-orm';
+import type { Express, Request, Response } from 'express';
+import { z } from 'zod';
+import { termRelationships } from '../../shared/enhancedSchema';
+import { categories, terms } from '../../shared/schema';
+import type { ApiResponse } from '../../shared/types';
+import { db } from '../db';
+import { validateParams } from '../middleware/validateRequest';
+import { log as logger } from '../utils/logger';
 
 // Validation schemas
 const termRelationshipQuerySchema = z.object({
-  depth: z.string().regex(/^\d+$/).transform(Number).default("2"),
+  depth: z.string().regex(/^\d+$/).transform(Number).default('2'),
   types: z.string().optional(),
   minStrength: z.string().regex(/^\d+$/).transform(Number).optional(),
-  includeCategories: z.string().transform(val => val === 'true').optional()
+  includeCategories: z
+    .string()
+    .transform((val) => val === 'true')
+    .optional(),
 });
 
 const bulkRelationshipQuerySchema = z.object({
   termIds: z.array(z.string().uuid()).min(1).max(50),
-  depth: z.number().min(1).max(3).default(1)
+  depth: z.number().min(1).max(3).default(1),
 });
 
 interface GraphNode {
@@ -54,35 +49,40 @@ export function registerRelationshipRoutes(app: Express): void {
   /**
    * Get relationships for a specific term with depth traversal
    */
-  app.get('/api/terms/:termId/relationships', 
-    validateInput({ params: z.object({ termId: z.string().uuid() }) }),
+  app.get(
+    '/api/terms/:termId/relationships',
+    validateParams(z.object({ termId: z.string().uuid() })),
     async (req: Request, res: Response) => {
       try {
         const { termId } = req.params;
-        const { depth, types, minStrength, includeCategories } = termRelationshipQuerySchema.parse(req.query);
-        
-        const relationshipTypes = types ? types.split(',') : ['prerequisite', 'related', 'extends', 'alternative'];
+        const { depth, types, minStrength, includeCategories } = termRelationshipQuerySchema.parse(
+          req.query
+        );
+
+        const relationshipTypes = types
+          ? types.split(',')
+          : ['prerequisite', 'related', 'extends', 'alternative'];
         const strengthThreshold = minStrength || 0;
 
         // Get the central term
         const centralTerm = await db.query.terms.findFirst({
           where: eq(terms.id, termId),
           with: {
-            category: true
-          }
+            category: true,
+          },
         });
 
         if (!centralTerm) {
           return res.status(404).json({
             success: false,
-            error: "Term not found"
+            error: 'Term not found',
           });
         }
 
         const nodes: GraphNode[] = [];
         const links: GraphLink[] = [];
         const processedNodeIds = new Set<string>();
-        const nodesToProcess: Array<{ id: string, level: number }> = [{ id: termId, level: 0 }];
+        const nodesToProcess: Array<{ id: string; level: number }> = [{ id: termId, level: 0 }];
 
         // Add central term as node
         nodes.push({
@@ -92,14 +92,14 @@ export function registerRelationshipRoutes(app: Express): void {
           category: centralTerm.category?.name,
           definition: centralTerm.shortDefinition || centralTerm.definition,
           level: 0,
-          viewCount: centralTerm.viewCount
+          viewCount: centralTerm.viewCount,
         });
         processedNodeIds.add(centralTerm.id);
 
         // Process relationships by depth
         while (nodesToProcess.length > 0) {
           const { id: currentTermId, level } = nodesToProcess.shift()!;
-          
+
           if (level >= depth) continue;
 
           // Get relationships where current term is source
@@ -108,7 +108,7 @@ export function registerRelationshipRoutes(app: Express): void {
               eq(termRelationships.fromTermId, currentTermId),
               inArray(termRelationships.relationshipType, relationshipTypes),
               sql`${termRelationships.strength} >= ${strengthThreshold}`
-            )
+            ),
           });
 
           // Get relationships where current term is target
@@ -117,7 +117,7 @@ export function registerRelationshipRoutes(app: Express): void {
               eq(termRelationships.toTermId, currentTermId),
               inArray(termRelationships.relationshipType, relationshipTypes),
               sql`${termRelationships.strength} >= ${strengthThreshold}`
-            )
+            ),
           });
 
           // Process outgoing relationships
@@ -126,8 +126,8 @@ export function registerRelationshipRoutes(app: Express): void {
               const relatedTerm = await db.query.terms.findFirst({
                 where: eq(terms.id, rel.toTermId),
                 with: {
-                  category: true
-                }
+                  category: true,
+                },
               });
 
               if (relatedTerm) {
@@ -138,7 +138,7 @@ export function registerRelationshipRoutes(app: Express): void {
                   category: relatedTerm.category?.name,
                   definition: relatedTerm.shortDefinition || relatedTerm.definition,
                   level: level + 1,
-                  viewCount: relatedTerm.viewCount
+                  viewCount: relatedTerm.viewCount,
                 });
                 processedNodeIds.add(relatedTerm.id);
                 nodesToProcess.push({ id: relatedTerm.id, level: level + 1 });
@@ -149,7 +149,7 @@ export function registerRelationshipRoutes(app: Express): void {
               source: currentTermId,
               target: rel.toTermId,
               type: rel.relationshipType as GraphLink['type'],
-              strength: rel.strength
+              strength: rel.strength,
             });
           }
 
@@ -159,8 +159,8 @@ export function registerRelationshipRoutes(app: Express): void {
               const relatedTerm = await db.query.terms.findFirst({
                 where: eq(terms.id, rel.fromTermId),
                 with: {
-                  category: true
-                }
+                  category: true,
+                },
               });
 
               if (relatedTerm) {
@@ -171,7 +171,7 @@ export function registerRelationshipRoutes(app: Express): void {
                   category: relatedTerm.category?.name,
                   definition: relatedTerm.shortDefinition || relatedTerm.definition,
                   level: level + 1,
-                  viewCount: relatedTerm.viewCount
+                  viewCount: relatedTerm.viewCount,
                 });
                 processedNodeIds.add(relatedTerm.id);
                 nodesToProcess.push({ id: relatedTerm.id, level: level + 1 });
@@ -183,7 +183,7 @@ export function registerRelationshipRoutes(app: Express): void {
               source: rel.fromTermId,
               target: currentTermId,
               type: rel.relationshipType as GraphLink['type'],
-              strength: rel.strength
+              strength: rel.strength,
             });
           }
         }
@@ -191,46 +191,48 @@ export function registerRelationshipRoutes(app: Express): void {
         // Include categories if requested
         let allCategories: string[] = [];
         let allSubcategories: string[] = [];
-        
+
         if (includeCategories) {
           // Add category nodes and links
-          const categoryIds = new Set(nodes.map(n => n.category).filter(Boolean));
-          
+          const categoryIds = new Set(nodes.map((n) => n.category).filter(Boolean));
+
           for (const categoryName of categoryIds) {
             const category = await db.query.categories.findFirst({
-              where: eq(categories.name, categoryName)
+              where: eq(categories.name, categoryName),
             });
-            
+
             if (category && !processedNodeIds.has(category.id)) {
               nodes.push({
                 id: category.id,
                 name: category.name,
                 type: 'category',
-                description: category.description
+                description: category.description,
               });
               processedNodeIds.add(category.id);
             }
-            
+
             // Add belongs_to links from terms to categories
-            nodes.filter(n => n.type === 'term' && n.category === categoryName).forEach(termNode => {
-              if (category) {
-                links.push({
-                  source: termNode.id,
-                  target: category.id,
-                  type: 'belongs_to',
-                  strength: 10
-                });
-              }
-            });
+            nodes
+              .filter((n) => n.type === 'term' && n.category === categoryName)
+              .forEach((termNode) => {
+                if (category) {
+                  links.push({
+                    source: termNode.id,
+                    target: category.id,
+                    type: 'belongs_to',
+                    strength: 10,
+                  });
+                }
+              });
           }
         }
 
         // Get all unique categories and subcategories for filtering
         const categoriesResult = await db.query.categories.findMany();
-        allCategories = categoriesResult.map(c => c.name);
-        
+        allCategories = categoriesResult.map((c) => c.name);
+
         const subcategoriesResult = await db.query.subcategories.findMany();
-        allSubcategories = subcategoriesResult.map(s => s.name);
+        allSubcategories = subcategoriesResult.map((s) => s.name);
 
         const response: ApiResponse<{
           nodes: GraphNode[];
@@ -243,8 +245,8 @@ export function registerRelationshipRoutes(app: Express): void {
             nodes,
             relationships: links,
             categories: allCategories,
-            subcategories: allSubcategories
-          }
+            subcategories: allSubcategories,
+          },
         };
 
         res.json(response);
@@ -252,7 +254,7 @@ export function registerRelationshipRoutes(app: Express): void {
         logger.error('Error fetching term relationships:', error);
         res.status(500).json({
           success: false,
-          error: "Failed to fetch term relationships"
+          error: 'Failed to fetch term relationships',
         });
       }
     }
@@ -261,7 +263,8 @@ export function registerRelationshipRoutes(app: Express): void {
   /**
    * Get bulk relationships for multiple terms (optimized for large graphs)
    */
-  app.post('/api/relationships/bulk',
+  app.post(
+    '/api/relationships/bulk',
     validateInput({ body: bulkRelationshipQuerySchema }),
     async (req: Request, res: Response) => {
       try {
@@ -271,14 +274,14 @@ export function registerRelationshipRoutes(app: Express): void {
         const termsData = await db.query.terms.findMany({
           where: inArray(terms.id, termIds),
           with: {
-            category: true
-          }
+            category: true,
+          },
         });
 
         if (termsData.length === 0) {
           return res.status(404).json({
             success: false,
-            error: "No terms found"
+            error: 'No terms found',
           });
         }
 
@@ -289,35 +292,35 @@ export function registerRelationshipRoutes(app: Express): void {
               inArray(termRelationships.fromTermId, termIds),
               inArray(termRelationships.toTermId, termIds)
             )
-          )
+          ),
         });
 
         // Convert to graph format
-        const nodes: GraphNode[] = termsData.map(term => ({
+        const nodes: GraphNode[] = termsData.map((term) => ({
           id: term.id,
           name: term.name,
           type: 'term',
           category: term.category?.name,
           definition: term.shortDefinition || term.definition,
-          viewCount: term.viewCount
+          viewCount: term.viewCount,
         }));
 
-        const links: GraphLink[] = relationships.map(rel => ({
+        const links: GraphLink[] = relationships.map((rel) => ({
           source: rel.fromTermId,
           target: rel.toTermId,
           type: rel.relationshipType as GraphLink['type'],
-          strength: rel.strength
+          strength: rel.strength,
         }));
 
         res.json({
           success: true,
-          data: { nodes, relationships: links }
+          data: { nodes, relationships: links },
         });
       } catch (error) {
         logger.error('Error fetching bulk relationships:', error);
         res.status(500).json({
           success: false,
-          error: "Failed to fetch bulk relationships"
+          error: 'Failed to fetch bulk relationships',
         });
       }
     }
@@ -326,13 +329,13 @@ export function registerRelationshipRoutes(app: Express): void {
   /**
    * Get relationship statistics for analytics
    */
-  app.get('/api/relationships/stats', async (req: Request, res: Response) => {
+  app.get('/api/relationships/stats', async (_req: Request, res: Response) => {
     try {
       // Get relationship type distribution
       const typeDistribution = await db
         .select({
           type: termRelationships.relationshipType,
-          count: sql<number>`count(*)`.as('count')
+          count: sql<number>`count(*)`.as('count'),
         })
         .from(termRelationships)
         .groupBy(termRelationships.relationshipType);
@@ -346,7 +349,7 @@ export function registerRelationshipRoutes(app: Express): void {
             (SELECT COUNT(*) FROM ${termRelationships} 
              WHERE ${termRelationships.fromTermId} = ${terms.id} 
              OR ${termRelationships.toTermId} = ${terms.id})
-          `.as('connectionCount')
+          `.as('connectionCount'),
         })
         .from(terms)
         .orderBy(sql`connectionCount DESC`)
@@ -362,7 +365,7 @@ export function registerRelationshipRoutes(app: Express): void {
               ELSE 'strong'
             END
           `.as('strengthRange'),
-          count: sql<number>`count(*)`.as('count')
+          count: sql<number>`count(*)`.as('count'),
         })
         .from(termRelationships)
         .groupBy(sql`strengthRange`);
@@ -373,21 +376,27 @@ export function registerRelationshipRoutes(app: Express): void {
           typeDistribution,
           mostConnected,
           strengthDistribution,
-          totalRelationships: await db.select({ count: sql<number>`count(*)` }).from(termRelationships).then(r => r[0].count),
-          totalTermsWithRelationships: await db.select({ 
-            count: sql<number>`count(DISTINCT term_id)` 
-          }).from(
-            sql`(SELECT ${termRelationships.fromTermId} as term_id FROM ${termRelationships}
+          totalRelationships: await db
+            .select({ count: sql<number>`count(*)` })
+            .from(termRelationships)
+            .then((r) => r[0].count),
+          totalTermsWithRelationships: await db
+            .select({
+              count: sql<number>`count(DISTINCT term_id)`,
+            })
+            .from(
+              sql`(SELECT ${termRelationships.fromTermId} as term_id FROM ${termRelationships}
                  UNION
                  SELECT ${termRelationships.toTermId} as term_id FROM ${termRelationships}) as connected_terms`
-          ).then(r => r[0].count)
-        }
+            )
+            .then((r) => r[0].count),
+        },
       });
     } catch (error) {
       logger.error('Error fetching relationship statistics:', error);
       res.status(500).json({
         success: false,
-        error: "Failed to fetch relationship statistics"
+        error: 'Failed to fetch relationship statistics',
       });
     }
   });
@@ -395,16 +404,19 @@ export function registerRelationshipRoutes(app: Express): void {
   /**
    * Create or update term relationships
    */
-  app.post('/api/terms/:termId/relationships',
+  app.post(
+    '/api/terms/:termId/relationships',
     validateInput({
       params: z.object({ termId: z.string().uuid() }),
       body: z.object({
-        relationships: z.array(z.object({
-          toTermId: z.string().uuid(),
-          type: z.enum(['prerequisite', 'related', 'extends', 'alternative']),
-          strength: z.number().min(1).max(10)
-        }))
-      })
+        relationships: z.array(
+          z.object({
+            toTermId: z.string().uuid(),
+            type: z.enum(['prerequisite', 'related', 'extends', 'alternative']),
+            strength: z.number().min(1).max(10),
+          })
+        ),
+      }),
     }),
     async (req: Request, res: Response) => {
       try {
@@ -413,40 +425,47 @@ export function registerRelationshipRoutes(app: Express): void {
 
         // Verify term exists
         const term = await db.query.terms.findFirst({
-          where: eq(terms.id, termId)
+          where: eq(terms.id, termId),
         });
 
         if (!term) {
           return res.status(404).json({
             success: false,
-            error: "Term not found"
+            error: 'Term not found',
           });
         }
 
         // Insert relationships
-        const insertData = relationships.map(rel => ({
+        const insertData = relationships.map((rel) => ({
           fromTermId: termId,
           toTermId: rel.toTermId,
           relationshipType: rel.type,
-          strength: rel.strength
+          strength: rel.strength,
         }));
 
-        await db.insert(termRelationships).values(insertData).onConflictDoUpdate({
-          target: [termRelationships.fromTermId, termRelationships.toTermId, termRelationships.relationshipType],
-          set: {
-            strength: sql`excluded.strength`
-          }
-        });
+        await db
+          .insert(termRelationships)
+          .values(insertData)
+          .onConflictDoUpdate({
+            target: [
+              termRelationships.fromTermId,
+              termRelationships.toTermId,
+              termRelationships.relationshipType,
+            ],
+            set: {
+              strength: sql`excluded.strength`,
+            },
+          });
 
         res.json({
           success: true,
-          data: { created: relationships.length }
+          data: { created: relationships.length },
         });
       } catch (error) {
         logger.error('Error creating term relationships:', error);
         res.status(500).json({
           success: false,
-          error: "Failed to create term relationships"
+          error: 'Failed to create term relationships',
         });
       }
     }

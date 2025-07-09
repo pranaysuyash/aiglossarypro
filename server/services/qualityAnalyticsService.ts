@@ -1,12 +1,3 @@
-import { db } from '../db';
-import { 
-  aiUsageAnalytics,
-  aiContentVerification,
-  sectionItems,
-  sections,
-  enhancedTerms
-} from '../../shared/enhancedSchema';
-import { eq, and, gte, lte, sql, desc, asc, inArray } from 'drizzle-orm';
 import { log as logger } from '../utils/logger';
 
 export interface QualityMetrics {
@@ -105,7 +96,7 @@ export class QualityAnalyticsService {
     excellent: 8.5,
     good: 7.0,
     acceptable: 5.5,
-    poor: 0
+    poor: 0,
   };
 
   /**
@@ -124,41 +115,37 @@ export class QualityAnalyticsService {
       logger.info('Generating quality report', {
         startDate,
         endDate,
-        options
+        options,
       });
 
       // Get evaluation data from analytics
       const evaluations = await this.getEvaluationData(startDate, endDate);
-      
+
       // Calculate summary metrics
       const summary = await this.calculateSummaryMetrics(evaluations);
-      
+
       // Get top performers and those needing improvement
       const topPerformers = await this.getTopPerformers(10);
       const needsImprovement = await this.getTermsNeedingImprovement(10);
-      
+
       // Calculate trends
       const trends = await this.calculateTrends(startDate, endDate);
-      
+
       // Get model performance metrics
       const modelPerformance = await this.getModelPerformance(startDate, endDate);
-      
+
       // Identify common issues
       const commonIssues = await this.identifyCommonIssues(evaluations);
-      
+
       // Generate recommendations
-      const recommendations = this.generateRecommendations(
-        summary,
-        commonIssues,
-        modelPerformance
-      );
+      const recommendations = this.generateRecommendations(summary, commonIssues, modelPerformance);
 
       const report: QualityReport = {
         reportId: `QR-${Date.now()}`,
         generatedAt: new Date(),
         period: {
           start: startDate,
-          end: endDate
+          end: endDate,
         },
         summary,
         topPerformers,
@@ -166,7 +153,7 @@ export class QualityAnalyticsService {
         trends,
         modelPerformance,
         commonIssues,
-        recommendations
+        recommendations,
       };
 
       // Store report for historical tracking
@@ -174,14 +161,13 @@ export class QualityAnalyticsService {
 
       logger.info('Quality report generated successfully', {
         reportId: report.reportId,
-        termsEvaluated: summary.totalTermsEvaluated
+        termsEvaluated: summary.totalTermsEvaluated,
       });
 
       return report;
-
     } catch (error) {
       logger.error('Error generating quality report:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -194,10 +180,10 @@ export class QualityAnalyticsService {
     try {
       // Get historical evaluation data
       const historicalData = await this.getTermEvaluationHistory(termId);
-      
+
       // Calculate trend
       const trend = this.calculateTrend(historicalData);
-      
+
       // Make predictions
       const predictions = this.makePredictions(historicalData, trend);
 
@@ -205,13 +191,12 @@ export class QualityAnalyticsService {
         termId,
         historicalScores: historicalData,
         trend,
-        predictions
+        predictions,
       };
-
     } catch (error) {
       logger.error('Error getting quality trend analysis:', {
         error: error instanceof Error ? error.message : String(error),
-        termId
+        termId,
       });
       throw error;
     }
@@ -222,17 +207,19 @@ export class QualityAnalyticsService {
    */
   async compareQualitySegments(
     segmentType: 'category' | 'difficulty' | 'model' | 'contentType',
-    startDate?: Date,
-    endDate?: Date
-  ): Promise<Array<{
-    segment: string;
-    metrics: {
-      averageScore: number;
-      evaluationCount: number;
-      improvementRate: number;
-      topIssues: string[];
-    };
-  }>> {
+    _startDate?: Date,
+    _endDate?: Date
+  ): Promise<
+    Array<{
+      segment: string;
+      metrics: {
+        averageScore: number;
+        evaluationCount: number;
+        improvementRate: number;
+        topIssues: string[];
+      };
+    }>
+  > {
     try {
       // This would perform complex aggregation queries
       // For now, returning mock data structure
@@ -243,8 +230,8 @@ export class QualityAnalyticsService {
             averageScore: 7.8,
             evaluationCount: 245,
             improvementRate: 0.12,
-            topIssues: ['Incomplete examples', 'Complex notation']
-          }
+            topIssues: ['Incomplete examples', 'Complex notation'],
+          },
         },
         {
           segment: 'Deep Learning',
@@ -252,8 +239,8 @@ export class QualityAnalyticsService {
             averageScore: 7.5,
             evaluationCount: 189,
             improvementRate: 0.08,
-            topIssues: ['Missing prerequisites', 'Unclear architecture diagrams']
-          }
+            topIssues: ['Missing prerequisites', 'Unclear architecture diagrams'],
+          },
         },
         {
           segment: 'Natural Language Processing',
@@ -261,15 +248,14 @@ export class QualityAnalyticsService {
             averageScore: 8.1,
             evaluationCount: 156,
             improvementRate: 0.15,
-            topIssues: ['Outdated examples', 'Limited practical applications']
-          }
-        }
+            topIssues: ['Outdated examples', 'Limited practical applications'],
+          },
+        },
       ];
-
     } catch (error) {
       logger.error('Error comparing quality segments:', {
         error: error instanceof Error ? error.message : String(error),
-        segmentType
+        segmentType,
       });
       throw error;
     }
@@ -302,7 +288,7 @@ export class QualityAnalyticsService {
         currentState: {
           averageScore: 7.2,
           weakestDimensions: ['engagement', 'completeness'],
-          strongestDimensions: ['accuracy', 'style']
+          strongestDimensions: ['accuracy', 'style'],
         },
         recommendations: [
           {
@@ -310,37 +296,36 @@ export class QualityAnalyticsService {
             action: 'Add interactive examples and visualizations',
             expectedImpact: 1.2,
             effortEstimate: 'medium',
-            resources: ['D3.js tutorials', 'Interactive ML playground examples']
+            resources: ['D3.js tutorials', 'Interactive ML playground examples'],
           },
           {
             priority: 'high',
             action: 'Expand practical application sections',
             expectedImpact: 0.8,
             effortEstimate: 'low',
-            resources: ['Industry case study database', 'Real-world ML applications']
+            resources: ['Industry case study database', 'Real-world ML applications'],
           },
           {
             priority: 'medium',
             action: 'Improve mathematical notation clarity',
             expectedImpact: 0.5,
             effortEstimate: 'medium',
-            resources: ['LaTeX best practices', 'Mathematical writing guide']
+            resources: ['LaTeX best practices', 'Mathematical writing guide'],
           },
           {
             priority: 'low',
             action: 'Standardize formatting across all sections',
             expectedImpact: 0.3,
             effortEstimate: 'low',
-            resources: ['Style guide', 'Markdown formatter']
-          }
+            resources: ['Style guide', 'Markdown formatter'],
+          },
         ],
-        estimatedTimeToTarget: targetScore ? 45 : null // days
+        estimatedTimeToTarget: targetScore ? 45 : null, // days
       };
-
     } catch (error) {
       logger.error('Error getting improvement recommendations:', {
         error: error instanceof Error ? error.message : String(error),
-        termId
+        termId,
       });
       throw error;
     }
@@ -372,11 +357,10 @@ export class QualityAnalyticsService {
         default:
           throw new Error(`Unsupported format: ${format}`);
       }
-
     } catch (error) {
       logger.error('Error exporting quality data:', {
         error: error instanceof Error ? error.message : String(error),
-        format
+        format,
       });
       throw error;
     }
@@ -403,29 +387,28 @@ export class QualityAnalyticsService {
     try {
       // Get metrics from the last hour and 24 hours
       const now = new Date();
-      const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
-      const oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+      const _oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000);
+      const _oneDayAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000);
 
       // This would query real-time data
       return {
         currentHour: {
           evaluations: 12,
           averageScore: 7.6,
-          failureRate: 0.08
+          failureRate: 0.08,
         },
         last24Hours: {
           evaluations: 156,
           averageScore: 7.4,
           trend: 'up',
-          trendPercentage: 3.2
+          trendPercentage: 3.2,
         },
         activeEvaluations: 3,
-        queuedEvaluations: 8
+        queuedEvaluations: 8,
       };
-
     } catch (error) {
       logger.error('Error getting real-time metrics:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -436,7 +419,7 @@ export class QualityAnalyticsService {
    */
   async scheduleQualityAudit(
     schedule: 'daily' | 'weekly' | 'monthly',
-    options: {
+    _options: {
       emailRecipients?: string[];
       slackWebhook?: string;
       qualityThreshold?: number;
@@ -459,20 +442,19 @@ export class QualityAnalyticsService {
       logger.info('Scheduled quality audit', {
         auditId,
         schedule,
-        nextRun
+        nextRun,
       });
 
       return {
         auditId,
         schedule,
         nextRun,
-        status: 'scheduled'
+        status: 'scheduled',
       };
-
     } catch (error) {
       logger.error('Error scheduling quality audit:', {
         error: error instanceof Error ? error.message : String(error),
-        schedule
+        schedule,
       });
       throw error;
     }
@@ -480,13 +462,13 @@ export class QualityAnalyticsService {
 
   // Private helper methods
 
-  private async getEvaluationData(startDate: Date, endDate: Date): Promise<any[]> {
+  private async getEvaluationData(_startDate: Date, _endDate: Date): Promise<any[]> {
     // Query evaluation data from database
     // This is a placeholder - would need actual database queries
     return [];
   }
 
-  private async calculateSummaryMetrics(evaluations: any[]): Promise<any> {
+  private async calculateSummaryMetrics(_evaluations: any[]): Promise<any> {
     // Calculate summary metrics from evaluations
     return {
       totalTermsEvaluated: 150,
@@ -496,11 +478,11 @@ export class QualityAnalyticsService {
       acceptableCount: 30,
       poorCount: 15,
       totalEvaluations: 450,
-      totalCost: 12.50
+      totalCost: 12.5,
     };
   }
 
-  private async getTopPerformers(limit: number): Promise<QualityMetrics[]> {
+  private async getTopPerformers(_limit: number): Promise<QualityMetrics[]> {
     // Get top performing terms
     return [
       {
@@ -513,17 +495,17 @@ export class QualityAnalyticsService {
           completeness: 9.3,
           relevance: 9.1,
           style: 8.8,
-          engagement: 9.0
+          engagement: 9.0,
         },
         evaluationCount: 5,
         lastEvaluated: new Date(),
         trend: 'stable',
-        trendPercentage: 0.5
-      }
+        trendPercentage: 0.5,
+      },
     ];
   }
 
-  private async getTermsNeedingImprovement(limit: number): Promise<QualityMetrics[]> {
+  private async getTermsNeedingImprovement(_limit: number): Promise<QualityMetrics[]> {
     // Get terms that need improvement
     return [
       {
@@ -536,25 +518,25 @@ export class QualityAnalyticsService {
           completeness: 4.5,
           relevance: 5.0,
           style: 5.5,
-          engagement: 3.8
+          engagement: 3.8,
         },
         evaluationCount: 3,
         lastEvaluated: new Date(),
         trend: 'declining',
-        trendPercentage: -5.2
-      }
+        trendPercentage: -5.2,
+      },
     ];
   }
 
-  private async calculateTrends(startDate: Date, endDate: Date): Promise<any> {
+  private async calculateTrends(_startDate: Date, _endDate: Date): Promise<any> {
     // Calculate daily and weekly trends
     return {
       daily: [],
-      weekly: []
+      weekly: [],
     };
   }
 
-  private async getModelPerformance(startDate: Date, endDate: Date): Promise<any[]> {
+  private async getModelPerformance(_startDate: Date, _endDate: Date): Promise<any[]> {
     // Get performance metrics by model
     return [
       {
@@ -562,54 +544,54 @@ export class QualityAnalyticsService {
         evaluationCount: 320,
         averageScore: 7.6,
         averageCost: 0.002,
-        averageLatency: 1250
+        averageLatency: 1250,
       },
       {
         model: 'gpt-4',
         evaluationCount: 80,
         averageScore: 8.1,
         averageCost: 0.15,
-        averageLatency: 2100
-      }
+        averageLatency: 2100,
+      },
     ];
   }
 
-  private async identifyCommonIssues(evaluations: any[]): Promise<any[]> {
+  private async identifyCommonIssues(_evaluations: any[]): Promise<any[]> {
     // Analyze evaluations to find common issues
     return [
       {
         issue: 'Incomplete code examples',
         frequency: 45,
         affectedTerms: 28,
-        suggestedAction: 'Add runnable code snippets with proper comments'
+        suggestedAction: 'Add runnable code snippets with proper comments',
       },
       {
         issue: 'Missing visual diagrams',
         frequency: 38,
         affectedTerms: 22,
-        suggestedAction: 'Create architecture and flow diagrams'
-      }
+        suggestedAction: 'Create architecture and flow diagrams',
+      },
     ];
   }
 
   private generateRecommendations(
-    summary: any,
-    commonIssues: any[],
-    modelPerformance: any[]
+    _summary: any,
+    _commonIssues: any[],
+    _modelPerformance: any[]
   ): any {
     return {
       immediate: [
         'Address critical quality issues in 15 terms scoring below 4.0',
-        'Add code examples to 28 terms missing implementation details'
+        'Add code examples to 28 terms missing implementation details',
       ],
       shortTerm: [
         'Implement visual diagrams for complex concepts',
-        'Standardize content structure across all categories'
+        'Standardize content structure across all categories',
       ],
       longTerm: [
         'Develop interactive learning components',
-        'Create comprehensive test suites for code examples'
-      ]
+        'Create comprehensive test suites for code examples',
+      ],
     };
   }
 
@@ -618,26 +600,26 @@ export class QualityAnalyticsService {
     logger.info('Stored quality report', { reportId: report.reportId });
   }
 
-  private async getTermEvaluationHistory(termId: string): Promise<any[]> {
+  private async getTermEvaluationHistory(_termId: string): Promise<any[]> {
     // Get historical evaluation scores for a term
     return [];
   }
 
-  private calculateTrend(historicalData: any[]): any {
+  private calculateTrend(_historicalData: any[]): any {
     // Calculate trend from historical data
     return {
       direction: 'improving' as const,
       rate: 0.05,
-      confidence: 0.85
+      confidence: 0.85,
     };
   }
 
-  private makePredictions(historicalData: any[], trend: any): any {
+  private makePredictions(_historicalData: any[], _trend: any): any {
     // Make predictions based on historical data and trend
     return {
       nextEvaluation: 7.8,
       timeToTarget: 30,
-      improvementPotential: 1.5
+      improvementPotential: 1.5,
     };
   }
 
@@ -655,18 +637,18 @@ export class QualityAnalyticsService {
     }
   }
 
-  private async getExportData(options?: any): Promise<any[]> {
+  private async getExportData(_options?: any): Promise<any[]> {
     // Get data for export based on options
     return [];
   }
 
-  private convertToCSV(data: any[]): Buffer {
+  private convertToCSV(_data: any[]): Buffer {
     // Convert data to CSV format
     const csv = 'termId,termName,overallScore,accuracy,clarity,completeness\n';
     return Buffer.from(csv);
   }
 
-  private convertToExcel(data: any[]): Buffer {
+  private convertToExcel(_data: any[]): Buffer {
     // Convert data to Excel format
     // Would use a library like exceljs
     return Buffer.from('Excel data');

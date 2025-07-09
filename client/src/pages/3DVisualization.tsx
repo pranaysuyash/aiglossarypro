@@ -3,27 +3,27 @@
  * Dedicated page for 3D knowledge graph and other interactive visualizations
  */
 
-import React, { useState } from 'react';
-import { useLocation } from 'wouter';
-import ThreeDKnowledgeGraph from '../components/visualization/3DKnowledgeGraph';
-import { Card, CardHeader, CardTitle, CardContent } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { 
-  ArrowLeft, 
-  Network, 
-  Brain, 
-  Zap, 
+import {
+  ArrowLeft,
+  Box,
+  Brain,
   Eye,
   Info,
   Lightbulb,
-  Target,
   Map,
+  Network,
   Sparkles,
-  Box,
-  RotateCcw
+  Target,
+  Zap,
 } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
+import { useLocation } from 'wouter';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import ThreeDKnowledgeGraph from '../components/visualization/3DKnowledgeGraph';
 
 interface GraphNode {
   id: string;
@@ -72,7 +72,7 @@ const ThreeDVisualizationPage: React.FC = () => {
                 <ArrowLeft className="h-4 w-4" />
                 Back to Home
               </Button>
-              
+
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 flex items-center">
                   <Box className="h-8 w-8 mr-3 text-blue-600" />
@@ -83,7 +83,7 @@ const ThreeDVisualizationPage: React.FC = () => {
                 </p>
               </div>
             </div>
-            
+
             <div className="flex items-center gap-2">
               <Badge variant="default" className="flex items-center gap-1">
                 <Network className="h-3 w-3" />
@@ -121,10 +121,7 @@ const ThreeDVisualizationPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               {/* Main Visualization */}
               <div className="lg:col-span-3">
-                <ThreeDKnowledgeGraph
-                  onNodeSelect={handleNodeSelect}
-                  className="w-full"
-                />
+                <ThreeDKnowledgeGraph onNodeSelect={handleNodeSelect} className="w-full" />
               </div>
 
               {/* Information Panel */}
@@ -144,45 +141,42 @@ const ThreeDVisualizationPage: React.FC = () => {
                           <h3 className="font-semibold text-lg">{selectedNode.name}</h3>
                           <p className="text-sm text-gray-600">{selectedNode.category}</p>
                         </div>
-                        
+
                         <div className="space-y-2">
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-600">Complexity:</span>
-                            <Badge 
-                              variant={selectedNode.complexity > 7 ? "destructive" : 
-                                      selectedNode.complexity > 4 ? "default" : "secondary"}
+                            <Badge
+                              variant={
+                                selectedNode.complexity > 7
+                                  ? 'destructive'
+                                  : selectedNode.complexity > 4
+                                    ? 'default'
+                                    : 'secondary'
+                              }
                             >
                               {selectedNode.complexity}/10
                             </Badge>
                           </div>
-                          
+
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-600">Popularity:</span>
-                            <Badge variant="outline">
-                              {Math.round(selectedNode.popularity)}%
-                            </Badge>
+                            <Badge variant="outline">{Math.round(selectedNode.popularity)}%</Badge>
                           </div>
-                          
+
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-600">Type:</span>
-                            <Badge variant={selectedNode.isCore ? "default" : "secondary"}>
+                            <Badge variant={selectedNode.isCore ? 'default' : 'secondary'}>
                               {selectedNode.isCore ? 'Core Concept' : 'Specialized'}
                             </Badge>
                           </div>
-                          
+
                           <div className="flex justify-between items-center">
                             <span className="text-sm text-gray-600">Connections:</span>
-                            <Badge variant="outline">
-                              {selectedNode.connections.length} links
-                            </Badge>
+                            <Badge variant="outline">{selectedNode.connections.length} links</Badge>
                           </div>
                         </div>
-                        
-                        <Button 
-                          onClick={handleViewTerm}
-                          className="w-full"
-                          size="sm"
-                        >
+
+                        <Button onClick={handleViewTerm} className="w-full" size="sm">
                           <Eye className="h-4 w-4 mr-2" />
                           View Details
                         </Button>
@@ -204,24 +198,25 @@ const ThreeDVisualizationPage: React.FC = () => {
                       <div className="flex items-start gap-2">
                         <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 flex-shrink-0"></div>
                         <div>
-                          <strong>Click</strong> on any sphere to select a concept and see its connections
+                          <strong>Click</strong> on any sphere to select a concept and see its
+                          connections
                         </div>
                       </div>
-                      
+
                       <div className="flex items-start gap-2">
                         <div className="w-2 h-2 bg-green-500 rounded-full mt-2 flex-shrink-0"></div>
                         <div>
                           <strong>Drag</strong> to rotate the view and explore from different angles
                         </div>
                       </div>
-                      
+
                       <div className="flex items-start gap-2">
                         <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2 flex-shrink-0"></div>
                         <div>
                           <strong>Scroll</strong> to zoom in and out for closer inspection
                         </div>
                       </div>
-                      
+
                       <div className="flex items-start gap-2">
                         <div className="w-2 h-2 bg-purple-500 rounded-full mt-2 flex-shrink-0"></div>
                         <div>
@@ -250,12 +245,15 @@ const ThreeDVisualizationPage: React.FC = () => {
                             <span>Regular concepts</span>
                           </div>
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 bg-blue-500" style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}></div>
+                            <div
+                              className="w-3 h-3 bg-blue-500"
+                              style={{ clipPath: 'polygon(50% 0%, 0% 100%, 100% 100%)' }}
+                            ></div>
                             <span>Core concepts</span>
                           </div>
                         </div>
                       </div>
-                      
+
                       <div>
                         <strong>Connection Types:</strong>
                         <div className="mt-1 space-y-1">
@@ -277,7 +275,7 @@ const ThreeDVisualizationPage: React.FC = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       <div>
                         <strong>Complexity Indicators:</strong>
                         <div className="mt-1 space-y-1">
@@ -299,7 +297,7 @@ const ThreeDVisualizationPage: React.FC = () => {
                       <div>
                         <h4 className="font-medium text-blue-900 mb-1">WebGL Acceleration</h4>
                         <p className="text-sm text-blue-800">
-                          This 3D visualization uses WebGL for hardware-accelerated rendering, 
+                          This 3D visualization uses WebGL for hardware-accelerated rendering,
                           supporting thousands of nodes with smooth 60fps performance.
                         </p>
                       </div>
@@ -326,7 +324,8 @@ const ThreeDVisualizationPage: React.FC = () => {
                     Concept Map Coming Soon
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    2D hierarchical visualization of concept relationships and learning progressions.
+                    2D hierarchical visualization of concept relationships and learning
+                    progressions.
                   </p>
                   <Badge variant="secondary">In Development</Badge>
                 </div>
@@ -350,15 +349,12 @@ const ThreeDVisualizationPage: React.FC = () => {
                     3D Learning Paths Coming Soon
                   </h3>
                   <p className="text-gray-600 mb-4">
-                    Interactive 3D visualization of personalized learning journeys and skill progression.
+                    Interactive 3D visualization of personalized learning journeys and skill
+                    progression.
                   </p>
                   <div className="flex items-center justify-center gap-2">
                     <Badge variant="secondary">In Development</Badge>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => navigate('/learning-paths')}
-                    >
+                    <Button variant="outline" size="sm" onClick={() => navigate('/learning-paths')}>
                       View 2D Learning Paths
                     </Button>
                   </div>

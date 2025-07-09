@@ -3,24 +3,24 @@
  * Handles comprehensive column-wise batch processing operations
  */
 
-import { Job } from 'bullmq';
-import { ColumnBatchProcessingJobData, ColumnBatchProcessingJobResult } from '../types';
+import type { Job } from 'bullmq';
 import { columnBatchProcessorService } from '../../services/columnBatchProcessorService';
 import { costManagementService } from '../../services/costManagementService';
 import { log as logger } from '../../utils/logger';
+import type { ColumnBatchProcessingJobData, ColumnBatchProcessingJobResult } from '../types';
 
 export async function columnBatchProcessingProcessor(
   job: Job<ColumnBatchProcessingJobData>
 ): Promise<ColumnBatchProcessingJobResult> {
   const startTime = Date.now();
-  const { 
-    operationId, 
-    sectionName, 
-    termIds, 
+  const {
+    operationId,
+    sectionName,
+    termIds,
     batchConfiguration,
     costLimits,
     notificationOptions,
-    userId 
+    userId,
   } = job.data;
 
   logger.info(`Starting column batch processing job ${job.id} for operation ${operationId}`);
@@ -37,7 +37,7 @@ export async function columnBatchProcessingProcessor(
     processingTime: 0,
     subJobIds: [],
     costBreakdown: {},
-    errors: []
+    errors: [],
   };
 
   try {
@@ -50,8 +50,8 @@ export async function columnBatchProcessingProcessor(
         operationId,
         sectionName,
         totalTerms: termIds.length,
-        batchSize: batchConfiguration.batchSize
-      }
+        batchSize: batchConfiguration.batchSize,
+      },
     });
 
     // Check if operation exists in the service
@@ -73,8 +73,8 @@ export async function columnBatchProcessingProcessor(
             processedTerms: currentOperation.progress.processedTerms,
             failedTerms: currentOperation.progress.failedTerms,
             currentCost: currentOperation.costs.actualCost,
-            budgetUsed: currentOperation.costs.budgetUsed
-          }
+            budgetUsed: currentOperation.costs.budgetUsed,
+          },
         });
 
         // Update result with current data
@@ -93,7 +93,7 @@ export async function columnBatchProcessingProcessor(
       await new Promise<void>((resolve, reject) => {
         const checkInterval = setInterval(() => {
           const currentOperation = columnBatchProcessorService.getOperationStatus(operationId);
-          
+
           if (!currentOperation) {
             clearInterval(checkInterval);
             reject(new Error(`Operation ${operationId} disappeared during processing`));
@@ -103,7 +103,7 @@ export async function columnBatchProcessingProcessor(
           // Check for completion states
           if (currentOperation.status === 'completed') {
             clearInterval(checkInterval);
-            
+
             // Update final result
             result.processedTerms = currentOperation.progress.processedTerms;
             result.failedTerms = currentOperation.progress.failedTerms;
@@ -119,11 +119,14 @@ export async function columnBatchProcessingProcessor(
             }
 
             resolve();
-          } else if (currentOperation.status === 'failed' || currentOperation.status === 'cancelled') {
+          } else if (
+            currentOperation.status === 'failed' ||
+            currentOperation.status === 'cancelled'
+          ) {
             clearInterval(checkInterval);
             reject(new Error(`Operation ${operationId} ${currentOperation.status}`));
           }
-          
+
           // Check for timeout (24 hours max)
           if (Date.now() - startTime > 24 * 60 * 60 * 1000) {
             clearInterval(checkInterval);
@@ -131,7 +134,6 @@ export async function columnBatchProcessingProcessor(
           }
         }, 2000); // Check every 2 seconds
       });
-
     } finally {
       clearInterval(progressInterval);
     }
@@ -142,14 +144,14 @@ export async function columnBatchProcessingProcessor(
         'column_batch_processing',
         batchConfiguration.model || 'gpt-3.5-turbo',
         0, // Input tokens will be tracked by individual jobs
-        0, // Output tokens will be tracked by individual jobs  
+        0, // Output tokens will be tracked by individual jobs
         userId,
         undefined,
         {
           operationId,
           sectionName,
           termCount: result.totalTerms,
-          batchSize: batchConfiguration.batchSize
+          batchSize: batchConfiguration.batchSize,
         }
       );
     }
@@ -162,7 +164,9 @@ export async function columnBatchProcessingProcessor(
 
     if (notificationOptions?.webhookUrl) {
       // TODO: Implement webhook notification
-      logger.info(`Webhook notification should be sent to ${notificationOptions.webhookUrl} for operation ${operationId}`);
+      logger.info(
+        `Webhook notification should be sent to ${notificationOptions.webhookUrl} for operation ${operationId}`
+      );
     }
 
     // Final progress update
@@ -175,8 +179,8 @@ export async function columnBatchProcessingProcessor(
         processedTerms: result.processedTerms,
         failedTerms: result.failedTerms,
         totalCost: result.totalCost,
-        processingTime: Date.now() - startTime
-      }
+        processingTime: Date.now() - startTime,
+      },
     });
 
     result.processingTime = Date.now() - startTime;
@@ -186,15 +190,14 @@ export async function columnBatchProcessingProcessor(
       processedTerms: result.processedTerms,
       failedTerms: result.failedTerms,
       totalCost: result.totalCost,
-      processingTime: result.processingTime
+      processingTime: result.processingTime,
     });
 
     return result;
-
   } catch (error) {
-    logger.error(`Column batch processing job ${job.id} failed:`, { 
+    logger.error(`Column batch processing job ${job.id} failed:`, {
       error: error instanceof Error ? error.message : String(error),
-      operationId 
+      operationId,
     });
 
     // Try to get final state even if failed
@@ -208,7 +211,7 @@ export async function columnBatchProcessingProcessor(
     }
 
     result.processingTime = Date.now() - startTime;
-    
+
     throw error;
   }
 }

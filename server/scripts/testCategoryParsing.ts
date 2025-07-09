@@ -12,15 +12,15 @@ function isValidCategoryValue(value: string): boolean {
     /^example/i,
     /^see also/i,
     /^\s*$/,
-    /^[0-9]+\.?\s*$/
+    /^[0-9]+\.?\s*$/,
   ];
-  
-  return !invalidPatterns.some(pattern => pattern.test(value)) && value.length > 2;
+
+  return !invalidPatterns.some((pattern) => pattern.test(value)) && value.length > 2;
 }
 
 function cleanCategoryName(name: string): string {
   return name
-    .replace(/^[-\*•\s]+/, '') // Remove leading bullets/dashes
+    .replace(/^[-*•\s]+/, '') // Remove leading bullets/dashes
     .replace(/\s+/g, ' ') // Normalize whitespace
     .replace(/^(Category|Tag|Domain|Technique):\s*/i, '') // Remove prefixes
     .replace(/\s*\([^)]*\)$/, '') // Remove trailing parentheses
@@ -29,7 +29,7 @@ function cleanCategoryName(name: string): string {
 
 function isValidCategoryName(name: string): boolean {
   if (!name || name.length < 3 || name.length > 80) return false;
-  
+
   // Valid category patterns for AI/ML domain
   const validPatterns = [
     /machine learning/i,
@@ -47,22 +47,22 @@ function isValidCategoryName(name: string): boolean {
     /supervised learning/i,
     /unsupervised learning/i,
     /robotics/i,
-    /nlp/i
+    /nlp/i,
   ];
-  
+
   const invalidPatterns = [
     /^tags?:/i,
     /^introduction/i,
     /^definition/i,
     /^overview/i,
     /^description/i,
-    /^example/i
+    /^example/i,
   ];
-  
+
   // Check if it's a valid AI/ML category or passes basic validation
-  const isValidAIML = validPatterns.some(pattern => pattern.test(name));
-  const isNotInvalid = !invalidPatterns.some(pattern => pattern.test(name));
-  
+  const isValidAIML = validPatterns.some((pattern) => pattern.test(name));
+  const isNotInvalid = !invalidPatterns.some((pattern) => pattern.test(name));
+
   return (isValidAIML || isNotInvalid) && name.split(' ').length <= 5; // Max 5 words
 }
 
@@ -79,7 +79,7 @@ const testCases = [
   '1.',
   '',
   'See Also: Related Terms',
-  
+
   // Valid categories that should pass
   'Machine Learning',
   'Deep Learning',
@@ -95,7 +95,7 @@ const testCases = [
   'Data Science',
   'Robotics',
   'NLP',
-  
+
   // Edge cases
   'Machine Learning Algorithms', // Should pass (valid AI/ML)
   'Transformer Architecture', // Should pass (specific but valid)
@@ -113,11 +113,11 @@ testCases.forEach((testCase, index) => {
   const cleanedName = cleanCategoryName(testCase);
   const isValidName = isValidCategoryName(cleanedName);
   const finalResult = isValidValue && isValidName;
-  
+
   const status = finalResult ? '✅ PASS' : '❌ FAIL';
   const indexStr = (index + 1).toString().padStart(2, ' ');
   console.log(`${indexStr}. ${status} "${testCase}" -> "${cleanedName}"`);
-  
+
   if (!isValidValue) console.log(`     └── Invalid value pattern`);
   if (isValidValue && !isValidName) console.log(`     └── Invalid name after cleaning`);
 });
@@ -125,13 +125,13 @@ testCases.forEach((testCase, index) => {
 // Test the parseListItems function simulation
 function parseListItems(value: string): string[] {
   if (!value) return [];
-  
+
   return value
     .split(/[,;|]+/) // Split by comma, semicolon, or pipe
-    .map(item => item.trim())
-    .filter(item => item.length > 0 && item.length <= 100)
-    .map(item => cleanCategoryName(item))
-    .filter(item => isValidCategoryName(item));
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0 && item.length <= 100)
+    .map((item) => cleanCategoryName(item))
+    .filter((item) => isValidCategoryName(item));
 }
 
 console.log('\n🔍 Testing List Parsing:');
@@ -148,7 +148,7 @@ const listTestCases = [
 listTestCases.forEach((testCase, index) => {
   const result = parseListItems(testCase);
   console.log(`${index + 1}. Input: "${testCase}"`);
-  console.log(`   Output: [${result.map(r => `"${r}"`).join(', ')}]`);
+  console.log(`   Output: [${result.map((r) => `"${r}"`).join(', ')}]`);
   console.log(`   Count: ${result.length}\n`);
 });
 

@@ -1,6 +1,6 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Quote, User, Heart, BookOpen, Clock, Target } from "lucide-react";
+import { BookOpen, Clock, Heart, Quote, Target, User } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function FounderStory() {
   return (
@@ -30,17 +30,20 @@ export function FounderStory() {
                   <User className="w-16 h-16 sm:w-20 sm:h-20 text-white" />
                 </div>
               </div>
-              
+
               {/* Story Content */}
               <div className="flex-1 text-center lg:text-left">
                 <Quote className="w-8 h-8 text-blue-500 mb-4 mx-auto lg:mx-0" />
                 <blockquote className="text-lg sm:text-xl text-gray-700 mb-6 italic leading-relaxed">
-                  "I'm a CS grad who spent years as a functional consultant and founder. While I stayed connected to technology through my consulting work and startup journey, AI/ML was exploding with concepts I needed to understand for business decisions. I realized: it's impossible to study 10,000+ terms in depth while running a business. So I combined my practical notes with thorough research to help other busy professionals."
+                  "I'm a CS grad who spent years as a functional consultant and founder. While I
+                  stayed connected to technology through my consulting work and startup journey,
+                  AI/ML was exploding with concepts I needed to understand for business decisions. I
+                  realized: it's impossible to study 10,000+ terms in depth while running a
+                  business. So I combined my practical notes with thorough research to help other
+                  busy professionals."
                 </blockquote>
                 <div className="text-right">
-                  <cite className="text-base text-gray-600 not-italic">
-                    — Pranay, Founder
-                  </cite>
+                  <cite className="text-base text-gray-600 not-italic">— Pranay, Founder</cite>
                 </div>
               </div>
             </div>
@@ -58,7 +61,10 @@ export function FounderStory() {
                 <div>
                   <h3 className="font-bold text-red-900 mb-2">The Time Crunch</h3>
                   <p className="text-red-700 text-sm leading-relaxed">
-                    When building products or advising clients, AI/ML concepts would come up that were critical to understand, but I had no time to research properly. I'd piece together definitions from multiple sources, never confident I had the complete picture.
+                    When building products or advising clients, AI/ML concepts would come up that
+                    were critical to understand, but I had no time to research properly. I'd piece
+                    together definitions from multiple sources, never confident I had the complete
+                    picture.
                   </p>
                 </div>
               </div>
@@ -74,7 +80,10 @@ export function FounderStory() {
                 <div>
                   <h3 className="font-bold text-orange-900 mb-2">The Solution</h3>
                   <p className="text-orange-700 text-sm leading-relaxed">
-                    I started systematically documenting every AI/ML concept I encountered for my projects. After building this knowledge base for months, I realized: why not combine my practical notes with comprehensive research to help other busy professionals facing the same challenge?
+                    I started systematically documenting every AI/ML concept I encountered for my
+                    projects. After building this knowledge base for months, I realized: why not
+                    combine my practical notes with comprehensive research to help other busy
+                    professionals facing the same challenge?
                   </p>
                 </div>
               </div>
@@ -88,16 +97,17 @@ export function FounderStory() {
             <h3 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 text-center">
               So I Built What I Wished Existed
             </h3>
-            
+
             <div className="grid sm:grid-cols-2 gap-6 mb-8">
               <div className="text-center p-4">
                 <BookOpen className="w-8 h-8 text-blue-600 mx-auto mb-3" />
                 <h4 className="font-semibold text-gray-900 mb-2">For Real People</h4>
                 <p className="text-gray-600 text-sm">
-                  Written for business professionals, students, and curious minds — not just engineers
+                  Written for business professionals, students, and curious minds — not just
+                  engineers
                 </p>
               </div>
-              
+
               <div className="text-center p-4">
                 <Target className="w-8 h-8 text-green-600 mx-auto mb-3" />
                 <h4 className="font-semibold text-gray-900 mb-2">Actually Useful</h4>
@@ -106,20 +116,26 @@ export function FounderStory() {
                 </p>
               </div>
             </div>
-            
+
             <div className="text-center">
               <p className="text-lg text-gray-700 leading-relaxed mb-6">
-                My notes grew: 100 terms... 1,000... 5,000... 10,000+. Colleagues transitioning into AI/ML started asking for copies. "Finally, explanations that don't assume I've been following every AI breakthrough for the past decade!" <span className="font-semibold text-blue-600">Now 1,000+ professionals use it daily</span> 
+                My notes grew: 100 terms... 1,000... 5,000... 10,000+. Colleagues transitioning into
+                AI/ML started asking for copies. "Finally, explanations that don't assume I've been
+                following every AI breakthrough for the past decade!"{' '}
+                <span className="font-semibold text-blue-600">
+                  Now 1,000+ professionals use it daily
+                </span>
                 to bridge the gap between academic complexity and practical understanding.
               </p>
-              
+
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-6 max-w-2xl mx-auto">
-                <p className="text-blue-800 font-medium mb-2">
-                  Why a Free Tier?
-                </p>
+                <p className="text-blue-800 font-medium mb-2">Why a Free Tier?</p>
                 <p className="text-blue-700 text-sm leading-relaxed">
-                  AI/ML Glossary Pro bridges the gap between academic complexity and practical understanding - built by someone who knows what it's like to feel behind in a rapidly moving field. That's why we offer 50 terms daily completely free. 
-                  For those who need unlimited access, our premium tier provides full access to all 10,000+ terms plus advanced features - all for a one-time payment.
+                  AI/ML Glossary Pro bridges the gap between academic complexity and practical
+                  understanding - built by someone who knows what it's like to feel behind in a
+                  rapidly moving field. That's why we offer 50 terms daily completely free. For
+                  those who need unlimited access, our premium tier provides full access to all
+                  10,000+ terms plus advanced features - all for a one-time payment.
                 </p>
               </div>
             </div>
@@ -129,9 +145,7 @@ export function FounderStory() {
         {/* Trust Signals */}
         <div className="text-center">
           <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-xl p-6 sm:p-8">
-            <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Built by Someone Who Gets It
-            </h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">Built by Someone Who Gets It</h3>
             <div className="grid sm:grid-cols-3 gap-4 text-sm text-gray-600">
               <div className="flex items-center justify-center gap-2">
                 <Heart className="w-4 h-4 text-red-500" />

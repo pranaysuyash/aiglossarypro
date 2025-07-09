@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
-import { Button } from './button';
+import { BookOpen, Clock, Heart, Share } from 'lucide-react';
 import { Badge } from './badge';
-import { Heart, Share, BookOpen, Clock } from 'lucide-react';
+import { Button } from './button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
 
 const meta: Meta<typeof Card> = {
   title: 'UI/Card Enhanced',
@@ -33,13 +33,11 @@ export const Default: Story = {
     <Card>
       <CardHeader>
         <CardTitle>Neural Network</CardTitle>
-        <CardDescription>
-          A computing system inspired by biological neural networks
-        </CardDescription>
+        <CardDescription>A computing system inspired by biological neural networks</CardDescription>
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">
-          Neural networks are a fundamental concept in machine learning and artificial intelligence, 
+          Neural networks are a fundamental concept in machine learning and artificial intelligence,
           consisting of layers of interconnected nodes that can learn complex patterns from data.
         </p>
       </CardContent>
@@ -116,13 +114,19 @@ export const TermCard: Story = {
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground mb-4">
-          A neural network architecture that relies entirely on attention mechanisms, 
-          dispensing with recurrence and convolutions entirely.
+          A neural network architecture that relies entirely on attention mechanisms, dispensing
+          with recurrence and convolutions entirely.
         </p>
         <div className="flex gap-2 flex-wrap">
-          <Badge variant="secondary" className="text-xs">NLP</Badge>
-          <Badge variant="secondary" className="text-xs">Attention</Badge>
-          <Badge variant="secondary" className="text-xs">BERT</Badge>
+          <Badge variant="secondary" className="text-xs">
+            NLP
+          </Badge>
+          <Badge variant="secondary" className="text-xs">
+            Attention
+          </Badge>
+          <Badge variant="secondary" className="text-xs">
+            BERT
+          </Badge>
         </div>
       </CardContent>
       <CardFooter className="flex justify-between items-center">
@@ -159,9 +163,7 @@ export const StatsCard: Story = {
       </CardHeader>
       <CardContent>
         <div className="text-2xl font-bold">1,247</div>
-        <p className="text-xs text-muted-foreground">
-          +12% from last month
-        </p>
+        <p className="text-xs text-muted-foreground">+12% from last month</p>
       </CardContent>
     </Card>
   ),
@@ -191,9 +193,9 @@ export const ArticleCard: Story = {
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">
-          Neural networks have revolutionized the field of artificial intelligence, 
-          enabling machines to learn complex patterns and make decisions in ways 
-          that were previously impossible...
+          Neural networks have revolutionized the field of artificial intelligence, enabling
+          machines to learn complex patterns and make decisions in ways that were previously
+          impossible...
         </p>
       </CardContent>
       <CardFooter>
@@ -265,9 +267,7 @@ export const ErrorCard: Story = {
     <Card className="border-red-200">
       <CardHeader>
         <CardTitle className="text-red-600">Error Loading Content</CardTitle>
-        <CardDescription>
-          Failed to load the requested term. Please try again.
-        </CardDescription>
+        <CardDescription>Failed to load the requested term. Please try again.</CardDescription>
       </CardHeader>
       <CardFooter>
         <Button variant="outline" className="w-full">
@@ -290,9 +290,7 @@ export const DarkMode: Story = {
     <Card>
       <CardHeader>
         <CardTitle>Neural Network</CardTitle>
-        <CardDescription>
-          A computing system inspired by biological neural networks
-        </CardDescription>
+        <CardDescription>A computing system inspired by biological neural networks</CardDescription>
       </CardHeader>
       <CardContent>
         <p className="text-sm text-muted-foreground">
@@ -321,4 +319,4 @@ export const DarkMode: Story = {
       </div>
     ),
   ],
-}; 
+};

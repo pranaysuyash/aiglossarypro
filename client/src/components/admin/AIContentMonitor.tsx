@@ -1,37 +1,48 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { 
-  Bot, 
-  Brain, 
-  CheckCircle, 
-  AlertCircle,
-  TrendingUp,
-  TrendingDown,
-  MessageSquare,
-  Star,
-  Flag,
-  Eye,
-  Edit,
-  RefreshCw,
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  AlertTriangle,
   BarChart3,
-  Users,
+  Bot,
+  Brain,
+  CheckCircle,
+  Eye,
+  Flag,
+  MessageSquare,
+  RefreshCw,
+  Star,
   Target,
-  Zap,
-  Clock,
-  AlertTriangle
+  TrendingUp,
 } from 'lucide-react';
+import { useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -68,16 +79,22 @@ interface AIAnalytics {
     totalInputTokens: number;
     totalOutputTokens: number;
   };
-  byOperation: Record<string, {
-    count: number;
-    totalCost: number;
-    avgLatency: number;
-  }>;
-  byModel: Record<string, {
-    count: number;
-    totalCost: number;
-    avgLatency: number;
-  }>;
+  byOperation: Record<
+    string,
+    {
+      count: number;
+      totalCost: number;
+      avgLatency: number;
+    }
+  >;
+  byModel: Record<
+    string,
+    {
+      count: number;
+      totalCost: number;
+      avgLatency: number;
+    }
+  >;
   timeline: Array<{
     date: string;
     requests: number;
@@ -90,22 +107,22 @@ export function AIContentMonitor() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
-  const [selectedFeedback, setSelectedFeedback] = useState<AIFeedback | null>(null);
+
+  const [_selectedFeedback, setSelectedFeedback] = useState<AIFeedback | null>(null);
   const [feedbackFilters, setFeedbackFilters] = useState({
     status: 'all',
     feedbackType: 'all',
-    severity: 'all'
+    severity: 'all',
   });
-  const [verificationFilters, setVerificationFilters] = useState({
-    status: 'all'
+  const [verificationFilters, _setVerificationFilters] = useState({
+    status: 'all',
   });
 
   // Query for AI feedback
-  const { 
-    data: feedbackData, 
+  const {
+    data: feedbackData,
     isLoading: isLoadingFeedback,
-    refetch: refetchFeedback
+    refetch: refetchFeedback,
   } = useQuery({
     queryKey: ['ai-feedback', feedbackFilters],
     queryFn: async () => {
@@ -113,19 +130,19 @@ export function AIContentMonitor() {
       Object.entries(feedbackFilters).forEach(([key, value]) => {
         if (value && value !== 'all') params.append(key, value);
       });
-      
+
       const response = await fetch(`/api/ai/feedback?${params}`);
       if (!response.ok) throw new Error('Failed to fetch AI feedback');
       return response.json();
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Query for AI verification status
-  const { 
-    data: verificationData, 
+  const {
+    data: verificationData,
     isLoading: isLoadingVerification,
-    refetch: refetchVerification
+    refetch: refetchVerification,
   } = useQuery({
     queryKey: ['ai-verification', verificationFilters],
     queryFn: async () => {
@@ -133,30 +150,35 @@ export function AIContentMonitor() {
       if (!response.ok) throw new Error('Failed to fetch verification data');
       return response.json();
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Query for AI analytics
-  const { 
-    data: analyticsData, 
-    isLoading: isLoadingAnalytics 
-  } = useQuery({
+  const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery({
     queryKey: ['ai-analytics'],
     queryFn: async () => {
       const response = await fetch('/api/ai/analytics?timeframe=7d');
       if (!response.ok) throw new Error('Failed to fetch AI analytics');
       return response.json();
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Mutation for updating feedback status
   const updateFeedbackMutation = useMutation({
-    mutationFn: async ({ id, status, adminNotes }: { id: string; status: string; adminNotes?: string }) => {
+    mutationFn: async ({
+      id,
+      status,
+      adminNotes,
+    }: {
+      id: string;
+      status: string;
+      adminNotes?: string;
+    }) => {
       const response = await fetch(`/api/ai/feedback/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status, adminNotes })
+        body: JSON.stringify({ status, adminNotes }),
       });
       if (!response.ok) throw new Error('Failed to update feedback');
       return response.json();
@@ -167,26 +189,31 @@ export function AIContentMonitor() {
       toast({ title: 'Success', description: 'Feedback status updated' });
     },
     onError: (error) => {
-      toast({ 
-        title: 'Error', 
+      toast({
+        title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to update feedback',
-        variant: 'destructive' 
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Mutation for updating verification status
   const updateVerificationMutation = useMutation({
-    mutationFn: async ({ id, isVerified, qualityScore, verificationNotes }: { 
-      id: string; 
-      isVerified: boolean; 
-      qualityScore?: number; 
-      verificationNotes?: string 
+    mutationFn: async ({
+      id,
+      isVerified,
+      qualityScore,
+      verificationNotes,
+    }: {
+      id: string;
+      isVerified: boolean;
+      qualityScore?: number;
+      verificationNotes?: string;
     }) => {
       const response = await fetch(`/api/ai/verification/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ isVerified, qualityScore, verificationNotes })
+        body: JSON.stringify({ isVerified, qualityScore, verificationNotes }),
       });
       if (!response.ok) throw new Error('Failed to update verification');
       return response.json();
@@ -194,36 +221,51 @@ export function AIContentMonitor() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['ai-verification'] });
       toast({ title: 'Success', description: 'Verification status updated' });
-    }
+    },
   });
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'bg-red-100 text-red-800';
-      case 'high': return 'bg-orange-100 text-orange-800';
-      case 'medium': return 'bg-yellow-100 text-yellow-800';
-      case 'low': return 'bg-blue-100 text-blue-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'critical':
+        return 'bg-red-100 text-red-800';
+      case 'high':
+        return 'bg-orange-100 text-orange-800';
+      case 'medium':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'low':
+        return 'bg-blue-100 text-blue-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'resolved': return 'bg-green-100 text-green-800';
-      case 'reviewed': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'dismissed': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'resolved':
+        return 'bg-green-100 text-green-800';
+      case 'reviewed':
+        return 'bg-blue-100 text-blue-800';
+      case 'pending':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'dismissed':
+        return 'bg-gray-100 text-gray-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getFeedbackIcon = (type: string) => {
     switch (type) {
-      case 'accuracy': return <Target className="w-4 h-4" />;
-      case 'completeness': return <CheckCircle className="w-4 h-4" />;
-      case 'clarity': return <Eye className="w-4 h-4" />;
-      case 'relevance': return <Star className="w-4 h-4" />;
-      default: return <MessageSquare className="w-4 h-4" />;
+      case 'accuracy':
+        return <Target className="w-4 h-4" />;
+      case 'completeness':
+        return <CheckCircle className="w-4 h-4" />;
+      case 'clarity':
+        return <Eye className="w-4 h-4" />;
+      case 'relevance':
+        return <Star className="w-4 h-4" />;
+      default:
+        return <MessageSquare className="w-4 h-4" />;
     }
   };
 
@@ -233,7 +275,7 @@ export function AIContentMonitor() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -281,9 +323,7 @@ export function AIContentMonitor() {
                 <div className="text-2xl font-bold">
                   {analyticsData?.data?.summary?.totalRequests || 0}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Last 7 days
-                </p>
+                <p className="text-xs text-muted-foreground">Last 7 days</p>
               </CardContent>
             </Card>
 
@@ -296,9 +336,7 @@ export function AIContentMonitor() {
                 <div className="text-2xl font-bold text-green-600">
                   {analyticsData?.data?.summary?.successRate || 0}%
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  AI operations successful
-                </p>
+                <p className="text-xs text-muted-foreground">AI operations successful</p>
               </CardContent>
             </Card>
 
@@ -309,11 +347,10 @@ export function AIContentMonitor() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-yellow-600">
-                  {feedbackData?.data?.filter((f: AIFeedback) => f.status === 'pending').length || 0}
+                  {feedbackData?.data?.filter((f: AIFeedback) => f.status === 'pending').length ||
+                    0}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Requires review
-                </p>
+                <p className="text-xs text-muted-foreground">Requires review</p>
               </CardContent>
             </Card>
 
@@ -326,9 +363,7 @@ export function AIContentMonitor() {
                 <div className="text-2xl font-bold text-orange-600">
                   {verificationData?.data?.stats?.unverified || 0}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Needs expert review
-                </p>
+                <p className="text-xs text-muted-foreground">Needs expert review</p>
               </CardContent>
             </Card>
           </div>
@@ -346,19 +381,27 @@ export function AIContentMonitor() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Average Response Time</span>
-                    <span className="text-sm">{analyticsData?.data?.summary?.averageLatency || 0}ms</span>
+                    <span className="text-sm">
+                      {analyticsData?.data?.summary?.averageLatency || 0}ms
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Total Cost (7 days)</span>
-                    <span className="text-sm">${(analyticsData?.data?.summary?.totalCost || 0).toFixed(2)}</span>
+                    <span className="text-sm">
+                      ${(analyticsData?.data?.summary?.totalCost || 0).toFixed(2)}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Input Tokens</span>
-                    <span className="text-sm">{(analyticsData?.data?.summary?.totalInputTokens || 0).toLocaleString()}</span>
+                    <span className="text-sm">
+                      {(analyticsData?.data?.summary?.totalInputTokens || 0).toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Output Tokens</span>
-                    <span className="text-sm">{(analyticsData?.data?.summary?.totalOutputTokens || 0).toLocaleString()}</span>
+                    <span className="text-sm">
+                      {(analyticsData?.data?.summary?.totalOutputTokens || 0).toLocaleString()}
+                    </span>
                   </div>
                 </div>
               </CardContent>
@@ -376,35 +419,51 @@ export function AIContentMonitor() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Verified Content</span>
                     <div className="flex items-center space-x-2">
-                      <Progress 
-                        value={verificationData?.data?.stats ? 
-                          (verificationData.data.stats.verified / verificationData.data.stats.total) * 100 : 0
-                        } 
-                        className="w-16" 
+                      <Progress
+                        value={
+                          verificationData?.data?.stats
+                            ? (verificationData.data.stats.verified /
+                                verificationData.data.stats.total) *
+                              100
+                            : 0
+                        }
+                        className="w-16"
                       />
-                      <span className="text-sm">{verificationData?.data?.stats?.verified || 0}</span>
+                      <span className="text-sm">
+                        {verificationData?.data?.stats?.verified || 0}
+                      </span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Unverified</span>
                     <div className="flex items-center space-x-2">
-                      <Progress 
-                        value={verificationData?.data?.stats ? 
-                          (verificationData.data.stats.unverified / verificationData.data.stats.total) * 100 : 0
-                        } 
-                        className="w-16" 
+                      <Progress
+                        value={
+                          verificationData?.data?.stats
+                            ? (verificationData.data.stats.unverified /
+                                verificationData.data.stats.total) *
+                              100
+                            : 0
+                        }
+                        className="w-16"
                       />
-                      <span className="text-sm">{verificationData?.data?.stats?.unverified || 0}</span>
+                      <span className="text-sm">
+                        {verificationData?.data?.stats?.unverified || 0}
+                      </span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium">Flagged</span>
                     <div className="flex items-center space-x-2">
-                      <Progress 
-                        value={verificationData?.data?.stats ? 
-                          (verificationData.data.stats.flagged / verificationData.data.stats.total) * 100 : 0
-                        } 
-                        className="w-16" 
+                      <Progress
+                        value={
+                          verificationData?.data?.stats
+                            ? (verificationData.data.stats.flagged /
+                                verificationData.data.stats.total) *
+                              100
+                            : 0
+                        }
+                        className="w-16"
                       />
                       <span className="text-sm">{verificationData?.data?.stats?.flagged || 0}</span>
                     </div>
@@ -427,7 +486,9 @@ export function AIContentMonitor() {
                   <Label htmlFor="status-filter">Status</Label>
                   <Select
                     value={feedbackFilters.status}
-                    onValueChange={(value) => setFeedbackFilters(prev => ({ ...prev, status: value }))}
+                    onValueChange={(value) =>
+                      setFeedbackFilters((prev) => ({ ...prev, status: value }))
+                    }
                   >
                     <SelectTrigger id="status-filter">
                       <SelectValue />
@@ -446,7 +507,9 @@ export function AIContentMonitor() {
                   <Label htmlFor="type-filter">Type</Label>
                   <Select
                     value={feedbackFilters.feedbackType}
-                    onValueChange={(value) => setFeedbackFilters(prev => ({ ...prev, feedbackType: value }))}
+                    onValueChange={(value) =>
+                      setFeedbackFilters((prev) => ({ ...prev, feedbackType: value }))
+                    }
                   >
                     <SelectTrigger id="type-filter">
                       <SelectValue />
@@ -466,7 +529,9 @@ export function AIContentMonitor() {
                   <Label htmlFor="severity-filter">Severity</Label>
                   <Select
                     value={feedbackFilters.severity}
-                    onValueChange={(value) => setFeedbackFilters(prev => ({ ...prev, severity: value }))}
+                    onValueChange={(value) =>
+                      setFeedbackFilters((prev) => ({ ...prev, severity: value }))
+                    }
                   >
                     <SelectTrigger id="severity-filter">
                       <SelectValue />
@@ -507,7 +572,9 @@ export function AIContentMonitor() {
                           <TableCell>
                             <div className="font-medium">{feedback.termName}</div>
                             {feedback.section && (
-                              <div className="text-sm text-gray-500">Section: {feedback.section}</div>
+                              <div className="text-sm text-gray-500">
+                                Section: {feedback.section}
+                              </div>
                             )}
                           </TableCell>
                           <TableCell>
@@ -527,7 +594,9 @@ export function AIContentMonitor() {
                             </Badge>
                           </TableCell>
                           <TableCell className="text-sm">{feedback.userEmail}</TableCell>
-                          <TableCell className="text-sm">{formatDate(feedback.createdAt)}</TableCell>
+                          <TableCell className="text-sm">
+                            {formatDate(feedback.createdAt)}
+                          </TableCell>
                           <TableCell>
                             <Dialog>
                               <DialogTrigger asChild>
@@ -571,10 +640,10 @@ export function AIContentMonitor() {
                                     <Label htmlFor="status-update">Update Status</Label>
                                     <Select
                                       defaultValue={feedback.status}
-                                      onValueChange={(value) => 
+                                      onValueChange={(value) =>
                                         updateFeedbackMutation.mutate({
                                           id: feedback.id,
-                                          status: value
+                                          status: value,
                                         })
                                       }
                                     >
@@ -634,11 +703,11 @@ export function AIContentMonitor() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => 
+                            onClick={() =>
                               updateVerificationMutation.mutate({
                                 id: item.id,
                                 isVerified: true,
-                                qualityScore: 85
+                                qualityScore: 85,
                               })
                             }
                           >
@@ -648,10 +717,10 @@ export function AIContentMonitor() {
                           <Button
                             size="sm"
                             variant="outline"
-                            onClick={() => 
+                            onClick={() =>
                               updateVerificationMutation.mutate({
                                 id: item.id,
-                                isVerified: false
+                                isVerified: false,
                               })
                             }
                           >
@@ -676,15 +745,22 @@ export function AIContentMonitor() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {analyticsData?.data?.byOperation && Object.entries(analyticsData.data.byOperation).map(([operation, data]: [string, any]) => (
-                    <div key={operation} className="flex items-center justify-between">
-                      <span className="text-sm font-medium capitalize">{operation.replace('_', ' ')}</span>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{data.count} requests</div>
-                        <div className="text-xs text-gray-500">${data.totalCost.toFixed(3)} • {data.avgLatency}ms</div>
-                      </div>
-                    </div>
-                  ))}
+                  {analyticsData?.data?.byOperation &&
+                    Object.entries(analyticsData.data.byOperation).map(
+                      ([operation, data]: [string, any]) => (
+                        <div key={operation} className="flex items-center justify-between">
+                          <span className="text-sm font-medium capitalize">
+                            {operation.replace('_', ' ')}
+                          </span>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">{data.count} requests</div>
+                            <div className="text-xs text-gray-500">
+                              ${data.totalCost.toFixed(3)} • {data.avgLatency}ms
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    )}
                 </div>
               </CardContent>
             </Card>
@@ -695,15 +771,20 @@ export function AIContentMonitor() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {analyticsData?.data?.byModel && Object.entries(analyticsData.data.byModel).map(([model, data]: [string, any]) => (
-                    <div key={model} className="flex items-center justify-between">
-                      <span className="text-sm font-medium">{model}</span>
-                      <div className="text-right">
-                        <div className="text-sm font-medium">{data.count} requests</div>
-                        <div className="text-xs text-gray-500">${data.totalCost.toFixed(3)} • {data.avgLatency}ms</div>
-                      </div>
-                    </div>
-                  ))}
+                  {analyticsData?.data?.byModel &&
+                    Object.entries(analyticsData.data.byModel).map(
+                      ([model, data]: [string, any]) => (
+                        <div key={model} className="flex items-center justify-between">
+                          <span className="text-sm font-medium">{model}</span>
+                          <div className="text-right">
+                            <div className="text-sm font-medium">{data.count} requests</div>
+                            <div className="text-xs text-gray-500">
+                              ${data.totalCost.toFixed(3)} • {data.avgLatency}ms
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    )}
                 </div>
               </CardContent>
             </Card>

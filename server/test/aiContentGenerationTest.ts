@@ -1,5 +1,5 @@
-import { db } from '../db';
 import { enhancedTerms } from '../../shared/enhancedSchema';
+import { db } from '../db';
 import { aiContentGenerationService } from '../services/aiContentGenerationService';
 import { promptTemplateService } from '../services/promptTemplateService';
 import { log as logger } from '../utils/logger';
@@ -14,20 +14,20 @@ async function testAIContentGeneration() {
 
     // Step 1: Get a sample term from the database
     logger.info('Step 1: Getting sample term from database...');
-    const sampleTerms = await db.select()
-      .from(enhancedTerms)
-      .limit(1);
+    const sampleTerms = await db.select().from(enhancedTerms).limit(1);
 
     if (sampleTerms.length === 0) {
       logger.warn('No terms found in database. Creating test term...');
-      
+
       // Create a test term
-      const testTerm = await db.insert(enhancedTerms)
+      const testTerm = await db
+        .insert(enhancedTerms)
         .values({
           name: 'Neural Network',
           slug: 'neural-network',
           shortDefinition: 'A computational model inspired by biological neural networks',
-          fullDefinition: 'A neural network is a computational model loosely inspired by the structure and function of biological neural networks. It consists of interconnected nodes (neurons) that process information through weighted connections.',
+          fullDefinition:
+            'A neural network is a computational model loosely inspired by the structure and function of biological neural networks. It consists of interconnected nodes (neurons) that process information through weighted connections.',
           mainCategories: ['Machine Learning', 'Deep Learning'],
           subCategories: ['Artificial Neural Networks', 'Computational Models'],
           relatedConcepts: ['Artificial Intelligence', 'Machine Learning', 'Deep Learning'],
@@ -39,7 +39,7 @@ async function testAIContentGeneration() {
           hasCaseStudies: true,
           hasCodeExamples: true,
           searchText: 'neural network artificial intelligence machine learning deep learning',
-          keywords: ['neural', 'network', 'ai', 'ml', 'deep learning']
+          keywords: ['neural', 'network', 'ai', 'ml', 'deep learning'],
         })
         .returning();
 
@@ -66,7 +66,7 @@ async function testAIContentGeneration() {
       termId: testTerm.id,
       sectionName: 'definition',
       model: 'gpt-3.5-turbo',
-      userId: 'test-user'
+      userId: 'test-user',
     });
 
     if (sectionResult.success) {
@@ -85,7 +85,7 @@ async function testAIContentGeneration() {
       termId: testTerm.id,
       sectionNames: ['applications', 'implementation', 'prerequisites'],
       model: 'gpt-3.5-turbo',
-      userId: 'test-user'
+      userId: 'test-user',
     });
 
     if (bulkResult.success) {
@@ -117,7 +117,7 @@ async function testAIContentGeneration() {
       sectionName: 'definition',
       model: 'gpt-3.5-turbo',
       userId: 'test-user',
-      regenerate: true
+      regenerate: true,
     });
 
     if (regenerateResult.success) {
@@ -142,19 +142,18 @@ async function testAIContentGeneration() {
         bulkGeneration: bulkResult.success,
         regeneration: regenerateResult.success,
         testTerm: testTerm.name,
-        testTermId: testTerm.id
-      }
+        testTermId: testTerm.id,
+      },
     };
-
   } catch (error) {
     logger.error('❌ AI Content Generation Test Failed:', {
       error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     });
 
     return {
       success: false,
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     };
   }
 }
@@ -184,23 +183,20 @@ async function testComponents() {
     return { success: true };
   } catch (error) {
     logger.error('❌ Component test failed:', {
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     });
     return { success: false, error: error instanceof Error ? error.message : String(error) };
   }
 }
 
 // Export functions for use in other tests or manual execution
-export {
-  testAIContentGeneration,
-  testComponents
-};
+export { testAIContentGeneration, testComponents };
 
 // Run tests if this file is executed directly
 if (require.main === module) {
   (async () => {
     logger.info('🚀 Running AI Content Generation Tests...');
-    
+
     // Run component tests first
     const componentResults = await testComponents();
     if (!componentResults.success) {

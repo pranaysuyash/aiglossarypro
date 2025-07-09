@@ -1,54 +1,79 @@
-import dotenv from "dotenv";
+import dotenv from 'dotenv';
+
 dotenv.config();
 
 console.log('FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID);
 console.log('FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL);
-console.log('FIREBASE_PRIVATE_KEY_BASE64:', process.env.FIREBASE_PRIVATE_KEY_BASE64 ? 'set' : 'not set');
+console.log(
+  'FIREBASE_PRIVATE_KEY_BASE64:',
+  process.env.FIREBASE_PRIVATE_KEY_BASE64 ? 'set' : 'not set'
+);
 
 // Debug: Check Firebase environment variables at server startup
 console.log('🔍 Server Startup - Firebase Environment Check:');
 console.log('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '✅ Set' : '❌ Missing');
-console.log('- FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL ? '✅ Set' : '❌ Missing');
-console.log('- FIREBASE_PRIVATE_KEY_BASE64:', process.env.FIREBASE_PRIVATE_KEY_BASE64 ? '✅ Set' : '❌ Missing');
-const firebaseEnabled = !!(process.env.FIREBASE_PROJECT_ID && process.env.FIREBASE_CLIENT_EMAIL && (process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY_BASE64));
+console.log(
+  '- FIREBASE_CLIENT_EMAIL:',
+  process.env.FIREBASE_CLIENT_EMAIL ? '✅ Set' : '❌ Missing'
+);
+console.log(
+  '- FIREBASE_PRIVATE_KEY_BASE64:',
+  process.env.FIREBASE_PRIVATE_KEY_BASE64 ? '✅ Set' : '❌ Missing'
+);
+const firebaseEnabled = !!(
+  process.env.FIREBASE_PROJECT_ID &&
+  process.env.FIREBASE_CLIENT_EMAIL &&
+  (process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY_BASE64)
+);
 console.log('- Firebase Auth Enabled:', firebaseEnabled ? '✅ TRUE' : '❌ FALSE');
 
 // Initialize error monitoring first
-import { initSentry, sentryRequestHandler, sentryTracingHandler, sentryErrorHandler } from "./utils/sentry";
+import {
+  initSentry,
+  sentryErrorHandler,
+  sentryRequestHandler,
+  sentryTracingHandler,
+} from './utils/sentry';
+
 initSentry();
 
-import express, { type Request, Response, NextFunction } from "express";
-import expressWs from "express-ws";
-import { registerRoutes } from "./routes/index";
-import { setupVite, serveStatic } from "./vite";
-import { smartLoadExcelData } from "./smartExcelLoader";
-import { getServerConfig, logConfigStatus } from "./config";
-import { features } from "./config";
-import { setupMultiAuth } from "./middleware/multiAuth";
-import { initS3Client } from "./s3Service";
-import { setupMockAuth } from "./middleware/dev/mockAuth";
-import { registerSimpleAuthRoutes } from "./routes/simpleAuth";
-import { registerFirebaseAuthRoutes } from "./routes/firebaseAuth";
-import { securityHeaders, sanitizeRequest, securityMonitoring, apiRateLimit, corsMiddleware } from "./middleware/security";
-import { errorHandler, notFoundHandler, gracefulShutdown } from "./middleware/errorHandler";
-import { 
-  performanceTrackingMiddleware, 
-  pageViewTrackingMiddleware, 
+import express from 'express';
+import expressWs from 'express-ws';
+// import { smartLoadExcelData } from "./smartExcelLoader";
+import { features, getServerConfig, logConfigStatus } from './config';
+import {
+  initializeAnalytics,
+  pageViewTrackingMiddleware,
+  performanceTrackingMiddleware,
   searchTrackingMiddleware,
   systemHealthMiddleware,
-  initializeAnalytics 
-} from "./middleware/analyticsMiddleware";
-import loggingMiddleware from "./middleware/loggingMiddleware";
-import { responseLoggingMiddleware } from "./middleware/responseLogging";
-import { log as logger } from "./utils/logger";
-import { performanceMiddleware } from "./middleware/compression";
-import { setupCacheMonitoring } from "./monitoring/cacheMonitoring";
-import { cacheStatsMiddleware } from "./middleware/queryCache";
-import { cdnCacheMiddleware } from "./middleware/cdnCache";
-import { setupSwagger } from "./swagger/setup";
+} from './middleware/analyticsMiddleware';
+import { cdnCacheMiddleware } from './middleware/cdnCache';
+import { performanceMiddleware } from './middleware/compression';
+import { setupMockAuth } from './middleware/dev/mockAuth';
+import { errorHandler, gracefulShutdown, notFoundHandler } from './middleware/errorHandler';
+import loggingMiddleware from './middleware/loggingMiddleware';
+import { setupMultiAuth } from './middleware/multiAuth';
+import { cacheStatsMiddleware } from './middleware/queryCache';
+import { responseLoggingMiddleware } from './middleware/responseLogging';
+import {
+  apiRateLimit,
+  corsMiddleware,
+  sanitizeRequest,
+  securityHeaders,
+  securityMonitoring,
+} from './middleware/security';
+import { setupCacheMonitoring } from './monitoring/cacheMonitoring';
+import { registerFirebaseAuthRoutes } from './routes/firebaseAuth';
+import { registerRoutes } from './routes/index';
+import { registerSimpleAuthRoutes } from './routes/simpleAuth';
+import { initS3Client } from './s3Service';
+import { setupSwagger } from './swagger/setup';
+import { log as logger } from './utils/logger';
+import { serveStatic, setupVite } from './vite';
 
 const app = express();
-const wsInstance = expressWs(app);
+const _wsInstance = expressWs(app);
 
 // Sentry request handling (must be first)
 app.use(sentryRequestHandler());
@@ -93,72 +118,80 @@ app.use(responseLoggingMiddleware);
 (async () => {
   // Load and validate configuration
   logConfigStatus();
-  
+
   // Setup authentication based on configuration priority
   try {
     if (features.firebaseAuthEnabled) {
       // Firebase auth takes priority - provides Google, GitHub, email/password
       registerFirebaseAuthRoutes(app);
-      logger.info("✅ Firebase authentication setup complete (Google, GitHub, Email/Password)");
+      logger.info('✅ Firebase authentication setup complete (Google, GitHub, Email/Password)');
     } else if (features.simpleAuthEnabled) {
       // Fallback to simple JWT + OAuth
       await setupMultiAuth(app);
       registerSimpleAuthRoutes(app);
-      logger.info("✅ Simple JWT + OAuth authentication setup complete");
+      logger.info('✅ Simple JWT + OAuth authentication setup complete');
     } else {
       // Development mock auth
       setupMockAuth(app);
-      logger.info("✅ Mock authentication setup complete (development mode)");
+      logger.info('✅ Mock authentication setup complete (development mode)');
     }
   } catch (error) {
-    logger.error("❌ Error setting up authentication", { error: error instanceof Error ? error.message : String(error) });
+    logger.error('❌ Error setting up authentication', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
-  
+
   // Initialize S3 client if credentials are present
   if (features.s3Enabled) {
     initS3Client();
-    logger.info("✅ S3 client initialized");
+    logger.info('✅ S3 client initialized');
   }
-  
+
   await registerRoutes(app);
-  logger.info("✅ API routes registered");
+  logger.info('✅ API routes registered');
 
   // Setup Swagger API documentation
   setupSwagger(app);
-  logger.info("✅ Swagger API documentation available at /api/docs");
+  logger.info('✅ Swagger API documentation available at /api/docs');
 
   // Get server configuration
   const serverConfig = getServerConfig();
 
   // Use configurable port
   const port = serverConfig.port;
-  
+
   // Create HTTP server instance
-  const { createServer } = await import('http');
+  const { createServer } = await import('node:http');
   const server = createServer(app);
-  
+
   // Setup Vite dev server in development, static files in production
-  if (serverConfig.nodeEnv === "development") {
-    logger.info("🔧 Setting up Vite dev server for development...");
+  if (serverConfig.nodeEnv === 'development') {
+    logger.info('🔧 Setting up Vite dev server for development...');
     try {
       await setupVite(app, server);
-      logger.info("✅ Vite dev server setup complete");
+      logger.info('✅ Vite dev server setup complete');
     } catch (error) {
-      logger.error("❌ Error setting up Vite dev server", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('❌ Error setting up Vite dev server', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       process.exit(1);
     }
   } else {
-    logger.info("📦 Setting up static file serving for production...");
+    logger.info('📦 Setting up static file serving for production...');
     try {
       serveStatic(app);
-      logger.info("✅ Static file serving setup complete");
+      logger.info('✅ Static file serving setup complete');
     } catch (error) {
-      logger.error("❌ Error setting up static file serving", { error: error instanceof Error ? error.message : String(error), stack: error instanceof Error ? error.stack : undefined });
+      logger.error('❌ Error setting up static file serving', {
+        error: error instanceof Error ? error.message : String(error),
+        stack: error instanceof Error ? error.stack : undefined,
+      });
       process.exit(1);
     }
   }
-  
+
   // Add logging error handler
   app.use(loggingMiddleware.errorLogging);
 
@@ -171,28 +204,29 @@ app.use(responseLoggingMiddleware);
   // Add comprehensive error handling middleware
   app.use(errorHandler);
 
-  
   // Initialize job queue system
   try {
-    const { jobQueueManager } = await import("./jobs/queue");
+    const { jobQueueManager } = await import('./jobs/queue');
     await jobQueueManager.initialize();
-    logger.info("✅ Job queue system initialized");
+    logger.info('✅ Job queue system initialized');
   } catch (error) {
-    logger.error("❌ Error initializing job queue system", { error: error instanceof Error ? error.message : String(error) });
+    logger.error('❌ Error initializing job queue system', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     // Don't exit on job queue failure - app can still function without it
-    logger.warn("⚠️ Continuing without job queue system");
+    logger.warn('⚠️ Continuing without job queue system');
   }
-  
+
   // Initialize analytics system
   await initializeAnalytics();
-  
+
   // Initialize cache monitoring
   setupCacheMonitoring(app);
-  logger.info("✅ Cache monitoring system initialized");
-  
+  logger.info('✅ Cache monitoring system initialized');
+
   // Start listening - use 0.0.0.0 in production for external access
   const host = serverConfig.nodeEnv === 'production' ? '0.0.0.0' : '127.0.0.1';
-  
+
   server.listen(port, host, () => {
     logger.info(`🚀 Server running on http://${host}:${port} in ${serverConfig.nodeEnv} mode`);
     logger.info(`🔍 Server address: ${JSON.stringify(server.address())}`);
@@ -205,8 +239,8 @@ app.use(responseLoggingMiddleware);
   server.on('error', (err) => {
     logger.error('❌ Server error', { error: err.message, stack: err.stack });
   });
-    
+
   // TODO: Implement automatic Excel data loading if needed
   // For now, use the admin endpoint /api/admin/import/force-reprocess
-  logger.info("🚀 Server ready. Use admin endpoint for Excel data processing.");
+  logger.info('🚀 Server ready. Use admin endpoint for Excel data processing.');
 })();

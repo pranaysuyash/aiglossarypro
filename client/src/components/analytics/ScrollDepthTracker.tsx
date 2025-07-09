@@ -16,7 +16,7 @@ export default function ScrollDepthTracker({
   scope = 'global',
   sectionId,
   milestones = [25, 50, 75, 90, 100],
-  throttleDelay = 100
+  throttleDelay = 100,
 }: ScrollDepthTrackerProps) {
   const { trackScrollDepth } = useGA4();
 
@@ -54,7 +54,7 @@ export default function ScrollDepthTracker({
           const visibleTop = Math.max(0, scrollTop - sectionTop);
           const visibleBottom = Math.min(sectionHeight, scrollTop + windowHeight - sectionTop);
           const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-          
+
           scrollPercentage = sectionHeight > 0 ? (visibleHeight / sectionHeight) * 100 : 0;
         } else {
           return;
@@ -68,10 +68,10 @@ export default function ScrollDepthTracker({
           for (const milestone of milestones) {
             if (maxScroll >= milestone && !trackedMilestones.has(milestone)) {
               trackedMilestones.add(milestone);
-              
+
               // Track the milestone
               trackScrollDepth(milestone);
-              
+
               // Optional: Log for debugging
               if (import.meta.env.NODE_ENV === 'development') {
                 console.log(
@@ -129,7 +129,7 @@ export function useScrollDepthTracking(
       const visibleTop = Math.max(0, scrollTop - sectionTop);
       const visibleBottom = Math.min(sectionHeight, scrollTop + windowHeight - sectionTop);
       const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-      
+
       scrollPercentage = sectionHeight > 0 ? (visibleHeight / sectionHeight) * 100 : 0;
     } else {
       return 0;
@@ -137,7 +137,7 @@ export function useScrollDepthTracking(
 
     // Find the highest milestone reached
     const reachedMilestone = milestones
-      .filter(milestone => scrollPercentage >= milestone)
+      .filter((milestone) => scrollPercentage >= milestone)
       .sort((a, b) => b - a)[0];
 
     if (reachedMilestone) {
@@ -166,10 +166,10 @@ export function useScrollDepthTracking(
         const visibleTop = Math.max(0, scrollTop - sectionTop);
         const visibleBottom = Math.min(sectionHeight, scrollTop + windowHeight - sectionTop);
         const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-        
+
         return sectionHeight > 0 ? (visibleHeight / sectionHeight) * 100 : 0;
       }
       return 0;
-    }
+    },
   };
 }

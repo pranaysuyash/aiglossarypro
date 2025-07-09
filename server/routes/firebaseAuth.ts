@@ -4,15 +4,14 @@
  */
 
 import type { Express, Request, Response } from 'express';
-import { verifyFirebaseToken, getUserByEmail, createFirebaseUser } from '../config/firebase';
-import { optimizedStorage as storage } from '../optimizedStorage';
-import { generateToken } from '../auth/simpleAuth';
 import type { ApiResponse, IUser } from '../../shared/types';
+import { generateToken } from '../auth/simpleAuth';
+import { createFirebaseUser, verifyFirebaseToken } from '../config/firebase';
+import { optimizedStorage as storage } from '../optimizedStorage';
 import { sendWelcomeEmail } from '../utils/email';
 import { log as logger } from '../utils/logger';
 
 export function registerFirebaseAuthRoutes(app: Express): void {
-  
   /**
    * Exchange Firebase ID token for JWT
    * POST /api/auth/firebase/login
@@ -20,27 +19,27 @@ export function registerFirebaseAuthRoutes(app: Express): void {
   app.post('/api/auth/firebase/login', async (req: Request, res: Response) => {
     try {
       const { idToken } = req.body;
-      
+
       if (!idToken) {
         return res.status(400).json({
           success: false,
-          message: 'ID token is required'
+          message: 'ID token is required',
         });
       }
 
       // Verify Firebase token
       const decodedToken = await verifyFirebaseToken(idToken);
-      
+
       if (!decodedToken) {
         return res.status(401).json({
           success: false,
-          message: 'Invalid ID token'
+          message: 'Invalid ID token',
         });
       }
 
       // Get or create user in database
       let user = await storage.getUserByEmail(decodedToken.email!);
-      
+
       if (!user) {
         // Create new user
         const nameParts = (decodedToken.name || '').split(' ');
@@ -71,16 +70,16 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         }
 
         user = await storage.upsertUser(userData);
-        
+
         // Send welcome email to new users
         try {
           await sendWelcomeEmail(userData.email, userData.firstName);
           logger.info('Welcome email sent to new user', { email: userData.email });
         } catch (emailError) {
           // Don't fail registration if email fails
-          logger.error('Failed to send welcome email', { 
+          logger.error('Failed to send welcome email', {
             error: emailError instanceof Error ? emailError.message : String(emailError),
-            email: userData.email 
+            email: userData.email,
           });
         }
       } else {
@@ -116,7 +115,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       if (!user) {
         return res.status(500).json({
           success: false,
-          message: 'Failed to create or retrieve user'
+          message: 'Failed to create or retrieve user',
         });
       }
 
@@ -128,7 +127,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
       });
 
       // Transform to IUser format
@@ -141,15 +140,15 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         isAdmin: user.isAdmin || false,
         lifetimeAccess: user.lifetimeAccess || false,
         subscriptionTier: user.subscriptionTier || 'free',
-        purchaseDate: user.purchaseDate || undefined
+        purchaseDate: user.purchaseDate || undefined,
       };
 
       const response: ApiResponse<{ user: IUser; token: string }> = {
         success: true,
         data: {
           user: userData,
-          token: jwtToken
-        }
+          token: jwtToken,
+        },
       };
 
       res.json(response);
@@ -157,7 +156,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       console.error('Firebase login error:', error);
       res.status(500).json({
         success: false,
-        message: 'Login failed'
+        message: 'Login failed',
       });
     }
   });
@@ -169,11 +168,11 @@ export function registerFirebaseAuthRoutes(app: Express): void {
   app.post('/api/auth/firebase/register', async (req: Request, res: Response) => {
     try {
       const { email, password, firstName, lastName } = req.body;
-      
+
       if (!email || !password) {
         return res.status(400).json({
           success: false,
-          message: 'Email and password are required'
+          message: 'Email and password are required',
         });
       }
 
@@ -182,13 +181,13 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       if (existingUser) {
         return res.status(409).json({
           success: false,
-          message: 'User already exists'
+          message: 'User already exists',
         });
       }
 
       // Create Firebase user
       const firebaseUser = await createFirebaseUser(
-        email, 
+        email,
         password,
         `${firstName || ''} ${lastName || ''}`.trim()
       );
@@ -196,7 +195,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       if (!firebaseUser) {
         return res.status(500).json({
           success: false,
-          message: 'Failed to create Firebase user'
+          message: 'Failed to create Firebase user',
         });
       }
 
@@ -213,7 +212,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       if (!user) {
         return res.status(500).json({
           success: false,
-          message: 'Failed to create user record'
+          message: 'Failed to create user record',
         });
       }
 
@@ -221,14 +220,14 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         success: true,
         message: 'Account created successfully. Please sign in.',
         data: {
-          email: user.email
-        }
+          email: user.email,
+        },
       });
     } catch (error: any) {
       console.error('Registration error:', error);
       res.status(500).json({
         success: false,
-        message: error.message || 'Registration failed'
+        message: error.message || 'Registration failed',
       });
     }
   });
@@ -237,11 +236,11 @@ export function registerFirebaseAuthRoutes(app: Express): void {
    * Logout - clear session
    * POST /api/auth/logout
    */
-  app.post('/api/auth/logout', (req: Request, res: Response) => {
+  app.post('/api/auth/logout', (_req: Request, res: Response) => {
     // Clear auth cookie
     res.clearCookie('authToken');
     res.clearCookie('firebaseToken');
-    
+
     // Set mock logout state for development
     if (process.env.NODE_ENV === 'development') {
       try {
@@ -251,10 +250,10 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         console.warn('Could not set mock logout state:', error);
       }
     }
-    
+
     res.json({
       success: true,
-      message: 'Logged out successfully'
+      message: 'Logged out successfully',
     });
   });
 
@@ -262,7 +261,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
    * Get authentication providers status
    * GET /api/auth/providers
    */
-  app.get('/api/auth/providers', (req: Request, res: Response) => {
+  app.get('/api/auth/providers', (_req: Request, res: Response) => {
     const firebaseConfigured = !!(
       process.env.FIREBASE_PROJECT_ID &&
       process.env.FIREBASE_CLIENT_EMAIL &&
@@ -275,8 +274,8 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         firebase: firebaseConfigured,
         google: firebaseConfigured, // Available through Firebase
         github: firebaseConfigured, // Available through Firebase
-        email: firebaseConfigured   // Available through Firebase
-      }
+        email: firebaseConfigured, // Available through Firebase
+      },
     });
   });
 
@@ -287,14 +286,14 @@ export function registerFirebaseAuthRoutes(app: Express): void {
   app.get('/api/auth/me', async (req: Request, res: Response) => {
     try {
       const authHeader = req.headers.authorization;
-      const token = authHeader?.startsWith('Bearer ') 
-        ? authHeader.substring(7) 
+      const token = authHeader?.startsWith('Bearer ')
+        ? authHeader.substring(7)
         : req.cookies?.authToken;
 
       if (!token) {
         return res.status(401).json({
           success: false,
-          message: 'Not authenticated'
+          message: 'Not authenticated',
         });
       }
 
@@ -302,13 +301,13 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       // In production, you might want to verify against Firebase too
       const jwt = require('jsonwebtoken');
       const decoded = jwt.verify(token, process.env.JWT_SECRET!);
-      
+
       const user = await storage.getUser(decoded.sub);
-      
+
       if (!user) {
         return res.status(404).json({
           success: false,
-          message: 'User not found'
+          message: 'User not found',
         });
       }
 
@@ -321,18 +320,18 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         isAdmin: user.isAdmin || false,
         lifetimeAccess: user.lifetimeAccess || false,
         subscriptionTier: user.subscriptionTier || 'free',
-        purchaseDate: user.purchaseDate || undefined
+        purchaseDate: user.purchaseDate || undefined,
       };
 
       res.json({
         success: true,
-        data: userData
+        data: userData,
       });
     } catch (error) {
       console.error('Get user error:', error);
       res.status(401).json({
         success: false,
-        message: 'Invalid token'
+        message: 'Invalid token',
       });
     }
   });

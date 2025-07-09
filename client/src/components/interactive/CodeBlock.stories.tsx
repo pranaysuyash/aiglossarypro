@@ -1,8 +1,8 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
 import CodeBlock from './CodeBlock';
 
-const CodeBlockDecorator = (Story: any, context: any) => {
+const CodeBlockDecorator = (Story: any, _context: any) => {
   return (
     <div className="w-full max-w-4xl">
       <Story />
@@ -17,13 +17,12 @@ const meta: Meta<typeof CodeBlock> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A sophisticated code block component with syntax highlighting, copy functionality, line numbers, and execution capabilities.',
+        component:
+          'A sophisticated code block component with syntax highlighting, copy functionality, line numbers, and execution capabilities.',
       },
     },
   },
-  decorators: [
-    CodeBlockDecorator,
-  ],
+  decorators: [CodeBlockDecorator],
   args: {
     showLineNumbers: true,
     executable: false,
@@ -36,7 +35,18 @@ const meta: Meta<typeof CodeBlock> = {
     },
     language: {
       control: { type: 'select' },
-      options: ['javascript', 'python', 'typescript', 'java', 'cpp', 'go', 'rust', 'html', 'css', 'json'],
+      options: [
+        'javascript',
+        'python',
+        'typescript',
+        'java',
+        'cpp',
+        'go',
+        'rust',
+        'html',
+        'css',
+        'json',
+      ],
       description: 'Programming language for syntax highlighting',
     },
     title: {
@@ -585,7 +595,7 @@ def neural_network(X, weights):
         title="Python Implementation"
         showLineNumbers={false}
       />
-      
+
       <CodeBlock
         code={`function sigmoid(x) {
   return 1 / (1 + Math.exp(-x));
@@ -598,7 +608,7 @@ function neuralNetwork(X, weights) {
         title="JavaScript Implementation"
         showLineNumbers={false}
       />
-      
+
       <CodeBlock
         code={`public static double sigmoid(double x) {
     return 1.0 / (1.0 + Math.exp(-x));
@@ -648,7 +658,7 @@ export const InteractiveDemo: Story = {
   render: () => {
     const [selectedLanguage, setSelectedLanguage] = React.useState('python');
     const [showExecutable, setShowExecutable] = React.useState(false);
-    
+
     const codeExamples = {
       python: `import numpy as np
 from sklearn.cluster import KMeans
@@ -716,14 +726,14 @@ public class KMeans {
         // Implementation details...
         return new double[k][2];
     }
-}`
+}`,
     };
-    
+
     return (
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
           <label className="font-medium">Language:</label>
-          <select 
+          <select
             value={selectedLanguage}
             onChange={(e) => setSelectedLanguage(e.target.value)}
             className="px-3 py-1 border rounded"
@@ -732,7 +742,7 @@ public class KMeans {
             <option value="javascript">JavaScript</option>
             <option value="java">Java</option>
           </select>
-          
+
           <label className="flex items-center space-x-2">
             <input
               type="checkbox"
@@ -742,7 +752,7 @@ public class KMeans {
             <span>Make executable</span>
           </label>
         </div>
-        
+
         <CodeBlock
           code={codeExamples[selectedLanguage as keyof typeof codeExamples]}
           language={selectedLanguage}
@@ -756,7 +766,8 @@ public class KMeans {
   parameters: {
     docs: {
       description: {
-        story: 'Interactive demo allowing users to switch between languages and toggle executable mode.',
+        story:
+          'Interactive demo allowing users to switch between languages and toggle executable mode.',
       },
     },
   },

@@ -31,19 +31,15 @@ export interface PaginationMetadata {
  * Parse and validate pagination parameters from request query
  */
 export function parsePaginationParams(params: PaginationParams): PaginationResult {
-  const {
-    page = 1,
-    limit = params.defaultLimit || 20,
-    maxLimit = 100
-  } = params;
+  const { page = 1, limit = params.defaultLimit || 20, maxLimit = 100 } = params;
 
   // Parse and validate page number
   const pageNum = Math.max(1, parseInt(page as string) || 1);
-  
+
   // Parse and validate limit with maximum cap
   const limitNum = Math.min(
     maxLimit,
-    Math.max(1, parseInt(limit as string) || (params.defaultLimit || 20))
+    Math.max(1, parseInt(limit as string) || params.defaultLimit || 20)
   );
 
   // Calculate offset
@@ -52,7 +48,7 @@ export function parsePaginationParams(params: PaginationParams): PaginationResul
   return {
     page: pageNum,
     limit: limitNum,
-    offset
+    offset,
   };
 }
 
@@ -77,7 +73,7 @@ export function calculatePaginationMetadata(
     hasMore,
     hasPrevious,
     startItem: offset + 1,
-    endItem: Math.min(offset + limit, totalItems)
+    endItem: Math.min(offset + limit, totalItems),
   };
 }
 
@@ -102,13 +98,17 @@ export function applyClientSidePagination<T>(
   return {
     paginatedItems,
     totalItems,
-    metadata
+    metadata,
   };
 }
 
 /**
  * Parse a limit parameter with a default value
  */
-export function parseLimit(limit: string | number | undefined, defaultLimit = 10, maxLimit = 100): number {
+export function parseLimit(
+  limit: string | number | undefined,
+  defaultLimit = 10,
+  maxLimit = 100
+): number {
   return Math.min(maxLimit, Math.max(1, parseInt(limit as string) || defaultLimit));
 }

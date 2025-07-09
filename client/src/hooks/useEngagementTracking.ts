@@ -3,7 +3,7 @@
  * Client-side engagement tracking with automatic metrics collection
  */
 
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useDeviceDetection } from './useDeviceDetection';
 
@@ -40,17 +40,14 @@ const DEFAULT_OPTIONS: Required<EngagementHookOptions> = {
   autoTrackReading: true,
   readingVelocityThreshold: 100, // 100 WPM minimum for active reading
   heartbeatInterval: 10000, // 10 seconds
-  scrollThreshold: 50 // 50px minimum scroll
+  scrollThreshold: 50, // 50px minimum scroll
 };
 
-export const useEngagementTracking = (
-  termId?: string,
-  options: EngagementHookOptions = {}
-) => {
+export const useEngagementTracking = (termId?: string, options: EngagementHookOptions = {}) => {
   const config = { ...DEFAULT_OPTIONS, ...options };
   const [location] = useLocation();
   const device = useDeviceDetection();
-  
+
   const [session, setSession] = useState<EngagementSession | null>(null);
   const [readingMetrics, setReadingMetrics] = useState<ReadingMetrics | null>(null);
   const [isTracking, setIsTracking] = useState(false);
@@ -77,7 +74,7 @@ export const useEngagementTracking = (
       currentTermId: termId,
       interactions: 0,
       scrollEvents: 0,
-      readingTime: 0
+      readingTime: 0,
     };
 
     setSession(newSession);
@@ -91,63 +88,80 @@ export const useEngagementTracking = (
         entryPoint: location,
         deviceType: device.isMobile ? 'mobile' : device.isTablet ? 'tablet' : 'desktop',
         screenSize: device.screenSize,
-        userAgent: navigator.userAgent
-      }
+        userAgent: navigator.userAgent,
+      },
     });
-  }, [config.trackingEnabled, termId, location, device, generateSessionId]);
+  }, [
+    config.trackingEnabled,
+    termId,
+    location,
+    device,
+    generateSessionId, // Track initial page view
+    trackInteraction,
+  ]);
 
   // Track interaction
-  const trackInteraction = useCallback(async (
-    interactionType: string,
-    data?: {
-      sessionId?: string;
-      termId?: string;
-      duration?: number;
-      metadata?: any;
-      contentInfo?: {
-        scrollDepth: number;
-        readingProgress: number;
-        timeOnContent: number;
-        wordsRead: number;
-      };
-    }
-  ) => {
-    if (!config.trackingEnabled || !session) return;
+  const trackInteraction = useCallback(
+    async (
+      interactionType: string,
+      data?: {
+        sessionId?: string;
+        termId?: string;
+        duration?: number;
+        metadata?: any;
+        contentInfo?: {
+          scrollDepth: number;
+          readingProgress: number;
+          timeOnContent: number;
+          wordsRead: number;
+        };
+      }
+    ) => {
+      if (!config.trackingEnabled || !session) return;
 
-    try {
-      const payload = {
-        sessionId: data?.sessionId || session.sessionId,
-        termId: data?.termId || termId,
-        interactionType,
-        duration: data?.duration,
-        metadata: data?.metadata,
-        deviceInfo: {
-          type: device.isMobile ? 'mobile' as const : device.isTablet ? 'tablet' as const : 'desktop' as const,
-          userAgent: navigator.userAgent,
-          screenResolution: `${device.viewportWidth}x${device.viewportHeight}`
-        },
-        contentInfo: data?.contentInfo
-      };
+      try {
+        const payload = {
+          sessionId: data?.sessionId || session.sessionId,
+          termId: data?.termId || termId,
+          interactionType,
+          duration: data?.duration,
+          metadata: data?.metadata,
+          deviceInfo: {
+            type: device.isMobile
+              ? ('mobile' as const)
+              : device.isTablet
+                ? ('tablet' as const)
+                : ('desktop' as const),
+            userAgent: navigator.userAgent,
+            screenResolution: `${device.viewportWidth}x${device.viewportHeight}`,
+          },
+          contentInfo: data?.contentInfo,
+        };
 
-      await fetch('/api/engagement/track', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-      });
+        await fetch('/api/engagement/track', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
 
-      // Update session interaction count
-      setSession(prev => prev ? {
-        ...prev,
-        interactions: prev.interactions + 1,
-        ...(interactionType === 'scroll' && { scrollEvents: prev.scrollEvents + 1 })
-      } : null);
-
-    } catch (error) {
-      console.warn('Failed to track interaction:', error);
-    }
-  }, [config.trackingEnabled, session, termId, device]);
+        // Update session interaction count
+        setSession((prev) =>
+          prev
+            ? {
+                ...prev,
+                interactions: prev.interactions + 1,
+                ...(interactionType === 'scroll' && { scrollEvents: prev.scrollEvents + 1 }),
+              }
+            : null
+        );
+      } catch (error) {
+        console.warn('Failed to track interaction:', error);
+      }
+    },
+    [config.trackingEnabled, session, termId, device]
+  );
 
   // Track reading progress
   const trackReadingProgress = useCallback(async () => {
@@ -160,7 +174,7 @@ export const useEngagementTracking = (
       await fetch('/api/engagement/reading-progress', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           sessionId: session.sessionId,
@@ -169,10 +183,9 @@ export const useEngagementTracking = (
           totalHeight: totalHeightRef.current,
           timeSpent,
           wordsRead: wordsReadRef.current,
-          readingVelocity: readingMetrics.readingVelocity
-        })
+          readingVelocity: readingMetrics.readingVelocity,
+        }),
       });
-
     } catch (error) {
       console.warn('Failed to track reading progress:', error);
     }
@@ -198,10 +211,10 @@ export const useEngagementTracking = (
     const currentTime = Date.now();
     const currentScrollY = window.scrollY;
     const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
-    
+
     // Throttle scroll events
     if (currentTime - lastScrollTimeRef.current < 100) return;
-    
+
     const scrollDelta = Math.abs(currentScrollY - scrollPositionRef.current);
     if (scrollDelta < config.scrollThreshold) return;
 
@@ -217,15 +230,19 @@ export const useEngagementTracking = (
     if (readingMetrics) {
       const timeSpent = (currentTime - readingMetrics.startTime.getTime()) / 1000;
       const readingVelocity = calculateReadingVelocity(wordsRead, timeSpent);
-      
-      setReadingMetrics(prev => prev ? {
-        ...prev,
-        scrollDepth,
-        timeOnPage: timeSpent,
-        wordsRead,
-        readingVelocity,
-        isReading: readingVelocity >= config.readingVelocityThreshold
-      } : null);
+
+      setReadingMetrics((prev) =>
+        prev
+          ? {
+              ...prev,
+              scrollDepth,
+              timeOnPage: timeSpent,
+              wordsRead,
+              readingVelocity,
+              isReading: readingVelocity >= config.readingVelocityThreshold,
+            }
+          : null
+      );
 
       // Track significant scroll milestones
       if (scrollDepth > 25 && scrollDepth % 25 === 0) {
@@ -234,24 +251,24 @@ export const useEngagementTracking = (
             scrollDepth,
             readingProgress: scrollDepth,
             timeOnContent: timeSpent,
-            wordsRead
+            wordsRead,
           },
           metadata: {
             scrollMilestone: scrollDepth,
-            readingVelocity
-          }
+            readingVelocity,
+          },
         });
       }
     }
   }, [
-    config.autoTrackScroll, 
-    config.scrollThreshold, 
+    config.autoTrackScroll,
+    config.scrollThreshold,
     config.readingVelocityThreshold,
-    session, 
-    readingMetrics, 
-    calculateWordsRead, 
-    calculateReadingVelocity, 
-    trackInteraction
+    session,
+    readingMetrics,
+    calculateWordsRead,
+    calculateReadingVelocity,
+    trackInteraction,
   ]);
 
   // Initialize reading metrics
@@ -264,7 +281,7 @@ export const useEngagementTracking = (
       timeOnPage: 0,
       wordsRead: 0,
       readingVelocity: 0,
-      isReading: false
+      isReading: false,
     };
 
     setReadingMetrics(metrics);
@@ -286,7 +303,14 @@ export const useEngagementTracking = (
         clearInterval(heartbeatIntervalRef.current);
       }
     };
-  }, [config.trackingEnabled, config.heartbeatInterval, session, readingMetrics, termId, trackReadingProgress]);
+  }, [
+    config.trackingEnabled,
+    config.heartbeatInterval,
+    session,
+    readingMetrics,
+    termId,
+    trackReadingProgress,
+  ]);
 
   // Set up scroll listener
   useEffect(() => {
@@ -309,17 +333,26 @@ export const useEngagementTracking = (
           metadata: {
             totalInteractions: session.interactions,
             scrollEvents: session.scrollEvents,
-            finalScrollDepth: readingMetrics?.scrollDepth || 0
-          }
+            finalScrollDepth: readingMetrics?.scrollDepth || 0,
+          },
         });
       }
     };
-  }, [termId, location]); // Re-initialize when term or location changes
+  }, [
+    initializeSession,
+    readingMetrics?.scrollDepth,
+    session,
+    startReadingTracking,
+    trackInteraction,
+  ]); // Re-initialize when term or location changes
 
   // Public interface
-  const trackCustomInteraction = useCallback((interactionType: string, metadata?: any) => {
-    trackInteraction(interactionType, { metadata });
-  }, [trackInteraction]);
+  const trackCustomInteraction = useCallback(
+    (interactionType: string, metadata?: any) => {
+      trackInteraction(interactionType, { metadata });
+    },
+    [trackInteraction]
+  );
 
   const trackFavorite = useCallback(() => {
     trackCustomInteraction('favorite');
@@ -329,16 +362,22 @@ export const useEngagementTracking = (
     trackCustomInteraction('share');
   }, [trackCustomInteraction]);
 
-  const trackSearch = useCallback((query: string) => {
-    trackCustomInteraction('search', { searchQuery: query });
-  }, [trackCustomInteraction]);
+  const trackSearch = useCallback(
+    (query: string) => {
+      trackCustomInteraction('search', { searchQuery: query });
+    },
+    [trackCustomInteraction]
+  );
 
-  const trackCopy = useCallback((content: string) => {
-    trackCustomInteraction('copy', { 
-      contentType: 'text',
-      contentLength: content.length 
-    });
-  }, [trackCustomInteraction]);
+  const trackCopy = useCallback(
+    (content: string) => {
+      trackCustomInteraction('copy', {
+        contentType: 'text',
+        contentLength: content.length,
+      });
+    },
+    [trackCustomInteraction]
+  );
 
   const getEngagementSummary = useCallback(() => {
     if (!session || !readingMetrics) return null;
@@ -359,9 +398,9 @@ export const useEngagementTracking = (
         session.interactions,
         readingMetrics.scrollDepth,
         readingMetrics.readingVelocity
-      )
+      ),
     };
-  }, [session, readingMetrics]);
+  }, [session, readingMetrics, calculateEngagementLevel]);
 
   // Calculate engagement level
   const calculateEngagementLevel = (
@@ -391,6 +430,6 @@ export const useEngagementTracking = (
     trackShare,
     trackSearch,
     trackCopy,
-    getEngagementSummary
+    getEngagementSummary,
   };
 };

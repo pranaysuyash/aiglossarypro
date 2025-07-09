@@ -1,38 +1,29 @@
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { 
-  Users, 
-  TrendingUp, 
-  DollarSign, 
-  Eye, 
-  Search,
-  Heart,
-  Activity,
-  Database
-} from 'lucide-react'
+import { Activity, Database, Eye, Heart, Search, TrendingUp, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface DashboardMetrics {
-  totalUsers: number
-  activeUsers: number
-  totalTerms: number
-  totalViews: number
-  totalSearches: number
-  totalFavorites: number
-  systemHealth: 'healthy' | 'warning' | 'error'
-  recentActivity: any[]
+  totalUsers: number;
+  activeUsers: number;
+  totalTerms: number;
+  totalViews: number;
+  totalSearches: number;
+  totalFavorites: number;
+  systemHealth: 'healthy' | 'warning' | 'error';
+  recentActivity: any[];
 }
 
 interface MetricCardProps {
-  title: string
-  value: string | number
-  icon: any
-  trend?: number
-  color?: string
+  title: string;
+  value: string | number;
+  icon: any;
+  trend?: number;
+  color?: string;
 }
 
-function MetricCard({ title, value, icon: Icon, trend, color = "blue" }: MetricCardProps) {
+function MetricCard({ title, value, icon: Icon, trend, color = 'blue' }: MetricCardProps) {
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -43,12 +34,13 @@ function MetricCard({ title, value, icon: Icon, trend, color = "blue" }: MetricC
         <div className="text-2xl font-bold">{value}</div>
         {trend !== undefined && (
           <p className={`text-xs ${trend >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-            {trend >= 0 ? '+' : ''}{trend}% from last month
+            {trend >= 0 ? '+' : ''}
+            {trend}% from last month
           </p>
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export default function OwnerDashboard() {
@@ -60,45 +52,45 @@ export default function OwnerDashboard() {
     totalSearches: 0,
     totalFavorites: 0,
     systemHealth: 'healthy',
-    recentActivity: []
-  })
-  const [loading, setLoading] = useState(true)
-  const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
+    recentActivity: [],
+  });
+  const [loading, setLoading] = useState(true);
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
 
   const fetchMetrics = async () => {
     try {
-      const response = await fetch('/api/admin/dashboard-metrics')
+      const response = await fetch('/api/admin/dashboard-metrics');
       if (response.ok) {
-        const data = await response.json()
-        setMetrics(data)
-        setLastUpdated(new Date())
+        const data = await response.json();
+        setMetrics(data);
+        setLastUpdated(new Date());
       }
     } catch (error) {
-      console.error('Failed to fetch metrics:', error)
+      console.error('Failed to fetch metrics:', error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchMetrics()
-    
+    fetchMetrics();
+
     // Update every 30 seconds
-    const interval = setInterval(fetchMetrics, 30000)
-    return () => clearInterval(interval)
-  }, [])
+    const interval = setInterval(fetchMetrics, 30000);
+    return () => clearInterval(interval);
+  }, [fetchMetrics]);
 
   const refreshMetrics = () => {
-    setLoading(true)
-    fetchMetrics()
-  }
+    setLoading(true);
+    fetchMetrics();
+  };
 
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   return (
@@ -107,14 +99,10 @@ export default function OwnerDashboard() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Owner Dashboard</h1>
-          <p className="text-muted-foreground">
-            Last updated: {lastUpdated.toLocaleTimeString()}
-          </p>
+          <p className="text-muted-foreground">Last updated: {lastUpdated.toLocaleTimeString()}</p>
         </div>
         <div className="flex gap-2">
-          <Badge 
-            variant={metrics.systemHealth === 'healthy' ? 'default' : 'destructive'}
-          >
+          <Badge variant={metrics.systemHealth === 'healthy' ? 'default' : 'destructive'}>
             System {metrics.systemHealth}
           </Badge>
           <Button onClick={refreshMetrics} size="sm">
@@ -177,7 +165,10 @@ export default function OwnerDashboard() {
           {metrics.recentActivity.length > 0 ? (
             <div className="space-y-3">
               {metrics.recentActivity.slice(0, 10).map((activity, index) => (
-                <div key={index} className="flex items-center justify-between py-2 border-b last:border-b-0">
+                <div
+                  key={index}
+                  className="flex items-center justify-between py-2 border-b last:border-b-0"
+                >
                   <div>
                     <p className="font-medium">{activity.action}</p>
                     <p className="text-sm text-muted-foreground">{activity.details}</p>
@@ -223,5 +214,5 @@ export default function OwnerDashboard() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

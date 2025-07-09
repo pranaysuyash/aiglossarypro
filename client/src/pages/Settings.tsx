@@ -1,40 +1,39 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { 
-  Card, 
-  CardContent, 
-  CardDescription, 
-  CardHeader, 
-  CardTitle, 
-  CardFooter 
-} from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { Switch } from "@/components/ui/switch";
-import { Button } from "@/components/ui/button";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Label } from "@/components/ui/label";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { useTheme } from "@/components/ThemeProvider";
-import { useToast } from "@/hooks/use-toast";
-import { 
-  User, 
-  Bell, 
-  Moon, 
-  Sun, 
-  Laptop, 
-  Eye, 
-  EyeOff, 
+import { useQuery } from '@tanstack/react-query';
+import {
   AlertCircle,
-  HardDriveDownload,
-  Trash2,
+  Bell,
   CheckCircle,
-  Settings as SettingsIcon
-} from "lucide-react";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import PageBreadcrumb from "@/components/ui/page-breadcrumb";
-import { apiRequest } from "@/lib/queryClient";
-import { useAuth } from "@/hooks/useAuth";
-import { queryClient } from "@/lib/queryClient";
+  Eye,
+  EyeOff,
+  HardDriveDownload,
+  Laptop,
+  Moon,
+  Settings as SettingsIcon,
+  Sun,
+  Trash2,
+  User,
+} from 'lucide-react';
+import { useState } from 'react';
+import { useTheme } from '@/components/ThemeProvider';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import PageBreadcrumb from '@/components/ui/page-breadcrumb';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/hooks/useAuth';
+import { apiRequest, queryClient } from '@/lib/queryClient';
 
 interface UserSettings {
   preferences?: {
@@ -51,115 +50,124 @@ export default function Settings() {
   const { toast } = useToast();
   const { user, isAuthenticated } = useAuth();
   const [saveSuccess, setSaveSuccess] = useState(false);
-  
+
   // Get user settings from the server
   const { data: settings, isLoading: settingsLoading } = useQuery<UserSettings>({
-    queryKey: ["/api/settings"],
+    queryKey: ['/api/settings'],
     enabled: isAuthenticated,
   });
-  
+
   // User preferences state (with defaults)
   const [preferences, setPreferences] = useState({
     emailNotifications: true,
     progressTracking: true,
     shareActivity: false,
-    ...settings?.preferences
+    ...settings?.preferences,
   });
-  
+
   // Function to handle preference changes
   const handlePreferenceChange = (key: keyof typeof preferences) => {
     setPreferences((prev: typeof preferences) => ({
       ...prev,
-      [key]: !prev[key]
+      [key]: !prev[key],
     }));
     setSaveSuccess(false);
   };
-  
+
   // Save preferences to the server
   const savePreferences = async () => {
     try {
-      await apiRequest("PUT", "/api/settings", { preferences });
+      await apiRequest('PUT', '/api/settings', { preferences });
       setSaveSuccess(true);
       toast({
-        title: "Settings saved",
-        description: "Your preferences have been updated",
+        title: 'Settings saved',
+        description: 'Your preferences have been updated',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
-        title: "Error saving settings",
-        description: "There was a problem saving your preferences",
-        variant: "destructive",
+        title: 'Error saving settings',
+        description: 'There was a problem saving your preferences',
+        variant: 'destructive',
       });
     }
   };
-  
+
   // Export user data
   const exportUserData = async () => {
     try {
-      const response = await fetch("/api/user/export", {
-        method: "GET",
-        credentials: "include",
+      const response = await fetch('/api/user/export', {
+        method: 'GET',
+        credentials: 'include',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
       });
-      
+
       if (!response.ok) {
-        throw new Error("Failed to export data");
+        throw new Error('Failed to export data');
       }
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
+      const a = document.createElement('a');
       a.href = url;
-      a.download = "ai-ml-glossary-data.json";
+      a.download = 'ai-ml-glossary-data.json';
       document.body.appendChild(a);
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-      
+
       toast({
-        title: "Data exported",
-        description: "Your data has been exported successfully",
+        title: 'Data exported',
+        description: 'Your data has been exported successfully',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
-        title: "Export failed",
-        description: "There was a problem exporting your data",
-        variant: "destructive",
+        title: 'Export failed',
+        description: 'There was a problem exporting your data',
+        variant: 'destructive',
       });
     }
   };
-  
+
   // Delete user data (with confirmation)
   const deleteUserData = async () => {
-    if (!window.confirm("Are you sure you want to delete all your data? This includes your favorites, learning progress, and activity history. This action cannot be undone.")) {
+    if (
+      !window.confirm(
+        'Are you sure you want to delete all your data? This includes your favorites, learning progress, and activity history. This action cannot be undone.'
+      )
+    ) {
       return;
     }
-    
+
     try {
-      await apiRequest("DELETE", "/api/user/data", null);
+      await apiRequest('DELETE', '/api/user/data', null);
       toast({
-        title: "Data deleted",
-        description: "Your data has been deleted successfully",
+        title: 'Data deleted',
+        description: 'Your data has been deleted successfully',
       });
       // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: ["/api/favorites"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/user/progress"] });
-      queryClient.invalidateQueries({ queryKey: ["/api/terms/recently-viewed"] });
-    } catch (error) {
+      queryClient.invalidateQueries({ queryKey: ['/api/favorites'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/user/progress'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/terms/recently-viewed'] });
+    } catch (_error) {
       toast({
-        title: "Deletion failed",
-        description: "There was a problem deleting your data",
-        variant: "destructive",
+        title: 'Deletion failed',
+        description: 'There was a problem deleting your data',
+        variant: 'destructive',
       });
     }
   };
-  
+
   // Calculate user initials for avatar
   const initials = user?.name
-    ? user.name.split(' ').map((part: string) => part[0]).join('').toUpperCase().slice(0, 2)
-    : user?.email?.substring(0, 2).toUpperCase() || "U";
+    ? user.name
+        .split(' ')
+        .map((part: string) => part[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 2)
+    : user?.email?.substring(0, 2).toUpperCase() || 'U';
 
   if (!isAuthenticated) {
     return (
@@ -169,13 +177,9 @@ export default function Settings() {
             <CardTitle className="text-center">Authentication Required</CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-center mb-4">
-              Please sign in to access your settings.
-            </p>
+            <p className="text-center mb-4">Please sign in to access your settings.</p>
             <div className="flex justify-center">
-              <Button onClick={() => window.location.href = "/api/login"}>
-                Sign In
-              </Button>
+              <Button onClick={() => (window.location.href = '/api/login')}>Sign In</Button>
             </div>
           </CardContent>
         </Card>
@@ -185,15 +189,15 @@ export default function Settings() {
 
   return (
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
-      <PageBreadcrumb 
+      <PageBreadcrumb
         items={[
-          { label: "Home", href: "/" },
-          { label: "Settings", isCurrentPage: true }
+          { label: 'Home', href: '/' },
+          { label: 'Settings', isCurrentPage: true },
         ]}
         className="mb-6"
       />
       <h1 className="text-3xl font-bold mb-6">Settings</h1>
-      
+
       <Tabs defaultValue="account" className="space-y-4">
         <TabsList>
           <TabsTrigger value="account" className="flex items-center">
@@ -209,22 +213,20 @@ export default function Settings() {
             <Eye className="mr-2 h-4 w-4" /> Privacy
           </TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="account">
           <Card>
             <CardHeader>
               <CardTitle>Account Information</CardTitle>
-              <CardDescription>
-                View and manage your account details
-              </CardDescription>
+              <CardDescription>View and manage your account details</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-20 w-20">
                   {(user as any)?.profileImageUrl && (
-                    <AvatarImage 
-                      src={(user as any).profileImageUrl} 
-                      alt={(user as any).firstName || "User"}
+                    <AvatarImage
+                      src={(user as any).profileImageUrl}
+                      alt={(user as any).firstName || 'User'}
                       className="object-cover"
                     />
                   )}
@@ -233,15 +235,11 @@ export default function Settings() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-lg font-medium">
-                    {user?.name}
-                  </h3>
-                  <p className="text-sm text-gray-500 dark:text-gray-400">
-                    {user?.email}
-                  </p>
+                  <h3 className="text-lg font-medium">{user?.name}</h3>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
                 </div>
               </div>
-              
+
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Note</AlertTitle>
@@ -252,7 +250,7 @@ export default function Settings() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="preferences">
           <Card>
             <CardHeader>
@@ -264,7 +262,7 @@ export default function Settings() {
             <CardContent className="space-y-6">
               {settingsLoading ? (
                 <div className="space-y-4 animate-pulse">
-                  {[1, 2, 3].map(i => (
+                  {[1, 2, 3].map((i) => (
                     <div key={i} className="flex justify-between items-center">
                       <div className="space-y-2">
                         <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-32"></div>
@@ -278,7 +276,9 @@ export default function Settings() {
                 <>
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="email-notifications" className="text-base">Email Notifications</Label>
+                      <Label htmlFor="email-notifications" className="text-base">
+                        Email Notifications
+                      </Label>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         Receive occasional emails about new terms and features
                       </p>
@@ -289,12 +289,14 @@ export default function Settings() {
                       onCheckedChange={() => handlePreferenceChange('emailNotifications')}
                     />
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="progress-tracking" className="text-base">Progress Tracking</Label>
+                      <Label htmlFor="progress-tracking" className="text-base">
+                        Progress Tracking
+                      </Label>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         Track which terms you've learned and show progress indicators
                       </p>
@@ -305,12 +307,14 @@ export default function Settings() {
                       onCheckedChange={() => handlePreferenceChange('progressTracking')}
                     />
                   </div>
-                  
+
                   <Separator />
-                  
+
                   <div className="flex items-center justify-between">
                     <div className="space-y-0.5">
-                      <Label htmlFor="share-activity" className="text-base">Share Learning Activity</Label>
+                      <Label htmlFor="share-activity" className="text-base">
+                        Share Learning Activity
+                      </Label>
                       <p className="text-sm text-gray-500 dark:text-gray-400">
                         Anonymously share your learning data to improve recommendations
                       </p>
@@ -337,14 +341,12 @@ export default function Settings() {
             </CardFooter>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="appearance">
           <Card>
             <CardHeader>
               <CardTitle>Appearance Settings</CardTitle>
-              <CardDescription>
-                Customize how the glossary looks
-              </CardDescription>
+              <CardDescription>Customize how the glossary looks</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -354,37 +356,37 @@ export default function Settings() {
                     Select your preferred theme mode
                   </p>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                    <Button 
-                      variant={theme === "light" ? "default" : "outline"}
+                    <Button
+                      variant={theme === 'light' ? 'default' : 'outline'}
                       className="flex flex-col items-center justify-center h-24"
-                      onClick={() => setTheme("light")}
+                      onClick={() => setTheme('light')}
                     >
                       <Sun className="h-8 w-8 mb-2" />
                       <span>Light</span>
                     </Button>
-                    
-                    <Button 
-                      variant={theme === "dark" ? "default" : "outline"}
+
+                    <Button
+                      variant={theme === 'dark' ? 'default' : 'outline'}
                       className="flex flex-col items-center justify-center h-24"
-                      onClick={() => setTheme("dark")}
+                      onClick={() => setTheme('dark')}
                     >
                       <Moon className="h-8 w-8 mb-2" />
                       <span>Dark</span>
                     </Button>
-                    
-                    <Button 
-                      variant={theme === "system" ? "default" : "outline"}
+
+                    <Button
+                      variant={theme === 'system' ? 'default' : 'outline'}
                       className="flex flex-col items-center justify-center h-24"
-                      onClick={() => setTheme("system")}
+                      onClick={() => setTheme('system')}
                     >
                       <Laptop className="h-8 w-8 mb-2" />
                       <span>System</span>
                     </Button>
 
-                    <Button 
-                      variant={theme === "high-contrast" ? "default" : "outline"}
+                    <Button
+                      variant={theme === 'high-contrast' ? 'default' : 'outline'}
                       className="flex flex-col items-center justify-center h-24"
-                      onClick={() => setTheme("high-contrast")}
+                      onClick={() => setTheme('high-contrast')}
                     >
                       <SettingsIcon className="h-8 w-8 mb-2" />
                       <span>High Contrast</span>
@@ -395,14 +397,12 @@ export default function Settings() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="privacy">
           <Card>
             <CardHeader>
               <CardTitle>Privacy & Data</CardTitle>
-              <CardDescription>
-                Manage your data and privacy settings
-              </CardDescription>
+              <CardDescription>Manage your data and privacy settings</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex items-center justify-between">
@@ -417,9 +417,9 @@ export default function Settings() {
                   Export
                 </Button>
               </div>
-              
+
               <Separator />
-              
+
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <h3 className="text-base font-medium">Delete Your Data</h3>
@@ -432,13 +432,13 @@ export default function Settings() {
                   Delete Data
                 </Button>
               </div>
-              
+
               <Alert>
                 <EyeOff className="h-4 w-4" />
                 <AlertTitle>Privacy Statement</AlertTitle>
                 <AlertDescription>
-                  We only collect data necessary to provide you with features like progress tracking and recommendations. 
-                  Your data is never shared with third parties.
+                  We only collect data necessary to provide you with features like progress tracking
+                  and recommendations. Your data is never shared with third parties.
                 </AlertDescription>
               </Alert>
             </CardContent>

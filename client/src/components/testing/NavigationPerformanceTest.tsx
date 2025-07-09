@@ -1,21 +1,14 @@
-import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { Play, Download, BarChart3, AlertTriangle, CheckCircle } from 'lucide-react';
-import HierarchicalNavigation from '../navigation/HierarchicalNavigation';
-import { 
-  createTestDataset, 
-  performanceTestData, 
-  searchTestScenarios, 
-  filterTestScenarios,
-  createLargeDataset,
-  memoryTestData 
-} from '@/data/test-dataset';
-import { 
-  runComprehensiveBenchmark, 
-  BenchmarkResult, 
-  PerformanceMetrics,
-  usePerformanceMonitoring 
+import { BarChart3, CheckCircle, Download, Play } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useRef, useState } from 'react';
+import { createLargeDataset, performanceTestData } from '@/data/test-dataset';
+import type { ContentNode } from '@/types/content-structure';
+import {
+  type BenchmarkResult,
+  runComprehensiveBenchmark,
+  usePerformanceMonitoring,
 } from '@/utils/performance-benchmarks';
-import { ContentNode } from '@/types/content-structure';
+import HierarchicalNavigation from '../navigation/HierarchicalNavigation';
 
 interface TestScenario {
   name: string;
@@ -33,32 +26,32 @@ const testScenarios: TestScenario[] = [
     name: 'Small Dataset (5 sections)',
     description: 'Baseline performance test with minimal data',
     dataset: performanceTestData.smallDataset,
-    expectedPerformance: { renderTime: 50, searchTime: 10, memoryUsage: 1024 * 1024 }
+    expectedPerformance: { renderTime: 50, searchTime: 10, memoryUsage: 1024 * 1024 },
   },
   {
     name: 'Medium Dataset (20 sections)',
     description: 'Realistic dataset size for most use cases',
     dataset: performanceTestData.mediumDataset,
-    expectedPerformance: { renderTime: 100, searchTime: 25, memoryUsage: 2 * 1024 * 1024 }
+    expectedPerformance: { renderTime: 100, searchTime: 25, memoryUsage: 2 * 1024 * 1024 },
   },
   {
     name: 'Full Dataset (42 sections, ~295 subsections)',
     description: 'Complete dataset as specified in requirements',
     dataset: performanceTestData.fullDataset,
-    expectedPerformance: { renderTime: 200, searchTime: 50, memoryUsage: 5 * 1024 * 1024 }
+    expectedPerformance: { renderTime: 200, searchTime: 50, memoryUsage: 5 * 1024 * 1024 },
   },
   {
     name: 'Deeply Nested Dataset',
     description: 'Stress test with maximum nesting depth',
     dataset: performanceTestData.deeplyNestedDataset,
-    expectedPerformance: { renderTime: 300, searchTime: 75, memoryUsage: 8 * 1024 * 1024 }
+    expectedPerformance: { renderTime: 300, searchTime: 75, memoryUsage: 8 * 1024 * 1024 },
   },
   {
     name: 'Large Dataset (10x multiplier)',
     description: 'Extreme load test with 420 sections',
     dataset: createLargeDataset(10),
-    expectedPerformance: { renderTime: 500, searchTime: 100, memoryUsage: 20 * 1024 * 1024 }
-  }
+    expectedPerformance: { renderTime: 500, searchTime: 100, memoryUsage: 20 * 1024 * 1024 },
+  },
 ];
 
 const NavigationPerformanceTest: React.FC = () => {
@@ -66,72 +59,82 @@ const NavigationPerformanceTest: React.FC = () => {
   const [results, setResults] = useState<BenchmarkResult[]>([]);
   const [isRunning, setIsRunning] = useState(false);
   const [selectedPath, setSelectedPath] = useState('');
-  const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-  
+  const [_expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+
   const navigationRef = useRef<HTMLDivElement>(null);
-  const { startOperation, endOperation, getMemoryUsage, metrics } = usePerformanceMonitoring('NavigationTest');
+  const { startOperation, endOperation, getMemoryUsage, metrics } =
+    usePerformanceMonitoring('NavigationTest');
 
   // Mock navigation operations for testing
-  const handleNavigate = useCallback((path: string, node: any) => {
-    startOperation('navigation');
-    setSelectedPath(path);
-    setTimeout(() => endOperation('navigation'), 0);
-  }, [startOperation, endOperation]);
+  const handleNavigate = useCallback(
+    (path: string, _node: any) => {
+      startOperation('navigation');
+      setSelectedPath(path);
+      setTimeout(() => endOperation('navigation'), 0);
+    },
+    [startOperation, endOperation]
+  );
 
-  const handleToggleExpand = useCallback((nodeId: string) => {
-    startOperation('expand_collapse');
-    setExpandedNodes(prev => {
-      const newSet = new Set(prev);
-      if (newSet.has(nodeId)) {
-        newSet.delete(nodeId);
-      } else {
-        newSet.add(nodeId);
-      }
-      return newSet;
-    });
-    setTimeout(() => endOperation('expand_collapse'), 0);
-  }, [startOperation, endOperation]);
+  const handleToggleExpand = useCallback(
+    (nodeId: string) => {
+      startOperation('expand_collapse');
+      setExpandedNodes((prev) => {
+        const newSet = new Set(prev);
+        if (newSet.has(nodeId)) {
+          newSet.delete(nodeId);
+        } else {
+          newSet.add(nodeId);
+        }
+        return newSet;
+      });
+      setTimeout(() => endOperation('expand_collapse'), 0);
+    },
+    [startOperation, endOperation]
+  );
 
   // Mock search function
-  const mockSearch = useCallback(async (query: string): Promise<any[]> => {
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        // Simple mock search - filter nodes by name
-        const results: any[] = [];
-        const searchInNodes = (nodes: ContentNode[]) => {
-          nodes.forEach(node => {
-            if (node.name.toLowerCase().includes(query.toLowerCase())) {
-              results.push(node);
+  const mockSearch = useCallback(
+    async (query: string): Promise<any[]> => {
+      return new Promise((resolve) => {
+        setTimeout(() => {
+          // Simple mock search - filter nodes by name
+          const results: any[] = [];
+          const searchInNodes = (nodes: ContentNode[]) => {
+            nodes.forEach((node) => {
+              if (node.name.toLowerCase().includes(query.toLowerCase())) {
+                results.push(node);
+              }
+              if (node.subsections) {
+                searchInNodes(node.subsections);
+              }
+            });
+          };
+
+          if (currentTest) {
+            const scenario = testScenarios.find((s) => s.name === currentTest);
+            if (scenario?.dataset.sections) {
+              searchInNodes(scenario.dataset.sections);
             }
-            if (node.subsections) {
-              searchInNodes(node.subsections);
-            }
-          });
-        };
-        
-        if (currentTest) {
-          const scenario = testScenarios.find(s => s.name === currentTest);
-          if (scenario?.dataset.sections) {
-            searchInNodes(scenario.dataset.sections);
           }
-        }
-        
-        resolve(results);
-      }, Math.random() * 20); // Simulate variable search latency
-    });
-  }, [currentTest]);
+
+          resolve(results);
+        }, Math.random() * 20); // Simulate variable search latency
+      });
+    },
+    [currentTest]
+  );
 
   // Run benchmark for a specific scenario
   const runBenchmark = async (scenario: TestScenario) => {
     setIsRunning(true);
     setCurrentTest(scenario.name);
-    
+
     try {
       startOperation('full_benchmark');
-      
+
       // Wait for component to render
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       const operations = {
         render: () => {
           // Force re-render by updating state
@@ -139,17 +142,17 @@ const NavigationPerformanceTest: React.FC = () => {
         },
         search: mockSearch,
         expand: (nodeId: string) => handleToggleExpand(nodeId),
-        collapse: (nodeId: string) => handleToggleExpand(nodeId)
+        collapse: (nodeId: string) => handleToggleExpand(nodeId),
       };
-      
+
       if (navigationRef.current) {
         const result = await runComprehensiveBenchmark(
           navigationRef.current,
           scenario.dataset,
           operations
         );
-        
-        setResults(prev => [...prev, result]);
+
+        setResults((prev) => [...prev, result]);
         endOperation('full_benchmark');
       }
     } catch (error) {
@@ -165,7 +168,7 @@ const NavigationPerformanceTest: React.FC = () => {
     for (const scenario of testScenarios) {
       await runBenchmark(scenario);
       // Small delay between tests
-      await new Promise(resolve => setTimeout(resolve, 500));
+      await new Promise((resolve) => setTimeout(resolve, 500));
     }
   };
 
@@ -175,9 +178,9 @@ const NavigationPerformanceTest: React.FC = () => {
       timestamp: new Date().toISOString(),
       environment: results[0]?.environment,
       results: results,
-      summary: generateSummary()
+      summary: generateSummary(),
     };
-    
+
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -190,22 +193,29 @@ const NavigationPerformanceTest: React.FC = () => {
   // Generate performance summary
   const generateSummary = () => {
     if (results.length === 0) return null;
-    
-    const avgRenderTime = results.reduce((sum, r) => sum + r.metrics.renderTime, 0) / results.length;
-    const avgSearchTime = results.reduce((sum, r) => sum + r.metrics.searchTime, 0) / results.length;
-    const avgMemoryUsage = results.reduce((sum, r) => sum + r.metrics.memoryUsage, 0) / results.length;
-    const worstPerformer = results.reduce((worst, current) => 
+
+    const avgRenderTime =
+      results.reduce((sum, r) => sum + r.metrics.renderTime, 0) / results.length;
+    const avgSearchTime =
+      results.reduce((sum, r) => sum + r.metrics.searchTime, 0) / results.length;
+    const avgMemoryUsage =
+      results.reduce((sum, r) => sum + r.metrics.memoryUsage, 0) / results.length;
+    const worstPerformer = results.reduce((worst, current) =>
       current.metrics.renderTime > worst.metrics.renderTime ? current : worst
     );
-    const bestPerformer = results.reduce((best, current) => 
+    const bestPerformer = results.reduce((best, current) =>
       current.metrics.renderTime < best.metrics.renderTime ? current : best
     );
-    
+
     return {
-      averageMetrics: { renderTime: avgRenderTime, searchTime: avgSearchTime, memoryUsage: avgMemoryUsage },
+      averageMetrics: {
+        renderTime: avgRenderTime,
+        searchTime: avgSearchTime,
+        memoryUsage: avgMemoryUsage,
+      },
       worstPerformer: worstPerformer.testName,
       bestPerformer: bestPerformer.testName,
-      totalTests: results.length
+      totalTests: results.length,
     };
   };
 
@@ -222,7 +232,7 @@ const NavigationPerformanceTest: React.FC = () => {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const currentScenario = testScenarios.find(s => s.name === currentTest);
+  const currentScenario = testScenarios.find((s) => s.name === currentTest);
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -231,7 +241,7 @@ const NavigationPerformanceTest: React.FC = () => {
           <BarChart3 className="w-6 h-6" />
           Hierarchical Navigation Performance Testing
         </h1>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
             <h3 className="font-semibold text-blue-900 dark:text-blue-100">Total Scenarios</h3>
@@ -262,7 +272,7 @@ const NavigationPerformanceTest: React.FC = () => {
             <Play className="w-4 h-4" />
             Run All Benchmarks
           </button>
-          
+
           {results.length > 0 && (
             <button
               onClick={exportResults}
@@ -280,10 +290,10 @@ const NavigationPerformanceTest: React.FC = () => {
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Test Scenarios</h2>
           <div className="space-y-3">
-            {testScenarios.map((scenario, index) => {
-              const result = results.find(r => r.testName.includes(scenario.name));
+            {testScenarios.map((scenario, _index) => {
+              const result = results.find((r) => r.testName.includes(scenario.name));
               const isRunning = currentTest === scenario.name;
-              
+
               return (
                 <div
                   key={scenario.name}
@@ -293,7 +303,9 @@ const NavigationPerformanceTest: React.FC = () => {
                     <h3 className="font-medium">{scenario.name}</h3>
                     <div className="flex items-center gap-2">
                       {result && <CheckCircle className="w-4 h-4 text-green-500" />}
-                      {isRunning && <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />}
+                      {isRunning && (
+                        <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+                      )}
                       <button
                         onClick={() => runBenchmark(scenario)}
                         disabled={isRunning}
@@ -304,36 +316,66 @@ const NavigationPerformanceTest: React.FC = () => {
                     </div>
                   </div>
                   <p className="text-sm text-gray-600 dark:text-gray-400">{scenario.description}</p>
-                  
+
                   {result && (
                     <div className="mt-2 grid grid-cols-3 gap-2 text-xs">
                       <div>
                         <span className="text-gray-500">Render:</span>
-                        <span className={`ml-1 ${
-                          getPerformanceStatus(result.metrics.renderTime, scenario.expectedPerformance.renderTime) === 'good' ? 'text-green-600' :
-                          getPerformanceStatus(result.metrics.renderTime, scenario.expectedPerformance.renderTime) === 'warning' ? 'text-yellow-600' :
-                          'text-red-600'
-                        }`}>
+                        <span
+                          className={`ml-1 ${
+                            getPerformanceStatus(
+                              result.metrics.renderTime,
+                              scenario.expectedPerformance.renderTime
+                            ) === 'good'
+                              ? 'text-green-600'
+                              : getPerformanceStatus(
+                                    result.metrics.renderTime,
+                                    scenario.expectedPerformance.renderTime
+                                  ) === 'warning'
+                                ? 'text-yellow-600'
+                                : 'text-red-600'
+                          }`}
+                        >
                           {result.metrics.renderTime.toFixed(1)}ms
                         </span>
                       </div>
                       <div>
                         <span className="text-gray-500">Search:</span>
-                        <span className={`ml-1 ${
-                          getPerformanceStatus(result.metrics.searchTime, scenario.expectedPerformance.searchTime) === 'good' ? 'text-green-600' :
-                          getPerformanceStatus(result.metrics.searchTime, scenario.expectedPerformance.searchTime) === 'warning' ? 'text-yellow-600' :
-                          'text-red-600'
-                        }`}>
+                        <span
+                          className={`ml-1 ${
+                            getPerformanceStatus(
+                              result.metrics.searchTime,
+                              scenario.expectedPerformance.searchTime
+                            ) === 'good'
+                              ? 'text-green-600'
+                              : getPerformanceStatus(
+                                    result.metrics.searchTime,
+                                    scenario.expectedPerformance.searchTime
+                                  ) === 'warning'
+                                ? 'text-yellow-600'
+                                : 'text-red-600'
+                          }`}
+                        >
                           {result.metrics.searchTime.toFixed(1)}ms
                         </span>
                       </div>
                       <div>
                         <span className="text-gray-500">Memory:</span>
-                        <span className={`ml-1 ${
-                          getPerformanceStatus(result.metrics.memoryUsage, scenario.expectedPerformance.memoryUsage) === 'good' ? 'text-green-600' :
-                          getPerformanceStatus(result.metrics.memoryUsage, scenario.expectedPerformance.memoryUsage) === 'warning' ? 'text-yellow-600' :
-                          'text-red-600'
-                        }`}>
+                        <span
+                          className={`ml-1 ${
+                            getPerformanceStatus(
+                              result.metrics.memoryUsage,
+                              scenario.expectedPerformance.memoryUsage
+                            ) === 'good'
+                              ? 'text-green-600'
+                              : getPerformanceStatus(
+                                    result.metrics.memoryUsage,
+                                    scenario.expectedPerformance.memoryUsage
+                                  ) === 'warning'
+                                ? 'text-yellow-600'
+                                : 'text-red-600'
+                          }`}
+                        >
                           {formatMemory(result.metrics.memoryUsage)}
                         </span>
                       </div>
@@ -363,16 +405,20 @@ const NavigationPerformanceTest: React.FC = () => {
               )}
             </div>
           </div>
-          
+
           {/* Real-time metrics */}
           <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
             <div>
               <span className="text-gray-500">Navigation Time:</span>
-              <span className="ml-2 font-mono">{(metrics.interactionLatency || 0).toFixed(1)}ms</span>
+              <span className="ml-2 font-mono">
+                {(metrics.interactionLatency || 0).toFixed(1)}ms
+              </span>
             </div>
             <div>
               <span className="text-gray-500">Expand/Collapse:</span>
-              <span className="ml-2 font-mono">{(metrics.expandCollapseTime || 0).toFixed(1)}ms</span>
+              <span className="ml-2 font-mono">
+                {(metrics.expandCollapseTime || 0).toFixed(1)}ms
+              </span>
             </div>
           </div>
         </div>
@@ -382,7 +428,7 @@ const NavigationPerformanceTest: React.FC = () => {
       {results.length > 0 && (
         <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6">
           <h2 className="text-xl font-semibold mb-4">Performance Summary</h2>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
@@ -399,10 +445,18 @@ const NavigationPerformanceTest: React.FC = () => {
                 {results.map((result, index) => (
                   <tr key={index} className="border-b border-gray-100 dark:border-gray-800">
                     <td className="py-2">{result.testName}</td>
-                    <td className="text-right py-2 font-mono">{result.metrics.renderTime.toFixed(1)}ms</td>
-                    <td className="text-right py-2 font-mono">{result.metrics.searchTime.toFixed(1)}ms</td>
-                    <td className="text-right py-2 font-mono">{formatMemory(result.metrics.memoryUsage)}</td>
-                    <td className="text-right py-2 font-mono">{result.metrics.scrollPerformance.toFixed(1)}</td>
+                    <td className="text-right py-2 font-mono">
+                      {result.metrics.renderTime.toFixed(1)}ms
+                    </td>
+                    <td className="text-right py-2 font-mono">
+                      {result.metrics.searchTime.toFixed(1)}ms
+                    </td>
+                    <td className="text-right py-2 font-mono">
+                      {formatMemory(result.metrics.memoryUsage)}
+                    </td>
+                    <td className="text-right py-2 font-mono">
+                      {result.metrics.scrollPerformance.toFixed(1)}
+                    </td>
                     <td className="text-right py-2">{result.datasetSize.totalNodes} nodes</td>
                   </tr>
                 ))}

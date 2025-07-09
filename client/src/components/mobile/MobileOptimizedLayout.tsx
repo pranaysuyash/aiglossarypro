@@ -1,17 +1,9 @@
-import { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
+import { ChevronDown, ChevronUp, Filter, Menu, Search, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { 
-  Menu, 
-  Search, 
-  Filter, 
-  Settings, 
-  ChevronDown,
-  ChevronUp,
-  X
-} from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 interface MobileOptimizedLayoutProps {
@@ -29,7 +21,7 @@ export default function MobileOptimizedLayout({
   searchComponent,
   filterComponent,
   title,
-  className = ''
+  className = '',
 }: MobileOptimizedLayoutProps) {
   const isMobile = useIsMobile();
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -51,10 +43,12 @@ export default function MobileOptimizedLayout({
   }, [isMobile]);
 
   const MobileHeader = () => (
-    <div className={`
+    <div
+      className={`
       sticky top-0 z-40 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700
       transition-all duration-200 ${isSticky ? 'shadow-md' : ''}
-    `}>
+    `}
+    >
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center space-x-3">
           {sidebar && (
@@ -69,7 +63,7 @@ export default function MobileOptimizedLayout({
               </SheetContent>
             </Sheet>
           )}
-          
+
           {title && (
             <h1 className="text-lg font-semibold text-gray-900 dark:text-gray-100 truncate">
               {title}
@@ -89,11 +83,7 @@ export default function MobileOptimizedLayout({
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">Search</h3>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setSearchOpen(false)}
-                    >
+                    <Button variant="ghost" size="icon" onClick={() => setSearchOpen(false)}>
                       <X className="h-5 w-5" />
                     </Button>
                   </div>
@@ -114,11 +104,7 @@ export default function MobileOptimizedLayout({
                 <div className="p-4">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-semibold">Filters</h3>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => setFilterOpen(false)}
-                    >
+                    <Button variant="ghost" size="icon" onClick={() => setFilterOpen(false)}>
                       <X className="h-5 w-5" />
                     </Button>
                   </div>
@@ -134,23 +120,15 @@ export default function MobileOptimizedLayout({
 
   const DesktopLayout = () => (
     <div className="flex flex-col lg:flex-row gap-6">
-      {sidebar && (
-        <aside className="lg:w-64 flex-shrink-0">
-          {sidebar}
-        </aside>
-      )}
-      <main className="flex-1 min-w-0">
-        {children}
-      </main>
+      {sidebar && <aside className="lg:w-64 flex-shrink-0">{sidebar}</aside>}
+      <main className="flex-1 min-w-0">{children}</main>
     </div>
   );
 
   const MobileLayout = () => (
     <div className="flex flex-col min-h-screen">
       <MobileHeader />
-      <main className="flex-1 p-4">
-        {children}
-      </main>
+      <main className="flex-1 p-4">{children}</main>
     </div>
   );
 
@@ -170,24 +148,24 @@ export const useResponsiveCardLayout = () => {
     const checkTablet = () => {
       setIsTablet(window.innerWidth <= 1024 && window.innerWidth > 768);
     };
-    
+
     checkTablet();
     window.addEventListener('resize', checkTablet);
     return () => window.removeEventListener('resize', checkTablet);
   }, []);
 
   const getGridCols = (itemCount: number) => {
-    if (isMobile) return "grid-cols-1";
-    if (isTablet) return itemCount > 2 ? "grid-cols-2" : "grid-cols-1";
-    return itemCount > 6 ? "grid-cols-3" : itemCount > 3 ? "grid-cols-2" : "grid-cols-1";
+    if (isMobile) return 'grid-cols-1';
+    if (isTablet) return itemCount > 2 ? 'grid-cols-2' : 'grid-cols-1';
+    return itemCount > 6 ? 'grid-cols-3' : itemCount > 3 ? 'grid-cols-2' : 'grid-cols-1';
   };
 
   const getCardSpacing = () => {
-    return isMobile ? "gap-3" : "gap-4";
+    return isMobile ? 'gap-3' : 'gap-4';
   };
 
   const getCardPadding = () => {
-    return isMobile ? "p-3" : "p-4";
+    return isMobile ? 'p-3' : 'p-4';
   };
 
   return {
@@ -195,16 +173,16 @@ export const useResponsiveCardLayout = () => {
     isTablet,
     getGridCols,
     getCardSpacing,
-    getCardPadding
+    getCardPadding,
   };
 };
 
 // Component for responsive text
-export const ResponsiveText = ({ 
-  children, 
-  className = "",
-  mobileSize = "text-sm",
-  desktopSize = "text-base"
+export const ResponsiveText = ({
+  children,
+  className = '',
+  mobileSize = 'text-sm',
+  desktopSize = 'text-base',
 }: {
   children: React.ReactNode;
   className?: string;
@@ -212,20 +190,16 @@ export const ResponsiveText = ({
   desktopSize?: string;
 }) => {
   const isMobile = useIsMobile();
-  
-  return (
-    <span className={`${isMobile ? mobileSize : desktopSize} ${className}`}>
-      {children}
-    </span>
-  );
+
+  return <span className={`${isMobile ? mobileSize : desktopSize} ${className}`}>{children}</span>;
 };
 
 // Component for responsive spacing
 export const ResponsiveContainer = ({
   children,
-  className = "",
-  mobilePadding = "p-4",
-  desktopPadding = "p-6"
+  className = '',
+  mobilePadding = 'p-4',
+  desktopPadding = 'p-6',
 }: {
   children: React.ReactNode;
   className?: string;
@@ -233,11 +207,9 @@ export const ResponsiveContainer = ({
   desktopPadding?: string;
 }) => {
   const isMobile = useIsMobile();
-  
+
   return (
-    <div className={`${isMobile ? mobilePadding : desktopPadding} ${className}`}>
-      {children}
-    </div>
+    <div className={`${isMobile ? mobilePadding : desktopPadding} ${className}`}>{children}</div>
   );
 };
 
@@ -246,7 +218,7 @@ export const MobileExpandableSection = ({
   title,
   children,
   defaultExpanded = false,
-  badge
+  badge,
 }: {
   title: string;
   children: React.ReactNode;
@@ -275,18 +247,10 @@ export const MobileExpandableSection = ({
             </Badge>
           )}
         </div>
-        {isExpanded ? (
-          <ChevronUp className="h-4 w-4" />
-        ) : (
-          <ChevronDown className="h-4 w-4" />
-        )}
+        {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
       </Button>
-      
-      {isExpanded && (
-        <div className="px-4 pb-4 border-t">
-          {children}
-        </div>
-      )}
+
+      {isExpanded && <div className="px-4 pb-4 border-t">{children}</div>}
     </div>
   );
 };

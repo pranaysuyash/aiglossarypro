@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Clock, Users, TrendingUp, AlertCircle } from "lucide-react";
+import { AlertCircle, Clock, TrendingUp, Users } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface EarlyBirdStatus {
   totalRegistered: number;
@@ -24,7 +24,7 @@ interface PricingCountdownProps {
   compact?: boolean;
 }
 
-export function PricingCountdown({ className = "", compact = false }: PricingCountdownProps) {
+export function PricingCountdown({ className = '', compact = false }: PricingCountdownProps) {
   const [status, setStatus] = useState<EarlyBirdStatus | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -35,14 +35,14 @@ export function PricingCountdown({ className = "", compact = false }: PricingCou
     try {
       const response = await fetch('/api/early-bird-status');
       const data = await response.json();
-      
+
       if (data.success) {
         setStatus(data.data);
         setError(null);
       } else {
         setError(data.error || 'Failed to fetch early bird status');
       }
-    } catch (err) {
+    } catch (_err) {
       setError('Network error - unable to fetch current status');
     } finally {
       setLoading(false);
@@ -52,15 +52,18 @@ export function PricingCountdown({ className = "", compact = false }: PricingCou
   // Initial fetch and periodic updates
   useEffect(() => {
     fetchStatus();
-    
+
     // Update every 5 minutes
-    const interval = setInterval(() => {
-      fetchStatus();
-      setLastUpdate(new Date());
-    }, 5 * 60 * 1000);
+    const interval = setInterval(
+      () => {
+        fetchStatus();
+        setLastUpdate(new Date());
+      },
+      5 * 60 * 1000
+    );
 
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchStatus]);
 
   // Handle loading state
   if (loading) {
@@ -80,9 +83,7 @@ export function PricingCountdown({ className = "", compact = false }: PricingCou
         <CardContent className="p-4">
           <div className="flex items-center gap-2 text-red-600">
             <AlertCircle className="w-4 h-4" />
-            <span className="text-sm">
-              {error || 'Unable to load early bird status'}
-            </span>
+            <span className="text-sm">{error || 'Unable to load early bird status'}</span>
           </div>
         </CardContent>
       </Card>
@@ -123,14 +124,14 @@ export function PricingCountdown({ className = "", compact = false }: PricingCou
     critical: 'bg-red-500',
     high: 'bg-orange-500',
     medium: 'bg-yellow-500',
-    low: 'bg-green-500'
+    low: 'bg-green-500',
   };
 
   const urgencyTextColors = {
     critical: 'text-red-700',
     high: 'text-orange-700',
     medium: 'text-yellow-700',
-    low: 'text-green-700'
+    low: 'text-green-700',
   };
 
   if (compact) {
@@ -154,11 +155,11 @@ export function PricingCountdown({ className = "", compact = false }: PricingCou
             </div>
           </div>
         </div>
-        
+
         {/* Progress bar */}
         <div className="mt-3">
           <div className="bg-purple-100 rounded-full h-2">
-            <div 
+            <div
               className={`h-2 rounded-full transition-all duration-300 ${urgencyColors[urgencyLevel]}`}
               style={{ width: `${progressWidth}%` }}
             />
@@ -177,19 +178,15 @@ export function PricingCountdown({ className = "", compact = false }: PricingCou
       <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 pb-3">
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-lg text-purple-900">
-              First 500 Customers
-            </CardTitle>
-            <div className="text-sm text-purple-600">
-              Limited time early bird pricing
-            </div>
+            <CardTitle className="text-lg text-purple-900">First 500 Customers</CardTitle>
+            <div className="text-sm text-purple-600">Limited time early bird pricing</div>
           </div>
           <Badge variant="secondary" className="bg-purple-600 text-white">
             ${status.pricing.discountAmount} OFF
           </Badge>
         </div>
       </CardHeader>
-      
+
       <CardContent className="p-6">
         {/* Pricing display */}
         <div className="text-center mb-6">
@@ -213,18 +210,14 @@ export function PricingCountdown({ className = "", compact = false }: PricingCou
               <Users className="w-4 h-4 text-purple-600" />
               <span className="text-sm text-gray-600">Registered</span>
             </div>
-            <div className="text-2xl font-bold text-purple-900">
-              {status.totalRegistered}
-            </div>
+            <div className="text-2xl font-bold text-purple-900">{status.totalRegistered}</div>
           </div>
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 mb-1">
               <TrendingUp className="w-4 h-4 text-purple-600" />
               <span className="text-sm text-gray-600">Purchased</span>
             </div>
-            <div className="text-2xl font-bold text-purple-900">
-              {status.totalPurchased}
-            </div>
+            <div className="text-2xl font-bold text-purple-900">{status.totalPurchased}</div>
           </div>
         </div>
 
@@ -235,7 +228,7 @@ export function PricingCountdown({ className = "", compact = false }: PricingCou
             <span>{status.remainingSlots} slots remaining</span>
           </div>
           <div className="bg-gray-200 rounded-full h-3">
-            <div 
+            <div
               className={`h-3 rounded-full transition-all duration-500 ${urgencyColors[urgencyLevel]}`}
               style={{ width: `${progressWidth}%` }}
             />

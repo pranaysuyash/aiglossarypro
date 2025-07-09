@@ -28,19 +28,22 @@ class PerformanceMonitor {
     const startTime = performance.now();
     callback();
     const endTime = performance.now();
-    
+
     const metric: PerformanceMetric = {
       component: componentName,
       renderTime: endTime - startTime,
       timestamp: Date.now(),
-      props
+      props,
     };
 
     this.metrics.push(metric);
-    
+
     // Log slow renders (> 16ms is one frame at 60fps)
     if (metric.renderTime > 16) {
-      console.warn(`⚠️ Slow render detected in ${componentName}: ${metric.renderTime.toFixed(2)}ms`, props);
+      console.warn(
+        `⚠️ Slow render detected in ${componentName}: ${metric.renderTime.toFixed(2)}ms`,
+        props
+      );
     }
   }
 
@@ -50,13 +53,16 @@ class PerformanceMonitor {
   getReport() {
     if (!this.metrics.length) return null;
 
-    const grouped = this.metrics.reduce((acc, metric) => {
-      if (!acc[metric.component]) {
-        acc[metric.component] = [];
-      }
-      acc[metric.component].push(metric.renderTime);
-      return acc;
-    }, {} as Record<string, number[]>);
+    const grouped = this.metrics.reduce(
+      (acc, metric) => {
+        if (!acc[metric.component]) {
+          acc[metric.component] = [];
+        }
+        acc[metric.component].push(metric.renderTime);
+        return acc;
+      },
+      {} as Record<string, number[]>
+    );
 
     const report = Object.entries(grouped).map(([component, times]) => ({
       component,
@@ -114,17 +120,17 @@ export function withPerformanceMonitor<P extends object>(
   componentName?: string
 ) {
   const displayName = componentName || Component.displayName || Component.name || 'Unknown';
-  
+
   return React.memo((props: P) => {
     const startTime = performance.now();
-    
+
     React.useEffect(() => {
       const renderTime = performance.now() - startTime;
       if (renderTime > 16) {
         console.warn(`⚠️ ${displayName} rendered in ${renderTime.toFixed(2)}ms`);
       }
     });
-    
+
     return <Component {...props} />;
   });
 }

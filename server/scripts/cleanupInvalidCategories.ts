@@ -1,13 +1,13 @@
 /**
  * Database Cleanup Script: Remove Invalid Categories
- * 
+ *
  * This script identifies and removes categories that are actually terms,
  * metadata, or other invalid data that was incorrectly stored as categories.
  */
 
+import { eq, ilike, inArray } from 'drizzle-orm';
+import { categories, subcategories, termSubcategories, terms } from '../../shared/schema';
 import { db } from '../db';
-import { categories, subcategories, terms, termSubcategories } from '../../shared/schema';
-import { eq, like, ilike, sql, inArray } from 'drizzle-orm';
 import { log } from '../utils/logger';
 
 interface CleanupStats {
@@ -19,13 +19,15 @@ interface CleanupStats {
 }
 
 async function identifyInvalidCategories(): Promise<string[]> {
-  const allCategories = await db.select({
-    id: categories.id,
-    name: categories.name
-  }).from(categories);
+  const allCategories = await db
+    .select({
+      id: categories.id,
+      name: categories.name,
+    })
+    .from(categories);
 
   const invalidCategoryIds: string[] = [];
-  
+
   // Patterns that indicate invalid categories
   const invalidPatterns = [
     /^tags?:/i,
@@ -83,20 +85,25 @@ async function identifyInvalidCategories(): Promise<string[]> {
   // Check each category
   for (const category of allCategories) {
     const categoryName = category.name.toLowerCase();
-    
+
     // Check against invalid patterns
-    const isInvalid = invalidPatterns.some(pattern => pattern.test(categoryName));
-    const isTooSpecific = tooSpecificPatterns.some(pattern => pattern.test(categoryName));
-    
+    const isInvalid = invalidPatterns.some((pattern) => pattern.test(categoryName));
+    const isTooSpecific = tooSpecificPatterns.some((pattern) => pattern.test(categoryName));
+
     // Additional checks
     const isSingleWord = categoryName.split(' ').length === 1 && categoryName.length < 4;
     const isVeryLong = categoryName.length > 60;
     const hasNumbers = /\d/.test(categoryName);
-    const hasSpecialChars = /[^a-z0-9\s\-]/.test(categoryName);
-    
-    if (isInvalid || isTooSpecific || isSingleWord || isVeryLong || 
-        (hasNumbers && !categoryName.includes('2d') && !categoryName.includes('3d')) ||
-        hasSpecialChars) {
+    const hasSpecialChars = /[^a-z0-9\s-]/.test(categoryName);
+
+    if (
+      isInvalid ||
+      isTooSpecific ||
+      isSingleWord ||
+      isVeryLong ||
+      (hasNumbers && !categoryName.includes('2d') && !categoryName.includes('3d')) ||
+      hasSpecialChars
+    ) {
       invalidCategoryIds.push(category.id);
       log.info(`Invalid category identified: "${category.name}" (${category.id})`);
     }
@@ -107,34 +114,37 @@ async function identifyInvalidCategories(): Promise<string[]> {
 
 async function getValidReplacementCategory(): Promise<string> {
   // Find or create a general "Artificial Intelligence" category
-  let aiCategory = await db.select({
-    id: categories.id,
-    name: categories.name
-  })
-  .from(categories)
-  .where(ilike(categories.name, '%artificial intelligence%'))
-  .limit(1);
+  let aiCategory = await db
+    .select({
+      id: categories.id,
+      name: categories.name,
+    })
+    .from(categories)
+    .where(ilike(categories.name, '%artificial intelligence%'))
+    .limit(1);
 
   if (aiCategory.length === 0) {
     // Try "Machine Learning"
-    aiCategory = await db.select({
-      id: categories.id,
-      name: categories.name
-    })
-    .from(categories)
-    .where(ilike(categories.name, '%machine learning%'))
-    .limit(1);
+    aiCategory = await db
+      .select({
+        id: categories.id,
+        name: categories.name,
+      })
+      .from(categories)
+      .where(ilike(categories.name, '%machine learning%'))
+      .limit(1);
   }
 
   if (aiCategory.length === 0) {
     // Create a default category
-    const [newCategory] = await db.insert(categories)
+    const [newCategory] = await db
+      .insert(categories)
       .values({
         name: 'Machine Learning',
-        description: 'General machine learning and artificial intelligence concepts'
+        description: 'General machine learning and artificial intelligence concepts',
       })
       .returning();
-    
+
     log.info(`Created default category: ${newCategory.name} (${newCategory.id})`);
     return newCategory.id;
   }
@@ -148,7 +158,7 @@ async function cleanupInvalidCategories(): Promise<CleanupStats> {
     invalidCategoriesRemoved: 0,
     invalidSubcategoriesRemoved: 0,
     termsReassigned: 0,
-    errors: []
+    errors: [],
   };
 
   try {
@@ -174,21 +184,25 @@ async function cleanupInvalidCategories(): Promise<CleanupStats> {
     for (const invalidCategoryId of invalidCategoryIds) {
       try {
         // Find terms assigned to this invalid category
-        const termsInCategory = await db.select({
-          id: terms.id,
-          name: terms.name
-        })
-        .from(terms)
-        .where(eq(terms.categoryId, invalidCategoryId));
+        const termsInCategory = await db
+          .select({
+            id: terms.id,
+            name: terms.name,
+          })
+          .from(terms)
+          .where(eq(terms.categoryId, invalidCategoryId));
 
         if (termsInCategory.length > 0) {
-          log.info(`📝 Reassigning ${termsInCategory.length} terms from invalid category ${invalidCategoryId}`);
-          
+          log.info(
+            `📝 Reassigning ${termsInCategory.length} terms from invalid category ${invalidCategoryId}`
+          );
+
           // Reassign terms to the replacement category
-          await db.update(terms)
+          await db
+            .update(terms)
             .set({ categoryId: replacementCategoryId })
             .where(eq(terms.categoryId, invalidCategoryId));
-          
+
           stats.termsReassigned += termsInCategory.length;
         }
       } catch (error) {
@@ -201,23 +215,26 @@ async function cleanupInvalidCategories(): Promise<CleanupStats> {
     // Step 4: Remove invalid subcategories
     if (invalidCategoryIds.length > 0) {
       try {
-        const subcatsToRemove = await db.select({
-          id: subcategories.id,
-          name: subcategories.name
-        })
-        .from(subcategories)
-        .where(inArray(subcategories.categoryId, invalidCategoryIds));
+        const subcatsToRemove = await db
+          .select({
+            id: subcategories.id,
+            name: subcategories.name,
+          })
+          .from(subcategories)
+          .where(inArray(subcategories.categoryId, invalidCategoryIds));
 
         if (subcatsToRemove.length > 0) {
           // First remove term-subcategory relationships
-          const subcatIds = subcatsToRemove.map(sc => sc.id);
-          await db.delete(termSubcategories)
+          const subcatIds = subcatsToRemove.map((sc) => sc.id);
+          await db
+            .delete(termSubcategories)
             .where(inArray(termSubcategories.subcategoryId, subcatIds));
 
           // Then remove the subcategories
-          await db.delete(subcategories)
+          await db
+            .delete(subcategories)
             .where(inArray(subcategories.categoryId, invalidCategoryIds));
-          
+
           stats.invalidSubcategoriesRemoved = subcatsToRemove.length;
           log.info(`🗑️  Removed ${subcatsToRemove.length} invalid subcategories`);
         }
@@ -230,9 +247,8 @@ async function cleanupInvalidCategories(): Promise<CleanupStats> {
 
     // Step 5: Remove the invalid categories
     try {
-      await db.delete(categories)
-        .where(inArray(categories.id, invalidCategoryIds));
-      
+      await db.delete(categories).where(inArray(categories.id, invalidCategoryIds));
+
       stats.invalidCategoriesRemoved = invalidCategoryIds.length;
       log.info(`🗑️  Removed ${invalidCategoryIds.length} invalid categories`);
     } catch (error) {
@@ -251,9 +267,8 @@ async function cleanupInvalidCategories(): Promise<CleanupStats> {
 
     if (stats.errors.length > 0) {
       log.error('Errors during cleanup:');
-      stats.errors.forEach(error => log.error(`  - ${error}`));
+      stats.errors.forEach((error) => log.error(`  - ${error}`));
     }
-
   } catch (error) {
     const errorMsg = `Fatal error during cleanup: ${error}`;
     stats.errors.push(errorMsg);
@@ -270,12 +285,12 @@ export { cleanupInvalidCategories, identifyInvalidCategories };
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   cleanupInvalidCategories()
-    .then(stats => {
+    .then((stats) => {
       console.log('\n🎉 Cleanup completed successfully!');
       console.log('Stats:', stats);
       process.exit(0);
     })
-    .catch(error => {
+    .catch((error) => {
       console.error('💥 Cleanup failed:', error);
       process.exit(1);
     });

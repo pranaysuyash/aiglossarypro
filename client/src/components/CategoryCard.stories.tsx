@@ -2,13 +2,14 @@ import type { Meta, StoryObj } from '@storybook/react';
 import CategoryCard from './CategoryCard';
 
 // Mock function for actions
-const fn = () => () => {};
+const _fn = () => () => {};
 
 // Mock category data
 const mockCategory = {
   id: '1',
   name: 'Machine Learning',
-  description: 'Algorithms and statistical models that computer systems use to perform tasks without explicit instructions.',
+  description:
+    'Algorithms and statistical models that computer systems use to perform tasks without explicit instructions.',
   termCount: 45,
 };
 
@@ -19,7 +20,8 @@ const meta: Meta<typeof CategoryCard> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A card component displaying category information with term count and navigation.',
+        component:
+          'A card component displaying category information with term count and navigation.',
       },
     },
   },
@@ -55,7 +57,8 @@ export const WithLongName: Story = {
     category: {
       ...mockCategory,
       name: 'Natural Language Processing and Understanding',
-      description: 'A very long description that tests how the card handles overflow text and maintains proper layout with extensive content.',
+      description:
+        'A very long description that tests how the card handles overflow text and maintains proper layout with extensive content.',
     },
   },
   parameters: {
@@ -108,7 +111,8 @@ export const WithoutIcon: Story = {
     category: {
       ...mockCategory,
       name: 'Computer Vision',
-      description: 'Interdisciplinary field that deals with how computers can be made to gain understanding from digital images.',
+      description:
+        'Interdisciplinary field that deals with how computers can be made to gain understanding from digital images.',
     },
   },
   parameters: {
@@ -183,9 +187,11 @@ export const Hover: Story = {
     },
   },
   play: async ({ canvasElement }) => {
-    const card = canvasElement.querySelector('[data-testid="category-card"]') || canvasElement.querySelector('.card');
+    const card =
+      canvasElement.querySelector('[data-testid="category-card"]') ||
+      canvasElement.querySelector('.card');
     if (card) {
       card.dispatchEvent(new MouseEvent('mouseenter', { bubbles: true }));
     }
   },
-}; 
+};

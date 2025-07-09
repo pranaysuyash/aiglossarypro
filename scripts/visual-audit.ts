@@ -2,7 +2,7 @@
 
 /**
  * Automated Visual Audit Script
- * 
+ *
  * This script:
  * 1. Starts the Vite React app
  * 2. Opens pages in a browser using Playwright
@@ -11,12 +11,12 @@
  * 5. Generates a comprehensive report with issues and action items
  */
 
-import { chromium, Browser, Page } from 'playwright';
-import { exec, spawn } from 'child_process';
-import { promisify } from 'util';
-import fs from 'fs/promises';
-import path from 'path';
+import { exec, spawn } from 'node:child_process';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { promisify } from 'node:util';
 import chalk from 'chalk';
+import { type Browser, chromium, type Page } from 'playwright';
 
 const execAsync = promisify(exec);
 
@@ -76,7 +76,7 @@ class VisualAuditor {
       await execAsync(`lsof -i :${this.baseUrl.split(':')[2]}`);
       console.log(chalk.green('✅ Vite server is already running'));
       return;
-    } catch (error) {
+    } catch (_error) {
       // Port is not in use, so start the server
       console.log(chalk.yellow('⚡ Starting Vite development server...'));
     }
@@ -84,7 +84,7 @@ class VisualAuditor {
     return new Promise((resolve, reject) => {
       this.viteProcess = spawn('npm', ['run', 'dev'], {
         stdio: 'pipe',
-        shell: true
+        shell: true,
       });
 
       this.viteProcess.stdout.on('data', (data: Buffer) => {
@@ -121,61 +121,61 @@ class VisualAuditor {
       {
         name: 'homepage-desktop',
         url: '/',
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
       {
         name: 'homepage-mobile',
         url: '/',
-        viewport: { width: 375, height: 812 }
+        viewport: { width: 375, height: 812 },
       },
       {
         name: 'homepage-tablet',
         url: '/',
-        viewport: { width: 768, height: 1024 }
+        viewport: { width: 768, height: 1024 },
       },
-      
+
       // Main pages
       {
         name: 'terms-listing',
         url: '/terms',
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
       {
         name: 'categories',
         url: '/categories',
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
       {
         name: 'trending',
         url: '/trending',
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
       {
         name: 'login-page',
         url: '/login',
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
       {
         name: 'dashboard',
         url: '/dashboard',
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
       {
         name: 'favorites',
         url: '/favorites',
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
       {
         name: 'settings',
         url: '/settings',
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
       {
         name: 'ai-tools',
         url: '/ai-tools',
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
-      
+
       // Interactive states
       {
         name: 'search-active',
@@ -185,8 +185,8 @@ class VisualAuditor {
           { type: 'wait', value: 2000 },
           { type: 'click', selector: 'input[type="text"]' },
           { type: 'type', selector: 'input[type="text"]', value: 'machine learning' },
-          { type: 'wait', value: 2000 }
-        ]
+          { type: 'wait', value: 2000 },
+        ],
       },
       {
         name: 'mobile-menu',
@@ -195,8 +195,8 @@ class VisualAuditor {
         actions: [
           { type: 'wait', value: 2000 },
           { type: 'click', selector: 'button[aria-label*="menu"]' },
-          { type: 'wait', value: 1000 }
-        ]
+          { type: 'wait', value: 1000 },
+        ],
       },
       {
         name: 'dark-mode',
@@ -205,10 +205,10 @@ class VisualAuditor {
         actions: [
           { type: 'wait', value: 2000 },
           { type: 'click', selector: 'button[aria-label*="mode"]' },
-          { type: 'wait', value: 1000 }
-        ]
+          { type: 'wait', value: 1000 },
+        ],
       },
-      
+
       // Forms and interactions
       {
         name: 'term-filters',
@@ -216,9 +216,12 @@ class VisualAuditor {
         viewport: { width: 1920, height: 1080 },
         actions: [
           { type: 'wait', value: 2000 },
-          { type: 'click', selector: 'button:has-text("Filters"), button[aria-label*="filter"], .filter-button' },
-          { type: 'wait', value: 1000 }
-        ]
+          {
+            type: 'click',
+            selector: 'button:has-text("Filters"), button[aria-label*="filter"], .filter-button',
+          },
+          { type: 'wait', value: 1000 },
+        ],
       },
       {
         name: 'category-dropdown',
@@ -227,40 +230,40 @@ class VisualAuditor {
         actions: [
           { type: 'wait', value: 2000 },
           { type: 'click', selector: '[role="combobox"], select, .category-select' },
-          { type: 'wait', value: 1000 }
-        ]
+          { type: 'wait', value: 1000 },
+        ],
       },
-      
+
       // Responsive breakpoints
       {
         name: 'mobile-portrait',
         url: '/terms',
-        viewport: { width: 360, height: 640 }
+        viewport: { width: 360, height: 640 },
       },
       {
         name: 'mobile-landscape',
         url: '/terms',
-        viewport: { width: 640, height: 360 }
+        viewport: { width: 640, height: 360 },
       },
       {
         name: 'small-desktop',
         url: '/',
-        viewport: { width: 1366, height: 768 }
+        viewport: { width: 1366, height: 768 },
       },
       {
         name: 'large-desktop',
         url: '/',
-        viewport: { width: 2560, height: 1440 }
-      }
+        viewport: { width: 2560, height: 1440 },
+      },
     ];
 
     console.log(chalk.yellow(`📸 Capturing ${pages.length} page configurations...`));
 
     for (const pageConfig of pages) {
       console.log(chalk.gray(`  Capturing ${pageConfig.name}...`));
-      
+
       const page = await this.browser.newPage();
-      
+
       // Set viewport
       if (pageConfig.viewport) {
         await page.setViewportSize(pageConfig.viewport);
@@ -268,7 +271,7 @@ class VisualAuditor {
 
       // Navigate to page
       await page.goto(`${this.baseUrl}${pageConfig.url}`, {
-        waitUntil: 'domcontentloaded'
+        waitUntil: 'domcontentloaded',
       });
 
       // Perform any actions
@@ -282,14 +285,14 @@ class VisualAuditor {
       const screenshotPath = path.join(this.screenshotDir, `${pageConfig.name}.png`);
       await page.screenshot({
         path: screenshotPath,
-        fullPage: pageConfig.name.includes('mobile') ? false : true
+        fullPage: !pageConfig.name.includes('mobile'),
       });
 
       // Capture different states if defined
       if (pageConfig.states) {
         for (const state of pageConfig.states) {
           console.log(chalk.gray(`    State: ${state.name}...`));
-          
+
           // Setup state
           for (const setup of state.setup) {
             await this.performAction(page, setup);
@@ -302,7 +305,7 @@ class VisualAuditor {
           );
           await page.screenshot({
             path: stateScreenshotPath,
-            fullPage: false
+            fullPage: false,
           });
         }
       }
@@ -344,13 +347,13 @@ class VisualAuditor {
 
   async analyzeWithClaude() {
     console.log(chalk.yellow('🤖 Analyzing screenshots with Claude...'));
-    
+
     const screenshots = await fs.readdir(this.screenshotDir);
-    
+
     for (const screenshot of screenshots) {
       const screenshotPath = path.join(this.screenshotDir, screenshot);
       console.log(chalk.gray(`  Analyzing ${screenshot}...`));
-      
+
       try {
         // Create a comprehensive prompt for Claude
         const prompt = `You are an expert UX/UI designer and accessibility specialist. Analyze this screenshot of an AI/ML Glossary web application and provide a comprehensive visual audit.
@@ -413,14 +416,13 @@ class VisualAuditor {
 
         // Execute claude command with the screenshot
         const claudeCommand = `claude -p "@${screenshotPath} ${prompt}"`;
-        
+
         const { stdout } = await execAsync(claudeCommand, {
-          maxBuffer: 10 * 1024 * 1024 // 10MB buffer
+          maxBuffer: 10 * 1024 * 1024, // 10MB buffer
         });
 
         // Parse Claude's response and add to issues
         this.parseClaudeResponse(stdout, screenshot);
-        
       } catch (error) {
         console.error(chalk.red(`Error analyzing ${screenshot}:`), error);
       }
@@ -430,21 +432,25 @@ class VisualAuditor {
   private parseClaudeResponse(response: string, screenshotName: string) {
     // This is a simplified parser - you might want to make it more sophisticated
     // Claude's response should be structured, so we can parse it
-    
+
     const lines = response.split('\n');
     let currentIssue: Partial<VisualIssue> | null = null;
-    
+
     for (const line of lines) {
       if (line.toLowerCase().includes('severity:')) {
-        if (currentIssue && currentIssue.description) {
+        if (currentIssue?.description) {
           this.issues.push(currentIssue as VisualIssue);
         }
         currentIssue = {
           page: screenshotName.replace('.png', ''),
-          severity: line.toLowerCase().includes('critical') ? 'critical' :
-                   line.toLowerCase().includes('high') ? 'high' :
-                   line.toLowerCase().includes('medium') ? 'medium' : 'low',
-          screenshot: screenshotName
+          severity: line.toLowerCase().includes('critical')
+            ? 'critical'
+            : line.toLowerCase().includes('high')
+              ? 'high'
+              : line.toLowerCase().includes('medium')
+                ? 'medium'
+                : 'low',
+          screenshot: screenshotName,
         };
       } else if (line.toLowerCase().includes('category:') && currentIssue) {
         currentIssue.category = line.split(':')[1].trim();
@@ -454,26 +460,26 @@ class VisualAuditor {
         currentIssue.recommendation = line.split(':')[1].trim();
       }
     }
-    
+
     // Don't forget the last issue
-    if (currentIssue && currentIssue.description) {
+    if (currentIssue?.description) {
       this.issues.push(currentIssue as VisualIssue);
     }
   }
 
   async generateReport() {
     console.log(chalk.yellow('📝 Generating report...'));
-    
+
     const reportPath = path.join(this.reportDir, 'visual-audit-report.md');
-    
+
     const report = `# Visual Audit Report
 Generated: ${new Date().toISOString()}
 
 ## Summary
-- Total Pages Audited: ${new Set(this.issues.map(i => i.page)).size}
+- Total Pages Audited: ${new Set(this.issues.map((i) => i.page)).size}
 - Total Issues Found: ${this.issues.length}
-- Critical Issues: ${this.issues.filter(i => i.severity === 'critical').length}
-- High Priority Issues: ${this.issues.filter(i => i.severity === 'high').length}
+- Critical Issues: ${this.issues.filter((i) => i.severity === 'critical').length}
+- High Priority Issues: ${this.issues.filter((i) => i.severity === 'high').length}
 
 ## Issues by Page
 
@@ -493,39 +499,54 @@ All screenshots are available in: ${path.relative(process.cwd(), this.screenshot
 
     await fs.writeFile(reportPath, report);
     console.log(chalk.green(`✅ Report generated: ${reportPath}`));
-    
+
     // Also generate a JSON version for programmatic use
     const jsonReportPath = path.join(this.reportDir, 'visual-audit-report.json');
-    await fs.writeFile(jsonReportPath, JSON.stringify({
-      timestamp: new Date().toISOString(),
-      summary: {
-        pagesAudited: new Set(this.issues.map(i => i.page)).size,
-        totalIssues: this.issues.length,
-        criticalIssues: this.issues.filter(i => i.severity === 'critical').length,
-        highPriorityIssues: this.issues.filter(i => i.severity === 'high').length
-      },
-      issues: this.issues,
-      screenshotDirectory: this.screenshotDir
-    }, null, 2));
+    await fs.writeFile(
+      jsonReportPath,
+      JSON.stringify(
+        {
+          timestamp: new Date().toISOString(),
+          summary: {
+            pagesAudited: new Set(this.issues.map((i) => i.page)).size,
+            totalIssues: this.issues.length,
+            criticalIssues: this.issues.filter((i) => i.severity === 'critical').length,
+            highPriorityIssues: this.issues.filter((i) => i.severity === 'high').length,
+          },
+          issues: this.issues,
+          screenshotDirectory: this.screenshotDir,
+        },
+        null,
+        2
+      )
+    );
   }
 
   private generateIssuesByPage(): string {
     const pageGroups = this.groupBy(this.issues, 'page');
-    
+
     return Object.entries(pageGroups)
-      .map(([page, issues]) => `### ${page}
-${issues.map(issue => `- **[${issue.severity.toUpperCase()}]** ${issue.description}
+      .map(
+        ([page, issues]) => `### ${page}
+${issues
+  .map(
+    (issue) => `- **[${issue.severity.toUpperCase()}]** ${issue.description}
   - Category: ${issue.category}
-  - Fix: ${issue.recommendation}`).join('\n')}`)
+  - Fix: ${issue.recommendation}`
+  )
+  .join('\n')}`
+      )
       .join('\n\n');
   }
 
   private generateIssuesByCategory(): string {
     const categoryGroups = this.groupBy(this.issues, 'category');
-    
+
     return Object.entries(categoryGroups)
-      .map(([category, issues]) => `### ${category}
-${issues.map(issue => `- **[${issue.severity.toUpperCase()}]** ${issue.description} (${issue.page})`).join('\n')}`)
+      .map(
+        ([category, issues]) => `### ${category}
+${issues.map((issue) => `- **[${issue.severity.toUpperCase()}]** ${issue.description} (${issue.page})`).join('\n')}`
+      )
       .join('\n\n');
   }
 
@@ -537,28 +558,36 @@ ${issues.map(issue => `- **[${issue.severity.toUpperCase()}]** ${issue.descripti
 
     return prioritizedIssues
       .slice(0, 10) // Top 10 action items
-      .map((issue, index) => `${index + 1}. **[${issue.severity.toUpperCase()}]** ${issue.recommendation}
+      .map(
+        (
+          issue,
+          index
+        ) => `${index + 1}. **[${issue.severity.toUpperCase()}]** ${issue.recommendation}
    - Page: ${issue.page}
-   - Issue: ${issue.description}`)
+   - Issue: ${issue.description}`
+      )
       .join('\n\n');
   }
 
   private groupBy<T>(array: T[], key: keyof T): Record<string, T[]> {
-    return array.reduce((result, item) => {
-      const group = String(item[key]);
-      if (!result[group]) result[group] = [];
-      result[group].push(item);
-      return result;
-    }, {} as Record<string, T[]>);
+    return array.reduce(
+      (result, item) => {
+        const group = String(item[key]);
+        if (!result[group]) result[group] = [];
+        result[group].push(item);
+        return result;
+      },
+      {} as Record<string, T[]>
+    );
   }
 
   async cleanup() {
     console.log(chalk.yellow('🧹 Cleaning up...'));
-    
+
     if (this.browser) {
       await this.browser.close();
     }
-    
+
     if (this.viteProcess) {
       this.viteProcess.kill();
     }
@@ -572,7 +601,7 @@ ${issues.map(issue => `- **[${issue.severity.toUpperCase()}]** ${issue.descripti
       await this.captureScreenshots();
       await this.analyzeWithClaude();
       await this.generateReport();
-      
+
       console.log(chalk.green('✨ Visual audit complete!'));
     } catch (error) {
       console.error(chalk.red('❌ Error during visual audit:'), error);
@@ -590,4 +619,4 @@ if (isMainModule) {
   auditor.run().catch(console.error);
 }
 
-export { VisualAuditor, VisualIssue };
+export { VisualAuditor, type VisualIssue };

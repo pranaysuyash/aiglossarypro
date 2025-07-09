@@ -27,7 +27,7 @@ async function request<T = any>(
   data?: any
 ): Promise<ApiResponse<T>> {
   const url = endpoint.startsWith('/') ? `/api${endpoint}` : endpoint;
-  
+
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
   };
@@ -35,9 +35,9 @@ async function request<T = any>(
   // Add Authorization header if token exists
   const token = localStorage.getItem('authToken');
   if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
+    headers.Authorization = `Bearer ${token}`;
   }
-  
+
   const options: RequestInit = {
     method,
     headers,
@@ -65,10 +65,7 @@ async function request<T = any>(
     if (error instanceof ApiError) {
       throw error;
     }
-    throw new ApiError(
-      error instanceof Error ? error.message : 'Network error',
-      0
-    );
+    throw new ApiError(error instanceof Error ? error.message : 'Network error', 0);
   }
 }
 

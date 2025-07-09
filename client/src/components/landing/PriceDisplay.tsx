@@ -1,6 +1,6 @@
-import { useCountryPricing } from '@/hooks/useCountryPricing';
-import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useCountryPricing } from '@/hooks/useCountryPricing';
 
 interface PriceDisplayProps {
   showComparison?: boolean;
@@ -9,11 +9,11 @@ interface PriceDisplayProps {
   className?: string;
 }
 
-export function PriceDisplay({ 
-  showComparison = false, 
+export function PriceDisplay({
+  showComparison = false,
   showSavings = false,
-  size = 'lg', 
-  className 
+  size = 'lg',
+  className,
 }: PriceDisplayProps) {
   const pricing = useCountryPricing();
 
@@ -37,16 +37,14 @@ export function PriceDisplay({
       <div className="space-y-2">
         {/* Original Price (if discounted) */}
         {showComparison && pricing.discount > 0 && (
-          <div className="text-lg text-gray-500 line-through">
-            ${pricing.basePrice}
-          </div>
+          <div className="text-lg text-gray-500 line-through">${pricing.basePrice}</div>
         )}
-        
+
         {/* Main Price */}
         <div className={`font-bold text-purple-900 ${sizeClasses[size]}`}>
           ${pricing.localPrice}
         </div>
-        
+
         {/* Discount Badge */}
         {pricing.discount > 0 && (
           <div className="flex justify-center">
@@ -55,7 +53,7 @@ export function PriceDisplay({
             </Badge>
           </div>
         )}
-        
+
         {/* Annual Savings */}
         {showSavings && (
           <div className="text-sm text-green-600 font-medium">

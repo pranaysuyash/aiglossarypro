@@ -3,33 +3,34 @@
  * Advanced search interface that leverages the adaptive search backend
  */
 
-import React, { useState, useCallback, useEffect, useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardHeader, CardTitle, CardContent } from '../ui/card';
-import { Button } from '../ui/button';
-import { Input } from '../ui/input';
-import { Badge } from '../ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { Checkbox } from '../ui/checkbox';
-import { Label } from '../ui/label';
-import { Slider } from '../ui/slider';
-import { 
-  Search, 
-  Brain, 
-  Zap, 
-  Filter, 
-  Sparkles, 
-  Target, 
-  TrendingUp,
-  Clock,
+import {
+  ArrowRight,
   ArrowUpDown,
   BarChart,
-  X,
-  ArrowRight,
+  Brain,
+  Clock,
+  Filter,
   Lightbulb,
   Map,
-  Network
+  Network,
+  Search,
+  Sparkles,
+  Target,
+  TrendingUp,
+  X,
+  Zap,
 } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Checkbox } from '../ui/checkbox';
+import { Input } from '../ui/input';
+import { Label } from '../ui/label';
+import { Slider } from '../ui/slider';
+import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 
 interface SemanticSearchResult {
   id: string;
@@ -73,16 +74,13 @@ interface AISemanticSearchProps {
   onResultSelect?: (result: SemanticSearchResult) => void;
 }
 
-const AISemanticSearch: React.FC<AISemanticSearchProps> = ({ 
-  className = '', 
-  onResultSelect 
-}) => {
+const AISemanticSearch: React.FC<AISemanticSearchProps> = ({ className = '', onResultSelect }) => {
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [searchMode, setSearchMode] = useState<'basic' | 'semantic' | 'advanced'>('semantic');
   const [isAdvancedOpen, setIsAdvancedOpen] = useState(false);
   const [page, setPage] = useState(1);
-  
+
   // Advanced search options
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [sortBy, setSortBy] = useState<'relevance' | 'name' | 'popularity' | 'recent'>('relevance');
@@ -100,20 +98,20 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
   }, [query]);
 
   // AI Semantic Search Query
-  const { 
-    data: searchResults, 
-    isLoading, 
+  const {
+    data: searchResults,
+    isLoading,
     error,
-    refetch 
+    refetch,
   } = useQuery<SemanticSearchResponse>({
     queryKey: [
-      'adaptive-search', 
-      debouncedQuery, 
-      page, 
-      selectedCategories, 
-      sortBy, 
+      'adaptive-search',
+      debouncedQuery,
+      page,
+      selectedCategories,
+      sortBy,
       includeDefinition,
-      searchMode
+      searchMode,
     ],
     queryFn: async () => {
       if (!debouncedQuery.trim()) {
@@ -127,7 +125,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
           query: '',
           hasMore: false,
           strategy: 'none',
-          isGeneric: false
+          isGeneric: false,
         };
       }
 
@@ -136,7 +134,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
         page: page.toString(),
         limit: '20',
         sort: sortBy,
-        includeDefinition: includeDefinition.toString()
+        includeDefinition: includeDefinition.toString(),
       });
 
       if (selectedCategories.length > 0) {
@@ -144,7 +142,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
       }
 
       const response = await fetch(`/api/adaptive-search?${searchParams}`);
-      
+
       if (!response.ok) {
         throw new Error('Search failed');
       }
@@ -173,17 +171,19 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
     queryKey: ['search-suggestions', debouncedQuery],
     queryFn: async () => {
       if (debouncedQuery.length < 2) return [];
-      
-      const response = await fetch(`/api/search/suggestions?q=${encodeURIComponent(debouncedQuery)}&limit=5`);
+
+      const response = await fetch(
+        `/api/search/suggestions?q=${encodeURIComponent(debouncedQuery)}&limit=5`
+      );
       if (!response.ok) return [];
-      
+
       return response.json();
     },
     enabled: debouncedQuery.length >= 2 && debouncedQuery.length < 10,
     staleTime: 60000,
   });
 
-  const handleSearch = useCallback((searchQuery: string) => {
+  const _handleSearch = useCallback((searchQuery: string) => {
     setQuery(searchQuery);
     setPage(1);
   }, []);
@@ -192,17 +192,18 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
     setQuery(suggestion);
   }, []);
 
-  const handleResultClick = useCallback((result: SemanticSearchResult) => {
-    if (onResultSelect) {
-      onResultSelect(result);
-    }
-  }, [onResultSelect]);
+  const handleResultClick = useCallback(
+    (result: SemanticSearchResult) => {
+      if (onResultSelect) {
+        onResultSelect(result);
+      }
+    },
+    [onResultSelect]
+  );
 
   const handleCategoryToggle = useCallback((categoryId: string) => {
-    setSelectedCategories(prev => 
-      prev.includes(categoryId) 
-        ? prev.filter(id => id !== categoryId)
-        : [...prev, categoryId]
+    setSelectedCategories((prev) =>
+      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
     );
     setPage(1);
   }, []);
@@ -216,19 +217,19 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
 
   const loadMoreResults = useCallback(() => {
     if (searchResults?.hasMore) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   }, [searchResults?.hasMore]);
 
   // Memoized search strategy info
   const searchInfo = useMemo(() => {
     if (!searchResults) return null;
-    
+
     return {
       strategy: searchResults.strategy,
       isGeneric: searchResults.isGeneric,
       searchTime: searchResults.searchTime,
-      totalResults: searchResults.total
+      totalResults: searchResults.total,
     };
   }, [searchResults]);
 
@@ -245,7 +246,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
             Intelligent search with concept understanding and relationship mapping
           </p>
         </div>
-        
+
         <div className="flex items-center gap-2">
           <Badge variant={searchMode === 'semantic' ? 'default' : 'secondary'}>
             <Sparkles className="h-3 w-3 mr-1" />
@@ -263,7 +264,10 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
               <Label htmlFor="semantic-search-input" className="sr-only">
                 Search AI/ML concepts with natural language
               </Label>
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" aria-hidden="true" />
+              <Search
+                className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400"
+                aria-hidden="true"
+              />
               <Input
                 id="semantic-search-input"
                 type="text"
@@ -279,7 +283,8 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
                 aria-label="AI semantic search input"
               />
               <div id="search-instructions" className="sr-only">
-                Enter search terms to find AI and machine learning concepts. Use natural language for best results.
+                Enter search terms to find AI and machine learning concepts. Use natural language
+                for best results.
                 {searchResults && `Found ${searchResults.total} results`}
               </div>
               {query && (
@@ -316,7 +321,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
-              
+
               <Button
                 variant="outline"
                 size="sm"
@@ -373,10 +378,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
                         checked={selectedCategories.includes(category.id)}
                         onCheckedChange={() => handleCategoryToggle(category.id)}
                       />
-                      <Label 
-                        htmlFor={`category-${category.id}`}
-                        className="text-sm cursor-pointer"
-                      >
+                      <Label htmlFor={`category-${category.id}`} className="text-sm cursor-pointer">
                         {category.name}
                       </Label>
                     </div>
@@ -392,7 +394,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
                     { value: 'relevance', label: 'Relevance', icon: Target },
                     { value: 'popularity', label: 'Popularity', icon: TrendingUp },
                     { value: 'recent', label: 'Most Recent', icon: Clock },
-                    { value: 'name', label: 'Alphabetical', icon: ArrowUpDown }
+                    { value: 'name', label: 'Alphabetical', icon: ArrowUpDown },
                   ].map(({ value, label, icon: Icon }) => (
                     <div key={value} className="flex items-center space-x-2">
                       <Checkbox
@@ -400,7 +402,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
                         checked={sortBy === value}
                         onCheckedChange={() => setSortBy(value as any)}
                       />
-                      <Label 
+                      <Label
                         htmlFor={`sort-${value}`}
                         className="text-sm cursor-pointer flex items-center"
                       >
@@ -426,7 +428,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
                       Include full definitions
                     </Label>
                   </div>
-                  
+
                   <div className="space-y-2">
                     <Label className="text-sm">
                       Minimum Relevance Score: {minRelevanceScore[0]}
@@ -448,9 +450,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
               <Button variant="outline" onClick={clearFilters}>
                 Clear Filters
               </Button>
-              <Button onClick={() => setIsAdvancedOpen(false)}>
-                Apply Filters
-              </Button>
+              <Button onClick={() => setIsAdvancedOpen(false)}>Apply Filters</Button>
             </div>
           </CardContent>
         </Card>
@@ -469,7 +469,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
                   </span>
                 )}
               </CardTitle>
-              
+
               {searchInfo && (
                 <div className="flex items-center gap-2">
                   <Badge variant="outline" className="text-xs">
@@ -529,11 +529,11 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
                             Score: {result.relevanceScore.toFixed(1)}
                           </Badge>
                         </div>
-                        
+
                         <p className="text-gray-600 text-sm mb-2">
-                          {result.shortDefinition || result.definition?.substring(0, 200) + '...'}
+                          {result.shortDefinition || `${result.definition?.substring(0, 200)}...`}
                         </p>
-                        
+
                         <div className="flex items-center gap-4 text-xs text-gray-500">
                           {result.category && (
                             <span className="flex items-center">
@@ -567,20 +567,16 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({
                           </div>
                         )}
                       </div>
-                      
+
                       <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0 ml-2" />
                     </div>
                   </div>
                 ))}
-                
+
                 {/* Load More Button */}
                 {searchResults?.hasMore && (
                   <div className="text-center pt-4">
-                    <Button 
-                      variant="outline" 
-                      onClick={loadMoreResults}
-                      disabled={isLoading}
-                    >
+                    <Button variant="outline" onClick={loadMoreResults} disabled={isLoading}>
                       Load More Results
                     </Button>
                   </div>

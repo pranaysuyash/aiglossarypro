@@ -3,28 +3,29 @@
  * Monitors active batch operations and triggers alerts
  */
 
-import { Job } from 'bullmq';
-import { ColumnBatchMonitoringJobData, ColumnBatchMonitoringJobResult } from '../types';
+import type { Job } from 'bullmq';
 import { columnBatchProcessorService } from '../../services/columnBatchProcessorService';
-import { costManagementService } from '../../services/costManagementService';
 import { log as logger } from '../../utils/logger';
+import type { ColumnBatchMonitoringJobData, ColumnBatchMonitoringJobResult } from '../types';
 
 export async function columnBatchMonitoringProcessor(
   job: Job<ColumnBatchMonitoringJobData>
 ): Promise<ColumnBatchMonitoringJobResult> {
-  const startTime = Date.now();
-  const { 
-    operationIds, 
+  const _startTime = Date.now();
+  const {
+    operationIds,
     checkInterval = 30000, // 30 seconds default
     alertThresholds = {
       staleTimeMinutes: 30,
       costWarningThreshold: 0.8, // 80%
-      errorRateThreshold: 0.2 // 20%
+      errorRateThreshold: 0.2, // 20%
     },
-    userId 
+    userId,
   } = job.data;
 
-  logger.info(`Starting column batch monitoring job ${job.id} for ${operationIds.length} operations`);
+  logger.info(
+    `Starting column batch monitoring job ${job.id} for ${operationIds.length} operations`
+  );
 
   const result: ColumnBatchMonitoringJobResult = {
     monitoredOperations: operationIds.length,
@@ -33,7 +34,7 @@ export async function columnBatchMonitoringProcessor(
     failedOperations: 0,
     alertsTriggered: 0,
     systemHealth: 'healthy',
-    recommendations: []
+    recommendations: [],
   };
 
   try {
@@ -44,21 +45,21 @@ export async function columnBatchMonitoringProcessor(
       details: {
         operationIds: operationIds.length,
         checkInterval,
-        alertThresholds
-      }
+        alertThresholds,
+      },
     });
 
     const monitoringResults = {
       staleOperations: [] as string[],
       costWarnings: [] as string[],
       highErrorRates: [] as string[],
-      systemIssues: [] as string[]
+      systemIssues: [] as string[],
     };
 
     // Monitor each operation
     for (let i = 0; i < operationIds.length; i++) {
       const operationId = operationIds[i];
-      
+
       await job.updateProgress({
         progress: 10 + (i / operationIds.length) * 70,
         message: `Monitoring operation ${i + 1}/${operationIds.length}`,
@@ -66,13 +67,13 @@ export async function columnBatchMonitoringProcessor(
         details: {
           currentOperation: operationId,
           processed: i,
-          total: operationIds.length
-        }
+          total: operationIds.length,
+        },
       });
 
       try {
         const operation = columnBatchProcessorService.getOperationStatus(operationId);
-        
+
         if (!operation) {
           logger.warn(`Operation ${operationId} not found during monitoring`);
           continue;
@@ -96,13 +97,18 @@ export async function columnBatchMonitoringProcessor(
 
         // Check for stale operations
         if (operation.timing.lastActivity) {
-          const lastActivityMinutes = (Date.now() - operation.timing.lastActivity.getTime()) / (1000 * 60);
-          if (lastActivityMinutes > alertThresholds.staleTimeMinutes && 
-              (operation.status === 'running' || operation.status === 'pending')) {
+          const lastActivityMinutes =
+            (Date.now() - operation.timing.lastActivity.getTime()) / (1000 * 60);
+          if (
+            lastActivityMinutes > alertThresholds.staleTimeMinutes &&
+            (operation.status === 'running' || operation.status === 'pending')
+          ) {
             monitoringResults.staleOperations.push(operationId);
             result.alertsTriggered++;
-            
-            logger.warn(`Stale operation detected: ${operationId} (${lastActivityMinutes.toFixed(1)} minutes inactive)`);
+
+            logger.warn(
+              `Stale operation detected: ${operationId} (${lastActivityMinutes.toFixed(1)} minutes inactive)`
+            );
           }
         }
 
@@ -110,25 +116,29 @@ export async function columnBatchMonitoringProcessor(
         if (operation.costs.budgetUsed >= alertThresholds.costWarningThreshold * 100) {
           monitoringResults.costWarnings.push(operationId);
           result.alertsTriggered++;
-          
-          logger.warn(`Cost warning for operation ${operationId}: ${operation.costs.budgetUsed.toFixed(1)}% of budget used`);
+
+          logger.warn(
+            `Cost warning for operation ${operationId}: ${operation.costs.budgetUsed.toFixed(1)}% of budget used`
+          );
         }
 
         // Check error rates
         const totalProcessed = operation.progress.processedTerms + operation.progress.failedTerms;
-        if (totalProcessed > 10) { // Only check if we have meaningful data
+        if (totalProcessed > 10) {
+          // Only check if we have meaningful data
           const errorRate = operation.progress.failedTerms / totalProcessed;
           if (errorRate >= alertThresholds.errorRateThreshold) {
             monitoringResults.highErrorRates.push(operationId);
             result.alertsTriggered++;
-            
-            logger.warn(`High error rate for operation ${operationId}: ${(errorRate * 100).toFixed(1)}%`);
+
+            logger.warn(
+              `High error rate for operation ${operationId}: ${(errorRate * 100).toFixed(1)}%`
+            );
           }
         }
-
       } catch (error) {
-        logger.error(`Error monitoring operation ${operationId}:`, { 
-          error: error instanceof Error ? error.message : String(error) 
+        logger.error(`Error monitoring operation ${operationId}:`, {
+          error: error instanceof Error ? error.message : String(error),
         });
         monitoringResults.systemIssues.push(operationId);
       }
@@ -137,14 +147,15 @@ export async function columnBatchMonitoringProcessor(
     await job.updateProgress({
       progress: 85,
       message: 'Analyzing system health',
-      stage: 'health_analysis'
+      stage: 'health_analysis',
     });
 
     // Determine system health
-    const totalIssues = monitoringResults.staleOperations.length + 
-                       monitoringResults.costWarnings.length + 
-                       monitoringResults.highErrorRates.length + 
-                       monitoringResults.systemIssues.length;
+    const totalIssues =
+      monitoringResults.staleOperations.length +
+      monitoringResults.costWarnings.length +
+      monitoringResults.highErrorRates.length +
+      monitoringResults.systemIssues.length;
 
     if (totalIssues === 0) {
       result.systemHealth = 'healthy';
@@ -181,17 +192,21 @@ export async function columnBatchMonitoringProcessor(
 
     // Add general recommendations based on system state
     if (result.activeOperations > 5) {
-      result.recommendations.push('High number of active operations - consider resource monitoring');
+      result.recommendations.push(
+        'High number of active operations - consider resource monitoring'
+      );
     }
 
     if (result.failedOperations > result.completedOperations && result.failedOperations > 0) {
-      result.recommendations.push('More operations are failing than completing - review system configuration');
+      result.recommendations.push(
+        'More operations are failing than completing - review system configuration'
+      );
     }
 
     await job.updateProgress({
       progress: 95,
       message: 'Generating monitoring report',
-      stage: 'reporting'
+      stage: 'reporting',
     });
 
     // Log monitoring summary
@@ -200,7 +215,7 @@ export async function columnBatchMonitoringProcessor(
       completed: result.completedOperations,
       failed: result.failedOperations,
       alertsTriggered: result.alertsTriggered,
-      systemHealth: result.systemHealth
+      systemHealth: result.systemHealth,
     });
 
     await job.updateProgress({
@@ -211,17 +226,16 @@ export async function columnBatchMonitoringProcessor(
         monitoredOperations: result.monitoredOperations,
         alertsTriggered: result.alertsTriggered,
         systemHealth: result.systemHealth,
-        recommendationCount: result.recommendations.length
-      }
+        recommendationCount: result.recommendations.length,
+      },
     });
 
     return result;
-
   } catch (error) {
-    logger.error(`Column batch monitoring job ${job.id} failed:`, { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error(`Column batch monitoring job ${job.id} failed:`, {
+      error: error instanceof Error ? error.message : String(error),
     });
-    
+
     throw error;
   }
 }

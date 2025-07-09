@@ -5,7 +5,6 @@
 
 import { createFirebaseUser, setCustomUserClaims } from '../config/firebase';
 import { optimizedStorage as storage } from '../optimizedStorage';
-import { log } from '../utils/logger';
 
 const TEST_USER_EMAIL = 'test@aimlglossary.com';
 const TEST_USER_PASSWORD = 'testpass123';
@@ -18,11 +17,7 @@ async function createTestUsers() {
 
     // Create regular test user
     console.log('Creating regular test user...');
-    const testUser = await createFirebaseUser(
-      TEST_USER_EMAIL,
-      TEST_USER_PASSWORD,
-      'Test User'
-    );
+    const testUser = await createFirebaseUser(TEST_USER_EMAIL, TEST_USER_PASSWORD, 'Test User');
 
     if (testUser) {
       // Create database record
@@ -34,23 +29,19 @@ async function createTestUsers() {
         authProvider: 'email',
         firebaseUid: testUser.uid,
         lifetimeAccess: false,
-        isAdmin: false
+        isAdmin: false,
       });
 
       console.log('✅ Regular test user created:', {
         firebase: testUser.uid,
         database: dbUser?.id,
-        email: TEST_USER_EMAIL
+        email: TEST_USER_EMAIL,
       });
     }
 
     // Create admin test user
     console.log('Creating admin test user...');
-    const adminUser = await createFirebaseUser(
-      TEST_ADMIN_EMAIL,
-      TEST_ADMIN_PASSWORD,
-      'Admin User'
-    );
+    const adminUser = await createFirebaseUser(TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD, 'Admin User');
 
     if (adminUser) {
       // Set admin custom claims in Firebase
@@ -65,14 +56,14 @@ async function createTestUsers() {
         authProvider: 'email',
         firebaseUid: adminUser.uid,
         lifetimeAccess: true,
-        isAdmin: true
+        isAdmin: true,
       });
 
       console.log('✅ Admin test user created:', {
         firebase: adminUser.uid,
         database: dbAdminUser?.id,
         email: TEST_ADMIN_EMAIL,
-        isAdmin: true
+        isAdmin: true,
       });
     }
 
@@ -84,7 +75,6 @@ async function createTestUsers() {
     console.log(`  Email: ${TEST_ADMIN_EMAIL}`);
     console.log(`  Password: ${TEST_ADMIN_PASSWORD}`);
     console.log('\n✨ You can now test login with these credentials!');
-
   } catch (error) {
     console.error('❌ Error creating test users:', error);
     throw error;
@@ -101,4 +91,10 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     });
 }
 
-export { createTestUsers, TEST_USER_EMAIL, TEST_USER_PASSWORD, TEST_ADMIN_EMAIL, TEST_ADMIN_PASSWORD };
+export {
+  createTestUsers,
+  TEST_USER_EMAIL,
+  TEST_USER_PASSWORD,
+  TEST_ADMIN_EMAIL,
+  TEST_ADMIN_PASSWORD,
+};

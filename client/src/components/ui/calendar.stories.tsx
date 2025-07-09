@@ -1,9 +1,8 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { useState } from 'react';
-import { Calendar, type CalendarProps } from './calendar';
 import { format } from 'date-fns';
+import { useState } from 'react';
 import type { DateRange } from 'react-day-picker';
+import { Calendar, type CalendarProps } from './calendar';
 
 const meta: Meta<CalendarProps> = {
   title: 'UI/Calendar',
@@ -36,15 +35,8 @@ export const Default: Story = {
 
     return (
       <div className="space-y-4">
-        <Calendar
-          mode="single"
-          selected={date}
-          onSelect={setDate}
-          className="rounded-md border"
-        />
-        <div className="text-sm text-gray-600">
-          Selected: {date ? format(date, 'PPP') : 'None'}
-        </div>
+        <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" />
+        <div className="text-sm text-gray-600">Selected: {date ? format(date, 'PPP') : 'None'}</div>
       </div>
     );
   },
@@ -55,12 +47,7 @@ export const WithSelectedDate: Story = {
   render: () => {
     const [date, setDate] = useState<Date | undefined>(new Date('2024-06-15'));
     return (
-      <Calendar
-        mode="single"
-        selected={date}
-        onSelect={setDate}
-        className="rounded-md border"
-      />
+      <Calendar mode="single" selected={date} onSelect={setDate} className="rounded-md border" />
     );
   },
 };
@@ -110,7 +97,7 @@ export const RangeMode: Story = {
           numberOfMonths={2}
         />
         <div className="text-sm text-gray-600">
-          Selected range: {dateRange?.from ? format(dateRange.from, 'PPP') : 'None'} 
+          Selected range: {dateRange?.from ? format(dateRange.from, 'PPP') : 'None'}
           {dateRange?.to ? ` to ${format(dateRange.to, 'PPP')}` : ''}
         </div>
       </div>
@@ -121,11 +108,7 @@ export const RangeMode: Story = {
 export const WithDisabledDates: Story = {
   render: () => {
     const [date, setDate] = useState<Date | undefined>();
-    const disabledDays = [
-      new Date('2024-06-10'),
-      new Date('2024-06-15'),
-      new Date('2024-06-20'),
-    ];
+    const disabledDays = [new Date('2024-06-10'), new Date('2024-06-15'), new Date('2024-06-20')];
     return (
       <Calendar
         mode="single"
@@ -202,8 +185,8 @@ export const CustomStyling: Story = {
         onSelect={setDate}
         className="rounded-md border bg-gradient-to-br from-blue-50 to-indigo-100 p-4"
         classNames={{
-          day_selected: "bg-blue-600 text-white hover:bg-blue-700",
-          day_today: "bg-yellow-200 text-yellow-800 font-bold",
+          day_selected: 'bg-blue-600 text-white hover:bg-blue-700',
+          day_today: 'bg-yellow-200 text-yellow-800 font-bold',
         }}
       />
     );
@@ -252,13 +235,11 @@ export const BookingCalendar: Story = {
       new Date('2024-06-22'),
       new Date('2024-06-23'),
     ]);
-    
+
     const isBooked = (date: Date) => {
-      return bookedDates.some(bookedDate => 
-        bookedDate.toDateString() === date.toDateString()
-      );
+      return bookedDates.some((bookedDate) => bookedDate.toDateString() === date.toDateString());
     };
-    
+
     return (
       <div className="space-y-4">
         <div className="text-sm text-gray-600">
@@ -280,7 +261,7 @@ export const BookingCalendar: Story = {
           disabled={isBooked}
           className="rounded-md border"
           classNames={{
-            day_disabled: "bg-red-100 text-red-400 line-through",
+            day_disabled: 'bg-red-100 text-red-400 line-through',
           }}
         />
       </div>
@@ -296,13 +277,11 @@ export const EventCalendar: Story = {
       { date: new Date('2024-06-18'), title: 'Workshop' },
       { date: new Date('2024-06-25'), title: 'Team Meeting' },
     ]);
-    
-    const hasEvent = (date: Date) => {
-      return events.some(event => 
-        event.date.toDateString() === date.toDateString()
-      );
+
+    const _hasEvent = (date: Date) => {
+      return events.some((event) => event.date.toDateString() === date.toDateString());
     };
-    
+
     return (
       <div className="space-y-4">
         <Calendar
@@ -310,21 +289,24 @@ export const EventCalendar: Story = {
           selected={date}
           onSelect={setDate}
           className="rounded-md border"
-          classNames={{
-            // Remove dynamic classNames as they can't be evaluated per day in this way
-          }}
+          classNames={
+            {
+              // Remove dynamic classNames as they can't be evaluated per day in this way
+            }
+          }
           modifiers={{
-            hasEvent: events.map(event => event.date),
+            hasEvent: events.map((event) => event.date),
           }}
           modifiersClassNames={{
-            hasEvent: "bg-green-100 text-green-800 font-semibold relative after:content-['•'] after:absolute after:top-1 after:right-1 after:text-green-600",
+            hasEvent:
+              "bg-green-100 text-green-800 font-semibold relative after:content-['•'] after:absolute after:top-1 after:right-1 after:text-green-600",
           }}
         />
         {date && (
           <div className="mt-4 p-3 bg-gray-50 rounded-md">
             <h4 className="font-medium mb-2">Selected: {date.toDateString()}</h4>
             {events
-              .filter(event => event.date.toDateString() === date.toDateString())
+              .filter((event) => event.date.toDateString() === date.toDateString())
               .map((event, index) => (
                 <div key={index} className="text-sm text-green-600">
                   📅 {event.title}

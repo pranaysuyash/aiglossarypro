@@ -1,11 +1,12 @@
 #!/usr/bin/env tsx
-import * as dotenv from "dotenv";
+import * as dotenv from 'dotenv';
+
 dotenv.config();
 
-import { sql } from "drizzle-orm";
-import { db, pool } from "../db";
-import * as schema from "../../shared/enhancedSchema";
-import * as originalSchema from "../../shared/schema";
+import { sql } from 'drizzle-orm';
+import * as schema from '../../shared/enhancedSchema';
+import * as originalSchema from '../../shared/schema';
+import { db, pool } from '../db';
 
 interface TableInfo {
   name: string;
@@ -27,7 +28,7 @@ interface DatabaseStatus {
 async function checkDatabaseStatus(): Promise<DatabaseStatus> {
   const status: DatabaseStatus = {
     connected: false,
-    databaseUrl: process.env.DATABASE_URL ? "✓ Configured" : "✗ Missing",
+    databaseUrl: process.env.DATABASE_URL ? '✓ Configured' : '✗ Missing',
     tables: [],
     errors: [],
     warnings: [],
@@ -36,20 +37,22 @@ async function checkDatabaseStatus(): Promise<DatabaseStatus> {
 
   // Check DATABASE_URL environment variable
   if (!process.env.DATABASE_URL) {
-    status.errors.push("DATABASE_URL environment variable is not set");
+    status.errors.push('DATABASE_URL environment variable is not set');
     return status;
   }
 
   try {
     // Test database connection
-    console.log("Testing database connection...");
+    console.log('Testing database connection...');
     const connectionTest = await db.execute(sql`SELECT 1 as test`);
     if (connectionTest.rows[0]?.test === 1) {
       status.connected = true;
-      console.log("✓ Database connection successful");
+      console.log('✓ Database connection successful');
     }
   } catch (error) {
-    status.errors.push(`Database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    status.errors.push(
+      `Database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    );
     return status;
   }
 
@@ -67,7 +70,7 @@ async function checkDatabaseStatus(): Promise<DatabaseStatus> {
     { name: 'user_progress', schema: originalSchema.userProgress },
     { name: 'term_views', schema: originalSchema.termViews },
     { name: 'user_settings', schema: originalSchema.userSettings },
-    
+
     // Enhanced schema tables
     { name: 'enhanced_terms', schema: schema.enhancedTerms },
     { name: 'term_sections', schema: schema.termSections },
@@ -100,7 +103,7 @@ async function checkDatabaseStatus(): Promise<DatabaseStatus> {
           AND table_name = ${table.name}
         ) as exists
       `);
-      
+
       tableInfo.exists = Boolean(tableExists.rows[0]?.exists || false);
 
       if (tableInfo.exists) {
@@ -123,7 +126,9 @@ async function checkDatabaseStatus(): Promise<DatabaseStatus> {
         status.warnings.push(`Table '${table.name}' does not exist`);
       }
     } catch (error) {
-      status.errors.push(`Error checking table '${table.name}': ${error instanceof Error ? error.message : 'Unknown error'}`);
+      status.errors.push(
+        `Error checking table '${table.name}': ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
 
     status.tables.push(tableInfo);
@@ -135,7 +140,7 @@ async function checkDatabaseStatus(): Promise<DatabaseStatus> {
     const workMemResult = await db.execute(sql`SHOW work_mem`);
     const workMem = workMemResult.rows[0]?.work_mem;
     console.log(`Current work_mem setting: ${workMem}`);
-    
+
     // For bulk imports of 10k+ terms, recommend higher work_mem
     if (workMem && parseInt(String(workMem)) < 16) {
       status.recommendations.push(
@@ -147,21 +152,25 @@ async function checkDatabaseStatus(): Promise<DatabaseStatus> {
     const maintenanceMemResult = await db.execute(sql`SHOW maintenance_work_mem`);
     const maintenanceMem = maintenanceMemResult.rows[0]?.maintenance_work_mem;
     console.log(`Current maintenance_work_mem setting: ${maintenanceMem}`);
-    
+
     if (maintenanceMem && parseInt(String(maintenanceMem)) < 64) {
       status.recommendations.push(
         "Consider increasing maintenance_work_mem to at least 64MB for faster index creation: SET maintenance_work_mem = '64MB';"
       );
     }
-  } catch (error) {
-    status.warnings.push("Could not check database optimization settings");
+  } catch (_error) {
+    status.warnings.push('Could not check database optimization settings');
   }
 
   // Check critical indexes for bulk import performance
   const criticalIndexes = [
     { table: 'enhanced_terms', column: 'name', importance: 'Critical for duplicate detection' },
     { table: 'enhanced_terms', column: 'slug', importance: 'Critical for unique constraints' },
-    { table: 'term_sections', column: 'term_id', importance: 'Critical for foreign key performance' },
+    {
+      table: 'term_sections',
+      column: 'term_id',
+      importance: 'Critical for foreign key performance',
+    },
   ];
 
   for (const idx of criticalIndexes) {
@@ -175,23 +184,23 @@ async function checkDatabaseStatus(): Promise<DatabaseStatus> {
           AND indexdef ILIKE '%${idx.column}%'
         ) as exists
       `);
-      
+
       if (!indexExists.rows[0]?.exists) {
         status.warnings.push(`Missing index on ${idx.table}.${idx.column} - ${idx.importance}`);
       }
-    } catch (error) {
+    } catch (_error) {
       // Index check failed, but not critical
     }
   }
 
   // Add bulk import recommendations
-  if (status.tables.find(t => t.name === 'enhanced_terms' && t.rowCount === 0)) {
+  if (status.tables.find((t) => t.name === 'enhanced_terms' && t.rowCount === 0)) {
     status.recommendations.push(
-      "Database is empty. For bulk imports:",
-      "1. Use CSV streaming for files > 100MB",
-      "2. Process in batches of 1000 terms",
-      "3. Consider disabling foreign key checks during import",
-      "4. Run ANALYZE after bulk import for query optimization"
+      'Database is empty. For bulk imports:',
+      '1. Use CSV streaming for files > 100MB',
+      '2. Process in batches of 1000 terms',
+      '3. Consider disabling foreign key checks during import',
+      '4. Run ANALYZE after bulk import for query optimization'
     );
   }
 
@@ -200,77 +209,78 @@ async function checkDatabaseStatus(): Promise<DatabaseStatus> {
 
 // Main execution
 async function main() {
-  console.log("=== AI/ML Glossary Database Status Check ===\n");
-  
+  console.log('=== AI/ML Glossary Database Status Check ===\n');
+
   const status = await checkDatabaseStatus();
-  
+
   console.log(`Database URL: ${status.databaseUrl}`);
   console.log(`Connection Status: ${status.connected ? '✓ Connected' : '✗ Disconnected'}\n`);
-  
+
   if (status.errors.length > 0) {
-    console.log("❌ ERRORS:");
-    status.errors.forEach(error => console.log(`  - ${error}`));
+    console.log('❌ ERRORS:');
+    status.errors.forEach((error) => console.log(`  - ${error}`));
     console.log();
   }
-  
+
   if (status.warnings.length > 0) {
-    console.log("⚠️  WARNINGS:");
-    status.warnings.forEach(warning => console.log(`  - ${warning}`));
+    console.log('⚠️  WARNINGS:');
+    status.warnings.forEach((warning) => console.log(`  - ${warning}`));
     console.log();
   }
-  
-  console.log("📊 TABLE STATUS:");
-  console.log("─".repeat(80));
-  console.log("Table Name".padEnd(30) + "Exists".padEnd(10) + "Rows".padEnd(15) + "Indexes");
-  console.log("─".repeat(80));
-  
-  status.tables.forEach(table => {
+
+  console.log('📊 TABLE STATUS:');
+  console.log('─'.repeat(80));
+  console.log(`${'Table Name'.padEnd(30) + 'Exists'.padEnd(10) + 'Rows'.padEnd(15)}Indexes`);
+  console.log('─'.repeat(80));
+
+  status.tables.forEach((table) => {
     const exists = table.exists ? '✓' : '✗';
     const rows = table.exists ? table.rowCount.toString() : '-';
     const indexes = table.exists ? `${table.indexCount} indexes` : '-';
-    console.log(
-      table.name.padEnd(30) +
-      exists.padEnd(10) +
-      rows.padEnd(15) +
-      indexes
-    );
+    console.log(table.name.padEnd(30) + exists.padEnd(10) + rows.padEnd(15) + indexes);
   });
-  
-  console.log("─".repeat(80));
-  
+
+  console.log('─'.repeat(80));
+
   // Summary statistics
-  const existingTables = status.tables.filter(t => t.exists).length;
+  const existingTables = status.tables.filter((t) => t.exists).length;
   const totalRows = status.tables.reduce((sum, t) => sum + t.rowCount, 0);
-  
+
   console.log(`\n📈 SUMMARY:`);
   console.log(`  - Tables: ${existingTables}/${status.tables.length} exist`);
   console.log(`  - Total Rows: ${totalRows.toLocaleString()}`);
-  console.log(`  - Enhanced Terms: ${status.tables.find(t => t.name === 'enhanced_terms')?.rowCount || 0} terms`);
-  console.log(`  - Original Terms: ${status.tables.find(t => t.name === 'terms')?.rowCount || 0} terms`);
-  
+  console.log(
+    `  - Enhanced Terms: ${status.tables.find((t) => t.name === 'enhanced_terms')?.rowCount || 0} terms`
+  );
+  console.log(
+    `  - Original Terms: ${status.tables.find((t) => t.name === 'terms')?.rowCount || 0} terms`
+  );
+
   if (status.recommendations.length > 0) {
-    console.log("\n💡 RECOMMENDATIONS:");
-    status.recommendations.forEach(rec => console.log(`  - ${rec}`));
+    console.log('\n💡 RECOMMENDATIONS:');
+    status.recommendations.forEach((rec) => console.log(`  - ${rec}`));
   }
-  
+
   // Exit with appropriate code
   if (status.errors.length > 0) {
-    console.log("\n❌ Database check FAILED");
+    console.log('\n❌ Database check FAILED');
     process.exit(1);
   } else if (status.warnings.length > 0) {
-    console.log("\n⚠️  Database check completed with warnings");
+    console.log('\n⚠️  Database check completed with warnings');
     process.exit(0);
   } else {
-    console.log("\n✅ Database check PASSED");
+    console.log('\n✅ Database check PASSED');
     process.exit(0);
   }
 }
 
 // Error handling
-main().catch((error) => {
-  console.error("Fatal error during database check:", error);
-  process.exit(1);
-}).finally(() => {
-  // Ensure connection pool is closed
-  pool.end();
-});
+main()
+  .catch((error) => {
+    console.error('Fatal error during database check:', error);
+    process.exit(1);
+  })
+  .finally(() => {
+    // Ensure connection pool is closed
+    pool.end();
+  });

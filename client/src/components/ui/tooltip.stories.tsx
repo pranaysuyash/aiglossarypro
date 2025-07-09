@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
-import { Button } from './button';
+import { HelpCircle, Info, Settings } from 'lucide-react';
 import { Badge } from './badge';
-import { Info, HelpCircle, Settings } from 'lucide-react';
+import { Button } from './button';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from './tooltip';
 
 const meta: Meta<typeof Tooltip> = {
   title: 'UI/Tooltip',
@@ -11,7 +11,8 @@ const meta: Meta<typeof Tooltip> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A tooltip displays informative text when users hover over, focus on, or tap an element.',
+        component:
+          'A tooltip displays informative text when users hover over, focus on, or tap an element.',
       },
     },
   },
@@ -106,7 +107,7 @@ export const DifferentSides: Story = {
           <p>Tooltip on top</p>
         </TooltipContent>
       </Tooltip>
-      
+
       <Tooltip>
         <TooltipTrigger asChild>
           <Button variant="outline">Right</Button>
@@ -115,7 +116,7 @@ export const DifferentSides: Story = {
           <p>Tooltip on right</p>
         </TooltipContent>
       </Tooltip>
-      
+
       <Tooltip>
         <TooltipTrigger asChild>
           <Button variant="outline">Bottom</Button>
@@ -124,7 +125,7 @@ export const DifferentSides: Story = {
           <p>Tooltip on bottom</p>
         </TooltipContent>
       </Tooltip>
-      
+
       <Tooltip>
         <TooltipTrigger asChild>
           <Button variant="outline">Left</Button>
@@ -155,7 +156,7 @@ export const WithDelay: Story = {
           <p>Shows immediately</p>
         </TooltipContent>
       </Tooltip>
-      
+
       <Tooltip delayDuration={500}>
         <TooltipTrigger asChild>
           <Button variant="outline">500ms delay</Button>
@@ -164,7 +165,7 @@ export const WithDelay: Story = {
           <p>Shows after 500ms</p>
         </TooltipContent>
       </Tooltip>
-      
+
       <Tooltip delayDuration={1000}>
         <TooltipTrigger asChild>
           <Button variant="outline">1s delay</Button>
@@ -192,9 +193,8 @@ export const LongContent: Story = {
       </TooltipTrigger>
       <TooltipContent className="max-w-xs">
         <p>
-          This is a longer tooltip that demonstrates how the component handles 
-          multi-line content and proper text wrapping. It should display properly 
-          without breaking the layout.
+          This is a longer tooltip that demonstrates how the component handles multi-line content
+          and proper text wrapping. It should display properly without breaking the layout.
         </p>
       </TooltipContent>
     </Tooltip>
@@ -320,7 +320,7 @@ export const MultipleTooltips: Story = {
           <p>Settings</p>
         </TooltipContent>
       </Tooltip>
-      
+
       <Tooltip>
         <TooltipTrigger asChild>
           <Button variant="outline" size="icon">
@@ -331,7 +331,7 @@ export const MultipleTooltips: Story = {
           <p>Information</p>
         </TooltipContent>
       </Tooltip>
-      
+
       <Tooltip>
         <TooltipTrigger asChild>
           <Button variant="outline" size="icon">

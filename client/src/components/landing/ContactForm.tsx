@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 
 interface ContactFormProps {
@@ -15,7 +16,7 @@ export function ContactForm({ className }: ContactFormProps) {
     name: '',
     email: '',
     subject: '',
-    message: ''
+    message: '',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
@@ -30,44 +31,44 @@ export function ContactForm({ className }: ContactFormProps) {
       const utmData = {
         utm_source: urlParams.get('utm_source') || undefined,
         utm_medium: urlParams.get('utm_medium') || undefined,
-        utm_campaign: urlParams.get('utm_campaign') || undefined
+        utm_campaign: urlParams.get('utm_campaign') || undefined,
       };
 
       const response = await fetch('/api/newsletter/contact', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({
           ...formData,
-          ...utmData
-        })
+          ...utmData,
+        }),
       });
 
       const result = await response.json();
 
       if (result.success) {
         toast({
-          title: "Message sent!",
+          title: 'Message sent!',
           description: result.message,
-          variant: "default"
+          variant: 'default',
         });
-        
+
         // Reset form
         setFormData({
           name: '',
           email: '',
           subject: '',
-          message: ''
+          message: '',
         });
       } else {
         throw new Error(result.message);
       }
     } catch (error) {
       toast({
-        title: "Error sending message",
-        description: error instanceof Error ? error.message : "Please try again later.",
-        variant: "destructive"
+        title: 'Error sending message',
+        description: error instanceof Error ? error.message : 'Please try again later.',
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
@@ -75,9 +76,9 @@ export function ContactForm({ className }: ContactFormProps) {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     }));
   };
 
@@ -87,22 +88,22 @@ export function ContactForm({ className }: ContactFormProps) {
         <CardTitle className="text-xl sm:text-2xl font-bold text-center">Contact Us</CardTitle>
         <p className="text-sm sm:text-base text-gray-600 text-center px-2 sm:px-0">
           Still have questions? We're here to help! Contact us at{' '}
-          <a 
-            href="mailto:support@aimlglossarypro.com" 
+          <a
+            href="mailto:support@aimlglossarypro.com"
             className="text-purple-600 hover:underline break-words"
           >
             support@aimlglossarypro.com
           </a>
         </p>
-        <p className="text-sm text-gray-500 text-center">
-          We typically respond within 24 hours.
-        </p>
+        <p className="text-sm text-gray-500 text-center">We typically respond within 24 hours.</p>
       </CardHeader>
       <CardContent className="px-4 sm:px-6">
         <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
             <div className="space-y-2">
-              <Label htmlFor="name" className="text-sm sm:text-base font-medium">Your Name *</Label>
+              <Label htmlFor="name" className="text-sm sm:text-base font-medium">
+                Your Name *
+              </Label>
               <Input
                 id="name"
                 name="name"
@@ -116,7 +117,9 @@ export function ContactForm({ className }: ContactFormProps) {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm sm:text-base font-medium">Email Address *</Label>
+              <Label htmlFor="email" className="text-sm sm:text-base font-medium">
+                Email Address *
+              </Label>
               <Input
                 id="email"
                 name="email"
@@ -130,9 +133,11 @@ export function ContactForm({ className }: ContactFormProps) {
               />
             </div>
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="subject" className="text-sm sm:text-base font-medium">Subject *</Label>
+            <Label htmlFor="subject" className="text-sm sm:text-base font-medium">
+              Subject *
+            </Label>
             <Input
               id="subject"
               name="subject"
@@ -145,9 +150,11 @@ export function ContactForm({ className }: ContactFormProps) {
               className="min-h-[48px] text-base sm:text-sm px-4 py-3 sm:py-2 touch-manipulation"
             />
           </div>
-          
+
           <div className="space-y-2">
-            <Label htmlFor="message" className="text-sm sm:text-base font-medium">Message *</Label>
+            <Label htmlFor="message" className="text-sm sm:text-base font-medium">
+              Message *
+            </Label>
             <Textarea
               id="message"
               name="message"
@@ -159,9 +166,9 @@ export function ContactForm({ className }: ContactFormProps) {
               disabled={isSubmitting}
             />
           </div>
-          
-          <Button 
-            type="submit" 
+
+          <Button
+            type="submit"
             className="w-full bg-purple-600 hover:bg-purple-700 min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
             disabled={isSubmitting}
           >

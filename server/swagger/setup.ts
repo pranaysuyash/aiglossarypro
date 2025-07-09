@@ -61,12 +61,12 @@ export function setupSwagger(app: Express): void {
       responseInterceptor: (res: any) => {
         // Add any response interceptors here
         return res;
-      }
-    }
+      },
+    },
   };
 
   // Serve Swagger JSON spec
-  app.get('/api/docs/swagger.json', (req, res) => {
+  app.get('/api/docs/swagger.json', (_req, res) => {
     res.setHeader('Content-Type', 'application/json');
     res.send(swaggerSpec);
   });
@@ -76,7 +76,7 @@ export function setupSwagger(app: Express): void {
   app.get('/api/docs', swaggerUi.setup(swaggerSpec, swaggerUiOptions));
 
   // Redirect /docs to /api/docs for convenience
-  app.get('/docs', (req, res) => {
+  app.get('/docs', (_req, res) => {
     res.redirect('/api/docs');
   });
 

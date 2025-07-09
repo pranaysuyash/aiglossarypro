@@ -5,9 +5,9 @@
  * Optimized version for faster execution
  */
 
-import { performance } from 'perf_hooks';
-import { writeFileSync, mkdirSync } from 'fs';
-import { join } from 'path';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { join } from 'node:path';
+import { performance } from 'node:perf_hooks';
 
 // Simplified test configurations
 const TEST_CONFIGS = [
@@ -18,7 +18,7 @@ const TEST_CONFIGS = [
 ];
 
 interface QuickTestResult {
-  config: typeof TEST_CONFIGS[0];
+  config: (typeof TEST_CONFIGS)[0];
   dataGenTime: number;
   layoutTime: number;
   renderingTime: number;
@@ -32,37 +32,37 @@ interface QuickTestResult {
 class Quick3DPerformanceTester {
   private results: QuickTestResult[] = [];
 
-  private generateTestData(config: typeof TEST_CONFIGS[0]) {
+  private generateTestData(config: (typeof TEST_CONFIGS)[0]) {
     const start = performance.now();
-    
+
     // Simplified data generation
     const nodes = Array.from({ length: config.nodes }, (_, i) => ({
       id: `node_${i}`,
       x: Math.random() * 100,
       y: Math.random() * 100,
       z: Math.random() * 100,
-      connections: Math.floor(Math.random() * 5)
+      connections: Math.floor(Math.random() * 5),
     }));
 
-    const edges = Array.from({ length: config.edges }, (_, i) => ({
+    const edges = Array.from({ length: config.edges }, (_, _i) => ({
       source: Math.floor(Math.random() * config.nodes),
       target: Math.floor(Math.random() * config.nodes),
-      weight: Math.random()
+      weight: Math.random(),
     }));
 
     return {
       nodes,
       edges,
-      time: performance.now() - start
+      time: performance.now() - start,
     };
   }
 
   private testLayoutCalculation(nodeCount: number): number {
     const start = performance.now();
-    
+
     // Simplified force calculation simulation
     const iterations = Math.min(10, Math.floor(1000 / Math.sqrt(nodeCount)));
-    
+
     for (let iter = 0; iter < iterations; iter++) {
       for (let i = 0; i < nodeCount; i++) {
         // Simulate force calculations
@@ -76,14 +76,14 @@ class Quick3DPerformanceTester {
 
   private testRenderingPerformance(nodeCount: number, edgeCount: number): number {
     const start = performance.now();
-    
+
     // Simulate 30 frames of rendering
     for (let frame = 0; frame < 30; frame++) {
       // Simulate node rendering
       for (let i = 0; i < nodeCount; i++) {
         Math.sqrt(i * Math.random());
       }
-      
+
       // Simulate edge rendering
       for (let i = 0; i < edgeCount; i++) {
         Math.sqrt(i * Math.random());
@@ -102,7 +102,7 @@ class Quick3DPerformanceTester {
 
   private testInteractionLatency(nodeCount: number): number {
     const start = performance.now();
-    
+
     // Simulate raycasting for node selection
     for (let i = 0; i < Math.min(100, nodeCount); i++) {
       Math.sqrt(i * Math.random() * Math.PI);
@@ -138,7 +138,7 @@ class Quick3DPerformanceTester {
     return recommendations;
   }
 
-  public async runTest(config: typeof TEST_CONFIGS[0]): Promise<QuickTestResult> {
+  public async runTest(config: (typeof TEST_CONFIGS)[0]): Promise<QuickTestResult> {
     console.log(`Testing ${config.name}: ${config.nodes} nodes, ${config.edges} edges`);
 
     try {
@@ -170,14 +170,13 @@ class Quick3DPerformanceTester {
         estimatedFPS,
         interactionLatency,
         success: true,
-        recommendations: []
+        recommendations: [],
       };
 
       result.recommendations = this.generateRecommendations(result);
 
       console.log(`  ✅ Completed: ${estimatedFPS.toFixed(1)} FPS, ${memoryUsageMB.toFixed(1)} MB`);
       return result;
-
     } catch (error) {
       console.log(`  ❌ Failed: ${error}`);
       return {
@@ -189,7 +188,7 @@ class Quick3DPerformanceTester {
         estimatedFPS: 0,
         interactionLatency: 0,
         success: false,
-        recommendations: ['Test execution failed']
+        recommendations: ['Test execution failed'],
       };
     }
   }
@@ -211,11 +210,11 @@ class Quick3DPerformanceTester {
       `Generated: ${new Date().toISOString()}`,
       '',
       '## Summary',
-      ''
+      '',
     ];
 
     // Find maximum viable configuration
-    const viableConfigs = this.results.filter(r => r.success && r.estimatedFPS >= 30);
+    const viableConfigs = this.results.filter((r) => r.success && r.estimatedFPS >= 30);
     const maxViable = viableConfigs.sort((a, b) => b.config.nodes - a.config.nodes)[0];
 
     if (maxViable) {
@@ -238,7 +237,9 @@ class Quick3DPerformanceTester {
       const memory = result.success ? result.memoryUsageMB.toFixed(1) : 'N/A';
       const layout = result.success ? result.layoutTime.toFixed(0) : 'N/A';
 
-      report.push(`| ${result.config.name} | ${result.config.nodes.toLocaleString()} | ${fps} | ${memory} | ${layout} | ${status} |`);
+      report.push(
+        `| ${result.config.name} | ${result.config.nodes.toLocaleString()} | ${fps} | ${memory} | ${layout} | ${status} |`
+      );
     }
 
     report.push('');
@@ -261,7 +262,7 @@ class Quick3DPerformanceTester {
       if (result.recommendations.length > 0) {
         report.push('');
         report.push('**Recommendations:**');
-        result.recommendations.forEach(rec => {
+        result.recommendations.forEach((rec) => {
           report.push(`- ${rec}`);
         });
       }
@@ -282,10 +283,10 @@ class Quick3DPerformanceTester {
 
   public saveResults(): void {
     const outputDir = join(process.cwd(), 'reports', 'performance');
-    
+
     try {
       mkdirSync(outputDir, { recursive: true });
-    } catch (error) {
+    } catch (_error) {
       // Directory might already exist
     }
 
@@ -294,12 +295,13 @@ class Quick3DPerformanceTester {
       timestamp: new Date().toISOString(),
       results: this.results,
       summary: {
-        maxViableNodes: this.results
-          .filter(r => r.success && r.estimatedFPS >= 30)
-          .sort((a, b) => b.config.nodes - a.config.nodes)[0]?.config.nodes || 0,
+        maxViableNodes:
+          this.results
+            .filter((r) => r.success && r.estimatedFPS >= 30)
+            .sort((a, b) => b.config.nodes - a.config.nodes)[0]?.config.nodes || 0,
         totalTests: this.results.length,
-        successfulTests: this.results.filter(r => r.success).length
-      }
+        successfulTests: this.results.filter((r) => r.success).length,
+      },
     };
 
     try {
@@ -308,17 +310,14 @@ class Quick3DPerformanceTester {
         JSON.stringify(jsonData, null, 2)
       );
       console.log(`\n📊 Results saved: ${join(outputDir, '3d-performance-results.json')}`);
-    } catch (error) {
+    } catch (_error) {
       console.warn('Could not save JSON results');
     }
 
     try {
-      writeFileSync(
-        join(outputDir, '3d-performance-report.md'),
-        this.generateReport()
-      );
+      writeFileSync(join(outputDir, '3d-performance-report.md'), this.generateReport());
       console.log(`📋 Report saved: ${join(outputDir, '3d-performance-report.md')}`);
-    } catch (error) {
+    } catch (_error) {
       console.warn('Could not save report');
     }
   }
@@ -326,15 +325,15 @@ class Quick3DPerformanceTester {
 
 async function main() {
   const tester = new Quick3DPerformanceTester();
-  
+
   await tester.runAllTests();
-  
+
   console.log('\n🎯 Performance Testing Complete!');
   console.log('='.repeat(50));
-  
+
   const report = tester.generateReport();
   console.log(report);
-  
+
   tester.saveResults();
 }
 

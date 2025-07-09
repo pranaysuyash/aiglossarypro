@@ -1,22 +1,41 @@
-import { Link } from "wouter";
-import { ArrowLeft, Eye, Clock, Code, Zap, TestTube, Brain, Heart, Copy, Share2, BookOpen } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import ShareMenu from "@/components/ShareMenu";
-import { IEnhancedTerm, ITerm, IEnhancedUserSettings } from "@/interfaces/interfaces";
-import { 
-  getDifficultyColor, 
-  getProgressPercentage, 
-  formatDate, 
+import {
+  ArrowLeft,
+  BookOpen,
+  Brain,
+  Clock,
+  Code,
+  Copy,
+  Eye,
+  Heart,
+  Share2,
+  TestTube,
+  Zap,
+} from 'lucide-react';
+import { Link } from 'wouter';
+import ShareMenu from '@/components/ShareMenu';
+import { Badge } from '@/components/ui/badge';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import type { IEnhancedTerm, IEnhancedUserSettings, ITerm } from '@/interfaces/interfaces';
+import {
+  formatDate,
   formatViewCount,
-  isEnhancedTerm,
-  getMainCategories,
+  getDifficultyColor,
   getDifficultyLevel,
-  getShortDefinition
-} from "@/utils/termUtils";
+  getMainCategories,
+  getProgressPercentage,
+  getShortDefinition,
+  isEnhancedTerm,
+} from '@/utils/termUtils';
 
 interface TermHeaderProps {
   term: IEnhancedTerm | ITerm;
@@ -29,7 +48,6 @@ interface TermHeaderProps {
   onCopyLink: () => void;
   onShareMenuToggle: (open: boolean) => void;
 }
-
 
 // Utility function to calculate reading time
 const calculateReadingTime = (text: string): number => {
@@ -48,20 +66,22 @@ export default function TermHeader({
   shareMenuOpen,
   onToggleFavorite,
   onCopyLink,
-  onShareMenuToggle
+  onShareMenuToggle,
 }: TermHeaderProps) {
   const enhancedTerm = isEnhancedTerm(term) ? term : null;
   const progressPercentage = getProgressPercentage(userSettings, term);
   const mainCategories = getMainCategories(term);
   const difficultyLevel = getDifficultyLevel(term);
   const shortDefinition = getShortDefinition(term);
-  
+
   // Calculate reading time based on term content
   const totalContent = [
     term?.definition,
     enhancedTerm?.fullDefinition,
-    enhancedTerm?.sections?.map(s => JSON.stringify(s.sectionData)).join(' ')
-  ].filter(Boolean).join(' ');
+    enhancedTerm?.sections?.map((s) => JSON.stringify(s.sectionData)).join(' '),
+  ]
+    .filter(Boolean)
+    .join(' ');
   const readingTime = calculateReadingTime(totalContent);
 
   return (
@@ -69,12 +89,7 @@ export default function TermHeader({
       <div className="p-6">
         {/* Back Navigation */}
         <div className="flex items-center mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => window.history.back()}
-            className="mr-4"
-          >
+          <Button variant="ghost" size="sm" onClick={() => window.history.back()} className="mr-4">
             <ArrowLeft className="h-4 w-4 mr-1" />
             Back
           </Button>
@@ -108,9 +123,7 @@ export default function TermHeader({
             )}
             <BreadcrumbSeparator />
             <BreadcrumbItem>
-              <BreadcrumbPage>
-                {term?.name}
-              </BreadcrumbPage>
+              <BreadcrumbPage>{term?.name}</BreadcrumbPage>
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
@@ -121,13 +134,11 @@ export default function TermHeader({
             {/* Badges and metadata */}
             <div className="flex flex-wrap items-center gap-2 mb-4">
               {difficultyLevel && (
-                <Badge className={getDifficultyColor(difficultyLevel)}>
-                  {difficultyLevel}
-                </Badge>
+                <Badge className={getDifficultyColor(difficultyLevel)}>{difficultyLevel}</Badge>
               )}
               {/* Reading Time Badge - More Prominent */}
-              <Badge 
-                variant="outline" 
+              <Badge
+                variant="outline"
                 className="bg-blue-50 border-blue-200 text-blue-700 dark:bg-blue-900/20 dark:border-blue-800 dark:text-blue-300 font-medium px-3 py-1"
               >
                 <BookOpen className="h-3 w-3 mr-1.5" />
@@ -148,9 +159,7 @@ export default function TermHeader({
               </div>
             </div>
 
-            <h1 className="text-3xl lg:text-4xl font-bold mb-4 leading-tight">
-              {term?.name}
-            </h1>
+            <h1 className="text-3xl lg:text-4xl font-bold mb-4 leading-tight">{term?.name}</h1>
 
             {shortDefinition && (
               <p className="text-lg text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
@@ -197,34 +206,34 @@ export default function TermHeader({
               </div>
             )}
           </div>
-          
+
           {/* Action buttons */}
           <div className="flex items-center space-x-2 flex-shrink-0">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={onToggleFavorite}
                     disabled={favoriteLoading}
-                    className={favorite ? "text-accent-500" : "text-gray-400 hover:text-accent-500"}
-                    aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
+                    className={favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}
+                    aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
                   >
-                    <Heart className={favorite ? "fill-current" : ""} />
+                    <Heart className={favorite ? 'fill-current' : ''} />
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{favorite ? "Remove from favorites" : "Add to favorites"}</p>
+                  <p>{favorite ? 'Remove from favorites' : 'Add to favorites'}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={onCopyLink}
                     aria-label="Copy link to this term"
@@ -237,12 +246,12 @@ export default function TermHeader({
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            
+
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={() => onShareMenuToggle(true)}
                     aria-label="Share this term"
@@ -255,9 +264,9 @@ export default function TermHeader({
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
-            
-            <ShareMenu 
-              isOpen={shareMenuOpen} 
+
+            <ShareMenu
+              isOpen={shareMenuOpen}
               onClose={() => onShareMenuToggle(false)}
               title={enhancedTerm?.name || term?.name || 'AI/ML Term'}
               url={window.location.href}

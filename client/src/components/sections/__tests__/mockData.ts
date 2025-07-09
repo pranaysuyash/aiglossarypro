@@ -1,4 +1,4 @@
-import { ContentNode } from '@/types/content-structure';
+import type { ContentNode } from '@/types/content-structure';
 
 export const mockContentNode: ContentNode = {
   name: 'Introduction to AI',
@@ -12,7 +12,7 @@ export const mockContentNode: ContentNode = {
     priority: 'high',
     estimatedReadTime: 5,
     prerequisites: ['Basic Programming'],
-    relatedTopics: ['Machine Learning', 'Deep Learning']
+    relatedTopics: ['Machine Learning', 'Deep Learning'],
   },
   isCompleted: false,
   progress: 0,
@@ -29,7 +29,7 @@ export const mockContentNode: ContentNode = {
         priority: 'medium',
         estimatedReadTime: 3,
         prerequisites: [],
-        relatedTopics: ['AI History']
+        relatedTopics: ['AI History'],
       },
       isCompleted: true,
       progress: 100,
@@ -46,10 +46,10 @@ export const mockContentNode: ContentNode = {
             priority: 'high',
             estimatedReadTime: 7,
             prerequisites: ['What is AI?'],
-            relatedTopics: ['AI Applications']
+            relatedTopics: ['AI Applications'],
           },
           isCompleted: false,
-          progress: 25
+          progress: 25,
         },
         {
           name: 'AI Applications',
@@ -63,12 +63,12 @@ export const mockContentNode: ContentNode = {
             priority: 'medium',
             estimatedReadTime: 5,
             prerequisites: ['Types of AI'],
-            relatedTopics: ['Machine Learning Applications']
+            relatedTopics: ['Machine Learning Applications'],
           },
           isCompleted: false,
-          progress: 0
-        }
-      ]
+          progress: 0,
+        },
+      ],
     },
     {
       name: 'History of AI',
@@ -82,7 +82,7 @@ export const mockContentNode: ContentNode = {
         priority: 'low',
         estimatedReadTime: 10,
         prerequisites: [],
-        relatedTopics: ['AI Timeline', 'AI Pioneers']
+        relatedTopics: ['AI Timeline', 'AI Pioneers'],
       },
       isCompleted: false,
       progress: 0,
@@ -99,14 +99,14 @@ export const mockContentNode: ContentNode = {
             priority: 'low',
             estimatedReadTime: 6,
             prerequisites: [],
-            relatedTopics: ['AI Pioneers']
+            relatedTopics: ['AI Pioneers'],
           },
           isCompleted: false,
-          progress: 0
-        }
-      ]
-    }
-  ]
+          progress: 0,
+        },
+      ],
+    },
+  ],
 };
 
 export const mockSectionsArray: ContentNode[] = [
@@ -123,7 +123,7 @@ export const mockSectionsArray: ContentNode[] = [
       priority: 'high',
       estimatedReadTime: 15,
       prerequisites: ['Introduction to AI'],
-      relatedTopics: ['Supervised Learning', 'Unsupervised Learning']
+      relatedTopics: ['Supervised Learning', 'Unsupervised Learning'],
     },
     isCompleted: false,
     progress: 50,
@@ -140,10 +140,10 @@ export const mockSectionsArray: ContentNode[] = [
           priority: 'medium',
           estimatedReadTime: 8,
           prerequisites: ['Machine Learning Basics'],
-          relatedTopics: ['Classification', 'Regression']
+          relatedTopics: ['Classification', 'Regression'],
         },
         isCompleted: true,
-        progress: 100
+        progress: 100,
       },
       {
         name: 'Unsupervised Learning',
@@ -157,12 +157,12 @@ export const mockSectionsArray: ContentNode[] = [
           priority: 'medium',
           estimatedReadTime: 10,
           prerequisites: ['Machine Learning Basics'],
-          relatedTopics: ['Clustering', 'Dimensionality Reduction']
+          relatedTopics: ['Clustering', 'Dimensionality Reduction'],
         },
         isCompleted: false,
-        progress: 30
-      }
-    ]
+        progress: 30,
+      },
+    ],
   },
   {
     name: 'Deep Learning',
@@ -176,7 +176,7 @@ export const mockSectionsArray: ContentNode[] = [
       priority: 'high',
       estimatedReadTime: 20,
       prerequisites: ['Machine Learning Basics'],
-      relatedTopics: ['Neural Networks', 'CNN', 'RNN']
+      relatedTopics: ['Neural Networks', 'CNN', 'RNN'],
     },
     isCompleted: false,
     progress: 0,
@@ -193,71 +193,71 @@ export const mockSectionsArray: ContentNode[] = [
           priority: 'high',
           estimatedReadTime: 12,
           prerequisites: ['Deep Learning'],
-          relatedTopics: ['Perceptron', 'Backpropagation']
+          relatedTopics: ['Perceptron', 'Backpropagation'],
         },
         isCompleted: false,
-        progress: 0
-      }
-    ]
-  }
+        progress: 0,
+      },
+    ],
+  },
 ];
 
 export const mockUserProgress = {
   '0': {
     isCompleted: false,
     progress: 25,
-    timeSpent: 300
+    timeSpent: 300,
   },
   '0.0': {
     isCompleted: true,
     progress: 100,
-    timeSpent: 180
+    timeSpent: 180,
   },
   '0.0.0': {
     isCompleted: false,
     progress: 25,
-    timeSpent: 60
+    timeSpent: 60,
   },
   '0.0.1': {
     isCompleted: false,
     progress: 0,
-    timeSpent: 0
+    timeSpent: 0,
   },
   '0.1': {
     isCompleted: false,
     progress: 0,
-    timeSpent: 0
+    timeSpent: 0,
   },
   '0.1.0': {
     isCompleted: false,
     progress: 0,
-    timeSpent: 0
+    timeSpent: 0,
   },
   '1': {
     isCompleted: false,
     progress: 50,
-    timeSpent: 600
+    timeSpent: 600,
   },
   '1.0': {
     isCompleted: true,
     progress: 100,
-    timeSpent: 240
+    timeSpent: 240,
   },
   '1.1': {
     isCompleted: false,
     progress: 30,
-    timeSpent: 120
+    timeSpent: 120,
   },
   '2': {
     isCompleted: false,
     progress: 0,
-    timeSpent: 0
+    timeSpent: 0,
   },
   '2.0': {
     isCompleted: false,
     progress: 0,
-    timeSpent: 0
-  }
+    timeSpent: 0,
+  },
 };
 
 export const mockSingleSection: ContentNode = {
@@ -272,10 +272,10 @@ export const mockSingleSection: ContentNode = {
     priority: 'medium',
     estimatedReadTime: 3,
     prerequisites: [],
-    relatedTopics: []
+    relatedTopics: [],
   },
   isCompleted: true,
-  progress: 100
+  progress: 100,
 };
 
 export const mockEmptySection: ContentNode = {
@@ -290,11 +290,11 @@ export const mockEmptySection: ContentNode = {
     priority: 'low',
     estimatedReadTime: 0,
     prerequisites: [],
-    relatedTopics: []
+    relatedTopics: [],
   },
   isCompleted: false,
   progress: 0,
-  subsections: []
+  subsections: [],
 };
 
 export const mockInteractiveSection: ContentNode = {
@@ -309,7 +309,7 @@ export const mockInteractiveSection: ContentNode = {
     priority: 'high',
     estimatedReadTime: 15,
     prerequisites: ['Basic AI Knowledge'],
-    relatedTopics: ['AI Demos', 'Interactive Learning']
+    relatedTopics: ['AI Demos', 'Interactive Learning'],
   },
   isCompleted: false,
   progress: 75,
@@ -326,10 +326,10 @@ export const mockInteractiveSection: ContentNode = {
         priority: 'high',
         estimatedReadTime: 5,
         prerequisites: [],
-        relatedTopics: []
+        relatedTopics: [],
       },
       isCompleted: true,
-      progress: 100
+      progress: 100,
     },
     {
       name: 'Interactive Element 2',
@@ -343,12 +343,12 @@ export const mockInteractiveSection: ContentNode = {
         priority: 'medium',
         estimatedReadTime: 10,
         prerequisites: ['Interactive Element 1'],
-        relatedTopics: []
+        relatedTopics: [],
       },
       isCompleted: false,
-      progress: 50
-    }
-  ]
+      progress: 50,
+    },
+  ],
 };
 
 export const mockSearchableContent: ContentNode[] = [
@@ -364,7 +364,7 @@ export const mockSearchableContent: ContentNode[] = [
       priority: 'high',
       estimatedReadTime: 10,
       prerequisites: [],
-      relatedTopics: []
+      relatedTopics: [],
     },
     isCompleted: false,
     progress: 0,
@@ -381,12 +381,12 @@ export const mockSearchableContent: ContentNode[] = [
           priority: 'medium',
           estimatedReadTime: 5,
           prerequisites: [],
-          relatedTopics: []
+          relatedTopics: [],
         },
         isCompleted: false,
-        progress: 0
-      }
-    ]
+        progress: 0,
+      },
+    ],
   },
   {
     name: 'Machine Learning',
@@ -400,7 +400,7 @@ export const mockSearchableContent: ContentNode[] = [
       priority: 'high',
       estimatedReadTime: 15,
       prerequisites: [],
-      relatedTopics: []
+      relatedTopics: [],
     },
     isCompleted: false,
     progress: 0,
@@ -417,12 +417,12 @@ export const mockSearchableContent: ContentNode[] = [
           priority: 'medium',
           estimatedReadTime: 8,
           prerequisites: [],
-          relatedTopics: []
+          relatedTopics: [],
         },
         isCompleted: false,
-        progress: 0
-      }
-    ]
+        progress: 0,
+      },
+    ],
   },
   {
     name: 'Deep Learning',
@@ -436,19 +436,20 @@ export const mockSearchableContent: ContentNode[] = [
       priority: 'high',
       estimatedReadTime: 20,
       prerequisites: [],
-      relatedTopics: []
+      relatedTopics: [],
     },
     isCompleted: false,
-    progress: 0
-  }
+    progress: 0,
+  },
 ];
 
 export const mockLargeDataset: ContentNode[] = Array.from({ length: 100 }, (_, i) => {
   const contentType: ContentNode['contentType'] = 'markdown';
   const displayType: NonNullable<ContentNode['metadata']>['displayType'] = 'main';
   const parseType: NonNullable<ContentNode['metadata']>['parseType'] = 'simple';
-  const priority: NonNullable<ContentNode['metadata']>['priority'] = i % 3 === 0 ? 'high' : i % 3 === 1 ? 'medium' : 'low';
-  
+  const priority: NonNullable<ContentNode['metadata']>['priority'] =
+    i % 3 === 0 ? 'high' : i % 3 === 1 ? 'medium' : 'low';
+
   return {
     name: `Section ${i + 1}`,
     slug: `section-${i + 1}`,
@@ -461,28 +462,31 @@ export const mockLargeDataset: ContentNode[] = Array.from({ length: 100 }, (_, i
       priority: priority,
       estimatedReadTime: Math.floor(Math.random() * 20) + 1,
       prerequisites: [],
-      relatedTopics: []
+      relatedTopics: [],
     },
     isCompleted: i % 4 === 0,
     progress: Math.floor(Math.random() * 100),
-    subsections: i % 10 === 0 ? [
-      {
-        name: `Subsection ${i + 1}.1`,
-        slug: `subsection-${i + 1}-1`,
-        content: `Subsection content for ${i + 1}.1`,
-        contentType: 'markdown',
-        metadata: {
-          isInteractive: false,
-          displayType: 'main',
-          parseType: 'simple',
-          priority: 'medium',
-          estimatedReadTime: 5,
-          prerequisites: [],
-          relatedTopics: []
-        },
-        isCompleted: false,
-        progress: 0
-      }
-    ] : undefined
+    subsections:
+      i % 10 === 0
+        ? [
+            {
+              name: `Subsection ${i + 1}.1`,
+              slug: `subsection-${i + 1}-1`,
+              content: `Subsection content for ${i + 1}.1`,
+              contentType: 'markdown',
+              metadata: {
+                isInteractive: false,
+                displayType: 'main',
+                parseType: 'simple',
+                priority: 'medium',
+                estimatedReadTime: 5,
+                prerequisites: [],
+                relatedTopics: [],
+              },
+              isCompleted: false,
+              progress: 0,
+            },
+          ]
+        : undefined,
   };
 });

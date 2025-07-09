@@ -1,11 +1,12 @@
 #!/usr/bin/env npx tsx
+
 /**
  * Comprehensive Visual Audit using Puppeteer
  * Includes authentication flows and full feature testing
  */
 
-import puppeteer, { Browser, Page } from 'puppeteer';
-import { writeFileSync } from 'fs';
+import { writeFileSync } from 'node:fs';
+import puppeteer, { type Browser } from 'puppeteer';
 
 interface AuditSection {
   name: string;
@@ -43,8 +44,8 @@ class PuppeteerAuditor {
         totalTests: 0,
         passed: 0,
         failed: 0,
-        warnings: 0
-      }
+        warnings: 0,
+      },
     };
   }
 
@@ -53,7 +54,7 @@ class PuppeteerAuditor {
     this.browser = await puppeteer.launch({
       headless: false,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      defaultViewport: { width: 1920, height: 1080 }
+      defaultViewport: { width: 1920, height: 1080 },
     });
   }
 
@@ -85,12 +86,12 @@ class PuppeteerAuditor {
 
     try {
       await page.goto('http://localhost:5173/', { waitUntil: 'networkidle2', timeout: 30000 });
-      
+
       // Check main elements
-      const hasHeading = await page.$('h1') !== null;
-      const hasNavigation = await page.$('nav') !== null;
-      const hasCategories = await page.$$eval('[data-testid="category-card"]', els => els.length);
-      
+      const hasHeading = (await page.$('h1')) !== null;
+      const hasNavigation = (await page.$('nav')) !== null;
+      const hasCategories = await page.$$eval('[data-testid="category-card"]', (els) => els.length);
+
       details.push(`Main heading: ${hasHeading ? '✅' : '❌'}`);
       details.push(`Navigation: ${hasNavigation ? '✅' : '❌'}`);
       details.push(`Category cards: ${hasCategories}`);
@@ -116,15 +117,14 @@ class PuppeteerAuditor {
         status: errors.length === 0 ? 'pass' : 'warning',
         details,
         errors,
-        screenshots: ['puppeteer-homepage.png', 'puppeteer-homepage-mobile.png']
+        screenshots: ['puppeteer-homepage.png', 'puppeteer-homepage-mobile.png'],
       });
-
     } catch (error) {
       this.addSection({
         name: 'Homepage',
         status: 'fail',
         details: ['Navigation failed'],
-        errors: [error instanceof Error ? error.message : String(error)]
+        errors: [error instanceof Error ? error.message : String(error)],
       });
     } finally {
       await page.close();
@@ -139,13 +139,15 @@ class PuppeteerAuditor {
 
     try {
       // Navigate to a term page (which should show preview for unauthenticated)
-      await page.goto('http://localhost:5173/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941', { 
-        waitUntil: 'networkidle2', 
-        timeout: 30000 
+      await page.goto('http://localhost:5173/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941', {
+        waitUntil: 'networkidle2',
+        timeout: 30000,
       });
 
       // Check for preview state
-      const isPreviewText = await page.$eval('body', el => el.textContent?.includes('Sign in to view full definition'));
+      const isPreviewText = await page.$eval('body', (el) =>
+        el.textContent?.includes('Sign in to view full definition')
+      );
       details.push(`Preview mode for unauthenticated: ${isPreviewText ? '✅' : '❌'}`);
 
       // Look for sign in button
@@ -159,20 +161,20 @@ class PuppeteerAuditor {
       if (signInButton) {
         await signInButton.click();
         await page.waitForTimeout(2000);
-        
+
         // Check for auth form elements
         const emailInput = await page.$('input[type="email"]');
         const passwordInput = await page.$('input[type="password"]');
-        
+
         if (emailInput && passwordInput) {
           details.push('Login form: ✅ Found');
-          
+
           // Try to login with test credentials
           await emailInput.type('test@example.com');
           await passwordInput.type('testpassword123');
-          
+
           await page.screenshot({ path: 'puppeteer-auth-form.png', fullPage: true });
-          
+
           // Look for submit button
           const submitButton = await page.$('button[type="submit"]');
           if (submitButton) {
@@ -186,15 +188,14 @@ class PuppeteerAuditor {
         status: details.length > 2 ? 'pass' : 'warning',
         details,
         errors,
-        screenshots: ['puppeteer-auth-preview.png', 'puppeteer-auth-form.png']
+        screenshots: ['puppeteer-auth-preview.png', 'puppeteer-auth-form.png'],
       });
-
     } catch (error) {
       this.addSection({
         name: 'Authentication',
         status: 'fail',
         details: ['Authentication audit failed'],
-        errors: [error instanceof Error ? error.message : String(error)]
+        errors: [error instanceof Error ? error.message : String(error)],
       });
     } finally {
       await page.close();
@@ -210,17 +211,21 @@ class PuppeteerAuditor {
     try {
       // We need to test with authentication to see hierarchical navigation
       // For now, let's check if the component would render
-      await page.goto('http://localhost:5173/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941', { 
-        waitUntil: 'networkidle2' 
+      await page.goto('http://localhost:5173/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941', {
+        waitUntil: 'networkidle2',
       });
 
       // Check if Content Navigation heading exists (won't for preview terms)
       const contentNavHeading = await page.$('h2:has-text("Content Navigation")');
-      details.push(`Content Navigation heading: ${contentNavHeading ? '✅' : '❌ (requires auth)'}`);
+      details.push(
+        `Content Navigation heading: ${contentNavHeading ? '✅' : '❌ (requires auth)'}`
+      );
 
       // Check for hierarchical navigator component
       const hierarchicalNav = await page.$('[data-testid="card"]');
-      details.push(`Hierarchical Navigator component: ${hierarchicalNav ? '✅' : '❌ (requires auth)'}`);
+      details.push(
+        `Hierarchical Navigator component: ${hierarchicalNav ? '✅' : '❌ (requires auth)'}`
+      );
 
       // Test sections tab
       const sectionsTab = await page.$('button:has-text("Sections"), [data-value="sections"]');
@@ -238,15 +243,14 @@ class PuppeteerAuditor {
         status: contentNavHeading ? 'pass' : 'warning',
         details,
         errors,
-        screenshots: ['puppeteer-hierarchical-nav.png', 'puppeteer-sections-tab.png']
+        screenshots: ['puppeteer-hierarchical-nav.png', 'puppeteer-sections-tab.png'],
       });
-
     } catch (error) {
       this.addSection({
         name: 'Hierarchical Navigation',
         status: 'fail',
         details: ['Navigation audit failed'],
-        errors: [error instanceof Error ? error.message : String(error)]
+        errors: [error instanceof Error ? error.message : String(error)],
       });
     } finally {
       await page.close();
@@ -266,29 +270,29 @@ class PuppeteerAuditor {
       const searchInput = await page.$('input[type="text"], input[placeholder*="Search"]');
       if (searchInput) {
         details.push('Search input: ✅ Found');
-        
+
         // Type search query
         await searchInput.type('machine learning');
         await page.waitForTimeout(1000);
-        
+
         // Check for autocomplete
         const autocomplete = await page.$$('.search-suggestion, [role="listbox"] > *');
         details.push(`Autocomplete suggestions: ${autocomplete.length}`);
-        
+
         await page.screenshot({ path: 'puppeteer-search-typing.png' });
-        
+
         // Submit search
         await page.keyboard.press('Enter');
         await page.waitForTimeout(2000);
-        
+
         // Check URL changed to search results
         const url = page.url();
         details.push(`Search navigation: ${url.includes('search=') ? '✅' : '❌'}`);
-        
+
         // Count results
         const results = await page.$$('[data-testid="term-card"]');
         details.push(`Search results: ${results.length}`);
-        
+
         await page.screenshot({ path: 'puppeteer-search-results.png', fullPage: true });
       } else {
         details.push('Search input: ❌ Not found');
@@ -299,15 +303,14 @@ class PuppeteerAuditor {
         status: searchInput ? 'pass' : 'fail',
         details,
         errors,
-        screenshots: ['puppeteer-search-typing.png', 'puppeteer-search-results.png']
+        screenshots: ['puppeteer-search-typing.png', 'puppeteer-search-results.png'],
       });
-
     } catch (error) {
       this.addSection({
         name: 'Search Functionality',
         status: 'fail',
         details: ['Search audit failed'],
-        errors: [error instanceof Error ? error.message : String(error)]
+        errors: [error instanceof Error ? error.message : String(error)],
       });
     } finally {
       await page.close();
@@ -336,8 +339,12 @@ class PuppeteerAuditor {
       );
 
       details.push(`Page load time: ${loadTime}ms`);
-      details.push(`DOM Content Loaded: ${performanceTiming.domContentLoadedEventEnd - performanceTiming.navigationStart}ms`);
-      details.push(`First Paint: ${metrics.FirstMeaningfulPaint ? metrics.FirstMeaningfulPaint.toFixed(2) : 'N/A'}ms`);
+      details.push(
+        `DOM Content Loaded: ${performanceTiming.domContentLoadedEventEnd - performanceTiming.navigationStart}ms`
+      );
+      details.push(
+        `First Paint: ${metrics.FirstMeaningfulPaint ? metrics.FirstMeaningfulPaint.toFixed(2) : 'N/A'}ms`
+      );
       details.push(`JS Heap Used: ${(metrics.JSHeapUsedSize / 1048576).toFixed(2)}MB`);
       details.push(`Nodes: ${metrics.Nodes}`);
 
@@ -345,7 +352,7 @@ class PuppeteerAuditor {
       const pages = [
         '/category/79f3d163-dae1-499d-8371-047accbe70e9',
         '/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941',
-        '/terms?search=ai'
+        '/terms?search=ai',
       ];
 
       for (const path of pages) {
@@ -359,15 +366,14 @@ class PuppeteerAuditor {
         name: 'Performance',
         status: loadTime < 1000 ? 'pass' : 'warning',
         details,
-        errors: []
+        errors: [],
       });
-
     } catch (error) {
       this.addSection({
         name: 'Performance',
         status: 'fail',
         details: ['Performance audit failed'],
-        errors: [error instanceof Error ? error.message : String(error)]
+        errors: [error instanceof Error ? error.message : String(error)],
       });
     } finally {
       await page.close();
@@ -383,10 +389,10 @@ class PuppeteerAuditor {
       await page.goto('http://localhost:5173/', { waitUntil: 'networkidle2' });
 
       // Check for main landmarks
-      const hasMain = await page.$('main, [role="main"]') !== null;
-      const hasNav = await page.$('nav, [role="navigation"]') !== null;
-      const hasHeader = await page.$('header, [role="banner"]') !== null;
-      
+      const hasMain = (await page.$('main, [role="main"]')) !== null;
+      const hasNav = (await page.$('nav, [role="navigation"]')) !== null;
+      const hasHeader = (await page.$('header, [role="banner"]')) !== null;
+
       details.push(`Main landmark: ${hasMain ? '✅' : '❌'}`);
       details.push(`Navigation landmark: ${hasNav ? '✅' : '❌'}`);
       details.push(`Header landmark: ${hasHeader ? '✅' : '❌'}`);
@@ -402,12 +408,14 @@ class PuppeteerAuditor {
         const h3s = document.querySelectorAll('h3').length;
         return { h1s, h2s, h3s };
       });
-      details.push(`Heading hierarchy: H1(${headings.h1s}), H2(${headings.h2s}), H3(${headings.h3s})`);
+      details.push(
+        `Heading hierarchy: H1(${headings.h1s}), H2(${headings.h2s}), H3(${headings.h3s})`
+      );
 
       // Check for alt text on images
       const imagesWithoutAlt = await page.evaluate(() => {
         const images = Array.from(document.querySelectorAll('img'));
-        return images.filter(img => !img.alt).length;
+        return images.filter((img) => !img.alt).length;
       });
       details.push(`Images without alt text: ${imagesWithoutAlt}`);
 
@@ -421,15 +429,14 @@ class PuppeteerAuditor {
         name: 'Accessibility',
         status: hasMain && hasNav && imagesWithoutAlt === 0 ? 'pass' : 'warning',
         details,
-        errors: []
+        errors: [],
       });
-
     } catch (error) {
       this.addSection({
         name: 'Accessibility',
         status: 'fail',
         details: ['Accessibility audit failed'],
-        errors: [error instanceof Error ? error.message : String(error)]
+        errors: [error instanceof Error ? error.message : String(error)],
       });
     } finally {
       await page.close();
@@ -438,7 +445,7 @@ class PuppeteerAuditor {
 
   async auditTypeScriptErrors() {
     console.log('\n🔧 Checking TypeScript Errors...');
-    const { execSync } = await import('child_process');
+    const { execSync } = await import('node:child_process');
     const details: string[] = [];
     const errors: string[] = [];
 
@@ -449,10 +456,10 @@ class PuppeteerAuditor {
     } catch (error: any) {
       const output = error.stdout || error.message;
       const errorLines = output.split('\n').filter((line: string) => line.includes('error TS'));
-      
+
       errors.push(...errorLines.slice(0, 10)); // First 10 errors
       details.push(`TypeScript errors: ${errorLines.length}`);
-      
+
       if (errorLines.length > 10) {
         errors.push(`... and ${errorLines.length - 10} more errors`);
       }
@@ -462,15 +469,15 @@ class PuppeteerAuditor {
       name: 'TypeScript Compilation',
       status: errors.length === 0 ? 'pass' : 'fail',
       details,
-      errors
+      errors,
     });
   }
 
   async generateReport() {
     const reportPath = 'puppeteer-comprehensive-audit.json';
     writeFileSync(reportPath, JSON.stringify(this.report, null, 2));
-    
-    console.log('\n' + '='.repeat(60));
+
+    console.log(`\n${'='.repeat(60)}`);
     console.log('📊 PUPPETEER COMPREHENSIVE AUDIT REPORT');
     console.log('='.repeat(60));
     console.log(`📅 Date: ${new Date(this.report.timestamp).toLocaleString()}`);
@@ -480,25 +487,25 @@ class PuppeteerAuditor {
     console.log(`   ✅ Passed: ${this.report.summary.passed}`);
     console.log(`   ❌ Failed: ${this.report.summary.failed}`);
     console.log(`   ⚠️  Warnings: ${this.report.summary.warnings}`);
-    
+
     console.log('\n📋 Section Results:');
     for (const section of this.report.sections) {
       const icon = section.status === 'pass' ? '✅' : section.status === 'fail' ? '❌' : '⚠️';
       console.log(`\n${icon} ${section.name}`);
-      section.details.forEach(detail => console.log(`   ${detail}`));
+      section.details.forEach((detail) => console.log(`   ${detail}`));
       if (section.errors && section.errors.length > 0) {
         console.log('   Errors:');
-        section.errors.forEach(error => console.log(`     - ${error.substring(0, 100)}...`));
+        section.errors.forEach((error) => console.log(`     - ${error.substring(0, 100)}...`));
       }
     }
-    
+
     console.log(`\n💾 Full report saved to: ${reportPath}`);
     console.log('📸 Screenshots saved with "puppeteer-" prefix');
   }
 
   async runComprehensiveAudit() {
     await this.init();
-    
+
     try {
       await this.auditHomepage();
       await this.auditAuthentication();
@@ -510,7 +517,7 @@ class PuppeteerAuditor {
     } finally {
       await this.cleanup();
     }
-    
+
     await this.generateReport();
   }
 }

@@ -1,5 +1,5 @@
-import { db } from './db';
 import { sql } from 'drizzle-orm';
+import { db } from './db';
 
 export async function simpleTermsMigration() {
   try {
@@ -42,11 +42,10 @@ export async function simpleTermsMigration() {
         }
 
         // Create search text
-        const searchText = [
-          term.name,
-          term.definition,
-          categoryName
-        ].filter(Boolean).join(' ').toLowerCase();
+        const searchText = [term.name, term.definition, categoryName]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
 
         // Insert into enhanced_terms with simple data
         await db.execute(sql`
@@ -77,11 +76,10 @@ export async function simpleTermsMigration() {
         `);
 
         migratedCount++;
-        
+
         if (migratedCount % 50 === 0) {
           console.log(`Migrated ${migratedCount} terms...`);
         }
-
       } catch (error) {
         console.error(`Error migrating term ${term.name}:`, error);
       }
@@ -89,7 +87,6 @@ export async function simpleTermsMigration() {
 
     console.log(`Migration completed! Migrated ${migratedCount} terms to enhanced_terms.`);
     return { success: true, migrated: migratedCount };
-
   } catch (error) {
     console.error('Simple terms migration failed:', error);
     throw error;
@@ -107,4 +104,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.error('Migration failed:', error);
       process.exit(1);
     });
-} 
+}

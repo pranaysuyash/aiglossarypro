@@ -1,42 +1,53 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { 
-  Bot, 
-  Plus, 
-  Edit, 
-  Eye, 
-  Wand2, 
-  Brain, 
-  CheckCircle, 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
   AlertCircle,
+  Bot,
+  Brain,
+  CheckCircle,
+  Eye,
+  Filter,
+  Globe,
   Lightbulb,
-  Search, 
-  Filter, 
+  Plus,
   RefreshCw,
-  Upload,
-  Download,
   Sparkles,
   Target,
-  TrendingUp,
-  Globe,
-  Users,
-  Clock,
-  Star,
-  Zap
+  Wand2,
+  Zap,
 } from 'lucide-react';
+import { useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 
@@ -48,7 +59,7 @@ interface Term {
   category: string;
   subcategory?: string;
   characteristics?: string[];
-  applications?: Array<{name: string; description: string}>;
+  applications?: Array<{ name: string; description: string }>;
   mathFormulation?: string;
   relatedTerms?: string[];
   aiGenerated: boolean;
@@ -68,7 +79,7 @@ interface AIDefinitionResponse {
   shortDefinition: string;
   definition: string;
   characteristics?: string[];
-  applications?: Array<{name: string; description: string}>;
+  applications?: Array<{ name: string; description: string }>;
   relatedTerms?: string[];
   mathFormulation?: string;
 }
@@ -96,12 +107,12 @@ export function AdminTermsManager() {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [selectedTerms, setSelectedTerms] = useState<string[]>([]);
-  const [bulkActionLoading, setBulkActionLoading] = useState(false);
+  const [bulkActionLoading, _setBulkActionLoading] = useState(false);
   const [selectedTerm, setSelectedTerm] = useState<Term | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
+  const [_isAIAssistantOpen, setIsAIAssistantOpen] = useState(false);
   const [newTerm, setNewTerm] = useState({ name: '', category: '', context: '' });
   const [aiSuggestions, setAISuggestions] = useState<TermSuggestion[]>([]);
   const [aiGeneratedContent, setAIGeneratedContent] = useState<AIDefinitionResponse | null>(null);
@@ -114,15 +125,15 @@ export function AdminTermsManager() {
     page: 1,
     limit: 50,
     sort: 'updatedAt',
-    order: 'desc'
+    order: 'desc',
   });
 
   // Query for terms with filters
-  const { 
-    data: termsData, 
-    isLoading: isLoadingTerms, 
+  const {
+    data: termsData,
+    isLoading: isLoadingTerms,
     error: termsError,
-    refetch: refetchTerms
+    refetch: refetchTerms,
   } = useQuery({
     queryKey: ['admin-terms', filters],
     queryFn: async () => {
@@ -137,12 +148,12 @@ export function AdminTermsManager() {
           }
         }
       });
-      
+
       const response = await fetch(`/api/terms?${params}&admin=true`);
       if (!response.ok) throw new Error('Failed to fetch terms');
       return response.json();
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Query for categories
@@ -152,7 +163,7 @@ export function AdminTermsManager() {
       const response = await fetch('/api/categories');
       if (!response.ok) throw new Error('Failed to fetch categories');
       return response.json();
-    }
+    },
   });
 
   // Query for AI analytics
@@ -163,7 +174,7 @@ export function AdminTermsManager() {
       if (!response.ok) throw new Error('Failed to fetch AI analytics');
       return response.json();
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Mutation for creating terms with AI
@@ -172,7 +183,7 @@ export function AdminTermsManager() {
       const response = await fetch('/api/terms', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(termData)
+        body: JSON.stringify(termData),
       });
       if (!response.ok) throw new Error('Failed to create term');
       return response.json();
@@ -185,59 +196,69 @@ export function AdminTermsManager() {
       toast({ title: 'Success', description: 'Term created successfully' });
     },
     onError: (error) => {
-      toast({ 
-        title: 'Error', 
+      toast({
+        title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to create term',
-        variant: 'destructive' 
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Mutation for AI definition generation
   const generateDefinitionMutation = useMutation({
-    mutationFn: async ({ term, category, context }: { term: string; category?: string; context?: string }) => {
+    mutationFn: async ({
+      term,
+      category,
+      context,
+    }: {
+      term: string;
+      category?: string;
+      context?: string;
+    }) => {
       const response = await fetch('/api/ai/generate-definition', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ term, category, context })
+        body: JSON.stringify({ term, category, context }),
       });
       if (!response.ok) throw new Error('Failed to generate definition');
       return response.json();
     },
     onSuccess: (data) => {
       setAIGeneratedContent(data.data);
-      toast({ 
-        title: 'AI Definition Generated', 
-        description: 'Review the generated content before saving' 
+      toast({
+        title: 'AI Definition Generated',
+        description: 'Review the generated content before saving',
       });
     },
     onError: (error) => {
-      toast({ 
-        title: 'Error', 
+      toast({
+        title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to generate definition',
-        variant: 'destructive' 
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Mutation for getting AI suggestions
   const getSuggestionsMutation = useMutation({
     mutationFn: async (category?: string) => {
-      const response = await fetch(`/api/ai/term-suggestions${category ? `?category=${category}` : ''}`);
+      const response = await fetch(
+        `/api/ai/term-suggestions${category ? `?category=${category}` : ''}`
+      );
       if (!response.ok) throw new Error('Failed to get suggestions');
       return response.json();
     },
     onSuccess: (data) => {
       setAISuggestions(data.data.suggestions);
       setIsAIAssistantOpen(true);
-    }
+    },
   });
 
   // Mutation for improving definitions
   const improveDefinitionMutation = useMutation({
     mutationFn: async (termId: string) => {
       const response = await fetch(`/api/ai/improve-definition/${termId}`, {
-        method: 'POST'
+        method: 'POST',
       });
       if (!response.ok) throw new Error('Failed to improve definition');
       return response.json();
@@ -245,11 +266,11 @@ export function AdminTermsManager() {
     onSuccess: (data) => {
       setAIGeneratedContent(data.data);
       setSelectedTerm(data.originalTerm);
-      toast({ 
-        title: 'AI Improvements Generated', 
-        description: 'Review the suggested improvements' 
+      toast({
+        title: 'AI Improvements Generated',
+        description: 'Review the suggested improvements',
       });
-    }
+    },
   });
 
   // Mutation for bulk verification
@@ -258,7 +279,7 @@ export function AdminTermsManager() {
       const response = await fetch('/api/admin/terms/bulk-verify', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ termIds, verified })
+        body: JSON.stringify({ termIds, verified }),
       });
       if (!response.ok) throw new Error('Failed to update verification status');
       return response.json();
@@ -267,14 +288,14 @@ export function AdminTermsManager() {
       queryClient.invalidateQueries({ queryKey: ['admin-terms'] });
       setSelectedTerms([]);
       toast({ title: 'Success', description: 'Terms updated successfully' });
-    }
+    },
   });
 
   const handleFilterChange = (key: keyof TermFilters, value: any) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [key]: value,
-      page: key === 'page' ? value : 1
+      page: key === 'page' ? value : 1,
     }));
   };
 
@@ -288,35 +309,35 @@ export function AdminTermsManager() {
 
   const handleSelectTerm = (id: string, checked: boolean) => {
     if (checked) {
-      setSelectedTerms(prev => [...prev, id]);
+      setSelectedTerms((prev) => [...prev, id]);
     } else {
-      setSelectedTerms(prev => prev.filter(termId => termId !== id));
+      setSelectedTerms((prev) => prev.filter((termId) => termId !== id));
     }
   };
 
   const handleGenerateDefinition = () => {
     if (!newTerm.name.trim()) {
-      toast({ 
-        title: 'Error', 
+      toast({
+        title: 'Error',
         description: 'Please enter a term name',
-        variant: 'destructive' 
+        variant: 'destructive',
       });
       return;
     }
-    
+
     generateDefinitionMutation.mutate({
       term: newTerm.name,
       category: newTerm.category,
-      context: newTerm.context
+      context: newTerm.context,
     });
   };
 
   const handleCreateTerm = () => {
     if (!aiGeneratedContent || !newTerm.name.trim()) {
-      toast({ 
-        title: 'Error', 
+      toast({
+        title: 'Error',
         description: 'Please generate AI content first',
-        variant: 'destructive' 
+        variant: 'destructive',
       });
       return;
     }
@@ -331,7 +352,7 @@ export function AdminTermsManager() {
       mathFormulation: aiGeneratedContent.mathFormulation,
       relatedTerms: aiGeneratedContent.relatedTerms,
       aiGenerated: true,
-      verificationStatus: 'unverified'
+      verificationStatus: 'unverified',
     });
   };
 
@@ -339,25 +360,29 @@ export function AdminTermsManager() {
     setNewTerm({
       name: suggestion.term,
       category: suggestion.category,
-      context: suggestion.reason
+      context: suggestion.reason,
     });
     setIsAIAssistantOpen(false);
     setIsCreateDialogOpen(true);
-    
+
     // Auto-generate definition for the suggestion
     generateDefinitionMutation.mutate({
       term: suggestion.term,
       category: suggestion.category,
-      context: suggestion.reason
+      context: suggestion.reason,
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'verified': return 'bg-green-100 text-green-800';
-      case 'unverified': return 'bg-yellow-100 text-yellow-800';
-      case 'flagged': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'verified':
+        return 'bg-green-100 text-green-800';
+      case 'unverified':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'flagged':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -374,7 +399,7 @@ export function AdminTermsManager() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -398,7 +423,9 @@ export function AdminTermsManager() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">AI-Powered Terms Management</h1>
-          <p className="text-gray-600 mt-2">Manage glossary terms with AI assistance for creation, improvement, and quality control</p>
+          <p className="text-gray-600 mt-2">
+            Manage glossary terms with AI assistance for creation, improvement, and quality control
+          </p>
         </div>
         <div className="flex items-center space-x-2">
           <Button
@@ -409,17 +436,11 @@ export function AdminTermsManager() {
             <Lightbulb className="w-4 h-4 mr-2" />
             AI Suggestions
           </Button>
-          <Button
-            onClick={() => setIsCreateDialogOpen(true)}
-          >
+          <Button onClick={() => setIsCreateDialogOpen(true)}>
             <Plus className="w-4 h-4 mr-2" />
             Create Term
           </Button>
-          <Button
-            variant="outline"
-            onClick={() => refetchTerms()}
-            disabled={isLoadingTerms}
-          >
+          <Button variant="outline" onClick={() => refetchTerms()} disabled={isLoadingTerms}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh
           </Button>
@@ -443,12 +464,8 @@ export function AdminTermsManager() {
                 <Globe className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {termsData?.pagination?.total || 0}
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Across all categories
-                </p>
+                <div className="text-2xl font-bold">{termsData?.pagination?.total || 0}</div>
+                <p className="text-xs text-muted-foreground">Across all categories</p>
               </CardContent>
             </Card>
 
@@ -462,7 +479,12 @@ export function AdminTermsManager() {
                   {termsData?.data?.filter((term: Term) => term.aiGenerated).length || 0}
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  {Math.round(((termsData?.data?.filter((term: Term) => term.aiGenerated).length || 0) / (termsData?.pagination?.total || 1)) * 100)}% of total
+                  {Math.round(
+                    ((termsData?.data?.filter((term: Term) => term.aiGenerated).length || 0) /
+                      (termsData?.pagination?.total || 1)) *
+                      100
+                  )}
+                  % of total
                 </p>
               </CardContent>
             </Card>
@@ -474,11 +496,10 @@ export function AdminTermsManager() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-green-600">
-                  {termsData?.data?.filter((term: Term) => term.verificationStatus === 'verified').length || 0}
+                  {termsData?.data?.filter((term: Term) => term.verificationStatus === 'verified')
+                    .length || 0}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Expert reviewed and approved
-                </p>
+                <p className="text-xs text-muted-foreground">Expert reviewed and approved</p>
               </CardContent>
             </Card>
 
@@ -489,11 +510,10 @@ export function AdminTermsManager() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-yellow-600">
-                  {termsData?.data?.filter((term: Term) => term.verificationStatus === 'unverified').length || 0}
+                  {termsData?.data?.filter((term: Term) => term.verificationStatus === 'unverified')
+                    .length || 0}
                 </div>
-                <p className="text-xs text-muted-foreground">
-                  Pending verification
-                </p>
+                <p className="text-xs text-muted-foreground">Pending verification</p>
               </CardContent>
             </Card>
           </div>
@@ -566,7 +586,9 @@ export function AdminTermsManager() {
                     <SelectContent>
                       <SelectItem value="">All Categories</SelectItem>
                       {categories?.map((cat: Category) => (
-                        <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                        <SelectItem key={cat.id} value={cat.name}>
+                          {cat.name}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -622,7 +644,9 @@ export function AdminTermsManager() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => bulkVerifyMutation.mutate({ termIds: selectedTerms, verified: true })}
+                      onClick={() =>
+                        bulkVerifyMutation.mutate({ termIds: selectedTerms, verified: true })
+                      }
                       disabled={bulkActionLoading}
                     >
                       <CheckCircle className="w-4 h-4 mr-2" />
@@ -631,7 +655,9 @@ export function AdminTermsManager() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => bulkVerifyMutation.mutate({ termIds: selectedTerms, verified: false })}
+                      onClick={() =>
+                        bulkVerifyMutation.mutate({ termIds: selectedTerms, verified: false })
+                      }
                       disabled={bulkActionLoading}
                     >
                       <AlertCircle className="w-4 h-4 mr-2" />
@@ -647,9 +673,7 @@ export function AdminTermsManager() {
           <Card>
             <CardHeader>
               <CardTitle>Terms</CardTitle>
-              <CardDescription>
-                {termsData?.pagination?.total || 0} total terms
-              </CardDescription>
+              <CardDescription>{termsData?.pagination?.total || 0} total terms</CardDescription>
             </CardHeader>
             <CardContent>
               {isLoadingTerms ? (
@@ -682,9 +706,7 @@ export function AdminTermsManager() {
                           <TableCell>
                             <Checkbox
                               checked={selectedTerms.includes(term.id)}
-                              onCheckedChange={(checked) => 
-                                handleSelectTerm(term.id, !!checked)
-                              }
+                              onCheckedChange={(checked) => handleSelectTerm(term.id, !!checked)}
                             />
                           </TableCell>
                           <TableCell>
@@ -747,9 +769,12 @@ export function AdminTermsManager() {
               {termsData?.pagination && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-gray-600">
-                    Showing {((termsData.pagination.page - 1) * termsData.pagination.limit) + 1} to{' '}
-                    {Math.min(termsData.pagination.page * termsData.pagination.limit, termsData.pagination.total)} of{' '}
-                    {termsData.pagination.total} terms
+                    Showing {(termsData.pagination.page - 1) * termsData.pagination.limit + 1} to{' '}
+                    {Math.min(
+                      termsData.pagination.page * termsData.pagination.limit,
+                      termsData.pagination.total
+                    )}{' '}
+                    of {termsData.pagination.total} terms
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button
@@ -797,7 +822,7 @@ export function AdminTermsManager() {
                   <span>Get Term Suggestions</span>
                   <span className="text-xs opacity-75">AI recommends missing terms</span>
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   onClick={() => setIsCreateDialogOpen(true)}
@@ -821,10 +846,7 @@ export function AdminTermsManager() {
                         </div>
                         <p className="text-sm text-gray-600">{suggestion.shortDefinition}</p>
                         <p className="text-xs text-gray-500">{suggestion.reason}</p>
-                        <Button
-                          size="sm"
-                          onClick={() => handleCreateFromSuggestion(suggestion)}
-                        >
+                        <Button size="sm" onClick={() => handleCreateFromSuggestion(suggestion)}>
                           <Plus className="w-3 h-3 mr-1" />
                           Create Term
                         </Button>
@@ -852,19 +874,24 @@ export function AdminTermsManager() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                 <div className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-green-600">
-                    {termsData?.data?.filter((term: Term) => (term.qualityScore || 0) >= 80).length || 0}
+                    {termsData?.data?.filter((term: Term) => (term.qualityScore || 0) >= 80)
+                      .length || 0}
                   </div>
                   <div className="text-sm text-gray-500">High Quality (80%+)</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-yellow-600">
-                    {termsData?.data?.filter((term: Term) => (term.qualityScore || 0) >= 60 && (term.qualityScore || 0) < 80).length || 0}
+                    {termsData?.data?.filter(
+                      (term: Term) =>
+                        (term.qualityScore || 0) >= 60 && (term.qualityScore || 0) < 80
+                    ).length || 0}
                   </div>
                   <div className="text-sm text-gray-500">Medium Quality (60-79%)</div>
                 </div>
                 <div className="text-center p-4 border rounded-lg">
                   <div className="text-2xl font-bold text-red-600">
-                    {termsData?.data?.filter((term: Term) => (term.qualityScore || 0) < 60).length || 0}
+                    {termsData?.data?.filter((term: Term) => (term.qualityScore || 0) < 60)
+                      .length || 0}
                   </div>
                   <div className="text-sm text-gray-500">Needs Improvement (&lt;60%)</div>
                 </div>
@@ -874,14 +901,20 @@ export function AdminTermsManager() {
                 <h3 className="font-semibold">Terms Needing Review</h3>
                 <div className="space-y-2">
                   {termsData?.data
-                    ?.filter((term: Term) => term.verificationStatus === 'unverified' || (term.qualityScore || 0) < 70)
+                    ?.filter(
+                      (term: Term) =>
+                        term.verificationStatus === 'unverified' || (term.qualityScore || 0) < 70
+                    )
                     ?.slice(0, 5)
                     ?.map((term: Term) => (
-                      <div key={term.id} className="flex items-center justify-between p-3 border rounded">
+                      <div
+                        key={term.id}
+                        className="flex items-center justify-between p-3 border rounded"
+                      >
                         <div>
                           <div className="font-medium">{term.name}</div>
                           <div className="text-sm text-gray-500">
-                            Quality: {term.qualityScore ? `${term.qualityScore}%` : 'Unscored'} • 
+                            Quality: {term.qualityScore ? `${term.qualityScore}%` : 'Unscored'} •
                             Status: {term.verificationStatus}
                           </div>
                         </div>
@@ -914,7 +947,7 @@ export function AdminTermsManager() {
               Use AI to generate comprehensive definitions and content for new terms
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
@@ -922,7 +955,7 @@ export function AdminTermsManager() {
                 <Input
                   id="term-name"
                   value={newTerm.name}
-                  onChange={(e) => setNewTerm(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => setNewTerm((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="Enter term name..."
                 />
               </div>
@@ -930,26 +963,28 @@ export function AdminTermsManager() {
                 <Label htmlFor="term-category">Category</Label>
                 <Select
                   value={newTerm.category}
-                  onValueChange={(value) => setNewTerm(prev => ({ ...prev, category: value }))}
+                  onValueChange={(value) => setNewTerm((prev) => ({ ...prev, category: value }))}
                 >
                   <SelectTrigger id="term-category">
                     <SelectValue placeholder="Select category" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories?.map((cat: Category) => (
-                      <SelectItem key={cat.id} value={cat.name}>{cat.name}</SelectItem>
+                      <SelectItem key={cat.id} value={cat.name}>
+                        {cat.name}
+                      </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
             </div>
-            
+
             <div>
               <Label htmlFor="term-context">Context (Optional)</Label>
               <Textarea
                 id="term-context"
                 value={newTerm.context}
-                onChange={(e) => setNewTerm(prev => ({ ...prev, context: e.target.value }))}
+                onChange={(e) => setNewTerm((prev) => ({ ...prev, context: e.target.value }))}
                 placeholder="Provide additional context to help AI generate better content..."
                 rows={3}
               />
@@ -967,12 +1002,9 @@ export function AdminTermsManager() {
                 )}
                 Generate AI Content
               </Button>
-              
+
               {aiGeneratedContent && (
-                <Button
-                  onClick={handleCreateTerm}
-                  disabled={createTermMutation.isPending}
-                >
+                <Button onClick={handleCreateTerm} disabled={createTermMutation.isPending}>
                   {createTermMutation.isPending ? (
                     <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                   ) : (
@@ -992,18 +1024,18 @@ export function AdminTermsManager() {
                     AI Generated
                   </Badge>
                 </div>
-                
+
                 <div className="space-y-3">
                   <div>
                     <Label className="text-sm font-medium">Short Definition</Label>
                     <p className="text-sm">{aiGeneratedContent.shortDefinition}</p>
                   </div>
-                  
+
                   <div>
                     <Label className="text-sm font-medium">Detailed Definition</Label>
                     <p className="text-sm">{aiGeneratedContent.definition}</p>
                   </div>
-                  
+
                   {aiGeneratedContent.characteristics && (
                     <div>
                       <Label className="text-sm font-medium">Key Characteristics</Label>
@@ -1014,7 +1046,7 @@ export function AdminTermsManager() {
                       </ul>
                     </div>
                   )}
-                  
+
                   {aiGeneratedContent.applications && (
                     <div>
                       <Label className="text-sm font-medium">Applications</Label>
@@ -1028,7 +1060,7 @@ export function AdminTermsManager() {
                       </div>
                     </div>
                   )}
-                  
+
                   {aiGeneratedContent.mathFormulation && (
                     <div>
                       <Label className="text-sm font-medium">Mathematical Formulation</Label>
@@ -1038,11 +1070,12 @@ export function AdminTermsManager() {
                     </div>
                   )}
                 </div>
-                
+
                 <Alert>
                   <AlertCircle className="h-4 w-4" />
                   <AlertDescription>
-                    This content was generated by AI and should be reviewed for accuracy before publishing.
+                    This content was generated by AI and should be reviewed for accuracy before
+                    publishing.
                   </AlertDescription>
                 </Alert>
               </div>
@@ -1074,18 +1107,18 @@ export function AdminTermsManager() {
                 Category: {selectedTerm.category} • Updated: {formatDate(selectedTerm.updatedAt)}
               </DialogDescription>
             </DialogHeader>
-            
+
             <div className="space-y-4">
               <div>
                 <Label className="font-medium">Short Definition</Label>
                 <p className="text-sm">{selectedTerm.shortDefinition}</p>
               </div>
-              
+
               <div>
                 <Label className="font-medium">Definition</Label>
                 <p className="text-sm">{selectedTerm.definition}</p>
               </div>
-              
+
               {selectedTerm.characteristics && (
                 <div>
                   <Label className="font-medium">Characteristics</Label>
@@ -1096,13 +1129,15 @@ export function AdminTermsManager() {
                   </ul>
                 </div>
               )}
-              
+
               {selectedTerm.qualityScore && (
                 <div>
                   <Label className="font-medium">Quality Score</Label>
                   <div className="flex items-center space-x-2">
                     <Progress value={selectedTerm.qualityScore} className="flex-1" />
-                    <span className={`text-sm font-medium ${getQualityColor(selectedTerm.qualityScore)}`}>
+                    <span
+                      className={`text-sm font-medium ${getQualityColor(selectedTerm.qualityScore)}`}
+                    >
                       {selectedTerm.qualityScore}%
                     </span>
                   </div>

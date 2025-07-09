@@ -1,47 +1,48 @@
-import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { 
-  BarChart3,
-  TrendingUp,
-  TrendingDown,
-  DollarSign,
-  Clock,
-  Target,
-  Zap,
-  Users,
-  Database,
+import {
   Activity,
-  Gauge,
-  PieChart,
-  LineChart,
-  ArrowUp,
-  ArrowDown,
-  Star,
   AlertTriangle,
-  CheckCircle,
+  ArrowDown,
+  ArrowUp,
+  BarChart3,
+  Clock,
+  DollarSign,
   RefreshCw,
-  Download,
-  Calendar,
-  Filter,
-  Eye,
-  Cpu,
-  Globe,
   Shield,
-  Timer,
-  Layers,
-  FileText,
-  Brain,
-  Sparkles
+  Sparkles,
+  Star,
+  Target,
+  Users,
 } from 'lucide-react';
-import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, BarChart as RechartsBarChart, Bar, PieChart as RechartsPieChart, Cell, Area, AreaChart, ComposedChart } from 'recharts';
+import { useEffect, useState } from 'react';
+import {
+  Bar,
+  CartesianGrid,
+  Cell,
+  ComposedChart,
+  Legend,
+  Line,
+  Pie,
+  LineChart as RechartsLineChart,
+  PieChart as RechartsPieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 // Enhanced interfaces for comprehensive analytics
 interface AdvancedAnalyticsData {
@@ -56,7 +57,7 @@ interface AdvancedAnalyticsData {
     costTrend: 'up' | 'down' | 'stable';
     performanceTrend: 'up' | 'down' | 'stable';
   };
-  
+
   timeSeriesData: Array<{
     date: string;
     generations: number;
@@ -65,7 +66,7 @@ interface AdvancedAnalyticsData {
     processingTime: number;
     successRate: number;
   }>;
-  
+
   modelPerformance: Array<{
     model: string;
     usage: number;
@@ -77,7 +78,7 @@ interface AdvancedAnalyticsData {
     costEfficiency: number;
     recommendedFor: string[];
   }>;
-  
+
   sectionAnalytics: Array<{
     sectionName: string;
     totalGenerations: number;
@@ -88,14 +89,14 @@ interface AdvancedAnalyticsData {
     complexity: 'simple' | 'moderate' | 'complex';
     improvement: number;
   }>;
-  
+
   qualityDistribution: {
     excellent: number; // 9-10
-    good: number;      // 7-8
-    average: number;   // 5-6
-    poor: number;      // 1-4
+    good: number; // 7-8
+    average: number; // 5-6
+    poor: number; // 1-4
   };
-  
+
   costBreakdown: {
     byModel: Array<{ model: string; cost: number; percentage: number }>;
     bySection: Array<{ section: string; cost: number; percentage: number }>;
@@ -105,7 +106,7 @@ interface AdvancedAnalyticsData {
     savingsFromBatching: number;
     recommendations: string[];
   };
-  
+
   performanceMetrics: {
     averageLatency: number;
     p95Latency: number;
@@ -117,7 +118,7 @@ interface AdvancedAnalyticsData {
     queueDepth: number;
     processingEfficiency: number;
   };
-  
+
   userActivity: {
     activeUsers: number;
     totalSessions: number;
@@ -126,61 +127,81 @@ interface AdvancedAnalyticsData {
     userEngagement: number;
     featureUsage: Array<{ feature: string; usage: number; satisfaction: number }>;
   };
-  
+
   systemHealth: {
     aiServiceUptime: number;
     databaseHealth: number;
     s3Health: number;
     queueHealth: number;
     overallHealth: number;
-    alerts: Array<{ type: string; message: string; severity: 'low' | 'medium' | 'high' | 'critical' }>;
+    alerts: Array<{
+      type: string;
+      message: string;
+      severity: 'low' | 'medium' | 'high' | 'critical';
+    }>;
     recommendations: string[];
   };
 }
 
-const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D', '#FFC658', '#FF7300'];
+const COLORS = [
+  '#0088FE',
+  '#00C49F',
+  '#FFBB28',
+  '#FF8042',
+  '#8884D8',
+  '#82CA9D',
+  '#FFC658',
+  '#FF7300',
+];
 
 const TIME_RANGES = [
   { value: 'today', label: 'Today' },
   { value: 'week', label: 'This Week' },
   { value: 'month', label: 'This Month' },
   { value: '3months', label: 'Last 3 Months' },
-  { value: 'year', label: 'This Year' }
+  { value: 'year', label: 'This Year' },
 ];
 
 export function AdvancedAnalyticsDashboard() {
   const [timeRange, setTimeRange] = useState('week');
   const [selectedModel, setSelectedModel] = useState('all');
-  const [selectedSection, setSelectedSection] = useState('all');
-  const [refreshInterval, setRefreshInterval] = useState(30000); // 30 seconds
-  
+  const [selectedSection, _setSelectedSection] = useState('all');
+  const [refreshInterval, _setRefreshInterval] = useState(30000); // 30 seconds
+
   // Query for advanced analytics data
-  const { data: analyticsData, isLoading, error, refetch } = useQuery<AdvancedAnalyticsData>({
+  const {
+    data: analyticsData,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery<AdvancedAnalyticsData>({
     queryKey: ['advanced-analytics', timeRange, selectedModel, selectedSection],
     queryFn: async () => {
       const params = new URLSearchParams({
         timeRange,
         model: selectedModel,
-        section: selectedSection
+        section: selectedSection,
       });
-      
-      const response = await fetch(`/api/admin/enhanced-content-generation/advanced-stats?${params}`);
+
+      const response = await fetch(
+        `/api/admin/enhanced-content-generation/advanced-stats?${params}`
+      );
       if (!response.ok) throw new Error('Failed to fetch analytics data');
       return response.json();
     },
     refetchInterval: refreshInterval,
-    staleTime: 10000 // 10 seconds
+    staleTime: 10000, // 10 seconds
   });
-  
+
   // Auto-refresh control
   useEffect(() => {
     const interval = setInterval(() => {
       refetch();
     }, refreshInterval);
-    
+
     return () => clearInterval(interval);
   }, [refreshInterval, refetch]);
-  
+
   if (isLoading) {
     return (
       <div className="space-y-6">
@@ -207,7 +228,7 @@ export function AdvancedAnalyticsDashboard() {
       </div>
     );
   }
-  
+
   if (error) {
     return (
       <Alert variant="destructive">
@@ -219,51 +240,56 @@ export function AdvancedAnalyticsDashboard() {
       </Alert>
     );
   }
-  
+
   const data = analyticsData!;
-  
+
   const getTrendIcon = (trend: 'up' | 'down' | 'stable') => {
     switch (trend) {
-      case 'up': return <ArrowUp className="w-4 h-4 text-green-500" />;
-      case 'down': return <ArrowDown className="w-4 h-4 text-red-500" />;
-      case 'stable': return <span className="w-4 h-4 text-gray-500">→</span>;
+      case 'up':
+        return <ArrowUp className="w-4 h-4 text-green-500" />;
+      case 'down':
+        return <ArrowDown className="w-4 h-4 text-red-500" />;
+      case 'stable':
+        return <span className="w-4 h-4 text-gray-500">→</span>;
     }
   };
-  
+
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
       minimumFractionDigits: 2,
-      maximumFractionDigits: 4
+      maximumFractionDigits: 4,
     }).format(amount);
   };
-  
+
   const formatPercentage = (value: number) => {
     return `${(value * 100).toFixed(1)}%`;
   };
-  
+
   const getHealthColor = (health: number) => {
     if (health >= 95) return 'text-green-500';
     if (health >= 85) return 'text-yellow-500';
     if (health >= 70) return 'text-orange-500';
     return 'text-red-500';
   };
-  
+
   const getHealthBadge = (health: number) => {
     if (health >= 95) return <Badge className="bg-green-500">Excellent</Badge>;
     if (health >= 85) return <Badge className="bg-yellow-500">Good</Badge>;
     if (health >= 70) return <Badge className="bg-orange-500">Warning</Badge>;
     return <Badge className="bg-red-500">Critical</Badge>;
   };
-  
+
   return (
     <div className="space-y-6">
       {/* Header with Controls */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">Advanced Analytics</h2>
-          <p className="text-muted-foreground">Comprehensive system performance and cost analysis</p>
+          <p className="text-muted-foreground">
+            Comprehensive system performance and cost analysis
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <Select value={timeRange} onValueChange={setTimeRange}>
@@ -271,7 +297,7 @@ export function AdvancedAnalyticsDashboard() {
               <SelectValue placeholder="Time Range" />
             </SelectTrigger>
             <SelectContent>
-              {TIME_RANGES.map(range => (
+              {TIME_RANGES.map((range) => (
                 <SelectItem key={range.value} value={range.value}>
                   {range.label}
                 </SelectItem>
@@ -295,7 +321,7 @@ export function AdvancedAnalyticsDashboard() {
           </Button>
         </div>
       </div>
-      
+
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
@@ -306,14 +332,16 @@ export function AdvancedAnalyticsDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.overview.totalGenerations.toLocaleString()}</div>
+            <div className="text-2xl font-bold">
+              {data.overview.totalGenerations.toLocaleString()}
+            </div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               {getTrendIcon(data.overview.performanceTrend)}
               <span>vs previous period</span>
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -329,7 +357,7 @@ export function AdvancedAnalyticsDashboard() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -345,7 +373,7 @@ export function AdvancedAnalyticsDashboard() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
           <CardHeader className="pb-3">
             <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -354,7 +382,9 @@ export function AdvancedAnalyticsDashboard() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{data.overview.averageProcessingTime.toFixed(1)}s</div>
+            <div className="text-2xl font-bold">
+              {data.overview.averageProcessingTime.toFixed(1)}s
+            </div>
             <div className="flex items-center gap-1 text-sm text-muted-foreground">
               {getTrendIcon(data.overview.performanceTrend)}
               <span>Performance trend</span>
@@ -362,7 +392,7 @@ export function AdvancedAnalyticsDashboard() {
           </CardContent>
         </Card>
       </div>
-      
+
       {/* System Health Overview */}
       <Card>
         <CardHeader>
@@ -374,20 +404,26 @@ export function AdvancedAnalyticsDashboard() {
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
             <div className="text-center">
-              <div className={`text-2xl font-bold ${getHealthColor(data.systemHealth.overallHealth)}`}>
+              <div
+                className={`text-2xl font-bold ${getHealthColor(data.systemHealth.overallHealth)}`}
+              >
                 {data.systemHealth.overallHealth.toFixed(1)}%
               </div>
               <div className="text-sm text-muted-foreground">Overall Health</div>
               {getHealthBadge(data.systemHealth.overallHealth)}
             </div>
             <div className="text-center">
-              <div className={`text-xl font-bold ${getHealthColor(data.systemHealth.aiServiceUptime)}`}>
+              <div
+                className={`text-xl font-bold ${getHealthColor(data.systemHealth.aiServiceUptime)}`}
+              >
                 {data.systemHealth.aiServiceUptime.toFixed(1)}%
               </div>
               <div className="text-sm text-muted-foreground">AI Service</div>
             </div>
             <div className="text-center">
-              <div className={`text-xl font-bold ${getHealthColor(data.systemHealth.databaseHealth)}`}>
+              <div
+                className={`text-xl font-bold ${getHealthColor(data.systemHealth.databaseHealth)}`}
+              >
                 {data.systemHealth.databaseHealth.toFixed(1)}%
               </div>
               <div className="text-sm text-muted-foreground">Database</div>
@@ -405,13 +441,16 @@ export function AdvancedAnalyticsDashboard() {
               <div className="text-sm text-muted-foreground">Queue System</div>
             </div>
           </div>
-          
+
           {data.systemHealth.alerts.length > 0 && (
             <div className="mt-4">
               <h4 className="font-medium mb-2">Active Alerts</h4>
               <div className="space-y-2">
                 {data.systemHealth.alerts.map((alert, index) => (
-                  <Alert key={index} variant={alert.severity === 'critical' ? 'destructive' : 'default'}>
+                  <Alert
+                    key={index}
+                    variant={alert.severity === 'critical' ? 'destructive' : 'default'}
+                  >
                     <AlertTriangle className="h-4 w-4" />
                     <AlertTitle>{alert.type}</AlertTitle>
                     <AlertDescription>{alert.message}</AlertDescription>
@@ -422,7 +461,7 @@ export function AdvancedAnalyticsDashboard() {
           )}
         </CardContent>
       </Card>
-      
+
       {/* Detailed Analytics Tabs */}
       <Tabs defaultValue="performance" className="space-y-4">
         <TabsList className="grid w-full grid-cols-6">
@@ -433,7 +472,7 @@ export function AdvancedAnalyticsDashboard() {
           <TabsTrigger value="sections">Sections</TabsTrigger>
           <TabsTrigger value="users">Users</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="performance" className="space-y-4">
           <Card>
             <CardHeader>
@@ -449,13 +488,25 @@ export function AdvancedAnalyticsDashboard() {
                   <Tooltip />
                   <Legend />
                   <Bar yAxisId="left" dataKey="generations" fill="#8884d8" name="Generations" />
-                  <Line yAxisId="right" type="monotone" dataKey="processingTime" stroke="#82ca9d" name="Processing Time (s)" />
-                  <Line yAxisId="right" type="monotone" dataKey="successRate" stroke="#ffc658" name="Success Rate %" />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="processingTime"
+                    stroke="#82ca9d"
+                    name="Processing Time (s)"
+                  />
+                  <Line
+                    yAxisId="right"
+                    type="monotone"
+                    dataKey="successRate"
+                    stroke="#ffc658"
+                    name="Success Rate %"
+                  />
                 </ComposedChart>
               </ResponsiveContainer>
             </CardContent>
           </Card>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
               <CardHeader>
@@ -464,31 +515,43 @@ export function AdvancedAnalyticsDashboard() {
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Average Latency</span>
-                  <span className="font-mono">{data.performanceMetrics.averageLatency.toFixed(0)}ms</span>
+                  <span className="font-mono">
+                    {data.performanceMetrics.averageLatency.toFixed(0)}ms
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">95th Percentile</span>
-                  <span className="font-mono">{data.performanceMetrics.p95Latency.toFixed(0)}ms</span>
+                  <span className="font-mono">
+                    {data.performanceMetrics.p95Latency.toFixed(0)}ms
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">99th Percentile</span>
-                  <span className="font-mono">{data.performanceMetrics.p99Latency.toFixed(0)}ms</span>
+                  <span className="font-mono">
+                    {data.performanceMetrics.p99Latency.toFixed(0)}ms
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Throughput</span>
-                  <span className="font-mono">{data.performanceMetrics.throughput.toFixed(1)} req/s</span>
+                  <span className="font-mono">
+                    {data.performanceMetrics.throughput.toFixed(1)} req/s
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Error Rate</span>
-                  <span className="font-mono">{formatPercentage(data.performanceMetrics.errorRate)}</span>
+                  <span className="font-mono">
+                    {formatPercentage(data.performanceMetrics.errorRate)}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Processing Efficiency</span>
-                  <span className="font-mono">{formatPercentage(data.performanceMetrics.processingEfficiency)}</span>
+                  <span className="font-mono">
+                    {formatPercentage(data.performanceMetrics.processingEfficiency)}
+                  </span>
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Queue Status</CardTitle>
@@ -500,21 +563,27 @@ export function AdvancedAnalyticsDashboard() {
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Retry Rate</span>
-                  <span className="font-mono">{formatPercentage(data.performanceMetrics.retryRate)}</span>
+                  <span className="font-mono">
+                    {formatPercentage(data.performanceMetrics.retryRate)}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Timeouts</span>
                   <span className="font-mono">{data.performanceMetrics.timeouts}</span>
                 </div>
-                <Progress value={data.performanceMetrics.processingEfficiency * 100} className="mt-2" />
+                <Progress
+                  value={data.performanceMetrics.processingEfficiency * 100}
+                  className="mt-2"
+                />
                 <div className="text-xs text-muted-foreground text-center">
-                  Processing Efficiency: {formatPercentage(data.performanceMetrics.processingEfficiency)}
+                  Processing Efficiency:{' '}
+                  {formatPercentage(data.performanceMetrics.processingEfficiency)}
                 </div>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="costs" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
@@ -529,12 +598,14 @@ export function AdvancedAnalyticsDashboard() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, percentage }) => `${name} ${percentage}%`}
+                      label={({ name, percentage }: { name: string; percentage: number }) =>
+                        `${name} ${percentage}%`
+                      }
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="cost"
                     >
-                      {data.costBreakdown.byModel.map((entry, index) => (
+                      {data.costBreakdown.byModel.map((_entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
@@ -543,7 +614,7 @@ export function AdvancedAnalyticsDashboard() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Cost Projections</CardTitle>
@@ -551,15 +622,21 @@ export function AdvancedAnalyticsDashboard() {
               <CardContent className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Projected Monthly Cost</span>
-                  <span className="font-mono font-bold">{formatCurrency(data.costBreakdown.projectedMonthlyCost)}</span>
+                  <span className="font-mono font-bold">
+                    {formatCurrency(data.costBreakdown.projectedMonthlyCost)}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Budget Utilization</span>
-                  <span className="font-mono">{formatPercentage(data.costBreakdown.budgetUtilization)}</span>
+                  <span className="font-mono">
+                    {formatPercentage(data.costBreakdown.budgetUtilization)}
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-sm">Savings from Batching</span>
-                  <span className="font-mono text-green-600">{formatCurrency(data.costBreakdown.savingsFromBatching)}</span>
+                  <span className="font-mono text-green-600">
+                    {formatCurrency(data.costBreakdown.savingsFromBatching)}
+                  </span>
                 </div>
                 <Progress value={data.costBreakdown.budgetUtilization * 100} className="mt-2" />
                 <div className="text-xs text-muted-foreground text-center">
@@ -568,7 +645,7 @@ export function AdvancedAnalyticsDashboard() {
               </CardContent>
             </Card>
           </div>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>Cost Optimization Recommendations</CardTitle>
@@ -585,7 +662,7 @@ export function AdvancedAnalyticsDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="quality" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <Card>
@@ -597,24 +674,58 @@ export function AdvancedAnalyticsDashboard() {
                   <RechartsPieChart>
                     <Pie
                       data={[
-                        { name: 'Excellent (9-10)', value: data.qualityDistribution.excellent, color: '#10B981' },
-                        { name: 'Good (7-8)', value: data.qualityDistribution.good, color: '#3B82F6' },
-                        { name: 'Average (5-6)', value: data.qualityDistribution.average, color: '#F59E0B' },
-                        { name: 'Poor (1-4)', value: data.qualityDistribution.poor, color: '#EF4444' }
+                        {
+                          name: 'Excellent (9-10)',
+                          value: data.qualityDistribution.excellent,
+                          color: '#10B981',
+                        },
+                        {
+                          name: 'Good (7-8)',
+                          value: data.qualityDistribution.good,
+                          color: '#3B82F6',
+                        },
+                        {
+                          name: 'Average (5-6)',
+                          value: data.qualityDistribution.average,
+                          color: '#F59E0B',
+                        },
+                        {
+                          name: 'Poor (1-4)',
+                          value: data.qualityDistribution.poor,
+                          color: '#EF4444',
+                        },
                       ]}
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      label={({ name, value }) => `${name}: ${value}`}
+                      label={({ name, value }: { name: string; value: number }) =>
+                        `${name}: ${value}`
+                      }
                       outerRadius={80}
                       fill="#8884d8"
                       dataKey="value"
                     >
                       {[
-                        { name: 'Excellent (9-10)', value: data.qualityDistribution.excellent, color: '#10B981' },
-                        { name: 'Good (7-8)', value: data.qualityDistribution.good, color: '#3B82F6' },
-                        { name: 'Average (5-6)', value: data.qualityDistribution.average, color: '#F59E0B' },
-                        { name: 'Poor (1-4)', value: data.qualityDistribution.poor, color: '#EF4444' }
+                        {
+                          name: 'Excellent (9-10)',
+                          value: data.qualityDistribution.excellent,
+                          color: '#10B981',
+                        },
+                        {
+                          name: 'Good (7-8)',
+                          value: data.qualityDistribution.good,
+                          color: '#3B82F6',
+                        },
+                        {
+                          name: 'Average (5-6)',
+                          value: data.qualityDistribution.average,
+                          color: '#F59E0B',
+                        },
+                        {
+                          name: 'Poor (1-4)',
+                          value: data.qualityDistribution.poor,
+                          color: '#EF4444',
+                        },
                       ].map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={entry.color} />
                       ))}
@@ -624,7 +735,7 @@ export function AdvancedAnalyticsDashboard() {
                 </ResponsiveContainer>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader>
                 <CardTitle>Quality Trends</CardTitle>
@@ -637,17 +748,22 @@ export function AdvancedAnalyticsDashboard() {
                     <YAxis />
                     <Tooltip />
                     <Legend />
-                    <Line type="monotone" dataKey="qualityScore" stroke="#8884d8" name="Quality Score" />
+                    <Line
+                      type="monotone"
+                      dataKey="qualityScore"
+                      stroke="#8884d8"
+                      name="Quality Score"
+                    />
                   </RechartsLineChart>
                 </ResponsiveContainer>
               </CardContent>
             </Card>
           </div>
         </TabsContent>
-        
+
         <TabsContent value="models" className="space-y-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {data.modelPerformance.map((model, index) => (
+            {data.modelPerformance.map((model, _index) => (
               <Card key={model.model}>
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
@@ -689,7 +805,7 @@ export function AdvancedAnalyticsDashboard() {
             ))}
           </div>
         </TabsContent>
-        
+
         <TabsContent value="sections" className="space-y-4">
           <Card>
             <CardHeader>
@@ -697,11 +813,19 @@ export function AdvancedAnalyticsDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {data.sectionAnalytics.map((section, index) => (
+                {data.sectionAnalytics.map((section, _index) => (
                   <div key={section.sectionName} className="border rounded p-4">
                     <div className="flex items-center justify-between mb-3">
                       <h4 className="font-medium">{section.sectionName}</h4>
-                      <Badge variant={section.complexity === 'complex' ? 'destructive' : section.complexity === 'moderate' ? 'default' : 'secondary'}>
+                      <Badge
+                        variant={
+                          section.complexity === 'complex'
+                            ? 'destructive'
+                            : section.complexity === 'moderate'
+                              ? 'default'
+                              : 'secondary'
+                        }
+                      >
                         {section.complexity}
                       </Badge>
                     </div>
@@ -726,7 +850,10 @@ export function AdvancedAnalyticsDashboard() {
                     <div className="mt-2">
                       <div className="flex justify-between items-center text-xs">
                         <span>Quality Progress</span>
-                        <span>{section.improvement > 0 ? '+' : ''}{section.improvement.toFixed(1)}%</span>
+                        <span>
+                          {section.improvement > 0 ? '+' : ''}
+                          {section.improvement.toFixed(1)}%
+                        </span>
                       </div>
                       <Progress value={section.averageQuality * 10} className="mt-1" />
                     </div>
@@ -736,7 +863,7 @@ export function AdvancedAnalyticsDashboard() {
             </CardContent>
           </Card>
         </TabsContent>
-        
+
         <TabsContent value="users" className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Card>
@@ -751,7 +878,7 @@ export function AdvancedAnalyticsDashboard() {
                 <div className="text-sm text-muted-foreground">Last 24 hours</div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -766,7 +893,7 @@ export function AdvancedAnalyticsDashboard() {
                 </div>
               </CardContent>
             </Card>
-            
+
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm font-medium flex items-center gap-2">
@@ -775,19 +902,21 @@ export function AdvancedAnalyticsDashboard() {
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{data.userActivity.userEngagement.toFixed(1)}/10</div>
+                <div className="text-2xl font-bold">
+                  {data.userActivity.userEngagement.toFixed(1)}/10
+                </div>
                 <div className="text-sm text-muted-foreground">User satisfaction</div>
               </CardContent>
             </Card>
           </div>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>Feature Usage</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {data.userActivity.featureUsage.map((feature, index) => (
+                {data.userActivity.featureUsage.map((feature, _index) => (
                   <div key={feature.feature} className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-sm">{feature.feature}</span>
@@ -807,7 +936,7 @@ export function AdvancedAnalyticsDashboard() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader>
               <CardTitle>Peak Activity Hours</CardTitle>

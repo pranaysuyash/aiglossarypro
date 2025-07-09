@@ -6,11 +6,10 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 import type {
+  CrossReferenceInsights,
   CrossReferenceMetrics,
-  ReferenceFlow,
   LearningPathway,
-  NavigationPattern,
-  CrossReferenceInsights
+  ReferenceFlow,
 } from '../../../shared/types/analytics';
 
 // Types are now imported from shared directory
@@ -31,15 +30,17 @@ export const useCrossReferenceAnalytics = (options: UseCrossReferenceAnalyticsOp
       queryFn: async (): Promise<CrossReferenceMetrics[]> => {
         const params = new URLSearchParams();
         if (termIds && termIds.length > 0) {
-          termIds.forEach(id => params.append('termIds', id));
+          termIds.forEach((id) => params.append('termIds', id));
         }
-        
+
         const response = await fetch(`/api/cross-reference/analytics/metrics?${params}`);
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(`Failed to fetch cross-reference metrics: ${response.status} ${errorData.message || response.statusText}`);
+          throw new Error(
+            `Failed to fetch cross-reference metrics: ${response.status} ${errorData.message || response.statusText}`
+          );
         }
-        
+
         const result = await response.json();
         return result.data;
       },
@@ -57,9 +58,11 @@ export const useCrossReferenceAnalytics = (options: UseCrossReferenceAnalyticsOp
         const response = await fetch(`/api/cross-reference/analytics/flows?timeRange=${timeRange}`);
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}));
-          throw new Error(`Failed to fetch reference flows: ${response.status} ${errorData.message || response.statusText}`);
+          throw new Error(
+            `Failed to fetch reference flows: ${response.status} ${errorData.message || response.statusText}`
+          );
         }
-        
+
         const result = await response.json();
         return result.data;
       },
@@ -74,11 +77,13 @@ export const useCrossReferenceAnalytics = (options: UseCrossReferenceAnalyticsOp
     return useQuery({
       queryKey: ['learningPathways', minFrequency],
       queryFn: async (): Promise<LearningPathway[]> => {
-        const response = await fetch(`/api/cross-reference/analytics/pathways?minFrequency=${minFrequency}`);
+        const response = await fetch(
+          `/api/cross-reference/analytics/pathways?minFrequency=${minFrequency}`
+        );
         if (!response.ok) {
           throw new Error('Failed to fetch learning pathways');
         }
-        
+
         const result = await response.json();
         return result.data;
       },
@@ -97,7 +102,7 @@ export const useCrossReferenceAnalytics = (options: UseCrossReferenceAnalyticsOp
         if (!response.ok) {
           throw new Error('Failed to fetch cross-reference insights');
         }
-        
+
         const result = await response.json();
         return result.data;
       },
@@ -109,31 +114,42 @@ export const useCrossReferenceAnalytics = (options: UseCrossReferenceAnalyticsOp
 
   // Utility functions
   const getHubTerms = useCallback((metrics: CrossReferenceMetrics[], threshold: number = 0.7) => {
-    return metrics.filter(m => m.hubScore >= threshold).sort((a, b) => b.hubScore - a.hubScore);
+    return metrics.filter((m) => m.hubScore >= threshold).sort((a, b) => b.hubScore - a.hubScore);
   }, []);
 
-  const getBridgeTerms = useCallback((metrics: CrossReferenceMetrics[], threshold: number = 0.6) => {
-    return metrics.filter(m => m.bridgeScore >= threshold).sort((a, b) => b.bridgeScore - a.bridgeScore);
-  }, []);
+  const getBridgeTerms = useCallback(
+    (metrics: CrossReferenceMetrics[], threshold: number = 0.6) => {
+      return metrics
+        .filter((m) => m.bridgeScore >= threshold)
+        .sort((a, b) => b.bridgeScore - a.bridgeScore);
+    },
+    []
+  );
 
   const getStrongConnections = useCallback((flows: ReferenceFlow[], minCount: number = 10) => {
-    return flows.filter(f => f.flowCount >= minCount);
+    return flows.filter((f) => f.flowCount >= minCount);
   }, []);
 
   const getCategoryBridges = useCallback((flows: ReferenceFlow[]) => {
-    return flows.filter(f => f.categoryBridge);
+    return flows.filter((f) => f.categoryBridge);
   }, []);
 
-  const getEffectivePathways = useCallback((pathways: LearningPathway[], minEffectiveness: number = 0.7) => {
-    return pathways.filter(p => p.learningEffectiveness >= minEffectiveness);
-  }, []);
+  const getEffectivePathways = useCallback(
+    (pathways: LearningPathway[], minEffectiveness: number = 0.7) => {
+      return pathways.filter((p) => p.learningEffectiveness >= minEffectiveness);
+    },
+    []
+  );
 
-  const getRecommendedSequences = useCallback((pathways: LearningPathway[], minScore: number = 0.8) => {
-    return pathways
-      .filter(p => p.recommendationScore >= minScore)
-      .sort((a, b) => b.recommendationScore - a.recommendationScore)
-      .map(p => p.termNames);
-  }, []);
+  const getRecommendedSequences = useCallback(
+    (pathways: LearningPathway[], minScore: number = 0.8) => {
+      return pathways
+        .filter((p) => p.recommendationScore >= minScore)
+        .sort((a, b) => b.recommendationScore - a.recommendationScore)
+        .map((p) => p.termNames);
+    },
+    []
+  );
 
   // Cache management
   const refreshAnalytics = useCallback(() => {
@@ -161,7 +177,7 @@ export const useCrossReferenceAnalytics = (options: UseCrossReferenceAnalyticsOp
     useReferenceFlows,
     useLearningPathways,
     useCrossReferenceInsights,
-    
+
     // Utility functions
     getHubTerms,
     getBridgeTerms,
@@ -169,7 +185,7 @@ export const useCrossReferenceAnalytics = (options: UseCrossReferenceAnalyticsOp
     getCategoryBridges,
     getEffectivePathways,
     getRecommendedSequences,
-    
+
     // Cache management
     refreshAnalytics,
     prefetchInsights,

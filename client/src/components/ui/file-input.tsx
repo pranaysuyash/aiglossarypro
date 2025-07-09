@@ -1,9 +1,8 @@
-import * as React from "react";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Upload, AlertCircle } from "@/components/ui/icons";
-import { useLiveRegion } from "@/components/accessibility/LiveRegion";
+import * as React from 'react';
+import { useLiveRegion } from '@/components/accessibility/LiveRegion';
+import { AlertCircle, Upload } from '@/components/ui/icons';
+import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 export interface FileInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -19,7 +18,7 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
   (
     {
       className,
-      type = "file",
+      type = 'file',
       label,
       accept,
       icon = <Upload className="h-5 w-5" />,
@@ -31,7 +30,7 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
     ref
   ) => {
     const inputRef = React.useRef<HTMLInputElement>(null);
-    const [fileName, setFileName] = React.useState<string>("");
+    const [fileName, setFileName] = React.useState<string>('');
     const { announce } = useLiveRegion();
     const prevErrorRef = React.useRef<string | null>(null);
 
@@ -52,9 +51,9 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
       if (files && files.length > 0) {
         setFileName(files[0].name);
       } else {
-        setFileName("");
+        setFileName('');
       }
-      
+
       if (onFilesSelected) {
         onFilesSelected(files);
       }
@@ -78,9 +77,10 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
         )}
         <div
           className={cn(
-            "relative flex items-center justify-center border-2 border-dashed rounded-lg p-6 transition-colors",
-            error ? "border-red-400 bg-red-50 dark:border-red-800 dark:bg-red-950/50" : 
-            "border-gray-300 dark:border-gray-700 hover:border-primary/70 dark:hover:border-primary/70"
+            'relative flex items-center justify-center border-2 border-dashed rounded-lg p-6 transition-colors',
+            error
+              ? 'border-red-400 bg-red-50 dark:border-red-800 dark:bg-red-950/50'
+              : 'border-gray-300 dark:border-gray-700 hover:border-primary/70 dark:hover:border-primary/70'
           )}
         >
           <input
@@ -127,6 +127,6 @@ const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(
   }
 );
 
-FileInput.displayName = "FileInput";
+FileInput.displayName = 'FileInput';
 
 export { FileInput };

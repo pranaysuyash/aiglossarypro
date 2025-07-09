@@ -1,10 +1,10 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import type { IEnhancedTerm } from '@/interfaces/interfaces';
 import EnhancedTermCard from './EnhancedTermCard';
-import { IEnhancedTerm } from '@/interfaces/interfaces';
 
 // Mock function for actions
-const fn = () => () => {};
+const _fn = () => () => {};
 
 // Create a mock query client for stories
 const queryClient = new QueryClient({
@@ -20,8 +20,10 @@ const mockEnhancedTerm: IEnhancedTerm = {
   id: '1',
   name: 'Machine Learning',
   slug: 'machine-learning',
-  definition: 'A subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed.',
-  shortDefinition: 'A subset of AI that enables systems to learn and improve from experience without explicit programming.',
+  definition:
+    'A subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed.',
+  shortDefinition:
+    'A subset of AI that enables systems to learn and improve from experience without explicit programming.',
   category: 'Core Concepts',
   mainCategories: ['Artificial Intelligence'],
   subCategories: ['Supervised Learning', 'Unsupervised Learning'],
@@ -36,7 +38,7 @@ const mockEnhancedTerm: IEnhancedTerm = {
   keywords: ['AI', 'Algorithms', 'Data Science'],
   viewCount: 1250,
   createdAt: new Date(),
-  updatedAt: new Date()
+  updatedAt: new Date(),
 };
 
 const meta: Meta<typeof EnhancedTermCard> = {
@@ -46,7 +48,8 @@ const meta: Meta<typeof EnhancedTermCard> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'An enhanced term card displaying comprehensive information about AI/ML terms with interactive features.',
+        component:
+          'An enhanced term card displaying comprehensive information about AI/ML terms with interactive features.',
       },
     },
   },
@@ -106,7 +109,8 @@ export const Advanced: Story = {
       ...mockEnhancedTerm,
       name: 'Transformer Architecture',
       difficultyLevel: 'Advanced',
-      shortDefinition: 'A neural network architecture that relies entirely on attention mechanisms.',
+      shortDefinition:
+        'A neural network architecture that relies entirely on attention mechanisms.',
       hasImplementation: true,
       hasCodeExamples: true,
       isAiGenerated: true,
@@ -204,4 +208,4 @@ export const DarkMode: Story = {
       </QueryClientProvider>
     ),
   ],
-}; 
+};

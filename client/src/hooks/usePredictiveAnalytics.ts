@@ -3,8 +3,8 @@
  * React hook for consuming predictive analytics data and insights
  */
 
-import { useState, useEffect, useCallback } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback, useState } from 'react';
 
 export interface LearningOutcomeMetrics {
   userId: string;
@@ -93,27 +93,27 @@ interface UsePredictiveAnalyticsReturn {
   outcomes: LearningOutcomeMetrics | null;
   isLoadingOutcomes: boolean;
   outcomesError: Error | null;
-  
+
   // Learning profile
   profile: UserLearningProfile | null;
   isLoadingProfile: boolean;
   profileError: Error | null;
-  
+
   // Predictive insights
   insights: PredictiveInsights | null;
   isLoadingInsights: boolean;
   insightsError: Error | null;
-  
+
   // Recommendations
   recommendations: PersonalizedRecommendation[];
   isLoadingRecommendations: boolean;
   recommendationsError: Error | null;
-  
+
   // Milestones
   milestones: ProgressMilestone[];
   isLoadingMilestones: boolean;
   milestonesError: Error | null;
-  
+
   // Actions
   refreshOutcomes: () => void;
   refreshProfile: () => void;
@@ -121,7 +121,7 @@ interface UsePredictiveAnalyticsReturn {
   refreshRecommendations: () => void;
   refreshMilestones: () => void;
   refreshAll: () => void;
-  
+
   // Utilities
   getScoreColor: (score: number) => string;
   getScoreLabel: (score: number) => string;
@@ -133,15 +133,15 @@ export const usePredictiveAnalytics = (
   userId: string,
   options: PredictiveAnalyticsOptions = {}
 ): UsePredictiveAnalyticsReturn => {
-  const queryClient = useQueryClient();
-  const [selectedTimeframe, setSelectedTimeframe] = useState(options.timeframe || '30d');
+  const _queryClient = useQueryClient();
+  const [selectedTimeframe, _setSelectedTimeframe] = useState(options.timeframe || '30d');
 
   // Fetch learning outcomes
   const {
     data: outcomes,
     isLoading: isLoadingOutcomes,
     error: outcomesError,
-    refetch: refreshOutcomes
+    refetch: refreshOutcomes,
   } = useQuery({
     queryKey: ['predictiveAnalytics', 'outcomes', userId, selectedTimeframe, options],
     queryFn: async (): Promise<LearningOutcomeMetrics> => {
@@ -149,7 +149,7 @@ export const usePredictiveAnalytics = (
         timeframe: selectedTimeframe,
         ...(options.includeInsights && { includeInsights: 'true' }),
         ...(options.includeRecommendations && { includeRecommendations: 'true' }),
-        ...(options.includeMilestones && { includeMilestones: 'true' })
+        ...(options.includeMilestones && { includeMilestones: 'true' }),
       });
 
       const response = await fetch(`/api/predictive-analytics/outcomes/${userId}?${params}`, {
@@ -160,7 +160,9 @@ export const usePredictiveAnalytics = (
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(`Failed to fetch learning outcomes: ${response.status} ${errorData.message || response.statusText}`);
+        throw new Error(
+          `Failed to fetch learning outcomes: ${response.status} ${errorData.message || response.statusText}`
+        );
       }
 
       const data = await response.json();
@@ -168,7 +170,7 @@ export const usePredictiveAnalytics = (
     },
     enabled: !!userId,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   });
 
   // Fetch learning profile
@@ -176,7 +178,7 @@ export const usePredictiveAnalytics = (
     data: profile,
     isLoading: isLoadingProfile,
     error: profileError,
-    refetch: refreshProfile
+    refetch: refreshProfile,
   } = useQuery({
     queryKey: ['predictiveAnalytics', 'profile', userId],
     queryFn: async (): Promise<UserLearningProfile> => {
@@ -188,7 +190,9 @@ export const usePredictiveAnalytics = (
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(`Failed to fetch learning profile: ${response.status} ${errorData.message || response.statusText}`);
+        throw new Error(
+          `Failed to fetch learning profile: ${response.status} ${errorData.message || response.statusText}`
+        );
       }
 
       const data = await response.json();
@@ -196,7 +200,7 @@ export const usePredictiveAnalytics = (
     },
     enabled: !!userId,
     staleTime: 10 * 60 * 1000, // 10 minutes
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   });
 
   // Fetch predictive insights
@@ -204,7 +208,7 @@ export const usePredictiveAnalytics = (
     data: insights,
     isLoading: isLoadingInsights,
     error: insightsError,
-    refetch: refreshInsights
+    refetch: refreshInsights,
   } = useQuery({
     queryKey: ['predictiveAnalytics', 'insights', userId],
     queryFn: async (): Promise<PredictiveInsights> => {
@@ -216,7 +220,9 @@ export const usePredictiveAnalytics = (
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(`Failed to fetch predictive insights: ${response.status} ${errorData.message || response.statusText}`);
+        throw new Error(
+          `Failed to fetch predictive insights: ${response.status} ${errorData.message || response.statusText}`
+        );
       }
 
       const data = await response.json();
@@ -224,7 +230,7 @@ export const usePredictiveAnalytics = (
     },
     enabled: !!userId,
     staleTime: 15 * 60 * 1000, // 15 minutes
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   });
 
   // Fetch recommendations
@@ -232,7 +238,7 @@ export const usePredictiveAnalytics = (
     data: recommendations = [],
     isLoading: isLoadingRecommendations,
     error: recommendationsError,
-    refetch: refreshRecommendations
+    refetch: refreshRecommendations,
   } = useQuery({
     queryKey: ['predictiveAnalytics', 'recommendations', userId],
     queryFn: async (): Promise<PersonalizedRecommendation[]> => {
@@ -244,7 +250,9 @@ export const usePredictiveAnalytics = (
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(`Failed to fetch recommendations: ${response.status} ${errorData.message || response.statusText}`);
+        throw new Error(
+          `Failed to fetch recommendations: ${response.status} ${errorData.message || response.statusText}`
+        );
       }
 
       const data = await response.json();
@@ -252,7 +260,7 @@ export const usePredictiveAnalytics = (
     },
     enabled: !!userId,
     staleTime: 20 * 60 * 1000, // 20 minutes
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   });
 
   // Fetch milestones
@@ -260,7 +268,7 @@ export const usePredictiveAnalytics = (
     data: milestones = [],
     isLoading: isLoadingMilestones,
     error: milestonesError,
-    refetch: refreshMilestones
+    refetch: refreshMilestones,
   } = useQuery({
     queryKey: ['predictiveAnalytics', 'milestones', userId],
     queryFn: async (): Promise<ProgressMilestone[]> => {
@@ -272,7 +280,9 @@ export const usePredictiveAnalytics = (
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        throw new Error(`Failed to fetch milestones: ${response.status} ${errorData.message || response.statusText}`);
+        throw new Error(
+          `Failed to fetch milestones: ${response.status} ${errorData.message || response.statusText}`
+        );
       }
 
       const data = await response.json();
@@ -280,7 +290,7 @@ export const usePredictiveAnalytics = (
     },
     enabled: !!userId,
     staleTime: 30 * 60 * 1000, // 30 minutes
-    refetchOnWindowFocus: false
+    refetchOnWindowFocus: false,
   });
 
   // Refresh all data
@@ -309,19 +319,27 @@ export const usePredictiveAnalytics = (
 
   const getSeverityColor = useCallback((severity: string): string => {
     switch (severity) {
-      case 'high': return 'text-red-600 bg-red-50 border-red-200';
-      case 'medium': return 'text-orange-600 bg-orange-50 border-orange-200';
-      case 'low': return 'text-yellow-600 bg-yellow-50 border-yellow-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case 'high':
+        return 'text-red-600 bg-red-50 border-red-200';
+      case 'medium':
+        return 'text-orange-600 bg-orange-50 border-orange-200';
+      case 'low':
+        return 'text-yellow-600 bg-yellow-50 border-yellow-200';
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   }, []);
 
   const getPriorityColor = useCallback((priority: string): string => {
     switch (priority) {
-      case 'high': return 'text-red-600 bg-red-50 border-red-200';
-      case 'medium': return 'text-blue-600 bg-blue-50 border-blue-200';
-      case 'low': return 'text-green-600 bg-green-50 border-green-200';
-      default: return 'text-gray-600 bg-gray-50 border-gray-200';
+      case 'high':
+        return 'text-red-600 bg-red-50 border-red-200';
+      case 'medium':
+        return 'text-blue-600 bg-blue-50 border-blue-200';
+      case 'low':
+        return 'text-green-600 bg-green-50 border-green-200';
+      default:
+        return 'text-gray-600 bg-gray-50 border-gray-200';
     }
   }, []);
 
@@ -330,23 +348,23 @@ export const usePredictiveAnalytics = (
     outcomes: outcomes || null,
     isLoadingOutcomes,
     outcomesError: outcomesError as Error | null,
-    
+
     profile: profile || null,
     isLoadingProfile,
     profileError: profileError as Error | null,
-    
+
     insights: insights || null,
     isLoadingInsights,
     insightsError: insightsError as Error | null,
-    
+
     recommendations,
     isLoadingRecommendations,
     recommendationsError: recommendationsError as Error | null,
-    
+
     milestones,
     isLoadingMilestones,
     milestonesError: milestonesError as Error | null,
-    
+
     // Actions
     refreshOutcomes,
     refreshProfile,
@@ -354,12 +372,12 @@ export const usePredictiveAnalytics = (
     refreshRecommendations,
     refreshMilestones,
     refreshAll,
-    
+
     // Utilities
     getScoreColor,
     getScoreLabel,
     getSeverityColor,
-    getPriorityColor
+    getPriorityColor,
   };
 };
 

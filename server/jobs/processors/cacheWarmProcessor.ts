@@ -3,12 +3,12 @@
  * Handles cache warming operations for better performance
  */
 
-import { Job } from 'bullmq';
-import { CacheWarmJobData } from '../types';
+import type { Job } from 'bullmq';
 import { redisCache } from '../../config/redis';
 import { enhancedStorage } from '../../enhancedStorage';
 import { optimizedSearch } from '../../optimizedSearchService';
 import { log as logger } from '../../utils/logger';
+import type { CacheWarmJobData } from '../types';
 
 interface CacheWarmJobResult {
   warmedKeys: string[];
@@ -17,9 +17,7 @@ interface CacheWarmJobResult {
   errors: Array<{ key: string; error: string }>;
 }
 
-export async function cacheWarmProcessor(
-  job: Job<CacheWarmJobData>
-): Promise<CacheWarmJobResult> {
+export async function cacheWarmProcessor(job: Job<CacheWarmJobData>): Promise<CacheWarmJobResult> {
   const startTime = Date.now();
   const { keys, ttl = 3600, priority = 'normal' } = job.data;
 
@@ -35,10 +33,10 @@ export async function cacheWarmProcessor(
   try {
     // Process keys based on priority
     const processOrder = priority === 'high' ? keys : keys.sort();
-    
+
     for (let i = 0; i < processOrder.length; i++) {
       const key = processOrder[i];
-      
+
       await job.updateProgress({
         progress: (i / processOrder.length) * 90,
         message: `Warming cache for key: ${key}`,
@@ -54,7 +52,9 @@ export async function cacheWarmProcessor(
         await warmCacheKey(key, ttl);
         result.warmedKeys.push(key);
       } catch (error) {
-        logger.error(`Failed to warm cache for key ${key}:`, { error: error instanceof Error ? error.message : String(error) });
+        logger.error(`Failed to warm cache for key ${key}:`, {
+          error: error instanceof Error ? error.message : String(error),
+        });
         result.failedKeys.push(key);
         result.errors.push({
           key,
@@ -83,9 +83,10 @@ export async function cacheWarmProcessor(
     });
 
     return result;
-
   } catch (error) {
-    logger.error(`Cache warm job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
+    logger.error(`Cache warm job ${job.id} failed:`, {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }
@@ -128,16 +129,16 @@ async function warmSearchCache(key: string, ttl: number): Promise<void> {
   // Extract search query from key (format: search:query:filters)
   const keyParts = key.split(':');
   if (keyParts.length < 2) return;
-  
+
   const query = keyParts[1];
   const filters = keyParts[2] ? JSON.parse(decodeURIComponent(keyParts[2])) : {};
-  
+
   const searchResults = await optimizedSearch({
     query,
     ...filters,
     limit: 20,
   });
-  
+
   await redisCache.set(key, searchResults, ttl);
 }
 
@@ -148,7 +149,7 @@ async function warmTermCache(key: string, ttl: number): Promise<void> {
   // Extract term ID from key (format: enhanced_term:id)
   const termId = key.split(':')[1];
   if (!termId) return;
-  
+
   const term = await enhancedStorage.getTermById(termId);
   if (term) {
     await redisCache.set(key, term, ttl);
@@ -162,7 +163,7 @@ async function warmTermSectionsCache(key: string, ttl: number): Promise<void> {
   // Extract term ID from key (format: term_sections:termId)
   const termId = key.split(':')[1];
   if (!termId) return;
-  
+
   const sections = await enhancedStorage.getTermSections(termId);
   if (sections) {
     await redisCache.set(key, sections, ttl);
@@ -176,7 +177,7 @@ async function warmUserPrefsCache(key: string, ttl: number): Promise<void> {
   // Extract user ID from key (format: user_prefs:userId)
   const userId = key.split(':')[1];
   if (!userId) return;
-  
+
   // Get user preferences from database
   const userPrefs = await getUserPreferences(userId);
   if (userPrefs) {
@@ -191,7 +192,7 @@ async function warmSearchMetricsCache(key: string, ttl: number): Promise<void> {
   // Extract timeframe from key (format: search_metrics:timeframe)
   const timeframe = key.split(':')[1];
   if (!timeframe) return;
-  
+
   const metrics = await calculateSearchMetrics(timeframe);
   await redisCache.set(key, metrics, ttl);
 }
@@ -203,7 +204,7 @@ async function warmRecommendationsCache(key: string, ttl: number): Promise<void>
   // Extract user ID from key (format: recommendations:userId)
   const userId = key.split(':')[1];
   if (!userId) return;
-  
+
   const recommendations = await generateUserRecommendations(userId);
   await redisCache.set(key, recommendations, ttl);
 }
@@ -215,7 +216,7 @@ async function warmRelationshipsCache(key: string, ttl: number): Promise<void> {
   // Extract term ID from key (format: relationships:termId)
   const termId = key.split(':')[1];
   if (!termId) return;
-  
+
   const relationships = await findTermRelationships(termId);
   await redisCache.set(key, relationships, ttl);
 }
@@ -273,7 +274,7 @@ async function generateUserRecommendations(userId: string): Promise<any> {
       {
         termId: 'dl-001',
         termName: 'Deep Learning',
-        score: 0.90,
+        score: 0.9,
         reason: 'Popular in your categories',
       },
     ],

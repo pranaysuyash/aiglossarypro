@@ -1,11 +1,12 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
+import { BookOpen, Clock, Search, TrendingUp, Users } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
-import { Clock, Users, BookOpen, TrendingUp, Filter, Search } from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
 
 interface LearningPath {
   id: string;
@@ -54,7 +55,7 @@ const LearningPaths: React.FC = () => {
     if (user) {
       fetchUserProgress();
     }
-  }, [user]);
+  }, [user, fetchLearningPaths, fetchUserProgress]);
 
   const fetchLearningPaths = async () => {
     try {
@@ -73,7 +74,7 @@ const LearningPaths: React.FC = () => {
     try {
       const response = await fetch('/api/learning-paths/progress', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
       if (!response.ok) throw new Error('Failed to fetch user progress');
@@ -94,13 +95,13 @@ const LearningPaths: React.FC = () => {
       const response = await fetch(`/api/learning-paths/${pathId}/start`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
         },
       });
 
       if (!response.ok) throw new Error('Failed to start learning path');
-      
+
       await fetchUserProgress();
       alert('Learning path started successfully!');
     } catch (err) {
@@ -110,10 +111,14 @@ const LearningPaths: React.FC = () => {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
-      case 'beginner': return 'bg-green-100 text-green-800';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800';
-      case 'advanced': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'beginner':
+        return 'bg-green-100 text-green-800';
+      case 'intermediate':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'advanced':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -123,10 +128,11 @@ const LearningPaths: React.FC = () => {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
-  const filteredPaths = paths.filter(path => {
-    const matchesSearch = path.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         path.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+  const filteredPaths = paths.filter((path) => {
+    const matchesSearch =
+      path.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      path.description?.toLowerCase().includes(searchTerm.toLowerCase());
+
     if (filter === 'all') return matchesSearch;
     if (filter === 'official') return matchesSearch && path.is_official;
     if (filter === 'beginner') return matchesSearch && path.difficulty_level === 'beginner';
@@ -136,7 +142,7 @@ const LearningPaths: React.FC = () => {
   });
 
   const getUserProgressForPath = (pathId: string) => {
-    return userProgress.find(p => p.learning_path_id === pathId);
+    return userProgress.find((p) => p.learning_path_id === pathId);
   };
 
   if (loading) {
@@ -216,9 +222,7 @@ const LearningPaths: React.FC = () => {
                       <Progress value={progress.completion_percentage} className="h-2" />
                       <div className="flex justify-between text-sm text-gray-500">
                         <span>Time spent: {formatDuration(progress.time_spent)}</span>
-                        <span>
-                          {progress.completed_at ? 'Completed' : 'In Progress'}
-                        </span>
+                        <span>{progress.completed_at ? 'Completed' : 'In Progress'}</span>
                       </div>
                     </div>
                   </CardContent>
@@ -233,7 +237,7 @@ const LearningPaths: React.FC = () => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {filteredPaths.map((path) => {
           const userProgressForPath = getUserProgressForPath(path.id);
-          
+
           return (
             <Card key={path.id} className="h-full hover:shadow-lg transition-shadow">
               <CardHeader>
@@ -247,7 +251,7 @@ const LearningPaths: React.FC = () => {
                 </div>
                 <p className="text-sm text-gray-600 line-clamp-3">{path.description}</p>
               </CardHeader>
-              
+
               <CardContent className="space-y-4">
                 <div className="flex flex-wrap gap-2">
                   <Badge className={getDifficultyColor(path.difficulty_level)}>

@@ -1,5 +1,5 @@
-import { db } from './server/db';
 import { sql } from 'drizzle-orm';
+import { db } from './server/db';
 
 async function checkTermsStructure() {
   try {
@@ -14,27 +14,32 @@ async function checkTermsStructure() {
     `);
 
     console.log('Terms table columns:');
-    structure.rows.forEach(col => {
+    structure.rows.forEach((col) => {
       console.log(`- ${col.column_name}: ${col.data_type} (nullable: ${col.is_nullable})`);
     });
 
     // Sample a few rows to see actual data
     console.log('\nSample term data:');
     const sample = await db.execute(sql`SELECT * FROM terms LIMIT 2`);
-    
+
     if (sample.rows.length > 0) {
       const firstTerm = sample.rows[0];
       console.log('\nFirst term structure:');
-      Object.keys(firstTerm).forEach(key => {
+      Object.keys(firstTerm).forEach((key) => {
         const value = firstTerm[key];
-        const valueStr = value ? (typeof value === 'string' ? value.substring(0, 100) + '...' : String(value)) : 'null';
+        const valueStr = value
+          ? typeof value === 'string'
+            ? `${value.substring(0, 100)}...`
+            : String(value)
+          : 'null';
         console.log(`- ${key}: ${valueStr}`);
       });
     }
-
   } catch (error) {
     console.error('Error checking terms structure:', error);
   }
 }
 
-checkTermsStructure().then(() => process.exit(0)).catch(console.error); 
+checkTermsStructure()
+  .then(() => process.exit(0))
+  .catch(console.error);

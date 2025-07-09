@@ -2,15 +2,15 @@
 
 /**
  * 42-Section Content Generator
- * 
+ *
  * This script generates comprehensive 42-section content for AI/ML terms
  * using the existing AI service infrastructure. It creates detailed,
  * educational content following the complete structure outlined in the
  * 42-section architecture.
- * 
+ *
  * Usage:
  * npm run generate:sections [options]
- * 
+ *
  * Options:
  * --term <name>           Generate content for specific term
  * --batch <count>         Process multiple terms (default: 5)
@@ -20,14 +20,14 @@
  * --validate             Validate existing section content
  */
 
-import { db } from '../../server/db';
+import { performance } from 'node:perf_hooks';
+import { and, eq, isNull, not, sql } from 'drizzle-orm';
 import { aiService } from '../../server/aiService';
-import { terms, categories } from '../../shared/schema';
-import { termSections } from '../../shared/enhancedSchema';
-import { eq, sql, and, not, isNull } from 'drizzle-orm';
-import { COMPLETE_CONTENT_SECTIONS } from '../complete_42_sections_config';
+import { db } from '../../server/db';
 import { log as logger } from '../../server/utils/logger';
-import { performance } from 'perf_hooks';
+import { termSections } from '../../shared/enhancedSchema';
+import { categories, terms } from '../../shared/schema';
+import { COMPLETE_CONTENT_SECTIONS } from '../complete_42_sections_config';
 
 // Command line arguments
 const args = process.argv.slice(2);
@@ -40,7 +40,9 @@ const isDryRun = args.includes('--dry-run');
 const isValidate = args.includes('--validate');
 const targetTerm = getCLIArg('--term') as string;
 const batchSize = parseInt(getCLIArg('--batch', '5') as string, 10);
-const specificSections = getCLIArg('--sections') ? (getCLIArg('--sections') as string).split(',').map(s => s.trim()) : [];
+const specificSections = getCLIArg('--sections')
+  ? (getCLIArg('--sections') as string).split(',').map((s) => s.trim())
+  : [];
 const priorityLevel = getCLIArg('--priority') as 'high' | 'medium' | 'low' | '';
 
 // Priority mapping for sections
@@ -53,7 +55,7 @@ const SECTION_PRIORITIES = {
     'Implementation',
     'Advantages and Disadvantages',
     'Best Practices',
-    'Common Challenges and Pitfalls'
+    'Common Challenges and Pitfalls',
   ],
   medium: [
     'Variants or Extensions',
@@ -63,7 +65,7 @@ const SECTION_PRIORITIES = {
     'Tools and Frameworks',
     'Historical Context',
     'Future Directions',
-    'Ethics and Responsible AI'
+    'Ethics and Responsible AI',
   ],
   low: [
     'Industry Insights',
@@ -73,8 +75,8 @@ const SECTION_PRIORITIES = {
     'Hands-on Tutorials',
     'Interactive Elements',
     'Interviews with Experts',
-    'Security Considerations'
-  ]
+    'Security Considerations',
+  ],
 };
 
 interface ContentSection {
@@ -118,7 +120,7 @@ async function generate42Sections(): Promise<void> {
     averageTimePerSection: 0,
     averageWordsPerSection: 0,
     qualityDistribution: { excellent: 0, good: 0, fair: 0, poor: 0 },
-    errors: 0
+    errors: 0,
   };
 
   try {
@@ -127,7 +129,9 @@ async function generate42Sections(): Promise<void> {
     logger.info(`Target Term: ${targetTerm || 'BATCH PROCESSING'}`);
     logger.info(`Batch Size: ${batchSize}`);
     logger.info(`Priority Level: ${priorityLevel || 'ALL'}`);
-    logger.info(`Specific Sections: ${specificSections.length ? specificSections.join(', ') : 'ALL'}`);
+    logger.info(
+      `Specific Sections: ${specificSections.length ? specificSections.join(', ') : 'ALL'}`
+    );
 
     if (isValidate) {
       await validateExistingSections();
@@ -136,7 +140,7 @@ async function generate42Sections(): Promise<void> {
 
     // Step 1: Get terms to process
     const termsToProcess = await getTermsToProcess(targetTerm, batchSize);
-    
+
     if (termsToProcess.length === 0) {
       logger.warn('No terms found to process');
       return;
@@ -146,30 +150,31 @@ async function generate42Sections(): Promise<void> {
 
     // Step 2: Get sections to generate
     const sectionsToGenerate = getSectionsToGenerate(specificSections, priorityLevel);
-    
+
     logger.info(`Will generate ${sectionsToGenerate.length} sections per term`);
-    logger.info(`Sections: ${sectionsToGenerate.map(s => s.sectionName).join(', ')}`);
+    logger.info(`Sections: ${sectionsToGenerate.map((s) => s.sectionName).join(', ')}`);
 
     // Step 3: Generate content for each term
     for (const term of termsToProcess) {
       try {
         logger.info(`\n🎯 Processing term: ${term.name} (ID: ${term.id})`);
-        
+
         const termStats = await generateContentForTerm(term, sectionsToGenerate);
-        
+
         // Update overall stats
         stats.totalTermsProcessed++;
         stats.totalSectionsGenerated += termStats.sectionsGenerated;
         stats.totalWords += termStats.totalWords;
         stats.errors += termStats.errors;
-        
+
         // Update quality distribution
         for (const [quality, count] of Object.entries(termStats.qualityDistribution)) {
           stats.qualityDistribution[quality] += count;
         }
 
-        logger.info(`  ✅ Completed ${termStats.sectionsGenerated} sections (${termStats.totalWords} words)`);
-        
+        logger.info(
+          `  ✅ Completed ${termStats.sectionsGenerated} sections (${termStats.totalWords} words)`
+        );
       } catch (error) {
         logger.error(`Error processing term ${term.name}:`, error);
         stats.errors++;
@@ -183,7 +188,6 @@ async function generate42Sections(): Promise<void> {
     stats.averageWordsPerSection = stats.totalWords / Math.max(stats.totalSectionsGenerated, 1);
 
     reportGenerationStats(stats);
-
   } catch (error) {
     logger.error('Fatal error in 42-section generation:', error);
     process.exit(1);
@@ -196,25 +200,18 @@ async function generate42Sections(): Promise<void> {
 async function getTermsToProcess(targetTerm: string, batchSize: number): Promise<any[]> {
   if (targetTerm) {
     // Get specific term
-    const termResult = await db
-      .select()
-      .from(terms)
-      .where(eq(terms.name, targetTerm))
-      .limit(1);
-    
+    const termResult = await db.select().from(terms).where(eq(terms.name, targetTerm)).limit(1);
+
     return termResult;
   } else {
     // Get batch of terms with basic content but missing comprehensive sections
     const termsResult = await db
       .select()
       .from(terms)
-      .where(and(
-        not(isNull(terms.definition)),
-        not(eq(terms.definition, ''))
-      ))
+      .where(and(not(isNull(terms.definition)), not(eq(terms.definition, ''))))
       .orderBy(sql`RANDOM()`)
       .limit(batchSize);
-    
+
     return termsResult;
   }
 }
@@ -222,12 +219,15 @@ async function getTermsToProcess(targetTerm: string, batchSize: number): Promise
 /**
  * Get sections to generate based on criteria
  */
-function getSectionsToGenerate(specificSections: string[], priorityLevel: string): ContentSection[] {
+function getSectionsToGenerate(
+  specificSections: string[],
+  priorityLevel: string
+): ContentSection[] {
   let sectionsToGenerate = COMPLETE_CONTENT_SECTIONS;
 
   // Filter by specific sections if provided
   if (specificSections.length > 0) {
-    sectionsToGenerate = sectionsToGenerate.filter(section =>
+    sectionsToGenerate = sectionsToGenerate.filter((section) =>
       specificSections.includes(section.sectionName)
     );
   }
@@ -235,7 +235,7 @@ function getSectionsToGenerate(specificSections: string[], priorityLevel: string
   // Filter by priority level if provided
   if (priorityLevel && SECTION_PRIORITIES[priorityLevel as keyof typeof SECTION_PRIORITIES]) {
     const prioritySections = SECTION_PRIORITIES[priorityLevel as keyof typeof SECTION_PRIORITIES];
-    sectionsToGenerate = sectionsToGenerate.filter(section =>
+    sectionsToGenerate = sectionsToGenerate.filter((section) =>
       prioritySections.includes(section.sectionName)
     );
   }
@@ -259,7 +259,7 @@ async function generateContentForTerm(
     sectionsGenerated: 0,
     totalWords: 0,
     qualityDistribution: { excellent: 0, good: 0, fair: 0, poor: 0 },
-    errors: 0
+    errors: 0,
   };
 
   // Get category information for context
@@ -270,7 +270,7 @@ async function generateContentForTerm(
       .from(categories)
       .where(eq(categories.id, term.categoryId))
       .limit(1);
-    
+
     if (categoryResult.length > 0) {
       categoryContext = categoryResult[0].name;
     }
@@ -280,20 +280,16 @@ async function generateContentForTerm(
   for (const section of sections) {
     try {
       const sectionStart = performance.now();
-      
+
       logger.info(`    📝 Generating: ${section.sectionName}`);
-      
-      const content = await generateSectionContent(
-        term,
-        section,
-        categoryContext
-      );
-      
+
+      const content = await generateSectionContent(term, section, categoryContext);
+
       if (content) {
         const wordCount = content.split(/\s+/).length;
         const generationTime = performance.now() - sectionStart;
         const quality = assessContentQuality(content, section);
-        
+
         const generatedContent: GeneratedContent = {
           termId: term.id,
           termName: term.name,
@@ -301,7 +297,7 @@ async function generateContentForTerm(
           content,
           wordCount,
           generationTime,
-          quality
+          quality,
         };
 
         if (!isDryRun) {
@@ -314,12 +310,13 @@ async function generateContentForTerm(
         termStats.totalWords += wordCount;
         termStats.qualityDistribution[quality]++;
 
-        logger.info(`      ✅ ${wordCount} words, ${(generationTime / 1000).toFixed(2)}s, quality: ${quality}`);
+        logger.info(
+          `      ✅ ${wordCount} words, ${(generationTime / 1000).toFixed(2)}s, quality: ${quality}`
+        );
       } else {
         termStats.errors++;
         logger.warn(`      ❌ Failed to generate content`);
       }
-
     } catch (error) {
       termStats.errors++;
       logger.error(`      ❌ Error generating ${section.sectionName}:`, error);
@@ -339,19 +336,15 @@ async function generateSectionContent(
 ): Promise<string | null> {
   try {
     // Build context-rich prompt for the section
-    const context = buildSectionContext(term, section, categoryContext);
-    
+    const _context = buildSectionContext(term, section, categoryContext);
+
     // Use the existing AI service
-    const content = await aiService.generateSectionContent(
-      term.name,
-      section.sectionName
-    );
+    const content = await aiService.generateSectionContent(term.name, section.sectionName);
 
     // Enhance content based on section type
     const enhancedContent = enhanceContentByType(content, section);
-    
-    return enhancedContent;
 
+    return enhancedContent;
   } catch (error) {
     logger.error(`Error generating content for section ${section.sectionName}:`, error);
     return null;
@@ -361,34 +354,30 @@ async function generateSectionContent(
 /**
  * Build context for section generation
  */
-function buildSectionContext(
-  term: any,
-  section: ContentSection,
-  categoryContext: string
-): string {
+function buildSectionContext(term: any, section: ContentSection, categoryContext: string): string {
   let context = `Term: ${term.name}\n`;
   context += `Category: ${categoryContext}\n`;
   context += `Definition: ${term.definition}\n`;
-  
+
   if (term.shortDefinition) {
     context += `Short Definition: ${term.shortDefinition}\n`;
   }
-  
+
   if (term.characteristics && term.characteristics.length > 0) {
     context += `Characteristics: ${term.characteristics.join(', ')}\n`;
   }
-  
+
   if (term.applications && term.applications.length > 0) {
-    const appNames = term.applications.map((app: any) => 
+    const appNames = term.applications.map((app: any) =>
       typeof app === 'string' ? app : app.name || 'Unknown'
     );
     context += `Applications: ${appNames.join(', ')}\n`;
   }
-  
+
   context += `\nSection Type: ${section.sectionName}\n`;
   context += `Display Type: ${section.displayType}\n`;
   context += `Expected Columns: ${section.columns.slice(0, 3).join(', ')}...\n`;
-  
+
   return context;
 }
 
@@ -419,27 +408,32 @@ function enhanceStructuredContent(content: string, section: ContentSection): str
       content += '\n\n[Code examples would be included here with proper syntax highlighting]';
     }
   }
-  
+
   if (section.sectionName.includes('Mathematics') || section.sectionName.includes('Theoretical')) {
     if (!content.includes('formula') && !content.includes('equation')) {
       content += '\n\n[Mathematical formulations would be displayed here using LaTeX formatting]';
     }
   }
-  
+
   return content;
 }
 
 /**
  * Enhance list content
  */
-function enhanceListContent(content: string, section: ContentSection): string {
+function enhanceListContent(content: string, _section: ContentSection): string {
   // Ensure list format for sections that should be lists
-  const lines = content.split('\n').filter(line => line.trim());
-  
-  if (lines.length > 1 && !content.includes('•') && !content.includes('-') && !content.includes('1.')) {
+  const lines = content.split('\n').filter((line) => line.trim());
+
+  if (
+    lines.length > 1 &&
+    !content.includes('•') &&
+    !content.includes('-') &&
+    !content.includes('1.')
+  ) {
     return lines.map((line, index) => `${index + 1}. ${line.trim()}`).join('\n');
   }
-  
+
   return content;
 }
 
@@ -450,42 +444,49 @@ function enhanceAIParseContent(content: string, section: ContentSection): string
   // Add metadata or structured markers for AI-parsed content
   if (section.sectionName.includes('Tags')) {
     // Ensure tag-like format
-    const tags = content.split(/[,\n]/).map(tag => tag.trim()).filter(tag => tag);
-    return tags.map(tag => `#${tag.replace(/^#/, '')}`).join(', ');
+    const tags = content
+      .split(/[,\n]/)
+      .map((tag) => tag.trim())
+      .filter((tag) => tag);
+    return tags.map((tag) => `#${tag.replace(/^#/, '')}`).join(', ');
   }
-  
+
   return content;
 }
 
 /**
  * Assess content quality
  */
-function assessContentQuality(content: string, section: ContentSection): 'excellent' | 'good' | 'fair' | 'poor' {
+function assessContentQuality(
+  content: string,
+  section: ContentSection
+): 'excellent' | 'good' | 'fair' | 'poor' {
   const wordCount = content.split(/\s+/).length;
   const hasStructure = content.includes('\n') || content.includes(':') || content.includes('•');
   const hasDetail = wordCount > 50;
-  const hasExamples = content.toLowerCase().includes('example') || content.toLowerCase().includes('instance');
-  
+  const hasExamples =
+    content.toLowerCase().includes('example') || content.toLowerCase().includes('instance');
+
   let score = 0;
-  
+
   // Word count scoring
   if (wordCount > 100) score += 3;
   else if (wordCount > 50) score += 2;
   else if (wordCount > 20) score += 1;
-  
+
   // Structure scoring
   if (hasStructure) score += 2;
-  
+
   // Detail scoring
   if (hasDetail) score += 2;
-  
+
   // Examples scoring
   if (hasExamples) score += 1;
-  
+
   // Section-specific scoring
   if (section.parseType === 'structured' && hasStructure) score += 1;
   if (section.displayType === 'interactive' && content.includes('interactive')) score += 1;
-  
+
   if (score >= 7) return 'excellent';
   if (score >= 5) return 'good';
   if (score >= 3) return 'fair';
@@ -507,18 +508,20 @@ function getPriorityValue(sectionName: string): number {
  */
 async function saveGeneratedContent(generatedContent: GeneratedContent): Promise<void> {
   try {
-    logger.info(`💾 Saving section: ${generatedContent.sectionName} for term: ${generatedContent.termName}`);
-    
+    logger.info(
+      `💾 Saving section: ${generatedContent.sectionName} for term: ${generatedContent.termName}`
+    );
+
     // Find the section configuration to get display type and priority
     const sectionConfig = COMPLETE_CONTENT_SECTIONS.find(
-      section => section.sectionName === generatedContent.sectionName
+      (section) => section.sectionName === generatedContent.sectionName
     );
-    
+
     if (!sectionConfig) {
       logger.warn(`⚠️  Section configuration not found for: ${generatedContent.sectionName}`);
       return;
     }
-    
+
     // Prepare section data
     const sectionData = {
       content: generatedContent.content,
@@ -529,10 +532,10 @@ async function saveGeneratedContent(generatedContent: GeneratedContent): Promise
       metadata: {
         parseType: sectionConfig.parseType,
         columns: sectionConfig.columns,
-        contentLength: generatedContent.content.length
-      }
+        contentLength: generatedContent.content.length,
+      },
     };
-    
+
     // Insert into term_sections table
     await db.insert(termSections).values({
       termId: generatedContent.termId,
@@ -542,11 +545,12 @@ async function saveGeneratedContent(generatedContent: GeneratedContent): Promise
       priority: getPriorityValue(generatedContent.sectionName),
       isInteractive: sectionConfig.displayType === 'interactive',
       createdAt: new Date(),
-      updatedAt: new Date()
+      updatedAt: new Date(),
     });
-    
-    logger.info(`✅ Saved section: ${generatedContent.sectionName} (${generatedContent.wordCount} words)`);
-    
+
+    logger.info(
+      `✅ Saved section: ${generatedContent.sectionName} (${generatedContent.wordCount} words)`
+    );
   } catch (error) {
     logger.error(`❌ Error saving section ${generatedContent.sectionName}:`, error);
     throw error;
@@ -558,22 +562,22 @@ async function saveGeneratedContent(generatedContent: GeneratedContent): Promise
  */
 async function validateExistingSections(): Promise<void> {
   logger.info('🔍 Validating existing section content...');
-  
+
   // Check basic terms content
   const existingTerms = await db.select().from(terms);
-  
+
   let termsWithContent = 0;
   let termsWithBasicContent = 0;
   let termsWithComprehensiveContent = 0;
-  
+
   for (const term of existingTerms) {
     if (term.definition && term.definition.trim().length > 0) {
       termsWithContent++;
-      
+
       if (term.shortDefinition && term.characteristics && term.applications) {
         termsWithBasicContent++;
       }
-      
+
       // Check for signs of comprehensive content
       const definitionLength = term.definition.length;
       if (definitionLength > 1000) {
@@ -581,7 +585,7 @@ async function validateExistingSections(): Promise<void> {
       }
     }
   }
-  
+
   // Check term_sections table
   const sectionStats = await db.execute(sql`
     SELECT 
@@ -590,7 +594,7 @@ async function validateExistingSections(): Promise<void> {
       COUNT(*) / NULLIF(COUNT(DISTINCT term_id), 0) as avg_sections_per_term
     FROM term_sections
   `);
-  
+
   const sectionsByType = await db.execute(sql`
     SELECT 
       section_name,
@@ -599,34 +603,39 @@ async function validateExistingSections(): Promise<void> {
     GROUP BY section_name
     ORDER BY count DESC
   `);
-  
+
   logger.info(`📊 Content Validation Results:`);
   logger.info(`  Total terms: ${existingTerms.length}`);
   logger.info(`  Terms with content: ${termsWithContent}`);
   logger.info(`  Terms with basic content: ${termsWithBasicContent}`);
   logger.info(`  Terms with comprehensive content: ${termsWithComprehensiveContent}`);
-  
-  const contentCoverage = (termsWithContent / existingTerms.length * 100).toFixed(1);
-  const comprehensiveCoverage = (termsWithComprehensiveContent / existingTerms.length * 100).toFixed(1);
-  
+
+  const contentCoverage = ((termsWithContent / existingTerms.length) * 100).toFixed(1);
+  const comprehensiveCoverage = (
+    (termsWithComprehensiveContent / existingTerms.length) *
+    100
+  ).toFixed(1);
+
   logger.info(`  Content coverage: ${contentCoverage}%`);
   logger.info(`  Comprehensive coverage: ${comprehensiveCoverage}%`);
-  
+
   if (sectionStats.rows.length > 0) {
     const stats = sectionStats.rows[0];
     logger.info(`\n📊 42-Section System Status:`);
     logger.info(`  Total sections: ${stats.total_sections}`);
     logger.info(`  Terms with sections: ${stats.terms_with_sections}`);
-    logger.info(`  Avg sections per term: ${stats.avg_sections_per_term ? Number(stats.avg_sections_per_term).toFixed(1) : '0'}`);
+    logger.info(
+      `  Avg sections per term: ${stats.avg_sections_per_term ? Number(stats.avg_sections_per_term).toFixed(1) : '0'}`
+    );
   }
-  
+
   if (sectionsByType.rows.length > 0) {
     logger.info(`\n📊 Section Distribution (Top 10):`);
     sectionsByType.rows.slice(0, 10).forEach((row: any) => {
       logger.info(`  ${row.section_name}: ${row.count} terms`);
     });
   }
-  
+
   if (comprehensiveCoverage < '20') {
     logger.warn('⚠️  Low comprehensive content coverage. Consider running section generation.');
   }
@@ -645,22 +654,31 @@ function reportGenerationStats(stats: GenerationStats): void {
   logger.info(`Average Time per Section: ${(stats.averageTimePerSection / 1000).toFixed(2)}s`);
   logger.info(`Average Words per Section: ${Math.round(stats.averageWordsPerSection)}`);
   logger.info(`Errors: ${stats.errors}`);
-  
+
   logger.info('\n📈 Quality Distribution:');
   for (const [quality, count] of Object.entries(stats.qualityDistribution)) {
-    const percentage = stats.totalSectionsGenerated > 0 ? 
-      (count / stats.totalSectionsGenerated * 100).toFixed(1) : '0';
+    const percentage =
+      stats.totalSectionsGenerated > 0
+        ? ((count / stats.totalSectionsGenerated) * 100).toFixed(1)
+        : '0';
     logger.info(`  ${quality}: ${count} (${percentage}%)`);
   }
-  
-  const successRate = stats.totalSectionsGenerated > 0 ? 
-    ((stats.totalSectionsGenerated - stats.errors) / stats.totalSectionsGenerated * 100).toFixed(1) : '0';
+
+  const successRate =
+    stats.totalSectionsGenerated > 0
+      ? (
+          ((stats.totalSectionsGenerated - stats.errors) / stats.totalSectionsGenerated) *
+          100
+        ).toFixed(1)
+      : '0';
   logger.info(`\n✅ Success Rate: ${successRate}%`);
-  
+
   if (stats.totalSectionsGenerated > 0) {
-    const estimatedFullContent = stats.totalSectionsGenerated * 42; // If all 42 sections were generated
+    const _estimatedFullContent = stats.totalSectionsGenerated * 42; // If all 42 sections were generated
     logger.info(`\n🎯 Content Scale: Generated ${stats.totalSectionsGenerated} sections`);
-    logger.info(`   (Equivalent to ${(stats.totalSectionsGenerated / 42).toFixed(1)} complete 42-section terms)`);
+    logger.info(
+      `   (Equivalent to ${(stats.totalSectionsGenerated / 42).toFixed(1)} complete 42-section terms)`
+    );
   }
 }
 
@@ -668,7 +686,7 @@ function reportGenerationStats(stats: GenerationStats): void {
  * Main execution
  */
 if (require.main === module) {
-  generate42Sections().catch(error => {
+  generate42Sections().catch((error) => {
     logger.error('42-section generation failed:', error);
     process.exit(1);
   });

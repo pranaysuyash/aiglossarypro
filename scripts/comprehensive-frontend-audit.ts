@@ -1,12 +1,13 @@
 #!/usr/bin/env tsx
+
 /**
  * Comprehensive Frontend Visual Audit
  * Tests all user flows, components, interactions on port 5173
  */
 
-import puppeteer, { Browser, Page } from 'puppeteer';
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
+import puppeteer, { type Browser, type Page } from 'puppeteer';
 
 interface AuditResult {
   testName: string;
@@ -45,13 +46,13 @@ class FrontendAuditor {
     {
       email: 'test@example.com',
       password: 'TestPassword123!',
-      name: 'Test User'
+      name: 'Test User',
     },
     {
-      email: 'admin@example.com', 
+      email: 'admin@example.com',
       password: 'AdminPassword123!',
-      name: 'Admin User'
-    }
+      name: 'Admin User',
+    },
   ];
 
   // User flows to test
@@ -63,10 +64,14 @@ class FrontendAuditor {
         { action: 'goto', text: '/' },
         { action: 'wait', waitFor: 'body' },
         { action: 'screenshot' },
-        { action: 'click', selector: 'nav a[href="/categories"]', expected: 'Categories page loads' },
+        {
+          action: 'click',
+          selector: 'nav a[href="/categories"]',
+          expected: 'Categories page loads',
+        },
         { action: 'wait', waitFor: '2000' },
-        { action: 'screenshot' }
-      ]
+        { action: 'screenshot' },
+      ],
     },
     {
       name: 'hierarchical-navigation',
@@ -79,8 +84,8 @@ class FrontendAuditor {
         { action: 'wait', waitFor: '1000' },
         { action: 'click', selector: 'button:has-text("Flat")', expected: 'Flat view active' },
         { action: 'wait', waitFor: '1000' },
-        { action: 'screenshot' }
-      ]
+        { action: 'screenshot' },
+      ],
     },
     {
       name: 'search-functionality',
@@ -88,14 +93,19 @@ class FrontendAuditor {
       steps: [
         { action: 'goto', text: '/' },
         { action: 'wait', waitFor: 'input[placeholder*="Search"]' },
-        { action: 'type', selector: 'input[placeholder*="Search"]', text: 'neural', expected: 'Search results appear' },
+        {
+          action: 'type',
+          selector: 'input[placeholder*="Search"]',
+          text: 'neural',
+          expected: 'Search results appear',
+        },
         { action: 'wait', waitFor: '2000' },
         { action: 'screenshot' },
         { action: 'clear', selector: 'input[placeholder*="Search"]' },
         { action: 'type', selector: 'input[placeholder*="Search"]', text: 'machine learning' },
         { action: 'wait', waitFor: '2000' },
-        { action: 'screenshot' }
-      ]
+        { action: 'screenshot' },
+      ],
     },
     {
       name: 'authentication-flow',
@@ -108,8 +118,8 @@ class FrontendAuditor {
         { action: 'type', selector: 'input[type="password"]', text: this.testUsers[0].password },
         { action: 'click', selector: 'button[type="submit"]', expected: 'Login successful' },
         { action: 'wait', waitFor: '3000' },
-        { action: 'screenshot' }
-      ]
+        { action: 'screenshot' },
+      ],
     },
     {
       name: 'term-page-interaction',
@@ -121,10 +131,14 @@ class FrontendAuditor {
         { action: 'scroll', text: 'down', expected: 'Page scrolls smoothly' },
         { action: 'wait', waitFor: '1000' },
         { action: 'screenshot' },
-        { action: 'click', selector: 'button:contains("Introduction")', expected: 'Section expands' },
+        {
+          action: 'click',
+          selector: 'button:contains("Introduction")',
+          expected: 'Section expands',
+        },
         { action: 'wait', waitFor: '1000' },
-        { action: 'screenshot' }
-      ]
+        { action: 'screenshot' },
+      ],
     },
     {
       name: 'dashboard-functionality',
@@ -135,8 +149,8 @@ class FrontendAuditor {
         { action: 'screenshot' },
         { action: 'click', selector: '.progress-card', expected: 'Progress details show' },
         { action: 'wait', waitFor: '1000' },
-        { action: 'screenshot' }
-      ]
+        { action: 'screenshot' },
+      ],
     },
     {
       name: 'mobile-responsiveness',
@@ -148,8 +162,8 @@ class FrontendAuditor {
         { action: 'screenshot' },
         { action: 'click', selector: 'button.menu-toggle', expected: 'Mobile menu opens' },
         { action: 'wait', waitFor: '1000' },
-        { action: 'screenshot' }
-      ]
+        { action: 'screenshot' },
+      ],
     },
     {
       name: 'form-interactions',
@@ -162,20 +176,20 @@ class FrontendAuditor {
         { action: 'type', selector: 'input[name="firstName"]', text: 'Updated Name' },
         { action: 'click', selector: 'button[type="submit"]', expected: 'Form submits' },
         { action: 'wait', waitFor: '2000' },
-        { action: 'screenshot' }
-      ]
-    }
+        { action: 'screenshot' },
+      ],
+    },
   ];
 
   async init(): Promise<void> {
     this.browser = await puppeteer.launch({
       headless: true,
       args: ['--no-sandbox', '--disable-setuid-sandbox', '--disable-dev-shm-usage'],
-      defaultViewport: { width: 1920, height: 1080 }
+      defaultViewport: { width: 1920, height: 1080 },
     });
 
     this.page = await this.browser.newPage();
-    
+
     // Create output directory
     const outputPath = path.join(process.cwd(), this.outputDir);
     if (!fs.existsSync(outputPath)) {
@@ -208,14 +222,14 @@ class FrontendAuditor {
         try {
           switch (step.action) {
             case 'goto':
-              await this.page.goto(`${this.baseUrl}${step.text}`, { 
+              await this.page.goto(`${this.baseUrl}${step.text}`, {
                 waitUntil: 'networkidle2',
-                timeout: 10000 
+                timeout: 10000,
               });
               break;
 
             case 'wait':
-              if (step.waitFor && !isNaN(Number(step.waitFor))) {
+              if (step.waitFor && !Number.isNaN(Number(step.waitFor))) {
                 await this.page.waitForTimeout(Number(step.waitFor));
               } else if (step.waitFor) {
                 await this.page.waitForSelector(step.waitFor, { timeout: 5000 });
@@ -254,9 +268,9 @@ class FrontendAuditor {
 
             case 'screenshot':
               screenshotPath = path.join(this.outputDir, `${flow.name}-${Date.now()}.png`);
-              await this.page.screenshot({ 
-                path: screenshotPath, 
-                fullPage: true 
+              await this.page.screenshot({
+                path: screenshotPath,
+                fullPage: true,
               });
               break;
 
@@ -270,7 +284,6 @@ class FrontendAuditor {
 
           // Small delay between actions
           await this.page.waitForTimeout(500);
-
         } catch (stepError) {
           const errorMsg = `Step failed: ${step.action} - ${stepError}`;
           errors.push(errorMsg);
@@ -284,25 +297,25 @@ class FrontendAuditor {
       return {
         testName: flow.name,
         status: errors.length === 0 ? 'passed' : 'warning',
-        message: errors.length === 0 
-          ? `✅ ${flow.description} completed successfully`
-          : `⚠️ ${flow.description} completed with ${errors.length} issues`,
+        message:
+          errors.length === 0
+            ? `✅ ${flow.description} completed successfully`
+            : `⚠️ ${flow.description} completed with ${errors.length} issues`,
         screenshot: screenshotPath,
         metrics: {
           loadTime,
           renderTime: loadTime,
-          interactionDelay: 0
+          interactionDelay: 0,
         },
-        errors: errors.length > 0 ? errors : undefined
+        errors: errors.length > 0 ? errors : undefined,
       };
-
     } catch (error) {
       return {
         testName: flow.name,
         status: 'failed',
         message: `❌ ${flow.description} failed: ${error}`,
         screenshot: screenshotPath,
-        errors: [String(error), ...errors]
+        errors: [String(error), ...errors],
       };
     }
   }
@@ -315,23 +328,23 @@ class FrontendAuditor {
     // Test hierarchical navigation specifically
     try {
       await this.page.goto(`${this.baseUrl}/`, { waitUntil: 'networkidle2' });
-      
+
       // Test expand/collapse functionality
       const expandButtons = await this.page.$$('button[data-size="sm"]');
       if (expandButtons.length > 0) {
         await expandButtons[0].click();
         await this.page.waitForTimeout(1000);
-        
+
         componentTests.push({
           testName: 'hierarchical-expand-collapse',
           status: 'passed',
           message: '✅ Hierarchical navigation expand/collapse works',
-          screenshot: path.join(this.outputDir, 'hierarchical-expanded.png')
+          screenshot: path.join(this.outputDir, 'hierarchical-expanded.png'),
         });
-        
-        await this.page.screenshot({ 
+
+        await this.page.screenshot({
           path: path.join(this.outputDir, 'hierarchical-expanded.png'),
-          fullPage: true 
+          fullPage: true,
         });
       }
 
@@ -340,7 +353,7 @@ class FrontendAuditor {
       if (searchInput) {
         await searchInput.type('neural networks');
         await this.page.waitForTimeout(2000);
-        
+
         const searchResults = await this.page.$eval('body', (body) => {
           return body.textContent?.includes('Neural Networks') || false;
         });
@@ -348,22 +361,22 @@ class FrontendAuditor {
         componentTests.push({
           testName: 'hierarchical-search',
           status: searchResults ? 'passed' : 'warning',
-          message: searchResults 
+          message: searchResults
             ? '✅ Search functionality works correctly'
             : '⚠️ Search results not found or delayed',
-          screenshot: path.join(this.outputDir, 'search-results.png')
+          screenshot: path.join(this.outputDir, 'search-results.png'),
         });
 
-        await this.page.screenshot({ 
+        await this.page.screenshot({
           path: path.join(this.outputDir, 'search-results.png'),
-          fullPage: true 
+          fullPage: true,
         });
       }
 
       // Test Tree/Flat view toggle
       const treeButton = await this.page.$('button:has-text("Tree")');
       const flatButton = await this.page.$('button:has-text("Flat")');
-      
+
       if (treeButton && flatButton) {
         await flatButton.click();
         await this.page.waitForTimeout(1000);
@@ -374,21 +387,20 @@ class FrontendAuditor {
           testName: 'view-mode-toggle',
           status: 'passed',
           message: '✅ Tree/Flat view toggle works',
-          screenshot: path.join(this.outputDir, 'view-toggle.png')
+          screenshot: path.join(this.outputDir, 'view-toggle.png'),
         });
 
-        await this.page.screenshot({ 
+        await this.page.screenshot({
           path: path.join(this.outputDir, 'view-toggle.png'),
-          fullPage: true 
+          fullPage: true,
         });
       }
-
     } catch (error) {
       componentTests.push({
         testName: 'component-interactions',
         status: 'failed',
         message: `❌ Component interaction test failed: ${error}`,
-        errors: [String(error)]
+        errors: [String(error)],
       });
     }
 
@@ -398,10 +410,10 @@ class FrontendAuditor {
   async runAllTests(): Promise<void> {
     console.log('🚀 Starting Comprehensive Frontend Audit...');
     console.log(`📍 Testing frontend on: ${this.baseUrl}`);
-    
+
     // Test basic connectivity
     try {
-      await this.page!.goto(this.baseUrl, { waitUntil: 'networkidle2', timeout: 10000 });
+      await this.page?.goto(this.baseUrl, { waitUntil: 'networkidle2', timeout: 10000 });
       console.log('✅ Frontend is accessible');
     } catch (error) {
       console.log('❌ Frontend connectivity failed:', error);
@@ -424,10 +436,10 @@ class FrontendAuditor {
 
   async generateReport(): Promise<void> {
     const reportPath = path.join(this.outputDir, 'audit-report.html');
-    
-    const passed = this.results.filter(r => r.status === 'passed').length;
-    const warnings = this.results.filter(r => r.status === 'warning').length;
-    const failed = this.results.filter(r => r.status === 'failed').length;
+
+    const passed = this.results.filter((r) => r.status === 'passed').length;
+    const warnings = this.results.filter((r) => r.status === 'warning').length;
+    const failed = this.results.filter((r) => r.status === 'failed').length;
 
     const html = `
 <!DOCTYPE html>
@@ -459,24 +471,40 @@ class FrontendAuditor {
     </div>
 
     <h2>📋 Detailed Results</h2>
-    ${this.results.map(result => `
+    ${this.results
+      .map(
+        (result) => `
         <div class="test ${result.status}">
             <h3>${result.testName}</h3>
             <p>${result.message}</p>
-            ${result.metrics ? `
+            ${
+              result.metrics
+                ? `
                 <p><strong>Metrics:</strong> Load: ${result.metrics.loadTime}ms, Render: ${result.metrics.renderTime}ms</p>
-            ` : ''}
-            ${result.errors ? `
+            `
+                : ''
+            }
+            ${
+              result.errors
+                ? `
                 <details>
                     <summary>Errors (${result.errors.length})</summary>
-                    <ul>${result.errors.map(error => `<li>${error}</li>`).join('')}</ul>
+                    <ul>${result.errors.map((error) => `<li>${error}</li>`).join('')}</ul>
                 </details>
-            ` : ''}
-            ${result.screenshot ? `
+            `
+                : ''
+            }
+            ${
+              result.screenshot
+                ? `
                 <p><img src="${path.basename(result.screenshot)}" alt="Screenshot" class="screenshot" onclick="window.open(this.src, '_blank')"></p>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
-    `).join('')}
+    `
+      )
+      .join('')}
 
     <div style="margin-top: 40px; padding: 20px; background: #f8f9fa; border-radius: 8px;">
         <h2>📁 Files</h2>
@@ -487,7 +515,7 @@ class FrontendAuditor {
 </html>`;
 
     fs.writeFileSync(reportPath, html);
-    
+
     console.log('\n🎉 Audit Complete!');
     console.log(`📊 Results: ${passed} passed, ${warnings} warnings, ${failed} failed`);
     console.log(`📄 Report: ${reportPath}`);
@@ -503,7 +531,7 @@ class FrontendAuditor {
 
 async function main() {
   const auditor = new FrontendAuditor();
-  
+
   try {
     await auditor.init();
     await auditor.runAllTests();

@@ -22,10 +22,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Introduction – Category and Sub-category of the Term – Relationship to Other Categories or Domains',
       'Introduction – Limitations and Assumptions of the Concept',
       'Introduction – Technological Trends and Future Predictions',
-      'Introduction – Interactive Element: Mermaid Diagram'
+      'Introduction – Interactive Element: Mermaid Diagram',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 2. Prerequisites
@@ -37,10 +37,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Prerequisites – Suggested Introductory Topics or Courses',
       'Prerequisites – Recommended Learning Resources',
       'Prerequisites – Connections to Other Prerequisite Topics or Skills',
-      'Prerequisites – Interactive Element: Links to Introductory Tutorials or Courses'
+      'Prerequisites – Interactive Element: Links to Introductory Tutorials or Courses',
     ],
     displayType: 'sidebar',
-    parseType: 'list'
+    parseType: 'list',
   },
 
   // 3. Theoretical Concepts
@@ -53,10 +53,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Theoretical Concepts – Mathematical Derivations or Proofs',
       'Theoretical Concepts – Interpretability and Explainability of the Underlying Concepts',
       'Theoretical Concepts – Theoretical Critiques and Counterarguments',
-      'Theoretical Concepts – Interactive Element: Mathematical Visualizations or Interactive Proofs'
+      'Theoretical Concepts – Interactive Element: Mathematical Visualizations or Interactive Proofs',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 4. How It Works
@@ -68,10 +68,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'How It Works – Illustrative Examples or Case Studies',
       'How It Works – Visualizations or Animations to Explain the Process',
       'How It Works – Component Breakdown',
-      'How It Works – Interactive Element: Flowcharts or Animated Diagrams'
+      'How It Works – Interactive Element: Flowcharts or Animated Diagrams',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 5. Variants or Extensions
@@ -83,10 +83,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Variants or Extensions – Recent Developments or Improvements',
       'Variants or Extensions – Comparisons to Similar or Related Techniques',
       'Variants or Extensions – Comparative Analysis of Variants or Extensions',
-      'Variants or Extensions – Interactive Element: Comparison Tables or Interactive Charts'
+      'Variants or Extensions – Interactive Element: Comparison Tables or Interactive Charts',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 6. Applications
@@ -98,10 +98,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Applications – Benefits and Impact',
       'Applications – Limitations or Challenges in Real-world Applications',
       'Applications – Economic Impact',
-      'Applications – Interactive Element: Case Study Walkthroughs or Interactive Use Cases'
+      'Applications – Interactive Element: Case Study Walkthroughs or Interactive Use Cases',
     ],
     displayType: 'main',
-    parseType: 'list'
+    parseType: 'list',
   },
 
   // 7. Implementation
@@ -120,10 +120,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Implementation – Model Deployment and Serving Strategies',
       'Implementation – Tips for Effective Implementation',
       'Implementation – Security Best Practices',
-      'Implementation – Interactive Element: Live Code Examples or Embedded Notebooks'
+      'Implementation – Interactive Element: Live Code Examples or Embedded Notebooks',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 8. Evaluation and Metrics
@@ -136,10 +136,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Evaluation and Metrics – Interpreting and Analyzing Results',
       'Evaluation and Metrics – Statistical Significance and Hypothesis Testing',
       'Evaluation and Metrics – Robustness and Stability Evaluation',
-      'Evaluation and Metrics – Interactive Element: Metric Calculators or Interactive Dashboards'
+      'Evaluation and Metrics – Interactive Element: Metric Calculators or Interactive Dashboards',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 9. Advantages and Disadvantages
@@ -149,10 +149,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Advantages and Disadvantages – Strengths and Benefits',
       'Advantages and Disadvantages – Weaknesses and Limitations',
       'Advantages and Disadvantages – Trade-offs and Considerations',
-      'Advantages and Disadvantages – Interactive Element: Pros and Cons Lists with Visual Indicators'
+      'Advantages and Disadvantages – Interactive Element: Pros and Cons Lists with Visual Indicators',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 10. Ethics and Responsible AI
@@ -166,10 +166,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Ethics and Responsible AI – Case Studies or Examples of Ethical Concerns',
       'Ethics and Responsible AI – Mitigation Strategies for Ethical Concerns',
       'Ethics and Responsible AI – Long-Term Societal Impact',
-      'Ethics and Responsible AI – Interactive Element: Ethical Decision-Making Scenarios or Quizzes'
+      'Ethics and Responsible AI – Interactive Element: Ethical Decision-Making Scenarios or Quizzes',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 11. Historical Context
@@ -186,10 +186,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Historical Context – Important Dates – Key Implementations or Applications',
       'Historical Context – Impact on the AI/ML Research Community',
       'Historical Context – Future Outlook and Potential Developments',
-      'Historical Context – Interactive Element: Timeline Diagrams (Mermaid or Other)'
+      'Historical Context – Interactive Element: Timeline Diagrams (Mermaid or Other)',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 12. Illustration or Diagram
@@ -200,10 +200,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Illustration or Diagram – Flowcharts or Process Diagrams',
       'Illustration or Diagram – Architectural or Model Schemas',
       'Illustration or Diagram – Interactive or Dynamic Visualizations',
-      'Illustration or Diagram – Interactive Element: Mermaid Diagrams, UML Diagrams, or Interactive Models'
+      'Illustration or Diagram – Interactive Element: Mermaid Diagrams, UML Diagrams, or Interactive Models',
     ],
     displayType: 'interactive',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 13. Related Concepts
@@ -219,10 +219,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Related Concepts – Interdisciplinary Connections (e.g., links to other fields like cognitive science, psychology, or neuroscience)',
       'Related Concepts – Interdisciplinary Applications and Cross-pollination',
       'Related Concepts – Influence of Non-Technical Fields',
-      'Related Concepts – Interactive Element: Concept Maps or Linked Interactive Diagrams'
+      'Related Concepts – Interactive Element: Concept Maps or Linked Interactive Diagrams',
     ],
     displayType: 'sidebar',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 14. Case Studies
@@ -235,10 +235,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Case Studies – Insights and Takeaways',
       'Case Studies – Limitations or Drawbacks Encountered in Real-world Applications',
       'Case Studies – Comparative Case Studies',
-      'Case Studies – Interactive Element: Detailed Case Study Walkthroughs or Interactive Stories'
+      'Case Studies – Interactive Element: Detailed Case Study Walkthroughs or Interactive Stories',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 15. Interviews with Experts
@@ -251,10 +251,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Interviews with Experts – Perspectives on Challenges and Opportunities',
       'Interviews with Experts – Ethical Considerations and Societal Impacts',
       'Interviews with Experts – Advice for Aspiring Researchers and Practitioners',
-      'Interviews with Experts – Interactive Element: Video Interviews or Embedded Audio Clips'
+      'Interviews with Experts – Interactive Element: Video Interviews or Embedded Audio Clips',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 16. Hands-on Tutorials
@@ -267,10 +267,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Hands-on Tutorials – Troubleshooting Common Issues – Debugging Tips and Preventive Measures',
       'Hands-on Tutorials – Best Practices and Tips',
       'Hands-on Tutorials – Project-Based Learning Scenarios',
-      'Hands-on Tutorials – Interactive Element: Embedded Code Editors or Live Coding Environments'
+      'Hands-on Tutorials – Interactive Element: Embedded Code Editors or Live Coding Environments',
     ],
     displayType: 'interactive',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 17. Interactive Elements
@@ -283,10 +283,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Interactive Elements – Discussion Forums or Q&A Sections',
       'Interactive Elements – Online Demos or Interactive Notebooks',
       'Interactive Elements – User-Submitted Content',
-      'Interactive Elements – Interactive Diagrams (e.g., Mermaid, UML)'
+      'Interactive Elements – Interactive Diagrams (e.g., Mermaid, UML)',
     ],
     displayType: 'interactive',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 18. Industry Insights
@@ -299,10 +299,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Industry Insights – Future Outlook and Potential Disruptions',
       'Industry Insights – Regulatory Landscape and Compliance Considerations',
       'Industry Insights – Innovation Spotlights',
-      'Industry Insights – Interactive Element: Industry Trend Charts or Interactive Reports'
+      'Industry Insights – Interactive Element: Industry Trend Charts or Interactive Reports',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 19. Common Challenges and Pitfalls
@@ -313,10 +313,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Common Challenges and Pitfalls – Debugging and Troubleshooting Strategies',
       'Common Challenges and Pitfalls – Best Practices for Avoiding Common Issues',
       'Common Challenges and Pitfalls – Strategies for Overcoming Challenges',
-      'Common Challenges and Pitfalls – Interactive Element: Problem-Solving Scenarios or Interactive FAQs'
+      'Common Challenges and Pitfalls – Interactive Element: Problem-Solving Scenarios or Interactive FAQs',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 20. Real-world Datasets and Benchmarks
@@ -329,10 +329,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Real-world Datasets and Benchmarks – Bias and Fairness Considerations in Datasets',
       'Real-world Datasets and Benchmarks – Considerations for Diverse and Inclusive Datasets',
       'Real-world Datasets and Benchmarks – Ethical Use of Data',
-      'Real-world Datasets and Benchmarks – Interactive Element: Dataset Exploration Tools or Benchmark Comparisons'
+      'Real-world Datasets and Benchmarks – Interactive Element: Dataset Exploration Tools or Benchmark Comparisons',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 21. Tools and Frameworks
@@ -343,10 +343,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Tools and Frameworks – Comparison of Different Tools',
       'Tools and Frameworks – Tutorials and Examples for Each Tool',
       'Tools and Frameworks – Comparative Analysis and Benchmarking of Tools',
-      'Tools and Frameworks – Interactive Element: Tool Demos or Interactive Comparisons'
+      'Tools and Frameworks – Interactive Element: Tool Demos or Interactive Comparisons',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 22. Did You Know?
@@ -358,10 +358,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Did You Know? – Latest Developments or Future Trends',
       'Did You Know? – Surprising or Counterintuitive Findings',
       'Did You Know? – Historical Anecdotes',
-      'Did You Know? – Interactive Element: Fun Facts Pop-ups or Interactive Trivia'
+      'Did You Know? – Interactive Element: Fun Facts Pop-ups or Interactive Trivia',
     ],
     displayType: 'card',
-    parseType: 'simple'
+    parseType: 'simple',
   },
 
   // 23. Quick Quiz
@@ -371,10 +371,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Quick Quiz – Multiple Choice Questions',
       'Quick Quiz – True or False Statements',
       'Quick Quiz – Fill in the Blanks',
-      'Quick Quiz – Interactive Element: Embedded Quiz Widgets'
+      'Quick Quiz – Interactive Element: Embedded Quiz Widgets',
     ],
     displayType: 'interactive',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 24. Further Reading
@@ -387,10 +387,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Further Reading – Industry Reports or White Papers',
       'Further Reading – Podcasts, Webinars, or Online Talks',
       'Further Reading – Critical Reviews and Analyses',
-      'Further Reading – Interactive Element: Links to External Resources or Reading Lists'
+      'Further Reading – Interactive Element: Links to External Resources or Reading Lists',
     ],
     displayType: 'sidebar',
-    parseType: 'list'
+    parseType: 'list',
   },
 
   // 25. Project Suggestions
@@ -400,10 +400,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Project Suggestions – Hands-on Exercises or Experiments',
       'Project Suggestions – Real-world Problem-solving Tasks',
       'Project Suggestions – Creative Applications or Extensions',
-      'Project Suggestions – Interactive Element: Project Idea Generators or Collaborative Project Platforms'
+      'Project Suggestions – Interactive Element: Project Idea Generators or Collaborative Project Platforms',
     ],
     displayType: 'main',
-    parseType: 'list'
+    parseType: 'list',
   },
 
   // 26. Recommended Websites and Courses
@@ -414,10 +414,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Recommended Websites and Courses – University Courses or Certifications',
       'Recommended Websites and Courses – Industry-specific Resources',
       'Recommended Websites and Courses – Professional Certifications or Specializations',
-      'Recommended Websites and Courses – Interactive Element: Course Comparison Tools or Enrollment Links'
+      'Recommended Websites and Courses – Interactive Element: Course Comparison Tools or Enrollment Links',
     ],
     displayType: 'sidebar',
-    parseType: 'list'
+    parseType: 'list',
   },
 
   // 27. Collaboration and Community
@@ -427,10 +427,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Collaboration and Community – Online Forums and Discussion Platforms',
       'Collaboration and Community – Open Source Projects and Contributions',
       'Collaboration and Community – Conferences, Workshops, and Meetups',
-      'Collaboration and Community – Interactive Element: Community Links or Collaboration Platforms'
+      'Collaboration and Community – Interactive Element: Community Links or Collaboration Platforms',
     ],
     displayType: 'sidebar',
-    parseType: 'list'
+    parseType: 'list',
   },
 
   // 28. Research Papers
@@ -443,10 +443,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Research Papers – Critique or Analysis of Research Papers',
       'Research Papers – Emerging Trends and Future Research Directions',
       'Research Papers – Theoretical Implications',
-      'Research Papers – Interactive Element: Paper Summaries or Interactive Literature Reviews'
+      'Research Papers – Interactive Element: Paper Summaries or Interactive Literature Reviews',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 29. Career Guidance
@@ -458,10 +458,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Career Guidance – Career Paths and Progression',
       'Career Guidance – Advice for Breaking into the Field',
       'Career Guidance – Emerging Job Roles and Future Career Prospects',
-      'Career Guidance – Interactive Element: Career Path Simulators or Skill Assessments'
+      'Career Guidance – Interactive Element: Career Path Simulators or Skill Assessments',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 30. Future Directions
@@ -474,10 +474,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Future Directions – Ethical Considerations and Societal Implications',
       'Future Directions – Potential Societal and Ethical Implications',
       'Future Directions – Interdisciplinary Research Opportunities',
-      'Future Directions – Interactive Element: Trend Prediction Models or Future Scenario Simulations'
+      'Future Directions – Interactive Element: Trend Prediction Models or Future Scenario Simulations',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 31. Glossary
@@ -491,10 +491,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Glossary – Glossary of Mathematical Notations – Definitions and Formulas',
       'Glossary – Glossary of Mathematical Notations – Visual Representations or Diagrams',
       'Glossary – Glossary of Mathematical Notations – References to Further Resources',
-      'Glossary – Interactive Element: Searchable Glossary or Hover-over Definitions'
+      'Glossary – Interactive Element: Searchable Glossary or Hover-over Definitions',
     ],
     displayType: 'sidebar',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 32. FAQs
@@ -505,10 +505,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'FAQs – Clear and Concise Answers',
       'FAQs – References to Relevant Sections or Resources',
       'FAQs – Encouragement for Further Exploration',
-      'FAQs – Interactive Element: Expandable FAQ Sections or Chatbot Integration'
+      'FAQs – Interactive Element: Expandable FAQ Sections or Chatbot Integration',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 33. Tags and Keywords
@@ -520,10 +520,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Tags and Keywords – Related Concept Tags',
       'Tags and Keywords – Application Domain Tags',
       'Tags and Keywords – Technique or Algorithm Tags',
-      'Tags and Keywords – Interactive Element: Tag Clouds or Interactive Tagging Systems'
+      'Tags and Keywords – Interactive Element: Tag Clouds or Interactive Tagging Systems',
     ],
     displayType: 'filter',
-    parseType: 'ai_parse'
+    parseType: 'ai_parse',
   },
 
   // 34. Appendices
@@ -533,10 +533,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Appendices – Additional Resources and References',
       'Appendices – Cheat Sheets or Quick Reference Guides',
       'Appendices – Glossary of Terms and Definitions',
-      'Appendices – Interactive Element: Downloadable Appendices or Interactive Reference Guides'
+      'Appendices – Interactive Element: Downloadable Appendices or Interactive Reference Guides',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 35. Index
@@ -545,10 +545,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
     columns: [
       'Index – Alphabetical Index of Key Terms and Concepts',
       'Index – Cross-references to Related Sections or Topics',
-      'Index – Interactive Element: Clickable Index with Jump Links'
+      'Index – Interactive Element: Clickable Index with Jump Links',
     ],
     displayType: 'sidebar',
-    parseType: 'list'
+    parseType: 'list',
   },
 
   // 36. References
@@ -558,10 +558,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'References – Citations for Quotes or Statistics',
       'References – Sources for Images or Diagrams',
       'References – Bibliography or Further Reading',
-      'References – Interactive Element: Linked References or Citation Tools'
+      'References – Interactive Element: Linked References or Citation Tools',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 37. Conclusion
@@ -571,10 +571,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Conclusion – Recap of Key Points',
       'Conclusion – Importance and Impact of the Term/Topic in AI/ML',
       'Conclusion – Final Thoughts and Recommendations',
-      'Conclusion – Interactive Element: Summary Highlights or Reflection Prompts'
+      'Conclusion – Interactive Element: Summary Highlights or Reflection Prompts',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 38. Metadata
@@ -587,10 +587,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
       'Metadata – Quality and Testing Context – Testing Methodologies',
       'Metadata – Academic and Research Context – Research Classification',
       'Metadata – Usage Context – Application Domains',
-      'Metadata – Performance and Optimization – Performance Metrics'
+      'Metadata – Performance and Optimization – Performance Metrics',
     ],
     displayType: 'metadata',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 39. Best Practices
@@ -599,10 +599,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
     columns: [
       'Best Practices – Guidelines and Recommendations for Optimal Use',
       'Best Practices – Common Strategies to Maximize Effectiveness',
-      'Best Practices – Interactive Element: Best Practices Checklists or Interactive Guides'
+      'Best Practices – Interactive Element: Best Practices Checklists or Interactive Guides',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 40. Security Considerations
@@ -611,10 +611,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
     columns: [
       'Security Considerations – Potential Security Vulnerabilities',
       'Security Considerations – Mitigation Strategies',
-      'Security Considerations – Interactive Element: Security Risk Assessments or Scenario Simulations'
+      'Security Considerations – Interactive Element: Security Risk Assessments or Scenario Simulations',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 41. Optimization Techniques
@@ -623,10 +623,10 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
     columns: [
       'Optimization Techniques – Advanced Methods to Improve Performance',
       'Optimization Techniques – Case Studies on Optimization',
-      'Optimization Techniques – Interactive Element: Optimization Strategy Simulators or Interactive Tutorials'
+      'Optimization Techniques – Interactive Element: Optimization Strategy Simulators or Interactive Tutorials',
     ],
     displayType: 'main',
-    parseType: 'structured'
+    parseType: 'structured',
   },
 
   // 42. Comparison with Alternatives
@@ -635,11 +635,11 @@ export const COMPLETE_CONTENT_SECTIONS: ContentSection[] = [
     columns: [
       'Comparison with Alternatives – Detailed Comparisons with Similar or Alternative Methods',
       'Comparison with Alternatives – Pros and Cons Relative to Other Techniques',
-      'Comparison with Alternatives – Interactive Element: Comparative Analysis Tables or Interactive Decision Tools'
+      'Comparison with Alternatives – Interactive Element: Comparative Analysis Tables or Interactive Decision Tools',
     ],
     displayType: 'main',
-    parseType: 'structured'
-  }
+    parseType: 'structured',
+  },
 ];
 
 export default COMPLETE_CONTENT_SECTIONS;

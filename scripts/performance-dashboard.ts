@@ -1,15 +1,16 @@
 #!/usr/bin/env tsx
+
 /**
  * Performance Dashboard Server
  * Creates a real-time performance monitoring dashboard
  */
 
+import fs from 'node:fs/promises';
+import { createServer } from 'node:http';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import express from 'express';
-import { createServer } from 'http';
 import { Server as SocketIOServer } from 'socket.io';
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -57,16 +58,16 @@ class PerformanceDashboard {
     this.port = port;
     this.updateInterval = updateInterval;
     this.reportsDir = path.join(__dirname, '..', 'performance-reports');
-    
+
     this.app = express();
     this.server = createServer(this.app);
     this.io = new SocketIOServer(this.server, {
       cors: {
-        origin: "*",
-        methods: ["GET", "POST"]
-      }
+        origin: '*',
+        methods: ['GET', 'POST'],
+      },
     });
-    
+
     this.setupRoutes();
     this.setupSocketIO();
   }
@@ -74,28 +75,28 @@ class PerformanceDashboard {
   private setupRoutes(): void {
     // Serve static files
     this.app.use('/static', express.static(path.join(__dirname, 'dashboard-assets')));
-    
+
     // API endpoints
-    this.app.get('/api/metrics', async (req, res) => {
+    this.app.get('/api/metrics', async (_req, res) => {
       try {
         const data = await this.getDashboardData();
         res.json(data);
-      } catch (error) {
+      } catch (_error) {
         res.status(500).json({ error: 'Failed to fetch metrics' });
       }
     });
-    
-    this.app.get('/api/metrics/live', async (req, res) => {
+
+    this.app.get('/api/metrics/live', async (_req, res) => {
       try {
         const liveMetrics = await this.getLiveMetrics();
         res.json(liveMetrics);
-      } catch (error) {
+      } catch (_error) {
         res.status(500).json({ error: 'Failed to fetch live metrics' });
       }
     });
-    
+
     // Main dashboard page
-    this.app.get('/', (req, res) => {
+    this.app.get('/', (_req, res) => {
       res.send(this.generateDashboardHTML());
     });
   }
@@ -103,12 +104,12 @@ class PerformanceDashboard {
   private setupSocketIO(): void {
     this.io.on('connection', (socket) => {
       console.log('📊 Dashboard client connected');
-      
+
       // Send initial data
-      this.getDashboardData().then(data => {
+      this.getDashboardData().then((data) => {
         socket.emit('dashboard-data', data);
       });
-      
+
       socket.on('disconnect', () => {
         console.log('📊 Dashboard client disconnected');
       });
@@ -118,47 +119,46 @@ class PerformanceDashboard {
   private async getDashboardData(): Promise<DashboardData> {
     const metrics = await this.loadPerformanceMetrics();
     const liveMetrics = metrics.slice(0, 100); // Last 100 metrics
-    
+
     const summary = this.calculateSummary(metrics);
     const componentStats = this.calculateComponentStats(metrics);
     const alerts = this.generateAlerts(metrics);
-    
+
     return {
       liveMetrics,
       summary,
       componentStats,
-      alerts
+      alerts,
     };
   }
 
   private async getLiveMetrics(): Promise<PerformanceMetric[]> {
     const metrics = await this.loadPerformanceMetrics();
-    const fiveMinutesAgo = Date.now() - (5 * 60 * 1000);
-    
-    return metrics.filter(metric => metric.timestamp > fiveMinutesAgo);
+    const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+
+    return metrics.filter((metric) => metric.timestamp > fiveMinutesAgo);
   }
 
   private async loadPerformanceMetrics(): Promise<PerformanceMetric[]> {
     try {
       const files = await fs.readdir(this.reportsDir);
-      const jsonFiles = files.filter(file => file.endsWith('.json'));
-      
+      const jsonFiles = files.filter((file) => file.endsWith('.json'));
+
       const allMetrics: PerformanceMetric[] = [];
-      
+
       for (const file of jsonFiles) {
         const filePath = path.join(this.reportsDir, file);
         const content = await fs.readFile(filePath, 'utf-8');
         const data = JSON.parse(content);
-        
+
         if (Array.isArray(data)) {
           allMetrics.push(...data);
         } else if (data.metrics) {
           allMetrics.push(...data.metrics);
         }
       }
-      
+
       return allMetrics.sort((a, b) => b.timestamp - a.timestamp);
-      
     } catch (error) {
       console.error('Error loading performance metrics:', error);
       return [];
@@ -169,34 +169,34 @@ class PerformanceDashboard {
     const totalRenders = metrics.length;
     const totalRenderTime = metrics.reduce((sum, m) => sum + m.renderTime, 0);
     const averageRenderTime = totalRenderTime / totalRenders || 0;
-    const uniqueComponents = new Set(metrics.map(m => m.component)).size;
-    const slowRenders = metrics.filter(m => m.renderTime > 50).length;
-    
+    const uniqueComponents = new Set(metrics.map((m) => m.component)).size;
+    const slowRenders = metrics.filter((m) => m.renderTime > 50).length;
+
     return {
       totalRenders,
       averageRenderTime,
       uniqueComponents,
-      slowRenders
+      slowRenders,
     };
   }
 
   private calculateComponentStats(metrics: PerformanceMetric[]) {
     const componentMap = new Map<string, PerformanceMetric[]>();
-    
-    metrics.forEach(metric => {
+
+    metrics.forEach((metric) => {
       if (!componentMap.has(metric.component)) {
         componentMap.set(metric.component, []);
       }
-      componentMap.get(metric.component)!.push(metric);
+      componentMap.get(metric.component)?.push(metric);
     });
-    
+
     return Array.from(componentMap.entries())
       .map(([component, items]) => ({
         component,
         renderCount: items.length,
         avgRenderTime: items.reduce((sum, item) => sum + item.renderTime, 0) / items.length,
-        maxRenderTime: Math.max(...items.map(item => item.renderTime)),
-        memoryUsage: items.reduce((sum, item) => sum + item.memoryUsage, 0) / items.length
+        maxRenderTime: Math.max(...items.map((item) => item.renderTime)),
+        memoryUsage: items.reduce((sum, item) => sum + item.memoryUsage, 0) / items.length,
       }))
       .sort((a, b) => b.avgRenderTime - a.avgRenderTime)
       .slice(0, 20); // Top 20 components
@@ -205,54 +205,54 @@ class PerformanceDashboard {
   private generateAlerts(metrics: PerformanceMetric[]) {
     const alerts = [];
     const now = Date.now();
-    
+
     // Check for recent slow renders
-    const recentSlowRenders = metrics.filter(m => 
-      m.renderTime > 100 && (now - m.timestamp) < 60000 // Last minute
+    const recentSlowRenders = metrics.filter(
+      (m) => m.renderTime > 100 && now - m.timestamp < 60000 // Last minute
     );
-    
+
     if (recentSlowRenders.length > 0) {
       alerts.push({
         type: 'warning' as const,
         message: `${recentSlowRenders.length} slow renders detected in the last minute`,
-        timestamp: now
+        timestamp: now,
       });
     }
-    
+
     // Check for memory issues
-    const highMemoryUsage = metrics.filter(m => 
-      m.memoryUsage > 100 && (now - m.timestamp) < 300000 // Last 5 minutes
+    const highMemoryUsage = metrics.filter(
+      (m) => m.memoryUsage > 100 && now - m.timestamp < 300000 // Last 5 minutes
     );
-    
+
     if (highMemoryUsage.length > 0) {
       alerts.push({
         type: 'error' as const,
         message: `High memory usage detected: ${highMemoryUsage.length} components using >100MB`,
-        timestamp: now
+        timestamp: now,
       });
     }
-    
+
     // Check for frequent re-renders
     const componentRenderCounts = new Map<string, number>();
-    const recentMetrics = metrics.filter(m => (now - m.timestamp) < 60000); // Last minute
-    
-    recentMetrics.forEach(m => {
+    const recentMetrics = metrics.filter((m) => now - m.timestamp < 60000); // Last minute
+
+    recentMetrics.forEach((m) => {
       componentRenderCounts.set(m.component, (componentRenderCounts.get(m.component) || 0) + 1);
     });
-    
+
     const frequentlyRenderingComponents = Array.from(componentRenderCounts.entries())
       .filter(([, count]) => count > 5)
       .sort((a, b) => b[1] - a[1]);
-    
+
     if (frequentlyRenderingComponents.length > 0) {
       const [component, count] = frequentlyRenderingComponents[0];
       alerts.push({
         type: 'warning' as const,
         message: `${component} rendered ${count} times in the last minute`,
-        timestamp: now
+        timestamp: now,
       });
     }
-    
+
     return alerts;
   }
 
@@ -516,12 +516,12 @@ class PerformanceDashboard {
   public async start(): Promise<void> {
     // Create output directory
     await fs.mkdir(path.join(__dirname, 'dashboard-assets'), { recursive: true });
-    
+
     // Start the server
     this.server.listen(this.port, () => {
       console.log(`🚀 Performance Dashboard running at http://localhost:${this.port}`);
     });
-    
+
     // Start real-time updates
     this.startRealTimeUpdates();
   }
@@ -547,17 +547,19 @@ class PerformanceDashboard {
 async function main() {
   const args = process.argv.slice(2);
   const port = args.includes('--port') ? parseInt(args[args.indexOf('--port') + 1]) : 3002;
-  const updateInterval = args.includes('--interval') ? parseInt(args[args.indexOf('--interval') + 1]) : 1000;
-  
+  const updateInterval = args.includes('--interval')
+    ? parseInt(args[args.indexOf('--interval') + 1])
+    : 1000;
+
   const dashboard = new PerformanceDashboard(port, updateInterval);
-  
+
   // Handle graceful shutdown
   process.on('SIGINT', () => {
     console.log('\n📊 Shutting down performance dashboard...');
     dashboard.stop();
     process.exit(0);
   });
-  
+
   await dashboard.start();
 }
 

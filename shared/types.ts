@@ -20,6 +20,7 @@ export interface IUser {
   purchaseDate?: Date;
   dailyViews?: number;
   lastViewReset?: Date;
+  token?: string;
 }
 
 export interface UserPreferences {
@@ -175,7 +176,7 @@ export interface FileUploadMetadata {
 }
 
 // Authentication types - using types from server/types/express.d.ts
-export type { AuthenticatedRequest, AdminRequest } from '../server/types/express';
+export type { AdminRequest, AuthenticatedRequest } from '../server/types/express';
 
 // Admin types
 export interface AdminStats {

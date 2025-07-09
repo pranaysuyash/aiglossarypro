@@ -1,5 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
 import DragDropUploader from './DragDropUploader';
 
 const meta: Meta<typeof DragDropUploader> = {
@@ -9,7 +9,8 @@ const meta: Meta<typeof DragDropUploader> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'A comprehensive drag-and-drop file uploader with progress tracking, validation, and multiple file support.',
+        component:
+          'A comprehensive drag-and-drop file uploader with progress tracking, validation, and multiple file support.',
       },
     },
   },
@@ -62,7 +63,8 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Default drag-and-drop uploader with standard settings for Excel, CSV, and text files.',
+        story:
+          'Default drag-and-drop uploader with standard settings for Excel, CSV, and text files.',
       },
     },
   },
@@ -200,17 +202,17 @@ export const InteractiveDemo: Story = {
   render: () => {
     const [uploadResults, setUploadResults] = React.useState<any[]>([]);
     const [uploadErrors, setUploadErrors] = React.useState<string[]>([]);
-    
+
     const handleUploadComplete = (results: any[]) => {
-      setUploadResults(prev => [...prev, ...results]);
+      setUploadResults((prev) => [...prev, ...results]);
       console.log('Upload completed:', results);
     };
-    
+
     const handleUploadError = (error: string) => {
-      setUploadErrors(prev => [...prev, error]);
+      setUploadErrors((prev) => [...prev, error]);
       console.error('Upload error:', error);
     };
-    
+
     return (
       <div className="space-y-6">
         <DragDropUploader
@@ -222,7 +224,7 @@ export const InteractiveDemo: Story = {
           enableCompression={true}
           showPreview={true}
         />
-        
+
         {/* Results Display */}
         {uploadResults.length > 0 && (
           <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
@@ -230,7 +232,7 @@ export const InteractiveDemo: Story = {
               Upload Results ({uploadResults.length})
             </h3>
             <div className="space-y-1">
-              {uploadResults.map((result, index) => (
+              {uploadResults.map((_result, index) => (
                 <div key={index} className="text-sm text-green-700">
                   ✓ File {index + 1}: Upload successful
                 </div>
@@ -238,7 +240,7 @@ export const InteractiveDemo: Story = {
             </div>
           </div>
         )}
-        
+
         {/* Errors Display */}
         {uploadErrors.length > 0 && (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -254,7 +256,7 @@ export const InteractiveDemo: Story = {
             </div>
           </div>
         )}
-        
+
         {/* Reset Button */}
         {(uploadResults.length > 0 || uploadErrors.length > 0) && (
           <div className="text-center">
@@ -284,10 +286,26 @@ export const InteractiveDemo: Story = {
 export const AllFileTypes: Story = {
   args: {
     acceptedTypes: [
-      '.xlsx', '.xls', '.csv', '.json', '.xml', '.txt', '.rtf',
-      '.pdf', '.doc', '.docx',
-      '.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg',
-      '.zip', '.gz', '.tar', '.rar'
+      '.xlsx',
+      '.xls',
+      '.csv',
+      '.json',
+      '.xml',
+      '.txt',
+      '.rtf',
+      '.pdf',
+      '.doc',
+      '.docx',
+      '.jpg',
+      '.jpeg',
+      '.png',
+      '.gif',
+      '.webp',
+      '.svg',
+      '.zip',
+      '.gz',
+      '.tar',
+      '.rar',
     ],
     maxFileSize: 200 * 1024 * 1024, // 200MB
     maxFiles: 15,
@@ -296,7 +314,8 @@ export const AllFileTypes: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'File uploader that accepts a wide variety of file types including documents, images, and archives.',
+        story:
+          'File uploader that accepts a wide variety of file types including documents, images, and archives.',
       },
     },
   },
@@ -330,7 +349,7 @@ export const ProductionConfig: Story = {
 export const ErrorStates: Story = {
   render: () => {
     const [simulateError, setSimulateError] = React.useState(false);
-    
+
     return (
       <div className="space-y-4">
         <div className="flex items-center space-x-4">
@@ -343,7 +362,7 @@ export const ErrorStates: Story = {
             <span>Simulate upload errors</span>
           </label>
         </div>
-        
+
         <DragDropUploader
           acceptedTypes={['.csv', '.json']}
           maxFileSize={5 * 1024 * 1024} // 5MB - small to test size errors
@@ -359,9 +378,11 @@ export const ErrorStates: Story = {
             console.error('Upload error:', error);
           }}
         />
-        
+
         <div className="text-sm text-gray-600 space-y-1">
-          <p><strong>To test error states:</strong></p>
+          <p>
+            <strong>To test error states:</strong>
+          </p>
           <ul className="list-disc list-inside space-y-1">
             <li>Try uploading files larger than 5MB (size limit error)</li>
             <li>Try uploading more than 3 files (max files error)</li>
@@ -436,11 +457,11 @@ export const CustomizationExample: Story = {
       showPreview: true,
       acceptedTypes: ['.csv', '.json', '.xlsx'],
     });
-    
+
     const handleConfigChange = (key: string, value: any) => {
-      setConfig(prev => ({ ...prev, [key]: value }));
+      setConfig((prev) => ({ ...prev, [key]: value }));
     };
-    
+
     return (
       <div className="space-y-6">
         {/* Configuration Panel */}
@@ -448,23 +469,21 @@ export const CustomizationExample: Story = {
           <h3 className="font-semibold mb-4">Uploader Configuration</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Max File Size (MB)
-              </label>
+              <label className="block text-sm font-medium mb-1">Max File Size (MB)</label>
               <input
                 type="number"
                 value={config.maxFileSize / (1024 * 1024)}
-                onChange={(e) => handleConfigChange('maxFileSize', Number(e.target.value) * 1024 * 1024)}
+                onChange={(e) =>
+                  handleConfigChange('maxFileSize', Number(e.target.value) * 1024 * 1024)
+                }
                 className="w-full px-3 py-2 border rounded"
                 min="1"
                 max="1000"
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium mb-1">
-                Max Files
-              </label>
+              <label className="block text-sm font-medium mb-1">Max Files</label>
               <input
                 type="number"
                 value={config.maxFiles}
@@ -474,7 +493,7 @@ export const CustomizationExample: Story = {
                 max="50"
               />
             </div>
-            
+
             <div>
               <label className="flex items-center space-x-2">
                 <input
@@ -485,7 +504,7 @@ export const CustomizationExample: Story = {
                 <span className="text-sm">Enable Compression</span>
               </label>
             </div>
-            
+
             <div>
               <label className="flex items-center space-x-2">
                 <input
@@ -498,7 +517,7 @@ export const CustomizationExample: Story = {
             </div>
           </div>
         </div>
-        
+
         {/* Dynamic Uploader */}
         <DragDropUploader
           {...config}

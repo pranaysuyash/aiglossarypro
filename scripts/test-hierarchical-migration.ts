@@ -2,10 +2,10 @@
 
 /**
  * Test Script: Hierarchical Migration with Small Dataset
- * 
+ *
  * This script tests the hierarchical migration with a small subset of data
  * to validate the migration logic before running on the full dataset.
- * 
+ *
  * Features:
  * 1. Creates test data if none exists
  * 2. Runs migration on limited dataset
@@ -14,15 +14,16 @@
  * 5. Can clean up test data after validation
  */
 
-import * as dotenv from "dotenv";
+import * as dotenv from 'dotenv';
+
 dotenv.config();
 
+import crypto from 'node:crypto';
 import { Pool } from '@neondatabase/serverless';
-import { drizzle } from 'drizzle-orm/neon-serverless';
-import { sql } from 'drizzle-orm';
 import * as schema from '@shared/enhancedSchema';
+import { sql } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/neon-serverless';
 import { HierarchicalMigrator } from './migrate-to-hierarchical';
-import crypto from 'crypto';
 
 interface TestTerm {
   id: string;
@@ -76,12 +77,12 @@ class HierarchicalMigrationTester {
     beforeMigration: { terms: 0, sections: 0, sectionItems: 0, userProgress: 0 },
     afterMigration: { terms: 0, termSections: 0, userProgress: 0 },
     migrationResults: [],
-    validationResults: {}
+    validationResults: {},
   };
 
   constructor() {
     if (!process.env.DATABASE_URL) {
-      throw new Error("DATABASE_URL must be set");
+      throw new Error('DATABASE_URL must be set');
     }
 
     this.pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -91,19 +92,21 @@ class HierarchicalMigrationTester {
   /**
    * Main test function
    */
-  async runTest(options: {
-    useExistingData?: boolean;
-    termCount?: number;
-    sectionsPerTerm?: number;
-    itemsPerSection?: number;
-    cleanupAfter?: boolean;
-  } = {}): Promise<void> {
+  async runTest(
+    options: {
+      useExistingData?: boolean;
+      termCount?: number;
+      sectionsPerTerm?: number;
+      itemsPerSection?: number;
+      cleanupAfter?: boolean;
+    } = {}
+  ): Promise<void> {
     const {
       useExistingData = false,
       termCount = 3,
       sectionsPerTerm = 5,
       itemsPerSection = 3,
-      cleanupAfter = true
+      cleanupAfter = true,
     } = options;
 
     console.log('🧪 Starting hierarchical migration test...');
@@ -144,7 +147,6 @@ class HierarchicalMigrationTester {
       }
 
       console.log('✅ Migration test completed successfully!');
-
     } catch (error) {
       console.error('❌ Migration test failed:', error);
       throw error;
@@ -156,7 +158,11 @@ class HierarchicalMigrationTester {
   /**
    * Create test data for migration testing
    */
-  private async createTestData(termCount: number, sectionsPerTerm: number, itemsPerSection: number): Promise<void> {
+  private async createTestData(
+    termCount: number,
+    sectionsPerTerm: number,
+    itemsPerSection: number
+  ): Promise<void> {
     console.log('🏗️  Creating test data...');
 
     // Clean up any existing test data first
@@ -170,7 +176,7 @@ class HierarchicalMigrationTester {
     for (let i = 0; i < termCount; i++) {
       const termId = crypto.randomUUID();
       const termName = `${this.testDataPrefix}term_${i + 1}`;
-      
+
       testTerms.push({
         id: termId,
         name: termName,
@@ -178,20 +184,20 @@ class HierarchicalMigrationTester {
         shortDefinition: `Short definition for ${termName}`,
         fullDefinition: `Full definition for ${termName}. This is a comprehensive explanation of the concept.`,
         mainCategories: [`Category ${i + 1}`, 'Machine Learning'],
-        subCategories: [`Subcategory ${i + 1}`, 'Deep Learning']
+        subCategories: [`Subcategory ${i + 1}`, 'Deep Learning'],
       });
 
       // Create sections for each term
       for (let j = 0; j < sectionsPerTerm; j++) {
         const sectionId = crypto.randomUUID();
         const sectionName = `Section ${j + 1}`;
-        
+
         testSections.push({
           id: sectionId,
           termId: termId,
           name: sectionName,
           displayOrder: j,
-          isCompleted: j < 2 // Mark first 2 sections as completed
+          isCompleted: j < 2, // Mark first 2 sections as completed
         });
 
         // Create section items
@@ -201,13 +207,13 @@ class HierarchicalMigrationTester {
             sectionId: sectionId,
             label: `Item ${k + 1}`,
             content: `Content for item ${k + 1} in ${sectionName} of ${termName}. This is sample content for testing.`,
-            contentType: k === 0 ? 'markdown' : (k === 1 ? 'code' : 'interactive'),
+            contentType: k === 0 ? 'markdown' : k === 1 ? 'code' : 'interactive',
             displayOrder: k,
             metadata: {
               isInteractive: k === 2,
               displayType: k === 2 ? 'interactive' : 'main',
-              priority: 'medium'
-            }
+              priority: 'medium',
+            },
           });
         }
       }
@@ -235,7 +241,7 @@ class HierarchicalMigrationTester {
       sql`
         SELECT et.id, et.name
         FROM enhanced_terms et
-        WHERE et.name NOT LIKE ${this.testDataPrefix + '%'}
+        WHERE et.name NOT LIKE ${`${this.testDataPrefix}%`}
         ORDER BY et.created_at ASC
         LIMIT ${limit}
       `
@@ -258,17 +264,25 @@ class HierarchicalMigrationTester {
     console.log('📊 Recording before migration state...');
 
     const [terms, sections, sectionItems, userProgress] = await Promise.all([
-      this.db.execute(sql`SELECT COUNT(*) as count FROM enhanced_terms WHERE name LIKE ${this.testDataPrefix + '%'}`),
-      this.db.execute(sql`SELECT COUNT(*) as count FROM sections s JOIN enhanced_terms et ON s.term_id = et.id WHERE et.name LIKE ${this.testDataPrefix + '%'}`),
-      this.db.execute(sql`SELECT COUNT(*) as count FROM section_items si JOIN sections s ON si.section_id = s.id JOIN enhanced_terms et ON s.term_id = et.id WHERE et.name LIKE ${this.testDataPrefix + '%'}`),
-      this.db.execute(sql`SELECT COUNT(*) as count FROM user_progress up JOIN enhanced_terms et ON up.term_id = et.id WHERE et.name LIKE ${this.testDataPrefix + '%'}`)
+      this.db.execute(
+        sql`SELECT COUNT(*) as count FROM enhanced_terms WHERE name LIKE ${`${this.testDataPrefix}%`}`
+      ),
+      this.db.execute(
+        sql`SELECT COUNT(*) as count FROM sections s JOIN enhanced_terms et ON s.term_id = et.id WHERE et.name LIKE ${`${this.testDataPrefix}%`}`
+      ),
+      this.db.execute(
+        sql`SELECT COUNT(*) as count FROM section_items si JOIN sections s ON si.section_id = s.id JOIN enhanced_terms et ON s.term_id = et.id WHERE et.name LIKE ${`${this.testDataPrefix}%`}`
+      ),
+      this.db.execute(
+        sql`SELECT COUNT(*) as count FROM user_progress up JOIN enhanced_terms et ON up.term_id = et.id WHERE et.name LIKE ${`${this.testDataPrefix}%`}`
+      ),
     ]);
 
     this.testResults.beforeMigration = {
       terms: parseInt(terms.rows[0].count as string),
       sections: parseInt(sections.rows[0].count as string),
       sectionItems: parseInt(sectionItems.rows[0].count as string),
-      userProgress: parseInt(userProgress.rows[0].count as string)
+      userProgress: parseInt(userProgress.rows[0].count as string),
     };
 
     console.log('📋 Before migration state:', this.testResults.beforeMigration);
@@ -294,15 +308,21 @@ class HierarchicalMigrationTester {
     console.log('📊 Recording after migration state...');
 
     const [terms, termSections, userProgress] = await Promise.all([
-      this.db.execute(sql`SELECT COUNT(*) as count FROM enhanced_terms WHERE name LIKE ${this.testDataPrefix + '%'}`),
-      this.db.execute(sql`SELECT COUNT(*) as count FROM term_sections ts JOIN enhanced_terms et ON ts.term_id = et.id WHERE et.name LIKE ${this.testDataPrefix + '%'}`),
-      this.db.execute(sql`SELECT COUNT(*) as count FROM user_progress up JOIN enhanced_terms et ON up.term_id = et.id WHERE et.name LIKE ${this.testDataPrefix + '%'}`)
+      this.db.execute(
+        sql`SELECT COUNT(*) as count FROM enhanced_terms WHERE name LIKE ${`${this.testDataPrefix}%`}`
+      ),
+      this.db.execute(
+        sql`SELECT COUNT(*) as count FROM term_sections ts JOIN enhanced_terms et ON ts.term_id = et.id WHERE et.name LIKE ${`${this.testDataPrefix}%`}`
+      ),
+      this.db.execute(
+        sql`SELECT COUNT(*) as count FROM user_progress up JOIN enhanced_terms et ON up.term_id = et.id WHERE et.name LIKE ${`${this.testDataPrefix}%`}`
+      ),
     ]);
 
     this.testResults.afterMigration = {
       terms: parseInt(terms.rows[0].count as string),
       termSections: parseInt(termSections.rows[0].count as string),
-      userProgress: parseInt(userProgress.rows[0].count as string)
+      userProgress: parseInt(userProgress.rows[0].count as string),
     };
 
     console.log('📋 After migration state:', this.testResults.afterMigration);
@@ -316,13 +336,14 @@ class HierarchicalMigrationTester {
 
     const validation: any = {
       dataIntegrity: {
-        termsPreserved: this.testResults.beforeMigration.terms === this.testResults.afterMigration.terms,
+        termsPreserved:
+          this.testResults.beforeMigration.terms === this.testResults.afterMigration.terms,
         userProgressPreserved: this.testResults.afterMigration.userProgress > 0,
-        hierarchicalStructureCreated: this.testResults.afterMigration.termSections > 0
+        hierarchicalStructureCreated: this.testResults.afterMigration.termSections > 0,
       },
       contentMapping: {},
       userProgressMapping: {},
-      errors: []
+      errors: [],
     };
 
     // Check that hierarchical sections were created
@@ -344,7 +365,7 @@ class HierarchicalMigrationTester {
       validation.contentMapping[result.termName] = {
         sectionsCreated: parseInt(termSections.rows[0].count as string),
         interactiveSections: parseInt(termSections.rows[0].interactive_count as string),
-        expectedSections: result.hierarchicalSections
+        expectedSections: result.hierarchicalSections,
       };
     }
 
@@ -354,7 +375,7 @@ class HierarchicalMigrationTester {
         SELECT up.term_id, COUNT(*) as progress_count
         FROM user_progress up
         JOIN enhanced_terms et ON up.term_id = et.id
-        WHERE et.name LIKE ${this.testDataPrefix + '%'}
+        WHERE et.name LIKE ${`${this.testDataPrefix}%`}
         GROUP BY up.term_id
       `
     );
@@ -369,8 +390,10 @@ class HierarchicalMigrationTester {
     console.log('📋 Validation Results:');
     console.log(`  ✅ Terms preserved: ${validation.dataIntegrity.termsPreserved}`);
     console.log(`  ✅ User progress preserved: ${validation.dataIntegrity.userProgressPreserved}`);
-    console.log(`  ✅ Hierarchical structure created: ${validation.dataIntegrity.hierarchicalStructureCreated}`);
-    
+    console.log(
+      `  ✅ Hierarchical structure created: ${validation.dataIntegrity.hierarchicalStructureCreated}`
+    );
+
     if (validation.errors.length > 0) {
       console.log('  ❌ Errors found:');
       validation.errors.forEach((error: string) => console.log(`    - ${error}`));
@@ -382,7 +405,7 @@ class HierarchicalMigrationTester {
    */
   private async generateTestReport(): Promise<void> {
     const reportPath = `test-migration-report-${Date.now()}.json`;
-    const fs = require('fs');
+    const fs = require('node:fs');
 
     const report = {
       testTimestamp: new Date().toISOString(),
@@ -392,8 +415,8 @@ class HierarchicalMigrationTester {
         testsPassed: this.testResults.validationResults.errors.length === 0,
         totalErrors: this.testResults.validationResults.errors.length,
         dataIntegrityScore: this.calculateDataIntegrityScore(),
-        recommendations: this.generateRecommendations()
-      }
+        recommendations: this.generateRecommendations(),
+      },
     };
 
     fs.writeFileSync(reportPath, JSON.stringify(report, null, 2));
@@ -412,10 +435,10 @@ class HierarchicalMigrationTester {
       this.testResults.validationResults.dataIntegrity.termsPreserved,
       this.testResults.validationResults.dataIntegrity.userProgressPreserved,
       this.testResults.validationResults.dataIntegrity.hierarchicalStructureCreated,
-      this.testResults.validationResults.errors.length === 0
+      this.testResults.validationResults.errors.length === 0,
     ];
 
-    const passedChecks = checks.filter(check => check).length;
+    const passedChecks = checks.filter((check) => check).length;
     return Math.round((passedChecks / checks.length) * 100);
   }
 
@@ -488,12 +511,14 @@ class HierarchicalMigrationTester {
 
   private async createTestUserProgress(terms: TestTerm[], sections: TestSection[]): Promise<void> {
     const testUserId = 'test_user_123';
-    
+
     // Create some sample user progress
-    for (const term of terms.slice(0, 2)) { // Only for first 2 terms
-      const termSections = sections.filter(s => s.termId === term.id);
-      
-      for (const section of termSections.slice(0, 3)) { // Only for first 3 sections
+    for (const term of terms.slice(0, 2)) {
+      // Only for first 2 terms
+      const termSections = sections.filter((s) => s.termId === term.id);
+
+      for (const section of termSections.slice(0, 3)) {
+        // Only for first 3 sections
         await this.db.execute(
           sql`
             INSERT INTO user_progress (user_id, term_id, section_id, status, completion_percentage)
@@ -512,11 +537,11 @@ class HierarchicalMigrationTester {
 
     // Delete in reverse order of dependencies
     await this.db.execute(
-      sql`DELETE FROM user_progress WHERE term_id IN (SELECT id FROM enhanced_terms WHERE name LIKE ${this.testDataPrefix + '%'})`
+      sql`DELETE FROM user_progress WHERE term_id IN (SELECT id FROM enhanced_terms WHERE name LIKE ${`${this.testDataPrefix}%`})`
     );
 
     await this.db.execute(
-      sql`DELETE FROM term_sections WHERE term_id IN (SELECT id FROM enhanced_terms WHERE name LIKE ${this.testDataPrefix + '%'})`
+      sql`DELETE FROM term_sections WHERE term_id IN (SELECT id FROM enhanced_terms WHERE name LIKE ${`${this.testDataPrefix}%`})`
     );
 
     await this.db.execute(
@@ -525,17 +550,17 @@ class HierarchicalMigrationTester {
         WHERE section_id IN (
           SELECT s.id FROM sections s 
           JOIN enhanced_terms et ON s.term_id = et.id 
-          WHERE et.name LIKE ${this.testDataPrefix + '%'}
+          WHERE et.name LIKE ${`${this.testDataPrefix}%`}
         )
       `
     );
 
     await this.db.execute(
-      sql`DELETE FROM sections WHERE term_id IN (SELECT id FROM enhanced_terms WHERE name LIKE ${this.testDataPrefix + '%'})`
+      sql`DELETE FROM sections WHERE term_id IN (SELECT id FROM enhanced_terms WHERE name LIKE ${`${this.testDataPrefix}%`})`
     );
 
     await this.db.execute(
-      sql`DELETE FROM enhanced_terms WHERE name LIKE ${this.testDataPrefix + '%'}`
+      sql`DELETE FROM enhanced_terms WHERE name LIKE ${`${this.testDataPrefix}%`}`
     );
 
     console.log('✅ Test data cleanup completed');
@@ -578,7 +603,7 @@ class TestMigrator extends HierarchicalMigrator {
           COUNT(s.id) as section_count
         FROM enhanced_terms et
         LEFT JOIN sections s ON et.id = s.term_id
-        WHERE et.name LIKE ${testPrefix + '%'}
+        WHERE et.name LIKE ${`${testPrefix}%`}
         GROUP BY et.id, et.name, et.slug, et.main_categories, et.sub_categories, et.created_at, et.updated_at
         ORDER BY et.created_at ASC
       `
@@ -591,13 +616,15 @@ class TestMigrator extends HierarchicalMigrator {
 // CLI interface
 async function main() {
   const args = process.argv.slice(2);
-  
+
   const options = {
     useExistingData: args.includes('--use-existing'),
-    termCount: parseInt(args.find(arg => arg.startsWith('--terms='))?.split('=')[1] || '3'),
-    sectionsPerTerm: parseInt(args.find(arg => arg.startsWith('--sections='))?.split('=')[1] || '5'),
-    itemsPerSection: parseInt(args.find(arg => arg.startsWith('--items='))?.split('=')[1] || '3'),
-    cleanupAfter: !args.includes('--no-cleanup')
+    termCount: parseInt(args.find((arg) => arg.startsWith('--terms='))?.split('=')[1] || '3'),
+    sectionsPerTerm: parseInt(
+      args.find((arg) => arg.startsWith('--sections='))?.split('=')[1] || '5'
+    ),
+    itemsPerSection: parseInt(args.find((arg) => arg.startsWith('--items='))?.split('=')[1] || '3'),
+    cleanupAfter: !args.includes('--no-cleanup'),
   };
 
   console.log('🧪 Hierarchical Migration Test Suite');
@@ -609,7 +636,7 @@ async function main() {
 
 // Run if called directly
 if (require.main === module) {
-  main().catch(error => {
+  main().catch((error) => {
     console.error('Fatal error:', error);
     process.exit(1);
   });

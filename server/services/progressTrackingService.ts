@@ -1,13 +1,12 @@
-import { db } from '../db';
-import { 
-  users, 
-  enhancedTerms, 
-  userTermHistory, 
-  userAchievements, 
-  dailyTermSelections,
-  termViews
+import { and, count, desc, eq, sql, sum } from 'drizzle-orm';
+import {
+  enhancedTerms,
+  termViews,
+  userAchievements,
+  users,
+  userTermHistory,
 } from '../../shared/enhancedSchema';
-import { eq, and, desc, asc, count, sum, avg, sql } from 'drizzle-orm';
+import { db } from '../db';
 import { log as logger } from '../utils/logger';
 
 export interface UserProgressStats {
@@ -44,7 +43,12 @@ export interface DailyStats {
 }
 
 export interface UpgradePromptTrigger {
-  type: 'bookmark_limit' | 'high_engagement' | 'streak_milestone' | 'category_exploration' | 'historical_access';
+  type:
+    | 'bookmark_limit'
+    | 'high_engagement'
+    | 'streak_milestone'
+    | 'category_exploration'
+    | 'historical_access';
   severity: 'low' | 'medium' | 'high';
   message: string;
   metadata?: any;
@@ -58,13 +62,13 @@ export interface BookmarkLimits {
 export class ProgressTrackingService {
   private static bookmarkLimits: BookmarkLimits = {
     free: 50,
-    premium: -1 // -1 means unlimited
+    premium: -1, // -1 means unlimited
   };
 
   // Track user interaction with a term
   static async trackTermInteraction(
-    userId: string, 
-    termId: string, 
+    userId: string,
+    termId: string,
     sectionsViewed: string[] = [],
     timeSpentSeconds: number = 0
   ): Promise<void> {
@@ -73,19 +77,18 @@ export class ProgressTrackingService {
       const existingHistory = await db
         .select()
         .from(userTermHistory)
-        .where(and(
-          eq(userTermHistory.userId, userId),
-          eq(userTermHistory.termId, termId)
-        ))
+        .where(and(eq(userTermHistory.userId, userId), eq(userTermHistory.termId, termId)))
         .limit(1);
 
       if (existingHistory.length > 0) {
         // Update existing record
         const history = existingHistory[0];
-        const newSectionsViewed = Array.from(new Set([...history.sectionsViewed, ...sectionsViewed]));
-        const newTimeSpent = history.timeSpentSeconds + timeSpentSeconds;
-        const newViewCount = history.viewCount + 1;
-        
+        const newSectionsViewed = Array.from(
+          new Set([...(history.sectionsViewed || []), ...sectionsViewed])
+        );
+        const newTimeSpent = (history.timeSpentSeconds || 0) + timeSpentSeconds;
+        const newViewCount = (history.viewCount || 0) + 1;
+
         await db
           .update(userTermHistory)
           .set({
@@ -94,53 +97,61 @@ export class ProgressTrackingService {
             sectionsViewed: newSectionsViewed,
             timeSpentSeconds: newTimeSpent,
             completionPercentage: Math.min(100, Math.round((newSectionsViewed.length / 42) * 100)),
-            updatedAt: new Date()
+            updatedAt: new Date(),
           })
           .where(eq(userTermHistory.id, history.id));
       } else {
         // Create new record
-        await db
-          .insert(userTermHistory)
-          .values({
-            userId,
-            termId,
-            sectionsViewed,
-            timeSpentSeconds,
-            viewCount: 1,
-            completionPercentage: Math.round((sectionsViewed.length / 42) * 100),
-            firstViewedAt: new Date(),
-            lastAccessedAt: new Date()
-          });
+        await db.insert(userTermHistory).values({
+          userId,
+          termId,
+          sectionsViewed,
+          timeSpentSeconds,
+          viewCount: 1,
+          completionPercentage: Math.round((sectionsViewed.length / 42) * 100),
+          firstViewedAt: new Date(),
+          lastAccessedAt: new Date(),
+        });
       }
 
       // Update daily streak
-      await this.updateDailyStreak(userId);
-      
+      await ProgressTrackingService.updateDailyStreak(userId);
+
       // Update term views counter
-      await this.updateTermViewsCounter(userId, termId);
-      
+      await ProgressTrackingService.updateTermViewsCounter(userId, termId);
+
       logger.info(`Tracked term interaction: ${userId} -> ${termId}`);
     } catch (error) {
-      logger.error('Error tracking term interaction:', error);
+      logger.error('Error tracking term interaction:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
 
   // Toggle bookmark status
-  static async toggleBookmark(userId: string, termId: string, isBookmarked: boolean): Promise<{ success: boolean; message?: string; bookmarkCount?: number }> {
+  static async toggleBookmark(
+    userId: string,
+    termId: string,
+    isBookmarked: boolean
+  ): Promise<{ success: boolean; message?: string; bookmarkCount?: number }> {
     try {
       // Check current bookmark count for free users
-      const userBookmarkCount = await this.getUserBookmarkCount(userId);
-      
+      const userBookmarkCount = await ProgressTrackingService.getUserBookmarkCount(userId);
+
       // Check if user has premium access
       const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
       const isPremium = user[0]?.lifetimeAccess || false;
-      
-      if (isBookmarked && !isPremium && userBookmarkCount >= this.bookmarkLimits.free) {
+
+      if (
+        isBookmarked &&
+        !isPremium &&
+        userBookmarkCount >= ProgressTrackingService.bookmarkLimits.free
+      ) {
         return {
           success: false,
-          message: `Free users can only bookmark ${this.bookmarkLimits.free} terms. Upgrade to premium for unlimited bookmarks.`,
-          bookmarkCount: userBookmarkCount
+          message: `Free users can only bookmark ${ProgressTrackingService.bookmarkLimits.free} terms. Upgrade to premium for unlimited bookmarks.`,
+          bookmarkCount: userBookmarkCount,
         };
       }
 
@@ -150,47 +161,41 @@ export class ProgressTrackingService {
         .set({
           isBookmarked,
           bookmarkDate: isBookmarked ? new Date() : null,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
-        .where(and(
-          eq(userTermHistory.userId, userId),
-          eq(userTermHistory.termId, termId)
-        ));
+        .where(and(eq(userTermHistory.userId, userId), eq(userTermHistory.termId, termId)));
 
       // If no existing history, create one
       const historyExists = await db
         .select({ id: userTermHistory.id })
         .from(userTermHistory)
-        .where(and(
-          eq(userTermHistory.userId, userId),
-          eq(userTermHistory.termId, termId)
-        ))
+        .where(and(eq(userTermHistory.userId, userId), eq(userTermHistory.termId, termId)))
         .limit(1);
 
       if (historyExists.length === 0) {
-        await db
-          .insert(userTermHistory)
-          .values({
-            userId,
-            termId,
-            isBookmarked,
-            bookmarkDate: isBookmarked ? new Date() : null,
-            firstViewedAt: new Date(),
-            lastAccessedAt: new Date()
-          });
+        await db.insert(userTermHistory).values({
+          userId,
+          termId,
+          isBookmarked,
+          bookmarkDate: isBookmarked ? new Date() : null,
+          firstViewedAt: new Date(),
+          lastAccessedAt: new Date(),
+        });
       }
 
       // Update bookmarks achievement
-      await this.updateBookmarksAchievement(userId);
+      await ProgressTrackingService.updateBookmarksAchievement(userId);
 
-      const newBookmarkCount = await this.getUserBookmarkCount(userId);
-      
+      const newBookmarkCount = await ProgressTrackingService.getUserBookmarkCount(userId);
+
       return {
         success: true,
-        bookmarkCount: newBookmarkCount
+        bookmarkCount: newBookmarkCount,
       };
     } catch (error) {
-      logger.error('Error toggling bookmark:', error);
+      logger.error('Error toggling bookmark:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -201,11 +206,8 @@ export class ProgressTrackingService {
       const result = await db
         .select({ count: count() })
         .from(userTermHistory)
-        .where(and(
-          eq(userTermHistory.userId, userId),
-          eq(userTermHistory.isBookmarked, true)
-        ));
-      
+        .where(and(eq(userTermHistory.userId, userId), eq(userTermHistory.isBookmarked, true)));
+
       return result[0]?.count || 0;
     } catch (error) {
       logger.error('Error getting bookmark count:', error);
@@ -225,14 +227,11 @@ export class ProgressTrackingService {
           viewCount: userTermHistory.viewCount,
           completionPercentage: userTermHistory.completionPercentage,
           difficultyLevel: enhancedTerms.difficultyLevel,
-          mainCategories: enhancedTerms.mainCategories
+          mainCategories: enhancedTerms.mainCategories,
         })
         .from(userTermHistory)
         .innerJoin(enhancedTerms, eq(userTermHistory.termId, enhancedTerms.id))
-        .where(and(
-          eq(userTermHistory.userId, userId),
-          eq(userTermHistory.isBookmarked, true)
-        ))
+        .where(and(eq(userTermHistory.userId, userId), eq(userTermHistory.isBookmarked, true)))
         .orderBy(desc(userTermHistory.bookmarkDate))
         .limit(limit);
 
@@ -252,25 +251,25 @@ export class ProgressTrackingService {
         achievements,
         dailyStats,
         timeSpentResult,
-        categoriesResult
+        categoriesResult,
       ] = await Promise.all([
-        this.getTotalTermsViewed(userId),
-        this.getUserBookmarkCount(userId),
-        this.getUserAchievements(userId),
-        this.getDailyStats(userId),
-        this.getTotalTimeSpent(userId),
-        this.getCategoriesExplored(userId)
+        ProgressTrackingService.getTotalTermsViewed(userId),
+        ProgressTrackingService.getUserBookmarkCount(userId),
+        ProgressTrackingService.getUserAchievements(userId),
+        ProgressTrackingService.getDailyStats(userId),
+        ProgressTrackingService.getTotalTimeSpent(userId),
+        ProgressTrackingService.getCategoriesExplored(userId),
       ]);
 
-      const currentStreak = achievements.find(a => a.type === 'daily_streak')?.currentStreak || 0;
-      const bestStreak = achievements.find(a => a.type === 'daily_streak')?.bestStreak || 0;
-      
-      const upgradePromptTriggers = await this.getUpgradePromptTriggers(userId, {
+      const currentStreak = achievements.find((a) => a.type === 'daily_streak')?.currentStreak || 0;
+      const bestStreak = achievements.find((a) => a.type === 'daily_streak')?.bestStreak || 0;
+
+      const upgradePromptTriggers = await ProgressTrackingService.getUpgradePromptTriggers(userId, {
         totalTermsViewed,
         totalBookmarks,
         currentStreak,
         categoriesExplored: categoriesResult,
-        timeSpentMinutes: Math.round(timeSpentResult / 60)
+        timeSpentMinutes: Math.round(timeSpentResult / 60),
       });
 
       return {
@@ -282,7 +281,7 @@ export class ProgressTrackingService {
         timeSpentMinutes: Math.round(timeSpentResult / 60),
         achievements,
         dailyStats,
-        upgradePromptTriggers
+        upgradePromptTriggers,
       };
     } catch (error) {
       logger.error('Error getting user progress stats:', error);
@@ -296,7 +295,7 @@ export class ProgressTrackingService {
       .select({ count: count() })
       .from(userTermHistory)
       .where(eq(userTermHistory.userId, userId));
-    
+
     return result[0]?.count || 0;
   }
 
@@ -306,20 +305,22 @@ export class ProgressTrackingService {
       .select({ total: sum(userTermHistory.timeSpentSeconds) })
       .from(userTermHistory)
       .where(eq(userTermHistory.userId, userId));
-    
+
     return Number(result[0]?.total) || 0;
   }
 
   // Get categories explored by user
   private static async getCategoriesExplored(userId: string): Promise<number> {
     const result = await db
-      .select({ categories: sql<string[]>`array_agg(DISTINCT unnest(${enhancedTerms.mainCategories}))` })
+      .select({
+        categories: sql<string[]>`array_agg(DISTINCT unnest(${enhancedTerms.mainCategories}))`,
+      })
       .from(userTermHistory)
       .innerJoin(enhancedTerms, eq(userTermHistory.termId, enhancedTerms.id))
       .where(eq(userTermHistory.userId, userId));
-    
+
     const categories = result[0]?.categories || [];
-    return categories.filter(cat => cat !== null).length;
+    return categories.filter((cat) => cat !== null).length;
   }
 
   // Get user achievements
@@ -330,7 +331,7 @@ export class ProgressTrackingService {
       .where(eq(userAchievements.userId, userId))
       .orderBy(desc(userAchievements.unlockedAt));
 
-    return achievements.map(a => ({
+    return achievements.map((a) => ({
       id: a.id,
       type: a.achievementType,
       value: a.achievementValue,
@@ -340,7 +341,7 @@ export class ProgressTrackingService {
       nextMilestone: a.nextMilestone || 0,
       unlockedAt: a.unlockedAt,
       isActive: a.isActive,
-      metadata: a.metadata
+      metadata: a.metadata,
     }));
   }
 
@@ -355,48 +356,60 @@ export class ProgressTrackingService {
         termsViewed: count(),
         timeSpent: sum(userTermHistory.timeSpentSeconds),
         bookmarksCreated: sql<number>`COUNT(CASE WHEN ${userTermHistory.isBookmarked} = true THEN 1 END)`,
-        categoriesExplored: sql<number>`COUNT(DISTINCT unnest(${enhancedTerms.mainCategories}))`
+        categoriesExplored: sql<number>`COUNT(DISTINCT unnest(${enhancedTerms.mainCategories}))`,
       })
       .from(userTermHistory)
       .innerJoin(enhancedTerms, eq(userTermHistory.termId, enhancedTerms.id))
-      .where(and(
-        eq(userTermHistory.userId, userId),
-        sql`${userTermHistory.lastAccessedAt} >= ${startDate}`
-      ))
+      .where(
+        and(
+          eq(userTermHistory.userId, userId),
+          sql`${userTermHistory.lastAccessedAt} >= ${startDate}`
+        )
+      )
       .groupBy(sql`DATE(${userTermHistory.lastAccessedAt})`)
       .orderBy(sql`DATE(${userTermHistory.lastAccessedAt})`);
 
-    return stats.map(stat => ({
+    return stats.map((stat) => ({
       date: stat.date,
       termsViewed: stat.termsViewed,
       timeSpent: Number(stat.timeSpent) || 0,
       bookmarksCreated: stat.bookmarksCreated,
-      categoriesExplored: stat.categoriesExplored
+      categoriesExplored: stat.categoriesExplored,
     }));
   }
 
   // Generate upgrade prompt triggers based on user behavior
   private static async getUpgradePromptTriggers(
-    userId: string, 
-    stats: { totalTermsViewed: number; totalBookmarks: number; currentStreak: number; categoriesExplored: number; timeSpentMinutes: number }
+    userId: string,
+    stats: {
+      totalTermsViewed: number;
+      totalBookmarks: number;
+      currentStreak: number;
+      categoriesExplored: number;
+      timeSpentMinutes: number;
+    }
   ): Promise<UpgradePromptTrigger[]> {
     const triggers: UpgradePromptTrigger[] = [];
-    
+
     // Check if user has premium access
     const user = await db.select().from(users).where(eq(users.id, userId)).limit(1);
     const isPremium = user[0]?.lifetimeAccess || false;
-    
+
     if (isPremium) {
       return triggers; // No upgrade prompts for premium users
     }
 
     // Bookmark limit trigger
-    if (stats.totalBookmarks >= this.bookmarkLimits.free * 0.8) {
+    if (stats.totalBookmarks >= ProgressTrackingService.bookmarkLimits.free * 0.8) {
       triggers.push({
         type: 'bookmark_limit',
-        severity: stats.totalBookmarks >= this.bookmarkLimits.free ? 'high' : 'medium',
-        message: `You've used ${stats.totalBookmarks} of ${this.bookmarkLimits.free} free bookmarks. Upgrade for unlimited bookmarks!`,
-        metadata: { currentBookmarks: stats.totalBookmarks, limit: this.bookmarkLimits.free }
+        severity:
+          stats.totalBookmarks >= ProgressTrackingService.bookmarkLimits.free ? 'high' : 'medium',
+        message: `You've used ${stats.totalBookmarks} of ${ProgressTrackingService.bookmarkLimits.free} free bookmarks. Upgrade for unlimited bookmarks!`,
+        metadata: {
+          currentBookmarks: stats.totalBookmarks,
+          limit: ProgressTrackingService.bookmarkLimits.free,
+        },
       });
     }
 
@@ -406,7 +419,7 @@ export class ProgressTrackingService {
         type: 'high_engagement',
         severity: 'medium',
         message: `You've explored ${stats.totalTermsViewed} terms and spent ${stats.timeSpentMinutes} minutes learning. Unlock your full potential with premium!`,
-        metadata: { termsViewed: stats.totalTermsViewed, timeSpent: stats.timeSpentMinutes }
+        metadata: { termsViewed: stats.totalTermsViewed, timeSpent: stats.timeSpentMinutes },
       });
     }
 
@@ -416,7 +429,7 @@ export class ProgressTrackingService {
         type: 'streak_milestone',
         severity: 'high',
         message: `Amazing! You've maintained a ${stats.currentStreak}-day learning streak. Celebrate with premium access!`,
-        metadata: { streak: stats.currentStreak }
+        metadata: { streak: stats.currentStreak },
       });
     }
 
@@ -426,7 +439,7 @@ export class ProgressTrackingService {
         type: 'category_exploration',
         severity: 'medium',
         message: `You've explored ${stats.categoriesExplored} different AI/ML categories. Dive deeper with premium features!`,
-        metadata: { categoriesExplored: stats.categoriesExplored }
+        metadata: { categoriesExplored: stats.categoriesExplored },
       });
     }
 
@@ -437,13 +450,15 @@ export class ProgressTrackingService {
       .where(eq(userTermHistory.userId, userId));
 
     if (firstView[0]?.firstView) {
-      const daysSinceFirst = Math.floor((Date.now() - firstView[0].firstView.getTime()) / (1000 * 60 * 60 * 24));
+      const daysSinceFirst = Math.floor(
+        (Date.now() - firstView[0].firstView.getTime()) / (1000 * 60 * 60 * 24)
+      );
       if (daysSinceFirst >= 7) {
         triggers.push({
           type: 'historical_access',
           severity: 'low',
           message: `You've been learning with us for ${daysSinceFirst} days. Ready to unlock everything?`,
-          metadata: { daysSinceFirst }
+          metadata: { daysSinceFirst },
         });
       }
     }
@@ -456,7 +471,7 @@ export class ProgressTrackingService {
     try {
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       const yesterday = new Date(today);
       yesterday.setDate(yesterday.getDate() - 1);
 
@@ -464,63 +479,65 @@ export class ProgressTrackingService {
       const todayActivity = await db
         .select({ count: count() })
         .from(userTermHistory)
-        .where(and(
-          eq(userTermHistory.userId, userId),
-          sql`DATE(${userTermHistory.lastAccessedAt}) = DATE(${today})`
-        ));
+        .where(
+          and(
+            eq(userTermHistory.userId, userId),
+            sql`DATE(${userTermHistory.lastAccessedAt}) = DATE(${today})`
+          )
+        );
 
       if (todayActivity[0]?.count === 0) {
         return; // No activity today, don't update streak
       }
 
       // Get or create streak achievement
-      let streakAchievement = await db
+      const streakAchievement = await db
         .select()
         .from(userAchievements)
-        .where(and(
-          eq(userAchievements.userId, userId),
-          eq(userAchievements.achievementType, 'daily_streak')
-        ))
+        .where(
+          and(
+            eq(userAchievements.userId, userId),
+            eq(userAchievements.achievementType, 'daily_streak')
+          )
+        )
         .limit(1);
 
       if (streakAchievement.length === 0) {
         // Create new streak achievement
-        await db
-          .insert(userAchievements)
-          .values({
-            userId,
-            achievementType: 'daily_streak',
-            achievementValue: 1,
-            currentStreak: 1,
-            bestStreak: 1,
-            lastStreakDate: today,
-            progress: 1,
-            nextMilestone: 7,
-            isActive: true
-          });
+        await db.insert(userAchievements).values({
+          userId,
+          achievementType: 'daily_streak',
+          achievementValue: 1,
+          currentStreak: 1,
+          bestStreak: 1,
+          lastStreakDate: today,
+          progress: 1,
+          nextMilestone: 7,
+          isActive: true,
+        });
       } else {
         const achievement = streakAchievement[0];
         const lastStreakDate = new Date(achievement.lastStreakDate || today);
         lastStreakDate.setHours(0, 0, 0, 0);
-        
+
         let newStreak = achievement.currentStreak;
-        
+
         // Check if streak continues
         if (lastStreakDate.getTime() === yesterday.getTime()) {
           newStreak += 1;
         } else if (lastStreakDate.getTime() < yesterday.getTime()) {
           newStreak = 1; // Reset streak
         }
-        
+
         await db
           .update(userAchievements)
           .set({
             currentStreak: newStreak,
-            bestStreak: Math.max(achievement.bestStreak, newStreak),
+            bestStreak: Math.max(achievement.bestStreak, newStreak || 0),
             lastStreakDate: today,
             progress: newStreak,
-            nextMilestone: Math.ceil(newStreak / 7) * 7,
-            updatedAt: new Date()
+            nextMilestone: Math.ceil((newStreak || 0) / 7) * 7,
+            updatedAt: new Date(),
           })
           .where(eq(userAchievements.id, achievement.id));
       }
@@ -532,30 +549,30 @@ export class ProgressTrackingService {
   // Update bookmarks achievement
   private static async updateBookmarksAchievement(userId: string): Promise<void> {
     try {
-      const bookmarkCount = await this.getUserBookmarkCount(userId);
-      
-      let bookmarksAchievement = await db
+      const bookmarkCount = await ProgressTrackingService.getUserBookmarkCount(userId);
+
+      const bookmarksAchievement = await db
         .select()
         .from(userAchievements)
-        .where(and(
-          eq(userAchievements.userId, userId),
-          eq(userAchievements.achievementType, 'bookmarks_created')
-        ))
+        .where(
+          and(
+            eq(userAchievements.userId, userId),
+            eq(userAchievements.achievementType, 'bookmarks_created')
+          )
+        )
         .limit(1);
 
       const nextMilestone = Math.ceil(bookmarkCount / 10) * 10;
-      
+
       if (bookmarksAchievement.length === 0) {
-        await db
-          .insert(userAchievements)
-          .values({
-            userId,
-            achievementType: 'bookmarks_created',
-            achievementValue: bookmarkCount,
-            progress: bookmarkCount,
-            nextMilestone,
-            isActive: true
-          });
+        await db.insert(userAchievements).values({
+          userId,
+          achievementType: 'bookmarks_created',
+          achievementValue: bookmarkCount,
+          progress: bookmarkCount,
+          nextMilestone,
+          isActive: true,
+        });
       } else {
         await db
           .update(userAchievements)
@@ -563,7 +580,7 @@ export class ProgressTrackingService {
             achievementValue: bookmarkCount,
             progress: bookmarkCount,
             nextMilestone,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           })
           .where(eq(userAchievements.id, bookmarksAchievement[0].id));
       }
@@ -578,25 +595,25 @@ export class ProgressTrackingService {
       // Check if view already exists for today
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-      
+
       const existingView = await db
         .select()
         .from(termViews)
-        .where(and(
-          eq(termViews.userId, userId),
-          eq(termViews.termId, termId),
-          sql`DATE(${termViews.viewedAt}) = DATE(${today})`
-        ))
+        .where(
+          and(
+            eq(termViews.userId, userId),
+            eq(termViews.termId, termId),
+            sql`DATE(${termViews.viewedAt}) = DATE(${today})`
+          )
+        )
         .limit(1);
 
       if (existingView.length === 0) {
-        await db
-          .insert(termViews)
-          .values({
-            userId,
-            termId,
-            viewedAt: new Date()
-          });
+        await db.insert(termViews).values({
+          userId,
+          termId,
+          viewedAt: new Date(),
+        });
       }
     } catch (error) {
       logger.error('Error updating term views counter:', error);
@@ -605,7 +622,7 @@ export class ProgressTrackingService {
 
   // Get bookmark limits for user type
   static getBookmarkLimits(): BookmarkLimits {
-    return this.bookmarkLimits;
+    return ProgressTrackingService.bookmarkLimits;
   }
 }
 

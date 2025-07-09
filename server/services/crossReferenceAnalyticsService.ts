@@ -3,36 +3,30 @@
  * Analyzes how users navigate between related terms and concepts
  */
 
-import { db } from '../db';
-import { 
-  userInteractions, 
-  terms, 
-  categories,
-  type UserInteraction 
-} from '../../shared/schema';
-import { eq, and, gte, desc, sql, count, avg, sum, inArray } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
+import { categories, terms, userInteractions } from '../../shared/schema';
 import type {
+  CrossReferenceInsights,
   CrossReferenceMetrics,
-  ReferenceFlow,
   LearningPathway,
   NavigationPattern,
-  CrossReferenceInsights
+  ReferenceFlow,
 } from '../../shared/types/analytics';
+import { db } from '../db';
 
 // Types are now imported from shared directory
 
 class CrossReferenceAnalyticsService {
-
   /**
    * Analyze cross-reference metrics for terms
    */
   async analyzeCrossReferences(termIds?: string[]): Promise<CrossReferenceMetrics[]> {
     let targetTerms = termIds;
-    
+
     if (!targetTerms) {
       // Get all terms if none specified
       const allTerms = await db.select({ id: terms.id }).from(terms).limit(100);
-      targetTerms = allTerms.map(t => t.id);
+      targetTerms = allTerms.map((t) => t.id);
     }
 
     // Bulk fetch all term information to avoid N+1 queries
@@ -40,14 +34,14 @@ class CrossReferenceAnalyticsService {
       .select({
         id: terms.id,
         name: terms.name,
-        categoryName: categories.name
+        categoryName: categories.name,
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
-      .where(sql`${terms.id} IN (${targetTerms.map(id => `'${id}'`).join(',')})`);
+      .where(sql`${terms.id} IN (${targetTerms.map((id) => `'${id}'`).join(',')})`);
 
     const allTermInfo = await termInfoQuery;
-    const termInfoMap = new Map(allTermInfo.map(term => [term.id, term]));
+    const termInfoMap = new Map(allTermInfo.map((term) => [term.id, term]));
 
     // Bulk calculate reference data for all terms
     const allIncomingRefs = await this.bulkCalculateIncomingReferences(targetTerms);
@@ -86,7 +80,7 @@ class CrossReferenceAnalyticsService {
         popularOutgoingTerms: outgoingRefs.slice(0, 10),
         referencePathways: pathways.slice(0, 5),
         hubScore,
-        bridgeScore
+        bridgeScore,
       });
     }
 
@@ -149,7 +143,7 @@ class CrossReferenceAnalyticsService {
     `;
 
     const results = await db.execute(flowQuery);
-    
+
     return results.rows.map((row: any) => ({
       sourceTermId: row.source_term_id,
       sourceTermName: row.source_term_name,
@@ -161,7 +155,7 @@ class CrossReferenceAnalyticsService {
       completionRate: 0.8, // Would need more sophisticated calculation
       backflowRate: 0.3, // Would need reverse flow analysis
       categoryBridge: row.source_category !== row.target_category,
-      difficultyProgression: 'unknown' as const // Would need difficulty analysis
+      difficultyProgression: 'unknown' as const, // Would need difficulty analysis
     }));
   }
 
@@ -203,7 +197,7 @@ class CrossReferenceAnalyticsService {
     `;
 
     const results = await db.execute(pathwayQuery);
-    
+
     return results.rows.map((row: any, index: number) => ({
       pathwayId: `pathway_${index + 1}`,
       termSequence: row.pathway_ids,
@@ -219,7 +213,7 @@ class CrossReferenceAnalyticsService {
       recommendationScore: this.calculateRecommendationScore(
         Number(row.frequency),
         0.75 // completion rate
-      )
+      ),
     }));
   }
 
@@ -235,7 +229,7 @@ class CrossReferenceAnalyticsService {
         averageSessionDuration: 312,
         knowledgeDepth: 0.73,
         breadthScore: 0.45,
-        returnRate: 0.28
+        returnRate: 0.28,
       },
       {
         patternType: 'exploratory' as const,
@@ -244,7 +238,7 @@ class CrossReferenceAnalyticsService {
         averageSessionDuration: 445,
         knowledgeDepth: 0.51,
         breadthScore: 0.82,
-        returnRate: 0.15
+        returnRate: 0.15,
       },
       {
         patternType: 'focused' as const,
@@ -253,7 +247,7 @@ class CrossReferenceAnalyticsService {
         averageSessionDuration: 198,
         knowledgeDepth: 0.89,
         breadthScore: 0.23,
-        returnRate: 0.44
+        returnRate: 0.44,
       },
       {
         patternType: 'random' as const,
@@ -262,8 +256,8 @@ class CrossReferenceAnalyticsService {
         averageSessionDuration: 267,
         knowledgeDepth: 0.34,
         breadthScore: 0.67,
-        returnRate: 0.12
-      }
+        returnRate: 0.12,
+      },
     ];
 
     return patterns;
@@ -279,19 +273,21 @@ class CrossReferenceAnalyticsService {
     const navigationPatterns = await this.analyzeNavigationPatterns();
 
     const totalCrossReferences = referenceFlows.reduce((sum, flow) => sum + flow.flowCount, 0);
-    const averageReferenceScore = crossReferenceMetrics.length > 0
-      ? crossReferenceMetrics.reduce((sum, metric) => sum + metric.referenceScore, 0) / crossReferenceMetrics.length
-      : 0;
+    const averageReferenceScore =
+      crossReferenceMetrics.length > 0
+        ? crossReferenceMetrics.reduce((sum, metric) => sum + metric.referenceScore, 0) /
+          crossReferenceMetrics.length
+        : 0;
 
     // Get top hub terms (high incoming and outgoing references)
     const topHubTerms = crossReferenceMetrics
-      .filter(m => m.hubScore > 0.7)
+      .filter((m) => m.hubScore > 0.7)
       .sort((a, b) => b.hubScore - a.hubScore)
       .slice(0, 10);
 
     // Get top bridge terms (connect different categories)
     const topBridgeTerms = crossReferenceMetrics
-      .filter(m => m.bridgeScore > 0.6)
+      .filter((m) => m.bridgeScore > 0.6)
       .sort((a, b) => b.bridgeScore - a.bridgeScore)
       .slice(0, 10);
 
@@ -299,13 +295,16 @@ class CrossReferenceAnalyticsService {
     const categoryConnections = this.calculateCategoryConnections(referenceFlows);
 
     const learningEfficiencyMetrics = {
-      averageTermsPerSession: navigationPatterns.reduce((sum, p) => sum + p.averagePathLength, 0) / navigationPatterns.length,
-      averageCompletionRate: learningPathways.reduce((sum, p) => sum + p.completionRate, 0) / learningPathways.length,
+      averageTermsPerSession:
+        navigationPatterns.reduce((sum, p) => sum + p.averagePathLength, 0) /
+        navigationPatterns.length,
+      averageCompletionRate:
+        learningPathways.reduce((sum, p) => sum + p.completionRate, 0) / learningPathways.length,
       optimalPathLength: 4, // Based on research on optimal learning sequences
       recommendedSequences: learningPathways
-        .filter(p => p.recommendationScore > 0.8)
+        .filter((p) => p.recommendationScore > 0.8)
         .slice(0, 5)
-        .map(p => p.termNames)
+        .map((p) => p.termNames),
     };
 
     return {
@@ -317,7 +316,7 @@ class CrossReferenceAnalyticsService {
       popularLearningPathways: learningPathways.slice(0, 10),
       navigationPatterns,
       categoryConnections,
-      learningEfficiencyMetrics
+      learningEfficiencyMetrics,
     };
   }
 
@@ -327,7 +326,7 @@ class CrossReferenceAnalyticsService {
   private async bulkCalculateIncomingReferences(termIds: string[]) {
     // Bulk calculate incoming references for multiple terms
     const results = new Map();
-    
+
     for (const termId of termIds) {
       // This would analyze which terms users viewed before viewing this term
       // For now, return mock data structure
@@ -335,29 +334,29 @@ class CrossReferenceAnalyticsService {
         termId: `term_${i}`,
         termName: `Related Term ${i}`,
         referenceCount: Math.floor(Math.random() * 50) + 5,
-        averageSessionGap: Math.floor(Math.random() * 300) + 30
+        averageSessionGap: Math.floor(Math.random() * 300) + 30,
       }));
       results.set(termId, refs);
     }
-    
+
     return results;
   }
 
-  private async calculateIncomingReferences(termId: string) {
+  private async calculateIncomingReferences(_termId: string) {
     // This would analyze which terms users viewed before viewing this term
     // For now, return mock data structure
     return Array.from({ length: Math.floor(Math.random() * 20) }, (_, i) => ({
       termId: `term_${i}`,
       termName: `Related Term ${i}`,
       referenceCount: Math.floor(Math.random() * 50) + 5,
-      averageSessionGap: Math.floor(Math.random() * 300) + 30
+      averageSessionGap: Math.floor(Math.random() * 300) + 30,
     }));
   }
 
   private async bulkCalculateOutgoingReferences(termIds: string[]) {
     // Bulk calculate outgoing references for multiple terms
     const results = new Map();
-    
+
     for (const termId of termIds) {
       // This would analyze which terms users viewed after viewing this term
       // For now, return mock data structure
@@ -365,65 +364,75 @@ class CrossReferenceAnalyticsService {
         termId: `term_out_${i}`,
         termName: `Following Term ${i}`,
         referenceCount: Math.floor(Math.random() * 40) + 3,
-        averageSessionGap: Math.floor(Math.random() * 240) + 20
+        averageSessionGap: Math.floor(Math.random() * 240) + 20,
       }));
       results.set(termId, refs);
     }
-    
+
     return results;
   }
 
-  private async calculateOutgoingReferences(termId: string) {
+  private async calculateOutgoingReferences(_termId: string) {
     // This would analyze which terms users viewed after viewing this term
     // For now, return mock data structure
     return Array.from({ length: Math.floor(Math.random() * 15) }, (_, i) => ({
       termId: `term_out_${i}`,
       termName: `Following Term ${i}`,
       referenceCount: Math.floor(Math.random() * 40) + 3,
-      averageSessionGap: Math.floor(Math.random() * 240) + 20
+      averageSessionGap: Math.floor(Math.random() * 240) + 20,
     }));
   }
 
   private async bulkCalculateReferencePathways(termIds: string[]) {
     // Bulk calculate reference pathways for multiple terms
     const results = new Map();
-    
+
     for (const termId of termIds) {
       // This would analyze common navigation pathways involving this term
       const pathways = Array.from({ length: Math.floor(Math.random() * 5) + 1 }, (_, i) => ({
         pathway: [`Term A${i}`, `Current Term`, `Term B${i}`],
         frequency: Math.floor(Math.random() * 30) + 5,
-        averageCompletionRate: Math.random() * 0.4 + 0.6
+        averageCompletionRate: Math.random() * 0.4 + 0.6,
       }));
       results.set(termId, pathways);
     }
-    
+
     return results;
   }
 
-  private async calculateReferencePathways(termId: string) {
+  private async calculateReferencePathways(_termId: string) {
     // This would analyze common navigation pathways involving this term
     return Array.from({ length: Math.floor(Math.random() * 5) + 1 }, (_, i) => ({
       pathway: [`Term A${i}`, `Current Term`, `Term B${i}`],
       frequency: Math.floor(Math.random() * 30) + 5,
-      averageCompletionRate: Math.random() * 0.4 + 0.6
+      averageCompletionRate: Math.random() * 0.4 + 0.6,
     }));
   }
 
   private calculateHubScore(incomingCount: number, outgoingCount: number): number {
     // Terms with many connections are considered hubs
     const totalConnections = incomingCount + outgoingCount;
-    const balanceScore = 1 - Math.abs(incomingCount - outgoingCount) / Math.max(totalConnections, 1);
+    const balanceScore =
+      1 - Math.abs(incomingCount - outgoingCount) / Math.max(totalConnections, 1);
     return Math.min(1, (totalConnections / 50) * balanceScore);
   }
 
-  private async calculateBridgeScore(termId: string, incomingRefs: any[], outgoingRefs: any[]): Promise<number> {
+  private async calculateBridgeScore(
+    _termId: string,
+    _incomingRefs: any[],
+    _outgoingRefs: any[]
+  ): Promise<number> {
     // Terms that connect different categories are considered bridges
     // This would need actual category analysis
     return Math.random() * 0.4 + 0.3; // Mock score between 0.3-0.7
   }
 
-  private calculateReferenceScore(incoming: number, outgoing: number, hubScore: number, bridgeScore: number): number {
+  private calculateReferenceScore(
+    incoming: number,
+    outgoing: number,
+    hubScore: number,
+    bridgeScore: number
+  ): number {
     const volumeScore = Math.min(1, (incoming + outgoing) / 100) * 40;
     const hubBonus = hubScore * 30;
     const bridgeBonus = bridgeScore * 30;
@@ -444,20 +453,23 @@ class CrossReferenceAnalyticsService {
   }
 
   private calculateRecommendationScore(frequency: number, completionRate: number): number {
-    return (Math.min(1, frequency / 20) * 0.6) + (completionRate * 0.4);
+    return Math.min(1, frequency / 20) * 0.6 + completionRate * 0.4;
   }
 
   private calculateCategoryConnections(flows: ReferenceFlow[]) {
-    const connections = new Map<string, { targetCategory: string; strength: number; bridgeTerms: Set<string> }>();
-    
-    flows.forEach(flow => {
+    const connections = new Map<
+      string,
+      { targetCategory: string; strength: number; bridgeTerms: Set<string> }
+    >();
+
+    flows.forEach((flow) => {
       if (flow.categoryBridge) {
         const key = `${flow.sourceTermName}-${flow.targetTermName}`;
         if (!connections.has(key)) {
           connections.set(key, {
             targetCategory: 'target',
             strength: 0,
-            bridgeTerms: new Set()
+            bridgeTerms: new Set(),
           });
         }
         const conn = connections.get(key)!;
@@ -466,12 +478,14 @@ class CrossReferenceAnalyticsService {
       }
     });
 
-    return Array.from(connections.entries()).slice(0, 10).map(([key, data]) => ({
-      sourceCategory: key.split('-')[0],
-      targetCategory: key.split('-')[1],
-      connectionStrength: data.strength,
-      topBridgeTerms: Array.from(data.bridgeTerms).slice(0, 3)
-    }));
+    return Array.from(connections.entries())
+      .slice(0, 10)
+      .map(([key, data]) => ({
+        sourceCategory: key.split('-')[0],
+        targetCategory: key.split('-')[1],
+        connectionStrength: data.strength,
+        topBridgeTerms: Array.from(data.bridgeTerms).slice(0, 3),
+      }));
   }
 }
 

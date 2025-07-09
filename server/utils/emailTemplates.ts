@@ -46,7 +46,7 @@ const footerStyles = `
 export function getWelcomeEmailTemplate(userName?: string): EmailTemplate {
   const displayName = userName || 'AI Enthusiast';
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  
+
   return {
     subject: 'Welcome to AI Glossary Pro! 🚀',
     html: `
@@ -120,7 +120,7 @@ Need help? Visit these links:
 
 Happy learning!
 The AI Glossary Pro Team
-    `
+    `,
   };
 }
 
@@ -130,7 +130,7 @@ The AI Glossary Pro Team
 export function getPasswordResetEmailTemplate(resetToken: string): EmailTemplate {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
-  
+
   return {
     subject: '🔐 Reset Your AI Glossary Pro Password',
     html: `
@@ -187,18 +187,21 @@ Having trouble? Copy and paste the link above into your browser.
 
 Best regards,
 The AI Glossary Pro Team
-    `
+    `,
   };
 }
 
 /**
  * Email verification template
  */
-export function getEmailVerificationTemplate(verificationToken: string, userName?: string): EmailTemplate {
+export function getEmailVerificationTemplate(
+  verificationToken: string,
+  userName?: string
+): EmailTemplate {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const verificationUrl = `${frontendUrl}/verify-email?token=${verificationToken}`;
   const displayName = userName || 'there';
-  
+
   return {
     subject: '✉️ Verify Your AI Glossary Pro Email',
     html: `
@@ -262,16 +265,20 @@ If you didn't create an account with AI Glossary Pro, you can safely ignore this
 
 Welcome aboard!
 The AI Glossary Pro Team
-    `
+    `,
   };
 }
 
 /**
  * Learning progress notification template
  */
-export function getLearningProgressTemplate(userName: string, milestone: string, progress: number): EmailTemplate {
+export function getLearningProgressTemplate(
+  userName: string,
+  milestone: string,
+  progress: number
+): EmailTemplate {
   const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  
+
   return {
     subject: `🎉 Congratulations! You've reached ${milestone}`,
     html: `
@@ -325,16 +332,21 @@ Ready for the next challenge? Check out our recommended learning paths tailored 
 
 Keep learning!
 The AI Glossary Pro Team
-    `
+    `,
   };
 }
 
 /**
  * System notification template
  */
-export function getSystemNotificationTemplate(title: string, message: string, actionUrl?: string, actionText?: string): EmailTemplate {
-  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
-  
+export function getSystemNotificationTemplate(
+  title: string,
+  message: string,
+  actionUrl?: string,
+  actionText?: string
+): EmailTemplate {
+  const _frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+
   return {
     subject: `AI Glossary Pro: ${title}`,
     html: `
@@ -346,11 +358,15 @@ export function getSystemNotificationTemplate(title: string, message: string, ac
             <p style="margin: 0;">${message}</p>
           </div>
           
-          ${actionUrl && actionText ? `
+          ${
+            actionUrl && actionText
+              ? `
             <a href="${actionUrl}" style="${buttonStyles}">
               ${actionText}
             </a>
-          ` : ''}
+          `
+              : ''
+          }
           
           <div style="${footerStyles}">
             <p>
@@ -370,6 +386,6 @@ ${actionUrl && actionText ? `${actionText}: ${actionUrl}` : ''}
 
 Best regards,
 The AI Glossary Pro Team
-    `
+    `,
   };
 }

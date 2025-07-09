@@ -1,52 +1,54 @@
-import { Switch, Route, useLocation } from "wouter";
-import { queryClient } from "./lib/queryClient";
-import { QueryClientProvider } from "@tanstack/react-query";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import NotFound from "@/pages/not-found";
-import Home from "@/pages/Home";
-
+import { QueryClientProvider } from '@tanstack/react-query';
+import { Route, Switch, useLocation } from 'wouter';
+import SkipLinks from '@/components/accessibility/SkipLinks';
+import CookieConsentBanner from '@/components/CookieConsentBanner';
+import FirebaseLoginPage from '@/components/FirebaseLoginPage';
+import Footer from '@/components/Footer';
+import Header from '@/components/Header';
 // Lazy load heavy pages to reduce initial bundle size
 import {
-  LazyTermsPage,
+  LazyAboutPage,
+  LazyAdminPage,
+  LazyAISearchPage,
+  LazyAIToolsPage,
+  LazyAnalyticsPage,
   LazyCategoriesPage,
+  LazyCodeExamplesPage,
+  LazyDashboardPage,
+  LazyDiscoveryPage,
+  LazyFavoritesPage,
+  LazyLandingPage,
+  LazyLearningPathDetailPage,
+  LazyLearningPathsPage,
+  LazyLifetimePage,
+  LazyPrivacyPolicyPage,
+  LazyProfilePage,
+  LazyProgressPage,
+  LazySettingsPage,
   LazySubcategoriesPage,
   LazySubcategoryDetailPage,
-  LazyTrendingPage,
-  LazyDashboardPage,
-  LazyFavoritesPage,
-  LazyAdminPage,
-  LazyAnalyticsPage,
-  LazySettingsPage,
-  LazyAIToolsPage,
-  LazyProgressPage,
-  LazyTermDetailPage,
-  LazyLifetimePage,
-  LazyProfilePage,
-  LazyLandingPage,
-  LazyAboutPage,
-  LazyPrivacyPolicyPage,
-  LazyTermsOfServicePage,
-  LazyLearningPathsPage,
-  LazyLearningPathDetailPage,
-  LazyCodeExamplesPage,
-  LazyDiscoveryPage,
   LazySurpriseMePage,
-  LazyAISearchPage,
-  LazyThreeDVisualizationPage
-} from "@/components/lazy/LazyPages";
-
-import Header from "@/components/Header";
-import Footer from "@/components/Footer";
-import FirebaseLoginPage from "@/components/FirebaseLoginPage";
-import PurchaseSuccess from "@/pages/PurchaseSuccess";
-import SkipLinks from "@/components/accessibility/SkipLinks";
-import CookieConsentBanner from "@/components/CookieConsentBanner";
-import { useAuth } from "@/hooks/useAuth";
-import { preloadOnIdle, preloadForAuthenticatedUser, preloadForAdmin } from "@/utils/preloadComponents";
-import "@/utils/bundleAnalyzer"; // Initialize bundle analyzer
-import { useEffect, useState } from "react";
+  LazyTermDetailPage,
+  LazyTermsOfServicePage,
+  LazyTermsPage,
+  LazyThreeDVisualizationPage,
+  LazyTrendingPage,
+} from '@/components/lazy/LazyPages';
+import { ThemeProvider } from '@/components/ThemeProvider';
+import { Toaster } from '@/components/ui/toaster';
+import { TooltipProvider } from '@/components/ui/tooltip';
+import { useAuth } from '@/hooks/useAuth';
+import Home from '@/pages/Home';
+import NotFound from '@/pages/not-found';
+import PurchaseSuccess from '@/pages/PurchaseSuccess';
+import {
+  preloadForAdmin,
+  preloadForAuthenticatedUser,
+  preloadOnIdle,
+} from '@/utils/preloadComponents';
+import { queryClient } from './lib/queryClient';
+import '@/utils/bundleAnalyzer'; // Initialize bundle analyzer
+import { useEffect, useState } from 'react';
 
 // Smart Term Detail component that chooses between enhanced and regular view
 function SmartTermDetail() {
@@ -60,7 +62,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
-      setLocation("/login");
+      setLocation('/login');
     }
   }, [isAuthenticated, isLoading, setLocation]);
 
@@ -84,19 +86,19 @@ function SmartLandingPage() {
   const { isAuthenticated, isLoading } = useAuth();
   const [, setLocation] = useLocation();
   const [hasRedirected, setHasRedirected] = useState(false);
-  
+
   // Handle authenticated user redirect with better state management
   useEffect(() => {
     if (!isLoading && isAuthenticated && !hasRedirected) {
       setHasRedirected(true);
-      setLocation("/app");
+      setLocation('/app');
     }
     // Reset redirect flag when user becomes unauthenticated
     if (!isAuthenticated) {
       setHasRedirected(false);
     }
   }, [isAuthenticated, isLoading, setLocation, hasRedirected]);
-  
+
   // Show loading while checking auth status
   if (isLoading) {
     return (
@@ -105,12 +107,12 @@ function SmartLandingPage() {
       </div>
     );
   }
-  
+
   // Don't render anything while redirecting authenticated users
   if (isAuthenticated && hasRedirected) {
     return null;
   }
-  
+
   // New visitors see marketing page
   return <LazyLandingPage />;
 }
@@ -126,7 +128,7 @@ function Router() {
 
     if (isAuthenticated) {
       preloadForAuthenticatedUser();
-      
+
       // Check if user is admin and preload admin components
       // This would typically be determined by user role
       // For now, we'll use a simple check or context
@@ -151,10 +153,10 @@ function Router() {
   return (
     <div className="flex flex-col min-h-screen">
       <SkipLinks />
-      
+
       {/* Only show main header if NOT on landing page */}
       {!isLandingPage && <Header />}
-      
+
       <main id="main-content" className="flex-grow" tabIndex={-1}>
         <Switch>
           <Route path="/" component={SmartLandingPage} />
@@ -224,10 +226,10 @@ function Router() {
           <Route component={NotFound} />
         </Switch>
       </main>
-      
+
       {/* Only show main footer if NOT on landing page */}
       {!isLandingPage && <Footer />}
-      
+
       {/* Cookie Consent Banner - Show on all pages */}
       <CookieConsentBanner />
     </div>

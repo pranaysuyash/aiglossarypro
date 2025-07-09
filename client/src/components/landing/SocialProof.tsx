@@ -1,59 +1,72 @@
-import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Star, Users, BookOpen, Download } from "lucide-react";
+import { BookOpen, Download, Star, Users } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Card, CardContent } from '@/components/ui/card';
 
 export function SocialProof() {
   const stats = [
     {
       icon: Users,
-      number: "1,000+",
-      label: "AI/ML Professionals",
-      description: "Trust our platform for their reference needs"
+      number: '1,000+',
+      label: 'AI/ML Professionals',
+      description: 'Trust our platform for their reference needs',
     },
     {
       icon: BookOpen,
-      number: "10,000+",
-      label: "Terms Covered",
-      description: "Comprehensive coverage across all domains"
+      number: '10,000+',
+      label: 'Terms Covered',
+      description: 'Comprehensive coverage across all domains',
     },
     {
       icon: Star,
-      number: "4.9/5",
-      label: "Average Rating", 
-      description: "Based on user feedback and reviews"
+      number: '4.9/5',
+      label: 'Average Rating',
+      description: 'Based on user feedback and reviews',
     },
     {
       icon: Download,
-      number: "50,000+",
-      label: "Terms Accessed",
-      description: "Monthly searches and downloads"
-    }
+      number: '50,000+',
+      label: 'Terms Accessed',
+      description: 'Monthly searches and downloads',
+    },
   ];
 
   const testimonials = [
     {
-      quote: "Finally, a single source for all AI/ML concepts with practical examples. This saves me hours every week and costs way less than my DataCamp subscription.",
-      author: "Dr. Sarah Chen",
-      role: "ML Research Scientist",
-      company: "Tech Startup"
+      quote:
+        'Finally, a single source for all AI/ML concepts with practical examples. This saves me hours every week and costs way less than my DataCamp subscription.',
+      author: 'Dr. Sarah Chen',
+      role: 'ML Research Scientist',
+      company: 'Tech Startup',
     },
     {
-      quote: "The code examples are exactly what I needed for my projects. Much better than scattered documentation.",
-      author: "Michael Rodriguez",
-      role: "Data Scientist",  
-      company: "Fortune 500"
+      quote:
+        'The code examples are exactly what I needed for my projects. Much better than scattered documentation.',
+      author: 'Michael Rodriguez',
+      role: 'Data Scientist',
+      company: 'Fortune 500',
     },
     {
-      quote: "Comprehensive coverage from basics to advanced topics. Best $249 I've spent - would cost me $400+ annually with Coursera for similar content.",
-      author: "Priya Sharma",
-      role: "AI Engineer",
-      company: "AI Research Lab"
-    }
+      quote:
+        "Comprehensive coverage from basics to advanced topics. Best $249 I've spent - would cost me $400+ annually with Coursera for similar content.",
+      author: 'Priya Sharma',
+      role: 'AI Engineer',
+      company: 'AI Research Lab',
+    },
   ];
 
   const companies = [
-    "Google", "Microsoft", "Amazon", "Meta", "Netflix", "Spotify", 
-    "Uber", "Tesla", "OpenAI", "DeepMind", "Nvidia", "IBM"
+    'Google',
+    'Microsoft',
+    'Amazon',
+    'Meta',
+    'Netflix',
+    'Spotify',
+    'Uber',
+    'Tesla',
+    'OpenAI',
+    'DeepMind',
+    'Nvidia',
+    'IBM',
   ];
 
   return (
@@ -87,7 +100,7 @@ export function SocialProof() {
           <h3 className="text-2xl font-bold text-center text-gray-900 mb-12">
             What AI/ML Professionals Are Saying
           </h3>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
               <Card key={index} className="border-2 hover:border-purple-200 transition-colors">
@@ -116,7 +129,7 @@ export function SocialProof() {
           <h3 className="text-lg font-semibold text-gray-900 mb-8">
             Trusted by professionals at leading companies
           </h3>
-          
+
           <div className="flex flex-wrap justify-center gap-x-8 gap-y-4 opacity-60">
             {companies.map((company, index) => (
               <Badge key={index} variant="outline" className="text-gray-600 border-gray-300">
@@ -124,7 +137,7 @@ export function SocialProof() {
               </Badge>
             ))}
           </div>
-          
+
           <div className="mt-8 text-sm text-gray-500">
             * Based on user-reported company affiliations
           </div>

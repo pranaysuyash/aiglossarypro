@@ -36,11 +36,11 @@ export function useAccess(): AccessCheckResult {
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 
-  const { 
-    data: accessStatus, 
-    isLoading, 
-    error, 
-    refetch 
+  const {
+    data: accessStatus,
+    isLoading,
+    error,
+    refetch,
   } = useQuery({
     queryKey: ['access-status', user?.id],
     queryFn: async () => {
@@ -86,12 +86,12 @@ export function useAccess(): AccessCheckResult {
  */
 export function useTermAccess(termId?: string) {
   const { canViewTerm, isLoading, accessStatus, refetch } = useAccess();
-  
+
   const { data: termAccessData, isLoading: isCheckingTerm } = useQuery({
     queryKey: ['term-access', termId, accessStatus?.dailyViews],
     queryFn: async () => {
       if (!termId || !canViewTerm) return null;
-      
+
       // Check if user has already viewed this term today
       const response = await api.get(`/user/term-access/${termId}`);
       return response.data;
@@ -118,7 +118,7 @@ export function useViewTerm() {
   const viewTerm = async (termId: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const response = await api.post(`/terms/${termId}/view`);
-      
+
       if (response.data.success) {
         // Refetch access status to update view counts
         await refetch();

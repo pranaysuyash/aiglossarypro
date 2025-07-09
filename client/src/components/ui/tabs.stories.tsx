@@ -1,10 +1,10 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from './tabs';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
-import { Button } from './button';
+import { Bell, CreditCard, Settings, Shield, User } from 'lucide-react';
+import React from 'react';
 import { Badge } from './badge';
-import { Calendar, Settings, User, Bell, Shield, CreditCard } from 'lucide-react';
+import { Button } from './button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from './tabs';
 
 const meta: Meta<typeof Tabs> = {
   title: 'UI/Tabs',
@@ -13,7 +13,8 @@ const meta: Meta<typeof Tabs> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A set of layered sections of content that display one panel of content at a time.',
+        component:
+          'A set of layered sections of content that display one panel of content at a time.',
       },
     },
   },
@@ -112,9 +113,7 @@ export const WithIcons: Story = {
               <User className="h-5 w-5" />
               Profile Settings
             </CardTitle>
-            <CardDescription>
-              Manage your profile information and preferences.
-            </CardDescription>
+            <CardDescription>Manage your profile information and preferences.</CardDescription>
           </CardHeader>
           <CardContent>
             <p>Profile content goes here...</p>
@@ -128,9 +127,7 @@ export const WithIcons: Story = {
               <Bell className="h-5 w-5" />
               Notification Settings
             </CardTitle>
-            <CardDescription>
-              Configure how you receive notifications.
-            </CardDescription>
+            <CardDescription>Configure how you receive notifications.</CardDescription>
           </CardHeader>
           <CardContent>
             <p>Notification settings go here...</p>
@@ -144,9 +141,7 @@ export const WithIcons: Story = {
               <Shield className="h-5 w-5" />
               Security Settings
             </CardTitle>
-            <CardDescription>
-              Manage your account security and privacy.
-            </CardDescription>
+            <CardDescription>Manage your account security and privacy.</CardDescription>
           </CardHeader>
           <CardContent>
             <p>Security settings go here...</p>
@@ -461,13 +456,13 @@ export const NestedTabs: Story = {
 export const Interactive: Story = {
   render: () => {
     const [activeTab, setActiveTab] = React.useState('dashboard');
-    
+
     return (
       <div className="w-full space-y-4">
         <p className="text-sm text-gray-600">
           Current active tab: <strong>{activeTab}</strong>
         </p>
-        
+
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
@@ -475,7 +470,7 @@ export const Interactive: Story = {
             <TabsTrigger value="reports">Reports</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="dashboard">
             <Card>
               <CardHeader>
@@ -484,15 +479,13 @@ export const Interactive: Story = {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Button onClick={() => setActiveTab('analytics')}>
-                    Go to Analytics
-                  </Button>
+                  <Button onClick={() => setActiveTab('analytics')}>Go to Analytics</Button>
                   <p>Dashboard content with interactive elements.</p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="analytics">
             <Card>
               <CardHeader>
@@ -501,15 +494,13 @@ export const Interactive: Story = {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Button onClick={() => setActiveTab('reports')}>
-                    View Reports
-                  </Button>
+                  <Button onClick={() => setActiveTab('reports')}>View Reports</Button>
                   <p>Analytics content...</p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="reports">
             <Card>
               <CardHeader>
@@ -518,15 +509,13 @@ export const Interactive: Story = {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Button onClick={() => setActiveTab('settings')}>
-                    Open Settings
-                  </Button>
+                  <Button onClick={() => setActiveTab('settings')}>Open Settings</Button>
                   <p>Reports content...</p>
                 </div>
               </CardContent>
             </Card>
           </TabsContent>
-          
+
           <TabsContent value="settings">
             <Card>
               <CardHeader>
@@ -535,9 +524,7 @@ export const Interactive: Story = {
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <Button onClick={() => setActiveTab('dashboard')}>
-                    Back to Dashboard
-                  </Button>
+                  <Button onClick={() => setActiveTab('dashboard')}>Back to Dashboard</Button>
                   <p>Settings content...</p>
                 </div>
               </CardContent>
@@ -573,7 +560,7 @@ export const DarkMode: Story = {
           Settings
         </TabsTrigger>
       </TabsList>
-      
+
       <TabsContent value="profile">
         <Card>
           <CardHeader>
@@ -585,7 +572,7 @@ export const DarkMode: Story = {
           </CardContent>
         </Card>
       </TabsContent>
-      
+
       <TabsContent value="billing">
         <Card>
           <CardHeader>
@@ -597,7 +584,7 @@ export const DarkMode: Story = {
           </CardContent>
         </Card>
       </TabsContent>
-      
+
       <TabsContent value="settings">
         <Card>
           <CardHeader>

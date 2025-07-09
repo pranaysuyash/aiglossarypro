@@ -1,5 +1,5 @@
-import { db } from './db';
 import { sql } from 'drizzle-orm';
+import { db } from './db';
 
 // The 42 standardized sections identified from the Excel analysis
 export const STANDARD_SECTIONS = [
@@ -44,7 +44,7 @@ export const STANDARD_SECTIONS = [
   { name: 'Appendices', order: 39 },
   { name: 'Metadata', order: 40 },
   { name: 'Feedback & Ratings', order: 41 },
-  { name: 'Version History', order: 42 }
+  { name: 'Version History', order: 42 },
 ] as const;
 
 export async function migrateSectionData() {
@@ -84,22 +84,21 @@ export async function migrateSectionData() {
 
     console.log(`Migration completed! Created ${totalSectionsCreated} sections total.`);
     return { success: true, sectionsCreated: totalSectionsCreated };
-
   } catch (error) {
     console.error('Section data migration failed:', error);
     throw error;
   }
 }
 
-async function createBasicSectionItems(termId: string, term: any) {
+async function createBasicSectionItems(termId: string, _term: any) {
   try {
     // Get the term's full data
     const termData = await db.execute(sql`
       SELECT * FROM enhanced_terms WHERE id = ${termId}
     `);
-    
+
     if (termData.rows.length === 0) return;
-    
+
     const fullTerm = termData.rows[0];
 
     // Get section IDs for this term
@@ -121,15 +120,15 @@ async function createBasicSectionItems(termId: string, term: any) {
             label: 'Definition and Overview',
             content: fullTerm.definition || fullTerm.short_definition || '',
             contentType: 'markdown',
-            order: 1
+            order: 1,
           },
           {
             label: 'Key Concepts',
             content: fullTerm.key_concepts || '',
             contentType: 'markdown',
-            order: 2
-          }
-        ]
+            order: 2,
+          },
+        ],
       },
       {
         sectionName: 'Applications',
@@ -138,9 +137,9 @@ async function createBasicSectionItems(termId: string, term: any) {
             label: 'Real-world Use Cases',
             content: fullTerm.applications || '',
             contentType: 'markdown',
-            order: 1
-          }
-        ]
+            order: 1,
+          },
+        ],
       },
       {
         sectionName: 'Implementation',
@@ -149,9 +148,9 @@ async function createBasicSectionItems(termId: string, term: any) {
             label: 'Code Examples',
             content: fullTerm.code_examples || '',
             contentType: 'code',
-            order: 1
-          }
-        ]
+            order: 1,
+          },
+        ],
       },
       {
         sectionName: 'Related Concepts',
@@ -160,10 +159,10 @@ async function createBasicSectionItems(termId: string, term: any) {
             label: 'Connected Terms',
             content: fullTerm.related_terms ? JSON.stringify(fullTerm.related_terms) : '',
             contentType: 'json',
-            order: 1
-          }
-        ]
-      }
+            order: 1,
+          },
+        ],
+      },
     ];
 
     // Insert section items
@@ -188,7 +187,6 @@ async function createBasicSectionItems(termId: string, term: any) {
         `);
       }
     }
-
   } catch (error) {
     console.error(`Error creating section items for term ${termId}:`, error);
   }
@@ -205,4 +203,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.error('Migration failed:', error);
       process.exit(1);
     });
-} 
+}

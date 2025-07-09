@@ -4,9 +4,9 @@
  * Analyzes performance data collected by React Scan and generates insights
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -41,30 +41,29 @@ class PerformanceAnalyzer {
 
   async analyze(): Promise<void> {
     console.log('🔍 Analyzing React Scan performance data...');
-    
+
     try {
       // Ensure output directory exists
       await fs.mkdir(this.outputDir, { recursive: true });
-      
+
       // Read all performance reports
       const reports = await this.readPerformanceReports();
-      
+
       if (reports.length === 0) {
         console.log('❌ No performance reports found. Run dev:scan:report first.');
         return;
       }
-      
+
       // Generate analysis
       const analysis = await this.generateAnalysis(reports);
-      
+
       // Save analysis results
       await this.saveAnalysis(analysis);
-      
+
       // Generate HTML report
       await this.generateHTMLReport(analysis);
-      
+
       console.log(`✅ Analysis complete! Reports saved to: ${this.outputDir}`);
-      
     } catch (error) {
       console.error('❌ Error analyzing performance data:', error);
       process.exit(1);
@@ -73,16 +72,16 @@ class PerformanceAnalyzer {
 
   private async readPerformanceReports(): Promise<PerformanceMetric[]> {
     const reports: PerformanceMetric[] = [];
-    
+
     try {
       const files = await fs.readdir(this.reportsDir);
-      const jsonFiles = files.filter(file => file.endsWith('.json'));
-      
+      const jsonFiles = files.filter((file) => file.endsWith('.json'));
+
       for (const file of jsonFiles) {
         const filePath = path.join(this.reportsDir, file);
         const content = await fs.readFile(filePath, 'utf-8');
         const data = JSON.parse(content);
-        
+
         // Handle different report formats
         if (Array.isArray(data)) {
           reports.push(...data);
@@ -92,10 +91,9 @@ class PerformanceAnalyzer {
           reports.push(data);
         }
       }
-      
+
       console.log(`📊 Loaded ${reports.length} performance metrics from ${jsonFiles.length} files`);
       return reports;
-      
     } catch (error) {
       console.error('Error reading performance reports:', error);
       return [];
@@ -107,22 +105,22 @@ class PerformanceAnalyzer {
     const totalRenders = metrics.length;
     const totalRenderTime = metrics.reduce((sum, m) => sum + m.renderTime, 0);
     const averageRenderTime = totalRenderTime / totalRenders;
-    
+
     // Find slowest components
     const slowestComponents = metrics
-      .filter(m => m.renderTime > 16) // > 16ms (60fps threshold)
+      .filter((m) => m.renderTime > 16) // > 16ms (60fps threshold)
       .sort((a, b) => b.renderTime - a.renderTime)
       .slice(0, 10);
-    
+
     // Detect potential memory leaks
     const memoryLeaks = metrics
-      .filter(m => m.memoryUsage > 50) // > 50MB
+      .filter((m) => m.memoryUsage > 50) // > 50MB
       .sort((a, b) => b.memoryUsage - a.memoryUsage)
       .slice(0, 5);
-    
+
     // Generate recommendations
     const recommendations = this.generateRecommendations(metrics, averageRenderTime);
-    
+
     return {
       timestamp: now,
       duration: this.calculateDuration(metrics),
@@ -130,63 +128,69 @@ class PerformanceAnalyzer {
       averageRenderTime,
       slowestComponents,
       memoryLeaks,
-      recommendations
+      recommendations,
     };
   }
 
-  private generateRecommendations(metrics: PerformanceMetric[], averageRenderTime: number): string[] {
+  private generateRecommendations(
+    metrics: PerformanceMetric[],
+    averageRenderTime: number
+  ): string[] {
     const recommendations: string[] = [];
-    
+
     // Check for frequent re-renders
     const componentRenderCounts = new Map<string, number>();
-    metrics.forEach(m => {
+    metrics.forEach((m) => {
       componentRenderCounts.set(m.component, (componentRenderCounts.get(m.component) || 0) + 1);
     });
-    
+
     const frequentlyRenderingComponents = Array.from(componentRenderCounts.entries())
       .filter(([, count]) => count > 10)
       .sort((a, b) => b[1] - a[1]);
-    
+
     if (frequentlyRenderingComponents.length > 0) {
       recommendations.push(
-        `Consider optimizing components with frequent re-renders: ${frequentlyRenderingComponents.slice(0, 3).map(([name]) => name).join(', ')}`
+        `Consider optimizing components with frequent re-renders: ${frequentlyRenderingComponents
+          .slice(0, 3)
+          .map(([name]) => name)
+          .join(', ')}`
       );
     }
-    
+
     // Check for slow renders
-    const slowRenders = metrics.filter(m => m.renderTime > 50);
+    const slowRenders = metrics.filter((m) => m.renderTime > 50);
     if (slowRenders.length > 0) {
       recommendations.push(
         `${slowRenders.length} renders took longer than 50ms. Consider using React.memo() or useMemo() for expensive computations.`
       );
     }
-    
+
     // Check average render time
     if (averageRenderTime > 16) {
       recommendations.push(
         `Average render time (${averageRenderTime.toFixed(2)}ms) exceeds 16ms target. Consider code splitting or lazy loading.`
       );
     }
-    
+
     // Check for memory issues
-    const highMemoryUsage = metrics.filter(m => m.memoryUsage > 100);
+    const highMemoryUsage = metrics.filter((m) => m.memoryUsage > 100);
     if (highMemoryUsage.length > 0) {
       recommendations.push(
         `High memory usage detected. Consider implementing proper cleanup in useEffect hooks and removing unused dependencies.`
       );
     }
-    
+
     if (recommendations.length === 0) {
       recommendations.push('Great job! No major performance issues detected.');
     }
-    
+
     return recommendations;
   }
 
   private calculateDuration(metrics: PerformanceMetric[]): number {
     if (metrics.length === 0) return 0;
-    
-    const timestamps = metrics.map(m => m.timestamp).sort((a, b) => a - b);
+
+    const timestamps = metrics.map((m) => m.timestamp).sort((a, b) => a - b);
     return timestamps[timestamps.length - 1] - timestamps[0];
   }
 
@@ -194,7 +198,7 @@ class PerformanceAnalyzer {
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `performance-analysis-${timestamp}.json`;
     const filePath = path.join(this.outputDir, filename);
-    
+
     await fs.writeFile(filePath, JSON.stringify(analysis, null, 2));
     console.log(`📝 Analysis saved to: ${filename}`);
   }
@@ -248,44 +252,64 @@ class PerformanceAnalyzer {
         </div>
 
         <h2>🐌 Slowest Components</h2>
-        ${analysis.slowestComponents.length > 0 ? `
+        ${
+          analysis.slowestComponents.length > 0
+            ? `
             <ul class="component-list">
-                ${analysis.slowestComponents.map(comp => `
+                ${analysis.slowestComponents
+                  .map(
+                    (comp) => `
                     <li class="component-item">
                         <span>${comp.component}</span>
                         <span class="render-time">${comp.renderTime.toFixed(2)}ms</span>
                     </li>
-                `).join('')}
+                `
+                  )
+                  .join('')}
             </ul>
-        ` : '<p class="success">No slow components detected!</p>'}
+        `
+            : '<p class="success">No slow components detected!</p>'
+        }
 
         <h2>🧠 Memory Usage</h2>
-        ${analysis.memoryLeaks.length > 0 ? `
+        ${
+          analysis.memoryLeaks.length > 0
+            ? `
             <ul class="component-list">
-                ${analysis.memoryLeaks.map(comp => `
+                ${analysis.memoryLeaks
+                  .map(
+                    (comp) => `
                     <li class="component-item">
                         <span>${comp.component}</span>
                         <span class="memory-usage">${comp.memoryUsage.toFixed(2)}MB</span>
                     </li>
-                `).join('')}
+                `
+                  )
+                  .join('')}
             </ul>
-        ` : '<p class="success">No memory issues detected!</p>'}
+        `
+            : '<p class="success">No memory issues detected!</p>'
+        }
 
         <h2>💡 Recommendations</h2>
         <div class="recommendations">
-            ${analysis.recommendations.map(rec => `
+            ${analysis.recommendations
+              .map(
+                (rec) => `
                 <div class="recommendation">• ${rec}</div>
-            `).join('')}
+            `
+              )
+              .join('')}
         </div>
     </div>
 </body>
 </html>
     `;
-    
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const filename = `performance-report-${timestamp}.html`;
     const filePath = path.join(this.outputDir, filename);
-    
+
     await fs.writeFile(filePath, html);
     console.log(`📊 HTML report saved to: ${filename}`);
   }

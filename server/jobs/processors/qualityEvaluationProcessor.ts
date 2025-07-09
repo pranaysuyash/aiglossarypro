@@ -1,11 +1,10 @@
-import { Job } from 'bull';
+import type { Job } from 'bull';
+import { and, eq, lte, or } from 'drizzle-orm';
+import { enhancedTerms, sectionItems, sections } from '../../../shared/enhancedSchema';
+import { db } from '../../db';
 import { aiQualityEvaluationService } from '../../services/aiQualityEvaluationService';
 import { qualityAnalyticsService } from '../../services/qualityAnalyticsService';
-import { db } from '../../db';
-import { enhancedTerms, sections, sectionItems } from '../../../shared/enhancedSchema';
-import { eq, and, isNull, lte, or } from 'drizzle-orm';
 import { log as logger } from '../../utils/logger';
-import { sendSystemNotificationEmail } from '../../utils/email';
 
 export interface QualityEvaluationJobData {
   type: 'single' | 'batch' | 'scheduled-audit' | 'auto-evaluation';
@@ -36,7 +35,7 @@ export async function processQualityEvaluationJob(job: Job<QualityEvaluationJobD
     jobId: job.id,
     termId,
     termIds: termIds?.length,
-    options
+    options,
   });
 
   try {
@@ -63,14 +62,13 @@ export async function processQualityEvaluationJob(job: Job<QualityEvaluationJobD
 
     logger.info(`Quality evaluation job completed`, {
       jobId: job.id,
-      type
+      type,
     });
-
   } catch (error) {
     logger.error('Error processing quality evaluation job:', {
       error: error instanceof Error ? error.message : String(error),
       jobId: job.id,
-      type
+      type,
     });
     throw error;
   }
@@ -87,10 +85,7 @@ async function processSingleEvaluation(job: Job<QualityEvaluationJobData>) {
   }
 
   // Get term content
-  const term = await db.select()
-    .from(enhancedTerms)
-    .where(eq(enhancedTerms.id, termId))
-    .limit(1);
+  const term = await db.select().from(enhancedTerms).where(eq(enhancedTerms.id, termId)).limit(1);
 
   if (term.length === 0) {
     throw new Error(`Term not found: ${termId}`);
@@ -101,20 +96,19 @@ async function processSingleEvaluation(job: Job<QualityEvaluationJobData>) {
 
   if (sectionName) {
     // Get specific section content
-    const section = await db.select()
+    const section = await db
+      .select()
       .from(sections)
-      .where(and(
-        eq(sections.termId, termId),
-        eq(sections.name, sectionName)
-      ))
+      .where(and(eq(sections.termId, termId), eq(sections.name, sectionName)))
       .limit(1);
 
     if (section.length > 0) {
-      const items = await db.select()
+      const items = await db
+        .select()
         .from(sectionItems)
         .where(eq(sectionItems.sectionId, section[0].id));
 
-      content = items.map(item => item.content).join('\n\n');
+      content = items.map((item) => item.content).join('\n\n');
       contentType = mapSectionToContentType(sectionName);
     }
   } else {
@@ -128,7 +122,7 @@ async function processSingleEvaluation(job: Job<QualityEvaluationJobData>) {
     sectionName,
     content,
     contentType,
-    model: options?.model
+    model: options?.model,
   });
 
   // Update job progress
@@ -158,28 +152,28 @@ async function processBatchEvaluation(job: Job<QualityEvaluationJobData>) {
   for (const termId of termIds) {
     try {
       // Get term content
-      const term = await db.select()
+      const term = await db
+        .select()
         .from(enhancedTerms)
         .where(eq(enhancedTerms.id, termId))
         .limit(1);
 
       if (term.length > 0) {
         const content = `${term[0].name}\n\n${term[0].definition || ''}\n\n${term[0].examples || ''}`;
-        
+
         evaluations.push({
           termId,
           content,
           contentType: 'general' as const,
-          model: options?.model
+          model: options?.model,
         });
       }
 
       processed++;
       await job.progress((processed / termIds.length) * 100);
-
     } catch (error) {
       logger.error(`Error preparing evaluation for term ${termId}:`, {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
     }
   }
@@ -187,7 +181,7 @@ async function processBatchEvaluation(job: Job<QualityEvaluationJobData>) {
   // Batch evaluate
   const result = await aiQualityEvaluationService.batchEvaluate({
     evaluations,
-    model: options?.model
+    model: options?.model,
   });
 
   // Send summary email if requested
@@ -229,14 +223,10 @@ async function processScheduledAudit(job: Job<QualityEvaluationJobData>) {
   }
 
   // Generate quality report
-  const report = await qualityAnalyticsService.generateQualityReport(
-    startDate,
-    endDate,
-    {
-      includeAllTerms: false,
-      minEvaluations: 1
-    }
-  );
+  const report = await qualityAnalyticsService.generateQualityReport(startDate, endDate, {
+    includeAllTerms: false,
+    minEvaluations: 1,
+  });
 
   // Get flagged content if threshold is set
   let flaggedContent;
@@ -260,7 +250,7 @@ async function processScheduledAudit(job: Job<QualityEvaluationJobData>) {
     auditId: scheduledAudit.auditId,
     reportId: report.reportId,
     summary: report.summary,
-    flaggedCount: flaggedContent?.flaggedCount || 0
+    flaggedCount: flaggedContent?.flaggedCount || 0,
   };
 }
 
@@ -276,16 +266,19 @@ async function processAutoEvaluation(job: Job<QualityEvaluationJobData>) {
   const cutoffDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days
 
   // Get terms with AI-generated content that haven't been evaluated
-  const unevaluatedTerms = await db.select()
+  const unevaluatedTerms = await db
+    .select()
     .from(sectionItems)
     .innerJoin(sections, eq(sections.id, sectionItems.sectionId))
-    .where(and(
-      eq(sectionItems.isAiGenerated, true),
-      or(
-        eq(sectionItems.verificationStatus, 'unverified'),
-        lte(sectionItems.updatedAt, cutoffDate)
+    .where(
+      and(
+        eq(sectionItems.isAiGenerated, true),
+        or(
+          eq(sectionItems.verificationStatus, 'unverified'),
+          lte(sectionItems.updatedAt, cutoffDate)
+        )
       )
-    ))
+    )
     .limit(50); // Process in batches
 
   const evaluations = [];
@@ -295,7 +288,7 @@ async function processAutoEvaluation(job: Job<QualityEvaluationJobData>) {
       sectionName: item.sections.name,
       content: item.section_items.content || '',
       contentType: mapSectionToContentType(item.sections.name),
-      model: options?.model
+      model: options?.model,
     });
   }
 
@@ -307,36 +300,38 @@ async function processAutoEvaluation(job: Job<QualityEvaluationJobData>) {
   // Batch evaluate
   const result = await aiQualityEvaluationService.batchEvaluate({
     evaluations,
-    model: options?.model
+    model: options?.model,
   });
 
   logger.info(`Auto evaluation completed`, {
     evaluated: result.summary.successCount,
-    failed: result.summary.failureCount
+    failed: result.summary.failureCount,
   });
 
   return {
     evaluated: result.summary.successCount,
     failed: result.summary.failureCount,
-    averageScore: result.summary.averageScore
+    averageScore: result.summary.averageScore,
   };
 }
 
 /**
  * Map section name to content type
  */
-function mapSectionToContentType(sectionName: string): 'definition' | 'example' | 'tutorial' | 'theory' | 'application' | 'general' {
+function mapSectionToContentType(
+  sectionName: string
+): 'definition' | 'example' | 'tutorial' | 'theory' | 'application' | 'general' {
   const mappings: Record<string, any> = {
-    'definition': 'definition',
-    'overview': 'definition',
-    'examples': 'example',
+    definition: 'definition',
+    overview: 'definition',
+    examples: 'example',
     'use cases': 'application',
-    'implementation': 'tutorial',
-    'code': 'tutorial',
-    'mathematical': 'theory',
-    'theory': 'theory',
-    'applications': 'application',
-    'practical': 'application'
+    implementation: 'tutorial',
+    code: 'tutorial',
+    mathematical: 'theory',
+    theory: 'theory',
+    applications: 'application',
+    practical: 'application',
   };
 
   const lowerSection = sectionName.toLowerCase();
@@ -352,11 +347,7 @@ function mapSectionToContentType(sectionName: string): 'definition' | 'example' 
 /**
  * Send evaluation report email
  */
-async function sendEvaluationReport(
-  termName: string,
-  result: any,
-  recipients: string[]
-) {
+async function sendEvaluationReport(termName: string, result: any, recipients: string[]) {
   const subject = `Quality Evaluation Report: ${termName}`;
   const html = `
     <h2>Quality Evaluation Report</h2>
@@ -390,7 +381,7 @@ async function sendEvaluationReport(
   await email.send({
     to: recipients,
     subject,
-    html
+    html,
   });
 }
 
@@ -426,7 +417,7 @@ async function sendBatchEvaluationSummary(result: any, recipients: string[]) {
   await email.send({
     to: recipients,
     subject,
-    html
+    html,
   });
 }
 
@@ -461,9 +452,10 @@ async function sendAuditReport(
       <h3>Flagged Low Quality Content:</h3>
       <p>${flaggedContent.flaggedCount} terms flagged for review</p>
       <ul>
-        ${flaggedContent.flaggedTerms.slice(0, 5).map((t: any) => 
-          `<li>${t.termName} (Score: ${t.score}) - ${t.issues.join(', ')}</li>`
-        ).join('')}
+        ${flaggedContent.flaggedTerms
+          .slice(0, 5)
+          .map((t: any) => `<li>${t.termName} (Score: ${t.score}) - ${t.issues.join(', ')}</li>`)
+          .join('')}
       </ul>
     `;
   }
@@ -487,6 +479,6 @@ async function sendAuditReport(
   await email.send({
     to: recipients,
     subject,
-    html
+    html,
   });
 }

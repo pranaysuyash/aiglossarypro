@@ -1,8 +1,7 @@
+import { and, eq, sql } from 'drizzle-orm';
 import { Router } from 'express';
-import { z } from 'zod';
+import { enhancedTerms, sectionItems, sections } from '../../../shared/enhancedSchema';
 import { db } from '../../db';
-import { enhancedTerms, sections, sectionItems } from '../../../shared/enhancedSchema';
-import { eq, and, like, sql } from 'drizzle-orm';
 import { authenticateToken } from '../../middleware/adminAuth';
 import { log } from '../../utils/logger';
 
@@ -22,22 +21,19 @@ router.get('/enhanced-terms', async (req, res) => {
     const offset = (pageNum - 1) * limitNum;
 
     let query = db.select().from(enhancedTerms);
-    
+
     if (search) {
       query = query.where(
         sql`${enhancedTerms.name} ILIKE ${`%${search}%`} OR ${enhancedTerms.shortDefinition} ILIKE ${`%${search}%`}`
       );
     }
 
-    const terms = await query
-      .orderBy(enhancedTerms.name)
-      .limit(limitNum)
-      .offset(offset);
+    const terms = await query.orderBy(enhancedTerms.name).limit(limitNum).offset(offset);
 
     res.json(terms);
   } catch (error) {
     log.error('Error fetching enhanced terms:', {
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     });
     res.status(500).json({ error: 'Failed to fetch terms' });
   }
@@ -46,11 +42,10 @@ router.get('/enhanced-terms', async (req, res) => {
 /**
  * Get content metrics
  */
-router.get('/content-metrics', async (req, res) => {
+router.get('/content-metrics', async (_req, res) => {
   try {
     // Get total terms
-    const totalTermsResult = await db.select({ count: sql<number>`count(*)` })
-      .from(enhancedTerms);
+    const totalTermsResult = await db.select({ count: sql<number>`count(*)` }).from(enhancedTerms);
     const totalTerms = Number(totalTermsResult[0]?.count || 0);
 
     // Get terms with content
@@ -65,10 +60,12 @@ router.get('/content-metrics', async (req, res) => {
     const sectionsGeneratedResult = await db
       .select({ count: sql<number>`count(*)` })
       .from(sectionItems)
-      .where(and(
-        eq(sectionItems.isAiGenerated, true),
-        sql`${sectionItems.content} IS NOT NULL AND ${sectionItems.content} != ''`
-      ));
+      .where(
+        and(
+          eq(sectionItems.isAiGenerated, true),
+          sql`${sectionItems.content} IS NOT NULL AND ${sectionItems.content} != ''`
+        )
+      );
     const sectionsGenerated = Number(sectionsGeneratedResult[0]?.count || 0);
 
     // Get average quality score (mock for now)
@@ -79,11 +76,11 @@ router.get('/content-metrics', async (req, res) => {
       termsWithContent,
       sectionsGenerated,
       averageQualityScore,
-      lastGeneratedAt: new Date().toISOString()
+      lastGeneratedAt: new Date().toISOString(),
     });
   } catch (error) {
     log.error('Error fetching content metrics:', {
-      error: error instanceof Error ? error.message : String(error)
+      error: error instanceof Error ? error.message : String(error),
     });
     res.status(500).json({ error: 'Failed to fetch metrics' });
   }
@@ -96,7 +93,8 @@ router.get('/terms/:termId/sections', async (req, res) => {
   try {
     const { termId } = req.params;
 
-    const termSections = await db.select()
+    const termSections = await db
+      .select()
       .from(sections)
       .where(eq(sections.termId, termId))
       .orderBy(sections.displayOrder);
@@ -105,7 +103,7 @@ router.get('/terms/:termId/sections', async (req, res) => {
   } catch (error) {
     log.error('Error fetching term sections:', {
       error: error instanceof Error ? error.message : String(error),
-      termId: req.params.termId
+      termId: req.params.termId,
     });
     res.status(500).json({ error: 'Failed to fetch sections' });
   }
@@ -119,12 +117,10 @@ router.get('/terms/:termId/sections/:sectionName/content', async (req, res) => {
     const { termId, sectionName } = req.params;
 
     // Get section
-    const section = await db.select()
+    const section = await db
+      .select()
       .from(sections)
-      .where(and(
-        eq(sections.termId, termId),
-        eq(sections.name, sectionName)
-      ))
+      .where(and(eq(sections.termId, termId), eq(sections.name, sectionName)))
       .limit(1);
 
     if (section.length === 0) {
@@ -132,12 +128,10 @@ router.get('/terms/:termId/sections/:sectionName/content', async (req, res) => {
     }
 
     // Get section item
-    const sectionItem = await db.select()
+    const sectionItem = await db
+      .select()
       .from(sectionItems)
-      .where(and(
-        eq(sectionItems.sectionId, section[0].id),
-        eq(sectionItems.label, sectionName)
-      ))
+      .where(and(eq(sectionItems.sectionId, section[0].id), eq(sectionItems.label, sectionName)))
       .limit(1);
 
     if (sectionItem.length === 0) {
@@ -145,7 +139,7 @@ router.get('/terms/:termId/sections/:sectionName/content', async (req, res) => {
     }
 
     const item = sectionItem[0];
-    const metadata = item.metadata as any || {};
+    const metadata = (item.metadata as any) || {};
 
     res.json({
       content: item.content,
@@ -155,14 +149,14 @@ router.get('/terms/:termId/sections/:sectionName/content', async (req, res) => {
       metadata: {
         ...metadata,
         lastEditedAt: item.updatedAt,
-        contentType: item.contentType
-      }
+        contentType: item.contentType,
+      },
     });
   } catch (error) {
     log.error('Error fetching section content:', {
       error: error instanceof Error ? error.message : String(error),
       termId: req.params.termId,
-      sectionName: req.params.sectionName
+      sectionName: req.params.sectionName,
     });
     res.status(500).json({ error: 'Failed to fetch content' });
   }

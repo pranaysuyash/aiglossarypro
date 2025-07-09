@@ -1,7 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Enhanced Term 42-Section Architecture', () => {
-
   test.beforeEach(async ({ page }) => {
     // Navigate to the Characteristic Function term from row1.xlsx (using basic term ID)
     await page.goto('/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941');
@@ -9,7 +8,9 @@ test.describe('Enhanced Term 42-Section Architecture', () => {
     await expect(page.locator('#main-content')).toBeVisible();
   });
 
-  test('should display the Characteristic Function term with complete metadata', async ({ page }) => {
+  test('should display the Characteristic Function term with complete metadata', async ({
+    page,
+  }) => {
     // Verify term header
     const header = page.locator('h1');
     await expect(header).toBeVisible();
@@ -19,7 +20,7 @@ test.describe('Enhanced Term 42-Section Architecture', () => {
     // Check for enhanced term indicators
     await expect(page.locator('[data-testid="enhanced-term-badge"]')).toBeVisible();
     await expect(page.locator('[data-testid="difficulty-badge"]')).toBeVisible();
-    
+
     // Verify difficulty level is intermediate
     const difficultyBadge = page.locator('[data-testid="difficulty-badge"]');
     const difficultyText = await difficultyBadge.innerText();
@@ -50,7 +51,7 @@ test.describe('Enhanced Term 42-Section Architecture', () => {
     // Look for section containers or content tabs
     const sections = page.locator('[data-testid="term-section"], .term-section, [id*="section"]');
     const sectionCount = await sections.count();
-    
+
     // Should have multiple sections (even if not all 42 are visible at once)
     expect(sectionCount).toBeGreaterThan(1);
 
@@ -66,7 +67,7 @@ test.describe('Enhanced Term 42-Section Architecture', () => {
     let foundSections = 0;
     for (const selector of keySelectors) {
       const element = page.locator(selector);
-      if (await element.count() > 0) {
+      if ((await element.count()) > 0) {
         foundSections++;
       }
     }
@@ -89,7 +90,7 @@ test.describe('Enhanced Term 42-Section Architecture', () => {
     let foundInteractive = false;
     for (const selector of interactiveElements) {
       const element = page.locator(selector);
-      if (await element.count() > 0) {
+      if ((await element.count()) > 0) {
         foundInteractive = true;
         // If we find an interactive element, try to interact with it
         if (await element.first().isVisible()) {
@@ -118,7 +119,7 @@ test.describe('Enhanced Term 42-Section Architecture', () => {
     let foundCategories = 0;
     for (const selector of categorySelectors) {
       const element = page.locator(selector);
-      if (await element.count() > 0) {
+      if ((await element.count()) > 0) {
         foundCategories++;
       }
     }
@@ -139,7 +140,7 @@ test.describe('Enhanced Term 42-Section Architecture', () => {
     let foundAIIndicators = 0;
     for (const selector of aiIndicators) {
       const element = page.locator(selector);
-      if (await element.count() > 0) {
+      if ((await element.count()) > 0) {
         foundAIIndicators++;
       }
     }
@@ -161,15 +162,15 @@ test.describe('Enhanced Term 42-Section Architecture', () => {
     let foundNavigation = false;
     for (const selector of navigationElements) {
       const element = page.locator(selector);
-      if (await element.count() > 0) {
+      if ((await element.count()) > 0) {
         foundNavigation = true;
-        
+
         // Try to interact with navigation
         if (await element.first().isVisible()) {
           // Look for clickable tabs or navigation items
           const navItems = element.locator('button, a, [role="tab"]');
           const itemCount = await navItems.count();
-          
+
           if (itemCount > 1) {
             // Click on the second navigation item
             await navItems.nth(1).click();
@@ -196,9 +197,9 @@ test.describe('Enhanced Term 42-Section Architecture', () => {
     let foundActions = 0;
     for (const selector of actionButtons) {
       const element = page.locator(selector);
-      if (await element.count() > 0) {
+      if ((await element.count()) > 0) {
         foundActions++;
-        
+
         // Try clicking the action (may require authentication)
         if (await element.first().isVisible()) {
           await element.first().click();
@@ -214,15 +215,9 @@ test.describe('Enhanced Term 42-Section Architecture', () => {
   test('should display comprehensive content for Characteristic Function', async ({ page }) => {
     // Verify we have substantial content
     const bodyText = await page.locator('body').innerText();
-    
+
     // Should contain mathematical/technical content related to characteristic functions
-    const expectedTerms = [
-      'probability',
-      'distribution',
-      'function',
-      'mathematical',
-      'fourier',
-    ];
+    const expectedTerms = ['probability', 'distribution', 'function', 'mathematical', 'fourier'];
 
     let foundTerms = 0;
     for (const term of expectedTerms) {
@@ -233,7 +228,7 @@ test.describe('Enhanced Term 42-Section Architecture', () => {
 
     // Should find most expected terms
     expect(foundTerms).toBeGreaterThan(2);
-    
+
     // Content should be substantial
     expect(bodyText.length).toBeGreaterThan(500);
   });
@@ -241,17 +236,16 @@ test.describe('Enhanced Term 42-Section Architecture', () => {
   test('should be responsive on mobile devices', async ({ page }) => {
     // Test mobile responsiveness
     await page.setViewportSize({ width: 375, height: 667 });
-    
+
     // Verify content is still accessible
     await expect(page.locator('#main-content')).toBeVisible();
-    
+
     // Check that header is visible
     await expect(page.locator('h1')).toBeVisible();
-    
+
     // Verify no horizontal scrolling
     const scrollWidth = await page.evaluate(() => document.body.scrollWidth);
     const clientWidth = await page.evaluate(() => document.body.clientWidth);
     expect(scrollWidth).toBeLessThanOrEqual(clientWidth + 5); // Allow small tolerance
   });
-
 });

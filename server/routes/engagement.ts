@@ -4,37 +4,45 @@
  */
 
 import type { Express, Request, Response } from 'express';
-import { engagementTrackingService } from '../services/engagementTrackingService';
-import { multiAuthMiddleware } from '../middleware/multiAuth';
-import { requireAdmin } from '../middleware/adminAuth';
-import { 
-  sendErrorResponse, 
-  handleDatabaseError, 
-  ErrorCode 
-} from '../utils/errorHandler';
 import { z } from 'zod';
+import { requireAdmin } from '../middleware/adminAuth';
+import { multiAuthMiddleware } from '../middleware/multiAuth';
+import { engagementTrackingService } from '../services/engagementTrackingService';
+import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';
 
 // Validation schemas
 const trackInteractionSchema = z.object({
   sessionId: z.string().min(1),
   termId: z.string().optional(),
   interactionType: z.enum([
-    'view', 'search', 'favorite', 'share', 'reading_progress', 
-    'scroll', 'click', 'copy', 'download', 'bookmark'
+    'view',
+    'search',
+    'favorite',
+    'share',
+    'reading_progress',
+    'scroll',
+    'click',
+    'copy',
+    'download',
+    'bookmark',
   ]),
   duration: z.number().optional(),
   metadata: z.record(z.any()).optional(),
-  deviceInfo: z.object({
-    type: z.enum(['mobile', 'tablet', 'desktop']),
-    userAgent: z.string(),
-    screenResolution: z.string()
-  }).optional(),
-  contentInfo: z.object({
-    scrollDepth: z.number().min(0).max(100),
-    readingProgress: z.number().min(0).max(100),
-    timeOnContent: z.number().min(0),
-    wordsRead: z.number().min(0)
-  }).optional()
+  deviceInfo: z
+    .object({
+      type: z.enum(['mobile', 'tablet', 'desktop']),
+      userAgent: z.string(),
+      screenResolution: z.string(),
+    })
+    .optional(),
+  contentInfo: z
+    .object({
+      scrollDepth: z.number().min(0).max(100),
+      readingProgress: z.number().min(0).max(100),
+      timeOnContent: z.number().min(0),
+      wordsRead: z.number().min(0),
+    })
+    .optional(),
 });
 
 const trackReadingProgressSchema = z.object({
@@ -44,15 +52,14 @@ const trackReadingProgressSchema = z.object({
   totalHeight: z.number().min(1),
   timeSpent: z.number().min(0),
   wordsRead: z.number().min(0),
-  readingVelocity: z.number().min(0)
+  readingVelocity: z.number().min(0),
 });
 
 const engagementInsightsSchema = z.object({
-  timeRange: z.enum(['7d', '30d', '90d']).optional()
+  timeRange: z.enum(['7d', '30d', '90d']).optional(),
 });
 
 export function registerEngagementRoutes(app: Express): void {
-
   /**
    * @openapi
    * /api/engagement/track:
@@ -138,25 +145,29 @@ export function registerEngagementRoutes(app: Express): void {
   app.post('/api/engagement/track', async (req: Request, res: Response) => {
     try {
       const validatedData = trackInteractionSchema.parse(req.body);
-      
+
       // Get user ID if authenticated
       const userId = (req as any).user?.id;
-      
+
       await engagementTrackingService.trackInteraction({
         ...validatedData,
-        userId
+        userId,
       });
 
       res.json({
         success: true,
-        message: 'Interaction tracked successfully'
+        message: 'Interaction tracked successfully',
       });
-
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return sendErrorResponse(res, ErrorCode.VALIDATION_ERROR, 'Invalid request data', error.errors);
+        return sendErrorResponse(
+          res,
+          ErrorCode.VALIDATION_ERROR,
+          'Invalid request data',
+          error.errors
+        );
       }
-      
+
       console.error('Track interaction error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
@@ -235,25 +246,29 @@ export function registerEngagementRoutes(app: Express): void {
   app.post('/api/engagement/reading-progress', async (req: Request, res: Response) => {
     try {
       const validatedData = trackReadingProgressSchema.parse(req.body);
-      
+
       // Get user ID if authenticated
       const userId = (req as any).user?.id;
-      
+
       await engagementTrackingService.trackReadingProgress({
         ...validatedData,
-        userId
+        userId,
       });
 
       res.json({
         success: true,
-        message: 'Reading progress tracked successfully'
+        message: 'Reading progress tracked successfully',
       });
-
     } catch (error) {
       if (error instanceof z.ZodError) {
-        return sendErrorResponse(res, ErrorCode.VALIDATION_ERROR, 'Invalid request data', error.errors);
+        return sendErrorResponse(
+          res,
+          ErrorCode.VALIDATION_ERROR,
+          'Invalid request data',
+          error.errors
+        );
       }
-      
+
       console.error('Track reading progress error:', error);
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
@@ -325,18 +340,17 @@ export function registerEngagementRoutes(app: Express): void {
   app.get('/api/engagement/session/:sessionId', async (req: Request, res: Response) => {
     try {
       const { sessionId } = req.params;
-      
+
       const sessionMetrics = await engagementTrackingService.calculateSessionEngagement(sessionId);
-      
+
       if (!sessionMetrics) {
         return sendErrorResponse(res, ErrorCode.NOT_FOUND, 'Session not found');
       }
 
       res.json({
         success: true,
-        data: sessionMetrics
+        data: sessionMetrics,
       });
-
     } catch (error) {
       console.error('Get session engagement error:', error);
       const dbError = handleDatabaseError(error);
@@ -404,10 +418,10 @@ export function registerEngagementRoutes(app: Express): void {
   app.get('/api/engagement/content', async (req: Request, res: Response) => {
     try {
       const { termIds } = req.query;
-      
-      const termIdsArray = Array.isArray(termIds) 
-        ? termIds as string[]
-        : typeof termIds === 'string' 
+
+      const termIdsArray = Array.isArray(termIds)
+        ? (termIds as string[])
+        : typeof termIds === 'string'
           ? [termIds]
           : undefined;
 
@@ -415,9 +429,8 @@ export function registerEngagementRoutes(app: Express): void {
 
       res.json({
         success: true,
-        data: contentMetrics
+        data: contentMetrics,
       });
-
     } catch (error) {
       console.error('Get content engagement error:', error);
       const dbError = handleDatabaseError(error);
@@ -506,27 +519,36 @@ export function registerEngagementRoutes(app: Express): void {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.get('/api/engagement/insights', multiAuthMiddleware, requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const validatedQuery = engagementInsightsSchema.parse(req.query);
-      
-      const insights = await engagementTrackingService.getEngagementInsights(
-        validatedQuery.timeRange || '30d'
-      );
+  app.get(
+    '/api/engagement/insights',
+    multiAuthMiddleware,
+    requireAdmin,
+    async (req: Request, res: Response) => {
+      try {
+        const validatedQuery = engagementInsightsSchema.parse(req.query);
 
-      res.json({
-        success: true,
-        data: insights
-      });
+        const insights = await engagementTrackingService.getEngagementInsights(
+          validatedQuery.timeRange || '30d'
+        );
 
-    } catch (error) {
-      if (error instanceof z.ZodError) {
-        return sendErrorResponse(res, ErrorCode.VALIDATION_ERROR, 'Invalid query parameters', error.errors);
+        res.json({
+          success: true,
+          data: insights,
+        });
+      } catch (error) {
+        if (error instanceof z.ZodError) {
+          return sendErrorResponse(
+            res,
+            ErrorCode.VALIDATION_ERROR,
+            'Invalid query parameters',
+            error.errors
+          );
+        }
+
+        console.error('Get engagement insights error:', error);
+        const dbError = handleDatabaseError(error);
+        sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
-      
-      console.error('Get engagement insights error:', error);
-      const dbError = handleDatabaseError(error);
-      sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
-  });
+  );
 }

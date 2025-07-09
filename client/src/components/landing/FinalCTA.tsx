@@ -1,13 +1,13 @@
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { ArrowRight, Clock, Shield, Star } from "lucide-react";
-import { useCountryPricing } from '@/hooks/useCountryPricing';
-import { trackCTAClick } from '@/types/analytics';
+import { ArrowRight, Clock, Shield, Star } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useBackgroundABTest } from '@/hooks/useBackgroundABTest';
+import { useCountryPricing } from '@/hooks/useCountryPricing';
 import { useABTestTracking } from '@/services/abTestingService';
+import { trackCTAClick } from '@/types/analytics';
 
 export function FinalCTA() {
-  const pricing = useCountryPricing();
+  const _pricing = useCountryPricing();
   const { currentVariant } = useBackgroundABTest();
   const { trackConversion } = useABTestTracking(currentVariant);
 
@@ -15,7 +15,10 @@ export function FinalCTA() {
     <section className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-purple-900 via-blue-900 to-purple-900 text-white">
       <div className="max-w-5xl mx-auto text-center">
         {/* Urgency Badge */}
-        <Badge variant="secondary" className="mb-6 px-4 py-2 text-sm sm:text-base font-medium bg-white/10 text-white hover:bg-white/20">
+        <Badge
+          variant="secondary"
+          className="mb-6 px-4 py-2 text-sm sm:text-base font-medium bg-white/10 text-white hover:bg-white/20"
+        >
           <Clock className="w-4 h-4 mr-2" />
           Limited Time: Lifetime Access Available
         </Badge>
@@ -24,10 +27,11 @@ export function FinalCTA() {
         <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-6 leading-tight">
           Ready to Master AI & Machine Learning?
         </h2>
-        
+
         {/* Subheading */}
         <p className="text-lg sm:text-xl md:text-2xl text-gray-300 mb-8 max-w-4xl mx-auto px-4 sm:px-0">
-          Join 1,000+ professionals who rely on our comprehensive platform for their AI/ML reference needs.
+          Join 1,000+ professionals who rely on our comprehensive platform for their AI/ML reference
+          needs.
         </p>
 
         {/* Value Highlights */}
@@ -49,14 +53,14 @@ export function FinalCTA() {
         {/* Main CTAs */}
         <div className="space-y-6 px-4 sm:px-0">
           <div className="flex flex-col sm:flex-row gap-4 items-center justify-center">
-            <Button 
+            <Button
               size="lg"
-              className="bg-green-600 hover:bg-green-700 text-white px-8 sm:px-12 py-4 sm:py-6 text-lg sm:text-xl font-bold rounded-xl shadow-2xl transition-all transform hover:scale-105 w-full sm:w-auto min-h-[56px] sm:min-h-[64px] touch-manipulation"
+              className="bg-purple-600 hover:bg-purple-700 text-white px-8 sm:px-12 py-4 sm:py-6 text-lg sm:text-xl font-bold rounded-xl shadow-2xl transition-all transform hover:scale-105 w-full sm:w-auto min-h-[56px] sm:min-h-[64px] touch-manipulation"
               onClick={() => {
                 trackCTAClick('final', 'Start for Free');
                 trackConversion('final_free_cta_click', {
                   button_text: 'Start for Free',
-                  position: 'final_cta'
+                  position: 'final_cta',
                 });
                 window.location.href = '/login';
               }}
@@ -66,8 +70,8 @@ export function FinalCTA() {
                 <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
               </span>
             </Button>
-            
-            <Button 
+
+            <Button
               size="lg"
               className="bg-white text-purple-900 hover:bg-gray-100 px-8 sm:px-12 py-4 sm:py-6 text-lg sm:text-xl font-bold rounded-xl shadow-2xl transition-all transform hover:scale-105 w-full sm:w-auto min-h-[56px] sm:min-h-[64px] touch-manipulation"
               onClick={() => {
@@ -77,7 +81,7 @@ export function FinalCTA() {
                   button_text: 'Get Premium - $179 (Early Bird)',
                   position: 'final_cta',
                   originalPrice: 249,
-                  discount: 70
+                  discount: 70,
                 });
                 window.open('https://pranaysuyash.gumroad.com/l/ggczfy/EARLY500', '_blank');
               }}
@@ -88,7 +92,7 @@ export function FinalCTA() {
               </span>
             </Button>
           </div>
-          
+
           <p className="text-gray-400 text-base sm:text-lg">
             Access 50 AI/ML terms daily for free. Upgrade anytime for unlimited access.
           </p>
@@ -110,7 +114,7 @@ export function FinalCTA() {
               <span>Trusted by 1,000+ professionals</span>
             </div>
           </div>
-          
+
           {/* Pricing Comparison */}
           <div className="mt-8 bg-white/10 rounded-xl p-4 sm:p-6 max-w-3xl mx-auto">
             <h3 className="text-lg sm:text-xl font-bold mb-4">Compare the Value</h3>
@@ -145,7 +149,9 @@ export function FinalCTA() {
         {/* Final Reassurance */}
         <div className="mt-12 text-gray-400 text-sm sm:text-base max-w-2xl mx-auto px-4 sm:px-0">
           <p className="leading-relaxed">
-            <strong className="text-white">Start with 50 free terms daily:</strong> That's 1,500+ terms monthly at no cost. Upgrade to unlimited access (10,000+ terms) plus premium features for just $179. Perfect for your AI/ML learning journey.
+            <strong className="text-white">Start with 50 free terms daily:</strong> That's 1,500+
+            terms monthly at no cost. Upgrade to unlimited access (10,000+ terms) plus premium
+            features for just $179. Perfect for your AI/ML learning journey.
           </p>
         </div>
       </div>

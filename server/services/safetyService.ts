@@ -68,35 +68,35 @@ class SafetyService {
   // Emergency Stop Controls
   async activateEmergencyStop(reason: string, userId?: string): Promise<void> {
     logger.warn('Emergency stop activated', { reason, userId });
-    
+
     this.limits.emergencyStopActive = true;
-    
+
     // Stop all active operations
     const activeOps = Array.from(this.activeOperations);
     for (const operationId of activeOps) {
       await this.stopOperation(operationId, 'Emergency stop activated');
     }
-    
+
     // Clear queue
     this.operationQueue = [];
-    
+
     // Create critical alert
     const alert: SafetyAlert = {
       id: `emergency-${Date.now()}`,
       type: 'emergency',
-      severity: 'critical',
+      priority: 'critical',
       message: `Emergency stop activated: ${reason}`,
       timestamp: new Date(),
       acknowledged: false,
       autoResolved: false,
     };
-    
+
     this.alerts.push(alert);
-    
+
     // Send notifications
     await this.notificationService.sendNotification({
       type: 'system_alert',
-      severity: 'critical',
+      priority: 'critical',
       title: 'Emergency Stop Activated',
       message: `Emergency stop activated: ${reason}`,
       data: { activeOperations: activeOps.length, queueSize: this.operationQueue.length },
@@ -105,19 +105,19 @@ class SafetyService {
 
   async deactivateEmergencyStop(userId?: string): Promise<void> {
     logger.info('Emergency stop deactivated', { userId });
-    
+
     this.limits.emergencyStopActive = false;
-    
+
     // Find and resolve emergency alerts
-    const emergencyAlerts = this.alerts.filter(a => a.type === 'emergency' && !a.acknowledged);
-    emergencyAlerts.forEach(alert => {
+    const emergencyAlerts = this.alerts.filter((a) => a.type === 'emergency' && !a.acknowledged);
+    emergencyAlerts.forEach((alert) => {
       alert.acknowledged = true;
       alert.autoResolved = true;
     });
-    
+
     await this.notificationService.sendNotification({
       type: 'system_alert',
-      severity: 'medium',
+      priority: 'medium',
       title: 'Emergency Stop Deactivated',
       message: 'System operations can resume normally',
       data: { userId },
@@ -129,9 +129,9 @@ class SafetyService {
     this.metrics.dailySpend += cost;
     this.metrics.monthlySpend += cost;
     this.metrics.lastUpdated = new Date();
-    
+
     logger.info('Cost tracked', { operationId, cost, dailySpend: this.metrics.dailySpend });
-    
+
     // Check daily limit
     if (this.metrics.dailySpend > this.limits.dailyCostLimit * 0.9) {
       await this.createAlert({
@@ -140,7 +140,7 @@ class SafetyService {
         message: `Daily cost limit approaching: $${this.metrics.dailySpend.toFixed(2)} / $${this.limits.dailyCostLimit}`,
       });
     }
-    
+
     // Check monthly limit
     if (this.metrics.monthlySpend > this.limits.monthlyCostLimit * 0.9) {
       await this.createAlert({
@@ -149,30 +149,35 @@ class SafetyService {
         message: `Monthly cost limit approaching: $${this.metrics.monthlySpend.toFixed(2)} / $${this.limits.monthlyCostLimit}`,
       });
     }
-    
+
     // Auto-activate emergency stop if critical cost limit exceeded
     if (this.metrics.dailySpend > this.limits.dailyCostLimit * 1.1) {
-      await this.activateEmergencyStop(`Daily cost limit exceeded: $${this.metrics.dailySpend.toFixed(2)}`);
+      await this.activateEmergencyStop(
+        `Daily cost limit exceeded: $${this.metrics.dailySpend.toFixed(2)}`
+      );
     }
   }
 
   // Operation Management
-  async canStartOperation(operationId: string, estimatedCost: number = 0): Promise<{ allowed: boolean; reason?: string }> {
+  async canStartOperation(
+    _operationId: string,
+    estimatedCost: number = 0
+  ): Promise<{ allowed: boolean; reason?: string }> {
     // Check emergency stop
     if (this.limits.emergencyStopActive) {
       return { allowed: false, reason: 'Emergency stop is active' };
     }
-    
+
     // Check concurrent operations
     if (this.activeOperations.size >= this.limits.maxConcurrentOperations) {
       return { allowed: false, reason: 'Maximum concurrent operations reached' };
     }
-    
+
     // Check queue size
     if (this.operationQueue.length >= this.limits.maxQueueSize) {
       return { allowed: false, reason: 'Operation queue is full' };
     }
-    
+
     // Check cost limits
     if (estimatedCost > 0) {
       const projectedDailyCost = this.metrics.dailySpend + estimatedCost;
@@ -180,7 +185,7 @@ class SafetyService {
         return { allowed: false, reason: 'Would exceed daily cost limit' };
       }
     }
-    
+
     return { allowed: true };
   }
 
@@ -189,54 +194,68 @@ class SafetyService {
     if (!check.allowed) {
       throw new Error(`Cannot start operation: ${check.reason}`);
     }
-    
+
     this.activeOperations.add(operationId);
     this.metrics.activeOperations = this.activeOperations.size;
-    
+
     logger.info('Operation started', { operationId, activeOperations: this.activeOperations.size });
   }
 
   async stopOperation(operationId: string, reason: string = 'Manual stop'): Promise<void> {
     this.activeOperations.delete(operationId);
     this.metrics.activeOperations = this.activeOperations.size;
-    
-    logger.info('Operation stopped', { operationId, reason, activeOperations: this.activeOperations.size });
+
+    logger.info('Operation stopped', {
+      operationId,
+      reason,
+      activeOperations: this.activeOperations.size,
+    });
   }
 
   // Quality Monitoring
   async trackQuality(operationId: string, qualityScore: number): Promise<void> {
     // Update average quality (simplified calculation)
     this.metrics.averageQuality = (this.metrics.averageQuality + qualityScore) / 2;
-    
+
     if (qualityScore < this.limits.minQualityThreshold) {
       await this.createAlert({
         type: 'quality',
-        severity: 'medium',
+        priority: 'medium',
         message: `Low quality detected: ${qualityScore.toFixed(1)} (threshold: ${this.limits.minQualityThreshold})`,
       });
     }
-    
-    logger.info('Quality tracked', { operationId, qualityScore, averageQuality: this.metrics.averageQuality });
+
+    logger.info('Quality tracked', {
+      operationId,
+      qualityScore,
+      averageQuality: this.metrics.averageQuality,
+    });
   }
 
   // Failure Rate Monitoring
   async trackFailure(operationId: string, error: string): Promise<void> {
     // Update failure rate (simplified calculation)
     this.metrics.failureRate = Math.min(this.metrics.failureRate + 0.01, 1);
-    
+
     if (this.metrics.failureRate > this.limits.maxFailureRate) {
       await this.createAlert({
         type: 'failure_rate',
-        severity: 'high',
+        priority: 'high',
         message: `High failure rate detected: ${(this.metrics.failureRate * 100).toFixed(1)}%`,
       });
     }
-    
-    logger.warn('Operation failure tracked', { operationId, error, failureRate: this.metrics.failureRate });
+
+    logger.warn('Operation failure tracked', {
+      operationId,
+      error,
+      failureRate: this.metrics.failureRate,
+    });
   }
 
   // Alert Management
-  private async createAlert(alertData: Omit<SafetyAlert, 'id' | 'timestamp' | 'acknowledged' | 'autoResolved'>): Promise<void> {
+  private async createAlert(
+    alertData: Omit<SafetyAlert, 'id' | 'timestamp' | 'acknowledged' | 'autoResolved'>
+  ): Promise<void> {
     const alert: SafetyAlert = {
       id: `alert-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       timestamp: new Date(),
@@ -244,9 +263,9 @@ class SafetyService {
       autoResolved: false,
       ...alertData,
     };
-    
+
     this.alerts.push(alert);
-    
+
     // Send notification based on severity
     if (alert.severity === 'high' || alert.severity === 'critical') {
       await this.notificationService.sendNotification({
@@ -260,7 +279,7 @@ class SafetyService {
   }
 
   async acknowledgeAlert(alertId: string, userId?: string): Promise<void> {
-    const alert = this.alerts.find(a => a.id === alertId);
+    const alert = this.alerts.find((a) => a.id === alertId);
     if (alert) {
       alert.acknowledged = true;
       logger.info('Alert acknowledged', { alertId, userId });
@@ -277,7 +296,7 @@ class SafetyService {
   }
 
   getActiveAlerts(): SafetyAlert[] {
-    return this.alerts.filter(a => !a.acknowledged);
+    return this.alerts.filter((a) => !a.acknowledged);
   }
 
   getAllAlerts(): SafetyAlert[] {
@@ -291,18 +310,23 @@ class SafetyService {
     emergencyStopActive: boolean;
     criticalAlerts: number;
   } {
-    const criticalAlerts = this.alerts.filter(a => !a.acknowledged && a.severity === 'critical').length;
-    
+    const criticalAlerts = this.alerts.filter(
+      (a) => !a.acknowledged && a.severity === 'critical'
+    ).length;
+
     let status: 'healthy' | 'warning' | 'critical' | 'emergency' = 'healthy';
-    
+
     if (this.limits.emergencyStopActive) {
       status = 'emergency';
     } else if (criticalAlerts > 0) {
       status = 'critical';
-    } else if (this.metrics.dailySpend > this.limits.dailyCostLimit * 0.8 || this.metrics.failureRate > this.limits.maxFailureRate * 0.8) {
+    } else if (
+      this.metrics.dailySpend > this.limits.dailyCostLimit * 0.8 ||
+      this.metrics.failureRate > this.limits.maxFailureRate * 0.8
+    ) {
       status = 'warning';
     }
-    
+
     return {
       status,
       activeOperations: this.activeOperations.size,
@@ -316,10 +340,10 @@ class SafetyService {
   async updateLimits(newLimits: Partial<SafetyLimits>): Promise<void> {
     this.limits = { ...this.limits, ...newLimits };
     logger.info('Safety limits updated', { newLimits });
-    
+
     await this.notificationService.sendNotification({
       type: 'system_alert',
-      severity: 'medium',
+      priority: 'medium',
       title: 'Safety Limits Updated',
       message: 'Safety configuration has been modified',
       data: { updatedLimits: newLimits },

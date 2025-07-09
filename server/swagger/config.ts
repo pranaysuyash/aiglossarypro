@@ -1,5 +1,5 @@
-import swaggerJSDoc from 'swagger-jsdoc';
 import type { Options } from 'swagger-jsdoc';
+import swaggerJSDoc from 'swagger-jsdoc';
 
 const options: Options = {
   definition: {
@@ -39,22 +39,22 @@ Most endpoints require authentication via JWT tokens. Admin endpoints require ad
       contact: {
         name: 'AI/ML Glossary Pro Support',
         email: 'support@aimlglossarypro.com',
-        url: 'https://aimlglossarypro.com'
+        url: 'https://aimlglossarypro.com',
       },
       license: {
         name: 'Proprietary License',
-        url: 'https://aimlglossarypro.com/license'
-      }
+        url: 'https://aimlglossarypro.com/license',
+      },
     },
     servers: [
       {
         url: 'http://localhost:3001',
-        description: 'Development server'
+        description: 'Development server',
       },
       {
         url: 'https://api.aimlglossarypro.com',
-        description: 'Production server'
-      }
+        description: 'Production server',
+      },
     ],
     components: {
       securitySchemes: {
@@ -62,14 +62,14 @@ Most endpoints require authentication via JWT tokens. Admin endpoints require ad
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description: 'JWT token for authenticated requests'
+          description: 'JWT token for authenticated requests',
         },
         AdminAuth: {
           type: 'http',
           scheme: 'bearer',
           bearerFormat: 'JWT',
-          description: 'JWT token with admin privileges'
-        }
+          description: 'JWT token with admin privileges',
+        },
       },
       schemas: {
         Term: {
@@ -79,62 +79,62 @@ Most endpoints require authentication via JWT tokens. Admin endpoints require ad
             id: {
               type: 'string',
               description: 'Unique identifier for the term',
-              example: 'neural-network'
+              example: 'neural-network',
             },
             name: {
               type: 'string',
               description: 'Name of the AI/ML term',
-              example: 'Neural Network'
+              example: 'Neural Network',
             },
             shortDefinition: {
               type: 'string',
               description: 'Brief definition of the term',
-              example: 'A computational model inspired by biological neural networks'
+              example: 'A computational model inspired by biological neural networks',
             },
             longDefinition: {
               type: 'string',
               description: 'Detailed explanation of the term',
-              example: 'A neural network is a computational model...'
+              example: 'A neural network is a computational model...',
             },
             categoryId: {
               type: 'string',
               description: 'Category identifier',
-              example: 'deep-learning'
+              example: 'deep-learning',
             },
             category: {
               type: 'string',
               description: 'Category name',
-              example: 'Deep Learning'
+              example: 'Deep Learning',
             },
             viewCount: {
               type: 'integer',
               description: 'Number of times this term has been viewed',
-              example: 1250
+              example: 1250,
             },
             difficulty: {
               type: 'string',
               enum: ['beginner', 'intermediate', 'advanced'],
-              description: 'Difficulty level of the term'
+              description: 'Difficulty level of the term',
             },
             tags: {
               type: 'array',
               items: {
-                type: 'string'
+                type: 'string',
               },
               description: 'Associated tags',
-              example: ['machine-learning', 'deep-learning', 'artificial-intelligence']
+              example: ['machine-learning', 'deep-learning', 'artificial-intelligence'],
             },
             createdAt: {
               type: 'string',
               format: 'date-time',
-              description: 'When the term was created'
+              description: 'When the term was created',
             },
             updatedAt: {
               type: 'string',
               format: 'date-time',
-              description: 'When the term was last updated'
-            }
-          }
+              description: 'When the term was last updated',
+            },
+          },
         },
         Category: {
           type: 'object',
@@ -143,34 +143,34 @@ Most endpoints require authentication via JWT tokens. Admin endpoints require ad
             id: {
               type: 'string',
               description: 'Unique identifier for the category',
-              example: 'machine-learning'
+              example: 'machine-learning',
             },
             name: {
               type: 'string',
               description: 'Category name',
-              example: 'Machine Learning'
+              example: 'Machine Learning',
             },
             description: {
               type: 'string',
               description: 'Category description',
-              example: 'Algorithms and techniques for machine learning'
+              example: 'Algorithms and techniques for machine learning',
             },
             termCount: {
               type: 'integer',
               description: 'Number of terms in this category',
-              example: 145
+              example: 145,
             },
             color: {
               type: 'string',
               description: 'Category color for UI',
-              example: '#3B82F6'
+              example: '#3B82F6',
             },
             icon: {
               type: 'string',
               description: 'Icon identifier',
-              example: 'brain'
-            }
-          }
+              example: 'brain',
+            },
+          },
         },
         User: {
           type: 'object',
@@ -179,35 +179,35 @@ Most endpoints require authentication via JWT tokens. Admin endpoints require ad
             id: {
               type: 'string',
               description: 'Unique user identifier',
-              example: 'user_123'
+              example: 'user_123',
             },
             email: {
               type: 'string',
               format: 'email',
               description: 'User email address',
-              example: 'user@example.com'
+              example: 'user@example.com',
             },
             subscriptionTier: {
               type: 'string',
               enum: ['free', 'lifetime'],
-              description: 'User subscription level'
+              description: 'User subscription level',
             },
             lifetimeAccess: {
               type: 'boolean',
               description: 'Whether user has lifetime access',
-              example: true
+              example: true,
             },
             dailyViews: {
               type: 'integer',
               description: 'Daily view count (for rate limiting)',
-              example: 25
+              example: 25,
             },
             isAdmin: {
               type: 'boolean',
               description: 'Whether user has admin privileges',
-              example: false
-            }
-          }
+              example: false,
+            },
+          },
         },
         PaginatedResponse: {
           type: 'object',
@@ -218,32 +218,32 @@ Most endpoints require authentication via JWT tokens. Admin endpoints require ad
               items: {
                 oneOf: [
                   { $ref: '#/components/schemas/Term' },
-                  { $ref: '#/components/schemas/Category' }
-                ]
+                  { $ref: '#/components/schemas/Category' },
+                ],
               },
-              description: 'Array of results'
+              description: 'Array of results',
             },
             total: {
               type: 'integer',
               description: 'Total number of items',
-              example: 10372
+              example: 10372,
             },
             page: {
               type: 'integer',
               description: 'Current page number',
-              example: 1
+              example: 1,
             },
             limit: {
               type: 'integer',
               description: 'Items per page',
-              example: 12
+              example: 12,
             },
             hasMore: {
               type: 'boolean',
               description: 'Whether there are more pages',
-              example: true
-            }
-          }
+              example: true,
+            },
+          },
         },
         ApiResponse: {
           type: 'object',
@@ -252,22 +252,22 @@ Most endpoints require authentication via JWT tokens. Admin endpoints require ad
             success: {
               type: 'boolean',
               description: 'Whether the request was successful',
-              example: true
+              example: true,
             },
             data: {
-              description: 'Response data (varies by endpoint)'
+              description: 'Response data (varies by endpoint)',
             },
             error: {
               type: 'string',
               description: 'Error message (only present when success is false)',
-              example: 'Resource not found'
+              example: 'Resource not found',
             },
             message: {
               type: 'string',
               description: 'Additional message',
-              example: 'Operation completed successfully'
-            }
-          }
+              example: 'Operation completed successfully',
+            },
+          },
         },
         ErrorResponse: {
           type: 'object',
@@ -275,19 +275,19 @@ Most endpoints require authentication via JWT tokens. Admin endpoints require ad
           properties: {
             success: {
               type: 'boolean',
-              example: false
+              example: false,
             },
             error: {
               type: 'string',
               description: 'Error message',
-              example: 'Authentication required'
+              example: 'Authentication required',
             },
             code: {
               type: 'string',
               description: 'Error code',
-              example: 'UNAUTHORIZED'
-            }
-          }
+              example: 'UNAUTHORIZED',
+            },
+          },
         },
         CountryPricing: {
           type: 'object',
@@ -296,50 +296,50 @@ Most endpoints require authentication via JWT tokens. Admin endpoints require ad
             basePrice: {
               type: 'number',
               description: 'Base price in USD',
-              example: 249
+              example: 249,
             },
             localPrice: {
               type: 'number',
               description: 'Local price with PPP discount',
-              example: 99
+              example: 99,
             },
             discount: {
               type: 'number',
               description: 'PPP discount percentage',
-              example: 60
+              example: 60,
             },
             countryCode: {
               type: 'string',
               description: 'ISO country code',
-              example: 'IN'
+              example: 'IN',
             },
             countryName: {
               type: 'string',
               description: 'Country name',
-              example: 'India'
+              example: 'India',
             },
             flag: {
               type: 'string',
               description: 'Country flag emoji',
-              example: '🇮🇳'
+              example: '🇮🇳',
             },
             currency: {
               type: 'string',
               description: 'Currency code',
-              example: 'USD'
+              example: 'USD',
             },
             annualSavings: {
               type: 'number',
               description: 'Annual savings vs competitors',
-              example: 400
+              example: 400,
             },
             localCompetitor: {
               type: 'string',
               description: 'Local competitor name',
-              example: 'DataCamp India'
-            }
-          }
-        }
+              example: 'DataCamp India',
+            },
+          },
+        },
       },
       responses: {
         UnauthorizedError: {
@@ -347,107 +347,103 @@ Most endpoints require authentication via JWT tokens. Admin endpoints require ad
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse',
               },
               example: {
                 success: false,
                 error: 'Authentication required',
-                code: 'UNAUTHORIZED'
-              }
-            }
-          }
+                code: 'UNAUTHORIZED',
+              },
+            },
+          },
         },
         ForbiddenError: {
           description: 'Insufficient permissions',
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse',
               },
               example: {
                 success: false,
                 error: 'Admin access required',
-                code: 'FORBIDDEN'
-              }
-            }
-          }
+                code: 'FORBIDDEN',
+              },
+            },
+          },
         },
         NotFoundError: {
           description: 'Resource not found',
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse',
               },
               example: {
                 success: false,
                 error: 'Resource not found',
-                code: 'NOT_FOUND'
-              }
-            }
-          }
+                code: 'NOT_FOUND',
+              },
+            },
+          },
         },
         RateLimitError: {
           description: 'Rate limit exceeded',
           content: {
             'application/json': {
               schema: {
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorResponse',
               },
               example: {
                 success: false,
                 error: 'Daily view limit exceeded. Upgrade to lifetime access for unlimited views.',
-                code: 'RATE_LIMITED'
-              }
-            }
-          }
-        }
-      }
+                code: 'RATE_LIMITED',
+              },
+            },
+          },
+        },
+      },
     },
     tags: [
       {
         name: 'Authentication',
-        description: 'User authentication and authorization'
+        description: 'User authentication and authorization',
       },
       {
         name: 'Terms',
-        description: 'AI/ML term operations - browse, search, and view detailed definitions'
+        description: 'AI/ML term operations - browse, search, and view detailed definitions',
       },
       {
         name: 'Categories',
-        description: 'Term categories and classification'
+        description: 'Term categories and classification',
       },
       {
         name: 'Search',
-        description: 'Advanced search and filtering capabilities'
+        description: 'Advanced search and filtering capabilities',
       },
       {
         name: 'User Management',
-        description: 'User profile, favorites, and progress tracking'
+        description: 'User profile, favorites, and progress tracking',
       },
       {
         name: 'Admin',
-        description: 'Administrative operations (requires admin privileges)'
+        description: 'Administrative operations (requires admin privileges)',
       },
       {
         name: 'Analytics',
-        description: 'Usage analytics and metrics'
+        description: 'Usage analytics and metrics',
       },
       {
         name: 'Monetization',
-        description: 'Purchase processing and pricing information'
+        description: 'Purchase processing and pricing information',
       },
       {
         name: 'System',
-        description: 'System health and monitoring'
-      }
-    ]
+        description: 'System health and monitoring',
+      },
+    ],
   },
-  apis: [
-    './server/routes/*.ts',
-    './server/routes/**/*.ts',
-    './server/swagger/paths/*.yaml'
-  ]
+  apis: ['./server/routes/*.ts', './server/routes/**/*.ts', './server/swagger/paths/*.yaml'],
 };
 
 export const swaggerSpec = swaggerJSDoc(options);

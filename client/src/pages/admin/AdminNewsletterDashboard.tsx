@@ -1,29 +1,41 @@
-import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { 
-  Mail, 
-  Users, 
-  TrendingUp, 
-  Download, 
-  Search, 
-  Filter, 
-  RefreshCw,
+import {
   BarChart3,
-  Globe,
   Calendar,
-  UserMinus
+  Download,
+  Filter,
+  Globe,
+  Mail,
+  RefreshCw,
+  TrendingUp,
+  UserMinus,
+  Users,
 } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Separator } from '@/components/ui/separator';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useAuth } from '@/hooks/useAuth';
 
 interface NewsletterSubscription {
@@ -85,15 +97,15 @@ const AdminNewsletterDashboard: React.FC = () => {
     page: 1,
     limit: 50,
     sort: 'created_at',
-    order: 'desc'
+    order: 'desc',
   });
 
   // Query for newsletter subscriptions
-  const { 
-    data: newsletterData, 
-    isLoading: isLoadingSubscriptions, 
+  const {
+    data: newsletterData,
+    isLoading: isLoadingSubscriptions,
     error: subscriptionsError,
-    refetch: refetchSubscriptions
+    refetch: refetchSubscriptions,
   } = useQuery({
     queryKey: ['admin-newsletter-subscriptions', filters],
     queryFn: async (): Promise<NewsletterData> => {
@@ -101,20 +113,17 @@ const AdminNewsletterDashboard: React.FC = () => {
       Object.entries(filters).forEach(([key, value]) => {
         if (value) params.append(key, value.toString());
       });
-      
+
       const response = await fetch(`/api/admin/newsletter/subscriptions?${params}`);
       if (!response.ok) throw new Error('Failed to fetch newsletter subscriptions');
       const result = await response.json();
       return result.data;
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Query for newsletter analytics
-  const { 
-    data: analyticsData, 
-    isLoading: isLoadingAnalytics 
-  } = useQuery({
+  const { data: analyticsData, isLoading: isLoadingAnalytics } = useQuery({
     queryKey: ['admin-newsletter-analytics'],
     queryFn: async () => {
       const response = await fetch('/api/admin/newsletter/analytics');
@@ -122,22 +131,22 @@ const AdminNewsletterDashboard: React.FC = () => {
       const result = await response.json();
       return result.data;
     },
-    enabled: !!user
+    enabled: !!user,
   });
 
   // Handle filter changes
   const handleFilterChange = (key: keyof NewsletterFilters, value: string | number) => {
-    setFilters(prev => ({
+    setFilters((prev) => ({
       ...prev,
       [key]: value,
-      page: key === 'page' ? Number(value) : 1 // Reset page when other filters change
+      page: key === 'page' ? Number(value) : 1, // Reset page when other filters change
     }));
   };
 
   // Handle bulk selection
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedSubscriptions(newsletterData?.subscriptions.map(sub => sub.id) || []);
+      setSelectedSubscriptions(newsletterData?.subscriptions.map((sub) => sub.id) || []);
     } else {
       setSelectedSubscriptions([]);
     }
@@ -145,9 +154,9 @@ const AdminNewsletterDashboard: React.FC = () => {
 
   const handleSelectSubscription = (id: number, checked: boolean) => {
     if (checked) {
-      setSelectedSubscriptions(prev => [...prev, id]);
+      setSelectedSubscriptions((prev) => [...prev, id]);
     } else {
-      setSelectedSubscriptions(prev => prev.filter(subId => subId !== id));
+      setSelectedSubscriptions((prev) => prev.filter((subId) => subId !== id));
     }
   };
 
@@ -164,8 +173,8 @@ const AdminNewsletterDashboard: React.FC = () => {
         },
         body: JSON.stringify({
           action,
-          ids: selectedSubscriptions
-        })
+          ids: selectedSubscriptions,
+        }),
       });
 
       if (!response.ok) throw new Error('Bulk action failed');
@@ -188,10 +197,10 @@ const AdminNewsletterDashboard: React.FC = () => {
           params.append(key, value.toString());
         }
       });
-      
+
       const response = await fetch(`/api/admin/newsletter/export?${params}`);
       if (!response.ok) throw new Error('Export failed');
-      
+
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -212,15 +221,18 @@ const AdminNewsletterDashboard: React.FC = () => {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return 'bg-green-100 text-green-800';
-      case 'unsubscribed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'active':
+        return 'bg-green-100 text-green-800';
+      case 'unsubscribed':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -423,7 +435,9 @@ const AdminNewsletterDashboard: React.FC = () => {
                       <TableRow>
                         <TableHead className="w-[50px]">
                           <Checkbox
-                            checked={selectedSubscriptions.length === newsletterData?.subscriptions.length}
+                            checked={
+                              selectedSubscriptions.length === newsletterData?.subscriptions.length
+                            }
                             onCheckedChange={handleSelectAll}
                           />
                         </TableHead>
@@ -441,7 +455,7 @@ const AdminNewsletterDashboard: React.FC = () => {
                           <TableCell>
                             <Checkbox
                               checked={selectedSubscriptions.includes(subscription.id)}
-                              onCheckedChange={(checked) => 
+                              onCheckedChange={(checked) =>
                                 handleSelectSubscription(subscription.id, !!checked)
                               }
                             />
@@ -456,7 +470,9 @@ const AdminNewsletterDashboard: React.FC = () => {
                           <TableCell>{subscription.utm_source || '-'}</TableCell>
                           <TableCell>{formatDate(subscription.created_at)}</TableCell>
                           <TableCell>
-                            {subscription.unsubscribed_at ? formatDate(subscription.unsubscribed_at) : '-'}
+                            {subscription.unsubscribed_at
+                              ? formatDate(subscription.unsubscribed_at)
+                              : '-'}
                           </TableCell>
                         </TableRow>
                       ))}
@@ -469,9 +485,13 @@ const AdminNewsletterDashboard: React.FC = () => {
               {newsletterData?.pagination && (
                 <div className="flex items-center justify-between mt-4">
                   <div className="text-sm text-gray-600">
-                    Showing {((newsletterData.pagination.page - 1) * newsletterData.pagination.limit) + 1} to{' '}
-                    {Math.min(newsletterData.pagination.page * newsletterData.pagination.limit, newsletterData.pagination.total)} of{' '}
-                    {newsletterData.pagination.total} subscriptions
+                    Showing{' '}
+                    {(newsletterData.pagination.page - 1) * newsletterData.pagination.limit + 1} to{' '}
+                    {Math.min(
+                      newsletterData.pagination.page * newsletterData.pagination.limit,
+                      newsletterData.pagination.total
+                    )}{' '}
+                    of {newsletterData.pagination.total} subscriptions
                   </div>
                   <div className="flex items-center space-x-2">
                     <Button
@@ -514,24 +534,31 @@ const AdminNewsletterDashboard: React.FC = () => {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {analyticsData?.subscriptionsOverTime?.slice(0, 7).map((item: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between py-2 border-b">
-                        <div className="flex items-center space-x-3">
-                          <Calendar className="w-4 h-4 text-gray-400" />
-                          <span className="text-sm font-medium">{item.date}</span>
-                        </div>
-                        <div className="flex items-center space-x-4">
-                          <div className="text-right">
-                            <div className="text-sm font-medium">{item.count}</div>
-                            <div className="text-xs text-gray-500">Total</div>
+                    {analyticsData?.subscriptionsOverTime
+                      ?.slice(0, 7)
+                      .map((item: any, index: number) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between py-2 border-b"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <Calendar className="w-4 h-4 text-gray-400" />
+                            <span className="text-sm font-medium">{item.date}</span>
                           </div>
-                          <div className="text-right">
-                            <div className="text-sm font-medium text-green-600">{item.active_count}</div>
-                            <div className="text-xs text-gray-500">Active</div>
+                          <div className="flex items-center space-x-4">
+                            <div className="text-right">
+                              <div className="text-sm font-medium">{item.count}</div>
+                              <div className="text-xs text-gray-500">Total</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-sm font-medium text-green-600">
+                                {item.active_count}
+                              </div>
+                              <div className="text-xs text-gray-500">Active</div>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                   </div>
                 )}
               </CardContent>

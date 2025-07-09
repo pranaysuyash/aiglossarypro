@@ -2,7 +2,7 @@
 
 /**
  * Production Setup Checker
- * 
+ *
  * Validates production environment configuration before deployment
  * - Checks required environment variables
  * - Validates Firebase configuration
@@ -13,15 +13,14 @@
  * - Validates SSL configuration
  */
 
+import fs from 'node:fs';
+import http from 'node:http';
+import https from 'node:https';
+import path from 'node:path';
+import { fileURLToPath, URL } from 'node:url';
 import dotenv from 'dotenv';
 import { Pool } from 'pg';
 import { createClient } from 'redis';
-import https from 'https';
-import http from 'http';
-import { URL } from 'url';
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 
 // Load environment variables
 dotenv.config({ path: '.env.production' });
@@ -51,10 +50,10 @@ class ProductionSetupChecker {
 
   private log(message: string, level: 'info' | 'error' | 'warn' | 'success' = 'info') {
     const colors = {
-      info: '\x1b[36m',    // Cyan
-      error: '\x1b[31m',   // Red
-      warn: '\x1b[33m',    // Yellow
-      success: '\x1b[32m'  // Green
+      info: '\x1b[36m', // Cyan
+      error: '\x1b[31m', // Red
+      warn: '\x1b[33m', // Yellow
+      success: '\x1b[32m', // Green
     };
     const reset = '\x1b[0m';
     console.log(`${colors[level]}${message}${reset}`);
@@ -66,7 +65,7 @@ class ProductionSetupChecker {
       const req = client.request(url, { timeout }, (res) => {
         resolve(res.statusCode === 200 || res.statusCode === 401 || res.statusCode === 403);
       });
-      
+
       req.on('error', () => resolve(false));
       req.on('timeout', () => resolve(false));
       req.end();
@@ -75,14 +74,14 @@ class ProductionSetupChecker {
 
   private async testDatabaseConnection(): Promise<ValidationResult> {
     const databaseUrl = process.env.DATABASE_URL;
-    
+
     if (!databaseUrl) {
       return {
         category: 'Database',
         name: 'Connection String',
         status: 'FAIL',
         message: 'DATABASE_URL is not configured',
-        critical: true
+        critical: true,
       };
     }
 
@@ -92,7 +91,7 @@ class ProductionSetupChecker {
         ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false,
         connectionTimeoutMillis: 5000,
         idleTimeoutMillis: 1000,
-        max: 1
+        max: 1,
       });
 
       const client = await pool.connect();
@@ -105,7 +104,7 @@ class ProductionSetupChecker {
         name: 'Connection Test',
         status: 'PASS',
         message: 'Database connection successful',
-        critical: true
+        critical: true,
       };
     } catch (error) {
       return {
@@ -113,21 +112,21 @@ class ProductionSetupChecker {
         name: 'Connection Test',
         status: 'FAIL',
         message: `Database connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        critical: true
+        critical: true,
       };
     }
   }
 
   private async testRedisConnection(): Promise<ValidationResult> {
     const redisUrl = process.env.REDIS_URL;
-    
+
     if (!redisUrl) {
       return {
         category: 'Redis',
         name: 'Connection String',
         status: 'WARN',
         message: 'REDIS_URL not configured - job queue will be disabled',
-        critical: false
+        critical: false,
       };
     }
 
@@ -136,8 +135,8 @@ class ProductionSetupChecker {
         url: redisUrl,
         socket: {
           connectTimeout: 5000,
-          commandTimeout: 5000
-        }
+          commandTimeout: 5000,
+        },
       });
 
       await client.connect();
@@ -149,7 +148,7 @@ class ProductionSetupChecker {
         name: 'Connection Test',
         status: 'PASS',
         message: 'Redis connection successful',
-        critical: false
+        critical: false,
       };
     } catch (error) {
       return {
@@ -157,21 +156,21 @@ class ProductionSetupChecker {
         name: 'Connection Test',
         status: 'WARN',
         message: `Redis connection failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        critical: false
+        critical: false,
       };
     }
   }
 
   private async testOpenAIAPI(): Promise<ValidationResult> {
     const apiKey = process.env.OPENAI_API_KEY;
-    
+
     if (!apiKey) {
       return {
         category: 'OpenAI',
         name: 'API Key',
         status: 'WARN',
         message: 'OPENAI_API_KEY not configured - AI features will be disabled',
-        critical: false
+        critical: false,
       };
     }
 
@@ -181,17 +180,17 @@ class ProductionSetupChecker {
         name: 'API Key Format',
         status: 'FAIL',
         message: 'OPENAI_API_KEY does not appear to be valid (should start with "sk-")',
-        critical: false
+        critical: false,
       };
     }
 
     try {
       const response = await fetch('https://api.openai.com/v1/models', {
         headers: {
-          'Authorization': `Bearer ${apiKey}`,
-          'User-Agent': 'AIGlossaryPro/1.0'
+          Authorization: `Bearer ${apiKey}`,
+          'User-Agent': 'AIGlossaryPro/1.0',
         },
-        signal: AbortSignal.timeout(10000)
+        signal: AbortSignal.timeout(10000),
       });
 
       if (response.ok) {
@@ -200,7 +199,7 @@ class ProductionSetupChecker {
           name: 'API Test',
           status: 'PASS',
           message: 'OpenAI API key is valid',
-          critical: false
+          critical: false,
         };
       } else {
         return {
@@ -208,7 +207,7 @@ class ProductionSetupChecker {
           name: 'API Test',
           status: 'FAIL',
           message: `OpenAI API test failed: ${response.status} ${response.statusText}`,
-          critical: false
+          critical: false,
         };
       }
     } catch (error) {
@@ -217,21 +216,21 @@ class ProductionSetupChecker {
         name: 'API Test',
         status: 'WARN',
         message: `OpenAI API test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        critical: false
+        critical: false,
       };
     }
   }
 
   private async testSentryDSN(): Promise<ValidationResult> {
     const sentryDsn = process.env.SENTRY_DSN;
-    
+
     if (!sentryDsn) {
       return {
         category: 'Sentry',
         name: 'DSN Configuration',
         status: 'WARN',
         message: 'SENTRY_DSN not configured - error tracking will be disabled',
-        critical: false
+        critical: false,
       };
     }
 
@@ -243,7 +242,7 @@ class ProductionSetupChecker {
           name: 'DSN Format',
           status: 'WARN',
           message: 'SENTRY_DSN does not appear to be a valid Sentry DSN',
-          critical: false
+          critical: false,
         };
       }
 
@@ -252,7 +251,7 @@ class ProductionSetupChecker {
         name: 'DSN Format',
         status: 'PASS',
         message: 'Sentry DSN format is valid',
-        critical: false
+        critical: false,
       };
     } catch (error) {
       return {
@@ -260,26 +259,26 @@ class ProductionSetupChecker {
         name: 'DSN Format',
         status: 'FAIL',
         message: `Invalid Sentry DSN format: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        critical: false
+        critical: false,
       };
     }
   }
 
   private async testPostHogConfiguration(): Promise<ValidationResult> {
-    const postHogKey = process.env.POSTHOG_KEY;
-    
+    const postHogKey = process.env.VITE_POSTHOG_KEY;
+
     if (!postHogKey) {
       return {
         category: 'PostHog',
         name: 'API Key',
         status: 'WARN',
-        message: 'POSTHOG_KEY not configured - analytics will be disabled',
-        critical: false
+        message: 'VITE_POSTHOG_KEY not configured - analytics will be disabled',
+        critical: false,
       };
     }
 
     const postHogHost = process.env.POSTHOG_HOST || 'https://app.posthog.com';
-    
+
     try {
       const isReachable = await this.testHttpEndpoint(postHogHost);
       if (!isReachable) {
@@ -288,7 +287,7 @@ class ProductionSetupChecker {
           name: 'Host Reachability',
           status: 'WARN',
           message: `PostHog host ${postHogHost} is not reachable`,
-          critical: false
+          critical: false,
         };
       }
 
@@ -297,7 +296,7 @@ class ProductionSetupChecker {
         name: 'Configuration',
         status: 'PASS',
         message: 'PostHog configuration is valid',
-        critical: false
+        critical: false,
       };
     } catch (error) {
       return {
@@ -305,7 +304,7 @@ class ProductionSetupChecker {
         name: 'Configuration',
         status: 'WARN',
         message: `PostHog configuration test failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        critical: false
+        critical: false,
       };
     }
   }
@@ -315,21 +314,21 @@ class ProductionSetupChecker {
       { name: 'NODE_ENV', critical: true },
       { name: 'DATABASE_URL', critical: true },
       { name: 'SESSION_SECRET', critical: true },
-      { name: 'PORT', critical: false }
+      { name: 'PORT', critical: false },
     ];
 
     const results: ValidationResult[] = [];
 
     for (const variable of requiredVars) {
       const value = process.env[variable.name];
-      
+
       if (!value) {
         results.push({
           category: 'Environment',
           name: variable.name,
           status: 'FAIL',
           message: `Required environment variable ${variable.name} is not set`,
-          critical: variable.critical
+          critical: variable.critical,
         });
       } else {
         // Additional validation for specific variables
@@ -339,7 +338,7 @@ class ProductionSetupChecker {
             name: variable.name,
             status: 'WARN',
             message: `NODE_ENV is set to "${value}" - should be "production" for production deployment`,
-            critical: false
+            critical: false,
           });
         } else if (variable.name === 'SESSION_SECRET' && value.length < 32) {
           results.push({
@@ -347,7 +346,7 @@ class ProductionSetupChecker {
             name: variable.name,
             status: 'WARN',
             message: 'SESSION_SECRET should be at least 32 characters long for security',
-            critical: false
+            critical: false,
           });
         } else {
           results.push({
@@ -355,7 +354,7 @@ class ProductionSetupChecker {
             name: variable.name,
             status: 'PASS',
             message: `${variable.name} is configured`,
-            critical: variable.critical
+            critical: variable.critical,
           });
         }
       }
@@ -367,28 +366,28 @@ class ProductionSetupChecker {
   private async checkSSLConfiguration(): Promise<ValidationResult> {
     const sslCertPath = process.env.SSL_CERT_PATH;
     const sslKeyPath = process.env.SSL_KEY_PATH;
-    
+
     if (!sslCertPath || !sslKeyPath) {
       return {
         category: 'SSL',
         name: 'Certificate Configuration',
         status: 'WARN',
         message: 'SSL certificate paths not configured - ensure reverse proxy handles SSL',
-        critical: false
+        critical: false,
       };
     }
 
     try {
       const certExists = fs.existsSync(sslCertPath);
       const keyExists = fs.existsSync(sslKeyPath);
-      
+
       if (!certExists || !keyExists) {
         return {
           category: 'SSL',
           name: 'Certificate Files',
           status: 'FAIL',
           message: 'SSL certificate or key file not found',
-          critical: false
+          critical: false,
         };
       }
 
@@ -397,7 +396,7 @@ class ProductionSetupChecker {
         name: 'Certificate Files',
         status: 'PASS',
         message: 'SSL certificate and key files are present',
-        critical: false
+        critical: false,
       };
     } catch (error) {
       return {
@@ -405,21 +404,21 @@ class ProductionSetupChecker {
         name: 'Certificate Files',
         status: 'FAIL',
         message: `SSL configuration check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-        critical: false
+        critical: false,
       };
     }
   }
 
   private async checkCORSConfiguration(): Promise<ValidationResult> {
     const corsOrigin = process.env.CORS_ORIGIN;
-    
+
     if (!corsOrigin) {
       return {
         category: 'CORS',
         name: 'Origin Configuration',
         status: 'WARN',
         message: 'CORS_ORIGIN not configured - may cause cross-origin issues',
-        critical: false
+        critical: false,
       };
     }
 
@@ -430,29 +429,29 @@ class ProductionSetupChecker {
         name: 'Origin Configuration',
         status: 'PASS',
         message: 'CORS origin is configured with valid URL',
-        critical: false
+        critical: false,
       };
-    } catch (error) {
+    } catch (_error) {
       return {
         category: 'CORS',
         name: 'Origin Configuration',
         status: 'FAIL',
         message: 'CORS_ORIGIN is not a valid URL',
-        critical: false
+        critical: false,
       };
     }
   }
 
   private async checkGumroadConfiguration(): Promise<ValidationResult> {
     const webhookSecret = process.env.GUMROAD_WEBHOOK_SECRET;
-    
+
     if (!webhookSecret) {
       return {
         category: 'Gumroad',
         name: 'Webhook Secret',
         status: 'WARN',
         message: 'GUMROAD_WEBHOOK_SECRET not configured - payment webhooks will not work',
-        critical: false
+        critical: false,
       };
     }
 
@@ -462,7 +461,7 @@ class ProductionSetupChecker {
         name: 'Webhook Secret',
         status: 'WARN',
         message: 'GUMROAD_WEBHOOK_SECRET should be at least 16 characters long',
-        critical: false
+        critical: false,
       };
     }
 
@@ -471,7 +470,121 @@ class ProductionSetupChecker {
       name: 'Webhook Secret',
       status: 'PASS',
       message: 'Gumroad webhook secret is configured',
-      critical: false
+      critical: false,
+    };
+  }
+
+  private async testGA4Configuration(): Promise<ValidationResult> {
+    const measurementId = process.env.VITE_GA4_MEASUREMENT_ID;
+    const apiSecret = process.env.VITE_GA4_API_SECRET;
+
+    if (!measurementId) {
+      return {
+        category: 'GA4',
+        name: 'Measurement ID',
+        status: 'WARN',
+        message: 'VITE_GA4_MEASUREMENT_ID not configured - Google Analytics will be disabled',
+        critical: false,
+      };
+    }
+
+    if (!measurementId.startsWith('G-')) {
+      return {
+        category: 'GA4',
+        name: 'Measurement ID Format',
+        status: 'WARN',
+        message: 'VITE_GA4_MEASUREMENT_ID should start with "G-"',
+        critical: false,
+      };
+    }
+
+    if (!apiSecret) {
+      return {
+        category: 'GA4',
+        name: 'API Secret',
+        status: 'WARN',
+        message: 'VITE_GA4_API_SECRET not configured - server-side tracking will be disabled',
+        critical: false,
+      };
+    }
+
+    return {
+      category: 'GA4',
+      name: 'Configuration',
+      status: 'PASS',
+      message: 'GA4 configuration is valid',
+      critical: false,
+    };
+  }
+
+  private async testEmailConfiguration(): Promise<ValidationResult> {
+    const emailEnabled = process.env.EMAIL_ENABLED;
+    const emailFrom = process.env.EMAIL_FROM;
+    const emailService = process.env.EMAIL_SERVICE;
+
+    if (!emailEnabled || emailEnabled !== 'true') {
+      return {
+        category: 'Email',
+        name: 'Service Status',
+        status: 'WARN',
+        message: 'EMAIL_ENABLED not set to true - email functionality will be disabled',
+        critical: false,
+      };
+    }
+
+    if (!emailFrom) {
+      return {
+        category: 'Email',
+        name: 'From Address',
+        status: 'FAIL',
+        message: 'EMAIL_FROM not configured - required for email functionality',
+        critical: false,
+      };
+    }
+
+    // Check service-specific configuration
+    const service = emailService?.toLowerCase() || 'smtp';
+
+    switch (service) {
+      case 'gmail': {
+        const gmailUser = process.env.EMAIL_USER;
+        const gmailPass = process.env.EMAIL_APP_PASSWORD;
+
+        if (!gmailUser || !gmailPass) {
+          return {
+            category: 'Email',
+            name: 'Gmail Configuration',
+            status: 'FAIL',
+            message: 'Gmail service requires EMAIL_USER and EMAIL_APP_PASSWORD',
+            critical: false,
+          };
+        }
+        break;
+      }
+      default: {
+        const smtpHost = process.env.SMTP_HOST;
+        const smtpUser = process.env.SMTP_USER;
+        const smtpPass = process.env.SMTP_PASSWORD;
+
+        if (!smtpHost || !smtpUser || !smtpPass) {
+          return {
+            category: 'Email',
+            name: 'SMTP Configuration',
+            status: 'FAIL',
+            message: 'SMTP service requires SMTP_HOST, SMTP_USER, and SMTP_PASSWORD',
+            critical: false,
+          };
+        }
+        break;
+      }
+    }
+
+    return {
+      category: 'Email',
+      name: 'Configuration',
+      status: 'PASS',
+      message: `Email service (${service}) is properly configured`,
+      critical: false,
     };
   }
 
@@ -481,14 +594,14 @@ class ProductionSetupChecker {
     // Check rate limiting configuration
     const rateLimitWindow = process.env.RATE_LIMIT_WINDOW_MS;
     const rateLimitMax = process.env.RATE_LIMIT_MAX_REQUESTS;
-    
+
     if (!rateLimitWindow || !rateLimitMax) {
       results.push({
         category: 'Security',
         name: 'Rate Limiting',
         status: 'WARN',
         message: 'Rate limiting configuration not found - using defaults',
-        critical: false
+        critical: false,
       });
     } else {
       results.push({
@@ -496,7 +609,7 @@ class ProductionSetupChecker {
         name: 'Rate Limiting',
         status: 'PASS',
         message: 'Rate limiting is configured',
-        critical: false
+        critical: false,
       });
     }
 
@@ -508,7 +621,7 @@ class ProductionSetupChecker {
         name: 'File Upload Limits',
         status: 'WARN',
         message: 'MAX_FILE_SIZE not configured - using default',
-        critical: false
+        critical: false,
       });
     } else {
       results.push({
@@ -516,7 +629,7 @@ class ProductionSetupChecker {
         name: 'File Upload Limits',
         status: 'PASS',
         message: 'File upload limits are configured',
-        critical: false
+        critical: false,
       });
     }
 
@@ -525,7 +638,7 @@ class ProductionSetupChecker {
 
   private async runAllChecks(): Promise<void> {
     this.log('🔍 Starting Production Environment Validation', 'info');
-    this.log('=' .repeat(50), 'info');
+    this.log('='.repeat(50), 'info');
 
     const checks: ConfigCheck[] = [
       {
@@ -535,63 +648,75 @@ class ProductionSetupChecker {
         check: async () => {
           const results = await this.checkEnvironmentVariables();
           this.results.push(...results);
-          const failures = results.filter(r => r.status === 'FAIL').length;
+          const failures = results.filter((r) => r.status === 'FAIL').length;
           return {
             category: 'Environment',
             name: 'Environment Variables',
             status: failures > 0 ? 'FAIL' : 'PASS',
             message: `${results.length} variables checked, ${failures} failures`,
-            critical: true
+            critical: true,
           };
-        }
+        },
       },
       {
         name: 'Database Connection',
         category: 'Database',
         critical: true,
-        check: () => this.testDatabaseConnection()
+        check: () => this.testDatabaseConnection(),
       },
       {
         name: 'Redis Connection',
         category: 'Redis',
         critical: false,
-        check: () => this.testRedisConnection()
+        check: () => this.testRedisConnection(),
       },
       {
         name: 'OpenAI API',
         category: 'OpenAI',
         critical: false,
-        check: () => this.testOpenAIAPI()
+        check: () => this.testOpenAIAPI(),
       },
       {
         name: 'Sentry Configuration',
         category: 'Sentry',
         critical: false,
-        check: () => this.testSentryDSN()
+        check: () => this.testSentryDSN(),
       },
       {
         name: 'PostHog Configuration',
         category: 'PostHog',
         critical: false,
-        check: () => this.testPostHogConfiguration()
+        check: () => this.testPostHogConfiguration(),
+      },
+      {
+        name: 'GA4 Configuration',
+        category: 'GA4',
+        critical: false,
+        check: () => this.testGA4Configuration(),
+      },
+      {
+        name: 'Email Configuration',
+        category: 'Email',
+        critical: false,
+        check: () => this.testEmailConfiguration(),
       },
       {
         name: 'SSL Configuration',
         category: 'SSL',
         critical: false,
-        check: () => this.checkSSLConfiguration()
+        check: () => this.checkSSLConfiguration(),
       },
       {
         name: 'CORS Configuration',
         category: 'CORS',
         critical: false,
-        check: () => this.checkCORSConfiguration()
+        check: () => this.checkCORSConfiguration(),
       },
       {
         name: 'Gumroad Configuration',
         category: 'Gumroad',
         critical: false,
-        check: () => this.checkGumroadConfiguration()
+        check: () => this.checkGumroadConfiguration(),
       },
       {
         name: 'Security Configuration',
@@ -605,23 +730,23 @@ class ProductionSetupChecker {
             name: 'Security Configuration',
             status: 'PASS',
             message: `${results.length} security checks completed`,
-            critical: false
+            critical: false,
           };
-        }
-      }
+        },
+      },
     ];
 
     for (const check of checks) {
       this.log(`\n🔧 Checking ${check.name}...`, 'info');
-      
+
       try {
         const result = await check.check();
         this.results.push(result);
-        
-        const status = result.status === 'PASS' ? 'success' : 
-                      result.status === 'WARN' ? 'warn' : 'error';
+
+        const status =
+          result.status === 'PASS' ? 'success' : result.status === 'WARN' ? 'warn' : 'error';
         this.log(`  ${this.getStatusIcon(result.status)} ${result.message}`, status);
-        
+
         if (result.status === 'FAIL' && result.critical) {
           this.criticalFailures++;
         } else if (result.status === 'WARN') {
@@ -633,11 +758,11 @@ class ProductionSetupChecker {
           name: check.name,
           status: 'FAIL',
           message: `Check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-          critical: check.critical
+          critical: check.critical,
         };
         this.results.push(errorResult);
         this.log(`  ❌ ${errorResult.message}`, 'error');
-        
+
         if (check.critical) {
           this.criticalFailures++;
         }
@@ -647,41 +772,49 @@ class ProductionSetupChecker {
 
   private getStatusIcon(status: string): string {
     switch (status) {
-      case 'PASS': return '✅';
-      case 'WARN': return '⚠️';
-      case 'FAIL': return '❌';
-      case 'SKIP': return '⏭️';
-      default: return '❓';
+      case 'PASS':
+        return '✅';
+      case 'WARN':
+        return '⚠️';
+      case 'FAIL':
+        return '❌';
+      case 'SKIP':
+        return '⏭️';
+      default:
+        return '❓';
     }
   }
 
   private generateReport(): void {
-    this.log('\n' + '='.repeat(50), 'info');
+    this.log(`\n${'='.repeat(50)}`, 'info');
     this.log('📊 PRODUCTION SETUP VALIDATION REPORT', 'info');
     this.log('='.repeat(50), 'info');
 
     // Group results by category
-    const categories = [...new Set(this.results.map(r => r.category))];
-    
+    const categories = [...new Set(this.results.map((r) => r.category))];
+
     for (const category of categories) {
-      const categoryResults = this.results.filter(r => r.category === category);
+      const categoryResults = this.results.filter((r) => r.category === category);
       this.log(`\n📁 ${category}:`, 'info');
-      
+
       for (const result of categoryResults) {
-        const status = result.status === 'PASS' ? 'success' : 
-                      result.status === 'WARN' ? 'warn' : 'error';
-        this.log(`  ${this.getStatusIcon(result.status)} ${result.name}: ${result.message}`, status);
+        const status =
+          result.status === 'PASS' ? 'success' : result.status === 'WARN' ? 'warn' : 'error';
+        this.log(
+          `  ${this.getStatusIcon(result.status)} ${result.name}: ${result.message}`,
+          status
+        );
       }
     }
 
     // Summary
     const totalChecks = this.results.length;
-    const passed = this.results.filter(r => r.status === 'PASS').length;
-    const failed = this.results.filter(r => r.status === 'FAIL').length;
-    const warnings = this.results.filter(r => r.status === 'WARN').length;
-    const skipped = this.results.filter(r => r.status === 'SKIP').length;
+    const passed = this.results.filter((r) => r.status === 'PASS').length;
+    const failed = this.results.filter((r) => r.status === 'FAIL').length;
+    const warnings = this.results.filter((r) => r.status === 'WARN').length;
+    const skipped = this.results.filter((r) => r.status === 'SKIP').length;
 
-    this.log('\n' + '='.repeat(50), 'info');
+    this.log(`\n${'='.repeat(50)}`, 'info');
     this.log('📈 SUMMARY', 'info');
     this.log('='.repeat(50), 'info');
     this.log(`Total Checks: ${totalChecks}`, 'info');
@@ -692,7 +825,10 @@ class ProductionSetupChecker {
 
     if (this.criticalFailures > 0) {
       this.log(`\n🚨 CRITICAL FAILURES: ${this.criticalFailures}`, 'error');
-      this.log('❌ Production deployment should NOT proceed until critical issues are resolved!', 'error');
+      this.log(
+        '❌ Production deployment should NOT proceed until critical issues are resolved!',
+        'error'
+      );
     } else if (warnings > 0) {
       this.log(`\n⚠️  WARNINGS: ${warnings}`, 'warn');
       this.log('✅ Production deployment can proceed, but consider addressing warnings', 'warn');
@@ -706,11 +842,14 @@ class ProductionSetupChecker {
     try {
       await this.runAllChecks();
       this.generateReport();
-      
+
       // Exit with appropriate code
       process.exit(this.criticalFailures > 0 ? 1 : 0);
     } catch (error) {
-      this.log(`\n🚨 Setup checker failed: ${error instanceof Error ? error.message : 'Unknown error'}`, 'error');
+      this.log(
+        `\n🚨 Setup checker failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        'error'
+      );
       process.exit(1);
     }
   }

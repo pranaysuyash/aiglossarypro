@@ -1,11 +1,11 @@
+import { AlertCircle, CheckCircle, Loader2, Mail } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { api } from '../lib/api';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
-import { Loader2, CheckCircle, AlertCircle, Mail } from 'lucide-react';
-import { api } from '../lib/api';
+import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Input } from './ui/input';
 
 interface PurchaseVerificationProps {
   onVerified?: () => void;
@@ -31,7 +31,7 @@ export function PurchaseVerification({ onVerified, className = '' }: PurchaseVer
 
   const handleVerify = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!email.trim()) {
       setError('Please enter your email address');
       return;
@@ -48,19 +48,19 @@ export function PurchaseVerification({ onVerified, className = '' }: PurchaseVer
 
     try {
       const response = await api.post('/gumroad/verify-purchase', { email: email.trim() });
-      
+
       if (response.data.success) {
         setResult({
           success: true,
           message: response.data.message,
           user: response.data.user,
         });
-        
+
         // Call onVerified callback if provided
         if (onVerified) {
           onVerified();
         }
-        
+
         // Refresh the page after a short delay to update the user session
         setTimeout(() => {
           window.location.reload();
@@ -74,7 +74,7 @@ export function PurchaseVerification({ onVerified, className = '' }: PurchaseVer
     } catch (err: any) {
       const errorMessage = err.response?.data?.error || 'Failed to verify purchase';
       setError(errorMessage);
-      
+
       if (err.response?.status === 404) {
         setResult({
           success: false,
@@ -157,9 +157,7 @@ export function PurchaseVerification({ onVerified, className = '' }: PurchaseVer
         {error && (
           <Alert className="border-red-200 bg-red-50">
             <AlertCircle className="h-4 w-4 text-red-600" />
-            <AlertDescription className="text-red-800">
-              {error}
-            </AlertDescription>
+            <AlertDescription className="text-red-800">{error}</AlertDescription>
           </Alert>
         )}
 
@@ -185,11 +183,7 @@ export function PurchaseVerification({ onVerified, className = '' }: PurchaseVer
             </div>
 
             <div className="flex gap-2">
-              <Button 
-                type="submit" 
-                disabled={isVerifying || !email.trim()}
-                className="flex-1"
-              >
+              <Button type="submit" disabled={isVerifying || !email.trim()} className="flex-1">
                 {isVerifying ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -199,14 +193,9 @@ export function PurchaseVerification({ onVerified, className = '' }: PurchaseVer
                   'Verify Purchase'
                 )}
               </Button>
-              
+
               {(result || error) && (
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={resetForm}
-                  disabled={isVerifying}
-                >
+                <Button type="button" variant="outline" onClick={resetForm} disabled={isVerifying}>
                   Try Again
                 </Button>
               )}
@@ -224,9 +213,7 @@ export function PurchaseVerification({ onVerified, className = '' }: PurchaseVer
             <li>Make sure you're using the same email address</li>
             <li>Wait a few minutes if you just completed the purchase</li>
           </ul>
-          <p className="mt-2">
-            Need help? Contact support with your Gumroad order ID.
-          </p>
+          <p className="mt-2">Need help? Contact support with your Gumroad order ID.</p>
         </div>
       </CardContent>
     </Card>

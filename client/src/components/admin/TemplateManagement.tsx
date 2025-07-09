@@ -1,33 +1,48 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  AlertCircle,
+  Brain,
+  Edit,
+  FileText,
+  Plus,
+  RefreshCw,
+  Save,
+  Sparkles,
+  Target,
+  TestTube,
+  Trash2,
+} from 'lucide-react';
+import { useState } from 'react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Badge } from '@/components/ui/badge';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { 
-  FileText, 
-  Plus, 
-  Edit, 
-  Trash2, 
-  Eye, 
-  Copy,
-  Save,
-  RefreshCw,
-  TestTube,
-  CheckCircle,
-  AlertCircle,
-  Sparkles,
-  Brain,
-  Target,
-  Settings
-} from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
 interface PromptTemplate {
@@ -68,7 +83,7 @@ interface TestResult {
 
 const SECTION_TYPES = [
   'definition_overview',
-  'key_concepts', 
+  'key_concepts',
   'basic_examples',
   'advantages',
   'limitations',
@@ -76,32 +91,32 @@ const SECTION_TYPES = [
   'real_world_applications',
   'implementation_basics',
   'best_practices',
-  'common_mistakes'
+  'common_mistakes',
 ];
 
 const COMPLEXITY_LEVELS = [
   { value: 'simple', label: 'Simple', description: 'Basic content, 60% of columns' },
   { value: 'moderate', label: 'Moderate', description: 'Balanced content, 30% of columns' },
-  { value: 'complex', label: 'Complex', description: 'Complex reasoning, 10% of columns' }
+  { value: 'complex', label: 'Complex', description: 'Complex reasoning, 10% of columns' },
 ];
 
 const RECOMMENDED_MODELS = [
   { value: 'gpt-4.1-nano', label: 'GPT-4.1 Nano', cost: '$0.20/1M', use: 'Simple content' },
   { value: 'gpt-4.1-mini', label: 'GPT-4.1 Mini', cost: '$0.80/1M', use: 'Balanced content' },
-  { value: 'o4-mini', label: 'O4 Mini', cost: '$2.20/1M', use: 'Complex reasoning' }
+  { value: 'o4-mini', label: 'O4 Mini', cost: '$2.20/1M', use: 'Complex reasoning' },
 ];
 
 export function TemplateManagement() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [selectedTemplate, setSelectedTemplate] = useState<PromptTemplate | null>(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [_isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isTestDialogOpen, setIsTestDialogOpen] = useState(false);
   const [testTerm, setTestTerm] = useState('');
   const [testResult, setTestResult] = useState<TestResult | null>(null);
-  
+
   // Form state for creating/editing templates
   const [formData, setFormData] = useState({
     name: '',
@@ -112,7 +127,7 @@ export function TemplateManagement() {
     evaluativePrompt: '',
     improvementPrompt: '',
     estimatedTokens: 500,
-    recommendedModel: 'gpt-4.1-nano'
+    recommendedModel: 'gpt-4.1-nano',
   });
 
   // Query for templates
@@ -122,7 +137,7 @@ export function TemplateManagement() {
       const response = await fetch('/api/admin/templates');
       if (!response.ok) throw new Error('Failed to fetch templates');
       return response.json();
-    }
+    },
   });
 
   // Mutation for creating template
@@ -131,7 +146,7 @@ export function TemplateManagement() {
       const response = await fetch('/api/admin/templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(templateData)
+        body: JSON.stringify(templateData),
       });
       if (!response.ok) throw new Error('Failed to create template');
       return response.json();
@@ -143,12 +158,12 @@ export function TemplateManagement() {
       toast({ title: 'Success', description: 'Template created successfully' });
     },
     onError: (error) => {
-      toast({ 
-        title: 'Error', 
+      toast({
+        title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to create template',
-        variant: 'destructive' 
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Mutation for updating template
@@ -157,7 +172,7 @@ export function TemplateManagement() {
       const response = await fetch(`/api/admin/templates/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(templateData)
+        body: JSON.stringify(templateData),
       });
       if (!response.ok) throw new Error('Failed to update template');
       return response.json();
@@ -167,14 +182,14 @@ export function TemplateManagement() {
       setIsEditDialogOpen(false);
       resetForm();
       toast({ title: 'Success', description: 'Template updated successfully' });
-    }
+    },
   });
 
   // Mutation for deleting template
   const deleteTemplateMutation = useMutation({
     mutationFn: async (id: string) => {
       const response = await fetch(`/api/admin/templates/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
       });
       if (!response.ok) throw new Error('Failed to delete template');
       return response.json();
@@ -182,7 +197,7 @@ export function TemplateManagement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['prompt-templates'] });
       toast({ title: 'Success', description: 'Template deleted successfully' });
-    }
+    },
   });
 
   // Mutation for testing template
@@ -191,7 +206,7 @@ export function TemplateManagement() {
       const response = await fetch('/api/admin/templates/test', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ templateId, termName })
+        body: JSON.stringify({ templateId, termName }),
       });
       if (!response.ok) throw new Error('Failed to test template');
       return response.json();
@@ -201,13 +216,13 @@ export function TemplateManagement() {
       if (data.success) {
         toast({ title: 'Test Completed', description: 'Template test completed successfully' });
       } else {
-        toast({ 
-          title: 'Test Failed', 
+        toast({
+          title: 'Test Failed',
           description: data.error || 'Template test failed',
-          variant: 'destructive' 
+          variant: 'destructive',
         });
       }
-    }
+    },
   });
 
   const resetForm = () => {
@@ -220,7 +235,7 @@ export function TemplateManagement() {
       evaluativePrompt: '',
       improvementPrompt: '',
       estimatedTokens: 500,
-      recommendedModel: 'gpt-4.1-nano'
+      recommendedModel: 'gpt-4.1-nano',
     });
     setSelectedTemplate(null);
   };
@@ -230,7 +245,7 @@ export function TemplateManagement() {
       toast({
         title: 'Missing Information',
         description: 'Please fill in all required fields',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -238,12 +253,12 @@ export function TemplateManagement() {
     createTemplateMutation.mutate(formData);
   };
 
-  const handleUpdateTemplate = () => {
+  const _handleUpdateTemplate = () => {
     if (!selectedTemplate) return;
-    
+
     updateTemplateMutation.mutate({
       id: selectedTemplate.id,
-      ...formData
+      ...formData,
     });
   };
 
@@ -258,7 +273,7 @@ export function TemplateManagement() {
       evaluativePrompt: template.evaluativePrompt,
       improvementPrompt: template.improvementPrompt,
       estimatedTokens: template.metadata.estimatedTokens,
-      recommendedModel: template.metadata.recommendedModel
+      recommendedModel: template.metadata.recommendedModel,
     });
     setIsEditDialogOpen(true);
   };
@@ -275,32 +290,40 @@ export function TemplateManagement() {
       toast({
         title: 'Missing Information',
         description: 'Please select a template and enter a test term',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
 
     testTemplateMutation.mutate({
       templateId: selectedTemplate.id,
-      termName: testTerm
+      termName: testTerm,
     });
   };
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {
-      case 'simple': return 'bg-green-100 text-green-800';
-      case 'moderate': return 'bg-yellow-100 text-yellow-800';
-      case 'complex': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'simple':
+        return 'bg-green-100 text-green-800';
+      case 'moderate':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'complex':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'generation': return <Brain className="w-4 h-4" />;
-      case 'evaluation': return <Target className="w-4 h-4" />;
-      case 'improvement': return <Sparkles className="w-4 h-4" />;
-      default: return <FileText className="w-4 h-4" />;
+      case 'generation':
+        return <Brain className="w-4 h-4" />;
+      case 'evaluation':
+        return <Target className="w-4 h-4" />;
+      case 'improvement':
+        return <Sparkles className="w-4 h-4" />;
+      default:
+        return <FileText className="w-4 h-4" />;
     }
   };
 
@@ -376,9 +399,7 @@ export function TemplateManagement() {
                           </div>
                         </TableCell>
                         <TableCell>
-                          <Badge variant="outline">
-                            {template.sectionType.replace('_', ' ')}
-                          </Badge>
+                          <Badge variant="outline">{template.sectionType.replace('_', ' ')}</Badge>
                         </TableCell>
                         <TableCell>
                           <Badge className={getComplexityColor(template.complexity)}>
@@ -392,7 +413,9 @@ export function TemplateManagement() {
                           <div className="text-sm">
                             <div>{template.metadata.usageCount || 0} uses</div>
                             {template.metadata.isDefault && (
-                              <Badge variant="secondary" className="text-xs">Default</Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                Default
+                              </Badge>
                             )}
                           </div>
                         </TableCell>
@@ -439,9 +462,7 @@ export function TemplateManagement() {
                 <FileText className="h-4 w-4 text-muted-foreground" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">
-                  {templatesData?.data?.length || 0}
-                </div>
+                <div className="text-2xl font-bold">{templatesData?.data?.length || 0}</div>
               </CardContent>
             </Card>
 
@@ -452,7 +473,8 @@ export function TemplateManagement() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-green-600">
-                  {templatesData?.data?.filter((t: PromptTemplate) => t.complexity === 'simple').length || 0}
+                  {templatesData?.data?.filter((t: PromptTemplate) => t.complexity === 'simple')
+                    .length || 0}
                 </div>
               </CardContent>
             </Card>
@@ -464,7 +486,8 @@ export function TemplateManagement() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-yellow-600">
-                  {templatesData?.data?.filter((t: PromptTemplate) => t.complexity === 'moderate').length || 0}
+                  {templatesData?.data?.filter((t: PromptTemplate) => t.complexity === 'moderate')
+                    .length || 0}
                 </div>
               </CardContent>
             </Card>
@@ -476,7 +499,8 @@ export function TemplateManagement() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold text-red-600">
-                  {templatesData?.data?.filter((t: PromptTemplate) => t.complexity === 'complex').length || 0}
+                  {templatesData?.data?.filter((t: PromptTemplate) => t.complexity === 'complex')
+                    .length || 0}
                 </div>
               </CardContent>
             </Card>
@@ -493,7 +517,7 @@ export function TemplateManagement() {
               Create a new prompt template for the Enhanced Content Generation System
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
               <div>
@@ -501,13 +525,18 @@ export function TemplateManagement() {
                 <Input
                   id="template-name"
                   value={formData.name}
-                  onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
                   placeholder="Enter template name..."
                 />
               </div>
               <div>
                 <Label htmlFor="section-type">Section Type</Label>
-                <Select value={formData.sectionType} onValueChange={(value) => setFormData(prev => ({ ...prev, sectionType: value }))}>
+                <Select
+                  value={formData.sectionType}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, sectionType: value }))
+                  }
+                >
                   <SelectTrigger id="section-type">
                     <SelectValue placeholder="Select section type..." />
                   </SelectTrigger>
@@ -527,7 +556,7 @@ export function TemplateManagement() {
               <Input
                 id="template-description"
                 value={formData.description}
-                onChange={(e) => setFormData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
                 placeholder="Enter template description..."
               />
             </div>
@@ -535,7 +564,12 @@ export function TemplateManagement() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <Label htmlFor="complexity">Complexity Level</Label>
-                <Select value={formData.complexity} onValueChange={(value: any) => setFormData(prev => ({ ...prev, complexity: value }))}>
+                <Select
+                  value={formData.complexity}
+                  onValueChange={(value: any) =>
+                    setFormData((prev) => ({ ...prev, complexity: value }))
+                  }
+                >
                   <SelectTrigger id="complexity">
                     <SelectValue />
                   </SelectTrigger>
@@ -553,7 +587,12 @@ export function TemplateManagement() {
               </div>
               <div>
                 <Label htmlFor="recommended-model">Recommended Model</Label>
-                <Select value={formData.recommendedModel} onValueChange={(value) => setFormData(prev => ({ ...prev, recommendedModel: value }))}>
+                <Select
+                  value={formData.recommendedModel}
+                  onValueChange={(value) =>
+                    setFormData((prev) => ({ ...prev, recommendedModel: value }))
+                  }
+                >
                   <SelectTrigger id="recommended-model">
                     <SelectValue />
                   </SelectTrigger>
@@ -562,7 +601,9 @@ export function TemplateManagement() {
                       <SelectItem key={model.value} value={model.value}>
                         <div>
                           <div>{model.label}</div>
-                          <div className="text-xs text-muted-foreground">{model.cost} • {model.use}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {model.cost} • {model.use}
+                          </div>
                         </div>
                       </SelectItem>
                     ))}
@@ -576,7 +617,9 @@ export function TemplateManagement() {
               <Textarea
                 id="generative-prompt"
                 value={formData.generativePrompt}
-                onChange={(e) => setFormData(prev => ({ ...prev, generativePrompt: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, generativePrompt: e.target.value }))
+                }
                 placeholder="Enter the generative prompt..."
                 className="min-h-[100px]"
               />
@@ -587,7 +630,9 @@ export function TemplateManagement() {
               <Textarea
                 id="evaluative-prompt"
                 value={formData.evaluativePrompt}
-                onChange={(e) => setFormData(prev => ({ ...prev, evaluativePrompt: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, evaluativePrompt: e.target.value }))
+                }
                 placeholder="Enter the evaluative prompt..."
                 className="min-h-[100px]"
               />
@@ -598,7 +643,9 @@ export function TemplateManagement() {
               <Textarea
                 id="improvement-prompt"
                 value={formData.improvementPrompt}
-                onChange={(e) => setFormData(prev => ({ ...prev, improvementPrompt: e.target.value }))}
+                onChange={(e) =>
+                  setFormData((prev) => ({ ...prev, improvementPrompt: e.target.value }))
+                }
                 placeholder="Enter the improvement prompt..."
                 className="min-h-[100px]"
               />
@@ -608,10 +655,7 @@ export function TemplateManagement() {
               <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
                 Cancel
               </Button>
-              <Button 
-                onClick={handleCreateTemplate}
-                disabled={createTemplateMutation.isPending}
-              >
+              <Button onClick={handleCreateTemplate} disabled={createTemplateMutation.isPending}>
                 {createTemplateMutation.isPending ? (
                   <>
                     <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
@@ -638,7 +682,7 @@ export function TemplateManagement() {
               Test the template with a sample term to see how it performs
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="space-y-4">
             <div>
               <Label htmlFor="test-term">Test Term</Label>
@@ -650,7 +694,7 @@ export function TemplateManagement() {
               />
             </div>
 
-            <Button 
+            <Button
               onClick={runTemplateTest}
               disabled={testTemplateMutation.isPending || !testTerm}
             >
@@ -674,7 +718,11 @@ export function TemplateManagement() {
                   <AlertDescription>
                     Test {testResult.success ? 'completed successfully' : 'failed'}
                     {testResult.metadata && (
-                      <span> • Cost: ${testResult.metadata.cost.toFixed(4)} • Time: {testResult.metadata.processingTime}ms</span>
+                      <span>
+                        {' '}
+                        • Cost: ${testResult.metadata.cost.toFixed(4)} • Time:{' '}
+                        {testResult.metadata.processingTime}ms
+                      </span>
                     )}
                   </AlertDescription>
                 </Alert>

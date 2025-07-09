@@ -1,15 +1,16 @@
 #!/usr/bin/env node
+
 /**
  * Optimized import script for large datasets
  * Usage: npm run import:optimized [file-path] [options]
  */
 
-import { optimizedImportFromFile } from "../optimizedBatchImporter";
-import { resolve } from "path";
+import { resolve } from 'node:path';
+import { optimizedImportFromFile } from '../optimizedBatchImporter';
 
 async function main() {
   const args = process.argv.slice(2);
-  
+
   if (args.length === 0) {
     console.log(`
 🚀 Optimized Data Import Tool
@@ -33,14 +34,14 @@ Examples:
   }
 
   const filePath = resolve(args[0]);
-  
+
   // Parse command line options
   const options: any = {};
-  
+
   for (let i = 1; i < args.length; i += 2) {
     const flag = args[i];
     const value = args[i + 1];
-    
+
     switch (flag) {
       case '--batch-size':
         options.batchSize = parseInt(value, 10);
@@ -75,7 +76,7 @@ Examples:
 
   try {
     const result = await optimizedImportFromFile(filePath, options);
-    
+
     if (result.success) {
       console.log(`\n✅ Import completed successfully!`);
       console.log(`📊 Summary:`);
@@ -86,12 +87,14 @@ Examples:
       console.log(`📈 Performance:`);
       console.log(`   📂 Categories/sec: ${result.performance.categoriesPerSecond.toFixed(1)}`);
       console.log(`   📄 Terms/sec: ${result.performance.termsPerSecond.toFixed(1)}`);
-      console.log(`💾 Memory used: ${Math.round(result.performance.memoryUsage.heapUsed / 1024 / 1024)}MB`);
-      
+      console.log(
+        `💾 Memory used: ${Math.round(result.performance.memoryUsage.heapUsed / 1024 / 1024)}MB`
+      );
+
       process.exit(0);
     } else {
       console.error(`❌ Import failed!`);
-      result.errors.forEach(error => console.error(`   ❌ ${error}`));
+      result.errors.forEach((error) => console.error(`   ❌ ${error}`));
       process.exit(1);
     }
   } catch (error) {

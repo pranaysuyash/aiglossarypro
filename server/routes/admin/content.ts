@@ -1,14 +1,14 @@
-import { Router, Request, Response, Express } from "express";
-import { enhancedStorage as storage } from "../../enhancedStorage";
-import { requireAdmin } from "../../middleware/adminAuth";
-import { ZodError } from "zod";
-import type { ApiResponse } from "../../../shared/types";
-import { errorLogger, ErrorCategory } from "../../middleware/errorHandler";
-import { log as logger } from "../../utils/logger";
-import { BULK_ACTIONS } from "../../constants";
-import { db } from "../../db";
-import { terms, categories } from "../../../shared/schema";
-import { eq } from "drizzle-orm";
+import { eq } from 'drizzle-orm';
+import { type Express, type Request, type Response, Router } from 'express';
+import { ZodError } from 'zod';
+import { categories, terms } from '../../../shared/schema';
+import type { ApiResponse } from '../../../shared/types';
+import { BULK_ACTIONS } from '../../constants';
+import { db } from '../../db';
+import { enhancedStorage as storage } from '../../enhancedStorage';
+import { requireAdmin } from '../../middleware/adminAuth';
+import { ErrorCategory, errorLogger } from '../../middleware/errorHandler';
+import { log as logger } from '../../utils/logger';
 
 const adminContentRouter = Router();
 
@@ -16,11 +16,11 @@ const adminContentRouter = Router();
 adminContentRouter.use(requireAdmin);
 
 // Get admin dashboard overview
-adminContentRouter.get("/dashboard", async (req: Request, res: Response<ApiResponse<any>>) => {
+adminContentRouter.get('/dashboard', async (req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const now = new Date();
-    const lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
-    const lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const _lastWeek = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const _lastMonth = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
 
     // Get counts using enhanced storage
     const adminStats = await storage.getAdminStats();
@@ -46,34 +46,34 @@ adminContentRouter.get("/dashboard", async (req: Request, res: Response<ApiRespo
           totalUsers: Number(userCount.count),
           pendingFeedback: Number((feedbackCount as any)?.count || 0),
           weeklyNewTerms: Number(weeklyGrowth.count),
-          monthlyNewTerms: Number(monthlyGrowth.count)
+          monthlyNewTerms: Number(monthlyGrowth.count),
         },
         recentActivity: {
           terms: recentTerms,
-          feedback: recentFeedback
-        }
-      }
+          feedback: recentFeedback,
+        },
+      },
     });
   } catch (error) {
     await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch dashboard data'
+      error: 'Failed to fetch dashboard data',
     });
   }
 });
 
 // Content management - List all terms with filters
-adminContentRouter.get("/terms", async (req: Request, res: Response<ApiResponse<any>>) => {
+adminContentRouter.get('/terms', async (req: Request, res: Response<ApiResponse<any>>) => {
   try {
-    const { 
-      search, 
-      categoryId, 
-      status, 
-      sortBy = 'updatedAt', 
+    const {
+      search,
+      categoryId,
+      status,
+      sortBy = 'updatedAt',
       sortOrder = 'desc',
       page = 1,
-      limit = 20 
+      limit = 20,
     } = req.query;
 
     const offset = (Number(page) - 1) * Number(limit);
@@ -85,7 +85,7 @@ adminContentRouter.get("/terms", async (req: Request, res: Response<ApiResponse<
       categoryId: categoryId ? String(categoryId) : undefined,
       searchTerm: search ? String(search) : undefined,
       sortBy: String(sortBy),
-      sortOrder: String(sortOrder) as 'asc' | 'desc'
+      sortOrder: String(sortOrder) as 'asc' | 'desc',
     });
 
     res.json({
@@ -96,21 +96,21 @@ adminContentRouter.get("/terms", async (req: Request, res: Response<ApiResponse<
           total: result.total,
           page: Number(page),
           limit: Number(limit),
-          totalPages: Math.ceil(result.total / Number(limit))
-        }
-      }
+          totalPages: Math.ceil(result.total / Number(limit)),
+        },
+      },
     });
   } catch (error) {
     await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch terms'
+      error: 'Failed to fetch terms',
     });
   }
 });
 
 // Create or update term
-adminContentRouter.post("/terms/:id?", async (req: Request, res: Response<ApiResponse<any>>) => {
+adminContentRouter.post('/terms/:id?', async (req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const { id } = req.params;
     const termData = req.body;
@@ -121,14 +121,14 @@ adminContentRouter.post("/terms/:id?", async (req: Request, res: Response<ApiRes
         .update(terms)
         .set({
           ...termData,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(terms.id, String(id)))
         .returning();
 
       res.json({
         success: true,
-        data: updatedTerm
+        data: updatedTerm,
       });
     } else {
       // Create new term
@@ -138,26 +138,26 @@ adminContentRouter.post("/terms/:id?", async (req: Request, res: Response<ApiRes
           ...termData,
           createdAt: new Date(),
           updatedAt: new Date(),
-          viewCount: 0
+          viewCount: 0,
         })
         .returning();
 
       res.json({
         success: true,
-        data: newTerm
+        data: newTerm,
       });
     }
   } catch (error) {
     await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
-      error: error instanceof ZodError ? JSON.stringify(error.errors) : 'Failed to save term'
+      error: error instanceof ZodError ? JSON.stringify(error.errors) : 'Failed to save term',
     });
   }
 });
 
 // Delete term
-adminContentRouter.delete("/terms/:id", async (req: Request, res: Response<ApiResponse<any>>) => {
+adminContentRouter.delete('/terms/:id', async (req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const { id } = req.params;
 
@@ -165,19 +165,19 @@ adminContentRouter.delete("/terms/:id", async (req: Request, res: Response<ApiRe
 
     res.json({
       success: true,
-      data: { message: 'Term deleted successfully' }
+      data: { message: 'Term deleted successfully' },
     });
   } catch (error) {
     await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
-      error: 'Failed to delete term'
+      error: 'Failed to delete term',
     });
   }
 });
 
 // Bulk operations
-adminContentRouter.post("/terms/bulk", async (req: Request, res: Response<ApiResponse<any>>) => {
+adminContentRouter.post('/terms/bulk', async (req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const { action, termIds, data } = req.body;
 
@@ -185,38 +185,38 @@ adminContentRouter.post("/terms/bulk", async (req: Request, res: Response<ApiRes
       case BULK_ACTIONS.DELETE:
         await storage.bulkDeleteTerms(termIds);
         break;
-      
+
       case BULK_ACTIONS.UPDATE_CATEGORY:
         await storage.bulkUpdateTermCategory(termIds, data.categoryId);
         break;
-      
+
       case BULK_ACTIONS.UPDATE_STATUS:
         // For future use when we have draft/published states
         await storage.bulkUpdateTermStatus(termIds, data.status);
         break;
-        
+
       default:
         return res.status(400).json({
           success: false,
-          error: `Invalid bulk action. Valid actions: ${Object.values(BULK_ACTIONS).join(', ')}`
+          error: `Invalid bulk action. Valid actions: ${Object.values(BULK_ACTIONS).join(', ')}`,
         });
     }
 
     res.json({
       success: true,
-      data: { message: `Bulk ${action} completed successfully` }
+      data: { message: `Bulk ${action} completed successfully` },
     });
   } catch (error) {
     await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
-      error: 'Failed to perform bulk operation'
+      error: 'Failed to perform bulk operation',
     });
   }
 });
 
 // Feedback moderation
-adminContentRouter.get("/feedback", async (req: Request, res: Response<ApiResponse<any>>) => {
+adminContentRouter.get('/feedback', async (req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const { status = 'pending', page = 1, limit = 20 } = req.query;
     const offset = (Number(page) - 1) * Number(limit);
@@ -234,130 +234,137 @@ adminContentRouter.get("/feedback", async (req: Request, res: Response<ApiRespon
           total: feedbackResult.total,
           page: Number(page),
           limit: Number(limit),
-          totalPages: Math.ceil(feedbackResult.total / Number(limit))
-        }
-      }
+          totalPages: Math.ceil(feedbackResult.total / Number(limit)),
+        },
+      },
     });
   } catch (error) {
     await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch feedback'
+      error: 'Failed to fetch feedback',
     });
   }
 });
 
 // Update feedback status
-adminContentRouter.patch("/feedback/:id", async (req: Request, res: Response<ApiResponse<any>>) => {
+adminContentRouter.patch('/feedback/:id', async (req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const { id } = req.params;
     const { status, adminNotes } = req.body;
 
     const updatedFeedback = await storage.updateFeedback(id, {
       status,
-      adminNotes
+      adminNotes,
     });
 
     res.json({
       success: true,
-      data: updatedFeedback
+      data: updatedFeedback,
     });
   } catch (error) {
     await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
-      error: 'Failed to update feedback'
+      error: 'Failed to update feedback',
     });
   }
 });
 
 // Category management
-adminContentRouter.get("/categories", async (req: Request, res: Response<ApiResponse<any>>) => {
+adminContentRouter.get('/categories', async (req: Request, res: Response<ApiResponse<any>>) => {
   try {
     const categoryList = await storage.getCategoriesWithStats();
 
     res.json({
       success: true,
-      data: categoryList
+      data: categoryList,
     });
   } catch (error) {
     await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch categories'
+      error: 'Failed to fetch categories',
     });
   }
 });
 
 // Create or update category
-adminContentRouter.post("/categories/:id?", async (req: Request, res: Response<ApiResponse<any>>) => {
-  try {
-    const { id } = req.params;
-    const categoryData = req.body;
+adminContentRouter.post(
+  '/categories/:id?',
+  async (req: Request, res: Response<ApiResponse<any>>) => {
+    try {
+      const { id } = req.params;
+      const categoryData = req.body;
 
-    if (id) {
-      const [updated] = await db
-        .update(categories)
-        .set(categoryData)
-        .where(eq(categories.id, String(id)))
-        .returning();
+      if (id) {
+        const [updated] = await db
+          .update(categories)
+          .set(categoryData)
+          .where(eq(categories.id, String(id)))
+          .returning();
 
-      res.json({
-        success: true,
-        data: updated
-      });
-    } else {
-      const [created] = await db
-        .insert(categories)
-        .values({
-          ...categoryData,
-          createdAt: new Date()
-        })
-        .returning();
+        res.json({
+          success: true,
+          data: updated,
+        });
+      } else {
+        const [created] = await db
+          .insert(categories)
+          .values({
+            ...categoryData,
+            createdAt: new Date(),
+          })
+          .returning();
 
-      res.json({
-        success: true,
-        data: created
+        res.json({
+          success: true,
+          data: created,
+        });
+      }
+    } catch (error) {
+      await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
+      res.status(500).json({
+        success: false,
+        error: 'Failed to save category',
       });
     }
-  } catch (error) {
-    await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
-    res.status(500).json({
-      success: false,
-      error: 'Failed to save category'
-    });
   }
-});
+);
 
 // Delete category
-adminContentRouter.delete("/categories/:id", async (req: Request, res: Response<ApiResponse<any>>) => {
-  try {
-    const { id } = req.params;
+adminContentRouter.delete(
+  '/categories/:id',
+  async (req: Request, res: Response<ApiResponse<any>>) => {
+    try {
+      const { id } = req.params;
 
-    // Check if category has terms
-    const categoryStats = await storage.getCategoryStats(String(id));
-    
-    if (categoryStats.termCount > 0) {
-      return res.status(400).json({
+      // Check if category has terms
+      const categoryStats = await storage.getCategoryStats(String(id));
+
+      if (categoryStats.termCount > 0) {
+        return res.status(400).json({
+          success: false,
+          error:
+            'Cannot delete category with existing terms. Please reassign or delete terms first.',
+        });
+      }
+
+      await storage.deleteCategory(String(id));
+
+      res.json({
+        success: true,
+        data: { message: 'Category deleted successfully' },
+      });
+    } catch (error) {
+      await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
+      res.status(500).json({
         success: false,
-        error: 'Cannot delete category with existing terms. Please reassign or delete terms first.'
+        error: 'Failed to delete category',
       });
     }
-
-    await storage.deleteCategory(String(id));
-
-    res.json({
-      success: true,
-      data: { message: 'Category deleted successfully' }
-    });
-  } catch (error) {
-    await errorLogger.logError(error, req, ErrorCategory.DATABASE, 'medium');
-    res.status(500).json({
-      success: false,
-      error: 'Failed to delete category'
-    });
   }
-});
+);
 
 // Register content management routes
 export function registerAdminContentRoutes(app: Express): void {
@@ -365,4 +372,4 @@ export function registerAdminContentRoutes(app: Express): void {
   logger.info('✅ Admin content management routes registered');
 }
 
-export { adminContentRouter }; 
+export { adminContentRouter };

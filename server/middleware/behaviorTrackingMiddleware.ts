@@ -1,7 +1,7 @@
-import type { Request, Response, NextFunction } from 'express';
+import crypto from 'node:crypto';
+import type { NextFunction, Request, Response } from 'express';
 import { personalizationService } from '../services/personalizationService';
 import { log as logger } from '../utils/logger';
-import crypto from 'crypto';
 
 interface TrackingContext {
   userId?: string;
@@ -28,16 +28,17 @@ export const behaviorTrackingMiddleware = (
   next: NextFunction
 ) => {
   req.startTime = Date.now();
-  
+
   // Generate or get session ID
-  const sessionId = req.session?.id || req.headers['x-session-id'] as string || generateSessionId();
-  
+  const sessionId =
+    req.session?.id || (req.headers['x-session-id'] as string) || generateSessionId();
+
   // Hash IP address for privacy
   const ipAddress = hashIP(req.ip || req.connection.remoteAddress || '');
-  
+
   // Extract user ID if authenticated
   const userId = (req as any).user?.claims?.sub;
-  
+
   // Build tracking context
   req.trackingContext = {
     userId,
@@ -47,7 +48,7 @@ export const behaviorTrackingMiddleware = (
     path: req.path,
     method: req.method,
     referrer: req.headers.referer,
-    timestamp: new Date()
+    timestamp: new Date(),
   };
 
   // Track page view for GET requests
@@ -57,7 +58,7 @@ export const behaviorTrackingMiddleware = (
 
   // Override res.json to track API responses
   const originalJson = res.json;
-  res.json = function(data: any) {
+  res.json = function (data: any) {
     if (userId && req.startTime) {
       const responseTime = Date.now() - req.startTime;
       trackAPIInteraction(req.trackingContext!, req.path, req.method, res.statusCode, responseTime);
@@ -91,11 +92,11 @@ export const trackUserAction = async (
         path: req.path,
         userAgent: req.trackingContext.userAgent,
         referrer: req.trackingContext.referrer,
-        sessionDuration: req.startTime ? Date.now() - req.startTime : 0
+        sessionDuration: req.startTime ? Date.now() - req.startTime : 0,
       },
       session_id: req.trackingContext.sessionId,
       user_agent: req.trackingContext.userAgent,
-      ip_address: req.trackingContext.ipAddress
+      ip_address: req.trackingContext.ipAddress,
     });
   } catch (error) {
     logger.error('Error tracking user action', { error, actionType, entityType, entityId });
@@ -110,11 +111,11 @@ export const enhancedBehaviorTracking = (options: {
   trackTimeSpent?: boolean;
   trackInteractions?: boolean;
 }) => {
-  return (req: BehaviorTrackingRequest, res: Response, next: NextFunction) => {
+  return (_req: BehaviorTrackingRequest, res: Response, next: NextFunction) => {
     // Add client-side tracking script injection for enhanced tracking
     if (options.trackScrollDepth || options.trackTimeSpent || options.trackInteractions) {
       const originalSend = res.send;
-      res.send = function(data: any) {
+      res.send = function (data: any) {
         if (typeof data === 'string' && data.includes('</body>')) {
           const trackingScript = generateTrackingScript(options);
           data = data.replace('</body>', `${trackingScript}</body>`);
@@ -129,17 +130,13 @@ export const enhancedBehaviorTracking = (options: {
 /**
  * Track page views
  */
-async function trackPageView(
-  context: TrackingContext,
-  path: string,
-  query: any
-) {
+async function trackPageView(context: TrackingContext, path: string, query: any) {
   if (!context.userId) return;
 
   try {
     // Determine entity type and ID from path
     const { entityType, entityId } = parsePathForEntity(path);
-    
+
     await personalizationService.trackBehaviorEvent({
       user_id: context.userId,
       event_type: 'page_view',
@@ -149,11 +146,11 @@ async function trackPageView(
         path,
         query,
         referrer: context.referrer,
-        timestamp: context.timestamp.toISOString()
+        timestamp: context.timestamp.toISOString(),
       },
       session_id: context.sessionId,
       user_agent: context.userAgent,
-      ip_address: context.ipAddress
+      ip_address: context.ipAddress,
     });
   } catch (error) {
     logger.error('Error tracking page view', { error, path });
@@ -174,7 +171,7 @@ async function trackAPIInteraction(
 
   try {
     const { entityType, entityId } = parsePathForEntity(path);
-    
+
     await personalizationService.trackBehaviorEvent({
       user_id: context.userId,
       event_type: 'api_interaction',
@@ -185,11 +182,11 @@ async function trackAPIInteraction(
         statusCode,
         responseTime,
         path,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
       session_id: context.sessionId,
       user_agent: context.userAgent,
-      ip_address: context.ipAddress
+      ip_address: context.ipAddress,
     });
   } catch (error) {
     logger.error('Error tracking API interaction', { error, path });
@@ -204,36 +201,36 @@ function parsePathForEntity(path: string): { entityType: string; entityId?: stri
   if (path.startsWith('/term/')) {
     return { entityType: 'term', entityId: path.split('/')[2] };
   }
-  
+
   // Category page: /category/:id
   if (path.startsWith('/category/')) {
     return { entityType: 'category', entityId: path.split('/')[2] };
   }
-  
+
   // Learning path: /learning-path/:id
   if (path.startsWith('/learning-path/')) {
     return { entityType: 'learning_path', entityId: path.split('/')[2] };
   }
-  
+
   // API endpoints
   if (path.startsWith('/api/terms/')) {
     return { entityType: 'term', entityId: path.split('/')[3] };
   }
-  
+
   if (path.startsWith('/api/categories/')) {
     return { entityType: 'category', entityId: path.split('/')[3] };
   }
-  
+
   // Search
   if (path.includes('/search')) {
     return { entityType: 'search' };
   }
-  
+
   // Home page
   if (path === '/' || path === '/home') {
     return { entityType: 'homepage' };
   }
-  
+
   // Default
   return { entityType: 'page' };
 }
@@ -249,7 +246,11 @@ function generateSessionId(): string {
  * Hash IP address for privacy
  */
 function hashIP(ip: string): string {
-  return crypto.createHash('sha256').update(ip + process.env.IP_SALT || 'default_salt').digest('hex').substring(0, 16);
+  return crypto
+    .createHash('sha256')
+    .update(ip + process.env.IP_SALT || 'default_salt')
+    .digest('hex')
+    .substring(0, 16);
 }
 
 /**
@@ -274,10 +275,10 @@ function shouldTrackPath(path: string): boolean {
     '.woff',
     '.woff2',
     '.ttf',
-    '.eot'
+    '.eot',
   ];
-  
-  return !excludePaths.some(exclude => path.includes(exclude));
+
+  return !excludePaths.some((exclude) => path.includes(exclude));
 }
 
 /**
@@ -295,7 +296,9 @@ function generateTrackingScript(options: {
         let maxScrollDepth = 0;
         let interactions = 0;
         
-        ${options.trackScrollDepth ? `
+        ${
+          options.trackScrollDepth
+            ? `
         // Track scroll depth
         function trackScrollDepth() {
           const scrollPercent = Math.round(
@@ -316,9 +319,13 @@ function generateTrackingScript(options: {
           }
         }
         window.addEventListener('scroll', trackScrollDepth);
-        ` : ''}
+        `
+            : ''
+        }
         
-        ${options.trackInteractions ? `
+        ${
+          options.trackInteractions
+            ? `
         // Track interactions
         function trackInteraction(event) {
           interactions++;
@@ -342,9 +349,13 @@ function generateTrackingScript(options: {
         ['click', 'focus', 'input'].forEach(eventType => {
           document.addEventListener(eventType, trackInteraction);
         });
-        ` : ''}
+        `
+            : ''
+        }
         
-        ${options.trackTimeSpent ? `
+        ${
+          options.trackTimeSpent
+            ? `
         // Track time spent before leaving
         function trackTimeSpent() {
           const timeSpent = Date.now() - startTime;
@@ -362,7 +373,9 @@ function generateTrackingScript(options: {
         
         window.addEventListener('beforeunload', trackTimeSpent);
         window.addEventListener('pagehide', trackTimeSpent);
-        ` : ''}
+        `
+            : ''
+        }
         
       })();
     </script>
@@ -376,22 +389,36 @@ export const trackTermView = (req: BehaviorTrackingRequest, termId: string, term
   return trackUserAction(req, 'view', 'term', termId, { termData });
 };
 
-export const trackTermFavorite = (req: BehaviorTrackingRequest, termId: string, action: 'add' | 'remove') => {
+export const trackTermFavorite = (
+  req: BehaviorTrackingRequest,
+  termId: string,
+  action: 'add' | 'remove'
+) => {
   return trackUserAction(req, 'favorite', 'term', termId, { action });
 };
 
 export const trackSearch = (req: BehaviorTrackingRequest, query: string, results?: any[]) => {
-  return trackUserAction(req, 'search', 'search', query, { 
-    query, 
+  return trackUserAction(req, 'search', 'search', query, {
+    query,
     resultCount: results?.length,
-    hasResults: (results?.length || 0) > 0
+    hasResults: (results?.length || 0) > 0,
   });
 };
 
-export const trackLearningPathProgress = (req: BehaviorTrackingRequest, pathId: string, stepId: string, progress: number) => {
+export const trackLearningPathProgress = (
+  req: BehaviorTrackingRequest,
+  pathId: string,
+  stepId: string,
+  progress: number
+) => {
   return trackUserAction(req, 'progress', 'learning_path', pathId, { stepId, progress });
 };
 
-export const trackContentEngagement = (req: BehaviorTrackingRequest, contentType: string, contentId: string, engagementData: any) => {
+export const trackContentEngagement = (
+  req: BehaviorTrackingRequest,
+  contentType: string,
+  contentId: string,
+  engagementData: any
+) => {
   return trackUserAction(req, 'engagement', contentType, contentId, engagementData);
 };

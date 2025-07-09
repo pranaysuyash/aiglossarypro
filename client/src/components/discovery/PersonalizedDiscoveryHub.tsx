@@ -1,34 +1,36 @@
-import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  Brain, 
-  TrendingUp, 
-  MapPin, 
-  Sparkles, 
-  Target, 
-  Users,
-  BookOpen,
-  Zap,
-  Search,
-  Filter,
-  Eye,
+import {
   ArrowRight,
-  Star,
-  Clock,
   BarChart3,
-  Lightbulb,
+  BookOpen,
+  Brain,
+  Clock,
   Compass,
-  Heart,
+  Eye,
+  Filter,
   Globe,
-  Route
+  Heart,
+  Route,
+  Search,
+  Sparkles,
+  Star,
+  Target,
+  TrendingUp,
+  Zap,
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { Link } from 'wouter';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface PersonalizedRecommendation {
   id: string;
@@ -82,11 +84,11 @@ export function PersonalizedDiscoveryHub() {
       const params = new URLSearchParams();
       if (difficultyFilter !== 'all') params.append('difficulty', difficultyFilter);
       if (categoryFilter !== 'all') params.append('category', categoryFilter);
-      
+
       const response = await fetch(`/api/discovery/personalized?${params}`);
       if (!response.ok) throw new Error('Failed to fetch recommendations');
       return response.json();
-    }
+    },
   });
 
   // Fetch discovery paths
@@ -96,7 +98,7 @@ export function PersonalizedDiscoveryHub() {
       const response = await fetch('/api/discovery/paths');
       if (!response.ok) throw new Error('Failed to fetch discovery paths');
       return response.json();
-    }
+    },
   });
 
   // Fetch trending topics
@@ -106,7 +108,7 @@ export function PersonalizedDiscoveryHub() {
       const response = await fetch('/api/analytics/trending');
       if (!response.ok) throw new Error('Failed to fetch trending topics');
       return response.json();
-    }
+    },
   });
 
   // Fetch user's interests for context
@@ -116,38 +118,55 @@ export function PersonalizedDiscoveryHub() {
       const response = await fetch('/api/users/context');
       if (!response.ok) throw new Error('Failed to fetch user context');
       return response.json();
-    }
+    },
   });
 
   const getRecommendationIcon = (type: string) => {
     switch (type) {
-      case 'trending': return <TrendingUp className="w-4 h-4" />;
-      case 'personalized': return <Brain className="w-4 h-4" />;
-      case 'prerequisite': return <Target className="w-4 h-4" />;
-      case 'related': return <Globe className="w-4 h-4" />;
-      case 'advanced': return <Zap className="w-4 h-4" />;
-      default: return <BookOpen className="w-4 h-4" />;
+      case 'trending':
+        return <TrendingUp className="w-4 h-4" />;
+      case 'personalized':
+        return <Brain className="w-4 h-4" />;
+      case 'prerequisite':
+        return <Target className="w-4 h-4" />;
+      case 'related':
+        return <Globe className="w-4 h-4" />;
+      case 'advanced':
+        return <Zap className="w-4 h-4" />;
+      default:
+        return <BookOpen className="w-4 h-4" />;
     }
   };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'trending': return 'bg-red-100 text-red-800';
-      case 'personalized': return 'bg-blue-100 text-blue-800';
-      case 'prerequisite': return 'bg-orange-100 text-orange-800';
-      case 'related': return 'bg-green-100 text-green-800';
-      case 'advanced': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'trending':
+        return 'bg-red-100 text-red-800';
+      case 'personalized':
+        return 'bg-blue-100 text-blue-800';
+      case 'prerequisite':
+        return 'bg-orange-100 text-orange-800';
+      case 'related':
+        return 'bg-green-100 text-green-800';
+      case 'advanced':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty) {
-      case 'beginner': return 'bg-green-100 text-green-800';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800';
-      case 'advanced': return 'bg-orange-100 text-orange-800';
-      case 'expert': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'beginner':
+        return 'bg-green-100 text-green-800';
+      case 'intermediate':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'advanced':
+        return 'bg-orange-100 text-orange-800';
+      case 'expert':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -160,13 +179,11 @@ export function PersonalizedDiscoveryHub() {
     <div className="container mx-auto px-4 py-8 space-y-8">
       {/* Header with Context */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold text-gray-900">
-          Discover Your Learning Journey
-        </h1>
+        <h1 className="text-4xl font-bold text-gray-900">Discover Your Learning Journey</h1>
         <p className="text-xl text-gray-600 max-w-3xl mx-auto">
           AI-powered recommendations tailored to your interests, learning style, and goals
         </p>
-        
+
         {userContext && (
           <div className="flex justify-center space-x-4 text-sm text-gray-500">
             <span className="flex items-center space-x-1">
@@ -210,7 +227,7 @@ export function PersonalizedDiscoveryHub() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium mb-2 block">Category</label>
               <Select value={categoryFilter} onValueChange={setCategoryFilter}>
@@ -227,7 +244,7 @@ export function PersonalizedDiscoveryHub() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div>
               <label className="text-sm font-medium mb-2 block">Time Available</label>
               <Select value={timeFilter} onValueChange={setTimeFilter}>
@@ -242,7 +259,7 @@ export function PersonalizedDiscoveryHub() {
                 </SelectContent>
               </Select>
             </div>
-            
+
             <div className="flex items-end">
               <Button variant="outline" className="w-full">
                 <Search className="w-4 h-4 mr-2" />
@@ -288,7 +305,7 @@ export function PersonalizedDiscoveryHub() {
                 </Button>
               </div>
             </div>
-            
+
             {loadingRecommendations ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[...Array(6)].map((_, i) => (
@@ -302,16 +319,20 @@ export function PersonalizedDiscoveryHub() {
                 ))}
               </div>
             ) : (
-              <div className={viewMode === 'grid' ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6' : 'space-y-4'}>
+              <div
+                className={
+                  viewMode === 'grid'
+                    ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6'
+                    : 'space-y-4'
+                }
+              >
                 {recommendations?.map((rec: PersonalizedRecommendation) => (
                   <Card key={rec.id} className="hover:shadow-lg transition-shadow cursor-pointer">
                     <CardHeader className="pb-3">
                       <div className="flex items-start justify-between">
                         <div className="flex items-center space-x-2">
                           {getRecommendationIcon(rec.type)}
-                          <Badge className={getTypeColor(rec.type)}>
-                            {rec.type}
-                          </Badge>
+                          <Badge className={getTypeColor(rec.type)}>{rec.type}</Badge>
                         </div>
                         <Badge className={getDifficultyColor(rec.difficulty)}>
                           {rec.difficulty}
@@ -329,7 +350,7 @@ export function PersonalizedDiscoveryHub() {
                         <p className="text-sm text-gray-600 bg-blue-50 p-2 rounded">
                           💡 {rec.reason}
                         </p>
-                        
+
                         <div className="flex items-center justify-between text-sm text-gray-500">
                           <span className="flex items-center space-x-1">
                             <Clock className="w-4 h-4" />
@@ -340,15 +361,15 @@ export function PersonalizedDiscoveryHub() {
                             <span>{Math.round(rec.confidence * 100)}% match</span>
                           </span>
                         </div>
-                        
+
                         <div className="flex flex-wrap gap-1">
-                          {rec.categories.slice(0, 3).map(category => (
+                          {rec.categories.slice(0, 3).map((category) => (
                             <Badge key={category} variant="outline" className="text-xs">
                               {category}
                             </Badge>
                           ))}
                         </div>
-                        
+
                         <Button className="w-full" size="sm">
                           <BookOpen className="w-4 h-4 mr-2" />
                           Start Learning
@@ -367,7 +388,7 @@ export function PersonalizedDiscoveryHub() {
         <TabsContent value="trending">
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">Trending in AI/ML</h2>
-            
+
             {loadingTrending ? (
               <div className="space-y-4">
                 {[...Array(5)].map((_, i) => (
@@ -390,7 +411,10 @@ export function PersonalizedDiscoveryHub() {
                             {index + 1}
                           </div>
                           <div>
-                            <Link to={`/app/terms/${topic.termId}`} className="text-lg font-semibold hover:text-blue-600">
+                            <Link
+                              to={`/app/terms/${topic.termId}`}
+                              className="text-lg font-semibold hover:text-blue-600"
+                            >
                               {topic.termName}
                             </Link>
                             <p className="text-sm text-gray-600">{topic.trendReason}</p>
@@ -401,7 +425,9 @@ export function PersonalizedDiscoveryHub() {
                             <TrendingUp className="w-4 h-4" />
                             <span className="font-semibold">+{topic.weeklyGrowth}%</span>
                           </div>
-                          <p className="text-sm text-gray-500">{topic.viewCount.toLocaleString()} views</p>
+                          <p className="text-sm text-gray-500">
+                            {topic.viewCount.toLocaleString()} views
+                          </p>
                         </div>
                       </div>
                     </CardContent>
@@ -416,7 +442,7 @@ export function PersonalizedDiscoveryHub() {
         <TabsContent value="paths">
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">Guided Learning Paths</h2>
-            
+
             {loadingPaths ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {[...Array(4)].map((_, i) => (
@@ -449,28 +475,28 @@ export function PersonalizedDiscoveryHub() {
                           <span>{path.termIds.length} concepts</span>
                           <span>{formatTime(path.estimatedTime)}</span>
                         </div>
-                        
+
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
                             <span>Your Progress</span>
                             <span>{path.userProgress}%</span>
                           </div>
                           <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div 
+                            <div
                               className="bg-blue-600 h-2 rounded-full transition-all"
                               style={{ width: `${path.userProgress}%` }}
                             ></div>
                           </div>
                         </div>
-                        
+
                         <div className="flex flex-wrap gap-1">
-                          {path.tags.slice(0, 3).map(tag => (
+                          {path.tags.slice(0, 3).map((tag) => (
                             <Badge key={tag} variant="outline" className="text-xs">
                               {tag}
                             </Badge>
                           ))}
                         </div>
-                        
+
                         <Button className="w-full">
                           {path.userProgress > 0 ? 'Continue Path' : 'Start Path'}
                           <ArrowRight className="w-4 h-4 ml-2" />
@@ -488,7 +514,7 @@ export function PersonalizedDiscoveryHub() {
         <TabsContent value="explore">
           <div className="space-y-6">
             <h2 className="text-2xl font-bold">Advanced Exploration</h2>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardHeader>
@@ -507,16 +533,14 @@ export function PersonalizedDiscoveryHub() {
                   </Button>
                 </CardContent>
               </Card>
-              
+
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardHeader>
                   <div className="flex items-center space-x-2">
                     <Sparkles className="w-6 h-6 text-purple-600" />
                     <CardTitle>Surprise Me</CardTitle>
                   </div>
-                  <CardDescription>
-                    Discover unexpected connections and hidden gems
-                  </CardDescription>
+                  <CardDescription>Discover unexpected connections and hidden gems</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <Button className="w-full" variant="outline">
@@ -525,7 +549,7 @@ export function PersonalizedDiscoveryHub() {
                   </Button>
                 </CardContent>
               </Card>
-              
+
               <Card className="hover:shadow-lg transition-shadow cursor-pointer">
                 <CardHeader>
                   <div className="flex items-center space-x-2">

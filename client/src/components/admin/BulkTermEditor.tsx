@@ -1,35 +1,31 @@
-import React, { useState, useCallback } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { AlertCircle, Bot, CheckCircle, RefreshCw, Save, Wand2, X } from 'lucide-react';
+import type React from 'react';
+import { useCallback, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Edit3, 
-  Bot, 
-  Save, 
-  X, 
-  CheckCircle, 
-  AlertCircle,
-  Upload,
-  Download,
-  RefreshCw,
-  Wand2,
-  FileText,
-  Globe,
-  Users,
-  Target,
-  Zap
-} from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
 interface BulkEditTerm {
@@ -40,7 +36,7 @@ interface BulkEditTerm {
   category: string;
   subcategory?: string;
   characteristics?: string[];
-  applications?: Array<{name: string; description: string}>;
+  applications?: Array<{ name: string; description: string }>;
   mathFormulation?: string;
   relatedTerms?: string[];
   aiGenerated: boolean;
@@ -66,16 +62,16 @@ interface Props {
 export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   const [terms, setTerms] = useState<BulkEditTerm[]>(
-    initialTerms.map(term => ({
+    initialTerms.map((term) => ({
       ...term,
       selected: false,
       modified: false,
-      originalData: { ...term }
+      originalData: { ...term },
     }))
   );
-  
+
   const [bulkOperationInProgress, setBulkOperationInProgress] = useState(false);
   const [bulkOperation, setBulkOperation] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
@@ -87,8 +83,8 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
   const saveBulkChangesMutation = useMutation({
     mutationFn: async (updatedTerms: BulkEditTerm[]) => {
       const changes = updatedTerms
-        .filter(term => term.modified)
-        .map(term => ({
+        .filter((term) => term.modified)
+        .map((term) => ({
           id: term.id,
           name: term.name,
           shortDefinition: term.shortDefinition,
@@ -99,40 +95,42 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
           applications: term.applications,
           mathFormulation: term.mathFormulation,
           relatedTerms: term.relatedTerms,
-          verificationStatus: term.verificationStatus
+          verificationStatus: term.verificationStatus,
         }));
 
       const response = await fetch('/api/admin/terms/bulk-update', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ changes })
+        body: JSON.stringify({ changes }),
       });
-      
+
       if (!response.ok) throw new Error('Failed to save bulk changes');
       return response.json();
     },
     onSuccess: (data) => {
       // Reset modified flags
-      setTerms(prev => prev.map(term => ({
-        ...term,
-        modified: false,
-        originalData: { ...term }
-      })));
-      
+      setTerms((prev) =>
+        prev.map((term) => ({
+          ...term,
+          modified: false,
+          originalData: { ...term },
+        }))
+      );
+
       queryClient.invalidateQueries({ queryKey: ['admin-terms'] });
       onTermsUpdated();
-      toast({ 
-        title: 'Success', 
-        description: `Updated ${data.updatedCount} terms successfully` 
+      toast({
+        title: 'Success',
+        description: `Updated ${data.updatedCount} terms successfully`,
       });
     },
     onError: (error) => {
-      toast({ 
-        title: 'Error', 
+      toast({
+        title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to save changes',
-        variant: 'destructive' 
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Mutation for AI improvements
@@ -141,206 +139,233 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
       setBulkOperationInProgress(true);
       setBulkOperation('AI Improvement');
       setProgress(0);
-      
+
       const results = [];
       for (let i = 0; i < termIds.length; i++) {
         const termId = termIds[i];
         setProgress(((i + 1) / termIds.length) * 100);
-        
+
         const response = await fetch(`/api/ai/improve-definition/${termId}`, {
-          method: 'POST'
+          method: 'POST',
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           results.push({ termId, improvement: data.data });
         }
-        
+
         // Small delay to prevent rate limiting
-        await new Promise(resolve => setTimeout(resolve, 500));
+        await new Promise((resolve) => setTimeout(resolve, 500));
       }
-      
+
       return results;
     },
     onSuccess: (results) => {
       // Apply AI improvements to terms
-      setTerms(prev => prev.map(term => {
-        const improvement = results.find(r => r.termId === term.id);
-        if (improvement) {
-          return {
-            ...term,
-            shortDefinition: improvement.improvement.shortDefinition || term.shortDefinition,
-            definition: improvement.improvement.definition || term.definition,
-            characteristics: improvement.improvement.characteristics || term.characteristics,
-            applications: improvement.improvement.applications || term.applications,
-            mathFormulation: improvement.improvement.mathFormulation || term.mathFormulation,
-            modified: true
-          };
-        }
-        return term;
-      }));
-      
+      setTerms((prev) =>
+        prev.map((term) => {
+          const improvement = results.find((r) => r.termId === term.id);
+          if (improvement) {
+            return {
+              ...term,
+              shortDefinition: improvement.improvement.shortDefinition || term.shortDefinition,
+              definition: improvement.improvement.definition || term.definition,
+              characteristics: improvement.improvement.characteristics || term.characteristics,
+              applications: improvement.improvement.applications || term.applications,
+              mathFormulation: improvement.improvement.mathFormulation || term.mathFormulation,
+              modified: true,
+            };
+          }
+          return term;
+        })
+      );
+
       setBulkOperationInProgress(false);
       setBulkOperation(null);
       setProgress(0);
-      
-      toast({ 
-        title: 'AI Improvements Applied', 
-        description: `Generated improvements for ${results.length} terms. Review and save changes.` 
+
+      toast({
+        title: 'AI Improvements Applied',
+        description: `Generated improvements for ${results.length} terms. Review and save changes.`,
       });
     },
     onError: (error) => {
       setBulkOperationInProgress(false);
       setBulkOperation(null);
       setProgress(0);
-      
-      toast({ 
-        title: 'Error', 
+
+      toast({
+        title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to generate AI improvements',
-        variant: 'destructive' 
+        variant: 'destructive',
       });
-    }
+    },
   });
 
-  const filteredTerms = terms.filter(term => {
-    const matchesSearch = !searchFilter || 
+  const filteredTerms = terms.filter((term) => {
+    const matchesSearch =
+      !searchFilter ||
       term.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
       term.shortDefinition.toLowerCase().includes(searchFilter.toLowerCase());
-    
+
     const matchesCategory = !categoryFilter || term.category === categoryFilter;
     const matchesStatus = !statusFilter || term.verificationStatus === statusFilter;
-    
+
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const selectedTerms = filteredTerms.filter(term => term.selected);
-  const modifiedTerms = terms.filter(term => term.modified);
+  const selectedTerms = filteredTerms.filter((term) => term.selected);
+  const modifiedTerms = terms.filter((term) => term.modified);
 
   const handleSelectAll = useCallback((checked: boolean) => {
-    setTerms(prev => prev.map(term => ({
-      ...term,
-      selected: checked
-    })));
+    setTerms((prev) =>
+      prev.map((term) => ({
+        ...term,
+        selected: checked,
+      }))
+    );
   }, []);
 
   const handleSelectTerm = useCallback((termId: string, checked: boolean) => {
-    setTerms(prev => prev.map(term =>
-      term.id === termId ? { ...term, selected: checked } : term
-    ));
+    setTerms((prev) =>
+      prev.map((term) => (term.id === termId ? { ...term, selected: checked } : term))
+    );
   }, []);
 
   const handleTermChange = useCallback((termId: string, field: string, value: any) => {
-    setTerms(prev => prev.map(term =>
-      term.id === termId 
-        ? { 
-            ...term, 
-            [field]: value, 
-            modified: true 
-          } 
-        : term
-    ));
+    setTerms((prev) =>
+      prev.map((term) =>
+        term.id === termId
+          ? {
+              ...term,
+              [field]: value,
+              modified: true,
+            }
+          : term
+      )
+    );
   }, []);
 
-  const handleBulkCategoryChange = useCallback((category: string) => {
-    const selectedIds = selectedTerms.map(term => term.id);
-    setTerms(prev => prev.map(term =>
-      selectedIds.includes(term.id) 
-        ? { ...term, category, modified: true }
-        : term
-    ));
-    
-    toast({ 
-      title: 'Bulk Update', 
-      description: `Category updated for ${selectedTerms.length} terms` 
-    });
-  }, [selectedTerms]);
+  const handleBulkCategoryChange = useCallback(
+    (category: string) => {
+      const selectedIds = selectedTerms.map((term) => term.id);
+      setTerms((prev) =>
+        prev.map((term) =>
+          selectedIds.includes(term.id) ? { ...term, category, modified: true } : term
+        )
+      );
 
-  const handleBulkVerificationChange = useCallback((status: 'verified' | 'unverified' | 'flagged') => {
-    const selectedIds = selectedTerms.map(term => term.id);
-    setTerms(prev => prev.map(term =>
-      selectedIds.includes(term.id) 
-        ? { ...term, verificationStatus: status, modified: true }
-        : term
-    ));
-    
-    toast({ 
-      title: 'Bulk Update', 
-      description: `Verification status updated for ${selectedTerms.length} terms` 
-    });
-  }, [selectedTerms]);
+      toast({
+        title: 'Bulk Update',
+        description: `Category updated for ${selectedTerms.length} terms`,
+      });
+    },
+    [selectedTerms, toast]
+  );
+
+  const handleBulkVerificationChange = useCallback(
+    (status: 'verified' | 'unverified' | 'flagged') => {
+      const selectedIds = selectedTerms.map((term) => term.id);
+      setTerms((prev) =>
+        prev.map((term) =>
+          selectedIds.includes(term.id)
+            ? { ...term, verificationStatus: status, modified: true }
+            : term
+        )
+      );
+
+      toast({
+        title: 'Bulk Update',
+        description: `Verification status updated for ${selectedTerms.length} terms`,
+      });
+    },
+    [selectedTerms, toast]
+  );
 
   const handleAIImprovement = useCallback(() => {
     if (selectedTerms.length === 0) {
-      toast({ 
-        title: 'No Selection', 
+      toast({
+        title: 'No Selection',
         description: 'Please select terms to improve',
-        variant: 'destructive' 
+        variant: 'destructive',
       });
       return;
     }
-    
-    const termIds = selectedTerms.map(term => term.id);
+
+    const termIds = selectedTerms.map((term) => term.id);
     aiImproveMutation.mutate(termIds);
-  }, [selectedTerms, aiImproveMutation]);
+  }, [selectedTerms, aiImproveMutation, toast]);
 
   const handleSaveChanges = useCallback(() => {
     if (modifiedTerms.length === 0) {
-      toast({ 
-        title: 'No Changes', 
+      toast({
+        title: 'No Changes',
         description: 'No changes to save',
-        variant: 'destructive' 
+        variant: 'destructive',
       });
       return;
     }
-    
+
     saveBulkChangesMutation.mutate(terms);
-  }, [modifiedTerms, terms, saveBulkChangesMutation]);
+  }, [modifiedTerms, terms, saveBulkChangesMutation, toast]);
 
   const handleDiscardChanges = useCallback(() => {
-    setTerms(prev => prev.map(term => ({
-      ...term.originalData,
-      selected: term.selected,
-      modified: false,
-      originalData: term.originalData
-    })));
-    
-    toast({ 
-      title: 'Changes Discarded', 
-      description: 'All modifications have been reverted' 
+    setTerms((prev) =>
+      prev.map((term) => ({
+        ...term.originalData,
+        selected: term.selected,
+        modified: false,
+        originalData: term.originalData,
+      }))
+    );
+
+    toast({
+      title: 'Changes Discarded',
+      description: 'All modifications have been reverted',
     });
-  }, []);
+  }, [toast]);
 
   const bulkOperations: BulkOperation[] = [
     {
       type: 'ai_improve',
       description: 'Improve with AI',
       icon: <Wand2 className="w-4 h-4" />,
-      action: async () => { await handleAIImprovement(); }
+      action: async () => {
+        await handleAIImprovement();
+      },
     },
     {
       type: 'verification',
       description: 'Mark as Verified',
       icon: <CheckCircle className="w-4 h-4" />,
-      action: async () => { handleBulkVerificationChange('verified'); }
+      action: async () => {
+        handleBulkVerificationChange('verified');
+      },
     },
     {
       type: 'verification',
       description: 'Mark as Unverified',
       icon: <AlertCircle className="w-4 h-4" />,
-      action: async () => { handleBulkVerificationChange('unverified'); }
-    }
+      action: async () => {
+        handleBulkVerificationChange('unverified');
+      },
+    },
   ];
 
-  const getStatusColor = (status: string) => {
+  const _getStatusColor = (status: string) => {
     switch (status) {
-      case 'verified': return 'bg-green-100 text-green-800';
-      case 'unverified': return 'bg-yellow-100 text-yellow-800';
-      case 'flagged': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'verified':
+        return 'bg-green-100 text-green-800';
+      case 'unverified':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'flagged':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
-  const categories = [...new Set(terms.map(term => term.category))].filter(Boolean);
+  const categories = [...new Set(terms.map((term) => term.category))].filter(Boolean);
   const statuses = ['verified', 'unverified', 'flagged'];
 
   return (
@@ -353,7 +378,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
             Edit multiple terms efficiently with AI assistance and bulk operations
           </p>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {modifiedTerms.length > 0 && (
             <>
@@ -365,10 +390,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                 <X className="w-4 h-4 mr-2" />
                 Discard Changes ({modifiedTerms.length})
               </Button>
-              <Button
-                onClick={handleSaveChanges}
-                disabled={saveBulkChangesMutation.isPending}
-              >
+              <Button onClick={handleSaveChanges} disabled={saveBulkChangesMutation.isPending}>
                 {saveBulkChangesMutation.isPending ? (
                   <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
                 ) : (
@@ -428,8 +450,10 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">All Categories</SelectItem>
-                      {categories.map(cat => (
-                        <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat} value={cat}>
+                          {cat}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -442,7 +466,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">All Statuses</SelectItem>
-                      {statuses.map(status => (
+                      {statuses.map((status) => (
                         <SelectItem key={status} value={status}>
                           {status.charAt(0).toUpperCase() + status.slice(1)}
                         </SelectItem>
@@ -468,12 +492,14 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                         <SelectValue placeholder="Change Category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map(cat => (
-                          <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                        {categories.map((cat) => (
+                          <SelectItem key={cat} value={cat}>
+                            {cat}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
-                    
+
                     {bulkOperations.map((operation, index) => (
                       <Button
                         key={index}
@@ -507,7 +533,10 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                     <TableRow>
                       <TableHead className="w-[50px]">
                         <Checkbox
-                          checked={selectedTerms.length === filteredTerms.length && filteredTerms.length > 0}
+                          checked={
+                            selectedTerms.length === filteredTerms.length &&
+                            filteredTerms.length > 0
+                          }
                           onCheckedChange={handleSelectAll}
                         />
                       </TableHead>
@@ -520,16 +549,11 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                   </TableHeader>
                   <TableBody>
                     {filteredTerms.map((term) => (
-                      <TableRow 
-                        key={term.id} 
-                        className={term.modified ? 'bg-blue-50' : ''}
-                      >
+                      <TableRow key={term.id} className={term.modified ? 'bg-blue-50' : ''}>
                         <TableCell>
                           <Checkbox
                             checked={term.selected}
-                            onCheckedChange={(checked) => 
-                              handleSelectTerm(term.id, !!checked)
-                            }
+                            onCheckedChange={(checked) => handleSelectTerm(term.id, !!checked)}
                           />
                         </TableCell>
                         <TableCell>
@@ -542,7 +566,9 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                         <TableCell>
                           <Textarea
                             value={term.shortDefinition}
-                            onChange={(e) => handleTermChange(term.id, 'shortDefinition', e.target.value)}
+                            onChange={(e) =>
+                              handleTermChange(term.id, 'shortDefinition', e.target.value)
+                            }
                             className="border-0 bg-transparent p-0 h-auto resize-none"
                             rows={2}
                           />
@@ -556,8 +582,10 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {categories.map(cat => (
-                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                              {categories.map((cat) => (
+                                <SelectItem key={cat} value={cat}>
+                                  {cat}
+                                </SelectItem>
                               ))}
                             </SelectContent>
                           </Select>
@@ -565,13 +593,15 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                         <TableCell>
                           <Select
                             value={term.verificationStatus}
-                            onValueChange={(value) => handleTermChange(term.id, 'verificationStatus', value)}
+                            onValueChange={(value) =>
+                              handleTermChange(term.id, 'verificationStatus', value)
+                            }
                           >
                             <SelectTrigger className="border-0 bg-transparent p-0 h-auto">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {statuses.map(status => (
+                              {statuses.map((status) => (
                                 <SelectItem key={status} value={status}>
                                   {status.charAt(0).toUpperCase() + status.slice(1)}
                                 </SelectItem>
@@ -624,15 +654,11 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
           <Card>
             <CardHeader>
               <CardTitle>Pending Changes ({modifiedTerms.length})</CardTitle>
-              <CardDescription>
-                Review your changes before saving
-              </CardDescription>
+              <CardDescription>Review your changes before saving</CardDescription>
             </CardHeader>
             <CardContent>
               {modifiedTerms.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No pending changes
-                </div>
+                <div className="text-center py-8 text-gray-500">No pending changes</div>
               ) : (
                 <div className="space-y-4">
                   {modifiedTerms.map((term) => (
@@ -641,23 +667,35 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                         <h3 className="font-medium">{term.name}</h3>
                         <Badge variant="outline">Modified</Badge>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                         <div>
                           <Label className="font-medium">Original</Label>
                           <div className="space-y-1">
-                            <div><strong>Category:</strong> {term.originalData.category}</div>
-                            <div><strong>Status:</strong> {term.originalData.verificationStatus}</div>
-                            <div><strong>Short Def:</strong> {term.originalData.shortDefinition}</div>
+                            <div>
+                              <strong>Category:</strong> {term.originalData.category}
+                            </div>
+                            <div>
+                              <strong>Status:</strong> {term.originalData.verificationStatus}
+                            </div>
+                            <div>
+                              <strong>Short Def:</strong> {term.originalData.shortDefinition}
+                            </div>
                           </div>
                         </div>
-                        
+
                         <div>
                           <Label className="font-medium">Modified</Label>
                           <div className="space-y-1">
-                            <div><strong>Category:</strong> {term.category}</div>
-                            <div><strong>Status:</strong> {term.verificationStatus}</div>
-                            <div><strong>Short Def:</strong> {term.shortDefinition}</div>
+                            <div>
+                              <strong>Category:</strong> {term.category}
+                            </div>
+                            <div>
+                              <strong>Status:</strong> {term.verificationStatus}
+                            </div>
+                            <div>
+                              <strong>Short Def:</strong> {term.shortDefinition}
+                            </div>
                           </div>
                         </div>
                       </div>

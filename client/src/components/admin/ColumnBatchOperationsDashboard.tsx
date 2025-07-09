@@ -1,63 +1,38 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { 
-  Play,
-  Pause,
-  Square,
-  RefreshCw,
-  AlertTriangle,
-  CheckCircle,
-  Clock,
-  BarChart3,
-  DollarSign,
-  Users,
-  Database,
-  Zap,
-  Target,
-  TrendingUp,
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
   Activity,
-  Settings,
-  Filter,
-  Search,
-  Calendar,
-  Timer,
+  AlertTriangle,
+  BarChart3,
+  Database,
+  DollarSign,
   Gauge,
-  AlertCircle,
-  ChevronRight,
-  ChevronDown,
-  Eye,
-  Download,
-  Upload,
-  StopCircle,
-  FastForward,
-  Rewind,
-  SkipForward,
-  Layers,
   Grid,
   List,
-  MoreHorizontal,
+  Pause,
+  Play,
+  RefreshCw,
+  Settings,
+  StopCircle,
   XCircle,
-  PauseCircle,
-  PlayCircle,
-  Trash2,
-  RotateCcw,
-  Shield,
-  Lock,
-  Unlock,
-  Bell,
-  BellOff
+  Zap,
 } from 'lucide-react';
+import { useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 
 // Interfaces for Column Batch Operations
@@ -89,46 +64,46 @@ interface BatchOperationStatus {
   successfulTerms: number;
   failedTerms: number;
   skippedTerms: number;
-  
+
   // Progress tracking
   currentBatch: number;
   totalBatches: number;
   currentPhase: 'generation' | 'evaluation' | 'improvement' | 'finalization';
-  
+
   // Quality metrics
   averageQualityScore: number;
   qualityDistribution: {
     excellent: number; // 9-10
-    good: number;      // 7-8
+    good: number; // 7-8
     needsWork: number; // 5-6
-    poor: number;      // 1-4
+    poor: number; // 1-4
   };
-  
+
   // Cost tracking
   estimatedCost: number;
   actualCost: number;
   costPerTerm: number;
   budgetUsed: number;
   budgetRemaining: number;
-  
+
   // Timing
   startTime: Date;
   lastUpdateTime: Date;
   estimatedCompletionTime: Date;
   averageTimePerTerm: number;
-  
+
   // Error handling
   errorCount: number;
   errorRate: number;
   retryCount: number;
   maxRetries: number;
-  
+
   // Safety controls
   canPause: boolean;
   canCancel: boolean;
   canRetry: boolean;
   emergencyStop: boolean;
-  
+
   errors: Array<{
     termId: string;
     termName: string;
@@ -183,86 +158,186 @@ interface SystemMetrics {
 
 const COLUMN_DEFINITIONS: ColumnDefinition[] = [
   // Essential Columns (Priority 1-5)
-  { 
-    id: 'term', name: 'Term Name', displayName: 'Term Name', priority: 1, 
-    category: 'essential', estimatedTokens: 50, complexity: 'simple',
-    description: 'Core term name and variations', recommendedModel: 'gpt-4.1-nano',
-    dependencies: [], estimatedTimeMinutes: 5, qualityThreshold: 8, batchSize: 50, retryLimit: 3
+  {
+    id: 'term',
+    name: 'Term Name',
+    displayName: 'Term Name',
+    priority: 1,
+    category: 'essential',
+    estimatedTokens: 50,
+    complexity: 'simple',
+    description: 'Core term name and variations',
+    recommendedModel: 'gpt-4.1-nano',
+    dependencies: [],
+    estimatedTimeMinutes: 5,
+    qualityThreshold: 8,
+    batchSize: 50,
+    retryLimit: 3,
   },
-  { 
-    id: 'definition_overview', name: 'Definition & Overview', displayName: 'Definition', priority: 2,
-    category: 'essential', estimatedTokens: 200, complexity: 'simple',
-    description: 'Clear, comprehensive definition', recommendedModel: 'gpt-4.1-mini',
-    dependencies: ['term'], estimatedTimeMinutes: 15, qualityThreshold: 8, batchSize: 20, retryLimit: 3
+  {
+    id: 'definition_overview',
+    name: 'Definition & Overview',
+    displayName: 'Definition',
+    priority: 2,
+    category: 'essential',
+    estimatedTokens: 200,
+    complexity: 'simple',
+    description: 'Clear, comprehensive definition',
+    recommendedModel: 'gpt-4.1-mini',
+    dependencies: ['term'],
+    estimatedTimeMinutes: 15,
+    qualityThreshold: 8,
+    batchSize: 20,
+    retryLimit: 3,
   },
-  { 
-    id: 'key_concepts', name: 'Key Concepts', displayName: 'Key Concepts', priority: 3,
-    category: 'essential', estimatedTokens: 300, complexity: 'moderate',
-    description: 'Essential understanding points', recommendedModel: 'gpt-4.1-mini',
-    dependencies: ['definition_overview'], estimatedTimeMinutes: 20, qualityThreshold: 7, batchSize: 15, retryLimit: 3
+  {
+    id: 'key_concepts',
+    name: 'Key Concepts',
+    displayName: 'Key Concepts',
+    priority: 3,
+    category: 'essential',
+    estimatedTokens: 300,
+    complexity: 'moderate',
+    description: 'Essential understanding points',
+    recommendedModel: 'gpt-4.1-mini',
+    dependencies: ['definition_overview'],
+    estimatedTimeMinutes: 20,
+    qualityThreshold: 7,
+    batchSize: 15,
+    retryLimit: 3,
   },
-  { 
-    id: 'basic_examples', name: 'Basic Examples', displayName: 'Examples', priority: 4,
-    category: 'essential', estimatedTokens: 250, complexity: 'simple',
-    description: 'Concrete examples for clarity', recommendedModel: 'gpt-4.1-mini',
-    dependencies: ['key_concepts'], estimatedTimeMinutes: 18, qualityThreshold: 7, batchSize: 20, retryLimit: 3
+  {
+    id: 'basic_examples',
+    name: 'Basic Examples',
+    displayName: 'Examples',
+    priority: 4,
+    category: 'essential',
+    estimatedTokens: 250,
+    complexity: 'simple',
+    description: 'Concrete examples for clarity',
+    recommendedModel: 'gpt-4.1-mini',
+    dependencies: ['key_concepts'],
+    estimatedTimeMinutes: 18,
+    qualityThreshold: 7,
+    batchSize: 20,
+    retryLimit: 3,
   },
-  { 
-    id: 'advantages', name: 'Advantages', displayName: 'Advantages', priority: 5,
-    category: 'essential', estimatedTokens: 200, complexity: 'simple',
-    description: 'Benefits and use cases', recommendedModel: 'gpt-4.1-mini',
-    dependencies: ['basic_examples'], estimatedTimeMinutes: 12, qualityThreshold: 7, batchSize: 25, retryLimit: 3
+  {
+    id: 'advantages',
+    name: 'Advantages',
+    displayName: 'Advantages',
+    priority: 5,
+    category: 'essential',
+    estimatedTokens: 200,
+    complexity: 'simple',
+    description: 'Benefits and use cases',
+    recommendedModel: 'gpt-4.1-mini',
+    dependencies: ['basic_examples'],
+    estimatedTimeMinutes: 12,
+    qualityThreshold: 7,
+    batchSize: 25,
+    retryLimit: 3,
   },
-  
+
   // Important Columns (Priority 6-15)
-  { 
-    id: 'how_it_works', name: 'How It Works', displayName: 'How It Works', priority: 6,
-    category: 'important', estimatedTokens: 400, complexity: 'moderate',
-    description: 'Detailed explanation of mechanisms', recommendedModel: 'gpt-4.1-mini',
-    dependencies: ['key_concepts'], estimatedTimeMinutes: 25, qualityThreshold: 7, batchSize: 12, retryLimit: 3
+  {
+    id: 'how_it_works',
+    name: 'How It Works',
+    displayName: 'How It Works',
+    priority: 6,
+    category: 'important',
+    estimatedTokens: 400,
+    complexity: 'moderate',
+    description: 'Detailed explanation of mechanisms',
+    recommendedModel: 'gpt-4.1-mini',
+    dependencies: ['key_concepts'],
+    estimatedTimeMinutes: 25,
+    qualityThreshold: 7,
+    batchSize: 12,
+    retryLimit: 3,
   },
-  { 
-    id: 'applications', name: 'Applications', displayName: 'Applications', priority: 7,
-    category: 'important', estimatedTokens: 350, complexity: 'moderate',
-    description: 'Real-world applications and use cases', recommendedModel: 'gpt-4.1-mini',
-    dependencies: ['advantages'], estimatedTimeMinutes: 22, qualityThreshold: 7, batchSize: 15, retryLimit: 3
+  {
+    id: 'applications',
+    name: 'Applications',
+    displayName: 'Applications',
+    priority: 7,
+    category: 'important',
+    estimatedTokens: 350,
+    complexity: 'moderate',
+    description: 'Real-world applications and use cases',
+    recommendedModel: 'gpt-4.1-mini',
+    dependencies: ['advantages'],
+    estimatedTimeMinutes: 22,
+    qualityThreshold: 7,
+    batchSize: 15,
+    retryLimit: 3,
   },
-  { 
-    id: 'implementation', name: 'Implementation', displayName: 'Implementation', priority: 8,
-    category: 'important', estimatedTokens: 450, complexity: 'moderate',
-    description: 'Implementation guidelines and best practices', recommendedModel: 'gpt-4.1-mini',
-    dependencies: ['how_it_works'], estimatedTimeMinutes: 30, qualityThreshold: 7, batchSize: 10, retryLimit: 3
+  {
+    id: 'implementation',
+    name: 'Implementation',
+    displayName: 'Implementation',
+    priority: 8,
+    category: 'important',
+    estimatedTokens: 450,
+    complexity: 'moderate',
+    description: 'Implementation guidelines and best practices',
+    recommendedModel: 'gpt-4.1-mini',
+    dependencies: ['how_it_works'],
+    estimatedTimeMinutes: 30,
+    qualityThreshold: 7,
+    batchSize: 10,
+    retryLimit: 3,
   },
-  
+
   // Advanced Columns (Priority 16+)
-  { 
-    id: 'mathematical_foundations', name: 'Mathematical Foundations', displayName: 'Math Foundations', priority: 16,
-    category: 'advanced', estimatedTokens: 600, complexity: 'complex',
-    description: 'Mathematical and theoretical foundations', recommendedModel: 'o4-mini',
-    dependencies: ['how_it_works'], estimatedTimeMinutes: 45, qualityThreshold: 8, batchSize: 5, retryLimit: 5
+  {
+    id: 'mathematical_foundations',
+    name: 'Mathematical Foundations',
+    displayName: 'Math Foundations',
+    priority: 16,
+    category: 'advanced',
+    estimatedTokens: 600,
+    complexity: 'complex',
+    description: 'Mathematical and theoretical foundations',
+    recommendedModel: 'o4-mini',
+    dependencies: ['how_it_works'],
+    estimatedTimeMinutes: 45,
+    qualityThreshold: 8,
+    batchSize: 5,
+    retryLimit: 5,
   },
-  { 
-    id: 'research_papers', name: 'Research Papers', displayName: 'Research', priority: 17,
-    category: 'advanced', estimatedTokens: 500, complexity: 'complex',
-    description: 'Key research papers and citations', recommendedModel: 'o4-mini',
-    dependencies: ['mathematical_foundations'], estimatedTimeMinutes: 40, qualityThreshold: 8, batchSize: 8, retryLimit: 5
-  }
+  {
+    id: 'research_papers',
+    name: 'Research Papers',
+    displayName: 'Research',
+    priority: 17,
+    category: 'advanced',
+    estimatedTokens: 500,
+    complexity: 'complex',
+    description: 'Key research papers and citations',
+    recommendedModel: 'o4-mini',
+    dependencies: ['mathematical_foundations'],
+    estimatedTimeMinutes: 40,
+    qualityThreshold: 8,
+    batchSize: 8,
+    retryLimit: 5,
+  },
 ];
 
 export function ColumnBatchOperationsDashboard() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // State management
-  const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
+  const [_selectedColumns, _setSelectedColumns] = useState<string[]>([]);
   const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [_filterStatus, _setFilterStatus] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
   const [showAdvancedConfig, setShowAdvancedConfig] = useState<boolean>(false);
   const [emergencyMode, setEmergencyMode] = useState<boolean>(false);
   const [autoRefresh, setAutoRefresh] = useState<boolean>(true);
-  
+
   // Configuration state
   const [batchConfig, setBatchConfig] = useState<Partial<BatchOperationConfig>>({
     batchSize: 15,
@@ -275,10 +350,10 @@ export function ColumnBatchOperationsDashboard() {
     skipExisting: true,
     safetyChecks: {
       maxErrorRate: 10,
-      maxCostPerTerm: 0.10,
+      maxCostPerTerm: 0.1,
       requireApproval: false,
-      notifyOnCompletion: true
-    }
+      notifyOnCompletion: true,
+    },
   });
 
   // Query for active batch operations
@@ -289,7 +364,7 @@ export function ColumnBatchOperationsDashboard() {
       if (!response.ok) throw new Error('Failed to fetch batch operations');
       return response.json();
     },
-    refetchInterval: autoRefresh ? 3000 : false
+    refetchInterval: autoRefresh ? 3000 : false,
   });
 
   // Query for system metrics
@@ -300,7 +375,7 @@ export function ColumnBatchOperationsDashboard() {
       if (!response.ok) throw new Error('Failed to fetch system metrics');
       return response.json();
     },
-    refetchInterval: autoRefresh ? 5000 : false
+    refetchInterval: autoRefresh ? 5000 : false,
   });
 
   // Mutation for starting batch operation
@@ -309,7 +384,7 @@ export function ColumnBatchOperationsDashboard() {
       const response = await fetch('/api/admin/batch-operations/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(config)
+        body: JSON.stringify(config),
       });
       if (!response.ok) throw new Error('Failed to start batch operation');
       return response.json();
@@ -320,31 +395,38 @@ export function ColumnBatchOperationsDashboard() {
         description: `Started processing column: ${data.columnName}`,
       });
       queryClient.invalidateQueries({ queryKey: ['batch-operations'] });
-    }
+    },
   });
 
   // Mutation for controlling operations
   const controlOperationMutation = useMutation({
-    mutationFn: async ({ operationId, action }: { operationId: string, action: 'pause' | 'resume' | 'cancel' | 'emergency-stop' }) => {
+    mutationFn: async ({
+      operationId,
+      action,
+    }: {
+      operationId: string;
+      action: 'pause' | 'resume' | 'cancel' | 'emergency-stop';
+    }) => {
       const response = await fetch(`/api/admin/batch-operations/${operationId}/${action}`, {
-        method: 'POST'
+        method: 'POST',
       });
       if (!response.ok) throw new Error(`Failed to ${action} operation`);
       return response.json();
     },
-    onSuccess: (data, variables) => {
+    onSuccess: (_data, variables) => {
       toast({
         title: 'Operation Updated',
         description: `Successfully ${variables.action}d the operation`,
       });
       queryClient.invalidateQueries({ queryKey: ['batch-operations'] });
-    }
+    },
   });
 
   // Filtered and sorted columns
-  const filteredColumns = COLUMN_DEFINITIONS.filter(column => {
+  const filteredColumns = COLUMN_DEFINITIONS.filter((column) => {
     const matchesCategory = filterCategory === 'all' || column.category === filterCategory;
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch =
+      searchQuery === '' ||
       column.displayName.toLowerCase().includes(searchQuery.toLowerCase()) ||
       column.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
@@ -353,23 +435,35 @@ export function ColumnBatchOperationsDashboard() {
   // Helper functions
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'running': return 'bg-blue-100 text-blue-800';
-      case 'paused': return 'bg-yellow-100 text-yellow-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      case 'cancelled': return 'bg-gray-100 text-gray-800';
-      case 'queued': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completed':
+        return 'bg-green-100 text-green-800';
+      case 'running':
+        return 'bg-blue-100 text-blue-800';
+      case 'paused':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'failed':
+        return 'bg-red-100 text-red-800';
+      case 'cancelled':
+        return 'bg-gray-100 text-gray-800';
+      case 'queued':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getCategoryColor = (category: string) => {
     switch (category) {
-      case 'essential': return 'bg-red-100 text-red-800';
-      case 'important': return 'bg-orange-100 text-orange-800';
-      case 'supplementary': return 'bg-blue-100 text-blue-800';
-      case 'advanced': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'essential':
+        return 'bg-red-100 text-red-800';
+      case 'important':
+        return 'bg-orange-100 text-orange-800';
+      case 'supplementary':
+        return 'bg-blue-100 text-blue-800';
+      case 'advanced':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -377,7 +471,7 @@ export function ColumnBatchOperationsDashboard() {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 4
+      minimumFractionDigits: 4,
     }).format(cost);
   };
 
@@ -388,7 +482,7 @@ export function ColumnBatchOperationsDashboard() {
   };
 
   const handleStartBatchOperation = (columnId: string) => {
-    const column = COLUMN_DEFINITIONS.find(c => c.id === columnId);
+    const column = COLUMN_DEFINITIONS.find((c) => c.id === columnId);
     if (!column) return;
 
     startBatchOperationMutation.mutate({
@@ -405,10 +499,10 @@ export function ColumnBatchOperationsDashboard() {
       dependencies: column.dependencies,
       safetyChecks: batchConfig.safetyChecks || {
         maxErrorRate: 10,
-        maxCostPerTerm: 0.10,
+        maxCostPerTerm: 0.1,
         requireApproval: false,
-        notifyOnCompletion: true
-      }
+        notifyOnCompletion: true,
+      },
     });
   };
 
@@ -429,17 +523,21 @@ export function ColumnBatchOperationsDashboard() {
           {/* System Health Indicator */}
           {metrics && (
             <div className="flex items-center space-x-2">
-              <div className={`w-3 h-3 rounded-full ${
-                metrics.systemHealth === 'excellent' ? 'bg-green-500' :
-                metrics.systemHealth === 'good' ? 'bg-blue-500' :
-                metrics.systemHealth === 'warning' ? 'bg-yellow-500' : 'bg-red-500'
-              }`} />
-              <span className="text-sm font-medium">
-                System {metrics.systemHealth}
-              </span>
+              <div
+                className={`w-3 h-3 rounded-full ${
+                  metrics.systemHealth === 'excellent'
+                    ? 'bg-green-500'
+                    : metrics.systemHealth === 'good'
+                      ? 'bg-blue-500'
+                      : metrics.systemHealth === 'warning'
+                        ? 'bg-yellow-500'
+                        : 'bg-red-500'
+                }`}
+              />
+              <span className="text-sm font-medium">System {metrics.systemHealth}</span>
             </div>
           )}
-          
+
           {/* Emergency Mode Toggle */}
           <div className="flex items-center space-x-2">
             <Switch
@@ -451,19 +549,15 @@ export function ColumnBatchOperationsDashboard() {
               Emergency Mode
             </Label>
           </div>
-          
+
           {/* Auto Refresh Toggle */}
           <div className="flex items-center space-x-2">
-            <Switch
-              id="auto-refresh"
-              checked={autoRefresh}
-              onCheckedChange={setAutoRefresh}
-            />
+            <Switch id="auto-refresh" checked={autoRefresh} onCheckedChange={setAutoRefresh} />
             <Label htmlFor="auto-refresh" className="text-sm">
               Auto Refresh
             </Label>
           </div>
-          
+
           <Button variant="outline" onClick={() => queryClient.invalidateQueries()}>
             <RefreshCw className="w-4 h-4 mr-2" />
             Refresh All
@@ -485,7 +579,7 @@ export function ColumnBatchOperationsDashboard() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -498,19 +592,21 @@ export function ColumnBatchOperationsDashboard() {
               <Progress value={metrics.currentLoad} className="mt-2" />
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Hourly Spend</p>
-                  <p className="text-2xl font-bold">{formatCost(metrics.costMetrics.hourlySpend)}</p>
+                  <p className="text-2xl font-bold">
+                    {formatCost(metrics.costMetrics.hourlySpend)}
+                  </p>
                 </div>
                 <DollarSign className="w-8 h-8 text-green-500" />
               </div>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardContent className="p-4">
               <div className="flex items-center justify-between">
@@ -533,9 +629,9 @@ export function ColumnBatchOperationsDashboard() {
           <AlertTitle>Emergency Mode Active</AlertTitle>
           <AlertDescription>
             All non-critical operations are paused. Only emergency controls are available.
-            <Button 
-              variant="outline" 
-              size="sm" 
+            <Button
+              variant="outline"
+              size="sm"
               className="ml-4"
               onClick={() => setEmergencyMode(false)}
             >
@@ -564,7 +660,7 @@ export function ColumnBatchOperationsDashboard() {
                   Active Batch Operations
                 </div>
                 <Badge variant="outline">
-                  {operations?.filter(op => op.status === 'running').length || 0} running
+                  {operations?.filter((op) => op.status === 'running').length || 0} running
                 </Badge>
               </CardTitle>
             </CardHeader>
@@ -587,10 +683,12 @@ export function ColumnBatchOperationsDashboard() {
                               <Button
                                 size="sm"
                                 variant="outline"
-                                onClick={() => controlOperationMutation.mutate({
-                                  operationId: operation.operationId,
-                                  action: operation.status === 'running' ? 'pause' : 'resume'
-                                })}
+                                onClick={() =>
+                                  controlOperationMutation.mutate({
+                                    operationId: operation.operationId,
+                                    action: operation.status === 'running' ? 'pause' : 'resume',
+                                  })
+                                }
                                 disabled={controlOperationMutation.isPending}
                               >
                                 {operation.status === 'running' ? (
@@ -610,10 +708,12 @@ export function ColumnBatchOperationsDashboard() {
                               <Button
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => controlOperationMutation.mutate({
-                                  operationId: operation.operationId,
-                                  action: 'cancel'
-                                })}
+                                onClick={() =>
+                                  controlOperationMutation.mutate({
+                                    operationId: operation.operationId,
+                                    action: 'cancel',
+                                  })
+                                }
                                 disabled={controlOperationMutation.isPending}
                               >
                                 <XCircle className="w-4 h-4 mr-1" />
@@ -624,10 +724,12 @@ export function ColumnBatchOperationsDashboard() {
                               <Button
                                 size="sm"
                                 variant="destructive"
-                                onClick={() => controlOperationMutation.mutate({
-                                  operationId: operation.operationId,
-                                  action: 'emergency-stop'
-                                })}
+                                onClick={() =>
+                                  controlOperationMutation.mutate({
+                                    operationId: operation.operationId,
+                                    action: 'emergency-stop',
+                                  })
+                                }
                                 disabled={controlOperationMutation.isPending}
                               >
                                 <StopCircle className="w-4 h-4 mr-1" />
@@ -641,11 +743,13 @@ export function ColumnBatchOperationsDashboard() {
                         <div className="space-y-3">
                           <div>
                             <div className="flex justify-between text-sm mb-1">
-                              <span>Progress: {operation.processedTerms}/{operation.totalTerms}</span>
+                              <span>
+                                Progress: {operation.processedTerms}/{operation.totalTerms}
+                              </span>
                               <span>Phase: {operation.currentPhase}</span>
                             </div>
-                            <Progress 
-                              value={(operation.processedTerms / operation.totalTerms) * 100} 
+                            <Progress
+                              value={(operation.processedTerms / operation.totalTerms) * 100}
                               className="h-2"
                             />
                           </div>
@@ -653,7 +757,9 @@ export function ColumnBatchOperationsDashboard() {
                           <div className="grid grid-cols-2 md:grid-cols-6 gap-4 text-sm">
                             <div>
                               <Label>Successful</Label>
-                              <p className="font-mono text-green-600">{operation.successfulTerms}</p>
+                              <p className="font-mono text-green-600">
+                                {operation.successfulTerms}
+                              </p>
                             </div>
                             <div>
                               <Label>Failed</Label>
@@ -661,7 +767,9 @@ export function ColumnBatchOperationsDashboard() {
                             </div>
                             <div>
                               <Label>Quality Score</Label>
-                              <p className="font-mono">{operation.averageQualityScore.toFixed(1)}/10</p>
+                              <p className="font-mono">
+                                {operation.averageQualityScore.toFixed(1)}/10
+                              </p>
                             </div>
                             <div>
                               <Label>Cost</Label>
@@ -671,15 +779,19 @@ export function ColumnBatchOperationsDashboard() {
                               <Label>ETA</Label>
                               <p className="font-mono">
                                 {formatDuration(
-                                  (new Date(operation.estimatedCompletionTime).getTime() - Date.now()) / 60000
+                                  (new Date(operation.estimatedCompletionTime).getTime() -
+                                    Date.now()) /
+                                    60000
                                 )}
                               </p>
                             </div>
                             <div>
                               <Label>Error Rate</Label>
-                              <p className={`font-mono ${
-                                operation.errorRate > 10 ? 'text-red-600' : 'text-green-600'
-                              }`}>
+                              <p
+                                className={`font-mono ${
+                                  operation.errorRate > 10 ? 'text-red-600' : 'text-green-600'
+                                }`}
+                              >
                                 {operation.errorRate.toFixed(1)}%
                               </p>
                             </div>
@@ -711,8 +823,12 @@ export function ColumnBatchOperationsDashboard() {
                               <Label>Recent Errors ({operation.errors.length})</Label>
                               <div className="mt-2 space-y-1 max-h-20 overflow-y-auto">
                                 {operation.errors.slice(0, 3).map((error, index) => (
-                                  <div key={index} className="text-xs text-red-600 bg-red-50 p-2 rounded">
-                                    <span className="font-medium">{error.termName}:</span> {error.error}
+                                  <div
+                                    key={index}
+                                    className="text-xs text-red-600 bg-red-50 p-2 rounded"
+                                  >
+                                    <span className="font-medium">{error.termName}:</span>{' '}
+                                    {error.error}
                                   </div>
                                 ))}
                               </div>
@@ -741,7 +857,9 @@ export function ColumnBatchOperationsDashboard() {
               <CardDescription>Manage operation queue and priorities</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Queue management interface will be implemented in Phase 2.2</p>
+              <p className="text-muted-foreground">
+                Queue management interface will be implemented in Phase 2.2
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -802,10 +920,12 @@ export function ColumnBatchOperationsDashboard() {
                   <Input
                     type="number"
                     value={batchConfig.batchSize}
-                    onChange={(e) => setBatchConfig(prev => ({ 
-                      ...prev, 
-                      batchSize: parseInt(e.target.value) 
-                    }))}
+                    onChange={(e) =>
+                      setBatchConfig((prev) => ({
+                        ...prev,
+                        batchSize: parseInt(e.target.value),
+                      }))
+                    }
                     min="1"
                     max="100"
                   />
@@ -815,10 +935,12 @@ export function ColumnBatchOperationsDashboard() {
                   <Input
                     type="number"
                     value={batchConfig.qualityThreshold}
-                    onChange={(e) => setBatchConfig(prev => ({ 
-                      ...prev, 
-                      qualityThreshold: parseFloat(e.target.value) 
-                    }))}
+                    onChange={(e) =>
+                      setBatchConfig((prev) => ({
+                        ...prev,
+                        qualityThreshold: parseFloat(e.target.value),
+                      }))
+                    }
                     min="1"
                     max="10"
                     step="0.1"
@@ -829,10 +951,12 @@ export function ColumnBatchOperationsDashboard() {
                   <Input
                     type="number"
                     value={batchConfig.budgetLimit}
-                    onChange={(e) => setBatchConfig(prev => ({ 
-                      ...prev, 
-                      budgetLimit: parseFloat(e.target.value) 
-                    }))}
+                    onChange={(e) =>
+                      setBatchConfig((prev) => ({
+                        ...prev,
+                        budgetLimit: parseFloat(e.target.value),
+                      }))
+                    }
                     min="1"
                     step="0.01"
                   />
@@ -847,10 +971,12 @@ export function ColumnBatchOperationsDashboard() {
                       <Input
                         type="number"
                         value={batchConfig.delayBetweenBatches}
-                        onChange={(e) => setBatchConfig(prev => ({ 
-                          ...prev, 
-                          delayBetweenBatches: parseInt(e.target.value) 
-                        }))}
+                        onChange={(e) =>
+                          setBatchConfig((prev) => ({
+                            ...prev,
+                            delayBetweenBatches: parseInt(e.target.value),
+                          }))
+                        }
                         min="100"
                         max="10000"
                       />
@@ -860,10 +986,12 @@ export function ColumnBatchOperationsDashboard() {
                       <Input
                         type="number"
                         value={batchConfig.maxRetries}
-                        onChange={(e) => setBatchConfig(prev => ({ 
-                          ...prev, 
-                          maxRetries: parseInt(e.target.value) 
-                        }))}
+                        onChange={(e) =>
+                          setBatchConfig((prev) => ({
+                            ...prev,
+                            maxRetries: parseInt(e.target.value),
+                          }))
+                        }
                         min="1"
                         max="10"
                       />
@@ -875,10 +1003,12 @@ export function ColumnBatchOperationsDashboard() {
                       <Switch
                         id="quality-pipeline"
                         checked={batchConfig.enableQualityPipeline}
-                        onCheckedChange={(checked) => setBatchConfig(prev => ({ 
-                          ...prev, 
-                          enableQualityPipeline: checked 
-                        }))}
+                        onCheckedChange={(checked) =>
+                          setBatchConfig((prev) => ({
+                            ...prev,
+                            enableQualityPipeline: checked,
+                          }))
+                        }
                       />
                       <Label htmlFor="quality-pipeline">Enable Quality Pipeline</Label>
                     </div>
@@ -886,10 +1016,12 @@ export function ColumnBatchOperationsDashboard() {
                       <Switch
                         id="skip-existing"
                         checked={batchConfig.skipExisting}
-                        onCheckedChange={(checked) => setBatchConfig(prev => ({ 
-                          ...prev, 
-                          skipExisting: checked 
-                        }))}
+                        onCheckedChange={(checked) =>
+                          setBatchConfig((prev) => ({
+                            ...prev,
+                            skipExisting: checked,
+                          }))
+                        }
                       />
                       <Label htmlFor="skip-existing">Skip Existing Content</Label>
                     </div>
@@ -900,11 +1032,11 @@ export function ColumnBatchOperationsDashboard() {
           </Card>
 
           {/* Columns Grid */}
-          <div className={`grid gap-4 ${
-            viewMode === 'grid' 
-              ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' 
-              : 'grid-cols-1'
-          }`}>
+          <div
+            className={`grid gap-4 ${
+              viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
+            }`}
+          >
             {filteredColumns.map((column) => (
               <Card key={column.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
@@ -912,9 +1044,7 @@ export function ColumnBatchOperationsDashboard() {
                     <CardTitle className="text-lg">{column.displayName}</CardTitle>
                     <div className="flex items-center space-x-2">
                       <Badge variant="outline">#{column.priority}</Badge>
-                      <Badge className={getCategoryColor(column.category)}>
-                        {column.category}
-                      </Badge>
+                      <Badge className={getCategoryColor(column.category)}>{column.category}</Badge>
                     </div>
                   </div>
                   <CardDescription>{column.description}</CardDescription>
@@ -946,7 +1076,7 @@ export function ColumnBatchOperationsDashboard() {
                         <div className="flex flex-wrap gap-1 mt-1">
                           {column.dependencies.map((dep) => (
                             <Badge key={dep} variant="outline" className="text-xs">
-                              {COLUMN_DEFINITIONS.find(c => c.id === dep)?.displayName || dep}
+                              {COLUMN_DEFINITIONS.find((c) => c.id === dep)?.displayName || dep}
                             </Badge>
                           ))}
                         </div>
@@ -984,7 +1114,9 @@ export function ColumnBatchOperationsDashboard() {
               <CardDescription>Advanced monitoring and analytics</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Advanced monitoring dashboard will be implemented in Phase 2.3</p>
+              <p className="text-muted-foreground">
+                Advanced monitoring dashboard will be implemented in Phase 2.3
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -996,7 +1128,9 @@ export function ColumnBatchOperationsDashboard() {
               <CardDescription>Safety mechanisms and emergency overrides</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Safety controls interface will be implemented in Phase 2.4</p>
+              <p className="text-muted-foreground">
+                Safety controls interface will be implemented in Phase 2.4
+              </p>
             </CardContent>
           </Card>
         </TabsContent>

@@ -1,6 +1,6 @@
 /**
  * Preload utility for critical components
- * 
+ *
  * This utility helps preload components that are likely to be needed
  * based on user interaction patterns and route priority.
  */
@@ -40,18 +40,13 @@ export async function preloadComponent(key: string): Promise<void> {
 
 // Preload multiple components
 export async function preloadComponents(keys: string[]): Promise<void> {
-  const promises = keys.map(key => preloadComponent(key));
+  const promises = keys.map((key) => preloadComponent(key));
   await Promise.allSettled(promises);
 }
 
 // Preload based on user authentication status
 export async function preloadForAuthenticatedUser(): Promise<void> {
-  await preloadComponents([
-    'dashboard',
-    'favorites',
-    'term-detail',
-    'ai-feedback-dashboard'
-  ]);
+  await preloadComponents(['dashboard', 'favorites', 'term-detail', 'ai-feedback-dashboard']);
 }
 
 // Preload based on admin role
@@ -61,7 +56,7 @@ export async function preloadForAdmin(): Promise<void> {
     'analytics',
     'ai-feedback-dashboard',
     'virtualized-term-list',
-    'chart-components'
+    'chart-components',
   ]);
 }
 
@@ -82,27 +77,27 @@ export function preloadOnIdle(): void {
 // Preload on mouse enter for specific elements
 export function preloadOnHover(element: HTMLElement, componentKey: string): void {
   let hasPreloaded = false;
-  
+
   const handleMouseEnter = () => {
     if (!hasPreloaded) {
       hasPreloaded = true;
       preloadComponent(componentKey);
     }
   };
-  
+
   element.addEventListener('mouseenter', handleMouseEnter, { once: true });
 }
 
 // Preload based on intersection (viewport proximity)
 export function preloadOnIntersection(
-  element: HTMLElement, 
-  componentKey: string, 
+  element: HTMLElement,
+  componentKey: string,
   rootMargin = '50px'
 ): void {
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(
       (entries) => {
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           if (entry.isIntersecting) {
             preloadComponent(componentKey);
             observer.unobserve(element);
@@ -111,7 +106,7 @@ export function preloadOnIntersection(
       },
       { rootMargin }
     );
-    
+
     observer.observe(element);
   }
 }
@@ -120,15 +115,16 @@ export function preloadOnIntersection(
 export function getPreloadStatus(): { loaded: string[]; pending: string[] } {
   const loaded: string[] = [];
   const pending: string[] = [];
-  
+
   for (const key of preloadMap.keys()) {
     // This is a simplified check - in practice you'd track loading state
-    if (Math.random() > 0.5) { // Placeholder logic
+    if (Math.random() > 0.5) {
+      // Placeholder logic
       loaded.push(key);
     } else {
       pending.push(key);
     }
   }
-  
+
   return { loaded, pending };
 }

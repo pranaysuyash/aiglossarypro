@@ -4,22 +4,18 @@ module.exports = {
   testMatch: ['**/__tests__/**/*.test.ts'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/../../$1',
-    '^@shared/(.*)$': '<rootDir>/../../../shared/$1'
+    '^@shared/(.*)$': '<rootDir>/../../../shared/$1',
   },
   transform: {
-    '^.+\\.tsx?$': 'ts-jest'
+    '^.+\\.tsx?$': 'ts-jest',
   },
-  collectCoverageFrom: [
-    '../*.ts',
-    '!../*.d.ts',
-    '!../__tests__/**'
-  ],
+  collectCoverageFrom: ['../*.ts', '!../*.d.ts', '!../__tests__/**'],
   coverageThreshold: {
     global: {
       branches: 80,
       functions: 80,
       lines: 80,
-      statements: 80
-    }
-  }
+      statements: 80,
+    },
+  },
 };

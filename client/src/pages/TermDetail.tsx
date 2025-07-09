@@ -1,25 +1,30 @@
-import { useState, useEffect } from "react";
-import { useParams, Link } from "wouter";
-import { ChevronRight, Heart, Copy, Share2 } from "lucide-react";
-import { useQuery } from "@tanstack/react-query";
-import { apiRequest } from "@/lib/queryClient";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbSeparator } from "@/components/ui/breadcrumb";
-import Sidebar from "@/components/Sidebar";
-import ProgressTracker from "@/components/ProgressTracker";
-import ShareMenu from "@/components/ShareMenu";
-import TermCard from "@/components/TermCard";
-import { AIDefinitionImprover } from "@/components/AIDefinitionImprover";
-import { useAuth } from "@/hooks/useAuth";
-import { sanitizeHTML, sanitizeMathHTML } from "@/utils/sanitize";
-import { FreeTierGate } from "@/components/FreeTierGate";
-import { UpgradePrompt } from "@/components/UpgradePrompt";
-import { useAccess } from "@/hooks/useAccess";
-import { OptimizedImage } from "@/components/ui/optimized-image";
-import { HierarchicalNavigator } from "@/components/sections/HierarchicalNavigator";
-import { contentOutline } from "@/data/content-outline";
+import { useQuery } from '@tanstack/react-query';
+import { ChevronRight, Copy, Heart, Share2 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, useParams } from 'wouter';
+import { AIDefinitionImprover } from '@/components/AIDefinitionImprover';
+import { FreeTierGate } from '@/components/FreeTierGate';
+import ProgressTracker from '@/components/ProgressTracker';
+import ShareMenu from '@/components/ShareMenu';
+import Sidebar from '@/components/Sidebar';
+import { HierarchicalNavigator } from '@/components/sections/HierarchicalNavigator';
+import TermCard from '@/components/TermCard';
+import { UpgradePrompt } from '@/components/UpgradePrompt';
+import { Badge } from '@/components/ui/badge';
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
+import { Button } from '@/components/ui/button';
+import { OptimizedImage } from '@/components/ui/optimized-image';
+import { contentOutline } from '@/data/content-outline';
+import { useToast } from '@/hooks/use-toast';
+import { useAccess } from '@/hooks/useAccess';
+import { useAuth } from '@/hooks/useAuth';
+import { apiRequest } from '@/lib/queryClient';
+import { sanitizeHTML, sanitizeMathHTML } from '@/utils/sanitize';
 
 export default function TermDetail() {
   const { id } = useParams();
@@ -47,7 +52,7 @@ export default function TermDetail() {
       }
     `;
     document.head.appendChild(style);
-    
+
     return () => {
       document.head.removeChild(style);
     };
@@ -56,64 +61,65 @@ export default function TermDetail() {
   // Function to handle section navigation
   const handleSectionNavigation = (path: string, node: any) => {
     console.log('Navigated to:', path, node);
-    
+
     // Generate section ID from path and node
     const sectionId = generateSectionId(path, node);
-    
+
     // Scroll to the specific section
     const element = document.getElementById(sectionId);
     if (element) {
-      element.scrollIntoView({ 
-        behavior: 'smooth', 
+      element.scrollIntoView({
+        behavior: 'smooth',
         block: 'start',
-        inline: 'nearest'
+        inline: 'nearest',
       });
-      
+
       // Add visual highlight
       element.classList.add('highlight-section');
       setTimeout(() => {
         element.classList.remove('highlight-section');
       }, 2000);
-      
+
       toast({
-        title: "Navigated to section",
+        title: 'Navigated to section',
         description: `Jumped to: ${node.title || node.name}`,
       });
     } else {
       toast({
-        title: "Section not found",
+        title: 'Section not found',
         description: "This section may not be loaded yet or doesn't exist.",
-        variant: "destructive"
+        variant: 'destructive',
       });
     }
   };
 
   // Generate consistent section ID from path and node
   const generateSectionId = (path: string, node: any) => {
-    const baseName = (node.title || node.name || '').toLowerCase()
+    const baseName = (node.title || node.name || '')
+      .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-+|-+$/g, '');
     return `section-${path.replace(/\./g, '-')}-${baseName}`;
   };
-  
+
   // Fetch term details
   const { data: term, isLoading } = useQuery({
     queryKey: [`/api/terms/${id}`],
     refetchOnWindowFocus: false,
-  }) as { data: any, isLoading: boolean };
-  
+  }) as { data: any; isLoading: boolean };
+
   // Fetch recommended terms
   const { data: recommended } = useQuery({
     queryKey: [`/api/terms/${id}/recommended`],
     refetchOnWindowFocus: false,
   });
-  
+
   // Check if term is in user's favorites
   const { data: favorite, isLoading: favoriteLoading } = useQuery({
     queryKey: [`/api/favorites/${id}`],
     enabled: isAuthenticated,
   });
-  
+
   // Check if term is marked as learned
   const { data: learned, isLoading: learnedLoading } = useQuery({
     queryKey: [`/api/progress/${id}`],
@@ -123,30 +129,27 @@ export default function TermDetail() {
   const toggleFavorite = async () => {
     if (!isAuthenticated) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to save favorites",
-        variant: "destructive",
+        title: 'Authentication required',
+        description: 'Please sign in to save favorites',
+        variant: 'destructive',
       });
       return;
     }
 
     try {
-      await apiRequest(
-        favorite ? "DELETE" : "POST", 
-        `/api/favorites/${id}`, 
-      );
-      
+      await apiRequest(favorite ? 'DELETE' : 'POST', `/api/favorites/${id}`);
+
       toast({
-        title: favorite ? "Removed from favorites" : "Added to favorites",
-        description: favorite 
-          ? `${term.name} has been removed from your favorites` 
+        title: favorite ? 'Removed from favorites' : 'Added to favorites',
+        description: favorite
+          ? `${term.name} has been removed from your favorites`
           : `${term.name} has been added to your favorites`,
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
-        title: "Error",
-        description: "Failed to update favorites. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to update favorites. Please try again.',
+        variant: 'destructive',
       });
     }
   };
@@ -156,14 +159,14 @@ export default function TermDetail() {
     try {
       await navigator.clipboard.writeText(url);
       toast({
-        title: "Link copied",
-        description: "Link has been copied to clipboard",
+        title: 'Link copied',
+        description: 'Link has been copied to clipboard',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
-        title: "Failed to copy",
-        description: "Please try again or copy manually",
-        variant: "destructive",
+        title: 'Failed to copy',
+        description: 'Please try again or copy manually',
+        variant: 'destructive',
       });
     }
   };
@@ -172,13 +175,13 @@ export default function TermDetail() {
   useState(() => {
     const trackView = async () => {
       try {
-        await apiRequest("POST", `/api/terms/${id}/view`, null);
+        await apiRequest('POST', `/api/terms/${id}/view`, null);
       } catch (error) {
         // Silent fail - not critical for UX
-        console.error("Failed to log term view", error);
+        console.error('Failed to log term view', error);
       }
     };
-    
+
     trackView();
   });
 
@@ -196,7 +199,7 @@ export default function TermDetail() {
                   <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>
                   <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
                 </div>
-                
+
                 <div className="space-y-4 my-8">
                   <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-1/5 mb-3"></div>
                   <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded"></div>
@@ -234,13 +237,13 @@ export default function TermDetail() {
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex flex-col md:flex-row gap-6">
         <Sidebar />
-        
+
         <main className="flex-1">
           {/* Free Tier Banner */}
           {isAuthenticated && isFreeTier && accessStatus && (
             <UpgradePrompt variant="banner" className="mb-4" />
           )}
-          
+
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm mb-6">
             <div className="p-6">
               {/* Breadcrumb */}
@@ -270,12 +273,16 @@ export default function TermDetail() {
               <div className="flex justify-between items-start mb-6">
                 <div>
                   <div className="flex flex-wrap gap-2 mb-2">
-                    {term.subcategories && term.subcategories.map((subcategory: any, index: number) => (
-                      <Badge key={index} variant="secondary" className={
-                        index % 2 === 0 
-                          ? "bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300" 
-                          : "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
-                      }>
+                    {term.subcategories?.map((subcategory: any, index: number) => (
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className={
+                          index % 2 === 0
+                            ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300'
+                            : 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300'
+                        }
+                      >
                         {subcategory}
                       </Badge>
                     ))}
@@ -283,39 +290,39 @@ export default function TermDetail() {
                   <h1 className="text-3xl font-bold mb-2">{term.name}</h1>
                   <p className="text-gray-500 dark:text-gray-400">Last updated: {term.updatedAt}</p>
                 </div>
-                
+
                 <div className="flex space-x-2">
-                  <Button 
-                    variant="ghost" 
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={toggleFavorite}
                     disabled={favoriteLoading}
-                    className={favorite ? "text-accent-500" : "text-gray-400 hover:text-accent-500"}
-                    aria-label={favorite ? "Remove from favorites" : "Add to favorites"}
+                    className={favorite ? 'text-accent-500' : 'text-gray-400 hover:text-accent-500'}
+                    aria-label={favorite ? 'Remove from favorites' : 'Add to favorites'}
                   >
-                    <Heart className={favorite ? "fill-current" : ""} />
+                    <Heart className={favorite ? 'fill-current' : ''} />
                   </Button>
-                  
-                  <Button 
-                    variant="ghost" 
+
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={copyLink}
                     aria-label="Copy link to clipboard"
                   >
                     <Copy />
                   </Button>
-                  
-                  <Button 
-                    variant="ghost" 
+
+                  <Button
+                    variant="ghost"
                     size="icon"
                     onClick={() => setShareMenuOpen(true)}
                     aria-label="Share this term"
                   >
                     <Share2 />
                   </Button>
-                  
-                  <ShareMenu 
-                    isOpen={shareMenuOpen} 
+
+                  <ShareMenu
+                    isOpen={shareMenuOpen}
                     onClose={() => setShareMenuOpen(false)}
                     title={term.name}
                     url={window.location.href}
@@ -326,7 +333,7 @@ export default function TermDetail() {
               {/* Definition */}
               <div id="section-0-0-definition" className="mb-8 scroll-mt-20">
                 <h2 className="text-xl font-semibold mb-3">Definition</h2>
-                
+
                 {/* Check if this is a preview version */}
                 {term.isPreview ? (
                   <div>
@@ -340,11 +347,12 @@ export default function TermDetail() {
                             Sign in to view full definition
                           </h3>
                           <p className="text-blue-700 dark:text-blue-300 text-sm">
-                            Get unlimited access to complete definitions, examples, and more features.
+                            Get unlimited access to complete definitions, examples, and more
+                            features.
                           </p>
                         </div>
-                        <Button 
-                          onClick={() => window.location.href = '/login'}
+                        <Button
+                          onClick={() => (window.location.href = '/login')}
                           className="bg-blue-600 hover:bg-blue-700 text-white"
                         >
                           Sign In
@@ -387,7 +395,10 @@ export default function TermDetail() {
                     <h2 className="text-xl font-semibold mb-3">Key Characteristics</h2>
                     <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
                       {term.characteristics.map((characteristic: string, index: number) => (
-                        <li key={index} dangerouslySetInnerHTML={{ __html: sanitizeHTML(characteristic) }} />
+                        <li
+                          key={index}
+                          dangerouslySetInnerHTML={{ __html: sanitizeHTML(characteristic) }}
+                        />
                       ))}
                     </ul>
                   </div>
@@ -403,7 +414,9 @@ export default function TermDetail() {
                       {term.types.map((type: any, index: number) => (
                         <div key={index} className="bg-gray-50 dark:bg-gray-900/50 p-4 rounded-lg">
                           <h3 className="font-medium text-lg mb-2">{type.name}</h3>
-                          <p className="text-gray-700 dark:text-gray-300 text-sm">{type.description}</p>
+                          <p className="text-gray-700 dark:text-gray-300 text-sm">
+                            {type.description}
+                          </p>
                         </div>
                       ))}
                     </div>
@@ -415,9 +428,9 @@ export default function TermDetail() {
               {term.visualUrl && (
                 <div className="mb-8">
                   <h2 className="text-xl font-semibold mb-3">Visual Representation</h2>
-                  <OptimizedImage 
-                    src={term.visualUrl} 
-                    alt={`${term.name} diagram`} 
+                  <OptimizedImage
+                    src={term.visualUrl}
+                    alt={`${term.name} diagram`}
                     className="rounded-lg shadow-sm w-full h-auto object-cover mb-2"
                     lazy={false}
                     priority
@@ -435,7 +448,9 @@ export default function TermDetail() {
                 <div className="mb-8">
                   <h2 className="text-xl font-semibold mb-3">Mathematical Foundation</h2>
                   <div className="bg-gray-50 dark:bg-gray-900/50 p-5 rounded-lg font-mono text-sm">
-                    <div dangerouslySetInnerHTML={{ __html: sanitizeMathHTML(term.mathFormulation) }} />
+                    <div
+                      dangerouslySetInnerHTML={{ __html: sanitizeMathHTML(term.mathFormulation) }}
+                    />
                   </div>
                 </div>
               )}
@@ -446,10 +461,20 @@ export default function TermDetail() {
                   <h2 className="text-xl font-semibold mb-3">Applications</h2>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                     {term.applications.map((app: any, index: number) => (
-                      <div key={index} className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg">
-                        {app.icon && <div className="mb-2" dangerouslySetInnerHTML={{ __html: sanitizeHTML(app.icon) }} />}
+                      <div
+                        key={index}
+                        className="p-4 border border-gray-200 dark:border-gray-700 rounded-lg"
+                      >
+                        {app.icon && (
+                          <div
+                            className="mb-2"
+                            dangerouslySetInnerHTML={{ __html: sanitizeHTML(app.icon) }}
+                          />
+                        )}
                         <h3 className="font-medium mb-1">{app.name}</h3>
-                        <p className="text-sm text-gray-600 dark:text-gray-400">{app.description}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">
+                          {app.description}
+                        </p>
                       </div>
                     ))}
                   </div>
@@ -479,19 +504,22 @@ export default function TermDetail() {
                   <ul className="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     {term.references.map((reference: string, index: number) => {
                       // Clean up the reference by removing href="#" stubs and extracting actual URLs
-                      const cleanReference = reference.replace(/href="#"/g, '').replace(/<a[^>]*href="#"[^>]*>/g, '').replace(/<\/a>/g, '');
-                      
+                      const cleanReference = reference
+                        .replace(/href="#"/g, '')
+                        .replace(/<a[^>]*href="#"[^>]*>/g, '')
+                        .replace(/<\/a>/g, '');
+
                       // Extract URL from reference if it contains a valid link
                       const urlMatch = cleanReference.match(/https?:\/\/[^\s<>"']+/);
                       const hasUrl = urlMatch?.[0];
-                      
+
                       // Extract text content, removing HTML tags for display
                       const textContent = cleanReference.replace(/<[^>]*>/g, '').trim();
-                      
+
                       return (
                         <li key={index}>
                           {hasUrl ? (
-                            <a 
+                            <a
                               href={hasUrl}
                               target="_blank"
                               rel="noopener noreferrer"
@@ -500,9 +528,7 @@ export default function TermDetail() {
                               {textContent}
                             </a>
                           ) : (
-                            <span className="text-gray-700 dark:text-gray-300">
-                              {textContent}
-                            </span>
+                            <span className="text-gray-700 dark:text-gray-300">{textContent}</span>
                           )}
                         </li>
                       );
@@ -511,26 +537,24 @@ export default function TermDetail() {
                 </div>
               )}
             </div>
-            
+
             {/* Progress Tracker */}
-            {!learnedLoading && (
-              <ProgressTracker termId={id!} isLearned={!!learned} />
-            )}
+            {!learnedLoading && <ProgressTracker termId={id!} isLearned={!!learned} />}
           </div>
-          
+
           {/* AI Definition Improver - Only for authenticated users */}
           {isAuthenticated && term && (
             <div className="mb-8">
-              <AIDefinitionImprover 
+              <AIDefinitionImprover
                 term={term as any}
-                onImprovementApplied={(improvedTerm) => {
+                onImprovementApplied={(_improvedTerm) => {
                   // Optionally refresh the term data or update local state
                   window.location.reload();
                 }}
               />
             </div>
           )}
-          
+
           {/* Recommended Section */}
           {recommended && Array.isArray(recommended) && recommended.length > 0 && (
             <div className="mb-8">
@@ -542,14 +566,10 @@ export default function TermDetail() {
                   </a>
                 </Link>
               </div>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {(recommended as any[]).map((recTerm: any) => (
-                  <TermCard
-                    key={recTerm.id}
-                    term={recTerm}
-                    isFavorite={recTerm.isFavorite}
-                  />
+                  <TermCard key={recTerm.id} term={recTerm} isFavorite={recTerm.isFavorite} />
                 ))}
               </div>
             </div>

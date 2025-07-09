@@ -1,43 +1,49 @@
-import { useState, useEffect } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
-import SubcategoryCard from "@/components/SubcategoryCard";
-import CategoryHierarchy from "@/components/CategoryHierarchy";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ISubcategory, ICategory } from "@/interfaces/interfaces";
-import { Search, FolderOpen, Filter, SortAsc, SortDesc, Loader2 } from "lucide-react";
+import { useQuery } from '@tanstack/react-query';
+import { Filter, FolderOpen, Loader2, Search, SortAsc, SortDesc } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link } from 'wouter';
+import CategoryHierarchy from '@/components/CategoryHierarchy';
+import SubcategoryCard from '@/components/SubcategoryCard';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { ICategory, ISubcategory } from '@/interfaces/interfaces';
 
 export default function Subcategories() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState<string>("all");
-  const [sortBy, setSortBy] = useState<"name" | "termCount">("name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'name' | 'termCount'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [page, setPage] = useState(1);
   const [limit] = useState(50);
 
   // Reset page when filters change
   useEffect(() => {
     setPage(1);
-  }, [searchTerm, selectedCategory, sortBy, sortOrder]);
+  }, []);
 
   // Fetch categories for filter dropdown
   const { data: categories } = useQuery({
-    queryKey: ["/api/categories?limit=500"],
+    queryKey: ['/api/categories?limit=500'],
     refetchOnWindowFocus: false,
   });
 
   // Fetch subcategories with filters
   const { data: subcategoriesData, isLoading: subcategoriesLoading } = useQuery({
     queryKey: [
-      "/api/subcategories",
+      '/api/subcategories',
       {
         page,
         limit,
         search: searchTerm || undefined,
-        categoryId: selectedCategory !== "all" ? selectedCategory : undefined,
+        categoryId: selectedCategory !== 'all' ? selectedCategory : undefined,
         sort: sortBy,
         order: sortOrder,
       },
@@ -49,48 +55,50 @@ export default function Subcategories() {
   const pagination = (subcategoriesData as any)?.pagination;
 
   // Create category lookup for showing category names
-  const categoryLookup = (categories as ICategory[] || []).reduce((acc, cat) => {
-    acc[cat.id] = cat.name;
-    return acc;
-  }, {} as Record<string, string>);
+  const categoryLookup = ((categories as ICategory[]) || []).reduce(
+    (acc, cat) => {
+      acc[cat.id] = cat.name;
+      return acc;
+    },
+    {} as Record<string, string>
+  );
 
   // Filter and sort subcategories locally for immediate feedback
   const filteredSubcategories = subcategories.filter((subcategory: ISubcategory) => {
-    const matchesSearch = !searchTerm || 
-      subcategory.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === "all" || 
-      subcategory.categoryId === selectedCategory;
+    const matchesSearch =
+      !searchTerm || subcategory.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory =
+      selectedCategory === 'all' || subcategory.categoryId === selectedCategory;
     return matchesSearch && matchesCategory;
   });
 
-  const sortedSubcategories = [...filteredSubcategories].sort((a: ISubcategory, b: ISubcategory) => {
-    let comparison = 0;
-    if (sortBy === "name") {
-      comparison = a.name.localeCompare(b.name);
-    } else if (sortBy === "termCount") {
-      comparison = (a.termCount || 0) - (b.termCount || 0);
+  const sortedSubcategories = [...filteredSubcategories].sort(
+    (a: ISubcategory, b: ISubcategory) => {
+      let comparison = 0;
+      if (sortBy === 'name') {
+        comparison = a.name.localeCompare(b.name);
+      } else if (sortBy === 'termCount') {
+        comparison = (a.termCount || 0) - (b.termCount || 0);
+      }
+      return sortOrder === 'asc' ? comparison : -comparison;
     }
-    return sortOrder === "asc" ? comparison : -comparison;
-  });
+  );
 
   const breadcrumbItems = [
-    { label: "Home", href: "/app" },
-    { label: "Subcategories", isCurrentPage: true }
+    { label: 'Home', href: '/app' },
+    { label: 'Subcategories', isCurrentPage: true },
   ];
 
   const handleLoadMore = () => {
     if (pagination?.hasMore) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   };
 
   return (
     <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-4 xs:py-6">
       {/* Breadcrumb */}
-      <CategoryHierarchy 
-        items={breadcrumbItems}
-        className="mb-4"
-      />
+      <CategoryHierarchy items={breadcrumbItems} className="mb-4" />
 
       {/* Header */}
       <div className="mb-8">
@@ -103,7 +111,7 @@ export default function Subcategories() {
               Explore specialized topics within AI/ML categories
             </p>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Badge variant="secondary">
               {pagination?.total || sortedSubcategories.length} Subcategories
@@ -134,7 +142,7 @@ export default function Subcategories() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {(categories as ICategory[] || []).map((category) => (
+              {((categories as ICategory[]) || []).map((category) => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
                 </SelectItem>
@@ -144,7 +152,10 @@ export default function Subcategories() {
 
           {/* Sort Options */}
           <div className="flex gap-2">
-            <Select value={sortBy} onValueChange={(value: "name" | "termCount") => setSortBy(value)}>
+            <Select
+              value={sortBy}
+              onValueChange={(value: 'name' | 'termCount') => setSortBy(value)}
+            >
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
               </SelectTrigger>
@@ -153,36 +164,37 @@ export default function Subcategories() {
                 <SelectItem value="termCount">Term Count</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
             >
-              {sortOrder === "asc" ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
+              {sortOrder === 'asc' ? (
+                <SortAsc className="h-4 w-4" />
+              ) : (
+                <SortDesc className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
 
         {/* Active Filters */}
-        {(searchTerm || selectedCategory !== "all") && (
+        {(searchTerm || selectedCategory !== 'all') && (
           <div className="flex flex-wrap gap-2">
             {searchTerm && (
               <Badge variant="secondary" className="flex items-center gap-1">
                 Search: "{searchTerm}"
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="ml-1 hover:text-red-500"
-                >
+                <button onClick={() => setSearchTerm('')} className="ml-1 hover:text-red-500">
                   ×
                 </button>
               </Badge>
             )}
-            {selectedCategory !== "all" && (
+            {selectedCategory !== 'all' && (
               <Badge variant="secondary" className="flex items-center gap-1">
                 Category: {categoryLookup[selectedCategory] || selectedCategory}
                 <button
-                  onClick={() => setSelectedCategory("all")}
+                  onClick={() => setSelectedCategory('all')}
                   className="ml-1 hover:text-red-500"
                 >
                   ×
@@ -197,7 +209,10 @@ export default function Subcategories() {
       {subcategoriesLoading && page === 1 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 xs:gap-4 sm:gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+            <div
+              key={i}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4"
+            >
               <div className="animate-pulse">
                 <div className="flex items-start space-x-3">
                   <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
@@ -219,7 +234,7 @@ export default function Subcategories() {
                 key={subcategory.id}
                 subcategory={subcategory}
                 categoryName={categoryLookup[subcategory.categoryId]}
-                showCategoryName={selectedCategory === "all"}
+                showCategoryName={selectedCategory === 'all'}
               />
             ))}
           </div>
@@ -233,9 +248,7 @@ export default function Subcategories() {
                 variant="outline"
                 className="flex items-center gap-2"
               >
-                {subcategoriesLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : null}
+                {subcategoriesLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 Load More Subcategories
               </Button>
             </div>
@@ -249,26 +262,23 @@ export default function Subcategories() {
               No subcategories found
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {searchTerm || selectedCategory !== "all"
-                ? "Try adjusting your search criteria"
-                : "No subcategories are available at the moment"
-              }
+              {searchTerm || selectedCategory !== 'all'
+                ? 'Try adjusting your search criteria'
+                : 'No subcategories are available at the moment'}
             </p>
-            {(searchTerm || selectedCategory !== "all") && (
+            {(searchTerm || selectedCategory !== 'all') && (
               <div className="space-x-2">
                 <Button
                   variant="outline"
                   onClick={() => {
-                    setSearchTerm("");
-                    setSelectedCategory("all");
+                    setSearchTerm('');
+                    setSelectedCategory('all');
                   }}
                 >
                   Clear all filters
                 </Button>
                 <Link href="/categories">
-                  <Button variant="outline">
-                    Browse Categories
-                  </Button>
+                  <Button variant="outline">Browse Categories</Button>
                 </Link>
               </div>
             )}
@@ -285,33 +295,28 @@ export default function Subcategories() {
               <div className="text-2xl font-bold text-primary">
                 {pagination?.total || sortedSubcategories.length}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Total Subcategories
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total Subcategories</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-primary">
-                {sortedSubcategories.reduce((sum: number, sub: ISubcategory) => sum + (sub.termCount || 0), 0)}
+                {sortedSubcategories.reduce(
+                  (sum: number, sub: ISubcategory) => sum + (sub.termCount || 0),
+                  0
+                )}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Total Terms
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total Terms</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-primary">
                 {new Set(sortedSubcategories.map((sub: ISubcategory) => sub.categoryId)).size}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Categories Covered
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Categories Covered</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-primary">
                 {sortedSubcategories.filter((sub: ISubcategory) => (sub.termCount || 0) > 0).length}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Active Subcategories
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Active Subcategories</div>
             </div>
           </div>
         </div>

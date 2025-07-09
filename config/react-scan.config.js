@@ -2,7 +2,7 @@
 export default {
   // Enable React Scan only in development mode
   enabled: process.env.NODE_ENV === 'development',
-  
+
   // Performance monitoring options
   monitoring: {
     // Track render performance
@@ -16,7 +16,7 @@ export default {
     // Track context changes
     contextChanges: true,
   },
-  
+
   // Reporting configuration
   reporting: {
     // Generate reports automatically
@@ -34,7 +34,7 @@ export default {
     // Include stack traces for slow renders
     includeStackTraces: true,
   },
-  
+
   // Performance thresholds
   thresholds: {
     // Render time threshold in milliseconds
@@ -46,7 +46,7 @@ export default {
     // Bundle size threshold in MB
     bundleSize: 5,
   },
-  
+
   // Component filtering
   filters: {
     // Include only these components (empty array means all)
@@ -70,7 +70,7 @@ export default {
       'src/features/**',
     ],
   },
-  
+
   // Integration with existing tools
   integrations: {
     // PostHog integration for analytics
@@ -86,7 +86,7 @@ export default {
         performanceReport: 'react_scan_performance_report',
       },
     },
-    
+
     // Sentry integration for error tracking
     sentry: {
       enabled: true,
@@ -95,7 +95,7 @@ export default {
       // Performance issue threshold
       performanceThreshold: 100, // milliseconds
     },
-    
+
     // Chrome DevTools integration
     devTools: {
       enabled: true,
@@ -107,7 +107,7 @@ export default {
       componentTree: true,
     },
   },
-  
+
   // Advanced options
   advanced: {
     // Sample rate for performance monitoring (0.1 = 10%)
@@ -126,7 +126,7 @@ export default {
       suspense: true,
     },
   },
-  
+
   // Alert configuration
   alerts: {
     // Enable performance alerts
@@ -150,7 +150,7 @@ export default {
       webhook: process.env.REACT_SCAN_WEBHOOK_URL,
     },
   },
-  
+
   // Custom metrics
   customMetrics: {
     // Track custom performance metrics

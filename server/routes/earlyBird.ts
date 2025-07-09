@@ -1,10 +1,10 @@
-import { Express, Request, Response } from "express";
-import { eq, and, count, sql } from "drizzle-orm";
-import { z } from "zod";
-import { db } from "../db";
-import { earlyBirdCustomers, earlyBirdStatus } from "../../shared/schema";
-import { log as logger } from "../utils/logger";
-import { createHash } from "crypto";
+import { createHash } from 'node:crypto';
+import { eq } from 'drizzle-orm';
+import type { Express, Request, Response } from 'express';
+import { z } from 'zod';
+import { earlyBirdCustomers, earlyBirdStatus } from '../../shared/schema';
+import { db } from '../db';
+import { log as logger } from '../utils/logger';
 
 // Validation schemas
 const registerEarlyBirdSchema = z.object({
@@ -28,10 +28,12 @@ function hashIP(ip: string): string {
 
 // Helper function to get client IP
 function getClientIP(req: Request): string {
-  return (req.headers['x-forwarded-for'] as string)?.split(',')[0] || 
-         req.connection?.remoteAddress || 
-         req.socket?.remoteAddress || 
-         'unknown';
+  return (
+    (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
+    req.connection?.remoteAddress ||
+    req.socket?.remoteAddress ||
+    'unknown'
+  );
 }
 
 // Register early bird customer
@@ -41,8 +43,8 @@ async function registerEarlyBirdCustomer(req: Request, res: Response): Promise<v
     if (!validation.success) {
       res.status(400).json({
         success: false,
-        error: "Invalid input",
-        details: validation.error.errors
+        error: 'Invalid input',
+        details: validation.error.errors,
       });
       return;
     }
@@ -50,7 +52,8 @@ async function registerEarlyBirdCustomer(req: Request, res: Response): Promise<v
     const { email, utmSource, utmMedium, utmCampaign, countryCode } = validation.data;
 
     // Check if email already registered
-    const existingCustomer = await db.select()
+    const existingCustomer = await db
+      .select()
       .from(earlyBirdCustomers)
       .where(eq(earlyBirdCustomers.email, email))
       .limit(1);
@@ -58,7 +61,7 @@ async function registerEarlyBirdCustomer(req: Request, res: Response): Promise<v
     if (existingCustomer.length > 0) {
       res.status(400).json({
         success: false,
-        error: "Email already registered for early bird promotion"
+        error: 'Email already registered for early bird promotion',
       });
       return;
     }
@@ -70,7 +73,7 @@ async function registerEarlyBirdCustomer(req: Request, res: Response): Promise<v
     if (!status?.earlyBirdActive || status.totalRegistered >= status.maxEarlyBirdSlots) {
       res.status(400).json({
         success: false,
-        error: "Early bird promotion has ended - all 500 slots have been filled"
+        error: 'Early bird promotion has ended - all 500 slots have been filled',
       });
       return;
     }
@@ -81,7 +84,7 @@ async function registerEarlyBirdCustomer(req: Request, res: Response): Promise<v
 
     // Register new early bird customer
     const ipAddress = hashIP(getClientIP(req));
-    
+
     await db.insert(earlyBirdCustomers).values({
       email,
       utmSource,
@@ -97,25 +100,26 @@ async function registerEarlyBirdCustomer(req: Request, res: Response): Promise<v
       utmSource,
       utmMedium,
       utmCampaign,
-      countryCode
+      countryCode,
     });
 
     res.json({
       success: true,
-      message: "Successfully registered for early bird promotion",
+      message: 'Successfully registered for early bird promotion',
       discount: {
         amount: 70,
         originalPrice: 249,
         discountedPrice: 179,
-        expiresAt: expiresAt.toISOString()
-      }
+        expiresAt: expiresAt.toISOString(),
+      },
     });
-
   } catch (error) {
-    logger.error("Error registering early bird customer", { error: error instanceof Error ? error.message : String(error) });
+    logger.error('Error registering early bird customer', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
-      error: "Internal server error"
+      error: 'Internal server error',
     });
   }
 }
@@ -127,8 +131,8 @@ async function updateEarlyBirdCustomer(req: Request, res: Response): Promise<voi
     if (!validation.success) {
       res.status(400).json({
         success: false,
-        error: "Invalid input",
-        details: validation.error.errors
+        error: 'Invalid input',
+        details: validation.error.errors,
       });
       return;
     }
@@ -144,30 +148,29 @@ async function updateEarlyBirdCustomer(req: Request, res: Response): Promise<voi
       updateData.purchasedAt = new Date();
     }
 
-    await db.update(earlyBirdCustomers)
-      .set(updateData)
-      .where(eq(earlyBirdCustomers.email, email));
+    await db.update(earlyBirdCustomers).set(updateData).where(eq(earlyBirdCustomers.email, email));
 
     logger.info(`Early bird customer status updated: ${email} -> ${status}`, {
-      purchaseOrderId
+      purchaseOrderId,
     });
 
     res.json({
       success: true,
-      message: "Early bird customer status updated successfully"
+      message: 'Early bird customer status updated successfully',
     });
-
   } catch (error) {
-    logger.error("Error updating early bird customer", { error: error instanceof Error ? error.message : String(error) });
+    logger.error('Error updating early bird customer', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
-      error: "Internal server error"
+      error: 'Internal server error',
     });
   }
 }
 
 // Get early bird status
-async function getEarlyBirdStatus(req: Request, res: Response): Promise<void> {
+async function getEarlyBirdStatus(_req: Request, res: Response): Promise<void> {
   try {
     const statusResult = await db.select().from(earlyBirdStatus).limit(1);
     const status = statusResult[0];
@@ -175,7 +178,7 @@ async function getEarlyBirdStatus(req: Request, res: Response): Promise<void> {
     if (!status) {
       res.status(404).json({
         success: false,
-        error: "Early bird status not found"
+        error: 'Early bird status not found',
       });
       return;
     }
@@ -197,16 +200,17 @@ async function getEarlyBirdStatus(req: Request, res: Response): Promise<void> {
           originalPrice: 249,
           discountedPrice: 179,
           discountAmount: 70,
-          discountPercentage: 28
-        }
-      }
+          discountPercentage: 28,
+        },
+      },
     });
-
   } catch (error) {
-    logger.error("Error getting early bird status", { error: error instanceof Error ? error.message : String(error) });
+    logger.error('Error getting early bird status', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
-      error: "Internal server error"
+      error: 'Internal server error',
     });
   }
 }
@@ -219,22 +223,23 @@ async function getEarlyBirdCustomer(req: Request, res: Response): Promise<void> 
     if (!email) {
       res.status(400).json({
         success: false,
-        error: "Email parameter is required"
+        error: 'Email parameter is required',
       });
       return;
     }
 
-    const customer = await db.select({
-      id: earlyBirdCustomers.id,
-      email: earlyBirdCustomers.email,
-      status: earlyBirdCustomers.status,
-      discountAmount: earlyBirdCustomers.discountAmount,
-      originalPrice: earlyBirdCustomers.originalPrice,
-      discountedPrice: earlyBirdCustomers.discountedPrice,
-      registeredAt: earlyBirdCustomers.registeredAt,
-      purchasedAt: earlyBirdCustomers.purchasedAt,
-      expiresAt: earlyBirdCustomers.expiresAt,
-    })
+    const customer = await db
+      .select({
+        id: earlyBirdCustomers.id,
+        email: earlyBirdCustomers.email,
+        status: earlyBirdCustomers.status,
+        discountAmount: earlyBirdCustomers.discountAmount,
+        originalPrice: earlyBirdCustomers.originalPrice,
+        discountedPrice: earlyBirdCustomers.discountedPrice,
+        registeredAt: earlyBirdCustomers.registeredAt,
+        purchasedAt: earlyBirdCustomers.purchasedAt,
+        expiresAt: earlyBirdCustomers.expiresAt,
+      })
       .from(earlyBirdCustomers)
       .where(eq(earlyBirdCustomers.email, email))
       .limit(1);
@@ -242,7 +247,7 @@ async function getEarlyBirdCustomer(req: Request, res: Response): Promise<void> 
     if (customer.length === 0) {
       res.status(404).json({
         success: false,
-        error: "Early bird customer not found"
+        error: 'Early bird customer not found',
       });
       return;
     }
@@ -256,15 +261,19 @@ async function getEarlyBirdCustomer(req: Request, res: Response): Promise<void> 
       data: {
         ...customerData,
         isExpired,
-        daysRemaining: Math.max(0, Math.ceil((customerData.expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)))
-      }
+        daysRemaining: Math.max(
+          0,
+          Math.ceil((customerData.expiresAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))
+        ),
+      },
     });
-
   } catch (error) {
-    logger.error("Error getting early bird customer", { error: error instanceof Error ? error.message : String(error) });
+    logger.error('Error getting early bird customer', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
-      error: "Internal server error"
+      error: 'Internal server error',
     });
   }
 }
@@ -273,13 +282,13 @@ async function getEarlyBirdCustomer(req: Request, res: Response): Promise<void> 
 export function registerEarlyBirdRoutes(app: Express): void {
   // Get early bird status (public endpoint)
   app.get('/api/early-bird-status', getEarlyBirdStatus);
-  
+
   // Register for early bird promotion
   app.post('/api/early-bird-register', registerEarlyBirdCustomer);
-  
+
   // Update early bird customer status (webhook endpoint)
   app.post('/api/early-bird-update', updateEarlyBirdCustomer);
-  
+
   // Get early bird customer by email
   app.get('/api/early-bird-customer/:email', getEarlyBirdCustomer);
 }

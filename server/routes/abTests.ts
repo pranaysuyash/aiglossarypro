@@ -1,17 +1,16 @@
+import { and, desc, eq } from 'drizzle-orm';
 import { Router } from 'express';
 import { z } from 'zod';
-import { db } from '../db';
-import { eq, and, desc } from 'drizzle-orm';
-import { validateRequest } from '../middleware/validateRequest';
-import { authenticateToken } from '../middleware/adminAuth';
-import { calculateStatisticalSignificance, determineWinner } from '../utils/statistics';
 import {
-  abTests,
-  abTestMetrics,
+  type ABTestMetrics as ABTestMetricsType,
   abTestEvents,
-  type ABTest,
-  type ABTestMetrics as ABTestMetricsType
-} from '../../shared/enhancedSchema';
+  abTestMetrics,
+  abTests,
+} from '../../shared/abTestingSchema';
+import { db } from '../db';
+import { authenticateToken } from '../middleware/adminAuth';
+import { validateRequest } from '../middleware/validateRequest';
+import { calculateStatisticalSignificance, determineWinner } from '../utils/statistics';
 
 const router = Router();
 
@@ -24,12 +23,12 @@ const abTestSyncSchema = z.object({
     seeWhatsInsideClicks: z.number(),
     ctaClicks: z.number(),
     trialSignups: z.number(),
-    newsletterSignups: z.number()
+    newsletterSignups: z.number(),
   }),
   sessionDuration: z.number(),
   deviceType: z.string(),
   browser: z.string(),
-  timestamp: z.string()
+  timestamp: z.string(),
 });
 
 // Schema for creating A/B test
@@ -40,7 +39,7 @@ const createABTestSchema = z.object({
   trafficSplit: z.record(z.string(), z.number()).optional(),
   startDate: z.string(),
   endDate: z.string().optional(),
-  successMetric: z.string()
+  successMetric: z.string(),
 });
 
 // Sync A/B test data from client
@@ -49,79 +48,71 @@ router.post('/sync', validateRequest(abTestSyncSchema), async (req, res) => {
     const { testId, variant, metrics, sessionDuration, deviceType, browser, timestamp } = req.body;
 
     // Store raw event data
-    await prisma.aBTestEvent.create({
-      data: {
-        testId,
-        variant,
-        eventType: 'session_metrics',
-        properties: {
-          ...metrics,
-          sessionDuration,
-          deviceType,
-          browser
-        },
-        timestamp: new Date(timestamp)
-      }
+    await db.insert(abTestEvents).values({
+      testId,
+      variant,
+      eventType: 'session_metrics',
+      properties: {
+        ...metrics,
+        sessionDuration,
+        deviceType,
+        browser,
+      },
+      timestamp: new Date(timestamp),
     });
 
     // Update aggregated metrics
-    const existingMetrics = await prisma.aBTestMetrics.findUnique({
-      where: {
-        testId_variant: {
-          testId,
-          variant
-        }
-      }
-    });
+    const existingMetrics = await db
+      .select()
+      .from(abTestMetrics)
+      .where(and(eq(abTestMetrics.testId, testId), eq(abTestMetrics.variant, variant)))
+      .limit(1);
 
-    if (existingMetrics) {
+    const existingMetric = existingMetrics[0];
+    if (existingMetric) {
       // Update existing metrics
-      await prisma.aBTestMetrics.update({
-        where: {
-          testId_variant: {
-            testId,
-            variant
-          }
-        },
-        data: {
-          pageViews: existingMetrics.pageViews + metrics.pageViews,
-          seeWhatsInsideClicks: existingMetrics.seeWhatsInsideClicks + metrics.seeWhatsInsideClicks,
-          ctaClicks: existingMetrics.ctaClicks + metrics.ctaClicks,
-          trialSignups: existingMetrics.trialSignups + metrics.trialSignups,
-          newsletterSignups: existingMetrics.newsletterSignups + metrics.newsletterSignups,
-          totalSessions: existingMetrics.totalSessions + 1,
-          avgSessionDuration: ((existingMetrics.avgSessionDuration * existingMetrics.totalSessions) + sessionDuration) / (existingMetrics.totalSessions + 1),
+      await db
+        .update(abTestMetrics)
+        .set({
+          pageViews: existingMetric.pageViews + metrics.pageViews,
+          seeWhatsInsideClicks: existingMetric.seeWhatsInsideClicks + metrics.seeWhatsInsideClicks,
+          ctaClicks: existingMetric.ctaClicks + metrics.ctaClicks,
+          trialSignups: existingMetric.trialSignups + metrics.trialSignups,
+          newsletterSignups: existingMetric.newsletterSignups + metrics.newsletterSignups,
+          totalSessions: existingMetric.totalSessions + 1,
+          avgSessionDuration:
+            ((existingMetric.avgSessionDuration || 0) * existingMetric.totalSessions +
+              sessionDuration) /
+            (existingMetric.totalSessions + 1),
           deviceBreakdown: {
-            ...existingMetrics.deviceBreakdown as any,
-            [deviceType]: ((existingMetrics.deviceBreakdown as any)[deviceType] || 0) + 1
+            ...(existingMetric.deviceBreakdown as any),
+            [deviceType]: ((existingMetric.deviceBreakdown as any)?.[deviceType] || 0) + 1,
           },
           browserBreakdown: {
-            ...existingMetrics.browserBreakdown as any,
-            [browser]: ((existingMetrics.browserBreakdown as any)[browser] || 0) + 1
+            ...(existingMetric.browserBreakdown as any),
+            [browser]: ((existingMetric.browserBreakdown as any)?.[browser] || 0) + 1,
           },
-          updatedAt: new Date()
-        }
-      });
+          updatedAt: new Date(),
+        })
+        .where(and(eq(abTestMetrics.testId, testId), eq(abTestMetrics.variant, variant)));
     } else {
       // Create new metrics record
-      await prisma.aBTestMetrics.create({
-        data: {
-          testId,
-          variant,
-          pageViews: metrics.pageViews,
-          seeWhatsInsideClicks: metrics.seeWhatsInsideClicks,
-          ctaClicks: metrics.ctaClicks,
-          trialSignups: metrics.trialSignups,
-          newsletterSignups: metrics.newsletterSignups,
-          totalSessions: 1,
-          avgSessionDuration: sessionDuration,
-          deviceBreakdown: {
-            [deviceType]: 1
-          },
-          browserBreakdown: {
-            [browser]: 1
-          }
-        }
+      await db.insert(abTestMetrics).values({
+        testId,
+        variant,
+        pageViews: metrics.pageViews,
+        seeWhatsInsideClicks: metrics.seeWhatsInsideClicks,
+        ctaClicks: metrics.ctaClicks,
+        trialSignups: metrics.trialSignups,
+        newsletterSignups: metrics.newsletterSignups,
+        totalSessions: 1,
+        avgSessionDuration: sessionDuration,
+        deviceBreakdown: {
+          [deviceType]: 1,
+        },
+        browserBreakdown: {
+          [browser]: 1,
+        },
       });
     }
 
@@ -138,16 +129,14 @@ router.get('/results/:testId', async (req, res) => {
     const { testId } = req.params;
 
     // Get all metrics for this test
-    const metrics = await prisma.aBTestMetrics.findMany({
-      where: { testId }
-    });
+    const metrics = await db.select().from(abTestMetrics).where(eq(abTestMetrics.testId, testId));
 
     if (!metrics.length) {
       return res.status(404).json({ error: 'Test not found' });
     }
 
     // Calculate conversion rates and statistical significance
-    const results = metrics.map(m => ({
+    const results = metrics.map((m: ABTestMetricsType) => ({
       variant: m.variant,
       metrics: {
         pageViews: m.pageViews,
@@ -158,14 +147,15 @@ router.get('/results/:testId', async (req, res) => {
         totalSessions: m.totalSessions,
         avgSessionDuration: m.avgSessionDuration,
         deviceBreakdown: m.deviceBreakdown,
-        browserBreakdown: m.browserBreakdown
+        browserBreakdown: m.browserBreakdown,
       },
       conversionRates: {
         seeWhatsInside: m.pageViews > 0 ? (m.seeWhatsInsideClicks / m.pageViews) * 100 : 0,
         cta: m.pageViews > 0 ? (m.ctaClicks / m.pageViews) * 100 : 0,
         trial: m.pageViews > 0 ? (m.trialSignups / m.pageViews) * 100 : 0,
-        newsletter: m.pageViews > 0 ? (m.newsletterSignups / m.pageViews) * 100 : 0
-      }
+        newsletter: m.pageViews > 0 ? (m.newsletterSignups / m.pageViews) * 100 : 0,
+      },
+      conversionRate: m.pageViews > 0 ? (m.trialSignups / m.pageViews) * 100 : 0,
     }));
 
     // Calculate statistical significance if we have 2 variants
@@ -185,7 +175,7 @@ router.get('/results/:testId', async (req, res) => {
           control.metrics.pageViews,
           variant.metrics.trialSignups,
           variant.metrics.pageViews
-        )
+        ),
       };
 
       const winner = determineWinner(results, 'trial');
@@ -195,13 +185,13 @@ router.get('/results/:testId', async (req, res) => {
         results,
         significance,
         winner,
-        status: 'active'
+        status: 'active',
       });
     } else {
       res.json({
         testId,
         results,
-        status: 'active'
+        status: 'active',
       });
     }
   } catch (error) {
@@ -211,18 +201,18 @@ router.get('/results/:testId', async (req, res) => {
 });
 
 // Get all active A/B tests
-router.get('/active', authenticateToken, async (req, res) => {
+router.get('/active', authenticateToken, async (_req, res) => {
   try {
     const tests = await db.select().from(abTests).where(eq(abTests.status, 'running'));
     res.json({
       success: true,
-      data: tests
+      data: tests,
     });
   } catch (error) {
     console.error('Error fetching active tests:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      error: 'Failed to fetch active tests' 
+      error: 'Failed to fetch active tests',
     });
   }
 });
@@ -230,11 +220,13 @@ router.get('/active', authenticateToken, async (req, res) => {
 // Create new A/B test (admin only)
 router.post('/create', authenticateToken, validateRequest(createABTestSchema), async (req, res) => {
   try {
-    const { name, description, variants, trafficSplit, startDate, endDate, successMetric } = req.body;
+    const { name, description, variants, trafficSplit, startDate, endDate, successMetric } =
+      req.body;
 
     // Create the test
-    const test = await prisma.aBTest.create({
-      data: {
+    const [test] = await db
+      .insert(abTests)
+      .values({
         name,
         description,
         variants,
@@ -243,9 +235,9 @@ router.post('/create', authenticateToken, validateRequest(createABTestSchema), a
         endDate: endDate ? new Date(endDate) : undefined,
         successMetric,
         status: 'active',
-        createdBy: req.user!.id
-      }
-    });
+        createdBy: req.user?.id,
+      })
+      .returning();
 
     res.json(test);
   } catch (error) {
@@ -260,28 +252,27 @@ router.post('/end/:testId', authenticateToken, async (req, res) => {
     const { testId } = req.params;
 
     // Get final results
-    const metrics = await prisma.aBTestMetrics.findMany({
-      where: { testId }
-    });
+    const metrics = await db.select().from(abTestMetrics).where(eq(abTestMetrics.testId, testId));
 
     // Determine winner
-    const results = metrics.map(m => ({
+    const results = metrics.map((m: ABTestMetricsType) => ({
       variant: m.variant,
-      conversionRate: m.pageViews > 0 ? (m.trialSignups / m.pageViews) * 100 : 0
+      conversionRate: m.pageViews > 0 ? (m.trialSignups / m.pageViews) * 100 : 0,
     }));
 
     const winner = determineWinner(results, 'trial');
 
     // Update test status
-    const test = await prisma.aBTest.update({
-      where: { id: testId },
-      data: {
+    const [test] = await db
+      .update(abTests)
+      .set({
         status: 'completed',
         endDate: new Date(),
         winner: winner?.variant,
-        finalResults: results
-      }
-    });
+        finalResults: results,
+      })
+      .where(eq(abTests.id, testId))
+      .returning();
 
     res.json(test);
   } catch (error) {
@@ -291,17 +282,14 @@ router.post('/end/:testId', authenticateToken, async (req, res) => {
 });
 
 // Get historical test results
-router.get('/history', authenticateToken, async (req, res) => {
+router.get('/history', authenticateToken, async (_req, res) => {
   try {
-    const tests = await prisma.aBTest.findMany({
-      where: {
-        status: 'completed'
-      },
-      orderBy: {
-        endDate: 'desc'
-      },
-      take: 50
-    });
+    const tests = await db
+      .select()
+      .from(abTests)
+      .where(eq(abTests.status, 'completed'))
+      .orderBy(desc(abTests.endDate))
+      .limit(50);
 
     res.json(tests);
   } catch (error) {

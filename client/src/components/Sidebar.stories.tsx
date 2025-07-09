@@ -33,7 +33,9 @@ const meta: Meta<typeof Sidebar> = {
           <div className="flex-1 bg-gray-50 p-8">
             <div className="text-center text-gray-600">
               <h2 className="text-xl font-semibold mb-2">Main Content Area</h2>
-              <p>This represents the main application content that appears alongside the sidebar.</p>
+              <p>
+                This represents the main application content that appears alongside the sidebar.
+              </p>
             </div>
           </div>
         </div>
@@ -221,4 +223,4 @@ export const DarkMode: Story = {
       </QueryClientProvider>
     ),
   ],
-}; 
+};

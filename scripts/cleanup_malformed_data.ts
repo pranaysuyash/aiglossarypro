@@ -6,11 +6,11 @@ async function cleanupMalformedData() {
   console.log('🧹 Starting Database Cleanup...\n');
 
   const client = await pool.connect();
-  
+
   try {
     // 1. Identify malformed categories
     console.log('📂 Identifying malformed categories...');
-    
+
     const malformedCategories = await client.query(`
       SELECT id, name, length(name) as name_length
       FROM categories 
@@ -28,7 +28,7 @@ async function cleanupMalformedData() {
     `);
 
     console.log(`Found ${malformedCategories.rows.length} malformed categories`);
-    
+
     // 2. Find terms that need category reassignment
     const termsMissingCategories = await client.query(`
       SELECT t.id, t.name 
@@ -42,45 +42,57 @@ async function cleanupMalformedData() {
 
     // 3. Create standard categories if they don't exist
     console.log('\n🏗️  Creating standard categories...');
-    
+
     const standardCategories = [
       { name: 'Machine Learning', description: 'Core machine learning concepts and algorithms' },
       { name: 'Deep Learning', description: 'Neural networks and deep learning architectures' },
-      { name: 'Natural Language Processing', description: 'Text processing and language understanding' },
+      {
+        name: 'Natural Language Processing',
+        description: 'Text processing and language understanding',
+      },
       { name: 'Computer Vision', description: 'Image and video processing techniques' },
       { name: 'Artificial Intelligence', description: 'General AI concepts and methodologies' },
       { name: 'Data Science', description: 'Data analysis and statistical methods' },
       { name: 'Reinforcement Learning', description: 'Learning through interaction and feedback' },
-      { name: 'Statistics', description: 'Statistical methods and probability theory' }
+      { name: 'Statistics', description: 'Statistical methods and probability theory' },
     ];
 
     for (const category of standardCategories) {
-      await client.query(`
+      await client.query(
+        `
         INSERT INTO categories (id, name, description, created_at, updated_at)
         VALUES (gen_random_uuid(), $1, $2, NOW(), NOW())
         ON CONFLICT (name) DO NOTHING;
-      `, [category.name, category.description]);
+      `,
+        [category.name, category.description]
+      );
     }
 
     // 4. Get the standard category IDs
-    const standardCatIds = await client.query(`
+    const standardCatIds = await client.query(
+      `
       SELECT id, name FROM categories 
       WHERE name IN (${standardCategories.map((_, i) => `$${i + 1}`).join(', ')})
-    `, standardCategories.map(c => c.name));
+    `,
+      standardCategories.map((c) => c.name)
+    );
 
     console.log(`Created/verified ${standardCatIds.rows.length} standard categories`);
 
     // 5. Reassign terms with malformed categories to "Machine Learning" default
-    const mlCategoryId = standardCatIds.rows.find(row => row.name === 'Machine Learning')?.id;
-    
+    const mlCategoryId = standardCatIds.rows.find((row) => row.name === 'Machine Learning')?.id;
+
     if (mlCategoryId) {
-      const reassignResult = await client.query(`
+      const reassignResult = await client.query(
+        `
         UPDATE terms 
         SET category_id = $1, updated_at = NOW()
         FROM categories c 
         WHERE terms.category_id = c.id 
           AND (length(c.name) > 50 OR c.name LIKE '%"%' OR c.name LIKE '%...%')
-      `, [mlCategoryId]);
+      `,
+        [mlCategoryId]
+      );
 
       console.log(`Reassigned ${reassignResult.rowCount} terms to Machine Learning category`);
     }
@@ -104,7 +116,7 @@ async function cleanupMalformedData() {
 
     // 7. Final verification
     console.log('\n✅ Cleanup completed! Final verification:');
-    
+
     const finalStats = await client.query(`
       SELECT 
         (SELECT COUNT(*) FROM categories) as total_categories,
@@ -118,8 +130,9 @@ async function cleanupMalformedData() {
     console.log(`Long category names: ${stats.long_categories}`);
     console.log(`Categorized terms: ${stats.categorized_terms}`);
     console.log(`Total terms: ${stats.total_terms}`);
-    console.log(`Categorization rate: ${((stats.categorized_terms / stats.total_terms) * 100).toFixed(1)}%`);
-
+    console.log(
+      `Categorization rate: ${((stats.categorized_terms / stats.total_terms) * 100).toFixed(1)}%`
+    );
   } catch (error) {
     console.error('❌ Error during cleanup:', error);
   } finally {

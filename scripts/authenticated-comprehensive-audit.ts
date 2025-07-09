@@ -1,21 +1,22 @@
 #!/usr/bin/env npx tsx
+
 /**
  * Comprehensive Authenticated Visual Audit
  * Tests with Firebase authentication and interactive content verification
  */
 
-import puppeteer, { Browser, Page } from 'puppeteer';
-import { writeFileSync } from 'fs';
+import { writeFileSync } from 'node:fs';
+import puppeteer, { type Browser, type Page } from 'puppeteer';
 
 // Test user credentials from createTestUser.ts
 const TEST_USER = {
   email: 'test@aimlglossary.com',
-  password: 'testpass123'
+  password: 'testpass123',
 };
 
 const ADMIN_USER = {
-  email: 'admin@aimlglossary.com', 
-  password: 'adminpass123'
+  email: 'admin@aimlglossary.com',
+  password: 'adminpass123',
 };
 
 interface AuditSection {
@@ -62,17 +63,17 @@ class AuthenticatedAuditor {
         totalTests: 0,
         passed: 0,
         failed: 0,
-        warnings: 0
+        warnings: 0,
       },
       interactiveContent: {
         found: false,
-        components: []
+        components: [],
       },
       hierarchicalNavigation: {
         authenticated: false,
         visible: false,
-        sections: 0
-      }
+        sections: 0,
+      },
     };
   }
 
@@ -81,7 +82,7 @@ class AuthenticatedAuditor {
     this.browser = await puppeteer.launch({
       headless: false,
       args: ['--no-sandbox', '--disable-setuid-sandbox'],
-      defaultViewport: { width: 1920, height: 1080 }
+      defaultViewport: { width: 1920, height: 1080 },
     });
   }
 
@@ -103,11 +104,14 @@ class AuthenticatedAuditor {
       await page.waitForSelector('button', { timeout: 3000 });
       const acceptButton = await page.evaluateHandle(() => {
         const buttons = Array.from(document.querySelectorAll('button'));
-        return buttons.find(btn => btn.textContent?.includes('Accept All'));
+        return buttons.find((btn) => btn.textContent?.includes('Accept All'));
       });
       if (acceptButton) {
         await acceptButton.asElement()?.click();
-        await page.waitForFunction(() => !document.querySelector('button')?.textContent?.includes('Accept All'), { timeout: 5000 });
+        await page.waitForFunction(
+          () => !document.querySelector('button')?.textContent?.includes('Accept All'),
+          { timeout: 5000 }
+        );
       }
     } catch {
       // Cookie banner might not be present or already dismissed
@@ -136,8 +140,10 @@ class AuthenticatedAuditor {
       const interactiveTerms = await page.evaluate(() => {
         const terms = [];
         // Look for elements with interactive classes or data attributes
-        const interactiveElements = document.querySelectorAll('[data-interactive="true"], .interactive-term, .interactive-card');
-        interactiveElements.forEach(el => {
+        const interactiveElements = document.querySelectorAll(
+          '[data-interactive="true"], .interactive-term, .interactive-card'
+        );
+        interactiveElements.forEach((el) => {
           const text = el.textContent || '';
           if (text) terms.push(text.substring(0, 50));
         });
@@ -170,15 +176,14 @@ class AuthenticatedAuditor {
         status: this.report.interactiveContent.found ? 'pass' : 'warning',
         details,
         errors,
-        screenshots: ['auth-audit-interactive-content.png']
+        screenshots: ['auth-audit-interactive-content.png'],
       });
-
     } catch (error) {
       this.addSection({
         name: 'Interactive Content',
         status: 'fail',
         details: ['Interactive content audit failed'],
-        errors: [error instanceof Error ? error.message : String(error)]
+        errors: [error instanceof Error ? error.message : String(error)],
       });
     } finally {
       await page.close();
@@ -187,14 +192,15 @@ class AuthenticatedAuditor {
 
   async loginWithFirebase(page: Page, credentials: typeof TEST_USER) {
     console.log(`\n🔐 Logging in as ${credentials.email}...`);
-    
+
     try {
       // Click sign in button
       const signInButton = await page.evaluateHandle(() => {
         const buttons = Array.from(document.querySelectorAll('button, a'));
-        return buttons.find(btn => 
-          btn.textContent?.toLowerCase().includes('sign in') || 
-          btn.textContent?.toLowerCase().includes('login')
+        return buttons.find(
+          (btn) =>
+            btn.textContent?.toLowerCase().includes('sign in') ||
+            btn.textContent?.toLowerCase().includes('login')
         );
       });
 
@@ -205,22 +211,24 @@ class AuthenticatedAuditor {
 
       // Wait for login form
       await page.waitForSelector('input[type="email"]', { timeout: 10000 });
-      
+
       // Fill credentials
       await page.type('input[type="email"]', credentials.email);
       await page.type('input[type="password"]', credentials.password);
-      
+
       // Submit form
       const submitButton = await page.$('button[type="submit"]');
       if (submitButton) {
         await submitButton.click();
-        
+
         // Wait for navigation or auth state change
         await page.waitForFunction(
-          () => !document.querySelector('input[type=\"email\"]') || window.location.pathname !== '/login',
+          () =>
+            !document.querySelector('input[type=\"email\"]') ||
+            window.location.pathname !== '/login',
           { timeout: 15000 }
         );
-        
+
         console.log('✅ Login successful');
         return true;
       }
@@ -228,7 +236,7 @@ class AuthenticatedAuditor {
       console.error('❌ Login failed:', error);
       return false;
     }
-    
+
     return false;
   }
 
@@ -250,26 +258,29 @@ class AuthenticatedAuditor {
         this.report.hierarchicalNavigation.authenticated = true;
 
         // Navigate to a term page to check hierarchical navigation
-        await page.goto('http://localhost:5173/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941', { 
-          waitUntil: 'networkidle2' 
+        await page.goto('http://localhost:5173/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941', {
+          waitUntil: 'networkidle2',
         });
 
         // Check for hierarchical navigation
         const contentNavHeading = await page.evaluate(() => {
           const headings = Array.from(document.querySelectorAll('h2'));
-          return headings.some(h => h.textContent?.includes('Content Navigation'));
+          return headings.some((h) => h.textContent?.includes('Content Navigation'));
         });
 
         if (contentNavHeading) {
           details.push('Hierarchical Navigation: ✅ Visible when authenticated');
           this.report.hierarchicalNavigation.visible = true;
-          
+
           // Count sections
           const sections = await page.$$('[data-testid="card"] .section-item, .navigation-section');
           this.report.hierarchicalNavigation.sections = sections.length;
           details.push(`Navigation Sections: ${sections.length}`);
-          
-          await page.screenshot({ path: 'auth-audit-hierarchical-nav-authenticated.png', fullPage: true });
+
+          await page.screenshot({
+            path: 'auth-audit-hierarchical-nav-authenticated.png',
+            fullPage: true,
+          });
         } else {
           details.push('Hierarchical Navigation: ❌ Not visible even when authenticated');
         }
@@ -278,7 +289,8 @@ class AuthenticatedAuditor {
         const premiumFeatures = await page.evaluate(() => {
           const features = [];
           // Look for elements that should be visible only to authenticated users
-          if (document.querySelector('.ai-definition-improver')) features.push('AI Definition Improver');
+          if (document.querySelector('.ai-definition-improver'))
+            features.push('AI Definition Improver');
           if (document.querySelector('.export-button')) features.push('Export Feature');
           if (document.querySelector('.full-definition')) features.push('Full Definitions');
           if (!document.querySelector('.preview-banner')) features.push('No Preview Banner');
@@ -288,7 +300,6 @@ class AuthenticatedAuditor {
         if (premiumFeatures.length > 0) {
           details.push(`Premium Features: ✅ ${premiumFeatures.join(', ')}`);
         }
-
       } else {
         details.push('Authentication: ❌ Login failed');
       }
@@ -298,15 +309,14 @@ class AuthenticatedAuditor {
         status: loginSuccess && this.report.hierarchicalNavigation.visible ? 'pass' : 'fail',
         details,
         errors,
-        screenshots: ['auth-audit-hierarchical-nav-authenticated.png']
+        screenshots: ['auth-audit-hierarchical-nav-authenticated.png'],
       });
-
     } catch (error) {
       this.addSection({
         name: 'Authenticated Features',
         status: 'fail',
         details: ['Authenticated features audit failed'],
-        errors: [error instanceof Error ? error.message : String(error)]
+        errors: [error instanceof Error ? error.message : String(error)],
       });
     } finally {
       await page.close();
@@ -331,23 +341,26 @@ class AuthenticatedAuditor {
         // Check for admin menu/dashboard link
         const adminLink = await page.evaluate(() => {
           const links = Array.from(document.querySelectorAll('a, button'));
-          return links.some(link => 
-            link.textContent?.toLowerCase().includes('admin') || 
-            link.getAttribute('href')?.includes('/admin')
+          return links.some(
+            (link) =>
+              link.textContent?.toLowerCase().includes('admin') ||
+              link.getAttribute('href')?.includes('/admin')
           );
         });
 
         if (adminLink) {
           details.push('Admin Dashboard Link: ✅ Found');
-          
+
           // Navigate to admin dashboard
           await page.goto('http://localhost:5173/admin', { waitUntil: 'networkidle2' });
-          
+
           // Check admin features
           const adminFeatures = await page.evaluate(() => {
             const features = [];
-            if (document.querySelector('[data-testid="user-management"]')) features.push('User Management');
-            if (document.querySelector('[data-testid="content-management"]')) features.push('Content Management');
+            if (document.querySelector('[data-testid="user-management"]'))
+              features.push('User Management');
+            if (document.querySelector('[data-testid="content-management"]'))
+              features.push('Content Management');
             if (document.querySelector('[data-testid="analytics"]')) features.push('Analytics');
             if (document.querySelector('.admin-panel')) features.push('Admin Panel');
             return features;
@@ -358,7 +371,7 @@ class AuthenticatedAuditor {
           } else {
             details.push('Admin Features: ⚠️ No specific admin features found');
           }
-          
+
           await page.screenshot({ path: 'auth-audit-admin-dashboard.png', fullPage: true });
         } else {
           details.push('Admin Dashboard Link: ❌ Not found');
@@ -372,15 +385,14 @@ class AuthenticatedAuditor {
         status: loginSuccess ? 'pass' : 'fail',
         details,
         errors,
-        screenshots: ['auth-audit-admin-dashboard.png']
+        screenshots: ['auth-audit-admin-dashboard.png'],
       });
-
     } catch (error) {
       this.addSection({
         name: 'Admin Features',
         status: 'fail',
         details: ['Admin features audit failed'],
-        errors: [error instanceof Error ? error.message : String(error)]
+        errors: [error instanceof Error ? error.message : String(error)],
       });
     } finally {
       await page.close();
@@ -402,7 +414,7 @@ class AuthenticatedAuditor {
       details.push('1. Guest Browsing:');
       const categoryCards = await page.$$('[data-testid="category-card"]');
       details.push(`   - Category cards: ${categoryCards.length}`);
-      
+
       if (categoryCards.length > 0) {
         await categoryCards[0].click();
         await page.waitForNavigation();
@@ -425,11 +437,11 @@ class AuthenticatedAuditor {
       const loginSuccess = await this.loginWithFirebase(page, TEST_USER);
       if (loginSuccess) {
         details.push('3. Login Flow: ✅');
-        
+
         // Navigate to a term
         await page.goto('http://localhost:5173/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941');
         await page.waitForTimeout(2000);
-        
+
         // Check for full content
         const hasFullContent = await page.evaluate(() => {
           const content = document.body.textContent || '';
@@ -441,9 +453,9 @@ class AuthenticatedAuditor {
       // 4. Test logout
       const logoutButton = await page.evaluateHandle(() => {
         const buttons = Array.from(document.querySelectorAll('button, a'));
-        return buttons.find(btn => btn.textContent?.toLowerCase().includes('logout'));
+        return buttons.find((btn) => btn.textContent?.toLowerCase().includes('logout'));
       });
-      
+
       if (logoutButton) {
         await logoutButton.asElement()?.click();
         await page.waitForTimeout(2000);
@@ -454,18 +466,17 @@ class AuthenticatedAuditor {
 
       this.addSection({
         name: 'Complete User Flows',
-        status: details.filter(d => d.includes('✅')).length > 3 ? 'pass' : 'warning',
+        status: details.filter((d) => d.includes('✅')).length > 3 ? 'pass' : 'warning',
         details,
         errors,
-        screenshots: ['auth-audit-user-flows.png']
+        screenshots: ['auth-audit-user-flows.png'],
       });
-
     } catch (error) {
       this.addSection({
         name: 'Complete User Flows',
         status: 'fail',
         details: ['User flow audit failed'],
-        errors: [error instanceof Error ? error.message : String(error)]
+        errors: [error instanceof Error ? error.message : String(error)],
       });
     } finally {
       await page.close();
@@ -474,7 +485,7 @@ class AuthenticatedAuditor {
 
   async generateMarkdownReport() {
     const reportPath = 'AUTHENTICATED_AUDIT_REPORT.md';
-    
+
     const markdown = `# 🔐 Authenticated Comprehensive Audit Report
 
 Generated: ${new Date(this.report.timestamp).toLocaleString()}
@@ -493,7 +504,7 @@ Duration: ${(this.report.duration / 1000).toFixed(2)}s
 
 **Status**: ${this.report.interactiveContent.found ? '✅ Found' : '❌ Not Found'}
 **Components**: ${this.report.interactiveContent.components.length}
-${this.report.interactiveContent.components.map(c => `- ${c}`).join('\n')}
+${this.report.interactiveContent.components.map((c) => `- ${c}`).join('\n')}
 
 ## 🗂️ Hierarchical Navigation
 
@@ -505,20 +516,22 @@ ${this.report.interactiveContent.components.map(c => `- ${c}`).join('\n')}
 
 ## 📋 Detailed Test Results
 
-${this.report.sections.map(section => {
-  const icon = section.status === 'pass' ? '✅' : section.status === 'fail' ? '❌' : '⚠️';
-  return `### ${icon} ${section.name}
+${this.report.sections
+  .map((section) => {
+    const icon = section.status === 'pass' ? '✅' : section.status === 'fail' ? '❌' : '⚠️';
+    return `### ${icon} ${section.name}
 
 **Status**: ${section.status.toUpperCase()}
 
 **Details**:
-${section.details.map(d => `- ${d}`).join('\n')}
+${section.details.map((d) => `- ${d}`).join('\n')}
 
-${section.errors && section.errors.length > 0 ? `**Errors**:\n${section.errors.map(e => `- ${e}`).join('\n')}` : ''}
+${section.errors && section.errors.length > 0 ? `**Errors**:\n${section.errors.map((e) => `- ${e}`).join('\n')}` : ''}
 
 ${section.screenshots && section.screenshots.length > 0 ? `**Screenshots**: ${section.screenshots.join(', ')}` : ''}
 `;
-}).join('\n---\n\n')}
+  })
+  .join('\n---\n\n')}
 
 ## 🔍 Key Findings
 
@@ -551,16 +564,16 @@ ${section.screenshots && section.screenshots.length > 0 ? `**Screenshots**: ${se
 
     writeFileSync(reportPath, markdown);
     console.log(`\n💾 Markdown report saved to: ${reportPath}`);
-    
+
     // Also save JSON version
     writeFileSync('authenticated-audit-report.json', JSON.stringify(this.report, null, 2));
-    
+
     return markdown;
   }
 
   async runAuthenticatedAudit() {
     await this.init();
-    
+
     try {
       await this.auditInteractiveContent();
       await this.auditAuthenticatedFeatures();
@@ -569,9 +582,9 @@ ${section.screenshots && section.screenshots.length > 0 ? `**Screenshots**: ${se
     } finally {
       await this.cleanup();
     }
-    
+
     const report = await this.generateMarkdownReport();
-    console.log('\n' + '='.repeat(60));
+    console.log(`\n${'='.repeat(60)}`);
     console.log('🔐 AUTHENTICATED AUDIT COMPLETE');
     console.log('='.repeat(60));
     console.log(report.split('\n').slice(0, 30).join('\n'));

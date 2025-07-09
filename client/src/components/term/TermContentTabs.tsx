@@ -1,7 +1,13 @@
-import { BookOpen, Settings, Zap, Lightbulb, Brain, Star } from "lucide-react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { IEnhancedTerm, ITerm, ITermSection, IInteractiveElement, IEnhancedUserSettings } from "@/interfaces/interfaces";
-import { TAB_LABELS } from "@/constants/messages";
+import { BookOpen, Brain, Lightbulb, Settings, Star, Zap } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { TAB_LABELS } from '@/constants/messages';
+import type {
+  IEnhancedTerm,
+  IEnhancedUserSettings,
+  IInteractiveElement,
+  ITerm,
+  ITermSection,
+} from '@/interfaces/interfaces';
 
 interface TermContentTabsProps {
   term: IEnhancedTerm | ITerm;
@@ -38,7 +44,7 @@ export default function TermContentTabs({
   interactiveComponent,
   relationshipsComponent,
   aiToolsComponent,
-  progressComponent
+  progressComponent,
 }: TermContentTabsProps) {
   return (
     <Tabs value={activeTab} onValueChange={onTabChange} className="mb-6">

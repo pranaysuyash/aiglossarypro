@@ -1,14 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import {
+  Activity,
+  ChevronDown,
+  ChevronRight,
+  Filter,
+  Layers,
+  Network,
+  RotateCcw,
+  Sparkles,
+  Target,
+} from 'lucide-react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
   SelectContent,
@@ -16,40 +25,31 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Filter,
-  ChevronDown,
-  ChevronRight,
-  RotateCcw,
-  Sparkles,
-  Network,
-  Layers,
-  Target,
-  Activity
-} from 'lucide-react';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
 
 export interface DynamicFilter {
   // Relationship filters
   relationshipTypes: string[];
   relationshipStrength: [number, number]; // min, max
-  
+
   // Node filters
   nodeTypes: string[];
   categories: string[];
   subcategories: string[];
   difficultyLevels: string[];
-  
+
   // Content filters
   hasImplementation: boolean | null;
   hasInteractiveElements: boolean | null;
   hasCaseStudies: boolean | null;
   hasCodeExamples: boolean | null;
-  
+
   // Discovery filters
   searchQuery: string;
   depth: number; // How many levels of relationships to show
   showOrphans: boolean; // Show unconnected nodes
-  
+
   // Visual filters
   layoutType: 'force' | 'hierarchical' | 'radial' | 'circular';
   nodeSize: 'uniform' | 'by-importance' | 'by-connections';
@@ -62,7 +62,7 @@ interface DynamicFilterPanelProps {
   availableCategories: string[];
   availableSubcategories: string[];
   className?: string;
-  
+
   // Analytics data for showing impact
   currentStats?: {
     totalNodes: number;
@@ -88,7 +88,7 @@ const DEFAULT_FILTERS: DynamicFilter = {
   showOrphans: false,
   layoutType: 'force',
   nodeSize: 'uniform',
-  edgeStyle: 'curved'
+  edgeStyle: 'curved',
 };
 
 export function DynamicFilterPanel({
@@ -97,7 +97,7 @@ export function DynamicFilterPanel({
   availableCategories,
   availableSubcategories,
   currentStats,
-  className = ""
+  className = '',
 }: DynamicFilterPanelProps) {
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
     new Set(['relationships', 'nodes'])
@@ -113,26 +113,19 @@ export function DynamicFilterPanel({
     setExpandedSections(newExpanded);
   };
 
-  const updateFilter = <K extends keyof DynamicFilter>(
-    key: K,
-    value: DynamicFilter[K]
-  ) => {
+  const updateFilter = <K extends keyof DynamicFilter>(key: K, value: DynamicFilter[K]) => {
     onFilterChange({
       ...filters,
-      [key]: value
+      [key]: value,
     });
   };
 
-  const updateArrayFilter = (
-    key: keyof DynamicFilter,
-    value: string,
-    checked: boolean
-  ) => {
+  const updateArrayFilter = (key: keyof DynamicFilter, value: string, checked: boolean) => {
     const currentArray = (filters[key] as string[]) || [];
     const newArray = checked
       ? [...currentArray, value]
-      : currentArray.filter(item => item !== value);
-    
+      : currentArray.filter((item) => item !== value);
+
     updateFilter(key as any, newArray);
   };
 
@@ -142,31 +135,37 @@ export function DynamicFilterPanel({
 
   const getActiveFilterCount = () => {
     let count = 0;
-    
+
     // Count array filters
-    ['categories', 'subcategories', 'difficultyLevels'].forEach(key => {
+    ['categories', 'subcategories', 'difficultyLevels'].forEach((key) => {
       count += (filters[key as keyof DynamicFilter] as string[]).length;
     });
-    
+
     // Count boolean filters
-    ['hasImplementation', 'hasInteractiveElements', 'hasCaseStudies', 'hasCodeExamples'].forEach(key => {
-      if (filters[key as keyof DynamicFilter] !== null) count++;
-    });
-    
+    ['hasImplementation', 'hasInteractiveElements', 'hasCaseStudies', 'hasCodeExamples'].forEach(
+      (key) => {
+        if (filters[key as keyof DynamicFilter] !== null) count++;
+      }
+    );
+
     // Count other filters
     if (filters.searchQuery) count++;
     if (filters.depth !== DEFAULT_FILTERS.depth) count++;
     if (filters.showOrphans !== DEFAULT_FILTERS.showOrphans) count++;
-    
+
     return count;
   };
 
   const renderImpactBadge = () => {
     if (!currentStats) return null;
-    
-    const percentageNodes = Math.round((currentStats.filteredNodes / currentStats.totalNodes) * 100);
-    const percentageRelationships = Math.round((currentStats.filteredRelationships / currentStats.totalRelationships) * 100);
-    
+
+    const _percentageNodes = Math.round(
+      (currentStats.filteredNodes / currentStats.totalNodes) * 100
+    );
+    const _percentageRelationships = Math.round(
+      (currentStats.filteredRelationships / currentStats.totalRelationships) * 100
+    );
+
     return (
       <div className="flex items-center gap-2">
         <Badge variant="outline" className="text-xs">
@@ -195,18 +194,14 @@ export function DynamicFilterPanel({
           <div className="flex items-center gap-2">
             {renderImpactBadge()}
             {getActiveFilterCount() > 0 && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={resetFilters}
-              >
+              <Button variant="ghost" size="sm" onClick={resetFilters}>
                 <RotateCcw className="h-4 w-4" />
               </Button>
             )}
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {/* Search */}
         <div className="space-y-2">
@@ -223,7 +218,7 @@ export function DynamicFilterPanel({
         </div>
 
         {/* Relationship Filters */}
-        <Collapsible 
+        <Collapsible
           open={expandedSections.has('relationships')}
           onOpenChange={() => toggleSection('relationships')}
         >
@@ -232,29 +227,27 @@ export function DynamicFilterPanel({
               <Network className="h-4 w-4" />
               <span className="font-medium text-sm">Relationships</span>
             </div>
-            {expandedSections.has('relationships') ? 
-              <ChevronDown className="h-4 w-4" /> : 
+            {expandedSections.has('relationships') ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
               <ChevronRight className="h-4 w-4" />
-            }
+            )}
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-3 pt-2">
             {/* Relationship Types */}
             <div className="space-y-2">
               <Label className="text-xs font-medium">Types</Label>
               <div className="space-y-2">
-                {['prerequisite', 'related', 'extends', 'alternative'].map(type => (
+                {['prerequisite', 'related', 'extends', 'alternative'].map((type) => (
                   <div key={type} className="flex items-center space-x-2">
                     <Checkbox
                       id={`rel-${type}`}
                       checked={filters.relationshipTypes.includes(type)}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         updateArrayFilter('relationshipTypes', type, checked as boolean)
                       }
                     />
-                    <Label 
-                      htmlFor={`rel-${type}`}
-                      className="text-sm capitalize cursor-pointer"
-                    >
+                    <Label htmlFor={`rel-${type}`} className="text-sm capitalize cursor-pointer">
                       {type}
                     </Label>
                   </div>
@@ -272,7 +265,9 @@ export function DynamicFilterPanel({
               </div>
               <Slider
                 value={filters.relationshipStrength}
-                onValueChange={(value) => updateFilter('relationshipStrength', value as [number, number])}
+                onValueChange={(value) =>
+                  updateFilter('relationshipStrength', value as [number, number])
+                }
                 min={0}
                 max={10}
                 step={1}
@@ -301,7 +296,7 @@ export function DynamicFilterPanel({
         </Collapsible>
 
         {/* Node Filters */}
-        <Collapsible 
+        <Collapsible
           open={expandedSections.has('nodes')}
           onOpenChange={() => toggleSection('nodes')}
         >
@@ -310,29 +305,27 @@ export function DynamicFilterPanel({
               <Layers className="h-4 w-4" />
               <span className="font-medium text-sm">Nodes</span>
             </div>
-            {expandedSections.has('nodes') ? 
-              <ChevronDown className="h-4 w-4" /> : 
+            {expandedSections.has('nodes') ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
               <ChevronRight className="h-4 w-4" />
-            }
+            )}
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-3 pt-2">
             {/* Node Types */}
             <div className="space-y-2">
               <Label className="text-xs font-medium">Types</Label>
               <div className="space-y-2">
-                {['term', 'category', 'subcategory'].map(type => (
+                {['term', 'category', 'subcategory'].map((type) => (
                   <div key={type} className="flex items-center space-x-2">
                     <Checkbox
                       id={`node-${type}`}
                       checked={filters.nodeTypes.includes(type)}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         updateArrayFilter('nodeTypes', type, checked as boolean)
                       }
                     />
-                    <Label 
-                      htmlFor={`node-${type}`}
-                      className="text-sm capitalize cursor-pointer"
-                    >
+                    <Label htmlFor={`node-${type}`} className="text-sm capitalize cursor-pointer">
                       {type}
                     </Label>
                   </div>
@@ -346,19 +339,16 @@ export function DynamicFilterPanel({
                 <Label className="text-xs font-medium">Categories</Label>
                 <ScrollArea className="h-32">
                   <div className="space-y-2 pr-3">
-                    {availableCategories.map(category => (
+                    {availableCategories.map((category) => (
                       <div key={category} className="flex items-center space-x-2">
                         <Checkbox
                           id={`cat-${category}`}
                           checked={filters.categories.includes(category)}
-                          onCheckedChange={(checked) => 
+                          onCheckedChange={(checked) =>
                             updateArrayFilter('categories', category, checked as boolean)
                           }
                         />
-                        <Label 
-                          htmlFor={`cat-${category}`}
-                          className="text-sm cursor-pointer"
-                        >
+                        <Label htmlFor={`cat-${category}`} className="text-sm cursor-pointer">
                           {category}
                         </Label>
                       </div>
@@ -372,19 +362,16 @@ export function DynamicFilterPanel({
             <div className="space-y-2">
               <Label className="text-xs font-medium">Difficulty</Label>
               <div className="space-y-2">
-                {['Beginner', 'Intermediate', 'Advanced', 'Expert'].map(level => (
+                {['Beginner', 'Intermediate', 'Advanced', 'Expert'].map((level) => (
                   <div key={level} className="flex items-center space-x-2">
                     <Checkbox
                       id={`diff-${level}`}
                       checked={filters.difficultyLevels.includes(level)}
-                      onCheckedChange={(checked) => 
+                      onCheckedChange={(checked) =>
                         updateArrayFilter('difficultyLevels', level, checked as boolean)
                       }
                     />
-                    <Label 
-                      htmlFor={`diff-${level}`}
-                      className="text-sm cursor-pointer"
-                    >
+                    <Label htmlFor={`diff-${level}`} className="text-sm cursor-pointer">
                       {level}
                     </Label>
                   </div>
@@ -395,7 +382,7 @@ export function DynamicFilterPanel({
         </Collapsible>
 
         {/* Content Features */}
-        <Collapsible 
+        <Collapsible
           open={expandedSections.has('features')}
           onOpenChange={() => toggleSection('features')}
         >
@@ -404,10 +391,11 @@ export function DynamicFilterPanel({
               <Sparkles className="h-4 w-4" />
               <span className="font-medium text-sm">Content Features</span>
             </div>
-            {expandedSections.has('features') ? 
-              <ChevronDown className="h-4 w-4" /> : 
+            {expandedSections.has('features') ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
               <ChevronRight className="h-4 w-4" />
-            }
+            )}
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-3 pt-2">
             <div className="space-y-3">
@@ -415,7 +403,7 @@ export function DynamicFilterPanel({
                 { key: 'hasImplementation', label: 'Has Implementation' },
                 { key: 'hasInteractiveElements', label: 'Interactive Elements' },
                 { key: 'hasCaseStudies', label: 'Case Studies' },
-                { key: 'hasCodeExamples', label: 'Code Examples' }
+                { key: 'hasCodeExamples', label: 'Code Examples' },
               ].map(({ key, label }) => (
                 <div key={key} className="flex items-center justify-between">
                   <Label htmlFor={key} className="text-sm cursor-pointer">
@@ -424,9 +412,7 @@ export function DynamicFilterPanel({
                   <Switch
                     id={key}
                     checked={filters[key as keyof DynamicFilter] === true}
-                    onCheckedChange={(checked) => 
-                      updateFilter(key as any, checked ? true : null)
-                    }
+                    onCheckedChange={(checked) => updateFilter(key as any, checked ? true : null)}
                   />
                 </div>
               ))}
@@ -435,7 +421,7 @@ export function DynamicFilterPanel({
         </Collapsible>
 
         {/* Visualization Settings */}
-        <Collapsible 
+        <Collapsible
           open={expandedSections.has('visualization')}
           onOpenChange={() => toggleSection('visualization')}
         >
@@ -444,17 +430,18 @@ export function DynamicFilterPanel({
               <Target className="h-4 w-4" />
               <span className="font-medium text-sm">Visualization</span>
             </div>
-            {expandedSections.has('visualization') ? 
-              <ChevronDown className="h-4 w-4" /> : 
+            {expandedSections.has('visualization') ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
               <ChevronRight className="h-4 w-4" />
-            }
+            )}
           </CollapsibleTrigger>
           <CollapsibleContent className="space-y-3 pt-2">
             {/* Layout Type */}
             <div className="space-y-2">
               <Label className="text-xs font-medium">Layout</Label>
-              <Select 
-                value={filters.layoutType} 
+              <Select
+                value={filters.layoutType}
                 onValueChange={(value: any) => updateFilter('layoutType', value)}
               >
                 <SelectTrigger className="h-9">
@@ -472,8 +459,8 @@ export function DynamicFilterPanel({
             {/* Node Size */}
             <div className="space-y-2">
               <Label className="text-xs font-medium">Node Size</Label>
-              <Select 
-                value={filters.nodeSize} 
+              <Select
+                value={filters.nodeSize}
                 onValueChange={(value: any) => updateFilter('nodeSize', value)}
               >
                 <SelectTrigger className="h-9">

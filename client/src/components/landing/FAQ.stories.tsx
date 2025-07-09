@@ -8,7 +8,8 @@ const meta: Meta<typeof FAQ> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Frequently Asked Questions component for the landing page with expandable sections and search functionality.',
+        component:
+          'Frequently Asked Questions component for the landing page with expandable sections and search functionality.',
       },
     },
   },
@@ -23,70 +24,80 @@ const defaultFAQData = [
     id: '1',
     category: 'General',
     question: 'What is AI Glossary Pro?',
-    answer: 'AI Glossary Pro is a comprehensive AI and Machine Learning terminology reference with over 10,000+ terms, definitions, and interactive learning tools. It includes AI-powered features like semantic search, definition improvement, and personalized learning paths.',
+    answer:
+      'AI Glossary Pro is a comprehensive AI and Machine Learning terminology reference with over 10,000+ terms, definitions, and interactive learning tools. It includes AI-powered features like semantic search, definition improvement, and personalized learning paths.',
     tags: ['basics', 'overview'],
   },
   {
     id: '2',
     category: 'Features',
     question: 'What makes this different from other AI glossaries?',
-    answer: 'Our glossary features AI-powered semantic search, interactive visualizations, code examples, real-world case studies, and personalized learning recommendations. Each term includes multiple explanation levels (beginner to expert) and is regularly updated by AI researchers.',
+    answer:
+      'Our glossary features AI-powered semantic search, interactive visualizations, code examples, real-world case studies, and personalized learning recommendations. Each term includes multiple explanation levels (beginner to expert) and is regularly updated by AI researchers.',
     tags: ['features', 'comparison'],
   },
   {
     id: '3',
     category: 'Pricing',
     question: 'How much does AI Glossary Pro cost?',
-    answer: 'We offer flexible pricing starting at $29/month for individual users, with team and enterprise plans available. All plans include a 14-day free trial with full access to premium features.',
+    answer:
+      'We offer flexible pricing starting at $29/month for individual users, with team and enterprise plans available. All plans include a 14-day free trial with full access to premium features.',
     tags: ['pricing', 'cost'],
   },
   {
     id: '4',
     category: 'Pricing',
     question: 'Is there a free version available?',
-    answer: 'Yes! We offer a free tier with access to 1,000+ basic terms and definitions. Premium features like AI-powered search, interactive content, and advanced explanations require a paid subscription.',
+    answer:
+      'Yes! We offer a free tier with access to 1,000+ basic terms and definitions. Premium features like AI-powered search, interactive content, and advanced explanations require a paid subscription.',
     tags: ['pricing', 'free'],
   },
   {
     id: '5',
     category: 'Technical',
     question: 'Can I access the glossary offline?',
-    answer: 'Yes, our mobile app supports offline access for downloaded terms. The web version requires an internet connection for AI-powered features, but cached content is available offline.',
+    answer:
+      'Yes, our mobile app supports offline access for downloaded terms. The web version requires an internet connection for AI-powered features, but cached content is available offline.',
     tags: ['technical', 'offline'],
   },
   {
     id: '6',
     category: 'Technical',
     question: 'Do you have an API for developers?',
-    answer: 'Yes, we provide a REST API for enterprise customers to integrate our terminology database into their applications. The API includes endpoints for term lookup, semantic search, and definition retrieval.',
+    answer:
+      'Yes, we provide a REST API for enterprise customers to integrate our terminology database into their applications. The API includes endpoints for term lookup, semantic search, and definition retrieval.',
     tags: ['technical', 'api', 'developers'],
   },
   {
     id: '7',
     category: 'Content',
     question: 'How often is the content updated?',
-    answer: 'Our content is updated weekly with new terms and improvements. We have a team of AI researchers and industry experts who review and enhance definitions regularly. Premium users get early access to new content.',
+    answer:
+      'Our content is updated weekly with new terms and improvements. We have a team of AI researchers and industry experts who review and enhance definitions regularly. Premium users get early access to new content.',
     tags: ['content', 'updates'],
   },
   {
     id: '8',
     category: 'Content',
     question: 'Can I suggest new terms or improvements?',
-    answer: 'Absolutely! We encourage user contributions. Premium users can suggest new terms, report inaccuracies, and vote on improvements. Our AI system also learns from user feedback to enhance definitions.',
+    answer:
+      'Absolutely! We encourage user contributions. Premium users can suggest new terms, report inaccuracies, and vote on improvements. Our AI system also learns from user feedback to enhance definitions.',
     tags: ['content', 'contributions'],
   },
   {
     id: '9',
     category: 'Learning',
     question: 'Are there learning paths or courses available?',
-    answer: 'Yes, we offer structured learning paths for different skill levels and specializations (NLP, Computer Vision, MLOps, etc.). Each path includes curated terms, interactive exercises, and progress tracking.',
+    answer:
+      'Yes, we offer structured learning paths for different skill levels and specializations (NLP, Computer Vision, MLOps, etc.). Each path includes curated terms, interactive exercises, and progress tracking.',
     tags: ['learning', 'education'],
   },
   {
     id: '10',
     category: 'Support',
     question: 'What kind of customer support do you provide?',
-    answer: 'We offer email support for all users, with priority support for premium customers. Enterprise clients get dedicated account management and phone support. Our average response time is under 4 hours.',
+    answer:
+      'We offer email support for all users, with priority support for premium customers. Enterprise clients get dedicated account management and phone support. Our average response time is under 4 hours.',
     tags: ['support', 'help'],
   },
 ];
@@ -148,14 +159,15 @@ export const EmptyState: Story = {
 
 export const WithAnalytics: Story = {
   args: {
-    faqs: defaultFAQData.map(faq => ({
+    faqs: defaultFAQData.map((faq) => ({
       ...faq,
       views: Math.floor(Math.random() * 1000) + 100,
       helpful: Math.floor(Math.random() * 50) + 10,
       lastUpdated: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
     })),
     showAnalytics: true,
-    onFeedback: (faqId: string, helpful: boolean) => console.log(`FAQ ${faqId} marked as ${helpful ? 'helpful' : 'not helpful'}`),
+    onFeedback: (faqId: string, helpful: boolean) =>
+      console.log(`FAQ ${faqId} marked as ${helpful ? 'helpful' : 'not helpful'}`),
   },
 };
 
@@ -168,7 +180,8 @@ export const InteractiveFeatures: Story = {
     showRelated: true,
     expandMultiple: false,
     onFAQClick: (faqId: string) => console.log(`FAQ ${faqId} clicked`),
-    onFeedback: (faqId: string, helpful: boolean) => console.log(`FAQ ${faqId} feedback: ${helpful}`),
+    onFeedback: (faqId: string, helpful: boolean) =>
+      console.log(`FAQ ${faqId} feedback: ${helpful}`),
   },
 };
 
@@ -190,15 +203,18 @@ export const MultiLanguage: Story = {
         id: '1',
         category: 'General',
         question: 'What is AI Glossary Pro?',
-        answer: 'AI Glossary Pro is a comprehensive AI and Machine Learning terminology reference...',
+        answer:
+          'AI Glossary Pro is a comprehensive AI and Machine Learning terminology reference...',
         translations: {
           es: {
             question: '¿Qué es AI Glossary Pro?',
-            answer: 'AI Glossary Pro es una referencia completa de terminología de IA y Machine Learning...',
+            answer:
+              'AI Glossary Pro es una referencia completa de terminología de IA y Machine Learning...',
           },
           fr: {
-            question: 'Qu\'est-ce qu\'AI Glossary Pro?',
-            answer: 'AI Glossary Pro est une référence complète de terminologie IA et Machine Learning...',
+            question: "Qu'est-ce qu'AI Glossary Pro?",
+            answer:
+              'AI Glossary Pro est une référence complète de terminologie IA et Machine Learning...',
           },
         },
       },
@@ -325,7 +341,7 @@ export const WithCustomActions: Story = {
 
 export const WithRelatedContent: Story = {
   args: {
-    faqs: defaultFAQData.map(faq => ({
+    faqs: defaultFAQData.map((faq) => ({
       ...faq,
       relatedLinks: [
         { title: 'Documentation', url: '/docs', type: 'internal' },
@@ -333,9 +349,9 @@ export const WithRelatedContent: Story = {
         { title: 'Community Forum', url: '/community', type: 'external' },
       ],
       relatedFAQs: defaultFAQData
-        .filter(related => related.id !== faq.id && related.category === faq.category)
+        .filter((related) => related.id !== faq.id && related.category === faq.category)
         .slice(0, 2)
-        .map(related => ({ id: related.id, question: related.question })),
+        .map((related) => ({ id: related.id, question: related.question })),
     })),
     showRelatedContent: true,
   },

@@ -1,85 +1,133 @@
-import React from 'react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import type React from 'react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { ContentNode } from '@/types/content-structure';
 import { HierarchicalNavigator } from '../HierarchicalNavigator';
-import { 
-  mockSectionsArray, 
-  mockUserProgress, 
-  mockSingleSection, 
+import {
   mockEmptySection,
   mockInteractiveSection,
+  mockLargeDataset,
   mockSearchableContent,
-  mockLargeDataset
+  mockSectionsArray,
+  mockSingleSection,
+  mockUserProgress,
 } from './mockData';
-import { ContentNode } from '@/types/content-structure';
 
 // Mock the icons to avoid rendering issues in tests
 vi.mock('lucide-react', () => ({
-  ChevronDown: ({ className }: { className?: string }) => <div data-testid="chevron-down" className={className} />,
-  ChevronRight: ({ className }: { className?: string }) => <div data-testid="chevron-right" className={className} />,
-  Search: ({ className }: { className?: string }) => <div data-testid="search-icon" className={className} />,
-  BookOpen: ({ className }: { className?: string }) => <div data-testid="book-open" className={className} />,
-  Code: ({ className }: { className?: string }) => <div data-testid="code-icon" className={className} />,
-  Play: ({ className }: { className?: string }) => <div data-testid="play-icon" className={className} />,
-  FileText: ({ className }: { className?: string }) => <div data-testid="file-text" className={className} />,
-  Target: ({ className }: { className?: string }) => <div data-testid="target-icon" className={className} />,
-  CheckCircle: ({ className }: { className?: string }) => <div data-testid="check-circle" className={className} />,
-  Circle: ({ className }: { className?: string }) => <div data-testid="circle" className={className} />,
-  Clock: ({ className }: { className?: string }) => <div data-testid="clock" className={className} />,
-  Star: ({ className }: { className?: string }) => <div data-testid="star" className={className} />
+  ChevronDown: ({ className }: { className?: string }) => (
+    <div data-testid="chevron-down" className={className} />
+  ),
+  ChevronRight: ({ className }: { className?: string }) => (
+    <div data-testid="chevron-right" className={className} />
+  ),
+  Search: ({ className }: { className?: string }) => (
+    <div data-testid="search-icon" className={className} />
+  ),
+  BookOpen: ({ className }: { className?: string }) => (
+    <div data-testid="book-open" className={className} />
+  ),
+  Code: ({ className }: { className?: string }) => (
+    <div data-testid="code-icon" className={className} />
+  ),
+  Play: ({ className }: { className?: string }) => (
+    <div data-testid="play-icon" className={className} />
+  ),
+  FileText: ({ className }: { className?: string }) => (
+    <div data-testid="file-text" className={className} />
+  ),
+  Target: ({ className }: { className?: string }) => (
+    <div data-testid="target-icon" className={className} />
+  ),
+  CheckCircle: ({ className }: { className?: string }) => (
+    <div data-testid="check-circle" className={className} />
+  ),
+  Circle: ({ className }: { className?: string }) => (
+    <div data-testid="circle" className={className} />
+  ),
+  Clock: ({ className }: { className?: string }) => (
+    <div data-testid="clock" className={className} />
+  ),
+  Star: ({ className }: { className?: string }) => <div data-testid="star" className={className} />,
 }));
 
 // Mock the UI components
 vi.mock('@/components/ui/card', () => ({
-  Card: ({ children, className }: { children: React.ReactNode; className?: string }) => 
-    <div data-testid="card" className={className}>{children}</div>,
-  CardContent: ({ children, className }: { children: React.ReactNode; className?: string }) => 
-    <div data-testid="card-content" className={className}>{children}</div>,
-  CardHeader: ({ children, className }: { children: React.ReactNode; className?: string }) => 
-    <div data-testid="card-header" className={className}>{children}</div>,
-  CardTitle: ({ children, className }: { children: React.ReactNode; className?: string }) => 
-    <div data-testid="card-title" className={className}>{children}</div>
+  Card: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <div data-testid="card" className={className}>
+      {children}
+    </div>
+  ),
+  CardContent: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <div data-testid="card-content" className={className}>
+      {children}
+    </div>
+  ),
+  CardHeader: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <div data-testid="card-header" className={className}>
+      {children}
+    </div>
+  ),
+  CardTitle: ({ children, className }: { children: React.ReactNode; className?: string }) => (
+    <div data-testid="card-title" className={className}>
+      {children}
+    </div>
+  ),
 }));
 
 vi.mock('@/components/ui/badge', () => ({
-  Badge: ({ children, variant, className }: { children: React.ReactNode; variant?: string; className?: string }) => 
-    <span data-testid="badge" data-variant={variant} className={className}>{children}</span>
+  Badge: ({
+    children,
+    variant,
+    className,
+  }: {
+    children: React.ReactNode;
+    variant?: string;
+    className?: string;
+  }) => (
+    <span data-testid="badge" data-variant={variant} className={className}>
+      {children}
+    </span>
+  ),
 }));
 
 vi.mock('@/components/ui/button', () => ({
-  Button: ({ children, variant, size, className, onClick, ...props }: any) => 
-    <button 
-      data-testid="button" 
-      data-variant={variant} 
-      data-size={size} 
-      className={className} 
-      onClick={onClick} 
+  Button: ({ children, variant, size, className, onClick, ...props }: any) => (
+    <button
+      data-testid="button"
+      data-variant={variant}
+      data-size={size}
+      className={className}
+      onClick={onClick}
       {...props}
     >
       {children}
     </button>
+  ),
 }));
 
 vi.mock('@/components/ui/progress', () => ({
-  Progress: ({ value, className }: { value: number; className?: string }) => 
+  Progress: ({ value, className }: { value: number; className?: string }) => (
     <div data-testid="progress" data-value={value} className={className} />
+  ),
 }));
 
 vi.mock('@/components/ui/input', () => ({
-  Input: ({ placeholder, value, onChange, className, ...props }: any) => 
-    <input 
-      data-testid="input" 
-      placeholder={placeholder} 
-      value={value} 
-      onChange={onChange} 
-      className={className} 
-      {...props} 
+  Input: ({ placeholder, value, onChange, className, ...props }: any) => (
+    <input
+      data-testid="input"
+      placeholder={placeholder}
+      value={value}
+      onChange={onChange}
+      className={className}
+      {...props}
     />
+  ),
 }));
 
 vi.mock('@/lib/utils', () => ({
-  cn: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' ')
+  cn: (...classes: (string | undefined)[]) => classes.filter(Boolean).join(' '),
 }));
 
 describe('HierarchicalNavigator', () => {
@@ -96,12 +144,7 @@ describe('HierarchicalNavigator', () => {
 
   describe('Basic Rendering', () => {
     it('renders the component with basic structure', () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       expect(screen.getByTestId('card')).toBeInTheDocument();
       expect(screen.getByTestId('card-header')).toBeInTheDocument();
@@ -110,12 +153,7 @@ describe('HierarchicalNavigator', () => {
     });
 
     it('renders all root level sections', () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       expect(screen.getByText('Introduction to AI')).toBeInTheDocument();
       expect(screen.getByText('Machine Learning Basics')).toBeInTheDocument();
@@ -136,12 +174,7 @@ describe('HierarchicalNavigator', () => {
     });
 
     it('renders correctly with empty sections array', () => {
-      render(
-        <HierarchicalNavigator
-          sections={[]}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={[]} onNodeClick={mockOnNodeClick} />);
 
       expect(screen.getByText('Content Navigation')).toBeInTheDocument();
       expect(screen.getByText('No sections found')).toBeInTheDocument();
@@ -150,10 +183,7 @@ describe('HierarchicalNavigator', () => {
 
     it('renders single section without subsections', () => {
       render(
-        <HierarchicalNavigator
-          sections={[mockSingleSection]}
-          onNodeClick={mockOnNodeClick}
-        />
+        <HierarchicalNavigator sections={[mockSingleSection]} onNodeClick={mockOnNodeClick} />
       );
 
       expect(screen.getByText('Simple Section')).toBeInTheDocument();
@@ -271,9 +301,9 @@ describe('HierarchicalNavigator', () => {
       );
 
       // Should have expand/collapse buttons for sections with subsections
-      const expandButtons = screen.getAllByTestId('button').filter(button => 
-        button.getAttribute('data-size') === 'sm'
-      );
+      const expandButtons = screen
+        .getAllByTestId('button')
+        .filter((button) => button.getAttribute('data-size') === 'sm');
       expect(expandButtons.length).toBeGreaterThan(0);
     });
 
@@ -301,10 +331,10 @@ describe('HierarchicalNavigator', () => {
       );
 
       // Find the first expand/collapse button and click it
-      const expandButtons = screen.getAllByTestId('button').filter(button => 
-        button.getAttribute('data-size') === 'sm'
-      );
-      
+      const expandButtons = screen
+        .getAllByTestId('button')
+        .filter((button) => button.getAttribute('data-size') === 'sm');
+
       if (expandButtons.length > 0) {
         await user.click(expandButtons[0]);
         // The subsections should still be visible due to default expansion
@@ -335,10 +365,10 @@ describe('HierarchicalNavigator', () => {
         />
       );
 
-      const expandButtons = screen.getAllByTestId('button').filter(button => 
-        button.getAttribute('data-size') === 'sm'
-      );
-      
+      const expandButtons = screen
+        .getAllByTestId('button')
+        .filter((button) => button.getAttribute('data-size') === 'sm');
+
       if (expandButtons.length > 0) {
         await user.click(expandButtons[0]);
         expect(mockOnNodeClick).not.toHaveBeenCalled();
@@ -458,23 +488,18 @@ describe('HierarchicalNavigator', () => {
 
       // Check that we have at least some icons rendered
       expect(screen.getAllByTestId('book-open').length).toBeGreaterThan(0);
-      
+
       // Check for interactive/play icons if present
       const playIcons = screen.queryAllByTestId('play-icon');
       expect(playIcons.length).toBeGreaterThanOrEqual(0);
-      
-      // Check for code icons if present  
+
+      // Check for code icons if present
       const codeIcons = screen.queryAllByTestId('code-icon');
       expect(codeIcons.length).toBeGreaterThanOrEqual(0);
     });
 
     it('shows priority indicators for high priority items', () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       expect(screen.getAllByTestId('star').length).toBeGreaterThan(0);
     });
@@ -482,28 +507,18 @@ describe('HierarchicalNavigator', () => {
 
   describe('Display Modes', () => {
     it('renders in tree view by default', () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       expect(screen.getByText('Tree')).toBeInTheDocument();
       expect(screen.getByText('Flat')).toBeInTheDocument();
-      
+
       // Tree view should show nested structure
       expect(screen.getByText('What is AI?')).toBeInTheDocument();
       expect(screen.getByText('History of AI')).toBeInTheDocument();
     });
 
     it('switches to flat view when flat button is clicked', async () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       const flatButton = screen.getByText('Flat');
       await user.click(flatButton);
@@ -514,12 +529,7 @@ describe('HierarchicalNavigator', () => {
     });
 
     it('switches back to tree view when tree button is clicked', async () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       const flatButton = screen.getByText('Flat');
       await user.click(flatButton);
@@ -535,12 +545,7 @@ describe('HierarchicalNavigator', () => {
 
   describe('Node Click Handling', () => {
     it('calls onNodeClick when a node is clicked', async () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       const firstSections = screen.getAllByText('Introduction to AI');
       await user.click(firstSections[0]);
@@ -549,33 +554,24 @@ describe('HierarchicalNavigator', () => {
     });
 
     it('calls onNodeClick with correct path for nested nodes', async () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       const nestedSections = screen.getAllByText('What is AI?');
       await user.click(nestedSections[0]);
 
-      expect(mockOnNodeClick).toHaveBeenCalledWith('0.0', mockSectionsArray[0].subsections![0]);
+      expect(mockOnNodeClick).toHaveBeenCalledWith('0.0', mockSectionsArray[0].subsections?.[0]);
     });
 
     it('handles keyboard navigation with Enter key', async () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       // Find the clickable element (div with role="button")
-      const nodeElements = screen.getAllByRole('button').filter(el => 
-        el.textContent?.includes('Introduction to AI') && 
-        el.hasAttribute('tabindex')
-      );
-      
+      const nodeElements = screen
+        .getAllByRole('button')
+        .filter(
+          (el) => el.textContent?.includes('Introduction to AI') && el.hasAttribute('tabindex')
+        );
+
       if (nodeElements.length > 0) {
         nodeElements[0].focus();
         await user.keyboard('{Enter}');
@@ -587,19 +583,15 @@ describe('HierarchicalNavigator', () => {
     });
 
     it('handles keyboard navigation with Space key', async () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       // Find the clickable element (div with role="button")
-      const nodeElements = screen.getAllByRole('button').filter(el => 
-        el.textContent?.includes('Introduction to AI') && 
-        el.hasAttribute('tabindex')
-      );
-      
+      const nodeElements = screen
+        .getAllByRole('button')
+        .filter(
+          (el) => el.textContent?.includes('Introduction to AI') && el.hasAttribute('tabindex')
+        );
+
       if (nodeElements.length > 0) {
         nodeElements[0].focus();
         await user.keyboard(' ');
@@ -655,52 +647,40 @@ describe('HierarchicalNavigator', () => {
 
   describe('Accessibility', () => {
     it('sets proper ARIA roles and attributes', () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       // Check for proper button roles - should include expand/collapse buttons and display mode buttons
       const nodeElements = screen.getAllByRole('button');
       expect(nodeElements.length).toBeGreaterThan(0);
 
       // Check for proper tabindex on node containers
-      const nodeContainers = screen.getAllByRole('button').filter(button => 
-        button.querySelector('span') && button.textContent?.includes('Introduction to AI')
-      );
+      const nodeContainers = screen
+        .getAllByRole('button')
+        .filter(
+          (button) =>
+            button.querySelector('span') && button.textContent?.includes('Introduction to AI')
+        );
       if (nodeContainers.length > 0) {
         expect(nodeContainers[0]).toHaveAttribute('tabindex', '0');
       }
     });
 
     it('supports keyboard navigation', () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       // Look for elements with role button and tabindex
       const buttonElements = screen.getAllByRole('button');
-      const interactiveElements = buttonElements.filter(el => el.hasAttribute('tabindex'));
+      const interactiveElements = buttonElements.filter((el) => el.hasAttribute('tabindex'));
       expect(interactiveElements.length).toBeGreaterThan(0);
     });
 
     it('provides proper focus management', () => {
-      render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />);
 
       // Find a focusable element
       const buttons = screen.getAllByRole('button');
-      const focusableButton = buttons.find(button => button.hasAttribute('tabindex'));
-      
+      const focusableButton = buttons.find((button) => button.hasAttribute('tabindex'));
+
       if (focusableButton) {
         focusableButton.focus();
         expect(document.activeElement).toBe(focusableButton);
@@ -714,13 +694,8 @@ describe('HierarchicalNavigator', () => {
   describe('Performance', () => {
     it('handles large datasets efficiently', () => {
       const startTime = performance.now();
-      
-      render(
-        <HierarchicalNavigator
-          sections={mockLargeDataset}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+
+      render(<HierarchicalNavigator sections={mockLargeDataset} onNodeClick={mockOnNodeClick} />);
 
       const endTime = performance.now();
       const renderTime = endTime - startTime;
@@ -759,23 +734,13 @@ describe('HierarchicalNavigator', () => {
   describe('Edge Cases', () => {
     it('handles undefined sections gracefully', () => {
       // Instead of passing undefined, pass an empty array
-      render(
-        <HierarchicalNavigator
-          sections={[]}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
-      
+      render(<HierarchicalNavigator sections={[]} onNodeClick={mockOnNodeClick} />);
+
       expect(screen.getByText('No sections found')).toBeInTheDocument();
     });
 
     it('handles sections with empty subsections array', () => {
-      render(
-        <HierarchicalNavigator
-          sections={[mockEmptySection]}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={[mockEmptySection]} onNodeClick={mockOnNodeClick} />);
 
       expect(screen.getByText('Empty Section')).toBeInTheDocument();
     });
@@ -783,14 +748,11 @@ describe('HierarchicalNavigator', () => {
     it('handles sections with missing metadata', () => {
       const sectionWithoutMetadata: ContentNode = {
         name: 'Section Without Metadata',
-        content: 'Content without metadata'
+        content: 'Content without metadata',
       };
 
       render(
-        <HierarchicalNavigator
-          sections={[sectionWithoutMetadata]}
-          onNodeClick={mockOnNodeClick}
-        />
+        <HierarchicalNavigator sections={[sectionWithoutMetadata]} onNodeClick={mockOnNodeClick} />
       );
 
       expect(screen.getByText('Section Without Metadata')).toBeInTheDocument();
@@ -799,23 +761,18 @@ describe('HierarchicalNavigator', () => {
     it('handles very deep nesting', () => {
       let deepSection: ContentNode = {
         name: 'Deep Level 10',
-        content: 'Very deep content'
+        content: 'Very deep content',
       };
 
       for (let i = 9; i >= 0; i--) {
         deepSection = {
           name: `Deep Level ${i}`,
           content: `Content for level ${i}`,
-          subsections: [deepSection]
+          subsections: [deepSection],
         };
       }
 
-      render(
-        <HierarchicalNavigator
-          sections={[deepSection]}
-          onNodeClick={mockOnNodeClick}
-        />
-      );
+      render(<HierarchicalNavigator sections={[deepSection]} onNodeClick={mockOnNodeClick} />);
 
       expect(screen.getByText('Deep Level 0')).toBeInTheDocument();
     });
@@ -836,10 +793,7 @@ describe('HierarchicalNavigator', () => {
   describe('Visual Snapshots', () => {
     it('matches snapshot for basic rendering', () => {
       const { container } = render(
-        <HierarchicalNavigator
-          sections={mockSectionsArray}
-          onNodeClick={mockOnNodeClick}
-        />
+        <HierarchicalNavigator sections={mockSectionsArray} onNodeClick={mockOnNodeClick} />
       );
 
       expect(container.firstChild).toMatchSnapshot();
@@ -861,10 +815,7 @@ describe('HierarchicalNavigator', () => {
 
     it('matches snapshot for empty state', () => {
       const { container } = render(
-        <HierarchicalNavigator
-          sections={[]}
-          onNodeClick={mockOnNodeClick}
-        />
+        <HierarchicalNavigator sections={[]} onNodeClick={mockOnNodeClick} />
       );
 
       expect(container.firstChild).toMatchSnapshot();

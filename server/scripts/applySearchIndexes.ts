@@ -1,13 +1,13 @@
 #!/usr/bin/env node
+import { readFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { Pool } from '@neondatabase/serverless';
 /**
  * Full-text search indexes migration script
  * Applies advanced search indexes for dramatically improved search performance
  */
-import dotenv from "dotenv";
-import { readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
-import { Pool } from '@neondatabase/serverless';
+import dotenv from 'dotenv';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -15,13 +15,13 @@ const __dirname = dirname(__filename);
 // Load environment variables
 dotenv.config();
 
-const pool = new Pool({ 
-  connectionString: process.env.DATABASE_URL 
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
 });
 
 async function main() {
   console.log('🔍 Starting full-text search indexes migration...');
-  
+
   if (!process.env.DATABASE_URL) {
     console.error('❌ DATABASE_URL environment variable is not set');
     process.exit(1);
@@ -31,14 +31,14 @@ async function main() {
     // Read the simplified SQL file
     const sqlPath = join(__dirname, '../migrations/simpleSearchIndexes.sql');
     const sqlContent = readFileSync(sqlPath, 'utf8');
-    
+
     console.log('📖 Reading full-text search indexes SQL file...');
-    
+
     // Split SQL content into individual statements
     const statements = sqlContent
       .split(';')
-      .map(stmt => stmt.trim())
-      .filter(stmt => {
+      .map((stmt) => stmt.trim())
+      .filter((stmt) => {
         // Filter out comments and empty statements
         if (stmt.length === 0) return false;
         if (stmt.startsWith('--')) return false;
@@ -47,35 +47,39 @@ async function main() {
         if (stmt.toLowerCase().startsWith('analyze')) return true;
         return false;
       });
-    
+
     console.log(`📊 Found ${statements.length} SQL statements to execute`);
-    
+
     // Execute each statement
     let successCount = 0;
     let errorCount = 0;
     const startTime = Date.now();
-    
+
     for (const statement of statements) {
       try {
         // Skip SELECT statements and comments
-        if (statement.toLowerCase().startsWith('select') || 
-            statement.startsWith('--') || 
-            statement.startsWith('/*')) {
+        if (
+          statement.toLowerCase().startsWith('select') ||
+          statement.startsWith('--') ||
+          statement.startsWith('/*')
+        ) {
           continue;
         }
-        
+
         const preview = statement.substring(0, 80).replace(/\s+/g, ' ');
         console.log(`⚡ Executing: ${preview}...`);
-        
+
         await pool.query(statement);
         successCount++;
         console.log('✅ Success');
       } catch (error) {
         errorCount++;
         const err = error as Error;
-        if (err.message.includes('already exists') || 
-            err.message.includes('does not exist') ||
-            err.message.includes('IF NOT EXISTS')) {
+        if (
+          err.message.includes('already exists') ||
+          err.message.includes('does not exist') ||
+          err.message.includes('IF NOT EXISTS')
+        ) {
           console.log('ℹ️  Already exists or condition met, skipping');
           successCount++;
         } else {
@@ -83,14 +87,14 @@ async function main() {
         }
       }
     }
-    
+
     const duration = Date.now() - startTime;
-    
+
     console.log('\n🔍 Search Index Migration Summary:');
     console.log(`✅ Successful operations: ${successCount}`);
     console.log(`❌ Failed operations: ${errorCount}`);
     console.log(`⏱️  Duration: ${(duration / 1000).toFixed(2)}s`);
-    
+
     if (errorCount === 0) {
       console.log('🎉 All search indexes applied successfully!');
       console.log('🚀 Expected search performance improvements:');
@@ -99,7 +103,7 @@ async function main() {
       console.log('   • Ranked results with relevance scoring');
       console.log('   • Support for complex filtered searches');
       console.log('   • Efficient autocomplete suggestions');
-      
+
       // Test the search performance
       console.log('\n🧪 Testing search performance...');
       try {
@@ -112,15 +116,15 @@ async function main() {
         `);
         const testDuration = Date.now() - testStart;
         console.log(`✅ Full-text search test completed in ${testDuration}ms`);
-        console.log(`📊 Found ${testResult.rows[0]?.total_terms || 0} terms matching 'machine learning'`);
-      } catch (testError) {
+        console.log(
+          `📊 Found ${testResult.rows[0]?.total_terms || 0} terms matching 'machine learning'`
+        );
+      } catch (_testError) {
         console.warn('⚠️  Search test failed (this is normal if no terms exist yet)');
       }
-      
     } else {
       console.log('⚠️  Some indexes failed to apply. Check the errors above.');
     }
-    
   } catch (error) {
     console.error('❌ Failed to apply search indexes:', error);
     process.exit(1);

@@ -3,7 +3,7 @@
  * Manages Progressive Web App functionality including service worker, installation, and offline capabilities
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import serviceWorkerManager from '../utils/serviceWorkerRegistration';
 
 interface PWAState {
@@ -56,7 +56,7 @@ export const usePWA = () => {
   });
 
   // Register service worker (now handled by serviceWorkerManager)
-  const registerServiceWorker = useCallback(async () => {
+  const _registerServiceWorker = useCallback(async () => {
     // Service worker registration is handled by serviceWorkerManager
     return null;
   }, []);
@@ -64,15 +64,15 @@ export const usePWA = () => {
   // Install PWA
   const installPWA = useCallback(async () => {
     const success = await serviceWorkerManager.installPWA();
-    
+
     if (success) {
-      setPWAState(prev => ({
+      setPWAState((prev) => ({
         ...prev,
         isInstalled: true,
         isInstallable: false,
         installPrompt: null,
       }));
-      
+
       // Track installation analytics
       if (window.gtag) {
         window.gtag('event', 'pwa_install', {
@@ -81,15 +81,15 @@ export const usePWA = () => {
         });
       }
     }
-    
+
     return success;
   }, []);
 
   // Update service worker
   const updateServiceWorker = useCallback(async () => {
     await serviceWorkerManager.updateServiceWorker();
-    
-    setPWAState(prev => ({
+
+    setPWAState((prev) => ({
       ...prev,
       isUpdateAvailable: false,
     }));
@@ -98,39 +98,38 @@ export const usePWA = () => {
   // Request notification permission
   const requestNotificationPermission = useCallback(async () => {
     const granted = await serviceWorkerManager.requestNotificationPermission();
-    
-    setCapabilities(prev => ({
+
+    setCapabilities((prev) => ({
       ...prev,
       canNotify: granted,
     }));
-    
+
     return granted;
   }, []);
 
   // Share content using Web Share API
-  const shareContent = useCallback(async (data: {
-    title?: string;
-    text?: string;
-    url?: string;
-  }) => {
-    return await serviceWorkerManager.shareContent({
-      title: data.title || '',
-      text: data.text || '',
-      url: data.url || ''
-    });
-  }, []);
+  const shareContent = useCallback(
+    async (data: { title?: string; text?: string; url?: string }) => {
+      return await serviceWorkerManager.shareContent({
+        title: data.title || '',
+        text: data.text || '',
+        url: data.url || '',
+      });
+    },
+    []
+  );
 
   // Get cache information
   const getCacheInfo = useCallback(async (): Promise<CacheInfo> => {
     const info = await serviceWorkerManager.getCacheInfo();
-    
+
     const formattedInfo: CacheInfo = {
       staticCacheSize: info.staticCacheSize,
       dynamicCacheSize: info.dynamicCacheSize,
       totalCacheSize: info.totalCacheSize,
       lastUpdated: info.lastUpdated,
     };
-    
+
     setCacheInfo(formattedInfo);
     return formattedInfo;
   }, []);
@@ -138,7 +137,7 @@ export const usePWA = () => {
   // Clear all caches
   const clearCache = useCallback(async () => {
     const success = await serviceWorkerManager.clearCache();
-    
+
     if (success) {
       setCacheInfo({
         staticCacheSize: 0,
@@ -147,7 +146,7 @@ export const usePWA = () => {
         lastUpdated: null,
       });
     }
-    
+
     return success;
   }, []);
 
@@ -178,7 +177,7 @@ export const usePWA = () => {
     setCapabilities(capabilities);
 
     // Set initial state
-    setPWAState(prev => ({
+    setPWAState((prev) => ({
       ...prev,
       isInstalled: serviceWorkerManager.isInstalled,
       isInstallable: serviceWorkerManager.isInstallable,
@@ -189,19 +188,19 @@ export const usePWA = () => {
 
     // Set up event listeners with serviceWorkerManager
     const handleOnline = () => {
-      setPWAState(prev => ({ ...prev, isOffline: false }));
+      setPWAState((prev) => ({ ...prev, isOffline: false }));
     };
 
     const handleOffline = () => {
-      setPWAState(prev => ({ ...prev, isOffline: true }));
+      setPWAState((prev) => ({ ...prev, isOffline: true }));
     };
 
     const handleUpdateAvailable = () => {
-      setPWAState(prev => ({ ...prev, isUpdateAvailable: true }));
+      setPWAState((prev) => ({ ...prev, isUpdateAvailable: true }));
     };
 
     const handleInstallPrompt = () => {
-      setPWAState(prev => ({ ...prev, isInstallable: true }));
+      setPWAState((prev) => ({ ...prev, isInstallable: true }));
     };
 
     // Register event listeners
@@ -224,7 +223,7 @@ export const usePWA = () => {
     ...pwaState,
     capabilities,
     cacheInfo,
-    
+
     // Actions
     installPWA,
     updateServiceWorker,
@@ -232,7 +231,7 @@ export const usePWA = () => {
     shareContent,
     getCacheInfo,
     clearCache,
-    
+
     // Utilities
     formatCacheSize,
     isStandaloneMode,

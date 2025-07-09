@@ -1,27 +1,26 @@
-import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
+import {
+  Activity,
+  Award,
+  BarChart3,
+  BookOpen,
+  Calendar,
+  Clock,
+  Eye,
+  Flame,
+  Star,
+  Target,
+  Trophy,
+} from 'lucide-react';
+import { useState } from 'react';
+import { Link } from 'wouter';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  BookOpen, 
-  Clock, 
-  Star, 
-  Target, 
-  Award,
-  Calendar,
-  BarChart3,
-  Activity,
-  Trophy,
-  Flame,
-  Eye
-} from 'lucide-react';
-import { Link } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
 import { getDifficultyColor } from '@/utils/termUtils';
-
 
 interface UserProgressStats {
   totalTermsViewed: number;
@@ -89,8 +88,6 @@ export default function UserProgressDashboard() {
     enabled: isAuthenticated,
   });
 
-
-
   if (!isAuthenticated) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -134,7 +131,6 @@ export default function UserProgressDashboard() {
     if (streak >= 7) return <Flame className="h-5 w-5 text-orange-500" />;
     return <Calendar className="h-5 w-5 text-blue-500" />;
   };
-
 
   const renderOverviewTab = () => (
     <div className="space-y-6">
@@ -197,7 +193,9 @@ export default function UserProgressDashboard() {
       <Card>
         <CardHeader>
           <CardTitle>Category Progress</CardTitle>
-          <CardDescription>Your learning progress across different AI/ML categories</CardDescription>
+          <CardDescription>
+            Your learning progress across different AI/ML categories
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -260,9 +258,11 @@ export default function UserProgressDashboard() {
                   <p className="text-sm font-medium truncate">
                     {activity.action === 'viewed' && 'Viewed'}
                     {activity.action === 'completed' && 'Completed'}
-                    {activity.action === 'favorited' && 'Favorited'}
-                    {' '}
-                    <Link href={`/terms/${activity.termId}`} className="text-blue-600 hover:underline">
+                    {activity.action === 'favorited' && 'Favorited'}{' '}
+                    <Link
+                      href={`/terms/${activity.termId}`}
+                      className="text-blue-600 hover:underline"
+                    >
                       {activity.termName}
                     </Link>
                   </p>
@@ -289,7 +289,10 @@ export default function UserProgressDashboard() {
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {progressStats.achievements.map((achievement) => (
-                <div key={achievement.id} className="flex items-center space-x-3 p-3 border rounded-lg">
+                <div
+                  key={achievement.id}
+                  className="flex items-center space-x-3 p-3 border rounded-lg"
+                >
                   <Award className="h-8 w-8 text-yellow-500" />
                   <div>
                     <p className="font-medium">{achievement.name}</p>
@@ -320,17 +323,22 @@ export default function UserProgressDashboard() {
               <div key={index} className="border rounded-lg p-4">
                 <div className="flex items-center justify-between mb-2">
                   <div>
-                    <Link href={`/terms/${section.termId}`} className="font-medium text-blue-600 hover:underline">
+                    <Link
+                      href={`/terms/${section.termId}`}
+                      className="font-medium text-blue-600 hover:underline"
+                    >
                       {section.termName}
                     </Link>
                     <p className="text-sm text-gray-600">{section.sectionName}</p>
                   </div>
-                  <Badge 
+                  <Badge
                     variant={section.status === 'completed' ? 'default' : 'secondary'}
                     className={
-                      section.status === 'completed' ? 'bg-green-100 text-green-700' :
-                      section.status === 'in_progress' ? 'bg-yellow-100 text-yellow-700' :
-                      'bg-gray-100 text-gray-700'
+                      section.status === 'completed'
+                        ? 'bg-green-100 text-green-700'
+                        : section.status === 'in_progress'
+                          ? 'bg-yellow-100 text-yellow-700'
+                          : 'bg-gray-100 text-gray-700'
                     }
                   >
                     {section.status.replace('_', ' ')}
@@ -344,7 +352,9 @@ export default function UserProgressDashboard() {
                   <Progress value={section.completionPercentage} className="h-2" />
                   <div className="flex items-center justify-between text-xs text-gray-500">
                     <span>Time spent: {formatTime(section.timeSpent)}</span>
-                    <span>Last accessed: {new Date(section.lastAccessed).toLocaleDateString()}</span>
+                    <span>
+                      Last accessed: {new Date(section.lastAccessed).toLocaleDateString()}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -380,18 +390,12 @@ export default function UserProgressDashboard() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="overview">
-          {renderOverviewTab()}
-        </TabsContent>
+        <TabsContent value="overview">{renderOverviewTab()}</TabsContent>
 
-        <TabsContent value="activity">
-          {renderActivityTab()}
-        </TabsContent>
+        <TabsContent value="activity">{renderActivityTab()}</TabsContent>
 
-        <TabsContent value="sections">
-          {renderSectionsTab()}
-        </TabsContent>
+        <TabsContent value="sections">{renderSectionsTab()}</TabsContent>
       </Tabs>
     </div>
   );
-} 
+}

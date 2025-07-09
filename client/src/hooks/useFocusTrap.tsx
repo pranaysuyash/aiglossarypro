@@ -12,7 +12,7 @@ export function useFocusTrap(isActive: boolean = true) {
     if (!isActive || !containerRef.current) return;
 
     const container = containerRef.current;
-    
+
     // Store the currently focused element
     lastFocusedElement.current = document.activeElement as HTMLElement;
 
@@ -29,14 +29,15 @@ export function useFocusTrap(isActive: boolean = true) {
         'object',
         'embed',
         '[tabindex]:not([tabindex="-1"])',
-        '[contenteditable]'
+        '[contenteditable]',
       ].join(',');
 
-      return Array.from(container.querySelectorAll(focusableSelectors))
-        .filter(el => {
-          const element = el as HTMLElement;
-          return element.offsetWidth > 0 || element.offsetHeight > 0 || element === document.activeElement;
-        }) as HTMLElement[];
+      return Array.from(container.querySelectorAll(focusableSelectors)).filter((el) => {
+        const element = el as HTMLElement;
+        return (
+          element.offsetWidth > 0 || element.offsetHeight > 0 || element === document.activeElement
+        );
+      }) as HTMLElement[];
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -69,7 +70,7 @@ export function useFocusTrap(isActive: boolean = true) {
         // Allow parent components to handle escape
         const escapeEvent = new CustomEvent('focustrap:escape', {
           bubbles: true,
-          cancelable: true
+          cancelable: true,
         });
         container.dispatchEvent(escapeEvent);
       }
@@ -89,7 +90,7 @@ export function useFocusTrap(isActive: boolean = true) {
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keydown', handleEscapeKey);
-      
+
       // Restore focus to the previously focused element
       if (lastFocusedElement.current && document.contains(lastFocusedElement.current)) {
         lastFocusedElement.current.focus();
@@ -110,16 +111,16 @@ export function useFocusLock(isActive: boolean = true) {
 
     const originalBodyStyle = document.body.style.overflow;
     const originalBodyPointerEvents = document.body.style.pointerEvents;
-    
+
     // Prevent scrolling and pointer events on body
     document.body.style.overflow = 'hidden';
-    
+
     // Add aria-hidden to all non-overlay content
     const mainContent = document.querySelector('main');
     const header = document.querySelector('header');
     const footer = document.querySelector('footer');
-    
-    [mainContent, header, footer].forEach(element => {
+
+    [mainContent, header, footer].forEach((element) => {
       if (element) {
         element.setAttribute('aria-hidden', 'true');
         element.style.pointerEvents = 'none';
@@ -130,9 +131,9 @@ export function useFocusLock(isActive: boolean = true) {
       // Restore original styles
       document.body.style.overflow = originalBodyStyle;
       document.body.style.pointerEvents = originalBodyPointerEvents;
-      
+
       // Remove aria-hidden from content
-      [mainContent, header, footer].forEach(element => {
+      [mainContent, header, footer].forEach((element) => {
         if (element) {
           element.removeAttribute('aria-hidden');
           element.style.pointerEvents = '';

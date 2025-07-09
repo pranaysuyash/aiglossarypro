@@ -3,12 +3,13 @@
  * Compact trending terms display for homepage and sidebar
  */
 
-import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { TrendingUp, TrendingDown, Eye, ExternalLink, RefreshCw } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { ExternalLink, Eye, RefreshCw, TrendingDown, TrendingUp } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Skeleton } from './ui/skeleton';
 
 interface TrendingTerm {
@@ -36,7 +37,7 @@ const TrendingWidget: React.FC<TrendingWidgetProps> = ({
   limit = 5,
   showHeader = true,
   className = '',
-  onTermClick
+  onTermClick,
 }) => {
   const [lastRefresh, setLastRefresh] = useState(new Date());
 
@@ -46,15 +47,15 @@ const TrendingWidget: React.FC<TrendingWidgetProps> = ({
       const params = new URLSearchParams({
         timeRange,
         trendType,
-        limit: limit.toString()
+        limit: limit.toString(),
       });
-      
+
       const response = await fetch(`/api/trending/terms?${params}`);
       if (!response.ok) throw new Error('Failed to fetch trending terms');
       return response.json();
     },
     refetchInterval: 60000, // Refresh every minute
-    staleTime: 30000 // Consider data stale after 30 seconds
+    staleTime: 30000, // Consider data stale after 30 seconds
   });
 
   const trendingTerms: TrendingTerm[] = data?.data || [];
@@ -72,7 +73,7 @@ const TrendingWidget: React.FC<TrendingWidgetProps> = ({
     }
   };
 
-  const getTrendIcon = (direction: string, change: number) => {
+  const getTrendIcon = (direction: string, _change: number) => {
     if (direction === 'up') {
       return <TrendingUp className="w-3 h-3 text-green-500" />;
     } else if (direction === 'down') {
@@ -87,20 +88,29 @@ const TrendingWidget: React.FC<TrendingWidgetProps> = ({
 
   const getTrendTypeLabel = (type: string): string => {
     switch (type) {
-      case 'velocity': return 'Fastest Growing';
-      case 'engagement': return 'Most Engaging';
-      case 'emerging': return 'Emerging';
-      case 'popular': return 'Popular';
-      default: return 'Trending';
+      case 'velocity':
+        return 'Fastest Growing';
+      case 'engagement':
+        return 'Most Engaging';
+      case 'emerging':
+        return 'Emerging';
+      case 'popular':
+        return 'Popular';
+      default:
+        return 'Trending';
     }
   };
 
   const getTimeRangeLabel = (range: string): string => {
     switch (range) {
-      case 'hour': return 'Last Hour';
-      case 'day': return 'Today';
-      case 'week': return 'This Week';
-      default: return 'Recent';
+      case 'hour':
+        return 'Last Hour';
+      case 'day':
+        return 'Today';
+      case 'week':
+        return 'This Week';
+      default:
+        return 'Recent';
     }
   };
 
@@ -128,7 +138,7 @@ const TrendingWidget: React.FC<TrendingWidgetProps> = ({
           </div>
         </CardHeader>
       )}
-      
+
       <CardContent className={showHeader ? 'pt-0' : ''}>
         {isLoading ? (
           <div className="space-y-3">
@@ -158,7 +168,7 @@ const TrendingWidget: React.FC<TrendingWidgetProps> = ({
                 <div className="flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center">
                   <span className="text-xs font-medium text-blue-600">{index + 1}</span>
                 </div>
-                
+
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <h4 className="font-medium text-sm truncate group-hover:text-blue-600 transition-colors">
@@ -166,27 +176,27 @@ const TrendingWidget: React.FC<TrendingWidgetProps> = ({
                     </h4>
                     <ExternalLink className="w-3 h-3 text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0" />
                   </div>
-                  
-                  <p className="text-xs text-gray-600 line-clamp-2 mb-1">
-                    {term.shortDefinition}
-                  </p>
-                  
+
+                  <p className="text-xs text-gray-600 line-clamp-2 mb-1">{term.shortDefinition}</p>
+
                   <div className="flex items-center gap-2">
                     <Badge variant="outline" className="text-xs px-1 py-0">
                       {term.categoryName}
                     </Badge>
-                    
+
                     <div className="flex items-center gap-1 text-xs text-gray-500">
                       <Eye className="w-3 h-3" />
                       {term.recentViews}
                     </div>
-                    
+
                     {term.trendDirection !== 'stable' && (
                       <div className="flex items-center gap-1">
                         {getTrendIcon(term.trendDirection, term.percentageChange)}
-                        <span className={`text-xs ${
-                          term.trendDirection === 'up' ? 'text-green-600' : 'text-red-600'
-                        }`}>
+                        <span
+                          className={`text-xs ${
+                            term.trendDirection === 'up' ? 'text-green-600' : 'text-red-600'
+                          }`}
+                        >
                           {formatPercentage(term.percentageChange)}
                         </span>
                       </div>
@@ -197,14 +207,14 @@ const TrendingWidget: React.FC<TrendingWidgetProps> = ({
             ))}
           </div>
         )}
-        
+
         {/* Footer */}
         <div className="mt-4 pt-3 border-t">
           <div className="flex items-center justify-between text-xs text-gray-500">
             <span>Updated {lastRefresh.toLocaleTimeString()}</span>
-            <Button 
-              variant="link" 
-              size="sm" 
+            <Button
+              variant="link"
+              size="sm"
               className="text-xs p-0 h-auto"
               onClick={() => window.open('/trending', '_blank')}
             >

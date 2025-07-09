@@ -1,7 +1,7 @@
-import * as fs from 'fs/promises';
-import * as path from 'path';
-import * as crypto from 'crypto';
-import { createReadStream } from 'fs';
+import * as crypto from 'node:crypto';
+import { createReadStream } from 'node:fs';
+import * as fs from 'node:fs/promises';
+import * as path from 'node:path';
 import { log as logger } from './utils/logger';
 
 /**
@@ -88,7 +88,7 @@ export class CheckpointManager {
     return new Promise((resolve, reject) => {
       const hash = crypto.createHash('md5');
       const stream = createReadStream(filePath);
-      
+
       stream.on('data', (data: Buffer) => hash.update(data));
       stream.on('end', () => resolve(hash.digest('hex')));
       stream.on('error', reject);
@@ -112,7 +112,7 @@ export class CheckpointManager {
 
       // Generate a simple hash from filename for now to avoid file path issues
       const fileHash = crypto.createHash('md5').update(fileName).digest('hex');
-      
+
       this.currentCheckpoint = {
         version: '1.0',
         processorType,
@@ -142,7 +142,9 @@ export class CheckpointManager {
       await this.saveCheckpoint();
       logger.info(`✅ Checkpoint initialized and saved: ${this.checkpointFile}`);
     } catch (error) {
-      logger.error('❌ Failed to initialize checkpoint:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('❌ Failed to initialize checkpoint:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       throw error;
     }
   }
@@ -154,15 +156,17 @@ export class CheckpointManager {
     try {
       const content = await fs.readFile(this.checkpointFile, 'utf-8');
       this.currentCheckpoint = JSON.parse(content);
-      
+
       if (this.currentCheckpoint) {
-        logger.info(`📋 Loaded checkpoint: ${this.currentCheckpoint.processedCells}/${this.currentCheckpoint.totalCells} cells processed`);
+        logger.info(
+          `📋 Loaded checkpoint: ${this.currentCheckpoint.processedCells}/${this.currentCheckpoint.totalCells} cells processed`
+        );
         logger.info(`📅 Last update: ${this.currentCheckpoint.lastUpdate}`);
         logger.info(`🔧 Processor: ${this.currentCheckpoint.processorType}`);
       }
-      
+
       return this.currentCheckpoint;
-    } catch (error) {
+    } catch (_error) {
       logger.info('📝 No existing checkpoint found, starting fresh');
       return null;
     }
@@ -179,17 +183,19 @@ export class CheckpointManager {
 
     try {
       this.currentCheckpoint.lastUpdate = new Date().toISOString();
-      
+
       logger.info(`💾 Saving checkpoint to: ${this.checkpointFile}`);
-      const tmpFile = this.checkpointFile + '.tmp';
+      const tmpFile = `${this.checkpointFile}.tmp`;
       await fs.writeFile(tmpFile, JSON.stringify(this.currentCheckpoint, null, 2), 'utf-8');
       await fs.rename(tmpFile, this.checkpointFile);
       logger.info(`✅ Checkpoint saved successfully`);
-      
+
       // Keep only last 5 checkpoint backups
       await this.rotateBackups();
     } catch (error) {
-      logger.error('❌ Failed to save checkpoint:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('❌ Failed to save checkpoint:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -203,11 +209,11 @@ export class CheckpointManager {
     if (!this.currentCheckpoint.completedCells[key]) {
       this.currentCheckpoint.completedCells[key] = true;
       this.currentCheckpoint.processedCells++;
-      
+
       if (processingTime) {
         const currentAvg = this.currentCheckpoint.performance.averageProcessingTime;
         const processed = this.currentCheckpoint.processedCells;
-        this.currentCheckpoint.performance.averageProcessingTime = 
+        this.currentCheckpoint.performance.averageProcessingTime =
           (currentAvg * (processed - 1) + processingTime) / processed;
       }
     }
@@ -225,7 +231,14 @@ export class CheckpointManager {
   /**
    * Log an error for a cell
    */
-  logError(row: number, col: number, term: string, section: string, error: string, retryCount: number = 0): void {
+  logError(
+    row: number,
+    col: number,
+    term: string,
+    section: string,
+    error: string,
+    retryCount: number = 0
+  ): void {
     if (!this.currentCheckpoint) return;
 
     this.currentCheckpoint.errorLog.push({
@@ -281,7 +294,10 @@ export class CheckpointManager {
   /**
    * Get tasks that still need processing
    */
-  getPendingTasks(headers: string[], rows: any[][]): Array<{
+  getPendingTasks(
+    headers: string[],
+    rows: any[][]
+  ): Array<{
     rowIdx: number;
     colIdx: number;
     excelRow: number;
@@ -289,18 +305,18 @@ export class CheckpointManager {
     section: string;
   }> {
     const tasks = [];
-    
+
     for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
       const row = rows[rowIdx];
       const term = row[0] || '';
       if (!term) continue;
-      
+
       for (let colIdx = 1; colIdx < headers.length; colIdx++) {
         const excelRow = rowIdx + 2; // Excel is 1-indexed, plus header row
-        
+
         // Skip if already completed or has content
         if (this.isCellCompleted(excelRow, colIdx) || row[colIdx]) continue;
-        
+
         tasks.push({
           rowIdx,
           colIdx,
@@ -310,16 +326,16 @@ export class CheckpointManager {
         });
       }
     }
-    
+
     return tasks;
   }
 
   /**
    * Check if processing is compatible with different processor
    */
-  isCompatibleWith(otherProcessorType: 'typescript' | 'nodejs' | 'python'): boolean {
+  isCompatibleWith(_otherProcessorType: 'typescript' | 'nodejs' | 'python'): boolean {
     if (!this.currentCheckpoint) return true;
-    
+
     // All processors are compatible with the unified checkpoint format
     return true;
   }
@@ -329,7 +345,7 @@ export class CheckpointManager {
    */
   exportToLegacyFormat(): { [key: string]: boolean } {
     if (!this.currentCheckpoint) return {};
-    
+
     return this.currentCheckpoint.completedCells;
   }
 
@@ -338,7 +354,7 @@ export class CheckpointManager {
    */
   importFromLegacyFormat(legacyCheckpoint: { [key: string]: boolean }): void {
     if (!this.currentCheckpoint) return;
-    
+
     this.currentCheckpoint.completedCells = { ...legacyCheckpoint };
     this.currentCheckpoint.processedCells = Object.keys(legacyCheckpoint).length;
   }
@@ -352,7 +368,7 @@ export class CheckpointManager {
     const progress = this.getProgress();
     const perf = this.currentCheckpoint.performance;
     const runtime = Date.now() - new Date(this.currentCheckpoint.startTime).getTime();
-    
+
     return `
 📊 Cross-Processor Checkpoint Report
 =====================================
@@ -390,18 +406,18 @@ export class CheckpointManager {
     try {
       const backupDir = path.join(this.tempDir, 'backups');
       await fs.mkdir(backupDir, { recursive: true });
-      
+
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
       const backupFile = path.join(backupDir, `checkpoint_${timestamp}.json`);
-      
+
       if (this.currentCheckpoint) {
         await fs.writeFile(backupFile, JSON.stringify(this.currentCheckpoint, null, 2));
       }
-      
+
       // Keep only last 5 backups
       const backups = await fs.readdir(backupDir);
-      const checkpointBackups = backups.filter(f => f.startsWith('checkpoint_')).sort();
-      
+      const checkpointBackups = backups.filter((f) => f.startsWith('checkpoint_')).sort();
+
       if (checkpointBackups.length > 5) {
         const toDelete = checkpointBackups.slice(0, -5);
         for (const file of toDelete) {
@@ -409,7 +425,9 @@ export class CheckpointManager {
         }
       }
     } catch (error) {
-      logger.warn('⚠️  Failed to rotate checkpoint backups:', { error: error instanceof Error ? error.message : String(error) });
+      logger.warn('⚠️  Failed to rotate checkpoint backups:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
     }
   }
 
@@ -425,17 +443,22 @@ export class CheckpointManager {
 }
 
 // Export convenience functions for backward compatibility
-export async function loadLegacyCheckpoint(filePath: string = 'checkpoint.json'): Promise<{ [key: string]: boolean }> {
+export async function loadLegacyCheckpoint(
+  filePath: string = 'checkpoint.json'
+): Promise<{ [key: string]: boolean }> {
   try {
     const content = await fs.readFile(filePath, 'utf-8');
     return JSON.parse(content);
-  } catch (error) {
+  } catch (_error) {
     return {};
   }
 }
 
-export async function saveLegacyCheckpoint(checkpoint: { [key: string]: boolean }, filePath: string = 'checkpoint.json'): Promise<void> {
-  const tmpFile = filePath + '.tmp';
+export async function saveLegacyCheckpoint(
+  checkpoint: { [key: string]: boolean },
+  filePath: string = 'checkpoint.json'
+): Promise<void> {
+  const tmpFile = `${filePath}.tmp`;
   await fs.writeFile(tmpFile, JSON.stringify(checkpoint, null, 2), 'utf-8');
   await fs.rename(tmpFile, filePath);
 }

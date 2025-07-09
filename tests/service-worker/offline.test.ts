@@ -2,18 +2,18 @@
  * Service Worker Tests
  */
 
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock service worker environment
 const mockServiceWorker = {
   addEventListener: vi.fn(),
   skipWaiting: vi.fn(),
   clients: {
-    claim: vi.fn()
+    claim: vi.fn(),
   },
   registration: {
-    showNotification: vi.fn()
-  }
+    showNotification: vi.fn(),
+  },
 };
 
 // Mock caches API
@@ -21,7 +21,7 @@ const mockCaches = {
   open: vi.fn(),
   keys: vi.fn(),
   delete: vi.fn(),
-  match: vi.fn()
+  match: vi.fn(),
 };
 
 const mockCache = {
@@ -29,7 +29,7 @@ const mockCache = {
   put: vi.fn(),
   match: vi.fn(),
   delete: vi.fn(),
-  keys: vi.fn()
+  keys: vi.fn(),
 };
 
 // Mock fetch
@@ -47,10 +47,10 @@ describe('Service Worker', () => {
     global.self = mockServiceWorker;
     global.caches = mockCaches;
     global.fetch = mockFetch;
-    
+
     // Reset all mocks
     vi.clearAllMocks();
-    
+
     // Setup default mock implementations
     mockCaches.open.mockResolvedValue(mockCache);
     mockCaches.keys.mockResolvedValue([]);
@@ -67,22 +67,18 @@ describe('Service Worker', () => {
   describe('Install Event', () => {
     it('should cache static assets on install', async () => {
       const installEvent = {
-        waitUntil: vi.fn()
+        waitUntil: vi.fn(),
       };
 
       // Import and test the service worker logic
       // Note: This would require restructuring the service worker to be testable
       // For now, we'll test the core functionality
 
-      const staticAssets = [
-        '/',
-        '/index.html',
-        '/manifest.json',
-        '/favicon.ico'
-      ];
+      const staticAssets = ['/', '/index.html', '/manifest.json', '/favicon.ico'];
 
       // Simulate install logic
-      const installPromise = mockCaches.open('static-cache-v1.2.0')
+      const installPromise = mockCaches
+        .open('static-cache-v1.2.0')
         .then((cache: any) => cache.addAll(staticAssets));
 
       installEvent.waitUntil(installPromise);
@@ -98,12 +94,13 @@ describe('Service Worker', () => {
       mockCache.addAll.mockRejectedValueOnce(new Error('Cache failed'));
 
       const installEvent = {
-        waitUntil: vi.fn()
+        waitUntil: vi.fn(),
       };
 
       const staticAssets = ['/'];
 
-      const installPromise = mockCaches.open('static-cache-v1.2.0')
+      const installPromise = mockCaches
+        .open('static-cache-v1.2.0')
         .then((cache: any) => cache.addAll(staticAssets))
         .catch((error: Error) => {
           expect(error.message).toBe('Cache failed');
@@ -124,30 +121,30 @@ describe('Service Worker', () => {
         'static-cache-v1.0.0',
         'dynamic-cache-v1.0.0',
         'static-cache-v1.2.0', // This should be kept
-        'image-cache-v1.2.0'   // This should be kept
+        'image-cache-v1.2.0', // This should be kept
       ];
 
       mockCaches.keys.mockResolvedValueOnce(oldCacheNames);
       mockCaches.delete.mockResolvedValue(true);
 
       const activateEvent = {
-        waitUntil: vi.fn()
+        waitUntil: vi.fn(),
       };
 
       // Simulate activate logic
-      const activatePromise = mockCaches.keys()
-        .then((cacheNames: string[]) => {
-          const deletePromises = cacheNames
-            .filter(cacheName => 
+      const activatePromise = mockCaches.keys().then((cacheNames: string[]) => {
+        const deletePromises = cacheNames
+          .filter(
+            (cacheName) =>
               !cacheName.includes('v1.2.0') && // Keep current version
-              (cacheName.includes('static-cache') || 
-               cacheName.includes('dynamic-cache') || 
-               cacheName.includes('image-cache'))
-            )
-            .map(cacheName => mockCaches.delete(cacheName));
-          
-          return Promise.all(deletePromises);
-        });
+              (cacheName.includes('static-cache') ||
+                cacheName.includes('dynamic-cache') ||
+                cacheName.includes('image-cache'))
+          )
+          .map((cacheName) => mockCaches.delete(cacheName));
+
+        return Promise.all(deletePromises);
+      });
 
       activateEvent.waitUntil(activatePromise);
 
@@ -164,11 +161,11 @@ describe('Service Worker', () => {
     it('should serve static assets from cache first', async () => {
       const request = new Request('https://example.com/favicon.ico');
       const cachedResponse = new Response('cached favicon');
-      
+
       mockCache.match.mockResolvedValueOnce(cachedResponse);
 
       // Simulate cache-first strategy
-      const response = await mockCache.match(request) || await mockFetch(request);
+      const response = (await mockCache.match(request)) || (await mockFetch(request));
 
       expect(response).toBe(cachedResponse);
       expect(mockCache.match).toHaveBeenCalledWith(request);
@@ -178,7 +175,7 @@ describe('Service Worker', () => {
     it('should fallback to network for cache miss', async () => {
       const request = new Request('https://example.com/new-file.js');
       const networkResponse = new Response('network response');
-      
+
       mockCache.match.mockResolvedValueOnce(null);
       mockFetch.mockResolvedValueOnce(networkResponse);
 
@@ -200,7 +197,7 @@ describe('Service Worker', () => {
     it('should use network-first for API requests', async () => {
       const request = new Request('https://example.com/api/terms');
       const networkResponse = new Response('{"terms": []}');
-      
+
       mockFetch.mockResolvedValueOnce(networkResponse);
 
       // Simulate network-first strategy
@@ -217,7 +214,7 @@ describe('Service Worker', () => {
     it('should serve offline page when network fails', async () => {
       const request = new Request('https://example.com/api/search');
       const offlineResponse = new Response('offline page');
-      
+
       mockFetch.mockRejectedValueOnce(new Error('Network error'));
       mockCache.match.mockResolvedValueOnce(null); // No cached API response
       mockCaches.match.mockResolvedValueOnce(offlineResponse); // Return offline page
@@ -226,7 +223,7 @@ describe('Service Worker', () => {
       let response;
       try {
         response = await mockFetch(request);
-      } catch (error) {
+      } catch (_error) {
         response = await mockCache.match(request);
         if (!response) {
           response = await mockCaches.match('/offline.html');
@@ -246,17 +243,17 @@ describe('Service Worker', () => {
           json: () => ({
             title: 'New Content',
             body: 'New AI terms available',
-            icon: '/icon.png'
-          })
+            icon: '/icon.png',
+          }),
         },
-        waitUntil: vi.fn()
+        waitUntil: vi.fn(),
       };
 
       const notificationOptions = {
         body: 'New AI terms available',
         icon: '/icon.png',
         badge: '/assets/badge.png',
-        vibrate: [200, 100, 200]
+        vibrate: [200, 100, 200],
       };
 
       // Simulate push event handling
@@ -282,7 +279,7 @@ describe('Service Worker', () => {
       const mockKeys = [
         new Request('https://example.com/file1.js'),
         new Request('https://example.com/file2.css'),
-        new Request('https://example.com/file3.html')
+        new Request('https://example.com/file3.html'),
       ];
 
       mockCache.keys.mockResolvedValueOnce(mockKeys);
@@ -292,7 +289,7 @@ describe('Service Worker', () => {
         totalCacheSize: keys.length,
         staticCacheSize: keys.length,
         dynamicCacheSize: 0,
-        lastUpdated: new Date()
+        lastUpdated: new Date(),
       }));
 
       expect(cacheInfo.totalCacheSize).toBe(3);
@@ -303,19 +300,18 @@ describe('Service Worker', () => {
 
     it('should clear all caches when requested', async () => {
       const cacheNames = ['cache1', 'cache2', 'cache3'];
-      
+
       mockCaches.keys.mockResolvedValueOnce(cacheNames);
       mockCaches.delete.mockResolvedValue(true);
 
       // Simulate cache clearing
-      const clearResult = await mockCaches.keys()
-        .then((names: string[]) => 
-          Promise.all(names.map(name => mockCaches.delete(name)))
-        );
+      const clearResult = await mockCaches
+        .keys()
+        .then((names: string[]) => Promise.all(names.map((name) => mockCaches.delete(name))));
 
       expect(clearResult).toEqual([true, true, true]);
       expect(mockCaches.delete).toHaveBeenCalledTimes(3);
-      cacheNames.forEach(name => {
+      cacheNames.forEach((name) => {
         expect(mockCaches.delete).toHaveBeenCalledWith(name);
       });
     });

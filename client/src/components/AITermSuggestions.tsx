@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Lightbulb, Loader2, Plus, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
+import { useToast } from '../hooks/use-toast';
+import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Loader2, Lightbulb, Plus, RefreshCw } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { useQuery } from '@tanstack/react-query';
-import { useToast } from '../hooks/use-toast';
 
 interface TermSuggestion {
   term: string;
@@ -20,10 +20,10 @@ interface AITermSuggestionsProps {
   className?: string;
 }
 
-export function AITermSuggestions({ 
+export function AITermSuggestions({
   onSuggestionSelect,
   focusCategory = '',
-  className = ""
+  className = '',
 }: AITermSuggestionsProps) {
   const [selectedCategory, setSelectedCategory] = useState(focusCategory);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -38,7 +38,7 @@ export function AITermSuggestions({
       const response = await fetch('/api/categories');
       if (!response.ok) throw new Error('Failed to fetch categories');
       return response.json();
-    }
+    },
   });
 
   const generateSuggestions = async () => {
@@ -53,18 +53,18 @@ export function AITermSuggestions({
       params.append('limit', '6');
 
       const response = await fetch(`/api/ai/term-suggestions?${params.toString()}`);
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to generate suggestions');
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setSuggestions(result.data.suggestions || []);
         toast({
-          title: "Success",
+          title: 'Success',
           description: `Generated ${result.data.suggestions?.length || 0} term suggestions!`,
         });
       } else {
@@ -73,9 +73,9 @@ export function AITermSuggestions({
     } catch (error) {
       console.error('Error generating suggestions:', error);
       toast({
-        title: "Error",
+        title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to generate suggestions',
-        variant: "destructive"
+        variant: 'destructive',
       });
       setSuggestions([]);
     } finally {
@@ -86,7 +86,7 @@ export function AITermSuggestions({
   const handleSuggestionSelect = (suggestion: TermSuggestion) => {
     onSuggestionSelect?.(suggestion);
     toast({
-      title: "Suggestion Selected",
+      title: 'Suggestion Selected',
       description: `Selected "${suggestion.term}" for further processing.`,
     });
   };
@@ -107,7 +107,10 @@ export function AITermSuggestions({
           <div className="flex gap-4 items-end">
             <div className="flex-1 space-y-2">
               <label className="text-sm font-medium">Focus Category (Optional)</label>
-              <Select value={selectedCategory || "all"} onValueChange={(value) => setSelectedCategory(value === "all" ? "" : value)}>
+              <Select
+                value={selectedCategory || 'all'}
+                onValueChange={(value) => setSelectedCategory(value === 'all' ? '' : value)}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="All categories" />
                 </SelectTrigger>
@@ -121,11 +124,7 @@ export function AITermSuggestions({
                 </SelectContent>
               </Select>
             </div>
-            <Button 
-              onClick={generateSuggestions} 
-              disabled={isGenerating}
-              className="flex-shrink-0"
-            >
+            <Button onClick={generateSuggestions} disabled={isGenerating} className="flex-shrink-0">
               {isGenerating ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -152,7 +151,9 @@ export function AITermSuggestions({
           <CardContent className="text-center py-8">
             <Lightbulb className="h-12 w-12 text-gray-300 mx-auto mb-3" />
             <p className="text-gray-500">No suggestions generated.</p>
-            <p className="text-sm text-gray-400 mt-1">Try adjusting the category filter or try again.</p>
+            <p className="text-sm text-gray-400 mt-1">
+              Try adjusting the category filter or try again.
+            </p>
           </CardContent>
         </Card>
       )}
@@ -194,11 +195,9 @@ export function AITermSuggestions({
                 <CardContent className="pt-0">
                   <div className="space-y-3">
                     <div>
-                      <p className="text-sm text-gray-600 mb-2">
-                        {suggestion.shortDefinition}
-                      </p>
+                      <p className="text-sm text-gray-600 mb-2">{suggestion.shortDefinition}</p>
                     </div>
-                    
+
                     <div className="bg-blue-50 p-3 rounded-md">
                       <p className="text-sm text-blue-800">
                         <span className="font-medium">Why this term matters: </span>
@@ -217,14 +216,8 @@ export function AITermSuggestions({
         <Card className="border-dashed">
           <CardContent className="text-center py-6">
             <div className="space-y-2">
-              <p className="text-sm text-gray-600">
-                Want to see more suggestions?
-              </p>
-              <Button 
-                variant="outline" 
-                onClick={generateSuggestions}
-                disabled={isGenerating}
-              >
+              <p className="text-sm text-gray-600">Want to see more suggestions?</p>
+              <Button variant="outline" onClick={generateSuggestions} disabled={isGenerating}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Generate New Suggestions
               </Button>

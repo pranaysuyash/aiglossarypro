@@ -1,9 +1,9 @@
-import { log as logger } from './utils/logger';
+import { randomUUID } from 'node:crypto';
+import { and, desc, eq } from 'drizzle-orm';
+import { termVersions } from '../shared/enhancedSchema';
 import { aiService } from './aiService';
 import { db } from './db';
-import { enhancedTerms, termSections, termVersions } from '../shared/enhancedSchema';
-import { eq, and, desc } from 'drizzle-orm';
-import { randomUUID } from 'crypto';
+import { log as logger } from './utils/logger';
 
 /**
  * AI-Powered Term Versioning and Quality Assessment Service
@@ -66,7 +66,7 @@ export class VersioningService {
 
     try {
       const assessmentPrompt = this.buildQualityAssessmentPrompt(termName, content);
-      
+
       const response = await aiService.generateDefinition(
         `quality_assessment_${termName}`,
         'content_quality',
@@ -75,13 +75,15 @@ export class VersioningService {
 
       // Parse AI response into quality metrics
       const qualityMetrics = await this.parseQualityAssessment(response.definition);
-      
+
       logger.info(`📊 Quality assessment complete: ${qualityMetrics.overallScore}/10`);
       return qualityMetrics;
-
     } catch (error) {
-      logger.error(`❌ Quality assessment failed for ${termName}:`, error as Record<string, unknown>);
-      
+      logger.error(
+        `❌ Quality assessment failed for ${termName}:`,
+        error as Record<string, unknown>
+      );
+
       // Return default conservative assessment
       return {
         clarity: 5.0,
@@ -92,7 +94,7 @@ export class VersioningService {
         overallScore: 5.0,
         reasoning: 'Assessment failed - using conservative defaults',
         improvements: ['Unable to assess - manual review recommended'],
-        concerns: ['Quality assessment system error']
+        concerns: ['Quality assessment system error'],
       };
     }
   }
@@ -101,8 +103,8 @@ export class VersioningService {
    * Compare new content with existing version and decide on action
    */
   async compareAndDecide(
-    termName: string, 
-    newContent: any, 
+    termName: string,
+    newContent: any,
     existingContent?: any
   ): Promise<VersionDecision> {
     logger.info(`⚖️  Comparing content versions for: ${termName}`);
@@ -111,30 +113,31 @@ export class VersioningService {
       // If no existing content, always accept new content
       if (!existingContent) {
         const newQuality = await this.assessContentQuality(termName, newContent);
-        
+
         return {
           action: newQuality.overallScore >= this.QUALITY_THRESHOLD ? 'upgrade' : 'needs_review',
           confidence: newQuality.overallScore >= this.QUALITY_THRESHOLD ? 0.9 : 0.6,
           reasoning: 'No existing content - accepting new content based on quality assessment',
           qualityDelta: newQuality.overallScore,
-          recommendations: newQuality.overallScore < this.QUALITY_THRESHOLD ? 
-            ['Consider improving content quality before publishing'] : 
-            ['Content meets quality standards']
+          recommendations:
+            newQuality.overallScore < this.QUALITY_THRESHOLD
+              ? ['Consider improving content quality before publishing']
+              : ['Content meets quality standards'],
         };
       }
 
       // Assess both versions
       const [newQuality, existingQuality] = await Promise.all([
         this.assessContentQuality(termName, newContent),
-        this.assessContentQuality(termName, existingContent)
+        this.assessContentQuality(termName, existingContent),
       ]);
 
       // Use AI to make comparison decision
       const comparisonPrompt = this.buildComparisonPrompt(
-        termName, 
-        newContent, 
-        existingContent, 
-        newQuality, 
+        termName,
+        newContent,
+        existingContent,
+        newQuality,
         existingQuality
       );
 
@@ -145,24 +148,26 @@ export class VersioningService {
       );
 
       const decision = await this.parseVersionDecision(
-        decisionResponse.definition, 
-        newQuality, 
+        decisionResponse.definition,
+        newQuality,
         existingQuality
       );
 
       logger.info(`🎯 Version decision: ${decision.action} (confidence: ${decision.confidence})`);
       return decision;
-
     } catch (error) {
-      logger.error(`❌ Version comparison failed for ${termName}:`, error as Record<string, unknown>);
-      
+      logger.error(
+        `❌ Version comparison failed for ${termName}:`,
+        error as Record<string, unknown>
+      );
+
       // Conservative fallback
       return {
         action: 'needs_review',
         confidence: 0.3,
         reasoning: 'Comparison system error - manual review required',
         qualityDelta: 0,
-        recommendations: ['System error occurred - human review needed']
+        recommendations: ['System error occurred - human review needed'],
       };
     }
   }
@@ -184,12 +189,10 @@ export class VersioningService {
 
     try {
       // Get existing active version
-      const existingVersions = await db.select()
+      const existingVersions = await db
+        .select()
         .from(termVersions)
-        .where(and(
-          eq(termVersions.termId, termId),
-          eq(termVersions.isActive, true)
-        ))
+        .where(and(eq(termVersions.termId, termId), eq(termVersions.isActive, true)))
         .orderBy(desc(termVersions.createdAt))
         .limit(1);
 
@@ -198,11 +201,12 @@ export class VersioningService {
       // Assess and compare
       const [newQuality, decision] = await Promise.all([
         this.assessContentQuality(termName, newContent),
-        this.compareAndDecide(termName, newContent, existingContent)
+        this.compareAndDecide(termName, newContent, existingContent),
       ]);
 
       // Determine version number
-      const allVersions = await db.select()
+      const allVersions = await db
+        .select()
         .from(termVersions)
         .where(eq(termVersions.termId, termId))
         .orderBy(desc(termVersions.createdAt));
@@ -210,29 +214,33 @@ export class VersioningService {
       const nextVersion = this.calculateNextVersion(allVersions, decision.action);
 
       // Create new version record
-      const [newVersion] = await db.insert(termVersions).values({
-        id: randomUUID(),
-        termId: termId,
-        version: nextVersion,
-        content: newContent,
-        qualityMetrics: newQuality,
-        isActive: decision.action === 'upgrade',
-        metadata: {
-          source: processingMetadata.source,
-          processingMode: processingMetadata.processingMode,
-          aiGenerated: processingMetadata.aiGenerated,
-          humanReviewed: false,
-          qualityAssessment: newQuality,
-          versionDecision: decision
-        }
-      }).returning();
+      const [newVersion] = await db
+        .insert(termVersions)
+        .values({
+          id: randomUUID(),
+          termId: termId,
+          version: nextVersion,
+          content: newContent,
+          qualityMetrics: newQuality,
+          isActive: decision.action === 'upgrade',
+          metadata: {
+            source: processingMetadata.source,
+            processingMode: processingMetadata.processingMode,
+            aiGenerated: processingMetadata.aiGenerated,
+            humanReviewed: false,
+            qualityAssessment: newQuality,
+            versionDecision: decision,
+          },
+        })
+        .returning();
 
       // If upgrading, deactivate previous version
       if (decision.action === 'upgrade' && existingVersions.length > 0) {
-        await db.update(termVersions)
-          .set({ 
+        await db
+          .update(termVersions)
+          .set({
             isActive: false,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           })
           .where(eq(termVersions.id, existingVersions[0].id));
 
@@ -246,11 +254,13 @@ export class VersioningService {
 
       return {
         versionId: newVersion.id,
-        decision
+        decision,
       };
-
     } catch (error) {
-      logger.error(`❌ Failed to create version for ${termName}:`, error as Record<string, unknown>);
+      logger.error(
+        `❌ Failed to create version for ${termName}:`,
+        error as Record<string, unknown>
+      );
       throw error;
     }
   }
@@ -260,12 +270,13 @@ export class VersioningService {
    */
   async getVersionHistory(termId: string): Promise<TermVersion[]> {
     try {
-      const versions = await db.select()
+      const versions = await db
+        .select()
         .from(termVersions)
         .where(eq(termVersions.termId, termId))
         .orderBy(desc(termVersions.createdAt));
 
-      return versions.map(v => ({
+      return versions.map((v) => ({
         id: v.id,
         termId: v.termId,
         version: v.version,
@@ -274,11 +285,13 @@ export class VersioningService {
         isActive: v.isActive ?? false,
         createdAt: v.createdAt || new Date(),
         updatedAt: v.updatedAt || new Date(),
-        metadata: v.metadata as any
+        metadata: v.metadata as any,
       }));
-
     } catch (error) {
-      logger.error(`❌ Failed to get version history for term ${termId}:`, error as Record<string, unknown>);
+      logger.error(
+        `❌ Failed to get version history for term ${termId}:`,
+        error as Record<string, unknown>
+      );
       return [];
     }
   }
@@ -288,7 +301,8 @@ export class VersioningService {
    */
   async promoteVersion(versionId: string, reviewerNotes?: string): Promise<boolean> {
     try {
-      const version = await db.select()
+      const version = await db
+        .select()
         .from(termVersions)
         .where(eq(termVersions.id, versionId))
         .limit(1);
@@ -301,26 +315,27 @@ export class VersioningService {
       const termVersion = version[0];
 
       // Deactivate other versions for this term
-      await db.update(termVersions)
+      await db
+        .update(termVersions)
         .set({ isActive: false })
         .where(eq(termVersions.termId, termVersion.termId));
 
       // Activate this version
-      await db.update(termVersions)
-        .set({ 
+      await db
+        .update(termVersions)
+        .set({
           isActive: true,
           updatedAt: new Date(),
           metadata: {
-            ...termVersion.metadata as any,
+            ...(termVersion.metadata as any),
             humanReviewed: true,
-            reviewerNotes: reviewerNotes || 'Manually promoted'
-          }
+            reviewerNotes: reviewerNotes || 'Manually promoted',
+          },
         })
         .where(eq(termVersions.id, versionId));
 
       logger.info(`✅ Version ${termVersion.version} promoted to active`);
       return true;
-
     } catch (error) {
       logger.error(`❌ Failed to promote version ${versionId}:`, error as Record<string, unknown>);
       return false;
@@ -338,13 +353,15 @@ export class VersioningService {
   }> {
     try {
       const versions = await this.getVersionHistory(termId);
-      const currentVersion = versions.find(v => v.isActive) || null;
+      const currentVersion = versions.find((v) => v.isActive) || null;
 
-      const qualityTrend = versions.map(v => ({
-        version: v.version,
-        score: v.qualityMetrics.overallScore,
-        date: v.createdAt
-      })).reverse(); // Chronological order
+      const qualityTrend = versions
+        .map((v) => ({
+          version: v.version,
+          score: v.qualityMetrics.overallScore,
+          date: v.createdAt,
+        }))
+        .reverse(); // Chronological order
 
       const recommendations = this.generateQualityRecommendations(versions);
 
@@ -352,11 +369,13 @@ export class VersioningService {
         currentVersion,
         allVersions: versions,
         qualityTrend,
-        recommendations
+        recommendations,
       };
-
     } catch (error) {
-      logger.error(`❌ Failed to generate quality report for term ${termId}:`, error as Record<string, unknown>);
+      logger.error(
+        `❌ Failed to generate quality report for term ${termId}:`,
+        error as Record<string, unknown>
+      );
       throw error;
     }
   }
@@ -438,11 +457,11 @@ Consider: accuracy, clarity, completeness, and practical value for AI/ML practit
       }
 
       const parsed = JSON.parse(jsonMatch[0]);
-      
+
       // Validate and normalize scores
       const normalizeScore = (score: any): number => {
         const num = parseFloat(score);
-        return isNaN(num) ? 5.0 : Math.max(0, Math.min(10, num));
+        return Number.isNaN(num) ? 5.0 : Math.max(0, Math.min(10, num));
       };
 
       return {
@@ -454,9 +473,8 @@ Consider: accuracy, clarity, completeness, and practical value for AI/ML practit
         overallScore: normalizeScore(parsed.overallScore),
         reasoning: parsed.reasoning || 'No reasoning provided',
         improvements: Array.isArray(parsed.improvements) ? parsed.improvements : [],
-        concerns: Array.isArray(parsed.concerns) ? parsed.concerns : []
+        concerns: Array.isArray(parsed.concerns) ? parsed.concerns : [],
       };
-
     } catch (error) {
       logger.error('❌ Failed to parse quality assessment:', error as Record<string, unknown>);
       throw error;
@@ -475,30 +493,29 @@ Consider: accuracy, clarity, completeness, and practical value for AI/ML practit
       }
 
       const parsed = JSON.parse(jsonMatch[0]);
-      
+
       const validActions = ['upgrade', 'keep_current', 'create_variant', 'needs_review'];
       const action = validActions.includes(parsed.action) ? parsed.action : 'needs_review';
-      
+
       return {
         action: action as any,
         confidence: Math.max(0, Math.min(1, parseFloat(parsed.confidence) || 0.5)),
         reasoning: parsed.reasoning || 'No reasoning provided',
         qualityDelta: newQuality.overallScore - existingQuality.overallScore,
-        recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : []
+        recommendations: Array.isArray(parsed.recommendations) ? parsed.recommendations : [],
       };
-
     } catch (error) {
       logger.error('❌ Failed to parse version decision:', error as Record<string, unknown>);
-      
+
       // Fallback decision based on quality scores
       const qualityDelta = newQuality.overallScore - existingQuality.overallScore;
-      
+
       return {
         action: qualityDelta > this.IMPROVEMENT_THRESHOLD ? 'upgrade' : 'keep_current',
         confidence: 0.5,
         reasoning: 'Parsing failed - using quality score fallback',
         qualityDelta,
-        recommendations: ['Review AI decision parsing system']
+        recommendations: ['Review AI decision parsing system'],
       };
     }
   }
@@ -525,14 +542,15 @@ Consider: accuracy, clarity, completeness, and practical value for AI/ML practit
 
   private async cleanupOldVersions(termId: string): Promise<void> {
     try {
-      const allVersions = await db.select()
+      const allVersions = await db
+        .select()
         .from(termVersions)
         .where(eq(termVersions.termId, termId))
         .orderBy(desc(termVersions.createdAt));
 
       if (allVersions.length > this.MAX_VERSIONS_PER_TERM) {
         const versionsToDelete = allVersions.slice(this.MAX_VERSIONS_PER_TERM);
-        
+
         for (const version of versionsToDelete) {
           await db.delete(termVersions).where(eq(termVersions.id, version.id));
         }
@@ -540,7 +558,10 @@ Consider: accuracy, clarity, completeness, and practical value for AI/ML practit
         logger.info(`🧹 Cleaned up ${versionsToDelete.length} old versions for term ${termId}`);
       }
     } catch (error) {
-      logger.error(`❌ Failed to cleanup old versions for term ${termId}:`, error as Record<string, unknown>);
+      logger.error(
+        `❌ Failed to cleanup old versions for term ${termId}:`,
+        error as Record<string, unknown>
+      );
     }
   }
 
@@ -551,20 +572,26 @@ Consider: accuracy, clarity, completeness, and practical value for AI/ML practit
       return ['No versions available for analysis'];
     }
 
-    const currentVersion = versions.find(v => v.isActive);
+    const currentVersion = versions.find((v) => v.isActive);
     if (!currentVersion) {
       recommendations.push('No active version set - review and promote a version');
     }
 
-    const avgQuality = versions.reduce((sum, v) => sum + v.qualityMetrics.overallScore, 0) / versions.length;
-    
+    const avgQuality =
+      versions.reduce((sum, v) => sum + v.qualityMetrics.overallScore, 0) / versions.length;
+
     if (avgQuality < this.QUALITY_THRESHOLD) {
-      recommendations.push(`Average quality score (${avgQuality.toFixed(1)}) below threshold - consider content improvement`);
+      recommendations.push(
+        `Average quality score (${avgQuality.toFixed(1)}) below threshold - consider content improvement`
+      );
     }
 
     const recentVersions = versions.slice(0, 3);
-    const qualityTrend = recentVersions.length > 1 ? 
-      recentVersions[0].qualityMetrics.overallScore - recentVersions[recentVersions.length - 1].qualityMetrics.overallScore : 0;
+    const qualityTrend =
+      recentVersions.length > 1
+        ? recentVersions[0].qualityMetrics.overallScore -
+          recentVersions[recentVersions.length - 1].qualityMetrics.overallScore
+        : 0;
 
     if (qualityTrend < -0.5) {
       recommendations.push('Quality trend declining - review recent changes');

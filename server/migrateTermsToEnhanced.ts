@@ -1,5 +1,5 @@
-import { db } from './db';
 import { sql } from 'drizzle-orm';
+import { db } from './db';
 
 export async function migrateTermsToEnhanced() {
   try {
@@ -41,9 +41,12 @@ export async function migrateTermsToEnhanced() {
             } else if (Array.isArray(term.characteristics)) {
               relatedConcepts = term.characteristics;
             }
-          } catch (e) {
+          } catch (_e) {
             // If parsing fails, split by comma
-            relatedConcepts = (term.characteristics as string).split(',').map(s => s.trim()).filter(s => s);
+            relatedConcepts = (term.characteristics as string)
+              .split(',')
+              .map((s) => s.trim())
+              .filter((s) => s);
           }
         }
 
@@ -59,7 +62,7 @@ export async function migrateTermsToEnhanced() {
         }
 
         // No subcategories in current schema
-        let subCategories: string[] = [];
+        const subCategories: string[] = [];
 
         // Parse applications
         let applicationDomains: string[] = [];
@@ -73,9 +76,12 @@ export async function migrateTermsToEnhanced() {
             } else if (Array.isArray(term.applications)) {
               applicationDomains = term.applications;
             }
-          } catch (e) {
+          } catch (_e) {
             // If parsing fails, convert to string and split
-            applicationDomains = String(term.applications).split(',').map(s => s.trim()).filter(s => s);
+            applicationDomains = String(term.applications)
+              .split(',')
+              .map((s) => s.trim())
+              .filter((s) => s);
           }
         }
 
@@ -88,9 +94,12 @@ export async function migrateTermsToEnhanced() {
             } else if (typeof term.references === 'string') {
               keywords = JSON.parse(term.references);
             }
-          } catch (e) {
+          } catch (_e) {
             // If parsing fails, split by comma
-            keywords = String(term.references).split(',').map(s => s.trim()).filter(s => s);
+            keywords = String(term.references)
+              .split(',')
+              .map((s) => s.trim())
+              .filter((s) => s);
           }
         }
 
@@ -101,8 +110,11 @@ export async function migrateTermsToEnhanced() {
           ...mainCategories,
           ...relatedConcepts,
           ...applicationDomains,
-          ...keywords
-        ].filter(Boolean).join(' ').toLowerCase();
+          ...keywords,
+        ]
+          .filter(Boolean)
+          .join(' ')
+          .toLowerCase();
 
         // Insert into enhanced_terms
         await db.execute(sql`
@@ -133,11 +145,10 @@ export async function migrateTermsToEnhanced() {
         `);
 
         migratedCount++;
-        
+
         if (migratedCount % 50 === 0) {
           console.log(`Migrated ${migratedCount} terms...`);
         }
-
       } catch (error) {
         console.error(`Error migrating term ${term.name}:`, error);
       }
@@ -145,7 +156,6 @@ export async function migrateTermsToEnhanced() {
 
     console.log(`Migration completed! Migrated ${migratedCount} terms to enhanced_terms.`);
     return { success: true, migrated: migratedCount };
-
   } catch (error) {
     console.error('Terms to enhanced migration failed:', error);
     throw error;
@@ -163,4 +173,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.error('Migration failed:', error);
       process.exit(1);
     });
-} 
+}

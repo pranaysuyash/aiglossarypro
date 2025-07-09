@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { AITermSuggestions } from './AITermSuggestions';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AITermSuggestions } from './AITermSuggestions';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,7 +25,8 @@ const meta: Meta<typeof AITermSuggestions> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'AI-powered component that suggests related terms and concepts based on current content or user behavior.',
+        component:
+          'AI-powered component that suggests related terms and concepts based on current content or user behavior.',
       },
     },
   },
@@ -34,7 +35,6 @@ const meta: Meta<typeof AITermSuggestions> = {
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
 
 export const Default: Story = {
   args: {
@@ -111,7 +111,7 @@ export const DataScienceFocus: Story = {
         term: suggestion.term,
         category: suggestion.category,
         reason: suggestion.reason,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       });
     },
   },
@@ -127,7 +127,7 @@ export const StatisticsFocus: Story = {
       interactions.push({
         term: suggestion.term,
         category: suggestion.category,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
       sessionStorage.setItem('interactions', JSON.stringify(interactions));
     },
@@ -144,7 +144,7 @@ export const AlgorithmsFocus: Story = {
         selectedTerm: suggestion.term,
         category: suggestion.category,
         completionTime: new Date().toLocaleTimeString(),
-        difficulty: 'Intermediate'
+        difficulty: 'Intermediate',
       };
       console.log('Progress updated:', progress);
     },
@@ -162,8 +162,8 @@ export const OptimizationFocus: Story = {
         detail: {
           suggestion,
           timestamp: Date.now(),
-          userAgent: navigator.userAgent.substring(0, 50)
-        }
+          userAgent: navigator.userAgent.substring(0, 50),
+        },
       });
       window.dispatchEvent(event);
     },
@@ -183,10 +183,12 @@ export const ReinforcementLearningFocus: Story = {
         reason: suggestion.reason,
         shortDefinition: suggestion.shortDefinition,
         sessionId: Math.random().toString(36).substring(7),
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       };
       console.log('Analytics event:', analytics);
-      alert(`Exploring: ${suggestion.term}\n\nCategory: ${suggestion.category}\nReason: ${suggestion.reason}`);
+      alert(
+        `Exploring: ${suggestion.term}\n\nCategory: ${suggestion.category}\nReason: ${suggestion.reason}`
+      );
     },
   },
 };
@@ -202,13 +204,13 @@ export const AllCategoriesMode: Story = {
         () => console.log('Action 1: Added to study queue'),
         () => console.log('Action 2: Updated learning path'),
         () => console.log('Action 3: Sent notification to study group'),
-        () => console.log('Action 4: Logged progress milestone')
+        () => console.log('Action 4: Logged progress milestone'),
       ];
-      
+
       actions.forEach((action, index) => {
         setTimeout(action, index * 200);
       });
-      
+
       setTimeout(() => {
         alert(`Successfully processed: ${suggestion.term}`);
       }, 1000);
@@ -222,22 +224,22 @@ export const InteractiveDemo: Story = {
     className: 'border-2 border-dashed border-blue-300 bg-blue-50/30 p-4 rounded-lg',
     onSuggestionSelect: (suggestion) => {
       console.log('Interactive demo - selected suggestion:', suggestion);
-      
+
       // Simulate a comprehensive workflow
       const workflow = {
         step1: 'Validating selection...',
         step2: 'Checking prerequisites...',
         step3: 'Adding to learning plan...',
         step4: 'Updating progress tracker...',
-        step5: 'Generating related suggestions...'
+        step5: 'Generating related suggestions...',
       };
-      
+
       Object.entries(workflow).forEach(([step, message], index) => {
         setTimeout(() => {
           console.log(`${step}: ${message}`);
         }, index * 300);
       });
-      
+
       // Final success message
       setTimeout(() => {
         const result = {
@@ -246,10 +248,12 @@ export const InteractiveDemo: Story = {
           addedToPath: true,
           nextSuggestions: 3,
           estimatedStudyTime: '15 minutes',
-          difficulty: 'Intermediate'
+          difficulty: 'Intermediate',
         };
         console.log('Workflow completed:', result);
-        alert(`✅ Successfully added "${suggestion.term}" to your learning path!\n\nCategory: ${suggestion.category}\nEstimated study time: 15 minutes`);
+        alert(
+          `✅ Successfully added "${suggestion.term}" to your learning path!\n\nCategory: ${suggestion.category}\nEstimated study time: 15 minutes`
+        );
       }, 1800);
     },
   },

@@ -1,6 +1,6 @@
-import { Link } from "wouter";
-import TermCard from "@/components/TermCard";
-import { ITerm } from "@/interfaces/interfaces";
+import { Link } from 'wouter';
+import TermCard from '@/components/TermCard';
+import type { ITerm } from '@/interfaces/interfaces';
 
 interface RecommendedTermsProps {
   recommended: ITerm[];
@@ -21,7 +21,7 @@ export default function RecommendedTerms({ recommended }: RecommendedTermsProps)
           </a>
         </Link>
       </div>
-      
+
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {recommended.map((recTerm: any) => (
           <TermCard

@@ -1,15 +1,13 @@
-import { db } from '../db';
-import { 
-  enhancedTerms, 
-  sections, 
-  sectionItems,
-  aiUsageAnalytics,
-  aiContentVerification,
-  termVersions
-} from '../../shared/enhancedSchema';
-import { eq, and, desc, gte, sql, lte } from 'drizzle-orm';
-import { log as logger } from '../utils/logger';
+import { and, eq } from 'drizzle-orm';
 import OpenAI from 'openai';
+import {
+  aiContentVerification,
+  aiUsageAnalytics,
+  sectionItems,
+  sections,
+} from '../../shared/enhancedSchema';
+import { db } from '../db';
+import { log as logger } from '../utils/logger';
 
 // Quality dimension types
 export interface QualityDimension {
@@ -119,23 +117,23 @@ export class AIQualityEvaluationService {
   private openai: OpenAI;
   private readonly DEFAULT_MODEL = 'gpt-4.1-mini';
   private readonly EVALUATION_MODELS = ['gpt-4.1-mini', 'gpt-4.1', 'o1-mini', 'gpt-4o-mini'];
-  
+
   private readonly MODEL_COSTS = {
-    'gpt-4.1': { input: 0.025, output: 0.10 },
+    'gpt-4.1': { input: 0.025, output: 0.1 },
     'gpt-4.1-mini': { input: 0.0002, output: 0.0008 },
     'gpt-4.1-nano': { input: 0.00005, output: 0.0002 },
     'o1-mini': { input: 0.003, output: 0.012 },
-    'gpt-4o-mini': { input: 0.00015, output: 0.0006 }
+    'gpt-4o-mini': { input: 0.00015, output: 0.0006 },
   };
 
   // Dimension weights for overall score calculation
   private readonly DIMENSION_WEIGHTS = {
-    accuracy: 0.30,
-    clarity: 0.20,
-    completeness: 0.20,
+    accuracy: 0.3,
+    clarity: 0.2,
+    completeness: 0.2,
     relevance: 0.15,
-    style: 0.10,
-    engagement: 0.05
+    style: 0.1,
+    engagement: 0.05,
   };
 
   // Quality thresholds
@@ -143,7 +141,7 @@ export class AIQualityEvaluationService {
     excellent: 8.5,
     good: 7.0,
     acceptable: 5.5,
-    poor: 4.0
+    poor: 4.0,
   };
 
   constructor() {
@@ -161,12 +159,12 @@ export class AIQualityEvaluationService {
    */
   async evaluateContent(request: EvaluationRequest): Promise<QualityEvaluationResult> {
     const startTime = Date.now();
-    
+
     try {
       logger.info(`Starting quality evaluation for ${request.termId}`, {
         sectionName: request.sectionName,
         contentType: request.contentType,
-        contentLength: request.content.length
+        contentLength: request.content.length,
       });
 
       // Get evaluation prompt based on content type
@@ -178,16 +176,16 @@ export class AIQualityEvaluationService {
         messages: [
           {
             role: 'system',
-            content: this.getSystemPrompt()
+            content: this.getSystemPrompt(),
           },
           {
             role: 'user',
-            content: evaluationPrompt
-          }
+            content: evaluationPrompt,
+          },
         ],
         temperature: 0.3, // Lower temperature for more consistent evaluation
         max_tokens: 2000,
-        response_format: { type: "json_object" }
+        response_format: { type: 'json_object' },
       });
 
       const responseContent = completion.choices[0]?.message?.content;
@@ -197,7 +195,7 @@ export class AIQualityEvaluationService {
 
       // Parse AI response
       const evaluationData = JSON.parse(responseContent);
-      
+
       // Calculate overall score
       const overallScore = this.calculateOverallScore(evaluationData.dimensions);
 
@@ -213,14 +211,14 @@ export class AIQualityEvaluationService {
           tokenUsage: {
             prompt: completion.usage?.prompt_tokens || 0,
             completion: completion.usage?.completion_tokens || 0,
-            total: completion.usage?.total_tokens || 0
+            total: completion.usage?.total_tokens || 0,
           },
           cost: this.calculateCost(
             request.model || this.DEFAULT_MODEL,
             completion.usage?.prompt_tokens || 0,
             completion.usage?.completion_tokens || 0
-          )
-        }
+          ),
+        },
       };
 
       // Store evaluation results
@@ -233,15 +231,14 @@ export class AIQualityEvaluationService {
         termId: request.termId,
         overallScore,
         evaluationTime: result.metadata.evaluationTime,
-        cost: result.metadata.cost
+        cost: result.metadata.cost,
       });
 
       return result;
-
     } catch (error) {
       logger.error('Error in quality evaluation:', {
         error: error instanceof Error ? error.message : String(error),
-        termId: request.termId
+        termId: request.termId,
       });
       throw error;
     }
@@ -275,7 +272,7 @@ export class AIQualityEvaluationService {
         const result = await this.evaluateContent({
           ...evaluation,
           model: evaluation.model || request.model,
-          userId: evaluation.userId || request.userId
+          userId: evaluation.userId || request.userId,
         });
 
         results.push(result);
@@ -284,12 +281,11 @@ export class AIQualityEvaluationService {
         successCount++;
 
         // Add delay to avoid rate limits
-        await new Promise(resolve => setTimeout(resolve, 200));
-
+        await new Promise((resolve) => setTimeout(resolve, 200));
       } catch (error) {
         failureCount++;
         logger.error(`Batch evaluation error for ${evaluation.termId}:`, {
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
@@ -303,7 +299,7 @@ export class AIQualityEvaluationService {
       failureCount,
       averageScore,
       totalCost,
-      totalTime
+      totalTime,
     });
 
     return {
@@ -314,8 +310,8 @@ export class AIQualityEvaluationService {
         successCount,
         failureCount,
         totalCost,
-        totalTime
-      }
+        totalTime,
+      },
     };
   }
 
@@ -340,30 +336,32 @@ export class AIQualityEvaluationService {
           completeness: 7.8,
           relevance: 7.5,
           style: 7.0,
-          engagement: 6.8
+          engagement: 6.8,
         },
         trends: mockTrends,
         distribution: mockDistribution,
         commonIssues: mockIssues,
-        modelComparison: request.groupBy === 'model' ? [
-          {
-            model: 'gpt-4o-mini',
-            averageScore: 7.8,
-            evaluationCount: 150,
-            averageCost: 0.002
-          },
-          {
-            model: 'gpt-4',
-            averageScore: 8.2,
-            evaluationCount: 50,
-            averageCost: 0.15
-          }
-        ] : undefined
+        modelComparison:
+          request.groupBy === 'model'
+            ? [
+                {
+                  model: 'gpt-4o-mini',
+                  averageScore: 7.8,
+                  evaluationCount: 150,
+                  averageCost: 0.002,
+                },
+                {
+                  model: 'gpt-4',
+                  averageScore: 8.2,
+                  evaluationCount: 50,
+                  averageCost: 0.15,
+                },
+              ]
+            : undefined,
       };
-
     } catch (error) {
       logger.error('Error getting quality analytics:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -390,30 +388,30 @@ export class AIQualityEvaluationService {
         messages: [
           {
             role: 'system',
-            content: 'You are an expert content evaluator specializing in technical content comparison.'
+            content:
+              'You are an expert content evaluator specializing in technical content comparison.',
           },
           {
             role: 'user',
-            content: prompt
-          }
+            content: prompt,
+          },
         ],
         temperature: 0.3,
         max_tokens: 1500,
-        response_format: { type: "json_object" }
+        response_format: { type: 'json_object' },
       });
 
       const result = JSON.parse(completion.choices[0]?.message?.content || '{}');
-      
+
       return {
         similarityScore: result.similarityScore || 0,
         improvements: result.improvements || [],
         missingElements: result.missingElements || [],
-        additionalElements: result.additionalElements || []
+        additionalElements: result.additionalElements || [],
       };
-
     } catch (error) {
       logger.error('Error comparing with reference:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -423,7 +421,7 @@ export class AIQualityEvaluationService {
    * Get evaluation prompt based on content type
    */
   private getEvaluationPrompt(request: EvaluationRequest): string {
-    const audienceContext = request.targetAudience 
+    const audienceContext = request.targetAudience
       ? `The target audience is ${request.targetAudience} level learners.`
       : '';
 
@@ -564,22 +562,27 @@ Return as JSON:
       return 0;
     }
 
-    return (promptTokens / 1000 * costs.input) + (completionTokens / 1000 * costs.output);
+    return (promptTokens / 1000) * costs.input + (completionTokens / 1000) * costs.output;
   }
 
   /**
    * Store evaluation results in database
    */
-  private async storeEvaluationResults(request: EvaluationRequest, result: QualityEvaluationResult) {
+  private async storeEvaluationResults(
+    request: EvaluationRequest,
+    result: QualityEvaluationResult
+  ) {
     try {
       // Update AI content verification with quality scores
-      const existingVerification = await db.select()
+      const existingVerification = await db
+        .select()
         .from(aiContentVerification)
         .where(eq(aiContentVerification.termId, request.termId))
         .limit(1);
 
       if (existingVerification.length > 0) {
-        await db.update(aiContentVerification)
+        await db
+          .update(aiContentVerification)
           .set({
             verificationStatus: this.getVerificationStatus(result.overallScore),
             confidenceLevel: this.getConfidenceLevel(result.overallScore),
@@ -588,8 +591,8 @@ Return as JSON:
               overallScore: result.overallScore,
               dimensions: result.dimensions,
               summary: result.summary,
-              evaluatedAt: result.metadata.evaluatedAt
-            })
+              evaluatedAt: result.metadata.evaluatedAt,
+            }),
           })
           .where(eq(aiContentVerification.id, existingVerification[0].id));
       }
@@ -597,40 +600,39 @@ Return as JSON:
       // Store quality metrics in term versions if applicable
       if (request.sectionName) {
         // Store section-specific quality data
-        const section = await db.select()
+        const section = await db
+          .select()
           .from(sections)
-          .where(and(
-            eq(sections.termId, request.termId),
-            eq(sections.name, request.sectionName)
-          ))
+          .where(and(eq(sections.termId, request.termId), eq(sections.name, request.sectionName)))
           .limit(1);
 
         if (section.length > 0) {
-          const sectionItem = await db.select()
+          const sectionItem = await db
+            .select()
             .from(sectionItems)
             .where(eq(sectionItems.sectionId, section[0].id))
             .limit(1);
 
           if (sectionItem.length > 0) {
-            await db.update(sectionItems)
+            await db
+              .update(sectionItems)
               .set({
                 metadata: {
                   ...((sectionItem[0].metadata as any) || {}),
                   qualityScore: result.overallScore,
                   qualityDimensions: result.dimensions,
-                  lastEvaluated: result.metadata.evaluatedAt
+                  lastEvaluated: result.metadata.evaluatedAt,
                 },
-                verificationStatus: this.getVerificationStatus(result.overallScore)
+                verificationStatus: this.getVerificationStatus(result.overallScore),
               })
               .where(eq(sectionItems.id, sectionItem[0].id));
           }
         }
       }
-
     } catch (error) {
       logger.error('Error storing evaluation results:', {
         error: error instanceof Error ? error.message : String(error),
-        termId: request.termId
+        termId: request.termId,
       });
       // Don't throw - storage is non-critical
     }
@@ -639,31 +641,33 @@ Return as JSON:
   /**
    * Log evaluation analytics
    */
-  private async logEvaluationAnalytics(request: EvaluationRequest, result: QualityEvaluationResult) {
+  private async logEvaluationAnalytics(
+    request: EvaluationRequest,
+    result: QualityEvaluationResult
+  ) {
     try {
-      await db.insert(aiUsageAnalytics)
-        .values({
-          operation: 'quality_evaluation',
-          model: result.metadata.evaluationModel,
-          userId: request.userId,
-          termId: request.termId,
-          inputTokens: result.metadata.tokenUsage.prompt,
-          outputTokens: result.metadata.tokenUsage.completion,
-          latency: result.metadata.evaluationTime,
-          cost: result.metadata.cost.toString(),
-          success: true,
-          metadata: {
-            contentType: request.contentType,
-            sectionName: request.sectionName,
-            overallScore: result.overallScore,
-            dimensions: Object.fromEntries(
-              Object.entries(result.dimensions).map(([key, dim]) => [key, dim.score])
-            )
-          }
-        });
+      await db.insert(aiUsageAnalytics).values({
+        operation: 'quality_evaluation',
+        model: result.metadata.evaluationModel,
+        userId: request.userId,
+        termId: request.termId,
+        inputTokens: result.metadata.tokenUsage.prompt,
+        outputTokens: result.metadata.tokenUsage.completion,
+        latency: result.metadata.evaluationTime,
+        cost: result.metadata.cost.toString(),
+        success: true,
+        metadata: {
+          contentType: request.contentType,
+          sectionName: request.sectionName,
+          overallScore: result.overallScore,
+          dimensions: Object.fromEntries(
+            Object.entries(result.dimensions).map(([key, dim]) => [key, dim.score])
+          ),
+        },
+      });
     } catch (error) {
       logger.error('Error logging evaluation analytics:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       // Don't throw - analytics logging is non-critical
     }
@@ -709,9 +713,9 @@ Return as JSON:
           completeness: 7 + Math.random() * 2,
           relevance: 7 + Math.random() * 1.5,
           style: 6.5 + Math.random() * 2,
-          engagement: 6 + Math.random() * 2.5
+          engagement: 6 + Math.random() * 2.5,
         },
-        evaluationCount: Math.floor(5 + Math.random() * 20)
+        evaluationCount: Math.floor(5 + Math.random() * 20),
       });
     }
 
@@ -727,7 +731,7 @@ Return as JSON:
       { scoreRange: '6-8', count: 60, percentage: 40 },
       { scoreRange: '4-6', count: 30, percentage: 20 },
       { scoreRange: '2-4', count: 12, percentage: 8 },
-      { scoreRange: '0-2', count: 3, percentage: 2 }
+      { scoreRange: '0-2', count: 3, percentage: 2 },
     ];
   }
 
@@ -739,35 +743,35 @@ Return as JSON:
       {
         issue: 'Insufficient practical examples',
         frequency: 45,
-        affectedDimensions: ['engagement', 'completeness']
+        affectedDimensions: ['engagement', 'completeness'],
       },
       {
         issue: 'Mathematical notation not properly explained',
         frequency: 38,
-        affectedDimensions: ['clarity', 'completeness']
+        affectedDimensions: ['clarity', 'completeness'],
       },
       {
         issue: 'Missing prerequisite information',
         frequency: 32,
-        affectedDimensions: ['completeness', 'relevance']
+        affectedDimensions: ['completeness', 'relevance'],
       },
       {
         issue: 'Inconsistent terminology usage',
         frequency: 28,
-        affectedDimensions: ['accuracy', 'style']
+        affectedDimensions: ['accuracy', 'style'],
       },
       {
         issue: 'Code examples lack comments',
         frequency: 25,
-        affectedDimensions: ['clarity', 'engagement']
-      }
+        affectedDimensions: ['clarity', 'engagement'],
+      },
     ];
   }
 
   /**
    * Auto-flag low quality content
    */
-  async autoFlagLowQualityContent(minScore: number = 5.5): Promise<{
+  async autoFlagLowQualityContent(_minScore: number = 5.5): Promise<{
     flaggedCount: number;
     flaggedTerms: Array<{
       termId: string;
@@ -785,15 +789,15 @@ Return as JSON:
           termId: 'uuid-1',
           termName: 'Backpropagation',
           score: 4.8,
-          issues: ['Incomplete mathematical explanation', 'No practical examples']
+          issues: ['Incomplete mathematical explanation', 'No practical examples'],
         },
         {
-          termId: 'uuid-2', 
+          termId: 'uuid-2',
           termName: 'Transformer Architecture',
           score: 5.2,
-          issues: ['Missing key components', 'Unclear attention mechanism description']
-        }
-      ]
+          issues: ['Missing key components', 'Unclear attention mechanism description'],
+        },
+      ],
     };
   }
 
@@ -801,8 +805,8 @@ Return as JSON:
    * Get improvement recommendations for a term
    */
   async getImprovementRecommendations(
-    termId: string,
-    evaluationHistory?: QualityEvaluationResult[]
+    _termId: string,
+    _evaluationHistory?: QualityEvaluationResult[]
   ): Promise<{
     prioritizedImprovements: Array<{
       priority: 'high' | 'medium' | 'low';
@@ -820,31 +824,31 @@ Return as JSON:
           priority: 'high',
           dimension: 'completeness',
           recommendation: 'Add practical implementation examples with code',
-          estimatedImpact: 1.5
+          estimatedImpact: 1.5,
         },
         {
           priority: 'medium',
           dimension: 'clarity',
           recommendation: 'Simplify mathematical notation with step-by-step breakdown',
-          estimatedImpact: 0.8
+          estimatedImpact: 0.8,
         },
         {
           priority: 'low',
           dimension: 'style',
           recommendation: 'Improve formatting consistency across sections',
-          estimatedImpact: 0.3
-        }
+          estimatedImpact: 0.3,
+        },
       ],
       quickWins: [
         'Add bullet point summaries at the end of each section',
         'Include visual diagrams for complex concepts',
-        'Fix typos and grammatical errors'
+        'Fix typos and grammatical errors',
       ],
       longTermGoals: [
         'Develop interactive examples and visualizations',
         'Create video explanations for complex topics',
-        'Build comprehensive prerequisite learning paths'
-      ]
+        'Build comprehensive prerequisite learning paths',
+      ],
     };
   }
 }

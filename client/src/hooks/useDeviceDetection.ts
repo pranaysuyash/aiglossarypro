@@ -3,7 +3,7 @@
  * Comprehensive device and capability detection for responsive design
  */
 
-import { useState, useEffect, useCallback } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 
 interface DeviceInfo {
   isMobile: boolean;
@@ -55,11 +55,11 @@ const getConnectionType = (): DeviceInfo['connectionType'] => {
   if (!connection) return 'unknown';
 
   const type = connection.effectiveType || connection.type;
-  
+
   if (type === 'wifi') return 'wifi';
   if (['cellular', '2g', '3g', '4g', '5g'].includes(type)) return 'cellular';
   if (type === 'ethernet') return 'ethernet';
-  
+
   return 'unknown';
 };
 
@@ -69,7 +69,7 @@ const getSafeAreaInsets = (): DeviceInfo['safeAreaInsets'] => {
   }
 
   const computedStyle = getComputedStyle(document.documentElement);
-  
+
   return {
     top: parseInt(computedStyle.getPropertyValue('--safe-area-inset-top') || '0', 10),
     right: parseInt(computedStyle.getPropertyValue('--safe-area-inset-right') || '0', 10),
@@ -101,34 +101,37 @@ const detectDevice = (): DeviceInfo => {
       devicePixelRatio: 1,
       viewportHeight: 768,
       viewportWidth: 1024,
-      safeAreaInsets: { top: 0, right: 0, bottom: 0, left: 0 }
+      safeAreaInsets: { top: 0, right: 0, bottom: 0, left: 0 },
     };
   }
 
   const userAgent = getUserAgent();
   const { innerWidth, innerHeight } = window;
-  
+
   // Device type detection
-  const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) || innerWidth < 768;
-  const isTablet = /iPad|Android.*(?!Mobile)/i.test(userAgent) || (innerWidth >= 768 && innerWidth < 1024);
+  const isMobile =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent) ||
+    innerWidth < 768;
+  const isTablet =
+    /iPad|Android.*(?!Mobile)/i.test(userAgent) || (innerWidth >= 768 && innerWidth < 1024);
   const isDesktop = !isMobile && !isTablet;
-  
+
   // Touch detection
   const isTouchDevice = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
-  
+
   // OS detection
   const isIOS = /iPad|iPhone|iPod/.test(userAgent);
   const isAndroid = /Android/.test(userAgent);
-  
+
   // Browser detection
   const isChrome = /Chrome/.test(userAgent) && !/Edge/.test(userAgent);
   const isSafari = /Safari/.test(userAgent) && !/Chrome/.test(userAgent);
   const isFirefox = /Firefox/.test(userAgent);
-  
+
   // Screen properties
   const screenSize = getScreenSize(innerWidth);
   const orientation = innerHeight > innerWidth ? 'portrait' : 'landscape';
-  
+
   // Feature detection
   const hasNotchSupport = isIOS && CSS.supports('padding-top: env(safe-area-inset-top)');
   const supportsHaptic = 'vibrate' in navigator;
@@ -141,7 +144,7 @@ const detectDevice = (): DeviceInfo => {
     }
   })();
   const supportsServiceWorker = 'serviceWorker' in navigator;
-  
+
   return {
     isMobile,
     isTablet,
@@ -162,7 +165,7 @@ const detectDevice = (): DeviceInfo => {
     devicePixelRatio: window.devicePixelRatio || 1,
     viewportHeight: innerHeight,
     viewportWidth: innerWidth,
-    safeAreaInsets: getSafeAreaInsets()
+    safeAreaInsets: getSafeAreaInsets(),
   };
 };
 
@@ -200,7 +203,7 @@ export const useDeviceDetection = () => {
       updateDeviceInfo();
     };
 
-    mediaQueries.forEach(mq => {
+    mediaQueries.forEach((mq) => {
       if (mq.addEventListener) {
         mq.addEventListener('change', handleMediaChange);
       } else {
@@ -212,8 +215,8 @@ export const useDeviceDetection = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleOrientationChange);
-      
-      mediaQueries.forEach(mq => {
+
+      mediaQueries.forEach((mq) => {
         if (mq.removeEventListener) {
           mq.removeEventListener('change', handleMediaChange);
         } else {
@@ -224,22 +227,30 @@ export const useDeviceDetection = () => {
   }, [updateDeviceInfo]);
 
   // Utility functions
-  const isBreakpoint = useCallback((breakpoint: DeviceInfo['screenSize']) => {
-    const breakpointValues = {
-      xs: 0,
-      sm: 480,
-      md: 640,
-      lg: 768,
-      xl: 1024,
-      '2xl': 1280
-    };
-    
-    return deviceInfo.viewportWidth >= breakpointValues[breakpoint];
-  }, [deviceInfo.viewportWidth]);
+  const isBreakpoint = useCallback(
+    (breakpoint: DeviceInfo['screenSize']) => {
+      const breakpointValues = {
+        xs: 0,
+        sm: 480,
+        md: 640,
+        lg: 768,
+        xl: 1024,
+        '2xl': 1280,
+      };
 
-  const canUseFeature = useCallback((feature: keyof Pick<DeviceInfo, 'supportsHaptic' | 'supportsWebGL' | 'supportsServiceWorker'>) => {
-    return deviceInfo[feature];
-  }, [deviceInfo]);
+      return deviceInfo.viewportWidth >= breakpointValues[breakpoint];
+    },
+    [deviceInfo.viewportWidth]
+  );
+
+  const canUseFeature = useCallback(
+    (
+      feature: keyof Pick<DeviceInfo, 'supportsHaptic' | 'supportsWebGL' | 'supportsServiceWorker'>
+    ) => {
+      return deviceInfo[feature];
+    },
+    [deviceInfo]
+  );
 
   const getOptimalImageSize = useCallback(() => {
     const { viewportWidth, devicePixelRatio } = deviceInfo;
@@ -254,7 +265,7 @@ export const useDeviceDetection = () => {
 
   const getConnectionQuality = useCallback(() => {
     const { connectionType } = deviceInfo;
-    
+
     if (typeof navigator === 'undefined' || !('connection' in navigator)) {
       return 'good';
     }
@@ -263,7 +274,7 @@ export const useDeviceDetection = () => {
     if (!connection) return 'good';
 
     const effectiveType = connection.effectiveType;
-    
+
     if (effectiveType === '4g' || connectionType === 'wifi' || connectionType === 'ethernet') {
       return 'good';
     } else if (effectiveType === '3g') {
@@ -271,7 +282,7 @@ export const useDeviceDetection = () => {
     } else {
       return 'poor';
     }
-  }, [deviceInfo.connectionType]);
+  }, [deviceInfo.connectionType, deviceInfo]);
 
   return {
     ...deviceInfo,
@@ -280,6 +291,6 @@ export const useDeviceDetection = () => {
     getOptimalImageSize,
     shouldUseNativeScroll,
     getConnectionQuality,
-    refresh: updateDeviceInfo
+    refresh: updateDeviceInfo,
   };
 };

@@ -7,7 +7,7 @@ import { TIME_CONSTANTS } from './constants';
 export function calculateDateRange(period: string): { startDate: Date; endDate: Date } {
   const now = new Date();
   const startDate = new Date();
-  
+
   switch (period) {
     case TIME_PERIODS.SEVEN_DAYS:
       startDate.setDate(now.getDate() - 7);
@@ -24,7 +24,7 @@ export function calculateDateRange(period: string): { startDate: Date; endDate: 
     default:
       startDate.setDate(now.getDate() - 30); // Default to 30 days
   }
-  
+
   return { startDate, endDate: now };
 }
 
@@ -35,7 +35,7 @@ export function getLastNDaysRange(days: number): { startDate: Date; endDate: Dat
   const now = new Date();
   const startDate = new Date();
   startDate.setDate(now.getDate() - days);
-  
+
   return { startDate, endDate: now };
 }
 
@@ -47,7 +47,12 @@ export function formatDate(date: Date, format: 'short' | 'long' | 'iso' = 'short
     case 'short':
       return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     case 'long':
-      return date.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+      return date.toLocaleDateString('en-US', {
+        weekday: 'long',
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      });
     case 'iso':
       return date.toISOString();
     default:
@@ -60,8 +65,10 @@ export function formatDate(date: Date, format: 'short' | 'long' | 'iso' = 'short
  */
 export function getRelativeTime(date: Date): string {
   const now = new Date();
-  const diffInSeconds = Math.floor((now.getTime() - date.getTime()) / TIME_CONSTANTS.MILLISECONDS_IN_SECOND);
-  
+  const diffInSeconds = Math.floor(
+    (now.getTime() - date.getTime()) / TIME_CONSTANTS.MILLISECONDS_IN_SECOND
+  );
+
   if (diffInSeconds < TIME_CONSTANTS.SECONDS_IN_MINUTE) {
     return 'just now';
   } else if (diffInSeconds < TIME_CONSTANTS.SECONDS_IN_HOUR) {
@@ -87,17 +94,18 @@ export function getRelativeTime(date: Date): string {
  */
 export function getStartOf(date: Date, unit: 'day' | 'week' | 'month' | 'year'): Date {
   const result = new Date(date);
-  
+
   switch (unit) {
     case 'day':
       result.setHours(0, 0, 0, 0);
       break;
-    case 'week':
+    case 'week': {
       const day = result.getDay();
       const diff = result.getDate() - day;
       result.setDate(diff);
       result.setHours(0, 0, 0, 0);
       break;
+    }
     case 'month':
       result.setDate(1);
       result.setHours(0, 0, 0, 0);
@@ -107,7 +115,7 @@ export function getStartOf(date: Date, unit: 'day' | 'week' | 'month' | 'year'):
       result.setHours(0, 0, 0, 0);
       break;
   }
-  
+
   return result;
 }
 
@@ -115,10 +123,13 @@ export function getStartOf(date: Date, unit: 'day' | 'week' | 'month' | 'year'):
  * Calculate date range from timeframe string (for analytics)
  * Supports timeframes like '24h', '7d', '30d', '1y'
  */
-export function calculateDateRangeFromTimeframe(timeframe: string): { startDate: Date; endDate: Date } {
+export function calculateDateRangeFromTimeframe(timeframe: string): {
+  startDate: Date;
+  endDate: Date;
+} {
   const now = new Date();
   let days = 30; // default
-  
+
   // Parse timeframe to days
   if (timeframe.endsWith('h')) {
     const hours = parseInt(timeframe);
@@ -129,8 +140,8 @@ export function calculateDateRangeFromTimeframe(timeframe: string): { startDate:
     const years = parseInt(timeframe);
     days = years * 365;
   }
-  
+
   const startDate = new Date(Date.now() - days * TIME_CONSTANTS.MILLISECONDS_IN_DAY);
-  
+
   return { startDate, endDate: now };
 }

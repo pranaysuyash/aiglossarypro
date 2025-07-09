@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { AIDefinitionGenerator } from './AIDefinitionGenerator';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AIDefinitionGenerator } from './AIDefinitionGenerator';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,7 +25,8 @@ const meta: Meta<typeof AIDefinitionGenerator> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'AI-powered component for generating comprehensive definitions and explanations of technical terms.',
+        component:
+          'AI-powered component for generating comprehensive definitions and explanations of technical terms.',
       },
     },
   },

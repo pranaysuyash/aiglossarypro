@@ -37,29 +37,29 @@ const developmentConfig: AnalyticsConfig = {
     enabled: import.meta.env.VITE_GA4_ENABLED === 'true',
     debugMode: true,
     cookieFlags: 'SameSite=Lax',
-    cookieExpires: 86400 // 1 day for development
+    cookieExpires: 86400, // 1 day for development
   },
   posthog: {
     apiKey: import.meta.env.VITE_POSTHOG_KEY || '',
     enabled: !!import.meta.env.VITE_POSTHOG_KEY,
     apiHost: 'https://app.posthog.com',
-    debugMode: true
+    debugMode: true,
   },
   privacy: {
     anonymizeIp: true,
     allowGoogleSignals: false,
     allowAdPersonalization: false,
-    respectDoNotTrack: true
+    respectDoNotTrack: true,
   },
   sampling: {
     pageviewSampleRate: 100, // Track all events in development
-    eventSampleRate: 100
+    eventSampleRate: 100,
   },
   features: {
     enhancedMeasurement: true,
     crossDomainTracking: false,
-    customDimensions: true
-  }
+    customDimensions: true,
+  },
 };
 
 const productionConfig: AnalyticsConfig = {
@@ -68,29 +68,29 @@ const productionConfig: AnalyticsConfig = {
     enabled: import.meta.env.VITE_GA4_ENABLED === 'true',
     debugMode: false,
     cookieFlags: 'SameSite=Strict;Secure',
-    cookieExpires: 63072000 // 2 years for production
+    cookieExpires: 63072000, // 2 years for production
   },
   posthog: {
     apiKey: import.meta.env.VITE_POSTHOG_KEY || '',
     enabled: !!import.meta.env.VITE_POSTHOG_KEY,
     apiHost: 'https://app.posthog.com',
-    debugMode: false
+    debugMode: false,
   },
   privacy: {
     anonymizeIp: true,
     allowGoogleSignals: false,
     allowAdPersonalization: false,
-    respectDoNotTrack: true
+    respectDoNotTrack: true,
   },
   sampling: {
     pageviewSampleRate: 100,
-    eventSampleRate: 100
+    eventSampleRate: 100,
   },
   features: {
     enhancedMeasurement: true,
     crossDomainTracking: false,
-    customDimensions: true
-  }
+    customDimensions: true,
+  },
 };
 
 const testConfig: AnalyticsConfig = {
@@ -99,41 +99,40 @@ const testConfig: AnalyticsConfig = {
     enabled: false, // Disable in tests
     debugMode: true,
     cookieFlags: 'SameSite=Lax',
-    cookieExpires: 3600 // 1 hour for tests
+    cookieExpires: 3600, // 1 hour for tests
   },
   posthog: {
     apiKey: '',
     enabled: false, // Disable in tests
     apiHost: 'https://app.posthog.com',
-    debugMode: true
+    debugMode: true,
   },
   privacy: {
     anonymizeIp: true,
     allowGoogleSignals: false,
     allowAdPersonalization: false,
-    respectDoNotTrack: true
+    respectDoNotTrack: true,
   },
   sampling: {
     pageviewSampleRate: 0, // No tracking in tests
-    eventSampleRate: 0
+    eventSampleRate: 0,
   },
   features: {
     enhancedMeasurement: false,
     crossDomainTracking: false,
-    customDimensions: false
-  }
+    customDimensions: false,
+  },
 };
 
 // Get current environment configuration
 export function getAnalyticsConfig(): AnalyticsConfig {
   const environment = import.meta.env.NODE_ENV || 'development';
-  
+
   switch (environment) {
     case 'production':
       return productionConfig;
     case 'test':
       return testConfig;
-    case 'development':
     default:
       return developmentConfig;
   }
@@ -155,7 +154,7 @@ export function validateAnalyticsConfig(config: AnalyticsConfig): {
     } else if (!config.ga4.measurementId.startsWith('G-')) {
       errors.push('GA4 measurement ID must start with "G-"');
     }
-    
+
     if (config.ga4.cookieExpires <= 0) {
       warnings.push('GA4 cookie expiration should be greater than 0');
     }
@@ -170,7 +169,7 @@ export function validateAnalyticsConfig(config: AnalyticsConfig): {
   if (config.sampling.pageviewSampleRate < 0 || config.sampling.pageviewSampleRate > 100) {
     errors.push('Pageview sample rate must be between 0 and 100');
   }
-  
+
   if (config.sampling.eventSampleRate < 0 || config.sampling.eventSampleRate > 100) {
     errors.push('Event sample rate must be between 0 and 100');
   }
@@ -180,11 +179,11 @@ export function validateAnalyticsConfig(config: AnalyticsConfig): {
     if (config.ga4.debugMode) {
       warnings.push('GA4 debug mode is enabled in production');
     }
-    
+
     if (config.posthog.debugMode) {
       warnings.push('PostHog debug mode is enabled in production');
     }
-    
+
     if (!config.ga4.cookieFlags.includes('Secure')) {
       warnings.push('GA4 cookies should be secure in production');
     }
@@ -193,7 +192,7 @@ export function validateAnalyticsConfig(config: AnalyticsConfig): {
   return {
     isValid: errors.length === 0,
     errors,
-    warnings
+    warnings,
   };
 }
 
@@ -204,15 +203,15 @@ export function getValidatedAnalyticsConfig(): {
 } {
   const config = getAnalyticsConfig();
   const validation = validateAnalyticsConfig(config);
-  
+
   if (!validation.isValid) {
     console.error('Analytics configuration validation failed:', validation.errors);
   }
-  
+
   if (validation.warnings.length > 0) {
     console.warn('Analytics configuration warnings:', validation.warnings);
   }
-  
+
   return { config, validation };
 }
 
@@ -227,26 +226,26 @@ export const analyticsFeatures = {
     const config = getAnalyticsConfig();
     return config.ga4.enabled && !!config.ga4.measurementId;
   },
-  
+
   enablePostHog: () => {
     const config = getAnalyticsConfig();
     return config.posthog.enabled && !!config.posthog.apiKey;
   },
-  
+
   enableDebugMode: () => {
     const config = getAnalyticsConfig();
     return config.ga4.debugMode || config.posthog.debugMode;
   },
-  
+
   enableCustomDimensions: () => {
     const config = getAnalyticsConfig();
     return config.features.customDimensions;
   },
-  
+
   enableEnhancedMeasurement: () => {
     const config = getAnalyticsConfig();
     return config.features.enhancedMeasurement;
-  }
+  },
 };
 
 // Default export

@@ -1,7 +1,6 @@
-import React from 'react';
 import { useLocation } from 'wouter';
 import SurpriseMe from '@/components/SurpriseMe';
-import { ITerm } from '@/interfaces/interfaces';
+import type { ITerm } from '@/interfaces/interfaces';
 
 export default function SurpriseMePage() {
   const [, setLocation] = useLocation();
@@ -12,7 +11,7 @@ export default function SurpriseMePage() {
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <SurpriseMe 
+      <SurpriseMe
         showModeSelector={true}
         compact={false}
         onTermSelect={handleTermSelect}

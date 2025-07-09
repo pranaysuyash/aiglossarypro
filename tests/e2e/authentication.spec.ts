@@ -1,7 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Authentication Flows', () => {
-  
   // Test data
   const testUser = {
     email: 'test@example.com',
@@ -9,7 +8,7 @@ test.describe('Authentication Flows', () => {
     name: 'Test User',
   };
 
-  const adminUser = {
+  const _adminUser = {
     email: 'admin@example.com',
     password: 'AdminPassword123!',
   };
@@ -18,14 +17,13 @@ test.describe('Authentication Flows', () => {
     // Clear any existing session data
     await page.context().clearCookies();
     await page.context().clearPermissions();
-    
+
     // Navigate to the homepage
     await page.goto('/');
     await expect(page.locator('#main-content')).toBeVisible();
   });
 
   test.describe('User Registration', () => {
-    
     test('should allow new user registration with valid credentials', async ({ page }) => {
       // Navigate to registration page
       await page.click('[data-testid="signup-button"], text=Sign Up');
@@ -33,9 +31,15 @@ test.describe('Authentication Flows', () => {
 
       // Fill registration form
       await page.fill('[data-testid="name-input"], input[name="name"]', testUser.name);
-      await page.fill('[data-testid="email-input"], input[name="email"], input[type="email"]', testUser.email);
-      await page.fill('[data-testid="password-input"], input[name="password"], input[type="password"]', testUser.password);
-      
+      await page.fill(
+        '[data-testid="email-input"], input[name="email"], input[type="email"]',
+        testUser.email
+      );
+      await page.fill(
+        '[data-testid="password-input"], input[name="password"], input[type="password"]',
+        testUser.password
+      );
+
       // Accept terms if required
       const termsCheckbox = page.locator('[data-testid="terms-checkbox"], input[name="terms"]');
       if (await termsCheckbox.isVisible()) {
@@ -47,7 +51,7 @@ test.describe('Authentication Flows', () => {
 
       // Verify successful registration
       await expect(page).toHaveURL(/.*\/(dashboard|home|welcome)/, { timeout: 10000 });
-      
+
       // Check for welcome message or user indicator
       const welcomeIndicators = [
         page.locator(`text=${testUser.name}`),
@@ -58,12 +62,12 @@ test.describe('Authentication Flows', () => {
 
       let foundIndicator = false;
       for (const indicator of welcomeIndicators) {
-        if (await indicator.count() > 0) {
+        if ((await indicator.count()) > 0) {
           foundIndicator = true;
           break;
         }
       }
-      
+
       expect(foundIndicator).toBe(true);
     });
 
@@ -87,40 +91,40 @@ test.describe('Authentication Flows', () => {
 
       let foundError = false;
       for (const selector of errorSelectors) {
-        if (await page.locator(selector).count() > 0) {
+        if ((await page.locator(selector).count()) > 0) {
           foundError = true;
           break;
         }
       }
-      
+
       expect(foundError).toBe(true);
     });
 
     test('should prevent registration with existing email', async ({ page }) => {
       await page.click('[data-testid="signup-button"], text=Sign Up');
-      
+
       // Fill form with existing email
       await page.fill('[data-testid="email-input"], input[type="email"]', 'existing@example.com');
       await page.fill('[data-testid="password-input"], input[type="password"]', testUser.password);
       await page.fill('[data-testid="name-input"], input[name="name"]', testUser.name);
-      
+
       await page.click('[data-testid="register-submit"], button[type="submit"]');
 
       // Check for error message about existing email
-      const existingEmailError = await page.waitForSelector(
-        'text=already exists, text=email taken, [data-testid="email-exists-error"]',
-        { timeout: 5000 }
-      ).catch(() => null);
+      const existingEmailError = await page
+        .waitForSelector(
+          'text=already exists, text=email taken, [data-testid="email-exists-error"]',
+          { timeout: 5000 }
+        )
+        .catch(() => null);
 
       if (existingEmailError) {
         expect(existingEmailError).toBeTruthy();
       }
     });
-
   });
 
   test.describe('User Login', () => {
-    
     test('should allow user login with valid credentials', async ({ page }) => {
       // Navigate to login page
       await page.click('[data-testid="login-button"], text=Login, text=Sign In');
@@ -135,7 +139,7 @@ test.describe('Authentication Flows', () => {
 
       // Verify successful login
       await expect(page).toHaveURL(/.*\/(dashboard|home)/, { timeout: 10000 });
-      
+
       // Verify user is logged in
       const loggedInIndicators = [
         page.locator('[data-testid="user-menu"]'),
@@ -146,36 +150,38 @@ test.describe('Authentication Flows', () => {
 
       let foundIndicator = false;
       for (const indicator of loggedInIndicators) {
-        if (await indicator.count() > 0) {
+        if ((await indicator.count()) > 0) {
           foundIndicator = true;
           break;
         }
       }
-      
+
       expect(foundIndicator).toBe(true);
     });
 
     test('should show error for invalid login credentials', async ({ page }) => {
       await page.click('[data-testid="login-button"], text=Login, text=Sign In');
-      
+
       // Fill with invalid credentials
       await page.fill('[data-testid="email-input"], input[type="email"]', 'invalid@example.com');
       await page.fill('[data-testid="password-input"], input[type="password"]', 'wrongpassword');
-      
+
       await page.click('[data-testid="login-submit"], button[type="submit"]');
 
       // Check for error message
-      const errorMessage = await page.waitForSelector(
-        'text=Invalid credentials, text=Login failed, text=incorrect, [data-testid="login-error"]',
-        { timeout: 5000 }
-      ).catch(() => null);
+      const errorMessage = await page
+        .waitForSelector(
+          'text=Invalid credentials, text=Login failed, text=incorrect, [data-testid="login-error"]',
+          { timeout: 5000 }
+        )
+        .catch(() => null);
 
       expect(errorMessage).toBeTruthy();
     });
 
     test('should handle "Remember Me" functionality', async ({ page }) => {
       await page.click('[data-testid="login-button"], text=Login');
-      
+
       // Check remember me option
       const rememberCheckbox = page.locator('[data-testid="remember-me"], input[name="remember"]');
       if (await rememberCheckbox.isVisible()) {
@@ -188,38 +194,40 @@ test.describe('Authentication Flows', () => {
 
       // Verify login success
       await expect(page).toHaveURL(/.*\/(dashboard|home)/, { timeout: 10000 });
-      
+
       // Close and reopen browser to test persistence
       await page.close();
       const newPage = await page.context().newPage();
       await newPage.goto('/');
-      
+
       // Check if user is still logged in
-      const stillLoggedIn = await newPage.locator('[data-testid="user-menu"]').count() > 0;
+      const stillLoggedIn = (await newPage.locator('[data-testid="user-menu"]').count()) > 0;
       if (stillLoggedIn) {
         console.log('Remember me functionality working');
       }
     });
-
   });
 
   test.describe('Password Reset', () => {
-    
     test('should allow password reset request', async ({ page }) => {
       await page.click('[data-testid="login-button"], text=Login');
-      
+
       // Click forgot password link
-      await page.click('[data-testid="forgot-password"], text=Forgot Password, text=Reset Password');
-      
+      await page.click(
+        '[data-testid="forgot-password"], text=Forgot Password, text=Reset Password'
+      );
+
       // Fill email for reset
       await page.fill('[data-testid="reset-email-input"], input[type="email"]', testUser.email);
       await page.click('[data-testid="reset-submit"], button[type="submit"]');
 
       // Check for success message
-      const successMessage = await page.waitForSelector(
-        'text=reset link sent, text=check your email, [data-testid="reset-success"]',
-        { timeout: 5000 }
-      ).catch(() => null);
+      const successMessage = await page
+        .waitForSelector(
+          'text=reset link sent, text=check your email, [data-testid="reset-success"]',
+          { timeout: 5000 }
+        )
+        .catch(() => null);
 
       expect(successMessage).toBeTruthy();
     });
@@ -227,30 +235,29 @@ test.describe('Authentication Flows', () => {
     test('should handle invalid email for password reset', async ({ page }) => {
       await page.click('[data-testid="login-button"], text=Login');
       await page.click('[data-testid="forgot-password"], text=Forgot Password');
-      
+
       await page.fill('[data-testid="reset-email-input"], input[type="email"]', 'invalid-email');
       await page.click('[data-testid="reset-submit"], button[type="submit"]');
 
       // Check for validation error
-      const errorMessage = await page.waitForSelector(
-        'text=valid email, text=invalid email, [data-testid="email-error"]',
-        { timeout: 5000 }
-      ).catch(() => null);
+      const errorMessage = await page
+        .waitForSelector('text=valid email, text=invalid email, [data-testid="email-error"]', {
+          timeout: 5000,
+        })
+        .catch(() => null);
 
       expect(errorMessage).toBeTruthy();
     });
-
   });
 
   test.describe('User Logout', () => {
-    
     test('should allow user to logout successfully', async ({ page }) => {
       // First login
       await page.click('[data-testid="login-button"], text=Login');
       await page.fill('[data-testid="email-input"], input[type="email"]', testUser.email);
       await page.fill('[data-testid="password-input"], input[type="password"]', testUser.password);
       await page.click('[data-testid="login-submit"], button[type="submit"]');
-      
+
       await expect(page).toHaveURL(/.*\/(dashboard|home)/, { timeout: 10000 });
 
       // Now logout
@@ -265,7 +272,7 @@ test.describe('Authentication Flows', () => {
       let loggedOut = false;
       for (const selector of logoutSelectors) {
         const element = page.locator(selector);
-        if (await element.count() > 0) {
+        if ((await element.count()) > 0) {
           await element.click();
           loggedOut = true;
           break;
@@ -275,7 +282,7 @@ test.describe('Authentication Flows', () => {
       if (!loggedOut) {
         // Try clicking user menu first, then logout
         const userMenu = page.locator('[data-testid="user-menu"]');
-        if (await userMenu.count() > 0) {
+        if ((await userMenu.count()) > 0) {
           await userMenu.click();
           await page.waitForTimeout(500);
           await page.click('text=Logout, text=Sign Out');
@@ -284,7 +291,7 @@ test.describe('Authentication Flows', () => {
 
       // Verify logout by checking URL or UI changes
       await page.waitForTimeout(2000);
-      
+
       // Check that user is logged out
       const loggedOutIndicators = [
         page.locator('[data-testid="login-button"]'),
@@ -294,7 +301,7 @@ test.describe('Authentication Flows', () => {
 
       let foundLogoutIndicator = false;
       for (const indicator of loggedOutIndicators) {
-        if (await indicator.count() > 0) {
+        if ((await indicator.count()) > 0) {
           foundLogoutIndicator = true;
           break;
         }
@@ -302,32 +309,28 @@ test.describe('Authentication Flows', () => {
 
       expect(foundLogoutIndicator).toBe(true);
     });
-
   });
 
   test.describe('Authentication Guards', () => {
-    
     test('should redirect unauthenticated users from protected routes', async ({ page }) => {
       // Try to access protected routes without authentication
-      const protectedRoutes = [
-        '/dashboard',
-        '/profile',
-        '/settings',
-        '/admin',
-        '/favorites',
-      ];
+      const protectedRoutes = ['/dashboard', '/profile', '/settings', '/admin', '/favorites'];
 
       for (const route of protectedRoutes) {
         await page.goto(route);
-        
+
         // Should redirect to login or show access denied
         const currentUrl = page.url();
-        const isRedirected = currentUrl.includes('/login') || 
-                           currentUrl.includes('/signin') || 
-                           currentUrl.includes('/auth');
-        
-        const hasAccessDenied = await page.locator('text=Access Denied, text=Please login, text=Authentication required').count() > 0;
-        
+        const isRedirected =
+          currentUrl.includes('/login') ||
+          currentUrl.includes('/signin') ||
+          currentUrl.includes('/auth');
+
+        const hasAccessDenied =
+          (await page
+            .locator('text=Access Denied, text=Please login, text=Authentication required')
+            .count()) > 0;
+
         expect(isRedirected || hasAccessDenied).toBe(true);
       }
     });
@@ -338,7 +341,7 @@ test.describe('Authentication Flows', () => {
       await page.fill('[data-testid="email-input"], input[type="email"]', testUser.email);
       await page.fill('[data-testid="password-input"], input[type="password"]', testUser.password);
       await page.click('[data-testid="login-submit"], button[type="submit"]');
-      
+
       await expect(page).toHaveURL(/.*\/(dashboard|home)/, { timeout: 10000 });
 
       // Now try to access protected routes
@@ -347,13 +350,13 @@ test.describe('Authentication Flows', () => {
       for (const route of protectedRoutes) {
         await page.goto(route);
         await page.waitForTimeout(1000);
-        
+
         // Should not redirect to login
         const currentUrl = page.url();
         const isOnLoginPage = currentUrl.includes('/login') || currentUrl.includes('/signin');
-        
+
         expect(isOnLoginPage).toBe(false);
-        
+
         // Should show protected content
         await expect(page.locator('#main-content')).toBeVisible();
       }
@@ -365,28 +368,29 @@ test.describe('Authentication Flows', () => {
       await page.fill('[data-testid="email-input"], input[type="email"]', testUser.email);
       await page.fill('[data-testid="password-input"], input[type="password"]', testUser.password);
       await page.click('[data-testid="login-submit"], button[type="submit"]');
-      
+
       // Try to access admin route
       await page.goto('/admin');
-      
+
       // Should show access denied or redirect
-      const isAccessDenied = await page.locator('text=Access Denied, text=Unauthorized, text=Admin access required').count() > 0;
+      const isAccessDenied =
+        (await page
+          .locator('text=Access Denied, text=Unauthorized, text=Admin access required')
+          .count()) > 0;
       const isRedirected = !page.url().includes('/admin');
-      
+
       expect(isAccessDenied || isRedirected).toBe(true);
     });
-
   });
 
   test.describe('Session Management', () => {
-    
     test('should handle session expiration gracefully', async ({ page }) => {
       // Login
       await page.goto('/login');
       await page.fill('[data-testid="email-input"], input[type="email"]', testUser.email);
       await page.fill('[data-testid="password-input"], input[type="password"]', testUser.password);
       await page.click('[data-testid="login-submit"], button[type="submit"]');
-      
+
       await expect(page).toHaveURL(/.*\/(dashboard|home)/, { timeout: 10000 });
 
       // Simulate session expiration by clearing auth tokens
@@ -410,14 +414,14 @@ test.describe('Authentication Flows', () => {
 
       let foundExpiredIndicator = false;
       for (const indicator of sessionExpiredIndicators) {
-        if (await indicator.count() > 0) {
+        if ((await indicator.count()) > 0) {
           foundExpiredIndicator = true;
           break;
         }
       }
 
       const isOnLoginPage = page.url().includes('/login') || page.url().includes('/signin');
-      
+
       expect(foundExpiredIndicator || isOnLoginPage).toBe(true);
     });
 
@@ -427,7 +431,7 @@ test.describe('Authentication Flows', () => {
       await page.fill('[data-testid="email-input"], input[type="email"]', testUser.email);
       await page.fill('[data-testid="password-input"], input[type="password"]', testUser.password);
       await page.click('[data-testid="login-submit"], button[type="submit"]');
-      
+
       await expect(page).toHaveURL(/.*\/(dashboard|home)/, { timeout: 10000 });
 
       // Refresh the page
@@ -435,19 +439,19 @@ test.describe('Authentication Flows', () => {
       await page.waitForTimeout(2000);
 
       // Should still be logged in
-      const stillLoggedIn = await page.locator('[data-testid="user-menu"], [data-testid="logout-button"]').count() > 0;
+      const stillLoggedIn =
+        (await page.locator('[data-testid="user-menu"], [data-testid="logout-button"]').count()) >
+        0;
       const isOnLoginPage = page.url().includes('/login');
-      
+
       expect(stillLoggedIn && !isOnLoginPage).toBe(true);
     });
-
   });
 
   test.describe('Social Authentication', () => {
-    
     test('should display social login options', async ({ page }) => {
       await page.goto('/login');
-      
+
       // Check for social login buttons
       const socialLoginButtons = [
         page.locator('[data-testid="google-login"], button:has-text("Google")'),
@@ -457,7 +461,7 @@ test.describe('Authentication Flows', () => {
 
       let foundSocialLogin = false;
       for (const button of socialLoginButtons) {
-        if (await button.count() > 0) {
+        if ((await button.count()) > 0) {
           foundSocialLogin = true;
           break;
         }
@@ -466,11 +470,9 @@ test.describe('Authentication Flows', () => {
       // Note: We can't actually test the OAuth flow in E2E without complex setup
       console.log(`Social login options found: ${foundSocialLogin}`);
     });
-
   });
 
   test.describe('Multi-Factor Authentication', () => {
-    
     test('should prompt for MFA when enabled', async ({ page }) => {
       // This test assumes MFA is enabled for the test user
       await page.goto('/login');
@@ -479,17 +481,17 @@ test.describe('Authentication Flows', () => {
       await page.click('[data-testid="login-submit"], button[type="submit"]');
 
       // Should prompt for MFA code
-      const mfaPrompt = await page.waitForSelector(
-        '[data-testid="mfa-input"], input[name="mfa"], input[placeholder*="code"]',
-        { timeout: 5000 }
-      ).catch(() => null);
+      const mfaPrompt = await page
+        .waitForSelector(
+          '[data-testid="mfa-input"], input[name="mfa"], input[placeholder*="code"]',
+          { timeout: 5000 }
+        )
+        .catch(() => null);
 
       if (mfaPrompt) {
         expect(mfaPrompt).toBeTruthy();
         console.log('MFA prompt displayed successfully');
       }
     });
-
   });
-
 });

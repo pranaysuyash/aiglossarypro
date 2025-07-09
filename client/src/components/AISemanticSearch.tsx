@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Loader2, Search, Brain, ExternalLink } from 'lucide-react';
-import { useToast } from '../hooks/use-toast';
+import { Brain, ExternalLink, Loader2, Search } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
+import { useToast } from '../hooks/use-toast';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Card, CardContent } from './ui/card';
+import { Input } from './ui/input';
 
 interface SemanticSearchResult {
   termId: string;
@@ -26,10 +26,10 @@ interface AISemanticSearchProps {
   className?: string;
 }
 
-export function AISemanticSearch({ 
-  placeholder = "Search with AI-powered semantic understanding...",
+export function AISemanticSearch({
+  placeholder = 'Search with AI-powered semantic understanding...',
   onResultClick,
-  className = ""
+  className = '',
 }: AISemanticSearchProps) {
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
@@ -50,7 +50,7 @@ export function AISemanticSearch({
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [query]);
+  }, [query, performSearch]);
 
   const performSearch = async (searchQuery: string) => {
     if (!searchQuery.trim()) return;
@@ -59,15 +59,17 @@ export function AISemanticSearch({
     setHasSearched(true);
 
     try {
-      const response = await fetch(`/api/ai/semantic-search?q=${encodeURIComponent(searchQuery)}&limit=8`);
-      
+      const response = await fetch(
+        `/api/ai/semantic-search?q=${encodeURIComponent(searchQuery)}&limit=8`
+      );
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Search failed');
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setResults(result.data.matches || []);
       } else {
@@ -76,9 +78,9 @@ export function AISemanticSearch({
     } catch (error) {
       console.error('Semantic search error:', error);
       toast({
-        title: "Search Error",
+        title: 'Search Error',
         description: error instanceof Error ? error.message : 'Failed to perform semantic search',
-        variant: "destructive"
+        variant: 'destructive',
       });
       setResults([]);
     } finally {
@@ -138,7 +140,9 @@ export function AISemanticSearch({
               <p className="text-xs mt-1">Try different keywords or concepts.</p>
             </div>
           ) : (
-            <p>Found {results.length} semantically related term{results.length !== 1 ? 's' : ''}</p>
+            <p>
+              Found {results.length} semantically related term{results.length !== 1 ? 's' : ''}
+            </p>
           )}
         </div>
       )}
@@ -150,7 +154,7 @@ export function AISemanticSearch({
               <div className="flex items-start justify-between mb-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <Link 
+                    <Link
                       href={`/term/${result.termId}`}
                       className="font-semibold text-blue-600 hover:text-blue-800"
                       onClick={() => handleResultClick(result.termId)}
@@ -160,21 +164,21 @@ export function AISemanticSearch({
                     <ExternalLink className="h-3 w-3 text-gray-400" />
                   </div>
                   <p className="text-sm text-gray-600 mb-2">
-                    {result.term.shortDefinition || result.term.definition.substring(0, 120) + '...'}
+                    {result.term.shortDefinition ||
+                      `${result.term.definition.substring(0, 120)}...`}
                   </p>
                   <div className="flex items-center gap-2 mb-2">
                     <Badge variant="outline" className="text-xs">
                       {result.term.category}
                     </Badge>
-                    <Badge 
-                      className={`text-xs ${getScoreColor(result.relevanceScore)}`}
-                    >
-                      {getScoreLabel(result.relevanceScore)} ({Math.round(result.relevanceScore * 100)}%)
+                    <Badge className={`text-xs ${getScoreColor(result.relevanceScore)}`}>
+                      {getScoreLabel(result.relevanceScore)} (
+                      {Math.round(result.relevanceScore * 100)}%)
                     </Badge>
                   </div>
                 </div>
               </div>
-              
+
               <div className="bg-blue-50 p-3 rounded-md">
                 <p className="text-sm text-blue-800">
                   <span className="font-medium">AI Relevance: </span>
@@ -188,11 +192,7 @@ export function AISemanticSearch({
 
       {query && !hasSearched && !isSearching && (
         <div className="text-center py-4">
-          <Button 
-            onClick={() => performSearch(query)}
-            variant="outline"
-            size="sm"
-          >
+          <Button onClick={() => performSearch(query)} variant="outline" size="sm">
             <Search className="h-4 w-4 mr-2" />
             Search Semantically
           </Button>

@@ -1,96 +1,104 @@
 import { useState } from 'react';
 import {
-  EnhancedTermCard,
   AdvancedSearch,
-  MermaidDiagram,
   CodeBlock,
+  EnhancedTermCard,
   InteractiveQuiz,
+  MermaidDiagram,
+  MobileOptimizedLayout,
+  ResponsiveContainer,
   SectionDisplay,
   UserPersonalizationSettings,
-  MobileOptimizedLayout,
   useResponsiveCardLayout,
-  ResponsiveContainer
 } from '@/components';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { IEnhancedTerm, ISearchFilters, ITermSection, IInteractiveElement } from '@/interfaces/interfaces';
+import type {
+  IEnhancedTerm,
+  IInteractiveElement,
+  ISearchFilters,
+  ITermSection,
+} from '@/interfaces/interfaces';
 
 // Example data
 const exampleTerm: IEnhancedTerm = {
-  id: "1",
-  name: "Neural Networks",
-  slug: "neural-networks",
-  definition: "Neural networks are computing systems vaguely inspired by the biological neural networks that constitute animal brains. They consist of interconnected nodes (neurons) that process information using connectionist approaches to computation.",
-  category: "Deep Learning",
-  shortDefinition: "Computational models inspired by biological neural networks",
-  fullDefinition: "Neural networks are computing systems vaguely inspired by the biological neural networks that constitute animal brains. They consist of interconnected nodes (neurons) that process information using connectionist approaches to computation.",
-  mainCategories: ["Machine Learning", "Deep Learning"],
-  subCategories: ["Artificial Intelligence", "Pattern Recognition"],
-  relatedConcepts: ["Backpropagation", "Gradient Descent", "Activation Functions"],
-  applicationDomains: ["Computer Vision", "Natural Language Processing", "Speech Recognition"],
-  techniques: ["Feedforward", "Convolutional", "Recurrent"],
-  difficultyLevel: "Intermediate",
+  id: '1',
+  name: 'Neural Networks',
+  slug: 'neural-networks',
+  definition:
+    'Neural networks are computing systems vaguely inspired by the biological neural networks that constitute animal brains. They consist of interconnected nodes (neurons) that process information using connectionist approaches to computation.',
+  category: 'Deep Learning',
+  shortDefinition: 'Computational models inspired by biological neural networks',
+  fullDefinition:
+    'Neural networks are computing systems vaguely inspired by the biological neural networks that constitute animal brains. They consist of interconnected nodes (neurons) that process information using connectionist approaches to computation.',
+  mainCategories: ['Machine Learning', 'Deep Learning'],
+  subCategories: ['Artificial Intelligence', 'Pattern Recognition'],
+  relatedConcepts: ['Backpropagation', 'Gradient Descent', 'Activation Functions'],
+  applicationDomains: ['Computer Vision', 'Natural Language Processing', 'Speech Recognition'],
+  techniques: ['Feedforward', 'Convolutional', 'Recurrent'],
+  difficultyLevel: 'Intermediate',
   hasImplementation: true,
   hasInteractiveElements: true,
   hasCaseStudies: true,
   hasCodeExamples: true,
-  searchText: "neural networks machine learning deep learning artificial intelligence",
-  keywords: ["neural", "network", "artificial", "intelligence", "machine", "learning"],
+  searchText: 'neural networks machine learning deep learning artificial intelligence',
+  keywords: ['neural', 'network', 'artificial', 'intelligence', 'machine', 'learning'],
   viewCount: 1250,
-  createdAt: new Date("2024-01-01T00:00:00Z"),
-  updatedAt: new Date("2024-01-15T00:00:00Z")
+  createdAt: new Date('2024-01-01T00:00:00Z'),
+  updatedAt: new Date('2024-01-15T00:00:00Z'),
 };
 
 const exampleSections: ITermSection[] = [
   {
-    id: "1",
-    termId: "1",
-    sectionName: "Introduction",
+    id: '1',
+    termId: '1',
+    sectionName: 'Introduction',
     sectionData: {
-      type: "markdown",
-      content: "# Introduction to Neural Networks\n\nNeural networks represent one of the most important breakthroughs in artificial intelligence..."
+      type: 'markdown',
+      content:
+        '# Introduction to Neural Networks\n\nNeural networks represent one of the most important breakthroughs in artificial intelligence...',
     },
-    displayType: "main",
+    displayType: 'main',
     priority: 1,
     isInteractive: false,
-    createdAt: "2024-01-01T00:00:00Z",
-    updatedAt: "2024-01-01T00:00:00Z"
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
   },
   {
-    id: "2",
-    termId: "1",
-    sectionName: "Key Components",
+    id: '2',
+    termId: '1',
+    sectionName: 'Key Components',
     sectionData: {
-      type: "list",
+      type: 'list',
       items: [
         {
-          title: "Neurons",
-          description: "Basic processing units that receive, process, and transmit information"
+          title: 'Neurons',
+          description: 'Basic processing units that receive, process, and transmit information',
         },
         {
-          title: "Weights",
-          description: "Parameters that determine the strength of connections between neurons"
+          title: 'Weights',
+          description: 'Parameters that determine the strength of connections between neurons',
         },
         {
-          title: "Activation Functions",
-          description: "Mathematical functions that determine the output of neurons"
-        }
-      ]
+          title: 'Activation Functions',
+          description: 'Mathematical functions that determine the output of neurons',
+        },
+      ],
     },
-    displayType: "card",
+    displayType: 'card',
     priority: 2,
     isInteractive: false,
-    createdAt: "2024-01-01T00:00:00Z",
-    updatedAt: "2024-01-01T00:00:00Z"
-  }
+    createdAt: '2024-01-01T00:00:00Z',
+    updatedAt: '2024-01-01T00:00:00Z',
+  },
 ];
 
 const exampleInteractiveElements: IInteractiveElement[] = [
   {
-    id: "1",
-    termId: "1",
-    sectionName: "Architecture",
-    elementType: "mermaid",
+    id: '1',
+    termId: '1',
+    sectionName: 'Architecture',
+    elementType: 'mermaid',
     elementData: {
       diagram: `graph TD
         A[Input Layer] --> B[Hidden Layer 1]
@@ -101,18 +109,18 @@ const exampleInteractiveElements: IInteractiveElement[] = [
         G[Input 3] --> A
         D --> H[Output 1]
         D --> I[Output 2]`,
-      title: "Neural Network Architecture",
-      description: "Basic structure of a feedforward neural network"
+      title: 'Neural Network Architecture',
+      description: 'Basic structure of a feedforward neural network',
     },
     displayOrder: 1,
     isActive: true,
-    createdAt: "2024-01-01T00:00:00Z"
+    createdAt: '2024-01-01T00:00:00Z',
   },
   {
-    id: "2",
-    termId: "1",
-    sectionName: "Implementation",
-    elementType: "code",
+    id: '2',
+    termId: '1',
+    sectionName: 'Implementation',
+    elementType: 'code',
     elementData: {
       code: `import numpy as np
 
@@ -140,70 +148,72 @@ nn = NeuralNetwork(3, 4, 2)
 input_data = np.array([[0.1, 0.2, 0.3]])
 output = nn.forward(input_data)
 print(f"Output: {output}")`,
-      language: "python",
-      title: "Simple Neural Network Implementation",
-      description: "Basic implementation of a neural network in Python"
+      language: 'python',
+      title: 'Simple Neural Network Implementation',
+      description: 'Basic implementation of a neural network in Python',
     },
     displayOrder: 2,
     isActive: true,
-    createdAt: "2024-01-01T00:00:00Z"
+    createdAt: '2024-01-01T00:00:00Z',
   },
   {
-    id: "3",
-    termId: "1",
-    sectionName: "Quiz",
-    elementType: "quiz",
+    id: '3',
+    termId: '1',
+    sectionName: 'Quiz',
+    elementType: 'quiz',
     elementData: {
-      title: "Neural Networks Quiz",
-      description: "Test your understanding of neural networks",
+      title: 'Neural Networks Quiz',
+      description: 'Test your understanding of neural networks',
       questions: [
         {
-          id: "1",
-          question: "What is the primary function of an activation function in a neural network?",
-          type: "multiple-choice",
+          id: '1',
+          question: 'What is the primary function of an activation function in a neural network?',
+          type: 'multiple-choice',
           options: [
-            "To initialize weights",
-            "To introduce non-linearity",
-            "To calculate gradients",
-            "To normalize inputs"
+            'To initialize weights',
+            'To introduce non-linearity',
+            'To calculate gradients',
+            'To normalize inputs',
           ],
           correctAnswer: 1,
-          explanation: "Activation functions introduce non-linearity to the network, allowing it to learn complex patterns."
+          explanation:
+            'Activation functions introduce non-linearity to the network, allowing it to learn complex patterns.',
         },
         {
-          id: "2",
-          question: "Backpropagation is used for training neural networks.",
-          type: "true-false",
-          correctAnswer: "true",
-          explanation: "Backpropagation is the standard algorithm for training neural networks by computing gradients."
-        }
-      ]
+          id: '2',
+          question: 'Backpropagation is used for training neural networks.',
+          type: 'true-false',
+          correctAnswer: 'true',
+          explanation:
+            'Backpropagation is the standard algorithm for training neural networks by computing gradients.',
+        },
+      ],
     },
     displayOrder: 3,
     isActive: true,
-    createdAt: "2024-01-01T00:00:00Z"
-  }
+    createdAt: '2024-01-01T00:00:00Z',
+  },
 ];
 
 const availableFilters = {
-  categories: ["Machine Learning", "Deep Learning", "Computer Vision", "NLP"],
-  subcategories: ["Artificial Intelligence", "Pattern Recognition", "Signal Processing"],
-  applicationDomains: ["Healthcare", "Finance", "Robotics", "Gaming"],
-  techniques: ["Supervised Learning", "Unsupervised Learning", "Reinforcement Learning"]
+  categories: ['Machine Learning', 'Deep Learning', 'Computer Vision', 'NLP'],
+  subcategories: ['Artificial Intelligence', 'Pattern Recognition', 'Signal Processing'],
+  applicationDomains: ['Healthcare', 'Finance', 'Robotics', 'Gaming'],
+  techniques: ['Supervised Learning', 'Unsupervised Learning', 'Reinforcement Learning'],
 };
 
 export default function ExampleEnhancedUsage() {
   const [searchFilters, setSearchFilters] = useState<ISearchFilters>({});
-  const [selectedTab, setSelectedTab] = useState("cards");
+  const [selectedTab, setSelectedTab] = useState('cards');
   const { getGridCols, getCardSpacing } = useResponsiveCardLayout();
 
   const handleSearch = (filters: ISearchFilters) => {
     setSearchFilters(filters);
-    console.log("Search filters:", filters);
+    console.log('Search filters:', filters);
   };
 
   const handleSectionInteraction = (type: string, data: any) => {
-    console.log("Section interaction:", type, data);
+    console.log('Section interaction:', type, data);
   };
 
   return (
@@ -243,7 +253,8 @@ export default function ExampleEnhancedUsage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  Enhanced term cards with new categorization, difficulty levels, and feature indicators.
+                  Enhanced term cards with new categorization, difficulty levels, and feature
+                  indicators.
                 </p>
                 <div className={`grid ${getGridCols(3)} ${getCardSpacing()}`}>
                   <EnhancedTermCard
@@ -273,7 +284,8 @@ export default function ExampleEnhancedUsage() {
               </CardHeader>
               <CardContent>
                 <p className="text-gray-600 dark:text-gray-400 mb-4">
-                  Advanced search with faceted filtering, AI-powered semantic search, and sorting options.
+                  Advanced search with faceted filtering, AI-powered semantic search, and sorting
+                  options.
                 </p>
                 <AdvancedSearch
                   onSearch={handleSearch}
@@ -294,7 +306,7 @@ export default function ExampleEnhancedUsage() {
                   Structured content sections with different display types and layouts.
                 </p>
                 <div className="space-y-4">
-                  {exampleSections.map(section => (
+                  {exampleSections.map((section) => (
                     <SectionDisplay
                       key={section.id}
                       section={section}
@@ -348,7 +360,7 @@ export default function ExampleEnhancedUsage() {
                     description={exampleInteractiveElements[2].elementData.description}
                     showExplanations={true}
                     allowRetry={true}
-                    onComplete={(result) => console.log("Quiz completed:", result)}
+                    onComplete={(result) => console.log('Quiz completed:', result)}
                   />
                 </CardContent>
               </Card>
@@ -367,7 +379,7 @@ export default function ExampleEnhancedUsage() {
                 <UserPersonalizationSettings
                   availableCategories={availableFilters.categories}
                   availableApplications={availableFilters.applicationDomains}
-                  onSettingsChange={(settings) => console.log("Settings changed:", settings)}
+                  onSettingsChange={(settings) => console.log('Settings changed:', settings)}
                 />
               </CardContent>
             </Card>

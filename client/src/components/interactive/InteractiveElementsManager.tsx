@@ -1,11 +1,11 @@
-import { IInteractiveElement } from '@/interfaces/interfaces';
-import MermaidDiagram from './MermaidDiagram';
+import { ExternalLink, Play } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import type { IInteractiveElement } from '@/interfaces/interfaces';
 import CodeBlock from './CodeBlock';
 import InteractiveQuiz from './InteractiveQuiz';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ExternalLink, Play } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import MermaidDiagram from './MermaidDiagram';
 
 interface InteractiveElementsManagerProps {
   elements: IInteractiveElement[];
@@ -16,7 +16,7 @@ interface InteractiveElementsManagerProps {
 export default function InteractiveElementsManager({
   elements,
   onInteraction,
-  className = ''
+  className = '',
 }: InteractiveElementsManagerProps) {
   const handleInteraction = (elementId: string, type: string, data?: any) => {
     if (onInteraction) {
@@ -140,9 +140,7 @@ export default function InteractiveElementsManager({
               <div className="text-center py-8 text-gray-500 dark:text-gray-400">
                 <Play className="h-12 w-12 mx-auto mb-2 opacity-50" />
                 <p>Simulation functionality coming soon</p>
-                <p className="text-xs mt-1">
-                  This would integrate with simulation frameworks
-                </p>
+                <p className="text-xs mt-1">This would integrate with simulation frameworks</p>
               </div>
             </CardContent>
           </Card>
@@ -174,11 +172,9 @@ export default function InteractiveElementsManager({
   return (
     <div className={className}>
       {sortedElements
-        .filter(element => element.isActive)
-        .map(element => (
-          <div key={element.id}>
-            {renderElement(element)}
-          </div>
+        .filter((element) => element.isActive)
+        .map((element) => (
+          <div key={element.id}>{renderElement(element)}</div>
         ))}
     </div>
   );

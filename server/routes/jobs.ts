@@ -3,12 +3,12 @@
  * Provides endpoints for managing and monitoring background jobs
  */
 
-import type { Express, Request, Response } from "express";
-import { mockIsAuthenticated } from "../middleware/dev/mockAuth";
-import { requireAdmin } from "../middleware/adminAuth";
-import { jobQueueManager, jobQueue, JobType } from "../jobs/queue";
-import { JobPriority } from "../jobs/types";
-import { log as logger } from "../utils/logger";
+import type { Express, Request, Response } from 'express';
+import { JobType, jobQueue, jobQueueManager } from '../jobs/queue';
+import { JobPriority } from '../jobs/types';
+import { requireAdmin } from '../middleware/adminAuth';
+import { mockIsAuthenticated } from '../middleware/dev/mockAuth';
+import { log as logger } from '../utils/logger';
 
 export function registerJobRoutes(app: Express): void {
   const authMiddleware = mockIsAuthenticated;
@@ -19,7 +19,7 @@ export function registerJobRoutes(app: Express): void {
   app.get('/api/jobs/:type/:jobId', authMiddleware, async (req: Request, res: Response) => {
     try {
       const { type, jobId } = req.params;
-      
+
       if (!Object.values(JobType).includes(type as JobType)) {
         return res.status(400).json({
           success: false,
@@ -28,7 +28,7 @@ export function registerJobRoutes(app: Express): void {
       }
 
       const jobStatus = await jobQueueManager.getJobStatus(type as JobType, jobId);
-      
+
       if (!jobStatus) {
         return res.status(404).json({
           success: false,
@@ -41,7 +41,9 @@ export function registerJobRoutes(app: Express): void {
         data: jobStatus,
       });
     } catch (error) {
-      logger.error('Error fetching job status:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error fetching job status:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to fetch job status',
@@ -52,51 +54,65 @@ export function registerJobRoutes(app: Express): void {
   /**
    * Get queue statistics
    */
-  app.get('/api/jobs/queues/stats', authMiddleware, requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const stats = await jobQueueManager.getAllQueueStats();
-      
-      res.json({
-        success: true,
-        data: stats,
-      });
-    } catch (error) {
-      logger.error('Error fetching queue stats:', { error: error instanceof Error ? error.message : String(error) });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch queue statistics',
-      });
+  app.get(
+    '/api/jobs/queues/stats',
+    authMiddleware,
+    requireAdmin,
+    async (_req: Request, res: Response) => {
+      try {
+        const stats = await jobQueueManager.getAllQueueStats();
+
+        res.json({
+          success: true,
+          data: stats,
+        });
+      } catch (error) {
+        logger.error('Error fetching queue stats:', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        res.status(500).json({
+          success: false,
+          error: 'Failed to fetch queue statistics',
+        });
+      }
     }
-  });
+  );
 
   /**
    * Get specific queue statistics
    */
-  app.get('/api/jobs/queues/:type/stats', authMiddleware, requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const { type } = req.params;
-      
-      if (!Object.values(JobType).includes(type as JobType)) {
-        return res.status(400).json({
+  app.get(
+    '/api/jobs/queues/:type/stats',
+    authMiddleware,
+    requireAdmin,
+    async (req: Request, res: Response) => {
+      try {
+        const { type } = req.params;
+
+        if (!Object.values(JobType).includes(type as JobType)) {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid job type',
+          });
+        }
+
+        const stats = await jobQueueManager.getQueueStats(type as JobType);
+
+        res.json({
+          success: true,
+          data: stats,
+        });
+      } catch (error) {
+        logger.error('Error fetching queue stats:', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        res.status(500).json({
           success: false,
-          error: 'Invalid job type',
+          error: 'Failed to fetch queue statistics',
         });
       }
-
-      const stats = await jobQueueManager.getQueueStats(type as JobType);
-      
-      res.json({
-        success: true,
-        data: stats,
-      });
-    } catch (error) {
-      logger.error('Error fetching queue stats:', { error: error instanceof Error ? error.message : String(error) });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to fetch queue statistics',
-      });
     }
-  });
+  );
 
   /**
    * Create a new Excel import job
@@ -118,20 +134,23 @@ export function registerJobRoutes(app: Express): void {
         });
       }
 
-      const jobId = await jobQueue.addExcelImportJob({
-        fileBuffer: Buffer.from(fileBuffer, 'base64'),
-        fileName,
-        fileSize: fileSize || Buffer.from(fileBuffer, 'base64').length,
-        importOptions: importOptions || {
-          mode: 'advanced',
-          enableAI: false,
-          checkpointEnabled: true,
+      const jobId = await jobQueue.addExcelImportJob(
+        {
+          fileBuffer: Buffer.from(fileBuffer, 'base64'),
+          fileName,
+          fileSize: fileSize || Buffer.from(fileBuffer, 'base64').length,
+          importOptions: importOptions || {
+            mode: 'advanced',
+            enableAI: false,
+            checkpointEnabled: true,
+          },
+          userId: req.user?.id,
+          requestId: req.headers['x-request-id'] as string,
         },
-        userId: req.user?.id,
-        requestId: req.headers['x-request-id'] as string,
-      }, {
-        priority,
-      });
+        {
+          priority,
+        }
+      );
 
       res.json({
         success: true,
@@ -142,7 +161,9 @@ export function registerJobRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      logger.error('Error creating Excel import job:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error creating Excel import job:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to create Excel import job',
@@ -171,17 +192,20 @@ export function registerJobRoutes(app: Express): void {
         });
       }
 
-      const jobId = await jobQueue.addAIContentJob({
-        termId,
-        termName,
-        sections,
-        model,
-        temperature,
-        userId: req.user?.id,
-        requestId: req.headers['x-request-id'] as string,
-      }, {
-        priority,
-      });
+      const jobId = await jobQueue.addAIContentJob(
+        {
+          termId,
+          termName,
+          sections,
+          model,
+          temperature,
+          userId: req.user?.id,
+          requestId: req.headers['x-request-id'] as string,
+        },
+        {
+          priority,
+        }
+      );
 
       res.json({
         success: true,
@@ -192,7 +216,9 @@ export function registerJobRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      logger.error('Error creating AI content job:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error creating AI content job:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to create AI content generation job',
@@ -203,61 +229,60 @@ export function registerJobRoutes(app: Express): void {
   /**
    * Create a cache warm job
    */
-  app.post('/api/jobs/cache-warm', authMiddleware, requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const {
-        keys,
-        ttl,
-        priority = JobPriority.LOW,
-      } = req.body;
+  app.post(
+    '/api/jobs/cache-warm',
+    authMiddleware,
+    requireAdmin,
+    async (req: Request, res: Response) => {
+      try {
+        const { keys, ttl, priority = JobPriority.LOW } = req.body;
 
-      if (!keys || !Array.isArray(keys)) {
-        return res.status(400).json({
+        if (!keys || !Array.isArray(keys)) {
+          return res.status(400).json({
+            success: false,
+            error: 'Keys array is required',
+          });
+        }
+
+        const jobId = await jobQueue.addCacheWarmJob(
+          {
+            keys,
+            ttl,
+            priority: priority === JobPriority.HIGH ? 'high' : 'normal',
+            userId: req.user?.id,
+            requestId: req.headers['x-request-id'] as string,
+          },
+          {
+            priority,
+          }
+        );
+
+        res.json({
+          success: true,
+          data: {
+            jobId,
+            type: JobType.CACHE_WARM,
+            message: 'Cache warm job created successfully',
+          },
+        });
+      } catch (error) {
+        logger.error('Error creating cache warm job:', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        res.status(500).json({
           success: false,
-          error: 'Keys array is required',
+          error: 'Failed to create cache warm job',
         });
       }
-
-      const jobId = await jobQueue.addCacheWarmJob({
-        keys,
-        ttl,
-        priority: priority === JobPriority.HIGH ? 'high' : 'normal',
-        userId: req.user?.id,
-        requestId: req.headers['x-request-id'] as string,
-      }, {
-        priority,
-      });
-
-      res.json({
-        success: true,
-        data: {
-          jobId,
-          type: JobType.CACHE_WARM,
-          message: 'Cache warm job created successfully',
-        },
-      });
-    } catch (error) {
-      logger.error('Error creating cache warm job:', { error: error instanceof Error ? error.message : String(error) });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to create cache warm job',
-      });
     }
-  });
+  );
 
   /**
    * Create an email send job
    */
   app.post('/api/jobs/email-send', authMiddleware, async (req: Request, res: Response) => {
     try {
-      const {
-        to,
-        subject,
-        template,
-        data,
-        attachments,
-        priority = JobPriority.NORMAL,
-      } = req.body;
+      const { to, subject, template, data, attachments, priority = JobPriority.NORMAL } = req.body;
 
       if (!to || !template) {
         return res.status(400).json({
@@ -266,17 +291,20 @@ export function registerJobRoutes(app: Express): void {
         });
       }
 
-      const jobId = await jobQueue.addEmailJob({
-        to,
-        subject,
-        template,
-        data: data || {},
-        attachments,
-        userId: req.user?.id,
-        requestId: req.headers['x-request-id'] as string,
-      }, {
-        priority,
-      });
+      const jobId = await jobQueue.addEmailJob(
+        {
+          to,
+          subject,
+          template,
+          data: data || {},
+          attachments,
+          userId: req.user?.id,
+          requestId: req.headers['x-request-id'] as string,
+        },
+        {
+          priority,
+        }
+      );
 
       res.json({
         success: true,
@@ -287,7 +315,9 @@ export function registerJobRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      logger.error('Error creating email job:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error creating email job:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to create email job',
@@ -301,7 +331,7 @@ export function registerJobRoutes(app: Express): void {
   app.delete('/api/jobs/:type/:jobId', authMiddleware, async (req: Request, res: Response) => {
     try {
       const { type, jobId } = req.params;
-      
+
       if (!Object.values(JobType).includes(type as JobType)) {
         return res.status(400).json({
           success: false,
@@ -310,7 +340,7 @@ export function registerJobRoutes(app: Express): void {
       }
 
       const cancelled = await jobQueueManager.cancelJob(type as JobType, jobId);
-      
+
       if (!cancelled) {
         return res.status(404).json({
           success: false,
@@ -323,7 +353,9 @@ export function registerJobRoutes(app: Express): void {
         message: 'Job cancelled successfully',
       });
     } catch (error) {
-      logger.error('Error cancelling job:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error cancelling job:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to cancel job',
@@ -334,99 +366,115 @@ export function registerJobRoutes(app: Express): void {
   /**
    * Pause a queue
    */
-  app.post('/api/jobs/queues/:type/pause', authMiddleware, requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const { type } = req.params;
-      
-      if (!Object.values(JobType).includes(type as JobType)) {
-        return res.status(400).json({
+  app.post(
+    '/api/jobs/queues/:type/pause',
+    authMiddleware,
+    requireAdmin,
+    async (req: Request, res: Response) => {
+      try {
+        const { type } = req.params;
+
+        if (!Object.values(JobType).includes(type as JobType)) {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid job type',
+          });
+        }
+
+        await jobQueueManager.pauseQueue(type as JobType);
+
+        res.json({
+          success: true,
+          message: `Queue ${type} paused successfully`,
+        });
+      } catch (error) {
+        logger.error('Error pausing queue:', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        res.status(500).json({
           success: false,
-          error: 'Invalid job type',
+          error: 'Failed to pause queue',
         });
       }
-
-      await jobQueueManager.pauseQueue(type as JobType);
-      
-      res.json({
-        success: true,
-        message: `Queue ${type} paused successfully`,
-      });
-    } catch (error) {
-      logger.error('Error pausing queue:', { error: error instanceof Error ? error.message : String(error) });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to pause queue',
-      });
     }
-  });
+  );
 
   /**
    * Resume a queue
    */
-  app.post('/api/jobs/queues/:type/resume', authMiddleware, requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const { type } = req.params;
-      
-      if (!Object.values(JobType).includes(type as JobType)) {
-        return res.status(400).json({
+  app.post(
+    '/api/jobs/queues/:type/resume',
+    authMiddleware,
+    requireAdmin,
+    async (req: Request, res: Response) => {
+      try {
+        const { type } = req.params;
+
+        if (!Object.values(JobType).includes(type as JobType)) {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid job type',
+          });
+        }
+
+        await jobQueueManager.resumeQueue(type as JobType);
+
+        res.json({
+          success: true,
+          message: `Queue ${type} resumed successfully`,
+        });
+      } catch (error) {
+        logger.error('Error resuming queue:', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        res.status(500).json({
           success: false,
-          error: 'Invalid job type',
+          error: 'Failed to resume queue',
         });
       }
-
-      await jobQueueManager.resumeQueue(type as JobType);
-      
-      res.json({
-        success: true,
-        message: `Queue ${type} resumed successfully`,
-      });
-    } catch (error) {
-      logger.error('Error resuming queue:', { error: error instanceof Error ? error.message : String(error) });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to resume queue',
-      });
     }
-  });
+  );
 
   /**
    * Clean old jobs from a queue
    */
-  app.post('/api/jobs/queues/:type/clean', authMiddleware, requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const { type } = req.params;
-      const { grace = 3600000, limit = 1000, status = 'completed' } = req.body;
-      
-      if (!Object.values(JobType).includes(type as JobType)) {
-        return res.status(400).json({
+  app.post(
+    '/api/jobs/queues/:type/clean',
+    authMiddleware,
+    requireAdmin,
+    async (req: Request, res: Response) => {
+      try {
+        const { type } = req.params;
+        const { grace = 3600000, limit = 1000, status = 'completed' } = req.body;
+
+        if (!Object.values(JobType).includes(type as JobType)) {
+          return res.status(400).json({
+            success: false,
+            error: 'Invalid job type',
+          });
+        }
+
+        const cleanedJobs = await jobQueueManager.cleanQueue(type as JobType, grace, limit, status);
+
+        res.json({
+          success: true,
+          data: {
+            cleanedJobs: cleanedJobs.length,
+            jobIds: cleanedJobs,
+          },
+          message: `Cleaned ${cleanedJobs.length} jobs from queue ${type}`,
+        });
+      } catch (error) {
+        logger.error('Error cleaning queue:', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        res.status(500).json({
           success: false,
-          error: 'Invalid job type',
+          error: 'Failed to clean queue',
         });
       }
-
-      const cleanedJobs = await jobQueueManager.cleanQueue(
-        type as JobType,
-        grace,
-        limit,
-        status
-      );
-      
-      res.json({
-        success: true,
-        data: {
-          cleanedJobs: cleanedJobs.length,
-          jobIds: cleanedJobs,
-        },
-        message: `Cleaned ${cleanedJobs.length} jobs from queue ${type}`,
-      });
-    } catch (error) {
-      logger.error('Error cleaning queue:', { error: error instanceof Error ? error.message : String(error) });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to clean queue',
-      });
     }
-  });
+  );
 
   /**
    * Create a batch AI processing job
@@ -451,16 +499,20 @@ export function registerJobRoutes(app: Express): void {
       // Convert term IDs to term objects (simplified for demo)
       const terms = termIds.map((id: string) => ({ id, name: `Term ${id}` }));
 
-      const jobId = await jobQueueManager.addJob(JobType.AI_BATCH_PROCESSING, {
-        terms,
-        sections,
-        batchSize,
-        costLimit,
-        userId: req.user?.id,
-        requestId: req.headers['x-request-id'] as string,
-      }, {
-        priority,
-      });
+      const jobId = await jobQueueManager.addJob(
+        JobType.AI_BATCH_PROCESSING,
+        {
+          terms,
+          sections,
+          batchSize,
+          costLimit,
+          userId: req.user?.id,
+          requestId: req.headers['x-request-id'] as string,
+        },
+        {
+          priority,
+        }
+      );
 
       res.json({
         success: true,
@@ -471,7 +523,9 @@ export function registerJobRoutes(app: Express): void {
         },
       });
     } catch (error) {
-      logger.error('Error creating AI batch job:', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('Error creating AI batch job:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res.status(500).json({
         success: false,
         error: 'Failed to create AI batch processing job',
@@ -482,50 +536,60 @@ export function registerJobRoutes(app: Express): void {
   /**
    * Create a database batch insert job
    */
-  app.post('/api/jobs/db-batch', authMiddleware, requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const {
-        table,
-        records,
-        conflictResolution = 'ignore',
-        batchSize = 1000,
-        priority = JobPriority.NORMAL,
-      } = req.body;
+  app.post(
+    '/api/jobs/db-batch',
+    authMiddleware,
+    requireAdmin,
+    async (req: Request, res: Response) => {
+      try {
+        const {
+          table,
+          records,
+          conflictResolution = 'ignore',
+          batchSize = 1000,
+          priority = JobPriority.NORMAL,
+        } = req.body;
 
-      if (!table || !records || !Array.isArray(records)) {
-        return res.status(400).json({
+        if (!table || !records || !Array.isArray(records)) {
+          return res.status(400).json({
+            success: false,
+            error: 'Table name and records array are required',
+          });
+        }
+
+        const jobId = await jobQueue.addDBBatchJob(
+          {
+            table,
+            records,
+            conflictResolution,
+            batchSize,
+            userId: req.user?.id,
+            requestId: req.headers['x-request-id'] as string,
+          },
+          {
+            priority,
+          }
+        );
+
+        res.json({
+          success: true,
+          data: {
+            jobId,
+            type: JobType.DB_BATCH_INSERT,
+            message: 'Database batch insert job created successfully',
+          },
+        });
+      } catch (error) {
+        logger.error('Error creating DB batch job:', {
+          error: error instanceof Error ? error.message : String(error),
+        });
+        res.status(500).json({
           success: false,
-          error: 'Table name and records array are required',
+          error: 'Failed to create database batch insert job',
         });
       }
-
-      const jobId = await jobQueue.addDBBatchJob({
-        table,
-        records,
-        conflictResolution,
-        batchSize,
-        userId: req.user?.id,
-        requestId: req.headers['x-request-id'] as string,
-      }, {
-        priority,
-      });
-
-      res.json({
-        success: true,
-        data: {
-          jobId,
-          type: JobType.DB_BATCH_INSERT,
-          message: 'Database batch insert job created successfully',
-        },
-      });
-    } catch (error) {
-      logger.error('Error creating DB batch job:', { error: error instanceof Error ? error.message : String(error) });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to create database batch insert job',
-      });
     }
-  });
+  );
 
   logger.info('Job management routes registered');
 }

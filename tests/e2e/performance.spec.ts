@@ -1,21 +1,19 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Performance and Load Testing', () => {
-
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#main-content')).toBeVisible();
   });
 
   test.describe('Page Load Performance', () => {
-
     test('should load homepage within acceptable time limits', async ({ page }) => {
       const startTime = Date.now();
-      
+
       await page.goto('/', { waitUntil: 'networkidle' });
-      
+
       const loadTime = Date.now() - startTime;
-      
+
       // Homepage should load within 3 seconds
       expect(loadTime).toBeLessThan(3000);
       console.log(`Homepage load time: ${loadTime}ms`);
@@ -26,36 +24,39 @@ test.describe('Performance and Load Testing', () => {
           new PerformanceObserver((list) => {
             const entries = list.getEntries();
             const metrics = {};
-            
+
             entries.forEach((entry) => {
               if (entry.entryType === 'navigation') {
-                metrics.domContentLoaded = entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart;
+                metrics.domContentLoaded =
+                  entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart;
                 metrics.loadComplete = entry.loadEventEnd - entry.loadEventStart;
               }
-              
+
               if (entry.entryType === 'largest-contentful-paint') {
                 metrics.lcp = entry.startTime;
               }
-              
+
               if (entry.entryType === 'first-input') {
                 metrics.fid = entry.processingStart - entry.startTime;
               }
-              
+
               if (entry.entryType === 'layout-shift') {
                 metrics.cls = (metrics.cls || 0) + entry.value;
               }
             });
-            
+
             resolve(metrics);
-          }).observe({ entryTypes: ['navigation', 'largest-contentful-paint', 'first-input', 'layout-shift'] });
-          
+          }).observe({
+            entryTypes: ['navigation', 'largest-contentful-paint', 'first-input', 'layout-shift'],
+          });
+
           // Fallback timeout
           setTimeout(() => resolve({}), 5000);
         });
       });
 
       console.log('Performance metrics:', performanceMetrics);
-      
+
       // LCP should be under 2.5s
       if (performanceMetrics.lcp) {
         expect(performanceMetrics.lcp).toBeLessThan(2500);
@@ -65,11 +66,11 @@ test.describe('Performance and Load Testing', () => {
     test('should load term detail pages efficiently', async ({ page }) => {
       // Navigate to a term page
       await page.goto('/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941');
-      
+
       const startTime = Date.now();
       await page.waitForLoadState('networkidle');
       const loadTime = Date.now() - startTime;
-      
+
       // Term pages should load within 2 seconds
       expect(loadTime).toBeLessThan(2000);
       console.log(`Term page load time: ${loadTime}ms`);
@@ -88,39 +89,41 @@ test.describe('Performance and Load Testing', () => {
 
     test('should handle search results efficiently', async ({ page }) => {
       const searchInput = page.locator('[data-testid="search-input"], input[type="text"]').first();
-      
+
       const startTime = Date.now();
       await searchInput.fill('machine learning');
       await searchInput.press('Enter');
-      
+
       // Wait for search results
-      await page.waitForSelector('[data-testid="term-card"], [data-testid="search-result"]', { timeout: 5000 });
-      
+      await page.waitForSelector('[data-testid="term-card"], [data-testid="search-result"]', {
+        timeout: 5000,
+      });
+
       const searchTime = Date.now() - startTime;
-      
+
       // Search should complete within 3 seconds
       expect(searchTime).toBeLessThan(3000);
       console.log(`Search completion time: ${searchTime}ms`);
 
       // Check that results are displayed
-      const searchResults = page.locator('[data-testid="term-card"], [data-testid="search-result"]');
+      const searchResults = page.locator(
+        '[data-testid="term-card"], [data-testid="search-result"]'
+      );
       const resultCount = await searchResults.count();
       expect(resultCount).toBeGreaterThan(0);
-      
+
       console.log(`Search results found: ${resultCount}`);
     });
-
   });
 
   test.describe('Resource Loading and Optimization', () => {
-
     test('should load images efficiently with proper optimization', async ({ page }) => {
       // Track network requests
       const imageRequests = [];
       const jsRequests = [];
       const cssRequests = [];
 
-      page.on('request', request => {
+      page.on('request', (request) => {
         const url = request.url();
         if (url.match(/\.(jpg|jpeg|png|gif|svg|webp)$/)) {
           imageRequests.push(url);
@@ -143,7 +146,9 @@ test.describe('Performance and Load Testing', () => {
       expect(cssRequests.length).toBeLessThan(5);
 
       // Check for modern image formats
-      const modernFormats = imageRequests.filter(url => url.includes('.webp') || url.includes('.avif'));
+      const modernFormats = imageRequests.filter(
+        (url) => url.includes('.webp') || url.includes('.avif')
+      );
       console.log(`Modern image formats: ${modernFormats.length}/${imageRequests.length}`);
     });
 
@@ -154,8 +159,8 @@ test.describe('Performance and Load Testing', () => {
 
       // Second visit to test caching
       const cachedRequests = [];
-      
-      page.on('response', response => {
+
+      page.on('response', (response) => {
         const cacheHeader = response.headers()['cache-control'];
         if (cacheHeader && (cacheHeader.includes('max-age') || cacheHeader.includes('public'))) {
           cachedRequests.push(response.url());
@@ -165,7 +170,7 @@ test.describe('Performance and Load Testing', () => {
       await page.reload({ waitUntil: 'networkidle' });
 
       console.log(`Cacheable resources: ${cachedRequests.length}`);
-      
+
       // Should have some cacheable resources
       expect(cachedRequests.length).toBeGreaterThan(0);
     });
@@ -173,7 +178,7 @@ test.describe('Performance and Load Testing', () => {
     test('should minimize bundle sizes', async ({ page }) => {
       const bundleSizes = [];
 
-      page.on('response', async response => {
+      page.on('response', async (response) => {
         const url = response.url();
         if (url.includes('.js') && !url.includes('node_modules')) {
           try {
@@ -184,7 +189,7 @@ test.describe('Performance and Load Testing', () => {
                 size: parseInt(contentLength),
               });
             }
-          } catch (error) {
+          } catch (_error) {
             // Ignore errors getting content length
           }
         }
@@ -193,11 +198,11 @@ test.describe('Performance and Load Testing', () => {
       await page.goto('/', { waitUntil: 'networkidle' });
 
       // Check bundle sizes
-      const largeBundles = bundleSizes.filter(bundle => bundle.size > 500000); // 500KB
-      
+      const largeBundles = bundleSizes.filter((bundle) => bundle.size > 500000); // 500KB
+
       console.log(`Total bundles: ${bundleSizes.length}`);
       console.log(`Large bundles (>500KB): ${largeBundles.length}`);
-      
+
       if (largeBundles.length > 0) {
         console.log('Large bundles:', largeBundles);
       }
@@ -205,26 +210,26 @@ test.describe('Performance and Load Testing', () => {
       // Should not have too many large bundles
       expect(largeBundles.length).toBeLessThan(3);
     });
-
   });
 
   test.describe('Large Dataset Handling', () => {
-
     test('should handle large search results efficiently', async ({ page }) => {
       // Perform search that should return many results
       const searchInput = page.locator('[data-testid="search-input"], input[type="text"]').first();
-      
+
       await searchInput.fill('machine'); // Broad search
       await searchInput.press('Enter');
-      
+
       await page.waitForTimeout(3000);
 
       // Check if virtualization or pagination is working
-      const searchResults = page.locator('[data-testid="term-card"], [data-testid="search-result"]');
+      const searchResults = page.locator(
+        '[data-testid="term-card"], [data-testid="search-result"]'
+      );
       const resultCount = await searchResults.count();
-      
+
       console.log(`Search results rendered: ${resultCount}`);
-      
+
       // Should render reasonable number of results (not thousands at once)
       expect(resultCount).toBeLessThan(100);
       expect(resultCount).toBeGreaterThan(0);
@@ -234,7 +239,7 @@ test.describe('Performance and Load Testing', () => {
       await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
       await page.waitForTimeout(500);
       const scrollTime = Date.now() - scrollStart;
-      
+
       console.log(`Scroll performance: ${scrollTime}ms`);
       expect(scrollTime).toBeLessThan(1000);
     });
@@ -256,19 +261,20 @@ test.describe('Performance and Load Testing', () => {
 
       let paginationFound = false;
       for (const element of paginationElements) {
-        if (await element.count() > 0) {
+        if ((await element.count()) > 0) {
           paginationFound = true;
-          
-          if (element === paginationElements[2]) { // Load More button
+
+          if (element === paginationElements[2]) {
+            // Load More button
             const loadStart = Date.now();
             await element.click();
             await page.waitForTimeout(2000);
             const loadTime = Date.now() - loadStart;
-            
+
             const newResultCount = await page.locator('[data-testid="term-card"]').count();
             console.log(`Load more time: ${loadTime}ms`);
             console.log(`New results: ${newResultCount}`);
-            
+
             expect(loadTime).toBeLessThan(3000);
             expect(newResultCount).toBeGreaterThan(initialResultCount);
           }
@@ -280,7 +286,7 @@ test.describe('Performance and Load Testing', () => {
       if (!paginationFound) {
         await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
         await page.waitForTimeout(2000);
-        
+
         const newResultCount = await page.locator('[data-testid="term-card"]').count();
         if (newResultCount > initialResultCount) {
           console.log('Infinite scroll working');
@@ -289,11 +295,9 @@ test.describe('Performance and Load Testing', () => {
 
       console.log(`Pagination system found: ${paginationFound}`);
     });
-
   });
 
   test.describe('Memory Usage and Leaks', () => {
-
     test('should not have significant memory leaks during navigation', async ({ page }) => {
       // Get initial memory usage
       const initialMemory = await page.evaluate(() => {
@@ -349,21 +353,21 @@ test.describe('Performance and Load Testing', () => {
 
       if (finalMemory) {
         console.log('Final memory:', finalMemory);
-        
+
         const memoryIncrease = finalMemory.usedJSHeapSize - initialMemory.usedJSHeapSize;
         const memoryIncreasePercent = (memoryIncrease / initialMemory.usedJSHeapSize) * 100;
-        
-        console.log(`Memory increase: ${memoryIncrease} bytes (${memoryIncreasePercent.toFixed(2)}%)`);
-        
+
+        console.log(
+          `Memory increase: ${memoryIncrease} bytes (${memoryIncreasePercent.toFixed(2)}%)`
+        );
+
         // Memory should not increase by more than 50%
         expect(memoryIncreasePercent).toBeLessThan(50);
       }
     });
-
   });
 
   test.describe('Network Performance', () => {
-
     test('should handle slow network conditions gracefully', async ({ page }) => {
       // Simulate slow 3G
       const client = await page.context().newCDPSession(page);
@@ -376,7 +380,7 @@ test.describe('Performance and Load Testing', () => {
 
       const startTime = Date.now();
       await page.goto('/', { timeout: 30000 });
-      
+
       // Should show loading states
       const loadingIndicators = [
         page.locator('[data-testid="loading"]'),
@@ -387,7 +391,7 @@ test.describe('Performance and Load Testing', () => {
 
       let foundLoadingState = false;
       for (const indicator of loadingIndicators) {
-        if (await indicator.count() > 0) {
+        if ((await indicator.count()) > 0) {
           foundLoadingState = true;
           break;
         }
@@ -395,10 +399,10 @@ test.describe('Performance and Load Testing', () => {
 
       await page.waitForSelector('#main-content', { timeout: 30000 });
       const loadTime = Date.now() - startTime;
-      
+
       console.log(`Slow network load time: ${loadTime}ms`);
       console.log(`Loading states shown: ${foundLoadingState}`);
-      
+
       // Should eventually load within 30 seconds
       expect(loadTime).toBeLessThan(30000);
 
@@ -417,14 +421,14 @@ test.describe('Performance and Load Testing', () => {
       await page.waitForTimeout(1000);
 
       // Simulate network failure
-      await page.route('**/*', route => route.abort());
+      await page.route('**/*', (route) => route.abort());
 
       // Try to navigate or perform action
       const searchInput = page.locator('[data-testid="search-input"], input[type="text"]').first();
-      if (await searchInput.count() > 0) {
+      if ((await searchInput.count()) > 0) {
         await searchInput.fill('test search');
         await searchInput.press('Enter');
-        
+
         await page.waitForTimeout(3000);
 
         // Should show error state
@@ -438,7 +442,7 @@ test.describe('Performance and Load Testing', () => {
 
         let foundErrorState = false;
         for (const error of errorStates) {
-          if (await error.count() > 0) {
+          if ((await error.count()) > 0) {
             foundErrorState = true;
             break;
           }
@@ -450,21 +454,19 @@ test.describe('Performance and Load Testing', () => {
       // Re-enable network
       await page.unroute('**/*');
     });
-
   });
 
   test.describe('Rendering Performance', () => {
-
     test('should render complex term pages efficiently', async ({ page }) => {
       await page.goto('/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941');
-      
+
       // Measure rendering performance
       const renderingMetrics = await page.evaluate(() => {
         return new Promise((resolve) => {
           const observer = new PerformanceObserver((list) => {
             const entries = list.getEntries();
             const paintMetrics = {};
-            
+
             entries.forEach((entry) => {
               if (entry.entryType === 'paint') {
                 paintMetrics[entry.name] = entry.startTime;
@@ -473,12 +475,12 @@ test.describe('Performance and Load Testing', () => {
                 paintMetrics[entry.name] = entry.duration;
               }
             });
-            
+
             resolve(paintMetrics);
           });
-          
+
           observer.observe({ entryTypes: ['paint', 'measure'] });
-          
+
           setTimeout(() => resolve({}), 3000);
         });
       });
@@ -489,7 +491,7 @@ test.describe('Performance and Load Testing', () => {
       const layoutShifts = await page.evaluate(() => {
         return new Promise((resolve) => {
           let cumulativeLayoutShift = 0;
-          
+
           const observer = new PerformanceObserver((list) => {
             for (const entry of list.getEntries()) {
               if (entry.entryType === 'layout-shift' && !entry.hadRecentInput) {
@@ -497,9 +499,9 @@ test.describe('Performance and Load Testing', () => {
               }
             }
           });
-          
+
           observer.observe({ entryTypes: ['layout-shift'] });
-          
+
           setTimeout(() => {
             observer.disconnect();
             resolve(cumulativeLayoutShift);
@@ -508,39 +510,43 @@ test.describe('Performance and Load Testing', () => {
       });
 
       console.log(`Cumulative Layout Shift: ${layoutShifts}`);
-      
+
       // CLS should be less than 0.1
       expect(layoutShifts).toBeLessThan(0.1);
     });
-
   });
 
   test.describe('Concurrent User Simulation', () => {
-
     test('should handle multiple simultaneous operations', async ({ page }) => {
       // Simulate multiple concurrent operations
       const operations = [
         // Search operation
         async () => {
-          const searchInput = page.locator('[data-testid="search-input"], input[type="text"]').first();
-          if (await searchInput.count() > 0) {
+          const searchInput = page
+            .locator('[data-testid="search-input"], input[type="text"]')
+            .first();
+          if ((await searchInput.count()) > 0) {
             await searchInput.fill('neural networks');
             await searchInput.press('Enter');
           }
         },
-        
+
         // Navigation operation
         async () => {
-          const categoryLink = page.locator('[data-testid="category-card"], a[href*="/category/"]').first();
-          if (await categoryLink.count() > 0) {
+          const categoryLink = page
+            .locator('[data-testid="category-card"], a[href*="/category/"]')
+            .first();
+          if ((await categoryLink.count()) > 0) {
             await categoryLink.click();
           }
         },
-        
+
         // User interaction
         async () => {
-          const favoriteButton = page.locator('[data-testid="favorite-button"], button[aria-label*="favorite"]').first();
-          if (await favoriteButton.count() > 0) {
+          const favoriteButton = page
+            .locator('[data-testid="favorite-button"], button[aria-label*="favorite"]')
+            .first();
+          if ((await favoriteButton.count()) > 0) {
             await favoriteButton.click();
           }
         },
@@ -548,18 +554,16 @@ test.describe('Performance and Load Testing', () => {
 
       // Execute operations concurrently
       const startTime = Date.now();
-      await Promise.all(operations.map(op => op().catch(console.error)));
+      await Promise.all(operations.map((op) => op().catch(console.error)));
       const executionTime = Date.now() - startTime;
 
       console.log(`Concurrent operations completed in: ${executionTime}ms`);
-      
+
       // Should complete within reasonable time
       expect(executionTime).toBeLessThan(5000);
 
       // Application should remain responsive
       await expect(page.locator('#main-content')).toBeVisible();
     });
-
   });
-
 });

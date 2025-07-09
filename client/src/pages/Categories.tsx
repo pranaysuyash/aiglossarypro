@@ -1,26 +1,26 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { Link, useParams } from "wouter";
-import CategoryCard from "@/components/CategoryCard";
-import SubcategoryCard from "@/components/SubcategoryCard";
-import TermCard from "@/components/TermCard";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import PageBreadcrumb from "@/components/ui/page-breadcrumb";
-import { ICategory, ITerm, ISubcategory } from "@/interfaces/interfaces";
-import { Search, FolderOpen, ChevronRight, Folder } from "lucide-react";
+import { useQuery } from '@tanstack/react-query';
+import { Folder, FolderOpen, Search } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useParams } from 'wouter';
+import CategoryCard from '@/components/CategoryCard';
+import SubcategoryCard from '@/components/SubcategoryCard';
+import TermCard from '@/components/TermCard';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import PageBreadcrumb from '@/components/ui/page-breadcrumb';
+import type { ICategory, ISubcategory, ITerm } from '@/interfaces/interfaces';
 
 export default function Categories() {
   const { id } = useParams();
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState('');
 
   // If we have an ID, this is a specific category page
   const isSpecificCategory = Boolean(id);
 
   // Fetch all categories with increased limit to show more data
   const { data: categories, isLoading: categoriesLoading } = useQuery({
-    queryKey: ["/api/categories?limit=500"],
+    queryKey: ['/api/categories?limit=500'],
     refetchOnWindowFocus: false,
   });
 
@@ -46,7 +46,7 @@ export default function Categories() {
   });
 
   // Filter categories based on search
-  const filteredCategories = (categories as ICategory[] || []).filter((category) => {
+  const filteredCategories = ((categories as ICategory[]) || []).filter((category) => {
     return category.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
@@ -65,14 +65,14 @@ export default function Categories() {
     return (
       <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-4 xs:py-6">
         {/* Breadcrumb */}
-        <PageBreadcrumb 
+        <PageBreadcrumb
           items={[
-            { label: "Home", href: "/" },
-            { label: "Categories", href: "/categories" },
-            { 
-              label: categoryLoading ? "Loading..." : ((categoryDetails as any)?.name || "Category"), 
-              isCurrentPage: true 
-            }
+            { label: 'Home', href: '/' },
+            { label: 'Categories', href: '/categories' },
+            {
+              label: categoryLoading ? 'Loading...' : (categoryDetails as any)?.name || 'Category',
+              isCurrentPage: true,
+            },
           ]}
           className="mb-4"
         />
@@ -80,17 +80,23 @@ export default function Categories() {
         {/* Category Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
-            {categoryLoading ? "Loading Category..." : ((categoryDetails as any)?.name || "Category Not Found")}
+            {categoryLoading
+              ? 'Loading Category...'
+              : (categoryDetails as any)?.name || 'Category Not Found'}
           </h1>
           <p className="text-gray-600 dark:text-gray-400">
-            {categoryLoading ? "Loading description..." : ((categoryDetails as any)?.description || "Explore terms in this category")}
+            {categoryLoading
+              ? 'Loading description...'
+              : (categoryDetails as any)?.description || 'Explore terms in this category'}
           </p>
           <div className="mt-4 flex gap-2">
             <Badge variant="secondary">
-              {termsLoading ? "Loading..." : `${(categoryTerms as ITerm[] || []).length} Terms`}
+              {termsLoading ? 'Loading...' : `${((categoryTerms as ITerm[]) || []).length} Terms`}
             </Badge>
             <Badge variant="outline">
-              {subcategoriesLoading ? "Loading..." : `${((categorySubcategories as any)?.data || []).length} Subcategories`}
+              {subcategoriesLoading
+                ? 'Loading...'
+                : `${((categorySubcategories as any)?.data || []).length} Subcategories`}
             </Badge>
           </div>
         </div>
@@ -99,9 +105,7 @@ export default function Categories() {
         {((categorySubcategories as any)?.data || []).length > 0 && (
           <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-                Subcategories
-              </h2>
+              <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Subcategories</h2>
               <Link href={`/categories/${id}/subcategories`}>
                 <Button variant="outline" size="sm">
                   <Folder className="w-4 h-4 mr-2" />
@@ -109,11 +113,14 @@ export default function Categories() {
                 </Button>
               </Link>
             </div>
-            
+
             {subcategoriesLoading ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
                 {Array.from({ length: 4 }).map((_, i) => (
-                  <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+                  <div
+                    key={i}
+                    className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4"
+                  >
                     <div className="animate-pulse">
                       <div className="flex items-start space-x-3">
                         <div className="w-10 h-10 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
@@ -128,14 +135,16 @@ export default function Categories() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-                {((categorySubcategories as any)?.data || []).slice(0, 8).map((subcategory: ISubcategory) => (
-                  <SubcategoryCard
-                    key={subcategory.id}
-                    subcategory={subcategory}
-                    categoryName={(categoryDetails as any)?.name}
-                    variant="compact"
-                  />
-                ))}
+                {((categorySubcategories as any)?.data || [])
+                  .slice(0, 8)
+                  .map((subcategory: ISubcategory) => (
+                    <SubcategoryCard
+                      key={subcategory.id}
+                      subcategory={subcategory}
+                      categoryName={(categoryDetails as any)?.name}
+                      variant="compact"
+                    />
+                  ))}
               </div>
             )}
           </div>
@@ -143,15 +152,16 @@ export default function Categories() {
 
         {/* Terms Grid */}
         <div className="mb-4">
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">
-            Terms
-          </h2>
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Terms</h2>
         </div>
-        
+
         {termsLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 xs:gap-4 sm:gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+              <div
+                key={i}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6"
+              >
                 <div className="animate-pulse">
                   <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-3"></div>
                   <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
@@ -163,14 +173,10 @@ export default function Categories() {
               </div>
             ))}
           </div>
-        ) : (categoryTerms as ITerm[] || []).length > 0 ? (
+        ) : ((categoryTerms as ITerm[]) || []).length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 xs:gap-4 sm:gap-6">
             {(categoryTerms as ITerm[]).map((term) => (
-              <TermCard
-                key={term.id}
-                term={term}
-                variant="compact"
-              />
+              <TermCard key={term.id} term={term} variant="compact" />
             ))}
           </div>
         ) : (
@@ -183,10 +189,7 @@ export default function Categories() {
               <p className="text-gray-600 dark:text-gray-400 mb-4">
                 This category doesn't have any terms yet.
               </p>
-              <Link 
-                href="/categories"
-                className="text-primary hover:text-primary-dark font-medium"
-              >
+              <Link href="/categories" className="text-primary hover:text-primary-dark font-medium">
                 Browse all categories
               </Link>
             </div>
@@ -200,28 +203,24 @@ export default function Categories() {
     <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-4 xs:py-6">
       {/* Header */}
       <div className="mb-8">
-        <PageBreadcrumb 
+        <PageBreadcrumb
           items={[
-            { label: "Home", href: "/" },
-            { label: "Categories", isCurrentPage: true }
+            { label: 'Home', href: '/' },
+            { label: 'Categories', isCurrentPage: true },
           ]}
           className="mb-4"
         />
-        
+
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-              Browse by Category
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Browse by Category</h1>
             <p className="text-gray-600 dark:text-gray-400 mt-2">
               Explore AI/ML concepts organized by topic areas
             </p>
           </div>
-          
+
           <div className="flex items-center gap-2">
-            <Badge variant="secondary">
-              {filteredCategories.length} Categories
-            </Badge>
+            <Badge variant="secondary">{filteredCategories.length} Categories</Badge>
           </div>
         </div>
       </div>
@@ -237,12 +236,10 @@ export default function Categories() {
             className="pl-10"
           />
         </div>
-        
+
         {searchTerm && (
           <div className="mt-2">
-            <Badge variant="secondary">
-              Search: "{searchTerm}"
-            </Badge>
+            <Badge variant="secondary">Search: "{searchTerm}"</Badge>
           </div>
         )}
       </div>
@@ -251,7 +248,10 @@ export default function Categories() {
       {categoriesLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 xs:gap-4 sm:gap-6">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <div
+              key={i}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6"
+            >
               <div className="animate-pulse">
                 <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-3"></div>
                 <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
@@ -266,10 +266,7 @@ export default function Categories() {
       ) : sortedCategories.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 xs:gap-4 sm:gap-6">
           {sortedCategories.map((category) => (
-            <CategoryCard
-              key={category.id}
-              category={category}
-            />
+            <CategoryCard key={category.id} category={category} />
           ))}
         </div>
       ) : (
@@ -280,14 +277,13 @@ export default function Categories() {
               No categories found
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
-              {searchTerm 
-                ? "Try adjusting your search term"
-                : "No categories are available at the moment"
-              }
+              {searchTerm
+                ? 'Try adjusting your search term'
+                : 'No categories are available at the moment'}
             </p>
             {searchTerm && (
               <button
-                onClick={() => setSearchTerm("")}
+                onClick={() => setSearchTerm('')}
                 className="text-primary hover:text-primary-dark font-medium"
               >
                 Clear search
@@ -303,36 +299,26 @@ export default function Categories() {
           <h3 className="text-lg font-semibold mb-2">Statistics</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
             <div>
-              <div className="text-2xl font-bold text-primary">
-                {sortedCategories.length}
-              </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Total Categories
-              </div>
+              <div className="text-2xl font-bold text-primary">{sortedCategories.length}</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total Categories</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-primary">
                 {sortedCategories.reduce((sum, cat) => sum + (cat.termCount || 0), 0)}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Total Terms
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Total Terms</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-primary">
-                {sortedCategories.filter(cat => (cat.termCount || 0) > 0).length}
+                {sortedCategories.filter((cat) => (cat.termCount || 0) > 0).length}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Active Categories
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Active Categories</div>
             </div>
             <div>
               <div className="text-2xl font-bold text-primary">
                 {sortedCategories.reduce((sum, cat) => sum + (cat.subcategories?.length || 0), 0)}
               </div>
-              <div className="text-sm text-gray-600 dark:text-gray-400">
-                Subcategories
-              </div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Subcategories</div>
             </div>
           </div>
         </div>

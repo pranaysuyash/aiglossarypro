@@ -1,7 +1,7 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { ErrorBoundary } from './ErrorBoundary';
+import React from 'react';
 import { Button } from '@/components/ui/button';
+import { ErrorBoundary } from './ErrorBoundary';
 
 // Component that simulates an error for testing
 const ErrorThrowingComponent = ({ shouldThrow = false }: { shouldThrow?: boolean }) => {
@@ -11,19 +11,21 @@ const ErrorThrowingComponent = ({ shouldThrow = false }: { shouldThrow?: boolean
     return (
       <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-center">
         <h2 className="text-xl font-bold text-red-800 mb-2">Error Boundary Activated</h2>
-        <p className="text-red-600 mb-4">This shows how the error boundary would look when an error occurs.</p>
+        <p className="text-red-600 mb-4">
+          This shows how the error boundary would look when an error occurs.
+        </p>
         <p className="text-sm text-gray-600">(Simulated for visual testing)</p>
       </div>
     );
   }
-  
+
   return <div>This component works fine!</div>;
 };
 
 // Component with interactive error triggering
 const InteractiveErrorComponent = () => {
   const [shouldError, setShouldError] = React.useState(false);
-  
+
   if (shouldError) {
     // Always show mock error state for consistency
     return (
@@ -34,14 +36,11 @@ const InteractiveErrorComponent = () => {
       </div>
     );
   }
-  
+
   return (
     <div className="space-y-4">
       <p>Click the button below to trigger an error:</p>
-      <Button 
-        variant="destructive" 
-        onClick={() => setShouldError(true)}
-      >
+      <Button variant="destructive" onClick={() => setShouldError(true)}>
         Trigger Error
       </Button>
     </div>
@@ -55,7 +54,8 @@ const meta: Meta<typeof ErrorBoundary> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A React error boundary component that catches JavaScript errors anywhere in the child component tree and displays a fallback UI.',
+        component:
+          'A React error boundary component that catches JavaScript errors anywhere in the child component tree and displays a fallback UI.',
       },
     },
   },
@@ -149,16 +149,18 @@ export const NestedErrorBoundaries: Story = {
   render: () => (
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Nested Error Boundaries</h3>
-      
+
       <ErrorBoundary>
         <div className="p-4 border rounded">
           <h4 className="font-medium mb-2">Outer Boundary - Working</h4>
           <p>This content is protected by the outer error boundary.</p>
-          
+
           <ErrorBoundary
             fallback={
               <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded">
-                <p className="text-yellow-800">Inner component failed, but outer boundary still works!</p>
+                <p className="text-yellow-800">
+                  Inner component failed, but outer boundary still works!
+                </p>
               </div>
             }
           >
@@ -174,7 +176,7 @@ export const NestedErrorBoundaries: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Nested ErrorBoundaries showing how inner errors don\'t affect outer boundaries.',
+        story: "Nested ErrorBoundaries showing how inner errors don't affect outer boundaries.",
       },
     },
   },
@@ -188,12 +190,12 @@ export const MultipleComponents: Story = {
           <h4 className="font-medium mb-2">Component 1 - Working</h4>
           <ErrorThrowingComponent shouldThrow={false} />
         </div>
-        
+
         <div className="p-4 border rounded">
           <h4 className="font-medium mb-2">Component 2 - Working</h4>
           <ErrorThrowingComponent shouldThrow={false} />
         </div>
-        
+
         <div className="p-4 border rounded">
           <h4 className="font-medium mb-2">Component 3 - Error</h4>
           <ErrorThrowingComponent shouldThrow={true} />
@@ -204,7 +206,8 @@ export const MultipleComponents: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Multiple components where one throws an error - the entire boundary shows error state.',
+        story:
+          'Multiple components where one throws an error - the entire boundary shows error state.',
       },
     },
   },
@@ -214,7 +217,7 @@ export const AsyncError: Story = {
   render: () => {
     const AsyncErrorComponent = () => {
       const [shouldError, setShouldError] = React.useState(false);
-      
+
       if (shouldError) {
         return (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-center">
@@ -224,18 +227,15 @@ export const AsyncError: Story = {
           </div>
         );
       }
-      
+
       return (
         <div className="space-y-4">
           <p>This component can trigger both sync and async errors:</p>
           <div className="space-x-2">
-            <Button 
-              variant="destructive" 
-              onClick={() => setShouldError(true)}
-            >
+            <Button variant="destructive" onClick={() => setShouldError(true)}>
               Trigger Sync Error
             </Button>
-            <Button 
+            <Button
               variant="outline"
               onClick={() => {
                 // This async error won't be caught by ErrorBoundary
@@ -248,13 +248,13 @@ export const AsyncError: Story = {
             </Button>
           </div>
           <p className="text-sm text-gray-600">
-            Note: React ErrorBoundaries only catch synchronous errors in render methods, 
-            lifecycle methods, and constructors.
+            Note: React ErrorBoundaries only catch synchronous errors in render methods, lifecycle
+            methods, and constructors.
           </p>
         </div>
       );
     };
-    
+
     return (
       <ErrorBoundary>
         <AsyncErrorComponent />
@@ -278,9 +278,9 @@ export const ErrorInEventHandler: Story = {
         console.error('Error in event handler - not caught by ErrorBoundary');
         alert('Event handler error occurred (check console)');
       };
-      
+
       const [showError, setShowError] = React.useState(false);
-      
+
       if (showError) {
         return (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-center">
@@ -290,21 +290,15 @@ export const ErrorInEventHandler: Story = {
           </div>
         );
       }
-      
+
       return (
         <div className="space-y-4">
           <p>Testing error handling in different scenarios:</p>
           <div className="space-x-2">
-            <Button 
-              variant="outline"
-              onClick={handleClick}
-            >
+            <Button variant="outline" onClick={handleClick}>
               Event Handler Error (Not Caught)
             </Button>
-            <Button 
-              variant="destructive"
-              onClick={() => setShowError(true)}
-            >
+            <Button variant="destructive" onClick={() => setShowError(true)}>
               Render Error (Caught)
             </Button>
           </div>
@@ -314,7 +308,7 @@ export const ErrorInEventHandler: Story = {
         </div>
       );
     };
-    
+
     return (
       <ErrorBoundary>
         <EventHandlerErrorComponent />
@@ -324,7 +318,7 @@ export const ErrorInEventHandler: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Shows that ErrorBoundaries don\'t catch errors in event handlers.',
+        story: "Shows that ErrorBoundaries don't catch errors in event handlers.",
       },
     },
   },
@@ -335,14 +329,14 @@ export const ErrorRecovery: Story = {
     const RecoverableErrorComponent = () => {
       const [errorCount, setErrorCount] = React.useState(0);
       const [shouldError, setShouldError] = React.useState(false);
-      
+
       React.useEffect(() => {
         if (shouldError) {
-          setErrorCount(prev => prev + 1);
+          setErrorCount((prev) => prev + 1);
           setShouldError(false);
         }
       }, [shouldError]);
-      
+
       if (shouldError) {
         return (
           <div className="p-4 bg-red-50 border border-red-200 rounded-lg text-center">
@@ -352,31 +346,27 @@ export const ErrorRecovery: Story = {
           </div>
         );
       }
-      
+
       return (
         <div className="space-y-4">
           <p>Error count: {errorCount}</p>
           <p>This component has recovered from {errorCount} error(s).</p>
-          <Button 
-            variant="destructive"
-            onClick={() => setShouldError(true)}
-          >
+          <Button variant="destructive" onClick={() => setShouldError(true)}>
             Trigger Another Error
           </Button>
         </div>
       );
     };
-    
+
     return (
       <ErrorBoundary
         fallback={
           <div className="p-6 bg-red-50 border border-red-200 rounded-lg text-center">
             <h2 className="text-xl font-bold text-red-800 mb-2">Component Error</h2>
-            <p className="text-red-600 mb-4">The component encountered an error but can be recovered.</p>
-            <Button 
-              variant="outline"
-              onClick={() => window.location.reload()}
-            >
+            <p className="text-red-600 mb-4">
+              The component encountered an error but can be recovered.
+            </p>
+            <Button variant="outline" onClick={() => window.location.reload()}>
               Reset Application
             </Button>
           </div>

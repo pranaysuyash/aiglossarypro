@@ -3,29 +3,30 @@
  * Touch-optimized navigation with gesture support and mobile-first design
  */
 
-import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'wouter';
-import { 
-  Home, 
-  Search, 
-  BookOpen, 
-  Star, 
-  User, 
-  Menu, 
-  X, 
-  TrendingUp, 
-  Shuffle,
-  Code,
-  MapPin,
-  Settings,
+import {
+  BookOpen,
   ChevronRight,
-  Compass
+  Code,
+  Compass,
+  Home,
+  MapPin,
+  Menu,
+  Search,
+  Settings,
+  Shuffle,
+  Star,
+  TrendingUp,
+  User,
+  X,
 } from 'lucide-react';
-import { useGestureNavigation } from '../../hooks/useGestureNavigation';
+import type React from 'react';
+import { useEffect, useState } from 'react';
+import { Link, useLocation } from 'wouter';
 import { useAuth } from '../../hooks/useAuth';
+import { useGestureNavigation } from '../../hooks/useGestureNavigation';
+import { cn } from '../../lib/utils';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
-import { cn } from '../../lib/utils';
 
 interface MobileNavItem {
   label: string;
@@ -42,36 +43,36 @@ const primaryNavItems: MobileNavItem[] = [
     path: '/',
     icon: Home,
     color: 'text-blue-600',
-    description: 'Dashboard and overview'
+    description: 'Dashboard and overview',
   },
   {
     label: 'Search',
     path: '/search',
     icon: Search,
     color: 'text-green-600',
-    description: 'Find AI/ML terms'
+    description: 'Find AI/ML terms',
   },
   {
     label: 'Categories',
     path: '/categories',
     icon: BookOpen,
     color: 'text-purple-600',
-    description: 'Browse by topic'
+    description: 'Browse by topic',
   },
   {
     label: 'Trending',
     path: '/trending',
     icon: TrendingUp,
     color: 'text-red-600',
-    description: 'Popular content'
+    description: 'Popular content',
   },
   {
     label: 'Surprise Me',
     path: '/surprise-me',
     icon: Shuffle,
     color: 'text-orange-600',
-    description: 'Random discovery'
-  }
+    description: 'Random discovery',
+  },
 ];
 
 const secondaryNavItems: MobileNavItem[] = [
@@ -80,29 +81,29 @@ const secondaryNavItems: MobileNavItem[] = [
     path: '/learning-paths',
     icon: MapPin,
     color: 'text-indigo-600',
-    description: 'Structured learning'
+    description: 'Structured learning',
   },
   {
     label: 'Code Examples',
     path: '/code-examples',
     icon: Code,
     color: 'text-teal-600',
-    description: 'Implementation guides'
+    description: 'Implementation guides',
   },
   {
     label: 'Discovery',
     path: '/discovery',
     icon: Compass,
     color: 'text-pink-600',
-    description: 'Explore relationships'
+    description: 'Explore relationships',
   },
   {
     label: 'Favorites',
     path: '/favorites',
     icon: Star,
     color: 'text-yellow-600',
-    description: 'Saved content'
-  }
+    description: 'Saved content',
+  },
 ];
 
 interface MobileNavigationProps {
@@ -110,37 +111,32 @@ interface MobileNavigationProps {
   showGestureHints?: boolean;
 }
 
-const MobileNavigation: React.FC<MobileNavigationProps> = ({ 
+const MobileNavigation: React.FC<MobileNavigationProps> = ({
   className,
-  showGestureHints = true 
+  showGestureHints = true,
 }) => {
   const [location] = useLocation();
   const { user } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showQuickActions, setShowQuickActions] = useState(false);
-  
-  const {
-    isGestureActive,
-    currentGesture,
-    getGestureStats,
-    triggerHaptic
-  } = useGestureNavigation({
+
+  const { isGestureActive, currentGesture, getGestureStats, triggerHaptic } = useGestureNavigation({
     enableHaptic: true,
-    enableSwipeNavigation: true
+    enableSwipeNavigation: true,
   });
 
   // Close menu when location changes
   useEffect(() => {
     setIsMenuOpen(false);
-  }, [location]);
+  }, []);
 
   // Determine if we're on mobile
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   // Get current page info
   const getCurrentPageInfo = () => {
-    const currentItem = [...primaryNavItems, ...secondaryNavItems].find(item => 
-      item.path === location || (item.path !== '/' && location.startsWith(item.path))
+    const currentItem = [...primaryNavItems, ...secondaryNavItems].find(
+      (item) => item.path === location || (item.path !== '/' && location.startsWith(item.path))
     );
     return currentItem || primaryNavItems[0];
   };
@@ -152,12 +148,12 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
     triggerHaptic('light');
   };
 
-  const handleNavClick = (path: string) => {
+  const handleNavClick = (_path: string) => {
     triggerHaptic('medium');
     setIsMenuOpen(false);
   };
 
-  const handleQuickActionToggle = () => {
+  const _handleQuickActionToggle = () => {
     setShowQuickActions(!showQuickActions);
     triggerHaptic('light');
   };
@@ -167,27 +163,28 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
     <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-40 safe-area-pb">
       <div className="flex items-center justify-around px-2 py-2">
         {primaryNavItems.slice(0, 4).map((item) => {
-          const isActive = location === item.path || (item.path !== '/' && location.startsWith(item.path));
+          const isActive =
+            location === item.path || (item.path !== '/' && location.startsWith(item.path));
           const Icon = item.icon;
-          
+
           return (
             <Link key={item.path} href={item.path}>
               <button
                 onClick={() => handleNavClick(item.path)}
                 className={cn(
-                  "flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 min-w-[60px]",
-                  isActive 
-                    ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 scale-105" 
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700"
+                  'flex flex-col items-center justify-center p-2 rounded-lg transition-all duration-200 min-w-[60px]',
+                  isActive
+                    ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 scale-105'
+                    : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700'
                 )}
               >
-                <Icon className={cn("w-5 h-5 mb-1", isActive && "scale-110")} />
+                <Icon className={cn('w-5 h-5 mb-1', isActive && 'scale-110')} />
                 <span className="text-xs font-medium">{item.label}</span>
               </button>
             </Link>
           );
         })}
-        
+
         {/* Menu button */}
         <button
           onClick={handleMenuToggle}
@@ -202,31 +199,31 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
 
   // Full Screen Menu
   const FullScreenMenu = () => (
-    <div className={cn(
-      "fixed inset-0 z-50 bg-white dark:bg-gray-900 transition-transform duration-300 ease-in-out",
-      isMenuOpen ? "transform translate-x-0" : "transform translate-x-full"
-    )}>
+    <div
+      className={cn(
+        'fixed inset-0 z-50 bg-white dark:bg-gray-900 transition-transform duration-300 ease-in-out',
+        isMenuOpen ? 'transform translate-x-0' : 'transform translate-x-full'
+      )}
+    >
       {/* Header */}
       <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
         <div className="flex items-center space-x-3">
-          <div className={cn("p-2 rounded-lg", currentPage.color?.replace('text-', 'bg-').replace('-600', '-100'))}>
-            <currentPage.icon className={cn("w-6 h-6", currentPage.color)} />
+          <div
+            className={cn(
+              'p-2 rounded-lg',
+              currentPage.color?.replace('text-', 'bg-').replace('-600', '-100')
+            )}
+          >
+            <currentPage.icon className={cn('w-6 h-6', currentPage.color)} />
           </div>
           <div>
             <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
               {currentPage.label}
             </h2>
-            <p className="text-sm text-gray-500 dark:text-gray-400">
-              {currentPage.description}
-            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">{currentPage.description}</p>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleMenuToggle}
-          className="p-2"
-        >
+        <Button variant="ghost" size="sm" onClick={handleMenuToggle} className="p-2">
           <X className="w-6 h-6" />
         </Button>
       </div>
@@ -240,7 +237,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
           </h3>
           <div className="grid grid-cols-2 gap-3">
             <Link href="/surprise-me">
-              <button 
+              <button
                 onClick={() => handleNavClick('/surprise-me')}
                 className="flex items-center space-x-3 p-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 w-full text-left"
               >
@@ -249,7 +246,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
               </button>
             </Link>
             <Link href="/trending">
-              <button 
+              <button
                 onClick={() => handleNavClick('/trending')}
                 className="flex items-center space-x-3 p-3 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 w-full text-left"
               >
@@ -267,25 +264,28 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
           </h3>
           <div className="space-y-2">
             {primaryNavItems.map((item) => {
-              const isActive = location === item.path || (item.path !== '/' && location.startsWith(item.path));
+              const isActive =
+                location === item.path || (item.path !== '/' && location.startsWith(item.path));
               const Icon = item.icon;
-              
+
               return (
                 <Link key={item.path} href={item.path}>
                   <button
                     onClick={() => handleNavClick(item.path)}
                     className={cn(
-                      "flex items-center justify-between w-full p-3 rounded-lg transition-all duration-200",
-                      isActive 
-                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" 
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      'flex items-center justify-between w-full p-3 rounded-lg transition-all duration-200',
+                      isActive
+                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                     )}
                   >
                     <div className="flex items-center space-x-3">
                       <Icon className="w-5 h-5" />
                       <div className="text-left">
                         <div className="font-medium">{item.label}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{item.description}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {item.description}
+                        </div>
                       </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -303,25 +303,28 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
           </h3>
           <div className="space-y-2">
             {secondaryNavItems.map((item) => {
-              const isActive = location === item.path || (item.path !== '/' && location.startsWith(item.path));
+              const isActive =
+                location === item.path || (item.path !== '/' && location.startsWith(item.path));
               const Icon = item.icon;
-              
+
               return (
                 <Link key={item.path} href={item.path}>
                   <button
                     onClick={() => handleNavClick(item.path)}
                     className={cn(
-                      "flex items-center justify-between w-full p-3 rounded-lg transition-all duration-200",
-                      isActive 
-                        ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400" 
-                        : "text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800"
+                      'flex items-center justify-between w-full p-3 rounded-lg transition-all duration-200',
+                      isActive
+                        ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+                        : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800'
                     )}
                   >
                     <div className="flex items-center space-x-3">
                       <Icon className="w-5 h-5" />
                       <div className="text-left">
                         <div className="font-medium">{item.label}</div>
-                        <div className="text-sm text-gray-500 dark:text-gray-400">{item.description}</div>
+                        <div className="text-sm text-gray-500 dark:text-gray-400">
+                          {item.description}
+                        </div>
                       </div>
                     </div>
                     <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -348,7 +351,9 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                     <User className="w-5 h-5" />
                     <div className="text-left">
                       <div className="font-medium">Dashboard</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">Your learning progress</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        Your learning progress
+                      </div>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -363,7 +368,9 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
                     <Settings className="w-5 h-5" />
                     <div className="text-left">
                       <div className="font-medium">Settings</div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">Preferences and account</div>
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
+                        Preferences and account
+                      </div>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-gray-400" />
@@ -402,7 +409,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
     <div className={className}>
       <BottomNavBar />
       <FullScreenMenu />
-      
+
       {/* Gesture feedback overlay */}
       {isGestureActive && currentGesture && (
         <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-60 pointer-events-none">

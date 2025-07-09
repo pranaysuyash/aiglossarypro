@@ -1,10 +1,10 @@
-import { useState, useRef, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Copy, Play, Download, Eye, EyeOff } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Copy, Download, Eye, EyeOff, Play } from 'lucide-react';
 import { useTheme } from 'next-themes';
+import { useEffect, useRef, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
 
 // Lazy load syntax highlighter components
 let syntaxHighlighterLoaded = false;
@@ -33,13 +33,13 @@ export default function CodeBlock({
   highlightLines = [],
   executable = false,
   className = '',
-  maxHeight = '400px'
+  maxHeight = '400px',
 }: CodeBlockProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [output, setOutput] = useState<string>('');
   const [isExecuting, setIsExecuting] = useState(false);
   const [syntaxHighlighterReady, setSyntaxHighlighterReady] = useState(false);
-  const codeRef = useRef<HTMLDivElement>(null);
+  const _codeRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { theme } = useTheme();
 
@@ -53,9 +53,9 @@ export default function CodeBlock({
           const [highlighterModule, darkStyle, lightStyle] = await Promise.all([
             import('react-syntax-highlighter'),
             import('react-syntax-highlighter/dist/esm/styles/prism/one-dark'),
-            import('react-syntax-highlighter/dist/esm/styles/prism/one-light')
+            import('react-syntax-highlighter/dist/esm/styles/prism/one-light'),
           ]);
-          
+
           SyntaxHighlighter = highlighterModule.Prism;
           oneDark = darkStyle.default;
           oneLight = lightStyle.default;
@@ -69,7 +69,7 @@ export default function CodeBlock({
 
     loadSyntaxHighlighter();
   }, []);
-  
+
   // Language display mapping
   const languageLabels: Record<string, string> = {
     javascript: 'JavaScript',
@@ -112,7 +112,7 @@ export default function CodeBlock({
       margin: '0',
       borderRadius: '0.5rem',
       backgroundColor: isDark ? '#1e1e1e' : '#fafafa',
-    }
+    },
   };
 
   const handleCopyCode = async () => {
@@ -122,7 +122,7 @@ export default function CodeBlock({
         title: 'Code copied',
         description: 'Code has been copied to clipboard',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
         title: 'Failed to copy',
         description: 'Could not copy code to clipboard',
@@ -134,7 +134,7 @@ export default function CodeBlock({
   const handleDownloadCode = () => {
     const extension = getFileExtension(language);
     const filename = `${title?.toLowerCase().replace(/\s+/g, '_') || 'code'}.${extension}`;
-    
+
     const blob = new Blob([code], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -148,7 +148,7 @@ export default function CodeBlock({
 
   const handleExecuteCode = async () => {
     if (!executable) return;
-    
+
     setIsExecuting(true);
     setOutput('');
 
@@ -156,15 +156,15 @@ export default function CodeBlock({
       // This is a mock execution for demonstration
       // In a real implementation, you'd send this to a code execution service
       setOutput('// Code execution would happen here\n// This is a demonstration of the UI');
-      
+
       // Simulate execution time
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       toast({
         title: 'Code executed',
         description: 'Check the output below',
       });
-    } catch (error) {
+    } catch (_error) {
       setOutput('Error: Code execution failed');
       toast({
         title: 'Execution failed',
@@ -221,29 +221,14 @@ export default function CodeBlock({
           </div>
           <div className="flex items-center space-x-1">
             {needsExpansion && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleExpanded}
-                className="h-8 w-8"
-              >
+              <Button variant="ghost" size="icon" onClick={toggleExpanded} className="h-8 w-8">
                 {isExpanded ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleCopyCode}
-              className="h-8 w-8"
-            >
+            <Button variant="ghost" size="icon" onClick={handleCopyCode} className="h-8 w-8">
               <Copy className="h-4 w-4" />
             </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleDownloadCode}
-              className="h-8 w-8"
-            >
+            <Button variant="ghost" size="icon" onClick={handleDownloadCode} className="h-8 w-8">
               <Download className="h-4 w-4" />
             </Button>
             {executable && (
@@ -264,16 +249,14 @@ export default function CodeBlock({
           </div>
         </div>
         {description && (
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
-            {description}
-          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">{description}</p>
         )}
       </CardHeader>
       <CardContent className="p-0">
-        <div 
+        <div
           className="overflow-auto"
-          style={{ 
-            maxHeight: needsExpansion && !isExpanded ? '300px' : maxHeight 
+          style={{
+            maxHeight: needsExpansion && !isExpanded ? '300px' : maxHeight,
           }}
         >
           {syntaxHighlighterReady && SyntaxHighlighter ? (
@@ -282,21 +265,21 @@ export default function CodeBlock({
               style={customStyle}
               showLineNumbers={showLineNumbers}
               wrapLines={true}
-              lineProps={(lineNumber) => ({
-                style: highlightLines.includes(lineNumber) 
-                  ? { 
+              lineProps={(lineNumber: number) => ({
+                style: highlightLines.includes(lineNumber)
+                  ? {
                       backgroundColor: isDark ? 'rgba(255, 255, 0, 0.1)' : 'rgba(255, 255, 0, 0.2)',
                       display: 'block',
-                      width: '100%'
+                      width: '100%',
                     }
-                  : {}
+                  : {},
               })}
             >
               {code}
             </SyntaxHighlighter>
           ) : (
             // Fallback plain text while syntax highlighter loads
-            <pre 
+            <pre
               className="p-4 bg-gray-50 dark:bg-gray-900 rounded overflow-x-auto text-sm font-mono"
               style={{ lineHeight: '1.5' }}
             >
@@ -304,15 +287,10 @@ export default function CodeBlock({
             </pre>
           )}
         </div>
-        
+
         {needsExpansion && !isExpanded && (
           <div className="bg-gradient-to-t from-white dark:from-gray-900 to-transparent h-8 -mt-8 relative z-10 flex items-end justify-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleExpanded}
-              className="text-xs"
-            >
+            <Button variant="ghost" size="sm" onClick={toggleExpanded} className="text-xs">
               Show more ({code.split('\n').length} lines)
             </Button>
           </div>
@@ -322,9 +300,7 @@ export default function CodeBlock({
         {executable && output && (
           <div className="border-t">
             <div className="p-4">
-              <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">
-                Output:
-              </h4>
+              <h4 className="text-sm font-medium mb-2 text-gray-700 dark:text-gray-300">Output:</h4>
               <pre className="bg-gray-100 dark:bg-gray-800 p-3 rounded text-sm overflow-x-auto">
                 {output}
               </pre>

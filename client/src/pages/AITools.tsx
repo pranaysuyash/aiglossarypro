@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Sparkles, Lightbulb, Brain, Search, Clock } from 'lucide-react';
-import { Button } from "@/components/ui/button";
-import Sidebar from "@/components/Sidebar";
-import { AIDefinitionGenerator } from "@/components/AIDefinitionGenerator";
-import { AITermSuggestions } from "@/components/AITermSuggestions";
-import { AISemanticSearch } from "@/components/AISemanticSearch";
-import { useAuth } from "@/hooks/useAuth";
+import { Brain, Clock, Lightbulb, Search, Sparkles } from 'lucide-react';
+import { useState } from 'react';
 import { Link } from 'wouter';
+import { AIDefinitionGenerator } from '@/components/AIDefinitionGenerator';
+import { AISemanticSearch } from '@/components/AISemanticSearch';
+import { AITermSuggestions } from '@/components/AITermSuggestions';
+import Sidebar from '@/components/Sidebar';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useAuth } from '@/hooks/useAuth';
 
 export default function AIToolsPage() {
   const { isAuthenticated, user } = useAuth();
@@ -36,9 +36,7 @@ export default function AIToolsPage() {
                   Please sign in to access AI-powered tools and features.
                 </p>
                 <Link href="/auth">
-                  <a className="text-primary-600 hover:text-primary-700 font-medium">
-                    Sign In
-                  </a>
+                  <a className="text-primary-600 hover:text-primary-700 font-medium">Sign In</a>
                 </Link>
               </CardContent>
             </Card>
@@ -63,7 +61,7 @@ export default function AIToolsPage() {
     <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex flex-col md:flex-row gap-6">
         <Sidebar />
-        
+
         <main className="flex-1">
           <div className="mb-6">
             <div className="flex items-center gap-3 mb-2">
@@ -74,7 +72,8 @@ export default function AIToolsPage() {
               </Badge>
             </div>
             <p className="text-gray-600">
-              Enhance your glossary with intelligent AI-powered features for content creation and management.
+              Enhance your glossary with intelligent AI-powered features for content creation and
+              management.
             </p>
           </div>
 
@@ -106,11 +105,12 @@ export default function AIToolsPage() {
                     AI Semantic Search
                   </CardTitle>
                   <CardDescription>
-                    Search for terms using natural language and semantic understanding, not just keyword matching.
+                    Search for terms using natural language and semantic understanding, not just
+                    keyword matching.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <AISemanticSearch 
+                  <AISemanticSearch
                     placeholder="Search with AI understanding (e.g., 'algorithms that learn from data')"
                     onResultClick={(termId) => {
                       // Navigate to term
@@ -132,7 +132,9 @@ export default function AIToolsPage() {
                       </div>
                       <div>
                         <h4 className="font-medium">Semantic Understanding</h4>
-                        <p className="text-gray-600">AI analyzes the meaning and context of your query, not just keywords.</p>
+                        <p className="text-gray-600">
+                          AI analyzes the meaning and context of your query, not just keywords.
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-3">
@@ -141,7 +143,9 @@ export default function AIToolsPage() {
                       </div>
                       <div>
                         <h4 className="font-medium">Relevance Scoring</h4>
-                        <p className="text-gray-600">Results are ranked by conceptual relevance and relationships.</p>
+                        <p className="text-gray-600">
+                          Results are ranked by conceptual relevance and relationships.
+                        </p>
                       </div>
                     </div>
                     <div className="flex gap-3">
@@ -150,7 +154,9 @@ export default function AIToolsPage() {
                       </div>
                       <div>
                         <h4 className="font-medium">Explanation</h4>
-                        <p className="text-gray-600">AI explains why each result is relevant to your query.</p>
+                        <p className="text-gray-600">
+                          AI explains why each result is relevant to your query.
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -164,7 +170,7 @@ export default function AIToolsPage() {
                 initialTerm={selectedSuggestion?.term || ''}
                 initialCategory={selectedSuggestion?.category || ''}
               />
-              
+
               {selectedSuggestion && (
                 <Card className="border-blue-200 bg-blue-50">
                   <CardHeader>
@@ -178,9 +184,7 @@ export default function AIToolsPage() {
             </TabsContent>
 
             <TabsContent value="suggestions" className="space-y-6">
-              <AITermSuggestions
-                onSuggestionSelect={handleSuggestionSelect}
-              />
+              <AITermSuggestions onSuggestionSelect={handleSuggestionSelect} />
 
               <Card>
                 <CardHeader>
@@ -189,8 +193,8 @@ export default function AIToolsPage() {
                 <CardContent>
                   <div className="space-y-4 text-sm">
                     <p className="text-gray-600">
-                      Our AI analyzes your existing glossary to identify important terms that might be missing. 
-                      Suggestions are based on:
+                      Our AI analyzes your existing glossary to identify important terms that might
+                      be missing. Suggestions are based on:
                     </p>
                     <ul className="space-y-2 text-gray-600">
                       <li className="flex items-start gap-2">
@@ -236,10 +240,11 @@ export default function AIToolsPage() {
                           <h3 className="font-medium">Batch Categorization</h3>
                         </div>
                         <p className="text-sm text-gray-600 mb-4">
-                          Automatically categorize multiple terms using AI analysis. Select up to 50 terms for AI-powered categorization.
+                          Automatically categorize multiple terms using AI analysis. Select up to 50
+                          terms for AI-powered categorization.
                         </p>
                         <div className="space-y-3">
-                          <Button 
+                          <Button
                             onClick={() => {
                               // Navigate to admin panel with batch categorization
                               window.location.href = '/admin?tab=batch-categorize';
@@ -250,13 +255,13 @@ export default function AIToolsPage() {
                             Start Batch Categorization
                           </Button>
                           <div className="text-xs text-gray-500">
-                            • Analyzes term definitions and suggests appropriate categories<br/>
-                            • Processes up to 50 terms at once<br/>
-                            • Uses GPT-4o-mini for intelligent categorization
+                            • Analyzes term definitions and suggests appropriate categories
+                            <br />• Processes up to 50 terms at once
+                            <br />• Uses GPT-4o-mini for intelligent categorization
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Definition Enhancement */}
                       <div className="p-6 border border-green-200 rounded-lg">
                         <div className="flex items-center gap-2 mb-3">
@@ -264,10 +269,11 @@ export default function AIToolsPage() {
                           <h3 className="font-medium">Definition Enhancement</h3>
                         </div>
                         <p className="text-sm text-gray-600 mb-4">
-                          Improve multiple term definitions simultaneously with AI assistance. Choose enhancement type and target audience.
+                          Improve multiple term definitions simultaneously with AI assistance.
+                          Choose enhancement type and target audience.
                         </p>
                         <div className="space-y-3">
-                          <Button 
+                          <Button
                             onClick={() => {
                               // Navigate to admin panel with definition enhancement
                               window.location.href = '/admin?tab=batch-enhance';
@@ -278,9 +284,9 @@ export default function AIToolsPage() {
                             Start Definition Enhancement
                           </Button>
                           <div className="text-xs text-gray-500">
-                            • Improves clarity and technical depth<br/>
-                            • Processes up to 20 terms at once<br/>
-                            • Customizable enhancement options
+                            • Improves clarity and technical depth
+                            <br />• Processes up to 20 terms at once
+                            <br />• Customizable enhancement options
                           </div>
                         </div>
                       </div>
@@ -292,7 +298,8 @@ export default function AIToolsPage() {
                           <h4 className="font-medium text-blue-800">Processing Info</h4>
                         </div>
                         <p className="text-sm text-blue-700">
-                          Batch operations are processed immediately. Large batches may take several minutes due to AI API rate limits.
+                          Batch operations are processed immediately. Large batches may take several
+                          minutes due to AI API rate limits.
                         </p>
                       </div>
                     </div>

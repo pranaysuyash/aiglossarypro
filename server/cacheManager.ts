@@ -1,7 +1,7 @@
-import fs from 'fs';
-import path from 'path';
-import crypto from 'crypto';
-import { promisify } from 'util';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { promisify } from 'node:util';
 
 const readFile = promisify(fs.readFile);
 const writeFile = promisify(fs.writeFile);
@@ -38,7 +38,7 @@ export class CacheManager {
   private async ensureCacheDirectory(): Promise<void> {
     try {
       await mkdir(this.cacheDir, { recursive: true });
-    } catch (error) {
+    } catch (_error) {
       // Directory might already exist
     }
   }
@@ -59,14 +59,16 @@ export class CacheManager {
   /**
    * Get file metadata for change detection
    */
-  private async getFileMetadata(filePath: string): Promise<{ hash: string; size: number; lastModified: number }> {
+  private async getFileMetadata(
+    filePath: string
+  ): Promise<{ hash: string; size: number; lastModified: number }> {
     const stats = await stat(filePath);
     const hash = await this.generateFileHash(filePath);
-    
+
     return {
       hash,
       size: stats.size,
-      lastModified: stats.mtime.getTime()
+      lastModified: stats.mtime.getTime(),
     };
   }
 
@@ -85,7 +87,7 @@ export class CacheManager {
     const cacheKey = this.getCacheKey(filePath);
     return {
       metadataPath: path.join(this.cacheDir, `${cacheKey}_metadata.json`),
-      dataPath: path.join(this.cacheDir, `${cacheKey}_data.json`)
+      dataPath: path.join(this.cacheDir, `${cacheKey}_data.json`),
     };
   }
 
@@ -95,7 +97,7 @@ export class CacheManager {
   async isCacheValid(filePath: string): Promise<boolean> {
     try {
       const { metadataPath, dataPath } = this.getCachePaths(filePath);
-      
+
       // Check if cache files exist
       if (!fs.existsSync(metadataPath) || !fs.existsSync(dataPath)) {
         console.log('📦 Cache files not found');
@@ -122,19 +124,25 @@ export class CacheManager {
       try {
         const dataContent = await readFile(dataPath, 'utf8');
         const cachedData = JSON.parse(dataContent);
-        
+
         // Verify the cached data actually contains terms
-        if (!cachedData.terms || !Array.isArray(cachedData.terms) || cachedData.terms.length === 0) {
+        if (
+          !cachedData.terms ||
+          !Array.isArray(cachedData.terms) ||
+          cachedData.terms.length === 0
+        ) {
           console.log('📦 Cache is invalid: data file contains no terms');
           return false;
         }
-        
+
         // Verify term count matches metadata
         if (cachedData.terms.length !== metadata.termCount) {
-          console.log(`📦 Cache is invalid: term count mismatch (metadata: ${metadata.termCount}, data: ${cachedData.terms.length})`);
+          console.log(
+            `📦 Cache is invalid: term count mismatch (metadata: ${metadata.termCount}, data: ${cachedData.terms.length})`
+          );
           return false;
         }
-      } catch (dataError) {
+      } catch (_dataError) {
         console.log('📦 Cache is invalid: corrupted data file');
         return false;
       }
@@ -143,8 +151,9 @@ export class CacheManager {
       const currentMetadata = await this.getFileMetadata(filePath);
 
       // Compare file hash and modification time
-      const isValid = metadata.fileHash === currentMetadata.hash && 
-                     metadata.lastModified === currentMetadata.lastModified;
+      const isValid =
+        metadata.fileHash === currentMetadata.hash &&
+        metadata.lastModified === currentMetadata.lastModified;
 
       if (isValid) {
         console.log(`✅ Cache is valid and up-to-date with ${metadata.termCount} terms`);
@@ -168,14 +177,14 @@ export class CacheManager {
   async loadFromCache(filePath: string): Promise<any | null> {
     try {
       const { dataPath } = this.getCachePaths(filePath);
-      
+
       if (!fs.existsSync(dataPath)) {
         return null;
       }
 
       const dataContent = await readFile(dataPath, 'utf8');
       const data = JSON.parse(dataContent);
-      
+
       console.log('📦 Successfully loaded data from cache');
       return data;
     } catch (error) {
@@ -190,7 +199,7 @@ export class CacheManager {
   async saveToCache(filePath: string, data: any, processingTime: number): Promise<void> {
     try {
       await this.ensureCacheDirectory();
-      
+
       const { metadataPath, dataPath } = this.getCachePaths(filePath);
       const fileMetadata = await this.getFileMetadata(filePath);
 
@@ -205,7 +214,7 @@ export class CacheManager {
         termCount: data.terms?.length || 0,
         categoryCount: data.categories?.length || 0,
         subcategoryCount: data.subcategories?.length || 0,
-        cacheVersion: this.cacheVersion
+        cacheVersion: this.cacheVersion,
       };
 
       // Save metadata and data
@@ -213,7 +222,9 @@ export class CacheManager {
       await writeFile(dataPath, JSON.stringify(data, null, 2));
 
       console.log('✅ Data saved to cache successfully');
-      console.log(`📊 Cached: ${metadata.termCount} terms, ${metadata.categoryCount} categories, ${metadata.subcategoryCount} subcategories`);
+      console.log(
+        `📊 Cached: ${metadata.termCount} terms, ${metadata.categoryCount} categories, ${metadata.subcategoryCount} subcategories`
+      );
     } catch (error) {
       console.error('Error saving to cache:', error);
       throw error;
@@ -226,7 +237,7 @@ export class CacheManager {
   async getCacheInfo(filePath: string): Promise<CacheMetadata | null> {
     try {
       const { metadataPath } = this.getCachePaths(filePath);
-      
+
       if (!fs.existsSync(metadataPath)) {
         return null;
       }
@@ -245,15 +256,15 @@ export class CacheManager {
   async clearCache(filePath: string): Promise<void> {
     try {
       const { metadataPath, dataPath } = this.getCachePaths(filePath);
-      
+
       if (fs.existsSync(metadataPath)) {
         fs.unlinkSync(metadataPath);
       }
-      
+
       if (fs.existsSync(dataPath)) {
         fs.unlinkSync(dataPath);
       }
-      
+
       console.log('🗑️ Cache cleared successfully');
     } catch (error) {
       console.error('Error clearing cache:', error);
@@ -287,10 +298,10 @@ export class CacheManager {
       }
 
       const files = fs.readdirSync(this.cacheDir);
-      const metadataFiles = files.filter(f => f.endsWith('_metadata.json'));
-      
+      const metadataFiles = files.filter((f) => f.endsWith('_metadata.json'));
+
       const cacheEntries: CacheMetadata[] = [];
-      
+
       for (const file of metadataFiles) {
         try {
           const content = await readFile(path.join(this.cacheDir, file), 'utf8');
@@ -300,7 +311,7 @@ export class CacheManager {
           console.warn(`Error reading cache metadata ${file}:`, error);
         }
       }
-      
+
       return cacheEntries;
     } catch (error) {
       console.error('Error listing cache:', error);
@@ -314,7 +325,7 @@ export class CacheManager {
   async forceInvalidateEmptyCache(filePath: string): Promise<boolean> {
     try {
       const cacheInfo = await this.getCacheInfo(filePath);
-      
+
       if (!cacheInfo) {
         console.log('📦 No cache found to invalidate');
         return false;
@@ -332,13 +343,17 @@ export class CacheManager {
       try {
         const dataContent = await readFile(dataPath, 'utf8');
         const cachedData = JSON.parse(dataContent);
-        
-        if (!cachedData.terms || !Array.isArray(cachedData.terms) || cachedData.terms.length === 0) {
+
+        if (
+          !cachedData.terms ||
+          !Array.isArray(cachedData.terms) ||
+          cachedData.terms.length === 0
+        ) {
           console.log('🗑️ Force invalidating corrupted cache (no terms in data)');
           await this.clearCache(filePath);
           return true;
         }
-      } catch (dataError) {
+      } catch (_dataError) {
         console.log('🗑️ Force invalidating corrupted cache (invalid data file)');
         await this.clearCache(filePath);
         return true;
@@ -353,4 +368,4 @@ export class CacheManager {
   }
 }
 
-export const cacheManager = new CacheManager(); 
+export const cacheManager = new CacheManager();

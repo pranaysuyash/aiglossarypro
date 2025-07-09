@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { AIAdminDashboard } from './AIAdminDashboard';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AIAdminDashboard } from './AIAdminDashboard';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,7 +25,8 @@ const meta: Meta<typeof AIAdminDashboard> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Comprehensive admin dashboard for managing AI features, content generation, user feedback, and system analytics.',
+        component:
+          'Comprehensive admin dashboard for managing AI features, content generation, user feedback, and system analytics.',
       },
     },
   },
@@ -94,7 +95,8 @@ const mockPendingReviews = [
   {
     id: '1',
     termName: 'Quantum Machine Learning',
-    generatedDefinition: 'Quantum machine learning combines quantum computing principles with machine learning algorithms...',
+    generatedDefinition:
+      'Quantum machine learning combines quantum computing principles with machine learning algorithms...',
     confidence: 0.87,
     flaggedIssues: ['needs_examples', 'technical_accuracy'],
     generatedAt: '2024-01-15T10:30:00Z',
@@ -102,7 +104,8 @@ const mockPendingReviews = [
   {
     id: '2',
     termName: 'Federated Learning',
-    generatedDefinition: 'A machine learning technique that trains algorithms across decentralized edge devices...',
+    generatedDefinition:
+      'A machine learning technique that trains algorithms across decentralized edge devices...',
     confidence: 0.92,
     flaggedIssues: ['privacy_concerns'],
     generatedAt: '2024-01-15T09:20:00Z',
@@ -181,7 +184,8 @@ export const ContentModerationQueue: Story = {
       {
         id: '3',
         termName: 'Explainable AI',
-        generatedDefinition: 'AI systems designed to provide clear explanations for their decisions and processes...',
+        generatedDefinition:
+          'AI systems designed to provide clear explanations for their decisions and processes...',
         confidence: 0.94,
         flaggedIssues: ['bias_check', 'completeness'],
         generatedAt: '2024-01-15T08:45:00Z',
@@ -212,7 +216,8 @@ export const ContentModerationQueue: Story = {
     onReviewTerm: (termId: string) => console.log('Review term:', termId),
     onApproveTerm: (termId: string) => console.log('Approve term:', termId),
     onRejectTerm: (termId: string) => console.log('Reject term:', termId),
-    onModerationAction: (itemId: string, action: string) => console.log('Moderation:', itemId, action),
+    onModerationAction: (itemId: string, action: string) =>
+      console.log('Moderation:', itemId, action),
   },
 };
 

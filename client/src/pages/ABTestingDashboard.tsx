@@ -1,40 +1,37 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import {
-  LineChart,
-  Line,
-  BarChart,
-  Bar,
-  PieChart,
-  Pie,
-  Cell,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer
-} from 'recharts';
 import {
   Activity,
-  BarChart3,
-  Clock,
-  Eye,
-  MousePointer,
-  TrendingUp,
-  Users,
   AlertCircle,
   CheckCircle,
-  PlayCircle,
+  Clock,
+  Download,
+  Eye,
   PauseCircle,
-  Settings,
-  Download
+  PlayCircle,
+  TrendingUp,
 } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Legend,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+
 // Define types locally until schema is properly exported
 interface ABTestMetricsType {
   id: string;
@@ -82,24 +79,24 @@ const VARIANT_COLORS = {
   code: '#10B981',
   geometric: '#F59E0B',
   default: '#6B7280',
-  fallback: '#EF4444'
+  fallback: '#EF4444',
 };
 
 export function ABTestingDashboard() {
   const [activeTest, setActiveTest] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedTimeRange, setSelectedTimeRange] = useState('7d');
+  const [_selectedTimeRange, _setSelectedTimeRange] = useState('7d');
   const [autoRefresh, setAutoRefresh] = useState(true);
 
   // Fetch active test data
   useEffect(() => {
     fetchActiveTest();
-    
+
     if (autoRefresh) {
       const interval = setInterval(fetchActiveTest, 30000); // Refresh every 30 seconds
       return () => clearInterval(interval);
     }
-  }, [autoRefresh]);
+  }, [autoRefresh, fetchActiveTest]);
 
   const fetchActiveTest = async () => {
     try {
@@ -119,19 +116,21 @@ export function ABTestingDashboard() {
   const getFunnelData = () => {
     if (!activeTest) return [];
 
-    return activeTest.variants.map(variant => {
-      const metrics = activeTest.metrics.find(m => m.variant === variant);
-      if (!metrics) return null;
+    return activeTest.variants
+      .map((variant) => {
+        const metrics = activeTest.metrics.find((m) => m.variant === variant);
+        if (!metrics) return null;
 
-      return {
-        variant,
-        'Page Views': metrics.pageViews,
-        'See What\'s Inside': metrics.seeWhatsInsideClicks,
-        'CTA Clicks': metrics.ctaClicks,
-        'Trial Signups': metrics.trialSignups,
-        'Newsletter': metrics.newsletterSignups
-      };
-    }).filter(Boolean);
+        return {
+          variant,
+          'Page Views': metrics.pageViews,
+          "See What's Inside": metrics.seeWhatsInsideClicks,
+          'CTA Clicks': metrics.ctaClicks,
+          'Trial Signups': metrics.trialSignups,
+          Newsletter: metrics.newsletterSignups,
+        };
+      })
+      .filter(Boolean);
   };
 
   // Calculate time series data
@@ -145,7 +144,7 @@ export function ABTestingDashboard() {
       { date: 'Thu', neural: 58, code: 48, geometric: 52, default: 40 },
       { date: 'Fri', neural: 62, code: 52, geometric: 48, default: 45 },
       { date: 'Sat', neural: 55, code: 50, geometric: 53, default: 48 },
-      { date: 'Sun', neural: 60, code: 55, geometric: 58, default: 50 }
+      { date: 'Sun', neural: 60, code: 55, geometric: 58, default: 50 },
     ];
   };
 
@@ -154,8 +153,8 @@ export function ABTestingDashboard() {
     if (!activeTest) return [];
 
     const deviceTotals: Record<string, number> = {};
-    
-    activeTest.metrics.forEach(metric => {
+
+    activeTest.metrics.forEach((metric) => {
       const breakdown = metric.deviceBreakdown as Record<string, number>;
       Object.entries(breakdown).forEach(([device, count]) => {
         deviceTotals[device] = (deviceTotals[device] || 0) + count;
@@ -164,7 +163,7 @@ export function ABTestingDashboard() {
 
     return Object.entries(deviceTotals).map(([device, count]) => ({
       name: device.charAt(0).toUpperCase() + device.slice(1),
-      value: count
+      value: count,
     }));
   };
 
@@ -182,9 +181,7 @@ export function ABTestingDashboard() {
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>No Active A/B Test</AlertTitle>
-          <AlertDescription>
-            There is no active A/B test running at the moment.
-          </AlertDescription>
+          <AlertDescription>There is no active A/B test running at the moment.</AlertDescription>
         </Alert>
       </div>
     );
@@ -199,11 +196,12 @@ export function ABTestingDashboard() {
           <p className="text-gray-600 mt-2">Landing Page Background Test</p>
         </div>
         <div className="flex gap-4">
-          <Button
-            variant="outline"
-            onClick={() => setAutoRefresh(!autoRefresh)}
-          >
-            {autoRefresh ? <PauseCircle className="h-4 w-4 mr-2" /> : <PlayCircle className="h-4 w-4 mr-2" />}
+          <Button variant="outline" onClick={() => setAutoRefresh(!autoRefresh)}>
+            {autoRefresh ? (
+              <PauseCircle className="h-4 w-4 mr-2" />
+            ) : (
+              <PlayCircle className="h-4 w-4 mr-2" />
+            )}
             {autoRefresh ? 'Pause' : 'Resume'} Auto-refresh
           </Button>
           <Button variant="outline">
@@ -230,21 +228,22 @@ export function ABTestingDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {activeTest.metrics.map(metric => (
+            {activeTest.metrics.map((metric) => (
               <div key={metric.variant} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-medium capitalize">{metric.variant}</span>
-                  <div 
+                  <div
                     className="w-4 h-4 rounded"
-                    style={{ backgroundColor: VARIANT_COLORS[metric.variant as keyof typeof VARIANT_COLORS] }}
+                    style={{
+                      backgroundColor:
+                        VARIANT_COLORS[metric.variant as keyof typeof VARIANT_COLORS],
+                    }}
                   />
                 </div>
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Conversion Rate</span>
-                    <span className="font-medium">
-                      {metric.conversionRate?.toFixed(2)}%
-                    </span>
+                    <span className="font-medium">{metric.conversionRate?.toFixed(2)}%</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-gray-600">Sessions</span>
@@ -261,8 +260,8 @@ export function ABTestingDashboard() {
               <CheckCircle className="h-4 w-4" />
               <AlertTitle>Statistical Winner Found!</AlertTitle>
               <AlertDescription>
-                {activeTest.winner.variant} variant shows {activeTest.winner.improvement.toFixed(1)}% improvement
-                with {activeTest.winner.confidence}% confidence.
+                {activeTest.winner.variant} variant shows {activeTest.winner.improvement.toFixed(1)}
+                % improvement with {activeTest.winner.confidence}% confidence.
               </AlertDescription>
             </Alert>
           )}
@@ -310,9 +309,7 @@ export function ABTestingDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Conversion Rate Over Time</CardTitle>
-              <CardDescription>
-                Daily conversion rates by variant
-              </CardDescription>
+              <CardDescription>Daily conversion rates by variant</CardDescription>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={400}>
@@ -322,7 +319,7 @@ export function ABTestingDashboard() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  {activeTest.variants.map(variant => (
+                  {activeTest.variants.map((variant) => (
                     <Line
                       key={variant}
                       type="monotone"
@@ -342,9 +339,7 @@ export function ABTestingDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Traffic by Device Type</CardTitle>
-              <CardDescription>
-                Breakdown of visitors by device
-              </CardDescription>
+              <CardDescription>Breakdown of visitors by device</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -360,8 +355,15 @@ export function ABTestingDashboard() {
                       fill="#8884d8"
                       dataKey="value"
                     >
-                      {getDeviceData().map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={Object.values(VARIANT_COLORS)[index % Object.values(VARIANT_COLORS).length]} />
+                      {getDeviceData().map((_entry, index) => (
+                        <Cell
+                          key={`cell-${index}`}
+                          fill={
+                            Object.values(VARIANT_COLORS)[
+                              index % Object.values(VARIANT_COLORS).length
+                            ]
+                          }
+                        />
                       ))}
                     </Pie>
                     <Tooltip />
@@ -369,14 +371,15 @@ export function ABTestingDashboard() {
                 </ResponsiveContainer>
 
                 <div className="space-y-4">
-                  {activeTest.metrics.map(metric => (
+                  {activeTest.metrics.map((metric) => (
                     <div key={metric.variant} className="space-y-2">
                       <h4 className="font-medium capitalize">{metric.variant} Variant</h4>
                       <div className="space-y-1">
                         <div className="flex justify-between text-sm">
                           <span className="text-gray-600">Avg Session Duration</span>
                           <span className="font-medium">
-                            {Math.floor((metric.avgSessionDuration || 0) / 60)}m {Math.floor((metric.avgSessionDuration || 0) % 60)}s
+                            {Math.floor((metric.avgSessionDuration || 0) / 60)}m{' '}
+                            {Math.floor((metric.avgSessionDuration || 0) % 60)}s
                           </span>
                         </div>
                         <div className="flex justify-between text-sm">
@@ -411,7 +414,11 @@ export function ABTestingDashboard() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-600">P-value:</span>
-                      <Badge variant={activeTest.significance.cta.isSignificant ? 'default' : 'secondary'}>
+                      <Badge
+                        variant={
+                          activeTest.significance.cta.isSignificant ? 'default' : 'secondary'
+                        }
+                      >
                         {activeTest.significance.cta.pValue.toFixed(4)}
                       </Badge>
                       {activeTest.significance.cta.isSignificant && (
@@ -420,10 +427,7 @@ export function ABTestingDashboard() {
                         </Badge>
                       )}
                     </div>
-                    <Progress 
-                      value={activeTest.significance.cta.confidenceLevel} 
-                      className="h-2"
-                    />
+                    <Progress value={activeTest.significance.cta.confidenceLevel} className="h-2" />
                     <span className="text-sm text-gray-600">
                       {activeTest.significance.cta.confidenceLevel.toFixed(1)}% Confidence Level
                     </span>
@@ -438,7 +442,11 @@ export function ABTestingDashboard() {
                   <div className="space-y-2">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-600">P-value:</span>
-                      <Badge variant={activeTest.significance.trial.isSignificant ? 'default' : 'secondary'}>
+                      <Badge
+                        variant={
+                          activeTest.significance.trial.isSignificant ? 'default' : 'secondary'
+                        }
+                      >
                         {activeTest.significance.trial.pValue.toFixed(4)}
                       </Badge>
                       {activeTest.significance.trial.isSignificant && (
@@ -447,8 +455,8 @@ export function ABTestingDashboard() {
                         </Badge>
                       )}
                     </div>
-                    <Progress 
-                      value={activeTest.significance.trial.confidenceLevel} 
+                    <Progress
+                      value={activeTest.significance.trial.confidenceLevel}
                       className="h-2"
                     />
                     <span className="text-sm text-gray-600">
@@ -463,7 +471,8 @@ export function ABTestingDashboard() {
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Sample Size Status</AlertTitle>
                 <AlertDescription>
-                  Current total sessions: {activeTest.metrics.reduce((sum, m) => sum + m.totalSessions, 0)}
+                  Current total sessions:{' '}
+                  {activeTest.metrics.reduce((sum, m) => sum + m.totalSessions, 0)}
                   <br />
                   Minimum recommended sample size: 1,000 per variant for 95% confidence
                 </AlertDescription>
@@ -484,9 +493,7 @@ export function ABTestingDashboard() {
             <div className="text-2xl font-bold">
               {activeTest.metrics.reduce((sum, m) => sum + m.pageViews, 0).toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Across all variants
-            </p>
+            <p className="text-xs text-muted-foreground">Across all variants</p>
           </CardContent>
         </Card>
 
@@ -499,9 +506,7 @@ export function ABTestingDashboard() {
             <div className="text-2xl font-bold">
               {activeTest.metrics.reduce((sum, m) => sum + m.trialSignups, 0).toLocaleString()}
             </div>
-            <p className="text-xs text-muted-foreground">
-              Trial signups
-            </p>
+            <p className="text-xs text-muted-foreground">Trial signups</p>
           </CardContent>
         </Card>
 
@@ -512,11 +517,13 @@ export function ABTestingDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {(activeTest.metrics.reduce((sum, m) => sum + (m.conversionRate || 0), 0) / activeTest.metrics.length).toFixed(2)}%
+              {(
+                activeTest.metrics.reduce((sum, m) => sum + (m.conversionRate || 0), 0) /
+                activeTest.metrics.length
+              ).toFixed(2)}
+              %
             </div>
-            <p className="text-xs text-muted-foreground">
-              Across all variants
-            </p>
+            <p className="text-xs text-muted-foreground">Across all variants</p>
           </CardContent>
         </Card>
 
@@ -527,11 +534,12 @@ export function ABTestingDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {Math.floor((Date.now() - new Date(activeTest.startDate).getTime()) / (1000 * 60 * 60 * 24))} days
+              {Math.floor(
+                (Date.now() - new Date(activeTest.startDate).getTime()) / (1000 * 60 * 60 * 24)
+              )}{' '}
+              days
             </div>
-            <p className="text-xs text-muted-foreground">
-              Since test started
-            </p>
+            <p className="text-xs text-muted-foreground">Since test started</p>
           </CardContent>
         </Card>
       </div>

@@ -1,14 +1,12 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Purchase and Premium Features', () => {
-
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#main-content')).toBeVisible();
   });
 
   test.describe('Pricing Page and Plans', () => {
-
     test('should display pricing plans correctly', async ({ page }) => {
       // Navigate to pricing page
       const pricingNavigation = [
@@ -19,7 +17,7 @@ test.describe('Purchase and Premium Features', () => {
 
       let pricingAccess = false;
       for (const nav of pricingNavigation) {
-        if (await nav.count() > 0) {
+        if ((await nav.count()) > 0) {
           await nav.click();
           pricingAccess = true;
           break;
@@ -56,12 +54,14 @@ test.describe('Purchase and Premium Features', () => {
       const planFeatures = [
         page.locator('text=/\\$\\d+|Free/'), // Price indicators
         page.locator('[data-testid="plan-features"], .plan-features'),
-        page.locator('button:has-text("Choose"), button:has-text("Select"), button:has-text("Get Started")'),
+        page.locator(
+          'button:has-text("Choose"), button:has-text("Select"), button:has-text("Get Started")'
+        ),
       ];
 
       let foundPlanFeatures = 0;
       for (const feature of planFeatures) {
-        if (await feature.count() > 0) {
+        if ((await feature.count()) > 0) {
           foundPlanFeatures++;
         }
       }
@@ -85,34 +85,32 @@ test.describe('Purchase and Premium Features', () => {
 
       let foundToggle = false;
       for (const toggle of billingToggle) {
-        if (await toggle.count() > 0) {
+        if ((await toggle.count()) > 0) {
           foundToggle = true;
-          
+
           // Get initial prices
           const initialPrices = await page.locator('text=/\\$\\d+/').allTextContents();
-          
+
           // Toggle billing frequency
           await toggle.click();
           await page.waitForTimeout(1000);
-          
+
           // Get new prices
           const newPrices = await page.locator('text=/\\$\\d+/').allTextContents();
-          
+
           // Prices should change (unless they're the same for monthly/yearly)
           const pricesChanged = JSON.stringify(initialPrices) !== JSON.stringify(newPrices);
           console.log(`Billing toggle working: ${pricesChanged || 'prices may be same'}`);
-          
+
           break;
         }
       }
 
       console.log(`Billing frequency toggle found: ${foundToggle}`);
     });
-
   });
 
   test.describe('Purchase Flow', () => {
-
     test('should initiate purchase process', async ({ page }) => {
       await page.goto('/pricing');
       await page.waitForTimeout(2000);
@@ -127,7 +125,7 @@ test.describe('Purchase and Premium Features', () => {
       let purchaseInitiated = false;
       for (const buttonGroup of purchaseButtons) {
         const buttons = await buttonGroup.all();
-        
+
         if (buttons.length > 0) {
           // Click on the first non-free plan button
           for (const button of buttons) {
@@ -138,7 +136,7 @@ test.describe('Purchase and Premium Features', () => {
               break;
             }
           }
-          
+
           if (purchaseInitiated) break;
         }
       }
@@ -157,7 +155,7 @@ test.describe('Purchase and Premium Features', () => {
 
         let foundCheckout = false;
         for (const indicator of checkoutIndicators) {
-          if (await indicator.count() > 0) {
+          if ((await indicator.count()) > 0) {
             foundCheckout = true;
             break;
           }
@@ -165,7 +163,7 @@ test.describe('Purchase and Premium Features', () => {
 
         // OR might redirect to login first
         const loginRedirect = page.url().includes('/login') || page.url().includes('/signin');
-        
+
         expect(foundCheckout || loginRedirect).toBe(true);
         console.log(`Purchase flow initiated: checkout=${foundCheckout}, login=${loginRedirect}`);
       }
@@ -176,8 +174,10 @@ test.describe('Purchase and Premium Features', () => {
       await page.waitForTimeout(2000);
 
       // Try to purchase without being logged in
-      const purchaseButton = page.locator('button:has-text("Get Started"), button:has-text("Choose")').first();
-      if (await purchaseButton.count() > 0) {
+      const purchaseButton = page
+        .locator('button:has-text("Get Started"), button:has-text("Choose")')
+        .first();
+      if ((await purchaseButton.count()) > 0) {
         await purchaseButton.click();
         await page.waitForTimeout(2000);
 
@@ -185,28 +185,29 @@ test.describe('Purchase and Premium Features', () => {
         const authRequired = [
           page.url().includes('/login'),
           page.url().includes('/signin'),
-          await page.locator('[data-testid="login-modal"], [data-testid="auth-modal"]').count() > 0,
-          await page.locator('text=Please log in, text=Sign in required').count() > 0,
+          (await page.locator('[data-testid="login-modal"], [data-testid="auth-modal"]').count()) >
+            0,
+          (await page.locator('text=Please log in, text=Sign in required').count()) > 0,
         ];
 
         const needsAuth = authRequired.some(Boolean);
         console.log(`Authentication required for purchase: ${needsAuth}`);
-        
+
         if (needsAuth) {
           // If redirected to login, fill credentials
           if (page.url().includes('/login') || page.url().includes('/signin')) {
             const emailInput = page.locator('input[type="email"]');
             const passwordInput = page.locator('input[type="password"]');
-            
-            if (await emailInput.count() > 0 && await passwordInput.count() > 0) {
+
+            if ((await emailInput.count()) > 0 && (await passwordInput.count()) > 0) {
               await emailInput.fill('test@example.com');
               await passwordInput.fill('testpassword123');
-              
+
               const loginButton = page.locator('button[type="submit"], button:has-text("Login")');
-              if (await loginButton.count() > 0) {
+              if ((await loginButton.count()) > 0) {
                 await loginButton.click();
                 await page.waitForTimeout(2000);
-                
+
                 console.log('Login attempted during purchase flow');
               }
             }
@@ -214,21 +215,19 @@ test.describe('Purchase and Premium Features', () => {
         }
       }
     });
-
   });
 
   test.describe('Payment Processing', () => {
-
     test('should display payment form elements', async ({ page }) => {
       // This test checks for payment form structure
       // Note: We won't actually process payments in tests
-      
+
       await page.goto('/pricing');
       await page.waitForTimeout(2000);
 
       // Try to reach checkout page
       const purchaseButton = page.locator('button:has-text("Get Started")').first();
-      if (await purchaseButton.count() > 0) {
+      if ((await purchaseButton.count()) > 0) {
         await purchaseButton.click();
         await page.waitForTimeout(3000);
 
@@ -243,7 +242,7 @@ test.describe('Purchase and Premium Features', () => {
 
         let foundPaymentForm = false;
         for (const element of paymentElements) {
-          if (await element.count() > 0) {
+          if ((await element.count()) > 0) {
             foundPaymentForm = true;
             console.log(`Payment form element found: ${element}`);
             break;
@@ -260,7 +259,7 @@ test.describe('Purchase and Premium Features', () => {
 
         let foundPaymentMethods = 0;
         for (const method of paymentMethods) {
-          if (await method.count() > 0) {
+          if ((await method.count()) > 0) {
             foundPaymentMethods++;
           }
         }
@@ -277,10 +276,10 @@ test.describe('Purchase and Premium Features', () => {
 
       // Look for payment validation
       const paymentForm = page.locator('[data-testid="payment-form"], form');
-      if (await paymentForm.count() > 0) {
+      if ((await paymentForm.count()) > 0) {
         // Try to submit empty form
         const submitButton = paymentForm.locator('button[type="submit"], button:has-text("Pay")');
-        if (await submitButton.count() > 0) {
+        if ((await submitButton.count()) > 0) {
           await submitButton.click();
           await page.waitForTimeout(1000);
 
@@ -293,7 +292,7 @@ test.describe('Purchase and Premium Features', () => {
 
           let foundValidation = false;
           for (const error of validationErrors) {
-            if (await error.count() > 0) {
+            if ((await error.count()) > 0) {
               foundValidation = true;
               break;
             }
@@ -303,11 +302,9 @@ test.describe('Purchase and Premium Features', () => {
         }
       }
     });
-
   });
 
   test.describe('Subscription Management', () => {
-
     test('should display subscription status for authenticated users', async ({ page }) => {
       // First login (mock successful login)
       await page.goto('/login');
@@ -315,13 +312,13 @@ test.describe('Purchase and Premium Features', () => {
 
       const emailInput = page.locator('input[type="email"]');
       const passwordInput = page.locator('input[type="password"]');
-      
-      if (await emailInput.count() > 0 && await passwordInput.count() > 0) {
+
+      if ((await emailInput.count()) > 0 && (await passwordInput.count()) > 0) {
         await emailInput.fill('premium@example.com');
         await passwordInput.fill('premiumuser123');
-        
+
         const loginButton = page.locator('button[type="submit"]');
-        if (await loginButton.count() > 0) {
+        if ((await loginButton.count()) > 0) {
           await loginButton.click();
           await page.waitForTimeout(2000);
 
@@ -335,7 +332,7 @@ test.describe('Purchase and Premium Features', () => {
 
           let accountAccess = false;
           for (const nav of accountNav) {
-            if (await nav.count() > 0) {
+            if ((await nav.count()) > 0) {
               await nav.click();
               accountAccess = true;
               break;
@@ -359,7 +356,7 @@ test.describe('Purchase and Premium Features', () => {
 
           let foundSubscriptionInfo = false;
           for (const info of subscriptionInfo) {
-            if (await info.count() > 0) {
+            if ((await info.count()) > 0) {
               foundSubscriptionInfo = true;
               break;
             }
@@ -384,7 +381,7 @@ test.describe('Purchase and Premium Features', () => {
 
       let foundManagement = false;
       for (const management of subscriptionManagement) {
-        if (await management.count() > 0) {
+        if ((await management.count()) > 0) {
           await management.click();
           foundManagement = true;
           break;
@@ -403,7 +400,7 @@ test.describe('Purchase and Premium Features', () => {
 
         let foundPlanOptions = false;
         for (const option of planOptions) {
-          if (await option.count() > 0) {
+          if ((await option.count()) > 0) {
             foundPlanOptions = true;
             break;
           }
@@ -426,7 +423,7 @@ test.describe('Purchase and Premium Features', () => {
 
       let foundCancelOption = false;
       for (const option of cancelOptions) {
-        if (await option.count() > 0) {
+        if ((await option.count()) > 0) {
           await option.click();
           foundCancelOption = true;
           break;
@@ -445,7 +442,7 @@ test.describe('Purchase and Premium Features', () => {
 
         let foundConfirmation = false;
         for (const dialog of confirmationDialog) {
-          if (await dialog.count() > 0) {
+          if ((await dialog.count()) > 0) {
             foundConfirmation = true;
             break;
           }
@@ -454,25 +451,20 @@ test.describe('Purchase and Premium Features', () => {
         console.log(`Cancellation confirmation shown: ${foundConfirmation}`);
 
         // Don't actually cancel in test - just verify the flow exists
-        const cancelButton = page.locator('button:has-text("Keep Subscription"), button:has-text("Never mind")');
-        if (await cancelButton.count() > 0) {
+        const cancelButton = page.locator(
+          'button:has-text("Keep Subscription"), button:has-text("Never mind")'
+        );
+        if ((await cancelButton.count()) > 0) {
           await cancelButton.click();
         }
       }
     });
-
   });
 
   test.describe('Premium Feature Access', () => {
-
     test('should restrict premium features for free users', async ({ page }) => {
       // Visit premium features as non-premium user
-      const premiumFeatures = [
-        '/ai-tools',
-        '/advanced-search',
-        '/premium-content',
-        '/export',
-      ];
+      const premiumFeatures = ['/ai-tools', '/advanced-search', '/premium-content', '/export'];
 
       for (const feature of premiumFeatures) {
         await page.goto(feature);
@@ -489,7 +481,7 @@ test.describe('Purchase and Premium Features', () => {
 
         let foundRestriction = false;
         for (const indicator of restrictionIndicators) {
-          if (await indicator.count() > 0) {
+          if ((await indicator.count()) > 0) {
             foundRestriction = true;
             break;
           }
@@ -514,7 +506,7 @@ test.describe('Purchase and Premium Features', () => {
 
       let foundUpgradePrompts = 0;
       for (const prompt of upgradePrompts) {
-        if (await prompt.count() > 0) {
+        if ((await prompt.count()) > 0) {
           foundUpgradePrompts++;
         }
       }
@@ -523,7 +515,7 @@ test.describe('Purchase and Premium Features', () => {
 
       // Test clicking upgrade prompt
       if (foundUpgradePrompts > 0) {
-        const firstPrompt = upgradePrompts.find(async (prompt) => await prompt.count() > 0);
+        const firstPrompt = upgradePrompts.find(async (prompt) => (await prompt.count()) > 0);
         if (firstPrompt) {
           await firstPrompt.click();
           await page.waitForTimeout(2000);
@@ -532,7 +524,7 @@ test.describe('Purchase and Premium Features', () => {
           const upgradeDestination = [
             page.url().includes('/pricing'),
             page.url().includes('/upgrade'),
-            await page.locator('[data-testid="upgrade-modal"]').count() > 0,
+            (await page.locator('[data-testid="upgrade-modal"]').count()) > 0,
           ];
 
           const upgradeFlowStarted = upgradeDestination.some(Boolean);
@@ -540,11 +532,9 @@ test.describe('Purchase and Premium Features', () => {
         }
       }
     });
-
   });
 
   test.describe('Free Trial', () => {
-
     test('should offer free trial for premium plans', async ({ page }) => {
       await page.goto('/pricing');
       await page.waitForTimeout(2000);
@@ -559,7 +549,7 @@ test.describe('Purchase and Premium Features', () => {
 
       let foundTrialOffers = 0;
       for (const indicator of trialIndicators) {
-        if (await indicator.count() > 0) {
+        if ((await indicator.count()) > 0) {
           foundTrialOffers++;
         }
       }
@@ -567,8 +557,10 @@ test.describe('Purchase and Premium Features', () => {
       console.log(`Free trial offers found: ${foundTrialOffers}`);
 
       // Test starting free trial
-      const trialButton = page.locator('button:has-text("Free Trial"), button:has-text("Try Free")').first();
-      if (await trialButton.count() > 0) {
+      const trialButton = page
+        .locator('button:has-text("Free Trial"), button:has-text("Try Free")')
+        .first();
+      if ((await trialButton.count()) > 0) {
         await trialButton.click();
         await page.waitForTimeout(2000);
 
@@ -576,18 +568,16 @@ test.describe('Purchase and Premium Features', () => {
         const trialSignup = [
           page.url().includes('/trial'),
           page.url().includes('/signup'),
-          await page.locator('[data-testid="trial-signup"]').count() > 0,
+          (await page.locator('[data-testid="trial-signup"]').count()) > 0,
         ];
 
         const trialStarted = trialSignup.some(Boolean);
         console.log(`Free trial signup started: ${trialStarted}`);
       }
     });
-
   });
 
   test.describe('Billing and Invoices', () => {
-
     test('should display billing history for subscribed users', async ({ page }) => {
       // Mock premium user login
       await page.goto('/profile');
@@ -603,13 +593,13 @@ test.describe('Purchase and Premium Features', () => {
 
       let foundBilling = false;
       for (const section of billingSection) {
-        if (await section.count() > 0) {
+        if ((await section.count()) > 0) {
           foundBilling = true;
-          
+
           // Check for invoice items
           const invoiceItems = section.locator('[data-testid="invoice-item"], tr, .invoice');
           const itemCount = await invoiceItems.count();
-          
+
           console.log(`Billing history items: ${itemCount}`);
           break;
         }
@@ -617,7 +607,5 @@ test.describe('Purchase and Premium Features', () => {
 
       console.log(`Billing history section found: ${foundBilling}`);
     });
-
   });
-
 });

@@ -26,11 +26,11 @@ export interface XRCompatibilityLevel {
 export const getDeviceInfo = (): DeviceInfo => {
   const userAgent = navigator.userAgent;
   const platform = navigator.platform.toLowerCase();
-  
+
   // Browser detection
   let browser: DeviceInfo['browser'] = 'unknown';
   let browserVersion = '';
-  
+
   if (userAgent.includes('OculusBrowser')) {
     browser = 'oculus';
   } else if (userAgent.includes('Chrome')) {
@@ -50,7 +50,7 @@ export const getDeviceInfo = (): DeviceInfo => {
     const match = userAgent.match(/Version\/(\d+)/);
     browserVersion = match ? match[1] : '';
   }
-  
+
   // Operating system detection
   let operatingSystem: DeviceInfo['operatingSystem'] = 'unknown';
   if (platform.includes('win')) {
@@ -64,17 +64,25 @@ export const getDeviceInfo = (): DeviceInfo => {
   } else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
     operatingSystem = 'ios';
   }
-  
+
   // Platform type detection
   let devicePlatform: DeviceInfo['platform'] = 'unknown';
-  if (userAgent.includes('Mobile') || userAgent.includes('Android') || userAgent.includes('iPhone')) {
+  if (
+    userAgent.includes('Mobile') ||
+    userAgent.includes('Android') ||
+    userAgent.includes('iPhone')
+  ) {
     devicePlatform = 'mobile';
   } else if (userAgent.includes('OculusBrowser') || userAgent.includes('VR')) {
     devicePlatform = 'vr';
-  } else if (operatingSystem === 'windows' || operatingSystem === 'macos' || operatingSystem === 'linux') {
+  } else if (
+    operatingSystem === 'windows' ||
+    operatingSystem === 'macos' ||
+    operatingSystem === 'linux'
+  ) {
     devicePlatform = 'desktop';
   }
-  
+
   return {
     platform: devicePlatform,
     browser,
@@ -93,7 +101,7 @@ export const getXRCompatibilityLevel = async (): Promise<XRCompatibilityLevel> =
   const supportedFeatures: string[] = [];
   const missingFeatures: string[] = [];
   const recommendations: string[] = [];
-  
+
   // Check basic WebXR support
   if (!deviceInfo.supportsWebXR) {
     return {
@@ -107,7 +115,7 @@ export const getXRCompatibilityLevel = async (): Promise<XRCompatibilityLevel> =
       ],
     };
   }
-  
+
   if (!deviceInfo.isSecureContext) {
     return {
       level: 'none',
@@ -117,12 +125,12 @@ export const getXRCompatibilityLevel = async (): Promise<XRCompatibilityLevel> =
       recommendations: ['Access the site over HTTPS'],
     };
   }
-  
+
   supportedFeatures.push('WebXR API');
-  
+
   try {
     const xr = (navigator as any).xr;
-    
+
     // Test VR support
     const supportsVR = await xr.isSessionSupported('immersive-vr');
     if (supportsVR) {
@@ -130,7 +138,7 @@ export const getXRCompatibilityLevel = async (): Promise<XRCompatibilityLevel> =
     } else {
       missingFeatures.push('Immersive VR');
     }
-    
+
     // Test AR support
     const supportsAR = await xr.isSessionSupported('immersive-ar');
     if (supportsAR) {
@@ -138,7 +146,7 @@ export const getXRCompatibilityLevel = async (): Promise<XRCompatibilityLevel> =
     } else {
       missingFeatures.push('Immersive AR');
     }
-    
+
     // Test inline support (fallback mode)
     const supportsInline = await xr.isSessionSupported('inline');
     if (supportsInline) {
@@ -146,22 +154,24 @@ export const getXRCompatibilityLevel = async (): Promise<XRCompatibilityLevel> =
     } else {
       missingFeatures.push('Inline XR');
     }
-    
   } catch (error) {
     console.error('Error checking XR session support:', error);
     missingFeatures.push('Session Support Check Failed');
   }
-  
+
   // Determine compatibility level
   let level: XRCompatibilityLevel['level'];
   let description: string;
-  
+
   if (supportedFeatures.includes('Immersive VR') && supportedFeatures.includes('Immersive AR')) {
     level = 'full';
     description = 'Full XR support with VR and AR capabilities';
-  } else if (supportedFeatures.includes('Immersive VR') || supportedFeatures.includes('Immersive AR')) {
+  } else if (
+    supportedFeatures.includes('Immersive VR') ||
+    supportedFeatures.includes('Immersive AR')
+  ) {
     level = 'partial';
-    description = supportedFeatures.includes('Immersive VR') 
+    description = supportedFeatures.includes('Immersive VR')
       ? 'VR support available, AR not supported'
       : 'AR support available, VR not supported';
   } else if (supportedFeatures.includes('Inline XR')) {
@@ -172,12 +182,14 @@ export const getXRCompatibilityLevel = async (): Promise<XRCompatibilityLevel> =
     level = 'none';
     description = 'No XR capabilities detected';
   }
-  
+
   // Add device-specific recommendations
   switch (deviceInfo.platform) {
     case 'desktop':
       if (!supportedFeatures.includes('Immersive VR')) {
-        recommendations.push('Connect a VR headset (Oculus, HTC Vive, Windows Mixed Reality) for VR experiences');
+        recommendations.push(
+          'Connect a VR headset (Oculus, HTC Vive, Windows Mixed Reality) for VR experiences'
+        );
       }
       break;
     case 'mobile':
@@ -193,12 +205,12 @@ export const getXRCompatibilityLevel = async (): Promise<XRCompatibilityLevel> =
       recommendations.push('You are already on a VR device - full immersive experiences available');
       break;
   }
-  
+
   // Browser-specific recommendations
   if (deviceInfo.browser === 'safari') {
     recommendations.push('Safari has limited WebXR support; consider using Chrome or Firefox');
   }
-  
+
   return {
     level,
     description,
@@ -236,26 +248,28 @@ export const checkFeatureSupport = (deviceInfo: DeviceInfo) => {
     depthSensing: false,
     spatialMapping: false,
   };
-  
+
   // VR devices typically support hand and eye tracking
   if (deviceInfo.platform === 'vr' || deviceInfo.browser === 'oculus') {
     features.handTracking = true;
     features.eyeTracking = true;
   }
-  
+
   // AR devices typically support hit testing and anchors
-  if (deviceInfo.platform === 'mobile' && 
-      (deviceInfo.operatingSystem === 'android' || deviceInfo.operatingSystem === 'ios')) {
+  if (
+    deviceInfo.platform === 'mobile' &&
+    (deviceInfo.operatingSystem === 'android' || deviceInfo.operatingSystem === 'ios')
+  ) {
     features.hitTest = true;
     features.anchors = true;
     features.spatialMapping = true;
-    
+
     // Modern AR devices support depth sensing
     if (deviceInfo.operatingSystem === 'android') {
       features.depthSensing = true; // Many Android devices with ARCore support this
     }
   }
-  
+
   return features;
 };
 
@@ -264,23 +278,23 @@ export const checkFeatureSupport = (deviceInfo: DeviceInfo) => {
  */
 export const getPerformanceRecommendations = (deviceInfo: DeviceInfo): string[] => {
   const recommendations: string[] = [];
-  
+
   if (deviceInfo.platform === 'mobile') {
     recommendations.push('Use lower-poly 3D models for better mobile performance');
     recommendations.push('Limit the number of concurrent AR objects to 5-10');
     recommendations.push('Enable performance monitoring to adjust quality dynamically');
   }
-  
+
   if (deviceInfo.platform === 'vr') {
     recommendations.push('Maintain 90fps for VR to prevent motion sickness');
     recommendations.push('Use level-of-detail (LOD) for complex 3D scenes');
     recommendations.push('Implement predictive rendering for smooth head tracking');
   }
-  
+
   if (deviceInfo.browser === 'safari') {
     recommendations.push('Safari WebGL performance may be limited; consider alternative browsers');
   }
-  
+
   return recommendations;
 };
 
@@ -292,7 +306,7 @@ export const generateCompatibilityReport = async () => {
   const xrCompatibility = await getXRCompatibilityLevel();
   const featureSupport = checkFeatureSupport(deviceInfo);
   const performanceRecs = getPerformanceRecommendations(deviceInfo);
-  
+
   return {
     deviceInfo,
     xrCompatibility,
@@ -307,16 +321,16 @@ export const generateCompatibilityReport = async () => {
  * Calculate an overall compatibility score (0-100)
  */
 const calculateCompatibilityScore = (
-  deviceInfo: DeviceInfo, 
+  deviceInfo: DeviceInfo,
   xrCompatibility: XRCompatibilityLevel
 ): number => {
   let score = 0;
-  
+
   // Base score for WebXR support
   if (deviceInfo.supportsWebXR && deviceInfo.isSecureContext) {
     score += 30;
   }
-  
+
   // Score based on XR capability level
   switch (xrCompatibility.level) {
     case 'full':
@@ -332,17 +346,17 @@ const calculateCompatibilityScore = (
       score += 0;
       break;
   }
-  
+
   // Bonus points for modern browsers
   if (['chrome', 'firefox', 'edge', 'oculus'].includes(deviceInfo.browser)) {
     score += 10;
   }
-  
+
   // Bonus for VR-native devices
   if (deviceInfo.platform === 'vr') {
     score += 10;
   }
-  
+
   return Math.min(score, 100);
 };
 

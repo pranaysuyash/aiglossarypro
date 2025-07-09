@@ -1,18 +1,16 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Accessibility Compliance', () => {
-
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#main-content')).toBeVisible();
   });
 
   test.describe('Keyboard Navigation', () => {
-
     test('should support keyboard navigation throughout the application', async ({ page }) => {
       // Start from the top of the page
       await page.keyboard.press('Tab');
-      
+
       // Track focusable elements
       const focusableElements = [];
       let attempts = 0;
@@ -20,12 +18,12 @@ test.describe('Accessibility Compliance', () => {
 
       while (attempts < maxAttempts) {
         const focusedElement = page.locator(':focus');
-        if (await focusedElement.count() > 0) {
-          const tagName = await focusedElement.evaluate(el => el.tagName);
+        if ((await focusedElement.count()) > 0) {
+          const tagName = await focusedElement.evaluate((el) => el.tagName);
           const id = await focusedElement.getAttribute('id');
           const testId = await focusedElement.getAttribute('data-testid');
           const role = await focusedElement.getAttribute('role');
-          
+
           focusableElements.push({
             tagName,
             id: id || 'no-id',
@@ -45,7 +43,7 @@ test.describe('Accessibility Compliance', () => {
 
       // Check for essential navigation elements
       const essentialElements = ['button', 'a', 'input'];
-      const foundEssential = focusableElements.some(el => 
+      const foundEssential = focusableElements.some((el) =>
         essentialElements.includes(el.tagName.toLowerCase())
       );
       expect(foundEssential).toBe(true);
@@ -60,20 +58,20 @@ test.describe('Accessibility Compliance', () => {
       ];
 
       for (const element of interactiveElements) {
-        if (await element.count() > 0) {
+        if ((await element.count()) > 0) {
           await element.focus();
-          
+
           // Test Enter key
           await page.keyboard.press('Enter');
           await page.waitForTimeout(500);
-          
+
           // Test Space key (for buttons)
-          if (await element.evaluate(el => el.tagName === 'BUTTON')) {
+          if (await element.evaluate((el) => el.tagName === 'BUTTON')) {
             await element.focus();
             await page.keyboard.press(' ');
             await page.waitForTimeout(500);
           }
-          
+
           break;
         }
       }
@@ -88,7 +86,7 @@ test.describe('Accessibility Compliance', () => {
       ];
 
       for (const trigger of menuTriggers) {
-        if (await trigger.count() > 0) {
+        if ((await trigger.count()) > 0) {
           await trigger.focus();
           await page.keyboard.press('Enter');
           await page.waitForTimeout(500);
@@ -124,16 +122,14 @@ test.describe('Accessibility Compliance', () => {
         } else {
           await page.keyboard.press(`${shortcut.keys[0]}+${shortcut.keys[1]}`);
         }
-        
+
         await page.waitForTimeout(500);
         console.log(`Tested shortcut for: ${shortcut.purpose}`);
       }
     });
-
   });
 
   test.describe('Screen Reader Support', () => {
-
     test('should have proper ARIA labels and roles', async ({ page }) => {
       // Check for ARIA landmarks
       const landmarks = [
@@ -146,7 +142,7 @@ test.describe('Accessibility Compliance', () => {
 
       let foundLandmarks = 0;
       for (const landmark of landmarks) {
-        if (await landmark.count() > 0) {
+        if ((await landmark.count()) > 0) {
           foundLandmarks++;
         }
       }
@@ -157,7 +153,7 @@ test.describe('Accessibility Compliance', () => {
       // Check for proper button labels
       const buttons = page.locator('button');
       const buttonCount = await buttons.count();
-      
+
       if (buttonCount > 0) {
         let buttonsWithLabels = 0;
         for (let i = 0; i < Math.min(buttonCount, 10); i++) {
@@ -165,12 +161,12 @@ test.describe('Accessibility Compliance', () => {
           const ariaLabel = await button.getAttribute('aria-label');
           const textContent = await button.textContent();
           const title = await button.getAttribute('title');
-          
+
           if (ariaLabel || textContent?.trim() || title) {
             buttonsWithLabels++;
           }
         }
-        
+
         const labelPercentage = (buttonsWithLabels / Math.min(buttonCount, 10)) * 100;
         expect(labelPercentage).toBeGreaterThan(80);
         console.log(`Buttons with labels: ${labelPercentage}%`);
@@ -180,23 +176,22 @@ test.describe('Accessibility Compliance', () => {
     test('should have descriptive headings hierarchy', async ({ page }) => {
       // Check heading structure
       const headings = await page.locator('h1, h2, h3, h4, h5, h6').allTextContents();
-      
+
       // Should have at least h1 and h2
       const h1Count = await page.locator('h1').count();
       const h2Count = await page.locator('h2').count();
-      
+
       expect(h1Count).toBeGreaterThan(0);
       expect(h2Count).toBeGreaterThan(0);
-      
+
       console.log(`Heading structure: H1(${h1Count}), H2(${h2Count}), Total(${headings.length})`);
-      
+
       // Check that headings have meaningful content
-      const meaningfulHeadings = headings.filter(heading => 
-        heading.trim().length > 2 && 
-        !heading.includes('undefined') && 
-        !heading.includes('null')
+      const meaningfulHeadings = headings.filter(
+        (heading) =>
+          heading.trim().length > 2 && !heading.includes('undefined') && !heading.includes('null')
       );
-      
+
       expect(meaningfulHeadings.length).toBeGreaterThan(0);
     });
 
@@ -204,31 +199,31 @@ test.describe('Accessibility Compliance', () => {
       // Look for forms
       const forms = page.locator('form');
       const formCount = await forms.count();
-      
+
       if (formCount > 0) {
         // Check inputs have labels
         const inputs = page.locator('input[type="text"], input[type="email"], textarea');
         const inputCount = await inputs.count();
-        
+
         let labelledInputs = 0;
         for (let i = 0; i < inputCount; i++) {
           const input = inputs.nth(i);
           const id = await input.getAttribute('id');
           const ariaLabel = await input.getAttribute('aria-label');
           const ariaLabelledBy = await input.getAttribute('aria-labelledby');
-          
+
           // Check for associated label
           let hasLabel = false;
           if (id) {
             const label = page.locator(`label[for="${id}"]`);
-            hasLabel = await label.count() > 0;
+            hasLabel = (await label.count()) > 0;
           }
-          
+
           if (hasLabel || ariaLabel || ariaLabelledBy) {
             labelledInputs++;
           }
         }
-        
+
         if (inputCount > 0) {
           const labelPercentage = (labelledInputs / inputCount) * 100;
           expect(labelPercentage).toBeGreaterThan(75);
@@ -248,7 +243,7 @@ test.describe('Accessibility Compliance', () => {
 
       let foundLiveRegions = 0;
       for (const region of liveRegions) {
-        if (await region.count() > 0) {
+        if ((await region.count()) > 0) {
           foundLiveRegions++;
         }
       }
@@ -257,10 +252,10 @@ test.describe('Accessibility Compliance', () => {
 
       // Test dynamic content updates (like search)
       const searchInput = page.locator('[data-testid="search-input"], input[type="text"]').first();
-      if (await searchInput.count() > 0) {
+      if ((await searchInput.count()) > 0) {
         await searchInput.fill('test');
         await page.waitForTimeout(1000);
-        
+
         // Check if results are announced
         const resultAnnouncements = [
           page.locator('[aria-live="polite"]'),
@@ -270,7 +265,7 @@ test.describe('Accessibility Compliance', () => {
 
         let foundAnnouncements = false;
         for (const announcement of resultAnnouncements) {
-          if (await announcement.count() > 0) {
+          if ((await announcement.count()) > 0) {
             foundAnnouncements = true;
             break;
           }
@@ -279,15 +274,13 @@ test.describe('Accessibility Compliance', () => {
         console.log(`Search results announced: ${foundAnnouncements}`);
       }
     });
-
   });
 
   test.describe('Color Contrast and Visual Accessibility', () => {
-
     test('should meet color contrast requirements', async ({ page }) => {
       // This test checks basic color properties, but real contrast testing
       // would require more sophisticated tools
-      
+
       // Check for high contrast mode support
       const highContrastElements = [
         page.locator('[data-high-contrast]'),
@@ -297,7 +290,7 @@ test.describe('Accessibility Compliance', () => {
 
       let supportsHighContrast = false;
       for (const element of highContrastElements) {
-        if (await element.count() > 0) {
+        if ((await element.count()) > 0) {
           supportsHighContrast = true;
           break;
         }
@@ -307,8 +300,8 @@ test.describe('Accessibility Compliance', () => {
 
       // Check that text has proper styling
       const textElements = page.locator('p, span, div').first();
-      if (await textElements.count() > 0) {
-        const styles = await textElements.evaluate(el => {
+      if ((await textElements.count()) > 0) {
+        const styles = await textElements.evaluate((el) => {
           const computed = window.getComputedStyle(el);
           return {
             color: computed.color,
@@ -327,26 +320,26 @@ test.describe('Accessibility Compliance', () => {
     test('should support zoom up to 200%', async ({ page }) => {
       // Test page functionality at different zoom levels
       const zoomLevels = [1.5, 2.0];
-      
+
       for (const zoom of zoomLevels) {
         await page.evaluate((zoomLevel) => {
           document.body.style.zoom = zoomLevel.toString();
         }, zoom);
-        
+
         await page.waitForTimeout(1000);
-        
+
         // Check that main content is still accessible
         await expect(page.locator('#main-content')).toBeVisible();
-        
+
         // Check that navigation still works
         const navElements = page.locator('nav, [role="navigation"]');
-        if (await navElements.count() > 0) {
+        if ((await navElements.count()) > 0) {
           await expect(navElements.first()).toBeVisible();
         }
-        
+
         console.log(`Zoom level ${zoom * 100}% tested`);
       }
-      
+
       // Reset zoom
       await page.evaluate(() => {
         document.body.style.zoom = '1';
@@ -363,27 +356,25 @@ test.describe('Accessibility Compliance', () => {
 
       for (const elementGroup of colorDependentElements) {
         const count = await elementGroup.count();
-        
+
         if (count > 0) {
           for (let i = 0; i < Math.min(count, 5); i++) {
             const element = elementGroup.nth(i);
-            
+
             // Check if element has additional indicators
-            const hasIcon = await element.locator('svg, i, .icon').count() > 0;
+            const hasIcon = (await element.locator('svg, i, .icon').count()) > 0;
             const hasText = (await element.textContent())?.trim().length > 0;
-            const hasAriaLabel = await element.getAttribute('aria-label') !== null;
-            
+            const hasAriaLabel = (await element.getAttribute('aria-label')) !== null;
+
             const hasNonColorIndicator = hasIcon || hasText || hasAriaLabel;
             console.log(`Element ${i}: Non-color indicator = ${hasNonColorIndicator}`);
           }
         }
       }
     });
-
   });
 
   test.describe('Focus Management', () => {
-
     test('should manage focus properly in modals and dialogs', async ({ page }) => {
       // Look for modal triggers
       const modalTriggers = [
@@ -392,21 +383,21 @@ test.describe('Accessibility Compliance', () => {
       ];
 
       for (const trigger of modalTriggers) {
-        if (await trigger.count() > 0) {
+        if ((await trigger.count()) > 0) {
           await trigger.first().click();
           await page.waitForTimeout(1000);
 
           // Check if focus is trapped in modal
           await page.keyboard.press('Tab');
           await page.waitForTimeout(200);
-          
+
           const focusedElement = page.locator(':focus');
-          if (await focusedElement.count() > 0) {
-            const isInModal = await focusedElement.evaluate(el => {
+          if ((await focusedElement.count()) > 0) {
+            const isInModal = await focusedElement.evaluate((el) => {
               const modal = el.closest('[role="dialog"], .modal, [data-testid*="modal"]');
               return modal !== null;
             });
-            
+
             console.log(`Focus trapped in modal: ${isInModal}`);
           }
 
@@ -428,9 +419,9 @@ test.describe('Accessibility Compliance', () => {
         await page.waitForTimeout(100);
 
         const focusedElement = page.locator(':focus');
-        if (await focusedElement.count() > 0) {
+        if ((await focusedElement.count()) > 0) {
           // Check if element has focus styling
-          const styles = await focusedElement.evaluate(el => {
+          const styles = await focusedElement.evaluate((el) => {
             const computed = window.getComputedStyle(el);
             return {
               outline: computed.outline,
@@ -441,7 +432,7 @@ test.describe('Accessibility Compliance', () => {
             };
           });
 
-          const hasFocusIndicator = 
+          const hasFocusIndicator =
             styles.outline !== 'none' ||
             styles.outlineWidth !== '0px' ||
             styles.boxShadow !== 'none' ||
@@ -461,7 +452,7 @@ test.describe('Accessibility Compliance', () => {
     test('should return focus after modal closes', async ({ page }) => {
       // Find a button that opens a modal
       const modalButton = page.locator('button').first();
-      if (await modalButton.count() > 0) {
+      if ((await modalButton.count()) > 0) {
         await modalButton.focus();
         await modalButton.click();
         await page.waitForTimeout(1000);
@@ -474,7 +465,7 @@ test.describe('Accessibility Compliance', () => {
 
         let modalClosed = false;
         for (const closeButton of closeButtons) {
-          if (await closeButton.count() > 0) {
+          if ((await closeButton.count()) > 0) {
             await closeButton.click();
             modalClosed = true;
             break;
@@ -489,24 +480,25 @@ test.describe('Accessibility Compliance', () => {
 
         // Check if focus returned to original button
         const currentFocus = page.locator(':focus');
-        if (await currentFocus.count() > 0) {
-          const isOriginalButton = await currentFocus.evaluate((el, buttonEl) => {
-            return el === buttonEl;
-          }, await modalButton.elementHandle());
-          
+        if ((await currentFocus.count()) > 0) {
+          const isOriginalButton = await currentFocus.evaluate(
+            (el, buttonEl) => {
+              return el === buttonEl;
+            },
+            await modalButton.elementHandle()
+          );
+
           console.log(`Focus returned to original element: ${isOriginalButton}`);
         }
       }
     });
-
   });
 
   test.describe('Alternative Input Methods', () => {
-
     test('should support voice navigation commands', async ({ page }) => {
       // This is a basic test - real voice navigation would require
       // speech recognition testing tools
-      
+
       // Check for voice navigation support indicators
       const voiceSupport = [
         page.locator('[data-voice-command]'),
@@ -516,7 +508,7 @@ test.describe('Accessibility Compliance', () => {
 
       let hasVoiceSupport = false;
       for (const element of voiceSupport) {
-        if (await element.count() > 0) {
+        if ((await element.count()) > 0) {
           hasVoiceSupport = true;
           break;
         }
@@ -534,10 +526,12 @@ test.describe('Accessibility Compliance', () => {
         // Check touch target size (should be at least 44x44px for accessibility)
         const firstTarget = touchTargets.first();
         const boundingBox = await firstTarget.boundingBox();
-        
+
         if (boundingBox) {
           const isAccessibleSize = boundingBox.width >= 44 && boundingBox.height >= 44;
-          console.log(`Touch target size acceptable: ${isAccessibleSize} (${boundingBox.width}x${boundingBox.height})`);
+          console.log(
+            `Touch target size acceptable: ${isAccessibleSize} (${boundingBox.width}x${boundingBox.height})`
+          );
         }
 
         // Test touch interactions
@@ -546,11 +540,9 @@ test.describe('Accessibility Compliance', () => {
         console.log('Touch interaction tested');
       }
     });
-
   });
 
   test.describe('Error Handling and Feedback', () => {
-
     test('should provide accessible error messages', async ({ page }) => {
       // Look for forms to test error handling
       const forms = page.locator('form');
@@ -558,10 +550,10 @@ test.describe('Accessibility Compliance', () => {
 
       if (formCount > 0) {
         const form = forms.first();
-        
+
         // Try to submit empty form to trigger validation
         const submitButton = form.locator('button[type="submit"], input[type="submit"]');
-        if (await submitButton.count() > 0) {
+        if ((await submitButton.count()) > 0) {
           await submitButton.click();
           await page.waitForTimeout(1000);
 
@@ -575,13 +567,13 @@ test.describe('Accessibility Compliance', () => {
 
           let foundAccessibleErrors = false;
           for (const errorGroup of errorMessages) {
-            if (await errorGroup.count() > 0) {
+            if ((await errorGroup.count()) > 0) {
               foundAccessibleErrors = true;
-              
+
               // Check if errors are properly associated with inputs
               const errorText = await errorGroup.textContent();
               const hasDescriptiveText = errorText && errorText.length > 5;
-              
+
               console.log(`Accessible error found: ${hasDescriptiveText}`);
               break;
             }
@@ -600,7 +592,7 @@ test.describe('Accessibility Compliance', () => {
       ];
 
       for (const trigger of loadingTriggers) {
-        if (await trigger.count() > 0) {
+        if ((await trigger.count()) > 0) {
           await trigger.click();
           await page.waitForTimeout(500);
 
@@ -613,7 +605,7 @@ test.describe('Accessibility Compliance', () => {
 
           let foundLoadingAnnouncement = false;
           for (const announcement of loadingAnnouncements) {
-            if (await announcement.count() > 0) {
+            if ((await announcement.count()) > 0) {
               foundLoadingAnnouncement = true;
               break;
             }
@@ -624,7 +616,5 @@ test.describe('Accessibility Compliance', () => {
         }
       }
     });
-
   });
-
 });

@@ -29,7 +29,7 @@ class ServiceWorkerManager {
   private isOnline = navigator.onLine;
   private updateAvailable = false;
   private installPromptAvailable = false;
-  
+
   // Event listeners
   private onlineListeners: (() => void)[] = [];
   private offlineListeners: (() => void)[] = [];
@@ -50,7 +50,7 @@ class ServiceWorkerManager {
     try {
       // Register service worker
       this.swRegistration = await navigator.serviceWorker.register('/service-worker.js', {
-        scope: '/'
+        scope: '/',
       });
 
       console.log('Service Worker registered successfully:', this.swRegistration);
@@ -70,7 +70,6 @@ class ServiceWorkerManager {
         this.updateAvailable = true;
         this.notifyUpdateListeners();
       }
-
     } catch (error) {
       console.error('Service Worker registration failed:', error);
     }
@@ -83,12 +82,12 @@ class ServiceWorkerManager {
     // Online/offline detection
     window.addEventListener('online', () => {
       this.isOnline = true;
-      this.onlineListeners.forEach(listener => listener());
+      this.onlineListeners.forEach((listener) => listener());
     });
 
     window.addEventListener('offline', () => {
       this.isOnline = false;
-      this.offlineListeners.forEach(listener => listener());
+      this.offlineListeners.forEach((listener) => listener());
     });
 
     // PWA install prompt
@@ -137,7 +136,7 @@ class ServiceWorkerManager {
     try {
       await this.deferredPrompt.prompt();
       const choiceResult = await this.deferredPrompt.userChoice;
-      
+
       if (choiceResult.outcome === 'accepted') {
         console.log('User accepted PWA install');
         this.deferredPrompt = null;
@@ -162,7 +161,7 @@ class ServiceWorkerManager {
     try {
       // Send message to waiting service worker to skip waiting
       this.swRegistration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      
+
       // Update will be applied when controller changes
       this.updateAvailable = false;
     } catch (error) {
@@ -218,21 +217,18 @@ class ServiceWorkerManager {
           totalCacheSize: 0,
           staticCacheSize: 0,
           dynamicCacheSize: 0,
-          lastUpdated: new Date()
+          lastUpdated: new Date(),
         });
         return;
       }
 
       const messageChannel = new MessageChannel();
-      
+
       messageChannel.port1.onmessage = (event) => {
         resolve(event.data);
       };
 
-      this.swRegistration.active?.postMessage(
-        { type: 'CACHE_INFO' },
-        [messageChannel.port2]
-      );
+      this.swRegistration.active?.postMessage({ type: 'CACHE_INFO' }, [messageChannel.port2]);
 
       // Timeout fallback
       setTimeout(() => {
@@ -240,7 +236,7 @@ class ServiceWorkerManager {
           totalCacheSize: 0,
           staticCacheSize: 0,
           dynamicCacheSize: 0,
-          lastUpdated: new Date()
+          lastUpdated: new Date(),
         });
       }, 5000);
     });
@@ -254,15 +250,12 @@ class ServiceWorkerManager {
       }
 
       const messageChannel = new MessageChannel();
-      
+
       messageChannel.port1.onmessage = (event) => {
         resolve(event.data.success);
       };
 
-      this.swRegistration.active?.postMessage(
-        { type: 'CLEAR_CACHE' },
-        [messageChannel.port2]
-      );
+      this.swRegistration.active?.postMessage({ type: 'CLEAR_CACHE' }, [messageChannel.port2]);
 
       // Timeout fallback
       setTimeout(() => {
@@ -277,29 +270,31 @@ class ServiceWorkerManager {
       canInstall: this.installPromptAvailable,
       canNotify: 'Notification' in window,
       canShare: 'share' in navigator,
-      canSync: 'serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype
+      canSync: 'serviceWorker' in navigator && 'sync' in window.ServiceWorkerRegistration.prototype,
     };
   }
 
   public isStandaloneMode(): boolean {
-    return window.matchMedia('(display-mode: standalone)').matches ||
-           (window.navigator as any).standalone === true;
+    return (
+      window.matchMedia('(display-mode: standalone)').matches ||
+      (window.navigator as any).standalone === true
+    );
   }
 
   public formatCacheSize(bytes: number): string {
     if (bytes === 0) return '0 B';
-    
+
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+
+    return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
   }
 
   public async queueAction(type: string, data: any): Promise<void> {
     try {
       const request = indexedDB.open('ai-glossary-queue', 1);
-      
+
       request.onupgradeneeded = () => {
         const db = request.result;
         if (!db.objectStoreNames.contains('actions')) {
@@ -311,11 +306,11 @@ class ServiceWorkerManager {
         const db = request.result;
         const transaction = db.transaction(['actions'], 'readwrite');
         const store = transaction.objectStore('actions');
-        
+
         store.add({
           type,
           data,
-          timestamp: Date.now()
+          timestamp: Date.now(),
         });
       };
     } catch (error) {
@@ -341,11 +336,11 @@ class ServiceWorkerManager {
   }
 
   private notifyUpdateListeners(): void {
-    this.updateListeners.forEach(listener => listener());
+    this.updateListeners.forEach((listener) => listener());
   }
 
   private notifyInstallListeners(): void {
-    this.installListeners.forEach(listener => listener());
+    this.installListeners.forEach((listener) => listener());
   }
 
   /**
@@ -380,10 +375,9 @@ class ServiceWorkerManager {
           }
         };
 
-        this.swRegistration!.active!.postMessage(
-          { type: 'FORCE_REFRESH_CONTENT' },
-          [messageChannel.port2]
-        );
+        this.swRegistration?.active?.postMessage({ type: 'FORCE_REFRESH_CONTENT' }, [
+          messageChannel.port2,
+        ]);
 
         // Timeout after 30 seconds
         setTimeout(() => resolve(0), 30000);

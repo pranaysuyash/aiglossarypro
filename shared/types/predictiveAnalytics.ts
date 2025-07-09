@@ -100,12 +100,15 @@ export interface BatchAnalyticsRequest {
 
 export interface BatchAnalyticsResponse {
   success: boolean;
-  data: Record<string, {
-    outcomes?: LearningOutcomeMetrics;
-    profile?: UserLearningProfile;
-    insights?: PredictiveInsights;
-    error?: string;
-  }>;
+  data: Record<
+    string,
+    {
+      outcomes?: LearningOutcomeMetrics;
+      profile?: UserLearningProfile;
+      insights?: PredictiveInsights;
+      error?: string;
+    }
+  >;
   error?: string;
   message?: string;
 }

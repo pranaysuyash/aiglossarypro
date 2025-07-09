@@ -1,14 +1,14 @@
-import { 
-  S3Client, 
-  GetObjectCommand, 
-  PutObjectCommand, 
+import fs from 'node:fs';
+import path from 'node:path';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
   ListObjectsV2Command,
-  DeleteObjectCommand 
+  PutObjectCommand,
+  S3Client,
 } from '@aws-sdk/client-s3';
-import fs from 'fs';
-import path from 'path';
+import { features, getS3Config } from './config';
 import { getS3MonitoringService } from './s3MonitoringService';
-import { getS3Config, features } from './config';
 
 // S3 client configuration
 let s3Client: S3Client | null = null;
@@ -26,7 +26,7 @@ export function initS3Client() {
       const s3Config = getS3Config();
       s3Client = new S3Client({
         region: s3Config.region,
-        credentials: s3Config.credentials
+        credentials: s3Config.credentials,
       });
       console.log(`✅ S3 client initialized with region: ${s3Config.region}`);
     } catch (error) {
@@ -34,7 +34,7 @@ export function initS3Client() {
       return null;
     }
   }
-  
+
   return s3Client;
 }
 
@@ -65,34 +65,40 @@ export async function listFiles(bucketName: string, prefix: string = '') {
   const monitoringService = getS3MonitoringService();
   const logId = monitoringService.logOperationStart('list', prefix || 'root');
   const startTime = Date.now();
-  
+
   try {
     const s3 = getS3Client();
-    
+
     const command = new ListObjectsV2Command({
       Bucket: bucketName,
-      Prefix: prefix
+      Prefix: prefix,
     });
-    
+
     const response = await s3.send(command);
-    
+
     // Return all files
-    const files = response.Contents?.map(item => ({
-      key: item.Key,
-      size: item.Size,
-      lastModified: item.LastModified
-    })) || [];
-    
+    const files =
+      response.Contents?.map((item) => ({
+        key: item.Key,
+        size: item.Size,
+        lastModified: item.LastModified,
+      })) || [];
+
     const duration = Date.now() - startTime;
     monitoringService.logOperationComplete(logId, 'success', duration, undefined, undefined, {
-      filesFound: files.length
+      filesFound: files.length,
     });
-    
+
     return files;
   } catch (error) {
     const duration = Date.now() - startTime;
-    monitoringService.logOperationComplete(logId, 'error', duration, undefined, 
-      error instanceof Error ? error.message : 'Unknown error');
+    monitoringService.logOperationComplete(
+      logId,
+      'error',
+      duration,
+      undefined,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     console.error('Error listing files from S3:', error);
     throw error;
   }
@@ -101,41 +107,37 @@ export async function listFiles(bucketName: string, prefix: string = '') {
 /**
  * Download file from S3 to local storage
  */
-export async function downloadFileFromS3(
-  bucketName: string, 
-  key: string, 
-  destinationPath: string
-) {
+export async function downloadFileFromS3(bucketName: string, key: string, destinationPath: string) {
   const monitoringService = getS3MonitoringService();
   const logId = monitoringService.logOperationStart('download', key);
   const startTime = Date.now();
-  
+
   try {
     const s3 = getS3Client();
-    
+
     // Ensure directory exists
     const dir = path.dirname(destinationPath);
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-    
+
     const command = new GetObjectCommand({
       Bucket: bucketName,
-      Key: key
+      Key: key,
     });
-    
+
     const response = await s3.send(command);
-    
+
     // Write stream for file
     const writeStream = fs.createWriteStream(destinationPath);
-    
+
     // Process the stream
     return new Promise<string>((resolve, reject) => {
       if (!response.Body) {
         reject(new Error('No data received from S3'));
         return;
       }
-      
+
       // @ts-ignore - Body should have pipe method as a readable stream
       response.Body.pipe(writeStream)
         .on('error', (err: Error) => {
@@ -154,8 +156,13 @@ export async function downloadFileFromS3(
     });
   } catch (error) {
     const duration = Date.now() - startTime;
-    monitoringService.logOperationComplete(logId, 'error', duration, undefined, 
-      error instanceof Error ? error.message : 'Unknown error');
+    monitoringService.logOperationComplete(
+      logId,
+      'error',
+      duration,
+      undefined,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     console.error('Error downloading file from S3:', error);
     throw error;
   }
@@ -164,21 +171,17 @@ export async function downloadFileFromS3(
 /**
  * Upload file to S3
  */
-export async function uploadFileToS3(
-  bucketName: string, 
-  key: string, 
-  filePath: string
-) {
+export async function uploadFileToS3(bucketName: string, key: string, filePath: string) {
   const monitoringService = getS3MonitoringService();
   const logId = monitoringService.logOperationStart('upload', key);
   const startTime = Date.now();
-  
+
   try {
     const s3 = getS3Client();
-    
+
     // Read file
     const fileContent = fs.readFileSync(filePath);
-    
+
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: key,
@@ -188,20 +191,25 @@ export async function uploadFileToS3(
       // Set metadata to track versions in application
       Metadata: {
         'x-amz-meta-version-date': new Date().toISOString(),
-        'x-amz-meta-version-info': 'Uploaded via AI/ML Glossary App'
-      }
+        'x-amz-meta-version-info': 'Uploaded via AI/ML Glossary App',
+      },
     });
-    
+
     const response = await s3.send(command);
     const duration = Date.now() - startTime;
     monitoringService.logOperationComplete(logId, 'success', duration, fileContent.length);
     console.log(`File uploaded successfully to s3://${bucketName}/${key}`);
-    
+
     return response;
   } catch (error) {
     const duration = Date.now() - startTime;
-    monitoringService.logOperationComplete(logId, 'error', duration, undefined, 
-      error instanceof Error ? error.message : 'Unknown error');
+    monitoringService.logOperationComplete(
+      logId,
+      'error',
+      duration,
+      undefined,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     console.error('Error uploading file to S3:', error);
     throw error;
   }
@@ -214,30 +222,34 @@ export async function deleteFileFromS3(bucketName: string, key: string) {
   const monitoringService = getS3MonitoringService();
   const logId = monitoringService.logOperationStart('delete', key);
   const startTime = Date.now();
-  
+
   try {
     const s3 = getS3Client();
-    
+
     const command = new DeleteObjectCommand({
       Bucket: bucketName,
-      Key: key
+      Key: key,
     });
-    
+
     const response = await s3.send(command);
     const duration = Date.now() - startTime;
     monitoringService.logOperationComplete(logId, 'success', duration);
     console.log(`File deleted successfully: s3://${bucketName}/${key}`);
-    
+
     return response;
   } catch (error) {
     const duration = Date.now() - startTime;
-    monitoringService.logOperationComplete(logId, 'error', duration, undefined, 
-      error instanceof Error ? error.message : 'Unknown error');
+    monitoringService.logOperationComplete(
+      logId,
+      'error',
+      duration,
+      undefined,
+      error instanceof Error ? error.message : 'Unknown error'
+    );
     console.error('Error deleting file from S3:', error);
     throw error;
   }
 }
-
 
 /**
  * Get file size from S3 (in bytes)
@@ -245,19 +257,19 @@ export async function deleteFileFromS3(bucketName: string, key: string) {
 export async function getFileSizeFromS3(bucketName: string, key: string): Promise<number> {
   try {
     const s3 = getS3Client();
-    
+
     const command = new ListObjectsV2Command({
       Bucket: bucketName,
-      Prefix: key
+      Prefix: key,
     });
-    
+
     const response = await s3.send(command);
-    
+
     if (!response.Contents || response.Contents.length === 0) {
       throw new Error(`File not found: s3://${bucketName}/${key}`);
     }
-    
-    const file = response.Contents.find(item => item.Key === key);
+
+    const file = response.Contents.find((item) => item.Key === key);
     return file?.Size || 0;
   } catch (error) {
     console.error('Error getting file size from S3:', error);

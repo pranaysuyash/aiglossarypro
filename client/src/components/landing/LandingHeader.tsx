@@ -1,5 +1,5 @@
-import { Button } from "@/components/ui/button";
-import { Link } from "wouter";
+import { Link } from 'wouter';
+import { Button } from '@/components/ui/button';
 import { useCountryPricing } from '@/hooks/useCountryPricing';
 
 export function LandingHeader() {
@@ -21,8 +21,8 @@ export function LandingHeader() {
 
           {/* Navigation */}
           <nav className="hidden md:flex items-center space-x-8">
-            <a 
-              href="#preview" 
+            <a
+              href="#preview"
               className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
               onClick={(e) => {
                 e.preventDefault();
@@ -31,8 +31,8 @@ export function LandingHeader() {
             >
               See What's Inside
             </a>
-            <a 
-              href="#pricing" 
+            <a
+              href="#pricing"
               className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
               onClick={(e) => {
                 e.preventDefault();
@@ -41,8 +41,8 @@ export function LandingHeader() {
             >
               Pricing
             </a>
-            <a 
-              href="#faq" 
+            <a
+              href="#faq"
               className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
               onClick={(e) => {
                 e.preventDefault();
@@ -62,7 +62,7 @@ export function LandingHeader() {
                   Sign In
                 </Button>
               </Link>
-              <Button 
+              <Button
                 className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2.5 font-medium"
                 onClick={() => {
                   // Track analytics
@@ -73,17 +73,17 @@ export function LandingHeader() {
                       value: pricing.localPrice,
                     });
                   }
-                  
+
                   window.open('https://pranaysuyash.gumroad.com/l/ggczfy', '_blank');
                 }}
               >
                 Get Lifetime Access
               </Button>
             </div>
-            
+
             {/* Mobile: Show only primary CTA */}
             <div className="md:hidden">
-              <Button 
+              <Button
                 size="sm"
                 className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 font-medium min-h-[44px] touch-manipulation"
                 onClick={() => {
@@ -95,7 +95,7 @@ export function LandingHeader() {
                       value: pricing.localPrice,
                     });
                   }
-                  
+
                   window.open('https://pranaysuyash.gumroad.com/l/ggczfy', '_blank');
                 }}
               >

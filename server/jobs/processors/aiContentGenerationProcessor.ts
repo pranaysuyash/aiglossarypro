@@ -3,16 +3,15 @@
  * Handles AI-powered content generation for terms
  */
 
-import { Job } from 'bullmq';
-import { 
-  AIContentGenerationJobData, 
-  AIContentGenerationJobResult,
-  JobProgressUpdate 
-} from '../types';
-import { aiService } from '../../aiService';
+import type { Job } from 'bullmq';
+import OpenAI from 'openai';
 import { enhancedStorage } from '../../enhancedStorage';
 import { log as logger } from '../../utils/logger';
-import OpenAI from 'openai';
+import type {
+  AIContentGenerationJobData,
+  AIContentGenerationJobResult,
+  JobProgressUpdate,
+} from '../types';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -21,26 +20,36 @@ const openai = new OpenAI({
 
 // Content generation templates for different sections
 const SECTION_PROMPTS = {
-  'Practical Examples': 'Generate 3-5 practical, real-world examples of {term} in AI/ML applications. Format as a list with brief explanations.',
-  'Common Pitfalls': 'List 3-5 common mistakes or pitfalls when working with {term} in AI/ML. Include brief advice on how to avoid each.',
-  'Best Practices': 'Provide 4-6 best practices for implementing or using {term} effectively in AI/ML projects.',
-  'Industry Applications': 'Describe 3-5 specific industry applications or use cases where {term} is particularly valuable.',
-  'Technical Deep Dive': 'Provide a technical explanation of {term} including mathematical foundations, algorithms, or implementation details where relevant.',
-  'Related Technologies': 'List and briefly describe 4-6 technologies, frameworks, or tools closely related to {term}.',
-  'Learning Path': 'Create a structured learning path for mastering {term}, including prerequisites, key concepts, and recommended resources.',
-  'Interview Questions': 'Generate 5-7 common interview questions about {term} with brief answer guidelines.',
-  'Code Examples': 'Provide 2-3 code examples demonstrating {term} in Python, with brief explanations.',
-  'Research Papers': 'List 3-5 influential research papers related to {term} with brief summaries of their contributions.',
+  'Practical Examples':
+    'Generate 3-5 practical, real-world examples of {term} in AI/ML applications. Format as a list with brief explanations.',
+  'Common Pitfalls':
+    'List 3-5 common mistakes or pitfalls when working with {term} in AI/ML. Include brief advice on how to avoid each.',
+  'Best Practices':
+    'Provide 4-6 best practices for implementing or using {term} effectively in AI/ML projects.',
+  'Industry Applications':
+    'Describe 3-5 specific industry applications or use cases where {term} is particularly valuable.',
+  'Technical Deep Dive':
+    'Provide a technical explanation of {term} including mathematical foundations, algorithms, or implementation details where relevant.',
+  'Related Technologies':
+    'List and briefly describe 4-6 technologies, frameworks, or tools closely related to {term}.',
+  'Learning Path':
+    'Create a structured learning path for mastering {term}, including prerequisites, key concepts, and recommended resources.',
+  'Interview Questions':
+    'Generate 5-7 common interview questions about {term} with brief answer guidelines.',
+  'Code Examples':
+    'Provide 2-3 code examples demonstrating {term} in Python, with brief explanations.',
+  'Research Papers':
+    'List 3-5 influential research papers related to {term} with brief summaries of their contributions.',
 };
 
 export async function aiContentGenerationProcessor(
   job: Job<AIContentGenerationJobData>
 ): Promise<AIContentGenerationJobResult> {
   const startTime = Date.now();
-  const { 
-    termId, 
-    termName, 
-    sections, 
+  const {
+    termId,
+    termName,
+    sections,
     model = 'gpt-4-turbo-preview',
     temperature = 0.7,
     maxRetries = 3,
@@ -108,7 +117,8 @@ export async function aiContentGenerationProcessor(
               messages: [
                 {
                   role: 'system',
-                  content: 'You are an AI/ML expert assistant. Generate clear, accurate, and practical content for glossary terms. Focus on real-world applications and examples.',
+                  content:
+                    'You are an AI/ML expert assistant. Generate clear, accurate, and practical content for glossary terms. Focus on real-world applications and examples.',
                 },
                 {
                   role: 'user',
@@ -130,20 +140,24 @@ export async function aiContentGenerationProcessor(
             logger.info(`Generated content for section ${section} of term ${termName}`);
           } catch (error) {
             attempts++;
-            logger.error(`Attempt ${attempts} failed for section ${section}:`, { error: error instanceof Error ? error.message : String(error) });
-            
+            logger.error(`Attempt ${attempts} failed for section ${section}:`, {
+              error: error instanceof Error ? error.message : String(error),
+            });
+
             if (attempts >= maxRetries) {
               throw error;
             }
-            
+
             // Wait before retry with exponential backoff
-            await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000));
+            await new Promise((resolve) => setTimeout(resolve, 2 ** attempts * 1000));
           }
         }
 
         processedSections++;
       } catch (sectionError) {
-        logger.error(`Failed to generate content for section ${section}:`, { error: sectionError instanceof Error ? sectionError.message : String(sectionError) });
+        logger.error(`Failed to generate content for section ${section}:`, {
+          error: sectionError instanceof Error ? sectionError.message : String(sectionError),
+        });
         result.generatedSections[section] = {
           error: sectionError instanceof Error ? sectionError.message : 'Generation failed',
         };
@@ -187,9 +201,10 @@ export async function aiContentGenerationProcessor(
     });
 
     return result;
-
   } catch (error) {
-    logger.error(`AI content generation job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
+    logger.error(`AI content generation job ${job.id} failed:`, {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }
@@ -202,15 +217,15 @@ function buildPrompt(template: string, termName: string, termData: any): string 
 
   // Add context from existing term data
   const context = [];
-  
+
   if (termData.definition) {
     context.push(`Definition: ${termData.definition}`);
   }
-  
+
   if (termData.categories?.length > 0) {
     context.push(`Categories: ${termData.categories.join(', ')}`);
   }
-  
+
   if (termData.key_concepts?.length > 0) {
     context.push(`Key concepts: ${termData.key_concepts.join(', ')}`);
   }
@@ -236,62 +251,64 @@ function parseGeneratedContent(section: string, content: string): any {
     case 'Best Practices':
     case 'Industry Applications':
     case 'Related Technologies':
-    case 'Interview Questions':
+    case 'Interview Questions': {
       // Parse as list items
       const items = cleanContent
         .split('\n')
-        .filter(line => line.trim())
-        .map(line => line.replace(/^[-*•]\s*/, '').trim())
-        .filter(line => line.length > 0);
+        .filter((line) => line.trim())
+        .map((line) => line.replace(/^[-*•]\s*/, '').trim())
+        .filter((line) => line.length > 0);
       return { items };
+    }
 
-    case 'Code Examples':
+    case 'Code Examples': {
       // Extract code blocks
       const codeBlocks = [];
       const codeRegex = /```(\w+)?\n([\s\S]*?)```/g;
       let match;
-      
+
       while ((match = codeRegex.exec(cleanContent)) !== null) {
         codeBlocks.push({
           language: match[1] || 'python',
           code: match[2].trim(),
         });
       }
-      
+
       // Also extract any inline explanations
       const explanations = cleanContent
         .replace(codeRegex, '')
         .split('\n')
-        .filter(line => line.trim())
+        .filter((line) => line.trim())
         .join('\n');
-      
-      return { codeBlocks, explanations };
 
-    case 'Research Papers':
+      return { codeBlocks, explanations };
+    }
+
+    case 'Research Papers': {
       // Parse paper entries
       const papers = cleanContent
         .split('\n\n')
-        .filter(entry => entry.trim())
-        .map(entry => {
+        .filter((entry) => entry.trim())
+        .map((entry) => {
           const lines = entry.split('\n');
           const title = lines[0]?.replace(/^[-*•]\s*/, '').trim();
           const summary = lines.slice(1).join(' ').trim();
           return { title, summary };
         });
       return { papers };
+    }
 
-    case 'Learning Path':
+    case 'Learning Path': {
       // Parse as structured learning steps
       const steps = cleanContent
         .split(/\d+\.\s+/)
-        .filter(step => step.trim())
+        .filter((step) => step.trim())
         .map((step, index) => ({
           order: index + 1,
           content: step.trim(),
         }));
       return { steps };
-
-    case 'Technical Deep Dive':
+    }
     default:
       // Return as formatted text
       return { content: cleanContent };
@@ -310,13 +327,13 @@ function calculateCost(tokens: number, model: string): number {
   };
 
   const modelPricing = pricing[model] || pricing['gpt-3.5-turbo'];
-  
+
   // Assume roughly 2/3 input tokens, 1/3 output tokens
   const inputTokens = Math.floor(tokens * 0.67);
   const outputTokens = tokens - inputTokens;
-  
-  const cost = (inputTokens / 1000) * modelPricing.input + 
-                (outputTokens / 1000) * modelPricing.output;
-  
+
+  const cost =
+    (inputTokens / 1000) * modelPricing.input + (outputTokens / 1000) * modelPricing.output;
+
   return Math.round(cost * 10000) / 10000; // Round to 4 decimal places
 }

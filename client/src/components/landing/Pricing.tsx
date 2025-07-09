@@ -1,59 +1,58 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Check, ArrowRight, X, DollarSign } from "lucide-react";
-import { PPPBanner } from './PPPBanner';
-import { PriceDisplay } from './PriceDisplay';
-import { useCountryPricing } from '@/hooks/useCountryPricing';
-import { TestPurchaseButton } from '../TestPurchaseButton';
-import { trackPurchaseIntent } from '@/types/analytics';
+import { ArrowRight, Check, DollarSign, X } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBackgroundABTest } from '@/hooks/useBackgroundABTest';
+import { useCountryPricing } from '@/hooks/useCountryPricing';
 import { useABTestTracking } from '@/services/abTestingService';
-import { PricingCountdown } from './PricingCountdown';
+import { trackPurchaseIntent } from '@/types/analytics';
+import { TestPurchaseButton } from '../TestPurchaseButton';
 import { FreeTierMessaging } from './FreeTierMessaging';
+import { PPPBanner } from './PPPBanner';
+import { PricingCountdown } from './PricingCountdown';
 
 export function Pricing() {
   const pricing = useCountryPricing();
   const { currentVariant } = useBackgroundABTest();
   const { trackConversion } = useABTestTracking(currentVariant);
-  
+
   const comparison = [
     {
-      feature: "AI/ML Term Coverage",
-      free: "Limited",
-      competitors: "Partial",
-      us: "10,000+ Complete"
+      feature: 'AI/ML Term Coverage',
+      free: 'Limited',
+      competitors: 'Partial',
+      us: '10,000+ Complete',
     },
     {
-      feature: "Code Examples", 
-      free: "None",
-      competitors: "Basic",
-      us: "Comprehensive"
+      feature: 'Code Examples',
+      free: 'None',
+      competitors: 'Basic',
+      us: 'Comprehensive',
     },
     {
-      feature: "Annual Cost",
-      free: "Free",
-      competitors: "$300-600",
-      us: `${Math.round(pricing.localPrice / 5)} equivalent*`
+      feature: 'Annual Cost',
+      free: 'Free',
+      competitors: '$300-600',
+      us: `${Math.round(pricing.localPrice / 5)} equivalent*`,
     },
     {
-      feature: "Mobile Access",
-      free: "Limited",
-      competitors: "Yes",
-      us: "Optimized"
+      feature: 'Mobile Access',
+      free: 'Limited',
+      competitors: 'Yes',
+      us: 'Optimized',
     },
     {
-      feature: "Search & Filters",
-      free: "Basic",
-      competitors: "Advanced",
-      us: "Advanced"
+      feature: 'Search & Filters',
+      free: 'Basic',
+      competitors: 'Advanced',
+      us: 'Advanced',
     },
     {
-      feature: "Updates",
-      free: "Never",
-      competitors: "Yearly",
-      us: "Lifetime"
-    }
+      feature: 'Updates',
+      free: 'Never',
+      competitors: 'Yearly',
+      us: 'Lifetime',
+    },
   ];
 
   return (
@@ -87,19 +86,35 @@ export function Pricing() {
             <table className="w-full border border-gray-200 rounded-lg overflow-hidden bg-white shadow-lg sm:min-w-[600px]">
               <thead className="bg-gray-50">
                 <tr>
-                  <th className="text-left p-2 sm:p-4 font-semibold text-gray-900 border-b text-sm sm:text-base">Features</th>
-                  <th className="text-center p-2 sm:p-4 font-semibold text-gray-900 border-b border-l text-sm sm:text-base">Free Resources</th>
-                  <th className="text-center p-2 sm:p-4 font-semibold text-gray-900 border-b border-l text-sm sm:text-base">DataCamp/Coursera</th>
-                  <th className="text-center p-2 sm:p-4 font-semibold text-white bg-purple-600 border-b border-l text-sm sm:text-base">AI/ML Glossary Pro</th>
+                  <th className="text-left p-2 sm:p-4 font-semibold text-gray-900 border-b text-sm sm:text-base">
+                    Features
+                  </th>
+                  <th className="text-center p-2 sm:p-4 font-semibold text-gray-900 border-b border-l text-sm sm:text-base">
+                    Free Resources
+                  </th>
+                  <th className="text-center p-2 sm:p-4 font-semibold text-gray-900 border-b border-l text-sm sm:text-base">
+                    DataCamp/Coursera
+                  </th>
+                  <th className="text-center p-2 sm:p-4 font-semibold text-white bg-purple-600 border-b border-l text-sm sm:text-base">
+                    AI/ML Glossary Pro
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {comparison.map((row, index) => (
                   <tr key={index} className="border-b border-gray-100">
-                    <td className="p-2 sm:p-4 font-medium text-gray-900 text-sm sm:text-base">{row.feature}</td>
-                    <td className="p-2 sm:p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400 text-sm sm:text-base">{row.free}</td>
-                    <td className="p-2 sm:p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400 text-sm sm:text-base">{row.competitors}</td>
-                    <td className="p-2 sm:p-4 text-center border-l border-gray-200 bg-purple-50 font-semibold text-purple-900 text-sm sm:text-base">{row.us}</td>
+                    <td className="p-2 sm:p-4 font-medium text-gray-900 text-sm sm:text-base">
+                      {row.feature}
+                    </td>
+                    <td className="p-2 sm:p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+                      {row.free}
+                    </td>
+                    <td className="p-2 sm:p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+                      {row.competitors}
+                    </td>
+                    <td className="p-2 sm:p-4 text-center border-l border-gray-200 bg-purple-50 font-semibold text-purple-900 text-sm sm:text-base">
+                      {row.us}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -146,12 +161,12 @@ export function Pricing() {
                 <span>1,500+ terms monthly</span>
               </div>
               <div className="pt-4">
-                <Button 
-                  className="w-full bg-green-600 hover:bg-green-700 text-white min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
+                <Button
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
                   onClick={() => {
                     trackConversion('free_start_click', {
                       button_text: 'Start Free Now',
-                      position: 'pricing_table'
+                      position: 'pricing_table',
                     });
                     window.location.href = '/login';
                   }}
@@ -209,7 +224,10 @@ export function Pricing() {
                 <div className="text-2xl font-bold text-purple-900">Premium Preview</div>
                 <div className="flex items-center justify-center gap-2 mt-2">
                   <div className="text-3xl font-bold text-purple-900">
-                    ${pricing.launchPricing.isActive ? pricing.launchPricing.launchPrice : pricing.launchPricing.originalPrice}
+                    $
+                    {pricing.launchPricing.isActive
+                      ? pricing.launchPricing.launchPrice
+                      : pricing.launchPricing.originalPrice}
                   </div>
                   {pricing.launchPricing.isActive && (
                     <div className="text-xl text-gray-500 line-through">
@@ -220,14 +238,16 @@ export function Pricing() {
                 <div className="text-sm text-purple-600">
                   {pricing.launchPricing.isActive ? (
                     <>
-                      lifetime access • Save ${pricing.launchPricing.savingsAmount} - First 500 Customers Only
+                      lifetime access • Save ${pricing.launchPricing.savingsAmount} - First 500
+                      Customers Only
                       <br />
                       <span className="font-bold text-green-600">
-                        {pricing.launchPricing.claimedSlots}/{pricing.launchPricing.totalSlots} claimed
+                        {pricing.launchPricing.claimedSlots}/{pricing.launchPricing.totalSlots}{' '}
+                        claimed
                       </span>
                     </>
                   ) : (
-                    "lifetime access"
+                    'lifetime access'
                   )}
                 </div>
               </CardTitle>
@@ -254,14 +274,16 @@ export function Pricing() {
                 <span>Export & offline access</span>
               </div>
               <div className="pt-4">
-                <Button 
+                <Button
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
                   onClick={() => {
-                    const currentPrice = pricing.launchPricing.isActive ? pricing.launchPricing.launchPrice : pricing.launchPricing.originalPrice;
-                    
+                    const currentPrice = pricing.launchPricing.isActive
+                      ? pricing.launchPricing.launchPrice
+                      : pricing.launchPricing.originalPrice;
+
                     // Track analytics with launch pricing
                     trackPurchaseIntent('launch_special_lifetime', currentPrice);
-                    
+
                     // Track A/B test conversion
                     trackConversion('launch_special_cta_click', {
                       value: currentPrice,
@@ -269,21 +291,25 @@ export function Pricing() {
                       position: 'pricing_table',
                       originalPrice: pricing.launchPricing.originalPrice,
                       discount: pricing.launchPricing.savingsAmount,
-                      slotsRemaining: pricing.launchPricing.totalSlots - pricing.launchPricing.claimedSlots
+                      slotsRemaining:
+                        pricing.launchPricing.totalSlots - pricing.launchPricing.claimedSlots,
                     });
-                    
+
                     // Open Gumroad with launch special discount
                     const discountCode = pricing.launchPricing.isActive ? 'LAUNCH500' : '';
-                    const gumroadUrl = discountCode 
+                    const gumroadUrl = discountCode
                       ? `https://pranaysuyash.gumroad.com/l/ggczfy/${discountCode}`
                       : 'https://pranaysuyash.gumroad.com/l/ggczfy';
-                    
+
                     window.open(gumroadUrl, '_blank');
                   }}
                 >
                   <span className="flex items-center justify-center gap-2">
                     <span>
-                      Get Launch Special - ${pricing.launchPricing.isActive ? pricing.launchPricing.launchPrice : pricing.launchPricing.originalPrice}
+                      Get Launch Special - $
+                      {pricing.launchPricing.isActive
+                        ? pricing.launchPricing.launchPrice
+                        : pricing.launchPricing.originalPrice}
                     </span>
                     <ArrowRight className="w-4 h-4 flex-shrink-0" />
                   </span>
@@ -313,13 +339,16 @@ export function Pricing() {
               </div>
               <div>
                 <div className="text-3xl font-bold text-purple-600 mb-2">
-                  ${pricing.launchPricing.isActive ? pricing.launchPricing.launchPrice : pricing.launchPricing.originalPrice}
+                  $
+                  {pricing.launchPricing.isActive
+                    ? pricing.launchPricing.launchPrice
+                    : pricing.launchPricing.originalPrice}
                 </div>
                 <div className="text-gray-600 dark:text-gray-400">
-                  {pricing.launchPricing.isActive ? "Premium launch special" : "Premium full price"}
+                  {pricing.launchPricing.isActive ? 'Premium launch special' : 'Premium full price'}
                 </div>
                 <div className="text-sm text-purple-600 mt-1">
-                  {pricing.launchPricing.isActive ? "First 500 customers" : "Regular pricing"}
+                  {pricing.launchPricing.isActive ? 'First 500 customers' : 'Regular pricing'}
                 </div>
               </div>
               <div>
@@ -334,13 +363,17 @@ export function Pricing() {
               </div>
             </div>
             <p className="text-gray-600 dark:text-gray-400 mt-6">
-              <strong>Start with 50 terms daily free.</strong> Get lifetime unlimited access for less than one year of competitors.
+              <strong>Start with 50 terms daily free.</strong> Get lifetime unlimited access for
+              less than one year of competitors.
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              * Launch special pricing limited to first 500 customers • No recurring fees • Lifetime updates included
+              * Launch special pricing limited to first 500 customers • No recurring fees • Lifetime
+              updates included
               {pricing.launchPricing.isActive && (
                 <span className="font-semibold text-green-600">
-                  {' '}• Only {pricing.launchPricing.totalSlots - pricing.launchPricing.claimedSlots} spots remaining
+                  {' '}
+                  • Only {pricing.launchPricing.totalSlots - pricing.launchPricing.claimedSlots}{' '}
+                  spots remaining
                 </span>
               )}
             </p>

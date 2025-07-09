@@ -1,15 +1,16 @@
 #!/usr/bin/env tsx
+
 /**
  * CSV Streaming Processor
- * 
+ *
  * Processes large CSV files line-by-line without loading into memory.
  * Maintains the same 42-section extraction logic as AdvancedExcelParser.
  */
 
-import { createReadStream } from 'fs';
+import { createReadStream } from 'node:fs';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { parse } from 'csv-parse';
-import path from 'path';
-import fs from 'fs/promises';
 // Note: Excel processing functionality has been removed
 // import { importComplexTerms } from '../server/advancedExcelParser';
 import { COMPLETE_CONTENT_SECTIONS } from './complete_42_sections_config';
@@ -27,13 +28,13 @@ class CSVStreamingProcessor {
   private successfulImports = 0;
   private currentBatch: any[] = [];
   private aiParseCache = new Map<string, any>();
-  
+
   constructor(options: Partial<CSVProcessorOptions> = {}) {
     this.options = {
       batchSize: 25,
       skipRows: 0,
       maxRows: undefined,
-      ...options
+      ...options,
     };
   }
 
@@ -42,12 +43,12 @@ class CSVStreamingProcessor {
     console.log('===================================');
     console.log(`📂 File: ${csvPath}`);
     console.log(`📦 Batch size: ${this.options.batchSize}`);
-    
+
     const startTime = Date.now();
-    
+
     // Load AI parse cache if exists
     await this.loadAICache();
-    
+
     return new Promise((resolve, reject) => {
       const parser = parse({
         delimiter: ',',
@@ -62,7 +63,7 @@ class CSVStreamingProcessor {
         skip_empty_lines: true,
         skip_records_with_error: true,
         from: this.options.skipRows || 0,
-        to: this.options.maxRows
+        to: this.options.maxRows,
       });
 
       parser.on('readable', async () => {
@@ -70,31 +71,33 @@ class CSVStreamingProcessor {
         while ((record = parser.read()) !== null) {
           // Skip empty rows
           if (!record[this.headers[0]]) continue;
-          
+
           this.processedRows++;
-          
+
           // Parse row to term format
           const parsedTerm = this.parseRowToTerm(record);
           if (parsedTerm) {
             this.currentBatch.push(parsedTerm);
-            
+
             // Process batch when full
             if (this.currentBatch.length >= this.options.batchSize) {
               parser.pause(); // Pause parsing while processing batch
-              
+
               try {
                 await this.processBatch();
               } catch (error) {
                 console.error('❌ Batch processing error:', error);
               }
-              
+
               parser.resume(); // Resume parsing
             }
           }
-          
+
           // Progress update
           if (this.processedRows % 100 === 0) {
-            console.log(`📊 Processed ${this.processedRows} rows, imported ${this.successfulImports} terms`);
+            console.log(
+              `📊 Processed ${this.processedRows} rows, imported ${this.successfulImports} terms`
+            );
             this.checkMemoryUsage();
           }
         }
@@ -110,18 +113,18 @@ class CSVStreamingProcessor {
         if (this.currentBatch.length > 0) {
           await this.processBatch();
         }
-        
+
         const totalTime = (Date.now() - startTime) / 1000;
-        
+
         console.log('\n🎉 CSV Processing Complete!');
         console.log('===========================');
         console.log(`✅ Total rows processed: ${this.processedRows}`);
         console.log(`✅ Successfully imported: ${this.successfulImports} terms`);
         console.log(`⏱️  Total time: ${(totalTime / 60).toFixed(2)} minutes`);
-        
+
         // Save AI cache
         await this.saveAICache();
-        
+
         resolve();
       });
 
@@ -139,7 +142,7 @@ class CSVStreamingProcessor {
       }
 
       const sections = new Map<string, any>();
-      const categories: { main: string[], sub: string[] } = { main: [], sub: [] };
+      const categories: { main: string[]; sub: string[] } = { main: [], sub: [] };
 
       // Map CSV columns to 42 sections
       for (const sectionConfig of COMPLETE_CONTENT_SECTIONS) {
@@ -159,7 +162,7 @@ class CSVStreamingProcessor {
             name: sectionConfig.sectionName,
             content: sectionData,
             displayType: sectionConfig.displayType,
-            parseType: sectionConfig.parseType
+            parseType: sectionConfig.parseType,
           });
         }
       }
@@ -179,9 +182,8 @@ class CSVStreamingProcessor {
       return {
         name: termName.trim(),
         sections,
-        categories
+        categories,
       };
-
     } catch (error) {
       console.error('❌ Error parsing row:', error);
       return null;
@@ -191,47 +193,49 @@ class CSVStreamingProcessor {
   private extractBasicCategories(text: string): string[] {
     const categories: string[] = [];
     const lowerText = text.toLowerCase();
-    
+
     const categoryPatterns = [
       { pattern: /machine learning|ml\b|supervised|unsupervised/, category: 'Machine Learning' },
       { pattern: /deep learning|neural network|cnn|rnn|transformer/, category: 'Deep Learning' },
-      { pattern: /nlp|natural language|text processing|linguistic/, category: 'Natural Language Processing' },
+      {
+        pattern: /nlp|natural language|text processing|linguistic/,
+        category: 'Natural Language Processing',
+      },
       { pattern: /computer vision|image|visual|opencv/, category: 'Computer Vision' },
       { pattern: /statistic|probability|distribution|hypothesis/, category: 'Statistics' },
       { pattern: /data science|analytics|data analysis/, category: 'Data Science' },
       { pattern: /artificial intelligence|ai\b/, category: 'Artificial Intelligence' },
-      { pattern: /reinforcement learning|reward|agent|policy/, category: 'Reinforcement Learning' }
+      { pattern: /reinforcement learning|reward|agent|policy/, category: 'Reinforcement Learning' },
     ];
-    
+
     for (const { pattern, category } of categoryPatterns) {
       if (pattern.test(lowerText)) {
         categories.push(category);
       }
     }
-    
+
     return categories.length > 0 ? categories : ['General'];
   }
 
   private async processBatch(): Promise<void> {
     if (this.currentBatch.length === 0) return;
-    
+
     const batchStartTime = Date.now();
     const batchSize = this.currentBatch.length;
-    
+
     console.log(`\n🚀 Processing batch of ${batchSize} terms...`);
-    
+
     try {
       // Excel processing functionality has been removed
       // await importComplexTerms(this.currentBatch);
       console.log('⚠️  Excel processing functionality has been removed');
-      
+
       this.successfulImports += batchSize;
       const batchTime = (Date.now() - batchStartTime) / 1000;
-      
+
       console.log(`✅ Batch imported in ${batchTime.toFixed(2)}s`);
-      
+
       this.currentBatch = []; // Clear batch
-      
     } catch (error) {
       console.error('❌ Batch import failed:', error);
       // Don't throw - continue with next batch
@@ -242,7 +246,7 @@ class CSVStreamingProcessor {
   private checkMemoryUsage(): void {
     const usage = process.memoryUsage();
     const heapUsedMB = usage.heapUsed / (1024 * 1024);
-    
+
     if (heapUsedMB > 1000) {
       console.log(`💾 High memory usage: ${heapUsedMB.toFixed(0)}MB`);
       if (global.gc) {
@@ -257,13 +261,13 @@ class CSVStreamingProcessor {
       const cacheFile = 'temp/ai_parse_cache.json';
       const cacheData = await fs.readFile(cacheFile, 'utf-8');
       const cache = JSON.parse(cacheData);
-      
+
       for (const [key, value] of Object.entries(cache)) {
         this.aiParseCache.set(key, value);
       }
-      
+
       console.log(`📂 Loaded ${this.aiParseCache.size} cached AI parse results`);
-    } catch (error) {
+    } catch (_error) {
       // Cache doesn't exist yet, that's okay
     }
   }
@@ -274,7 +278,7 @@ class CSVStreamingProcessor {
       for (const [key, value] of this.aiParseCache.entries()) {
         cacheObj[key] = value;
       }
-      
+
       await fs.writeFile('temp/ai_parse_cache.json', JSON.stringify(cacheObj, null, 2));
       console.log(`💾 Saved ${this.aiParseCache.size} AI parse results to cache`);
     } catch (error) {
@@ -329,26 +333,25 @@ Run: \`npx tsx csv_streaming_processor.ts\`
 async function main() {
   // Check if CSV file exists
   const csvPath = path.join(process.cwd(), 'data', 'aiml.csv');
-  
+
   try {
     await fs.access(csvPath);
     console.log('✅ Found aiml.csv file');
-    
+
     // Process the CSV
     const processor = new CSVStreamingProcessor({
       batchSize: 25,
       // skipRows: 1000,  // Uncomment to skip rows for testing
       // maxRows: 2000    // Uncomment to limit rows for testing
     });
-    
+
     await processor.processCSVFile(csvPath);
-    
-  } catch (error) {
+  } catch (_error) {
     console.log('❌ CSV file not found at data/aiml.csv');
     console.log('\n📋 Creating conversion instructions...');
-    
+
     await createConversionInstructions();
-    
+
     console.log('\n⚠️  Please convert aiml.xlsx to CSV format first');
     console.log('See EXCEL_TO_CSV_CONVERSION.md for instructions');
   }

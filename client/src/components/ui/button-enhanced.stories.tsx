@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import { Download, Heart, Plus, Search, Settings, Trash2 } from 'lucide-react';
 import { Button } from './button';
-import { Heart, Download, Search, Settings, Plus, Trash2 } from 'lucide-react';
 
 // Mock function for actions
 const fn = () => () => {};
@@ -58,7 +58,9 @@ export const AllSizes: Story = {
       <Button size="sm">Small</Button>
       <Button size="default">Default</Button>
       <Button size="lg">Large</Button>
-      <Button size="icon"><Plus className="h-4 w-4" /></Button>
+      <Button size="icon">
+        <Plus className="h-4 w-4" />
+      </Button>
     </div>
   ),
   parameters: {
@@ -132,7 +134,9 @@ export const States: Story = {
       <Button>Normal</Button>
       <Button disabled>Disabled</Button>
       <Button variant="outline">Normal Outline</Button>
-      <Button variant="outline" disabled>Disabled Outline</Button>
+      <Button variant="outline" disabled>
+        Disabled Outline
+      </Button>
     </div>
   ),
   parameters: {
@@ -169,9 +173,7 @@ export const Loading: Story = {
 export const LongText: Story = {
   render: () => (
     <div className="max-w-xs space-y-2">
-      <Button className="w-full">
-        This is a very long button text that might wrap
-      </Button>
+      <Button className="w-full">This is a very long button text that might wrap</Button>
       <Button variant="outline" className="w-full">
         Another long text to test button wrapping behavior
       </Button>
@@ -190,8 +192,12 @@ export const FullWidth: Story = {
   render: () => (
     <div className="w-full max-w-md space-y-2">
       <Button className="w-full">Full Width Default</Button>
-      <Button variant="outline" className="w-full">Full Width Outline</Button>
-      <Button variant="secondary" className="w-full">Full Width Secondary</Button>
+      <Button variant="outline" className="w-full">
+        Full Width Outline
+      </Button>
+      <Button variant="secondary" className="w-full">
+        Full Width Secondary
+      </Button>
     </div>
   ),
   parameters: {
@@ -253,4 +259,4 @@ export const DarkMode: Story = {
       </div>
     ),
   ],
-}; 
+};

@@ -1,5 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
 import { Progress } from './progress';
 
 const meta: Meta<typeof Progress> = {
@@ -9,7 +9,8 @@ const meta: Meta<typeof Progress> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A visual indicator showing completion progress of a task, often displayed as a progress bar.',
+        component:
+          'A visual indicator showing completion progress of a task, often displayed as a progress bar.',
       },
     },
   },
@@ -84,7 +85,7 @@ export const DifferentValues: Story = {
         </div>
         <Progress value={25} aria-label="25% complete" />
       </div>
-      
+
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
           <span>50% Complete</span>
@@ -92,7 +93,7 @@ export const DifferentValues: Story = {
         </div>
         <Progress value={50} aria-label="50% complete" />
       </div>
-      
+
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
           <span>75% Complete</span>
@@ -100,7 +101,7 @@ export const DifferentValues: Story = {
         </div>
         <Progress value={75} aria-label="75% complete" />
       </div>
-      
+
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
           <span>90% Complete</span>
@@ -125,11 +126,7 @@ export const WithLabel: Story = {
       <label htmlFor="file-progress" className="text-sm font-medium">
         File Upload Progress
       </label>
-      <Progress 
-        id="file-progress"
-        value={67} 
-        aria-label="File upload progress: 67% complete"
-      />
+      <Progress id="file-progress" value={67} aria-label="File upload progress: 67% complete" />
       <p className="text-xs text-gray-600">67% of 5 files uploaded</p>
     </div>
   ),
@@ -147,38 +144,22 @@ export const CustomColors: Story = {
     <div className="space-y-6">
       <div className="space-y-2">
         <p className="text-sm font-medium">Success (Green)</p>
-        <Progress 
-          value={80} 
-          className="[&>div]:bg-green-500"
-          aria-label="Success progress"
-        />
+        <Progress value={80} className="[&>div]:bg-green-500" aria-label="Success progress" />
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm font-medium">Warning (Yellow)</p>
-        <Progress 
-          value={60} 
-          className="[&>div]:bg-yellow-500"
-          aria-label="Warning progress"
-        />
+        <Progress value={60} className="[&>div]:bg-yellow-500" aria-label="Warning progress" />
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm font-medium">Error (Red)</p>
-        <Progress 
-          value={30} 
-          className="[&>div]:bg-red-500"
-          aria-label="Error progress"
-        />
+        <Progress value={30} className="[&>div]:bg-red-500" aria-label="Error progress" />
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm font-medium">Info (Blue)</p>
-        <Progress 
-          value={45} 
-          className="[&>div]:bg-blue-500"
-          aria-label="Info progress"
-        />
+        <Progress value={45} className="[&>div]:bg-blue-500" aria-label="Info progress" />
       </div>
     </div>
   ),
@@ -198,17 +179,17 @@ export const DifferentSizes: Story = {
         <p className="text-sm font-medium">Small (h-2)</p>
         <Progress value={60} className="h-2" aria-label="Small progress bar" />
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm font-medium">Default (h-4)</p>
         <Progress value={60} aria-label="Default progress bar" />
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm font-medium">Large (h-6)</p>
         <Progress value={60} className="h-6" aria-label="Large progress bar" />
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm font-medium">Extra Large (h-8)</p>
         <Progress value={60} className="h-8" aria-label="Extra large progress bar" />
@@ -227,7 +208,7 @@ export const DifferentSizes: Story = {
 export const Animated: Story = {
   render: () => {
     const [progress, setProgress] = React.useState(0);
-    
+
     React.useEffect(() => {
       const timer = setInterval(() => {
         setProgress((oldProgress) => {
@@ -238,10 +219,10 @@ export const Animated: Story = {
           return newProgress;
         });
       }, 100);
-      
+
       return () => clearInterval(timer);
     }, []);
-    
+
     return (
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
@@ -269,21 +250,21 @@ export const LoadingStates: Story = {
         <Progress value={45} aria-label="Download progress: 45%" />
         <p className="text-xs text-gray-600">2.3 MB of 5.1 MB</p>
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm font-medium">Installing... (78%)</p>
-        <Progress 
-          value={78} 
+        <Progress
+          value={78}
           className="[&>div]:bg-blue-500"
           aria-label="Installation progress: 78%"
         />
         <p className="text-xs text-gray-600">Installing dependencies...</p>
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm font-medium">Processing... (12%)</p>
-        <Progress 
-          value={12} 
+        <Progress
+          value={12}
           className="[&>div]:bg-orange-500"
           aria-label="Processing progress: 12%"
         />
@@ -311,12 +292,12 @@ export const Indeterminate: Story = {
         </div>
         <p className="text-xs text-gray-600">Please wait...</p>
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm font-medium">Processing...</p>
         <div className="relative overflow-hidden">
           <Progress value={0} className="bg-gray-200" aria-label="Processing" />
-          <div 
+          <div
             className="absolute inset-y-0 left-0 w-1/3 bg-primary opacity-75 animate-pulse"
             style={{
               animation: 'slide 2s ease-in-out infinite',
@@ -344,31 +325,47 @@ export const SkillLevels: Story = {
           <span className="text-sm font-medium">JavaScript</span>
           <span className="text-sm text-gray-600">Expert</span>
         </div>
-        <Progress value={90} className="[&>div]:bg-green-500" aria-label="JavaScript skill: Expert level" />
+        <Progress
+          value={90}
+          className="[&>div]:bg-green-500"
+          aria-label="JavaScript skill: Expert level"
+        />
       </div>
-      
+
       <div className="space-y-2">
         <div className="flex justify-between">
           <span className="text-sm font-medium">React</span>
           <span className="text-sm text-gray-600">Advanced</span>
         </div>
-        <Progress value={80} className="[&>div]:bg-blue-500" aria-label="React skill: Advanced level" />
+        <Progress
+          value={80}
+          className="[&>div]:bg-blue-500"
+          aria-label="React skill: Advanced level"
+        />
       </div>
-      
+
       <div className="space-y-2">
         <div className="flex justify-between">
           <span className="text-sm font-medium">Python</span>
           <span className="text-sm text-gray-600">Intermediate</span>
         </div>
-        <Progress value={60} className="[&>div]:bg-yellow-500" aria-label="Python skill: Intermediate level" />
+        <Progress
+          value={60}
+          className="[&>div]:bg-yellow-500"
+          aria-label="Python skill: Intermediate level"
+        />
       </div>
-      
+
       <div className="space-y-2">
         <div className="flex justify-between">
           <span className="text-sm font-medium">Go</span>
           <span className="text-sm text-gray-600">Beginner</span>
         </div>
-        <Progress value={25} className="[&>div]:bg-orange-500" aria-label="Go skill: Beginner level" />
+        <Progress
+          value={25}
+          className="[&>div]:bg-orange-500"
+          aria-label="Go skill: Beginner level"
+        />
       </div>
     </div>
   ),
@@ -388,16 +385,16 @@ export const DarkMode: Story = {
         <p className="text-sm font-medium">Default Progress</p>
         <Progress value={65} aria-label="Default progress in dark mode" />
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm font-medium">Success Progress</p>
-        <Progress 
-          value={80} 
+        <Progress
+          value={80}
           className="[&>div]:bg-green-400"
           aria-label="Success progress in dark mode"
         />
       </div>
-      
+
       <div className="space-y-2">
         <div className="flex justify-between text-sm">
           <span>Upload Progress</span>

@@ -1,7 +1,16 @@
-import React, { useState, useMemo, useCallback, memo, useRef, useEffect } from 'react';
-import { Search, ChevronDown, ChevronRight, BookOpen, CheckCircle, Clock, Filter } from 'lucide-react';
-import { ContentNode } from '@/types/content-structure';
+import {
+  BookOpen,
+  CheckCircle,
+  ChevronDown,
+  ChevronRight,
+  Clock,
+  Filter,
+  Search,
+} from 'lucide-react';
+import type React from 'react';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
+import type { ContentNode } from '@/types/content-structure';
 
 interface NavigationNode extends ContentNode {
   id: string;
@@ -39,20 +48,24 @@ const NavigationItem = memo<{
   const priority = node.metadata?.priority;
 
   // Filter logic
-  const matchesFilter = !filterType || 
-    filterType === 'all' || 
-    displayType === filterType || 
+  const matchesFilter =
+    !filterType ||
+    filterType === 'all' ||
+    displayType === filterType ||
     priority === filterType ||
     (filterType === 'interactive' && isInteractive);
 
   if (!matchesFilter && !node.matchesSearch) return null;
 
-  const handleToggle = useCallback((e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (hasChildren) {
-      onToggle(node.id);
-    }
-  }, [hasChildren, onToggle, node.id]);
+  const handleToggle = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      if (hasChildren) {
+        onToggle(node.id);
+      }
+    },
+    [hasChildren, onToggle, node.id]
+  );
 
   const handleSelect = useCallback(() => {
     onSelect(node.path, node);
@@ -63,10 +76,14 @@ const NavigationItem = memo<{
     if (!query) return text;
     const regex = new RegExp(`(${query})`, 'gi');
     const parts = text.split(regex);
-    return parts.map((part, index) => 
-      regex.test(part) ? 
-        <span key={index} className="bg-yellow-200 dark:bg-yellow-900">{part}</span> : 
+    return parts.map((part, index) =>
+      regex.test(part) ? (
+        <span key={index} className="bg-yellow-200 dark:bg-yellow-900">
+          {part}
+        </span>
+      ) : (
         part
+      )
     );
   };
 
@@ -74,12 +91,12 @@ const NavigationItem = memo<{
     <div className="relative">
       <div
         className={cn(
-          "flex items-center gap-2 p-2 rounded-md cursor-pointer transition-all duration-150",
-          "hover:bg-gray-100 dark:hover:bg-gray-800",
-          isSelected && "bg-blue-100 dark:bg-blue-900 border-l-4 border-blue-500",
-          node.depth > 0 && "ml-4",
-          node.depth > 1 && "ml-8",
-          node.depth > 2 && "ml-12"
+          'flex items-center gap-2 p-2 rounded-md cursor-pointer transition-all duration-150',
+          'hover:bg-gray-100 dark:hover:bg-gray-800',
+          isSelected && 'bg-blue-100 dark:bg-blue-900 border-l-4 border-blue-500',
+          node.depth > 0 && 'ml-4',
+          node.depth > 1 && 'ml-8',
+          node.depth > 2 && 'ml-12'
         )}
         onClick={handleSelect}
         style={{ paddingLeft: `${node.depth * 16 + 8}px` }}
@@ -91,10 +108,11 @@ const NavigationItem = memo<{
             className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded transition-colors"
             aria-label={node.isExpanded ? 'Collapse' : 'Expand'}
           >
-            {node.isExpanded ? 
-              <ChevronDown className="w-4 h-4" /> : 
+            {node.isExpanded ? (
+              <ChevronDown className="w-4 h-4" />
+            ) : (
               <ChevronRight className="w-4 h-4" />
-            }
+            )}
           </button>
         )}
 
@@ -105,24 +123,28 @@ const NavigationItem = memo<{
               <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
             </div>
           ) : (
-            <BookOpen className={cn(
-              "w-4 h-4",
-              displayType === 'main' && "text-blue-500",
-              displayType === 'sidebar' && "text-gray-500",
-              displayType === 'card' && "text-purple-500",
-              displayType === 'filter' && "text-orange-500",
-              displayType === 'metadata' && "text-gray-400"
-            )} />
+            <BookOpen
+              className={cn(
+                'w-4 h-4',
+                displayType === 'main' && 'text-blue-500',
+                displayType === 'sidebar' && 'text-gray-500',
+                displayType === 'card' && 'text-purple-500',
+                displayType === 'filter' && 'text-orange-500',
+                displayType === 'metadata' && 'text-gray-400'
+              )}
+            />
           )}
         </div>
 
         {/* Node Name with Search Highlighting */}
-        <span className={cn(
-          "flex-1 text-sm",
-          priority === 'high' && "font-semibold",
-          priority === 'medium' && "font-medium",
-          priority === 'low' && "text-gray-600 dark:text-gray-400"
-        )}>
+        <span
+          className={cn(
+            'flex-1 text-sm',
+            priority === 'high' && 'font-semibold',
+            priority === 'medium' && 'font-medium',
+            priority === 'low' && 'text-gray-600 dark:text-gray-400'
+          )}
+        >
           {highlightText(node.name, searchQuery)}
         </span>
 
@@ -135,7 +157,7 @@ const NavigationItem = memo<{
               <div className="flex items-center gap-1">
                 <Clock className="w-3 h-3 text-gray-400" />
                 <div className="w-8 bg-gray-200 dark:bg-gray-700 rounded-full h-1">
-                  <div 
+                  <div
                     className="bg-blue-500 h-1 rounded-full transition-all duration-300"
                     style={{ width: `${node.progress}%` }}
                   />
@@ -187,21 +209,24 @@ NavigationItem.displayName = 'NavigationItem';
 const useVirtualScrolling = (items: NavigationNode[], containerHeight: number = 600) => {
   const [scrollTop, setScrollTop] = useState(0);
   const itemHeight = 40; // Approximate height per item
-  
+
   const visibleStart = Math.floor(scrollTop / itemHeight);
-  const visibleEnd = Math.min(visibleStart + Math.ceil(containerHeight / itemHeight) + 1, items.length);
-  
+  const visibleEnd = Math.min(
+    visibleStart + Math.ceil(containerHeight / itemHeight) + 1,
+    items.length
+  );
+
   const visibleItems = items.slice(visibleStart, visibleEnd);
   const totalHeight = items.length * itemHeight;
   const offsetY = visibleStart * itemHeight;
-  
+
   return {
     visibleItems,
     totalHeight,
     offsetY,
     onScroll: (e: React.UIEvent<HTMLDivElement>) => {
       setScrollTop(e.currentTarget.scrollTop);
-    }
+    },
   };
 };
 
@@ -213,7 +238,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
   enableFilters = true,
   enableProgress = true,
   enableVirtualization = false,
-  className
+  className,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -223,11 +248,16 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
   // Transform flat structure to hierarchical with performance optimization
   const navigationNodes = useMemo(() => {
     const nodes: NavigationNode[] = [];
-    
-    const processNode = (node: ContentNode, parentPath: string = '', depth: number = 0, parentId?: string): NavigationNode => {
+
+    const processNode = (
+      node: ContentNode,
+      parentPath: string = '',
+      depth: number = 0,
+      parentId?: string
+    ): NavigationNode => {
       const id = `${parentPath}-${node.slug || node.name.toLowerCase().replace(/\s+/g, '-')}`;
-      const path = parentPath ? `${parentPath}/${node.slug || ''}` : (node.slug || '');
-      
+      const path = parentPath ? `${parentPath}/${node.slug || ''}` : node.slug || '';
+
       const processedNode: NavigationNode = {
         ...node,
         id,
@@ -236,11 +266,11 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
         parentId,
         isExpanded: expandedNodes.has(id),
         isVisible: true,
-        matchesSearch: !searchQuery || node.name.toLowerCase().includes(searchQuery.toLowerCase())
+        matchesSearch: !searchQuery || node.name.toLowerCase().includes(searchQuery.toLowerCase()),
       };
 
       if (node.subsections) {
-        processedNode.subsections = node.subsections.map(child => 
+        processedNode.subsections = node.subsections.map((child) =>
           processNode(child, path, depth + 1, id)
         );
       }
@@ -248,7 +278,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
       return processedNode;
     };
 
-    contentStructure.forEach(section => {
+    contentStructure.forEach((section) => {
       nodes.push(processNode(section));
     });
 
@@ -259,17 +289,17 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
   const flattenedNodes = useMemo(() => {
     const flatten = (nodes: NavigationNode[]): NavigationNode[] => {
       const result: NavigationNode[] = [];
-      
-      nodes.forEach(node => {
+
+      nodes.forEach((node) => {
         result.push(node);
         if (node.subsections && node.isExpanded) {
           result.push(...flatten(node.subsections as NavigationNode[]));
         }
       });
-      
+
       return result;
     };
-    
+
     return flatten(navigationNodes);
   }, [navigationNodes]);
 
@@ -283,7 +313,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
         // Auto-expand nodes that contain search matches
         const matchingNodeIds = new Set<string>();
         const findMatches = (nodes: NavigationNode[]) => {
-          nodes.forEach(node => {
+          nodes.forEach((node) => {
             if (node.matchesSearch) {
               matchingNodeIds.add(node.id);
               if (node.parentId) matchingNodeIds.add(node.parentId);
@@ -302,7 +332,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
   }, [searchQuery, navigationNodes]);
 
   const handleToggle = useCallback((id: string) => {
-    setExpandedNodes(prev => {
+    setExpandedNodes((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
         newSet.delete(id);
@@ -313,9 +343,12 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
     });
   }, []);
 
-  const handleSelect = useCallback((path: string, node: NavigationNode) => {
-    onNavigate?.(path, node);
-  }, [onNavigate]);
+  const handleSelect = useCallback(
+    (path: string, node: NavigationNode) => {
+      onNavigate?.(path, node);
+    },
+    [onNavigate]
+  );
 
   const handleSearchFocus = useCallback(() => {
     searchInputRef.current?.focus();
@@ -340,15 +373,15 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
     { value: 'sidebar', label: 'Sidebar Content' },
     { value: 'interactive', label: 'Interactive Elements' },
     { value: 'high', label: 'High Priority' },
-    { value: 'medium', label: 'Medium Priority' }
+    { value: 'medium', label: 'Medium Priority' },
   ];
 
   return (
-    <div className={cn("flex flex-col h-full bg-white dark:bg-gray-900", className)}>
+    <div className={cn('flex flex-col h-full bg-white dark:bg-gray-900', className)}>
       {/* Header */}
       <div className="p-4 border-b border-gray-200 dark:border-gray-700">
         <h2 className="text-lg font-semibold mb-3">Content Navigation</h2>
-        
+
         {/* Search */}
         {enableSearch && (
           <div className="relative mb-3">
@@ -376,7 +409,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
               className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1
                          bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             >
-              {filterOptions.map(option => (
+              {filterOptions.map((option) => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -389,26 +422,23 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
       {/* Navigation Tree */}
       <div className="flex-1 overflow-hidden">
         {enableVirtualization ? (
-          <div 
-            className="h-full overflow-auto"
-            onScroll={virtualScrolling.onScroll}
-          >
-            <div 
-              style={{ 
+          <div className="h-full overflow-auto" onScroll={virtualScrolling.onScroll}>
+            <div
+              style={{
                 height: virtualScrolling.totalHeight,
-                position: 'relative'
+                position: 'relative',
               }}
             >
-              <div 
-                style={{ 
+              <div
+                style={{
                   transform: `translateY(${virtualScrolling.offsetY}px)`,
                   position: 'absolute',
                   top: 0,
                   left: 0,
-                  right: 0
+                  right: 0,
                 }}
               >
-                {virtualScrolling.visibleItems.map(node => (
+                {virtualScrolling.visibleItems.map((node) => (
                   <NavigationItem
                     key={node.id}
                     node={node}
@@ -424,7 +454,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
           </div>
         ) : (
           <div className="h-full overflow-auto p-2">
-            {navigationNodes.map(node => (
+            {navigationNodes.map((node) => (
               <NavigationItem
                 key={node.id}
                 node={node}
@@ -446,9 +476,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
             {navigationNodes.length} sections, {flattenedNodes.length} total items
           </span>
           {searchQuery && (
-            <span>
-              {flattenedNodes.filter(n => n.matchesSearch).length} matches
-            </span>
+            <span>{flattenedNodes.filter((n) => n.matchesSearch).length} matches</span>
           )}
         </div>
       </div>

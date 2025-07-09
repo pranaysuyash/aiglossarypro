@@ -1,15 +1,7 @@
-import { cn } from "@/lib/utils"
+import { cn } from '@/lib/utils';
 
-function Skeleton({
-  className,
-  ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
-  return (
-    <div
-      className={cn("animate-pulse rounded-md bg-muted", className)}
-      {...props}
-    />
-  )
+function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
+  return <div className={cn('animate-pulse rounded-md bg-muted', className)} {...props} />;
 }
 
 // Specific skeleton components for better UX
@@ -25,7 +17,7 @@ function TermHeaderSkeleton() {
         <Skeleton className="h-8 w-20" />
       </div>
     </div>
-  )
+  );
 }
 
 function TermContentSkeleton() {
@@ -47,7 +39,7 @@ function TermContentSkeleton() {
         <Skeleton className="h-24" />
       </div>
     </div>
-  )
+  );
 }
 
 function TermCardSkeleton() {
@@ -67,7 +59,7 @@ function TermCardSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function CategoryCardSkeleton() {
@@ -81,7 +73,7 @@ function CategoryCardSkeleton() {
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 function SearchResultSkeleton() {
@@ -98,14 +90,14 @@ function SearchResultSkeleton() {
         </div>
       ))}
     </div>
-  )
+  );
 }
 
-export { 
+export {
   Skeleton,
   TermHeaderSkeleton,
   TermContentSkeleton,
   TermCardSkeleton,
   CategoryCardSkeleton,
-  SearchResultSkeleton
-}
+  SearchResultSkeleton,
+};

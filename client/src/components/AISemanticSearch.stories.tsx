@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { AISemanticSearch } from './AISemanticSearch';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AISemanticSearch } from './AISemanticSearch';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -25,7 +25,8 @@ const meta: Meta<typeof AISemanticSearch> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'AI-powered semantic search component that provides intelligent search suggestions and results.',
+        component:
+          'AI-powered semantic search component that provides intelligent search suggestions and results.',
       },
     },
   },

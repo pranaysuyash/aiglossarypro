@@ -1,6 +1,6 @@
 /**
  * Bundle Analysis Utility
- * 
+ *
  * Provides runtime analysis of chunk loading and performance metrics.
  */
 
@@ -47,16 +47,16 @@ class BundleAnalyzer {
   private recordChunkLoad(resource: PerformanceResourceTiming): void {
     const chunkName = this.extractChunkName(resource.name);
     const loadTime = resource.responseEnd - resource.responseStart;
-    
+
     const metrics: ChunkMetrics = {
       name: chunkName,
       size: resource.transferSize || 0,
       loadTime,
-      loadedAt: resource.responseEnd
+      loadedAt: resource.responseEnd,
     };
 
     this.chunks.set(chunkName, metrics);
-    
+
     // Log slow chunks
     if (loadTime > 1000) {
       console.warn(`🐌 Slow chunk detected: ${chunkName} (${loadTime.toFixed(2)}ms)`);
@@ -70,25 +70,27 @@ class BundleAnalyzer {
 
   getStats(): BundleStats {
     const chunks = Array.from(this.chunks.values());
-    
+
     return {
       totalChunks: chunks.length,
       totalSize: chunks.reduce((sum, chunk) => sum + chunk.size, 0),
-      averageLoadTime: chunks.length > 0 
-        ? chunks.reduce((sum, chunk) => sum + chunk.loadTime, 0) / chunks.length 
-        : 0,
-      largestChunk: chunks.length > 0 
-        ? chunks.reduce((prev, curr) => curr.size > prev.size ? curr : prev) 
-        : null,
-      slowestChunk: chunks.length > 0 
-        ? chunks.reduce((prev, curr) => curr.loadTime > prev.loadTime ? curr : prev) 
-        : null
+      averageLoadTime:
+        chunks.length > 0
+          ? chunks.reduce((sum, chunk) => sum + chunk.loadTime, 0) / chunks.length
+          : 0,
+      largestChunk:
+        chunks.length > 0
+          ? chunks.reduce((prev, curr) => (curr.size > prev.size ? curr : prev))
+          : null,
+      slowestChunk:
+        chunks.length > 0
+          ? chunks.reduce((prev, curr) => (curr.loadTime > prev.loadTime ? curr : prev))
+          : null,
     };
   }
 
   getChunkAnalysis(): ChunkMetrics[] {
-    return Array.from(this.chunks.values())
-      .sort((a, b) => b.size - a.size); // Sort by size descending
+    return Array.from(this.chunks.values()).sort((a, b) => b.size - a.size); // Sort by size descending
   }
 
   logAnalysis(): void {
@@ -99,13 +101,17 @@ class BundleAnalyzer {
     console.log(`Total chunks loaded: ${stats.totalChunks}`);
     console.log(`Total size: ${this.formatBytes(stats.totalSize)}`);
     console.log(`Average load time: ${stats.averageLoadTime.toFixed(2)}ms`);
-    
+
     if (stats.largestChunk) {
-      console.log(`Largest chunk: ${stats.largestChunk.name} (${this.formatBytes(stats.largestChunk.size)})`);
+      console.log(
+        `Largest chunk: ${stats.largestChunk.name} (${this.formatBytes(stats.largestChunk.size)})`
+      );
     }
-    
+
     if (stats.slowestChunk) {
-      console.log(`Slowest chunk: ${stats.slowestChunk.name} (${stats.slowestChunk.loadTime.toFixed(2)}ms)`);
+      console.log(
+        `Slowest chunk: ${stats.slowestChunk.name} (${stats.slowestChunk.loadTime.toFixed(2)}ms)`
+      );
     }
 
     if (chunks.length > 0) {
@@ -120,7 +126,7 @@ class BundleAnalyzer {
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`;
   }
 
   // Monitor Core Web Vitals related to bundle loading
@@ -139,7 +145,7 @@ class BundleAnalyzer {
       // First Input Delay
       const fidObserver = new PerformanceObserver((list) => {
         const entries = list.getEntries();
-        entries.forEach(entry => {
+        entries.forEach((entry) => {
           const performanceEntry = entry as PerformanceEventTiming;
           if (performanceEntry.processingStart) {
             const fid = performanceEntry.processingStart - entry.startTime;
@@ -158,7 +164,8 @@ class BundleAnalyzer {
     const stats = this.getStats();
     const recommendations: string[] = [];
 
-    if (stats.totalSize > 2 * 1024 * 1024) { // 2MB threshold
+    if (stats.totalSize > 2 * 1024 * 1024) {
+      // 2MB threshold
       recommendations.push('Consider code splitting for large bundles');
     }
 
@@ -166,13 +173,14 @@ class BundleAnalyzer {
       recommendations.push('Optimize chunk loading performance');
     }
 
-    if (stats.largestChunk && stats.largestChunk.size > 500 * 1024) { // 500KB threshold
+    if (stats.largestChunk && stats.largestChunk.size > 500 * 1024) {
+      // 500KB threshold
       recommendations.push(`Split large chunk: ${stats.largestChunk.name}`);
     }
 
     if (recommendations.length > 0) {
       console.group('💡 Bundle Optimization Recommendations');
-      recommendations.forEach(rec => console.log(`• ${rec}`));
+      recommendations.forEach((rec) => console.log(`• ${rec}`));
       console.groupEnd();
     } else {
       console.log('✅ Bundle efficiency looks good!');
@@ -180,7 +188,7 @@ class BundleAnalyzer {
   }
 
   destroy(): void {
-    this.observers.forEach(observer => observer.disconnect());
+    this.observers.forEach((observer) => observer.disconnect());
     this.observers = [];
   }
 }
@@ -191,7 +199,7 @@ export const bundleAnalyzer = new BundleAnalyzer();
 // Auto-start monitoring in development
 if (import.meta.env.DEV) {
   bundleAnalyzer.monitorWebVitals();
-  
+
   // Log analysis after page load
   window.addEventListener('load', () => {
     setTimeout(() => {

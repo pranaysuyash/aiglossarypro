@@ -2,9 +2,9 @@
  * Advanced Analytics Service with Comprehensive Usage Monitoring
  * Tracks user behavior, search queries, performance metrics, and system health
  */
-import { db } from '../db';
+
 import { sql } from 'drizzle-orm';
-import { TIME_CONSTANTS } from '../utils/constants';
+import { db } from '../db';
 import { getLastNDaysRange } from '../utils/dateHelpers';
 
 export interface SearchAnalytics {
@@ -66,14 +66,19 @@ export class AnalyticsService {
   }
 
   // Track search queries and their performance
-  async trackSearch(query: string, resultsCount: number, responseTimeMs: number, userIp?: string): Promise<void> {
+  async trackSearch(
+    query: string,
+    resultsCount: number,
+    responseTimeMs: number,
+    userIp?: string
+  ): Promise<void> {
     try {
       const searchEvent: SearchAnalytics = {
         query: query.toLowerCase().trim(),
         results_count: resultsCount,
         timestamp: new Date(),
         user_ip: userIp,
-        response_time_ms: responseTimeMs
+        response_time_ms: responseTimeMs,
       };
 
       this.searchQueries.push(searchEvent);
@@ -91,7 +96,13 @@ export class AnalyticsService {
   }
 
   // Track page views and user engagement
-  async trackPageView(page: string, termId?: string, userIp?: string, referrer?: string, userAgent?: string): Promise<void> {
+  async trackPageView(
+    page: string,
+    termId?: string,
+    userIp?: string,
+    referrer?: string,
+    userAgent?: string
+  ): Promise<void> {
     try {
       const pageViewEvent: PageViewAnalytics = {
         page,
@@ -99,7 +110,7 @@ export class AnalyticsService {
         timestamp: new Date(),
         user_ip: userIp,
         referrer,
-        user_agent: userAgent
+        user_agent: userAgent,
       };
 
       this.pageViews.push(pageViewEvent);
@@ -119,7 +130,14 @@ export class AnalyticsService {
   }
 
   // Track API performance and system metrics
-  async trackPerformance(endpoint: string, method: string, responseTimeMs: number, statusCode: number, memoryUsageMb?: number, cpuUsagePercent?: number): Promise<void> {
+  async trackPerformance(
+    endpoint: string,
+    method: string,
+    responseTimeMs: number,
+    statusCode: number,
+    memoryUsageMb?: number,
+    cpuUsagePercent?: number
+  ): Promise<void> {
     try {
       const performanceEvent: PerformanceMetrics = {
         endpoint,
@@ -128,7 +146,7 @@ export class AnalyticsService {
         status_code: statusCode,
         timestamp: new Date(),
         memory_usage_mb: memoryUsageMb,
-        cpu_usage_percent: cpuUsagePercent
+        cpu_usage_percent: cpuUsagePercent,
       };
 
       this.performanceMetrics.push(performanceEvent);
@@ -143,7 +161,13 @@ export class AnalyticsService {
   }
 
   // Track user interactions for behavior analysis
-  async trackUserInteraction(action: UserInteractionAnalytics['action'], termId?: string, query?: string, userIp?: string, sessionId?: string): Promise<void> {
+  async trackUserInteraction(
+    action: UserInteractionAnalytics['action'],
+    termId?: string,
+    query?: string,
+    userIp?: string,
+    sessionId?: string
+  ): Promise<void> {
     try {
       const interactionEvent: UserInteractionAnalytics = {
         action,
@@ -151,7 +175,7 @@ export class AnalyticsService {
         query,
         timestamp: new Date(),
         user_ip: userIp,
-        session_id: sessionId
+        session_id: sessionId,
       };
 
       this.userInteractions.push(interactionEvent);
@@ -172,7 +196,7 @@ export class AnalyticsService {
         day: 1,
         week: 7,
         month: 30,
-        year: 365
+        year: 365,
       };
 
       const days = timeframeDays[timeframe];
@@ -257,16 +281,16 @@ export class AnalyticsService {
         timeframe,
         search: {
           stats: searchStats.rows[0] || {},
-          popular_queries: popularSearches.rows || []
+          popular_queries: popularSearches.rows || [],
         },
         pageViews: {
           stats: pageViewStats.rows[0] || {},
-          popular_terms: popularTerms.rows || []
+          popular_terms: popularTerms.rows || [],
         },
         performance: performanceStats.rows[0] || {},
         interactions: interactionStats.rows || [],
         traffic_pattern: trafficPattern.rows || [],
-        generated_at: new Date().toISOString()
+        generated_at: new Date().toISOString(),
       };
     } catch (error) {
       console.error('Failed to get dashboard data:', error);
@@ -313,7 +337,7 @@ export class AnalyticsService {
         no_result_queries: noResultQueries || [],
         slow_searches: slowSearches || [],
         search_trends: searchTrends || [],
-        generated_at: new Date().toISOString()
+        generated_at: new Date().toISOString(),
       };
     } catch (error) {
       console.error('Failed to get search insights:', error);
@@ -327,7 +351,7 @@ export class AnalyticsService {
       this.flushSearchAnalytics(),
       this.flushPageViewAnalytics(),
       this.flushPerformanceAnalytics(),
-      this.flushUserInteractionAnalytics()
+      this.flushUserInteractionAnalytics(),
     ]);
   }
 
@@ -353,7 +377,7 @@ export class AnalyticsService {
       // Batch insert search analytics
       for (const query of queries) {
         const userIp = query.user_ip ?? null;
-        
+
         await db.execute(sql`
           INSERT INTO search_analytics (query, results_count, response_time_ms, user_ip)
           VALUES (${query.query}, ${query.results_count}, ${query.response_time_ms}, ${userIp})
@@ -392,7 +416,7 @@ export class AnalyticsService {
         const referrer = view.referrer ?? null;
         const userAgent = view.user_agent ?? null;
         const sessionDuration = view.session_duration_ms ?? null;
-        
+
         await db.execute(sql`
           INSERT INTO page_view_analytics (page, term_id, user_ip, referrer, user_agent, session_duration_ms)
           VALUES (${view.page}, ${termId}, ${userIp}, ${referrer}, ${userAgent}, ${sessionDuration})
@@ -428,7 +452,7 @@ export class AnalyticsService {
       for (const metric of metrics) {
         const memoryUsage = metric.memory_usage_mb ?? null;
         const cpuUsage = metric.cpu_usage_percent ?? null;
-        
+
         await db.execute(sql`
           INSERT INTO performance_metrics (endpoint, method, response_time_ms, status_code, memory_usage_mb, cpu_usage_percent)
           VALUES (${metric.endpoint}, ${metric.method}, ${metric.response_time_ms}, ${metric.status_code}, ${memoryUsage}, ${cpuUsage})
@@ -465,7 +489,7 @@ export class AnalyticsService {
         const query = interaction.query ?? null;
         const userIp = interaction.user_ip ?? null;
         const sessionId = interaction.session_id ?? null;
-        
+
         await db.execute(sql`
           INSERT INTO user_interaction_analytics (action, term_id, query, user_ip, session_id)
           VALUES (${interaction.action}, ${termId}, ${query}, ${userIp}, ${sessionId})

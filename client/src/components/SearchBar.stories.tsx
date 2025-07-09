@@ -1,7 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
 // Mock function for actions
 const fn = () => () => {};
+
 import SearchBar from './SearchBar';
 
 // Create a mock query client for stories
@@ -20,7 +22,8 @@ const meta: Meta<typeof SearchBar> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A comprehensive search bar with autocomplete, suggestions, and advanced search features.',
+        component:
+          'A comprehensive search bar with autocomplete, suggestions, and advanced search features.',
       },
     },
   },
@@ -159,4 +162,4 @@ export const DarkMode: Story = {
       </QueryClientProvider>
     ),
   ],
-}; 
+};

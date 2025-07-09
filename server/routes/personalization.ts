@@ -1,22 +1,28 @@
-import type { Express, Request, Response } from "express";
-import { mockIsAuthenticated } from "../middleware/dev/mockAuth";
-import { personalizationService } from "../services/personalizationService";
-import { behaviorTrackingMiddleware, trackUserAction, BehaviorTrackingRequest } from "../middleware/behaviorTrackingMiddleware";
-import { log as logger } from "../utils/logger";
-import { z } from "zod";
+import type { Express, Response } from 'express';
+import { z } from 'zod';
+import {
+  type BehaviorTrackingRequest,
+  behaviorTrackingMiddleware,
+  trackUserAction,
+} from '../middleware/behaviorTrackingMiddleware';
+import { mockIsAuthenticated } from '../middleware/dev/mockAuth';
+import { personalizationService } from '../services/personalizationService';
+import { log as logger } from '../utils/logger';
 
 // Validation schemas
 const PersonalizedHomepageSchema = z.object({
-  context: z.object({
-    timeOfDay: z.enum(['morning', 'afternoon', 'evening', 'night']).optional(),
-    dayOfWeek: z.string().optional(),
-    sessionLength: z.number().optional(),
-    deviceType: z.enum(['mobile', 'tablet', 'desktop']).optional(),
-    currentPath: z.string().optional(),
-    referrer: z.string().optional()
-  }).optional(),
+  context: z
+    .object({
+      timeOfDay: z.enum(['morning', 'afternoon', 'evening', 'night']).optional(),
+      dayOfWeek: z.string().optional(),
+      sessionLength: z.number().optional(),
+      deviceType: z.enum(['mobile', 'tablet', 'desktop']).optional(),
+      currentPath: z.string().optional(),
+      referrer: z.string().optional(),
+    })
+    .optional(),
   limit: z.number().min(1).max(50).default(20),
-  sections: z.array(z.string()).optional()
+  sections: z.array(z.string()).optional(),
 });
 
 const BehaviorEventSchema = z.object({
@@ -24,22 +30,22 @@ const BehaviorEventSchema = z.object({
   entityType: z.string(),
   entityId: z.string(),
   context: z.record(z.any()).optional(),
-  timestamp: z.string().optional()
+  timestamp: z.string().optional(),
 });
 
 const RecommendationFeedbackSchema = z.object({
   recommendationId: z.string(),
   feedback: z.enum(['positive', 'negative', 'neutral']),
-  reason: z.string().optional()
+  reason: z.string().optional(),
 });
 
-interface AuthenticatedRequest extends BehaviorTrackingRequest {
+type AuthenticatedRequest = BehaviorTrackingRequest & {
   user: {
     claims: {
       sub: string;
     };
   };
-}
+};
 
 /**
  * Personalization routes for AI-powered homepage
@@ -48,13 +54,14 @@ export function registerPersonalizationRoutes(app: Express): void {
   const authMiddleware = mockIsAuthenticated;
 
   // Get personalized homepage data
-  app.get('/api/personalization/homepage', 
+  app.get(
+    '/api/personalization/homepage',
     authMiddleware as any,
     behaviorTrackingMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
         const userId = req.user.claims.sub;
-        
+
         // Parse and validate query parameters
         const validation = PersonalizedHomepageSchema.safeParse({
           context: {
@@ -62,17 +69,17 @@ export function registerPersonalizationRoutes(app: Express): void {
             dayOfWeek: new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase(),
             deviceType: req.headers['user-agent']?.includes('Mobile') ? 'mobile' : 'desktop',
             currentPath: req.path,
-            referrer: req.headers.referer
+            referrer: req.headers.referer,
           },
           limit: parseInt(req.query.limit as string) || 20,
-          sections: req.query.sections ? (req.query.sections as string).split(',') : undefined
+          sections: req.query.sections ? (req.query.sections as string).split(',') : undefined,
         });
 
         if (!validation.success) {
           return res.status(400).json({
             success: false,
-            message: "Invalid request parameters",
-            errors: validation.error.issues
+            message: 'Invalid request parameters',
+            errors: validation.error.issues,
           });
         }
 
@@ -84,7 +91,7 @@ export function registerPersonalizationRoutes(app: Express): void {
           context: context!,
           recommendationType: 'homepage',
           limit,
-          excludeIds: []
+          excludeIds: [],
         });
 
         // Get user's learning profile for additional context
@@ -96,14 +103,14 @@ export function registerPersonalizationRoutes(app: Express): void {
           recommendations,
           userProfile,
           requestedSections: sections,
-          context: context!
+          context: context!,
         });
 
         // Track homepage view
         await trackUserAction(req, 'view', 'homepage', 'personalized', {
           sectionsRequested: sections?.length || 0,
           recommendationsCount: recommendations.length,
-          userExperienceLevel: userProfile.preferredComplexity
+          userExperienceLevel: userProfile.preferredComplexity,
         });
 
         res.json({
@@ -112,28 +119,31 @@ export function registerPersonalizationRoutes(app: Express): void {
           metadata: {
             generatedAt: new Date().toISOString(),
             algorithmVersion: 'v1.2.0',
-            personalizationLevel: calculatePersonalizationLevel(userProfile, recommendations.length),
-            cacheExpiry: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes
-          }
+            personalizationLevel: calculatePersonalizationLevel(
+              userProfile,
+              recommendations.length
+            ),
+            cacheExpiry: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes
+          },
         });
-
       } catch (error) {
-        logger.error('Error generating personalized homepage', { 
+        logger.error('Error generating personalized homepage', {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
-          userId: req.user?.claims?.sub
+          userId: req.user?.claims?.sub,
         });
-        
+
         res.status(500).json({
           success: false,
-          message: "Failed to generate personalized homepage"
+          message: 'Failed to generate personalized homepage',
         });
       }
     }
   );
 
   // Get personalized recommendations for a specific context
-  app.get('/api/personalization/recommendations/:type',
+  app.get(
+    '/api/personalization/recommendations/:type',
     authMiddleware as any,
     behaviorTrackingMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
@@ -143,10 +153,14 @@ export function registerPersonalizationRoutes(app: Express): void {
         const limit = parseInt(req.query.limit as string) || 10;
         const excludeIds = req.query.exclude ? (req.query.exclude as string).split(',') : [];
 
-        if (!['homepage', 'term_detail', 'category_page', 'search_results'].includes(recommendationType)) {
+        if (
+          !['homepage', 'term_detail', 'category_page', 'search_results'].includes(
+            recommendationType
+          )
+        ) {
           return res.status(400).json({
             success: false,
-            message: "Invalid recommendation type"
+            message: 'Invalid recommendation type',
           });
         }
 
@@ -154,9 +168,11 @@ export function registerPersonalizationRoutes(app: Express): void {
           timeOfDay: determineTimeOfDay(),
           dayOfWeek: new Date().toLocaleDateString('en-US', { weekday: 'long' }).toLowerCase(),
           sessionLength: 0,
-          deviceType: req.headers['user-agent']?.includes('Mobile') ? 'mobile' as const : 'desktop' as const,
+          deviceType: req.headers['user-agent']?.includes('Mobile')
+            ? ('mobile' as const)
+            : ('desktop' as const),
           currentPath: req.path,
-          referrer: req.headers.referer
+          referrer: req.headers.referer,
         };
 
         const recommendations = await personalizationService.getPersonalizedRecommendations({
@@ -164,15 +180,21 @@ export function registerPersonalizationRoutes(app: Express): void {
           context,
           recommendationType: recommendationType as any,
           limit,
-          excludeIds
+          excludeIds,
         });
 
         // Track recommendation request
-        await trackUserAction(req, 'recommendation_request', 'recommendations', recommendationType, {
-          limit,
-          excludeCount: excludeIds.length,
-          resultCount: recommendations.length
-        });
+        await trackUserAction(
+          req,
+          'recommendation_request',
+          'recommendations',
+          recommendationType,
+          {
+            limit,
+            excludeCount: excludeIds.length,
+            resultCount: recommendations.length,
+          }
+        );
 
         res.json({
           success: true,
@@ -180,39 +202,39 @@ export function registerPersonalizationRoutes(app: Express): void {
           metadata: {
             type: recommendationType,
             generatedAt: new Date().toISOString(),
-            count: recommendations.length
-          }
+            count: recommendations.length,
+          },
         });
-
       } catch (error) {
-        logger.error('Error getting personalized recommendations', { 
+        logger.error('Error getting personalized recommendations', {
           error: error instanceof Error ? error.message : String(error),
           type: req.params.type,
-          userId: req.user?.claims?.sub
+          userId: req.user?.claims?.sub,
         });
-        
+
         res.status(500).json({
           success: false,
-          message: "Failed to get recommendations"
+          message: 'Failed to get recommendations',
         });
       }
     }
   );
 
   // Track user behavior event
-  app.post('/api/personalization/track',
+  app.post(
+    '/api/personalization/track',
     authMiddleware as any,
     behaviorTrackingMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
-        const userId = req.user.claims.sub;
-        
+        const _userId = req.user.claims.sub;
+
         const validation = BehaviorEventSchema.safeParse(req.body);
         if (!validation.success) {
           return res.status(400).json({
             success: false,
-            message: "Invalid event data",
-            errors: validation.error.issues
+            message: 'Invalid event data',
+            errors: validation.error.issues,
           });
         }
 
@@ -222,38 +244,38 @@ export function registerPersonalizationRoutes(app: Express): void {
 
         res.json({
           success: true,
-          message: "Event tracked successfully"
+          message: 'Event tracked successfully',
         });
-
       } catch (error) {
-        logger.error('Error tracking behavior event', { 
+        logger.error('Error tracking behavior event', {
           error: error instanceof Error ? error.message : String(error),
           body: req.body,
-          userId: req.user?.claims?.sub
+          userId: req.user?.claims?.sub,
         });
-        
+
         res.status(500).json({
           success: false,
-          message: "Failed to track event"
+          message: 'Failed to track event',
         });
       }
     }
   );
 
   // Provide feedback on recommendations
-  app.post('/api/personalization/feedback',
+  app.post(
+    '/api/personalization/feedback',
     authMiddleware as any,
     behaviorTrackingMiddleware,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
         const userId = req.user.claims.sub;
-        
+
         const validation = RecommendationFeedbackSchema.safeParse(req.body);
         if (!validation.success) {
           return res.status(400).json({
             success: false,
-            message: "Invalid feedback data",
-            errors: validation.error.issues
+            message: 'Invalid feedback data',
+            errors: validation.error.issues,
           });
         }
 
@@ -263,7 +285,7 @@ export function registerPersonalizationRoutes(app: Express): void {
         await trackUserAction(req, 'recommendation_feedback', 'recommendation', recommendationId, {
           feedback,
           reason,
-          timestamp: new Date().toISOString()
+          timestamp: new Date().toISOString(),
         });
 
         // Store feedback for improving recommendations
@@ -275,68 +297,68 @@ export function registerPersonalizationRoutes(app: Express): void {
           context: { feedback, reason },
           session_id: req.trackingContext?.sessionId || '',
           user_agent: req.headers['user-agent'] || '',
-          ip_address: req.trackingContext?.ipAddress || ''
+          ip_address: req.trackingContext?.ipAddress || '',
         });
 
         res.json({
           success: true,
-          message: "Feedback recorded successfully"
+          message: 'Feedback recorded successfully',
         });
-
       } catch (error) {
-        logger.error('Error recording recommendation feedback', { 
+        logger.error('Error recording recommendation feedback', {
           error: error instanceof Error ? error.message : String(error),
           body: req.body,
-          userId: req.user?.claims?.sub
+          userId: req.user?.claims?.sub,
         });
-        
+
         res.status(500).json({
           success: false,
-          message: "Failed to record feedback"
+          message: 'Failed to record feedback',
         });
       }
     }
   );
 
   // Get user's personalization profile
-  app.get('/api/personalization/profile',
+  app.get(
+    '/api/personalization/profile',
     authMiddleware as any,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
         const userId = req.user.claims.sub;
-        
+
         const profile = await personalizationService.getUserPersonalizationProfile(userId);
 
         res.json({
           success: true,
-          data: profile
+          data: profile,
+        });
+      } catch (error) {
+        logger.error('Error getting user profile', {
+          error: error instanceof Error ? error.message : String(error),
+          userId: req.user?.claims?.sub,
         });
 
-      } catch (error) {
-        logger.error('Error getting user profile', { 
-          error: error instanceof Error ? error.message : String(error),
-          userId: req.user?.claims?.sub
-        });
-        
         res.status(500).json({
           success: false,
-          message: "Failed to get user profile"
+          message: 'Failed to get user profile',
         });
       }
     }
   );
 
   // Analytics endpoints for behavior tracking
-  app.post('/api/analytics/scroll-depth',
+  app.post(
+    '/api/analytics/scroll-depth',
     authMiddleware as any,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
-        const userId = req.user.claims.sub;
+        const _userId = req.user.claims.sub;
         const { depth, timestamp } = req.body;
 
         await trackUserAction(req, 'scroll_depth', 'page', req.path, {
           scrollDepth: depth,
-          timeToScroll: timestamp
+          timeToScroll: timestamp,
         });
 
         res.json({ success: true });
@@ -347,14 +369,21 @@ export function registerPersonalizationRoutes(app: Express): void {
     }
   );
 
-  app.post('/api/analytics/interaction',
+  app.post(
+    '/api/analytics/interaction',
     authMiddleware as any,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
-        const userId = req.user.claims.sub;
+        const _userId = req.user.claims.sub;
         const interactionData = req.body;
 
-        await trackUserAction(req, 'ui_interaction', 'element', interactionData.element || 'unknown', interactionData);
+        await trackUserAction(
+          req,
+          'ui_interaction',
+          'element',
+          interactionData.element || 'unknown',
+          interactionData
+        );
 
         res.json({ success: true });
       } catch (error) {
@@ -364,18 +393,19 @@ export function registerPersonalizationRoutes(app: Express): void {
     }
   );
 
-  app.post('/api/analytics/time-spent',
+  app.post(
+    '/api/analytics/time-spent',
     authMiddleware as any,
     async (req: AuthenticatedRequest, res: Response) => {
       try {
-        const userId = req.user.claims.sub;
+        const _userId = req.user.claims.sub;
         const { timeSpent, maxScrollDepth, interactions, url } = req.body;
 
         await trackUserAction(req, 'session_summary', 'page', url || req.path, {
           timeSpent,
           maxScrollDepth,
           interactions,
-          sessionEnd: true
+          sessionEnd: true,
         });
 
         res.json({ success: true });
@@ -386,7 +416,7 @@ export function registerPersonalizationRoutes(app: Express): void {
     }
   );
 
-  logger.info("Personalization routes registered successfully");
+  logger.info('Personalization routes registered successfully');
 }
 
 // Helper functions
@@ -415,7 +445,7 @@ async function buildPersonalizedHomepage(params: {
     'trending_topics',
     'explore_categories',
     'learning_paths',
-    'recent_activity'
+    'recent_activity',
   ];
 
   const sections = requestedSections || defaultSections;
@@ -426,41 +456,41 @@ async function buildPersonalizedHomepage(params: {
       case 'welcome_banner':
         homepage.welcomeBanner = buildWelcomeBanner(userProfile, context);
         break;
-      
+
       case 'recommended_for_you':
         homepage.recommendedForYou = recommendations
-          .filter(r => r.type === 'term')
+          .filter((r) => r.type === 'term')
           .slice(0, 6)
-          .map(r => ({
+          .map((r) => ({
             ...r,
-            displayPriority: 'high'
+            displayPriority: 'high',
           }));
         break;
-      
+
       case 'continue_learning':
         homepage.continueLearning = recommendations
-          .filter(r => r.metadata.algorithm === 'content_based')
+          .filter((r) => r.metadata.algorithm === 'content_based')
           .slice(0, 3);
         break;
-      
+
       case 'trending_topics':
         homepage.trendingTopics = recommendations
-          .filter(r => r.metadata.popularity > 100)
+          .filter((r) => r.metadata.popularity > 100)
           .slice(0, 4);
         break;
-      
+
       case 'explore_categories':
         homepage.exploreCategories = recommendations
-          .filter(r => r.type === 'category')
+          .filter((r) => r.type === 'category')
           .slice(0, 6);
         break;
-      
+
       case 'learning_paths':
         homepage.learningPaths = recommendations
-          .filter(r => r.type === 'learning_path')
+          .filter((r) => r.type === 'learning_path')
           .slice(0, 3);
         break;
-      
+
       case 'recent_activity':
         // This would come from user's recent behavior
         homepage.recentActivity = [];
@@ -474,25 +504,25 @@ async function buildPersonalizedHomepage(params: {
 function buildWelcomeBanner(userProfile: any, context: any) {
   const timeOfDay = context.timeOfDay;
   const complexity = userProfile.preferredComplexity;
-  
-  let greeting = "Welcome back!";
-  let suggestion = "";
+
+  let greeting = 'Welcome back!';
+  let suggestion = '';
 
   switch (timeOfDay) {
     case 'morning':
-      greeting = "Good morning!";
+      greeting = 'Good morning!';
       suggestion = `Start your day with some ${complexity}-level AI concepts`;
       break;
     case 'afternoon':
-      greeting = "Good afternoon!";
+      greeting = 'Good afternoon!';
       suggestion = `Perfect time to dive into practical AI applications`;
       break;
     case 'evening':
-      greeting = "Good evening!";
+      greeting = 'Good evening!';
       suggestion = `Wind down with some interesting AI theory`;
       break;
     case 'night':
-      greeting = "Working late?";
+      greeting = 'Working late?';
       suggestion = `Here are some quick AI insights for you`;
       break;
   }
@@ -502,16 +532,20 @@ function buildWelcomeBanner(userProfile: any, context: any) {
     suggestion,
     userLevel: complexity,
     timeOfDay,
-    personalizedMessage: true
+    personalizedMessage: true,
   };
 }
 
-function calculatePersonalizationLevel(userProfile: any, recommendationCount: number): 'low' | 'medium' | 'high' {
+function calculatePersonalizationLevel(
+  userProfile: any,
+  recommendationCount: number
+): 'low' | 'medium' | 'high' {
   // Calculate how personalized the experience is based on available data
   let score = 0;
-  
+
   if (userProfile.interestCategories.length > 0) score += 20;
-  if (userProfile.engagementPatterns && Object.keys(userProfile.engagementPatterns).length > 0) score += 20;
+  if (userProfile.engagementPatterns && Object.keys(userProfile.engagementPatterns).length > 0)
+    score += 20;
   if (userProfile.skillLevel && Object.keys(userProfile.skillLevel).length > 0) score += 20;
   if (userProfile.activeGoals.length > 0) score += 20;
   if (recommendationCount > 10) score += 20;

@@ -25,7 +25,7 @@ export default function SectionViewTracker({
   className,
   threshold = 0.5,
   rootMargin = '0px',
-  trackOnce = true
+  trackOnce = true,
 }: SectionViewTrackerProps) {
   const { trackSectionView } = useGA4();
   const elementRef = useRef<HTMLDivElement>(null);
@@ -43,7 +43,7 @@ export default function SectionViewTracker({
             if (!trackOnce || !hasTracked.current) {
               trackSectionView(sectionName, sectionPosition);
               hasTracked.current = true;
-              
+
               if (import.meta.env.NODE_ENV === 'development') {
                 console.log(`Section view tracked: ${sectionName} (position: ${sectionPosition})`);
               }
@@ -53,7 +53,7 @@ export default function SectionViewTracker({
       },
       {
         threshold,
-        rootMargin
+        rootMargin,
       }
     );
 
@@ -75,11 +75,7 @@ export default function SectionViewTracker({
 
   // If no children, render as invisible tracker element
   return (
-    <div 
-      ref={elementRef} 
-      className={`invisible absolute ${className || ''}`}
-      aria-hidden="true"
-    />
+    <div ref={elementRef} className={`invisible absolute ${className || ''}`} aria-hidden="true" />
   );
 }
 
@@ -89,7 +85,7 @@ export function useSectionViewTracking() {
 
   const trackManualSectionView = (sectionName: string, position?: number) => {
     trackSectionView(sectionName, position);
-    
+
     if (import.meta.env.NODE_ENV === 'development') {
       console.log(`Manual section view tracked: ${sectionName} (position: ${position || 0})`);
     }
@@ -104,12 +100,8 @@ export function useSectionViewTracking() {
       trackOnce?: boolean;
     } = {}
   ) => {
-    const { 
-      threshold = 0.5, 
-      rootMargin = '0px', 
-      trackOnce = true 
-    } = options;
-    
+    const { threshold = 0.5, rootMargin = '0px', trackOnce = true } = options;
+
     let hasTracked = false;
 
     return new IntersectionObserver(
@@ -119,7 +111,7 @@ export function useSectionViewTracking() {
             if (!trackOnce || !hasTracked) {
               trackSectionView(sectionName, position);
               hasTracked = true;
-              
+
               if (import.meta.env.NODE_ENV === 'development') {
                 console.log(`Section view tracked: ${sectionName} (position: ${position})`);
               }
@@ -129,14 +121,14 @@ export function useSectionViewTracking() {
       },
       {
         threshold,
-        rootMargin
+        rootMargin,
       }
     );
   };
 
   return {
     trackManualSectionView,
-    createSectionObserver
+    createSectionObserver,
   };
 }
 

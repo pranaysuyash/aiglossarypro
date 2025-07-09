@@ -1,20 +1,20 @@
-import { useQuery } from "@tanstack/react-query";
-import { Link } from "wouter";
-import TermCard from "@/components/TermCard";
-import { Badge } from "@/components/ui/badge";
-import { ITerm } from "@/interfaces/interfaces";
-import { TrendingUp, Calendar, Eye } from "lucide-react";
+import { useQuery } from '@tanstack/react-query';
+import { Calendar, Eye, TrendingUp } from 'lucide-react';
+import { Link } from 'wouter';
+import TermCard from '@/components/TermCard';
+import { Badge } from '@/components/ui/badge';
+import type { ITerm } from '@/interfaces/interfaces';
 
 export default function Trending() {
   // Fetch trending terms (most viewed)
   const { data: trendingTerms, isLoading: trendingLoading } = useQuery({
-    queryKey: ["/api/terms/trending"],
+    queryKey: ['/api/terms/trending'],
     refetchOnWindowFocus: false,
   });
 
   // Fetch recently added terms
   const { data: recentTerms, isLoading: recentLoading } = useQuery({
-    queryKey: ["/api/terms/recent"],
+    queryKey: ['/api/terms/recent'],
     refetchOnWindowFocus: false,
   });
 
@@ -23,11 +23,13 @@ export default function Trending() {
       {/* Header */}
       <div className="mb-8">
         <div className="flex items-center gap-2 text-sm text-gray-500 mb-4">
-          <Link href="/" className="hover:text-primary">Home</Link>
+          <Link href="/" className="hover:text-primary">
+            Home
+          </Link>
           <span>/</span>
           <span className="text-gray-900 font-medium">Trending</span>
         </div>
-        
+
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex items-center gap-3">
@@ -45,18 +47,17 @@ export default function Trending() {
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <Eye className="h-5 w-5 text-primary" />
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            Most Viewed
-          </h2>
-          <Badge variant="secondary">
-            Popular this week
-          </Badge>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Most Viewed</h2>
+          <Badge variant="secondary">Popular this week</Badge>
         </div>
-        
+
         {trendingLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+              <div
+                key={i}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4"
+              >
                 <div className="animate-pulse">
                   <div className="flex justify-between mb-2">
                     <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
@@ -75,14 +76,11 @@ export default function Trending() {
               </div>
             ))}
           </div>
-        ) : (trendingTerms as ITerm[] || []).length > 0 ? (
+        ) : ((trendingTerms as ITerm[]) || []).length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {(trendingTerms as ITerm[]).slice(0, 6).map((term, index) => (
               <div key={term.id} className="relative">
-                <TermCard
-                  term={term}
-                  isFavorite={false}
-                />
+                <TermCard term={term} isFavorite={false} />
                 {/* Trending badge */}
                 <div className="absolute -top-2 -right-2">
                   <Badge variant="default" className="bg-orange-500 hover:bg-orange-600">
@@ -109,18 +107,17 @@ export default function Trending() {
       <div className="mb-12">
         <div className="flex items-center gap-3 mb-6">
           <Calendar className="h-5 w-5 text-primary" />
-          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">
-            Recently Added
-          </h2>
-          <Badge variant="secondary">
-            New this month
-          </Badge>
+          <h2 className="text-2xl font-semibold text-gray-900 dark:text-white">Recently Added</h2>
+          <Badge variant="secondary">New this month</Badge>
         </div>
-        
+
         {recentLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4">
+              <div
+                key={i}
+                className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-4"
+              >
                 <div className="animate-pulse">
                   <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-3"></div>
                   <div className="space-y-2 mb-3">
@@ -135,14 +132,11 @@ export default function Trending() {
               </div>
             ))}
           </div>
-        ) : (recentTerms as ITerm[] || []).length > 0 ? (
+        ) : ((recentTerms as ITerm[]) || []).length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {(recentTerms as ITerm[]).slice(0, 6).map((term) => (
               <div key={term.id} className="relative">
-                <TermCard
-                  term={term}
-                  isFavorite={false}
-                />
+                <TermCard term={term} isFavorite={false} />
                 {/* New badge */}
                 <div className="absolute -top-2 -right-2">
                   <Badge variant="default" className="bg-green-500 hover:bg-green-600">

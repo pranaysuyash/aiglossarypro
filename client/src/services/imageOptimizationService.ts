@@ -37,7 +37,7 @@ class ImageOptimizationService {
   constructor(config: OptimizationConfig = {}) {
     this.config = {
       baseUrl: '/api/images/optimize',
-      ...config
+      ...config,
     };
   }
 
@@ -79,9 +79,9 @@ class ImageOptimizationService {
   private generateCloudinaryUrl(src: string, params: ImageOptimizationParams): string {
     const { cloudName } = this.config.cloudinary!;
     const baseUrl = `https://res.cloudinary.com/${cloudName}/image/fetch`;
-    
+
     const transformations: string[] = [];
-    
+
     if (params.width) transformations.push(`w_${params.width}`);
     if (params.height) transformations.push(`h_${params.height}`);
     if (params.quality) transformations.push(`q_${params.quality}`);
@@ -90,7 +90,7 @@ class ImageOptimizationService {
     if (params.blur) transformations.push(`e_blur:${params.blur}`);
     if (params.sharpen) transformations.push('e_sharpen');
     if (params.progressive) transformations.push('fl_progressive');
-    
+
     const transformationString = transformations.join(',');
     return `${baseUrl}/${transformationString}/${encodeURIComponent(src)}`;
   }
@@ -101,9 +101,9 @@ class ImageOptimizationService {
   private generateImageKitUrl(src: string, params: ImageOptimizationParams): string {
     const { urlEndpoint } = this.config.imagekit!;
     const baseUrl = urlEndpoint.endsWith('/') ? urlEndpoint.slice(0, -1) : urlEndpoint;
-    
+
     const transformations: string[] = [];
-    
+
     if (params.width) transformations.push(`w-${params.width}`);
     if (params.height) transformations.push(`h-${params.height}`);
     if (params.quality) transformations.push(`q-${params.quality}`);
@@ -112,7 +112,7 @@ class ImageOptimizationService {
     if (params.blur) transformations.push(`bl-${params.blur}`);
     if (params.sharpen) transformations.push('e-sharpen');
     if (params.progressive) transformations.push('pr-true');
-    
+
     const transformationString = transformations.join(',');
     return `${baseUrl}/tr:${transformationString}/${src.replace(/^\//, '')}`;
   }
@@ -123,7 +123,7 @@ class ImageOptimizationService {
   private generateCustomUrl(src: string, params: ImageOptimizationParams): string {
     const { endpoint } = this.config.custom!;
     const url = new URL(endpoint);
-    
+
     url.searchParams.set('src', src);
     if (params.width) url.searchParams.set('w', params.width.toString());
     if (params.height) url.searchParams.set('h', params.height.toString());
@@ -133,7 +133,7 @@ class ImageOptimizationService {
     if (params.blur) url.searchParams.set('blur', params.blur.toString());
     if (params.sharpen) url.searchParams.set('sharpen', 'true');
     if (params.progressive) url.searchParams.set('progressive', 'true');
-    
+
     return url.toString();
   }
 
@@ -145,14 +145,14 @@ class ImageOptimizationService {
     // This would route to a local image processing endpoint
     const baseUrl = this.config.baseUrl || '/api/images/optimize';
     const url = new URL(baseUrl, window.location.origin);
-    
+
     url.searchParams.set('src', src);
     if (params.width) url.searchParams.set('w', params.width.toString());
     if (params.height) url.searchParams.set('h', params.height.toString());
     if (params.quality) url.searchParams.set('q', params.quality.toString());
     if (params.format) url.searchParams.set('f', params.format);
     if (params.fit) url.searchParams.set('fit', params.fit);
-    
+
     return url.toString();
   }
 
@@ -163,10 +163,10 @@ class ImageOptimizationService {
     return new Promise((resolve, reject) => {
       const optimizedSrc = this.generateOptimizedUrl(src, params);
       const img = new Image();
-      
+
       img.onload = () => resolve();
       img.onerror = () => reject(new Error(`Failed to preload image: ${optimizedSrc}`));
-      
+
       img.src = optimizedSrc;
     });
   }
@@ -189,17 +189,21 @@ class ImageOptimizationService {
    * Get optimal format for browser
    */
   static async getOptimalFormat(): Promise<'avif' | 'webp' | 'jpeg'> {
-    if (await this.isFormatSupported('avif')) return 'avif';
-    if (await this.isFormatSupported('webp')) return 'webp';
+    if (await ImageOptimizationService.isFormatSupported('avif')) return 'avif';
+    if (await ImageOptimizationService.isFormatSupported('webp')) return 'webp';
     return 'jpeg';
   }
 
   /**
    * Generate responsive srcset
    */
-  generateSrcSet(src: string, widths: number[], params: Omit<ImageOptimizationParams, 'width'> = {}): string {
+  generateSrcSet(
+    src: string,
+    widths: number[],
+    params: Omit<ImageOptimizationParams, 'width'> = {}
+  ): string {
     return widths
-      .map(width => {
+      .map((width) => {
         const url = this.generateOptimizedUrl(src, { ...params, width });
         return `${url} ${width}w`;
       })
@@ -218,21 +222,21 @@ class ImageOptimizationService {
 const imageOptimizationService = new ImageOptimizationService({
   // Default configuration - can be overridden by environment variables
   baseUrl: import.meta.env.VITE_IMAGE_OPTIMIZATION_ENDPOINT || '/api/images/optimize',
-  
+
   // Cloudinary configuration (if available)
   ...(import.meta.env.VITE_CLOUDINARY_CLOUD_NAME && {
     cloudinary: {
       cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
       apiKey: import.meta.env.VITE_CLOUDINARY_API_KEY || '',
-    }
+    },
   }),
-  
+
   // ImageKit configuration (if available)
   ...(import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY && {
     imagekit: {
       publicKey: import.meta.env.VITE_IMAGEKIT_PUBLIC_KEY,
       urlEndpoint: import.meta.env.VITE_IMAGEKIT_URL_ENDPOINT || '',
-    }
+    },
   }),
 });
 

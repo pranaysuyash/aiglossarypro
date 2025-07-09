@@ -1,65 +1,71 @@
 /**
  * Optimized Storage Implementation
- * 
+ *
  * Fixes N+1 query problems and implements performance optimizations
  * identified in the database analysis. This replaces the original storage.ts
  * with better query patterns and caching.
  */
 
 import {
-  users,
-  terms,
   categories,
+  favorites,
   subcategories,
   termSubcategories,
-  favorites,
-  userProgress,
+  terms,
   termViews,
-  userSettings
-} from "@shared/enhancedSchema";
-import type { User, UpsertUser } from "@shared/schema";
-import { purchases } from "@shared/schema";
-import { db } from "./db";
-import { eq, desc, sql, and, like, ilike, asc, gte, lte, not, isNull, inArray, or } from "drizzle-orm";
-import { 
-  createInsertSchema, 
-  createSelectSchema
-} from "drizzle-zod";
-import { z } from "zod";
-import { formatDistanceToNow, subDays, format, startOfDay, endOfDay } from "date-fns";
-import { cached, CacheKeys, CacheInvalidation, queryCache, clearCache, getCacheStats } from './middleware/queryCache';
-import type { ITerm, ICategory } from '../shared/types';
+  userProgress,
+  userSettings,
+  users,
+} from '@shared/enhancedSchema';
+import type { UpsertUser, User } from '@shared/schema';
+import { purchases } from '@shared/schema';
+import { subDays } from 'date-fns';
+import { and, asc, desc, eq, gte, ilike, inArray, lte, or, sql } from 'drizzle-orm';
+import { createInsertSchema } from 'drizzle-zod';
+import type { ICategory, ITerm } from '../shared/types';
+import { db } from './db';
+import {
+  CacheInvalidation,
+  CacheKeys,
+  cached,
+  clearCache,
+  getCacheStats,
+  queryCache,
+} from './middleware/queryCache';
 
 // Interface for storage operations (same as original)
 export interface IStorage {
   // User operations
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-  
+
   // Category operations
   getCategories(): Promise<ICategory[]>;
   getCategoryById(id: string): Promise<ICategory | null>;
-  
+
   // Term operations
   getFeaturedTerms(): Promise<ITerm[]>;
   getTermById(id: string): Promise<ITerm | null>;
   getRecentlyViewedTerms(userId: string): Promise<ITerm[]>;
   recordTermView(termId: string, userId: string | null): Promise<void>;
   searchTerms(query: string): Promise<ITerm[]>;
-  
+
   // Favorites operations
   getUserFavorites(userId: string): Promise<ITerm[]>;
-  getUserFavoritesOptimized?(userId: string, pagination?: { limit?: number; offset?: number; fields?: string[] }): Promise<{ data: any[]; total: number; hasMore: boolean }>;
+  getUserFavoritesOptimized?(
+    userId: string,
+    pagination?: { limit?: number; offset?: number; fields?: string[] }
+  ): Promise<{ data: any[]; total: number; hasMore: boolean }>;
   isTermFavorite(userId: string, termId: string): Promise<boolean>;
   addFavorite(userId: string, termId: string): Promise<void>;
   removeFavorite(userId: string, termId: string): Promise<void>;
-  
+
   // Progress operations
   getUserProgress(userId: string): Promise<any>;
   isTermLearned(userId: string, termId: string): Promise<boolean>;
   markTermAsLearned(userId: string, termId: string): Promise<void>;
   unmarkTermAsLearned(userId: string, termId: string): Promise<void>;
-  
+
   // Revenue tracking operations
   getTotalRevenue(): Promise<number>;
   getTotalPurchases(): Promise<number>;
@@ -67,7 +73,10 @@ export interface IStorage {
   getPurchasesForPeriod(startDate: Date, endDate: Date): Promise<number>;
   getTotalUsers(): Promise<number>;
   getRevenueByCurrency(): Promise<Array<{ currency: string; total: number }>>;
-  getDailyRevenueForPeriod(startDate: Date, endDate: Date): Promise<Array<{ date: string; revenue: number }>>;
+  getDailyRevenueForPeriod(
+    startDate: Date,
+    endDate: Date
+  ): Promise<Array<{ date: string; revenue: number }>>;
   getRecentPurchases(limit?: number): Promise<any[]>;
   getRevenueByPeriod(period: string): Promise<any>;
   getTopCountriesByRevenue(limit?: number): Promise<any[]>;
@@ -77,7 +86,7 @@ export interface IStorage {
   getRecentWebhookActivity(limit?: number): Promise<any[]>;
   getPurchaseByOrderId(orderId: string): Promise<any>;
   updateUserAccess(orderId: string, updates: any): Promise<void>;
-  
+
   // Additional user operations
   getUserByEmail(email: string): Promise<any>;
   updateUser(userId: string, updates: any): Promise<any>;
@@ -87,22 +96,47 @@ export interface IStorage {
   exportUserData(userId: string): Promise<any>;
   deleteUserData(userId: string): Promise<void>;
   getUserStreak(userId: string): Promise<any>;
-  
+
   // Admin user management
-  getAllUsers(options?: { page?: number; limit?: number; search?: string }): Promise<{ data: any[]; total: number; page: number; limit: number; hasMore: boolean }>;
-  
+  getAllUsers(options?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<{ data: any[]; total: number; page: number; limit: number; hasMore: boolean }>;
+
   // Admin data management
   clearAllData(): Promise<{ tablesCleared: string[] }>;
-  reindexDatabase(): Promise<{ success: boolean; operation: string; duration: number; operations: string[]; timestamp: Date; message: string }>;
+  reindexDatabase(): Promise<{
+    success: boolean;
+    operation: string;
+    duration: number;
+    operations: string[];
+    timestamp: Date;
+    message: string;
+  }>;
   getAdminStats(): Promise<any>;
-  cleanupDatabase(): Promise<{ success: boolean; operation: string; duration: number; operations: string[]; timestamp: Date; message: string }>;
-  vacuumDatabase(): Promise<{ success: boolean; operation: string; duration: number; operations: string[]; timestamp: Date; message: string }>;
-  
-  // Content moderation  
+  cleanupDatabase(): Promise<{
+    success: boolean;
+    operation: string;
+    duration: number;
+    operations: string[];
+    timestamp: Date;
+    message: string;
+  }>;
+  vacuumDatabase(): Promise<{
+    success: boolean;
+    operation: string;
+    duration: number;
+    operations: string[];
+    timestamp: Date;
+    message: string;
+  }>;
+
+  // Content moderation
   getPendingContent(): Promise<any[]>;
   approveContent(id: string): Promise<any>;
   rejectContent(id: string): Promise<any>;
-  
+
   // Missing methods for enhanced features
   getTermsOptimized?(options?: { limit?: number }): Promise<any[]>;
   getTermsByIds?(ids: string[]): Promise<any[]>;
@@ -126,7 +160,6 @@ export interface IStorage {
 }
 
 export class OptimizedStorage implements IStorage {
-  
   // User operations (cached)
   async getUser(id: string): Promise<User | undefined> {
     return cached(
@@ -146,7 +179,8 @@ export class OptimizedStorage implements IStorage {
       throw new Error(`Invalid user data: ${validationResult.error.message}`);
     }
 
-    const result = await db.insert(users)
+    const result = await db
+      .insert(users)
       .values(user)
       .onConflictDoUpdate({
         target: users.id,
@@ -155,14 +189,14 @@ export class OptimizedStorage implements IStorage {
           lastName: user.lastName,
           email: user.email,
           profileImageUrl: user.profileImageUrl,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       })
       .returning();
 
     // Invalidate user cache
     CacheInvalidation.user(user.id);
-    
+
     return result[0];
   }
 
@@ -171,23 +205,24 @@ export class OptimizedStorage implements IStorage {
     return cached(
       CacheKeys.categoryTree(),
       async () => {
-        const results = await db.select({
-          id: categories.id,
-          name: categories.name,
-          description: categories.description,
-          termCount: sql<number>`(
+        const results = await db
+          .select({
+            id: categories.id,
+            name: categories.name,
+            description: categories.description,
+            termCount: sql<number>`(
             SELECT COUNT(*) 
             FROM ${terms} 
             WHERE ${terms.categoryId} = ${categories.id}
-          )`
-        })
-        .from(categories)
-        .orderBy(categories.name);
-        return results.map(r => ({
+          )`,
+          })
+          .from(categories)
+          .orderBy(categories.name);
+        return results.map((r) => ({
           id: r.id,
           name: r.name,
           description: r.description ?? undefined,
-          termCount: Number(r.termCount)
+          termCount: Number(r.termCount),
         }));
       },
       60 * 60 * 1000 // 1 hour cache
@@ -198,25 +233,26 @@ export class OptimizedStorage implements IStorage {
     return cached(
       CacheKeys.term(`category:${id}`),
       async () => {
-        const result = await db.select({
-          id: categories.id,
-          name: categories.name,
-          description: categories.description,
-          termCount: sql<number>`(
+        const result = await db
+          .select({
+            id: categories.id,
+            name: categories.name,
+            description: categories.description,
+            termCount: sql<number>`(
             SELECT COUNT(*) 
             FROM ${terms} 
             WHERE ${terms.categoryId} = ${categories.id}
-          )`
-        })
-        .from(categories)
-        .where(eq(categories.id, id))
-        .limit(1);
+          )`,
+          })
+          .from(categories)
+          .where(eq(categories.id, id))
+          .limit(1);
         if (!result[0]) return null;
         return {
           id: result[0].id,
           name: result[0].name,
           description: result[0].description ?? undefined,
-          termCount: Number(result[0].termCount)
+          termCount: Number(result[0].termCount),
         };
       },
       30 * 60 * 1000 // 30 minutes
@@ -228,33 +264,39 @@ export class OptimizedStorage implements IStorage {
     return cached(
       CacheKeys.popularTerms(),
       async () => {
-        const results = await db.select({
-          id: terms.id,
-          name: terms.name,
-          shortDefinition: terms.shortDefinition,
-          viewCount: terms.viewCount,
-          category: categories.name,
-          categoryId: categories.id,
-          definition: terms.definition,
-          subcategories: sql<string[]>`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`
-        })
-        .from(terms)
-        .leftJoin(categories, eq(terms.categoryId, categories.id))
-        .leftJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
-        .leftJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
-        .groupBy(terms.id, categories.id, categories.name)
-        .orderBy(desc(terms.viewCount))
-        .limit(20);
-        return results.map(result => ({
-          id: result.id,
-          name: result.name,
-          definition: result.definition ?? '',
-          shortDefinition: result.shortDefinition ?? undefined,
-          viewCount: result.viewCount ?? 0,
-          category: result.category ?? '',
-          categoryId: result.categoryId ?? '',
-          subcategories: result.subcategories?.filter(Boolean) || []
-        }) as ITerm);
+        const results = await db
+          .select({
+            id: terms.id,
+            name: terms.name,
+            shortDefinition: terms.shortDefinition,
+            viewCount: terms.viewCount,
+            category: categories.name,
+            categoryId: categories.id,
+            definition: terms.definition,
+            subcategories: sql<
+              string[]
+            >`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`,
+          })
+          .from(terms)
+          .leftJoin(categories, eq(terms.categoryId, categories.id))
+          .leftJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
+          .leftJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
+          .groupBy(terms.id, categories.id, categories.name)
+          .orderBy(desc(terms.viewCount))
+          .limit(20);
+        return results.map(
+          (result) =>
+            ({
+              id: result.id,
+              name: result.name,
+              definition: result.definition ?? '',
+              shortDefinition: result.shortDefinition ?? undefined,
+              viewCount: result.viewCount ?? 0,
+              category: result.category ?? '',
+              categoryId: result.categoryId ?? '',
+              subcategories: result.subcategories?.filter(Boolean) || [],
+            }) as ITerm
+        );
       },
       10 * 60 * 1000 // 10 minutes cache
     );
@@ -264,26 +306,29 @@ export class OptimizedStorage implements IStorage {
     return cached(
       CacheKeys.term(id),
       async () => {
-        const result = await db.select({
-          id: terms.id,
-          name: terms.name,
-          definition: terms.definition,
-          shortDefinition: terms.shortDefinition,
-          viewCount: terms.viewCount,
-          categoryId: terms.categoryId,
-          category: categories.name,
-          categoryDescription: categories.description,
-          subcategories: sql<string[]>`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`,
-          createdAt: terms.createdAt,
-          updatedAt: terms.updatedAt
-        })
-        .from(terms)
-        .leftJoin(categories, eq(terms.categoryId, categories.id))
-        .leftJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
-        .leftJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
-        .where(eq(terms.id, id))
-        .groupBy(terms.id, categories.id)
-        .limit(1);
+        const result = await db
+          .select({
+            id: terms.id,
+            name: terms.name,
+            definition: terms.definition,
+            shortDefinition: terms.shortDefinition,
+            viewCount: terms.viewCount,
+            categoryId: terms.categoryId,
+            category: categories.name,
+            categoryDescription: categories.description,
+            subcategories: sql<
+              string[]
+            >`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`,
+            createdAt: terms.createdAt,
+            updatedAt: terms.updatedAt,
+          })
+          .from(terms)
+          .leftJoin(categories, eq(terms.categoryId, categories.id))
+          .leftJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
+          .leftJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
+          .where(eq(terms.id, id))
+          .groupBy(terms.id, categories.id)
+          .limit(1);
         if (result.length === 0) return null;
         return {
           id: result[0].id,
@@ -295,7 +340,7 @@ export class OptimizedStorage implements IStorage {
           category: result[0].category,
           subcategories: result[0].subcategories?.filter(Boolean) || [],
           createdAt: result[0].createdAt,
-          updatedAt: result[0].updatedAt
+          updatedAt: result[0].updatedAt,
         } as ITerm;
       },
       15 * 60 * 1000 // 15 minutes cache
@@ -306,37 +351,43 @@ export class OptimizedStorage implements IStorage {
     return cached(
       `user:${userId}:recent_views`,
       async () => {
-        const results = await db.select({
-          id: terms.id,
-          name: terms.name,
-          shortDefinition: terms.shortDefinition,
-          viewCount: terms.viewCount,
-          category: categories.name,
-          categoryId: categories.id,
-          viewedAt: termViews.viewedAt,
-          definition: terms.definition,
-          subcategories: sql<string[]>`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`
-        })
-        .from(termViews)
-        .innerJoin(terms, eq(termViews.termId, terms.id))
-        .leftJoin(categories, eq(terms.categoryId, categories.id))
-        .leftJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
-        .leftJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
-        .where(eq(termViews.userId, userId))
-        .groupBy(terms.id, categories.id, termViews.viewedAt)
-        .orderBy(desc(termViews.viewedAt))
-        .limit(20);
-        return results.map(result => ({
-          id: result.id,
-          name: result.name,
-          definition: result.definition ?? '',
-          shortDefinition: result.shortDefinition ?? undefined,
-          viewCount: result.viewCount ?? 0,
-          category: result.category ?? '',
-          categoryId: result.categoryId ?? '',
-          subcategories: result.subcategories?.filter(Boolean) || [],
-          viewedAt: result.viewedAt
-        }) as ITerm);
+        const results = await db
+          .select({
+            id: terms.id,
+            name: terms.name,
+            shortDefinition: terms.shortDefinition,
+            viewCount: terms.viewCount,
+            category: categories.name,
+            categoryId: categories.id,
+            viewedAt: termViews.viewedAt,
+            definition: terms.definition,
+            subcategories: sql<
+              string[]
+            >`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`,
+          })
+          .from(termViews)
+          .innerJoin(terms, eq(termViews.termId, terms.id))
+          .leftJoin(categories, eq(terms.categoryId, categories.id))
+          .leftJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
+          .leftJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
+          .where(eq(termViews.userId, userId))
+          .groupBy(terms.id, categories.id, termViews.viewedAt)
+          .orderBy(desc(termViews.viewedAt))
+          .limit(20);
+        return results.map(
+          (result) =>
+            ({
+              id: result.id,
+              name: result.name,
+              definition: result.definition ?? '',
+              shortDefinition: result.shortDefinition ?? undefined,
+              viewCount: result.viewCount ?? 0,
+              category: result.category ?? '',
+              categoryId: result.categoryId ?? '',
+              subcategories: result.subcategories?.filter(Boolean) || [],
+              viewedAt: result.viewedAt,
+            }) as ITerm
+        );
       },
       5 * 60 * 1000 // 5 minutes cache
     );
@@ -345,24 +396,28 @@ export class OptimizedStorage implements IStorage {
   async recordTermView(termId: string, userId: string | null): Promise<void> {
     // Always execute this (no caching for writes)
     if (userId) {
-      await db.insert(termViews).values({
-        termId,
-        userId,
-        viewedAt: new Date()
-      }).onConflictDoNothing();
-      
+      await db
+        .insert(termViews)
+        .values({
+          termId,
+          userId,
+          viewedAt: new Date(),
+        })
+        .onConflictDoNothing();
+
       // Invalidate related caches
       CacheInvalidation.user(userId);
     }
 
     // Update view count
-    await db.update(terms)
-      .set({ 
+    await db
+      .update(terms)
+      .set({
         viewCount: sql`${terms.viewCount} + 1`,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .where(eq(terms.id, termId));
-    
+
     // Invalidate term and popular terms cache
     CacheInvalidation.term(termId);
   }
@@ -372,41 +427,47 @@ export class OptimizedStorage implements IStorage {
     return cached(
       CacheKeys.termSearch(query),
       async () => {
-        const results = await db.select({
-          id: terms.id,
-          name: terms.name,
-          shortDefinition: terms.shortDefinition,
-          viewCount: terms.viewCount,
-          category: categories.name,
-          categoryId: categories.id,
-          definition: terms.definition,
-          relevance: sql<number>`ts_rank_cd(${terms.definition}, plainto_tsquery(${query}))`,
-          subcategories: sql<string[]>`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`
-        })
-        .from(terms)
-        .leftJoin(categories, eq(terms.categoryId, categories.id))
-        .leftJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
-        .leftJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
-        .where(ilike(terms.name, `%${query}%`))
-        .groupBy(terms.id, categories.id)
-        .orderBy(desc(sql<number>`ts_rank_cd(${terms.definition}, plainto_tsquery(${query}))`))
-        .limit(20);
-        return results.map(result => ({
-          id: result.id,
-          name: result.name,
-          definition: result.definition ?? '',
-          shortDefinition: result.shortDefinition ?? undefined,
-          viewCount: result.viewCount ?? 0,
-          category: result.category ?? '',
-          categoryId: result.categoryId ?? '',
-          subcategories: result.subcategories?.filter(Boolean) || [],
-          relevance: result.relevance
-        }) as ITerm);
+        const results = await db
+          .select({
+            id: terms.id,
+            name: terms.name,
+            shortDefinition: terms.shortDefinition,
+            viewCount: terms.viewCount,
+            category: categories.name,
+            categoryId: categories.id,
+            definition: terms.definition,
+            relevance: sql<number>`ts_rank_cd(${terms.definition}, plainto_tsquery(${query}))`,
+            subcategories: sql<
+              string[]
+            >`ARRAY_AGG(DISTINCT ${subcategories.name}) FILTER (WHERE ${subcategories.name} IS NOT NULL)`,
+          })
+          .from(terms)
+          .leftJoin(categories, eq(terms.categoryId, categories.id))
+          .leftJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
+          .leftJoin(subcategories, eq(termSubcategories.subcategoryId, subcategories.id))
+          .where(ilike(terms.name, `%${query}%`))
+          .groupBy(terms.id, categories.id)
+          .orderBy(desc(sql<number>`ts_rank_cd(${terms.definition}, plainto_tsquery(${query}))`))
+          .limit(20);
+        return results.map(
+          (result) =>
+            ({
+              id: result.id,
+              name: result.name,
+              definition: result.definition ?? '',
+              shortDefinition: result.shortDefinition ?? undefined,
+              viewCount: result.viewCount ?? 0,
+              category: result.category ?? '',
+              categoryId: result.categoryId ?? '',
+              subcategories: result.subcategories?.filter(Boolean) || [],
+              relevance: result.relevance,
+            }) as ITerm
+        );
       },
       2 * 60 * 1000 // 2 minutes cache (shorter for search)
     );
   }
-  
+
   // NEW: Optimized search with database-level pagination and field selection
   async searchTermsOptimized(options: {
     query: string;
@@ -415,16 +476,16 @@ export class OptimizedStorage implements IStorage {
     limit?: number;
     fields?: string[];
   }): Promise<{ data: any[]; total: number }> {
-    const { 
-      query, 
-      categoryId, 
-      offset = 0, 
+    const {
+      query,
+      categoryId,
+      offset = 0,
       limit = 20,
-      fields = ['id', 'name', 'shortDefinition', 'viewCount']
+      fields = ['id', 'name', 'shortDefinition', 'viewCount'],
     } = options;
-    
+
     const cacheKey = `search-optimized:${query}:${categoryId || 'all'}:${offset}:${limit}:${fields.join(',')}`;
-    
+
     return cached(
       cacheKey,
       async () => {
@@ -435,7 +496,7 @@ export class OptimizedStorage implements IStorage {
           OR ${terms.name} ILIKE ${`%${query}%`}
           OR ${terms.shortDefinition} ILIKE ${`%${query}%`}
         `;
-        
+
         const relevanceScore = sql<number>`
           CASE 
             WHEN ${terms.name} ILIKE ${`${query}%`} THEN 3.0
@@ -444,32 +505,36 @@ export class OptimizedStorage implements IStorage {
             ELSE 1.0
           END
         `;
-        
+
         // Build where conditions
         const whereConditions = [searchCondition];
         if (categoryId) {
           whereConditions.push(eq(terms.categoryId, categoryId));
         }
-        
+
         // Get total count
         let totalResult: any;
         if (fields.includes('category')) {
-          const countWithJoin = db.select({ count: sql<number>`count(*)` }).from(terms)
+          const countWithJoin = db
+            .select({ count: sql<number>`count(*)` })
+            .from(terms)
             .leftJoin(categories, eq(terms.categoryId, categories.id))
             .where(and(...whereConditions));
           totalResult = await countWithJoin;
         } else {
-          const countQuery = db.select({ count: sql<number>`count(*)` }).from(terms)
+          const countQuery = db
+            .select({ count: sql<number>`count(*)` })
+            .from(terms)
             .where(and(...whereConditions));
           totalResult = await countQuery;
         }
         const total = totalResult[0]?.count || 0;
-        
+
         // Build dynamic select
         const selectObj: any = {
-          relevance: relevanceScore
+          relevance: relevanceScore,
         };
-        
+
         if (fields.includes('id')) selectObj.id = terms.id;
         if (fields.includes('name')) selectObj.name = terms.name;
         if (fields.includes('shortDefinition')) selectObj.shortDefinition = terms.shortDefinition;
@@ -478,30 +543,32 @@ export class OptimizedStorage implements IStorage {
         if (fields.includes('categoryId')) selectObj.categoryId = terms.categoryId;
         if (fields.includes('category')) selectObj.category = categories.name;
         if (fields.includes('createdAt')) selectObj.createdAt = terms.createdAt;
-        
+
         // Build main query
         const baseQuery = db.select(selectObj).from(terms);
-        
+
         // Add joins and conditions
         let results: any;
         if (fields.includes('category')) {
-          const joinedQuery = baseQuery.leftJoin(categories, eq(terms.categoryId, categories.id))
+          const joinedQuery = baseQuery
+            .leftJoin(categories, eq(terms.categoryId, categories.id))
             .where(and(...whereConditions))
             .orderBy(desc(relevanceScore), desc(terms.viewCount))
             .limit(limit)
             .offset(offset);
           results = await joinedQuery;
         } else {
-          const simpleQuery = baseQuery.where(and(...whereConditions))
+          const simpleQuery = baseQuery
+            .where(and(...whereConditions))
             .orderBy(desc(relevanceScore), desc(terms.viewCount))
             .limit(limit)
             .offset(offset);
           results = await simpleQuery;
         }
-        
+
         return {
           data: results,
-          total
+          total,
         };
       },
       90 * 1000 // 1.5 minutes cache for search results
@@ -514,15 +581,23 @@ export class OptimizedStorage implements IStorage {
     return result.data;
   }
 
-  async getUserFavoritesOptimized(userId: string, pagination?: { limit?: number; offset?: number; fields?: string[] }): Promise<{ data: any[]; total: number; hasMore: boolean }> {
-    const { limit = 50, offset = 0, fields = ['termId', 'name', 'shortDefinition', 'viewCount', 'category'] } = pagination || {};
+  async getUserFavoritesOptimized(
+    userId: string,
+    pagination?: { limit?: number; offset?: number; fields?: string[] }
+  ): Promise<{ data: any[]; total: number; hasMore: boolean }> {
+    const {
+      limit = 50,
+      offset = 0,
+      fields = ['termId', 'name', 'shortDefinition', 'viewCount', 'category'],
+    } = pagination || {};
     const cacheKey = `${CacheKeys.userFavorites(userId)}:${limit}:${offset}:${fields.join(',')}`;
-    
+
     return cached(
       cacheKey,
       async () => {
         // Get total count first
-        const totalResult = await db.select({ count: sql<number>`count(*)` })
+        const totalResult = await db
+          .select({ count: sql<number>`count(*)` })
           .from(favorites)
           .where(eq(favorites.userId, userId));
         const total = totalResult[0]?.count || 0;
@@ -530,32 +605,33 @@ export class OptimizedStorage implements IStorage {
         // Build dynamic select based on requested fields
         const selectObj: any = {
           termId: favorites.termId,
-          createdAt: favorites.createdAt
+          createdAt: favorites.createdAt,
         };
-        
+
         if (fields.includes('name')) selectObj.name = terms.name;
         if (fields.includes('shortDefinition')) selectObj.shortDefinition = terms.shortDefinition;
         if (fields.includes('definition')) selectObj.definition = terms.definition;
         if (fields.includes('viewCount')) selectObj.viewCount = terms.viewCount;
         if (fields.includes('category')) selectObj.category = categories.name;
         if (fields.includes('categoryId')) selectObj.categoryId = categories.id;
-        
+
         // Single query with field selection and pagination
-        const results = await db.select(selectObj)
-        .from(favorites)
-        .innerJoin(terms, eq(favorites.termId, terms.id))
-        .leftJoin(categories, eq(terms.categoryId, categories.id))
-        .where(eq(favorites.userId, userId))
-        .orderBy(desc(favorites.createdAt))
-        .limit(limit)
-        .offset(offset);
+        const results = await db
+          .select(selectObj)
+          .from(favorites)
+          .innerJoin(terms, eq(favorites.termId, terms.id))
+          .leftJoin(categories, eq(terms.categoryId, categories.id))
+          .where(eq(favorites.userId, userId))
+          .orderBy(desc(favorites.createdAt))
+          .limit(limit)
+          .offset(offset);
 
         const data = results;
 
         return {
           data,
           total,
-          hasMore: offset + limit < total
+          hasMore: offset + limit < total,
         };
       },
       5 * 60 * 1000 // 5 minutes cache for field-specific results
@@ -566,11 +642,12 @@ export class OptimizedStorage implements IStorage {
     return cached(
       `user:${userId}:favorite:${termId}`,
       async () => {
-        const result = await db.select({ id: favorites.id })
+        const result = await db
+          .select({ id: favorites.id })
           .from(favorites)
           .where(and(eq(favorites.userId, userId), eq(favorites.termId, termId)))
           .limit(1);
-        
+
         return result.length > 0;
       },
       5 * 60 * 1000 // 5 minutes cache
@@ -578,24 +655,28 @@ export class OptimizedStorage implements IStorage {
   }
 
   async addFavorite(userId: string, termId: string): Promise<void> {
-    await db.insert(favorites).values({
-      userId,
-      termId,
-      createdAt: new Date()
-    }).onConflictDoUpdate({
-      target: [favorites.userId, favorites.termId],
-      set: { createdAt: new Date() }
-    });
-    
+    await db
+      .insert(favorites)
+      .values({
+        userId,
+        termId,
+        createdAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: [favorites.userId, favorites.termId],
+        set: { createdAt: new Date() },
+      });
+
     // Invalidate caches
     CacheInvalidation.user(userId);
     queryCache.invalidate(`user:${userId}:favorite:${termId}`);
   }
 
   async removeFavorite(userId: string, termId: string): Promise<void> {
-    await db.delete(favorites)
+    await db
+      .delete(favorites)
       .where(and(eq(favorites.userId, userId), eq(favorites.termId, termId)));
-    
+
     // Invalidate caches
     CacheInvalidation.user(userId);
     queryCache.invalidate(`user:${userId}:favorite:${termId}`);
@@ -606,21 +687,21 @@ export class OptimizedStorage implements IStorage {
     return cached(
       `user:${userId}:progress`,
       async () => {
-        const learned = await db.select({
-          termId: userProgress.termId,
-          learnedAt: userProgress.learnedAt
-        })
-        .from(userProgress)
-        .where(eq(userProgress.userId, userId));
+        const learned = await db
+          .select({
+            termId: userProgress.termId,
+            learnedAt: userProgress.learnedAt,
+          })
+          .from(userProgress)
+          .where(eq(userProgress.userId, userId));
 
-        const totalTerms = await db.select({ count: sql<number>`count(*)` })
-          .from(terms);
+        const totalTerms = await db.select({ count: sql<number>`count(*)` }).from(terms);
 
         return {
           learnedCount: learned.length,
           totalTerms: totalTerms[0].count,
           percentage: totalTerms[0].count > 0 ? (learned.length / totalTerms[0].count) * 100 : 0,
-          learnedTerms: learned
+          learnedTerms: learned,
         };
       },
       15 * 60 * 1000 // 15 minutes cache
@@ -631,11 +712,12 @@ export class OptimizedStorage implements IStorage {
     return cached(
       `user:${userId}:learned:${termId}`,
       async () => {
-        const result = await db.select({ id: userProgress.id })
+        const result = await db
+          .select({ id: userProgress.id })
           .from(userProgress)
           .where(and(eq(userProgress.userId, userId), eq(userProgress.termId, termId)))
           .limit(1);
-        
+
         return result.length > 0;
       },
       10 * 60 * 1000 // 10 minutes cache
@@ -643,50 +725,57 @@ export class OptimizedStorage implements IStorage {
   }
 
   async markTermAsLearned(userId: string, termId: string): Promise<void> {
-    await db.insert(userProgress).values({
-      userId,
-      termId,
-      learnedAt: new Date()
-    }).onConflictDoNothing();
-    
+    await db
+      .insert(userProgress)
+      .values({
+        userId,
+        termId,
+        learnedAt: new Date(),
+      })
+      .onConflictDoNothing();
+
     // Invalidate caches
     CacheInvalidation.user(userId);
     queryCache.invalidate(`user:${userId}:learned:${termId}`);
   }
 
   async unmarkTermAsLearned(userId: string, termId: string): Promise<void> {
-    await db.delete(userProgress)
+    await db
+      .delete(userProgress)
       .where(and(eq(userProgress.userId, userId), eq(userProgress.termId, termId)));
-    
+
     // Invalidate caches
     CacheInvalidation.user(userId);
     queryCache.invalidate(`user:${userId}:learned:${termId}`);
   }
 
   // Optimized bulk operations with field selection
-  async getTermsByCategory(categoryId: string, options: {
-    offset?: number;
-    limit?: number;
-    sort?: string;
-    order?: 'asc' | 'desc';
-    fields?: string[];
-  } = {}): Promise<{ data: any[]; total: number }> {
-    const { 
-      offset = 0, 
-      limit = 20, 
-      sort = 'name', 
+  async getTermsByCategory(
+    categoryId: string,
+    options: {
+      offset?: number;
+      limit?: number;
+      sort?: string;
+      order?: 'asc' | 'desc';
+      fields?: string[];
+    } = {}
+  ): Promise<{ data: any[]; total: number }> {
+    const {
+      offset = 0,
+      limit = 20,
+      sort = 'name',
       order = 'asc',
-      fields = ['id', 'name', 'shortDefinition', 'viewCount']
+      fields = ['id', 'name', 'shortDefinition', 'viewCount'],
     } = options;
-    
+
     const cacheKey = `${CacheKeys.termsByCategory(categoryId)}:${offset}:${limit}:${sort}:${order}:${fields.join(',')}`;
-    
+
     return cached(
       cacheKey,
       async () => {
         // Build dynamic select based on requested fields
         const selectObj: any = {};
-        
+
         if (fields.includes('id')) selectObj.id = terms.id;
         if (fields.includes('name')) selectObj.name = terms.name;
         if (fields.includes('shortDefinition')) selectObj.shortDefinition = terms.shortDefinition;
@@ -696,49 +785,49 @@ export class OptimizedStorage implements IStorage {
         if (fields.includes('categoryId')) selectObj.categoryId = categories.id;
         if (fields.includes('createdAt')) selectObj.createdAt = terms.createdAt;
         if (fields.includes('updatedAt')) selectObj.updatedAt = terms.updatedAt;
-        
+
         // Get total count first
-        const totalResult = await db.select({ count: sql<number>`count(*)` })
+        const totalResult = await db
+          .select({ count: sql<number>`count(*)` })
           .from(terms)
           .where(eq(terms.categoryId, categoryId));
-        
+
         const total = totalResult[0]?.count || 0;
-        
+
         // Build main query with sorting and pagination
-        const sortColumn = sort === 'name' ? terms.name :
-                          sort === 'viewCount' ? terms.viewCount :
-                          sort === 'createdAt' ? terms.createdAt :
-                          terms.name;
-        
+        const sortColumn =
+          sort === 'name'
+            ? terms.name
+            : sort === 'viewCount'
+              ? terms.viewCount
+              : sort === 'createdAt'
+                ? terms.createdAt
+                : terms.name;
+
         let results: any;
         if (fields.includes('category')) {
-          const query = db.select(selectObj).from(terms)
+          const query = db
+            .select(selectObj)
+            .from(terms)
             .leftJoin(categories, eq(terms.categoryId, categories.id))
             .where(eq(terms.categoryId, categoryId));
-          
-          const sortedQuery = order === 'desc' ? 
-            query.orderBy(desc(sortColumn)) :
-            query.orderBy(asc(sortColumn));
-          
-          results = await sortedQuery
-            .limit(limit)
-            .offset(offset);
+
+          const sortedQuery =
+            order === 'desc' ? query.orderBy(desc(sortColumn)) : query.orderBy(asc(sortColumn));
+
+          results = await sortedQuery.limit(limit).offset(offset);
         } else {
-          const query = db.select(selectObj).from(terms)
-            .where(eq(terms.categoryId, categoryId));
-          
-          const sortedQuery = order === 'desc' ? 
-            query.orderBy(desc(sortColumn)) :
-            query.orderBy(asc(sortColumn));
-          
-          results = await sortedQuery
-            .limit(limit)
-            .offset(offset);
+          const query = db.select(selectObj).from(terms).where(eq(terms.categoryId, categoryId));
+
+          const sortedQuery =
+            order === 'desc' ? query.orderBy(desc(sortColumn)) : query.orderBy(asc(sortColumn));
+
+          results = await sortedQuery.limit(limit).offset(offset);
         }
-        
+
         return {
           data: results,
-          total
+          total,
         };
       },
       10 * 60 * 1000 // 10 minutes cache
@@ -750,27 +839,31 @@ export class OptimizedStorage implements IStorage {
     return cached(
       CacheKeys.popularTerms(timeframe),
       async () => {
-        const dateFilter = timeframe === 'day' ? subDays(new Date(), 1) :
-                          timeframe === 'week' ? subDays(new Date(), 7) :
-                          subDays(new Date(), 30);
+        const dateFilter =
+          timeframe === 'day'
+            ? subDays(new Date(), 1)
+            : timeframe === 'week'
+              ? subDays(new Date(), 7)
+              : subDays(new Date(), 30);
 
-        const results = await db.select({
-          id: terms.id,
-          name: terms.name,
-          shortDefinition: terms.shortDefinition,
-          viewCount: terms.viewCount,
-          category: categories.name,
-          recentViews: sql<number>`COUNT(${termViews.id})`
-        })
-        .from(terms)
-        .leftJoin(categories, eq(terms.categoryId, categories.id))
-        .leftJoin(termViews, and(
-          eq(termViews.termId, terms.id),
-          gte(termViews.viewedAt, dateFilter)
-        ))
-        .groupBy(terms.id, categories.name)
-        .orderBy(desc(sql`recent_views`), desc(terms.viewCount))
-        .limit(20);
+        const results = await db
+          .select({
+            id: terms.id,
+            name: terms.name,
+            shortDefinition: terms.shortDefinition,
+            viewCount: terms.viewCount,
+            category: categories.name,
+            recentViews: sql<number>`COUNT(${termViews.id})`,
+          })
+          .from(terms)
+          .leftJoin(categories, eq(terms.categoryId, categories.id))
+          .leftJoin(
+            termViews,
+            and(eq(termViews.termId, terms.id), gte(termViews.viewedAt, dateFilter))
+          )
+          .groupBy(terms.id, categories.name)
+          .orderBy(desc(sql`recent_views`), desc(terms.viewCount))
+          .limit(20);
 
         return results;
       },
@@ -782,23 +875,27 @@ export class OptimizedStorage implements IStorage {
     return cached(
       `trending_terms_${limit}`,
       async () => {
-        const results = await db.select({
-          id: terms.id,
-          name: terms.name,
-          shortDefinition: terms.shortDefinition,
-          viewCount: terms.viewCount,
-          category: categories.name,
-          recentViews: sql<number>`COUNT(${termViews.id})`
-        })
-        .from(terms)
-        .leftJoin(categories, eq(terms.categoryId, categories.id))
-        .leftJoin(termViews, and(
-          eq(termViews.termId, terms.id),
-          gte(termViews.viewedAt, subDays(new Date(), 7)) // Last 7 days
-        ))
-        .groupBy(terms.id, categories.name)
-        .orderBy(desc(sql`recent_views`), desc(terms.viewCount))
-        .limit(limit);
+        const results = await db
+          .select({
+            id: terms.id,
+            name: terms.name,
+            shortDefinition: terms.shortDefinition,
+            viewCount: terms.viewCount,
+            category: categories.name,
+            recentViews: sql<number>`COUNT(${termViews.id})`,
+          })
+          .from(terms)
+          .leftJoin(categories, eq(terms.categoryId, categories.id))
+          .leftJoin(
+            termViews,
+            and(
+              eq(termViews.termId, terms.id),
+              gte(termViews.viewedAt, subDays(new Date(), 7)) // Last 7 days
+            )
+          )
+          .groupBy(terms.id, categories.name)
+          .orderBy(desc(sql`recent_views`), desc(terms.viewCount))
+          .limit(limit);
 
         return results;
       },
@@ -807,14 +904,15 @@ export class OptimizedStorage implements IStorage {
   }
 
   async updateTerm(termId: string, updates: any): Promise<any> {
-    const [updatedTerm] = await db.update(terms)
+    const [updatedTerm] = await db
+      .update(terms)
       .set({
         ...updates,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .where(eq(terms.id, termId))
       .returning();
-    
+
     // Invalidate cache for this term
     CacheInvalidation.term(termId);
 
@@ -824,96 +922,102 @@ export class OptimizedStorage implements IStorage {
   // Test-specific optimized methods
   async getTermsOptimized(options: { limit?: number } = {}): Promise<any[]> {
     const { limit = 20 } = options;
-    
+
     return cached(
       CacheKeys.term(`terms:optimized:${limit}`),
       async () => {
-        const result = await db.select({
-          id: terms.id,
-          name: terms.name,
-          definition: terms.definition,
-          shortDefinition: terms.shortDefinition,
-          categoryId: terms.categoryId,
-          viewCount: terms.viewCount,
-          createdAt: terms.createdAt,
-          updatedAt: terms.updatedAt
-        })
-        .from(terms)
-        .orderBy(terms.viewCount)
-        .limit(limit);
-        
+        const result = await db
+          .select({
+            id: terms.id,
+            name: terms.name,
+            definition: terms.definition,
+            shortDefinition: terms.shortDefinition,
+            categoryId: terms.categoryId,
+            viewCount: terms.viewCount,
+            createdAt: terms.createdAt,
+            updatedAt: terms.updatedAt,
+          })
+          .from(terms)
+          .orderBy(terms.viewCount)
+          .limit(limit);
+
         return result;
       },
       5 * 60 * 1000 // 5 minutes cache
     );
   }
 
-  async getCategoriesOptimized(options: {
-    offset?: number;
-    limit?: number;
-    fields?: string[];
-    search?: string;
-    includeStats?: boolean;
-  } = {}): Promise<any[]> {
-    const { offset = 0, limit = 20, fields = ['id', 'name', 'description'], search, includeStats = false } = options;
-    
+  async getCategoriesOptimized(
+    options: {
+      offset?: number;
+      limit?: number;
+      fields?: string[];
+      search?: string;
+      includeStats?: boolean;
+    } = {}
+  ): Promise<any[]> {
+    const {
+      offset = 0,
+      limit = 20,
+      fields = ['id', 'name', 'description'],
+      search,
+      includeStats = false,
+    } = options;
+
     const cacheKey = `${CacheKeys.categoryTree()}:${offset}:${limit}:${fields.join(',')}:${search || 'all'}:${includeStats}`;
-    
+
     return cached(
       cacheKey,
       async () => {
         // Build dynamic select based on requested fields
         const selectObj: any = {};
-        
+
         if (fields.includes('id')) selectObj.id = categories.id;
         if (fields.includes('name')) selectObj.name = categories.name;
         if (fields.includes('description')) selectObj.description = categories.description;
         if (fields.includes('termCount') || includeStats) {
           selectObj.termCount = sql<number>`count(${terms.id})::int`;
         }
-        
+
         let query: any = db.select(selectObj).from(categories);
-        
+
         // Add joins only if needed
         if (fields.includes('termCount') || includeStats) {
           query = query.leftJoin(terms, eq(terms.categoryId, categories.id));
         }
-        
+
         // Add search filter if provided
         if (search) {
           query = query.where(ilike(categories.name, `%${search}%`));
         }
-        
+
         // Add grouping only if aggregating
         if (fields.includes('termCount') || includeStats) {
           query = query.groupBy(categories.id, categories.name, categories.description);
         }
-        
+
         // Add ordering, limit, and offset
-        const result = await query
-          .orderBy(categories.name)
-          .limit(limit)
-          .offset(offset);
-        
+        const result = await query.orderBy(categories.name).limit(limit).offset(offset);
+
         return result;
       },
       5 * 60 * 1000 // 5 minutes cache for paginated results
     );
   }
-  
+
   async getCategoriesCount(options: { search?: string } = {}): Promise<number> {
     const { search } = options;
     const cacheKey = `categories:count:${search || 'all'}`;
-    
+
     return cached(
       cacheKey,
       async () => {
         let query: any = db.select({ count: sql<number>`count(*)` }).from(categories);
-        
+
         if (search) {
           query = query.where(ilike(categories.name, `%${search}%`));
         }
-        
+
         const result = await query;
         return result[0]?.count || 0;
       },
@@ -927,7 +1031,7 @@ export class OptimizedStorage implements IStorage {
     }
 
     try {
-      const result = await db.insert(terms).values(termsData).onConflictDoNothing();
+      const _result = await db.insert(terms).values(termsData).onConflictDoNothing();
       // The result of a bulk insert in Drizzle doesn't directly tell us how many rows were inserted.
       // We'll assume success for all if no error is thrown.
       const successCount = termsData.length;
@@ -959,7 +1063,7 @@ export class OptimizedStorage implements IStorage {
       averageResponseTime: getCacheStats().averageResponseTime || 0,
       totalCachedQueries: getCacheStats().hits + getCacheStats().misses,
       cacheSize: process.memoryUsage().heapUsed,
-      lastCacheReset: new Date()
+      lastCacheReset: new Date(),
     };
   }
 
@@ -973,35 +1077,37 @@ export class OptimizedStorage implements IStorage {
     }
   }
 
-  async getAllTerms(options: { 
-    limit?: number; 
-    page?: number;
-    offset?: number;
-    categoryId?: string;
-    searchTerm?: string;
-    sortBy?: string;
-    sortOrder?: 'asc' | 'desc';
-    fields?: string[];
-  } = {}): Promise<{ data: any[]; terms: any[]; total: number }> {
-    const { 
-      limit = 100, 
-      page = 1, 
+  async getAllTerms(
+    options: {
+      limit?: number;
+      page?: number;
+      offset?: number;
+      categoryId?: string;
+      searchTerm?: string;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      fields?: string[];
+    } = {}
+  ): Promise<{ data: any[]; terms: any[]; total: number }> {
+    const {
+      limit = 100,
+      page = 1,
       offset = (page - 1) * limit,
       categoryId,
       searchTerm,
       sortBy = 'name',
       sortOrder = 'asc',
-      fields = ['id', 'name', 'shortDefinition', 'viewCount', 'categoryId']
+      fields = ['id', 'name', 'shortDefinition', 'viewCount', 'categoryId'],
     } = options;
-    
+
     const cacheKey = `all-terms:${limit}:${offset}:${categoryId || 'all'}:${searchTerm || 'all'}:${sortBy}:${sortOrder}:${fields.join(',')}`;
-    
+
     const termsList = await cached(
       cacheKey,
       async () => {
         // Build dynamic select based on requested fields
         const selectObj: any = {};
-        
+
         if (fields.includes('id')) selectObj.id = terms.id;
         if (fields.includes('name')) selectObj.name = terms.name;
         if (fields.includes('shortDefinition')) selectObj.shortDefinition = terms.shortDefinition;
@@ -1011,14 +1117,14 @@ export class OptimizedStorage implements IStorage {
         if (fields.includes('createdAt')) selectObj.createdAt = terms.createdAt;
         if (fields.includes('updatedAt')) selectObj.updatedAt = terms.updatedAt;
         if (fields.includes('category')) selectObj.category = categories.name;
-        
+
         let query: any = db.select(selectObj).from(terms);
-        
+
         // Add joins only if needed
         if (fields.includes('category')) {
           query = query.leftJoin(categories, eq(terms.categoryId, categories.id));
         }
-        
+
         // Add filters
         const whereConditions = [];
         if (categoryId) {
@@ -1032,24 +1138,25 @@ export class OptimizedStorage implements IStorage {
             )
           );
         }
-        
+
         if (whereConditions.length > 0) {
           query = query.where(and(...whereConditions));
         }
-        
+
         // Add sorting
-        const sortColumn = sortBy === 'name' ? terms.name :
-                          sortBy === 'viewCount' ? terms.viewCount :
-                          sortBy === 'createdAt' ? terms.createdAt :
-                          terms.name;
-        
-        query = sortOrder === 'desc' ? 
-          query.orderBy(desc(sortColumn)) :
-          query.orderBy(asc(sortColumn));
-        
-        return await query
-          .limit(limit)
-          .offset(offset);
+        const sortColumn =
+          sortBy === 'name'
+            ? terms.name
+            : sortBy === 'viewCount'
+              ? terms.viewCount
+              : sortBy === 'createdAt'
+                ? terms.createdAt
+                : terms.name;
+
+        query =
+          sortOrder === 'desc' ? query.orderBy(desc(sortColumn)) : query.orderBy(asc(sortColumn));
+
+        return await query.limit(limit).offset(offset);
       },
       3 * 60 * 1000 // 3 minutes cache for filtered results
     );
@@ -1060,7 +1167,7 @@ export class OptimizedStorage implements IStorage {
       totalCacheKey,
       async () => {
         let countQuery: any = db.select({ count: sql<number>`count(*)` }).from(terms);
-        
+
         const whereConditions = [];
         if (categoryId) {
           whereConditions.push(eq(terms.categoryId, categoryId));
@@ -1073,11 +1180,11 @@ export class OptimizedStorage implements IStorage {
             )
           );
         }
-        
+
         if (whereConditions.length > 0) {
           countQuery = countQuery.where(and(...whereConditions));
         }
-        
+
         const result = await countQuery;
         return result[0]?.count || 0;
       },
@@ -1087,7 +1194,7 @@ export class OptimizedStorage implements IStorage {
     return {
       data: termsList,
       terms: termsList,
-      total: total
+      total: total,
     };
   }
 
@@ -1097,7 +1204,7 @@ export class OptimizedStorage implements IStorage {
       CacheKeys.term('all-term-names'),
       async () => {
         const result = await db.select({ name: terms.name }).from(terms);
-        return result.map(term => term.name);
+        return result.map((term) => term.name);
       },
       10 * 60 * 1000 // 10 minutes cache
     );
@@ -1107,17 +1214,18 @@ export class OptimizedStorage implements IStorage {
     return await cached(
       CacheKeys.term(`terms-for-search:${limit}`),
       async () => {
-        const result = await db.select({
-          id: terms.id,
-          name: terms.name,
-          definition: terms.definition,
-          shortDefinition: terms.shortDefinition,
-          categoryId: terms.categoryId
-        })
-        .from(terms)
-        .orderBy(terms.viewCount)
-        .limit(limit);
-        
+        const result = await db
+          .select({
+            id: terms.id,
+            name: terms.name,
+            definition: terms.definition,
+            shortDefinition: terms.shortDefinition,
+            categoryId: terms.categoryId,
+          })
+          .from(terms)
+          .orderBy(terms.viewCount)
+          .limit(limit);
+
         return result;
       },
       15 * 60 * 1000 // 15 minutes cache
@@ -1129,24 +1237,24 @@ export class OptimizedStorage implements IStorage {
     return await cached(
       `user-stats:${userId}`,
       async () => {
-        const totalProgress = await db.select({ count: sql<number>`count(*)` })
+        const totalProgress = await db
+          .select({ count: sql<number>`count(*)` })
           .from(userProgress)
           .where(eq(userProgress.userId, userId));
 
-        const completedProgress = await db.select({ count: sql<number>`count(*)` })
+        const completedProgress = await db
+          .select({ count: sql<number>`count(*)` })
           .from(userProgress)
-          .where(and(
-            eq(userProgress.userId, userId),
-            sql`${userProgress.learnedAt} IS NOT NULL`
-          ));
+          .where(and(eq(userProgress.userId, userId), sql`${userProgress.learnedAt} IS NOT NULL`));
 
         return {
           totalTermsStarted: Number(totalProgress[0]?.count) || 0,
           completedTerms: Number(completedProgress[0]?.count) || 0,
           totalTimeSpent: 0, // Time tracking not implemented yet
-          completionRate: totalProgress[0]?.count > 0 
-            ? (Number(completedProgress[0]?.count) / Number(totalProgress[0]?.count)) * 100 
-            : 0
+          completionRate:
+            totalProgress[0]?.count > 0
+              ? (Number(completedProgress[0]?.count) / Number(totalProgress[0]?.count)) * 100
+              : 0,
         };
       },
       5 * 60 * 1000 // 5 minutes cache
@@ -1155,199 +1263,217 @@ export class OptimizedStorage implements IStorage {
 
   // Revenue tracking methods for admin dashboard
   async getTotalRevenue(): Promise<number> {
-    const result = await db.select({
-      total: sql<number>`COALESCE(SUM(amount), 0)`
-    })
-    .from(purchases)
-    .where(eq(purchases.status, 'completed'));
-    
+    const result = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(amount), 0)`,
+      })
+      .from(purchases)
+      .where(eq(purchases.status, 'completed'));
+
     return Number(result[0]?.total) || 0;
   }
 
   async getTotalPurchases(): Promise<number> {
-    const result = await db.select({
-      count: sql<number>`COUNT(*)`
-    })
-    .from(purchases)
-    .where(eq(purchases.status, 'completed'));
-    
+    const result = await db
+      .select({
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(purchases)
+      .where(eq(purchases.status, 'completed'));
+
     return Number(result[0]?.count) || 0;
   }
 
   async getRevenueForPeriod(startDate: Date, endDate: Date): Promise<number> {
-    const result = await db.select({
-      total: sql<number>`COALESCE(SUM(amount), 0)`
-    })
-    .from(purchases)
-    .where(and(
-      eq(purchases.status, 'completed'),
-      gte(purchases.createdAt, startDate),
-      lte(purchases.createdAt, endDate)
-    ));
-    
+    const result = await db
+      .select({
+        total: sql<number>`COALESCE(SUM(amount), 0)`,
+      })
+      .from(purchases)
+      .where(
+        and(
+          eq(purchases.status, 'completed'),
+          gte(purchases.createdAt, startDate),
+          lte(purchases.createdAt, endDate)
+        )
+      );
+
     return Number(result[0]?.total) || 0;
   }
 
   async getPurchasesForPeriod(startDate: Date, endDate: Date): Promise<number> {
-    const result = await db.select({
-      count: sql<number>`COUNT(*)`
-    })
-    .from(purchases)
-    .where(and(
-      eq(purchases.status, 'completed'),
-      gte(purchases.createdAt, startDate),
-      lte(purchases.createdAt, endDate)
-    ));
-    
+    const result = await db
+      .select({
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(purchases)
+      .where(
+        and(
+          eq(purchases.status, 'completed'),
+          gte(purchases.createdAt, startDate),
+          lte(purchases.createdAt, endDate)
+        )
+      );
+
     return Number(result[0]?.count) || 0;
   }
 
   async getTotalUsers(): Promise<number> {
-    const result = await db.select({
-      count: sql<number>`COUNT(*)`
-    })
-    .from(users);
-    
+    const result = await db
+      .select({
+        count: sql<number>`COUNT(*)`,
+      })
+      .from(users);
+
     return Number(result[0]?.count) || 0;
   }
 
   async getRevenueByCurrency(): Promise<Array<{ currency: string; total: number }>> {
-    const result = await db.select({
-      currency: purchases.currency,
-      total: sql<number>`COALESCE(SUM(amount), 0)`
-    })
-    .from(purchases)
-    .where(eq(purchases.status, 'completed'))
-    .groupBy(purchases.currency);
-    
-    return result.map(row => ({
+    const result = await db
+      .select({
+        currency: purchases.currency,
+        total: sql<number>`COALESCE(SUM(amount), 0)`,
+      })
+      .from(purchases)
+      .where(eq(purchases.status, 'completed'))
+      .groupBy(purchases.currency);
+
+    return result.map((row) => ({
       currency: row.currency || 'USD',
-      total: Number(row.total)
+      total: Number(row.total),
     }));
   }
 
-  async getDailyRevenueForPeriod(startDate: Date, endDate: Date): Promise<Array<{ date: string; revenue: number }>> {
-    const result = await db.select({
-      date: sql<string>`DATE(created_at)`,
-      revenue: sql<number>`COALESCE(SUM(amount), 0)`
-    })
-    .from(purchases)
-    .where(and(
-      eq(purchases.status, 'completed'),
-      gte(purchases.createdAt, startDate),
-      lte(purchases.createdAt, endDate)
-    ))
-    .groupBy(sql`DATE(created_at)`)
-    .orderBy(sql`DATE(created_at)`);
-    
-    return result.map(row => ({
+  async getDailyRevenueForPeriod(
+    startDate: Date,
+    endDate: Date
+  ): Promise<Array<{ date: string; revenue: number }>> {
+    const result = await db
+      .select({
+        date: sql<string>`DATE(created_at)`,
+        revenue: sql<number>`COALESCE(SUM(amount), 0)`,
+      })
+      .from(purchases)
+      .where(
+        and(
+          eq(purchases.status, 'completed'),
+          gte(purchases.createdAt, startDate),
+          lte(purchases.createdAt, endDate)
+        )
+      )
+      .groupBy(sql`DATE(created_at)`)
+      .orderBy(sql`DATE(created_at)`);
+
+    return result.map((row) => ({
       date: row.date,
-      revenue: Number(row.revenue)
+      revenue: Number(row.revenue),
     }));
   }
 
   async getRecentPurchases(limit: number = 10): Promise<any[]> {
-    return await db.select({
-      id: purchases.id,
-      userId: purchases.userId,
-      orderId: purchases.gumroadOrderId,
-      amount: purchases.amount,
-      currency: purchases.currency,
-      status: purchases.status,
-      createdAt: purchases.createdAt,
-      userEmail: users.email
-    })
-    .from(purchases)
-    .leftJoin(users, eq(purchases.userId, users.id))
-    .orderBy(desc(purchases.createdAt))
-    .limit(limit);
+    return await db
+      .select({
+        id: purchases.id,
+        userId: purchases.userId,
+        orderId: purchases.gumroadOrderId,
+        amount: purchases.amount,
+        currency: purchases.currency,
+        status: purchases.status,
+        createdAt: purchases.createdAt,
+        userEmail: users.email,
+      })
+      .from(purchases)
+      .leftJoin(users, eq(purchases.userId, users.id))
+      .orderBy(desc(purchases.createdAt))
+      .limit(limit);
   }
 
   async getRevenueByPeriod(period: string): Promise<any> {
     // Simplified implementation - can be enhanced
-    const now = new Date();
+    const _now = new Date();
     const periods = {
       day: [],
       week: [],
       month: [],
-      year: []
+      year: [],
     };
-    
+
     return periods[period as keyof typeof periods] || [];
   }
 
   async getTopCountriesByRevenue(limit: number = 10): Promise<any[]> {
     // Extract country from purchase data JSON
-    const result = await db.select({
-      country: sql<string>`(purchase_data->>'country')::text`,
-      revenue: sql<number>`COALESCE(SUM(amount), 0)`
-    })
-    .from(purchases)
-    .where(eq(purchases.status, 'completed'))
-    .groupBy(sql`(purchase_data->>'country')::text`)
-    .orderBy(desc(sql`COALESCE(SUM(amount), 0)`))
-    .limit(limit);
-    
-    return result.map(row => ({
+    const result = await db
+      .select({
+        country: sql<string>`(purchase_data->>'country')::text`,
+        revenue: sql<number>`COALESCE(SUM(amount), 0)`,
+      })
+      .from(purchases)
+      .where(eq(purchases.status, 'completed'))
+      .groupBy(sql`(purchase_data->>'country')::text`)
+      .orderBy(desc(sql`COALESCE(SUM(amount), 0)`))
+      .limit(limit);
+
+    return result.map((row) => ({
       country: row.country || 'Unknown',
-      revenue: Number(row.revenue)
+      revenue: Number(row.revenue),
     }));
   }
 
   async getConversionFunnel(): Promise<any> {
     const totalUsers = await this.getTotalUsers();
-    const purchasedUsers = await db.select({
-      count: sql<number>`COUNT(DISTINCT user_id)`
-    })
-    .from(purchases)
-    .where(eq(purchases.status, 'completed'));
-    
+    const purchasedUsers = await db
+      .select({
+        count: sql<number>`COUNT(DISTINCT user_id)`,
+      })
+      .from(purchases)
+      .where(eq(purchases.status, 'completed'));
+
     const purchasedCount = Number(purchasedUsers[0]?.count) || 0;
-    
+
     return {
       visitors: totalUsers * 10, // Estimate
       signups: totalUsers,
       purchased: purchasedCount,
-      conversionRate: totalUsers > 0 ? (purchasedCount / totalUsers) * 100 : 0
+      conversionRate: totalUsers > 0 ? (purchasedCount / totalUsers) * 100 : 0,
     };
   }
 
   async getRefundAnalytics(): Promise<any> {
-    const refunds = await db.select({
-      count: sql<number>`COUNT(*)`,
-      total: sql<number>`COALESCE(SUM(amount), 0)`
-    })
-    .from(purchases)
-    .where(eq(purchases.status, 'refunded'));
-    
+    const refunds = await db
+      .select({
+        count: sql<number>`COUNT(*)`,
+        total: sql<number>`COALESCE(SUM(amount), 0)`,
+      })
+      .from(purchases)
+      .where(eq(purchases.status, 'refunded'));
+
     return {
       count: Number(refunds[0]?.count) || 0,
-      totalAmount: Number(refunds[0]?.total) || 0
+      totalAmount: Number(refunds[0]?.total) || 0,
     };
   }
 
   async getPurchasesForExport(startDate?: Date, endDate?: Date): Promise<any[]> {
-    const baseQuery = db.select({
-      orderId: purchases.gumroadOrderId,
-      userEmail: users.email,
-      amount: purchases.amount,
-      currency: purchases.currency,
-      status: purchases.status,
-      createdAt: purchases.createdAt,
-      purchaseData: purchases.purchaseData
-    })
-    .from(purchases)
-    .leftJoin(users, eq(purchases.userId, users.id));
-    
+    const baseQuery = db
+      .select({
+        orderId: purchases.gumroadOrderId,
+        userEmail: users.email,
+        amount: purchases.amount,
+        currency: purchases.currency,
+        status: purchases.status,
+        createdAt: purchases.createdAt,
+        purchaseData: purchases.purchaseData,
+      })
+      .from(purchases)
+      .leftJoin(users, eq(purchases.userId, users.id));
+
     if (startDate && endDate) {
       return await baseQuery
-        .where(and(
-          gte(purchases.createdAt, startDate),
-          lte(purchases.createdAt, endDate)
-        ))
+        .where(and(gte(purchases.createdAt, startDate), lte(purchases.createdAt, endDate)))
         .orderBy(desc(purchases.createdAt));
     }
-    
+
     return await baseQuery.orderBy(desc(purchases.createdAt));
   }
 
@@ -1357,21 +1483,23 @@ export class OptimizedStorage implements IStorage {
   }
 
   async getPurchaseByOrderId(orderId: string): Promise<any> {
-    const result = await db.select()
+    const result = await db
+      .select()
       .from(purchases)
       .where(eq(purchases.gumroadOrderId, orderId))
       .limit(1);
-    
+
     return result[0];
   }
 
   async updateUserAccess(orderId: string, updates: any): Promise<void> {
     const purchase = await this.getPurchaseByOrderId(orderId);
-    if (purchase && purchase.userId) {
-      await db.update(users)
+    if (purchase?.userId) {
+      await db
+        .update(users)
         .set({
           lifetimeAccess: updates.grantAccess,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(users.id, purchase.userId));
     }
@@ -1384,10 +1512,11 @@ export class OptimizedStorage implements IStorage {
   }
 
   async updateUser(userId: string, updates: any): Promise<any> {
-    const [updatedUser] = await db.update(users)
+    const [updatedUser] = await db
+      .update(users)
       .set({
         ...updates,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .where(eq(users.id, userId))
       .returning();
@@ -1395,30 +1524,33 @@ export class OptimizedStorage implements IStorage {
   }
 
   async createPurchase(purchaseData: any): Promise<any> {
-    const [purchase] = await db.insert(purchases)
-      .values(purchaseData)
-      .returning();
+    const [purchase] = await db.insert(purchases).values(purchaseData).returning();
     return purchase;
   }
 
   async getUserSettings(userId: string): Promise<any> {
-    const result = await db.select().from(userSettings).where(eq(userSettings.userId, userId)).limit(1);
+    const result = await db
+      .select()
+      .from(userSettings)
+      .where(eq(userSettings.userId, userId))
+      .limit(1);
     return result[0]?.preferences || {};
   }
 
   async updateUserSettings(userId: string, settings: any): Promise<void> {
-    await db.insert(userSettings)
+    await db
+      .insert(userSettings)
       .values({
         userId,
         preferences: settings,
-        updatedAt: new Date()
+        updatedAt: new Date(),
       })
       .onConflictDoUpdate({
         target: userSettings.userId,
         set: {
           preferences: settings,
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       });
   }
 
@@ -1427,12 +1559,12 @@ export class OptimizedStorage implements IStorage {
     const favorites = await this.getUserFavorites(userId);
     const progress = await this.getUserProgress(userId);
     const settings = await this.getUserSettings(userId);
-    
+
     return {
       user,
       favorites,
       progress,
-      settings
+      settings,
     };
   }
 
@@ -1447,22 +1579,27 @@ export class OptimizedStorage implements IStorage {
 
   async getUserStreak(userId: string): Promise<any> {
     // Simple implementation - can be enhanced
-    const recentViews = await db.select({
-      viewedAt: termViews.viewedAt
-    })
-    .from(termViews)
-    .where(eq(termViews.userId, userId))
-    .orderBy(desc(termViews.viewedAt))
-    .limit(30);
+    const recentViews = await db
+      .select({
+        viewedAt: termViews.viewedAt,
+      })
+      .from(termViews)
+      .where(eq(termViews.userId, userId))
+      .orderBy(desc(termViews.viewedAt))
+      .limit(30);
 
     return {
       currentStreak: 0,
       longestStreak: 0,
-      recentActivity: recentViews
+      recentActivity: recentViews,
     };
   }
 
-  async getAllUsers(options?: { page?: number; limit?: number; search?: string }): Promise<{ data: any[]; total: number; page: number; limit: number; hasMore: boolean }> {
+  async getAllUsers(options?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Promise<{ data: any[]; total: number; page: number; limit: number; hasMore: boolean }> {
     const { page = 1, limit = 50, search } = options || {};
     const offset = (page - 1) * limit;
 
@@ -1470,8 +1607,8 @@ export class OptimizedStorage implements IStorage {
       CacheKeys.term(`users:page-${page}:limit-${limit}:search-${search || 'none'}`),
       async () => {
         // Build base query
-        let whereConditions = undefined;
-        
+        let whereConditions;
+
         if (search) {
           whereConditions = or(
             ilike(users.email, `%${search}%`),
@@ -1481,42 +1618,44 @@ export class OptimizedStorage implements IStorage {
         }
 
         // Get total count
-        const totalResult = await db.select({ 
-          count: sql<number>`count(*)` 
-        })
-        .from(users)
-        .where(whereConditions);
-        
+        const totalResult = await db
+          .select({
+            count: sql<number>`count(*)`,
+          })
+          .from(users)
+          .where(whereConditions);
+
         const total = Number(totalResult[0]?.count) || 0;
 
         // Get paginated users with all relevant fields
-        const result = await db.select({
-          id: users.id,
-          email: users.email,
-          firstName: users.firstName,
-          lastName: users.lastName,
-          profileImageUrl: users.profileImageUrl,
-          isAdmin: users.isAdmin,
-          subscriptionTier: users.subscriptionTier,
-          lifetimeAccess: users.lifetimeAccess,
-          purchaseDate: users.purchaseDate,
-          dailyViews: users.dailyViews,
-          lastViewReset: users.lastViewReset,
-          createdAt: users.createdAt,
-          updatedAt: users.updatedAt
-        })
-        .from(users)
-        .where(whereConditions)
-        .orderBy(desc(users.createdAt))
-        .limit(limit)
-        .offset(offset);
+        const result = await db
+          .select({
+            id: users.id,
+            email: users.email,
+            firstName: users.firstName,
+            lastName: users.lastName,
+            profileImageUrl: users.profileImageUrl,
+            isAdmin: users.isAdmin,
+            subscriptionTier: users.subscriptionTier,
+            lifetimeAccess: users.lifetimeAccess,
+            purchaseDate: users.purchaseDate,
+            dailyViews: users.dailyViews,
+            lastViewReset: users.lastViewReset,
+            createdAt: users.createdAt,
+            updatedAt: users.updatedAt,
+          })
+          .from(users)
+          .where(whereConditions)
+          .orderBy(desc(users.createdAt))
+          .limit(limit)
+          .offset(offset);
 
         return {
           data: result,
           total,
           page,
           limit,
-          hasMore: offset + limit < total
+          hasMore: offset + limit < total,
         };
       },
       300 // Cache for 5 minutes
@@ -1525,60 +1664,69 @@ export class OptimizedStorage implements IStorage {
 
   async clearAllData(): Promise<{ tablesCleared: string[] }> {
     const tablesCleared: string[] = [];
-    
+
     try {
       // Clear user-related data (in dependency order)
       await db.delete(userSettings);
       tablesCleared.push('userSettings');
-      
+
       await db.delete(userProgress);
       tablesCleared.push('userProgress');
-      
+
       await db.delete(termViews);
       tablesCleared.push('termViews');
-      
+
       await db.delete(favorites);
       tablesCleared.push('favorites');
-      
+
       // Clear purchases data
       await db.delete(purchases);
       tablesCleared.push('purchases');
-      
+
       // Clear users (this should be done after all user-dependent data)
       await db.delete(users);
       tablesCleared.push('users');
-      
+
       // Clear term-related data
       await db.delete(termSubcategories);
       tablesCleared.push('termSubcategories');
-      
+
       await db.delete(terms);
       tablesCleared.push('terms');
-      
+
       // Clear category hierarchy
       await db.delete(subcategories);
       tablesCleared.push('subcategories');
-      
+
       await db.delete(categories);
       tablesCleared.push('categories');
-      
+
       // Clear all caches
       await clearCache();
       tablesCleared.push('queryCache');
-      
+
       console.log(`[OptimizedStorage] Successfully cleared ${tablesCleared.length} tables`);
-      
+
       return { tablesCleared };
     } catch (error) {
       console.error('[OptimizedStorage] clearAllData error:', error);
-      throw new Error(`Failed to clear data: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to clear data: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
-  async reindexDatabase(): Promise<{ success: boolean; operation: string; duration: number; operations: string[]; timestamp: Date; message: string }> {
+  async reindexDatabase(): Promise<{
+    success: boolean;
+    operation: string;
+    duration: number;
+    operations: string[];
+    timestamp: Date;
+    message: string;
+  }> {
     const startTime = Date.now();
     const operations: string[] = [];
-    
+
     try {
       console.log('[OptimizedStorage] Starting comprehensive database reindexing...');
       operations.push('Database reindexing started');
@@ -1598,21 +1746,21 @@ export class OptimizedStorage implements IStorage {
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_category_id_idx ON terms(category_id)`,
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_view_count_idx ON terms(view_count DESC)`,
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_created_at_idx ON terms(created_at DESC)`,
-        
+
         // Full-text search indexes
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_name_gin_idx ON terms USING GIN(to_tsvector('english', name))`,
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_definition_gin_idx ON terms USING GIN(to_tsvector('english', definition))`,
-        
+
         // Composite indexes for common queries
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_category_view_count_idx ON terms(category_id, view_count DESC)`,
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_category_created_at_idx ON terms(category_id, created_at DESC)`,
-        
+
         // User activity indexes
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS favorites_user_id_idx ON favorites(user_id)`,
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS user_progress_user_id_idx ON user_progress(user_id)`,
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS term_views_term_id_idx ON term_views(term_id)`,
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS term_views_user_id_idx ON term_views(user_id)`,
-        
+
         // Category optimization
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS categories_name_lower_idx ON categories(LOWER(name))`,
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS subcategories_category_id_idx ON subcategories(category_id)`,
@@ -1632,10 +1780,10 @@ export class OptimizedStorage implements IStorage {
         // Trigram indexes for fuzzy search
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_name_trgm_idx ON terms USING GIN(name gin_trgm_ops)`,
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_definition_trgm_idx ON terms USING GIN(definition gin_trgm_ops)`,
-        
+
         // Case-insensitive search
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_name_lower_idx ON terms(LOWER(name))`,
-        
+
         // Time-based partial indexes
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_recent_idx ON terms(created_at DESC) WHERE created_at > NOW() - INTERVAL '30 days'`,
         `CREATE INDEX CONCURRENTLY IF NOT EXISTS terms_popular_idx ON terms(view_count DESC) WHERE view_count > 10`,
@@ -1654,15 +1802,25 @@ export class OptimizedStorage implements IStorage {
       try {
         await db.execute(sql`REINDEX DATABASE CONCURRENTLY`);
         operations.push('✓ Database reindexed');
-      } catch (error) {
+      } catch (_error) {
         // Fallback to table-specific reindexing
-        const tables = ['terms', 'categories', 'subcategories', 'users', 'favorites', 'user_progress', 'term_views'];
+        const tables = [
+          'terms',
+          'categories',
+          'subcategories',
+          'users',
+          'favorites',
+          'user_progress',
+          'term_views',
+        ];
         for (const table of tables) {
           try {
             await db.execute(sql.raw(`REINDEX TABLE ${table}`));
             operations.push(`✓ Reindexed table: ${table}`);
           } catch (tableError) {
-            operations.push(`⚠ Reindex ${table}: ${tableError instanceof Error ? tableError.message : 'error'}`);
+            operations.push(
+              `⚠ Reindex ${table}: ${tableError instanceof Error ? tableError.message : 'error'}`
+            );
           }
         }
       }
@@ -1681,29 +1839,31 @@ export class OptimizedStorage implements IStorage {
 
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       console.log(`[OptimizedStorage] Database reindexing completed in ${duration}ms`);
-      
+
       return {
         success: true,
         operation: 'reindex',
         duration,
         operations,
         timestamp: new Date(),
-        message: `Database reindexing completed successfully in ${duration}ms`
+        message: `Database reindexing completed successfully in ${duration}ms`,
       };
-      
     } catch (error) {
       const endTime = Date.now();
       console.error('[OptimizedStorage] reindexDatabase error:', error);
-      
+
       return {
         success: false,
         operation: 'reindex',
         duration: endTime - startTime,
-        operations: [...operations, `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`],
+        operations: [
+          ...operations,
+          `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ],
         timestamp: new Date(),
-        message: `Database reindexing failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        message: `Database reindexing failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -1714,58 +1874,72 @@ export class OptimizedStorage implements IStorage {
       async () => {
         try {
           // Get total counts
-          const [userCountResult] = await db.select({ 
-            count: sql<number>`count(*)` 
-          }).from(users);
-          
-          const [termCountResult] = await db.select({ 
-            count: sql<number>`count(*)` 
-          }).from(terms);
-          
-          const [categoryCountResult] = await db.select({ 
-            count: sql<number>`count(*)` 
-          }).from(categories);
-          
-          const [viewCountResult] = await db.select({ 
-            count: sql<number>`count(*)` 
-          }).from(termViews);
+          const [userCountResult] = await db
+            .select({
+              count: sql<number>`count(*)`,
+            })
+            .from(users);
+
+          const [termCountResult] = await db
+            .select({
+              count: sql<number>`count(*)`,
+            })
+            .from(terms);
+
+          const [categoryCountResult] = await db
+            .select({
+              count: sql<number>`count(*)`,
+            })
+            .from(categories);
+
+          const [viewCountResult] = await db
+            .select({
+              count: sql<number>`count(*)`,
+            })
+            .from(termViews);
 
           // Get recent activity (last 50 actions)
-          const recentActivity = await db.select({
-            id: termViews.id,
-            userId: termViews.userId,
-            action: sql<string>`'view'`,
-            entityType: sql<string>`'term'`,
-            entityId: termViews.termId,
-            createdAt: termViews.viewedAt
-          })
-          .from(termViews)
-          .orderBy(desc(termViews.viewedAt))
-          .limit(50);
+          const recentActivity = await db
+            .select({
+              id: termViews.id,
+              userId: termViews.userId,
+              action: sql<string>`'view'`,
+              entityType: sql<string>`'term'`,
+              entityId: termViews.termId,
+              createdAt: termViews.viewedAt,
+            })
+            .from(termViews)
+            .orderBy(desc(termViews.viewedAt))
+            .limit(50);
 
           // Get recent favorites as additional activity
-          const recentFavorites = await db.select({
-            id: favorites.id,
-            userId: favorites.userId,
-            action: sql<string>`'favorite'`,
-            entityType: sql<string>`'term'`,
-            entityId: favorites.termId,
-            createdAt: favorites.createdAt
-          })
-          .from(favorites)
-          .orderBy(desc(favorites.createdAt))
-          .limit(25);
+          const recentFavorites = await db
+            .select({
+              id: favorites.id,
+              userId: favorites.userId,
+              action: sql<string>`'favorite'`,
+              entityType: sql<string>`'term'`,
+              entityId: favorites.termId,
+              createdAt: favorites.createdAt,
+            })
+            .from(favorites)
+            .orderBy(desc(favorites.createdAt))
+            .limit(25);
 
           // Combine and sort activity
           const combinedActivity = [...recentActivity, ...recentFavorites]
-            .sort((a, b) => new Date(b.createdAt || new Date()).getTime() - new Date(a.createdAt || new Date()).getTime())
+            .sort(
+              (a, b) =>
+                new Date(b.createdAt || new Date()).getTime() -
+                new Date(a.createdAt || new Date()).getTime()
+            )
             .slice(0, 50);
 
           // Basic system health check
           const systemHealth = {
             database: 'healthy' as const,
             s3: 'healthy' as const,
-            ai: 'healthy' as const
+            ai: 'healthy' as const,
           };
 
           return {
@@ -1774,12 +1948,11 @@ export class OptimizedStorage implements IStorage {
             totalCategories: Number(categoryCountResult?.count) || 0,
             totalViews: Number(viewCountResult?.count) || 0,
             recentActivity: combinedActivity,
-            systemHealth
+            systemHealth,
           };
-          
         } catch (error) {
           console.error('[OptimizedStorage] getAdminStats error:', error);
-          
+
           // Return default stats on error
           return {
             totalUsers: 0,
@@ -1790,8 +1963,8 @@ export class OptimizedStorage implements IStorage {
             systemHealth: {
               database: 'error' as const,
               s3: 'warning' as const,
-              ai: 'warning' as const
-            }
+              ai: 'warning' as const,
+            },
           };
         }
       },
@@ -1799,10 +1972,17 @@ export class OptimizedStorage implements IStorage {
     );
   }
 
-  async cleanupDatabase(): Promise<{ success: boolean; operation: string; duration: number; operations: string[]; timestamp: Date; message: string }> {
+  async cleanupDatabase(): Promise<{
+    success: boolean;
+    operation: string;
+    duration: number;
+    operations: string[];
+    timestamp: Date;
+    message: string;
+  }> {
     const startTime = Date.now();
     const operations: string[] = [];
-    
+
     try {
       console.log('[OptimizedStorage] Starting database cleanup...');
       operations.push('Database cleanup started');
@@ -1810,25 +1990,32 @@ export class OptimizedStorage implements IStorage {
       // 1. Clean up orphaned records
       try {
         // Remove user progress for non-existent users
-        const orphanedProgress = await db.delete(userProgress)
+        const _orphanedProgress = await db
+          .delete(userProgress)
           .where(sql`user_id NOT IN (SELECT id FROM users)`);
         operations.push(`✓ Cleaned orphaned user progress records`);
 
         // Remove favorites for non-existent users or terms
-        const orphanedFavorites = await db.delete(favorites)
-          .where(sql`user_id NOT IN (SELECT id FROM users) OR term_id NOT IN (SELECT id FROM terms)`);
+        const _orphanedFavorites = await db
+          .delete(favorites)
+          .where(
+            sql`user_id NOT IN (SELECT id FROM users) OR term_id NOT IN (SELECT id FROM terms)`
+          );
         operations.push(`✓ Cleaned orphaned favorites`);
 
         // Remove term views for non-existent users or terms
-        const orphanedViews = await db.delete(termViews)
-          .where(sql`user_id NOT IN (SELECT id FROM users) OR term_id NOT IN (SELECT id FROM terms)`);
+        const _orphanedViews = await db
+          .delete(termViews)
+          .where(
+            sql`user_id NOT IN (SELECT id FROM users) OR term_id NOT IN (SELECT id FROM terms)`
+          );
         operations.push(`✓ Cleaned orphaned term views`);
 
         // Remove user settings for non-existent users
-        const orphanedSettings = await db.delete(userSettings)
+        const _orphanedSettings = await db
+          .delete(userSettings)
           .where(sql`user_id NOT IN (SELECT id FROM users)`);
         operations.push(`✓ Cleaned orphaned user settings`);
-
       } catch (error) {
         operations.push(`⚠ Orphan cleanup: ${error instanceof Error ? error.message : 'error'}`);
       }
@@ -1836,17 +2023,19 @@ export class OptimizedStorage implements IStorage {
       // 2. Clean up old/expired data
       try {
         // Remove old term views (older than 6 months)
-        const oldViews = await db.delete(termViews)
+        const _oldViews = await db
+          .delete(termViews)
           .where(sql`viewed_at < NOW() - INTERVAL '6 months'`);
         operations.push(`✓ Cleaned old term views (6+ months)`);
-
       } catch (error) {
         operations.push(`⚠ Old data cleanup: ${error instanceof Error ? error.message : 'error'}`);
       }
 
       // 3. Optimize table statistics
       try {
-        await db.execute(sql`ANALYZE users, terms, categories, subcategories, favorites, user_progress, term_views`);
+        await db.execute(
+          sql`ANALYZE users, terms, categories, subcategories, favorites, user_progress, term_views`
+        );
         operations.push('✓ Updated table statistics');
       } catch (error) {
         operations.push(`⚠ Statistics update: ${error instanceof Error ? error.message : 'error'}`);
@@ -1858,44 +2047,62 @@ export class OptimizedStorage implements IStorage {
 
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       console.log(`[OptimizedStorage] Database cleanup completed in ${duration}ms`);
-      
+
       return {
         success: true,
         operation: 'cleanup',
         duration,
         operations,
         timestamp: new Date(),
-        message: `Database cleanup completed successfully in ${duration}ms`
+        message: `Database cleanup completed successfully in ${duration}ms`,
       };
-      
     } catch (error) {
       const endTime = Date.now();
       console.error('[OptimizedStorage] cleanupDatabase error:', error);
-      
+
       return {
         success: false,
         operation: 'cleanup',
         duration: endTime - startTime,
-        operations: [...operations, `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`],
+        operations: [
+          ...operations,
+          `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ],
         timestamp: new Date(),
-        message: `Database cleanup failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        message: `Database cleanup failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
 
-  async vacuumDatabase(): Promise<{ success: boolean; operation: string; duration: number; operations: string[]; timestamp: Date; message: string }> {
+  async vacuumDatabase(): Promise<{
+    success: boolean;
+    operation: string;
+    duration: number;
+    operations: string[];
+    timestamp: Date;
+    message: string;
+  }> {
     const startTime = Date.now();
     const operations: string[] = [];
-    
+
     try {
       console.log('[OptimizedStorage] Starting database vacuum...');
       operations.push('Database vacuum started');
 
       // 1. Vacuum main tables
-      const tables = ['users', 'terms', 'categories', 'subcategories', 'favorites', 'user_progress', 'term_views', 'purchases'];
-      
+      const tables = [
+        'users',
+        'terms',
+        'categories',
+        'subcategories',
+        'favorites',
+        'user_progress',
+        'term_views',
+        'purchases',
+      ];
+
       for (const table of tables) {
         try {
           await db.execute(sql.raw(`VACUUM ANALYZE ${table}`));
@@ -1927,29 +2134,31 @@ export class OptimizedStorage implements IStorage {
 
       const endTime = Date.now();
       const duration = endTime - startTime;
-      
+
       console.log(`[OptimizedStorage] Database vacuum completed in ${duration}ms`);
-      
+
       return {
         success: true,
         operation: 'vacuum',
         duration,
         operations,
         timestamp: new Date(),
-        message: `Database vacuum completed successfully in ${duration}ms`
+        message: `Database vacuum completed successfully in ${duration}ms`,
       };
-      
     } catch (error) {
       const endTime = Date.now();
       console.error('[OptimizedStorage] vacuumDatabase error:', error);
-      
+
       return {
         success: false,
         operation: 'vacuum',
         duration: endTime - startTime,
-        operations: [...operations, `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`],
+        operations: [
+          ...operations,
+          `❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        ],
         timestamp: new Date(),
-        message: `Database vacuum failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+        message: `Database vacuum failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
       };
     }
   }
@@ -2006,21 +2215,23 @@ export class OptimizedStorage implements IStorage {
 
       // Clear pending content cache
       await clearCache();
-      
+
       if (result.rows && result.rows.length > 0) {
         console.log(`[OptimizedStorage] Content approved: ${id}`);
         return {
           success: true,
           id,
           status: 'resolved',
-          message: 'Content approved successfully'
+          message: 'Content approved successfully',
         };
       } else {
         throw new Error('Content not found');
       }
     } catch (error) {
       console.error('[OptimizedStorage] approveContent error:', error);
-      throw new Error(`Failed to approve content: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to approve content: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -2039,21 +2250,23 @@ export class OptimizedStorage implements IStorage {
 
       // Clear pending content cache
       await clearCache();
-      
+
       if (result.rows && result.rows.length > 0) {
         console.log(`[OptimizedStorage] Content rejected: ${id}`);
         return {
           success: true,
           id,
           status: 'dismissed',
-          message: 'Content rejected successfully'
+          message: 'Content rejected successfully',
         };
       } else {
         throw new Error('Content not found');
       }
     } catch (error) {
       console.error('[OptimizedStorage] rejectContent error:', error);
-      throw new Error(`Failed to reject content: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to reject content: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
@@ -2061,13 +2274,15 @@ export class OptimizedStorage implements IStorage {
     try {
       if (categoryId) {
         // Get stats for a specific category
-        const [termCountResult] = await db.select({
-          count: sql<number>`count(*)`
-        })
-        .from(terms)
-        .where(eq(terms.categoryId, categoryId));
+        const [termCountResult] = await db
+          .select({
+            count: sql<number>`count(*)`,
+          })
+          .from(terms)
+          .where(eq(terms.categoryId, categoryId));
 
-        const [categoryResult] = await db.select()
+        const [categoryResult] = await db
+          .select()
           .from(categories)
           .where(eq(categories.id, categoryId))
           .limit(1);
@@ -2076,48 +2291,49 @@ export class OptimizedStorage implements IStorage {
           categoryId,
           categoryName: categoryResult?.name || 'Unknown',
           termCount: termCountResult?.count || 0,
-          lastUpdated: new Date()
+          lastUpdated: new Date(),
         };
       } else {
         // Get stats for all categories
-        const results = await db.select({
-          categoryId: categories.id,
-          categoryName: categories.name,
-          termCount: sql<number>`count(${terms.id})`
-        })
-        .from(categories)
-        .leftJoin(terms, eq(categories.id, terms.categoryId))
-        .groupBy(categories.id, categories.name)
-        .orderBy(desc(sql`count(${terms.id})`));
+        const results = await db
+          .select({
+            categoryId: categories.id,
+            categoryName: categories.name,
+            termCount: sql<number>`count(${terms.id})`,
+          })
+          .from(categories)
+          .leftJoin(terms, eq(categories.id, terms.categoryId))
+          .groupBy(categories.id, categories.name)
+          .orderBy(desc(sql`count(${terms.id})`));
 
         return results;
       }
     } catch (error) {
       console.error('[OptimizedStorage] getCategoryStats error:', error);
-      throw new Error(`Failed to get category stats: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(
+        `Failed to get category stats: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
   }
 
   // Additional missing methods implementation
   async getTermsByIds(ids: string[]): Promise<any[]> {
     if (ids.length === 0) return [];
-    
-    return await db.select()
-      .from(terms)
-      .where(inArray(terms.id, ids));
+
+    return await db.select().from(terms).where(inArray(terms.id, ids));
   }
 
-  async submitFeedback(data: any): Promise<any> {
+  async submitFeedback(_data: any): Promise<any> {
     // Placeholder implementation - would need feedback table schema
-    return { success: true, id: 'feedback-' + Date.now() };
+    return { success: true, id: `feedback-${Date.now()}` };
   }
 
-  async storeFeedback(data: any): Promise<any> {
+  async storeFeedback(_data: any): Promise<any> {
     // Placeholder implementation - would need feedback table schema
-    return { success: true, id: 'feedback-' + Date.now() };
+    return { success: true, id: `feedback-${Date.now()}` };
   }
 
-  async getFeedback(filters: any, pagination: any): Promise<any> {
+  async getFeedback(_filters: any, _pagination: any): Promise<any> {
     // Placeholder implementation - would need feedback table schema
     return { data: [], total: 0 };
   }
@@ -2127,7 +2343,7 @@ export class OptimizedStorage implements IStorage {
     return { totalFeedback: 0, pendingReview: 0, resolved: 0 };
   }
 
-  async updateFeedbackStatus(id: string, status: string, notes?: string): Promise<any> {
+  async updateFeedbackStatus(id: string, status: string, _notes?: string): Promise<any> {
     // Placeholder implementation - would need feedback table schema
     return { success: true, id, status };
   }
@@ -2147,7 +2363,7 @@ export class OptimizedStorage implements IStorage {
     console.log('Term section update placeholder:', { termId, sectionId, data });
   }
 
-  async trackTermView(userId: string, termId: string, sectionId?: string): Promise<void> {
+  async trackTermView(userId: string, termId: string, _sectionId?: string): Promise<void> {
     await this.recordTermView(termId, userId);
   }
 
@@ -2156,24 +2372,23 @@ export class OptimizedStorage implements IStorage {
     console.log('Section completion tracking placeholder:', { userId, termId, sectionId });
   }
 
-
-  async getUserSectionProgress(userId: string, options?: any): Promise<any[]> {
+  async getUserSectionProgress(userId: string, _options?: any): Promise<any[]> {
     // Return user progress in a different format
     const progress = await this.getUserProgress(userId);
     return progress.learnedTerms || [];
   }
 
-  async getUserTimeSpent(userId: string, timeframe?: string): Promise<number> {
+  async getUserTimeSpent(_userId: string, _timeframe?: string): Promise<number> {
     // Placeholder implementation - would need time tracking schema
     return 0;
   }
 
-  async getCategoryProgress(userId: string): Promise<any[]> {
+  async getCategoryProgress(_userId: string): Promise<any[]> {
     // Placeholder implementation - would need category progress tracking
     return [];
   }
 
-  async isAchievementUnlocked(userId: string, achievementId: string): Promise<boolean> {
+  async isAchievementUnlocked(_userId: string, _achievementId: string): Promise<boolean> {
     // Placeholder implementation - would need achievements schema
     return false;
   }
@@ -2192,87 +2407,84 @@ export class OptimizedStorage implements IStorage {
     categoryId?: string;
     includeStats?: boolean;
   }): Promise<any[]> {
-    const { offset = 0, limit = 100, fields = ['*'], search, categoryId, includeStats = false } = options;
-    
+    const {
+      offset = 0,
+      limit = 100,
+      fields = ['*'],
+      search,
+      categoryId,
+      includeStats = false,
+    } = options;
+
     try {
       // Start with basic query
-      let query = db.select()
-        .from(subcategories);
-      
+      let query = db.select().from(subcategories);
+
       const conditions = [];
-      
+
       if (search) {
-        conditions.push(
-          ilike(subcategories.name, `%${search}%`)
-        );
+        conditions.push(ilike(subcategories.name, `%${search}%`));
       }
-      
+
       if (categoryId) {
         conditions.push(eq(subcategories.categoryId, categoryId));
       }
-      
+
       if (conditions.length > 0) {
         query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions));
       }
-      
-      query = query.orderBy(asc(subcategories.name))
-        .limit(limit)
-        .offset(offset);
-      
+
+      query = query.orderBy(asc(subcategories.name)).limit(limit).offset(offset);
+
       const results = await query;
-      
+
       // If includeStats is true, add term count manually
       if (includeStats) {
         const resultsWithCount = await Promise.all(
           results.map(async (subcategory) => {
-            const countQuery = await db.select({
-              count: sql<number>`COUNT(*)`
-            })
-            .from(termSubcategories)
-            .where(eq(termSubcategories.subcategoryId, subcategory.id));
-            
+            const countQuery = await db
+              .select({
+                count: sql<number>`COUNT(*)`,
+              })
+              .from(termSubcategories)
+              .where(eq(termSubcategories.subcategoryId, subcategory.id));
+
             return {
               ...subcategory,
-              termCount: countQuery[0]?.count || 0
+              termCount: countQuery[0]?.count || 0,
             };
           })
         );
         return resultsWithCount;
       }
-      
-      return results.map(r => ({ ...r, termCount: 0 }));
+
+      return results.map((r) => ({ ...r, termCount: 0 }));
     } catch (error) {
       console.error('Error in getSubcategoriesOptimized:', error);
       throw error;
     }
   }
 
-  async getSubcategoriesCount(options: {
-    search?: string;
-    categoryId?: string;
-  }): Promise<number> {
+  async getSubcategoriesCount(options: { search?: string; categoryId?: string }): Promise<number> {
     try {
       const { search, categoryId } = options || {};
-      
-      let query = db.select({ count: sql<number>`COUNT(*)` })
-        .from(subcategories);
-      
+
+      let query = db.select({ count: sql<number>`COUNT(*)` }).from(subcategories);
+
       const conditions = [];
-      
+
       if (search) {
-        conditions.push(
-          ilike(subcategories.name, `%${search}%`)
-        );
+        conditions.push(ilike(subcategories.name, `%${search}%`));
       }
-      
+
       if (categoryId) {
         conditions.push(eq(subcategories.categoryId, categoryId));
       }
-      
+
       if (conditions.length > 0) {
         query = query.where(conditions.length === 1 ? conditions[0] : and(...conditions));
       }
-      
+
       const result = await query;
       return result[0]?.count || 0;
     } catch (error) {
@@ -2282,56 +2494,68 @@ export class OptimizedStorage implements IStorage {
   }
 
   async getSubcategoryById(id: string): Promise<any | null> {
-    const result = await db.select({
-      id: subcategories.id,
-      name: subcategories.name,
-      categoryId: subcategories.categoryId,
-      createdAt: subcategories.createdAt,
-      updatedAt: subcategories.updatedAt,
-      termCount: sql<number>`COUNT(DISTINCT ${termSubcategories.termId})`
-    })
-    .from(subcategories)
-    .leftJoin(termSubcategories, eq(subcategories.id, termSubcategories.subcategoryId))
-    .where(eq(subcategories.id, id))
-    .groupBy(subcategories.id, subcategories.name, subcategories.categoryId, subcategories.createdAt, subcategories.updatedAt);
-    
+    const result = await db
+      .select({
+        id: subcategories.id,
+        name: subcategories.name,
+        categoryId: subcategories.categoryId,
+        createdAt: subcategories.createdAt,
+        updatedAt: subcategories.updatedAt,
+        termCount: sql<number>`COUNT(DISTINCT ${termSubcategories.termId})`,
+      })
+      .from(subcategories)
+      .leftJoin(termSubcategories, eq(subcategories.id, termSubcategories.subcategoryId))
+      .where(eq(subcategories.id, id))
+      .groupBy(
+        subcategories.id,
+        subcategories.name,
+        subcategories.categoryId,
+        subcategories.createdAt,
+        subcategories.updatedAt
+      );
+
     return result[0] || null;
   }
 
-  async getTermsBySubcategory(subcategoryId: string, options: {
-    offset?: number;
-    limit?: number;
-    sort?: string;
-    order?: 'asc' | 'desc';
-    fields?: string[];
-  }): Promise<{ data: any[]; total: number }> {
+  async getTermsBySubcategory(
+    subcategoryId: string,
+    options: {
+      offset?: number;
+      limit?: number;
+      sort?: string;
+      order?: 'asc' | 'desc';
+      fields?: string[];
+    }
+  ): Promise<{ data: any[]; total: number }> {
     const { offset = 0, limit = 50, sort = 'name', order = 'asc', fields = ['*'] } = options;
-    
+
     // Get total count first
-    const totalResult = await db.select({
-      count: sql<number>`COUNT(DISTINCT ${terms.id})`
-    })
-    .from(terms)
-    .innerJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
-    .where(eq(termSubcategories.subcategoryId, subcategoryId));
-    
+    const totalResult = await db
+      .select({
+        count: sql<number>`COUNT(DISTINCT ${terms.id})`,
+      })
+      .from(terms)
+      .innerJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
+      .where(eq(termSubcategories.subcategoryId, subcategoryId));
+
     const total = totalResult[0]?.count || 0;
-    
+
     // Get the actual data
-    let query = db.select({
-      id: terms.id,
-      name: terms.name,
-      shortDefinition: terms.shortDefinition,
-      definition: terms.definition,
-      viewCount: terms.viewCount,
-      categoryId: terms.categoryId,
-      createdAt: terms.createdAt,
-      updatedAt: terms.updatedAt
-    })
-    .from(terms)
-    .innerJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
-    .where(eq(termSubcategories.subcategoryId, subcategoryId));
-    
+    let query = db
+      .select({
+        id: terms.id,
+        name: terms.name,
+        shortDefinition: terms.shortDefinition,
+        definition: terms.definition,
+        viewCount: terms.viewCount,
+        categoryId: terms.categoryId,
+        createdAt: terms.createdAt,
+        updatedAt: terms.updatedAt,
+      })
+      .from(terms)
+      .innerJoin(termSubcategories, eq(terms.id, termSubcategories.termId))
+      .where(eq(termSubcategories.subcategoryId, subcategoryId));
+
     // Apply sorting
     if (sort === 'name') {
       query = query.orderBy(order === 'desc' ? desc(terms.name) : asc(terms.name));
@@ -2340,18 +2564,18 @@ export class OptimizedStorage implements IStorage {
     } else if (sort === 'createdAt') {
       query = query.orderBy(order === 'desc' ? desc(terms.createdAt) : asc(terms.createdAt));
     }
-    
+
     query = query.limit(limit).offset(offset);
-    
+
     const data = await query;
-    
+
     return { data, total };
   }
 
   // Section-related methods for 42-section content system
   async getTermSections(termId: string): Promise<any[]> {
     const cacheKey = `term_sections:${termId}`;
-    
+
     return cached(
       cacheKey,
       async () => {
@@ -2365,7 +2589,7 @@ export class OptimizedStorage implements IStorage {
 
   async getSectionById(sectionId: string): Promise<any | null> {
     const cacheKey = `section:${sectionId}`;
-    
+
     return cached(
       cacheKey,
       async () => {
@@ -2379,7 +2603,7 @@ export class OptimizedStorage implements IStorage {
 
   async getContentGallery(sectionName: string, page: number = 1, limit: number = 20): Promise<any> {
     const cacheKey = `content_gallery:${sectionName}:${page}:${limit}`;
-    
+
     return cached(
       cacheKey,
       async () => {
@@ -2390,7 +2614,7 @@ export class OptimizedStorage implements IStorage {
           items: [],
           termCount: 0,
           totalPages: 0,
-          currentPage: page
+          currentPage: page,
         };
       },
       CacheKeys.MEDIUM_CACHE_TTL
@@ -2399,34 +2623,40 @@ export class OptimizedStorage implements IStorage {
 
   async getUserProgressSummary(userId: string): Promise<any> {
     const cacheKey = `user_progress_summary:${userId}`;
-    
+
     return cached(
       cacheKey,
       async () => {
         // Get user progress from existing userProgress table
-        const progressRows = await db.select()
+        const progressRows = await db
+          .select()
           .from(userProgress)
           .where(eq(userProgress.userId, userId));
-        
+
         const totalSections = 42; // Based on the 42-section architecture
         const completedSections = progressRows.length;
         const inProgressSections = 0; // Could be calculated based on partial completion
-        
+
         return {
           totalSections,
           completedSections,
           inProgressSections,
-          completionPercentage: Math.round((completedSections / totalSections) * 100)
+          completionPercentage: Math.round((completedSections / totalSections) * 100),
         };
       },
       CacheKeys.SHORT_CACHE_TTL
     );
   }
 
-  async updateUserProgress(userId: string, termId: string, sectionId: string, progressData: any): Promise<void> {
+  async updateUserProgress(
+    userId: string,
+    termId: string,
+    _sectionId: string,
+    _progressData: any
+  ): Promise<void> {
     // For now, use the existing markTermAsLearned method
     await this.markTermAsLearned(userId, termId);
-    
+
     // Clear cache for user progress
     clearCache(`user_progress_summary:${userId}`);
     clearCache(`term_sections:${termId}`);
@@ -2435,7 +2665,7 @@ export class OptimizedStorage implements IStorage {
   async searchSectionContent(query: string, options: any = {}): Promise<any> {
     const { contentType, sectionName, page = 1, limit = 20 } = options;
     const cacheKey = `section_search:${query}:${contentType || 'all'}:${sectionName || 'all'}:${page}:${limit}`;
-    
+
     return cached(
       cacheKey,
       async () => {
@@ -2446,7 +2676,7 @@ export class OptimizedStorage implements IStorage {
           total: 0,
           hasMore: false,
           page,
-          limit
+          limit,
         };
       },
       CacheKeys.SHORT_CACHE_TTL
@@ -2455,20 +2685,19 @@ export class OptimizedStorage implements IStorage {
 
   async getSectionAnalytics(): Promise<any> {
     const cacheKey = 'section_analytics';
-    
+
     return cached(
       cacheKey,
       async () => {
         // Calculate basic analytics from existing data
-        const termCount = await db.select({ count: sql<number>`COUNT(*)` })
-          .from(terms);
-        
+        const termCount = await db.select({ count: sql<number>`COUNT(*)` }).from(terms);
+
         return {
           totalSections: 42, // Based on 42-section architecture
           totalTerms: termCount[0]?.count || 0,
           totalItems: 0, // Would be sum of all section items
           completionRates: [], // Would be calculated from user progress
-          popularSections: [] // Would be calculated from view counts
+          popularSections: [], // Would be calculated from view counts
         };
       },
       CacheKeys.LONG_CACHE_TTL

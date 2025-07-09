@@ -3,24 +3,24 @@
  * AI-powered adaptive homepage with personalized content sections
  */
 
-import React, { useState, useEffect } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  User, 
-  TrendingUp, 
-  BookOpen, 
-  Clock, 
-  Compass, 
-  Brain,
-  Target,
+import {
   Activity,
+  BookOpen,
+  Brain,
   ChevronRight,
+  Clock,
+  Compass,
   RefreshCw,
-  Settings
+  Settings,
+  Target,
+  TrendingUp,
 } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import type React from 'react';
+import { useState } from 'react';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
@@ -75,7 +75,11 @@ const PersonalizedDashboard: React.FC = () => {
   const [refreshing, setRefreshing] = useState(false);
 
   // Fetch personalized homepage data
-  const { data: homepageData, isLoading, refetch } = useQuery({
+  const {
+    data: homepageData,
+    isLoading,
+    refetch,
+  } = useQuery({
     queryKey: ['personalized-homepage'],
     queryFn: async () => {
       const response = await fetch('/api/personalized/homepage');
@@ -91,7 +95,7 @@ const PersonalizedDashboard: React.FC = () => {
     retry: (failureCount, error) => {
       if (error.message === 'Authentication required') return false;
       return failureCount < 2;
-    }
+    },
   });
 
   const personalizedData: PersonalizedHomepageData = homepageData?.data;
@@ -105,20 +109,29 @@ const PersonalizedDashboard: React.FC = () => {
 
   const getSkillLevelColor = (level: string) => {
     switch (level) {
-      case 'beginner': return 'bg-green-100 text-green-800';
-      case 'intermediate': return 'bg-blue-100 text-blue-800';
-      case 'advanced': return 'bg-purple-100 text-purple-800';
-      case 'expert': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'beginner':
+        return 'bg-green-100 text-green-800';
+      case 'intermediate':
+        return 'bg-blue-100 text-blue-800';
+      case 'advanced':
+        return 'bg-purple-100 text-purple-800';
+      case 'expert':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getActivityLevelIcon = (level: string) => {
     switch (level) {
-      case 'high': return <Activity className="w-4 h-4 text-green-500" />;
-      case 'moderate': return <Activity className="w-4 h-4 text-yellow-500" />;
-      case 'low': return <Activity className="w-4 h-4 text-gray-500" />;
-      default: return <Activity className="w-4 h-4 text-gray-500" />;
+      case 'high':
+        return <Activity className="w-4 h-4 text-green-500" />;
+      case 'moderate':
+        return <Activity className="w-4 h-4 text-yellow-500" />;
+      case 'low':
+        return <Activity className="w-4 h-4 text-gray-500" />;
+      default:
+        return <Activity className="w-4 h-4 text-gray-500" />;
     }
   };
 
@@ -130,14 +143,14 @@ const PersonalizedDashboard: React.FC = () => {
           <div className="h-8 bg-gray-200 rounded w-1/3 mb-2"></div>
           <div className="h-4 bg-gray-200 rounded w-1/2"></div>
         </div>
-        
+
         {/* Cards Skeleton */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {[...Array(4)].map((_, i) => (
             <div key={i} className="animate-pulse bg-gray-200 h-32 rounded-lg"></div>
           ))}
         </div>
-        
+
         {/* Content Skeleton */}
         <div className="animate-pulse space-y-4">
           <div className="h-64 bg-gray-200 rounded-lg"></div>
@@ -157,9 +170,7 @@ const PersonalizedDashboard: React.FC = () => {
         <p className="text-gray-500 mb-4">
           We're analyzing your learning patterns to customize your dashboard.
         </p>
-        <Button onClick={() => refetch()}>
-          Try Again
-        </Button>
+        <Button onClick={() => refetch()}>Try Again</Button>
       </div>
     );
   }
@@ -170,9 +181,7 @@ const PersonalizedDashboard: React.FC = () => {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold">Welcome Back!</h1>
-          <p className="text-gray-600 mt-2">
-            Your personalized AI/ML learning dashboard
-          </p>
+          <p className="text-gray-600 mt-2">Your personalized AI/ML learning dashboard</p>
         </div>
         <div className="flex items-center gap-2">
           <Button
@@ -266,14 +275,12 @@ const PersonalizedDashboard: React.FC = () => {
                 <Target className="w-5 h-5" />
                 Recommended For You
               </CardTitle>
-              <CardDescription>
-                Based on your interests and learning patterns
-              </CardDescription>
+              <CardDescription>Based on your interests and learning patterns</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {personalizedData.personalizedSections.recommendedForYou.map((rec, index) => (
-                  <div 
+                  <div
                     key={index}
                     className="flex items-start space-x-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                     onClick={() => window.open(`/${rec.type}/${rec.id}`, '_blank')}
@@ -283,7 +290,7 @@ const PersonalizedDashboard: React.FC = () => {
                       {rec.type === 'learning_path' && <Target className="w-5 h-5 text-blue-600" />}
                       {rec.type === 'category' && <Compass className="w-5 h-5 text-blue-600" />}
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <h4 className="font-medium text-gray-900">{rec.title}</h4>
                       <p className="text-sm text-gray-600 line-clamp-2">{rec.description}</p>
@@ -296,7 +303,7 @@ const PersonalizedDashboard: React.FC = () => {
                         </Badge>
                       </div>
                     </div>
-                    
+
                     <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0" />
                   </div>
                 ))}
@@ -312,9 +319,7 @@ const PersonalizedDashboard: React.FC = () => {
                 <Clock className="w-5 h-5" />
                 Continue Learning
               </CardTitle>
-              <CardDescription>
-                Pick up where you left off
-              </CardDescription>
+              <CardDescription>Pick up where you left off</CardDescription>
             </CardHeader>
             <CardContent>
               {personalizedData.personalizedSections.continuelearning.length === 0 ? (
@@ -328,7 +333,7 @@ const PersonalizedDashboard: React.FC = () => {
               ) : (
                 <div className="space-y-4">
                   {personalizedData.personalizedSections.continuelearning.map((item, index) => (
-                    <div 
+                    <div
                       key={index}
                       className="flex items-center space-x-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                       onClick={() => window.open(`/learning-paths/${item.pathId}`, '_blank')}
@@ -362,14 +367,12 @@ const PersonalizedDashboard: React.FC = () => {
                 <Compass className="w-5 h-5" />
                 Explore New Topics
               </CardTitle>
-              <CardDescription>
-                Discover areas outside your usual interests
-              </CardDescription>
+              <CardDescription>Discover areas outside your usual interests</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {personalizedData.personalizedSections.exploreNew.map((rec, index) => (
-                  <div 
+                  <div
                     key={index}
                     className="flex items-start space-x-4 p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer"
                     onClick={() => window.open(`/${rec.type}/${rec.id}`, '_blank')}
@@ -377,7 +380,7 @@ const PersonalizedDashboard: React.FC = () => {
                     <div className="flex-shrink-0 w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                       <Compass className="w-5 h-5 text-green-600" />
                     </div>
-                    
+
                     <div className="flex-1">
                       <h4 className="font-medium text-gray-900">{rec.title}</h4>
                       <p className="text-sm text-gray-600 line-clamp-2">{rec.description}</p>
@@ -385,7 +388,7 @@ const PersonalizedDashboard: React.FC = () => {
                         New territory
                       </Badge>
                     </div>
-                    
+
                     <ChevronRight className="w-4 h-4 text-gray-400" />
                   </div>
                 ))}

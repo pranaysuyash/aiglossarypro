@@ -1,6 +1,16 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
-import { Command, CommandDialog, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList, CommandSeparator, CommandShortcut } from './command';
+import {
+  Command,
+  CommandDialog,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+  CommandSeparator,
+  CommandShortcut,
+} from './command';
 
 const meta: Meta<typeof Command> = {
   title: 'UI/Command',
@@ -9,7 +19,8 @@ const meta: Meta<typeof Command> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A command palette component for fast navigation and actions. Built with Radix UI and cmdk.',
+        component:
+          'A command palette component for fast navigation and actions. Built with Radix UI and cmdk.',
       },
     },
   },
@@ -172,24 +183,45 @@ export const WithIcons: Story = {
 export const SearchResults: Story = {
   render: () => {
     const [searchTerm, setSearchTerm] = useState('');
-    
+
     const terms = [
-      { name: 'Neural Networks', category: 'Deep Learning', description: 'Computational models inspired by biological neural networks' },
-      { name: 'Gradient Descent', category: 'Optimization', description: 'Algorithm for finding minimum of a function' },
-      { name: 'Transformer', category: 'NLP', description: 'Attention-based neural network architecture' },
-      { name: 'Convolutional Neural Network', category: 'Computer Vision', description: 'Neural network designed for image processing' },
-      { name: 'Random Forest', category: 'Machine Learning', description: 'Ensemble learning method using decision trees' },
+      {
+        name: 'Neural Networks',
+        category: 'Deep Learning',
+        description: 'Computational models inspired by biological neural networks',
+      },
+      {
+        name: 'Gradient Descent',
+        category: 'Optimization',
+        description: 'Algorithm for finding minimum of a function',
+      },
+      {
+        name: 'Transformer',
+        category: 'NLP',
+        description: 'Attention-based neural network architecture',
+      },
+      {
+        name: 'Convolutional Neural Network',
+        category: 'Computer Vision',
+        description: 'Neural network designed for image processing',
+      },
+      {
+        name: 'Random Forest',
+        category: 'Machine Learning',
+        description: 'Ensemble learning method using decision trees',
+      },
     ];
 
-    const filteredTerms = terms.filter(term =>
-      term.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      term.category.toLowerCase().includes(searchTerm.toLowerCase())
+    const filteredTerms = terms.filter(
+      (term) =>
+        term.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        term.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
       <Command className="rounded-lg border shadow-md max-w-2xl">
-        <CommandInput 
-          placeholder="Search AI/ML terms..." 
+        <CommandInput
+          placeholder="Search AI/ML terms..."
           value={searchTerm}
           onValueChange={setSearchTerm}
         />
@@ -205,9 +237,7 @@ export const SearchResults: Story = {
                       {term.category}
                     </span>
                   </div>
-                  <span className="text-sm text-muted-foreground mt-1">
-                    {term.description}
-                  </span>
+                  <span className="text-sm text-muted-foreground mt-1">{term.description}</span>
                 </CommandItem>
               ))}
             </CommandGroup>
@@ -317,8 +347,8 @@ export const RecentSearches: Story = {
 
     return (
       <Command className="rounded-lg border shadow-md max-w-md">
-        <CommandInput 
-          placeholder="Search AI terms..." 
+        <CommandInput
+          placeholder="Search AI terms..."
           value={searchValue}
           onValueChange={setSearchValue}
         />

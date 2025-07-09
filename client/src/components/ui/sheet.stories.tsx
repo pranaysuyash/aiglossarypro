@@ -1,11 +1,19 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
-import { Sheet, SheetContent, SheetDescription, SheetFooter, SheetHeader, SheetTitle, SheetTrigger } from './sheet';
+import { Badge } from './badge';
 import { Button } from './button';
 import { Input } from './input';
 import { Label } from './label';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetFooter,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from './sheet';
 import { Textarea } from './textarea';
-import { Badge } from './badge';
 
 const meta: Meta<typeof Sheet> = {
   title: 'UI/Sheet',
@@ -14,7 +22,8 @@ const meta: Meta<typeof Sheet> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A slide-out sheet component built on top of Radix UI Dialog primitives. Perfect for forms, filters, and additional content.',
+        component:
+          'A slide-out sheet component built on top of Radix UI Dialog primitives. Perfect for forms, filters, and additional content.',
       },
     },
   },
@@ -39,11 +48,15 @@ export const Default: Story = {
         </SheetHeader>
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">Name</Label>
+            <Label htmlFor="name" className="text-right">
+              Name
+            </Label>
             <Input id="name" value="John Doe" className="col-span-3" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="email" className="text-right">Email</Label>
+            <Label htmlFor="email" className="text-right">
+              Email
+            </Label>
             <Input id="email" value="john@example.com" className="col-span-3" />
           </div>
         </div>
@@ -64,9 +77,7 @@ export const LeftSide: Story = {
       <SheetContent side="left">
         <SheetHeader>
           <SheetTitle>Navigation Menu</SheetTitle>
-          <SheetDescription>
-            Quick access to all sections of the application.
-          </SheetDescription>
+          <SheetDescription>Quick access to all sections of the application.</SheetDescription>
         </SheetHeader>
         <div className="py-4 space-y-4">
           <Button variant="ghost" className="w-full justify-start">
@@ -99,9 +110,7 @@ export const RightSide: Story = {
       <SheetContent side="right">
         <SheetHeader>
           <SheetTitle>Term Details</SheetTitle>
-          <SheetDescription>
-            Additional information and related content.
-          </SheetDescription>
+          <SheetDescription>Additional information and related content.</SheetDescription>
         </SheetHeader>
         <div className="py-4 space-y-4">
           <div>
@@ -115,9 +124,15 @@ export const RightSide: Story = {
           <div>
             <h4 className="font-semibold mb-2">Related Terms</h4>
             <div className="space-y-2">
-              <Button variant="link" className="p-0 h-auto">Neural Networks</Button>
-              <Button variant="link" className="p-0 h-auto">Deep Learning</Button>
-              <Button variant="link" className="p-0 h-auto">Gradient Descent</Button>
+              <Button variant="link" className="p-0 h-auto">
+                Neural Networks
+              </Button>
+              <Button variant="link" className="p-0 h-auto">
+                Deep Learning
+              </Button>
+              <Button variant="link" className="p-0 h-auto">
+                Gradient Descent
+              </Button>
             </div>
           </div>
         </div>
@@ -135,9 +150,7 @@ export const TopSide: Story = {
       <SheetContent side="top" className="h-[300px]">
         <SheetHeader>
           <SheetTitle>Search Filters</SheetTitle>
-          <SheetDescription>
-            Refine your search results with advanced filters.
-          </SheetDescription>
+          <SheetDescription>Refine your search results with advanced filters.</SheetDescription>
         </SheetHeader>
         <div className="grid grid-cols-3 gap-4 py-4">
           <div className="space-y-2">
@@ -186,9 +199,7 @@ export const BottomSide: Story = {
       <SheetContent side="bottom" className="h-[400px]">
         <SheetHeader>
           <SheetTitle>Quick Actions</SheetTitle>
-          <SheetDescription>
-            Perform common actions quickly from anywhere.
-          </SheetDescription>
+          <SheetDescription>Perform common actions quickly from anywhere.</SheetDescription>
         </SheetHeader>
         <div className="grid grid-cols-2 gap-4 py-4">
           <Button className="h-20 flex flex-col gap-2">
@@ -236,9 +247,7 @@ export const WithForm: Story = {
         <SheetContent className="w-[600px] sm:max-w-[600px]">
           <SheetHeader>
             <SheetTitle>Add New Term</SheetTitle>
-            <SheetDescription>
-              Create a new term definition for the glossary.
-            </SheetDescription>
+            <SheetDescription>Create a new term definition for the glossary.</SheetDescription>
           </SheetHeader>
           <form onSubmit={handleSubmit} className="space-y-4 py-4">
             <div className="space-y-2">
@@ -294,7 +303,9 @@ export const WithForm: Story = {
               />
             </div>
             <SheetFooter>
-              <Button type="button" variant="outline">Cancel</Button>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
               <Button type="submit">Create Term</Button>
             </SheetFooter>
           </form>
@@ -345,9 +356,7 @@ export const MobileBottomSheet: Story = {
       <SheetContent side="bottom" className="h-[80vh]">
         <SheetHeader>
           <SheetTitle>Term Actions</SheetTitle>
-          <SheetDescription>
-            What would you like to do with this term?
-          </SheetDescription>
+          <SheetDescription>What would you like to do with this term?</SheetDescription>
         </SheetHeader>
         <div className="py-6 space-y-4">
           <Button className="w-full justify-start text-left" variant="ghost">
@@ -391,27 +400,20 @@ export const ControlledSheet: Story = {
 
     return (
       <div className="space-x-2">
-        <Button onClick={() => setIsOpen(true)}>
-          Open Controlled Sheet
-        </Button>
+        <Button onClick={() => setIsOpen(true)}>Open Controlled Sheet</Button>
         <Button variant="outline" onClick={() => setIsOpen(false)}>
           Close Programmatically
         </Button>
-        
+
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetContent>
             <SheetHeader>
               <SheetTitle>Controlled Sheet</SheetTitle>
-              <SheetDescription>
-                This sheet is controlled by external state.
-              </SheetDescription>
+              <SheetDescription>This sheet is controlled by external state.</SheetDescription>
             </SheetHeader>
             <div className="py-4">
               <p>Sheet state: {isOpen ? 'Open' : 'Closed'}</p>
-              <Button 
-                onClick={() => setIsOpen(false)}
-                className="mt-4"
-              >
+              <Button onClick={() => setIsOpen(false)} className="mt-4">
                 Close from Inside
               </Button>
             </div>
@@ -428,7 +430,7 @@ export const LoadingSheet: Story = {
 
     const handleAction = async () => {
       setLoading(true);
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
       setLoading(false);
     };
 
@@ -453,10 +455,7 @@ export const LoadingSheet: Story = {
             )}
           </div>
           <SheetFooter>
-            <Button 
-              onClick={handleAction}
-              disabled={loading}
-            >
+            <Button onClick={handleAction} disabled={loading}>
               {loading ? 'Processing...' : 'Start Process'}
             </Button>
           </SheetFooter>
@@ -484,15 +483,15 @@ export const CustomWidth: Story = {
             <div>
               <h4 className="font-semibold mb-2">Left Column</h4>
               <p className="text-sm text-muted-foreground">
-                Content in the left column with more space to display
-                detailed information and complex layouts.
+                Content in the left column with more space to display detailed information and
+                complex layouts.
               </p>
             </div>
             <div>
               <h4 className="font-semibold mb-2">Right Column</h4>
               <p className="text-sm text-muted-foreground">
-                Content in the right column taking advantage of the
-                additional width for better organization.
+                Content in the right column taking advantage of the additional width for better
+                organization.
               </p>
             </div>
           </div>
@@ -511,9 +510,7 @@ export const DarkMode: Story = {
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Dark Mode Sheet</SheetTitle>
-          <SheetDescription>
-            This sheet adapts to dark mode styling automatically.
-          </SheetDescription>
+          <SheetDescription>This sheet adapts to dark mode styling automatically.</SheetDescription>
         </SheetHeader>
         <div className="py-4">
           <p>Content looks great in both light and dark modes.</p>

@@ -18,11 +18,11 @@ async function emergencyTermSyncFix() {
   console.log('🚨 EMERGENCY: Fixing critical term synchronization issue...\n');
 
   const client = await pool.connect();
-  
+
   try {
     // 1. Create term mapping table if it doesn't exist
     console.log('📋 Creating term mapping table...');
-    
+
     await client.query(`
       CREATE TABLE IF NOT EXISTS term_mappings (
         id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -39,7 +39,7 @@ async function emergencyTermSyncFix() {
 
     // 2. Find terms that exist in both tables by name matching
     console.log('🔍 Finding matching terms between basic and enhanced tables...');
-    
+
     const matchingTerms = await client.query(`
       SELECT 
         t.id as basic_id,
@@ -59,20 +59,23 @@ async function emergencyTermSyncFix() {
 
     // 3. Insert mappings
     console.log('🔗 Creating term mappings...');
-    
+
     let mappingsCreated = 0;
     for (const match of matchingTerms.rows) {
       try {
-        await client.query(`
+        await client.query(
+          `
           INSERT INTO term_mappings (basic_term_id, enhanced_term_id, term_name, match_confidence, sync_status)
           VALUES ($1, $2, $3, $4, 'synced')
           ON CONFLICT (basic_term_id, enhanced_term_id) DO NOTHING;
-        `, [
-          match.basic_id,
-          match.enhanced_id,
-          match.basic_name,
-          match.match_type === 'exact' ? 1.0 : 0.9
-        ]);
+        `,
+          [
+            match.basic_id,
+            match.enhanced_id,
+            match.basic_name,
+            match.match_type === 'exact' ? 1.0 : 0.9,
+          ]
+        );
         mappingsCreated++;
       } catch (error) {
         console.warn(`⚠️  Could not create mapping for "${match.basic_name}":`, error.message);
@@ -81,9 +84,9 @@ async function emergencyTermSyncFix() {
 
     console.log(`✅ Created ${mappingsCreated} term mappings`);
 
-    // 4. Special fix for "Characteristic Function" 
+    // 4. Special fix for "Characteristic Function"
     console.log('🎯 Special fix for Characteristic Function...');
-    
+
     const characteristicFunctionMapping = await client.query(`
       SELECT basic_term_id, enhanced_term_id FROM term_mappings 
       WHERE term_name = 'Characteristic Function';
@@ -100,20 +103,20 @@ async function emergencyTermSyncFix() {
 
     // 5. Add relationship columns to existing tables (if they don't exist)
     console.log('🔧 Adding relationship columns...');
-    
+
     try {
       await client.query(`
         ALTER TABLE terms ADD COLUMN IF NOT EXISTS enhanced_term_id UUID;
         ALTER TABLE enhanced_terms ADD COLUMN IF NOT EXISTS basic_term_id UUID;
       `);
       console.log('✅ Relationship columns added');
-    } catch (error) {
+    } catch (_error) {
       console.log('ℹ️  Relationship columns already exist or could not be added');
     }
 
     // 6. Update tables with cross-references
     console.log('🔄 Updating cross-references...');
-    
+
     const updateBasic = await client.query(`
       UPDATE terms 
       SET enhanced_term_id = tm.enhanced_term_id, updated_at = NOW()
@@ -133,7 +136,7 @@ async function emergencyTermSyncFix() {
 
     // 7. Verification
     console.log('\n🔍 VERIFICATION:');
-    
+
     const verificationResults = await client.query(`
       SELECT 
         'Total Mappings' as metric,
@@ -159,13 +162,13 @@ async function emergencyTermSyncFix() {
       WHERE term_name = 'Characteristic Function' AND sync_status = 'synced';
     `);
 
-    verificationResults.rows.forEach(row => {
+    verificationResults.rows.forEach((row) => {
       console.log(`   ${row.metric}: ${row.count}`);
     });
 
     // 8. Create API helper function for term resolution
     console.log('\n📝 Creating term resolution helper...');
-    
+
     await client.query(`
       CREATE OR REPLACE FUNCTION resolve_term_data(input_term_id UUID)
       RETURNS TABLE (
@@ -201,18 +204,21 @@ async function emergencyTermSyncFix() {
 
     // 9. Test the resolution function with Characteristic Function
     console.log('\n🧪 Testing term resolution...');
-    
+
     const testBasicId = '8b5bff9a-afb7-4691-a58e-adc2bf94f941';
     const testEnhancedId = '662ec15e-b90d-4836-bb00-4ac24c17e3af';
 
-    const testResults = await client.query(`
+    const testResults = await client.query(
+      `
       SELECT * FROM resolve_term_data($1)
       UNION ALL
       SELECT * FROM resolve_term_data($2);
-    `, [testBasicId, testEnhancedId]);
+    `,
+      [testBasicId, testEnhancedId]
+    );
 
     console.log('Test Results:');
-    testResults.rows.forEach(row => {
+    testResults.rows.forEach((row) => {
       console.log(`   Name: ${row.name}`);
       console.log(`   Basic ID: ${row.basic_id}`);
       console.log(`   Enhanced ID: ${row.enhanced_id}`);
@@ -226,7 +232,6 @@ async function emergencyTermSyncFix() {
     console.log('1. Update SmartTermDetail component to use resolve_term_data function');
     console.log('2. Update API endpoints to handle both basic and enhanced IDs');
     console.log('3. Re-run navigation tests with updated data resolution');
-
   } catch (error) {
     console.error('❌ Emergency fix failed:', error);
     throw error;

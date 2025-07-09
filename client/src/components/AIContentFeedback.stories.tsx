@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { AIContentFeedback } from './AIContentFeedback';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { AIContentFeedback } from './AIContentFeedback';
 import { Toaster } from './ui/toaster';
 
 // Mock function for actions
 const fn = () => () => {};
-const action = (name: string) => fn;
+const action = (_name: string) => fn;
 
 // Create query client for stories
 const queryClient = new QueryClient({
@@ -30,10 +30,10 @@ const meta: Meta<typeof AIContentFeedback> = {
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="font-semibold text-lg mb-2">Sample AI-Generated Content</h3>
             <p className="text-gray-700 mb-4">
-              Machine Learning is a subset of artificial intelligence that enables computer systems 
-              to automatically learn and improve from experience without being explicitly programmed. 
-              It focuses on developing algorithms that can analyze data, identify patterns, and make 
-              predictions or decisions with minimal human intervention.
+              Machine Learning is a subset of artificial intelligence that enables computer systems
+              to automatically learn and improve from experience without being explicitly
+              programmed. It focuses on developing algorithms that can analyze data, identify
+              patterns, and make predictions or decisions with minimal human intervention.
             </p>
             <div className="text-sm text-gray-500">
               This content section helps visualize how the feedback component appears in context.
@@ -93,18 +93,28 @@ The component only shows for AI-generated content that hasn't been verified or e
       control: { type: 'select' },
       options: ['unverified', 'verified', 'flagged', 'needs_review', 'expert_reviewed'],
       description: 'Current verification status of the content',
-      table: { 
-        type: { summary: "'unverified' | 'verified' | 'flagged' | 'needs_review' | 'expert_reviewed'" },
+      table: {
+        type: {
+          summary: "'unverified' | 'verified' | 'flagged' | 'needs_review' | 'expert_reviewed'",
+        },
         defaultValue: { summary: 'unverified' },
       },
     },
     section: {
       control: { type: 'select' },
-      options: [undefined, 'definition', 'characteristics', 'examples', 'implementation', 'theory', 'applications'],
+      options: [
+        undefined,
+        'definition',
+        'characteristics',
+        'examples',
+        'implementation',
+        'theory',
+        'applications',
+      ],
       description: 'Specific section of content for contextual feedback',
       table: { type: { summary: 'string | undefined' } },
     },
-    onFeedbackSubmitted: { 
+    onFeedbackSubmitted: {
       action: 'feedbackSubmitted',
       description: 'Callback fired when feedback is successfully submitted',
       table: { type: { summary: '() => void' } },
@@ -119,7 +129,6 @@ The component only shows for AI-generated content that hasn't been verified or e
 
 export default meta;
 type Story = StoryObj<typeof meta>;
-
 
 // Basic States
 export const Default: Story = {
@@ -228,7 +237,8 @@ export const ExpertReviewedContent: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Expert-reviewed content does not show feedback component as it has been validated by experts.',
+        story:
+          'Expert-reviewed content does not show feedback component as it has been validated by experts.',
       },
     },
   },
@@ -328,7 +338,8 @@ export const FeedbackFormOpened: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Shows the feedback form - click "Report Issue" to see the form with all fields visible.',
+        story:
+          'Shows the feedback form - click "Report Issue" to see the form with all fields visible.',
       },
     },
   },
@@ -346,7 +357,8 @@ export const IncorrectFeedbackExample: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Example of reporting factually incorrect content - demonstrates how users would report incorrect mathematical formulas or algorithmic explanations.',
+        story:
+          'Example of reporting factually incorrect content - demonstrates how users would report incorrect mathematical formulas or algorithmic explanations.',
       },
     },
   },
@@ -364,7 +376,8 @@ export const IncompleteFeedbackExample: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Example of reporting incomplete content - shows how users would report missing examples, practical applications, or code samples.',
+        story:
+          'Example of reporting incomplete content - shows how users would report missing examples, practical applications, or code samples.',
       },
     },
   },
@@ -382,7 +395,8 @@ export const MisleadingFeedbackExample: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Example of reporting misleading content - demonstrates how users would report definitions or explanations that could cause misunderstanding.',
+        story:
+          'Example of reporting misleading content - demonstrates how users would report definitions or explanations that could cause misunderstanding.',
       },
     },
   },
@@ -400,7 +414,8 @@ export const OutdatedFeedbackExample: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Example of reporting outdated information - shows how users would report content referencing older models or deprecated techniques.',
+        story:
+          'Example of reporting outdated information - shows how users would report content referencing older models or deprecated techniques.',
       },
     },
   },
@@ -419,7 +434,8 @@ export const SuccessfulSubmission: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Demonstrates the feedback form for implementation content - fill out the form to simulate successful submission.',
+        story:
+          'Demonstrates the feedback form for implementation content - fill out the form to simulate successful submission.',
       },
     },
   },
@@ -437,7 +453,8 @@ export const SubmissionError: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Demonstrates the feedback form for examples content - includes proper error handling if submission fails.',
+        story:
+          'Demonstrates the feedback form for examples content - includes proper error handling if submission fails.',
       },
     },
   },
@@ -455,7 +472,8 @@ export const ValidationErrors: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Shows form validation - submit button is disabled when required fields (type and description) are missing.',
+        story:
+          'Shows form validation - submit button is disabled when required fields (type and description) are missing.',
       },
     },
   },
@@ -478,7 +496,8 @@ export const MobileView: Story = {
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
             <h3 className="font-semibold text-base mb-2">Mobile Content View</h3>
             <p className="text-sm text-gray-700">
-              Ensemble methods combine multiple learning algorithms to improve predictive performance.
+              Ensemble methods combine multiple learning algorithms to improve predictive
+              performance.
             </p>
           </div>
           <Story />
@@ -515,7 +534,7 @@ export const TabletView: Story = {
           <div className="mb-4 p-4 bg-gray-50 rounded-lg">
             <h3 className="font-semibold text-lg mb-2">Tablet Content View</h3>
             <p className="text-gray-700">
-              Feature engineering is the process of selecting, modifying, or creating new features 
+              Feature engineering is the process of selecting, modifying, or creating new features
               from raw data to improve machine learning model performance.
             </p>
           </div>
@@ -555,13 +574,11 @@ export const DarkMode: Story = {
             <div className="mb-6 p-4 bg-gray-800 rounded-lg border border-gray-700">
               <h3 className="font-semibold text-lg mb-2 text-white">Dark Mode Content</h3>
               <p className="text-gray-300 mb-4">
-                Attention mechanisms allow neural networks to focus on different parts of the input 
-                sequence when producing each part of the output sequence, improving performance on 
+                Attention mechanisms allow neural networks to focus on different parts of the input
+                sequence when producing each part of the output sequence, improving performance on
                 sequence-to-sequence tasks.
               </p>
-              <div className="text-sm text-gray-400">
-                Content shown in dark mode theme.
-              </div>
+              <div className="text-sm text-gray-400">Content shown in dark mode theme.</div>
             </div>
             <Story />
             <Toaster />

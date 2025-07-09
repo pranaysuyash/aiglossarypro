@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent } from './card';
 import { Button } from './button';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './card';
 
 const meta: Meta<typeof Card> = {
   title: 'UI/Card',
@@ -71,25 +71,17 @@ export const NotificationCard: Story = {
       <CardContent className="grid gap-4">
         <div className="flex items-center space-x-4 rounded-md border p-4">
           <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium leading-none">
-              Push Notifications
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Send notifications to device.
-            </p>
+            <p className="text-sm font-medium leading-none">Push Notifications</p>
+            <p className="text-sm text-muted-foreground">Send notifications to device.</p>
           </div>
         </div>
         <div className="flex items-center space-x-4 rounded-md border p-4">
           <div className="flex-1 space-y-1">
-            <p className="text-sm font-medium leading-none">
-              Email Notifications
-            </p>
-            <p className="text-sm text-muted-foreground">
-              Send notifications to email.
-            </p>
+            <p className="text-sm font-medium leading-none">Email Notifications</p>
+            <p className="text-sm text-muted-foreground">Send notifications to email.</p>
           </div>
         </div>
       </CardContent>
     </Card>
   ),
-}; 
+};

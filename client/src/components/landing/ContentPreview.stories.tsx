@@ -8,7 +8,8 @@ const meta: Meta<typeof ContentPreview> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Content preview component showcasing the quality and breadth of AI/ML terminology with interactive samples.',
+        component:
+          'Content preview component showcasing the quality and breadth of AI/ML terminology with interactive samples.',
       },
     },
   },
@@ -22,13 +23,15 @@ const sampleTerms = [
   {
     id: '1',
     name: 'Neural Network',
-    definition: 'A computational model inspired by biological neural networks, consisting of interconnected nodes (neurons) that process information through weighted connections.',
+    definition:
+      'A computational model inspired by biological neural networks, consisting of interconnected nodes (neurons) that process information through weighted connections.',
     category: 'Deep Learning',
     difficulty: 'intermediate',
     enhanced: true,
     sections: {
       overview: 'Neural networks are the foundation of modern AI...',
-      implementation: 'class NeuralNetwork:\n    def __init__(self, layers):\n        self.layers = layers',
+      implementation:
+        'class NeuralNetwork:\n    def __init__(self, layers):\n        self.layers = layers',
       examples: ['Image classification', 'Natural language processing'],
       interactive: true,
     },
@@ -36,7 +39,8 @@ const sampleTerms = [
   {
     id: '2',
     name: 'Gradient Descent',
-    definition: 'An optimization algorithm used to minimize the cost function in machine learning by iteratively moving toward the steepest descent.',
+    definition:
+      'An optimization algorithm used to minimize the cost function in machine learning by iteratively moving toward the steepest descent.',
     category: 'Optimization',
     difficulty: 'intermediate',
     enhanced: true,
@@ -49,7 +53,8 @@ const sampleTerms = [
   {
     id: '3',
     name: 'Transformer',
-    definition: 'A neural network architecture that relies entirely on attention mechanisms, dispensing with recurrence and convolutions entirely.',
+    definition:
+      'A neural network architecture that relies entirely on attention mechanisms, dispensing with recurrence and convolutions entirely.',
     category: 'Natural Language Processing',
     difficulty: 'advanced',
     enhanced: true,
@@ -165,12 +170,7 @@ export const ComparisonView: Story = {
     comparisonData: {
       before: {
         title: 'Traditional Glossaries',
-        features: [
-          'Static definitions',
-          'Limited search',
-          'No examples',
-          'Outdated content',
-        ],
+        features: ['Static definitions', 'Limited search', 'No examples', 'Outdated content'],
         color: '#EF4444',
       },
       after: {
@@ -198,7 +198,8 @@ export const WithTestimonials: Story = {
         id: '1',
         author: 'Dr. Sarah Chen',
         role: 'ML Research Scientist at Google',
-        content: 'The most comprehensive AI glossary I\'ve ever used. The interactive examples make complex concepts crystal clear.',
+        content:
+          "The most comprehensive AI glossary I've ever used. The interactive examples make complex concepts crystal clear.",
         rating: 5,
         avatar: '👩‍🔬',
       },
@@ -206,7 +207,8 @@ export const WithTestimonials: Story = {
         id: '2',
         author: 'Marcus Johnson',
         role: 'Data Science Student',
-        content: 'This glossary transformed my understanding of machine learning. The progressive difficulty levels are perfect for learning.',
+        content:
+          'This glossary transformed my understanding of machine learning. The progressive difficulty levels are perfect for learning.',
         rating: 5,
         avatar: '👨‍🎓',
       },
@@ -214,7 +216,8 @@ export const WithTestimonials: Story = {
         id: '3',
         author: 'Elena Rodriguez',
         role: 'AI Product Manager',
-        content: 'Essential for anyone working in AI. The semantic search finds exactly what I need, even with vague queries.',
+        content:
+          'Essential for anyone working in AI. The semantic search finds exactly what I need, even with vague queries.',
         rating: 5,
         avatar: '👩‍💼',
       },

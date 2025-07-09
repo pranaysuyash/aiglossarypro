@@ -1,18 +1,16 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import RecommendedTerms from './RecommendedTerms';
+import React from 'react';
 import type { ITerm } from '../../../../shared/types';
+import RecommendedTerms from './RecommendedTerms';
 
 // Mock components to avoid dependency issues
-const MockTermCard = ({ term, variant, isFavorite }: any) => {
+const _MockTermCard = ({ term, variant, isFavorite }: any) => {
   return (
     <div className="border rounded-lg p-4 bg-white shadow-sm hover:shadow-md transition-shadow">
       <h3 className="font-semibold text-lg mb-2">{term.name}</h3>
       <p className="text-gray-600 text-sm mb-3 line-clamp-2">{term.definition}</p>
       <div className="flex items-center justify-between">
-        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
-          {term.category}
-        </span>
+        <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">{term.category}</span>
         {isFavorite && <span className="text-red-500">❤️</span>}
       </div>
     </div>
@@ -20,7 +18,7 @@ const MockTermCard = ({ term, variant, isFavorite }: any) => {
 };
 
 // Mock the Link component
-const MockLink = ({ href, children }: any) => (
+const _MockLink = ({ href, children }: any) => (
   <a href={href} className="text-primary-600 hover:text-primary-700">
     {children}
   </a>
@@ -37,7 +35,8 @@ const sampleTerms: ITerm[] = [
   {
     id: '1',
     name: 'Machine Learning',
-    definition: 'A subset of artificial intelligence that enables computers to learn and improve from experience without being explicitly programmed.',
+    definition:
+      'A subset of artificial intelligence that enables computers to learn and improve from experience without being explicitly programmed.',
     category: 'Core Concepts',
     viewCount: 1250,
     isFavorite: false,
@@ -45,7 +44,8 @@ const sampleTerms: ITerm[] = [
   {
     id: '2',
     name: 'Neural Network',
-    definition: 'A computing system inspired by biological neural networks that can learn to recognize patterns and make decisions.',
+    definition:
+      'A computing system inspired by biological neural networks that can learn to recognize patterns and make decisions.',
     category: 'Deep Learning',
     viewCount: 980,
     isFavorite: true,
@@ -53,7 +53,8 @@ const sampleTerms: ITerm[] = [
   {
     id: '3',
     name: 'Gradient Descent',
-    definition: 'An optimization algorithm used to minimize the cost function in machine learning by iteratively moving in the direction of steepest descent.',
+    definition:
+      'An optimization algorithm used to minimize the cost function in machine learning by iteratively moving in the direction of steepest descent.',
     category: 'Optimization',
     viewCount: 750,
     isFavorite: false,
@@ -61,7 +62,8 @@ const sampleTerms: ITerm[] = [
   {
     id: '4',
     name: 'Natural Language Processing',
-    definition: 'A branch of AI that helps computers understand, interpret and manipulate human language.',
+    definition:
+      'A branch of AI that helps computers understand, interpret and manipulate human language.',
     category: 'NLP',
     viewCount: 1100,
     isFavorite: false,
@@ -69,7 +71,8 @@ const sampleTerms: ITerm[] = [
   {
     id: '5',
     name: 'Computer Vision',
-    definition: 'A field of artificial intelligence that trains computers to interpret and understand the visual world.',
+    definition:
+      'A field of artificial intelligence that trains computers to interpret and understand the visual world.',
     category: 'Computer Vision',
     viewCount: 890,
     isFavorite: true,
@@ -77,7 +80,8 @@ const sampleTerms: ITerm[] = [
   {
     id: '6',
     name: 'Reinforcement Learning',
-    definition: 'A type of machine learning where an agent learns to behave in an environment by performing actions and seeing the results.',
+    definition:
+      'A type of machine learning where an agent learns to behave in an environment by performing actions and seeing the results.',
     category: 'Learning Types',
     viewCount: 670,
     isFavorite: false,
@@ -91,13 +95,12 @@ const meta: Meta<typeof RecommendedTerms> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A component that displays recommended terms in a grid layout with a "See all" link.',
+        component:
+          'A component that displays recommended terms in a grid layout with a "See all" link.',
       },
     },
   },
-  decorators: [
-    RecommendedTermsDecorator,
-  ],
+  decorators: [RecommendedTermsDecorator],
   args: {
     recommended: sampleTerms.slice(0, 3),
   },
@@ -180,7 +183,7 @@ export const ManyTerms: Story = {
 
 export const WithFavorites: Story = {
   args: {
-    recommended: sampleTerms.filter(term => term.isFavorite),
+    recommended: sampleTerms.filter((term) => term.isFavorite),
   },
   parameters: {
     docs: {
@@ -197,7 +200,8 @@ export const LongDefinitions: Story = {
       {
         id: '1',
         name: 'Transformer Architecture',
-        definition: 'A neural network architecture that relies entirely on self-attention mechanisms to draw global dependencies between input and output, revolutionizing natural language processing and forming the foundation for models like BERT, GPT, and T5.',
+        definition:
+          'A neural network architecture that relies entirely on self-attention mechanisms to draw global dependencies between input and output, revolutionizing natural language processing and forming the foundation for models like BERT, GPT, and T5.',
         category: 'Deep Learning',
         viewCount: 1500,
         isFavorite: false,
@@ -205,7 +209,8 @@ export const LongDefinitions: Story = {
       {
         id: '2',
         name: 'Generative Adversarial Networks',
-        definition: 'A class of machine learning frameworks where two neural networks contest with each other in a game-theoretic scenario, consisting of a generator that creates fake data and a discriminator that tries to detect the fake data.',
+        definition:
+          'A class of machine learning frameworks where two neural networks contest with each other in a game-theoretic scenario, consisting of a generator that creates fake data and a discriminator that tries to detect the fake data.',
         category: 'Generative Models',
         viewCount: 1200,
         isFavorite: true,
@@ -213,7 +218,8 @@ export const LongDefinitions: Story = {
       {
         id: '3',
         name: 'Convolutional Neural Networks',
-        definition: 'A deep learning algorithm particularly powerful for analyzing visual imagery, using a mathematical operation called convolution to detect features like edges, textures, and patterns in images.',
+        definition:
+          'A deep learning algorithm particularly powerful for analyzing visual imagery, using a mathematical operation called convolution to detect features like edges, textures, and patterns in images.',
         category: 'Computer Vision',
         viewCount: 1350,
         isFavorite: false,
@@ -235,7 +241,8 @@ export const DifferentCategories: Story = {
       {
         id: '1',
         name: 'Supervised Learning',
-        definition: 'A type of machine learning where the algorithm learns from labeled training data.',
+        definition:
+          'A type of machine learning where the algorithm learns from labeled training data.',
         category: 'Learning Types',
         viewCount: 850,
         isFavorite: false,
@@ -243,7 +250,8 @@ export const DifferentCategories: Story = {
       {
         id: '2',
         name: 'LSTM',
-        definition: 'Long Short-Term Memory networks, a special kind of RNN capable of learning long-term dependencies.',
+        definition:
+          'Long Short-Term Memory networks, a special kind of RNN capable of learning long-term dependencies.',
         category: 'Neural Networks',
         viewCount: 720,
         isFavorite: true,
@@ -251,7 +259,8 @@ export const DifferentCategories: Story = {
       {
         id: '3',
         name: 'Precision',
-        definition: 'A metric that measures the accuracy of positive predictions in classification tasks.',
+        definition:
+          'A metric that measures the accuracy of positive predictions in classification tasks.',
         category: 'Evaluation Metrics',
         viewCount: 650,
         isFavorite: false,
@@ -302,33 +311,39 @@ export const TabletView: Story = {
 export const InteractiveDemo: Story = {
   render: () => {
     const [selectedCategory, setSelectedCategory] = React.useState('all');
-    
-    const categories = ['all', 'Core Concepts', 'Deep Learning', 'NLP', 'Computer Vision', 'Optimization'];
-    
-    const filteredTerms = selectedCategory === 'all' 
-      ? sampleTerms 
-      : sampleTerms.filter(term => term.category === selectedCategory);
-    
+
+    const categories = [
+      'all',
+      'Core Concepts',
+      'Deep Learning',
+      'NLP',
+      'Computer Vision',
+      'Optimization',
+    ];
+
+    const filteredTerms =
+      selectedCategory === 'all'
+        ? sampleTerms
+        : sampleTerms.filter((term) => term.category === selectedCategory);
+
     return (
       <div className="space-y-6">
         <div className="flex items-center space-x-4">
           <label className="font-medium">Filter by category:</label>
-          <select 
+          <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
             className="px-3 py-2 border rounded-lg"
           >
-            {categories.map(cat => (
+            {categories.map((cat) => (
               <option key={cat} value={cat}>
                 {cat === 'all' ? 'All Categories' : cat}
               </option>
             ))}
           </select>
-          <span className="text-sm text-gray-600">
-            ({filteredTerms.length} terms)
-          </span>
+          <span className="text-sm text-gray-600">({filteredTerms.length} terms)</span>
         </div>
-        
+
         <RecommendedTerms recommended={filteredTerms} />
       </div>
     );
@@ -349,9 +364,7 @@ export const CustomLayout: Story = {
         return (
           <div className="text-center py-8">
             <p className="text-gray-500">No recommendations available at the moment.</p>
-            <button className="mt-2 text-blue-600 hover:underline">
-              Explore all terms
-            </button>
+            <button className="mt-2 text-blue-600 hover:underline">Explore all terms</button>
           </div>
         );
       }
@@ -365,15 +378,21 @@ export const CustomLayout: Story = {
             </div>
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-500">{recommended.length} terms</span>
-              <a href="/recommendations" className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700">
+              <a
+                href="/recommendations"
+                className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700"
+              >
                 View All
               </a>
             </div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {recommended.map((term: any) => (
-              <div key={term.id} className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow">
+              <div
+                key={term.id}
+                className="bg-white border border-gray-200 rounded-xl p-6 hover:shadow-lg transition-shadow"
+              >
                 <div className="flex justify-between items-start mb-3">
                   <h3 className="font-bold text-lg text-gray-900">{term.name}</h3>
                   {term.isFavorite && <span className="text-red-500 text-xl">♥</span>}
@@ -395,7 +414,7 @@ export const CustomLayout: Story = {
         </div>
       );
     };
-    
+
     return <CustomRecommendedTerms recommended={sampleTerms.slice(0, 3)} />;
   },
   parameters: {
@@ -416,7 +435,7 @@ export const LoadingState: Story = {
             <h2 className="text-xl font-semibold">Recommended for You</h2>
             <div className="w-16 h-4 bg-gray-200 rounded animate-pulse"></div>
           </div>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {Array.from({ length: 3 }).map((_, index) => (
               <div key={index} className="p-4 border rounded-lg bg-white">
@@ -435,7 +454,7 @@ export const LoadingState: Story = {
         </div>
       );
     };
-    
+
     return <LoadingRecommendedTerms />;
   },
   parameters: {
@@ -455,7 +474,7 @@ export const ErrorState: Story = {
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Recommended for You</h2>
           </div>
-          
+
           <div className="text-center py-12 bg-red-50 border border-red-200 rounded-lg">
             <div className="text-red-500 text-4xl mb-4">⚠️</div>
             <h3 className="text-lg font-semibold text-red-800 mb-2">
@@ -468,15 +487,13 @@ export const ErrorState: Story = {
               <button className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700">
                 Try Again
               </button>
-              <button className="text-red-600 hover:text-red-800">
-                Browse All Terms
-              </button>
+              <button className="text-red-600 hover:text-red-800">Browse All Terms</button>
             </div>
           </div>
         </div>
       );
     };
-    
+
     return <ErrorRecommendedTerms />;
   },
   parameters: {
@@ -510,4 +527,3 @@ export const DarkMode: Story = {
     ),
   ],
 };
-

@@ -1,60 +1,34 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
-import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
-import { 
-  Bot, 
-  Brain, 
-  Play,
-  Pause,
-  CheckCircle, 
-  AlertCircle,
-  TrendingUp,
-  Star,
-  Settings,
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  Activity,
+  Brain,
+  Cpu,
+  DollarSign,
   Eye,
   RefreshCw,
-  Zap,
-  Target,
-  DollarSign,
-  Clock,
-  BarChart3,
-  Layers,
-  CheckCircle2,
-  AlertTriangle,
-  ArrowRight,
   Sparkles,
-  LineChart,
-  PieChart,
-  FileText,
-  Database,
-  Cpu,
-  Globe,
-  Gauge,
-  Activity,
-  Wrench,
-  Filter,
-  Download,
-  Upload,
-  Save,
-  Edit,
-  Trash2,
-  Copy,
-  Users,
-  Calendar,
-  Timer
+  TrendingUp,
 } from 'lucide-react';
+import { useState } from 'react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Separator } from '@/components/ui/separator';
+import { Slider } from '@/components/ui/slider';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
 // Enhanced interfaces for comprehensive content generation
@@ -186,56 +160,61 @@ const ENHANCED_MODEL_CONFIGURATIONS: ModelConfiguration[] = [
     name: 'GPT-4.1 Nano',
     provider: 'OpenAI',
     costPer1MTokens: {
-      input: 0.10,
-      output: 0.40,
-      batch: { input: 0.05, output: 0.20 }
+      input: 0.1,
+      output: 0.4,
+      batch: { input: 0.05, output: 0.2 },
     },
     maxTokens: 16384,
     capabilities: ['text-generation', 'structured-output', 'fast-processing'],
     bestFor: ['Simple definitions', 'Basic examples', 'Term explanations', 'Short content'],
-    performance: { speed: 9, quality: 7, consistency: 8 }
+    performance: { speed: 9, quality: 7, consistency: 8 },
   },
   {
     id: 'gpt-4.1-mini',
     name: 'GPT-4.1 Mini',
     provider: 'OpenAI',
     costPer1MTokens: {
-      input: 0.40,
-      output: 1.60,
-      batch: { input: 0.20, output: 0.80 }
+      input: 0.4,
+      output: 1.6,
+      batch: { input: 0.2, output: 0.8 },
     },
     maxTokens: 32768,
     capabilities: ['text-generation', 'reasoning', 'analysis', 'structured-output'],
     bestFor: ['Detailed explanations', 'Technical content', 'Use cases', 'Implementation guides'],
-    performance: { speed: 8, quality: 8, consistency: 9 }
+    performance: { speed: 8, quality: 8, consistency: 9 },
   },
   {
     id: 'o4-mini',
     name: 'O4 Mini',
     provider: 'OpenAI',
     costPer1MTokens: {
-      input: 1.10,
-      output: 4.40,
-      batch: { input: 0.55, output: 2.20 }
+      input: 1.1,
+      output: 4.4,
+      batch: { input: 0.55, output: 2.2 },
     },
     maxTokens: 65536,
     capabilities: ['advanced-reasoning', 'complex-analysis', 'mathematical-processing', 'research'],
-    bestFor: ['Mathematical foundations', 'Research analysis', 'Complex algorithms', 'Theoretical concepts'],
-    performance: { speed: 6, quality: 10, consistency: 9 }
-  }
+    bestFor: [
+      'Mathematical foundations',
+      'Research analysis',
+      'Complex algorithms',
+      'Theoretical concepts',
+    ],
+    performance: { speed: 6, quality: 10, consistency: 9 },
+  },
 ];
 
 const CONTENT_CATEGORIES = [
   { id: 'essential', name: 'Essential', priority: 1, color: 'bg-red-100 text-red-800' },
   { id: 'important', name: 'Important', priority: 2, color: 'bg-orange-100 text-orange-800' },
   { id: 'supplementary', name: 'Supplementary', priority: 3, color: 'bg-blue-100 text-blue-800' },
-  { id: 'advanced', name: 'Advanced', priority: 4, color: 'bg-purple-100 text-purple-800' }
+  { id: 'advanced', name: 'Advanced', priority: 4, color: 'bg-purple-100 text-purple-800' },
 ];
 
 export function EnhancedContentGenerationV2() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  
+
   // State for content generation
   const [selectedTerm, setSelectedTerm] = useState<any>(null);
   const [selectedSection, setSelectedSection] = useState<string>('');
@@ -252,11 +231,11 @@ export function EnhancedContentGenerationV2() {
   const [generatedContent, setGeneratedContent] = useState<string>('');
   const [showPreview, setShowPreview] = useState<boolean>(false);
   const [activeTab, setActiveTab] = useState<string>('generation');
-  
+
   // State for filtering and search
   const [searchTerm, setSearchTerm] = useState<string>('');
-  const [filterCategory, setFilterCategory] = useState<string>('all');
-  const [filterModel, setFilterModel] = useState<string>('all');
+  const [filterCategory, _setFilterCategory] = useState<string>('all');
+  const [_filterModel, _setFilterModel] = useState<string>('all');
   const [showAdvancedOptions, setShowAdvancedOptions] = useState<boolean>(false);
 
   // Query for terms with search and filtering
@@ -266,11 +245,11 @@ export function EnhancedContentGenerationV2() {
       const params = new URLSearchParams();
       if (searchTerm) params.append('search', searchTerm);
       if (filterCategory !== 'all') params.append('category', filterCategory);
-      
+
       const response = await fetch(`/api/terms?${params.toString()}`);
       if (!response.ok) throw new Error('Failed to fetch terms');
       return response.json();
-    }
+    },
   });
 
   // Query for templates
@@ -280,7 +259,7 @@ export function EnhancedContentGenerationV2() {
       const response = await fetch('/api/admin/templates');
       if (!response.ok) throw new Error('Failed to fetch templates');
       return response.json();
-    }
+    },
   });
 
   // Query for real-time analytics
@@ -291,7 +270,7 @@ export function EnhancedContentGenerationV2() {
       if (!response.ok) throw new Error('Failed to fetch analytics');
       return response.json();
     },
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Query for cost estimates
@@ -299,7 +278,7 @@ export function EnhancedContentGenerationV2() {
     queryKey: ['cost-estimate', selectedModel, maxTokens, selectedSection],
     queryFn: async () => {
       if (!selectedSection || !selectedModel) return null;
-      
+
       const response = await fetch('/api/admin/cost-estimate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -307,13 +286,13 @@ export function EnhancedContentGenerationV2() {
           model: selectedModel,
           section: selectedSection,
           maxTokens,
-          batchMode
-        })
+          batchMode,
+        }),
       });
       if (!response.ok) throw new Error('Failed to fetch cost estimate');
       return response.json();
     },
-    enabled: !!(selectedSection && selectedModel)
+    enabled: !!(selectedSection && selectedModel),
   });
 
   // Mutation for enhanced content generation
@@ -322,7 +301,7 @@ export function EnhancedContentGenerationV2() {
       const response = await fetch('/api/admin/content/enhanced-generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request)
+        body: JSON.stringify(request),
       });
       if (!response.ok) throw new Error('Failed to generate content');
       return response.json();
@@ -331,19 +310,19 @@ export function EnhancedContentGenerationV2() {
       if (data.success) {
         setGeneratedContent(data.content || '');
         setShowPreview(true);
-        
+
         toast({
           title: 'Content Generated Successfully',
           description: `Quality Score: ${data.qualityScore}/10 | Cost: $${data.metadata?.cost.toFixed(4)}`,
         });
-        
+
         // Refresh analytics
         queryClient.invalidateQueries({ queryKey: ['content-generation-analytics'] });
       } else {
         toast({
           title: 'Generation Failed',
           description: data.error || 'Unknown error occurred',
-          variant: 'destructive'
+          variant: 'destructive',
         });
       }
     },
@@ -351,18 +330,18 @@ export function EnhancedContentGenerationV2() {
       toast({
         title: 'Generation Error',
         description: error instanceof Error ? error.message : 'Failed to generate content',
-        variant: 'destructive'
+        variant: 'destructive',
       });
-    }
+    },
   });
 
   // Mutation for template management
-  const saveTemplateMutation = useMutation({
+  const _saveTemplateMutation = useMutation({
     mutationFn: async (template: Partial<ContentTemplate>) => {
       const response = await fetch('/api/admin/templates', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(template)
+        body: JSON.stringify(template),
       });
       if (!response.ok) throw new Error('Failed to save template');
       return response.json();
@@ -370,7 +349,7 @@ export function EnhancedContentGenerationV2() {
     onSuccess: () => {
       toast({ title: 'Template Saved', description: 'Template saved successfully' });
       queryClient.invalidateQueries({ queryKey: ['content-templates'] });
-    }
+    },
   });
 
   const handleGenerateContent = () => {
@@ -378,7 +357,7 @@ export function EnhancedContentGenerationV2() {
       toast({
         title: 'Missing Information',
         description: 'Please select both a term and a section',
-        variant: 'destructive'
+        variant: 'destructive',
       });
       return;
     }
@@ -395,16 +374,20 @@ export function EnhancedContentGenerationV2() {
       qualityThreshold,
       batchMode,
       multiModelEnsemble,
-      enableQualityPipeline
+      enableQualityPipeline,
     });
   };
 
   const getModelColor = (modelId: string) => {
     switch (modelId) {
-      case 'gpt-4.1-nano': return 'bg-green-100 text-green-800';
-      case 'gpt-4.1-mini': return 'bg-blue-100 text-blue-800';
-      case 'o4-mini': return 'bg-purple-100 text-purple-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'gpt-4.1-nano':
+        return 'bg-green-100 text-green-800';
+      case 'gpt-4.1-mini':
+        return 'bg-blue-100 text-blue-800';
+      case 'o4-mini':
+        return 'bg-purple-100 text-purple-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -412,7 +395,7 @@ export function EnhancedContentGenerationV2() {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-      minimumFractionDigits: 4
+      minimumFractionDigits: 4,
     }).format(cost);
   };
 
@@ -436,11 +419,15 @@ export function EnhancedContentGenerationV2() {
                 <div className="text-muted-foreground">Generated</div>
               </div>
               <div className="text-center">
-                <div className="font-bold text-lg text-blue-600">{analytics.successRate.toFixed(1)}%</div>
+                <div className="font-bold text-lg text-blue-600">
+                  {analytics.successRate.toFixed(1)}%
+                </div>
                 <div className="text-muted-foreground">Success</div>
               </div>
               <div className="text-center">
-                <div className="font-bold text-lg text-purple-600">{formatCost(analytics.totalCost)}</div>
+                <div className="font-bold text-lg text-purple-600">
+                  {formatCost(analytics.totalCost)}
+                </div>
                 <div className="text-muted-foreground">Total Cost</div>
               </div>
             </div>
@@ -541,11 +528,11 @@ export function EnhancedContentGenerationV2() {
                     <Label>AI Model Selection</Label>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
                       {ENHANCED_MODEL_CONFIGURATIONS.map((model) => (
-                        <Card 
+                        <Card
                           key={model.id}
                           className={`cursor-pointer transition-all hover:shadow-md ${
-                            selectedModel === model.id 
-                              ? 'ring-2 ring-blue-500 bg-blue-50' 
+                            selectedModel === model.id
+                              ? 'ring-2 ring-blue-500 bg-blue-50'
                               : 'hover:bg-gray-50'
                           }`}
                           onClick={() => setSelectedModel(model.id)}
@@ -720,7 +707,9 @@ export function EnhancedContentGenerationV2() {
                   {/* Generate Button */}
                   <Button
                     onClick={handleGenerateContent}
-                    disabled={!selectedTerm || !selectedSection || generateContentMutation.isPending}
+                    disabled={
+                      !selectedTerm || !selectedSection || generateContentMutation.isPending
+                    }
                     className="w-full"
                     size="lg"
                   >
@@ -748,9 +737,7 @@ export function EnhancedContentGenerationV2() {
                     <Eye className="w-5 h-5 mr-2" />
                     Content Preview
                   </CardTitle>
-                  <CardDescription>
-                    Generated content with quality metrics
-                  </CardDescription>
+                  <CardDescription>Generated content with quality metrics</CardDescription>
                 </CardHeader>
                 <CardContent>
                   {showPreview && generatedContent ? (
@@ -763,7 +750,7 @@ export function EnhancedContentGenerationV2() {
                           className="min-h-[300px] mt-2"
                         />
                       </div>
-                      
+
                       {generateContentMutation.data?.metadata && (
                         <div className="space-y-4">
                           <Separator />
@@ -771,9 +758,9 @@ export function EnhancedContentGenerationV2() {
                             <div>
                               <Label>Quality Score</Label>
                               <div className="flex items-center space-x-2">
-                                <Progress 
-                                  value={generateContentMutation.data.metadata.qualityScore * 10} 
-                                  className="flex-1" 
+                                <Progress
+                                  value={generateContentMutation.data.metadata.qualityScore * 10}
+                                  className="flex-1"
                                 />
                                 <span className="font-mono">
                                   {generateContentMutation.data.metadata.qualityScore}/10
@@ -800,7 +787,11 @@ export function EnhancedContentGenerationV2() {
                             </div>
                             <div>
                               <Label>Model</Label>
-                              <Badge className={getModelColor(generateContentMutation.data.metadata.model)}>
+                              <Badge
+                                className={getModelColor(
+                                  generateContentMutation.data.metadata.model
+                                )}
+                              >
                                 {generateContentMutation.data.metadata.model}
                               </Badge>
                             </div>
@@ -811,13 +802,15 @@ export function EnhancedContentGenerationV2() {
                               </Badge>
                             </div>
                           </div>
-                          
+
                           {generateContentMutation.data.metadata.improvements > 0 && (
                             <Alert>
                               <TrendingUp className="h-4 w-4" />
                               <AlertTitle>Content Improved</AlertTitle>
                               <AlertDescription>
-                                Content went through {generateContentMutation.data.metadata.improvements} improvement iterations
+                                Content went through{' '}
+                                {generateContentMutation.data.metadata.improvements} improvement
+                                iterations
                               </AlertDescription>
                             </Alert>
                           )}
@@ -850,13 +843,15 @@ export function EnhancedContentGenerationV2() {
                         <Badge variant="outline">{analytics.successRate.toFixed(1)}%</Badge>
                       </div>
                       <Progress value={analytics.successRate} />
-                      
+
                       <div className="flex justify-between items-center">
                         <span className="text-sm font-medium">Avg Quality</span>
-                        <Badge variant="outline">{analytics.averageQualityScore.toFixed(1)}/10</Badge>
+                        <Badge variant="outline">
+                          {analytics.averageQualityScore.toFixed(1)}/10
+                        </Badge>
                       </div>
                       <Progress value={analytics.averageQualityScore * 10} />
-                      
+
                       <div className="flex justify-between items-center">
                         <span className="text-sm font-medium">Avg Processing</span>
                         <Badge variant="outline">{analytics.averageProcessingTime}ms</Badge>
@@ -877,7 +872,9 @@ export function EnhancedContentGenerationV2() {
               <CardDescription>Manage content generation templates</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Template management interface will be implemented in Phase 1.2</p>
+              <p className="text-muted-foreground">
+                Template management interface will be implemented in Phase 1.2
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -889,7 +886,9 @@ export function EnhancedContentGenerationV2() {
               <CardDescription>Detailed analytics and performance metrics</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Advanced analytics dashboard will be implemented in Phase 1.3</p>
+              <p className="text-muted-foreground">
+                Advanced analytics dashboard will be implemented in Phase 1.3
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -901,7 +900,9 @@ export function EnhancedContentGenerationV2() {
               <CardDescription>Monitor and control generation costs</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Cost tracking dashboard will be implemented in Phase 1.4</p>
+              <p className="text-muted-foreground">
+                Cost tracking dashboard will be implemented in Phase 1.4
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -913,7 +914,9 @@ export function EnhancedContentGenerationV2() {
               <CardDescription>Quality evaluation and improvement tools</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Quality assurance tools will be implemented in Phase 1.5</p>
+              <p className="text-muted-foreground">
+                Quality assurance tools will be implemented in Phase 1.5
+              </p>
             </CardContent>
           </Card>
         </TabsContent>
@@ -925,7 +928,9 @@ export function EnhancedContentGenerationV2() {
               <CardDescription>System configuration and preferences</CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">Advanced settings panel will be implemented in Phase 1.6</p>
+              <p className="text-muted-foreground">
+                Advanced settings panel will be implemented in Phase 1.6
+              </p>
             </CardContent>
           </Card>
         </TabsContent>

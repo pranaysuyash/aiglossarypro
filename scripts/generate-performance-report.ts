@@ -4,9 +4,9 @@
  * Creates comprehensive performance reports from React Scan data
  */
 
-import fs from 'fs/promises';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -39,28 +39,28 @@ class PerformanceReporter {
       includeStackTraces: false,
       format: 'html',
       outputDir: path.join(__dirname, '..', 'performance-output'),
-      ...config
+      ...config,
     };
   }
 
   async generateReport(): Promise<void> {
     console.log('📊 Generating performance report...');
-    
+
     try {
       // Ensure output directory exists
       await fs.mkdir(this.config.outputDir, { recursive: true });
-      
+
       // Load performance data
       const data = await this.loadPerformanceData();
-      
+
       if (data.length === 0) {
         console.log('❌ No performance data found. Run React Scan first.');
         return;
       }
-      
+
       // Filter data based on time range
       const filteredData = this.filterByTimeRange(data);
-      
+
       // Generate report based on format
       switch (this.config.format) {
         case 'json':
@@ -76,9 +76,8 @@ class PerformanceReporter {
           await this.generateMarkdownReport(filteredData);
           break;
       }
-      
+
       console.log(`✅ Performance report generated in ${this.config.outputDir}`);
-      
     } catch (error) {
       console.error('❌ Error generating performance report:', error);
       process.exit(1);
@@ -87,25 +86,24 @@ class PerformanceReporter {
 
   private async loadPerformanceData(): Promise<PerformanceData[]> {
     const data: PerformanceData[] = [];
-    
+
     try {
       const files = await fs.readdir(this.reportsDir);
-      const jsonFiles = files.filter(file => file.endsWith('.json'));
-      
+      const jsonFiles = files.filter((file) => file.endsWith('.json'));
+
       for (const file of jsonFiles) {
         const filePath = path.join(this.reportsDir, file);
         const content = await fs.readFile(filePath, 'utf-8');
         const parsed = JSON.parse(content);
-        
+
         if (Array.isArray(parsed)) {
           data.push(...parsed);
         } else if (parsed.metrics) {
           data.push(...parsed.metrics);
         }
       }
-      
+
       return data.sort((a, b) => b.timestamp - a.timestamp);
-      
     } catch (error) {
       console.error('Error loading performance data:', error);
       return [];
@@ -118,11 +116,11 @@ class PerformanceReporter {
       'last-hour': 60 * 60 * 1000,
       'last-day': 24 * 60 * 60 * 1000,
       'last-week': 7 * 24 * 60 * 60 * 1000,
-      'all': Infinity
+      all: Infinity,
     };
-    
+
     const rangeMs = timeRanges[this.config.timeRange];
-    return data.filter(item => now - item.timestamp <= rangeMs);
+    return data.filter((item) => now - item.timestamp <= rangeMs);
   }
 
   private async generateJSONReport(data: PerformanceData[]): Promise<void> {
@@ -131,12 +129,12 @@ class PerformanceReporter {
       timeRange: this.config.timeRange,
       totalEntries: data.length,
       summary: this.generateSummary(data),
-      data: this.config.includeStackTraces ? data : data.map(({ stackTrace, ...rest }) => rest)
+      data: this.config.includeStackTraces ? data : data.map(({ stackTrace, ...rest }) => rest),
     };
-    
+
     const filename = `performance-report-${Date.now()}.json`;
     const filepath = path.join(this.config.outputDir, filename);
-    
+
     await fs.writeFile(filepath, JSON.stringify(report, null, 2));
     console.log(`📄 JSON report saved: ${filename}`);
   }
@@ -144,7 +142,7 @@ class PerformanceReporter {
   private async generateHTMLReport(data: PerformanceData[]): Promise<void> {
     const summary = this.generateSummary(data);
     const componentStats = this.generateComponentStats(data);
-    
+
     const html = `
 <!DOCTYPE html>
 <html lang="en">
@@ -220,7 +218,9 @@ class PerformanceReporter {
                     </tr>
                 </thead>
                 <tbody>
-                    ${componentStats.map(stat => `
+                    ${componentStats
+                      .map(
+                        (stat) => `
                         <tr>
                             <td>${stat.component}</td>
                             <td>${stat.renderCount}</td>
@@ -228,7 +228,9 @@ class PerformanceReporter {
                             <td class="render-time ${this.getRenderTimeClass(stat.maxRenderTime)}">${stat.maxRenderTime.toFixed(2)}ms</td>
                             <td>${stat.avgMemoryUsage.toFixed(2)}MB</td>
                         </tr>
-                    `).join('')}
+                    `
+                      )
+                      .join('')}
                 </tbody>
             </table>
         </div>
@@ -243,29 +245,29 @@ class PerformanceReporter {
 </body>
 </html>
     `;
-    
+
     const filename = `performance-report-${Date.now()}.html`;
     const filepath = path.join(this.config.outputDir, filename);
-    
+
     await fs.writeFile(filepath, html);
     console.log(`📄 HTML report saved: ${filename}`);
   }
 
   private async generateCSVReport(data: PerformanceData[]): Promise<void> {
     const headers = ['timestamp', 'component', 'renderTime', 'renderCount', 'memoryUsage'];
-    const rows = data.map(item => [
+    const rows = data.map((item) => [
       new Date(item.timestamp).toISOString(),
       item.component,
       item.renderTime,
       item.renderCount,
-      item.memoryUsage
+      item.memoryUsage,
     ]);
-    
-    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
-    
+
+    const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
+
     const filename = `performance-report-${Date.now()}.csv`;
     const filepath = path.join(this.config.outputDir, filename);
-    
+
     await fs.writeFile(filepath, csv);
     console.log(`📄 CSV report saved: ${filename}`);
   }
@@ -273,7 +275,7 @@ class PerformanceReporter {
   private async generateMarkdownReport(data: PerformanceData[]): Promise<void> {
     const summary = this.generateSummary(data);
     const componentStats = this.generateComponentStats(data);
-    
+
     const markdown = `
 # React Performance Report
 
@@ -292,18 +294,21 @@ class PerformanceReporter {
 
 | Component | Renders | Avg Time | Max Time | Memory Usage |
 |-----------|---------|----------|----------|--------------|
-${componentStats.map(stat => 
-  `| ${stat.component} | ${stat.renderCount} | ${stat.avgRenderTime.toFixed(2)}ms | ${stat.maxRenderTime.toFixed(2)}ms | ${stat.avgMemoryUsage.toFixed(2)}MB |`
-).join('\n')}
+${componentStats
+  .map(
+    (stat) =>
+      `| ${stat.component} | ${stat.renderCount} | ${stat.avgRenderTime.toFixed(2)}ms | ${stat.maxRenderTime.toFixed(2)}ms | ${stat.avgMemoryUsage.toFixed(2)}MB |`
+  )
+  .join('\n')}
 
 ## Performance Insights
 
 ${this.generateInsights(summary, componentStats)}
     `;
-    
+
     const filename = `performance-report-${Date.now()}.md`;
     const filepath = path.join(this.config.outputDir, filename);
-    
+
     await fs.writeFile(filepath, markdown);
     console.log(`📄 Markdown report saved: ${filename}`);
   }
@@ -312,34 +317,34 @@ ${this.generateInsights(summary, componentStats)}
     const totalRenders = data.length;
     const totalRenderTime = data.reduce((sum, item) => sum + item.renderTime, 0);
     const averageRenderTime = totalRenderTime / totalRenders;
-    const uniqueComponents = new Set(data.map(item => item.component)).size;
-    const slowRenders = data.filter(item => item.renderTime > 50).length;
-    
+    const uniqueComponents = new Set(data.map((item) => item.component)).size;
+    const slowRenders = data.filter((item) => item.renderTime > 50).length;
+
     return {
       totalRenders,
       averageRenderTime,
       uniqueComponents,
-      slowRenders
+      slowRenders,
     };
   }
 
   private generateComponentStats(data: PerformanceData[]) {
     const componentMap = new Map<string, PerformanceData[]>();
-    
-    data.forEach(item => {
+
+    data.forEach((item) => {
       if (!componentMap.has(item.component)) {
         componentMap.set(item.component, []);
       }
-      componentMap.get(item.component)!.push(item);
+      componentMap.get(item.component)?.push(item);
     });
-    
+
     return Array.from(componentMap.entries())
       .map(([component, items]) => ({
         component,
         renderCount: items.length,
         avgRenderTime: items.reduce((sum, item) => sum + item.renderTime, 0) / items.length,
-        maxRenderTime: Math.max(...items.map(item => item.renderTime)),
-        avgMemoryUsage: items.reduce((sum, item) => sum + item.memoryUsage, 0) / items.length
+        maxRenderTime: Math.max(...items.map((item) => item.renderTime)),
+        avgMemoryUsage: items.reduce((sum, item) => sum + item.memoryUsage, 0) / items.length,
       }))
       .sort((a, b) => b.avgRenderTime - a.avgRenderTime);
   }
@@ -352,40 +357,56 @@ ${this.generateInsights(summary, componentStats)}
 
   private generateAlerts(summary: any): string {
     const alerts = [];
-    
+
     if (summary.averageRenderTime > 50) {
-      alerts.push(`<div class="alert warning">⚠️ Average render time (${summary.averageRenderTime.toFixed(2)}ms) is high. Consider optimizing component rendering.</div>`);
+      alerts.push(
+        `<div class="alert warning">⚠️ Average render time (${summary.averageRenderTime.toFixed(2)}ms) is high. Consider optimizing component rendering.</div>`
+      );
     }
-    
+
     if (summary.slowRenders > summary.totalRenders * 0.1) {
-      alerts.push(`<div class="alert warning">⚠️ ${summary.slowRenders} slow renders detected (${((summary.slowRenders / summary.totalRenders) * 100).toFixed(1)}% of total).</div>`);
+      alerts.push(
+        `<div class="alert warning">⚠️ ${summary.slowRenders} slow renders detected (${((summary.slowRenders / summary.totalRenders) * 100).toFixed(1)}% of total).</div>`
+      );
     }
-    
+
     if (summary.averageRenderTime < 16) {
-      alerts.push(`<div class="alert success">✅ Great performance! Average render time is within the 60fps target.</div>`);
+      alerts.push(
+        `<div class="alert success">✅ Great performance! Average render time is within the 60fps target.</div>`
+      );
     }
-    
-    return alerts.length > 0 ? alerts.join('') : '<div class="alert info">ℹ️ No performance issues detected.</div>';
+
+    return alerts.length > 0
+      ? alerts.join('')
+      : '<div class="alert info">ℹ️ No performance issues detected.</div>';
   }
 
   private generateInsights(summary: any, componentStats: any[]): string {
     const insights = [];
-    
+
     const slowestComponent = componentStats[0];
     if (slowestComponent && slowestComponent.avgRenderTime > 50) {
-      insights.push(`- **Slowest Component:** ${slowestComponent.component} (${slowestComponent.avgRenderTime.toFixed(2)}ms avg)`);
+      insights.push(
+        `- **Slowest Component:** ${slowestComponent.component} (${slowestComponent.avgRenderTime.toFixed(2)}ms avg)`
+      );
     }
-    
-    const mostRenderedComponent = componentStats.reduce((max, comp) => 
-      comp.renderCount > max.renderCount ? comp : max, componentStats[0]);
+
+    const mostRenderedComponent = componentStats.reduce(
+      (max, comp) => (comp.renderCount > max.renderCount ? comp : max),
+      componentStats[0]
+    );
     if (mostRenderedComponent && mostRenderedComponent.renderCount > 10) {
-      insights.push(`- **Most Rendered:** ${mostRenderedComponent.component} (${mostRenderedComponent.renderCount} renders)`);
+      insights.push(
+        `- **Most Rendered:** ${mostRenderedComponent.component} (${mostRenderedComponent.renderCount} renders)`
+      );
     }
-    
+
     if (summary.slowRenders > 5) {
-      insights.push(`- **Recommendation:** Consider implementing React.memo() or useMemo() for components with slow renders`);
+      insights.push(
+        `- **Recommendation:** Consider implementing React.memo() or useMemo() for components with slow renders`
+      );
     }
-    
+
     return insights.length > 0 ? insights.join('\n') : '- No specific insights available';
   }
 }
@@ -394,7 +415,7 @@ ${this.generateInsights(summary, componentStats)}
 async function main() {
   const args = process.argv.slice(2);
   const config: Partial<ReportConfig> = {};
-  
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     switch (arg) {
@@ -412,7 +433,7 @@ async function main() {
         break;
     }
   }
-  
+
   const reporter = new PerformanceReporter(config);
   await reporter.generateReport();
 }

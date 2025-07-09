@@ -1,23 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { AlertCircle, Edit, Eye, EyeOff, History, Loader2, RefreshCw, Save, X } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Save,
-  Edit,
-  X,
-  Check,
-  RefreshCw,
-  Eye,
-  EyeOff,
-  History,
-  AlertCircle,
-  Loader2
-} from 'lucide-react';
 import { cn } from '@/lib/utils';
-import ReactMarkdown from 'react-markdown';
 
 interface ContentVersion {
   id: string;
@@ -53,7 +42,7 @@ export function InlineContentEditor({
   metadata,
   onSave,
   onRegenerate,
-  className
+  className,
 }: InlineContentEditorProps) {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
@@ -102,7 +91,7 @@ export function InlineContentEditor({
       setOriginalContent(content);
       setIsEditing(false);
       setHasChanges(false);
-      
+
       // Add to version history
       const newVersion: ContentVersion = {
         id: Date.now().toString(),
@@ -110,14 +99,14 @@ export function InlineContentEditor({
         editedAt: new Date(),
         editedBy: 'Admin',
         isAiGenerated: false,
-        qualityScore
+        qualityScore,
       };
       setVersions([newVersion, ...versions.slice(0, 9)]); // Keep last 10 versions
-      
-      toast.success('Content saved successfully');
+
+      toast({ title: 'Success', description: 'Content saved successfully' });
     } catch (error) {
       console.error('Error saving content:', error);
-      toast.error('Failed to save content');
+      toast({ title: 'Error', description: 'Failed to save content', variant: 'destructive' });
     } finally {
       setIsSaving(false);
     }
@@ -138,7 +127,7 @@ export function InlineContentEditor({
     setContent(version.content);
     setHasChanges(true);
     setShowVersionHistory(false);
-    toast.info('Reverted to previous version. Click Save to apply.');
+    toast({ title: 'Info', description: 'Reverted to previous version. Click Save to apply.' });
   };
 
   const getQualityBadgeColor = (score?: number) => {
@@ -152,7 +141,7 @@ export function InlineContentEditor({
   const autoResizeTextarea = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = textareaRef.current.scrollHeight + 'px';
+      textareaRef.current.style.height = `${textareaRef.current.scrollHeight}px`;
     }
   };
 
@@ -169,10 +158,7 @@ export function InlineContentEditor({
                 </Badge>
               )}
               {qualityScore && (
-                <Badge 
-                  variant={getQualityBadgeColor(qualityScore) as any}
-                  className="text-xs"
-                >
+                <Badge variant={getQualityBadgeColor(qualityScore) as any} className="text-xs">
                   Quality: {qualityScore}/10
                 </Badge>
               )}
@@ -183,7 +169,7 @@ export function InlineContentEditor({
               )}
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             {!isEditing && (
               <>
@@ -196,43 +182,22 @@ export function InlineContentEditor({
                   <History className="w-4 h-4" />
                 </Button>
                 {onRegenerate && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRegenerate}
-                  >
+                  <Button variant="ghost" size="sm" onClick={handleRegenerate}>
                     <RefreshCw className="w-4 h-4" />
                   </Button>
                 )}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleEdit}
-                >
+                <Button variant="ghost" size="sm" onClick={handleEdit}>
                   <Edit className="w-4 h-4" />
                 </Button>
               </>
             )}
-            
+
             {isEditing && (
               <>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowPreview(!showPreview)}
-                >
-                  {showPreview ? (
-                    <EyeOff className="w-4 h-4" />
-                  ) : (
-                    <Eye className="w-4 h-4" />
-                  )}
+                <Button variant="ghost" size="sm" onClick={() => setShowPreview(!showPreview)}>
+                  {showPreview ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleCancel}
-                  disabled={isSaving}
-                >
+                <Button variant="ghost" size="sm" onClick={handleCancel} disabled={isSaving}>
                   <X className="w-4 h-4" />
                 </Button>
                 <Button
@@ -252,26 +217,19 @@ export function InlineContentEditor({
           </div>
         </div>
       </CardHeader>
-      
+
       <CardContent className="space-y-4">
         {showVersionHistory && versions.length > 0 && (
           <div className="mb-4 p-4 bg-muted rounded-lg space-y-2">
             <h4 className="font-medium text-sm">Version History</h4>
             <div className="space-y-1">
               {versions.map((version) => (
-                <div
-                  key={version.id}
-                  className="flex items-center justify-between text-sm"
-                >
+                <div key={version.id} className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">
                     {new Date(version.editedAt).toLocaleString()}
                     {version.isAiGenerated && ' (AI)'}
                   </span>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => handleRevertToVersion(version)}
-                  >
+                  <Button variant="ghost" size="sm" onClick={() => handleRevertToVersion(version)}>
                     Revert
                   </Button>
                 </div>
@@ -279,7 +237,7 @@ export function InlineContentEditor({
             </div>
           </div>
         )}
-        
+
         {isEditing ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <div className="space-y-2">
@@ -299,19 +257,17 @@ export function InlineContentEditor({
                 Supports Markdown formatting. Use **bold**, *italic*, # headers, - lists, etc.
               </p>
             </div>
-            
+
             {showPreview && (
               <div className="space-y-2">
                 <label className="text-sm font-medium">Preview</label>
                 <div className="min-h-[300px] p-4 border rounded-lg bg-background overflow-auto">
                   {content ? (
-                    <ReactMarkdown className="prose prose-sm dark:prose-invert max-w-none">
-                      {content}
-                    </ReactMarkdown>
+                    <div className="prose prose-sm dark:prose-invert max-w-none">
+                      <ReactMarkdown>{content}</ReactMarkdown>
+                    </div>
                   ) : (
-                    <p className="text-muted-foreground text-sm">
-                      No content to preview
-                    </p>
+                    <p className="text-muted-foreground text-sm">No content to preview</p>
                   )}
                 </div>
               </div>
@@ -329,13 +285,11 @@ export function InlineContentEditor({
             )}
           </div>
         )}
-        
+
         {metadata && Object.keys(metadata).length > 0 && (
           <div className="mt-4 pt-4 border-t">
             <details className="cursor-pointer">
-              <summary className="text-sm font-medium text-muted-foreground">
-                Metadata
-              </summary>
+              <summary className="text-sm font-medium text-muted-foreground">Metadata</summary>
               <pre className="mt-2 text-xs bg-muted p-2 rounded overflow-auto">
                 {JSON.stringify(metadata, null, 2)}
               </pre>

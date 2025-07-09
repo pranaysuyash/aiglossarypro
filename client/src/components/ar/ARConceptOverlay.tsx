@@ -1,7 +1,7 @@
 /**
  * AR Concept Overlay Component
  * Provides augmented reality visualization of AI/ML concepts in real-world space
- * 
+ *
  * Features:
  * - Real-world plane detection and anchoring
  * - 3D concept models overlaid on physical surfaces
@@ -9,10 +9,10 @@
  * - Persistent spatial anchors for concept placement
  */
 
-import React, { useRef, useEffect, useState, useCallback } from 'react';
+import { Box, Cylinder, Sphere, Text } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { ARButton, XR, useHitTest, useXR } from '@react-three/xr';
-import { Text, Sphere, Box, Cylinder } from '@react-three/drei';
+import { ARButton, createXRStore, useXRHitTest, XR } from '@react-three/xr';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useWebXR } from '../../hooks/useWebXR';
 
@@ -48,16 +48,16 @@ const ARReticle: React.FC<{
   position: THREE.Vector3;
 }> = ({ visible, position }) => {
   const reticleRef = useRef<THREE.Group>(null);
-  
-  useFrame((state) => {
+
+  useFrame((_state) => {
     if (reticleRef.current && visible) {
       // Animate reticle rotation
       reticleRef.current.rotation.z += 0.05;
     }
   });
-  
+
   if (!visible) return null;
-  
+
   return (
     <group ref={reticleRef} position={position.toArray()}>
       {/* Outer ring */}
@@ -65,13 +65,13 @@ const ARReticle: React.FC<{
         <ringGeometry args={[0.08, 0.1, 32]} />
         <meshBasicMaterial color="#ffffff" transparent opacity={0.6} />
       </mesh>
-      
+
       {/* Inner dot */}
       <mesh rotation={[Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.02, 16]} />
         <meshBasicMaterial color="#ffffff" />
       </mesh>
-      
+
       {/* Cross hairs */}
       <mesh position={[0, 0.001, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <planeGeometry args={[0.02, 0.2]} />
@@ -95,12 +95,13 @@ const ARConceptModel: React.FC<{
 }> = ({ concept, isSelected, onSelect }) => {
   const groupRef = useRef<THREE.Group>(null);
   const [isHovered, setIsHovered] = useState(false);
-  
+
   useFrame((state) => {
     if (groupRef.current) {
       // Gentle floating animation
-      groupRef.current.position.y = concept.position.y + Math.sin(state.clock.elapsedTime * 2) * 0.01;
-      
+      groupRef.current.position.y =
+        concept.position.y + Math.sin(state.clock.elapsedTime * 2) * 0.01;
+
       // Highlight animation when selected
       if (isSelected) {
         groupRef.current.rotation.y += 0.02;
@@ -112,23 +113,23 @@ const ARConceptModel: React.FC<{
       }
     }
   });
-  
+
   const handleClick = useCallback(() => {
     onSelect();
-    
+
     // Provide haptic feedback
     if ('vibrate' in navigator) {
       navigator.vibrate(50);
     }
   }, [onSelect]);
-  
+
   const renderModel = () => {
     const props = {
       onClick: handleClick,
       onPointerEnter: () => setIsHovered(true),
       onPointerLeave: () => setIsHovered(false),
     };
-    
+
     const material = (
       <meshStandardMaterial
         color={isSelected ? '#ffff00' : concept.color}
@@ -139,7 +140,7 @@ const ARConceptModel: React.FC<{
         roughness={0.4}
       />
     );
-    
+
     switch (concept.model) {
       case 'sphere':
         return (
@@ -167,15 +168,12 @@ const ARConceptModel: React.FC<{
         );
     }
   };
-  
+
   return (
-    <group
-      ref={groupRef}
-      position={[concept.position.x, concept.position.y, concept.position.z]}
-    >
+    <group ref={groupRef} position={[concept.position.x, concept.position.y, concept.position.z]}>
       {/* 3D Model */}
       {renderModel()}
-      
+
       {/* Label */}
       <Text
         position={[0, 0.1, 0]}
@@ -185,17 +183,17 @@ const ARConceptModel: React.FC<{
         anchorY="middle"
         outlineWidth={0.005}
         outlineColor="black"
-        billboard
+        billboard={true}
       >
         {concept.name}
       </Text>
-      
+
       {/* Category badge */}
       <mesh position={[0, -0.08, 0]}>
         <planeGeometry args={[0.12, 0.02]} />
         <meshBasicMaterial color={concept.color} transparent opacity={0.7} />
       </mesh>
-      
+
       {/* Ground shadow/connection indicator */}
       <mesh position={[0, -0.06, 0]} rotation={[Math.PI / 2, 0, 0]}>
         <circleGeometry args={[0.03, 16]} />
@@ -214,9 +212,9 @@ const ARPlacementSystem: React.FC<{
 }> = ({ selectedConcept, onConceptPlace }) => {
   const [reticleVisible, setReticleVisible] = useState(false);
   const [reticlePosition, setReticlePosition] = useState(new THREE.Vector3());
-  
+
   // Hit test for surface detection
-  const hitTest = useHitTest((hitMatrix) => {
+  const _hitTest = useXRHitTest('viewer', (hitMatrix: any) => {
     if (hitMatrix) {
       const position = new THREE.Vector3();
       position.setFromMatrixPosition(hitMatrix);
@@ -226,7 +224,7 @@ const ARPlacementSystem: React.FC<{
       setReticleVisible(false);
     }
   });
-  
+
   // Handle screen tap for placement
   const handlePlacement = useCallback(() => {
     if (selectedConcept && reticleVisible) {
@@ -234,7 +232,7 @@ const ARPlacementSystem: React.FC<{
       setReticleVisible(false);
     }
   }, [selectedConcept, reticleVisible, reticlePosition, onConceptPlace]);
-  
+
   // Listen for screen taps
   useEffect(() => {
     const handleTouchEnd = (event: TouchEvent) => {
@@ -242,25 +240,22 @@ const ARPlacementSystem: React.FC<{
         handlePlacement();
       }
     };
-    
+
     const handleClick = () => {
       handlePlacement();
     };
-    
+
     window.addEventListener('touchend', handleTouchEnd);
     window.addEventListener('click', handleClick);
-    
+
     return () => {
       window.removeEventListener('touchend', handleTouchEnd);
       window.removeEventListener('click', handleClick);
     };
   }, [handlePlacement]);
-  
+
   return (
-    <ARReticle 
-      visible={reticleVisible && selectedConcept !== null} 
-      position={reticlePosition} 
-    />
+    <ARReticle visible={reticleVisible && selectedConcept !== null} position={reticlePosition} />
   );
 };
 
@@ -276,10 +271,10 @@ const ARConceptConnections: React.FC<{
       to: THREE.Vector3;
       color: string;
     }> = [];
-    
-    placedConcepts.forEach(concept => {
-      concept.connections.forEach(connectionId => {
-        const targetConcept = placedConcepts.find(c => c.id === connectionId);
+
+    placedConcepts.forEach((concept) => {
+      concept.connections.forEach((connectionId) => {
+        const targetConcept = placedConcepts.find((c) => c.id === connectionId);
         if (targetConcept) {
           lines.push({
             from: concept.position,
@@ -289,10 +284,10 @@ const ARConceptConnections: React.FC<{
         }
       });
     });
-    
+
     return lines;
   }, [placedConcepts]);
-  
+
   return (
     <>
       {connections.map((connection, index) => (
@@ -301,10 +296,16 @@ const ARConceptConnections: React.FC<{
             <bufferAttribute
               attach="attributes-position"
               count={2}
-              array={new Float32Array([
-                connection.from.x, connection.from.y, connection.from.z,
-                connection.to.x, connection.to.y, connection.to.z,
-              ])}
+              array={
+                new Float32Array([
+                  connection.from.x,
+                  connection.from.y,
+                  connection.from.z,
+                  connection.to.x,
+                  connection.to.y,
+                  connection.to.z,
+                ])
+              }
               itemSize={3}
             />
           </bufferGeometry>
@@ -328,7 +329,7 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
   const [placedConcepts, setPlacedConcepts] = useState<ARPlacedConcept[]>([]);
   const [selectedConcept, setSelectedConcept] = useState<ARConcept | null>(null);
   const [selectedPlacedConcept, setSelectedPlacedConcept] = useState<string | undefined>();
-  
+
   // Mock concept data if none provided
   const mockConcepts: ARConcept[] = [
     {
@@ -362,10 +363,10 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
       connections: [],
     },
   ];
-  
+
   const availableConcepts = concepts.length > 0 ? concepts : mockConcepts;
-  
-  const handleARSessionStart = useCallback(async () => {
+
+  const _handleARSessionStart = useCallback(async () => {
     try {
       await initializeARSession();
     } catch (error) {
@@ -373,8 +374,8 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
       onError?.(message);
     }
   }, [initializeARSession, onError]);
-  
-  const handleARSessionEnd = useCallback(async () => {
+
+  const _handleARSessionEnd = useCallback(async () => {
     try {
       await endSession();
       setPlacedConcepts([]);
@@ -383,45 +384,59 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
       console.error('Error ending AR session:', error);
     }
   }, [endSession]);
-  
-  const handleConceptPlace = useCallback((concept: ARConcept, position: THREE.Vector3) => {
-    const placedConcept: ARPlacedConcept = {
-      ...concept,
-      position: position.clone(),
-      timestamp: Date.now(),
-    };
-    
-    setPlacedConcepts(prev => [...prev, placedConcept]);
-    setSelectedConcept(null);
-    onConceptPlace?.(concept, position);
-    
-    // Haptic feedback for successful placement
-    if ('vibrate' in navigator) {
-      navigator.vibrate([50, 50, 50]);
-    }
-  }, [onConceptPlace]);
-  
-  const handlePlacedConceptSelect = useCallback((conceptId: string) => {
-    setSelectedPlacedConcept(conceptId);
-    onConceptSelect?.(conceptId);
-  }, [onConceptSelect]);
-  
+
+  const handleConceptPlace = useCallback(
+    (concept: ARConcept, position: THREE.Vector3) => {
+      const placedConcept: ARPlacedConcept = {
+        ...concept,
+        position: position.clone(),
+        timestamp: Date.now(),
+      };
+
+      setPlacedConcepts((prev) => [...prev, placedConcept]);
+      setSelectedConcept(null);
+      onConceptPlace?.(concept, position);
+
+      // Haptic feedback for successful placement
+      if ('vibrate' in navigator) {
+        navigator.vibrate([50, 50, 50]);
+      }
+    },
+    [onConceptPlace]
+  );
+
+  const handlePlacedConceptSelect = useCallback(
+    (conceptId: string) => {
+      setSelectedPlacedConcept(conceptId);
+      onConceptSelect?.(conceptId);
+    },
+    [onConceptSelect]
+  );
+
   const clearAllConcepts = useCallback(() => {
     setPlacedConcepts([]);
     setSelectedConcept(null);
     setSelectedPlacedConcept(undefined);
   }, []);
 
+  const store = createXRStore();
+
   return (
     <div className="w-full h-screen relative bg-transparent">
       {/* AR Session Controls */}
       <div className="absolute top-4 left-4 z-10 space-y-2">
         <ARButton
-          onEnterAR={handleARSessionStart}
-          onExitAR={handleARSessionEnd}
-          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          store={store}
+          style={{
+            padding: '8px 16px',
+            backgroundColor: '#16a34a',
+            color: 'white',
+            borderRadius: '8px',
+            border: 'none',
+            cursor: 'pointer',
+          }}
         />
-        
+
         {sessionState.isActive && (
           <button
             onClick={clearAllConcepts}
@@ -431,13 +446,13 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
           </button>
         )}
       </div>
-      
+
       {/* Concept Selection Panel */}
       {sessionState.isActive && (
         <div className="absolute top-4 right-4 z-10 bg-black bg-opacity-80 rounded-lg p-4 max-w-xs">
           <h3 className="text-white font-bold mb-3">Select Concept to Place</h3>
           <div className="space-y-2">
-            {availableConcepts.map(concept => (
+            {availableConcepts.map((concept) => (
               <button
                 key={concept.id}
                 onClick={() => setSelectedConcept(concept)}
@@ -454,27 +469,27 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
           </div>
         </div>
       )}
-      
+
       {/* Placement Instructions */}
       {sessionState.isActive && selectedConcept && (
         <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 z-10 bg-black bg-opacity-80 text-white px-4 py-2 rounded-lg">
           Tap on a surface to place "{selectedConcept.name}"
         </div>
       )}
-      
+
       {/* Status Indicators */}
       {sessionState.isLoading && (
         <div className="absolute bottom-4 left-4 z-10 text-white bg-black bg-opacity-50 px-4 py-2 rounded">
           Initializing AR...
         </div>
       )}
-      
+
       {sessionState.error && (
         <div className="absolute bottom-16 left-4 z-10 text-red-400 bg-black bg-opacity-50 px-4 py-2 rounded">
           Error: {sessionState.error}
         </div>
       )}
-      
+
       {/* Placed Concepts Count */}
       {sessionState.isActive && placedConcepts.length > 0 && (
         <div className="absolute bottom-4 right-4 z-10 text-white bg-black bg-opacity-50 px-4 py-2 rounded">
@@ -488,19 +503,19 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
         camera={{ position: [0, 0, 0], fov: 70 }}
         gl={{ alpha: true, antialias: true }}
       >
-        <XR>
+        <XR store={store}>
           {/* Lighting for AR objects */}
           <ambientLight intensity={0.6} />
           <directionalLight position={[1, 1, 1]} intensity={0.8} />
-          
+
           {/* AR Placement System */}
           <ARPlacementSystem
             selectedConcept={selectedConcept}
             onConceptPlace={handleConceptPlace}
           />
-          
+
           {/* Render Placed Concepts */}
-          {placedConcepts.map(concept => (
+          {placedConcepts.map((concept) => (
             <ARConceptModel
               key={`${concept.id}-${concept.timestamp}`}
               concept={concept}
@@ -508,7 +523,7 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
               onSelect={() => handlePlacedConceptSelect(concept.id)}
             />
           ))}
-          
+
           {/* Concept Connections */}
           <ARConceptConnections placedConcepts={placedConcepts} />
         </XR>

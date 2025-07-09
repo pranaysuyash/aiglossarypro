@@ -1,11 +1,11 @@
-import { useState, useEffect, useRef, memo, useCallback, useMemo } from "react";
-import { useLocation } from "wouter";
-import { Search, X, Brain, Zap } from "@/components/ui/icons";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { useQuery } from "@tanstack/react-query";
-import { cn } from "@/lib/utils";
-import { BaseComponentProps } from "@/types/common-props";
+import { useQuery } from '@tanstack/react-query';
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useLocation } from 'wouter';
+import { Button } from '@/components/ui/button';
+import { Brain, Search, X, Zap } from '@/components/ui/icons';
+import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
+import type { BaseComponentProps } from '@/types/common-props';
 
 interface SearchBarProps extends BaseComponentProps {
   onSearch: (query: string) => void;
@@ -22,12 +22,12 @@ interface SearchSuggestion {
   highlightedName?: string;
 }
 
-const SearchBar = memo(function SearchBar({ 
-  onSearch, 
-  placeholder = "Search AI/ML terms...", 
+const SearchBar = memo(function SearchBar({
+  onSearch,
+  placeholder = 'Search AI/ML terms...',
   className,
-  initialValue = "",
-  iconOnly = false
+  initialValue = '',
+  iconOnly = false,
 }: SearchBarProps) {
   const [query, setQuery] = useState(initialValue);
   const [debouncedQuery, setDebouncedQuery] = useState(initialValue);
@@ -37,7 +37,7 @@ const SearchBar = memo(function SearchBar({
   const [, navigate] = useLocation();
   const inputRef = useRef<HTMLInputElement>(null);
   const suggestionsRef = useRef<HTMLDivElement>(null);
-  const listboxId = useMemo(() => "search-suggestions-listbox", []);
+  const listboxId = useMemo(() => 'search-suggestions-listbox', []);
 
   // Debounce the query to prevent excessive API calls
   useEffect(() => {
@@ -67,7 +67,9 @@ const SearchBar = memo(function SearchBar({
   const suggestions = enhancedSuggestions || basicSuggestions;
 
   useEffect(() => {
-    setShowSuggestions(debouncedQuery.length >= 2 && Array.isArray(suggestions) && suggestions.length > 0);
+    setShowSuggestions(
+      debouncedQuery.length >= 2 && Array.isArray(suggestions) && suggestions.length > 0
+    );
     setSelectedIndex(-1);
   }, [suggestions, debouncedQuery]);
 
@@ -77,42 +79,41 @@ const SearchBar = memo(function SearchBar({
     setSelectedIndex(-1);
   }, []);
 
-  const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    if (!showSuggestions) {
-      if (e.key === 'Enter') {
-        handleSearch();
-      }
-      return;
-    }
-
-    switch (e.key) {
-      case 'ArrowDown':
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev < (suggestions?.length || 0) - 1 ? prev + 1 : -1
-        );
-        break;
-      case 'ArrowUp':
-        e.preventDefault();
-        setSelectedIndex(prev => 
-          prev > -1 ? prev - 1 : (suggestions?.length || 0) - 1
-        );
-        break;
-      case 'Enter':
-        e.preventDefault();
-        if (selectedIndex >= 0 && suggestions && suggestions[selectedIndex]) {
-          handleSuggestionSelect(suggestions[selectedIndex]);
-        } else {
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (!showSuggestions) {
+        if (e.key === 'Enter') {
           handleSearch();
         }
-        break;
-      case 'Escape':
-        setShowSuggestions(false);
-        setSelectedIndex(-1);
-        inputRef.current?.blur();
-        break;
-    }
-  }, [showSuggestions, suggestions, selectedIndex]);
+        return;
+      }
+
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault();
+          setSelectedIndex((prev) => (prev < (suggestions?.length || 0) - 1 ? prev + 1 : -1));
+          break;
+        case 'ArrowUp':
+          e.preventDefault();
+          setSelectedIndex((prev) => (prev > -1 ? prev - 1 : (suggestions?.length || 0) - 1));
+          break;
+        case 'Enter':
+          e.preventDefault();
+          if (selectedIndex >= 0 && suggestions && suggestions[selectedIndex]) {
+            handleSuggestionSelect(suggestions[selectedIndex]);
+          } else {
+            handleSearch();
+          }
+          break;
+        case 'Escape':
+          setShowSuggestions(false);
+          setSelectedIndex(-1);
+          inputRef.current?.blur();
+          break;
+      }
+    },
+    [showSuggestions, suggestions, selectedIndex, handleSearch, handleSuggestionSelect]
+  );
 
   const handleSearch = useCallback(() => {
     if (query.trim()) {
@@ -121,19 +122,22 @@ const SearchBar = memo(function SearchBar({
     }
   }, [query, onSearch]);
 
-  const handleSuggestionSelect = useCallback((suggestion: SearchSuggestion) => {
-    if (suggestion.type === 'term') {
-      navigate(`/term/${suggestion.id}`);
-    } else if (suggestion.type === 'category') {
-      setQuery(suggestion.name);
-      onSearch(suggestion.name);
-    }
-    setShowSuggestions(false);
-    setSelectedIndex(-1);
-  }, [navigate, onSearch]);
+  const handleSuggestionSelect = useCallback(
+    (suggestion: SearchSuggestion) => {
+      if (suggestion.type === 'term') {
+        navigate(`/term/${suggestion.id}`);
+      } else if (suggestion.type === 'category') {
+        setQuery(suggestion.name);
+        onSearch(suggestion.name);
+      }
+      setShowSuggestions(false);
+      setSelectedIndex(-1);
+    },
+    [navigate, onSearch]
+  );
 
   const clearSearch = useCallback(() => {
-    setQuery("");
+    setQuery('');
     setShowSuggestions(false);
     inputRef.current?.focus();
   }, []);
@@ -157,7 +161,7 @@ const SearchBar = memo(function SearchBar({
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setShowSuggestions(prev => !prev);
+        setShowSuggestions((prev) => !prev);
         setTimeout(() => {
           inputRef.current?.focus();
         }, 0);
@@ -189,10 +193,10 @@ const SearchBar = memo(function SearchBar({
   }
 
   return (
-    <div id="search" className={cn("relative w-full max-w-md", className)}>
+    <div id="search" className={cn('relative w-full max-w-md', className)}>
       <div className="relative">
-        <Search 
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 h-4 w-4" 
+        <Search
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 h-4 w-4"
           aria-hidden="true"
         />
         <Input
@@ -211,7 +215,7 @@ const SearchBar = memo(function SearchBar({
           aria-controls={showSuggestions ? listboxId : undefined}
           autoComplete="off"
           aria-activedescendant={
-            selectedIndex >= 0 && suggestions?.[selectedIndex] 
+            selectedIndex >= 0 && suggestions?.[selectedIndex]
               ? `suggestion-${suggestions[selectedIndex].type}-${suggestions[selectedIndex].id}`
               : undefined
           }
@@ -240,15 +244,20 @@ const SearchBar = memo(function SearchBar({
           className="absolute z-50 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-md shadow-lg max-h-64 overflow-y-auto"
         >
           {isLoading ? (
-            <div className="p-3 text-center text-gray-500 dark:text-gray-300" role="status" aria-live="polite">
-              <div 
+            <div
+              className="p-3 text-center text-gray-500 dark:text-gray-300"
+              role="status"
+              aria-live="polite"
+            >
+              <div
                 className="animate-spin rounded-full h-4 w-4 border-t-2 border-b-2 border-primary mx-auto"
                 aria-hidden="true"
               ></div>
               <span className="sr-only">Loading search suggestions...</span>
             </div>
           ) : (
-            Array.isArray(suggestions) && suggestions.map((suggestion: SearchSuggestion, index: number) => (
+            Array.isArray(suggestions) &&
+            suggestions.map((suggestion: SearchSuggestion, index: number) => (
               <button
                 key={`${suggestion.type}-${suggestion.id}`}
                 id={`suggestion-${suggestion.type}-${suggestion.id}`}
@@ -256,15 +265,15 @@ const SearchBar = memo(function SearchBar({
                 aria-selected={selectedIndex === index}
                 onClick={() => handleSuggestionSelect(suggestion)}
                 className={cn(
-                  "w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-700",
-                  selectedIndex === index && "bg-gray-50 dark:bg-gray-700"
+                  'w-full px-4 py-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-100 dark:border-gray-700 last:border-b-0 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-700',
+                  selectedIndex === index && 'bg-gray-50 dark:bg-gray-700'
                 )}
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <div className="font-medium text-gray-900 dark:text-gray-100">
                       {suggestion.highlightedName ? (
-                        <span 
+                        <span
                           className="search-highlighted"
                           dangerouslySetInnerHTML={{ __html: suggestion.highlightedName }}
                         />

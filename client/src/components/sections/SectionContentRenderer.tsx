@@ -1,22 +1,18 @@
+import { AlertTriangle, BookOpen, Code, FileText, Play, Target, TestTube } from 'lucide-react';
 import { useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import ReactMarkdown from 'react-markdown';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { 
-  BookOpen, 
-  Code, 
-  Play, 
-  FileText,
-  Target,
-  TestTube,
-  AlertTriangle
-} from 'lucide-react';
-import ReactMarkdown from 'react-markdown';
-
-import InteractiveQuiz from '../interactive/InteractiveQuiz';
 import CodeBlock from '../interactive/CodeBlock';
+import InteractiveQuiz from '../interactive/InteractiveQuiz';
 import MermaidDiagram from '../interactive/MermaidDiagram';
 import { OptimizedImage } from '../ui/optimized-image';
 
@@ -50,14 +46,14 @@ export default function SectionContentRenderer({
   sections,
   onInteraction,
   displayMode = 'accordion',
-  className = ''
+  className = '',
 }: SectionContentRendererProps) {
   const [activeSection, setActiveSection] = useState<string>(sections[0]?.id.toString() || '');
 
   // Section type configurations for icons and styling
   const getSectionConfig = (sectionName: string) => {
     const name = sectionName.toLowerCase();
-    
+
     if (name.includes('introduction') || name.includes('definition')) {
       return { icon: BookOpen, color: 'blue', priority: 'high' };
     }
@@ -76,7 +72,7 @@ export default function SectionContentRenderer({
     if (name.includes('example') || name.includes('case study')) {
       return { icon: TestTube, color: 'teal', priority: 'medium' };
     }
-    
+
     return { icon: FileText, color: 'gray', priority: 'low' };
   };
 
@@ -107,13 +103,7 @@ export default function SectionContentRenderer({
         );
 
       case 'mermaid':
-        return (
-          <MermaidDiagram
-            diagram={item.content}
-            title={item.label}
-            className="mb-4"
-          />
-        );
+        return <MermaidDiagram diagram={item.content} title={item.label} className="mb-4" />;
 
       case 'interactive':
         try {
@@ -133,9 +123,7 @@ export default function SectionContentRenderer({
         }
         return (
           <div className="p-4 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg">
-            <p className="text-gray-600 dark:text-gray-400">
-              Interactive element: {item.label}
-            </p>
+            <p className="text-gray-600 dark:text-gray-400">Interactive element: {item.label}</p>
             <pre className="text-xs mt-2 text-gray-500">{item.content}</pre>
           </div>
         );
@@ -146,12 +134,10 @@ export default function SectionContentRenderer({
           return (
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
               <h4 className="font-medium mb-2">{item.label}</h4>
-              <pre className="text-sm overflow-x-auto">
-                {JSON.stringify(jsonData, null, 2)}
-              </pre>
+              <pre className="text-sm overflow-x-auto">{JSON.stringify(jsonData, null, 2)}</pre>
             </div>
           );
-        } catch (error) {
+        } catch (_error) {
           return (
             <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg">
               <h4 className="font-medium mb-2">{item.label}</h4>
@@ -164,8 +150,8 @@ export default function SectionContentRenderer({
         return (
           <div className="mb-4">
             <h4 className="font-medium mb-2">{item.label}</h4>
-            <OptimizedImage 
-              src={item.content} 
+            <OptimizedImage
+              src={item.content}
               alt={item.label}
               className="max-w-full h-auto rounded-lg"
             />
@@ -185,7 +171,7 @@ export default function SectionContentRenderer({
   const renderSection = (section: Section) => {
     const config = getSectionConfig(section.name);
     const IconComponent = config.icon;
-    
+
     return (
       <div key={section.id} className="mb-4">
         <div className="flex items-center space-x-2 mb-3">
@@ -200,7 +186,7 @@ export default function SectionContentRenderer({
             </Badge>
           )}
         </div>
-        
+
         <div className="space-y-4">
           {section.items
             .sort((a, b) => a.displayOrder - b.displayOrder)
@@ -214,7 +200,7 @@ export default function SectionContentRenderer({
                         AI Generated
                       </Badge>
                     )}
-                    <Badge 
+                    <Badge
                       variant={item.verificationStatus === 'verified' ? 'default' : 'outline'}
                       className="text-xs"
                     >
@@ -237,7 +223,7 @@ export default function SectionContentRenderer({
         .map((section) => {
           const config = getSectionConfig(section.name);
           const IconComponent = config.icon;
-          
+
           return (
             <AccordionItem key={section.id} value={section.id.toString()}>
               <AccordionTrigger className="text-left">
@@ -255,9 +241,7 @@ export default function SectionContentRenderer({
                 </div>
               </AccordionTrigger>
               <AccordionContent>
-                <div className="pt-4">
-                  {renderSection(section)}
-                </div>
+                <div className="pt-4">{renderSection(section)}</div>
               </AccordionContent>
             </AccordionItem>
           );
@@ -268,7 +252,7 @@ export default function SectionContentRenderer({
   const renderTabsMode = () => {
     const prioritySections = sections
       .sort((a, b) => a.displayOrder - b.displayOrder)
-      .filter(section => {
+      .filter((section) => {
         const config = getSectionConfig(section.name);
         return config.priority === 'high';
       })
@@ -280,28 +264,24 @@ export default function SectionContentRenderer({
           {prioritySections.map((section) => {
             const config = getSectionConfig(section.name);
             const IconComponent = config.icon;
-            
+
             return (
-              <TabsTrigger 
-                key={section.id} 
+              <TabsTrigger
+                key={section.id}
                 value={section.id.toString()}
                 className="flex items-center space-x-1"
               >
                 <IconComponent className="h-3 w-3" />
-                <span className="hidden sm:inline truncate">
-                  {section.name.split(' ')[0]}
-                </span>
+                <span className="hidden sm:inline truncate">{section.name.split(' ')[0]}</span>
               </TabsTrigger>
             );
           })}
         </TabsList>
-        
+
         {prioritySections.map((section) => (
           <TabsContent key={section.id} value={section.id.toString()}>
             <Card>
-              <CardContent className="pt-6">
-                {renderSection(section)}
-              </CardContent>
+              <CardContent className="pt-6">{renderSection(section)}</CardContent>
             </Card>
           </TabsContent>
         ))}
@@ -316,7 +296,7 @@ export default function SectionContentRenderer({
         .map((section) => {
           const config = getSectionConfig(section.name);
           const IconComponent = config.icon;
-          
+
           return (
             <Card key={section.id}>
               <CardHeader>
@@ -330,9 +310,7 @@ export default function SectionContentRenderer({
                   )}
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                {renderSection(section)}
-              </CardContent>
+              <CardContent>{renderSection(section)}</CardContent>
             </Card>
           );
         })}
@@ -359,35 +337,33 @@ export default function SectionContentRenderer({
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-xl font-semibold">Content Sections</h2>
           <div className="flex items-center space-x-2">
-            <Badge variant="outline">
-              {sections.length} sections
-            </Badge>
+            <Badge variant="outline">{sections.length} sections</Badge>
             <Badge variant="secondary">
-              {sections.filter(s => s.isCompleted).length} completed
+              {sections.filter((s) => s.isCompleted).length} completed
             </Badge>
           </div>
         </div>
-        
+
         {/* Display mode selector */}
         <div className="flex items-center space-x-2 mb-4">
           <Button
             variant={displayMode === 'accordion' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => displayMode = 'accordion'}
+            onClick={() => (displayMode = 'accordion')}
           >
             Accordion
           </Button>
           <Button
             variant={displayMode === 'tabs' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => displayMode = 'tabs'}
+            onClick={() => (displayMode = 'tabs')}
           >
             Tabs
           </Button>
           <Button
             variant={displayMode === 'cards' ? 'default' : 'outline'}
             size="sm"
-            onClick={() => displayMode = 'cards'}
+            onClick={() => (displayMode = 'cards')}
           >
             Cards
           </Button>
@@ -399,4 +375,4 @@ export default function SectionContentRenderer({
       {displayMode === 'cards' && renderCardsMode()}
     </div>
   );
-} 
+}

@@ -12,9 +12,9 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   reporter: [
     ['html', { outputFolder: 'playwright-report/visual' }],
-    ['json', { outputFile: 'playwright-report/visual-results.json' }]
+    ['json', { outputFile: 'playwright-report/visual-results.json' }],
   ],
-  
+
   use: {
     baseURL: 'http://localhost:5173',
     trace: 'retain-on-failure',
@@ -41,23 +41,23 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium-desktop',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
     },
     {
       name: 'firefox-desktop',
-      use: { 
+      use: {
         ...devices['Desktop Firefox'],
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
     },
     {
       name: 'webkit-desktop',
-      use: { 
+      use: {
         ...devices['Desktop Safari'],
-        viewport: { width: 1920, height: 1080 }
+        viewport: { width: 1920, height: 1080 },
       },
     },
     {
@@ -70,9 +70,9 @@ export default defineConfig({
     },
     {
       name: 'tablet-chrome',
-      use: { 
+      use: {
         ...devices['Desktop Chrome'],
-        viewport: { width: 768, height: 1024 }
+        viewport: { width: 768, height: 1024 },
       },
     },
   ],

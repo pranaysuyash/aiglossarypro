@@ -92,17 +92,20 @@ export const withPerformanceTracking = <P extends object>(
       // Track component mount time
       mountTimeRef.current = performance.now();
       benchmark.current.startTiming('mount');
-      
+
       return () => {
         benchmark.current.endTiming('mount');
-        console.log(`${componentName} mount time:`, benchmark.current.getAllMeasurements().get('mount'));
+        console.log(
+          `${componentName} mount time:`,
+          benchmark.current.getAllMeasurements().get('mount')
+        );
       };
-    }, []);
+    }, [componentName]);
 
     React.useEffect(() => {
       // Track updates
       benchmark.current.startTiming('update');
-      
+
       return () => {
         const updateTime = benchmark.current.endTiming('update');
         if (updateTime > 0) {
@@ -120,26 +123,29 @@ export const benchmarkSearch = async (
   searchFunction: (query: string) => Promise<any[]> | any[],
   queries: string[],
   iterations: number = 5
-): Promise<{ averageTime: number; results: Array<{ query: string; time: number; resultCount: number }> }> => {
+): Promise<{
+  averageTime: number;
+  results: Array<{ query: string; time: number; resultCount: number }>;
+}> => {
   const results: Array<{ query: string; time: number; resultCount: number }> = [];
-  
+
   for (const query of queries) {
     const times: number[] = [];
     let lastResultCount = 0;
-    
+
     for (let i = 0; i < iterations; i++) {
       const startTime = performance.now();
       const searchResults = await searchFunction(query);
       const endTime = performance.now();
-      
+
       times.push(endTime - startTime);
       lastResultCount = Array.isArray(searchResults) ? searchResults.length : 0;
     }
-    
+
     const averageTime = times.reduce((sum, time) => sum + time, 0) / times.length;
     results.push({ query, time: averageTime, resultCount: lastResultCount });
   }
-  
+
   const overallAverage = results.reduce((sum, result) => sum + result.time, 0) / results.length;
   return { averageTime: overallAverage, results };
 };
@@ -150,14 +156,14 @@ export const benchmarkRender = (
   iterations: number = 10
 ): { averageTime: number; times: number[] } => {
   const times: number[] = [];
-  
+
   for (let i = 0; i < iterations; i++) {
     const startTime = performance.now();
     renderFunction();
     const endTime = performance.now();
     times.push(endTime - startTime);
   }
-  
+
   const averageTime = times.reduce((sum, time) => sum + time, 0) / times.length;
   return { averageTime, times };
 };
@@ -169,47 +175,48 @@ export const benchmarkScrolling = (
   duration: number = 2000
 ): Promise<{ frameRate: number; scrollJank: number }> => {
   return new Promise((resolve) => {
-    let frameCount = 0;
+    let _frameCount = 0;
     let lastTimestamp = 0;
-    let frameTimes: number[] = [];
+    const frameTimes: number[] = [];
     const startTime = performance.now();
-    
+
     const measureFrame = (timestamp: number) => {
       if (lastTimestamp > 0) {
         const frameTime = timestamp - lastTimestamp;
         frameTimes.push(frameTime);
-        frameCount++;
+        _frameCount++;
       }
       lastTimestamp = timestamp;
-      
+
       if (timestamp - startTime < duration) {
         requestAnimationFrame(measureFrame);
       } else {
-        const averageFrameTime = frameTimes.reduce((sum, time) => sum + time, 0) / frameTimes.length;
+        const averageFrameTime =
+          frameTimes.reduce((sum, time) => sum + time, 0) / frameTimes.length;
         const frameRate = 1000 / averageFrameTime;
-        const scrollJank = frameTimes.filter(time => time > 16.67).length / frameTimes.length;
-        
+        const scrollJank = frameTimes.filter((time) => time > 16.67).length / frameTimes.length;
+
         resolve({ frameRate, scrollJank });
       }
     };
-    
+
     // Start scrolling animation
     const startScroll = container.scrollTop;
     const endScroll = startScroll + scrollDistance;
     const scrollStart = performance.now();
-    
+
     const scroll = () => {
       const elapsed = performance.now() - scrollStart;
       const progress = Math.min(elapsed / duration, 1);
       const currentScroll = startScroll + (endScroll - startScroll) * progress;
-      
+
       container.scrollTop = currentScroll;
-      
+
       if (progress < 1) {
         requestAnimationFrame(scroll);
       }
     };
-    
+
     requestAnimationFrame(measureFrame);
     requestAnimationFrame(scroll);
   });
@@ -219,34 +226,39 @@ export const benchmarkScrolling = (
 export const detectMemoryLeaks = async (
   operation: () => Promise<void> | void,
   iterations: number = 50
-): Promise<{ initialMemory: number; finalMemory: number; memoryGrowth: number; leaked: boolean }> => {
+): Promise<{
+  initialMemory: number;
+  finalMemory: number;
+  memoryGrowth: number;
+  leaked: boolean;
+}> => {
   // Force garbage collection if available
   if (window.gc) {
     window.gc();
   }
-  
+
   const initialMemory = (performance as any).memory?.usedJSHeapSize || 0;
-  
+
   for (let i = 0; i < iterations; i++) {
     await operation();
-    
+
     // Periodic garbage collection
     if (i % 10 === 0 && window.gc) {
       window.gc();
     }
   }
-  
+
   // Final garbage collection
   if (window.gc) {
     window.gc();
   }
-  
-  await new Promise(resolve => setTimeout(resolve, 100)); // Allow GC to complete
-  
+
+  await new Promise((resolve) => setTimeout(resolve, 100)); // Allow GC to complete
+
   const finalMemory = (performance as any).memory?.usedJSHeapSize || 0;
   const memoryGrowth = finalMemory - initialMemory;
   const leaked = memoryGrowth > 1024 * 1024; // Consider >1MB growth as potential leak
-  
+
   return { initialMemory, finalMemory, memoryGrowth, leaked };
 };
 
@@ -263,15 +275,15 @@ export const runComprehensiveBenchmark = async (
 ): Promise<BenchmarkResult> => {
   const benchmark = new PerformanceBenchmark();
   const testName = `Navigation_${testData.sections?.length || 0}_sections`;
-  
+
   // Environment info
   const environment = {
     userAgent: navigator.userAgent,
     viewport: { width: window.innerWidth, height: window.innerHeight },
     deviceMemory: (navigator as any).deviceMemory,
-    hardwareConcurrency: navigator.hardwareConcurrency
+    hardwareConcurrency: navigator.hardwareConcurrency,
   };
-  
+
   // Dataset size analysis
   const countNodes = (sections: any[]): number => {
     return sections.reduce((count, section) => {
@@ -282,7 +294,7 @@ export const runComprehensiveBenchmark = async (
       return count + nodeCount;
     }, 0);
   };
-  
+
   const getMaxDepth = (sections: any[], currentDepth: number = 0): number => {
     return sections.reduce((maxDepth, section) => {
       const depth = currentDepth + 1;
@@ -292,34 +304,34 @@ export const runComprehensiveBenchmark = async (
       return Math.max(maxDepth, depth);
     }, 0);
   };
-  
+
   const datasetSize = {
     sections: testData.sections?.length || 0,
     totalNodes: countNodes(testData.sections || []),
-    maxDepth: getMaxDepth(testData.sections || [])
+    maxDepth: getMaxDepth(testData.sections || []),
   };
-  
+
   // Benchmark rendering
   benchmark.startTiming('render');
   operations.render();
   const renderTime = benchmark.endTiming('render');
-  
+
   // Benchmark search
   const searchQueries = ['test', 'machine', 'learning', 'algorithm'];
   const searchResults = await benchmarkSearch(operations.search, searchQueries, 3);
   const searchTime = searchResults.averageTime;
-  
+
   // Benchmark expand/collapse
   benchmark.startTiming('expand');
   operations.expand('test-node-1');
   const expandTime = benchmark.endTiming('expand');
-  
+
   benchmark.startTiming('collapse');
   operations.collapse('test-node-1');
   const collapseTime = benchmark.endTiming('collapse');
-  
+
   const expandCollapseTime = (expandTime + collapseTime) / 2;
-  
+
   // Benchmark scrolling
   const scrollContainer = component.querySelector('[role="tree"], .overflow-auto') as HTMLElement;
   let scrollPerformance = 0;
@@ -327,10 +339,10 @@ export const runComprehensiveBenchmark = async (
     const scrollResult = await benchmarkScrolling(scrollContainer);
     scrollPerformance = scrollResult.frameRate;
   }
-  
+
   // Memory usage
   const memoryUsage = benchmark.getMemoryDelta();
-  
+
   const metrics: PerformanceMetrics = {
     renderTime,
     memoryUsage,
@@ -339,37 +351,37 @@ export const runComprehensiveBenchmark = async (
     scrollPerformance,
     interactionLatency: expandCollapseTime, // Use expand/collapse as interaction latency proxy
     componentMountTime: renderTime,
-    updateTime: expandCollapseTime
+    updateTime: expandCollapseTime,
   };
-  
+
   return {
     testName,
     timestamp: Date.now(),
     metrics,
     datasetSize,
-    environment
+    environment,
   };
 };
 
 // Performance monitoring hook
-export const usePerformanceMonitoring = (componentName: string) => {
+export const usePerformanceMonitoring = (_componentName: string) => {
   const benchmark = React.useRef(new PerformanceBenchmark());
   const [metrics, setMetrics] = React.useState<Partial<PerformanceMetrics>>({});
-  
+
   const startOperation = React.useCallback((operation: string) => {
     benchmark.current.startTiming(operation);
   }, []);
-  
+
   const endOperation = React.useCallback((operation: string) => {
     const time = benchmark.current.endTiming(operation);
-    setMetrics(prev => ({ ...prev, [operation]: time }));
+    setMetrics((prev) => ({ ...prev, [operation]: time }));
     return time;
   }, []);
-  
+
   const getMemoryUsage = React.useCallback(() => {
     return benchmark.current.getMemoryDelta();
   }, []);
-  
+
   return {
     startOperation,
     endOperation,
@@ -378,7 +390,7 @@ export const usePerformanceMonitoring = (componentName: string) => {
     clearMetrics: () => {
       benchmark.current.clear();
       setMetrics({});
-    }
+    },
   };
 };
 
@@ -390,7 +402,7 @@ export const PerformanceUtils = {
   benchmarkRender,
   benchmarkScrolling,
   detectMemoryLeaks,
-  runComprehensiveBenchmark
+  runComprehensiveBenchmark,
 };
 
 export default PerformanceUtils;

@@ -1,4 +1,4 @@
-import { cn } from "@/lib/utils";
+import { cn } from '@/lib/utils';
 
 interface SkipLinksProps {
   className?: string;
@@ -6,7 +6,7 @@ interface SkipLinksProps {
 
 export function SkipLinks({ className }: SkipLinksProps) {
   return (
-    <nav className={cn("sr-only focus-within:not-sr-only", className)} aria-label="Skip navigation">
+    <nav className={cn('sr-only focus-within:not-sr-only', className)} aria-label="Skip navigation">
       <div className="fixed top-0 left-0 z-50 bg-primary text-primary-foreground p-4 rounded-br-md">
         <h2 className="sr-only">Skip Navigation Links</h2>
         <ul className="flex space-x-4">

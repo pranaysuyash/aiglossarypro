@@ -14,10 +14,10 @@ const AB_TEST_CONFIG = {
       code: 0.2,
       geometric: 0.2,
       default: 0.2,
-      fallback: 0.2
+      fallback: 0.2,
     },
-    status: 'running'
-  }
+    status: 'running',
+  },
 };
 
 // Schema for tracking events
@@ -28,7 +28,7 @@ const eventTrackingSchema = z.object({
   eventType: z.string(),
   eventData: z.record(z.any()).optional(),
   userAgent: z.string().optional(),
-  deviceType: z.string().optional()
+  deviceType: z.string().optional(),
 });
 
 // Get active A/B test configuration
@@ -36,23 +36,23 @@ router.get('/config/:testId', async (req, res) => {
   try {
     const { testId } = req.params;
     const config = AB_TEST_CONFIG[testId as keyof typeof AB_TEST_CONFIG];
-    
+
     if (!config) {
       return res.status(404).json({
         success: false,
-        message: 'Test not found'
+        message: 'Test not found',
       });
     }
 
     res.json({
       success: true,
-      data: config
+      data: config,
     });
   } catch (error) {
     console.error('Error fetching test config:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch test configuration'
+      message: 'Failed to fetch test configuration',
     });
   }
 });
@@ -61,30 +61,30 @@ router.get('/config/:testId', async (req, res) => {
 router.post('/track', async (req, res) => {
   try {
     const validatedData = eventTrackingSchema.parse(req.body);
-    
+
     // For now, just log the event
     console.log('A/B Test Event:', {
       timestamp: new Date().toISOString(),
-      ...validatedData
+      ...validatedData,
     });
 
     res.json({
       success: true,
-      message: 'Event tracked successfully'
+      message: 'Event tracked successfully',
     });
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
         message: 'Invalid event data',
-        errors: error.errors
+        errors: error.errors,
       });
     }
 
     console.error('Error tracking event:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to track event'
+      message: 'Failed to track event',
     });
   }
 });
@@ -94,11 +94,11 @@ router.get('/results/:testId', async (req, res) => {
   try {
     const { testId } = req.params;
     const config = AB_TEST_CONFIG[testId as keyof typeof AB_TEST_CONFIG];
-    
+
     if (!config) {
       return res.status(404).json({
         success: false,
-        message: 'Test not found'
+        message: 'Test not found',
       });
     }
 
@@ -106,23 +106,23 @@ router.get('/results/:testId', async (req, res) => {
     const mockResults = {
       testId,
       status: config.status,
-      variants: config.variants.map(variant => ({
+      variants: config.variants.map((variant) => ({
         variant,
         sessions: Math.floor(Math.random() * 1000) + 100,
         conversions: Math.floor(Math.random() * 50) + 10,
-        conversionRate: (Math.random() * 0.1 + 0.02).toFixed(3)
-      }))
+        conversionRate: (Math.random() * 0.1 + 0.02).toFixed(3),
+      })),
     };
 
     res.json({
       success: true,
-      data: mockResults
+      data: mockResults,
     });
   } catch (error) {
     console.error('Error fetching results:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to fetch test results'
+      message: 'Failed to fetch test results',
     });
   }
 });

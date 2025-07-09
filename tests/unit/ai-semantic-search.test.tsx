@@ -1,7 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { render, screen, waitFor } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AISemanticSearch } from '../../client/src/components/AISemanticSearch';
 import '@testing-library/jest-dom';
 
@@ -37,7 +37,7 @@ const createWrapper = () => {
       mutations: { retry: false },
     },
   });
-  
+
   return ({ children }: { children: React.ReactNode }) => (
     <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
   );
@@ -57,7 +57,7 @@ describe('AISemanticSearch', () => {
 
   it('renders search input correctly', () => {
     render(<AISemanticSearch />, { wrapper: createWrapper() });
-    
+
     expect(screen.getByPlaceholderText(/search/i)).toBeInTheDocument();
   });
 
@@ -69,10 +69,10 @@ describe('AISemanticSearch', () => {
 
     const user = userEvent.setup();
     render(<AISemanticSearch />, { wrapper: createWrapper() });
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
     await user.type(searchInput, 'neural networks');
-    
+
     // Wait for debounced search
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
@@ -96,10 +96,10 @@ describe('AISemanticSearch', () => {
 
     const user = userEvent.setup();
     render(<AISemanticSearch />, { wrapper: createWrapper() });
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
     await user.type(searchInput, 'neural');
-    
+
     await waitFor(() => {
       expect(screen.getByText('Neural Networks')).toBeInTheDocument();
       expect(screen.getByText(/computational models inspired/i)).toBeInTheDocument();
@@ -114,10 +114,10 @@ describe('AISemanticSearch', () => {
 
     const user = userEvent.setup();
     render(<AISemanticSearch showRelevanceScores={true} />, { wrapper: createWrapper() });
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
     await user.type(searchInput, 'neural');
-    
+
     await waitFor(() => {
       expect(screen.getByText(/95%/)).toBeInTheDocument();
       expect(screen.getByText(/87%/)).toBeInTheDocument();
@@ -132,10 +132,10 @@ describe('AISemanticSearch', () => {
 
     const user = userEvent.setup();
     render(<AISemanticSearch showSuggestions={true} />, { wrapper: createWrapper() });
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
     await user.type(searchInput, 'neural');
-    
+
     await waitFor(() => {
       expect(screen.getByText('deep learning')).toBeInTheDocument();
       expect(screen.getByText('artificial neural networks')).toBeInTheDocument();
@@ -150,10 +150,10 @@ describe('AISemanticSearch', () => {
 
     const user = userEvent.setup();
     render(<AISemanticSearch />, { wrapper: createWrapper() });
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
     await user.type(searchInput, 'nonexistent term');
-    
+
     await waitFor(() => {
       expect(screen.getByText(/no results found/i)).toBeInTheDocument();
     });
@@ -164,10 +164,10 @@ describe('AISemanticSearch', () => {
 
     const user = userEvent.setup();
     render(<AISemanticSearch />, { wrapper: createWrapper() });
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
     await user.type(searchInput, 'neural');
-    
+
     await waitFor(() => {
       expect(screen.getByText(/error occurred/i)).toBeInTheDocument();
     });
@@ -182,10 +182,10 @@ describe('AISemanticSearch', () => {
 
     const user = userEvent.setup();
     render(<AISemanticSearch onResultClick={mockOnResultClick} />, { wrapper: createWrapper() });
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
     await user.type(searchInput, 'neural');
-    
+
     await waitFor(() => {
       expect(screen.getByText('Neural Networks')).toBeInTheDocument();
     });
@@ -196,24 +196,29 @@ describe('AISemanticSearch', () => {
 
   it('shows loading state during search', async () => {
     // Simulate slow response
-    mockFetch.mockImplementationOnce(() => 
-      new Promise(resolve => 
-        setTimeout(() => resolve({
-          ok: true,
-          json: async () => mockSearchResults,
-        }), 100)
-      )
+    mockFetch.mockImplementationOnce(
+      () =>
+        new Promise((resolve) =>
+          setTimeout(
+            () =>
+              resolve({
+                ok: true,
+                json: async () => mockSearchResults,
+              }),
+            100
+          )
+        )
     );
 
     const user = userEvent.setup();
     render(<AISemanticSearch />, { wrapper: createWrapper() });
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
     await user.type(searchInput, 'neural');
-    
+
     // Should show loading state
     expect(screen.getByText(/searching/i)).toBeInTheDocument();
-    
+
     // Wait for results
     await waitFor(() => {
       expect(screen.getByText('Neural Networks')).toBeInTheDocument();
@@ -228,9 +233,9 @@ describe('AISemanticSearch', () => {
 
     const user = userEvent.setup();
     render(<AISemanticSearch debounceMs={300} />, { wrapper: createWrapper() });
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
-    
+
     // Type multiple characters quickly
     await user.type(searchInput, 'n');
     await user.type(searchInput, 'e');
@@ -238,20 +243,23 @@ describe('AISemanticSearch', () => {
     await user.type(searchInput, 'r');
     await user.type(searchInput, 'a');
     await user.type(searchInput, 'l');
-    
+
     // Should not call API for each character
     expect(mockFetch).not.toHaveBeenCalled();
-    
+
     // Wait for debounce
-    await waitFor(() => {
-      expect(mockFetch).toHaveBeenCalledTimes(1);
-    }, { timeout: 500 });
+    await waitFor(
+      () => {
+        expect(mockFetch).toHaveBeenCalledTimes(1);
+      },
+      { timeout: 500 }
+    );
   });
 
   it('filters results by category when specified', async () => {
     const filteredResults = {
       ...mockSearchResults,
-      results: mockSearchResults.results.filter(r => r.category === 'Deep Learning'),
+      results: mockSearchResults.results.filter((r) => r.category === 'Deep Learning'),
     };
 
     mockFetch.mockResolvedValueOnce({
@@ -261,10 +269,10 @@ describe('AISemanticSearch', () => {
 
     const user = userEvent.setup();
     render(<AISemanticSearch categoryFilter="Deep Learning" />, { wrapper: createWrapper() });
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
     await user.type(searchInput, 'neural');
-    
+
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
@@ -283,17 +291,17 @@ describe('AISemanticSearch', () => {
 
     const user = userEvent.setup();
     render(<AISemanticSearch showModeToggle={true} />, { wrapper: createWrapper() });
-    
+
     // Should have semantic mode toggle
     const semanticToggle = screen.getByRole('checkbox', { name: /semantic search/i });
     expect(semanticToggle).toBeInTheDocument();
-    
+
     // Toggle semantic mode
     await user.click(semanticToggle);
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
     await user.type(searchInput, 'neural');
-    
+
     await waitFor(() => {
       expect(mockFetch).toHaveBeenCalledWith(
         expect.any(String),
@@ -312,30 +320,34 @@ describe('AISemanticSearch', () => {
 
     const user = userEvent.setup();
     render(<AISemanticSearch enableKeyboardNavigation={true} />, { wrapper: createWrapper() });
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
     await user.type(searchInput, 'neural');
-    
+
     await waitFor(() => {
       expect(screen.getByText('Neural Networks')).toBeInTheDocument();
     });
 
     // Use arrow keys to navigate
     await user.keyboard('{ArrowDown}');
-    
+
     // First result should be highlighted
-    const firstResult = screen.getByText('Neural Networks').closest('[data-testid="search-result"]');
+    const firstResult = screen
+      .getByText('Neural Networks')
+      .closest('[data-testid="search-result"]');
     expect(firstResult).toHaveClass('highlighted');
-    
+
     // Navigate to second result
     await user.keyboard('{ArrowDown}');
-    
-    const secondResult = screen.getByText('Machine Learning').closest('[data-testid="search-result"]');
+
+    const secondResult = screen
+      .getByText('Machine Learning')
+      .closest('[data-testid="search-result"]');
     expect(secondResult).toHaveClass('highlighted');
-    
+
     // Press Enter to select
     await user.keyboard('{Enter}');
-    
+
     // Should trigger result click
     expect(mockFetch).toHaveBeenCalled();
   });
@@ -351,10 +363,10 @@ describe('AISemanticSearch', () => {
 
     const user = userEvent.setup();
     render(<AISemanticSearch enableAnalytics={true} />, { wrapper: createWrapper() });
-    
+
     const searchInput = screen.getByPlaceholderText(/search/i);
     await user.type(searchInput, 'neural networks');
-    
+
     await waitFor(() => {
       expect(mockAnalytics).toHaveBeenCalledWith('event', 'search', {
         search_term: 'neural networks',
@@ -362,5 +374,4 @@ describe('AISemanticSearch', () => {
       });
     });
   });
-
 });

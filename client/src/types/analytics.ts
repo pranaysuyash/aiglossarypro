@@ -28,7 +28,7 @@ export const trackEvent = (eventName: string, parameters?: AnalyticsEvent): void
   if (typeof window !== 'undefined' && window.gtag) {
     window.gtag('event', eventName, parameters);
   }
-  
+
   // Also track with GA4 for comprehensive coverage
   ga4Analytics.trackEngagement({
     event_name: eventName,
@@ -42,7 +42,7 @@ export const trackEvent = (eventName: string, parameters?: AnalyticsEvent): void
     item_category: parameters?.item_category,
     value: parameters?.value,
     currency: parameters?.currency,
-    custom_parameters: parameters
+    custom_parameters: parameters,
   });
 };
 
@@ -55,9 +55,9 @@ export const trackPurchaseIntent = (itemName: string, value?: number): void => {
     value: value || 249,
     currency: 'USD',
     item_name: itemName,
-    item_category: 'subscription'
+    item_category: 'subscription',
   });
-  
+
   // Enhanced GA4 conversion tracking
   ga4Analytics.trackConversion({
     event_name: 'purchase_intent',
@@ -68,29 +68,24 @@ export const trackPurchaseIntent = (itemName: string, value?: number): void => {
     item_name: itemName,
     item_category: 'subscription',
     event_category: 'conversion',
-    event_label: itemName
+    event_label: itemName,
   });
 };
 
 // Enhanced CTA click tracking with better categorization
 export const trackCTAClick = (ctaLocation: string, ctaText?: string): void => {
   const eventName = `${ctaLocation}_cta_click`;
-  
+
   // Legacy GA tracking
   trackEvent(eventName, {
     event_category: 'engagement',
     event_label: ctaText || 'CTA Click',
     item_name: 'AI/ML Glossary Pro',
-    item_category: 'subscription'
+    item_category: 'subscription',
   });
-  
+
   // Enhanced GA4 CTA tracking
-  ga4Analytics.trackCTAClick(
-    ctaText || 'CTA Click',
-    ctaLocation,
-    'landing_page',
-    1
-  );
+  ga4Analytics.trackCTAClick(ctaText || 'CTA Click', ctaLocation, 'landing_page', 1);
 };
 
 // New enhanced tracking functions using GA4
@@ -102,7 +97,10 @@ export const trackSectionView = (sectionName: string, position?: number): void =
   ga4Analytics.trackSectionView(sectionName, position);
 };
 
-export const trackFormSubmission = (formType: 'contact' | 'newsletter' | 'signup' | 'feedback', location: string): void => {
+export const trackFormSubmission = (
+  formType: 'contact' | 'newsletter' | 'signup' | 'feedback',
+  location: string
+): void => {
   ga4Analytics.trackFormSubmission(formType, location);
 };
 
@@ -114,7 +112,12 @@ export const trackABTestView = (testId: string, variant: string, testType: strin
   ga4Analytics.trackABTestView(testId, variant, testType);
 };
 
-export const trackPurchase = (transactionId: string, value: number, currency: string = 'USD', items: any[]): void => {
+export const trackPurchase = (
+  transactionId: string,
+  value: number,
+  currency: string = 'USD',
+  items: any[]
+): void => {
   ga4Analytics.trackPurchase(transactionId, value, currency, items);
 };
 
@@ -130,5 +133,3 @@ export const setUserId = (userId: string): void => {
 
 // Export GA4 hook for React components
 export { useGA4 };
-
-export {};

@@ -1,4 +1,4 @@
-import { X, Clock, DollarSign } from "lucide-react";
+import { Clock, DollarSign, X } from 'lucide-react';
 
 export function ValueProposition() {
   return (
@@ -21,29 +21,35 @@ export function ValueProposition() {
               <X className="w-6 h-6 mr-2" />
               The Problem
             </h3>
-            
+
             <div className="space-y-4">
               <div className="flex items-start gap-3 p-4 bg-red-50 rounded-lg border border-red-200">
                 <X className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 className="font-semibold text-red-900">Scattered Information</h4>
-                  <p className="text-red-700 text-sm">Searching through dozens of docs, papers, and websites</p>
+                  <p className="text-red-700 text-sm">
+                    Searching through dozens of docs, papers, and websites
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3 p-4 bg-red-50 rounded-lg border border-red-200">
                 <Clock className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 className="font-semibold text-red-900">Time Wasted</h4>
-                  <p className="text-red-700 text-sm">Hours spent looking for simple definitions and examples</p>
+                  <p className="text-red-700 text-sm">
+                    Hours spent looking for simple definitions and examples
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3 p-4 bg-red-50 rounded-lg border border-red-200">
                 <DollarSign className="w-5 h-5 text-red-500 mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 className="font-semibold text-red-900">Expensive Recurring Costs</h4>
-                  <p className="text-red-700 text-sm">$300-600/year for DataCamp, Coursera with incomplete AI/ML coverage</p>
+                  <p className="text-red-700 text-sm">
+                    $300-600/year for DataCamp, Coursera with incomplete AI/ML coverage
+                  </p>
                 </div>
               </div>
             </div>
@@ -54,7 +60,7 @@ export function ValueProposition() {
             <h3 className="text-2xl font-bold text-green-600 mb-6 flex items-center">
               ✅ The Solution
             </h3>
-            
+
             <div className="space-y-4">
               <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
                 <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
@@ -62,27 +68,33 @@ export function ValueProposition() {
                 </div>
                 <div>
                   <h4 className="font-semibold text-green-900">Everything in One Place</h4>
-                  <p className="text-green-700 text-sm">10,000+ terms with definitions, examples, and code</p>
+                  <p className="text-green-700 text-sm">
+                    10,000+ terms with definitions, examples, and code
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
                 <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                   <span className="text-white text-xs">✓</span>
                 </div>
                 <div>
                   <h4 className="font-semibold text-green-900">Instant Search</h4>
-                  <p className="text-green-700 text-sm">Find any concept in seconds with advanced filtering</p>
+                  <p className="text-green-700 text-sm">
+                    Find any concept in seconds with advanced filtering
+                  </p>
                 </div>
               </div>
-              
+
               <div className="flex items-start gap-3 p-4 bg-green-50 rounded-lg border border-green-200">
                 <div className="w-5 h-5 bg-green-500 rounded-full flex items-center justify-center mt-0.5 flex-shrink-0">
                   <span className="text-white text-xs">✓</span>
                 </div>
                 <div>
                   <h4 className="font-semibold text-green-900">Incredible Value</h4>
-                  <p className="text-green-700 text-sm">$179 early bird (reg. $249) vs $300-600/year subscriptions. Save $1000s</p>
+                  <p className="text-green-700 text-sm">
+                    $179 early bird (reg. $249) vs $300-600/year subscriptions. Save $1000s
+                  </p>
                 </div>
               </div>
             </div>

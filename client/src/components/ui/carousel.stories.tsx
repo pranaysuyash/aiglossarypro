@@ -1,5 +1,6 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import React from 'react';
+import { Card, CardContent } from './card';
 import {
   Carousel,
   CarouselContent,
@@ -7,7 +8,6 @@ import {
   CarouselNext,
   CarouselPrevious,
 } from './carousel';
-import { Card, CardContent } from './card';
 
 const meta: Meta<typeof Carousel> = {
   title: 'UI/Carousel',
@@ -58,29 +58,33 @@ export const AIGlossaryTerms: Story = {
   render: () => {
     const terms = [
       {
-        title: "Machine Learning",
-        description: "A subset of AI that enables computers to learn from experience without explicit programming.",
-        icon: "🤖"
+        title: 'Machine Learning',
+        description:
+          'A subset of AI that enables computers to learn from experience without explicit programming.',
+        icon: '🤖',
       },
       {
-        title: "Deep Learning",
-        description: "Neural networks with multiple layers that can model complex patterns in data.",
-        icon: "🧠"
+        title: 'Deep Learning',
+        description:
+          'Neural networks with multiple layers that can model complex patterns in data.',
+        icon: '🧠',
       },
       {
-        title: "Natural Language Processing",
-        description: "AI that helps computers understand and interpret human language.",
-        icon: "💬"
+        title: 'Natural Language Processing',
+        description: 'AI that helps computers understand and interpret human language.',
+        icon: '💬',
       },
       {
-        title: "Computer Vision",
-        description: "AI technology that enables machines to interpret and make decisions based on visual data.",
-        icon: "👁️"
+        title: 'Computer Vision',
+        description:
+          'AI technology that enables machines to interpret and make decisions based on visual data.',
+        icon: '👁️',
       },
       {
-        title: "Reinforcement Learning",
-        description: "ML technique where agents learn through trial and error with rewards and penalties.",
-        icon: "🎯"
+        title: 'Reinforcement Learning',
+        description:
+          'ML technique where agents learn through trial and error with rewards and penalties.',
+        icon: '🎯',
       },
     ];
 
@@ -117,7 +121,7 @@ export const MultipleItems: Story = {
     <div className="w-full max-w-sm">
       <Carousel
         opts={{
-          align: "start",
+          align: 'start',
         }}
         className="w-full max-w-sm"
       >
@@ -146,7 +150,7 @@ export const ThreeItems: Story = {
     <div className="w-full max-w-lg">
       <Carousel
         opts={{
-          align: "start",
+          align: 'start',
         }}
         className="w-full max-w-lg"
       >
@@ -173,10 +177,7 @@ export const ThreeItems: Story = {
 export const VerticalOrientation: Story = {
   render: () => (
     <div className="h-80">
-      <Carousel
-        orientation="vertical"
-        className="w-full max-w-xs mx-auto"
-      >
+      <Carousel orientation="vertical" className="w-full max-w-xs mx-auto">
         <CarouselContent className="-mt-1 h-[320px]">
           {Array.from({ length: 5 }, (_, index) => (
             <CarouselItem key={index} className="pt-1 md:basis-1/3">
@@ -201,28 +202,28 @@ export const ImageCarousel: Story = {
   render: () => {
     const images = [
       {
-        src: "https://picsum.photos/400/200?random=1",
-        alt: "AI Research Lab",
-        title: "AI Research Lab",
-        description: "State-of-the-art machine learning research facility"
+        src: 'https://picsum.photos/400/200?random=1',
+        alt: 'AI Research Lab',
+        title: 'AI Research Lab',
+        description: 'State-of-the-art machine learning research facility',
       },
       {
-        src: "https://picsum.photos/400/200?random=2",
-        alt: "Neural Network Visualization",
-        title: "Neural Networks",
-        description: "Visual representation of deep learning architectures"
+        src: 'https://picsum.photos/400/200?random=2',
+        alt: 'Neural Network Visualization',
+        title: 'Neural Networks',
+        description: 'Visual representation of deep learning architectures',
       },
       {
-        src: "https://picsum.photos/400/200?random=3",
-        alt: "Data Center",
-        title: "Data Processing",
-        description: "High-performance computing infrastructure for AI"
+        src: 'https://picsum.photos/400/200?random=3',
+        alt: 'Data Center',
+        title: 'Data Processing',
+        description: 'High-performance computing infrastructure for AI',
       },
       {
-        src: "https://picsum.photos/400/200?random=4",
-        alt: "Robot Assembly",
-        title: "Robotics",
-        description: "AI-powered robotic systems in manufacturing"
+        src: 'https://picsum.photos/400/200?random=4',
+        alt: 'Robot Assembly',
+        title: 'Robotics',
+        description: 'AI-powered robotic systems in manufacturing',
       },
     ];
 
@@ -264,22 +265,22 @@ export const AutoPlay: Story = {
   render: () => {
     const featuredContent = [
       {
-        title: "Featured Article",
-        subtitle: "Understanding Transformers",
-        content: "Deep dive into the architecture that revolutionized NLP",
-        badge: "New"
+        title: 'Featured Article',
+        subtitle: 'Understanding Transformers',
+        content: 'Deep dive into the architecture that revolutionized NLP',
+        badge: 'New',
       },
       {
-        title: "Weekly Spotlight",
-        subtitle: "Computer Vision Advances",
-        content: "Latest breakthroughs in image recognition and processing",
-        badge: "Trending"
+        title: 'Weekly Spotlight',
+        subtitle: 'Computer Vision Advances',
+        content: 'Latest breakthroughs in image recognition and processing',
+        badge: 'Trending',
       },
       {
-        title: "Expert Interview",
-        subtitle: "AI Ethics Discussion",
-        content: "Insights from leading researchers on responsible AI development",
-        badge: "Featured"
+        title: 'Expert Interview',
+        subtitle: 'AI Ethics Discussion',
+        content: 'Insights from leading researchers on responsible AI development',
+        badge: 'Featured',
       },
     ];
 
@@ -287,7 +288,7 @@ export const AutoPlay: Story = {
       <div className="w-full max-w-lg">
         <Carousel
           opts={{
-            align: "start",
+            align: 'start',
             loop: true,
           }}
         >
@@ -328,22 +329,25 @@ export const TestimonialCarousel: Story = {
   render: () => {
     const testimonials = [
       {
-        quote: "This AI glossary has been invaluable for my machine learning studies. The definitions are clear and comprehensive.",
-        author: "Sarah Chen",
-        role: "ML Engineer",
-        avatar: "👩‍💻"
+        quote:
+          'This AI glossary has been invaluable for my machine learning studies. The definitions are clear and comprehensive.',
+        author: 'Sarah Chen',
+        role: 'ML Engineer',
+        avatar: '👩‍💻',
       },
       {
-        quote: "As a beginner in AI, I appreciate how complex concepts are explained in an accessible way.",
-        author: "Michael Rodriguez",
-        role: "CS Student",
-        avatar: "👨‍🎓"
+        quote:
+          'As a beginner in AI, I appreciate how complex concepts are explained in an accessible way.',
+        author: 'Michael Rodriguez',
+        role: 'CS Student',
+        avatar: '👨‍🎓',
       },
       {
-        quote: "The examples and use cases help me understand how these concepts apply in real-world scenarios.",
-        author: "Dr. Emily Watson",
-        role: "AI Researcher",
-        avatar: "👩‍🔬"
+        quote:
+          'The examples and use cases help me understand how these concepts apply in real-world scenarios.',
+        author: 'Dr. Emily Watson',
+        role: 'AI Researcher',
+        avatar: '👩‍🔬',
       },
     ];
 
@@ -384,10 +388,10 @@ export const WithIndicators: Story = {
   render: () => {
     const [current, setCurrent] = React.useState(0);
     const slides = [
-      { title: "Slide 1", color: "bg-red-100" },
-      { title: "Slide 2", color: "bg-blue-100" },
-      { title: "Slide 3", color: "bg-green-100" },
-      { title: "Slide 4", color: "bg-yellow-100" },
+      { title: 'Slide 1', color: 'bg-red-100' },
+      { title: 'Slide 2', color: 'bg-blue-100' },
+      { title: 'Slide 3', color: 'bg-green-100' },
+      { title: 'Slide 4', color: 'bg-yellow-100' },
     ];
 
     return (
@@ -406,7 +410,9 @@ export const WithIndicators: Story = {
               <CarouselItem key={index}>
                 <div className="p-1">
                   <Card>
-                    <CardContent className={`flex aspect-square items-center justify-center p-6 ${slide.color}`}>
+                    <CardContent
+                      className={`flex aspect-square items-center justify-center p-6 ${slide.color}`}
+                    >
                       <span className="text-2xl font-semibold">{slide.title}</span>
                     </CardContent>
                   </Card>

@@ -1,6 +1,10 @@
-import React, { useState, useRef, useEffect } from "react";
-import { cn } from "@/lib/utils";
-import { imageOptimizationService, ImageOptimizationService } from "@/services/imageOptimizationService";
+import type React from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { cn } from '@/lib/utils';
+import {
+  ImageOptimizationService,
+  imageOptimizationService,
+} from '@/services/imageOptimizationService';
 
 interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> {
   src: string;
@@ -40,7 +44,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
   const [hasError, setHasError] = useState(false);
   const [isInView, setIsInView] = useState(!lazy || priority);
   const imgRef = useRef<HTMLImageElement>(null);
-  const [currentSrc, setCurrentSrc] = useState<string>("");
+  const [currentSrc, setCurrentSrc] = useState<string>('');
 
   // Intersection Observer for lazy loading
   useEffect(() => {
@@ -54,7 +58,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
         }
       },
       {
-        rootMargin: "50px 0px", // Start loading 50px before entering viewport
+        rootMargin: '50px 0px', // Start loading 50px before entering viewport
         threshold: 0.01,
       }
     );
@@ -68,8 +72,8 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Generate optimized source URLs using the optimization service
   const generateOptimizedSrc = (originalSrc: string, format?: string) => {
-    if (!originalSrc) return "";
-    
+    if (!originalSrc) return '';
+
     const params = {
       width,
       height,
@@ -77,13 +81,13 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       format: format as 'webp' | 'avif' | 'jpeg' | 'png' | undefined,
       blur: blur ? 5 : undefined,
     };
-    
+
     return imageOptimizationService.generateOptimizedUrl(originalSrc, params);
   };
 
   // Use the optimization service's format detection
   const [optimalFormat, setOptimalFormat] = useState<'avif' | 'webp' | 'jpeg'>('jpeg');
-  
+
   useEffect(() => {
     ImageOptimizationService.getOptimalFormat().then(setOptimalFormat);
   }, []);
@@ -94,7 +98,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
     const optimizedSrc = generateOptimizedSrc(src, optimalFormat);
     setCurrentSrc(optimizedSrc);
-  }, [src, isInView, optimalFormat, width, height, quality, blur]);
+  }, [src, isInView, optimalFormat, generateOptimizedSrc]);
 
   const handleLoad = () => {
     setIsLoaded(true);
@@ -103,36 +107,34 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   const handleError = () => {
     setHasError(true);
-    
+
     // Try fallback image if provided
     if (fallback && currentSrc !== fallback) {
       setCurrentSrc(fallback);
       setHasError(false);
       return;
     }
-    
+
     // Try original source if we were using an optimized version
     if (currentSrc !== src) {
       setCurrentSrc(src);
       setHasError(false);
       return;
     }
-    
+
     onError?.();
   };
 
   // Generate placeholder dimensions
   const aspectRatio = width && height ? height / width : undefined;
-  const placeholderStyle = aspectRatio
-    ? { aspectRatio: `${width} / ${height}` }
-    : undefined;
+  const placeholderStyle = aspectRatio ? { aspectRatio: `${width} / ${height}` } : undefined;
 
   return (
     <div
       ref={imgRef}
       className={cn(
-        "relative overflow-hidden",
-        !isLoaded && blur && "animate-pulse bg-gray-200 dark:bg-gray-800",
+        'relative overflow-hidden',
+        !isLoaded && blur && 'animate-pulse bg-gray-200 dark:bg-gray-800',
         className
       )}
       style={placeholderStyle}
@@ -149,31 +151,25 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
       {isInView && (
         <picture>
           {/* AVIF source */}
-          <source
-            srcSet={generateOptimizedSrc(src, 'avif')}
-            type="image/avif"
-          />
-          
+          <source srcSet={generateOptimizedSrc(src, 'avif')} type="image/avif" />
+
           {/* WebP source */}
-          <source
-            srcSet={generateOptimizedSrc(src, 'webp')}
-            type="image/webp"
-          />
-          
+          <source srcSet={generateOptimizedSrc(src, 'webp')} type="image/webp" />
+
           {/* Fallback image */}
           <img
             src={currentSrc || src}
             alt={alt}
             width={width}
             height={height}
-            loading={lazy && !priority ? "lazy" : "eager"}
+            loading={lazy && !priority ? 'lazy' : 'eager'}
             decoding="async"
             onLoad={handleLoad}
             onError={handleError}
             className={cn(
-              "transition-opacity duration-300",
-              isLoaded ? "opacity-100" : "opacity-0",
-              hasError && "hidden"
+              'transition-opacity duration-300',
+              isLoaded ? 'opacity-100' : 'opacity-0',
+              hasError && 'hidden'
             )}
             {...props}
           />
@@ -221,7 +217,11 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 /**
  * Hook to preload critical images using the optimization service
  */
-export const useImagePreload = (src: string, priority = false, params?: { width?: number; height?: number; quality?: number }) => {
+export const useImagePreload = (
+  src: string,
+  priority = false,
+  params?: { width?: number; height?: number; quality?: number }
+) => {
   useEffect(() => {
     if (!priority || !src) return;
 
@@ -231,13 +231,13 @@ export const useImagePreload = (src: string, priority = false, params?: { width?
         const optimalFormat = await ImageOptimizationService.getOptimalFormat();
         await imageOptimizationService.preloadImage(src, {
           format: optimalFormat,
-          ...params
+          ...params,
         });
       } catch (error) {
         console.warn('Failed to preload image:', src, error);
       }
     };
-    
+
     preloadImage();
   }, [src, priority, params]);
 };

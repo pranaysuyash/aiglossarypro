@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 interface CountryPricing {
   basePrice: number;
@@ -63,24 +63,26 @@ export function useCountryPricing() {
         const response = await fetch('https://api.ipdata.co/v1/current?api-key=test', {
           mode: 'cors',
           headers: {
-            'Accept': 'application/json',
-          }
+            Accept: 'application/json',
+          },
         }).catch(() => null);
-        
+
         if (!response || !response.ok) {
           // Fallback to default US pricing
-          setPricing(prev => ({ ...prev, loading: false }));
+          setPricing((prev) => ({ ...prev, loading: false }));
           return;
         }
-        
+
         const data = await response.json();
-        
+
         const countryPricing = calculatePPPPricing(data.country_code, data.country_name);
         setPricing({
           ...countryPricing,
           loading: false,
           launchPricing: {
-            isActive: LAUNCH_PRICING_CONFIG.isActive && LAUNCH_PRICING_CONFIG.claimedSlots < LAUNCH_PRICING_CONFIG.totalSlots,
+            isActive:
+              LAUNCH_PRICING_CONFIG.isActive &&
+              LAUNCH_PRICING_CONFIG.claimedSlots < LAUNCH_PRICING_CONFIG.totalSlots,
             launchPrice: LAUNCH_PRICING_CONFIG.launchPrice,
             originalPrice: LAUNCH_PRICING_CONFIG.originalPrice,
             savingsAmount: LAUNCH_PRICING_CONFIG.savingsAmount,
@@ -91,11 +93,13 @@ export function useCountryPricing() {
         });
       } catch (error) {
         console.error('Country detection failed:', error);
-        setPricing(prev => ({ 
-          ...prev, 
+        setPricing((prev) => ({
+          ...prev,
           loading: false,
           launchPricing: {
-            isActive: LAUNCH_PRICING_CONFIG.isActive && LAUNCH_PRICING_CONFIG.claimedSlots < LAUNCH_PRICING_CONFIG.totalSlots,
+            isActive:
+              LAUNCH_PRICING_CONFIG.isActive &&
+              LAUNCH_PRICING_CONFIG.claimedSlots < LAUNCH_PRICING_CONFIG.totalSlots,
             launchPrice: LAUNCH_PRICING_CONFIG.launchPrice,
             originalPrice: LAUNCH_PRICING_CONFIG.originalPrice,
             savingsAmount: LAUNCH_PRICING_CONFIG.savingsAmount,
@@ -113,12 +117,17 @@ export function useCountryPricing() {
   return pricing;
 }
 
-function calculatePPPPricing(countryCode: string, countryName: string): Omit<CountryPricing, 'loading'> {
+function calculatePPPPricing(
+  countryCode: string,
+  countryName: string
+): Omit<CountryPricing, 'loading'> {
   const basePrice = 249;
-  
+
   // Calculate launch pricing
   const launchPricing = {
-    isActive: LAUNCH_PRICING_CONFIG.isActive && LAUNCH_PRICING_CONFIG.claimedSlots < LAUNCH_PRICING_CONFIG.totalSlots,
+    isActive:
+      LAUNCH_PRICING_CONFIG.isActive &&
+      LAUNCH_PRICING_CONFIG.claimedSlots < LAUNCH_PRICING_CONFIG.totalSlots,
     launchPrice: LAUNCH_PRICING_CONFIG.launchPrice,
     originalPrice: LAUNCH_PRICING_CONFIG.originalPrice,
     savingsAmount: LAUNCH_PRICING_CONFIG.savingsAmount,
@@ -126,173 +135,176 @@ function calculatePPPPricing(countryCode: string, countryName: string): Omit<Cou
     totalSlots: LAUNCH_PRICING_CONFIG.totalSlots,
     showCounter: LAUNCH_PRICING_CONFIG.showCounter,
   };
-  
+
   // Enhanced PPP data with competitor analysis
-  const pppData: Record<string, { 
-    discount: number; 
-    flag: string; 
-    currency: string;
-    annualSavings: number;
-    localCompetitor: string;
-  }> = {
-    'IN': { 
-      discount: 60, 
-      flag: '🇮🇳', 
+  const pppData: Record<
+    string,
+    {
+      discount: number;
+      flag: string;
+      currency: string;
+      annualSavings: number;
+      localCompetitor: string;
+    }
+  > = {
+    IN: {
+      discount: 60,
+      flag: '🇮🇳',
       currency: 'USD',
       annualSavings: 400, // vs ₹25,000/year courses
-      localCompetitor: 'DataCamp India'
+      localCompetitor: 'DataCamp India',
     },
-    'BR': { 
-      discount: 55, 
-      flag: '🇧🇷', 
+    BR: {
+      discount: 55,
+      flag: '🇧🇷',
       currency: 'USD',
       annualSavings: 350,
-      localCompetitor: 'Coursera Brazil'
+      localCompetitor: 'Coursera Brazil',
     },
-    'MX': { 
-      discount: 50, 
-      flag: '🇲🇽', 
+    MX: {
+      discount: 50,
+      flag: '🇲🇽',
       currency: 'USD',
       annualSavings: 300,
-      localCompetitor: 'Platzi'
+      localCompetitor: 'Platzi',
     },
-    'AR': { 
-      discount: 65, 
-      flag: '🇦🇷', 
+    AR: {
+      discount: 65,
+      flag: '🇦🇷',
       currency: 'USD',
       annualSavings: 250,
-      localCompetitor: 'Coursera Argentina'
+      localCompetitor: 'Coursera Argentina',
     },
-    'TR': { 
-      discount: 45, 
-      flag: '🇹🇷', 
+    TR: {
+      discount: 45,
+      flag: '🇹🇷',
       currency: 'USD',
       annualSavings: 200,
-      localCompetitor: 'Udemy Turkey'
+      localCompetitor: 'Udemy Turkey',
     },
-    'PH': { 
-      discount: 60, 
-      flag: '🇵🇭', 
+    PH: {
+      discount: 60,
+      flag: '🇵🇭',
       currency: 'USD',
       annualSavings: 300,
-      localCompetitor: 'DataCamp Philippines'
+      localCompetitor: 'DataCamp Philippines',
     },
-    'VN': { 
-      discount: 65, 
-      flag: '🇻🇳', 
+    VN: {
+      discount: 65,
+      flag: '🇻🇳',
       currency: 'USD',
       annualSavings: 250,
-      localCompetitor: 'Coursera Vietnam'
+      localCompetitor: 'Coursera Vietnam',
     },
-    'TH': { 
-      discount: 50, 
-      flag: '🇹🇭', 
+    TH: {
+      discount: 50,
+      flag: '🇹🇭',
       currency: 'USD',
       annualSavings: 275,
-      localCompetitor: 'DataCamp Thailand'
+      localCompetitor: 'DataCamp Thailand',
     },
-    'ID': { 
-      discount: 60, 
-      flag: '🇮🇩', 
+    ID: {
+      discount: 60,
+      flag: '🇮🇩',
       currency: 'USD',
       annualSavings: 300,
-      localCompetitor: 'Coursera Indonesia'
+      localCompetitor: 'Coursera Indonesia',
     },
-    'MY': { 
-      discount: 45, 
-      flag: '🇲🇾', 
+    MY: {
+      discount: 45,
+      flag: '🇲🇾',
       currency: 'USD',
       annualSavings: 200,
-      localCompetitor: 'DataCamp Malaysia'
+      localCompetitor: 'DataCamp Malaysia',
     },
-    'PK': { 
-      discount: 65, 
-      flag: '🇵🇰', 
+    PK: {
+      discount: 65,
+      flag: '🇵🇰',
       currency: 'USD',
       annualSavings: 350,
-      localCompetitor: 'Local AI courses'
+      localCompetitor: 'Local AI courses',
     },
-    'BD': { 
-      discount: 70, 
-      flag: '🇧🇩', 
+    BD: {
+      discount: 70,
+      flag: '🇧🇩',
       currency: 'USD',
       annualSavings: 400,
-      localCompetitor: 'Local tech courses'
+      localCompetitor: 'Local tech courses',
     },
-    'EG': { 
-      discount: 60, 
-      flag: '🇪🇬', 
+    EG: {
+      discount: 60,
+      flag: '🇪🇬',
       currency: 'USD',
       annualSavings: 300,
-      localCompetitor: 'Coursera Egypt'
+      localCompetitor: 'Coursera Egypt',
     },
-    'NG': { 
-      discount: 65, 
-      flag: '🇳🇬', 
+    NG: {
+      discount: 65,
+      flag: '🇳🇬',
       currency: 'USD',
       annualSavings: 350,
-      localCompetitor: 'Local AI bootcamps'
+      localCompetitor: 'Local AI bootcamps',
     },
-    'KE': { 
-      discount: 60, 
-      flag: '🇰🇪', 
+    KE: {
+      discount: 60,
+      flag: '🇰🇪',
       currency: 'USD',
       annualSavings: 300,
-      localCompetitor: 'DataCamp Kenya'
+      localCompetitor: 'DataCamp Kenya',
     },
-    'UA': { 
-      discount: 55, 
-      flag: '🇺🇦', 
+    UA: {
+      discount: 55,
+      flag: '🇺🇦',
       currency: 'USD',
       annualSavings: 250,
-      localCompetitor: 'Coursera Ukraine'
+      localCompetitor: 'Coursera Ukraine',
     },
-    'RO': { 
-      discount: 40, 
-      flag: '🇷🇴', 
+    RO: {
+      discount: 40,
+      flag: '🇷🇴',
       currency: 'USD',
       annualSavings: 200,
-      localCompetitor: 'European platforms'
+      localCompetitor: 'European platforms',
     },
-    'PL': { 
-      discount: 35, 
-      flag: '🇵🇱', 
+    PL: {
+      discount: 35,
+      flag: '🇵🇱',
       currency: 'USD',
       annualSavings: 200,
-      localCompetitor: 'European platforms'
+      localCompetitor: 'European platforms',
     },
-    'CZ': { 
-      discount: 35, 
-      flag: '🇨🇿', 
+    CZ: {
+      discount: 35,
+      flag: '🇨🇿',
       currency: 'USD',
       annualSavings: 200,
-      localCompetitor: 'European platforms'
+      localCompetitor: 'European platforms',
     },
-    'BG': { 
-      discount: 45, 
-      flag: '🇧🇬', 
+    BG: {
+      discount: 45,
+      flag: '🇧🇬',
       currency: 'USD',
       annualSavings: 180,
-      localCompetitor: 'European platforms'
+      localCompetitor: 'European platforms',
     },
-    'RS': { 
-      discount: 50, 
-      flag: '🇷🇸', 
+    RS: {
+      discount: 50,
+      flag: '🇷🇸',
       currency: 'USD',
       annualSavings: 150,
-      localCompetitor: 'Regional platforms'
+      localCompetitor: 'Regional platforms',
     },
-    'HR': { 
-      discount: 35, 
-      flag: '🇭🇷', 
+    HR: {
+      discount: 35,
+      flag: '🇭🇷',
       currency: 'USD',
       annualSavings: 180,
-      localCompetitor: 'European platforms'
+      localCompetitor: 'European platforms',
     },
   };
 
   const countryInfo = pppData[countryCode];
-  
+
   if (countryInfo) {
     const localPrice = Math.round(basePrice * (1 - countryInfo.discount / 100));
     return {
@@ -326,10 +338,26 @@ function calculatePPPPricing(countryCode: string, countryName: string): Omit<Cou
 
 function getCountryFlag(countryCode: string): string {
   const flags: Record<string, string> = {
-    'US': '🇺🇸', 'CA': '🇨🇦', 'GB': '🇬🇧', 'AU': '🇦🇺', 'DE': '🇩🇪', 
-    'FR': '🇫🇷', 'IT': '🇮🇹', 'ES': '🇪🇸', 'NL': '🇳🇱', 'SE': '🇸🇪',
-    'NO': '🇳🇴', 'DK': '🇩🇰', 'FI': '🇫🇮', 'CH': '🇨🇭', 'AT': '🇦🇹',
-    'IE': '🇮🇪', 'JP': '🇯🇵', 'KR': '🇰🇷', 'SG': '🇸🇬', 'NZ': '🇳🇿',
+    US: '🇺🇸',
+    CA: '🇨🇦',
+    GB: '🇬🇧',
+    AU: '🇦🇺',
+    DE: '🇩🇪',
+    FR: '🇫🇷',
+    IT: '🇮🇹',
+    ES: '🇪🇸',
+    NL: '🇳🇱',
+    SE: '🇸🇪',
+    NO: '🇳🇴',
+    DK: '🇩🇰',
+    FI: '🇫🇮',
+    CH: '🇨🇭',
+    AT: '🇦🇹',
+    IE: '🇮🇪',
+    JP: '🇯🇵',
+    KR: '🇰🇷',
+    SG: '🇸🇬',
+    NZ: '🇳🇿',
   };
   return flags[countryCode] || '🌍';
 }

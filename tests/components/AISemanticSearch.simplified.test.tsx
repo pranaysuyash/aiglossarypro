@@ -2,7 +2,7 @@
  * Simplified AI Semantic Search Component Tests
  */
 
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Mock fetch for API calls
 global.fetch = vi.fn();
@@ -26,8 +26,8 @@ describe('AISemanticSearch Core Logic', () => {
           semanticSimilarity: 0.9,
           conceptRelationships: ['Deep Learning', 'Machine Learning'],
           createdAt: new Date(),
-          updatedAt: new Date()
-        }
+          updatedAt: new Date(),
+        },
       ],
       total: 1,
       page: 1,
@@ -37,19 +37,20 @@ describe('AISemanticSearch Core Logic', () => {
       query: 'neural',
       hasMore: false,
       strategy: 'fts',
-      isGeneric: false
+      isGeneric: false,
     };
 
     (global.fetch as any).mockResolvedValueOnce({
       ok: true,
-      json: () => Promise.resolve({
-        success: true,
-        data: {
-          ...mockResults,
-          searchType: 'adaptive',
-          aiEnhanced: true
-        }
-      })
+      json: () =>
+        Promise.resolve({
+          success: true,
+          data: {
+            ...mockResults,
+            searchType: 'adaptive',
+            aiEnhanced: true,
+          },
+        }),
     });
 
     const response = await fetch('/api/adaptive-search?query=neural');
@@ -90,9 +91,13 @@ describe('AISemanticSearch Core Logic', () => {
   it('should calculate semantic similarity correctly', () => {
     // Test semantic similarity calculation logic
     const calculateSemanticSimilarity = (relevanceScore: number) => {
-      return relevanceScore > 50 ? 0.9 : 
-             relevanceScore > 25 ? 0.7 :
-             relevanceScore > 10 ? 0.5 : 0.3;
+      return relevanceScore > 50
+        ? 0.9
+        : relevanceScore > 25
+          ? 0.7
+          : relevanceScore > 10
+            ? 0.5
+            : 0.3;
     };
 
     expect(calculateSemanticSimilarity(95)).toBe(0.9);
@@ -107,12 +112,16 @@ describe('AISemanticSearch Core Logic', () => {
       const relationships: Record<string, string[]> = {
         'Deep Learning': ['Neural Networks', 'Machine Learning', 'AI'],
         'Natural Language Processing': ['Text Processing', 'Language Models', 'AI'],
-        'Computer Vision': ['Image Processing', 'Pattern Recognition', 'AI']
+        'Computer Vision': ['Image Processing', 'Pattern Recognition', 'AI'],
       };
       return relationships[category] || ['AI', 'Machine Learning'];
     };
 
-    expect(generateConceptRelationships('Deep Learning')).toEqual(['Neural Networks', 'Machine Learning', 'AI']);
+    expect(generateConceptRelationships('Deep Learning')).toEqual([
+      'Neural Networks',
+      'Machine Learning',
+      'AI',
+    ]);
     expect(generateConceptRelationships('Unknown Category')).toEqual(['AI', 'Machine Learning']);
   });
 });

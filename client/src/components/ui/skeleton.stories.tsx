@@ -8,7 +8,8 @@ const meta: Meta<typeof Skeleton> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A skeleton loader component used to show loading states with animated placeholders.',
+        component:
+          'A skeleton loader component used to show loading states with animated placeholders.',
       },
     },
   },
@@ -157,7 +158,7 @@ export const TableSkeleton: Story = {
         <Skeleton className="h-4 w-1/4" />
         <Skeleton className="h-4 w-1/4" />
       </div>
-      
+
       {/* Rows */}
       {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} className="flex space-x-4">
@@ -185,17 +186,17 @@ export const FormSkeleton: Story = {
         <Skeleton className="h-4 w-20" />
         <Skeleton className="h-10 w-full" />
       </div>
-      
+
       <div className="space-y-2">
         <Skeleton className="h-4 w-24" />
         <Skeleton className="h-10 w-full" />
       </div>
-      
+
       <div className="space-y-2">
         <Skeleton className="h-4 w-32" />
         <Skeleton className="h-24 w-full" />
       </div>
-      
+
       <div className="flex space-x-2">
         <Skeleton className="h-10 w-20" />
         <Skeleton className="h-10 w-16" />
@@ -219,7 +220,7 @@ export const DashboardSkeleton: Story = {
         <Skeleton className="h-8 w-48" />
         <Skeleton className="h-10 w-24" />
       </div>
-      
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         {Array.from({ length: 3 }).map((_, i) => (
@@ -230,13 +231,13 @@ export const DashboardSkeleton: Story = {
           </div>
         ))}
       </div>
-      
+
       {/* Chart */}
       <div className="border rounded-lg p-4">
         <Skeleton className="h-4 w-32 mb-4" />
         <Skeleton className="h-64 w-full" />
       </div>
-      
+
       {/* Table */}
       <div className="border rounded-lg p-4 space-y-4">
         <Skeleton className="h-4 w-24" />
@@ -269,22 +270,22 @@ export const DifferentSizes: Story = {
         <p className="text-sm text-gray-600">Extra Small</p>
         <Skeleton className="h-2 w-full" />
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm text-gray-600">Small</p>
         <Skeleton className="h-3 w-full" />
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm text-gray-600">Medium (Default)</p>
         <Skeleton className="h-4 w-full" />
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm text-gray-600">Large</p>
         <Skeleton className="h-6 w-full" />
       </div>
-      
+
       <div className="space-y-2">
         <p className="text-sm text-gray-600">Extra Large</p>
         <Skeleton className="h-8 w-full" />
@@ -330,13 +331,13 @@ export const DarkMode: Story = {
           <Skeleton className="h-4 w-[200px]" />
         </div>
       </div>
-      
+
       <div className="space-y-2">
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-full" />
         <Skeleton className="h-4 w-3/4" />
       </div>
-      
+
       <Skeleton className="h-48 w-full rounded-lg" />
     </div>
   ),

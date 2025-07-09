@@ -1,24 +1,23 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { 
-  sanitizeTermDefinition, 
-  calculateReadingTime, 
-  formatSearchQuery,
-  validateTermData,
-  generateTermSlug,
-  extractKeywords,
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import {
   calculateDifficultyScore,
+  calculateReadingTime,
+  extractKeywords,
   formatRelativeTime,
-  parseMarkdownToSections,
+  formatSearchQuery,
+  generateTermSlug,
   generateTOC,
+  parseMarkdownToSections,
+  sanitizeTermDefinition,
+  validateTermData,
 } from '../../client/src/utils/termUtils';
 
 describe('Term Utilities', () => {
-
   describe('sanitizeTermDefinition', () => {
     it('should remove potentially dangerous HTML tags', () => {
       const input = '<script>alert("xss")</script><p>Safe content</p>';
       const result = sanitizeTermDefinition(input);
-      
+
       expect(result).not.toContain('<script>');
       expect(result).toContain('Safe content');
     });
@@ -26,7 +25,7 @@ describe('Term Utilities', () => {
     it('should preserve safe HTML tags', () => {
       const input = '<p>This is <strong>important</strong> and <em>emphasized</em></p>';
       const result = sanitizeTermDefinition(input);
-      
+
       expect(result).toContain('<p>');
       expect(result).toContain('<strong>');
       expect(result).toContain('<em>');
@@ -35,7 +34,7 @@ describe('Term Utilities', () => {
     it('should handle markdown-style formatting', () => {
       const input = '**Bold text** and *italic text*';
       const result = sanitizeTermDefinition(input);
-      
+
       expect(result).toContain('<strong>Bold text</strong>');
       expect(result).toContain('<em>italic text</em>');
     });
@@ -43,7 +42,7 @@ describe('Term Utilities', () => {
     it('should handle code blocks correctly', () => {
       const input = '```python\nprint("Hello, World!")\n```';
       const result = sanitizeTermDefinition(input);
-      
+
       expect(result).toContain('<pre>');
       expect(result).toContain('<code>');
       expect(result).toContain('print("Hello, World!")');
@@ -52,7 +51,7 @@ describe('Term Utilities', () => {
     it('should sanitize URLs and make them safe', () => {
       const input = '[Link](javascript:alert("xss")) and [Safe Link](https://example.com)';
       const result = sanitizeTermDefinition(input);
-      
+
       expect(result).not.toContain('javascript:');
       expect(result).toContain('href="https://example.com"');
     });
@@ -62,14 +61,14 @@ describe('Term Utilities', () => {
     it('should calculate reading time for short text', () => {
       const text = 'This is a short sentence with about ten words.';
       const result = calculateReadingTime(text);
-      
+
       expect(result).toBe(1); // Should be less than 1 minute, rounded up
     });
 
     it('should calculate reading time for longer text', () => {
       const text = 'word '.repeat(300); // 300 words
       const result = calculateReadingTime(text);
-      
+
       // At 200 WPM, 300 words should take 1.5 minutes, rounded to 2
       expect(result).toBe(2);
     });
@@ -83,7 +82,7 @@ describe('Term Utilities', () => {
     it('should allow custom reading speed', () => {
       const text = 'word '.repeat(100); // 100 words
       const result = calculateReadingTime(text, 100); // 100 WPM
-      
+
       expect(result).toBe(1); // 100 words at 100 WPM = 1 minute
     });
   });
@@ -132,7 +131,7 @@ describe('Term Utilities', () => {
     it('should detect missing required fields', () => {
       const invalidTerm = { ...validTerm };
       delete invalidTerm.name;
-      
+
       const result = validateTermData(invalidTerm);
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Name is required');
@@ -141,7 +140,7 @@ describe('Term Utilities', () => {
     it('should validate definition length', () => {
       const shortDefinition = { ...validTerm, definition: 'Too short' };
       const result = validateTermData(shortDefinition);
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Definition must be at least 20 characters');
     });
@@ -149,7 +148,7 @@ describe('Term Utilities', () => {
     it('should validate difficulty levels', () => {
       const invalidDifficulty = { ...validTerm, difficulty: 'impossible' };
       const result = validateTermData(invalidDifficulty);
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Invalid difficulty level');
     });
@@ -157,7 +156,7 @@ describe('Term Utilities', () => {
     it('should validate name length and format', () => {
       const longName = { ...validTerm, name: 'A'.repeat(101) };
       const result = validateTermData(longName);
-      
+
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Name must be less than 100 characters');
     });
@@ -192,9 +191,10 @@ describe('Term Utilities', () => {
 
   describe('extractKeywords', () => {
     it('should extract meaningful keywords', () => {
-      const text = 'Neural networks are computational models inspired by biological neural networks in the brain.';
+      const text =
+        'Neural networks are computational models inspired by biological neural networks in the brain.';
       const result = extractKeywords(text);
-      
+
       expect(result).toContain('neural');
       expect(result).toContain('networks');
       expect(result).toContain('computational');
@@ -206,7 +206,7 @@ describe('Term Utilities', () => {
     it('should handle technical terms', () => {
       const text = 'Machine learning algorithms use gradient descent optimization.';
       const result = extractKeywords(text);
-      
+
       expect(result).toContain('machine');
       expect(result).toContain('learning');
       expect(result).toContain('algorithms');
@@ -218,7 +218,7 @@ describe('Term Utilities', () => {
     it('should limit number of keywords', () => {
       const longText = 'word '.repeat(100);
       const result = extractKeywords(longText, 5);
-      
+
       expect(result).toHaveLength(5);
     });
 
@@ -231,31 +231,34 @@ describe('Term Utilities', () => {
   describe('calculateDifficultyScore', () => {
     it('should calculate score based on text complexity', () => {
       const beginnerText = 'AI is computer thinking. It helps solve problems.';
-      const advancedText = 'Convolutional neural networks utilize hierarchical feature extraction through learnable filters and pooling operations.';
-      
+      const advancedText =
+        'Convolutional neural networks utilize hierarchical feature extraction through learnable filters and pooling operations.';
+
       const beginnerScore = calculateDifficultyScore(beginnerText);
       const advancedScore = calculateDifficultyScore(advancedText);
-      
+
       expect(beginnerScore).toBeLessThan(advancedScore);
     });
 
     it('should consider sentence length', () => {
       const shortSentences = 'AI is smart. It learns fast. People use it.';
-      const longSentences = 'Artificial intelligence represents a complex computational paradigm that encompasses various sophisticated algorithms and methodologies designed to emulate human cognitive processes.';
-      
+      const longSentences =
+        'Artificial intelligence represents a complex computational paradigm that encompasses various sophisticated algorithms and methodologies designed to emulate human cognitive processes.';
+
       const shortScore = calculateDifficultyScore(shortSentences);
       const longScore = calculateDifficultyScore(longSentences);
-      
+
       expect(shortScore).toBeLessThan(longScore);
     });
 
     it('should consider technical vocabulary', () => {
       const simpleText = 'The computer learns from data to make predictions.';
-      const technicalText = 'The algorithm optimizes hyperparameters using backpropagation and stochastic gradient descent.';
-      
+      const technicalText =
+        'The algorithm optimizes hyperparameters using backpropagation and stochastic gradient descent.';
+
       const simpleScore = calculateDifficultyScore(simpleText);
       const technicalScore = calculateDifficultyScore(technicalText);
-      
+
       expect(simpleScore).toBeLessThan(technicalScore);
     });
   });
@@ -269,42 +272,42 @@ describe('Term Utilities', () => {
     it('should format recent times correctly', () => {
       const oneMinuteAgo = new Date('2024-01-15T09:59:00Z').toISOString();
       const result = formatRelativeTime(oneMinuteAgo);
-      
+
       expect(result).toBe('1 minute ago');
     });
 
     it('should format hours correctly', () => {
       const twoHoursAgo = new Date('2024-01-15T08:00:00Z').toISOString();
       const result = formatRelativeTime(twoHoursAgo);
-      
+
       expect(result).toBe('2 hours ago');
     });
 
     it('should format days correctly', () => {
       const threeDaysAgo = new Date('2024-01-12T10:00:00Z').toISOString();
       const result = formatRelativeTime(threeDaysAgo);
-      
+
       expect(result).toBe('3 days ago');
     });
 
     it('should format weeks correctly', () => {
       const twoWeeksAgo = new Date('2024-01-01T10:00:00Z').toISOString();
       const result = formatRelativeTime(twoWeeksAgo);
-      
+
       expect(result).toBe('2 weeks ago');
     });
 
     it('should handle future dates', () => {
       const futureDate = new Date('2024-01-16T10:00:00Z').toISOString();
       const result = formatRelativeTime(futureDate);
-      
+
       expect(result).toBe('in 1 day');
     });
 
     it('should handle just now', () => {
       const justNow = new Date('2024-01-15T09:59:50Z').toISOString();
       const result = formatRelativeTime(justNow);
-      
+
       expect(result).toBe('just now');
     });
   });
@@ -324,7 +327,7 @@ Code examples would go here.
 Real-world examples.`;
 
       const result = parseMarkdownToSections(markdown);
-      
+
       expect(result).toHaveLength(4);
       expect(result[0].title).toBe('Introduction');
       expect(result[0].level).toBe(1);
@@ -344,7 +347,7 @@ Multiple paragraphs here.
 Content for section 2.`;
 
       const result = parseMarkdownToSections(markdown);
-      
+
       expect(result[0].content).toContain('Content for section 1');
       expect(result[0].content).toContain('Multiple paragraphs here');
       expect(result[1].content).toContain('Content for section 2');
@@ -362,7 +365,7 @@ def neural_network():
 That was the code.`;
 
       const result = parseMarkdownToSections(markdown);
-      
+
       expect(result[0].content).toContain('```python');
       expect(result[0].content).toContain('def neural_network()');
     });
@@ -379,12 +382,12 @@ That was the code.`;
       ];
 
       const result = generateTOC(sections);
-      
+
       expect(result).toHaveLength(5);
       expect(result[0].title).toBe('Introduction');
       expect(result[0].anchor).toBe('introduction');
       expect(result[0].level).toBe(1);
-      
+
       expect(result[3].title).toBe('Implementation');
       expect(result[3].anchor).toBe('implementation');
       expect(result[3].level).toBe(3);
@@ -397,7 +400,7 @@ That was the code.`;
       ];
 
       const result = generateTOC(sections);
-      
+
       expect(result[0].anchor).toBe('overview');
       expect(result[1].anchor).toBe('overview-1');
     });
@@ -409,7 +412,7 @@ That was the code.`;
       ];
 
       const result = generateTOC(sections);
-      
+
       expect(result[0].anchor).toBe('c-plus-plus-programming');
       expect(result[1].anchor).toBe('ai-ml-overview');
     });
@@ -423,10 +426,9 @@ That was the code.`;
       ];
 
       const result = generateTOC(sections, 2);
-      
+
       expect(result).toHaveLength(2);
-      expect(result.every(item => item.level <= 2)).toBe(true);
+      expect(result.every((item) => item.level <= 2)).toBe(true);
     });
   });
-
 });

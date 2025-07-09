@@ -1,19 +1,19 @@
 /**
  * Column Batch Processing API Routes - Phase 2 Enhanced Content Generation System
- * 
+ *
  * Comprehensive API endpoints for managing column-wise batch processing operations
  * with advanced monitoring, cost management, and safety controls.
  */
 
-import { Router, Request, Response } from 'express';
+import { type Request, type Response, Router } from 'express';
 import { z } from 'zod';
-import { columnBatchProcessorService } from '../../services/columnBatchProcessorService';
-import { costManagementService } from '../../services/costManagementService';
-import { batchProgressTrackingService } from '../../services/batchProgressTrackingService';
-import { batchSafetyControlsService } from '../../services/batchSafetyControlsService';
-import { jobQueueManager, JobType, JobPriority } from '../../jobs/queue';
+import { JobPriority, JobType, jobQueueManager } from '../../jobs/queue';
 import { requireAdmin } from '../../middleware/adminAuth';
 import { validateRequest } from '../../middleware/validateRequest';
+import { batchProgressTrackingService } from '../../services/batchProgressTrackingService';
+import { batchSafetyControlsService } from '../../services/batchSafetyControlsService';
+import { columnBatchProcessorService } from '../../services/columnBatchProcessorService';
+import { costManagementService } from '../../services/costManagementService';
 import { log as logger } from '../../utils/logger';
 
 const router = Router();
@@ -23,13 +23,21 @@ const columnBatchRequestSchema = z.object({
   sectionName: z.string().min(1, 'Section name is required'),
   termIds: z.array(z.string()).optional(),
   categories: z.array(z.string()).optional(),
-  filterOptions: z.object({
-    hasContent: z.boolean().optional(),
-    isAiGenerated: z.boolean().optional(),
-    verificationStatus: z.enum(['verified', 'unverified', 'needs_review']).optional(),
-    lastUpdatedBefore: z.string().transform(str => new Date(str)).optional(),
-    lastUpdatedAfter: z.string().transform(str => new Date(str)).optional(),
-  }).optional(),
+  filterOptions: z
+    .object({
+      hasContent: z.boolean().optional(),
+      isAiGenerated: z.boolean().optional(),
+      verificationStatus: z.enum(['verified', 'unverified', 'needs_review']).optional(),
+      lastUpdatedBefore: z
+        .string()
+        .transform((str) => new Date(str))
+        .optional(),
+      lastUpdatedAfter: z
+        .string()
+        .transform((str) => new Date(str))
+        .optional(),
+    })
+    .optional(),
   processingOptions: z.object({
     batchSize: z.number().int().min(1).max(200),
     model: z.string().optional(),
@@ -37,34 +45,46 @@ const columnBatchRequestSchema = z.object({
     maxTokens: z.number().int().min(1).max(4000).optional(),
     regenerateExisting: z.boolean().default(false),
     pauseOnError: z.boolean().default(false),
-    maxConcurrentBatches: z.number().int().min(1).max(5).default(2)
+    maxConcurrentBatches: z.number().int().min(1).max(5).default(2),
   }),
-  costLimits: z.object({
-    maxTotalCost: z.number().positive().optional(),
-    maxCostPerTerm: z.number().positive().optional(),
-    warningThreshold: z.number().min(0).max(100).optional()
-  }).optional(),
-  notificationOptions: z.object({
-    emailOnCompletion: z.boolean().default(false),
-    webhookUrl: z.string().url().optional(),
-    notifyOnMilestones: z.array(z.number().min(0).max(100)).optional()
-  }).optional()
+  costLimits: z
+    .object({
+      maxTotalCost: z.number().positive().optional(),
+      maxCostPerTerm: z.number().positive().optional(),
+      warningThreshold: z.number().min(0).max(100).optional(),
+    })
+    .optional(),
+  notificationOptions: z
+    .object({
+      emailOnCompletion: z.boolean().default(false),
+      webhookUrl: z.string().url().optional(),
+      notifyOnMilestones: z.array(z.number().min(0).max(100)).optional(),
+    })
+    .optional(),
 });
 
 const costEstimationRequestSchema = z.object({
   sectionName: z.string().min(1, 'Section name is required'),
   termIds: z.array(z.string()).optional(),
   categories: z.array(z.string()).optional(),
-  filterOptions: z.object({
-    hasContent: z.boolean().optional(),
-    isAiGenerated: z.boolean().optional(),
-    verificationStatus: z.enum(['verified', 'unverified', 'needs_review']).optional(),
-    lastUpdatedBefore: z.string().transform(str => new Date(str)).optional(),
-    lastUpdatedAfter: z.string().transform(str => new Date(str)).optional(),
-  }).optional(),
+  filterOptions: z
+    .object({
+      hasContent: z.boolean().optional(),
+      isAiGenerated: z.boolean().optional(),
+      verificationStatus: z.enum(['verified', 'unverified', 'needs_review']).optional(),
+      lastUpdatedBefore: z
+        .string()
+        .transform((str) => new Date(str))
+        .optional(),
+      lastUpdatedAfter: z
+        .string()
+        .transform((str) => new Date(str))
+        .optional(),
+    })
+    .optional(),
   model: z.string().default('gpt-3.5-turbo'),
   temperature: z.number().min(0).max(2).default(0.7),
-  maxTokens: z.number().int().min(1).max(4000).default(1000)
+  maxTokens: z.number().int().min(1).max(4000).default(1000),
 });
 
 // Apply admin authentication to all routes
@@ -74,49 +94,52 @@ router.use(requireAdmin);
  * POST /api/admin/column-batch/estimate
  * Estimate cost and time for a batch operation
  */
-router.post('/estimate', validateRequest(costEstimationRequestSchema), async (req: Request, res: Response) => {
-  try {
-    const userId = req.user?.uid || 'unknown';
-    
-    logger.info(`Cost estimation requested by ${userId}:`, {
-      sectionName: req.body.sectionName,
-      model: req.body.model
-    });
+router.post(
+  '/estimate',
+  validateRequest(costEstimationRequestSchema),
+  async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.uid || 'unknown';
 
-    // Create estimation job
-    const jobId = await jobQueueManager.addJob(
-      JobType.COLUMN_BATCH_ESTIMATION,
-      {
-        ...req.body,
-        userId,
-        requestId: `est-${Date.now()}`
-      },
-      {
-        priority: JobPriority.NORMAL,
-        attempts: 3,
-        timeout: 300000 // 5 minutes
-      }
-    );
+      logger.info(`Cost estimation requested by ${userId}:`, {
+        sectionName: req.body.sectionName,
+        model: req.body.model,
+      });
 
-    res.status(202).json({
-      success: true,
-      message: 'Cost estimation job started',
-      jobId,
-      estimatedCompletionTime: new Date(Date.now() + 2 * 60 * 1000) // 2 minutes
-    });
+      // Create estimation job
+      const jobId = await jobQueueManager.addJob(
+        JobType.COLUMN_BATCH_ESTIMATION,
+        {
+          ...req.body,
+          userId,
+          requestId: `est-${Date.now()}`,
+        },
+        {
+          priority: JobPriority.NORMAL,
+          attempts: 3,
+          timeout: 300000, // 5 minutes
+        }
+      );
 
-  } catch (error) {
-    logger.error('Error starting cost estimation:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
-    res.status(500).json({
-      success: false,
-      error: 'Failed to start cost estimation',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
+      res.status(202).json({
+        success: true,
+        message: 'Cost estimation job started',
+        jobId,
+        estimatedCompletionTime: new Date(Date.now() + 2 * 60 * 1000), // 2 minutes
+      });
+    } catch (error) {
+      logger.error('Error starting cost estimation:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+
+      res.status(500).json({
+        success: false,
+        error: 'Failed to start cost estimation',
+        details: error instanceof Error ? error.message : 'Unknown error',
+      });
+    }
   }
-});
+);
 
 /**
  * GET /api/admin/column-batch/estimate/:jobId
@@ -125,13 +148,13 @@ router.post('/estimate', validateRequest(costEstimationRequestSchema), async (re
 router.get('/estimate/:jobId', async (req: Request, res: Response) => {
   try {
     const { jobId } = req.params;
-    
+
     const jobStatus = await jobQueueManager.getJobStatus(JobType.COLUMN_BATCH_ESTIMATION, jobId);
-    
+
     if (!jobStatus) {
       return res.status(404).json({
         success: false,
-        error: 'Estimation job not found'
+        error: 'Estimation job not found',
       });
     }
 
@@ -140,32 +163,31 @@ router.get('/estimate/:jobId', async (req: Request, res: Response) => {
         success: true,
         status: 'completed',
         result: jobStatus.result,
-        completedAt: jobStatus.finishedOn
+        completedAt: jobStatus.finishedOn,
       });
     } else if (jobStatus.state === 'failed') {
       res.status(500).json({
         success: false,
         status: 'failed',
         error: jobStatus.failedReason || 'Estimation failed',
-        failedAt: jobStatus.finishedOn
+        failedAt: jobStatus.finishedOn,
       });
     } else {
       res.json({
         success: true,
         status: jobStatus.state,
         progress: jobStatus.progress,
-        startedAt: jobStatus.processedOn
+        startedAt: jobStatus.processedOn,
       });
     }
-
   } catch (error) {
-    logger.error('Error getting estimation status:', { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error('Error getting estimation status:', {
+      error: error instanceof Error ? error.message : String(error),
     });
-    
+
     res.status(500).json({
       success: false,
-      error: 'Failed to get estimation status'
+      error: 'Failed to get estimation status',
     });
   }
 });
@@ -174,63 +196,66 @@ router.get('/estimate/:jobId', async (req: Request, res: Response) => {
  * POST /api/admin/column-batch/start
  * Start a new column batch operation
  */
-router.post('/start', validateRequest(columnBatchRequestSchema), async (req: Request, res: Response) => {
-  try {
-    const userId = req.user?.uid || 'unknown';
-    const request = {
-      ...req.body,
-      metadata: {
-        initiatedBy: userId,
-        reason: req.body.reason || 'Admin batch operation',
-        tags: req.body.tags || []
+router.post(
+  '/start',
+  validateRequest(columnBatchRequestSchema),
+  async (req: Request, res: Response) => {
+    try {
+      const userId = req.user?.uid || 'unknown';
+      const request = {
+        ...req.body,
+        metadata: {
+          initiatedBy: userId,
+          reason: req.body.reason || 'Admin batch operation',
+          tags: req.body.tags || [],
+        },
+      };
+
+      logger.info(`Batch operation start requested by ${userId}:`, {
+        sectionName: request.sectionName,
+        batchSize: request.processingOptions.batchSize,
+      });
+
+      // Check safety permissions
+      const permissionCheck = await batchSafetyControlsService.checkOperationPermission(userId, {
+        sectionName: request.sectionName,
+        termCount: 1000, // Estimate - will be refined during actual processing
+        estimatedCost: 50, // Estimate - will be refined during actual processing
+        estimatedDuration: 60, // Estimate - will be refined during actual processing
+      });
+
+      if (!permissionCheck.allowed) {
+        return res.status(429).json({
+          success: false,
+          error: 'Operation not permitted',
+          reason: permissionCheck.reason,
+          waitTime: permissionCheck.waitTime,
+        });
       }
-    };
 
-    logger.info(`Batch operation start requested by ${userId}:`, {
-      sectionName: request.sectionName,
-      batchSize: request.processingOptions.batchSize
-    });
+      // Start the batch operation
+      const operationId = await columnBatchProcessorService.startBatchOperation(request);
 
-    // Check safety permissions
-    const permissionCheck = await batchSafetyControlsService.checkOperationPermission(userId, {
-      sectionName: request.sectionName,
-      termCount: 1000, // Estimate - will be refined during actual processing
-      estimatedCost: 50, // Estimate - will be refined during actual processing
-      estimatedDuration: 60 // Estimate - will be refined during actual processing
-    });
+      res.status(202).json({
+        success: true,
+        message: 'Batch operation started successfully',
+        operationId,
+        status: 'pending',
+        startedAt: new Date(),
+      });
+    } catch (error) {
+      logger.error('Error starting batch operation:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
 
-    if (!permissionCheck.allowed) {
-      return res.status(429).json({
+      res.status(500).json({
         success: false,
-        error: 'Operation not permitted',
-        reason: permissionCheck.reason,
-        waitTime: permissionCheck.waitTime
+        error: 'Failed to start batch operation',
+        details: error instanceof Error ? error.message : 'Unknown error',
       });
     }
-
-    // Start the batch operation
-    const operationId = await columnBatchProcessorService.startBatchOperation(request);
-
-    res.status(202).json({
-      success: true,
-      message: 'Batch operation started successfully',
-      operationId,
-      status: 'pending',
-      startedAt: new Date()
-    });
-
-  } catch (error) {
-    logger.error('Error starting batch operation:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
-    res.status(500).json({
-      success: false,
-      error: 'Failed to start batch operation',
-      details: error instanceof Error ? error.message : 'Unknown error'
-    });
   }
-});
+);
 
 /**
  * GET /api/admin/column-batch/operations
@@ -239,16 +264,21 @@ router.post('/start', validateRequest(columnBatchRequestSchema), async (req: Req
 router.get('/operations', async (req: Request, res: Response) => {
   try {
     const { status, limit = '50', offset = '0' } = req.query;
-    
-    let operations = columnBatchProcessorService.getOperationHistory(parseInt(limit as string) + parseInt(offset as string));
-    
+
+    let operations = columnBatchProcessorService.getOperationHistory(
+      parseInt(limit as string) + parseInt(offset as string)
+    );
+
     // Filter by status if provided
     if (status && typeof status === 'string') {
-      operations = operations.filter(op => op.status === status);
+      operations = operations.filter((op) => op.status === status);
     }
 
     // Apply pagination
-    const paginatedOps = operations.slice(parseInt(offset as string), parseInt(offset as string) + parseInt(limit as string));
+    const paginatedOps = operations.slice(
+      parseInt(offset as string),
+      parseInt(offset as string) + parseInt(limit as string)
+    );
 
     res.json({
       success: true,
@@ -257,18 +287,17 @@ router.get('/operations', async (req: Request, res: Response) => {
         total: operations.length,
         limit: parseInt(limit as string),
         offset: parseInt(offset as string),
-        hasMore: operations.length > parseInt(offset as string) + parseInt(limit as string)
-      }
+        hasMore: operations.length > parseInt(offset as string) + parseInt(limit as string),
+      },
+    });
+  } catch (error) {
+    logger.error('Error getting operations list:', {
+      error: error instanceof Error ? error.message : String(error),
     });
 
-  } catch (error) {
-    logger.error('Error getting operations list:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
     res.status(500).json({
       success: false,
-      error: 'Failed to get operations list'
+      error: 'Failed to get operations list',
     });
   }
 });
@@ -277,34 +306,33 @@ router.get('/operations', async (req: Request, res: Response) => {
  * GET /api/admin/column-batch/operations/active
  * Get active batch operations
  */
-router.get('/operations/active', async (req: Request, res: Response) => {
+router.get('/operations/active', async (_req: Request, res: Response) => {
   try {
     const activeOperations = columnBatchProcessorService.getActiveOperations();
-    
+
     // Enhance with current progress data
-    const enhancedOperations = activeOperations.map(op => {
+    const enhancedOperations = activeOperations.map((op) => {
       const currentProgress = batchProgressTrackingService.getCurrentProgress(op.id);
       return {
         ...op,
         currentProgress,
-        health: currentProgress ? 'healthy' : 'unknown' // Simplified health check
+        health: currentProgress ? 'healthy' : 'unknown', // Simplified health check
       };
     });
 
     res.json({
       success: true,
       activeOperations: enhancedOperations,
-      count: enhancedOperations.length
+      count: enhancedOperations.length,
+    });
+  } catch (error) {
+    logger.error('Error getting active operations:', {
+      error: error instanceof Error ? error.message : String(error),
     });
 
-  } catch (error) {
-    logger.error('Error getting active operations:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
     res.status(500).json({
       success: false,
-      error: 'Failed to get active operations'
+      error: 'Failed to get active operations',
     });
   }
 });
@@ -316,13 +344,13 @@ router.get('/operations/active', async (req: Request, res: Response) => {
 router.get('/operations/:operationId', async (req: Request, res: Response) => {
   try {
     const { operationId } = req.params;
-    
+
     const operation = columnBatchProcessorService.getOperationStatus(operationId);
-    
+
     if (!operation) {
       return res.status(404).json({
         success: false,
-        error: 'Operation not found'
+        error: 'Operation not found',
       });
     }
 
@@ -338,17 +366,16 @@ router.get('/operations/:operationId', async (req: Request, res: Response) => {
       currentProgress,
       progressHistory,
       statusReports,
-      detailedMetrics
+      detailedMetrics,
+    });
+  } catch (error) {
+    logger.error('Error getting operation details:', {
+      error: error instanceof Error ? error.message : String(error),
     });
 
-  } catch (error) {
-    logger.error('Error getting operation details:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
     res.status(500).json({
       success: false,
-      error: 'Failed to get operation details'
+      error: 'Failed to get operation details',
     });
   }
 });
@@ -361,32 +388,31 @@ router.post('/operations/:operationId/pause', async (req: Request, res: Response
   try {
     const { operationId } = req.params;
     const userId = req.user?.uid || 'unknown';
-    
+
     const success = await columnBatchProcessorService.pauseBatchOperation(operationId);
-    
+
     if (success) {
       logger.info(`Operation ${operationId} paused by ${userId}`);
       res.json({
         success: true,
         message: 'Operation paused successfully',
-        pausedAt: new Date()
+        pausedAt: new Date(),
       });
     } else {
       res.status(400).json({
         success: false,
-        error: 'Failed to pause operation'
+        error: 'Failed to pause operation',
       });
     }
-
   } catch (error) {
-    logger.error('Error pausing operation:', { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error('Error pausing operation:', {
+      error: error instanceof Error ? error.message : String(error),
     });
-    
+
     res.status(500).json({
       success: false,
       error: 'Failed to pause operation',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -399,32 +425,31 @@ router.post('/operations/:operationId/resume', async (req: Request, res: Respons
   try {
     const { operationId } = req.params;
     const userId = req.user?.uid || 'unknown';
-    
+
     const success = await columnBatchProcessorService.resumeBatchOperation(operationId);
-    
+
     if (success) {
       logger.info(`Operation ${operationId} resumed by ${userId}`);
       res.json({
         success: true,
         message: 'Operation resumed successfully',
-        resumedAt: new Date()
+        resumedAt: new Date(),
       });
     } else {
       res.status(400).json({
         success: false,
-        error: 'Failed to resume operation'
+        error: 'Failed to resume operation',
       });
     }
-
   } catch (error) {
-    logger.error('Error resuming operation:', { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error('Error resuming operation:', {
+      error: error instanceof Error ? error.message : String(error),
     });
-    
+
     res.status(500).json({
       success: false,
       error: 'Failed to resume operation',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -437,32 +462,31 @@ router.post('/operations/:operationId/cancel', async (req: Request, res: Respons
   try {
     const { operationId } = req.params;
     const userId = req.user?.uid || 'unknown';
-    
+
     const success = await columnBatchProcessorService.cancelBatchOperation(operationId);
-    
+
     if (success) {
       logger.info(`Operation ${operationId} cancelled by ${userId}`);
       res.json({
         success: true,
         message: 'Operation cancelled successfully',
-        cancelledAt: new Date()
+        cancelledAt: new Date(),
       });
     } else {
       res.status(400).json({
         success: false,
-        error: 'Failed to cancel operation'
+        error: 'Failed to cancel operation',
       });
     }
-
   } catch (error) {
-    logger.error('Error cancelling operation:', { 
-      error: error instanceof Error ? error.message : String(error) 
+    logger.error('Error cancelling operation:', {
+      error: error instanceof Error ? error.message : String(error),
     });
-    
+
     res.status(500).json({
       success: false,
       error: 'Failed to cancel operation',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -471,7 +495,7 @@ router.post('/operations/:operationId/cancel', async (req: Request, res: Respons
  * GET /api/admin/column-batch/dashboard
  * Get dashboard data for batch operations
  */
-router.get('/dashboard', async (req: Request, res: Response) => {
+router.get('/dashboard', async (_req: Request, res: Response) => {
   try {
     const dashboardData = await batchProgressTrackingService.getDashboardData();
     const safetyStatus = await batchSafetyControlsService.getSafetyStatus();
@@ -482,17 +506,16 @@ router.get('/dashboard', async (req: Request, res: Response) => {
       dashboard: dashboardData,
       safety: safetyStatus,
       costs: costSummary,
-      timestamp: new Date()
+      timestamp: new Date(),
+    });
+  } catch (error) {
+    logger.error('Error getting dashboard data:', {
+      error: error instanceof Error ? error.message : String(error),
     });
 
-  } catch (error) {
-    logger.error('Error getting dashboard data:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
     res.status(500).json({
       success: false,
-      error: 'Failed to get dashboard data'
+      error: 'Failed to get dashboard data',
     });
   }
 });
@@ -504,30 +527,31 @@ router.get('/dashboard', async (req: Request, res: Response) => {
 router.get('/analytics', async (req: Request, res: Response) => {
   try {
     const { startDate, endDate, operation, model, userId } = req.query;
-    
-    const start = startDate ? new Date(startDate as string) : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const start = startDate
+      ? new Date(startDate as string)
+      : new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     const end = endDate ? new Date(endDate as string) : new Date();
-    
+
     const analytics = await costManagementService.getCostAnalytics(start, end, {
       operation: operation as string,
       model: model as string,
-      userId: userId as string
+      userId: userId as string,
     });
 
     res.json({
       success: true,
       analytics,
-      period: { start, end }
+      period: { start, end },
+    });
+  } catch (error) {
+    logger.error('Error getting analytics:', {
+      error: error instanceof Error ? error.message : String(error),
     });
 
-  } catch (error) {
-    logger.error('Error getting analytics:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
     res.status(500).json({
       success: false,
-      error: 'Failed to get analytics data'
+      error: 'Failed to get analytics data',
     });
   }
 });
@@ -536,23 +560,22 @@ router.get('/analytics', async (req: Request, res: Response) => {
  * GET /api/admin/column-batch/safety/status
  * Get safety controls status
  */
-router.get('/safety/status', async (req: Request, res: Response) => {
+router.get('/safety/status', async (_req: Request, res: Response) => {
   try {
     const safetyStatus = await batchSafetyControlsService.getSafetyStatus();
-    
+
     res.json({
       success: true,
-      safetyStatus
+      safetyStatus,
+    });
+  } catch (error) {
+    logger.error('Error getting safety status:', {
+      error: error instanceof Error ? error.message : String(error),
     });
 
-  } catch (error) {
-    logger.error('Error getting safety status:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
     res.status(500).json({
       success: false,
-      error: 'Failed to get safety status'
+      error: 'Failed to get safety status',
     });
   }
 });
@@ -565,34 +588,33 @@ router.post('/safety/emergency-stop', async (req: Request, res: Response) => {
   try {
     const { reason } = req.body;
     const userId = req.user?.uid || 'unknown';
-    
+
     if (!reason) {
       return res.status(400).json({
         success: false,
-        error: 'Reason is required for emergency stop'
+        error: 'Reason is required for emergency stop',
       });
     }
 
     await batchSafetyControlsService.activateEmergencyStop(reason, userId);
-    
+
     logger.critical(`Emergency stop activated by ${userId}: ${reason}`);
-    
+
     res.json({
       success: true,
       message: 'Emergency stop activated',
       activatedBy: userId,
       reason,
-      activatedAt: new Date()
+      activatedAt: new Date(),
+    });
+  } catch (error) {
+    logger.error('Error activating emergency stop:', {
+      error: error instanceof Error ? error.message : String(error),
     });
 
-  } catch (error) {
-    logger.error('Error activating emergency stop:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
     res.status(500).json({
       success: false,
-      error: 'Failed to activate emergency stop'
+      error: 'Failed to activate emergency stop',
     });
   }
 });
@@ -604,26 +626,25 @@ router.post('/safety/emergency-stop', async (req: Request, res: Response) => {
 router.post('/safety/emergency-stop/deactivate', async (req: Request, res: Response) => {
   try {
     const userId = req.user?.uid || 'unknown';
-    
+
     await batchSafetyControlsService.deactivateEmergencyStop(userId);
-    
+
     logger.info(`Emergency stop deactivated by ${userId}`);
-    
+
     res.json({
       success: true,
       message: 'Emergency stop deactivated',
       deactivatedBy: userId,
-      deactivatedAt: new Date()
+      deactivatedAt: new Date(),
+    });
+  } catch (error) {
+    logger.error('Error deactivating emergency stop:', {
+      error: error instanceof Error ? error.message : String(error),
     });
 
-  } catch (error) {
-    logger.error('Error deactivating emergency stop:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
     res.status(500).json({
       success: false,
-      error: 'Failed to deactivate emergency stop'
+      error: 'Failed to deactivate emergency stop',
     });
   }
 });
@@ -632,25 +653,24 @@ router.post('/safety/emergency-stop/deactivate', async (req: Request, res: Respo
  * GET /api/admin/column-batch/costs/budgets
  * Get cost budgets
  */
-router.get('/costs/budgets', async (req: Request, res: Response) => {
+router.get('/costs/budgets', async (_req: Request, res: Response) => {
   try {
     const budgets = costManagementService.getBudgets();
     const alerts = costManagementService.getCostAlerts();
-    
+
     res.json({
       success: true,
       budgets,
-      alerts: alerts.slice(0, 10) // Latest 10 alerts
+      alerts: alerts.slice(0, 10), // Latest 10 alerts
+    });
+  } catch (error) {
+    logger.error('Error getting cost budgets:', {
+      error: error instanceof Error ? error.message : String(error),
     });
 
-  } catch (error) {
-    logger.error('Error getting cost budgets:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
     res.status(500).json({
       success: false,
-      error: 'Failed to get cost budgets'
+      error: 'Failed to get cost budgets',
     });
   }
 });
@@ -664,26 +684,25 @@ router.post('/costs/budgets', async (req: Request, res: Response) => {
     const userId = req.user?.uid || 'unknown';
     const budgetData = {
       ...req.body,
-      createdBy: userId
+      createdBy: userId,
     };
-    
+
     const budgetId = await costManagementService.createBudget(budgetData);
-    
+
     res.status(201).json({
       success: true,
       message: 'Budget created successfully',
-      budgetId
+      budgetId,
+    });
+  } catch (error) {
+    logger.error('Error creating budget:', {
+      error: error instanceof Error ? error.message : String(error),
     });
 
-  } catch (error) {
-    logger.error('Error creating budget:', { 
-      error: error instanceof Error ? error.message : String(error) 
-    });
-    
     res.status(500).json({
       success: false,
       error: 'Failed to create budget',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });

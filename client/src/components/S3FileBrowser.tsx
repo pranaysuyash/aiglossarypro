@@ -1,10 +1,17 @@
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Loader2, FileSpreadsheet, Upload, Check } from "lucide-react";
-import { queryClient } from "@/lib/queryClient";
+import { Check, FileSpreadsheet, Loader2, Upload } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { queryClient } from '@/lib/queryClient';
 
 interface S3File {
   key: string;
@@ -27,31 +34,35 @@ export default function S3FileBrowser() {
       try {
         setLoading(true);
         setError(null);
-        
+
         // Use the optimized S3 endpoint with enhanced features
-        const response = await fetch('/api/s3-optimized/files?sortBy=lastModified&sortOrder=desc&maxKeys=50');
-        
+        const response = await fetch(
+          '/api/s3-optimized/files?sortBy=lastModified&sortOrder=desc&maxKeys=50'
+        );
+
         if (!response.ok) {
           const errorText = await response.text();
           throw new Error(`API error (${response.status}): ${errorText || response.statusText}`);
         }
-        
+
         // Check if we got HTML instead of JSON (error)
         const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('text/html')) {
+        if (contentType?.includes('text/html')) {
           throw new Error('Received HTML instead of JSON. API endpoint may be misconfigured.');
         }
-        
+
         const data = await response.json();
         console.log('Files API response:', data);
-        
+
         if (Array.isArray(data)) {
           // Original endpoint format (/api/s3/files)
-          setFiles(data.map(file => ({
-            key: file.key,
-            size: file.size,
-            lastModified: file.lastModified
-          })));
+          setFiles(
+            data.map((file) => ({
+              key: file.key,
+              size: file.size,
+              lastModified: file.lastModified,
+            }))
+          );
         } else if (data.success && Array.isArray(data.files)) {
           // New endpoint format (/api/s3/list-files)
           setFiles(data.files);
@@ -67,61 +78,61 @@ export default function S3FileBrowser() {
         setLoading(false);
       }
     };
-    
+
     fetchFiles();
   }, []);
-  
+
   const handleSelectFile = (file: S3File) => {
     setSelectedFile(file);
     setResult(null);
   };
-  
+
   const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return bytes + ' bytes';
-    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
-    if (bytes < 1024 * 1024 * 1024) return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
-    return (bytes / (1024 * 1024 * 1024)).toFixed(1) + ' GB';
+    if (bytes < 1024) return `${bytes} bytes`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
   };
-  
+
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();
   };
-  
+
   const getFileName = (key: string) => {
     const parts = key.split('/');
     return parts[parts.length - 1];
   };
-  
+
   const handleProcessFile = async (shouldImport: boolean = false) => {
     if (!selectedFile) return;
-    
+
     setProcessing(true);
     setResult(null);
     setError(null);
-    
+
     try {
       // Build the query parameters
       const params = new URLSearchParams();
       params.append('fileKey', selectedFile.key);
-      
+
       if (maxChunks) {
         params.append('maxChunks', maxChunks.toString());
       }
-      
+
       // Make the API request
       const response = await fetch(`/api/s3/python-import?${params.toString()}`);
-      
+
       // Check if we got HTML instead of JSON (error)
       const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('text/html')) {
+      if (contentType?.includes('text/html')) {
         throw new Error('Received HTML instead of JSON. API endpoint may be misconfigured.');
       }
-      
+
       const data = await response.json();
       console.log('Processing response:', data);
-      
+
       setResult(data);
-      
+
       // If successful and we should import, invalidate the relevant queries
       if (data.success && shouldImport) {
         await queryClient.invalidateQueries({ queryKey: ['/api/categories'] });
@@ -129,12 +140,14 @@ export default function S3FileBrowser() {
       }
     } catch (err) {
       console.error('Error processing file:', err);
-      setError(`Error: ${err instanceof Error ? err.message : 'Unknown error while processing file'}`);
+      setError(
+        `Error: ${err instanceof Error ? err.message : 'Unknown error while processing file'}`
+      );
     } finally {
       setProcessing(false);
     }
   };
-  
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       <Card>
@@ -151,11 +164,7 @@ export default function S3FileBrowser() {
           ) : error ? (
             <div className="text-red-500 py-4">
               <p>Error: {error}</p>
-              <Button 
-                onClick={() => window.location.reload()} 
-                variant="outline" 
-                className="mt-2"
-              >
+              <Button onClick={() => window.location.reload()} variant="outline" className="mt-2">
                 Retry
               </Button>
             </div>
@@ -168,15 +177,19 @@ export default function S3FileBrowser() {
               <table className="w-full">
                 <thead className="bg-gray-50 sticky top-0">
                   <tr>
-                    <th className="py-2 px-4 text-left text-sm font-medium text-gray-500">File Name</th>
+                    <th className="py-2 px-4 text-left text-sm font-medium text-gray-500">
+                      File Name
+                    </th>
                     <th className="py-2 px-4 text-left text-sm font-medium text-gray-500">Size</th>
-                    <th className="py-2 px-4 text-left text-sm font-medium text-gray-500">Last Modified</th>
+                    <th className="py-2 px-4 text-left text-sm font-medium text-gray-500">
+                      Last Modified
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y">
                   {files.map((file) => (
-                    <tr 
-                      key={file.key} 
+                    <tr
+                      key={file.key}
                       onClick={() => handleSelectFile(file)}
                       className={`cursor-pointer hover:bg-gray-50 ${selectedFile?.key === file.key ? 'bg-blue-50' : ''}`}
                     >
@@ -195,7 +208,7 @@ export default function S3FileBrowser() {
               </table>
             </div>
           )}
-          
+
           {selectedFile && (
             <div className="mt-4 p-4 bg-gray-50 rounded-md">
               <h3 className="font-medium mb-2">Selected File:</h3>
@@ -207,11 +220,13 @@ export default function S3FileBrowser() {
                   type="number"
                   placeholder="Leave empty to process all"
                   value={maxChunks || ''}
-                  onChange={(e) => setMaxChunks(e.target.value ? parseInt(e.target.value) : undefined)}
+                  onChange={(e) =>
+                    setMaxChunks(e.target.value ? parseInt(e.target.value) : undefined)
+                  }
                 />
                 <p className="text-xs text-gray-500">
-                  Limit the number of chunks to process. Each chunk is 100 rows.
-                  For testing, try with 5-10 chunks first.
+                  Limit the number of chunks to process. Each chunk is 100 rows. For testing, try
+                  with 5-10 chunks first.
                 </p>
               </div>
             </div>
@@ -235,7 +250,7 @@ export default function S3FileBrowser() {
               </>
             )}
           </Button>
-          <Button 
+          <Button
             onClick={() => handleProcessFile(true)}
             disabled={!selectedFile || processing}
             variant="secondary"
@@ -254,7 +269,7 @@ export default function S3FileBrowser() {
           </Button>
         </CardFooter>
       </Card>
-      
+
       <Card>
         <CardHeader>
           <CardTitle>Results</CardTitle>
@@ -268,7 +283,7 @@ export default function S3FileBrowser() {
               </pre>
             </div>
           )}
-          
+
           {!result && (
             <div className="text-center p-6 text-gray-400">
               No results yet. Select a file and click Process.

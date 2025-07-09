@@ -8,7 +8,8 @@ const meta: Meta<typeof Pricing> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Pricing component for the landing page with flexible plans, feature comparisons, and purchase integration.',
+        component:
+          'Pricing component for the landing page with flexible plans, feature comparisons, and purchase integration.',
       },
     },
   },
@@ -32,11 +33,7 @@ const basicPricingData = [
       'Mobile app access',
       'Community support',
     ],
-    limitations: [
-      'No AI-powered features',
-      'Limited search results',
-      'Basic definitions only',
-    ],
+    limitations: ['No AI-powered features', 'Limited search results', 'Basic definitions only'],
     buttonText: 'Get Started Free',
     buttonAction: 'signup',
     popular: false,
@@ -134,11 +131,7 @@ const advancedPricingData = [
       'Academic resources',
       'Thesis support tools',
     ],
-    requirements: [
-      'Valid student ID required',
-      'Educational email address',
-      'Annual verification',
-    ],
+    requirements: ['Valid student ID required', 'Educational email address', 'Annual verification'],
     buttonText: 'Verify Student Status',
     buttonAction: 'verify',
     badge: '69% OFF',
@@ -151,7 +144,8 @@ const advancedPricingData = [
 export const Default: Story = {
   args: {
     plans: basicPricingData,
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
@@ -161,7 +155,8 @@ export const WithYearlyToggle: Story = {
     showYearlyToggle: true,
     defaultInterval: 'month',
     yearlyDiscountText: 'Save 17% with yearly billing',
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
     onIntervalChange: (interval: string) => console.log(`Billing interval changed to: ${interval}`),
   },
 };
@@ -170,7 +165,8 @@ export const WithStudentPricing: Story = {
   args: {
     plans: advancedPricingData,
     showStudentPricing: true,
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
@@ -179,7 +175,8 @@ export const ComparisonView: Story = {
     plans: basicPricingData,
     layout: 'comparison',
     showFeatureComparison: true,
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
@@ -193,20 +190,22 @@ export const WithTrialBanner: Story = {
       'No credit card required',
       'Cancel anytime',
     ],
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
 export const WithCustomCurrency: Story = {
   args: {
-    plans: basicPricingData.map(plan => ({
+    plans: basicPricingData.map((plan) => ({
       ...plan,
       price: plan.price ? plan.price * 0.85 : null,
       currency: 'EUR',
       yearlyPrice: plan.yearlyPrice ? plan.yearlyPrice * 0.85 : undefined,
     })),
     currency: 'EUR',
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
@@ -218,7 +217,8 @@ export const WithPPPBanner: Story = {
     userCountry: 'IN',
     pppMessage: 'Special pricing available for your region',
     onPPPApply: () => console.log('PPP discount applied'),
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
@@ -231,7 +231,8 @@ export const WithTestimonials: Story = {
         id: '1',
         author: 'Sarah Chen',
         role: 'ML Engineer at Google',
-        content: 'This glossary has become my go-to resource for AI terminology. The semantic search is incredibly accurate.',
+        content:
+          'This glossary has become my go-to resource for AI terminology. The semantic search is incredibly accurate.',
         rating: 5,
         plan: 'pro',
       },
@@ -239,12 +240,14 @@ export const WithTestimonials: Story = {
         id: '2',
         author: 'Dr. Michael Rodriguez',
         role: 'AI Research Professor',
-        content: 'I use this with my students. The learning paths and interactive content make complex concepts accessible.',
+        content:
+          'I use this with my students. The learning paths and interactive content make complex concepts accessible.',
         rating: 5,
         plan: 'team',
       },
     ],
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
@@ -255,33 +258,41 @@ export const WithFAQ: Story = {
     faqItems: [
       {
         question: 'Can I change plans anytime?',
-        answer: 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.',
+        answer:
+          'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.',
       },
       {
         question: 'What payment methods do you accept?',
-        answer: 'We accept all major credit cards, PayPal, and wire transfers for enterprise customers.',
+        answer:
+          'We accept all major credit cards, PayPal, and wire transfers for enterprise customers.',
       },
       {
         question: 'Is there a free trial?',
-        answer: 'Yes, we offer a 14-day free trial of our Professional plan with full access to all features.',
+        answer:
+          'Yes, we offer a 14-day free trial of our Professional plan with full access to all features.',
       },
     ],
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
 export const WithLimitedTimeOffer: Story = {
   args: {
-    plans: basicPricingData.map(plan => ({
+    plans: basicPricingData.map((plan) => ({
       ...plan,
-      limitedOffer: plan.id === 'pro' ? {
-        discount: 30,
-        originalPrice: plan.price,
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-        reason: 'Launch Special',
-      } : undefined,
+      limitedOffer:
+        plan.id === 'pro'
+          ? {
+              discount: 30,
+              originalPrice: plan.price,
+              expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+              reason: 'Launch Special',
+            }
+          : undefined,
     })),
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
@@ -298,7 +309,7 @@ export const WithUsageBasedPricing: Story = {
         description: 'Perfect for occasional users',
         usagePricing: {
           basePrice: 5,
-          perQuery: 0.10,
+          perQuery: 0.1,
           includedQueries: 50,
           maxQueries: 1000,
         },
@@ -313,31 +324,36 @@ export const WithUsageBasedPricing: Story = {
       },
       ...basicPricingData.slice(2),
     ],
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
 export const WithAddOns: Story = {
   args: {
-    plans: basicPricingData.map(plan => ({
+    plans: basicPricingData.map((plan) => ({
       ...plan,
-      addOns: plan.id === 'pro' || plan.id === 'team' ? [
-        {
-          id: 'priority-support',
-          name: 'Priority Support',
-          price: 15,
-          description: '24/7 priority support with 1-hour response time',
-        },
-        {
-          id: 'custom-integrations',
-          name: 'Custom Integrations',
-          price: 50,
-          description: 'Custom API integrations with your existing tools',
-        },
-      ] : undefined,
+      addOns:
+        plan.id === 'pro' || plan.id === 'team'
+          ? [
+              {
+                id: 'priority-support',
+                name: 'Priority Support',
+                price: 15,
+                description: '24/7 priority support with 1-hour response time',
+              },
+              {
+                id: 'custom-integrations',
+                name: 'Custom Integrations',
+                price: 50,
+                description: 'Custom API integrations with your existing tools',
+              },
+            ]
+          : undefined,
     })),
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
-    onAddOnToggle: (planId: string, addOnId: string, selected: boolean) => 
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
+    onAddOnToggle: (planId: string, addOnId: string, selected: boolean) =>
       console.log(`Add-on ${addOnId} ${selected ? 'added to' : 'removed from'} plan ${planId}`),
   },
 };
@@ -361,7 +377,8 @@ export const DarkMode: Story = {
     plans: basicPricingData,
     showYearlyToggle: true,
     theme: 'dark',
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
   parameters: {
     themes: {
@@ -375,7 +392,8 @@ export const MobileOptimized: Story = {
     plans: basicPricingData,
     showYearlyToggle: true,
     mobileOptimized: true,
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
   parameters: {
     viewport: {
@@ -393,7 +411,8 @@ export const WithAnalytics: Story = {
       // Analytics tracking would happen here
     },
     onPlanView: (planId: string) => console.log(`Plan ${planId} viewed`),
-    onFeatureClick: (planId: string, feature: string) => console.log(`Feature "${feature}" clicked on plan ${planId}`),
+    onFeatureClick: (planId: string, feature: string) =>
+      console.log(`Feature "${feature}" clicked on plan ${planId}`),
   },
 };
 
@@ -407,7 +426,8 @@ export const WithCustomization: Story = {
       buttonStyle: 'gradient',
       cardStyle: 'elevated',
     },
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };
 
@@ -425,6 +445,7 @@ export const WithExperimentalFeatures: Story = {
       industry: 'technology',
       budget: 'medium',
     },
-    onPlanSelect: (planId: string, action: string) => console.log(`Selected plan: ${planId}, action: ${action}`),
+    onPlanSelect: (planId: string, action: string) =>
+      console.log(`Selected plan: ${planId}, action: ${action}`),
   },
 };

@@ -1,7 +1,6 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 test.describe('Admin Dashboard', () => {
-
   // Admin user credentials
   const adminUser = {
     email: 'admin@example.com',
@@ -11,28 +10,27 @@ test.describe('Admin Dashboard', () => {
   test.beforeEach(async ({ page }) => {
     // Clear any existing session
     await page.context().clearCookies();
-    
+
     // Login as admin
     await page.goto('/');
     await expect(page.locator('#main-content')).toBeVisible();
 
     // Navigate to login
     const loginButton = page.locator('[data-testid="login-button"], text=Login, text=Sign In');
-    if (await loginButton.count() > 0) {
+    if ((await loginButton.count()) > 0) {
       await loginButton.click();
-      
+
       // Fill admin credentials
       await page.fill('[data-testid="email-input"], input[type="email"]', adminUser.email);
       await page.fill('[data-testid="password-input"], input[type="password"]', adminUser.password);
       await page.click('[data-testid="login-submit"], button[type="submit"]');
-      
+
       // Wait for login to complete
       await page.waitForTimeout(2000);
     }
   });
 
   test.describe('Admin Access and Navigation', () => {
-
     test('should allow admin access to dashboard', async ({ page }) => {
       // Navigate to admin dashboard
       const adminNavigation = [
@@ -44,7 +42,7 @@ test.describe('Admin Dashboard', () => {
 
       let adminAccess = false;
       for (const nav of adminNavigation) {
-        if (await nav.count() > 0) {
+        if ((await nav.count()) > 0) {
           await nav.click();
           adminAccess = true;
           break;
@@ -68,7 +66,7 @@ test.describe('Admin Dashboard', () => {
 
       let foundAdmin = false;
       for (const indicator of adminIndicators) {
-        if (await indicator.count() > 0) {
+        if ((await indicator.count()) > 0) {
           foundAdmin = true;
           break;
         }
@@ -76,7 +74,7 @@ test.describe('Admin Dashboard', () => {
 
       // Should not show access denied
       const accessDenied = await page.locator('text=Access Denied, text=Unauthorized').count();
-      
+
       expect(foundAdmin || accessDenied === 0).toBe(true);
       console.log(`Admin dashboard accessible: ${foundAdmin}`);
     });
@@ -99,8 +97,10 @@ test.describe('Admin Dashboard', () => {
 
       let foundSections = 0;
       for (const section of adminSections) {
-        const sectionElement = page.locator(`text=${section}, [data-testid="${section.toLowerCase().replace(' ', '-')}"]`);
-        if (await sectionElement.count() > 0) {
+        const sectionElement = page.locator(
+          `text=${section}, [data-testid="${section.toLowerCase().replace(' ', '-')}"]`
+        );
+        if ((await sectionElement.count()) > 0) {
           foundSections++;
         }
       }
@@ -108,11 +108,9 @@ test.describe('Admin Dashboard', () => {
       expect(foundSections).toBeGreaterThan(0);
       console.log(`Admin sections found: ${foundSections}/${adminSections.length}`);
     });
-
   });
 
   test.describe('Content Management', () => {
-
     test('should allow viewing and managing terms', async ({ page }) => {
       await page.goto('/admin');
       await page.waitForTimeout(1000);
@@ -127,7 +125,7 @@ test.describe('Admin Dashboard', () => {
 
       let termsAccess = false;
       for (const nav of termsNavigation) {
-        if (await nav.count() > 0) {
+        if ((await nav.count()) > 0) {
           await nav.click();
           termsAccess = true;
           break;
@@ -141,8 +139,10 @@ test.describe('Admin Dashboard', () => {
       await page.waitForTimeout(2000);
 
       // Check for terms list
-      const termsList = page.locator('[data-testid="admin-terms-list"], [data-testid="terms-table"]');
-      if (await termsList.count() > 0) {
+      const termsList = page.locator(
+        '[data-testid="admin-terms-list"], [data-testid="terms-table"]'
+      );
+      if ((await termsList.count()) > 0) {
         // Should show term management features
         const managementFeatures = [
           page.locator('[data-testid="add-term-button"], button:has-text("Add Term")'),
@@ -153,7 +153,7 @@ test.describe('Admin Dashboard', () => {
 
         let foundFeatures = 0;
         for (const feature of managementFeatures) {
-          if (await feature.count() > 0) {
+          if ((await feature.count()) > 0) {
             foundFeatures++;
           }
         }
@@ -161,28 +161,32 @@ test.describe('Admin Dashboard', () => {
         console.log(`Term management features found: ${foundFeatures}`);
 
         // Test adding a new term
-        const addTermButton = page.locator('[data-testid="add-term-button"], button:has-text("Add")');
-        if (await addTermButton.count() > 0) {
+        const addTermButton = page.locator(
+          '[data-testid="add-term-button"], button:has-text("Add")'
+        );
+        if ((await addTermButton.count()) > 0) {
           await addTermButton.click();
           await page.waitForTimeout(1000);
 
           // Should open term creation form
           const termForm = page.locator('[data-testid="term-form"], form');
-          if (await termForm.count() > 0) {
+          if ((await termForm.count()) > 0) {
             // Fill basic term information
             const nameInput = termForm.locator('[data-testid="term-name"], input[name="name"]');
-            if (await nameInput.count() > 0) {
+            if ((await nameInput.count()) > 0) {
               await nameInput.fill('Test AI Term');
             }
 
-            const definitionInput = termForm.locator('[data-testid="term-definition"], textarea[name="definition"]');
-            if (await definitionInput.count() > 0) {
+            const definitionInput = termForm.locator(
+              '[data-testid="term-definition"], textarea[name="definition"]'
+            );
+            if ((await definitionInput.count()) > 0) {
               await definitionInput.fill('This is a test definition for admin testing purposes.');
             }
 
             // Submit form
             const submitButton = termForm.locator('button[type="submit"], button:has-text("Save")');
-            if (await submitButton.count() > 0) {
+            if ((await submitButton.count()) > 0) {
               await submitButton.click();
               await page.waitForTimeout(2000);
 
@@ -195,7 +199,7 @@ test.describe('Admin Dashboard', () => {
 
               let success = false;
               for (const indicator of successIndicators) {
-                if (await indicator.count() > 0) {
+                if ((await indicator.count()) > 0) {
                   success = true;
                   break;
                 }
@@ -213,14 +217,16 @@ test.describe('Admin Dashboard', () => {
       await page.waitForTimeout(2000);
 
       // Look for bulk selection
-      const selectAllCheckbox = page.locator('[data-testid="select-all"], input[type="checkbox"]:first-of-type');
-      if (await selectAllCheckbox.count() > 0) {
+      const selectAllCheckbox = page.locator(
+        '[data-testid="select-all"], input[type="checkbox"]:first-of-type'
+      );
+      if ((await selectAllCheckbox.count()) > 0) {
         await selectAllCheckbox.check();
         await page.waitForTimeout(500);
 
         // Should show bulk action menu
         const bulkActions = page.locator('[data-testid="bulk-actions"], .bulk-actions');
-        if (await bulkActions.count() > 0) {
+        if ((await bulkActions.count()) > 0) {
           const bulkButtons = [
             bulkActions.locator('button:has-text("Delete")'),
             bulkActions.locator('button:has-text("Export")'),
@@ -230,7 +236,7 @@ test.describe('Admin Dashboard', () => {
 
           let foundBulkActions = 0;
           for (const button of bulkButtons) {
-            if (await button.count() > 0) {
+            if ((await button.count()) > 0) {
               foundBulkActions++;
             }
           }
@@ -239,10 +245,10 @@ test.describe('Admin Dashboard', () => {
 
           // Test bulk export
           const exportButton = bulkActions.locator('button:has-text("Export")');
-          if (await exportButton.count() > 0) {
+          if ((await exportButton.count()) > 0) {
             await exportButton.click();
             await page.waitForTimeout(1000);
-            
+
             // Should trigger download or show export options
             console.log('Bulk export triggered');
           }
@@ -255,8 +261,10 @@ test.describe('Admin Dashboard', () => {
       await page.waitForTimeout(1000);
 
       // Navigate to categories
-      const categoriesNav = page.locator('[data-testid="admin-categories"], text=Categories, [href*="/admin/categories"]');
-      if (await categoriesNav.count() > 0) {
+      const categoriesNav = page.locator(
+        '[data-testid="admin-categories"], text=Categories, [href*="/admin/categories"]'
+      );
+      if ((await categoriesNav.count()) > 0) {
         await categoriesNav.click();
       } else {
         await page.goto('/admin/categories');
@@ -273,7 +281,7 @@ test.describe('Admin Dashboard', () => {
 
       let foundCategoryInterface = false;
       for (const element of categoryManagement) {
-        if (await element.count() > 0) {
+        if ((await element.count()) > 0) {
           foundCategoryInterface = true;
           break;
         }
@@ -281,19 +289,21 @@ test.describe('Admin Dashboard', () => {
 
       if (foundCategoryInterface) {
         // Test adding a category
-        const addCategoryButton = page.locator('[data-testid="add-category-button"], button:has-text("Add Category")');
-        if (await addCategoryButton.count() > 0) {
+        const addCategoryButton = page.locator(
+          '[data-testid="add-category-button"], button:has-text("Add Category")'
+        );
+        if ((await addCategoryButton.count()) > 0) {
           await addCategoryButton.click();
           await page.waitForTimeout(1000);
 
           const categoryForm = page.locator('[data-testid="category-form"], form');
-          if (await categoryForm.count() > 0) {
+          if ((await categoryForm.count()) > 0) {
             const nameInput = categoryForm.locator('input[name="name"]');
-            if (await nameInput.count() > 0) {
+            if ((await nameInput.count()) > 0) {
               await nameInput.fill('Test Category');
 
               const submitButton = categoryForm.locator('button[type="submit"]');
-              if (await submitButton.count() > 0) {
+              if ((await submitButton.count()) > 0) {
                 await submitButton.click();
                 await page.waitForTimeout(1000);
 
@@ -306,18 +316,18 @@ test.describe('Admin Dashboard', () => {
 
       console.log(`Category management interface found: ${foundCategoryInterface}`);
     });
-
   });
 
   test.describe('User Management', () => {
-
     test('should display user management interface', async ({ page }) => {
       await page.goto('/admin');
       await page.waitForTimeout(1000);
 
       // Navigate to user management
-      const userNav = page.locator('[data-testid="admin-users"], text=Users, [href*="/admin/users"]');
-      if (await userNav.count() > 0) {
+      const userNav = page.locator(
+        '[data-testid="admin-users"], text=Users, [href*="/admin/users"]'
+      );
+      if ((await userNav.count()) > 0) {
         await userNav.click();
       } else {
         await page.goto('/admin/users');
@@ -335,7 +345,7 @@ test.describe('Admin Dashboard', () => {
 
       let foundUserFeatures = 0;
       for (const feature of userManagementFeatures) {
-        if (await feature.count() > 0) {
+        if ((await feature.count()) > 0) {
           foundUserFeatures++;
         }
       }
@@ -351,7 +361,7 @@ test.describe('Admin Dashboard', () => {
 
       let foundUserActions = 0;
       for (const action of userActions) {
-        if (await action.count() > 0) {
+        if ((await action.count()) > 0) {
           foundUserActions++;
         }
       }
@@ -365,7 +375,7 @@ test.describe('Admin Dashboard', () => {
 
       // Test user search
       const searchInput = page.locator('[data-testid="user-search"], input[placeholder*="search"]');
-      if (await searchInput.count() > 0) {
+      if ((await searchInput.count()) > 0) {
         await searchInput.fill('admin@example.com');
         await page.waitForTimeout(1000);
 
@@ -377,25 +387,25 @@ test.describe('Admin Dashboard', () => {
 
       // Test user filters
       const filterDropdown = page.locator('[data-testid="user-filter"], select');
-      if (await filterDropdown.count() > 0) {
+      if ((await filterDropdown.count()) > 0) {
         await filterDropdown.selectOption('admin');
         await page.waitForTimeout(1000);
 
         console.log('User filter applied');
       }
     });
-
   });
 
   test.describe('Analytics Dashboard', () => {
-
     test('should display analytics and metrics', async ({ page }) => {
       await page.goto('/admin');
       await page.waitForTimeout(1000);
 
       // Navigate to analytics
-      const analyticsNav = page.locator('[data-testid="admin-analytics"], text=Analytics, [href*="/admin/analytics"]');
-      if (await analyticsNav.count() > 0) {
+      const analyticsNav = page.locator(
+        '[data-testid="admin-analytics"], text=Analytics, [href*="/admin/analytics"]'
+      );
+      if ((await analyticsNav.count()) > 0) {
         await analyticsNav.click();
       } else {
         await page.goto('/admin/analytics');
@@ -413,7 +423,7 @@ test.describe('Admin Dashboard', () => {
 
       let foundWidgets = 0;
       for (const widget of analyticsWidgets) {
-        if (await widget.count() > 0) {
+        if ((await widget.count()) > 0) {
           foundWidgets++;
         }
       }
@@ -430,7 +440,7 @@ test.describe('Admin Dashboard', () => {
 
       let foundCharts = 0;
       for (const chart of charts) {
-        if (await chart.count() > 0) {
+        if ((await chart.count()) > 0) {
           foundCharts++;
         }
       }
@@ -439,7 +449,7 @@ test.describe('Admin Dashboard', () => {
 
       // Test date range selector
       const dateRange = page.locator('[data-testid="date-range"], select:has-option');
-      if (await dateRange.count() > 0) {
+      if ((await dateRange.count()) > 0) {
         await dateRange.selectOption('7d');
         await page.waitForTimeout(2000);
 
@@ -461,9 +471,9 @@ test.describe('Admin Dashboard', () => {
 
       let foundDetailedStats = 0;
       for (const stat of detailedStats) {
-        if (await stat.count() > 0) {
+        if ((await stat.count()) > 0) {
           foundDetailedStats++;
-          
+
           // Check if it has data
           const hasData = await stat.locator('tr, .data-row, .stat-item').count();
           if (hasData > 0) {
@@ -474,18 +484,18 @@ test.describe('Admin Dashboard', () => {
 
       console.log(`Detailed statistics sections found: ${foundDetailedStats}`);
     });
-
   });
 
   test.describe('AI Tools Management', () => {
-
     test('should provide AI tools administration', async ({ page }) => {
       await page.goto('/admin');
       await page.waitForTimeout(1000);
 
       // Navigate to AI tools
-      const aiToolsNav = page.locator('[data-testid="admin-ai-tools"], text=AI Tools, [href*="/admin/ai"]');
-      if (await aiToolsNav.count() > 0) {
+      const aiToolsNav = page.locator(
+        '[data-testid="admin-ai-tools"], text=AI Tools, [href*="/admin/ai"]'
+      );
+      if ((await aiToolsNav.count()) > 0) {
         await aiToolsNav.click();
       } else {
         await page.goto('/admin/ai-tools');
@@ -504,7 +514,7 @@ test.describe('Admin Dashboard', () => {
 
       let foundAIFeatures = 0;
       for (const feature of aiFeatures) {
-        if (await feature.count() > 0) {
+        if ((await feature.count()) > 0) {
           foundAIFeatures++;
         }
       }
@@ -513,7 +523,7 @@ test.describe('Admin Dashboard', () => {
 
       // Test AI settings
       const aiSettings = page.locator('[data-testid="ai-settings"], text=Settings');
-      if (await aiSettings.count() > 0) {
+      if ((await aiSettings.count()) > 0) {
         await aiSettings.click();
         await page.waitForTimeout(1000);
 
@@ -526,7 +536,7 @@ test.describe('Admin Dashboard', () => {
 
         let foundConfigOptions = 0;
         for (const option of configOptions) {
-          if (await option.count() > 0) {
+          if ((await option.count()) > 0) {
             foundConfigOptions++;
           }
         }
@@ -541,38 +551,40 @@ test.describe('Admin Dashboard', () => {
 
       // Look for generation queue
       const generationQueue = page.locator('[data-testid="generation-queue"], .queue-table');
-      if (await generationQueue.count() > 0) {
+      if ((await generationQueue.count()) > 0) {
         // Should show pending and completed generations
         const queueItems = generationQueue.locator('[data-testid="queue-item"], tr');
         const itemCount = await queueItems.count();
-        
+
         console.log(`Generation queue items: ${itemCount}`);
 
         // Check for status indicators
-        const statusElements = generationQueue.locator('[data-testid="generation-status"], .status');
+        const statusElements = generationQueue.locator(
+          '[data-testid="generation-status"], .status'
+        );
         const statusCount = await statusElements.count();
-        
+
         console.log(`Status indicators found: ${statusCount}`);
       }
 
       // Look for AI performance metrics
       const performanceMetrics = page.locator('[data-testid="ai-performance"], .ai-metrics');
-      if (await performanceMetrics.count() > 0) {
+      if ((await performanceMetrics.count()) > 0) {
         console.log('AI performance metrics displayed');
       }
     });
-
   });
 
   test.describe('System Settings', () => {
-
     test('should allow configuring system settings', async ({ page }) => {
       await page.goto('/admin');
       await page.waitForTimeout(1000);
 
       // Navigate to settings
-      const settingsNav = page.locator('[data-testid="admin-settings"], text=Settings, [href*="/admin/settings"]');
-      if (await settingsNav.count() > 0) {
+      const settingsNav = page.locator(
+        '[data-testid="admin-settings"], text=Settings, [href*="/admin/settings"]'
+      );
+      if ((await settingsNav.count()) > 0) {
         await settingsNav.click();
       } else {
         await page.goto('/admin/settings');
@@ -590,7 +602,7 @@ test.describe('Admin Dashboard', () => {
 
       let foundSettingSections = 0;
       for (const section of settingsSections) {
-        if (await section.count() > 0) {
+        if ((await section.count()) > 0) {
           foundSettingSections++;
         }
       }
@@ -599,21 +611,21 @@ test.describe('Admin Dashboard', () => {
 
       // Test updating a setting
       const settingInput = page.locator('input[name*="setting"], input[name*="config"]').first();
-      if (await settingInput.count() > 0) {
+      if ((await settingInput.count()) > 0) {
         const originalValue = await settingInput.inputValue();
         await settingInput.fill('Updated Test Value');
-        
+
         const saveButton = page.locator('button:has-text("Save"), button[type="submit"]');
-        if (await saveButton.count() > 0) {
+        if ((await saveButton.count()) > 0) {
           await saveButton.click();
           await page.waitForTimeout(1000);
 
           // Should show success message
           const successMessage = page.locator('[data-testid="save-success"], text=saved');
-          const hasSuccess = await successMessage.count() > 0;
-          
+          const hasSuccess = (await successMessage.count()) > 0;
+
           console.log(`Settings save successful: ${hasSuccess}`);
-          
+
           // Restore original value
           if (originalValue) {
             await settingInput.fill(originalValue);
@@ -622,15 +634,15 @@ test.describe('Admin Dashboard', () => {
         }
       }
     });
-
   });
 
   test.describe('Admin Permissions and Security', () => {
-
     test('should restrict admin functions to admin users only', async ({ page }) => {
       // Logout admin
-      const logoutButton = page.locator('[data-testid="logout-button"], text=Logout, text=Sign Out');
-      if (await logoutButton.count() > 0) {
+      const logoutButton = page.locator(
+        '[data-testid="logout-button"], text=Logout, text=Sign Out'
+      );
+      if ((await logoutButton.count()) > 0) {
         await logoutButton.click();
         await page.waitForTimeout(1000);
       }
@@ -649,7 +661,7 @@ test.describe('Admin Dashboard', () => {
 
       let isRestricted = false;
       for (const indicator of restrictionIndicators) {
-        if (await indicator.count() > 0) {
+        if ((await indicator.count()) > 0) {
           isRestricted = true;
           break;
         }
@@ -662,7 +674,5 @@ test.describe('Admin Dashboard', () => {
       expect(isRestricted || isRedirectedToLogin).toBe(true);
       console.log(`Admin access properly restricted: ${isRestricted || isRedirectedToLogin}`);
     });
-
   });
-
 });

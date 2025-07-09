@@ -1,21 +1,27 @@
 #!/usr/bin/env node
-import fs from 'fs';
-import path from 'path';
+import fs from 'node:fs';
+import path from 'node:path';
 import { glob } from 'glob';
 
 const projectRoot = process.cwd();
-const clientSrcPath = path.join(projectRoot, 'client/src');
-const serverPath = path.join(projectRoot, 'server');
-const testsPath = path.join(projectRoot, 'tests');
+const _clientSrcPath = path.join(projectRoot, 'client/src');
+const _serverPath = path.join(projectRoot, 'server');
+const _testsPath = path.join(projectRoot, 'tests');
 
 console.log('🔍 Analyzing test coverage gaps in AIGlossaryPro...\n');
 
 // Get all source files
-const clientFiles = await glob('client/src/**/*.{ts,tsx}', { ignore: ['**/*.d.ts', '**/*.stories.tsx'] });
-const serverFiles = await glob('server/**/*.{ts,js}', { ignore: ['**/*.d.ts', '**/public/**', '**/migrations/**', '**/scripts/**'] });
+const clientFiles = await glob('client/src/**/*.{ts,tsx}', {
+  ignore: ['**/*.d.ts', '**/*.stories.tsx'],
+});
+const serverFiles = await glob('server/**/*.{ts,js}', {
+  ignore: ['**/*.d.ts', '**/public/**', '**/migrations/**', '**/scripts/**'],
+});
 
 // Get all test files
-const testFiles = await glob('tests/**/*.{test,spec}.{ts,tsx}', { ignore: ['tests/visual/**', 'tests/e2e/**'] });
+const testFiles = await glob('tests/**/*.{test,spec}.{ts,tsx}', {
+  ignore: ['tests/visual/**', 'tests/e2e/**'],
+});
 
 console.log('📊 FILE ANALYSIS');
 console.log('================');
@@ -46,16 +52,16 @@ const criticalPatterns = [
 // Find files matching critical patterns
 for (const { pattern, priority } of criticalPatterns) {
   const matchingFiles = await glob(pattern);
-  matchingFiles.forEach(file => {
+  matchingFiles.forEach((file) => {
     criticalModules.push({ file, priority });
   });
 }
 
 // Check which files have tests
 const testedFiles = new Set();
-testFiles.forEach(testFile => {
+testFiles.forEach((testFile) => {
   const content = fs.readFileSync(testFile, 'utf8');
-  
+
   // Extract import paths from test files
   const importRegex = /from\s+['"]([^'"]+)['"]/g;
   let match;
@@ -70,13 +76,13 @@ testFiles.forEach(testFile => {
 console.log('🎯 CRITICAL MODULES REQUIRING 80%+ COVERAGE');
 console.log('===========================================');
 criticalModules.forEach(({ file, priority }) => {
-  const hasTest = Array.from(testedFiles).some(testPath => 
+  const hasTest = Array.from(testedFiles).some((testPath) =>
     testPath.includes(path.basename(file, path.extname(file)))
   );
-  
+
   const status = hasTest ? '✅ HAS TESTS' : '❌ NO TESTS';
   console.log(`${status} [${priority}] ${file}`);
-  
+
   if (!hasTest) {
     uncoveredFiles.push({ file, priority });
   }
@@ -85,7 +91,7 @@ criticalModules.forEach(({ file, priority }) => {
 console.log('\n🚨 FILES WITHOUT TESTS (PRIORITY ORDER)');
 console.log('=======================================');
 const sortedUncovered = uncoveredFiles.sort((a, b) => {
-  const priorityOrder = { 'CRITICAL': 0, 'HIGH': 1, 'MEDIUM': 2, 'LOW': 3 };
+  const priorityOrder = { CRITICAL: 0, HIGH: 1, MEDIUM: 2, LOW: 3 };
   return priorityOrder[a.priority] - priorityOrder[b.priority];
 });
 
@@ -127,7 +133,7 @@ const suggestedTests = [
   'tests/integration/auth-flow.test.ts',
 ];
 
-suggestedTests.forEach(test => {
+suggestedTests.forEach((test) => {
   console.log(`   - ${test}`);
 });
 

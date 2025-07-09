@@ -1,16 +1,17 @@
-import React, { useState } from 'react';
-import { HierarchicalNavigator } from './HierarchicalNavigator';
-import { contentOutline } from '@/data/content-outline';
-import { ContentNode, findNodeByPath } from '@/types/content-structure';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ArrowLeft, BookOpen, Code, ExternalLink, Play, Target } from 'lucide-react';
+import type React from 'react';
+import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, ExternalLink, BookOpen, Play, Code, Target } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { contentOutline } from '@/data/content-outline';
+import type { ContentNode } from '@/types/content-structure';
+import { HierarchicalNavigator } from './HierarchicalNavigator';
 
 export const HierarchicalNavigatorDemo: React.FC = () => {
   const [currentPath, setCurrentPath] = useState<string>('');
   const [selectedNode, setSelectedNode] = useState<ContentNode | null>(null);
-  
+
   // Mock user progress data
   const mockUserProgress = {
     '1': { isCompleted: true, progress: 100, timeSpent: 300 },
@@ -103,7 +104,7 @@ export const HierarchicalNavigatorDemo: React.FC = () => {
                 <h4 className="font-medium mb-2">Subsections ({node.subsections.length})</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {node.subsections.map((subsection, index) => (
-                    <div 
+                    <div
                       key={subsection.slug || index}
                       className="p-2 bg-white dark:bg-gray-700 rounded border hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer"
                       onClick={() => handleNodeClick(`${currentPath}.${index}`, subsection)}
@@ -174,7 +175,8 @@ export const HierarchicalNavigatorDemo: React.FC = () => {
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">Hierarchical Content Navigation Demo</h1>
         <p className="text-gray-600 dark:text-gray-400">
-          This demo shows the new hierarchical navigation system with 295 subsections organized into 42 main sections.
+          This demo shows the new hierarchical navigation system with 295 subsections organized into
+          42 main sections.
         </p>
       </div>
 
@@ -206,9 +208,10 @@ export const HierarchicalNavigatorDemo: React.FC = () => {
               <CardContent>
                 <div className="space-y-4">
                   <p className="text-gray-600 dark:text-gray-400">
-                    Select a section from the navigation to explore the hierarchical content structure.
+                    Select a section from the navigation to explore the hierarchical content
+                    structure.
                   </p>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                       <h3 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
@@ -222,7 +225,7 @@ export const HierarchicalNavigatorDemo: React.FC = () => {
                         <li>• Flexible display modes</li>
                       </ul>
                     </div>
-                    
+
                     <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                       <h3 className="font-medium text-green-900 dark:text-green-100 mb-2">
                         Content Types
@@ -236,14 +239,16 @@ export const HierarchicalNavigatorDemo: React.FC = () => {
                       </ul>
                     </div>
                   </div>
-                  
+
                   <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
                     <h3 className="font-medium text-purple-900 dark:text-purple-100 mb-2">
                       Structure Overview
                     </h3>
                     <p className="text-sm text-purple-700 dark:text-purple-300">
-                      The new structure organizes <strong>295 subsections</strong> into <strong>42 main sections</strong> 
-                      with proper hierarchical relationships, making navigation more intuitive and content discovery easier.
+                      The new structure organizes <strong>295 subsections</strong> into{' '}
+                      <strong>42 main sections</strong>
+                      with proper hierarchical relationships, making navigation more intuitive and
+                      content discovery easier.
                     </p>
                   </div>
                 </div>

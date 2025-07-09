@@ -3,10 +3,10 @@
  * Handles batch AI processing for multiple terms
  */
 
-import { Job } from 'bullmq';
-import { AIBatchProcessingJobData } from '../types';
-import { jobQueueManager, JobType } from '../queue';
+import type { Job } from 'bullmq';
 import { log as logger } from '../../utils/logger';
+import { JobType, jobQueueManager } from '../queue';
+import type { AIBatchProcessingJobData } from '../types';
 
 interface AIBatchProcessingJobResult {
   totalTerms: number;
@@ -100,13 +100,15 @@ export async function aiBatchProcessingProcessor(
           result.subJobIds.push(jobId);
           return jobId;
         } catch (error) {
-          logger.error(`Failed to create AI job for term ${term.id}:`, { error: error instanceof Error ? error.message : String(error) });
+          logger.error(`Failed to create AI job for term ${term.id}:`, {
+            error: error instanceof Error ? error.message : String(error),
+          });
           result.failedTerms++;
           return null;
         }
       });
 
-      const createdJobIds = (await Promise.all(jobPromises)).filter(id => id !== null);
+      const createdJobIds = (await Promise.all(jobPromises)).filter((id) => id !== null);
 
       // Wait for batch completion with timeout
       const batchTimeout = 300000; // 5 minutes per batch
@@ -114,11 +116,13 @@ export async function aiBatchProcessingProcessor(
 
       while (Date.now() - batchStartTime < batchTimeout) {
         const jobStatuses = await Promise.all(
-          createdJobIds.map(id => jobQueueManager.getJobStatus(JobType.AI_CONTENT_GENERATION, id!))
+          createdJobIds.map((id) =>
+            jobQueueManager.getJobStatus(JobType.AI_CONTENT_GENERATION, id!)
+          )
         );
 
-        const completed = jobStatuses.filter(status => 
-          status && (status.state === 'completed' || status.state === 'failed')
+        const completed = jobStatuses.filter(
+          (status) => status && (status.state === 'completed' || status.state === 'failed')
         );
 
         if (completed.length === createdJobIds.length) {
@@ -127,14 +131,14 @@ export async function aiBatchProcessingProcessor(
         }
 
         // Wait before checking again
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
 
       // Collect results from completed jobs
       const batchResults = await Promise.all(
         createdJobIds.map(async (jobId) => {
           if (!jobId) return null;
-          
+
           const status = await jobQueueManager.getJobStatus(JobType.AI_CONTENT_GENERATION, jobId);
           if (status?.state === 'completed' && status.result) {
             result.processedTerms++;
@@ -149,8 +153,8 @@ export async function aiBatchProcessingProcessor(
       );
 
       logger.info(`Batch ${batchIndex + 1} completed:`, {
-        processed: batchResults.filter(r => r !== null).length,
-        failed: batch.length - batchResults.filter(r => r !== null).length,
+        processed: batchResults.filter((r) => r !== null).length,
+        failed: batch.length - batchResults.filter((r) => r !== null).length,
         totalCost: result.totalCost,
       });
     }
@@ -179,9 +183,10 @@ export async function aiBatchProcessingProcessor(
 
     logger.info(`AI batch processing job ${job.id} completed`, result);
     return result;
-
   } catch (error) {
-    logger.error(`AI batch processing job ${job.id} failed:`, { error: error instanceof Error ? error.message : String(error) });
+    logger.error(`AI batch processing job ${job.id} failed:`, {
+      error: error instanceof Error ? error.message : String(error),
+    });
     throw error;
   }
 }

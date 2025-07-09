@@ -2,20 +2,14 @@
 
 /**
  * Content Population System Demo
- * 
+ *
  * This script demonstrates the content population system capabilities
  * with a complete end-to-end workflow for generating high-quality
  * AI/ML content using the existing AI services.
  */
 
+import { performance } from 'node:perf_hooks';
 import { log as logger } from '../../server/utils/logger';
-import { performance } from 'perf_hooks';
-
-// Import our content seeding functions
-import { seedTerms } from './seedTerms';
-import { generate42Sections } from './generate42Sections';
-import { validateContent } from './validateContent';
-import { bulkImport } from './bulkImport';
 import { ESSENTIAL_AI_TERMS, getCategoryStatistics } from './data/essentialTerms';
 
 /**
@@ -23,32 +17,32 @@ import { ESSENTIAL_AI_TERMS, getCategoryStatistics } from './data/essentialTerms
  */
 async function runDemo(): Promise<void> {
   const startTime = performance.now();
-  
+
   try {
     logger.info('🚀 CONTENT POPULATION SYSTEM DEMO');
     logger.info('═══════════════════════════════════');
-    
+
     // Step 1: Show essential terms statistics
     await demonstrateEssentialTerms();
-    
+
     // Step 2: Demo content seeding (dry run)
     await demonstrateContentSeeding();
-    
+
     // Step 3: Demo 42-section generation (dry run)
     await demonstrate42SectionGeneration();
-    
+
     // Step 4: Demo content validation
     await demonstrateContentValidation();
-    
+
     // Step 5: Demo bulk import capabilities
     await demonstrateBulkImport();
-    
+
     // Step 6: Show complete workflow
     await demonstrateCompleteWorkflow();
-    
+
     const endTime = performance.now();
     const duration = (endTime - startTime) / 1000;
-    
+
     logger.info('\n✅ DEMO COMPLETED SUCCESSFULLY');
     logger.info(`Total Demo Time: ${duration.toFixed(2)}s`);
     logger.info('\n📚 Next Steps:');
@@ -57,7 +51,6 @@ async function runDemo(): Promise<void> {
     logger.info('3. Validate content quality: npm run validate:content');
     logger.info('4. Import bulk content: npm run import:bulk');
     logger.info('\n📖 See docs/CONTENT_POPULATION_SYSTEM.md for complete guide');
-    
   } catch (error) {
     logger.error('Demo failed:', error);
     process.exit(1);
@@ -70,23 +63,25 @@ async function runDemo(): Promise<void> {
 async function demonstrateEssentialTerms(): Promise<void> {
   logger.info('\n📋 ESSENTIAL TERMS DATABASE');
   logger.info('──────────────────────────');
-  
+
   const stats = getCategoryStatistics();
   let totalTerms = 0;
   let totalHigh = 0;
-  
+
   for (const [category, categoryStats] of Object.entries(stats)) {
-    logger.info(`📁 ${category}: ${categoryStats.total} terms (${categoryStats.high} high priority)`);
+    logger.info(
+      `📁 ${category}: ${categoryStats.total} terms (${categoryStats.high} high priority)`
+    );
     totalTerms += categoryStats.total;
     totalHigh += categoryStats.high;
   }
-  
+
   logger.info(`\n📊 Summary: ${totalTerms} total terms, ${totalHigh} high priority`);
-  
+
   // Show sample terms from Machine Learning category
   const mlTerms = ESSENTIAL_AI_TERMS['Machine Learning'] || [];
   logger.info('\n📝 Sample ML Terms:');
-  mlTerms.slice(0, 5).forEach(term => {
+  mlTerms.slice(0, 5).forEach((term) => {
     logger.info(`  • ${term.name} (${term.priority}/${term.complexity})`);
   });
 }
@@ -97,7 +92,7 @@ async function demonstrateEssentialTerms(): Promise<void> {
 async function demonstrateContentSeeding(): Promise<void> {
   logger.info('\n🌱 CONTENT SEEDING DEMO (DRY RUN)');
   logger.info('─────────────────────────────────');
-  
+
   logger.info('This would generate AI/ML terms using the existing AI service...');
   logger.info('Features:');
   logger.info('  ✅ Uses existing aiService.ts infrastructure');
@@ -105,7 +100,7 @@ async function demonstrateContentSeeding(): Promise<void> {
   logger.info('  ✅ Supports category-specific generation');
   logger.info('  ✅ Includes quality assessment and validation');
   logger.info('  ✅ Provides comprehensive error handling');
-  
+
   logger.info('\n🎯 Example Commands:');
   logger.info('  npm run seed:terms -- --count 10');
   logger.info('  npm run seed:terms:category "Machine Learning"');
@@ -118,7 +113,7 @@ async function demonstrateContentSeeding(): Promise<void> {
 async function demonstrate42SectionGeneration(): Promise<void> {
   logger.info('\n📚 42-SECTION CONTENT GENERATION DEMO');
   logger.info('────────────────────────────────────');
-  
+
   logger.info('This would generate comprehensive content for each term...');
   logger.info('Features:');
   logger.info('  ✅ Complete 42-section structure implementation');
@@ -126,12 +121,12 @@ async function demonstrate42SectionGeneration(): Promise<void> {
   logger.info('  ✅ Content quality scoring and assessment');
   logger.info('  ✅ Batch processing capabilities');
   logger.info('  ✅ Section-specific generation support');
-  
+
   logger.info('\n📖 Section Categories:');
   logger.info('  🏆 High Priority (8 sections): Introduction, How It Works, Applications...');
   logger.info('  📈 Medium Priority (8 sections): Variants, Evaluation, Case Studies...');
   logger.info('  📚 Supporting (26 sections): Research Papers, Career Guidance...');
-  
+
   logger.info('\n🎯 Example Commands:');
   logger.info('  npm run generate:sections:priority high');
   logger.info('  npm run generate:sections -- --term "Neural Network"');
@@ -144,7 +139,7 @@ async function demonstrate42SectionGeneration(): Promise<void> {
 async function demonstrateContentValidation(): Promise<void> {
   logger.info('\n✅ CONTENT VALIDATION DEMO');
   logger.info('──────────────────────────');
-  
+
   logger.info('This would validate content quality, completeness, and consistency...');
   logger.info('Features:');
   logger.info('  ✅ Quality scoring (0-100 scale)');
@@ -152,12 +147,12 @@ async function demonstrateContentValidation(): Promise<void> {
   logger.info('  ✅ Consistency verification');
   logger.info('  ✅ Auto-fix capabilities');
   logger.info('  ✅ Detailed reporting');
-  
+
   logger.info('\n🔍 Validation Types:');
   logger.info('  📊 Quality: Text clarity, technical accuracy, grammar');
   logger.info('  📋 Completeness: Required fields, section coverage');
   logger.info('  🔗 Consistency: Definition alignment, category fit');
-  
+
   logger.info('\n🎯 Example Commands:');
   logger.info('  npm run validate:content:report');
   logger.info('  npm run validate:content:fix');
@@ -170,7 +165,7 @@ async function demonstrateContentValidation(): Promise<void> {
 async function demonstrateBulkImport(): Promise<void> {
   logger.info('\n📥 BULK IMPORT DEMO');
   logger.info('──────────────────');
-  
+
   logger.info('This would import content from various sources...');
   logger.info('Features:');
   logger.info('  ✅ Multiple format support (CSV, JSON, Essential)');
@@ -178,12 +173,12 @@ async function demonstrateBulkImport(): Promise<void> {
   logger.info('  ✅ Automatic category creation');
   logger.info('  ✅ Batch processing with error handling');
   logger.info('  ✅ Sample file generation');
-  
+
   logger.info('\n📁 Supported Formats:');
   logger.info('  📄 CSV: Standard spreadsheet format');
   logger.info('  📋 JSON: Structured data format');
   logger.info('  📚 Essential: Built-in curated terms');
-  
+
   logger.info('\n🎯 Example Commands:');
   logger.info('  npm run import:bulk:samples (create sample files)');
   logger.info('  npm run import:bulk:csv path/to/terms.csv --enhance');
@@ -196,27 +191,27 @@ async function demonstrateBulkImport(): Promise<void> {
 async function demonstrateCompleteWorkflow(): Promise<void> {
   logger.info('\n🔄 COMPLETE WORKFLOW DEMO');
   logger.info('─────────────────────────');
-  
+
   logger.info('Recommended workflow for production-ready content:');
   logger.info('\n1️⃣ Initial Setup:');
   logger.info('   npm run import:bulk:samples  # Create sample files');
   logger.info('   npm run db:status           # Verify database');
-  
+
   logger.info('\n2️⃣ Content Generation:');
   logger.info('   npm run seed:terms:dry-run  # Test generation');
   logger.info('   npm run seed:terms          # Generate essential terms');
-  
+
   logger.info('\n3️⃣ Comprehensive Content:');
   logger.info('   npm run generate:sections:priority high  # Priority sections');
   logger.info('   npm run generate:sections -- --batch 10  # Complete content');
-  
+
   logger.info('\n4️⃣ Quality Assurance:');
   logger.info('   npm run validate:content:report  # Generate report');
   logger.info('   npm run validate:content:fix     # Auto-fix issues');
-  
+
   logger.info('\n5️⃣ Bulk Enhancement:');
   logger.info('   npm run import:bulk:enhance  # Import with AI enhancement');
-  
+
   logger.info('\n📊 Expected Results:');
   logger.info('  • 50-500 high-quality AI/ML terms');
   logger.info('  • 42-section comprehensive content');
@@ -227,10 +222,10 @@ async function demonstrateCompleteWorkflow(): Promise<void> {
 /**
  * Show system capabilities overview
  */
-function showSystemCapabilities(): void {
+function _showSystemCapabilities(): void {
   logger.info('\n🎯 SYSTEM CAPABILITIES OVERVIEW');
   logger.info('───────────────────────────────');
-  
+
   const capabilities = [
     '🤖 AI-Powered Content Generation',
     '📚 42-Section Comprehensive Structure',
@@ -241,10 +236,10 @@ function showSystemCapabilities(): void {
     '📊 Performance Analytics',
     '🛡️ Error Handling & Recovery',
     '💾 Database Integration',
-    '📈 Progress Monitoring'
+    '📈 Progress Monitoring',
   ];
-  
-  capabilities.forEach(capability => {
+
+  capabilities.forEach((capability) => {
     logger.info(`  ${capability}`);
   });
 }
@@ -253,7 +248,7 @@ function showSystemCapabilities(): void {
  * Main execution
  */
 if (require.main === module) {
-  runDemo().catch(error => {
+  runDemo().catch((error) => {
     logger.error('Demo execution failed:', error);
     process.exit(1);
   });

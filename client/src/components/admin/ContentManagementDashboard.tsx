@@ -1,29 +1,21 @@
-import React, { useState, useEffect } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AlertCircle, Bot, Edit, FileText, Layers, RefreshCw, Search } from 'lucide-react';
+import { useState } from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import {
-  Search,
-  RefreshCw,
-  Bot,
-  Brain,
-  CheckCircle,
-  AlertCircle,
-  Edit,
-  Eye,
-  Settings,
-  Layers,
-  FileText,
-  TrendingUp
-} from 'lucide-react';
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useToast } from '@/hooks/use-toast';
 import { InlineContentEditor } from './InlineContentEditor';
 
 interface Term {
@@ -80,7 +72,7 @@ export function ContentManagementDashboard() {
   const [selectedTerm, setSelectedTerm] = useState<Term | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedSection, setSelectedSection] = useState<string>('definition_overview');
-  const [viewMode, setViewMode] = useState<'single' | 'batch'>('single');
+  const [_viewMode, _setViewMode] = useState<'single' | 'batch'>('single');
 
   // Fetch terms
   const { data: terms = [], isLoading: loadingTerms } = useQuery({
@@ -91,7 +83,7 @@ export function ContentManagementDashboard() {
       const response = await fetch(`/api/admin/enhanced-terms?${params}`);
       if (!response.ok) throw new Error('Failed to fetch terms');
       return response.json();
-    }
+    },
   });
 
   // Fetch content metrics
@@ -101,7 +93,7 @@ export function ContentManagementDashboard() {
       const response = await fetch('/api/admin/content-metrics');
       if (!response.ok) throw new Error('Failed to fetch metrics');
       return response.json();
-    }
+    },
   });
 
   // Fetch sections for selected term
@@ -113,7 +105,7 @@ export function ContentManagementDashboard() {
       if (!response.ok) throw new Error('Failed to fetch sections');
       return response.json();
     },
-    enabled: !!selectedTerm
+    enabled: !!selectedTerm,
   });
 
   // Fetch section content
@@ -130,7 +122,7 @@ export function ContentManagementDashboard() {
       }
       return response.json();
     },
-    enabled: !!selectedTerm && !!selectedSection
+    enabled: !!selectedTerm && !!selectedSection,
   });
 
   // Generate content mutation
@@ -144,7 +136,7 @@ export function ContentManagementDashboard() {
       const response = await fetch('/api/admin/enhanced-content-generation/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(params)
+        body: JSON.stringify(params),
       });
       if (!response.ok) throw new Error('Failed to generate content');
       return response.json();
@@ -163,22 +155,18 @@ export function ContentManagementDashboard() {
         description: `Generation failed: ${error.message}`,
         variant: 'destructive',
       });
-    }
+    },
   });
 
   // Save content mutation
   const saveContent = useMutation({
-    mutationFn: async (params: {
-      termId: string;
-      sectionName: string;
-      content: string;
-    }) => {
+    mutationFn: async (params: { termId: string; sectionName: string; content: string }) => {
       const response = await fetch(
         `/api/admin/content-editing/content/${params.termId}/${params.sectionName}`,
         {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content: params.content })
+          body: JSON.stringify({ content: params.content }),
         }
       );
       if (!response.ok) throw new Error('Failed to save content');
@@ -186,35 +174,37 @@ export function ContentManagementDashboard() {
     },
     onSuccess: () => {
       refetchContent();
-    }
+    },
   });
 
   const handleGenerateContent = async () => {
     if (!selectedTerm) return;
-    
+
     await generateContent.mutateAsync({
       termId: selectedTerm.id,
       sectionName: selectedSection,
-      regenerate: true
+      regenerate: true,
     });
   };
 
   const handleSaveContent = async (content: string) => {
     if (!selectedTerm) return;
-    
+
     await saveContent.mutateAsync({
       termId: selectedTerm.id,
       sectionName: selectedSection,
-      content
+      content,
     });
   };
 
   const getSectionInfo = (sectionName: string) => {
-    return SECTION_DEFINITIONS.find(s => s.name === sectionName) || {
-      name: sectionName,
-      label: sectionName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
-      priority: 5
-    };
+    return (
+      SECTION_DEFINITIONS.find((s) => s.name === sectionName) || {
+        name: sectionName,
+        label: sectionName.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+        priority: 5,
+      }
+    );
   };
 
   return (
@@ -294,13 +284,9 @@ export function ContentManagementDashboard() {
             <ScrollArea className="h-[600px]">
               <div className="space-y-2">
                 {loadingTerms ? (
-                  <div className="text-center py-4 text-muted-foreground">
-                    Loading terms...
-                  </div>
+                  <div className="text-center py-4 text-muted-foreground">Loading terms...</div>
                 ) : terms.length === 0 ? (
-                  <div className="text-center py-4 text-muted-foreground">
-                    No terms found
-                  </div>
+                  <div className="text-center py-4 text-muted-foreground">No terms found</div>
                 ) : (
                   terms.map((term: Term) => (
                     <div
@@ -339,9 +325,7 @@ export function ContentManagementDashboard() {
                 <Edit className="w-5 h-5" />
                 Content Editor
               </CardTitle>
-              {selectedTerm && (
-                <Badge variant="outline">{selectedTerm.name}</Badge>
-              )}
+              {selectedTerm && <Badge variant="outline">{selectedTerm.name}</Badge>}
             </div>
           </CardHeader>
           <CardContent>
@@ -432,19 +416,13 @@ export function ContentManagementDashboard() {
         <CardContent>
           <div className="flex items-center gap-4">
             <Button variant="outline" asChild>
-              <a href="/admin/column-batch-operations">
-                Column-wise Generation
-              </a>
+              <a href="/admin/column-batch-operations">Column-wise Generation</a>
             </Button>
             <Button variant="outline" asChild>
-              <a href="/admin/quality-evaluation">
-                Quality Evaluation
-              </a>
+              <a href="/admin/quality-evaluation">Quality Evaluation</a>
             </Button>
             <Button variant="outline" asChild>
-              <a href="/admin/template-management">
-                Manage Templates
-              </a>
+              <a href="/admin/template-management">Manage Templates</a>
             </Button>
           </div>
         </CardContent>

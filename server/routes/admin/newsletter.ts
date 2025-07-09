@@ -1,10 +1,10 @@
-import type { Express } from "express";
-import { db } from "../../db";
-import { log } from "../../utils/logger";
-import { canPerformAdminAction } from "../../utils/accessControl";
-import { z } from "zod";
-import { newsletterSubscriptions, contactSubmissions } from "../../../shared/schema";
-import { eq, like, and, desc, asc, count, sql, inArray, or, isNull, isNotNull } from "drizzle-orm";
+import { and, asc, count, desc, eq, inArray, isNotNull, like, or, sql } from 'drizzle-orm';
+import type { Express } from 'express';
+import { z } from 'zod';
+import { contactSubmissions, newsletterSubscriptions } from '../../../shared/schema';
+import { db } from '../../db';
+import { canPerformAdminAction } from '../../utils/accessControl';
+import { log } from '../../utils/logger';
 
 // Validation schemas
 const newsletterFiltersSchema = z.object({
@@ -17,7 +17,7 @@ const newsletterFiltersSchema = z.object({
   page: z.number().min(1).optional(),
   limit: z.number().min(1).max(100).optional(),
   sort: z.enum(['created_at', 'email', 'language']).optional(),
-  order: z.enum(['asc', 'desc']).optional()
+  order: z.enum(['asc', 'desc']).optional(),
 });
 
 const contactFiltersSchema = z.object({
@@ -30,17 +30,17 @@ const contactFiltersSchema = z.object({
   page: z.number().min(1).optional(),
   limit: z.number().min(1).max(100).optional(),
   sort: z.enum(['created_at', 'name', 'email', 'subject']).optional(),
-  order: z.enum(['asc', 'desc']).optional()
+  order: z.enum(['asc', 'desc']).optional(),
 });
 
 const bulkActionSchema = z.object({
   action: z.enum(['mark_resolved', 'mark_in_progress', 'mark_new', 'unsubscribe']),
-  ids: z.array(z.number()).min(1)
+  ids: z.array(z.number()).min(1),
 });
 
 const updateContactStatusSchema = z.object({
   status: z.enum(['new', 'in_progress', 'resolved']),
-  notes: z.string().optional()
+  notes: z.string().optional(),
 });
 
 /**
@@ -49,18 +49,18 @@ const updateContactStatusSchema = z.object({
 function requireAdminAccess(req: any, res: any, next: any) {
   try {
     const user = req.user;
-    
+
     if (!user) {
       return res.status(401).json({
         success: false,
-        message: 'Authentication required'
+        message: 'Authentication required',
       });
     }
 
     if (!canPerformAdminAction(user)) {
       return res.status(403).json({
         success: false,
-        message: 'Admin access required'
+        message: 'Admin access required',
       });
     }
 
@@ -69,7 +69,7 @@ function requireAdminAccess(req: any, res: any, next: any) {
     log.error('Admin auth middleware error:', error);
     return res.status(500).json({
       success: false,
-      message: 'Internal server error'
+      message: 'Internal server error',
     });
   }
 }
@@ -80,11 +80,11 @@ function requireAdminAccess(req: any, res: any, next: any) {
 async function getNewsletterSubscriptions(req: any, res: any) {
   try {
     const filters = newsletterFiltersSchema.parse(req.query);
-    
+
     const page = filters.page || 1;
     const limit = filters.limit || 50;
     const offset = (page - 1) * limit;
-    const sort = filters.sort || 'created_at';
+    const sort = filters.sort || 'createdAt';
     const order = filters.order || 'desc';
 
     // Build WHERE conditions
@@ -121,12 +121,13 @@ async function getNewsletterSubscriptions(req: any, res: any) {
       .select({ total: count() })
       .from(newsletterSubscriptions)
       .where(whereClause);
-    
+
     const total = countResult[0].total;
 
     // Get subscriptions
-    const orderBy = order === 'desc' ? desc(newsletterSubscriptions[sort]) : asc(newsletterSubscriptions[sort]);
-    
+    const orderBy =
+      order === 'desc' ? desc(newsletterSubscriptions[sort]) : asc(newsletterSubscriptions[sort]);
+
     const subscriptions = await db
       .select({
         id: newsletterSubscriptions.id,
@@ -138,7 +139,7 @@ async function getNewsletterSubscriptions(req: any, res: any) {
         utmCampaign: newsletterSubscriptions.utmCampaign,
         createdAt: newsletterSubscriptions.createdAt,
         unsubscribedAt: newsletterSubscriptions.unsubscribedAt,
-        userAgent: newsletterSubscriptions.userAgent
+        userAgent: newsletterSubscriptions.userAgent,
       })
       .from(newsletterSubscriptions)
       .where(whereClause)
@@ -150,10 +151,14 @@ async function getNewsletterSubscriptions(req: any, res: any) {
     const analyticsResult = await db
       .select({
         totalSubscriptions: count(),
-        activeSubscriptions: count(sql`CASE WHEN ${newsletterSubscriptions.status} = 'active' THEN 1 END`),
-        unsubscribed: count(sql`CASE WHEN ${newsletterSubscriptions.status} = 'unsubscribed' THEN 1 END`),
+        activeSubscriptions: count(
+          sql`CASE WHEN ${newsletterSubscriptions.status} = 'active' THEN 1 END`
+        ),
+        unsubscribed: count(
+          sql`CASE WHEN ${newsletterSubscriptions.status} = 'unsubscribed' THEN 1 END`
+        ),
         uniqueLanguages: sql<number>`COUNT(DISTINCT ${newsletterSubscriptions.language})`,
-        uniqueSources: sql<number>`COUNT(DISTINCT ${newsletterSubscriptions.utmSource})`
+        uniqueSources: sql<number>`COUNT(DISTINCT ${newsletterSubscriptions.utmSource})`,
       })
       .from(newsletterSubscriptions)
       .where(whereClause);
@@ -168,31 +173,32 @@ async function getNewsletterSubscriptions(req: any, res: any) {
           page,
           limit,
           total,
-          pages: Math.ceil(total / limit)
+          pages: Math.ceil(total / limit),
         },
         analytics: {
           total_subscriptions: analytics.totalSubscriptions,
           active_subscriptions: analytics.activeSubscriptions,
           unsubscribed: analytics.unsubscribed,
           unique_languages: analytics.uniqueLanguages,
-          unique_sources: analytics.uniqueSources
-        }
-      }
+          unique_sources: analytics.uniqueSources,
+        },
+      },
     });
-
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
         message: 'Invalid query parameters',
-        errors: error.errors
+        errors: error.errors,
       });
     }
 
-    log.error('Get newsletter subscriptions error:', error);
+    log.error('Get newsletter subscriptions error:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve newsletter subscriptions'
+      message: 'Failed to retrieve newsletter subscriptions',
     });
   }
 }
@@ -203,11 +209,11 @@ async function getNewsletterSubscriptions(req: any, res: any) {
 async function getContactSubmissions(req: any, res: any) {
   try {
     const filters = contactFiltersSchema.parse(req.query);
-    
+
     const page = filters.page || 1;
     const limit = filters.limit || 50;
     const offset = (page - 1) * limit;
-    const sort = filters.sort || 'created_at';
+    const sort = filters.sort || 'createdAt';
     const order = filters.order || 'desc';
 
     // Build WHERE conditions
@@ -251,12 +257,13 @@ async function getContactSubmissions(req: any, res: any) {
       .select({ total: count() })
       .from(contactSubmissions)
       .where(whereClause);
-    
+
     const total = countResult[0].total;
 
     // Get submissions
-    const orderBy = order === 'desc' ? desc(contactSubmissions[sort]) : asc(contactSubmissions[sort]);
-    
+    const orderBy =
+      order === 'desc' ? desc(contactSubmissions[sort]) : asc(contactSubmissions[sort]);
+
     const submissions = await db
       .select()
       .from(contactSubmissions)
@@ -270,10 +277,14 @@ async function getContactSubmissions(req: any, res: any) {
       .select({
         totalSubmissions: count(),
         newSubmissions: count(sql`CASE WHEN ${contactSubmissions.status} = 'new' THEN 1 END`),
-        inProgressSubmissions: count(sql`CASE WHEN ${contactSubmissions.status} = 'in_progress' THEN 1 END`),
-        resolvedSubmissions: count(sql`CASE WHEN ${contactSubmissions.status} = 'resolved' THEN 1 END`),
+        inProgressSubmissions: count(
+          sql`CASE WHEN ${contactSubmissions.status} = 'in_progress' THEN 1 END`
+        ),
+        resolvedSubmissions: count(
+          sql`CASE WHEN ${contactSubmissions.status} = 'resolved' THEN 1 END`
+        ),
         uniqueLanguages: sql<number>`COUNT(DISTINCT ${contactSubmissions.language})`,
-        uniqueSources: sql<number>`COUNT(DISTINCT ${contactSubmissions.utmSource})`
+        uniqueSources: sql<number>`COUNT(DISTINCT ${contactSubmissions.utmSource})`,
       })
       .from(contactSubmissions)
       .where(whereClause);
@@ -288,7 +299,7 @@ async function getContactSubmissions(req: any, res: any) {
           page,
           limit,
           total,
-          pages: Math.ceil(total / limit)
+          pages: Math.ceil(total / limit),
         },
         analytics: {
           total_submissions: analytics.totalSubmissions,
@@ -296,24 +307,23 @@ async function getContactSubmissions(req: any, res: any) {
           in_progress_submissions: analytics.inProgressSubmissions,
           resolved_submissions: analytics.resolvedSubmissions,
           unique_languages: analytics.uniqueLanguages,
-          unique_sources: analytics.uniqueSources
-        }
-      }
+          unique_sources: analytics.uniqueSources,
+        },
+      },
     });
-
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
         message: 'Invalid query parameters',
-        errors: error.errors
+        errors: error.errors,
       });
     }
 
     log.error('Get contact submissions error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve contact submissions'
+      message: 'Failed to retrieve contact submissions',
     });
   }
 }
@@ -326,13 +336,13 @@ async function getNewsletterAnalytics(req: any, res: any) {
     const days = parseInt(req.query.days as string) || 30;
     const pastDate = new Date();
     pastDate.setDate(pastDate.getDate() - days);
-    
+
     // Subscriptions over time
     const subscriptionsOverTime = await db
       .select({
         date: sql<string>`DATE(${newsletterSubscriptions.createdAt})`,
         count: count(),
-        activeCount: count(sql`CASE WHEN ${newsletterSubscriptions.status} = 'active' THEN 1 END`)
+        activeCount: count(sql`CASE WHEN ${newsletterSubscriptions.status} = 'active' THEN 1 END`),
       })
       .from(newsletterSubscriptions)
       .where(sql`${newsletterSubscriptions.createdAt} >= ${pastDate}`)
@@ -344,7 +354,7 @@ async function getNewsletterAnalytics(req: any, res: any) {
       .select({
         utmSource: newsletterSubscriptions.utmSource,
         count: count(),
-        activeCount: count(sql`CASE WHEN ${newsletterSubscriptions.status} = 'active' THEN 1 END`)
+        activeCount: count(sql`CASE WHEN ${newsletterSubscriptions.status} = 'active' THEN 1 END`),
       })
       .from(newsletterSubscriptions)
       .where(
@@ -363,7 +373,7 @@ async function getNewsletterAnalytics(req: any, res: any) {
       .select({
         language: newsletterSubscriptions.language,
         count: count(),
-        activeCount: count(sql`CASE WHEN ${newsletterSubscriptions.status} = 'active' THEN 1 END`)
+        activeCount: count(sql`CASE WHEN ${newsletterSubscriptions.status} = 'active' THEN 1 END`),
       })
       .from(newsletterSubscriptions)
       .where(sql`${newsletterSubscriptions.createdAt} >= ${pastDate}`)
@@ -375,7 +385,7 @@ async function getNewsletterAnalytics(req: any, res: any) {
       .select({
         utmCampaign: newsletterSubscriptions.utmCampaign,
         count: count(),
-        activeCount: count(sql`CASE WHEN ${newsletterSubscriptions.status} = 'active' THEN 1 END`)
+        activeCount: count(sql`CASE WHEN ${newsletterSubscriptions.status} = 'active' THEN 1 END`),
       })
       .from(newsletterSubscriptions)
       .where(
@@ -396,15 +406,14 @@ async function getNewsletterAnalytics(req: any, res: any) {
         popularSources,
         languageBreakdown,
         campaignPerformance,
-        period: `${days} days`
-      }
+        period: `${days} days`,
+      },
     });
-
   } catch (error) {
     log.error('Get newsletter analytics error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve newsletter analytics'
+      message: 'Failed to retrieve newsletter analytics',
     });
   }
 }
@@ -417,14 +426,14 @@ async function getContactAnalytics(req: any, res: any) {
     const days = parseInt(req.query.days as string) || 30;
     const pastDate = new Date();
     pastDate.setDate(pastDate.getDate() - days);
-    
+
     // Submissions over time
     const submissionsOverTime = await db
       .select({
         date: sql<string>`DATE(${contactSubmissions.createdAt})`,
         count: count(),
         newCount: count(sql`CASE WHEN ${contactSubmissions.status} = 'new' THEN 1 END`),
-        resolvedCount: count(sql`CASE WHEN ${contactSubmissions.status} = 'resolved' THEN 1 END`)
+        resolvedCount: count(sql`CASE WHEN ${contactSubmissions.status} = 'resolved' THEN 1 END`),
       })
       .from(contactSubmissions)
       .where(sql`${contactSubmissions.createdAt} >= ${pastDate}`)
@@ -435,7 +444,7 @@ async function getContactAnalytics(req: any, res: any) {
     const popularSources = await db
       .select({
         utmSource: contactSubmissions.utmSource,
-        count: count()
+        count: count(),
       })
       .from(contactSubmissions)
       .where(
@@ -453,7 +462,7 @@ async function getContactAnalytics(req: any, res: any) {
     const languageBreakdown = await db
       .select({
         language: contactSubmissions.language,
-        count: count()
+        count: count(),
       })
       .from(contactSubmissions)
       .where(sql`${contactSubmissions.createdAt} >= ${pastDate}`)
@@ -465,7 +474,7 @@ async function getContactAnalytics(req: any, res: any) {
       .select({
         avgResponseHours: sql<number>`AVG(CASE WHEN ${contactSubmissions.status} = 'resolved' AND ${contactSubmissions.updatedAt} IS NOT NULL THEN EXTRACT(EPOCH FROM (${contactSubmissions.updatedAt} - ${contactSubmissions.createdAt})) / 3600 END)`,
         resolvedCount: count(sql`CASE WHEN ${contactSubmissions.status} = 'resolved' THEN 1 END`),
-        totalCount: count()
+        totalCount: count(),
       })
       .from(contactSubmissions)
       .where(sql`${contactSubmissions.createdAt} >= ${pastDate}`);
@@ -477,15 +486,14 @@ async function getContactAnalytics(req: any, res: any) {
         popularSources,
         languageBreakdown,
         responseTimeAnalytics: responseTimeAnalytics[0],
-        period: `${days} days`
-      }
+        period: `${days} days`,
+      },
     });
-
   } catch (error) {
     log.error('Get contact analytics error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to retrieve contact analytics'
+      message: 'Failed to retrieve contact analytics',
     });
   }
 }
@@ -496,7 +504,7 @@ async function getContactAnalytics(req: any, res: any) {
 async function exportNewsletterSubscriptions(req: any, res: any) {
   try {
     const filters = newsletterFiltersSchema.parse(req.query);
-    
+
     // Build WHERE conditions (same as getNewsletterSubscriptions)
     const whereConditions = [];
 
@@ -535,15 +543,24 @@ async function exportNewsletterSubscriptions(req: any, res: any) {
         utmMedium: newsletterSubscriptions.utmMedium,
         utmCampaign: newsletterSubscriptions.utmCampaign,
         createdAt: newsletterSubscriptions.createdAt,
-        unsubscribedAt: newsletterSubscriptions.unsubscribedAt
+        unsubscribedAt: newsletterSubscriptions.unsubscribedAt,
       })
       .from(newsletterSubscriptions)
       .where(whereClause)
       .orderBy(desc(newsletterSubscriptions.createdAt));
 
     // Generate CSV
-    const csvHeaders = ['Email', 'Status', 'Language', 'UTM Source', 'UTM Medium', 'UTM Campaign', 'Created At', 'Unsubscribed At'];
-    const csvRows = subscriptions.map(sub => [
+    const csvHeaders = [
+      'Email',
+      'Status',
+      'Language',
+      'UTM Source',
+      'UTM Medium',
+      'UTM Campaign',
+      'Created At',
+      'Unsubscribed At',
+    ];
+    const csvRows = subscriptions.map((sub) => [
       sub.email,
       sub.status,
       sub.language,
@@ -551,22 +568,24 @@ async function exportNewsletterSubscriptions(req: any, res: any) {
       sub.utmMedium || '',
       sub.utmCampaign || '',
       sub.createdAt?.toISOString() || '',
-      sub.unsubscribedAt?.toISOString() || ''
+      sub.unsubscribedAt?.toISOString() || '',
     ]);
 
     const csvContent = [csvHeaders, ...csvRows]
-      .map(row => row.map(field => `"${field}"`).join(','))
+      .map((row) => row.map((field) => `"${field}"`).join(','))
       .join('\n');
 
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="newsletter-subscriptions-${new Date().toISOString().split('T')[0]}.csv"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="newsletter-subscriptions-${new Date().toISOString().split('T')[0]}.csv"`
+    );
     res.send(csvContent);
-
   } catch (error) {
     log.error('Export newsletter subscriptions error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to export newsletter subscriptions'
+      message: 'Failed to export newsletter subscriptions',
     });
   }
 }
@@ -577,7 +596,7 @@ async function exportNewsletterSubscriptions(req: any, res: any) {
 async function exportContactSubmissions(req: any, res: any) {
   try {
     const filters = contactFiltersSchema.parse(req.query);
-    
+
     // Build WHERE conditions (same as getContactSubmissions)
     const whereConditions = [];
 
@@ -621,8 +640,21 @@ async function exportContactSubmissions(req: any, res: any) {
       .orderBy(desc(contactSubmissions.createdAt));
 
     // Generate CSV
-    const csvHeaders = ['Name', 'Email', 'Subject', 'Message', 'Status', 'Language', 'UTM Source', 'UTM Medium', 'UTM Campaign', 'Created At', 'Updated At', 'Notes'];
-    const csvRows = submissions.map(sub => [
+    const csvHeaders = [
+      'Name',
+      'Email',
+      'Subject',
+      'Message',
+      'Status',
+      'Language',
+      'UTM Source',
+      'UTM Medium',
+      'UTM Campaign',
+      'Created At',
+      'Updated At',
+      'Notes',
+    ];
+    const csvRows = submissions.map((sub) => [
       sub.name,
       sub.email,
       sub.subject,
@@ -634,22 +666,24 @@ async function exportContactSubmissions(req: any, res: any) {
       sub.utmCampaign || '',
       sub.createdAt?.toISOString() || '',
       sub.updatedAt?.toISOString() || '',
-      sub.notes || ''
+      sub.notes || '',
     ]);
 
     const csvContent = [csvHeaders, ...csvRows]
-      .map(row => row.map(field => `"${field}"`).join(','))
+      .map((row) => row.map((field) => `"${field}"`).join(','))
       .join('\n');
 
     res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', `attachment; filename="contact-submissions-${new Date().toISOString().split('T')[0]}.csv"`);
+    res.setHeader(
+      'Content-Disposition',
+      `attachment; filename="contact-submissions-${new Date().toISOString().split('T')[0]}.csv"`
+    );
     res.send(csvContent);
-
   } catch (error) {
     log.error('Export contact submissions error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to export contact submissions'
+      message: 'Failed to export contact submissions',
     });
   }
 }
@@ -664,31 +698,30 @@ async function updateContactStatus(req: any, res: any) {
 
     await db
       .update(contactSubmissions)
-      .set({ 
-        status, 
-        notes, 
-        updatedAt: new Date() 
+      .set({
+        status,
+        notes,
+        updatedAt: new Date(),
       })
       .where(eq(contactSubmissions.id, parseInt(id)));
 
     res.json({
       success: true,
-      message: 'Contact submission status updated successfully'
+      message: 'Contact submission status updated successfully',
     });
-
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
         message: 'Invalid request data',
-        errors: error.errors
+        errors: error.errors,
       });
     }
 
     log.error('Update contact status error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to update contact status'
+      message: 'Failed to update contact status',
     });
   }
 }
@@ -728,28 +761,27 @@ async function bulkContactActions(req: any, res: any) {
       default:
         return res.status(400).json({
           success: false,
-          message: 'Invalid action'
+          message: 'Invalid action',
         });
     }
 
     res.json({
       success: true,
-      message: `Bulk action ${action} completed successfully for ${ids.length} items`
+      message: `Bulk action ${action} completed successfully for ${ids.length} items`,
     });
-
   } catch (error) {
     if (error instanceof z.ZodError) {
       return res.status(400).json({
         success: false,
         message: 'Invalid request data',
-        errors: error.errors
+        errors: error.errors,
       });
     }
 
     log.error('Bulk contact actions error:', error);
     res.status(500).json({
       success: false,
-      message: 'Failed to perform bulk action'
+      message: 'Failed to perform bulk action',
     });
   }
 }

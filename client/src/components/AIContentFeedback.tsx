@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { AlertTriangle, Flag, MessageSquare, CheckCircle, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, Flag, MessageSquare } from 'lucide-react';
+import { useState } from 'react';
+import { useToast } from '../hooks/use-toast';
+import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Textarea } from './ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
-import { useToast } from '../hooks/use-toast';
+import { Textarea } from './ui/textarea';
 
 interface AIContentFeedbackProps {
   termId: string;
@@ -30,32 +30,52 @@ export function AIContentFeedback({
   verificationStatus = 'unverified',
   section,
   onFeedbackSubmitted,
-  className = ""
+  className = '',
 }: AIContentFeedbackProps) {
   const [showFeedbackForm, setShowFeedbackForm] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [feedbackData, setFeedbackData] = useState<FeedbackFormData>({
     feedbackType: '',
     description: '',
-    severity: 'medium'
+    severity: 'medium',
   });
   const { toast } = useToast();
 
   const feedbackTypes = [
-    { value: 'incorrect', label: 'Factually Incorrect', description: 'Contains false or inaccurate information' },
-    { value: 'incomplete', label: 'Incomplete', description: 'Missing important information or context' },
+    {
+      value: 'incorrect',
+      label: 'Factually Incorrect',
+      description: 'Contains false or inaccurate information',
+    },
+    {
+      value: 'incomplete',
+      label: 'Incomplete',
+      description: 'Missing important information or context',
+    },
     { value: 'misleading', label: 'Misleading', description: 'Could lead to misunderstanding' },
     { value: 'outdated', label: 'Outdated', description: 'Information is no longer current' },
-    { value: 'other', label: 'Other Issue', description: 'Different type of problem' }
+    { value: 'other', label: 'Other Issue', description: 'Different type of problem' },
   ];
 
   const getVerificationBadge = () => {
     const statusConfig = {
-      unverified: { color: 'bg-yellow-100 text-yellow-800', icon: AlertTriangle, label: 'Unverified' },
+      unverified: {
+        color: 'bg-yellow-100 text-yellow-800',
+        icon: AlertTriangle,
+        label: 'Unverified',
+      },
       verified: { color: 'bg-green-100 text-green-800', icon: CheckCircle, label: 'Verified' },
       flagged: { color: 'bg-red-100 text-red-800', icon: Flag, label: 'Flagged' },
-      needs_review: { color: 'bg-orange-100 text-orange-800', icon: AlertTriangle, label: 'Needs Review' },
-      expert_reviewed: { color: 'bg-blue-100 text-blue-800', icon: CheckCircle, label: 'Expert Reviewed' }
+      needs_review: {
+        color: 'bg-orange-100 text-orange-800',
+        icon: AlertTriangle,
+        label: 'Needs Review',
+      },
+      expert_reviewed: {
+        color: 'bg-blue-100 text-blue-800',
+        icon: CheckCircle,
+        label: 'Expert Reviewed',
+      },
     };
 
     const config = statusConfig[verificationStatus];
@@ -72,9 +92,9 @@ export function AIContentFeedback({
   const submitFeedback = async () => {
     if (!feedbackData.feedbackType || !feedbackData.description.trim()) {
       toast({
-        title: "Incomplete Form",
-        description: "Please select a feedback type and provide a description.",
-        variant: "destructive"
+        title: 'Incomplete Form',
+        description: 'Please select a feedback type and provide a description.',
+        variant: 'destructive',
       });
       return;
     }
@@ -92,7 +112,7 @@ export function AIContentFeedback({
           feedbackType: feedbackData.feedbackType,
           section,
           description: feedbackData.description,
-          severity: feedbackData.severity
+          severity: feedbackData.severity,
         }),
       });
 
@@ -105,17 +125,18 @@ export function AIContentFeedback({
 
       if (result.success) {
         toast({
-          title: "Feedback Submitted",
-          description: "Thank you for helping improve our AI-generated content. Your feedback will be reviewed by our team.",
+          title: 'Feedback Submitted',
+          description:
+            'Thank you for helping improve our AI-generated content. Your feedback will be reviewed by our team.',
         });
-        
+
         setShowFeedbackForm(false);
         setFeedbackData({
           feedbackType: '',
           description: '',
-          severity: 'medium'
+          severity: 'medium',
         });
-        
+
         onFeedbackSubmitted?.();
       } else {
         throw new Error(result.error || 'Failed to submit feedback');
@@ -123,9 +144,9 @@ export function AIContentFeedback({
     } catch (error) {
       console.error('Error submitting feedback:', error);
       toast({
-        title: "Error",
+        title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to submit feedback',
-        variant: "destructive"
+        variant: 'destructive',
       });
     } finally {
       setIsSubmitting(false);
@@ -133,7 +154,11 @@ export function AIContentFeedback({
   };
 
   // Don't show feedback option for verified content unless it's flagged
-  if (!isAiGenerated || (verificationStatus === 'verified' || verificationStatus === 'expert_reviewed')) {
+  if (
+    !isAiGenerated ||
+    verificationStatus === 'verified' ||
+    verificationStatus === 'expert_reviewed'
+  ) {
     return null;
   }
 
@@ -152,7 +177,7 @@ export function AIContentFeedback({
             This content was generated using AI and may require verification.
           </span>
         </div>
-        
+
         {!showFeedbackForm && (
           <Button
             variant="outline"
@@ -183,9 +208,12 @@ export function AIContentFeedback({
             {/* Feedback Type Selection */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Type of Issue</label>
-              <Select value={feedbackData.feedbackType} onValueChange={(value) => 
-                setFeedbackData(prev => ({ ...prev, feedbackType: value }))
-              }>
+              <Select
+                value={feedbackData.feedbackType}
+                onValueChange={(value) =>
+                  setFeedbackData((prev) => ({ ...prev, feedbackType: value }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select the type of issue" />
                 </SelectTrigger>
@@ -205,9 +233,12 @@ export function AIContentFeedback({
             {/* Severity Level */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Severity</label>
-              <Select value={feedbackData.severity} onValueChange={(value: 'low' | 'medium' | 'high' | 'critical') => 
-                setFeedbackData(prev => ({ ...prev, severity: value }))
-              }>
+              <Select
+                value={feedbackData.severity}
+                onValueChange={(value: 'low' | 'medium' | 'high' | 'critical') =>
+                  setFeedbackData((prev) => ({ ...prev, severity: value }))
+                }
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -228,7 +259,9 @@ export function AIContentFeedback({
               <Textarea
                 placeholder="Please describe the issue in detail. What is incorrect or problematic? How should it be corrected?"
                 value={feedbackData.description}
-                onChange={(e) => setFeedbackData(prev => ({ ...prev, description: e.target.value }))}
+                onChange={(e) =>
+                  setFeedbackData((prev) => ({ ...prev, description: e.target.value }))
+                }
                 rows={4}
                 className="resize-none"
               />
@@ -248,7 +281,9 @@ export function AIContentFeedback({
               </Button>
               <Button
                 onClick={submitFeedback}
-                disabled={isSubmitting || !feedbackData.feedbackType || !feedbackData.description.trim()}
+                disabled={
+                  isSubmitting || !feedbackData.feedbackType || !feedbackData.description.trim()
+                }
               >
                 {isSubmitting ? (
                   <>
@@ -271,12 +306,13 @@ export function AIContentFeedback({
       {isAiGenerated && verificationStatus === 'unverified' && (
         <div className="text-xs text-gray-500 p-2 bg-gray-50 rounded border">
           <AlertTriangle className="w-3 h-3 inline mr-1" />
-          <strong>AI-Generated Content:</strong> This information was created by artificial intelligence and has not been verified by experts. 
-          Please use with caution and consider consulting additional sources for critical applications.
+          <strong>AI-Generated Content:</strong> This information was created by artificial
+          intelligence and has not been verified by experts. Please use with caution and consider
+          consulting additional sources for critical applications.
         </div>
       )}
     </div>
   );
 }
 
-export default AIContentFeedback; 
+export default AIContentFeedback;

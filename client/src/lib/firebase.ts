@@ -4,17 +4,17 @@
  */
 
 import { initializeApp } from 'firebase/app';
-import { 
-  getAuth, 
-  GoogleAuthProvider, 
-  GithubAuthProvider,
-  signInWithPopup,
-  signInWithEmailAndPassword,
+import {
+  type AuthProvider,
   createUserWithEmailAndPassword,
-  signOut,
+  GithubAuthProvider,
+  GoogleAuthProvider,
+  getAuth,
   onAuthStateChanged,
+  signInWithEmailAndPassword,
+  signInWithPopup,
+  signOut,
   type User,
-  type AuthProvider
 } from 'firebase/auth';
 
 // Firebase configuration from environment variables
@@ -29,12 +29,16 @@ const firebaseConfig = {
 
 // Validate Firebase configuration
 const requiredConfigKeys = ['apiKey', 'authDomain', 'projectId', 'appId'];
-const missingKeys = requiredConfigKeys.filter(key => !firebaseConfig[key as keyof typeof firebaseConfig]);
+const missingKeys = requiredConfigKeys.filter(
+  (key) => !firebaseConfig[key as keyof typeof firebaseConfig]
+);
 
 if (missingKeys.length > 0) {
   console.error('❌ Missing Firebase configuration keys:', missingKeys);
-  console.error('Please check your .env file for the following VITE_FIREBASE_* variables:', 
-    missingKeys.map(key => `VITE_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`));
+  console.error(
+    'Please check your .env file for the following VITE_FIREBASE_* variables:',
+    missingKeys.map((key) => `VITE_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`)
+  );
 }
 
 // Initialize Firebase
@@ -75,21 +79,22 @@ export async function signInWithProvider(providerName: 'google' | 'github') {
     if (!auth) {
       throw new Error('Firebase authentication is not initialized');
     }
-    
-    const provider: AuthProvider | null = providerName === 'google' ? googleProvider : githubProvider;
+
+    const provider: AuthProvider | null =
+      providerName === 'google' ? googleProvider : githubProvider;
     if (!provider) {
       throw new Error(`${providerName} provider is not available`);
     }
-    
+
     const result = await signInWithPopup(auth, provider);
-    
+
     // Get ID token to send to backend
     const idToken = await result.user.getIdToken();
-    
+
     return {
       user: result.user,
       idToken,
-      provider: providerName
+      provider: providerName,
     };
   } catch (error) {
     console.error(`Error signing in with ${providerName}:`, error);
@@ -105,13 +110,13 @@ export async function signInWithEmail(email: string, password: string) {
     if (!auth) {
       throw new Error('Firebase authentication is not initialized');
     }
-    
+
     const result = await signInWithEmailAndPassword(auth, email, password);
     const idToken = await result.user.getIdToken();
-    
+
     return {
       user: result.user,
-      idToken
+      idToken,
     };
   } catch (error) {
     console.error('Error signing in with email:', error);
@@ -127,13 +132,13 @@ export async function createAccount(email: string, password: string) {
     if (!auth) {
       throw new Error('Firebase authentication is not initialized');
     }
-    
+
     const result = await createUserWithEmailAndPassword(auth, email, password);
     const idToken = await result.user.getIdToken();
-    
+
     return {
       user: result.user,
-      idToken
+      idToken,
     };
   } catch (error) {
     console.error('Error creating account:', error);
@@ -181,7 +186,7 @@ export async function getIdToken(): Promise<string | null> {
   try {
     const user = getCurrentUser();
     if (!user) return null;
-    
+
     return await user.getIdToken();
   } catch (error) {
     console.error('Error getting ID token:', error);
@@ -196,7 +201,7 @@ export async function refreshIdToken(): Promise<string | null> {
   try {
     const user = getCurrentUser();
     if (!user) return null;
-    
+
     return await user.getIdToken(true); // Force refresh
   } catch (error) {
     console.error('Error refreshing ID token:', error);

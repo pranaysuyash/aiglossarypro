@@ -1,4 +1,3 @@
-import { db } from '../db';
 import { log as logger } from '../utils/logger';
 
 export interface NotificationConfig {
@@ -32,7 +31,13 @@ export interface NotificationConfig {
 }
 
 export interface NotificationData {
-  type: 'batch_started' | 'batch_completed' | 'batch_failed' | 'quality_alert' | 'cost_alert' | 'system_alert';
+  type:
+    | 'batch_started'
+    | 'batch_completed'
+    | 'batch_failed'
+    | 'quality_alert'
+    | 'cost_alert'
+    | 'system_alert';
   title: string;
   message: string;
   priority: 'low' | 'medium' | 'high' | 'critical';
@@ -99,25 +104,25 @@ export class NotificationService {
           secure: process.env.SMTP_SECURE === 'true',
           auth: {
             user: process.env.SMTP_USER || '',
-            pass: process.env.SMTP_PASS || ''
-          }
+            pass: process.env.SMTP_PASS || '',
+          },
         },
         from: process.env.NOTIFICATION_FROM_EMAIL || 'noreply@aimlglossary.com',
-        recipients: process.env.NOTIFICATION_RECIPIENTS?.split(',') || []
+        recipients: process.env.NOTIFICATION_RECIPIENTS?.split(',') || [],
       },
       webhook: {
         enabled: process.env.NOTIFICATION_WEBHOOK_ENABLED === 'true',
         url: process.env.NOTIFICATION_WEBHOOK_URL || '',
         secret: process.env.NOTIFICATION_WEBHOOK_SECRET,
         timeout: parseInt(process.env.NOTIFICATION_WEBHOOK_TIMEOUT || '5000'),
-        retries: parseInt(process.env.NOTIFICATION_WEBHOOK_RETRIES || '3')
+        retries: parseInt(process.env.NOTIFICATION_WEBHOOK_RETRIES || '3'),
       },
       slack: {
         enabled: process.env.NOTIFICATION_SLACK_ENABLED === 'true',
         webhookUrl: process.env.SLACK_WEBHOOK_URL || '',
         channel: process.env.SLACK_CHANNEL || '#ai-glossary-alerts',
-        username: process.env.SLACK_USERNAME || 'AI Glossary Bot'
-      }
+        username: process.env.SLACK_USERNAME || 'AI Glossary Bot',
+      },
     };
   }
 
@@ -127,7 +132,10 @@ export class NotificationService {
   private initialize(): void {
     try {
       // Validate configuration
-      if (this.config.email?.enabled && (!this.config.email.smtp.user || !this.config.email.smtp.pass)) {
+      if (
+        this.config.email?.enabled &&
+        (!this.config.email.smtp.auth.user || !this.config.email.smtp.auth.pass)
+      ) {
         logger.warn('Email notifications enabled but SMTP credentials not provided');
         this.config.email.enabled = false;
       }
@@ -146,10 +154,12 @@ export class NotificationService {
       logger.info('Notification service initialized', {
         emailEnabled: this.config.email?.enabled,
         webhookEnabled: this.config.webhook?.enabled,
-        slackEnabled: this.config.slack?.enabled
+        slackEnabled: this.config.slack?.enabled,
       });
     } catch (error) {
-      logger.error('Failed to initialize notification service:', error);
+      logger.error('Failed to initialize notification service:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       this.isInitialized = false;
     }
   }
@@ -164,7 +174,7 @@ export class NotificationService {
     }
 
     const results: NotificationResult[] = [];
-    
+
     try {
       // Send email notification
       if (this.config.email?.enabled) {
@@ -190,13 +200,15 @@ export class NotificationService {
       logger.info('Notification sent', {
         type: notification.type,
         priority: notification.priority,
-        channels: results.map(r => r.channel),
-        success: results.every(r => r.success)
+        channels: results.map((r) => r.channel),
+        success: results.every((r) => r.success),
       });
 
       return results;
     } catch (error) {
-      logger.error('Error sending notification:', error);
+      logger.error('Error sending notification:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       return results;
     }
   }
@@ -208,17 +220,17 @@ export class NotificationService {
     const result: NotificationResult = {
       success: false,
       channel: 'email',
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     try {
       // Mock email sending - in production, use a proper email service like SendGrid, AWS SES, or nodemailer
       const emailBody = this.formatEmailBody(notification);
-      
+
       logger.info('Mock email notification sent', {
         to: this.config.email?.recipients,
         subject: notification.title,
-        body: emailBody.substring(0, 200) + '...'
+        body: `${emailBody.substring(0, 200)}...`,
       });
 
       result.success = true;
@@ -234,11 +246,13 @@ export class NotificationService {
   /**
    * Send webhook notification
    */
-  private async sendWebhookNotification(notification: NotificationData): Promise<NotificationResult> {
+  private async sendWebhookNotification(
+    notification: NotificationData
+  ): Promise<NotificationResult> {
     const result: NotificationResult = {
       success: false,
       channel: 'webhook',
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     try {
@@ -248,13 +262,13 @@ export class NotificationService {
         message: notification.message,
         priority: notification.priority,
         timestamp: notification.timestamp.toISOString(),
-        metadata: notification.metadata
+        metadata: notification.metadata,
       };
 
       // Mock webhook sending - in production, use fetch or axios
       logger.info('Mock webhook notification sent', {
         url: this.config.webhook?.url,
-        payload: JSON.stringify(payload, null, 2)
+        payload: JSON.stringify(payload, null, 2),
       });
 
       result.success = true;
@@ -274,16 +288,16 @@ export class NotificationService {
     const result: NotificationResult = {
       success: false,
       channel: 'slack',
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     try {
       const slackMessage = this.formatSlackMessage(notification);
-      
+
       // Mock Slack sending - in production, use @slack/webhook
       logger.info('Mock Slack notification sent', {
         channel: this.config.slack?.channel,
-        message: slackMessage
+        message: slackMessage,
       });
 
       result.success = true;
@@ -304,7 +318,7 @@ export class NotificationService {
       low: '🔵',
       medium: '🟡',
       high: '🟠',
-      critical: '🔴'
+      critical: '🔴',
     };
 
     let body = `
@@ -318,38 +332,38 @@ Time: ${notification.timestamp.toLocaleString()}
 
     if (notification.metadata) {
       body += '\n--- Details ---\n';
-      
+
       if (notification.metadata.operationId) {
         body += `Operation ID: ${notification.metadata.operationId}\n`;
       }
-      
+
       if (notification.metadata.columnId) {
         body += `Column: ${notification.metadata.columnId}\n`;
       }
-      
+
       if (notification.metadata.termCount) {
         body += `Terms Processed: ${notification.metadata.termCount}\n`;
       }
-      
+
       if (notification.metadata.totalCost) {
         body += `Total Cost: $${notification.metadata.totalCost.toFixed(4)}\n`;
       }
-      
+
       if (notification.metadata.successRate) {
         body += `Success Rate: ${(notification.metadata.successRate * 100).toFixed(1)}%\n`;
       }
-      
+
       if (notification.metadata.averageQuality) {
         body += `Average Quality: ${notification.metadata.averageQuality.toFixed(1)}/10\n`;
       }
-      
+
       if (notification.metadata.processingTime) {
         body += `Processing Time: ${(notification.metadata.processingTime / 1000).toFixed(1)}s\n`;
       }
-      
+
       if (notification.metadata.errors && notification.metadata.errors.length > 0) {
         body += `\nErrors (${notification.metadata.errors.length}):\n`;
-        notification.metadata.errors.slice(0, 5).forEach(error => {
+        notification.metadata.errors.slice(0, 5).forEach((error) => {
           body += `- ${error.termName}: ${error.error}\n`;
         });
         if (notification.metadata.errors.length > 5) {
@@ -371,47 +385,47 @@ Time: ${notification.timestamp.toLocaleString()}
       low: '#36a64f',
       medium: '#ffb347',
       high: '#ff6b47',
-      critical: '#ff0000'
+      critical: '#ff0000',
     };
 
     const priorityEmoji = {
       low: ':large_blue_circle:',
       medium: ':large_yellow_circle:',
       high: ':large_orange_circle:',
-      critical: ':red_circle:'
+      critical: ':red_circle:',
     };
 
     const fields = [];
-    
+
     if (notification.metadata?.termCount) {
       fields.push({
         title: 'Terms Processed',
         value: notification.metadata.termCount.toString(),
-        short: true
+        short: true,
       });
     }
-    
+
     if (notification.metadata?.totalCost) {
       fields.push({
         title: 'Total Cost',
         value: `$${notification.metadata.totalCost.toFixed(4)}`,
-        short: true
+        short: true,
       });
     }
-    
+
     if (notification.metadata?.successRate) {
       fields.push({
         title: 'Success Rate',
         value: `${(notification.metadata.successRate * 100).toFixed(1)}%`,
-        short: true
+        short: true,
       });
     }
-    
+
     if (notification.metadata?.averageQuality) {
       fields.push({
         title: 'Average Quality',
         value: `${notification.metadata.averageQuality.toFixed(1)}/10`,
-        short: true
+        short: true,
       });
     }
 
@@ -426,9 +440,9 @@ Time: ${notification.timestamp.toLocaleString()}
           text: notification.message,
           fields,
           footer: 'AI/ML Glossary Pro',
-          ts: Math.floor(notification.timestamp.getTime() / 1000)
-        }
-      ]
+          ts: Math.floor(notification.timestamp.getTime() / 1000),
+        },
+      ],
     };
   }
 
@@ -447,18 +461,18 @@ Time: ${notification.timestamp.toLocaleString()}
         title: notification.title,
         message: notification.message,
         priority: notification.priority,
-        channels: results.map(r => r.channel),
-        success: results.every(r => r.success),
+        channels: results.map((r) => r.channel),
+        success: results.every((r) => r.success),
         results,
         metadata: notification.metadata,
         createdAt: notification.timestamp,
-        sentAt: new Date()
+        sentAt: new Date(),
       };
 
       logger.info('Notification history stored', {
         id: historyEntry.id,
         type: historyEntry.type,
-        success: historyEntry.success
+        success: historyEntry.success,
       });
     } catch (error) {
       logger.error('Failed to store notification history:', error);
@@ -468,7 +482,11 @@ Time: ${notification.timestamp.toLocaleString()}
   /**
    * Send batch started notification
    */
-  async notifyBatchStarted(operationId: string, columnId: string, termCount: number): Promise<void> {
+  async notifyBatchStarted(
+    operationId: string,
+    columnId: string,
+    termCount: number
+  ): Promise<void> {
     const notification: NotificationData = {
       type: 'batch_started',
       title: 'Batch Processing Started',
@@ -477,9 +495,9 @@ Time: ${notification.timestamp.toLocaleString()}
       metadata: {
         operationId,
         columnId,
-        termCount
+        termCount,
       },
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     await this.sendNotification(notification);
@@ -509,9 +527,9 @@ Time: ${notification.timestamp.toLocaleString()}
         successRate,
         averageQuality,
         totalCost,
-        processingTime
+        processingTime,
       },
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     await this.sendNotification(notification);
@@ -535,9 +553,9 @@ Time: ${notification.timestamp.toLocaleString()}
         operationId,
         columnId,
         termCount,
-        errors: errors.slice(0, 10) // Limit to first 10 errors
+        errors: errors.slice(0, 10), // Limit to first 10 errors
       },
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     await this.sendNotification(notification);
@@ -563,9 +581,9 @@ Time: ${notification.timestamp.toLocaleString()}
         columnId,
         averageQuality,
         threshold,
-        lowQualityCount
+        lowQualityCount,
       },
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     await this.sendNotification(notification);
@@ -589,9 +607,9 @@ Time: ${notification.timestamp.toLocaleString()}
         operationId,
         currentCost,
         budgetLimit,
-        projectedCost
+        projectedCost,
       },
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     await this.sendNotification(notification);
@@ -612,7 +630,7 @@ Time: ${notification.timestamp.toLocaleString()}
       message,
       priority,
       metadata,
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     await this.sendNotification(notification);
@@ -640,13 +658,14 @@ Time: ${notification.timestamp.toLocaleString()}
     const testNotification: NotificationData = {
       type: 'system_alert',
       title: 'Notification Test',
-      message: 'This is a test notification to verify that all notification channels are working correctly.',
+      message:
+        'This is a test notification to verify that all notification channels are working correctly.',
       priority: 'low',
       metadata: {
         test: true,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
       },
-      timestamp: new Date()
+      timestamp: new Date(),
     };
 
     return await this.sendNotification(testNotification);

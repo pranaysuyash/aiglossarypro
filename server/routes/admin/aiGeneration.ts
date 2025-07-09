@@ -1,10 +1,10 @@
 import { Router } from 'express';
 import { z } from 'zod';
+import { authenticateFirebaseToken } from '../../middleware/firebaseAuth';
+import { validateRequest } from '../../middleware/validateRequest';
 import { aiContentGenerationService } from '../../services/aiContentGenerationService';
 import { promptTemplateService } from '../../services/promptTemplateService';
 import { log as logger } from '../../utils/logger';
-import { authenticateFirebaseToken } from '../../middleware/firebaseAuth';
-import { validateRequest } from '../../middleware/validateRequest';
 
 const router = Router();
 
@@ -16,7 +16,7 @@ const generateContentSchema = z.object({
   model: z.enum(['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo', 'gpt-4o-mini']).optional(),
   temperature: z.number().min(0).max(2).optional(),
   maxTokens: z.number().min(1).max(4000).optional(),
-  regenerate: z.boolean().default(false)
+  regenerate: z.boolean().default(false),
 });
 
 const bulkGenerateSchema = z.object({
@@ -24,7 +24,7 @@ const bulkGenerateSchema = z.object({
   sectionNames: z.array(z.string().min(1)).min(1, 'At least one section name is required'),
   templateId: z.string().optional(),
   model: z.enum(['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo', 'gpt-4o-mini']).optional(),
-  regenerate: z.boolean().default(false)
+  regenerate: z.boolean().default(false),
 });
 
 const createTemplateSchema = z.object({
@@ -33,7 +33,7 @@ const createTemplateSchema = z.object({
   template: z.string().min(10, 'Template content must be at least 10 characters'),
   variables: z.array(z.string()).default([]),
   category: z.string().min(1, 'Template category is required'),
-  isDefault: z.boolean().default(false)
+  isDefault: z.boolean().default(false),
 });
 
 const updateTemplateSchema = z.object({
@@ -42,7 +42,7 @@ const updateTemplateSchema = z.object({
   template: z.string().min(10).optional(),
   variables: z.array(z.string()).optional(),
   category: z.string().min(1).optional(),
-  isDefault: z.boolean().optional()
+  isDefault: z.boolean().optional(),
 });
 
 /**
@@ -136,12 +136,14 @@ const updateTemplateSchema = z.object({
  *       500:
  *         description: Server error
  */
-router.post('/generate', 
+router.post(
+  '/generate',
   authenticateFirebaseToken,
   validateRequest(generateContentSchema),
   async (req, res) => {
     try {
-      const { termId, sectionName, templateId, model, temperature, maxTokens, regenerate } = req.body;
+      const { termId, sectionName, templateId, model, temperature, maxTokens, regenerate } =
+        req.body;
       const userId = req.user?.uid;
 
       logger.info('AI content generation request', {
@@ -150,7 +152,7 @@ router.post('/generate',
         templateId,
         model,
         userId,
-        regenerate
+        regenerate,
       });
 
       const result = await aiContentGenerationService.generateContent({
@@ -161,7 +163,7 @@ router.post('/generate',
         temperature,
         maxTokens,
         userId,
-        regenerate
+        regenerate,
       });
 
       if (result.success) {
@@ -169,18 +171,18 @@ router.post('/generate',
       } else {
         res.status(400).json({
           success: false,
-          error: result.error || 'Failed to generate content'
+          error: result.error || 'Failed to generate content',
         });
       }
     } catch (error) {
       logger.error('Error in AI content generation endpoint:', {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       });
 
       res.status(500).json({
         success: false,
-        error: 'Internal server error'
+        error: 'Internal server error',
       });
     }
   }
@@ -259,7 +261,8 @@ router.post('/generate',
  *       500:
  *         description: Server error
  */
-router.post('/generate/bulk',
+router.post(
+  '/generate/bulk',
   authenticateFirebaseToken,
   validateRequest(bulkGenerateSchema),
   async (req, res) => {
@@ -273,7 +276,7 @@ router.post('/generate/bulk',
         templateId,
         model,
         userId,
-        regenerate
+        regenerate,
       });
 
       const result = await aiContentGenerationService.generateBulkContent({
@@ -282,19 +285,19 @@ router.post('/generate/bulk',
         templateId,
         model,
         userId,
-        regenerate
+        regenerate,
       });
 
       res.json(result);
     } catch (error) {
       logger.error('Error in bulk AI content generation endpoint:', {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       });
 
       res.status(500).json({
         success: false,
-        error: 'Internal server error'
+        error: 'Internal server error',
       });
     }
   }
@@ -329,30 +332,27 @@ router.post('/generate/bulk',
  *       500:
  *         description: Server error
  */
-router.get('/templates',
-  authenticateFirebaseToken,
-  async (req, res) => {
-    try {
-      const templates = promptTemplateService.getAllTemplates();
-      const stats = promptTemplateService.getTemplateStats();
+router.get('/templates', authenticateFirebaseToken, async (_req, res) => {
+  try {
+    const templates = promptTemplateService.getAllTemplates();
+    const stats = promptTemplateService.getTemplateStats();
 
-      res.json({
-        success: true,
-        templates,
-        stats
-      });
-    } catch (error) {
-      logger.error('Error getting templates:', {
-        error: error instanceof Error ? error.message : String(error)
-      });
+    res.json({
+      success: true,
+      templates,
+      stats,
+    });
+  } catch (error) {
+    logger.error('Error getting templates:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
 
-      res.status(500).json({
-        success: false,
-        error: 'Internal server error'
-      });
-    }
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
   }
-);
+});
 
 /**
  * @swagger
@@ -377,29 +377,26 @@ router.get('/templates',
  *       500:
  *         description: Server error
  */
-router.get('/templates/:category',
-  authenticateFirebaseToken,
-  async (req, res) => {
-    try {
-      const { category } = req.params;
-      const templates = promptTemplateService.getTemplatesByCategory(category);
+router.get('/templates/:category', authenticateFirebaseToken, async (req, res) => {
+  try {
+    const { category } = req.params;
+    const templates = promptTemplateService.getTemplatesByCategory(category);
 
-      res.json({
-        success: true,
-        templates
-      });
-    } catch (error) {
-      logger.error('Error getting templates by category:', {
-        error: error instanceof Error ? error.message : String(error)
-      });
+    res.json({
+      success: true,
+      templates,
+    });
+  } catch (error) {
+    logger.error('Error getting templates by category:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
 
-      res.status(500).json({
-        success: false,
-        error: 'Internal server error'
-      });
-    }
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
   }
-);
+});
 
 /**
  * @swagger
@@ -451,7 +448,8 @@ router.get('/templates/:category',
  *       500:
  *         description: Server error
  */
-router.post('/templates',
+router.post(
+  '/templates',
   authenticateFirebaseToken,
   validateRequest(createTemplateSchema),
   async (req, res) => {
@@ -464,28 +462,28 @@ router.post('/templates',
         template,
         variables,
         category,
-        isDefault
+        isDefault,
       });
 
       logger.info('Created new prompt template', {
         templateId: newTemplate.id,
         name,
         category,
-        userId: req.user?.uid
+        userId: req.user?.uid,
       });
 
       res.status(201).json({
         success: true,
-        template: newTemplate
+        template: newTemplate,
       });
     } catch (error) {
       logger.error('Error creating template:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
 
       res.status(500).json({
         success: false,
-        error: 'Internal server error'
+        error: 'Internal server error',
       });
     }
   }
@@ -539,7 +537,8 @@ router.post('/templates',
  *       500:
  *         description: Server error
  */
-router.put('/templates/:templateId',
+router.put(
+  '/templates/:templateId',
   authenticateFirebaseToken,
   validateRequest(updateTemplateSchema),
   async (req, res) => {
@@ -552,27 +551,27 @@ router.put('/templates/:templateId',
       logger.info('Updated prompt template', {
         templateId,
         updates: Object.keys(updates),
-        userId: req.user?.uid
+        userId: req.user?.uid,
       });
 
       res.json({
         success: true,
-        template: updatedTemplate
+        template: updatedTemplate,
       });
     } catch (error) {
       logger.error('Error updating template:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
 
       if (error instanceof Error && error.message.includes('not found')) {
         res.status(404).json({
           success: false,
-          error: 'Template not found'
+          error: 'Template not found',
         });
       } else {
         res.status(500).json({
           success: false,
-          error: 'Internal server error'
+          error: 'Internal server error',
         });
       }
     }
@@ -604,49 +603,46 @@ router.put('/templates/:templateId',
  *       500:
  *         description: Server error
  */
-router.delete('/templates/:templateId',
-  authenticateFirebaseToken,
-  async (req, res) => {
-    try {
-      const { templateId } = req.params;
+router.delete('/templates/:templateId', authenticateFirebaseToken, async (req, res) => {
+  try {
+    const { templateId } = req.params;
 
-      const deleted = promptTemplateService.deleteTemplate(templateId);
+    const deleted = promptTemplateService.deleteTemplate(templateId);
 
-      if (deleted) {
-        logger.info('Deleted prompt template', {
-          templateId,
-          userId: req.user?.uid
-        });
-
-        res.json({
-          success: true,
-          message: 'Template deleted successfully'
-        });
-      } else {
-        res.status(404).json({
-          success: false,
-          error: 'Template not found'
-        });
-      }
-    } catch (error) {
-      logger.error('Error deleting template:', {
-        error: error instanceof Error ? error.message : String(error)
+    if (deleted) {
+      logger.info('Deleted prompt template', {
+        templateId,
+        userId: req.user?.uid,
       });
 
-      if (error instanceof Error && error.message.includes('Cannot delete default template')) {
-        res.status(400).json({
-          success: false,
-          error: 'Cannot delete default template'
-        });
-      } else {
-        res.status(500).json({
-          success: false,
-          error: 'Internal server error'
-        });
-      }
+      res.json({
+        success: true,
+        message: 'Template deleted successfully',
+      });
+    } else {
+      res.status(404).json({
+        success: false,
+        error: 'Template not found',
+      });
+    }
+  } catch (error) {
+    logger.error('Error deleting template:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+
+    if (error instanceof Error && error.message.includes('Cannot delete default template')) {
+      res.status(400).json({
+        success: false,
+        error: 'Cannot delete default template',
+      });
+    } else {
+      res.status(500).json({
+        success: false,
+        error: 'Internal server error',
+      });
     }
   }
-);
+});
 
 /**
  * @swagger
@@ -692,29 +688,26 @@ router.delete('/templates/:templateId',
  *       500:
  *         description: Server error
  */
-router.get('/stats',
-  authenticateFirebaseToken,
-  async (req, res) => {
-    try {
-      const { termId } = req.query;
+router.get('/stats', authenticateFirebaseToken, async (req, res) => {
+  try {
+    const { termId } = req.query;
 
-      const stats = await aiContentGenerationService.getGenerationStats(termId as string);
+    const stats = await aiContentGenerationService.getGenerationStats(termId as string);
 
-      res.json({
-        success: true,
-        stats
-      });
-    } catch (error) {
-      logger.error('Error getting generation stats:', {
-        error: error instanceof Error ? error.message : String(error)
-      });
+    res.json({
+      success: true,
+      stats,
+    });
+  } catch (error) {
+    logger.error('Error getting generation stats:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
 
-      res.status(500).json({
-        success: false,
-        error: 'Internal server error'
-      });
-    }
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+    });
   }
-);
+});
 
 export default router;

@@ -1,20 +1,13 @@
-import { useState, useEffect } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import { CheckCircle, Clock, Lightbulb, RotateCcw, Trophy, XCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { 
-  CheckCircle, 
-  XCircle, 
-  RotateCcw, 
-  Trophy, 
-  Clock,
-  Lightbulb
-} from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useToast } from '@/hooks/use-toast';
 
 interface QuizQuestion {
@@ -59,7 +52,7 @@ export default function InteractiveQuiz({
   showExplanations = true,
   allowRetry = true,
   onComplete,
-  className = ''
+  className = '',
 }: InteractiveQuizProps) {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [userAnswers, setUserAnswers] = useState<Record<string, string | string[]>>({});
@@ -78,7 +71,7 @@ export default function InteractiveQuiz({
   useEffect(() => {
     if (timeLimit && timeRemaining > 0 && !isCompleted) {
       const timer = setInterval(() => {
-        setTimeRemaining(prev => {
+        setTimeRemaining((prev) => {
           if (prev <= 1) {
             handleCompleteQuiz();
             return 0;
@@ -89,7 +82,7 @@ export default function InteractiveQuiz({
 
       return () => clearInterval(timer);
     }
-  }, [timeLimit, timeRemaining, isCompleted]);
+  }, [timeLimit, timeRemaining, isCompleted, handleCompleteQuiz]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);
@@ -98,38 +91,42 @@ export default function InteractiveQuiz({
   };
 
   const handleAnswerChange = (questionId: string, answer: string | string[]) => {
-    setUserAnswers(prev => ({
+    setUserAnswers((prev) => ({
       ...prev,
-      [questionId]: answer
+      [questionId]: answer,
     }));
   };
 
   const isCorrectAnswer = (question: QuizQuestion, userAnswer: string | string[]): boolean => {
     if (question.type === 'multiple-select') {
-      const correctAnswers = Array.isArray(question.correctAnswer) 
-        ? question.correctAnswer 
+      const correctAnswers = Array.isArray(question.correctAnswer)
+        ? question.correctAnswer
         : [question.correctAnswer];
       const userAnswersArray = Array.isArray(userAnswer) ? userAnswer : [userAnswer];
-      
-      return correctAnswers.length === userAnswersArray.length &&
-             correctAnswers.every(answer => userAnswersArray.includes(answer.toString()));
+
+      return (
+        correctAnswers.length === userAnswersArray.length &&
+        correctAnswers.every((answer) => userAnswersArray.includes(answer.toString()))
+      );
     }
-    
-    return userAnswer.toString().toLowerCase().trim() === 
-           question.correctAnswer.toString().toLowerCase().trim();
+
+    return (
+      userAnswer.toString().toLowerCase().trim() ===
+      question.correctAnswer.toString().toLowerCase().trim()
+    );
   };
 
   const calculateResult = (): QuizResult => {
-    const answers = questions.map(question => {
+    const answers = questions.map((question) => {
       const userAnswer = userAnswers[question.id] || '';
       const isCorrect = isCorrectAnswer(question, userAnswer);
-      const points = isCorrect ? (question.points || 1) : 0;
+      const points = isCorrect ? question.points || 1 : 0;
 
       return {
         questionId: question.id,
         userAnswer,
         isCorrect,
-        points
+        points,
       };
     });
 
@@ -143,7 +140,7 @@ export default function InteractiveQuiz({
       totalQuestions,
       percentage,
       timeSpent,
-      answers
+      answers,
     };
   };
 
@@ -152,7 +149,7 @@ export default function InteractiveQuiz({
     setResult(quizResult);
     setIsCompleted(true);
     setShowResults(true);
-    
+
     if (onComplete) {
       onComplete(quizResult);
     }
@@ -165,7 +162,7 @@ export default function InteractiveQuiz({
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex < totalQuestions - 1) {
-      setCurrentQuestionIndex(prev => prev + 1);
+      setCurrentQuestionIndex((prev) => prev + 1);
     } else {
       handleCompleteQuiz();
     }
@@ -173,7 +170,7 @@ export default function InteractiveQuiz({
 
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex(prev => prev - 1);
+      setCurrentQuestionIndex((prev) => prev - 1);
     }
   };
 
@@ -194,7 +191,7 @@ export default function InteractiveQuiz({
       case 'multiple-choice':
         return (
           <RadioGroup
-            value={userAnswer as string || ''}
+            value={(userAnswer as string) || ''}
             onValueChange={(value) => handleAnswerChange(question.id, value)}
             className="mt-4"
           >
@@ -212,17 +209,21 @@ export default function InteractiveQuiz({
       case 'true-false':
         return (
           <RadioGroup
-            value={userAnswer as string || ''}
+            value={(userAnswer as string) || ''}
             onValueChange={(value) => handleAnswerChange(question.id, value)}
             className="mt-4"
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="true" id={`${question.id}-true`} />
-              <Label htmlFor={`${question.id}-true`} className="cursor-pointer">True</Label>
+              <Label htmlFor={`${question.id}-true`} className="cursor-pointer">
+                True
+              </Label>
             </div>
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="false" id={`${question.id}-false`} />
-              <Label htmlFor={`${question.id}-false`} className="cursor-pointer">False</Label>
+              <Label htmlFor={`${question.id}-false`} className="cursor-pointer">
+                False
+              </Label>
             </div>
           </RadioGroup>
         );
@@ -230,7 +231,7 @@ export default function InteractiveQuiz({
       case 'fill-blank':
         return (
           <Input
-            value={userAnswer as string || ''}
+            value={(userAnswer as string) || ''}
             onChange={(e) => handleAnswerChange(question.id, e.target.value)}
             placeholder="Type your answer here..."
             className="mt-4"
@@ -250,7 +251,10 @@ export default function InteractiveQuiz({
                     if (checked) {
                       handleAnswerChange(question.id, [...currentAnswers, option]);
                     } else {
-                      handleAnswerChange(question.id, currentAnswers.filter(a => a !== option));
+                      handleAnswerChange(
+                        question.id,
+                        currentAnswers.filter((a) => a !== option)
+                      );
                     }
                   }}
                 />
@@ -298,7 +302,7 @@ export default function InteractiveQuiz({
           <div className="space-y-4">
             <h4 className="text-lg font-semibold">Review Your Answers</h4>
             {questions.map((question, index) => {
-              const answer = result.answers.find(a => a.questionId === question.id);
+              const answer = result.answers.find((a) => a.questionId === question.id);
               if (!answer) return null;
 
               return (
@@ -315,13 +319,19 @@ export default function InteractiveQuiz({
                           {index + 1}. {question.question}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">
-                          Your answer: <span className="font-medium">{Array.isArray(answer.userAnswer) ? answer.userAnswer.join(', ') : answer.userAnswer}</span>
+                          Your answer:{' '}
+                          <span className="font-medium">
+                            {Array.isArray(answer.userAnswer)
+                              ? answer.userAnswer.join(', ')
+                              : answer.userAnswer}
+                          </span>
                         </p>
                         {!answer.isCorrect && (
                           <p className="text-sm text-green-600 dark:text-green-400 mb-2">
-                            Correct answer: <span className="font-medium">
-                              {Array.isArray(question.correctAnswer) 
-                                ? question.correctAnswer.join(', ') 
+                            Correct answer:{' '}
+                            <span className="font-medium">
+                              {Array.isArray(question.correctAnswer)
+                                ? question.correctAnswer.join(', ')
                                 : question.correctAnswer}
                             </span>
                           </p>
@@ -363,9 +373,7 @@ export default function InteractiveQuiz({
         <CardHeader>
           <CardTitle>{title} - Results</CardTitle>
         </CardHeader>
-        <CardContent>
-          {renderResults()}
-        </CardContent>
+        <CardContent>{renderResults()}</CardContent>
       </Card>
     );
   }
@@ -382,9 +390,7 @@ export default function InteractiveQuiz({
               </Badge>
             </CardTitle>
             {description && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {description}
-              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{description}</p>
             )}
           </div>
           {timeLimit && timeRemaining > 0 && (
@@ -400,9 +406,7 @@ export default function InteractiveQuiz({
       </CardHeader>
       <CardContent>
         <div className="mb-6">
-          <h3 className="text-lg font-medium mb-4">
-            {currentQuestion.question}
-          </h3>
+          <h3 className="text-lg font-medium mb-4">{currentQuestion.question}</h3>
           {renderQuestion(currentQuestion)}
         </div>
 
@@ -414,10 +418,7 @@ export default function InteractiveQuiz({
           >
             Previous
           </Button>
-          <Button
-            onClick={handleNextQuestion}
-            disabled={!userAnswers[currentQuestion.id]}
-          >
+          <Button onClick={handleNextQuestion} disabled={!userAnswers[currentQuestion.id]}>
             {currentQuestionIndex === totalQuestions - 1 ? 'Complete Quiz' : 'Next'}
           </Button>
         </div>

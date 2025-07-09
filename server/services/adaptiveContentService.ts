@@ -3,16 +3,15 @@
  * Analyzes learning patterns and dynamically organizes content for optimal learning
  */
 
-import { db } from '../db';
-import { 
-  userInteractions, 
-  terms, 
-  categories, 
-  users,
+import { and, desc, eq, inArray, not, sql } from 'drizzle-orm';
+import {
+  categories,
+  terms,
+  type UserInteraction,
+  userInteractions,
   userProfiles,
-  type UserInteraction 
 } from '../../shared/schema';
-import { eq, and, gte, desc, sql, count, avg, sum, inArray, not } from 'drizzle-orm';
+import { db } from '../db';
 
 export interface LearningPattern {
   userId: string;
@@ -57,7 +56,11 @@ export interface AdaptiveRecommendation {
 
 export interface ContentOrganization {
   userId: string;
-  organizationType: 'difficulty-based' | 'category-clustered' | 'pathway-optimized' | 'interest-driven';
+  organizationType:
+    | 'difficulty-based'
+    | 'category-clustered'
+    | 'pathway-optimized'
+    | 'interest-driven';
   sections: Array<{
     sectionId: string;
     title: string;
@@ -97,7 +100,6 @@ export interface LearningInsights {
 }
 
 class AdaptiveContentService {
-
   /**
    * Analyze user learning patterns from interaction history
    */
@@ -116,19 +118,19 @@ class AdaptiveContentService {
 
     // Analyze session patterns
     const sessionPatterns = this.analyzeSessionPatterns(interactions);
-    
+
     // Analyze content preferences
     const contentPreferences = await this.analyzeContentPreferences(userId, interactions);
-    
+
     // Analyze category affinities
     const categoryAffinities = await this.analyzeCategoryAffinities(userId, interactions);
-    
+
     // Determine learning style
     const learningStyle = this.determineLearningStyle(interactions, sessionPatterns);
-    
+
     // Determine preferred difficulty
     const preferredDifficulty = this.determinePreferredDifficulty(interactions);
-    
+
     // Analyze progression patterns
     const progressionPatterns = this.analyzeProgressionPatterns(interactions);
 
@@ -139,7 +141,7 @@ class AdaptiveContentService {
       sessionLength: sessionPatterns.averageSessionLength,
       contentPreferences,
       categoryAffinities,
-      progressionPatterns
+      progressionPatterns,
     };
   }
 
@@ -147,29 +149,31 @@ class AdaptiveContentService {
    * Generate adaptive recommendations based on learning patterns
    */
   async generateAdaptiveRecommendations(
-    userId: string, 
+    userId: string,
     count: number = 10
   ): Promise<AdaptiveRecommendation[]> {
     const learningPattern = await this.analyzeLearningPatterns(userId);
     const userProfile = await this.getUserProfile(userId);
-    
+
     // Get potential terms for recommendation
     const candidateTerms = await this.getCandidateTerms(userId, learningPattern);
-    
+
     const recommendations: AdaptiveRecommendation[] = [];
-    
-    for (const term of candidateTerms.slice(0, count * 2)) { // Get more than needed for filtering
+
+    for (const term of candidateTerms.slice(0, count * 2)) {
+      // Get more than needed for filtering
       const recommendation = await this.createAdaptiveRecommendation(
         term,
         learningPattern,
         userProfile
       );
-      
-      if (recommendation.recommendationScore > 0.3) { // Threshold for quality
+
+      if (recommendation.recommendationScore > 0.3) {
+        // Threshold for quality
         recommendations.push(recommendation);
       }
     }
-    
+
     // Sort by recommendation score and return top results
     return recommendations
       .sort((a, b) => b.recommendationScore - a.recommendationScore)
@@ -182,17 +186,17 @@ class AdaptiveContentService {
   async organizeContentAdaptively(userId: string): Promise<ContentOrganization> {
     const learningPattern = await this.analyzeLearningPatterns(userId);
     const recommendations = await this.generateAdaptiveRecommendations(userId, 20);
-    
+
     // Determine organization type based on learning pattern
     const organizationType = this.determineOrganizationType(learningPattern);
-    
+
     // Create adaptive sections
     const sections = await this.createAdaptiveSections(
       recommendations,
       learningPattern,
       organizationType
     );
-    
+
     // Determine adaptive features
     const adaptiveFeatures = this.determineAdaptiveFeatures(learningPattern);
 
@@ -200,7 +204,7 @@ class AdaptiveContentService {
       userId,
       organizationType,
       sections,
-      adaptiveFeatures
+      adaptiveFeatures,
     };
   }
 
@@ -211,15 +215,15 @@ class AdaptiveContentService {
     const learningPattern = await this.analyzeLearningPatterns(userId);
     const userProgress = await this.calculateOverallProgress(userId);
     const recommendations = await this.generateAdaptiveRecommendations(userId, 5);
-    
+
     const strengthAreas = learningPattern.categoryAffinities
-      .filter(ca => ca.masteryLevel > 0.7)
-      .map(ca => ca.categoryName);
-    
+      .filter((ca) => ca.masteryLevel > 0.7)
+      .map((ca) => ca.categoryName);
+
     const improvementAreas = learningPattern.categoryAffinities
-      .filter(ca => ca.masteryLevel < 0.4 && ca.affinityScore > 0.1)
-      .map(ca => ca.categoryName);
-    
+      .filter((ca) => ca.masteryLevel < 0.4 && ca.affinityScore > 0.1)
+      .map((ca) => ca.categoryName);
+
     const engagementTrends = await this.calculateEngagementTrends(userId);
     const adaptiveAdjustments = this.calculateAdaptiveAdjustments(learningPattern);
 
@@ -232,7 +236,7 @@ class AdaptiveContentService {
       learningVelocity: userProgress.weeklyVelocity,
       retentionRate: userProgress.retentionRate,
       engagementTrends,
-      adaptiveAdjustments
+      adaptiveAdjustments,
     };
   }
 
@@ -249,14 +253,14 @@ class AdaptiveContentService {
     }
   ): Promise<void> {
     // Get current user profile
-    const profile = await this.getUserProfile(userId);
-    
+    const _profile = await this.getUserProfile(userId);
+
     // Apply feedback adjustments
     const adjustments = this.calculateFeedbackAdjustments(feedback);
-    
+
     // Update user profile with new preferences
     await this.updateUserProfile(userId, adjustments);
-    
+
     // Log adaptation event for learning
     await this.logAdaptationEvent(userId, feedback, adjustments);
   }
@@ -274,35 +278,35 @@ class AdaptiveContentService {
         conceptual: 0.5,
         practical: 0.5,
         visual: 0.5,
-        depth: 0.5
+        depth: 0.5,
       },
       categoryAffinities: [],
       progressionPatterns: {
         averageTermsPerSession: 5,
         preferredPathLength: 3,
         returnFrequency: 0.2,
-        explorationRate: 0.3
-      }
+        explorationRate: 0.3,
+      },
     };
   }
 
   private analyzeSessionPatterns(interactions: UserInteraction[]) {
     // Group interactions by session
     const sessions = new Map<string, UserInteraction[]>();
-    
-    interactions.forEach(interaction => {
+
+    interactions.forEach((interaction) => {
       const metadata = interaction.metadata as any;
       const sessionId = metadata?.sessionId as string;
       if (sessionId) {
         if (!sessions.has(sessionId)) {
           sessions.set(sessionId, []);
         }
-        sessions.get(sessionId)!.push(interaction);
+        sessions.get(sessionId)?.push(interaction);
       }
     });
 
     // Calculate session metrics
-    const sessionLengths = Array.from(sessions.values()).map(session => {
+    const sessionLengths = Array.from(sessions.values()).map((session) => {
       if (session.length < 2) return 0;
       const start = new Date(session[session.length - 1].timestamp);
       const end = new Date(session[0].timestamp);
@@ -310,7 +314,7 @@ class AdaptiveContentService {
     });
 
     const averageLength = sessionLengths.reduce((sum, len) => sum + len, 0) / sessionLengths.length;
-    
+
     let averageSessionLength: 'short' | 'medium' | 'long';
     if (averageLength < 10) {
       averageSessionLength = 'short';
@@ -323,58 +327,63 @@ class AdaptiveContentService {
     return {
       sessionCount: sessions.size,
       averageLength,
-      averageSessionLength
+      averageSessionLength,
     };
   }
 
-  private async analyzeContentPreferences(userId: string, interactions: UserInteraction[]) {
+  private async analyzeContentPreferences(_userId: string, interactions: UserInteraction[]) {
     // Analyze interaction patterns to determine content preferences
-    const viewInteractions = interactions.filter(i => i.interactionType === 'view');
-    const shareInteractions = interactions.filter(i => i.interactionType === 'share');
-    const favoriteInteractions = interactions.filter(i => i.interactionType === 'favorite');
-    
+    const _viewInteractions = interactions.filter((i) => i.interactionType === 'view');
+    const _shareInteractions = interactions.filter((i) => i.interactionType === 'share');
+    const _favoriteInteractions = interactions.filter((i) => i.interactionType === 'favorite');
+
     // Mock analysis - in practice, would analyze content types and engagement
     return {
       conceptual: 0.6 + Math.random() * 0.3,
       practical: 0.4 + Math.random() * 0.4,
       visual: 0.5 + Math.random() * 0.3,
-      depth: 0.5 + Math.random() * 0.4
+      depth: 0.5 + Math.random() * 0.4,
     };
   }
 
-  private async analyzeCategoryAffinities(userId: string, interactions: UserInteraction[]) {
+  private async analyzeCategoryAffinities(_userId: string, interactions: UserInteraction[]) {
     // Get term categories from interactions
-    const termIds = [...new Set(interactions.map(i => i.termId).filter((id): id is string => Boolean(id)))];
-    
+    const termIds = [
+      ...new Set(interactions.map((i) => i.termId).filter((id): id is string => Boolean(id))),
+    ];
+
     if (termIds.length === 0) return [];
-    
+
     // Get category data for these terms
     const termCategories = await db
       .select({
         termId: terms.id,
         categoryId: categories.id,
-        categoryName: categories.name
+        categoryName: categories.name,
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
       .where(termIds.length > 0 ? inArray(terms.id, termIds) : sql`1=0`);
 
     // Calculate category engagement
-    const categoryStats = new Map<string, { 
-      interactions: number; 
-      categoryName: string; 
-      uniqueTerms: Set<string> 
-    }>();
+    const categoryStats = new Map<
+      string,
+      {
+        interactions: number;
+        categoryName: string;
+        uniqueTerms: Set<string>;
+      }
+    >();
 
-    interactions.forEach(interaction => {
-      const termCategory = termCategories.find(tc => tc.termId === interaction.termId);
+    interactions.forEach((interaction) => {
+      const termCategory = termCategories.find((tc) => tc.termId === interaction.termId);
       if (termCategory?.categoryId) {
         const key = termCategory.categoryId;
         if (!categoryStats.has(key)) {
           categoryStats.set(key, {
             interactions: 0,
             categoryName: termCategory.categoryName || 'Unknown',
-            uniqueTerms: new Set()
+            uniqueTerms: new Set(),
           });
         }
         const stats = categoryStats.get(key)!;
@@ -391,26 +400,29 @@ class AdaptiveContentService {
       categoryId,
       categoryName: stats.categoryName,
       affinityScore: stats.interactions / totalInteractions,
-      masteryLevel: Math.min(stats.uniqueTerms.size / 20, 1) // Assume 20 terms = mastery
+      masteryLevel: Math.min(stats.uniqueTerms.size / 20, 1), // Assume 20 terms = mastery
     }));
   }
 
   private determineLearningStyle(
-    interactions: UserInteraction[], 
+    interactions: UserInteraction[],
     sessionPatterns: any
   ): LearningPattern['learningStyle'] {
     // Analyze patterns to determine learning style
-    const searchCount = interactions.filter(i => i.interactionType === 'search').length;
-    const viewCount = interactions.filter(i => i.interactionType === 'view').length;
+    const searchCount = interactions.filter((i) => i.interactionType === 'search').length;
+    const viewCount = interactions.filter((i) => i.interactionType === 'view').length;
     const explorationRatio = searchCount / Math.max(viewCount, 1);
-    
+
     if (explorationRatio > 0.3) return 'exploratory';
-    if (sessionPatterns.sessionCount > 10 && sessionPatterns.averageLength > 20) return 'project-based';
+    if (sessionPatterns.sessionCount > 10 && sessionPatterns.averageLength > 20)
+      return 'project-based';
     if (explorationRatio < 0.1) return 'reference';
     return 'sequential';
   }
 
-  private determinePreferredDifficulty(interactions: UserInteraction[]): LearningPattern['preferredDifficulty'] {
+  private determinePreferredDifficulty(
+    _interactions: UserInteraction[]
+  ): LearningPattern['preferredDifficulty'] {
     // Mock analysis - would analyze difficulty of engaged content
     const rand = Math.random();
     if (rand < 0.3) return 'beginner';
@@ -419,15 +431,15 @@ class AdaptiveContentService {
   }
 
   private analyzeProgressionPatterns(interactions: UserInteraction[]) {
-    const viewInteractions = interactions.filter(i => i.interactionType === 'view');
-    const uniqueTerms = new Set(viewInteractions.map(i => i.termId));
-    const sessionCount = new Set(interactions.map(i => (i.metadata as any)?.sessionId)).size;
-    
+    const viewInteractions = interactions.filter((i) => i.interactionType === 'view');
+    const _uniqueTerms = new Set(viewInteractions.map((i) => i.termId));
+    const sessionCount = new Set(interactions.map((i) => (i.metadata as any)?.sessionId)).size;
+
     return {
       averageTermsPerSession: viewInteractions.length / Math.max(sessionCount, 1),
       preferredPathLength: 3 + Math.random() * 4, // Mock calculation
       returnFrequency: 0.1 + Math.random() * 0.3,
-      explorationRate: 0.2 + Math.random() * 0.4
+      explorationRate: 0.2 + Math.random() * 0.4,
     };
   }
 
@@ -438,22 +450,21 @@ class AdaptiveContentService {
       .from(userProfiles)
       .where(eq(userProfiles.userId, userId))
       .limit(1);
-    
+
     return profile[0] || null;
   }
 
-  private async getCandidateTerms(userId: string, pattern: LearningPattern) {
+  private async getCandidateTerms(userId: string, _pattern: LearningPattern) {
     // Get terms user hasn't viewed yet, preferring categories they like
     const viewedTermIds = await db
       .select({ termId: userInteractions.termId })
       .from(userInteractions)
-      .where(and(
-        eq(userInteractions.userId, userId),
-        eq(userInteractions.interactionType, 'view')
-      ));
+      .where(
+        and(eq(userInteractions.userId, userId), eq(userInteractions.interactionType, 'view'))
+      );
 
-    const viewedIds = viewedTermIds.map(v => v.termId).filter((id): id is string => Boolean(id));
-    
+    const viewedIds = viewedTermIds.map((v) => v.termId).filter((id): id is string => Boolean(id));
+
     // Get candidate terms from preferred categories
     const candidateTerms = await db
       .select({
@@ -461,7 +472,7 @@ class AdaptiveContentService {
         name: terms.name,
         categoryId: terms.categoryId,
         categoryName: categories.name,
-        difficulty: sql<number>`0.5`.as('difficulty') // Default difficulty since not in schema
+        difficulty: sql<number>`0.5`.as('difficulty'), // Default difficulty since not in schema
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
@@ -474,20 +485,21 @@ class AdaptiveContentService {
   private async createAdaptiveRecommendation(
     term: any,
     pattern: LearningPattern,
-    userProfile: any
+    _userProfile: any
   ): Promise<AdaptiveRecommendation> {
     // Calculate recommendation score based on multiple factors
-    const categoryAffinity = pattern.categoryAffinities.find(
-      ca => ca.categoryId === term.categoryId
-    )?.affinityScore || 0.1;
-    
+    const categoryAffinity =
+      pattern.categoryAffinities.find((ca) => ca.categoryId === term.categoryId)?.affinityScore ||
+      0.1;
+
     const difficultyMatch = this.calculateDifficultyMatch(
       term.difficulty || 0.5,
       pattern.preferredDifficulty
     );
-    
-    const recommendationScore = (categoryAffinity * 0.4) + (difficultyMatch * 0.4) + (Math.random() * 0.2);
-    
+
+    const recommendationScore =
+      categoryAffinity * 0.4 + difficultyMatch * 0.4 + Math.random() * 0.2;
+
     return {
       termId: term.id,
       termName: term.name,
@@ -497,7 +509,7 @@ class AdaptiveContentService {
       reasoning: this.generateRecommendationReasoning(term, pattern, categoryAffinity),
       estimatedDifficulty: term.difficulty || 0.5,
       estimatedEngagement: recommendationScore,
-      adaptations: this.determineContentAdaptations(pattern)
+      adaptations: this.determineContentAdaptations(pattern),
     };
   }
 
@@ -507,7 +519,10 @@ class AdaptiveContentService {
     return 1 - Math.abs(termDifficulty - preferred);
   }
 
-  private determineRecommendationType(term: any, pattern: LearningPattern): AdaptiveRecommendation['recommendationType'] {
+  private determineRecommendationType(
+    _term: any,
+    _pattern: LearningPattern
+  ): AdaptiveRecommendation['recommendationType'] {
     const rand = Math.random();
     if (rand < 0.4) return 'next_logical';
     if (rand < 0.7) return 'fill_gap';
@@ -515,7 +530,11 @@ class AdaptiveContentService {
     return 'review_weak';
   }
 
-  private generateRecommendationReasoning(term: any, pattern: LearningPattern, affinity: number): string {
+  private generateRecommendationReasoning(
+    term: any,
+    pattern: LearningPattern,
+    affinity: number
+  ): string {
     if (affinity > 0.3) {
       return `Based on your strong interest in ${term.categoryName}`;
     }
@@ -527,13 +546,18 @@ class AdaptiveContentService {
 
   private determineContentAdaptations(pattern: LearningPattern) {
     return {
-      contentFormat: pattern.contentPreferences.depth > 0.7 ? 'detailed' as const : 'overview' as const,
-      presentationStyle: pattern.learningStyle === 'sequential' ? 'linear' as const : 'modular' as const,
-      supportLevel: pattern.preferredDifficulty === 'beginner' ? 'guided' as const : 'minimal' as const
+      contentFormat:
+        pattern.contentPreferences.depth > 0.7 ? ('detailed' as const) : ('overview' as const),
+      presentationStyle:
+        pattern.learningStyle === 'sequential' ? ('linear' as const) : ('modular' as const),
+      supportLevel:
+        pattern.preferredDifficulty === 'beginner' ? ('guided' as const) : ('minimal' as const),
     };
   }
 
-  private determineOrganizationType(pattern: LearningPattern): ContentOrganization['organizationType'] {
+  private determineOrganizationType(
+    pattern: LearningPattern
+  ): ContentOrganization['organizationType'] {
     if (pattern.learningStyle === 'sequential') return 'pathway-optimized';
     if (pattern.categoryAffinities.length > 3) return 'category-clustered';
     if (pattern.preferredDifficulty === 'beginner') return 'difficulty-based';
@@ -542,16 +566,16 @@ class AdaptiveContentService {
 
   private async createAdaptiveSections(
     recommendations: AdaptiveRecommendation[],
-    pattern: LearningPattern,
+    _pattern: LearningPattern,
     organizationType: ContentOrganization['organizationType']
   ) {
     // Group recommendations into logical sections
     const sections = [];
-    
+
     if (organizationType === 'category-clustered') {
-      const categories = [...new Set(recommendations.map(r => r.categoryName))];
+      const categories = [...new Set(recommendations.map((r) => r.categoryName))];
       categories.forEach((category, index) => {
-        const categoryTerms = recommendations.filter(r => r.categoryName === category);
+        const categoryTerms = recommendations.filter((r) => r.categoryName === category);
         sections.push({
           sectionId: `category_${index}`,
           title: `${category} Concepts`,
@@ -560,7 +584,7 @@ class AdaptiveContentService {
           estimatedTime: categoryTerms.length * 10,
           terms: categoryTerms,
           prerequisites: [],
-          learningObjectives: [`Master ${category.toLowerCase()} fundamentals`]
+          learningObjectives: [`Master ${category.toLowerCase()} fundamentals`],
         });
       });
     } else {
@@ -577,12 +601,12 @@ class AdaptiveContentService {
             estimatedTime: chunk.length * 10,
             terms: chunk,
             prerequisites: i > 0 ? [`section_${i}`] : [],
-            learningObjectives: [`Progress in your learning journey`]
+            learningObjectives: [`Progress in your learning journey`],
           });
         }
       }
     }
-    
+
     return sections;
   }
 
@@ -591,20 +615,20 @@ class AdaptiveContentService {
       dynamicDifficulty: pattern.preferredDifficulty !== 'advanced',
       contextualHints: pattern.learningStyle !== 'reference',
       progressiveDisclosure: pattern.contentPreferences.depth < 0.7,
-      personalizedExamples: pattern.contentPreferences.practical > 0.6
+      personalizedExamples: pattern.contentPreferences.practical > 0.6,
     };
   }
 
-  private async calculateOverallProgress(userId: string) {
+  private async calculateOverallProgress(_userId: string) {
     // Mock calculation
     return {
       completionRate: 0.3 + Math.random() * 0.4,
       weeklyVelocity: 5 + Math.random() * 10,
-      retentionRate: 0.7 + Math.random() * 0.2
+      retentionRate: 0.7 + Math.random() * 0.2,
     };
   }
 
-  private async calculateEngagementTrends(userId: string) {
+  private async calculateEngagementTrends(_userId: string) {
     // Generate mock engagement trends
     const trends = [];
     for (let i = 7; i >= 0; i--) {
@@ -613,7 +637,10 @@ class AdaptiveContentService {
       trends.push({
         date: date.toISOString().split('T')[0],
         engagementScore: 0.5 + Math.random() * 0.4,
-        focusAreas: ['Machine Learning', 'Neural Networks'].slice(0, Math.floor(Math.random() * 2) + 1)
+        focusAreas: ['Machine Learning', 'Neural Networks'].slice(
+          0,
+          Math.floor(Math.random() * 2) + 1
+        ),
       });
     }
     return trends;
@@ -623,8 +650,9 @@ class AdaptiveContentService {
     const difficultyMap = { beginner: 0.3, intermediate: 0.6, advanced: 0.9 };
     return {
       difficultyLevel: difficultyMap[pattern.preferredDifficulty],
-      contentPacing: pattern.sessionLength === 'short' ? 0.7 : pattern.sessionLength === 'long' ? 1.3 : 1.0,
-      supportLevel: pattern.learningStyle === 'reference' ? 0.3 : 0.7
+      contentPacing:
+        pattern.sessionLength === 'short' ? 0.7 : pattern.sessionLength === 'long' ? 1.3 : 1.0,
+      supportLevel: pattern.learningStyle === 'reference' ? 0.3 : 0.7,
     };
   }
 
@@ -633,16 +661,16 @@ class AdaptiveContentService {
     return {
       difficultyPreference: feedback.difficultyAdjustment || 0,
       pacePreference: feedback.paceAdjustment || 0,
-      contentType: feedback.contentTypePreference
+      contentType: feedback.contentTypePreference,
     };
   }
 
-  private async updateUserProfile(userId: string, adjustments: any) {
+  private async updateUserProfile(_userId: string, _adjustments: any) {
     // Update user profile with new preferences
     // This would update the userProfiles table
   }
 
-  private async logAdaptationEvent(userId: string, feedback: any, adjustments: any) {
+  private async logAdaptationEvent(_userId: string, _feedback: any, _adjustments: any) {
     // Log the adaptation for machine learning purposes
     // This would help improve the adaptive algorithm over time
   }

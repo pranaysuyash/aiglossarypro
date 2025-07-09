@@ -1,8 +1,8 @@
-import React, { Suspense } from "react";
-import { createRoot } from "react-dom/client";
-import App from "./App";
-import "./index.css";
-import { initAnalytics, initReactScanIntegration } from "./lib/analytics";
+import React, { Suspense } from 'react';
+import { createRoot } from 'react-dom/client';
+import App from './App';
+import './index.css';
+import { initAnalytics, initReactScanIntegration } from './lib/analytics';
 
 // Performance monitoring
 const startTime = performance.now();
@@ -16,10 +16,7 @@ function removeInitialLoader() {
 }
 
 // Error boundary for better UX
-class ErrorBoundary extends React.Component<
-  { children: React.ReactNode },
-  { hasError: boolean }
-> {
+class ErrorBoundary extends React.Component<{ children: React.ReactNode }, { hasError: boolean }> {
   constructor(props: { children: React.ReactNode }) {
     super(props);
     this.state = { hasError: false };
@@ -38,9 +35,7 @@ class ErrorBoundary extends React.Component<
       return (
         <div style={{ padding: '20px', textAlign: 'center' }}>
           <h2>Something went wrong.</h2>
-          <button onClick={() => window.location.reload()}>
-            Reload Page
-          </button>
+          <button onClick={() => window.location.reload()}>Reload Page</button>
         </div>
       );
     }
@@ -55,7 +50,7 @@ initAnalytics();
 // Initialize React Scan integration
 initReactScanIntegration();
 
-const root = createRoot(document.getElementById("root")!);
+const root = createRoot(document.getElementById('root')!);
 
 root.render(
   <ErrorBoundary>

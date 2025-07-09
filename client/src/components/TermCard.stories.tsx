@@ -1,13 +1,15 @@
 import type { Meta, StoryObj } from '@storybook/react';
+import type { ITerm } from '@/interfaces/interfaces';
 import TermCard from './TermCard';
-import { ITerm } from '@/interfaces/interfaces';
 
 // Mock term data for stories
 const mockTerm: ITerm = {
   id: '1',
   name: 'Machine Learning',
-  definition: 'Machine Learning is a subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed. ML focuses on the development of computer programs that can access data and use it to learn for themselves.',
-  shortDefinition: 'A subset of AI that enables systems to learn and improve from experience without explicit programming.',
+  definition:
+    'Machine Learning is a subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed. ML focuses on the development of computer programs that can access data and use it to learn for themselves.',
+  shortDefinition:
+    'A subset of AI that enables systems to learn and improve from experience without explicit programming.',
   category: 'Artificial Intelligence',
   subcategories: ['Supervised Learning', 'Unsupervised Learning'],
   categoryId: 'ai-category',
@@ -17,7 +19,7 @@ const mockTerm: ITerm = {
   mathFormulation: undefined,
   viewCount: 1250,
   createdAt: new Date('2024-01-01'),
-  updatedAt: new Date('2024-01-01')
+  updatedAt: new Date('2024-01-01'),
 };
 
 const simpleTerm: ITerm = {
@@ -34,14 +36,16 @@ const simpleTerm: ITerm = {
   mathFormulation: undefined,
   viewCount: 890,
   createdAt: new Date('2024-01-01'),
-  updatedAt: new Date('2024-01-01')
+  updatedAt: new Date('2024-01-01'),
 };
 
 const complexTerm: ITerm = {
   id: '3',
   name: 'Transformer Architecture',
-  definition: 'The Transformer is a deep learning architecture that relies entirely on self-attention mechanisms to draw global dependencies between input and output. It was introduced in the paper "Attention Is All You Need" and has become the foundation for many state-of-the-art models in natural language processing.',
-  shortDefinition: 'A deep learning architecture based on self-attention mechanisms, fundamental to modern NLP.',
+  definition:
+    'The Transformer is a deep learning architecture that relies entirely on self-attention mechanisms to draw global dependencies between input and output. It was introduced in the paper "Attention Is All You Need" and has become the foundation for many state-of-the-art models in natural language processing.',
+  shortDefinition:
+    'A deep learning architecture based on self-attention mechanisms, fundamental to modern NLP.',
   category: 'Natural Language Processing',
   subcategories: ['Attention Mechanisms', 'Sequence-to-Sequence Models', 'BERT', 'GPT'],
   categoryId: 'nlp-category',
@@ -51,7 +55,7 @@ const complexTerm: ITerm = {
   mathFormulation: 'Attention(Q,K,V) = softmax(QK^T/√d_k)V',
   viewCount: 2100,
   createdAt: new Date('2024-01-01'),
-  updatedAt: new Date('2024-01-01')
+  updatedAt: new Date('2024-01-01'),
 };
 
 const meta: Meta<typeof TermCard> = {
@@ -132,12 +136,15 @@ export const GridLayout: Story = {
       <TermCard term={mockTerm} isFavorite={false} />
       <TermCard term={simpleTerm} isFavorite={true} />
       <TermCard term={complexTerm} isFavorite={false} />
-      <TermCard term={{...mockTerm, id: '4', name: 'Gradient Descent'}} isFavorite={true} />
-      <TermCard term={{...simpleTerm, id: '5', name: 'Backpropagation'}} isFavorite={false} />
-      <TermCard term={{...complexTerm, id: '6', name: 'Convolutional Neural Network'}} isFavorite={false} />
+      <TermCard term={{ ...mockTerm, id: '4', name: 'Gradient Descent' }} isFavorite={true} />
+      <TermCard term={{ ...simpleTerm, id: '5', name: 'Backpropagation' }} isFavorite={false} />
+      <TermCard
+        term={{ ...complexTerm, id: '6', name: 'Convolutional Neural Network' }}
+        isFavorite={false}
+      />
     </div>
   ),
   parameters: {
     layout: 'fullscreen',
   },
-}; 
+};

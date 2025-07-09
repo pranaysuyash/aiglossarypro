@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
+import { Check, Loader2, Wand2, X } from 'lucide-react';
+import { useState } from 'react';
+import { AI_IMPROVEMENT_MESSAGES, GENERIC_MESSAGES } from '../constants/messages';
+import { useToast } from '../hooks/use-toast';
+import type { ITerm } from '../interfaces/interfaces';
+import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Loader2, Wand2, Check, X, ArrowRight } from 'lucide-react';
-import { useToast } from '../hooks/use-toast';
-import { ITerm } from '../interfaces/interfaces';
-import { AI_IMPROVEMENT_MESSAGES, GENERIC_MESSAGES } from '../constants/messages';
 
 interface AIDefinitionImproverProps {
   term: ITerm;
@@ -25,10 +25,10 @@ interface AIDefinitionResponse {
   mathFormulation?: string;
 }
 
-export function AIDefinitionImprover({ 
-  term, 
+export function AIDefinitionImprover({
+  term,
   onImprovementApplied,
-  className = ""
+  className = '',
 }: AIDefinitionImproverProps) {
   const [isImproving, setIsImproving] = useState(false);
   const [isApplying, setIsApplying] = useState(false);
@@ -53,7 +53,7 @@ export function AIDefinitionImprover({
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setImprovements(result.data);
         setShowComparison(true);
@@ -66,7 +66,7 @@ export function AIDefinitionImprover({
       toast({
         title: GENERIC_MESSAGES.ERROR.title,
         description: error instanceof Error ? error.message : 'Failed to generate improvements',
-        variant: "destructive"
+        variant: 'destructive',
       });
     } finally {
       setIsImproving(false);
@@ -85,7 +85,7 @@ export function AIDefinitionImprover({
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          improvements
+          improvements,
         }),
       });
 
@@ -95,7 +95,7 @@ export function AIDefinitionImprover({
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         onImprovementApplied?.(result.data);
         toast(AI_IMPROVEMENT_MESSAGES.APPLIED);
@@ -109,7 +109,7 @@ export function AIDefinitionImprover({
       toast({
         title: GENERIC_MESSAGES.ERROR.title,
         description: error instanceof Error ? error.message : 'Failed to apply improvements',
-        variant: "destructive"
+        variant: 'destructive',
       });
     } finally {
       setIsApplying(false);
@@ -122,26 +122,30 @@ export function AIDefinitionImprover({
     toast(AI_IMPROVEMENT_MESSAGES.DISMISSED);
   };
 
-  const ComparisonSection = ({ 
-    title, 
-    original, 
-    improved 
-  }: { 
-    title: string; 
-    original: string | string[] | null | undefined; 
-    improved: string | string[] | null | undefined; 
+  const ComparisonSection = ({
+    title,
+    original,
+    improved,
+  }: {
+    title: string;
+    original: string | string[] | null | undefined;
+    improved: string | string[] | null | undefined;
   }) => {
     const hasChanges = JSON.stringify(original) !== JSON.stringify(improved);
-    
+
     if (!hasChanges && !improved) return null;
 
     return (
       <div className="space-y-3">
         <h4 className="font-medium text-sm flex items-center gap-2">
           {title}
-          {hasChanges && <Badge variant="secondary" className="text-xs">Improved</Badge>}
+          {hasChanges && (
+            <Badge variant="secondary" className="text-xs">
+              Improved
+            </Badge>
+          )}
         </h4>
-        
+
         <div className="grid md:grid-cols-2 gap-4">
           <div className="space-y-2">
             <label className="text-xs text-gray-500 uppercase tracking-wide">Current</label>
@@ -163,7 +167,7 @@ export function AIDefinitionImprover({
               )}
             </div>
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-xs text-green-600 uppercase tracking-wide">AI Improved</label>
             <div className="p-3 bg-green-50 border border-green-200 rounded-md min-h-[60px]">
@@ -180,7 +184,9 @@ export function AIDefinitionImprover({
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-green-800">{improved || <span className="text-gray-400">None</span>}</p>
+                <p className="text-sm text-green-800">
+                  {improved || <span className="text-gray-400">None</span>}
+                </p>
               )}
             </div>
           </div>
@@ -205,13 +211,10 @@ export function AIDefinitionImprover({
           {!showComparison ? (
             <div className="text-center py-6">
               <p className="text-gray-600 mb-4">
-                Get AI-powered suggestions to improve this term's definition, characteristics, and applications.
+                Get AI-powered suggestions to improve this term's definition, characteristics, and
+                applications.
               </p>
-              <Button 
-                onClick={generateImprovements} 
-                disabled={isImproving}
-                size="lg"
-              >
+              <Button onClick={generateImprovements} disabled={isImproving} size="lg">
                 {isImproving ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -239,11 +242,7 @@ export function AIDefinitionImprover({
                     <X className="h-4 w-4 mr-1" />
                     Dismiss
                   </Button>
-                  <Button
-                    size="sm"
-                    onClick={applyImprovements}
-                    disabled={isApplying}
-                  >
+                  <Button size="sm" onClick={applyImprovements} disabled={isApplying}>
                     {isApplying ? (
                       <>
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -290,11 +289,16 @@ export function AIDefinitionImprover({
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm flex items-center gap-2">
                       Applications
-                      <Badge variant="secondary" className="text-xs">New</Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        New
+                      </Badge>
                     </h4>
                     <div className="space-y-2">
                       {improvements.applications.map((app, index) => (
-                        <div key={index} className="p-3 bg-blue-50 border border-blue-200 rounded-md">
+                        <div
+                          key={index}
+                          className="p-3 bg-blue-50 border border-blue-200 rounded-md"
+                        >
                           <h5 className="font-medium text-sm text-blue-800">{app.name}</h5>
                           <p className="text-sm text-blue-700">{app.description}</p>
                         </div>
@@ -307,7 +311,9 @@ export function AIDefinitionImprover({
                   <div className="space-y-3">
                     <h4 className="font-medium text-sm flex items-center gap-2">
                       Related Terms
-                      <Badge variant="secondary" className="text-xs">Suggested</Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        Suggested
+                      </Badge>
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {improvements.relatedTerms.map((relatedTerm, index) => (

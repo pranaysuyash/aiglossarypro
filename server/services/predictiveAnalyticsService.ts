@@ -3,16 +3,9 @@
  * Analyzes learning patterns and predicts outcomes for users
  */
 
+import { and, asc, avg, count, desc, eq, gte, sql } from 'drizzle-orm';
+import { categories, terms, userInteractions } from '../../shared/schema';
 import { db } from '../db';
-import { 
-  users, 
-  userProgress, 
-  userInteractions,
-  terms, 
-  categories,
-  favorites as userFavorites
-} from '../../shared/schema';
-import { eq, and, gte, lte, desc, asc, sql, count, avg, sum } from 'drizzle-orm';
 
 export interface LearningOutcomeMetrics {
   userId: string;
@@ -93,7 +86,7 @@ class PredictiveAnalyticsService {
    */
   async predictLearningOutcomes(userId: string): Promise<LearningOutcomeMetrics> {
     const profile = await this.generateLearningProfile(userId);
-    
+
     // Calculate predictive metrics based on available data
     const predictedCompletionRate = await this.calculateCompletionRate(profile);
     const estimatedLearningTime = await this.estimateLearningTime(profile);
@@ -117,7 +110,7 @@ class PredictiveAnalyticsService {
       strengthAreas,
       improvementAreas,
       nextBestActions,
-      confidenceScore
+      confidenceScore,
     };
   }
 
@@ -145,7 +138,7 @@ class PredictiveAnalyticsService {
       timeOfDayPreference,
       sessionDurationPreference,
       conceptualStrengths,
-      lastActivityDate: lastActivity
+      lastActivityDate: lastActivity,
     };
   }
 
@@ -165,7 +158,7 @@ class PredictiveAnalyticsService {
       opportunityFactors,
       personalizedRecommendations,
       progressMilestones,
-      learningEfficiencyScore
+      learningEfficiencyScore,
     };
   }
 
@@ -177,14 +170,11 @@ class PredictiveAnalyticsService {
     const interactions = await db
       .select({
         timestamp: userInteractions.timestamp,
-        type: userInteractions.interactionType
+        type: userInteractions.interactionType,
       })
       .from(userInteractions)
       .where(
-        and(
-          eq(userInteractions.userId, userId),
-          gte(userInteractions.timestamp, thirtyDaysAgo)
-        )
+        and(eq(userInteractions.userId, userId), gte(userInteractions.timestamp, thirtyDaysAgo))
       )
       .orderBy(desc(userInteractions.timestamp));
 
@@ -194,26 +184,26 @@ class PredictiveAnalyticsService {
         sessionsPerWeek: 0,
         preferredTimeSlots: [],
         consistencyScore: 0,
-        completionRate: 0
+        completionRate: 0,
       };
     }
 
     // Group interactions by day to estimate sessions
     const sessionsByDay = new Map<string, typeof interactions>();
-    interactions.forEach(interaction => {
+    interactions.forEach((interaction) => {
       const day = interaction.timestamp.toDateString();
       if (!sessionsByDay.has(day)) {
         sessionsByDay.set(day, []);
       }
-      sessionsByDay.get(day)!.push(interaction);
+      sessionsByDay.get(day)?.push(interaction);
     });
 
     const averageSessionLength = 20; // Estimated 20 minutes average
-    const sessionsPerWeek = (sessionsByDay.size / 4.3); // 30 days ≈ 4.3 weeks
-    
+    const sessionsPerWeek = sessionsByDay.size / 4.3; // 30 days ≈ 4.3 weeks
+
     // Analyze time preferences
     const hourCounts = new Map<number, number>();
-    interactions.forEach(interaction => {
+    interactions.forEach((interaction) => {
       const hour = new Date(interaction.timestamp).getHours();
       hourCounts.set(hour, (hourCounts.get(hour) || 0) + 1);
     });
@@ -231,7 +221,7 @@ class PredictiveAnalyticsService {
       sessionsPerWeek,
       preferredTimeSlots,
       consistencyScore,
-      completionRate
+      completionRate,
     };
   }
 
@@ -242,14 +232,11 @@ class PredictiveAnalyticsService {
     const interactions = await db
       .select({
         type: userInteractions.interactionType,
-        timestamp: userInteractions.timestamp
+        timestamp: userInteractions.timestamp,
       })
       .from(userInteractions)
       .where(
-        and(
-          eq(userInteractions.userId, userId),
-          gte(userInteractions.timestamp, thirtyDaysAgo)
-        )
+        and(eq(userInteractions.userId, userId), gte(userInteractions.timestamp, thirtyDaysAgo))
       );
 
     if (interactions.length === 0) return 0.5; // Default middle score
@@ -257,9 +244,9 @@ class PredictiveAnalyticsService {
     let comprehensionScore = 0;
     let totalInteractions = 0;
 
-    interactions.forEach(interaction => {
+    interactions.forEach((interaction) => {
       totalInteractions++;
-      
+
       switch (interaction.type) {
         case 'view':
           comprehensionScore += 0.3;
@@ -278,7 +265,9 @@ class PredictiveAnalyticsService {
     return Math.min(comprehensionScore / totalInteractions, 1.0);
   }
 
-  private async determinePreferredDifficulty(userId: string): Promise<'beginner' | 'intermediate' | 'advanced'> {
+  private async determinePreferredDifficulty(
+    _userId: string
+  ): Promise<'beginner' | 'intermediate' | 'advanced'> {
     // Since we don't have difficulty data, return intermediate as default
     return 'intermediate';
   }
@@ -289,14 +278,11 @@ class PredictiveAnalyticsService {
 
     const recentInteractions = await db
       .select({
-        count: count(userInteractions.id)
+        count: count(userInteractions.id),
       })
       .from(userInteractions)
       .where(
-        and(
-          eq(userInteractions.userId, userId),
-          gte(userInteractions.timestamp, sevenDaysAgo)
-        )
+        and(eq(userInteractions.userId, userId), gte(userInteractions.timestamp, sevenDaysAgo))
       );
 
     const totalInteractions = recentInteractions[0]?.count || 0;
@@ -307,7 +293,7 @@ class PredictiveAnalyticsService {
     const categoryEngagement = await db
       .select({
         categoryName: categories.name,
-        interactionCount: count(userInteractions.id)
+        interactionCount: count(userInteractions.id),
       })
       .from(userInteractions)
       .innerJoin(terms, eq(userInteractions.termId, terms.id))
@@ -317,7 +303,7 @@ class PredictiveAnalyticsService {
       .orderBy(desc(count(userInteractions.id)))
       .limit(5);
 
-    return categoryEngagement.map(c => c.categoryName);
+    return categoryEngagement.map((c) => c.categoryName);
   }
 
   private async identifyStrengthAreas(userId: string): Promise<string[]> {
@@ -328,7 +314,7 @@ class PredictiveAnalyticsService {
           WHEN ${userInteractions.interactionType} = 'favorite' THEN 5
           WHEN ${userInteractions.interactionType} = 'view' THEN 2
           ELSE 1
-        END`)
+        END`),
       })
       .from(userInteractions)
       .innerJoin(terms, eq(userInteractions.termId, terms.id))
@@ -336,14 +322,18 @@ class PredictiveAnalyticsService {
       .where(eq(userInteractions.userId, userId))
       .groupBy(categories.name)
       .having(sql`COUNT(${userInteractions.id}) >= 5`)
-      .orderBy(desc(avg(sql`CASE 
+      .orderBy(
+        desc(
+          avg(sql`CASE 
         WHEN ${userInteractions.interactionType} = 'favorite' THEN 5
         WHEN ${userInteractions.interactionType} = 'view' THEN 2
         ELSE 1
-      END`)))
+      END`)
+        )
+      )
       .limit(3);
 
-    return strengths.map(area => area.categoryName);
+    return strengths.map((area) => area.categoryName);
   }
 
   private async identifyImprovementAreas(userId: string): Promise<string[]> {
@@ -354,7 +344,7 @@ class PredictiveAnalyticsService {
           WHEN ${userInteractions.interactionType} = 'favorite' THEN 5
           WHEN ${userInteractions.interactionType} = 'view' THEN 2
           ELSE 1
-        END`)
+        END`),
       })
       .from(userInteractions)
       .innerJoin(terms, eq(userInteractions.termId, terms.id))
@@ -362,43 +352,51 @@ class PredictiveAnalyticsService {
       .where(eq(userInteractions.userId, userId))
       .groupBy(categories.name)
       .having(sql`COUNT(${userInteractions.id}) >= 3`)
-      .orderBy(asc(avg(sql`CASE 
+      .orderBy(
+        asc(
+          avg(sql`CASE 
         WHEN ${userInteractions.interactionType} = 'favorite' THEN 5
         WHEN ${userInteractions.interactionType} = 'view' THEN 2
         ELSE 1
-      END`)))
+      END`)
+        )
+      )
       .limit(3);
 
-    return improvements.map(area => area.categoryName);
+    return improvements.map((area) => area.categoryName);
   }
 
   private async calculateCompletionRate(profile: UserLearningProfile): Promise<number> {
     const sessionConsistency = profile.sessionPatterns.consistencyScore;
     const comprehensionFactor = profile.comprehensionRate;
     const velocityFactor = Math.min(profile.learningVelocity / 10, 1);
-    
-    return (sessionConsistency * 0.4 + comprehensionFactor * 0.4 + velocityFactor * 0.2);
+
+    return sessionConsistency * 0.4 + comprehensionFactor * 0.4 + velocityFactor * 0.2;
   }
 
   private async estimateLearningTime(profile: UserLearningProfile): Promise<number> {
     const baseTimePerTerm = 5; // minutes
     const velocityMultiplier = Math.max(0.5, 1 / Math.max(profile.learningVelocity, 1));
-    const difficultyMultiplier = profile.preferredDifficulty === 'beginner' ? 1.5 : 
-                                 profile.preferredDifficulty === 'advanced' ? 0.8 : 1.0;
-    
+    const difficultyMultiplier =
+      profile.preferredDifficulty === 'beginner'
+        ? 1.5
+        : profile.preferredDifficulty === 'advanced'
+          ? 0.8
+          : 1.0;
+
     return baseTimePerTerm * velocityMultiplier * difficultyMultiplier;
   }
 
   private async calculateDifficultyAlignment(profile: UserLearningProfile): Promise<number> {
     const comprehensionThresholds = {
-      'beginner': { min: 0.0, max: 0.4 },
-      'intermediate': { min: 0.3, max: 0.7 },
-      'advanced': { min: 0.6, max: 1.0 }
+      beginner: { min: 0.0, max: 0.4 },
+      intermediate: { min: 0.3, max: 0.7 },
+      advanced: { min: 0.6, max: 1.0 },
     };
-    
+
     const thresholds = comprehensionThresholds[profile.preferredDifficulty];
     const comprehension = profile.comprehensionRate;
-    
+
     if (comprehension >= thresholds.min && comprehension <= thresholds.max) {
       return 1.0;
     } else {
@@ -415,20 +413,22 @@ class PredictiveAnalyticsService {
     const consistencyScore = profile.sessionPatterns.consistencyScore;
     const comprehensionScore = profile.comprehensionRate;
     const velocityScore = Math.min(profile.learningVelocity / 15, 1);
-    
-    return (sessionScore * 0.3 + consistencyScore * 0.3 + comprehensionScore * 0.25 + velocityScore * 0.15);
+
+    return (
+      sessionScore * 0.3 + consistencyScore * 0.3 + comprehensionScore * 0.25 + velocityScore * 0.15
+    );
   }
 
   private async calculateRetentionProbability(profile: UserLearningProfile): Promise<number> {
     const daysSinceLastActivity = Math.floor(
-      (new Date().getTime() - profile.lastActivityDate.getTime()) / (1000 * 60 * 60 * 24)
+      (Date.now() - profile.lastActivityDate.getTime()) / (1000 * 60 * 60 * 24)
     );
-    
-    const activityRecency = Math.max(0, 1 - (daysSinceLastActivity / 30));
+
+    const activityRecency = Math.max(0, 1 - daysSinceLastActivity / 30);
     const consistencyFactor = profile.sessionPatterns.consistencyScore;
     const engagementFactor = profile.comprehensionRate;
-    
-    return (activityRecency * 0.5 + consistencyFactor * 0.3 + engagementFactor * 0.2);
+
+    return activityRecency * 0.5 + consistencyFactor * 0.3 + engagementFactor * 0.2;
   }
 
   private async recommendOptimalLearningPath(profile: UserLearningProfile): Promise<string | null> {
@@ -441,191 +441,192 @@ class PredictiveAnalyticsService {
 
   private async generateNextBestActions(profile: UserLearningProfile): Promise<string[]> {
     const actions: string[] = [];
-    
+
     if (profile.sessionPatterns.consistencyScore < 0.5) {
-      actions.push("Establish a regular study schedule");
+      actions.push('Establish a regular study schedule');
     }
-    
+
     if (profile.comprehensionRate < 0.4) {
-      actions.push("Focus on fundamental concepts before advancing");
+      actions.push('Focus on fundamental concepts before advancing');
     }
-    
+
     if (profile.learningVelocity < 2) {
-      actions.push("Increase engagement with interactive content");
+      actions.push('Increase engagement with interactive content');
     }
-    
+
     if (profile.focusAreas.length > 3) {
-      actions.push("Focus on fewer topics for better retention");
+      actions.push('Focus on fewer topics for better retention');
     }
-    
-    actions.push("Continue your current learning momentum");
-    
+
+    actions.push('Continue your current learning momentum');
+
     return actions.slice(0, 5);
   }
 
   private async identifyRiskFactors(userId: string): Promise<RiskFactor[]> {
     const risks: RiskFactor[] = [];
     const profile = await this.generateLearningProfile(userId);
-    
+
     const daysSinceLastActivity = Math.floor(
-      (new Date().getTime() - profile.lastActivityDate.getTime()) / (1000 * 60 * 60 * 24)
+      (Date.now() - profile.lastActivityDate.getTime()) / (1000 * 60 * 60 * 24)
     );
-    
+
     if (daysSinceLastActivity > 7) {
       risks.push({
         factor: 'Inactivity',
-        severity: daysSinceLastActivity > 21 ? 'high' : daysSinceLastActivity > 14 ? 'medium' : 'low',
+        severity:
+          daysSinceLastActivity > 21 ? 'high' : daysSinceLastActivity > 14 ? 'medium' : 'low',
         description: `No activity for ${daysSinceLastActivity} days`,
-        mitigation: 'Send gentle reminder notifications and suggest shorter learning sessions'
+        mitigation: 'Send gentle reminder notifications and suggest shorter learning sessions',
       });
     }
-    
+
     if (profile.comprehensionRate < 0.3) {
       risks.push({
         factor: 'Low Comprehension',
         severity: 'high',
         description: 'Below-average understanding of concepts',
-        mitigation: 'Recommend prerequisite content and provide additional explanations'
+        mitigation: 'Recommend prerequisite content and provide additional explanations',
       });
     }
-    
+
     if (profile.sessionPatterns.consistencyScore < 0.4) {
       risks.push({
         factor: 'Inconsistent Learning',
         severity: 'medium',
         description: 'Irregular learning patterns may impact retention',
-        mitigation: 'Suggest creating a study schedule and setting learning reminders'
+        mitigation: 'Suggest creating a study schedule and setting learning reminders',
       });
     }
-    
+
     return risks;
   }
 
   private async identifyOpportunityFactors(userId: string): Promise<OpportunityFactor[]> {
     const opportunities: OpportunityFactor[] = [];
     const profile = await this.generateLearningProfile(userId);
-    
+
     if (profile.comprehensionRate > 0.7) {
       opportunities.push({
         factor: 'High Comprehension',
         potential: 'high',
         description: 'Strong understanding indicates readiness for advanced content',
-        action: 'Recommend advanced topics and challenging learning paths'
+        action: 'Recommend advanced topics and challenging learning paths',
       });
     }
-    
+
     if (profile.sessionPatterns.consistencyScore > 0.8) {
       opportunities.push({
         factor: 'Consistent Learning',
         potential: 'high',
         description: 'Regular learning habits create opportunity for acceleration',
-        action: 'Increase learning velocity and introduce complex concepts'
+        action: 'Increase learning velocity and introduce complex concepts',
       });
     }
-    
+
     if (profile.focusAreas.length <= 2) {
       opportunities.push({
         factor: 'Focused Learning',
         potential: 'medium',
         description: 'Concentrated focus on specific areas shows expertise potential',
-        action: 'Provide deep-dive content and specialization paths'
+        action: 'Provide deep-dive content and specialization paths',
       });
     }
-    
+
     return opportunities;
   }
 
-  private async generatePersonalizedRecommendations(userId: string): Promise<PersonalizedRecommendation[]> {
+  private async generatePersonalizedRecommendations(
+    userId: string
+  ): Promise<PersonalizedRecommendation[]> {
     const recommendations: PersonalizedRecommendation[] = [];
     const profile = await this.generateLearningProfile(userId);
-    
+
     if (profile.comprehensionRate < 0.5) {
       recommendations.push({
         type: 'content',
         title: 'Start with Fundamentals',
         description: 'Begin with basic concepts to build a strong foundation',
         expectedImprovement: 'Improve comprehension by 30-40%',
-        priority: 'high'
+        priority: 'high',
       });
     }
-    
+
     if (profile.learningVelocity < 3) {
       recommendations.push({
         type: 'pacing',
         title: 'Increase Learning Pace',
         description: 'Engage with more terms per session to accelerate progress',
         expectedImprovement: 'Reduce learning time by 20-25%',
-        priority: 'medium'
+        priority: 'medium',
       });
     }
-    
+
     if (profile.sessionPatterns.consistencyScore < 0.6) {
       recommendations.push({
         type: 'timing',
         title: 'Establish Study Schedule',
         description: `Study during your peak times: ${profile.timeOfDayPreference}`,
         expectedImprovement: 'Improve retention by 15-20%',
-        priority: 'high'
+        priority: 'high',
       });
     }
-    
+
     return recommendations;
   }
 
   private async predictProgressMilestones(userId: string): Promise<ProgressMilestone[]> {
     const milestones: ProgressMilestone[] = [];
     const profile = await this.generateLearningProfile(userId);
-    
+
     const currentDate = new Date();
-    
+
     const weeklyTarget = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
     milestones.push({
       milestone: 'Weekly Learning Goal',
       targetDate: weeklyTarget,
       probability: Math.min(profile.sessionPatterns.consistencyScore * 1.2, 1.0),
-      requirements: ['Maintain current learning pace', 'Complete 3-4 study sessions']
+      requirements: ['Maintain current learning pace', 'Complete 3-4 study sessions'],
     });
-    
+
     const monthlyTarget = new Date(currentDate.getTime() + 30 * 24 * 60 * 60 * 1000);
     milestones.push({
       milestone: 'Monthly Mastery Checkpoint',
       targetDate: monthlyTarget,
       probability: profile.comprehensionRate * 0.8,
-      requirements: ['Demonstrate understanding of key concepts', 'Complete assessment activities']
+      requirements: ['Demonstrate understanding of key concepts', 'Complete assessment activities'],
     });
-    
+
     return milestones;
   }
 
   private async calculateLearningEfficiency(userId: string): Promise<number> {
     const profile = await this.generateLearningProfile(userId);
-    
-    const timeEfficiency = profile.learningVelocity / profile.sessionPatterns.averageSessionLength || 0.5;
+
+    const timeEfficiency =
+      profile.learningVelocity / profile.sessionPatterns.averageSessionLength || 0.5;
     const comprehensionEfficiency = profile.comprehensionRate;
     const consistencyEfficiency = profile.sessionPatterns.consistencyScore;
-    
-    return (timeEfficiency * 0.4 + comprehensionEfficiency * 0.4 + consistencyEfficiency * 0.2);
+
+    return timeEfficiency * 0.4 + comprehensionEfficiency * 0.4 + consistencyEfficiency * 0.2;
   }
 
   private async calculateConfidenceScore(userId: string): Promise<number> {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-    
+
     const interactionCount = await db
       .select({ count: count(userInteractions.id) })
       .from(userInteractions)
       .where(
-        and(
-          eq(userInteractions.userId, userId),
-          gte(userInteractions.timestamp, thirtyDaysAgo)
-        )
+        and(eq(userInteractions.userId, userId), gte(userInteractions.timestamp, thirtyDaysAgo))
       );
-    
+
     const totalInteractions = interactionCount[0]?.count || 0;
-    
+
     // Confidence increases with more data points
     const interactionScore = Math.min(totalInteractions / 50, 1.0);
-    
+
     return interactionScore;
   }
 
@@ -639,11 +640,11 @@ class PredictiveAnalyticsService {
 
   private calculateConsistencyScore(sessionsByDay: Map<string, any[]>): number {
     if (sessionsByDay.size < 2) return 0;
-    
+
     // Simple consistency based on days with activity
     const daysWithActivity = sessionsByDay.size;
     const totalDays = 30;
-    
+
     return Math.min(daysWithActivity / (totalDays * 0.2), 1); // Expect activity 20% of days
   }
 
@@ -653,23 +654,22 @@ class PredictiveAnalyticsService {
       .from(userInteractions)
       .where(eq(userInteractions.userId, userId))
       .limit(20);
-    
+
     if (interactions.length === 0) return 'Morning';
-    
+
     const hourCounts = new Map<string, number>();
-    interactions.forEach(interaction => {
+    interactions.forEach((interaction) => {
       const hour = new Date(interaction.timestamp).getHours();
       const timeSlot = this.getTimeSlotName(hour);
       hourCounts.set(timeSlot, (hourCounts.get(timeSlot) || 0) + 1);
     });
-    
-    const sortedTimeSlots = Array.from(hourCounts.entries())
-      .sort((a, b) => b[1] - a[1]);
-    
+
+    const sortedTimeSlots = Array.from(hourCounts.entries()).sort((a, b) => b[1] - a[1]);
+
     return sortedTimeSlots[0]?.[0] || 'Morning';
   }
 
-  private async calculatePreferredSessionDuration(userId: string): Promise<number> {
+  private async calculatePreferredSessionDuration(_userId: string): Promise<number> {
     // Default to 30 minutes since we don't have session duration data
     return 30;
   }
@@ -682,7 +682,7 @@ class PredictiveAnalyticsService {
           WHEN ${userInteractions.interactionType} = 'favorite' THEN 5
           WHEN ${userInteractions.interactionType} = 'view' THEN 3
           ELSE 2
-        END`)
+        END`),
       })
       .from(userInteractions)
       .innerJoin(terms, eq(userInteractions.termId, terms.id))
@@ -694,14 +694,18 @@ class PredictiveAnalyticsService {
         WHEN ${userInteractions.interactionType} = 'view' THEN 3
         ELSE 2
       END) > 3`)
-      .orderBy(desc(avg(sql`CASE 
+      .orderBy(
+        desc(
+          avg(sql`CASE 
         WHEN ${userInteractions.interactionType} = 'favorite' THEN 5
         WHEN ${userInteractions.interactionType} = 'view' THEN 3
         ELSE 2
-      END`)))
+      END`)
+        )
+      )
       .limit(5);
-    
-    return strengths.map(s => s.categoryName);
+
+    return strengths.map((s) => s.categoryName);
   }
 
   private async getLastActivity(userId: string): Promise<Date> {
@@ -711,7 +715,7 @@ class PredictiveAnalyticsService {
       .where(eq(userInteractions.userId, userId))
       .orderBy(desc(userInteractions.timestamp))
       .limit(1);
-    
+
     return lastActivity[0]?.timestamp || new Date();
   }
 }

@@ -3,26 +3,25 @@
  * Handles image and media upload/management for rich content
  */
 
-import { Router, Request, Response } from 'express';
-import multer from 'multer';
-import path from 'path';
-import fs from 'fs/promises';
-import { db } from '../db';
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { sql } from 'drizzle-orm';
-import { requireAdmin } from '../middleware/adminAuth';
-import { errorLogger } from '../middleware/errorHandler';
-import { log as logger } from '../utils/logger';
+import { type Request, type Response, Router } from 'express';
+import multer from 'multer';
 import type { ApiResponse } from '../../shared/types';
+import { db } from '../db';
+import { requireAdmin } from '../middleware/adminAuth';
+import { log as logger } from '../utils/logger';
 
 // File type validation using magic numbers
 const FILE_SIGNATURES = {
-  'image/jpeg': [0xFF, 0xD8, 0xFF],
-  'image/png': [0x89, 0x50, 0x4E, 0x47],
+  'image/jpeg': [0xff, 0xd8, 0xff],
+  'image/png': [0x89, 0x50, 0x4e, 0x47],
   'image/gif': [0x47, 0x49, 0x46],
   'image/webp': [0x52, 0x49, 0x46, 0x46],
   'application/pdf': [0x25, 0x50, 0x44, 0x46],
   'video/mp4': [0x00, 0x00, 0x00, 0x18, 0x66, 0x74, 0x79, 0x70], // ftypmp4
-  'video/webm': [0x1A, 0x45, 0xDF, 0xA3]
+  'video/webm': [0x1a, 0x45, 0xdf, 0xa3],
 };
 
 async function validateFileContent(filePath: string, declaredMimeType: string): Promise<boolean> {
@@ -43,7 +42,9 @@ async function validateFileContent(filePath: string, declaredMimeType: string): 
     }
     return true;
   } catch (error) {
-    logger.error('File validation error', { error: error instanceof Error ? error.message : String(error) });
+    logger.error('File validation error', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return false;
   }
 }
@@ -85,7 +86,9 @@ const createMediaTable = async () => {
 
     logger.info('Media files table initialized');
   } catch (error) {
-    logger.error('Error creating media table', { error: error instanceof Error ? error.message : String(error) });
+    logger.error('Error creating media table', {
+      error: error instanceof Error ? error.message : String(error),
+    });
   }
 };
 
@@ -94,7 +97,7 @@ createMediaTable();
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
+  destination: async (_req, _file, cb) => {
     const uploadDir = path.join(process.cwd(), 'uploads', 'media');
     try {
       await fs.mkdir(uploadDir, { recursive: true });
@@ -103,11 +106,11 @@ const storage = multer.diskStorage({
       cb(error as Error, '');
     }
   },
-  filename: (req, file, cb) => {
-    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+  filename: (_req, file, cb) => {
+    const uniqueSuffix = `${Date.now()}-${Math.round(Math.random() * 1e9)}`;
     const ext = path.extname(file.originalname);
     cb(null, `${file.fieldname}-${uniqueSuffix}${ext}`);
-  }
+  },
 });
 
 const upload = multer({
@@ -115,70 +118,76 @@ const upload = multer({
   limits: {
     fileSize: 10 * 1024 * 1024, // 10MB limit
   },
-  fileFilter: (req, file, cb) => {
+  fileFilter: (_req, file, cb) => {
     // Allow images and common document types
     const allowedTypes = [
       'image/jpeg',
-      'image/jpg', 
+      'image/jpg',
       'image/png',
       'image/gif',
       'image/webp',
       'image/svg+xml',
       'application/pdf',
       'video/mp4',
-      'video/webm'
+      'video/webm',
     ];
-    
+
     if (allowedTypes.includes(file.mimetype)) {
       cb(null, true);
     } else {
       cb(new Error('Invalid file type. Only images, PDFs, and videos are allowed.'));
     }
-  }
+  },
 });
 
 // Upload media file
-mediaRouter.post('/upload', requireAdmin, upload.single('file'), async (req: Request, res: Response<ApiResponse<any>>) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({
-        success: false,
-        error: 'No file uploaded'
-      });
-    }
-
-    // Security: Validate file content matches declared MIME type
-    const isValidContent = await validateFileContent(req.file.path, req.file.mimetype);
-    if (!isValidContent) {
-      // Delete the uploaded file since it failed validation
-      try {
-        await fs.unlink(req.file.path);
-      } catch (unlinkError) {
-        logger.warn('Could not delete invalid file', { error: unlinkError instanceof Error ? unlinkError.message : String(unlinkError) });
+mediaRouter.post(
+  '/upload',
+  requireAdmin,
+  upload.single('file'),
+  async (req: Request, res: Response<ApiResponse<any>>) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({
+          success: false,
+          error: 'No file uploaded',
+        });
       }
-      
-      return res.status(400).json({
-        success: false,
-        error: 'File content does not match declared file type'
-      });
-    }
 
-    const { altText, caption, termId } = req.body;
-    const userId = req.user?.claims?.sub;
+      // Security: Validate file content matches declared MIME type
+      const isValidContent = await validateFileContent(req.file.path, req.file.mimetype);
+      if (!isValidContent) {
+        // Delete the uploaded file since it failed validation
+        try {
+          await fs.unlink(req.file.path);
+        } catch (unlinkError) {
+          logger.warn('Could not delete invalid file', {
+            error: unlinkError instanceof Error ? unlinkError.message : String(unlinkError),
+          });
+        }
 
-    // Get image dimensions if it's an image
-    let width = null;
-    let height = null;
-    
-    if (req.file.mimetype.startsWith('image/')) {
-      // You might want to use a library like 'sharp' for better image processing
-      // For now, we'll skip dimensions
-    }
+        return res.status(400).json({
+          success: false,
+          error: 'File content does not match declared file type',
+        });
+      }
 
-    const publicUrl = `/uploads/media/${req.file.filename}`;
+      const { altText, caption, termId } = req.body;
+      const userId = req.user?.claims?.sub;
 
-    // Save file info to database
-    const mediaFile = await db.execute(sql`
+      // Get image dimensions if it's an image
+      const width = null;
+      const height = null;
+
+      if (req.file.mimetype.startsWith('image/')) {
+        // You might want to use a library like 'sharp' for better image processing
+        // For now, we'll skip dimensions
+      }
+
+      const publicUrl = `/uploads/media/${req.file.filename}`;
+
+      // Save file info to database
+      const mediaFile = await db.execute(sql`
       INSERT INTO media_files (
         filename, original_name, mime_type, file_size, width, height,
         alt_text, caption, upload_path, public_url, term_id, uploaded_by
@@ -189,18 +198,21 @@ mediaRouter.post('/upload', requireAdmin, upload.single('file'), async (req: Req
       ) RETURNING *
     `);
 
-    res.json({
-      success: true,
-      data: mediaFile.rows?.[0]
-    });
-  } catch (error) {
-    logger.error('Media upload error', { error: error instanceof Error ? error.message : String(error) });
-    res.status(500).json({
-      success: false,
-      error: 'Failed to upload media file'
-    });
+      res.json({
+        success: true,
+        data: mediaFile.rows?.[0],
+      });
+    } catch (error) {
+      logger.error('Media upload error', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      res.status(500).json({
+        success: false,
+        error: 'Failed to upload media file',
+      });
+    }
   }
-});
+);
 
 // Get media files
 mediaRouter.get('/', async (req: Request, res: Response<ApiResponse<any>>) => {
@@ -211,23 +223,23 @@ mediaRouter.get('/', async (req: Request, res: Response<ApiResponse<any>>) => {
     // Build parameterized query conditions
     let query = sql`SELECT * FROM media_files`;
     let countQuery = sql`SELECT COUNT(*) as count FROM media_files`;
-    
+
     const conditions = [];
-    
+
     if (termId) {
       conditions.push(sql`term_id = ${termId}`);
     }
-    
+
     if (type) {
       conditions.push(sql`mime_type LIKE ${`${type}/%`}`);
     }
-    
+
     if (conditions.length > 0) {
       const whereClause = sql.join(conditions, sql` AND `);
       query = sql`SELECT * FROM media_files WHERE ${whereClause}`;
       countQuery = sql`SELECT COUNT(*) as count FROM media_files WHERE ${whereClause}`;
     }
-    
+
     query = sql`${query} ORDER BY created_at DESC LIMIT ${Number(limit)} OFFSET ${offset}`;
 
     const mediaFiles = await db.execute(query);
@@ -241,15 +253,17 @@ mediaRouter.get('/', async (req: Request, res: Response<ApiResponse<any>>) => {
           total: Number((countResult.rows?.[0] as any)?.count || 0),
           page: Number(page),
           limit: Number(limit),
-          totalPages: Math.ceil(Number((countResult.rows?.[0] as any)?.count || 0) / Number(limit))
-        }
-      }
+          totalPages: Math.ceil(Number((countResult.rows?.[0] as any)?.count || 0) / Number(limit)),
+        },
+      },
     });
   } catch (error) {
-    logger.error('Media list error', { error: error instanceof Error ? error.message : String(error) });
+    logger.error('Media list error', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
-      error: 'Failed to fetch media files'
+      error: 'Failed to fetch media files',
     });
   }
 });
@@ -269,13 +283,15 @@ mediaRouter.patch('/:id', requireAdmin, async (req: Request, res: Response<ApiRe
 
     res.json({
       success: true,
-      data: updatedFile.rows?.[0]
+      data: updatedFile.rows?.[0],
     });
   } catch (error) {
-    logger.error('Media update error', { error: error instanceof Error ? error.message : String(error) });
+    logger.error('Media update error', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
-      error: 'Failed to update media file'
+      error: 'Failed to update media file',
     });
   }
 });
@@ -295,7 +311,9 @@ mediaRouter.delete('/:id', requireAdmin, async (req: Request, res: Response<ApiR
       try {
         await fs.unlink((fileInfo.rows[0] as any).upload_path);
       } catch (error) {
-        logger.warn('Could not delete physical file', { error: error instanceof Error ? error.message : String(error) });
+        logger.warn('Could not delete physical file', {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }
 
@@ -306,13 +324,15 @@ mediaRouter.delete('/:id', requireAdmin, async (req: Request, res: Response<ApiR
 
     res.json({
       success: true,
-      data: { message: 'Media file deleted successfully' }
+      data: { message: 'Media file deleted successfully' },
     });
   } catch (error) {
-    logger.error('Media delete error', { error: error instanceof Error ? error.message : String(error) });
+    logger.error('Media delete error', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
-      error: 'Failed to delete media file'
+      error: 'Failed to delete media file',
     });
   }
 });
@@ -321,42 +341,42 @@ mediaRouter.delete('/:id', requireAdmin, async (req: Request, res: Response<ApiR
 mediaRouter.get('/serve/:filename', async (req: Request, res: Response) => {
   try {
     const { filename } = req.params;
-    
+
     // Security: Prevent path traversal attacks
     if (filename.includes('..') || filename.includes('/') || filename.includes('\\')) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid filename'
+        error: 'Invalid filename',
       });
     }
-    
+
     // Security: Only allow alphanumeric, dash, underscore, and dot
     if (!/^[a-zA-Z0-9._-]+$/.test(filename)) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid filename format'
+        error: 'Invalid filename format',
       });
     }
-    
+
     const filePath = path.join(process.cwd(), 'uploads', 'media', filename);
-    
+
     // Security: Ensure resolved path is still within uploads directory
     const uploadsDir = path.join(process.cwd(), 'uploads', 'media');
     const resolvedPath = path.resolve(filePath);
     if (!resolvedPath.startsWith(path.resolve(uploadsDir))) {
       return res.status(400).json({
         success: false,
-        error: 'Access denied'
+        error: 'Access denied',
       });
     }
-    
+
     // Check if file exists
     try {
       await fs.access(filePath);
     } catch {
       return res.status(404).json({
         success: false,
-        error: 'File not found'
+        error: 'File not found',
       });
     }
 
@@ -368,23 +388,25 @@ mediaRouter.get('/serve/:filename', async (req: Request, res: Response) => {
     if (!fileInfo.rows?.length) {
       return res.status(404).json({
         success: false,
-        error: 'File not found in database'
+        error: 'File not found in database',
       });
     }
 
     const file = fileInfo.rows[0] as any;
-    
+
     // Security: Sanitize headers to prevent header injection
     const safeOriginalName = (file.original_name || 'download').replace(/["\\r\\n]/g, '');
-    
+
     res.setHeader('Content-Type', file.mime_type);
     res.setHeader('Content-Disposition', `inline; filename="${safeOriginalName}"`);
     res.sendFile(filePath);
   } catch (error) {
-    logger.error('Media serve error', { error: error instanceof Error ? error.message : String(error) });
+    logger.error('Media serve error', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
-      error: 'Failed to serve media file'
+      error: 'Failed to serve media file',
     });
   }
 });

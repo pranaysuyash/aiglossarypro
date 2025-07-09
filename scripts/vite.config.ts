@@ -1,26 +1,26 @@
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import path from "path";
+import path from 'node:path';
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [react()],
   resolve: {
     alias: {
-      "@": path.resolve(import.meta.dirname, "client", "src"),
-      "@shared": path.resolve(import.meta.dirname, "shared"),
-      "@assets": path.resolve(import.meta.dirname, "attached_assets"),
+      '@': path.resolve(import.meta.dirname, 'client', 'src'),
+      '@shared': path.resolve(import.meta.dirname, 'shared'),
+      '@assets': path.resolve(import.meta.dirname, 'attached_assets'),
     },
   },
-  root: path.resolve(import.meta.dirname, "client"),
+  root: path.resolve(import.meta.dirname, 'client'),
   build: {
-    outDir: path.resolve(import.meta.dirname, "dist/public"),
+    outDir: path.resolve(import.meta.dirname, 'dist/public'),
     emptyOutDir: true,
     rollupOptions: {
       output: {
         manualChunks: {
           // React core libraries
           react: ['react', 'react-dom'],
-          // Router and state management  
+          // Router and state management
           router: ['wouter', '@tanstack/react-query'],
           // UI component libraries
           ui: [
@@ -36,7 +36,7 @@ export default defineConfig({
             '@radix-ui/react-select',
             '@radix-ui/react-separator',
             '@radix-ui/react-switch',
-            '@radix-ui/react-tabs'
+            '@radix-ui/react-tabs',
           ],
           // Icons and utilities
           utils: ['lucide-react', 'clsx', 'tailwind-merge', 'class-variance-authority'],
@@ -46,10 +46,10 @@ export default defineConfig({
           charts: ['recharts'],
           // Code syntax highlighting (heavy library)
           katex: ['katex'],
-          // Mermaid diagrams (heavy library) 
+          // Mermaid diagrams (heavy library)
           mermaid: ['mermaid'],
           // Cytoscape (heavy library)
-          cytoscape: ['cytoscape']
+          cytoscape: ['cytoscape'],
         },
         // Optimized chunk naming
         chunkFileNames: 'assets/js/[name]-[hash].js',

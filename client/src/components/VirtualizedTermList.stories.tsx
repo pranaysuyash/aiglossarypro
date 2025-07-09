@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import VirtualizedTermList from './VirtualizedTermList';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ITerm } from '../../../shared/types';
+import VirtualizedTermList from './VirtualizedTermList';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -26,7 +26,8 @@ const meta: Meta<typeof VirtualizedTermList> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'High-performance virtualized list component for displaying large sets of terms with smooth scrolling and efficient rendering.',
+        component:
+          'High-performance virtualized list component for displaying large sets of terms with smooth scrolling and efficient rendering.',
       },
     },
   },
@@ -38,9 +39,16 @@ type Story = StoryObj<typeof meta>;
 
 // Generate mock data
 const generateMockTerms = (count: number): ITerm[] => {
-  const categories = ['Machine Learning', 'Deep Learning', 'NLP', 'Computer Vision', 'Reinforcement Learning', 'Statistics'];
-  const difficulties = ['beginner', 'intermediate', 'advanced'] as const;
-  
+  const categories = [
+    'Machine Learning',
+    'Deep Learning',
+    'NLP',
+    'Computer Vision',
+    'Reinforcement Learning',
+    'Statistics',
+  ];
+  const _difficulties = ['beginner', 'intermediate', 'advanced'] as const;
+
   return Array.from({ length: count }, (_, i) => ({
     id: `term-${i}`,
     name: `AI Term ${i + 1}`,
@@ -50,7 +58,9 @@ const generateMockTerms = (count: number): ITerm[] => {
     createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
     updatedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
     isAiGenerated: i % 4 === 0,
-    verificationStatus: (['unverified', 'verified', 'flagged', 'needs_review', 'expert_reviewed'] as const)[i % 5],
+    verificationStatus: (
+      ['unverified', 'verified', 'flagged', 'needs_review', 'expert_reviewed'] as const
+    )[i % 5],
   }));
 };
 
@@ -127,7 +137,8 @@ export const WithSelectionMode: Story = {
     height: 400,
     itemHeight: 120,
     onTermClick: (termId: string) => console.log('Term clicked:', termId),
-    onFavoriteToggle: (termId: string, isFavorite: boolean) => console.log('Favorite toggled:', termId, isFavorite),
+    onFavoriteToggle: (termId: string, isFavorite: boolean) =>
+      console.log('Favorite toggled:', termId, isFavorite),
   },
 };
 
@@ -137,7 +148,8 @@ export const WithCustomActions: Story = {
     height: 400,
     itemHeight: 120,
     onTermClick: (termId: string) => console.log('Term clicked:', termId),
-    onFavoriteToggle: (termId: string, isFavorite: boolean) => console.log('Favorite toggled:', termId, isFavorite),
+    onFavoriteToggle: (termId: string, isFavorite: boolean) =>
+      console.log('Favorite toggled:', termId, isFavorite),
   },
 };
 
@@ -214,7 +226,8 @@ export const MobileOptimized: Story = {
     height: 400,
     itemHeight: 100,
     onTermClick: (termId: string) => console.log('Term clicked:', termId),
-    onFavoriteToggle: (termId: string, isFavorite: boolean) => console.log('Favorite toggled:', termId, isFavorite),
+    onFavoriteToggle: (termId: string, isFavorite: boolean) =>
+      console.log('Favorite toggled:', termId, isFavorite),
   },
   parameters: {
     viewport: {

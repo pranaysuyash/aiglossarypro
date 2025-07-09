@@ -23,7 +23,7 @@ export function NeuralNetworkBackground({
   opacity = 0.4,
   nodeCount = 50,
   maxConnections = 3,
-  animationSpeed = 0.5
+  animationSpeed = 0.5,
 }: NeuralNetworkBackgroundProps) {
   // Reduce complexity on mobile devices
   const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
@@ -39,13 +39,13 @@ export function NeuralNetworkBackground({
     // Check for reduced motion preference
     const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
     isReducedMotion.current = mediaQuery.matches;
-    
+
     const handleMotionChange = (e: MediaQueryListEvent) => {
       isReducedMotion.current = e.matches;
     };
-    
+
     mediaQuery.addEventListener('change', handleMotionChange);
-    
+
     return () => {
       mediaQuery.removeEventListener('change', handleMotionChange);
     };
@@ -70,7 +70,7 @@ export function NeuralNetworkBackground({
     const initializeNodes = () => {
       const nodes: Node[] = [];
       const rect = canvas.getBoundingClientRect();
-      
+
       for (let i = 0; i < adjustedNodeCount; i++) {
         const node: Node = {
           x: Math.random() * rect.width,
@@ -79,7 +79,7 @@ export function NeuralNetworkBackground({
           vy: (Math.random() - 0.5) * adjustedAnimationSpeed,
           connections: [],
           pulse: Math.random() * Math.PI * 2,
-          pulseSpeed: 0.02 + Math.random() * 0.02
+          pulseSpeed: 0.02 + Math.random() * 0.02,
         };
         nodes.push(node);
       }
@@ -103,10 +103,10 @@ export function NeuralNetworkBackground({
       ctx.clearRect(0, 0, rect.width, rect.height);
 
       const nodes = nodesRef.current;
-      
+
       // Update node positions if animation is allowed
       if (!isReducedMotion.current) {
-        nodes.forEach(node => {
+        nodes.forEach((node) => {
           node.x += node.vx;
           node.y += node.vy;
           node.pulse += node.pulseSpeed;
@@ -126,19 +126,17 @@ export function NeuralNetworkBackground({
       // Draw connections
       ctx.strokeStyle = `rgba(147, 51, 234, ${opacity * 0.3})`;
       ctx.lineWidth = 1;
-      
-      nodes.forEach((node, index) => {
-        node.connections.forEach(targetIndex => {
+
+      nodes.forEach((node, _index) => {
+        node.connections.forEach((targetIndex) => {
           const target = nodes[targetIndex];
-          const distance = Math.sqrt(
-            Math.pow(node.x - target.x, 2) + Math.pow(node.y - target.y, 2)
-          );
-          
+          const distance = Math.sqrt((node.x - target.x) ** 2 + (node.y - target.y) ** 2);
+
           // Only draw connection if nodes are close enough
           if (distance < 150) {
             const alpha = (1 - distance / 150) * opacity * 0.3;
             ctx.strokeStyle = `rgba(147, 51, 234, ${alpha})`;
-            
+
             ctx.beginPath();
             ctx.moveTo(node.x, node.y);
             ctx.lineTo(target.x, target.y);
@@ -148,16 +146,16 @@ export function NeuralNetworkBackground({
       });
 
       // Draw nodes
-      nodes.forEach(node => {
+      nodes.forEach((node) => {
         const pulseSize = isReducedMotion.current ? 1 : 1 + Math.sin(node.pulse) * 0.3;
         const radius = 2 * pulseSize;
         const alpha = opacity * (0.6 + Math.sin(node.pulse) * 0.4);
-        
+
         ctx.fillStyle = `rgba(147, 51, 234, ${alpha})`;
         ctx.beginPath();
         ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
         ctx.fill();
-        
+
         // Add glow effect
         ctx.shadowBlur = 10;
         ctx.shadowColor = `rgba(147, 51, 234, ${alpha})`;
@@ -195,9 +193,8 @@ export function NeuralNetworkBackground({
       className={`absolute inset-0 w-full h-full pointer-events-none ${className}`}
       style={{
         background: 'transparent',
-        zIndex: 0
+        zIndex: 0,
       }}
-      aria-hidden="true"
     />
   );
 }

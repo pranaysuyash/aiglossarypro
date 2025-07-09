@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { Button } from './ui/button';
-import { Input } from './ui/input';
-import { Textarea } from './ui/textarea';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { Badge } from './ui/badge';
-import { Loader2, Sparkles, Copy, Check } from '@/components/ui/icons';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
 import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
+import { Check, Copy, Loader2, Sparkles } from '@/components/ui/icons';
 import { useToast } from '../hooks/use-toast';
 import { useLiveRegion } from './accessibility/LiveRegion';
+import { Badge } from './ui/badge';
+import { Button } from './ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Input } from './ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from './ui/select';
+import { Textarea } from './ui/textarea';
 
 interface AIDefinitionGeneratorProps {
   onDefinitionGenerated?: (definition: any) => void;
@@ -28,10 +28,10 @@ interface AIDefinitionResponse {
   mathFormulation?: string;
 }
 
-export function AIDefinitionGenerator({ 
-  onDefinitionGenerated, 
-  initialTerm = '', 
-  initialCategory = '' 
+export function AIDefinitionGenerator({
+  onDefinitionGenerated,
+  initialTerm = '',
+  initialCategory = '',
 }: AIDefinitionGeneratorProps) {
   const [term, setTerm] = useState(initialTerm);
   const [category, setCategory] = useState(initialCategory);
@@ -49,15 +49,15 @@ export function AIDefinitionGenerator({
       const response = await fetch('/api/categories');
       if (!response.ok) throw new Error('Failed to fetch categories');
       return response.json();
-    }
+    },
   });
 
   const generateDefinition = async () => {
     if (!term.trim()) {
       toast({
-        title: "Error",
-        description: "Please enter a term to define.",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Please enter a term to define.',
+        variant: 'destructive',
       });
       return;
     }
@@ -83,14 +83,14 @@ export function AIDefinitionGenerator({
       }
 
       const result = await response.json();
-      
+
       if (result.success) {
         setGeneratedDefinition(result.data);
         onDefinitionGenerated?.(result.data);
         announce(`AI definition for ${term.trim()} generated successfully`, 'polite');
         toast({
-          title: "Success",
-          description: "AI definition generated successfully!",
+          title: 'Success',
+          description: 'AI definition generated successfully!',
         });
       } else {
         throw new Error(result.error || 'Failed to generate definition');
@@ -99,9 +99,9 @@ export function AIDefinitionGenerator({
       console.error('Error generating definition:', error);
       announce(`Failed to generate definition for ${term.trim()}`, 'assertive');
       toast({
-        title: "Error",
+        title: 'Error',
         description: error instanceof Error ? error.message : 'Failed to generate definition',
-        variant: "destructive"
+        variant: 'destructive',
       });
     } finally {
       setIsGenerating(false);
@@ -114,14 +114,14 @@ export function AIDefinitionGenerator({
       setCopiedField(field);
       setTimeout(() => setCopiedField(null), 2000);
       toast({
-        title: "Copied",
-        description: "Content copied to clipboard",
+        title: 'Copied',
+        description: 'Content copied to clipboard',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
-        title: "Error",
-        description: "Failed to copy to clipboard",
-        variant: "destructive"
+        title: 'Error',
+        description: 'Failed to copy to clipboard',
+        variant: 'destructive',
       });
     }
   };
@@ -151,7 +151,11 @@ export function AIDefinitionGenerator({
             </div>
             <div className="space-y-2">
               <label className="text-sm font-medium">Category (Optional)</label>
-              <Select value={category || "none"} onValueChange={(value) => setCategory(value === "none" ? "" : value)} disabled={isGenerating}>
+              <Select
+                value={category || 'none'}
+                onValueChange={(value) => setCategory(value === 'none' ? '' : value)}
+                disabled={isGenerating}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
@@ -178,8 +182,8 @@ export function AIDefinitionGenerator({
             />
           </div>
 
-          <Button 
-            onClick={generateDefinition} 
+          <Button
+            onClick={generateDefinition}
             disabled={isGenerating || !term.trim()}
             className="w-full"
           >
@@ -202,9 +206,7 @@ export function AIDefinitionGenerator({
         <Card>
           <CardHeader>
             <CardTitle>Generated Definition</CardTitle>
-            <CardDescription>
-              AI-generated comprehensive definition for "{term}"
-            </CardDescription>
+            <CardDescription>AI-generated comprehensive definition for "{term}"</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Short Definition */}
@@ -250,18 +252,19 @@ export function AIDefinitionGenerator({
             </div>
 
             {/* Characteristics */}
-            {generatedDefinition.characteristics && generatedDefinition.characteristics.length > 0 && (
-              <div className="space-y-2">
-                <label className="text-sm font-medium">Key Characteristics</label>
-                <div className="flex flex-wrap gap-2">
-                  {generatedDefinition.characteristics.map((char, index) => (
-                    <Badge key={index} variant="secondary">
-                      {char}
-                    </Badge>
-                  ))}
+            {generatedDefinition.characteristics &&
+              generatedDefinition.characteristics.length > 0 && (
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Key Characteristics</label>
+                  <div className="flex flex-wrap gap-2">
+                    {generatedDefinition.characteristics.map((char, index) => (
+                      <Badge key={index} variant="secondary">
+                        {char}
+                      </Badge>
+                    ))}
+                  </div>
                 </div>
-              </div>
-            )}
+              )}
 
             {/* Applications */}
             {generatedDefinition.applications && generatedDefinition.applications.length > 0 && (

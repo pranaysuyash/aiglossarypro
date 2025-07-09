@@ -1,24 +1,23 @@
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '../hooks/useAuth';
-import { Link } from 'wouter';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Badge } from '../components/ui/badge';
-import { Button } from '../components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { 
-  Code, 
-  Play, 
-  ThumbsUp, 
-  ThumbsDown, 
-  ExternalLink, 
-  Search, 
-  Filter,
-  Copy,
+import {
   CheckCircle,
-  AlertCircle
+  Code,
+  Copy,
+  ExternalLink,
+  Play,
+  Search,
+  ThumbsDown,
+  ThumbsUp,
 } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Link } from 'wouter';
+import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
+import { useAuth } from '../hooks/useAuth';
 
 interface CodeExample {
   id: string;
@@ -57,7 +56,7 @@ const CodeExamples: React.FC = () => {
 
   useEffect(() => {
     fetchCodeExamples();
-  }, [languageFilter, difficultyFilter, typeFilter]);
+  }, [fetchCodeExamples]);
 
   const fetchCodeExamples = async () => {
     try {
@@ -65,7 +64,7 @@ const CodeExamples: React.FC = () => {
       if (languageFilter !== 'all') params.append('language', languageFilter);
       if (difficultyFilter !== 'all') params.append('difficulty', difficultyFilter);
       if (typeFilter !== 'all') params.append('type', typeFilter);
-      
+
       const response = await fetch(`/api/code-examples?${params}`);
       if (!response.ok) throw new Error('Failed to fetch code examples');
       const data = await response.json();
@@ -87,24 +86,26 @@ const CodeExamples: React.FC = () => {
       const response = await fetch(`/api/code-examples/${exampleId}/vote`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ vote }),
       });
 
       if (!response.ok) throw new Error('Failed to vote');
-      
+
       // Update local state
-      setExamples(examples.map(example => 
-        example.id === exampleId 
-          ? { 
-              ...example, 
-              upvotes: vote === 'up' ? example.upvotes + 1 : example.upvotes,
-              downvotes: vote === 'down' ? example.downvotes + 1 : example.downvotes
-            }
-          : example
-      ));
+      setExamples(
+        examples.map((example) =>
+          example.id === exampleId
+            ? {
+                ...example,
+                upvotes: vote === 'up' ? example.upvotes + 1 : example.upvotes,
+                downvotes: vote === 'down' ? example.downvotes + 1 : example.downvotes,
+              }
+            : example
+        )
+      );
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to vote');
     }
@@ -130,7 +131,7 @@ const CodeExamples: React.FC = () => {
       const response = await fetch(`/api/code-examples/${exampleId}/run`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -141,7 +142,7 @@ const CodeExamples: React.FC = () => {
       });
 
       if (!response.ok) throw new Error('Failed to run example');
-      
+
       alert('Code executed successfully! (This is a simulation)');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to run example');
@@ -150,34 +151,48 @@ const CodeExamples: React.FC = () => {
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
-      case 'beginner': return 'bg-green-100 text-green-800';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800';
-      case 'advanced': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'beginner':
+        return 'bg-green-100 text-green-800';
+      case 'intermediate':
+        return 'bg-yellow-100 text-yellow-800';
+      case 'advanced':
+        return 'bg-red-100 text-red-800';
+      default:
+        return 'bg-gray-100 text-gray-800';
     }
   };
 
   const getLanguageIcon = (language: string) => {
     switch (language.toLowerCase()) {
-      case 'python': return '🐍';
-      case 'javascript': return '🟨';
-      case 'typescript': return '🔷';
-      case 'r': return '📊';
-      case 'sql': return '🗄️';
-      case 'java': return '☕';
-      case 'cpp': case 'c++': return '⚡';
-      default: return '📝';
+      case 'python':
+        return '🐍';
+      case 'javascript':
+        return '🟨';
+      case 'typescript':
+        return '🔷';
+      case 'r':
+        return '📊';
+      case 'sql':
+        return '🗄️';
+      case 'java':
+        return '☕';
+      case 'cpp':
+      case 'c++':
+        return '⚡';
+      default:
+        return '📝';
     }
   };
 
-  const filteredExamples = examples.filter(example => {
-    const matchesSearch = example.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         example.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         example.term?.name.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredExamples = examples.filter((example) => {
+    const matchesSearch =
+      example.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      example.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      example.term?.name.toLowerCase().includes(searchTerm.toLowerCase());
     return matchesSearch;
   });
 
-  const languages = [...new Set(examples.map(e => e.language))];
+  const languages = [...new Set(examples.map((e) => e.language))];
   const difficulties = ['beginner', 'intermediate', 'advanced'];
   const types = ['implementation', 'visualization', 'exercise'];
 
@@ -224,7 +239,7 @@ const CodeExamples: React.FC = () => {
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
-          
+
           <div className="flex flex-wrap gap-4">
             <select
               value={languageFilter}
@@ -232,7 +247,7 @@ const CodeExamples: React.FC = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Languages</option>
-              {languages.map(lang => (
+              {languages.map((lang) => (
                 <option key={lang} value={lang}>
                   {getLanguageIcon(lang)} {lang}
                 </option>
@@ -245,7 +260,7 @@ const CodeExamples: React.FC = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Difficulties</option>
-              {difficulties.map(diff => (
+              {difficulties.map((diff) => (
                 <option key={diff} value={diff}>
                   {diff.charAt(0).toUpperCase() + diff.slice(1)}
                 </option>
@@ -258,7 +273,7 @@ const CodeExamples: React.FC = () => {
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Types</option>
-              {types.map(type => (
+              {types.map((type) => (
                 <option key={type} value={type}>
                   {type.charAt(0).toUpperCase() + type.slice(1)}
                 </option>
@@ -285,7 +300,7 @@ const CodeExamples: React.FC = () => {
                     )}
                   </div>
                   <p className="text-gray-600 mb-3">{example.description}</p>
-                  
+
                   <div className="flex flex-wrap gap-2">
                     <Badge variant="outline">
                       {getLanguageIcon(example.language)} {example.language}
@@ -293,9 +308,7 @@ const CodeExamples: React.FC = () => {
                     <Badge className={getDifficultyColor(example.difficulty_level)}>
                       {example.difficulty_level}
                     </Badge>
-                    <Badge variant="outline">
-                      {example.example_type}
-                    </Badge>
+                    <Badge variant="outline">{example.example_type}</Badge>
                     {example.term && (
                       <Link to={`/terms/${example.term_id}`}>
                         <Badge variant="outline" className="hover:bg-blue-50">
@@ -361,7 +374,7 @@ const CodeExamples: React.FC = () => {
                       {example.code}
                     </SyntaxHighlighter>
                   </div>
-                  
+
                   <div className="flex gap-2 mt-4">
                     {example.is_runnable && (
                       <Button
@@ -400,15 +413,17 @@ const CodeExamples: React.FC = () => {
                       <div>
                         <h4 className="font-medium mb-2">Required Libraries:</h4>
                         <div className="flex flex-wrap gap-2">
-                          {Object.entries(example.libraries as Record<string, string>).map(([lib, version]) => (
-                            <Badge key={lib} variant="outline">
-                              {lib} {version && `v${version}`}
-                            </Badge>
-                          ))}
+                          {Object.entries(example.libraries as Record<string, string>).map(
+                            ([lib, version]) => (
+                              <Badge key={lib} variant="outline">
+                                {lib} {version && `v${version}`}
+                              </Badge>
+                            )
+                          )}
                         </div>
                       </div>
                     )}
-                    
+
                     <div className="text-sm text-gray-500">
                       Created: {new Date(example.created_at).toLocaleDateString()}
                       {example.updated_at !== example.created_at && (
@@ -428,7 +443,9 @@ const CodeExamples: React.FC = () => {
           <Code className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No code examples found</h3>
           <p className="text-gray-500">
-            {searchTerm ? 'Try adjusting your search terms or filters' : 'Code examples are coming soon!'}
+            {searchTerm
+              ? 'Try adjusting your search terms or filters'
+              : 'Code examples are coming soon!'}
           </p>
         </div>
       )}

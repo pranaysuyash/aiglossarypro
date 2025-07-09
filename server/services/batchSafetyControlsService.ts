@@ -1,15 +1,13 @@
 /**
  * Batch Safety Controls Service - Phase 2 Enhanced Content Generation System
- * 
+ *
  * Provides comprehensive safety controls, rate limiting, and protection mechanisms
  * for large-scale batch operations to prevent system abuse and ensure stability.
  */
 
-import { EventEmitter } from 'events';
+import { EventEmitter } from 'node:events';
 import { log as logger } from '../utils/logger';
 import { columnBatchProcessorService } from './columnBatchProcessorService';
-import { costManagementService } from './costManagementService';
-import { batchProgressTrackingService } from './batchProgressTrackingService';
 
 // Safety control interfaces
 export interface SafetyLimits {
@@ -100,7 +98,7 @@ export interface EmergencyControls {
 
 /**
  * Batch Safety Controls Service
- * 
+ *
  * Comprehensive service for implementing safety controls, rate limiting,
  * and system protection for batch operations.
  */
@@ -137,14 +135,14 @@ export class BatchSafetyControlsService extends EventEmitter {
     if (this.emergencyControls.emergencyStopActive) {
       return {
         allowed: false,
-        reason: 'System is in emergency stop mode - all operations are blocked'
+        reason: 'System is in emergency stop mode - all operations are blocked',
       };
     }
 
     if (this.emergencyControls.blockNewOperations) {
       return {
         allowed: false,
-        reason: 'New operations are temporarily blocked for system maintenance'
+        reason: 'New operations are temporarily blocked for system maintenance',
       };
     }
 
@@ -153,7 +151,7 @@ export class BatchSafetyControlsService extends EventEmitter {
     if (userStatus.status === 'blocked') {
       return {
         allowed: false,
-        reason: 'User is temporarily blocked due to safety violations'
+        reason: 'User is temporarily blocked due to safety violations',
       };
     }
 
@@ -163,18 +161,18 @@ export class BatchSafetyControlsService extends EventEmitter {
       return {
         allowed: false,
         reason: `Maximum concurrent operations reached (${this.safetyLimits.global.maxConcurrentOperations})`,
-        waitTime: await this.estimateWaitTime()
+        waitTime: await this.estimateWaitTime(),
       };
     }
 
     // Check user concurrent operations
-    const userActiveOps = activeOperations.filter(op => 
-      op.configuration.metadata?.initiatedBy === userId
+    const userActiveOps = activeOperations.filter(
+      (op) => op.configuration.metadata?.initiatedBy === userId
     );
     if (userActiveOps.length >= this.safetyLimits.global.maxOperationsPerUser) {
       return {
         allowed: false,
-        reason: `Maximum operations per user reached (${this.safetyLimits.global.maxOperationsPerUser})`
+        reason: `Maximum operations per user reached (${this.safetyLimits.global.maxOperationsPerUser})`,
       };
     }
 
@@ -182,14 +180,14 @@ export class BatchSafetyControlsService extends EventEmitter {
     if (operationRequest.termCount > this.safetyLimits.operation.maxTermsPerOperation) {
       return {
         allowed: false,
-        reason: `Operation too large (${operationRequest.termCount} terms, max: ${this.safetyLimits.operation.maxTermsPerOperation})`
+        reason: `Operation too large (${operationRequest.termCount} terms, max: ${this.safetyLimits.operation.maxTermsPerOperation})`,
       };
     }
 
     if (operationRequest.estimatedCost > this.safetyLimits.operation.maxCostPerOperation) {
       return {
         allowed: false,
-        reason: `Operation cost too high ($${operationRequest.estimatedCost}, max: $${this.safetyLimits.operation.maxCostPerOperation})`
+        reason: `Operation cost too high ($${operationRequest.estimatedCost}, max: $${this.safetyLimits.operation.maxCostPerOperation})`,
       };
     }
 
@@ -201,7 +199,7 @@ export class BatchSafetyControlsService extends EventEmitter {
     if (dailyCost + operationRequest.estimatedCost > this.safetyLimits.global.maxTotalCostPerUser) {
       return {
         allowed: false,
-        reason: `Daily cost limit would be exceeded ($${dailyCost + operationRequest.estimatedCost}, max: $${this.safetyLimits.global.maxTotalCostPerUser})`
+        reason: `Daily cost limit would be exceeded ($${dailyCost + operationRequest.estimatedCost}, max: $${this.safetyLimits.global.maxTotalCostPerUser})`,
       };
     }
 
@@ -209,7 +207,7 @@ export class BatchSafetyControlsService extends EventEmitter {
     if (dailyOperations >= this.safetyLimits.global.maxOperationsPerDay) {
       return {
         allowed: false,
-        reason: `Daily operation limit reached (${dailyOperations}, max: ${this.safetyLimits.global.maxOperationsPerDay})`
+        reason: `Daily operation limit reached (${dailyOperations}, max: ${this.safetyLimits.global.maxOperationsPerDay})`,
       };
     }
 
@@ -220,7 +218,7 @@ export class BatchSafetyControlsService extends EventEmitter {
       return {
         allowed: false,
         reason: `Hourly operation limit reached (${hourlyOperations}, max: ${this.safetyLimits.global.maxOperationsPerHour})`,
-        waitTime: 60 // Wait an hour
+        waitTime: 60, // Wait an hour
       };
     }
 
@@ -229,7 +227,7 @@ export class BatchSafetyControlsService extends EventEmitter {
     if (!healthCheck.healthy) {
       return {
         allowed: false,
-        reason: 'System health check failed - operations temporarily restricted'
+        reason: 'System health check failed - operations temporarily restricted',
       };
     }
 
@@ -239,7 +237,7 @@ export class BatchSafetyControlsService extends EventEmitter {
       return {
         allowed: false,
         reason: rateLimitCheck.reason,
-        waitTime: rateLimitCheck.waitTime
+        waitTime: rateLimitCheck.waitTime,
       };
     }
 
@@ -266,7 +264,7 @@ export class BatchSafetyControlsService extends EventEmitter {
           operationId,
           currentValue: durationHours,
           limitValue: this.safetyLimits.operation.maxDurationHours,
-          action: 'cancel'
+          action: 'cancel',
         });
       }
     }
@@ -283,7 +281,7 @@ export class BatchSafetyControlsService extends EventEmitter {
           operationId,
           currentValue: errorRate,
           limitValue: this.safetyLimits.operation.maxErrorRate,
-          action: 'pause'
+          action: 'pause',
         });
       }
     }
@@ -297,7 +295,7 @@ export class BatchSafetyControlsService extends EventEmitter {
         operationId,
         currentValue: operation.costs.actualCost,
         limitValue: operation.costs.estimatedCost * 1.5,
-        action: 'pause'
+        action: 'pause',
       });
     }
   }
@@ -317,14 +315,18 @@ export class BatchSafetyControlsService extends EventEmitter {
         await columnBatchProcessorService.pauseBatchOperation(operation.id);
         logger.warn(`Emergency stop: Paused operation ${operation.id}`);
       } catch (error) {
-        logger.error(`Failed to pause operation ${operation.id} during emergency stop:`, { 
-          error: error instanceof Error ? error.message : String(error) 
+        logger.error(`Failed to pause operation ${operation.id} during emergency stop:`, {
+          error: error instanceof Error ? error.message : String(error),
         });
       }
     }
 
     logger.critical(`Emergency stop activated by ${activatedBy}: ${reason}`);
-    this.emit('emergency:activated', { reason, activatedBy, affectedOperations: activeOperations.length });
+    this.emit('emergency:activated', {
+      reason,
+      activatedBy,
+      affectedOperations: activeOperations.length,
+    });
   }
 
   /**
@@ -350,19 +352,19 @@ export class BatchSafetyControlsService extends EventEmitter {
   }> {
     const systemHealth = await this.performHealthCheck();
     const recentViolations = Array.from(this.violations.values())
-      .filter(v => Date.now() - v.triggeredAt.getTime() < 24 * 60 * 60 * 1000) // Last 24 hours
+      .filter((v) => Date.now() - v.triggeredAt.getTime() < 24 * 60 * 60 * 1000) // Last 24 hours
       .sort((a, b) => b.triggeredAt.getTime() - a.triggeredAt.getTime());
 
     const blockedUsers = Array.from(this.userLimitStatus.values())
-      .filter(status => status.status === 'blocked')
-      .map(status => status.userId);
+      .filter((status) => status.status === 'blocked')
+      .map((status) => status.userId);
 
     return {
       systemHealth,
       emergencyControls: this.emergencyControls,
       activeLimits: this.safetyLimits,
       recentViolations,
-      blockedUsers
+      blockedUsers,
     };
   }
 
@@ -371,7 +373,7 @@ export class BatchSafetyControlsService extends EventEmitter {
    */
   async updateSafetyLimits(newLimits: Partial<SafetyLimits>): Promise<void> {
     this.safetyLimits = { ...this.safetyLimits, ...newLimits };
-    
+
     logger.info('Safety limits updated:', newLimits);
     this.emit('limits:updated', { newLimits });
   }
@@ -381,7 +383,7 @@ export class BatchSafetyControlsService extends EventEmitter {
    */
   async getUserLimitStatus(userId: string): Promise<UserLimitStatus> {
     let status = this.userLimitStatus.get(userId);
-    
+
     if (!status) {
       status = {
         userId,
@@ -389,10 +391,10 @@ export class BatchSafetyControlsService extends EventEmitter {
           operationsToday: 0,
           costToday: 0,
           activeOperations: 0,
-          recentRequests: 0
+          recentRequests: 0,
         },
         violations: [],
-        status: 'normal'
+        status: 'normal',
       };
       this.userLimitStatus.set(userId, status);
     }
@@ -400,26 +402,27 @@ export class BatchSafetyControlsService extends EventEmitter {
     // Update current limits
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    
+
     status.currentLimits.operationsToday = await this.getUserDailyOperations(userId, today);
     status.currentLimits.costToday = await this.getUserDailyCost(userId, today);
-    
+
     const activeOps = columnBatchProcessorService.getActiveOperations();
-    status.currentLimits.activeOperations = activeOps.filter(op => 
-      op.configuration.metadata?.initiatedBy === userId
+    status.currentLimits.activeOperations = activeOps.filter(
+      (op) => op.configuration.metadata?.initiatedBy === userId
     ).length;
 
     // Check for recent violations
-    const recentViolations = Array.from(this.violations.values())
-      .filter(v => v.userId === userId && Date.now() - v.triggeredAt.getTime() < 60 * 60 * 1000);
-    
+    const recentViolations = Array.from(this.violations.values()).filter(
+      (v) => v.userId === userId && Date.now() - v.triggeredAt.getTime() < 60 * 60 * 1000
+    );
+
     status.violations = recentViolations;
 
     // Update status based on violations
-    if (recentViolations.some(v => v.severity === 'emergency')) {
+    if (recentViolations.some((v) => v.severity === 'emergency')) {
       status.status = 'blocked';
       status.nextAllowedOperation = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hour block
-    } else if (recentViolations.some(v => v.severity === 'critical')) {
+    } else if (recentViolations.some((v) => v.severity === 'critical')) {
       status.status = 'throttled';
       status.nextAllowedOperation = new Date(Date.now() + 60 * 60 * 1000); // 1 hour throttle
     } else {
@@ -434,8 +437,7 @@ export class BatchSafetyControlsService extends EventEmitter {
    * Clear user violations (admin function)
    */
   async clearUserViolations(userId: string, clearedBy: string): Promise<void> {
-    const violations = Array.from(this.violations.values())
-      .filter(v => v.userId === userId);
+    const violations = Array.from(this.violations.values()).filter((v) => v.userId === userId);
 
     for (const violation of violations) {
       this.violations.delete(violation.id);
@@ -455,28 +457,32 @@ export class BatchSafetyControlsService extends EventEmitter {
   /**
    * Check API rate limit for a user
    */
-  private checkApiRateLimit(userId: string): { allowed: boolean; reason?: string; waitTime?: number } {
+  private checkApiRateLimit(userId: string): {
+    allowed: boolean;
+    reason?: string;
+    waitTime?: number;
+  } {
     const now = new Date();
     const userRequests = this.requestCounts.get(userId) || [];
 
     // Clean old requests
-    const validRequests = userRequests.filter(req => 
-      now.getTime() - req.timestamp.getTime() < 60 * 60 * 1000 // Last hour
+    const validRequests = userRequests.filter(
+      (req) => now.getTime() - req.timestamp.getTime() < 60 * 60 * 1000 // Last hour
     );
 
     // Count requests in last minute and hour
     const lastMinute = new Date(now.getTime() - 60 * 1000);
     const lastHour = new Date(now.getTime() - 60 * 60 * 1000);
 
-    const requestsLastMinute = validRequests.filter(req => req.timestamp > lastMinute).length;
-    const requestsLastHour = validRequests.filter(req => req.timestamp > lastHour).length;
+    const requestsLastMinute = validRequests.filter((req) => req.timestamp > lastMinute).length;
+    const requestsLastHour = validRequests.filter((req) => req.timestamp > lastHour).length;
 
     // Check limits
     if (requestsLastMinute >= this.safetyLimits.api.maxRequestsPerMinute) {
       return {
         allowed: false,
         reason: `API rate limit exceeded (${requestsLastMinute}/${this.safetyLimits.api.maxRequestsPerMinute} per minute)`,
-        waitTime: 1 // Wait 1 minute
+        waitTime: 1, // Wait 1 minute
       };
     }
 
@@ -484,7 +490,7 @@ export class BatchSafetyControlsService extends EventEmitter {
       return {
         allowed: false,
         reason: `API rate limit exceeded (${requestsLastHour}/${this.safetyLimits.api.maxRequestsPerHour} per hour)`,
-        waitTime: 60 // Wait 1 hour
+        waitTime: 60, // Wait 1 hour
       };
     }
 
@@ -498,11 +504,13 @@ export class BatchSafetyControlsService extends EventEmitter {
   /**
    * Trigger a safety violation
    */
-  private async triggerViolation(violationData: Omit<SafetyViolation, 'id' | 'triggeredAt'>): Promise<void> {
+  private async triggerViolation(
+    violationData: Omit<SafetyViolation, 'id' | 'triggeredAt'>
+  ): Promise<void> {
     const violation: SafetyViolation = {
       ...violationData,
       id: `violation-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
-      triggeredAt: new Date()
+      triggeredAt: new Date(),
     };
 
     this.violations.set(violation.id, violation);
@@ -513,9 +521,13 @@ export class BatchSafetyControlsService extends EventEmitter {
         if (violation.operationId) {
           try {
             await columnBatchProcessorService.pauseBatchOperation(violation.operationId);
-            logger.warn(`Paused operation ${violation.operationId} due to safety violation: ${violation.message}`);
+            logger.warn(
+              `Paused operation ${violation.operationId} due to safety violation: ${violation.message}`
+            );
           } catch (error) {
-            logger.error(`Failed to pause operation ${violation.operationId}:`, { error: error instanceof Error ? error.message : String(error) });
+            logger.error(`Failed to pause operation ${violation.operationId}:`, {
+              error: error instanceof Error ? error.message : String(error),
+            });
           }
         }
         break;
@@ -524,9 +536,13 @@ export class BatchSafetyControlsService extends EventEmitter {
         if (violation.operationId) {
           try {
             await columnBatchProcessorService.cancelBatchOperation(violation.operationId);
-            logger.warn(`Cancelled operation ${violation.operationId} due to safety violation: ${violation.message}`);
+            logger.warn(
+              `Cancelled operation ${violation.operationId} due to safety violation: ${violation.message}`
+            );
           } catch (error) {
-            logger.error(`Failed to cancel operation ${violation.operationId}:`, { error: error instanceof Error ? error.message : String(error) });
+            logger.error(`Failed to cancel operation ${violation.operationId}:`, {
+              error: error instanceof Error ? error.message : String(error),
+            });
           }
         }
         break;
@@ -535,7 +551,9 @@ export class BatchSafetyControlsService extends EventEmitter {
         if (violation.userId) {
           const userStatus = await this.getUserLimitStatus(violation.userId);
           userStatus.status = 'blocked';
-          logger.warn(`Blocked user ${violation.userId} due to safety violation: ${violation.message}`);
+          logger.warn(
+            `Blocked user ${violation.userId} due to safety violation: ${violation.message}`
+          );
         }
         break;
     }
@@ -555,7 +573,7 @@ export class BatchSafetyControlsService extends EventEmitter {
       diskUsagePercent: 0, // Would need additional monitoring
       activeOperations: columnBatchProcessorService.getActiveOperations().length,
       queueDepth: 0, // Would get from job queue
-      errorRate: 0 // Would calculate from recent operations
+      errorRate: 0, // Would calculate from recent operations
     };
 
     const alerts: Array<{ type: string; severity: string; message: string }> = [];
@@ -566,7 +584,7 @@ export class BatchSafetyControlsService extends EventEmitter {
       alerts.push({
         type: 'memory',
         severity: 'critical',
-        message: `High memory usage: ${metrics.memoryUsageMB.toFixed(1)}MB (limit: ${this.safetyLimits.system.maxMemoryUsageMB}MB)`
+        message: `High memory usage: ${metrics.memoryUsageMB.toFixed(1)}MB (limit: ${this.safetyLimits.system.maxMemoryUsageMB}MB)`,
       });
       recommendations.push('Consider reducing concurrent operations or restarting the service');
     }
@@ -576,19 +594,21 @@ export class BatchSafetyControlsService extends EventEmitter {
       alerts.push({
         type: 'operations',
         severity: 'warning',
-        message: `High number of active operations: ${metrics.activeOperations}`
+        message: `High number of active operations: ${metrics.activeOperations}`,
       });
-      recommendations.push('Monitor operation completion rates and consider increasing processing capacity');
+      recommendations.push(
+        'Monitor operation completion rates and consider increasing processing capacity'
+      );
     }
 
-    const healthy = alerts.length === 0 || !alerts.some(a => a.severity === 'critical');
+    const healthy = alerts.length === 0 || !alerts.some((a) => a.severity === 'critical');
 
     return {
       timestamp,
       healthy,
       metrics,
       alerts,
-      recommendations
+      recommendations,
     };
   }
 
@@ -597,10 +617,11 @@ export class BatchSafetyControlsService extends EventEmitter {
    */
   private async getUserDailyOperations(userId: string, date: Date): Promise<number> {
     const history = columnBatchProcessorService.getOperationHistory(1000);
-    const userOpsToday = history.filter(op => 
-      op.configuration.metadata?.initiatedBy === userId &&
-      op.timing.startedAt &&
-      op.timing.startedAt >= date
+    const userOpsToday = history.filter(
+      (op) =>
+        op.configuration.metadata?.initiatedBy === userId &&
+        op.timing.startedAt &&
+        op.timing.startedAt >= date
     );
     return userOpsToday.length;
   }
@@ -610,10 +631,11 @@ export class BatchSafetyControlsService extends EventEmitter {
    */
   private async getUserDailyCost(userId: string, date: Date): Promise<number> {
     const history = columnBatchProcessorService.getOperationHistory(1000);
-    const userOpsToday = history.filter(op => 
-      op.configuration.metadata?.initiatedBy === userId &&
-      op.timing.startedAt &&
-      op.timing.startedAt >= date
+    const userOpsToday = history.filter(
+      (op) =>
+        op.configuration.metadata?.initiatedBy === userId &&
+        op.timing.startedAt &&
+        op.timing.startedAt >= date
     );
     return userOpsToday.reduce((sum, op) => sum + op.costs.actualCost, 0);
   }
@@ -623,10 +645,11 @@ export class BatchSafetyControlsService extends EventEmitter {
    */
   private async getUserOperationsSince(userId: string, since: Date): Promise<number> {
     const history = columnBatchProcessorService.getOperationHistory(1000);
-    const userOpsSince = history.filter(op => 
-      op.configuration.metadata?.initiatedBy === userId &&
-      op.timing.startedAt &&
-      op.timing.startedAt >= since
+    const userOpsSince = history.filter(
+      (op) =>
+        op.configuration.metadata?.initiatedBy === userId &&
+        op.timing.startedAt &&
+        op.timing.startedAt >= since
     );
     return userOpsSince.length;
   }
@@ -637,7 +660,7 @@ export class BatchSafetyControlsService extends EventEmitter {
   private async estimateWaitTime(): Promise<number> {
     const activeOperations = columnBatchProcessorService.getActiveOperations();
     const avgCompletionTime = 3600; // 1 hour estimate
-    
+
     // Simple estimate: average time divided by number of operations
     return Math.max(15, avgCompletionTime / Math.max(1, activeOperations.length));
   }
@@ -653,26 +676,26 @@ export class BatchSafetyControlsService extends EventEmitter {
         maxOperationsPerDay: 50,
         maxOperationsPerUser: 3,
         maxTotalCostPerDay: 500,
-        maxTotalCostPerUser: 100
+        maxTotalCostPerUser: 100,
       },
       operation: {
         maxTermsPerOperation: 5000,
         maxCostPerOperation: 100,
         maxDurationHours: 24,
         maxErrorRate: 0.2,
-        maxRetries: 3
+        maxRetries: 3,
       },
       api: {
         maxRequestsPerMinute: 60,
         maxRequestsPerHour: 1000,
-        cooldownPeriodMinutes: 5
+        cooldownPeriodMinutes: 5,
       },
       system: {
         maxMemoryUsageMB: 2048,
         maxCpuUsagePercent: 80,
         maxDiskUsagePercent: 90,
-        emergencyStopThreshold: 95
-      }
+        emergencyStopThreshold: 95,
+      },
     };
   }
 
@@ -684,7 +707,7 @@ export class BatchSafetyControlsService extends EventEmitter {
       emergencyStopActive: false,
       pauseAllOperations: false,
       blockNewOperations: false,
-      emergencyContacts: ['admin@example.com']
+      emergencyContacts: ['admin@example.com'],
     };
   }
 
@@ -695,28 +718,33 @@ export class BatchSafetyControlsService extends EventEmitter {
     this.healthCheckInterval = setInterval(async () => {
       try {
         const healthCheck = await this.performHealthCheck();
-        
+
         if (!healthCheck.healthy) {
           this.emit('health:degraded', healthCheck);
         }
 
         // Auto-trigger emergency stop if critical
-        const criticalAlerts = healthCheck.alerts.filter(a => a.severity === 'critical');
+        const criticalAlerts = healthCheck.alerts.filter((a) => a.severity === 'critical');
         if (criticalAlerts.length > 0 && !this.emergencyControls.emergencyStopActive) {
           await this.activateEmergencyStop(
-            `Auto-triggered due to critical health alerts: ${criticalAlerts.map(a => a.message).join(', ')}`,
+            `Auto-triggered due to critical health alerts: ${criticalAlerts.map((a) => a.message).join(', ')}`,
             'system'
           );
         }
       } catch (error) {
-        logger.error('Health check failed:', { error: error instanceof Error ? error.message : String(error) });
+        logger.error('Health check failed:', {
+          error: error instanceof Error ? error.message : String(error),
+        });
       }
     }, 60000); // Every minute
 
     // Cleanup old data periodically
-    setInterval(() => {
-      this.cleanupOldData();
-    }, 60 * 60 * 1000); // Every hour
+    setInterval(
+      () => {
+        this.cleanupOldData();
+      },
+      60 * 60 * 1000
+    ); // Every hour
   }
 
   /**
@@ -724,7 +752,7 @@ export class BatchSafetyControlsService extends EventEmitter {
    */
   private cleanupOldData(): void {
     const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-    
+
     // Cleanup old violations
     for (const [id, violation] of this.violations.entries()) {
       if (violation.triggeredAt < oneDayAgo) {
@@ -735,7 +763,7 @@ export class BatchSafetyControlsService extends EventEmitter {
     // Cleanup old request counts
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     for (const [userId, requests] of this.requestCounts.entries()) {
-      const validRequests = requests.filter(req => req.timestamp > oneHourAgo);
+      const validRequests = requests.filter((req) => req.timestamp > oneHourAgo);
       if (validRequests.length === 0) {
         this.requestCounts.delete(userId);
       } else {

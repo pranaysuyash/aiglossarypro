@@ -1,12 +1,22 @@
-import { useState, useEffect } from 'react';
-import { IEnhancedUserSettings } from '@/interfaces/interfaces';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
+import {
+  BookOpen,
+  Brain,
+  Code,
+  EyeOff,
+  Heart,
+  Palette,
+  RotateCcw,
+  Save,
+  Settings,
+  Star,
+  TestTube,
+  User,
+} from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Select,
@@ -15,25 +25,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  User,
-  Settings,
-  Eye,
-  EyeOff,
-  Code,
-  Brain,
-  TestTube,
-  BookOpen,
-  Palette,
-  Save,
-  RotateCcw,
-  Star,
-  Heart,
-  CheckCircle
-} from 'lucide-react';
+import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
-import { apiRequest } from '@/lib/queryClient';
 import { useAuth } from '@/hooks/useAuth';
+import type { IEnhancedUserSettings } from '@/interfaces/interfaces';
+import { apiRequest } from '@/lib/queryClient';
 
 interface UserPersonalizationSettingsProps {
   currentSettings?: IEnhancedUserSettings;
@@ -58,7 +56,7 @@ const defaultSections = [
   'best-practices',
   'common-mistakes',
   'related-concepts',
-  'further-reading'
+  'further-reading',
 ];
 
 export default function UserPersonalizationSettings({
@@ -67,7 +65,7 @@ export default function UserPersonalizationSettings({
   availableCategories = [],
   availableApplications = [],
   availableSections = defaultSections,
-  className = ''
+  className = '',
 }: UserPersonalizationSettingsProps) {
   const [settings, setSettings] = useState<Partial<IEnhancedUserSettings>>({
     experienceLevel: 'intermediate',
@@ -80,9 +78,9 @@ export default function UserPersonalizationSettings({
     favoriteApplications: [],
     compactMode: false,
     darkMode: false,
-    ...currentSettings
+    ...currentSettings,
   });
-  
+
   const [hasChanges, setHasChanges] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const { toast } = useToast();
@@ -95,9 +93,9 @@ export default function UserPersonalizationSettings({
   }, [currentSettings]);
 
   const handleSettingChange = (key: keyof IEnhancedUserSettings, value: any) => {
-    setSettings(prev => ({
+    setSettings((prev) => ({
       ...prev,
-      [key]: value
+      [key]: value,
     }));
     setHasChanges(true);
   };
@@ -105,18 +103,18 @@ export default function UserPersonalizationSettings({
   const toggleArrayItem = (key: keyof IEnhancedUserSettings, item: string) => {
     const currentArray = (settings[key] as string[]) || [];
     const newArray = currentArray.includes(item)
-      ? currentArray.filter(i => i !== item)
+      ? currentArray.filter((i) => i !== item)
       : [...currentArray, item];
-    
+
     handleSettingChange(key, newArray);
   };
 
   const handleSaveSettings = async () => {
     if (!isAuthenticated) {
       toast({
-        title: "Authentication required",
-        description: "Please sign in to save settings",
-        variant: "destructive",
+        title: 'Authentication required',
+        description: 'Please sign in to save settings',
+        variant: 'destructive',
       });
       return;
     }
@@ -125,21 +123,21 @@ export default function UserPersonalizationSettings({
     try {
       const response = await apiRequest('PUT', '/api/user/settings', settings);
       const updatedSettings = await response.json();
-      
+
       if (onSettingsChange) {
         onSettingsChange(updatedSettings);
       }
-      
+
       setHasChanges(false);
       toast({
-        title: "Settings saved",
-        description: "Your preferences have been updated successfully",
+        title: 'Settings saved',
+        description: 'Your preferences have been updated successfully',
       });
-    } catch (error) {
+    } catch (_error) {
       toast({
-        title: "Error",
-        description: "Failed to save settings. Please try again.",
-        variant: "destructive",
+        title: 'Error',
+        description: 'Failed to save settings. Please try again.',
+        variant: 'destructive',
       });
     } finally {
       setIsSaving(false);
@@ -173,8 +171,8 @@ export default function UserPersonalizationSettings({
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label>Select your AI/ML experience level</Label>
-          <Select 
-            value={settings.experienceLevel} 
+          <Select
+            value={settings.experienceLevel}
             onValueChange={(value) => handleSettingChange('experienceLevel', value)}
           >
             <SelectTrigger>
@@ -297,7 +295,7 @@ export default function UserPersonalizationSettings({
           </p>
           <ScrollArea className="h-32 border rounded p-3">
             <div className="grid grid-cols-2 gap-2">
-              {availableSections.map(section => (
+              {availableSections.map((section) => (
                 <div key={section} className="flex items-center space-x-2">
                   <Switch
                     id={`preferred-${section}`}
@@ -325,7 +323,7 @@ export default function UserPersonalizationSettings({
           </p>
           <ScrollArea className="h-32 border rounded p-3">
             <div className="grid grid-cols-2 gap-2">
-              {availableSections.map(section => (
+              {availableSections.map((section) => (
                 <div key={section} className="flex items-center space-x-2">
                   <Switch
                     id={`hidden-${section}`}
@@ -358,7 +356,7 @@ export default function UserPersonalizationSettings({
             Select categories you're most interested in
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {availableCategories.map(category => (
+            {availableCategories.map((category) => (
               <div key={category} className="flex items-center space-x-2">
                 <Switch
                   id={`fav-cat-${category}`}
@@ -386,7 +384,7 @@ export default function UserPersonalizationSettings({
             Select application domains you work with or are interested in
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {availableApplications.map(application => (
+            {availableApplications.map((application) => (
               <div key={application} className="flex items-center space-x-2">
                 <Switch
                   id={`fav-app-${application}`}
@@ -449,14 +447,15 @@ export default function UserPersonalizationSettings({
       <div className="flex items-center justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold">Personalization Settings</h2>
-          <p className="text-gray-600 dark:text-gray-400">
-            Customize your learning experience
-          </p>
+          <p className="text-gray-600 dark:text-gray-400">Customize your learning experience</p>
         </div>
-        
+
         <div className="flex items-center space-x-2">
           {hasChanges && (
-            <Badge variant="secondary" className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">
+            <Badge
+              variant="secondary"
+              className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300"
+            >
               Unsaved changes
             </Badge>
           )}
@@ -490,20 +489,20 @@ export default function UserPersonalizationSettings({
           <TabsTrigger value="personalization">Interests</TabsTrigger>
           <TabsTrigger value="ui">Interface</TabsTrigger>
         </TabsList>
-        
+
         <TabsContent value="experience" className="space-y-6">
           {renderExperienceLevel()}
         </TabsContent>
-        
+
         <TabsContent value="content" className="space-y-6">
           {renderContentPreferences()}
           {renderSectionPreferences()}
         </TabsContent>
-        
+
         <TabsContent value="personalization" className="space-y-6">
           {renderPersonalization()}
         </TabsContent>
-        
+
         <TabsContent value="ui" className="space-y-6">
           {renderUIPreferences()}
         </TabsContent>

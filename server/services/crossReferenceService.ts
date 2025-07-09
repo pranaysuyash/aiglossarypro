@@ -3,9 +3,9 @@
  * Automatically identifies and links terms within definitions
  */
 
-import { db } from '../db';
+import { and, eq, ilike, or, sql } from 'drizzle-orm';
 import { terms } from '../../shared/schema';
-import { sql, eq, ilike, or, and } from 'drizzle-orm';
+import { db } from '../db';
 
 export interface CrossReference {
   termId: string;
@@ -44,29 +44,29 @@ class CrossReferenceService {
         .select({
           id: terms.id,
           name: terms.name,
-          slug: sql<string>`LOWER(REPLACE(${terms.name}, ' ', '-'))` // Generate slug
+          slug: sql<string>`LOWER(REPLACE(${terms.name}, ' ', '-'))`, // Generate slug
         })
         .from(terms);
 
       this.termCache.clear();
-      
-      allTerms.forEach(term => {
+
+      allTerms.forEach((term) => {
         // Store by exact name (case-insensitive key)
         const key = term.name.toLowerCase();
         this.termCache.set(key, {
           id: term.id,
           name: term.name,
-          slug: term.slug || this.generateSlug(term.name)
+          slug: term.slug || this.generateSlug(term.name),
         });
 
         // Also store common variations
         const variations = this.generateTermVariations(term.name);
-        variations.forEach(variation => {
+        variations.forEach((variation) => {
           if (!this.termCache.has(variation.toLowerCase())) {
             this.termCache.set(variation.toLowerCase(), {
               id: term.id,
               name: term.name,
-              slug: term.slug || this.generateSlug(term.name)
+              slug: term.slug || this.generateSlug(term.name),
             });
           }
         });
@@ -84,31 +84,34 @@ class CrossReferenceService {
    */
   private generateTermVariations(termName: string): string[] {
     const variations = [termName];
-    
+
     // Add plural forms
     if (!termName.endsWith('s')) {
-      variations.push(termName + 's');
+      variations.push(`${termName}s`);
     }
-    
+
     // Add singular form if plural
     if (termName.endsWith('s') && termName.length > 3) {
       variations.push(termName.slice(0, -1));
     }
-    
+
     // Add acronym if applicable (e.g., "Machine Learning" -> "ML")
     const words = termName.split(' ');
     if (words.length > 1) {
-      const acronym = words.map(word => word[0]).join('').toUpperCase();
+      const acronym = words
+        .map((word) => word[0])
+        .join('')
+        .toUpperCase();
       if (acronym.length >= 2 && acronym.length <= 5) {
         variations.push(acronym);
       }
     }
-    
+
     // Add hyphenated version
     if (termName.includes(' ')) {
       variations.push(termName.replace(/\s+/g, '-'));
     }
-    
+
     return variations;
   }
 
@@ -145,7 +148,7 @@ class CrossReferenceService {
         originalText: text,
         linkedText: text,
         linksAdded: 0,
-        linksFound: []
+        linksFound: [],
       };
     }
 
@@ -154,8 +157,9 @@ class CrossReferenceService {
     let linksAdded = 0;
 
     // Sort terms by length (longer first) to avoid partial matches
-    const sortedTerms = Array.from(this.termCache.entries())
-      .sort((a, b) => b[0].length - a[0].length);
+    const sortedTerms = Array.from(this.termCache.entries()).sort(
+      (a, b) => b[0].length - a[0].length
+    );
 
     // Keep track of already linked positions to avoid double-linking
     const linkedPositions: Array<{ start: number; end: number }> = [];
@@ -180,9 +184,8 @@ class CrossReferenceService {
         const end = start + match[0].length;
 
         // Check if this position is already linked
-        const isAlreadyLinked = linkedPositions.some(pos => 
-          (start >= pos.start && start < pos.end) || 
-          (end > pos.start && end <= pos.end)
+        const isAlreadyLinked = linkedPositions.some(
+          (pos) => (start >= pos.start && start < pos.end) || (end > pos.start && end <= pos.end)
         );
 
         if (!isAlreadyLinked) {
@@ -190,7 +193,7 @@ class CrossReferenceService {
           const beforeMatch = linkedText.substring(0, start);
           const openTags = (beforeMatch.match(/</g) || []).length;
           const closeTags = (beforeMatch.match(/>/g) || []).length;
-          
+
           // If inside a tag, skip
           if (openTags > closeTags) {
             continue;
@@ -199,25 +202,25 @@ class CrossReferenceService {
           // Create the link
           const originalTerm = match[0];
           const link = `<a href="/terms/${termData.slug}" class="term-link" title="Learn more about ${termData.name}">${originalTerm}</a>`;
-          
+
           // Replace the text
           linkedText = linkedText.substring(0, start) + link + linkedText.substring(end);
-          
+
           // Update regex lastIndex since we changed the string
           regex.lastIndex = start + link.length;
-          
+
           // Track the linked position (adjusted for the new length)
           linkedPositions.push({
             start: start,
-            end: start + link.length
+            end: start + link.length,
           });
 
           // Track this link
-          if (!linksFound.some(l => l.termId === termData.id)) {
+          if (!linksFound.some((l) => l.termId === termData.id)) {
             linksFound.push({
               termName: termData.name,
               termId: termData.id,
-              slug: termData.slug
+              slug: termData.slug,
             });
           }
 
@@ -230,7 +233,7 @@ class CrossReferenceService {
       originalText: text,
       linkedText,
       linksAdded,
-      linksFound
+      linksFound,
     };
   }
 
@@ -249,11 +252,7 @@ class CrossReferenceService {
 
     try {
       // Get the term details
-      const term = await db
-        .select()
-        .from(terms)
-        .where(eq(terms.id, termId))
-        .limit(1);
+      const term = await db.select().from(terms).where(eq(terms.id, termId)).limit(1);
 
       if (term.length === 0) {
         return [];
@@ -268,7 +267,7 @@ class CrossReferenceService {
           id: terms.id,
           name: terms.name,
           definition: terms.definition,
-          shortDefinition: terms.shortDefinition
+          shortDefinition: terms.shortDefinition,
         })
         .from(terms)
         .where(
@@ -291,28 +290,40 @@ class CrossReferenceService {
 
         // Check definition for mentions
         if (mentioningTerm.definition) {
-          const position = mentioningTerm.definition.toLowerCase().indexOf(targetTerm.name.toLowerCase());
+          const position = mentioningTerm.definition
+            .toLowerCase()
+            .indexOf(targetTerm.name.toLowerCase());
           if (position !== -1) {
-            const context = this.extractContext(mentioningTerm.definition, position, targetTerm.name.length);
+            const context = this.extractContext(
+              mentioningTerm.definition,
+              position,
+              targetTerm.name.length
+            );
             mentions.push({
               termId: mentioningTerm.id,
               termName: mentioningTerm.name,
               context,
-              position
+              position,
             });
           }
         }
 
         // Check short definition for mentions
         if (mentioningTerm.shortDefinition) {
-          const position = mentioningTerm.shortDefinition.toLowerCase().indexOf(targetTerm.name.toLowerCase());
+          const position = mentioningTerm.shortDefinition
+            .toLowerCase()
+            .indexOf(targetTerm.name.toLowerCase());
           if (position !== -1) {
-            const context = this.extractContext(mentioningTerm.shortDefinition, position, targetTerm.name.length);
+            const context = this.extractContext(
+              mentioningTerm.shortDefinition,
+              position,
+              targetTerm.name.length
+            );
             mentions.push({
               termId: mentioningTerm.id,
               termName: mentioningTerm.name,
               context,
-              position
+              position,
             });
           }
         }
@@ -322,7 +333,7 @@ class CrossReferenceService {
             termId: mentioningTerm.id,
             termName: mentioningTerm.name,
             slug: this.generateSlug(mentioningTerm.name),
-            mentions
+            mentions,
           });
         }
       }
@@ -337,16 +348,21 @@ class CrossReferenceService {
   /**
    * Extract context around a mention
    */
-  private extractContext(text: string, position: number, termLength: number, contextLength: number = 100): string {
+  private extractContext(
+    text: string,
+    position: number,
+    termLength: number,
+    contextLength: number = 100
+  ): string {
     const start = Math.max(0, position - contextLength);
     const end = Math.min(text.length, position + termLength + contextLength);
-    
+
     let context = text.substring(start, end);
-    
+
     // Add ellipsis if truncated
-    if (start > 0) context = '...' + context;
-    if (end < text.length) context = context + '...';
-    
+    if (start > 0) context = `...${context}`;
+    if (end < text.length) context = `${context}...`;
+
     return context.trim();
   }
 
@@ -358,17 +374,10 @@ class CrossReferenceService {
 
     for (const termId of termIds) {
       try {
-        const term = await db
-          .select()
-          .from(terms)
-          .where(eq(terms.id, termId))
-          .limit(1);
+        const term = await db.select().from(terms).where(eq(terms.id, termId)).limit(1);
 
         if (term.length > 0) {
-          const linkingResult = await this.processTextForLinks(
-            term[0].definition || '',
-            termId
-          );
+          const linkingResult = await this.processTextForLinks(term[0].definition || '', termId);
           results.set(termId, linkingResult);
         }
       } catch (error) {
@@ -384,27 +393,20 @@ class CrossReferenceService {
    */
   async updateTermWithLinks(termId: string): Promise<boolean> {
     try {
-      const term = await db
-        .select()
-        .from(terms)
-        .where(eq(terms.id, termId))
-        .limit(1);
+      const term = await db.select().from(terms).where(eq(terms.id, termId)).limit(1);
 
       if (term.length === 0) {
         return false;
       }
 
-      const linkingResult = await this.processTextForLinks(
-        term[0].definition || '',
-        termId
-      );
+      const linkingResult = await this.processTextForLinks(term[0].definition || '', termId);
 
       if (linkingResult.linksAdded > 0) {
         await db
           .update(terms)
           .set({
             definition: linkingResult.linkedText,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           })
           .where(eq(terms.id, termId));
 

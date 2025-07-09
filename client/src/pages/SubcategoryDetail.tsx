@@ -1,20 +1,26 @@
-import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { useParams, Link } from "wouter";
-import TermCard from "@/components/TermCard";
-import CategoryHierarchy, { createCategoryBreadcrumb } from "@/components/CategoryHierarchy";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ISubcategory, ITerm, ICategory } from "@/interfaces/interfaces";
-import { Search, BookOpen, FolderOpen, SortAsc, SortDesc, ArrowLeft, Loader2 } from "lucide-react";
+import { useQuery } from '@tanstack/react-query';
+import { ArrowLeft, BookOpen, FolderOpen, Loader2, Search, SortAsc, SortDesc } from 'lucide-react';
+import { useState } from 'react';
+import { Link, useParams } from 'wouter';
+import CategoryHierarchy, { createCategoryBreadcrumb } from '@/components/CategoryHierarchy';
+import TermCard from '@/components/TermCard';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { ITerm } from '@/interfaces/interfaces';
 
 export default function SubcategoryDetail() {
   const { id } = useParams();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"name" | "viewCount">("name");
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("asc");
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortBy, setSortBy] = useState<'name' | 'viewCount'>('name');
+  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const [page, setPage] = useState(1);
   const [limit] = useState(24);
 
@@ -57,19 +63,21 @@ export default function SubcategoryDetail() {
   // Filter terms locally for immediate feedback
   const filteredTerms = terms.filter((term: ITerm) => {
     if (!searchTerm) return true;
-    return term.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-           term.definition?.toLowerCase().includes(searchTerm.toLowerCase());
+    return (
+      term.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      term.definition?.toLowerCase().includes(searchTerm.toLowerCase())
+    );
   });
 
   // Sort terms
   const sortedTerms = [...filteredTerms].sort((a: ITerm, b: ITerm) => {
     let comparison = 0;
-    if (sortBy === "name") {
+    if (sortBy === 'name') {
       comparison = a.name.localeCompare(b.name);
-    } else if (sortBy === "viewCount") {
+    } else if (sortBy === 'viewCount') {
       comparison = (a.viewCount || 0) - (b.viewCount || 0);
     }
-    return sortOrder === "asc" ? comparison : -comparison;
+    return sortOrder === 'asc' ? comparison : -comparison;
   });
 
   // Create breadcrumb items
@@ -83,7 +91,7 @@ export default function SubcategoryDetail() {
 
   const handleLoadMore = () => {
     if (hasMore) {
-      setPage(prev => prev + 1);
+      setPage((prev) => prev + 1);
     }
   };
 
@@ -126,9 +134,7 @@ export default function SubcategoryDetail() {
                 </Button>
               </Link>
               <Link href="/categories">
-                <Button variant="outline">
-                  Browse Categories
-                </Button>
+                <Button variant="outline">Browse Categories</Button>
               </Link>
             </div>
           </div>
@@ -140,10 +146,7 @@ export default function SubcategoryDetail() {
   return (
     <div className="container mx-auto px-3 xs:px-4 sm:px-6 lg:px-8 py-4 xs:py-6">
       {/* Breadcrumb */}
-      <CategoryHierarchy 
-        items={breadcrumbItems}
-        className="mb-4"
-      />
+      <CategoryHierarchy items={breadcrumbItems} className="mb-4" />
 
       {/* Header */}
       <div className="mb-8">
@@ -161,7 +164,7 @@ export default function SubcategoryDetail() {
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
               {subcategoryData.name}
             </h1>
-            
+
             {categoryInfo && (
               <div className="flex items-center gap-2 mb-3">
                 <span className="text-gray-500 dark:text-gray-400">in</span>
@@ -179,7 +182,7 @@ export default function SubcategoryDetail() {
               </p>
             )}
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Badge variant="secondary">
               {totalTerms} {totalTerms === 1 ? 'Term' : 'Terms'}
@@ -204,7 +207,10 @@ export default function SubcategoryDetail() {
 
           {/* Sort Options */}
           <div className="flex gap-2">
-            <Select value={sortBy} onValueChange={(value: "name" | "viewCount") => setSortBy(value)}>
+            <Select
+              value={sortBy}
+              onValueChange={(value: 'name' | 'viewCount') => setSortBy(value)}
+            >
               <SelectTrigger className="w-[140px]">
                 <SelectValue />
               </SelectTrigger>
@@ -213,13 +219,17 @@ export default function SubcategoryDetail() {
                 <SelectItem value="viewCount">View Count</SelectItem>
               </SelectContent>
             </Select>
-            
+
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setSortOrder(sortOrder === "asc" ? "desc" : "asc")}
+              onClick={() => setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc')}
             >
-              {sortOrder === "asc" ? <SortAsc className="h-4 w-4" /> : <SortDesc className="h-4 w-4" />}
+              {sortOrder === 'asc' ? (
+                <SortAsc className="h-4 w-4" />
+              ) : (
+                <SortDesc className="h-4 w-4" />
+              )}
             </Button>
           </div>
         </div>
@@ -229,10 +239,7 @@ export default function SubcategoryDetail() {
           <div className="flex items-center gap-2">
             <Badge variant="secondary" className="flex items-center gap-1">
               Search: "{searchTerm}"
-              <button
-                onClick={() => setSearchTerm("")}
-                className="ml-1 hover:text-red-500"
-              >
+              <button onClick={() => setSearchTerm('')} className="ml-1 hover:text-red-500">
                 ×
               </button>
             </Badge>
@@ -244,7 +251,10 @@ export default function SubcategoryDetail() {
       {termsLoading && page === 1 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 xs:gap-4 sm:gap-6">
           {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6">
+            <div
+              key={i}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 p-6"
+            >
               <div className="animate-pulse">
                 <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded w-2/3 mb-3"></div>
                 <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4 mb-4"></div>
@@ -260,11 +270,7 @@ export default function SubcategoryDetail() {
         <>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 xs:gap-4 sm:gap-6">
             {sortedTerms.map((term: ITerm) => (
-              <TermCard
-                key={term.id}
-                term={term}
-                variant="compact"
-              />
+              <TermCard key={term.id} term={term} variant="compact" />
             ))}
           </div>
 
@@ -277,9 +283,7 @@ export default function SubcategoryDetail() {
                 variant="outline"
                 className="flex items-center gap-2"
               >
-                {termsLoading ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : null}
+                {termsLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 Load More Terms
               </Button>
             </div>
@@ -294,29 +298,21 @@ export default function SubcategoryDetail() {
             </h3>
             <p className="text-gray-600 dark:text-gray-400 mb-4">
               {searchTerm
-                ? "Try adjusting your search term or browse other subcategories"
-                : "This subcategory doesn't have any terms yet"
-              }
+                ? 'Try adjusting your search term or browse other subcategories'
+                : "This subcategory doesn't have any terms yet"}
             </p>
             <div className="space-x-2">
               {searchTerm && (
-                <Button
-                  variant="outline"
-                  onClick={() => setSearchTerm("")}
-                >
+                <Button variant="outline" onClick={() => setSearchTerm('')}>
                   Clear search
                 </Button>
               )}
               <Link href="/subcategories">
-                <Button variant="outline">
-                  Browse Subcategories
-                </Button>
+                <Button variant="outline">Browse Subcategories</Button>
               </Link>
               {categoryInfo && (
                 <Link href={`/category/${categoryInfo.id}`}>
-                  <Button variant="outline">
-                    View Category
-                  </Button>
+                  <Button variant="outline">View Category</Button>
                 </Link>
               )}
             </div>

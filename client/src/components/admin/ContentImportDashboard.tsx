@@ -1,47 +1,35 @@
-import { useState, useCallback } from "react";
-import { useDropzone } from "react-dropzone";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { queryClient } from "@/lib/queryClient";
+import { useMutation, useQuery } from '@tanstack/react-query';
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { Textarea } from "@/components/ui/textarea";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Upload,
-  FileSpreadsheet,
-  Sparkles,
-  CheckCircle,
-  XCircle,
   AlertCircle,
+  CheckCircle,
   Clock,
-  Download,
-  RefreshCw,
-  Plus,
-  Loader2,
+  FileSpreadsheet,
   FileText,
-} from "lucide-react";
+  Loader2,
+  Plus,
+  RefreshCw,
+  Sparkles,
+  Upload,
+  XCircle,
+} from 'lucide-react';
+import { useCallback, useState } from 'react';
+import { useDropzone } from 'react-dropzone';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Progress } from '@/components/ui/progress';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Textarea } from '@/components/ui/textarea';
+import { useToast } from '@/hooks/use-toast';
+import { queryClient } from '@/lib/queryClient';
 
 interface ImportJob {
   id: string;
   type: string;
-  status: "pending" | "processing" | "completed" | "failed";
+  status: 'pending' | 'processing' | 'completed' | 'failed';
   progress: number;
   fileName: string;
   termsProcessed: number;
@@ -55,19 +43,19 @@ export default function ContentImportDashboard() {
   const { toast } = useToast();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [singleTermData, setSingleTermData] = useState({
-    name: "",
-    shortDefinition: "",
-    definition: "",
-    category: "",
+    name: '',
+    shortDefinition: '',
+    definition: '',
+    category: '',
     useAI: false,
   });
 
   // Fetch active import jobs
   const { data: jobsData, refetch: refetchJobs } = useQuery({
-    queryKey: ["/api/admin/jobs/imports"],
+    queryKey: ['/api/admin/jobs/imports'],
     queryFn: async () => {
-      const response = await fetch("/api/admin/jobs/imports");
-      if (!response.ok) throw new Error("Failed to fetch import jobs");
+      const response = await fetch('/api/admin/jobs/imports');
+      if (!response.ok) throw new Error('Failed to fetch import jobs');
       return response.json();
     },
     refetchInterval: 2000, // Poll every 2 seconds for updates
@@ -77,24 +65,27 @@ export default function ContentImportDashboard() {
   const uploadFileMutation = useMutation({
     mutationFn: async (file: File) => {
       const formData = new FormData();
-      formData.append("file", file);
-      formData.append("aiOptions", JSON.stringify({
-        enableAI: true,
-        mode: "selective",
-        costOptimization: true,
-      }));
+      formData.append('file', file);
+      formData.append(
+        'aiOptions',
+        JSON.stringify({
+          enableAI: true,
+          mode: 'selective',
+          costOptimization: true,
+        })
+      );
 
-      const response = await fetch("/api/admin/import?async=true", {
-        method: "POST",
+      const response = await fetch('/api/admin/import?async=true', {
+        method: 'POST',
         body: formData,
       });
 
-      if (!response.ok) throw new Error("Failed to upload file");
+      if (!response.ok) throw new Error('Failed to upload file');
       return response.json();
     },
     onSuccess: (data) => {
       toast({
-        title: "Import started",
+        title: 'Import started',
         description: `Import job ${data.data.jobId} has been queued`,
       });
       setSelectedFile(null);
@@ -102,9 +93,9 @@ export default function ContentImportDashboard() {
     },
     onError: (error) => {
       toast({
-        title: "Import failed",
+        title: 'Import failed',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -112,34 +103,34 @@ export default function ContentImportDashboard() {
   // Single term creation mutation
   const createTermMutation = useMutation({
     mutationFn: async (termData: typeof singleTermData) => {
-      const response = await fetch("/api/admin/terms/create-single", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const response = await fetch('/api/admin/terms/create-single', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(termData),
       });
 
-      if (!response.ok) throw new Error("Failed to create term");
+      if (!response.ok) throw new Error('Failed to create term');
       return response.json();
     },
     onSuccess: () => {
       toast({
-        title: "Term created",
-        description: "The term has been created successfully",
+        title: 'Term created',
+        description: 'The term has been created successfully',
       });
       setSingleTermData({
-        name: "",
-        shortDefinition: "",
-        definition: "",
-        category: "",
+        name: '',
+        shortDefinition: '',
+        definition: '',
+        category: '',
         useAI: false,
       });
-      queryClient.invalidateQueries({ queryKey: ["/api/terms"] });
+      queryClient.invalidateQueries({ queryKey: ['/api/terms'] });
     },
     onError: (error) => {
       toast({
-        title: "Creation failed",
+        title: 'Creation failed',
         description: error.message,
-        variant: "destructive",
+        variant: 'destructive',
       });
     },
   });
@@ -154,9 +145,9 @@ export default function ContentImportDashboard() {
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
     accept: {
-      "application/vnd.ms-excel": [".xls"],
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [".xlsx"],
-      "text/csv": [".csv"],
+      'application/vnd.ms-excel': ['.xls'],
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
+      'text/csv': ['.csv'],
     },
     maxFiles: 1,
   });
@@ -198,8 +189,8 @@ export default function ContentImportDashboard() {
                 {...getRootProps()}
                 className={`border-2 border-dashed rounded-lg p-8 text-center cursor-pointer transition-colors ${
                   isDragActive
-                    ? "border-primary bg-primary/5"
-                    : "border-gray-300 hover:border-gray-400"
+                    ? 'border-primary bg-primary/5'
+                    : 'border-gray-300 hover:border-gray-400'
                 }`}
               >
                 <input {...getInputProps()} />
@@ -230,10 +221,7 @@ export default function ContentImportDashboard() {
                         </p>
                       </div>
                     </div>
-                    <Button
-                      onClick={handleFileUpload}
-                      disabled={uploadFileMutation.isPending}
-                    >
+                    <Button onClick={handleFileUpload} disabled={uploadFileMutation.isPending}>
                       {uploadFileMutation.isPending ? (
                         <>
                           <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -282,9 +270,7 @@ export default function ContentImportDashboard() {
                 <Plus className="h-5 w-5" />
                 Create Single Term
               </CardTitle>
-              <CardDescription>
-                Create individual terms with optional AI assistance
-              </CardDescription>
+              <CardDescription>Create individual terms with optional AI assistance</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -292,9 +278,7 @@ export default function ContentImportDashboard() {
                 <Input
                   id="term-name"
                   value={singleTermData.name}
-                  onChange={(e) =>
-                    setSingleTermData({ ...singleTermData, name: e.target.value })
-                  }
+                  onChange={(e) => setSingleTermData({ ...singleTermData, name: e.target.value })}
                   placeholder="e.g., Machine Learning"
                 />
               </div>
@@ -370,9 +354,7 @@ export default function ContentImportDashboard() {
               <Button
                 onClick={handleCreateSingleTerm}
                 disabled={
-                  !singleTermData.name ||
-                  !singleTermData.category ||
-                  createTermMutation.isPending
+                  !singleTermData.name || !singleTermData.category || createTermMutation.isPending
                 }
                 className="w-full"
               >
@@ -401,9 +383,7 @@ export default function ContentImportDashboard() {
                     <Clock className="h-5 w-5" />
                     Import Jobs
                   </CardTitle>
-                  <CardDescription>
-                    Monitor the progress of your import jobs
-                  </CardDescription>
+                  <CardDescription>Monitor the progress of your import jobs</CardDescription>
                 </div>
                 <Button onClick={() => refetchJobs()} variant="outline" size="sm">
                   <RefreshCw className="h-4 w-4 mr-2" />
@@ -413,49 +393,38 @@ export default function ContentImportDashboard() {
             </CardHeader>
             <CardContent>
               {activeJobs.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  No import jobs running
-                </div>
+                <div className="text-center py-8 text-gray-500">No import jobs running</div>
               ) : (
                 <div className="space-y-4">
                   {activeJobs.map((job: ImportJob) => (
-                    <div
-                      key={job.id}
-                      className="p-4 border rounded-lg space-y-3"
-                    >
+                    <div key={job.id} className="p-4 border rounded-lg space-y-3">
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="flex items-center gap-2">
                             <FileSpreadsheet className="h-4 w-4" />
                             <span className="font-medium">{job.fileName}</span>
                           </div>
-                          <div className="text-sm text-gray-500 mt-1">
-                            Job ID: {job.id}
-                          </div>
+                          <div className="text-sm text-gray-500 mt-1">Job ID: {job.id}</div>
                         </div>
                         <Badge
                           variant={
-                            job.status === "completed"
-                              ? "default"
-                              : job.status === "failed"
-                              ? "destructive"
-                              : "secondary"
+                            job.status === 'completed'
+                              ? 'default'
+                              : job.status === 'failed'
+                                ? 'destructive'
+                                : 'secondary'
                           }
                         >
-                          {job.status === "processing" && (
+                          {job.status === 'processing' && (
                             <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                           )}
-                          {job.status === "completed" && (
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                          )}
-                          {job.status === "failed" && (
-                            <XCircle className="h-3 w-3 mr-1" />
-                          )}
+                          {job.status === 'completed' && <CheckCircle className="h-3 w-3 mr-1" />}
+                          {job.status === 'failed' && <XCircle className="h-3 w-3 mr-1" />}
                           {job.status}
                         </Badge>
                       </div>
 
-                      {job.status === "processing" && (
+                      {job.status === 'processing' && (
                         <div className="space-y-2">
                           <div className="flex justify-between text-sm">
                             <span>Progress</span>

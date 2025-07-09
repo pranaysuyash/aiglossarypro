@@ -57,31 +57,38 @@ interface Term {
 
 const AVAILABLE_MODELS = [
   { 
-    value: 'gpt-3.5-turbo', 
-    label: 'GPT-3.5 Turbo', 
-    cost: '$0.50/1M tokens', 
-    use: 'Fast, cost-effective',
-    color: 'bg-green-100 text-green-800'
+    value: 'gpt-4.1', 
+    label: 'GPT-4.1', 
+    cost: '$25/1M tokens', 
+    use: 'Latest flagship model, superior coding & instruction following',
+    color: 'bg-emerald-100 text-emerald-800'
   },
   { 
-    value: 'gpt-4', 
-    label: 'GPT-4', 
-    cost: '$30/1M tokens', 
-    use: 'High quality, complex reasoning',
-    color: 'bg-blue-100 text-blue-800'
+    value: 'gpt-4.1-mini', 
+    label: 'GPT-4.1 Mini', 
+    cost: '$0.20/1M tokens', 
+    use: 'Small model with GPT-4o level performance',
+    color: 'bg-teal-100 text-teal-800'
   },
   { 
-    value: 'gpt-4-turbo', 
-    label: 'GPT-4 Turbo', 
-    cost: '$10/1M tokens', 
-    use: 'Balanced quality and speed',
-    color: 'bg-purple-100 text-purple-800'
+    value: 'gpt-4.1-nano', 
+    label: 'GPT-4.1 Nano', 
+    cost: '$0.05/1M tokens', 
+    use: 'Fastest, cheapest for classification & autocompletion',
+    color: 'bg-cyan-100 text-cyan-800'
+  },
+  { 
+    value: 'o1-mini', 
+    label: 'OpenAI o1-mini', 
+    cost: '$3/1M tokens', 
+    use: 'Advanced reasoning for complex problems',
+    color: 'bg-indigo-100 text-indigo-800'
   },
   { 
     value: 'gpt-4o-mini', 
     label: 'GPT-4o Mini', 
     cost: '$0.15/1M tokens', 
-    use: 'Ultra-fast, lightweight',
+    use: 'Multimodal, fast & cost-effective',
     color: 'bg-orange-100 text-orange-800'
   }
 ];
@@ -103,7 +110,7 @@ export function ModelComparison() {
   
   const [selectedTerm, setSelectedTerm] = useState<Term | null>(null);
   const [selectedSection, setSelectedSection] = useState<string>('');
-  const [selectedModels, setSelectedModels] = useState<string[]>(['gpt-3.5-turbo', 'gpt-4o-mini']);
+  const [selectedModels, setSelectedModels] = useState<string[]>(['gpt-4.1-mini', 'gpt-4o-mini']);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showContent, setShowContent] = useState<Record<string, boolean>>({});
   const [activeTab, setActiveTab] = useState<string>('comparison');

@@ -117,13 +117,14 @@ export interface QualityAnalyticsResult {
  */
 export class AIQualityEvaluationService {
   private openai: OpenAI;
-  private readonly DEFAULT_MODEL = 'gpt-4o-mini';
-  private readonly EVALUATION_MODELS = ['gpt-4o-mini', 'gpt-4', 'gpt-4-turbo'];
+  private readonly DEFAULT_MODEL = 'gpt-4.1-mini';
+  private readonly EVALUATION_MODELS = ['gpt-4.1-mini', 'gpt-4.1', 'o1-mini', 'gpt-4o-mini'];
   
   private readonly MODEL_COSTS = {
-    'gpt-3.5-turbo': { input: 0.0005, output: 0.0015 },
-    'gpt-4': { input: 0.03, output: 0.06 },
-    'gpt-4-turbo': { input: 0.01, output: 0.03 },
+    'gpt-4.1': { input: 0.025, output: 0.10 },
+    'gpt-4.1-mini': { input: 0.0002, output: 0.0008 },
+    'gpt-4.1-nano': { input: 0.00005, output: 0.0002 },
+    'o1-mini': { input: 0.003, output: 0.012 },
     'gpt-4o-mini': { input: 0.00015, output: 0.0006 }
   };
 

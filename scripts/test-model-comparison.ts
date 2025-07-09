@@ -25,7 +25,7 @@ async function testModelComparisonFeature() {
     console.log('\n🔄 Test 1: Multi-model content generation');
     console.log('------------------------------------------');
     
-    const testModels = ['gpt-3.5-turbo', 'gpt-4o-mini'];
+    const testModels = ['gpt-4.1-mini', 'gpt-4o-mini'];
     const testSection = 'definition_overview';
 
     const multiModelResult = await aiContentGenerationService.generateMultiModelContent({

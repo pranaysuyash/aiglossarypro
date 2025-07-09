@@ -78,11 +78,16 @@ class AIService {
 
   // Model configurations for different operations
   private readonly modelConfig = {
-    primary: 'gpt-4.1-nano', // Primary model for high-accuracy tasks
-    secondary: 'gpt-3.5-turbo', // Secondary model for less critical tasks
+    primary: 'gpt-4.1-mini', // Primary model for high-accuracy tasks
+    secondary: 'gpt-4.1-nano', // Secondary model for fast, simple tasks
+    reasoning: 'o1-mini', // Reasoning model for complex problems
+    multimodal: 'gpt-4o-mini', // Multimodal model for image/text tasks
     costs: {
-      'gpt-4.1-nano': { input: 0.00015, output: 0.0006 }, // Per 1K tokens (estimated)
-      'gpt-3.5-turbo': { input: 0.0005, output: 0.0015 }  // Per 1K tokens
+      'gpt-4.1': { input: 0.025, output: 0.10 }, // Per 1K tokens
+      'gpt-4.1-mini': { input: 0.0002, output: 0.0008 }, // Per 1K tokens
+      'gpt-4.1-nano': { input: 0.00005, output: 0.0002 }, // Per 1K tokens
+      'o1-mini': { input: 0.003, output: 0.012 }, // Per 1K tokens
+      'gpt-4o-mini': { input: 0.00015, output: 0.0006 } // Per 1K tokens
     }
   };
 

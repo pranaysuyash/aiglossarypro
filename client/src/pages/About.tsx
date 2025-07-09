@@ -40,11 +40,11 @@ export default function About() {
                     Hi, I'm Pranay
                   </h2>
                   <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-                    I'm the founder of AI/ML Glossary Pro. I have a CS degree, but I spent the last 10 years building my career outside of tech. When I decided to dive into AI/ML, I thought my technical background would help. I was wrong.
+                    I'm the founder of AI/ML Glossary Pro. I'm a CS grad who spent years as a functional consultant and founder. While I stayed connected to technology through my consulting work and my current startup journey, AI/ML was exploding with new concepts I needed to understand for business decisions.
                   </p>
                   <Quote className="w-8 h-8 text-blue-500 mb-4 mx-auto lg:mx-0" />
                   <blockquote className="text-lg text-gray-700 italic leading-relaxed">
-                    "The field had evolved completely. Terms like 'transformer architecture,' 'attention mechanisms,' and 'RLHF' didn't exist when I was in school. Even basic concepts had new implementations and meanings. I found myself googling constantly, jumping between research papers, blog posts, and Stack Overflow threads."
+                    "The reality hit me: it's impossible to study 10,000+ AI/ML terms with real depth while running a business. Yet I was taking detailed notes on everything I encountered - researching concepts thoroughly when they became relevant to my work. That's when I realized: if I'm already doing this deep research for my own projects, why not combine my notes with comprehensive research to help other professionals in the same boat?"
                   </blockquote>
                 </div>
               </div>
@@ -54,7 +54,7 @@ export default function About() {
           {/* The Problem */}
           <div className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-              The Problem I Faced (And You Probably Face Too)
+              The Challenge Every Busy Professional Faces
             </h2>
             <div className="grid md:grid-cols-2 gap-8">
               <Card className="border border-red-200 bg-red-50">
@@ -64,14 +64,12 @@ export default function About() {
                       <Clock className="w-6 h-6 text-red-600" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-red-900 mb-2">Time Wasted on Scattered Information</h3>
+                      <h3 className="font-bold text-red-900 mb-2">No Time for Deep Research</h3>
                       <p className="text-red-700 text-sm leading-relaxed mb-4">
-                        I'd spend hours jumping between research papers, blog posts, and Stack Overflow threads, 
-                        trying to piece together one concept. Every resource assumed knowledge I didn't have or explained things in ways that felt disconnected from practical application.
+                        When building products or advising clients, I'd encounter AI/ML concepts that were critical to understand but had no time to research properly. I'd piece together definitions from multiple sources, never confident I had the complete picture.
                       </p>
                       <p className="text-red-700 text-sm leading-relaxed">
-                        I once spent an entire weekend trying to understand what "transformer architecture" meant, 
-                        only to realize the field had evolved completely since my CS degree. Terms that didn't exist when I was in school were now fundamental concepts.
+                        Every resource assumed extensive background knowledge or was purely academic. I needed practical explanations that connected to real business applications - something that didn't exist.
                       </p>
                     </div>
                   </div>
@@ -85,12 +83,12 @@ export default function About() {
                       <Target className="w-6 h-6 text-orange-600" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-orange-900 mb-2">Content Not Made for Real People</h3>
+                      <h3 className="font-bold text-orange-900 mb-2">Research Once, Help Everyone</h3>
                       <p className="text-orange-700 text-sm leading-relaxed mb-4">
-                        So I started taking notes. Detailed notes. If I struggled to understand something, I'd research it from multiple angles until I could explain it clearly to someone re-entering tech like me.
+                        So I started keeping detailed notes. When I encountered a new AI/ML concept for my projects, I'd research it thoroughly - not just the definition, but the practical implications, use cases, and business context.
                       </p>
                       <p className="text-orange-700 text-sm leading-relaxed">
-                        I needed explanations that bridged the gap between academic complexity and practical understanding - written for someone who knows what it's like to feel behind in a rapidly moving field.
+                        After months of building this personal knowledge base, I realized: if I'm already doing this deep research for my own work, why not structure it properly and help other busy professionals who face the same challenge?
                       </p>
                     </div>
                   </div>
@@ -102,7 +100,7 @@ export default function About() {
           {/* The Journey */}
           <div className="mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">
-              My Journey to Understanding
+              From Personal Notes to Professional Resource
             </h2>
             <div className="bg-white rounded-xl border border-gray-200 p-8 sm:p-12">
               <div className="space-y-8">
@@ -111,9 +109,9 @@ export default function About() {
                     1
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 mb-2">The Frustration Phase</h3>
+                    <h3 className="font-bold text-gray-900 mb-2">The Recognition Phase</h3>
                     <p className="text-gray-700 leading-relaxed">
-                      After 10 years outside of tech, I kept hearing about AI/ML transforming industries. I thought my CS degree would help me understand it quickly. But the field had evolved completely - terms like "transformer architecture," "attention mechanisms," and "RLHF" didn't exist when I was in school.
+                      As I worked on projects and advised clients, AI/ML concepts kept coming up. I realized I needed more than surface-level understanding - I needed to grasp the practical implications, limitations, and business applications of these technologies to make informed decisions.
                     </p>
                   </div>
                 </div>
@@ -123,9 +121,9 @@ export default function About() {
                     2
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 mb-2">The Obsession Phase</h3>
+                    <h3 className="font-bold text-gray-900 mb-2">The Documentation Phase</h3>
                     <p className="text-gray-700 leading-relaxed">
-                      So I started taking notes. Detailed notes. If I struggled to understand something, I'd research it from multiple angles until I could explain it clearly to someone re-entering tech like me. I'd spend evenings and weekends reading research papers, watching YouTube videos, and taking online courses.
+                      I started systematically documenting every AI/ML concept I encountered. Not just definitions, but practical context: when to use it, what problems it solves, common misconceptions, and real-world applications. My personal knowledge base grew from dozens to hundreds of thoroughly researched entries.
                     </p>
                   </div>
                 </div>
@@ -135,9 +133,9 @@ export default function About() {
                     3
                   </div>
                   <div>
-                    <h3 className="font-bold text-gray-900 mb-2">The Breakthrough Phase</h3>
+                    <h3 className="font-bold text-gray-900 mb-2">The Platform Phase</h3>
                     <p className="text-gray-700 leading-relaxed">
-                      My notes grew: 100 terms... 1,000... 5,000... 10,000+. I developed a method: always start with the basic definition, explain it in simple terms, provide real-world examples, then build up to more complex applications. I started sharing my notes with colleagues who had the same struggles.
+                      That's when the lightbulb went off: I was already investing significant time researching these concepts for my own work. What if I could systematize this process, combine my practical notes with comprehensive research, and create something that would save other busy professionals the same time I was spending?
                     </p>
                   </div>
                 </div>

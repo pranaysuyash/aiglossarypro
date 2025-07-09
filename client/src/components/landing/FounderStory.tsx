@@ -35,7 +35,7 @@ export function FounderStory() {
               <div className="flex-1 text-center lg:text-left">
                 <Quote className="w-8 h-8 text-blue-500 mb-4 mx-auto lg:mx-0" />
                 <blockquote className="text-lg sm:text-xl text-gray-700 mb-6 italic leading-relaxed">
-                  "I have a CS degree, but I spent the last 10 years building my career outside of tech. When I decided to dive into AI/ML, I thought my technical background would help. I was wrong. The field had evolved completely. Terms like 'transformer architecture,' 'attention mechanisms,' and 'RLHF' didn't exist when I was in school."
+                  "I'm a CS grad who spent years as a functional consultant and founder. While I stayed connected to technology through my consulting work and startup journey, AI/ML was exploding with concepts I needed to understand for business decisions. I realized: it's impossible to study 10,000+ terms in depth while running a business. So I combined my practical notes with thorough research to help other busy professionals."
                 </blockquote>
                 <div className="text-right">
                   <cite className="text-base text-gray-600 not-italic">
@@ -56,9 +56,9 @@ export function FounderStory() {
                   <Clock className="w-6 h-6 text-red-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-red-900 mb-2">The Frustration</h3>
+                  <h3 className="font-bold text-red-900 mb-2">The Time Crunch</h3>
                   <p className="text-red-700 text-sm leading-relaxed">
-                    I found myself googling constantly, jumping between research papers, blog posts, and Stack Overflow threads. Every resource assumed knowledge I didn't have or explained things in ways that felt disconnected from practical application.
+                    When building products or advising clients, AI/ML concepts would come up that were critical to understand, but I had no time to research properly. I'd piece together definitions from multiple sources, never confident I had the complete picture.
                   </p>
                 </div>
               </div>
@@ -72,9 +72,9 @@ export function FounderStory() {
                   <Target className="w-6 h-6 text-orange-600" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-orange-900 mb-2">The Missing Piece</h3>
+                  <h3 className="font-bold text-orange-900 mb-2">The Solution</h3>
                   <p className="text-orange-700 text-sm leading-relaxed">
-                    So I started taking notes. Detailed notes. If I struggled to understand something, I'd research it from multiple angles until I could explain it clearly to someone re-entering tech like me.
+                    I started systematically documenting every AI/ML concept I encountered for my projects. After building this knowledge base for months, I realized: why not combine my practical notes with comprehensive research to help other busy professionals facing the same challenge?
                   </p>
                 </div>
               </div>

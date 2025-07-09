@@ -8,7 +8,7 @@ import {
   termViews
 } from '../../shared/enhancedSchema';
 import { eq, and, desc, asc, count, sum, avg, sql } from 'drizzle-orm';
-import { logger } from '../utils/logger';
+import { log as logger } from '../utils/logger';
 
 export interface UserProgressStats {
   totalTermsViewed: number;

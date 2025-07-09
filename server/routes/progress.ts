@@ -4,7 +4,7 @@ import { eq, and, desc, asc } from "drizzle-orm";
 import { users, enhancedTerms, userTermHistory } from "../../shared/enhancedSchema";
 import ProgressTrackingService from "../services/progressTrackingService";
 import type { AuthenticatedRequest } from "../types/express";
-import { logger } from "../utils/logger";
+import { log as logger } from "../utils/logger";
 
 export function registerProgressRoutes(app: Express): void {
   // Get comprehensive progress statistics

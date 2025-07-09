@@ -199,19 +199,37 @@ export function Pricing() {
             </CardContent>
           </Card>
 
-          {/* Premium Tier - Early Bird */}
+          {/* Premium Tier - Launch Special */}
           <Card className="border-2 border-purple-500 shadow-xl relative">
-            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-purple-600 text-white px-4 py-1">
-              Early Bird Special
+            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-1">
+              🎉 Launch Special
             </Badge>
             <CardHeader className="bg-purple-50">
               <CardTitle className="text-center">
                 <div className="text-2xl font-bold text-purple-900">Premium Preview</div>
                 <div className="flex items-center justify-center gap-2 mt-2">
-                  <div className="text-3xl font-bold text-purple-900">$179</div>
-                  <div className="text-xl text-gray-500 line-through">$249</div>
+                  <div className="text-3xl font-bold text-purple-900">
+                    ${pricing.launchPricing.isActive ? pricing.launchPricing.launchPrice : pricing.launchPricing.originalPrice}
+                  </div>
+                  {pricing.launchPricing.isActive && (
+                    <div className="text-xl text-gray-500 line-through">
+                      ${pricing.launchPricing.originalPrice}
+                    </div>
+                  )}
                 </div>
-                <div className="text-sm text-purple-600">lifetime access • first 500 customers</div>
+                <div className="text-sm text-purple-600">
+                  {pricing.launchPricing.isActive ? (
+                    <>
+                      lifetime access • Save ${pricing.launchPricing.savingsAmount} - First 500 Customers Only
+                      <br />
+                      <span className="font-bold text-green-600">
+                        {pricing.launchPricing.claimedSlots}/{pricing.launchPricing.totalSlots} claimed
+                      </span>
+                    </>
+                  ) : (
+                    "lifetime access"
+                  )}
+                </div>
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3 pt-6">
@@ -239,24 +257,34 @@ export function Pricing() {
                 <Button 
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
                   onClick={() => {
-                    // Track analytics with early bird pricing
-                    trackPurchaseIntent('early_bird_lifetime', 179);
+                    const currentPrice = pricing.launchPricing.isActive ? pricing.launchPricing.launchPrice : pricing.launchPricing.originalPrice;
+                    
+                    // Track analytics with launch pricing
+                    trackPurchaseIntent('launch_special_lifetime', currentPrice);
                     
                     // Track A/B test conversion
-                    trackConversion('early_bird_cta_click', {
-                      value: 179,
-                      button_text: 'Get Early Bird Access - $179',
+                    trackConversion('launch_special_cta_click', {
+                      value: currentPrice,
+                      button_text: `Get Launch Special - $${currentPrice}`,
                       position: 'pricing_table',
-                      originalPrice: 249,
-                      discount: 70
+                      originalPrice: pricing.launchPricing.originalPrice,
+                      discount: pricing.launchPricing.savingsAmount,
+                      slotsRemaining: pricing.launchPricing.totalSlots - pricing.launchPricing.claimedSlots
                     });
                     
-                    // Open Gumroad with early bird discount
-                    window.open('https://pranaysuyash.gumroad.com/l/ggczfy/EARLY500', '_blank');
+                    // Open Gumroad with launch special discount
+                    const discountCode = pricing.launchPricing.isActive ? 'LAUNCH500' : '';
+                    const gumroadUrl = discountCode 
+                      ? `https://pranaysuyash.gumroad.com/l/ggczfy/${discountCode}`
+                      : 'https://pranaysuyash.gumroad.com/l/ggczfy';
+                    
+                    window.open(gumroadUrl, '_blank');
                   }}
                 >
                   <span className="flex items-center justify-center gap-2">
-                    <span>Get Early Bird Access - $179</span>
+                    <span>
+                      Get Launch Special - ${pricing.launchPricing.isActive ? pricing.launchPricing.launchPrice : pricing.launchPricing.originalPrice}
+                    </span>
                     <ArrowRight className="w-4 h-4 flex-shrink-0" />
                   </span>
                 </Button>
@@ -284,9 +312,15 @@ export function Pricing() {
                 <div className="text-sm text-green-600 mt-1">10,000+ terms</div>
               </div>
               <div>
-                <div className="text-3xl font-bold text-purple-600 mb-2">$179</div>
-                <div className="text-gray-600 dark:text-gray-400">Premium early bird</div>
-                <div className="text-sm text-purple-600 mt-1">Limited time</div>
+                <div className="text-3xl font-bold text-purple-600 mb-2">
+                  ${pricing.launchPricing.isActive ? pricing.launchPricing.launchPrice : pricing.launchPricing.originalPrice}
+                </div>
+                <div className="text-gray-600 dark:text-gray-400">
+                  {pricing.launchPricing.isActive ? "Premium launch special" : "Premium full price"}
+                </div>
+                <div className="text-sm text-purple-600 mt-1">
+                  {pricing.launchPricing.isActive ? "First 500 customers" : "Regular pricing"}
+                </div>
               </div>
               <div>
                 <div className="text-3xl font-bold text-red-600 mb-2">$300+</div>
@@ -303,7 +337,12 @@ export function Pricing() {
               <strong>Start free with no barriers.</strong> Get lifetime value for less than one year of competitors.
             </p>
             <p className="text-sm text-gray-500 mt-2">
-              * Early bird pricing limited to first 500 customers • No recurring fees • Lifetime updates included
+              * Launch special pricing limited to first 500 customers • No recurring fees • Lifetime updates included
+              {pricing.launchPricing.isActive && (
+                <span className="font-semibold text-green-600">
+                  {' '}• Only {pricing.launchPricing.totalSlots - pricing.launchPricing.claimedSlots} spots remaining
+                </span>
+              )}
             </p>
           </div>
         </div>

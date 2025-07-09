@@ -9,10 +9,15 @@ import AdminContactsDashboard from "@/pages/admin/AdminContactsDashboard";
 import UserManagementDashboard from "@/components/admin/UserManagementDashboard";
 import ContentImportDashboard from "@/components/admin/ContentImportDashboard";
 import ContentModerationDashboard from "@/components/admin/ContentModerationDashboard";
-import EnhancedContentGeneration from "@/components/admin/EnhancedContentGeneration";
+import { EnhancedContentGenerationV2 } from "@/components/admin/EnhancedContentGenerationV2";
 import TemplateManagement from "@/components/admin/TemplateManagement";
 import GenerationStatsDashboard from "@/components/admin/GenerationStatsDashboard";
 import { ModelComparison } from "@/components/admin/ModelComparison";
+import { ContentManagementDashboard } from "@/components/admin/ContentManagementDashboard";
+import { ColumnBatchOperationsDashboard } from "@/components/admin/ColumnBatchOperationsDashboard";
+import { QualityEvaluationDashboard } from "@/components/admin/QualityEvaluationDashboard";
+import { AdvancedAnalyticsDashboard } from "@/components/admin/AdvancedAnalyticsDashboard";
+import { EmergencyStopControls } from "@/components/admin/EmergencyStopControls";
 
 export default function AdminPage() {
   const { user, isAuthenticated } = useAuth();
@@ -52,9 +57,14 @@ export default function AdminPage() {
     <div className="container mx-auto p-4">
       <h1 className="text-2xl font-bold mb-4">Admin Panel</h1>
       
-      <Tabs defaultValue="enhanced-generation" className="mb-8">
-        <TabsList className="mb-4 grid grid-cols-5 lg:grid-cols-11">
+      <Tabs defaultValue="content-management" className="mb-8">
+        <TabsList className="mb-4 grid grid-cols-6 lg:grid-cols-12">
+          <TabsTrigger value="content-management">Content Mgmt</TabsTrigger>
           <TabsTrigger value="enhanced-generation">Enhanced AI</TabsTrigger>
+          <TabsTrigger value="column-batch">Column Batch</TabsTrigger>
+          <TabsTrigger value="quality-evaluation">Quality Eval</TabsTrigger>
+          <TabsTrigger value="advanced-analytics">Advanced Analytics</TabsTrigger>
+          <TabsTrigger value="emergency-stop">Emergency Stop</TabsTrigger>
           <TabsTrigger value="model-comparison">Model Compare</TabsTrigger>
           <TabsTrigger value="templates">Templates</TabsTrigger>
           <TabsTrigger value="generation-stats">AI Stats</TabsTrigger>
@@ -63,12 +73,31 @@ export default function AdminPage() {
           <TabsTrigger value="users">Users</TabsTrigger>
           <TabsTrigger value="s3">S3 Files</TabsTrigger>
           <TabsTrigger value="newsletter">Newsletter</TabsTrigger>
-          <TabsTrigger value="contacts">Contacts</TabsTrigger>
           <TabsTrigger value="ai">AI Legacy</TabsTrigger>
         </TabsList>
         
+        <TabsContent value="content-management" className="mt-4">
+          <ContentManagementDashboard />
+        </TabsContent>
+        
         <TabsContent value="enhanced-generation" className="mt-4">
-          <EnhancedContentGeneration />
+          <EnhancedContentGenerationV2 />
+        </TabsContent>
+        
+        <TabsContent value="column-batch" className="mt-4">
+          <ColumnBatchOperationsDashboard />
+        </TabsContent>
+        
+        <TabsContent value="quality-evaluation" className="mt-4">
+          <QualityEvaluationDashboard />
+        </TabsContent>
+        
+        <TabsContent value="advanced-analytics" className="mt-4">
+          <AdvancedAnalyticsDashboard />
+        </TabsContent>
+        
+        <TabsContent value="emergency-stop" className="mt-4">
+          <EmergencyStopControls />
         </TabsContent>
         
         <TabsContent value="model-comparison" className="mt-4">

@@ -11,7 +11,27 @@ interface CountryPricing {
   loading: boolean;
   annualSavings: number; // vs competitors
   localCompetitor: string;
+  launchPricing: {
+    isActive: boolean;
+    launchPrice: number;
+    originalPrice: number;
+    savingsAmount: number;
+    claimedSlots: number;
+    totalSlots: number;
+    showCounter: boolean;
+  };
 }
+
+// Launch pricing configuration
+const LAUNCH_PRICING_CONFIG = {
+  originalPrice: 249,
+  launchPrice: 179,
+  savingsAmount: 70,
+  totalSlots: 500,
+  claimedSlots: 237, // Start realistic, update manually
+  showCounter: true,
+  isActive: true, // Control launch pricing globally
+};
 
 export function useCountryPricing() {
   const [pricing, setPricing] = useState<CountryPricing>({
@@ -25,6 +45,15 @@ export function useCountryPricing() {
     loading: true,
     annualSavings: 300,
     localCompetitor: 'DataCamp',
+    launchPricing: {
+      isActive: LAUNCH_PRICING_CONFIG.isActive,
+      launchPrice: LAUNCH_PRICING_CONFIG.launchPrice,
+      originalPrice: LAUNCH_PRICING_CONFIG.originalPrice,
+      savingsAmount: LAUNCH_PRICING_CONFIG.savingsAmount,
+      claimedSlots: LAUNCH_PRICING_CONFIG.claimedSlots,
+      totalSlots: LAUNCH_PRICING_CONFIG.totalSlots,
+      showCounter: LAUNCH_PRICING_CONFIG.showCounter,
+    },
   });
 
   useEffect(() => {
@@ -50,10 +79,31 @@ export function useCountryPricing() {
         setPricing({
           ...countryPricing,
           loading: false,
+          launchPricing: {
+            isActive: LAUNCH_PRICING_CONFIG.isActive && LAUNCH_PRICING_CONFIG.claimedSlots < LAUNCH_PRICING_CONFIG.totalSlots,
+            launchPrice: LAUNCH_PRICING_CONFIG.launchPrice,
+            originalPrice: LAUNCH_PRICING_CONFIG.originalPrice,
+            savingsAmount: LAUNCH_PRICING_CONFIG.savingsAmount,
+            claimedSlots: LAUNCH_PRICING_CONFIG.claimedSlots,
+            totalSlots: LAUNCH_PRICING_CONFIG.totalSlots,
+            showCounter: LAUNCH_PRICING_CONFIG.showCounter,
+          },
         });
       } catch (error) {
         console.error('Country detection failed:', error);
-        setPricing(prev => ({ ...prev, loading: false }));
+        setPricing(prev => ({ 
+          ...prev, 
+          loading: false,
+          launchPricing: {
+            isActive: LAUNCH_PRICING_CONFIG.isActive && LAUNCH_PRICING_CONFIG.claimedSlots < LAUNCH_PRICING_CONFIG.totalSlots,
+            launchPrice: LAUNCH_PRICING_CONFIG.launchPrice,
+            originalPrice: LAUNCH_PRICING_CONFIG.originalPrice,
+            savingsAmount: LAUNCH_PRICING_CONFIG.savingsAmount,
+            claimedSlots: LAUNCH_PRICING_CONFIG.claimedSlots,
+            totalSlots: LAUNCH_PRICING_CONFIG.totalSlots,
+            showCounter: LAUNCH_PRICING_CONFIG.showCounter,
+          },
+        }));
       }
     };
 
@@ -65,6 +115,17 @@ export function useCountryPricing() {
 
 function calculatePPPPricing(countryCode: string, countryName: string): Omit<CountryPricing, 'loading'> {
   const basePrice = 249;
+  
+  // Calculate launch pricing
+  const launchPricing = {
+    isActive: LAUNCH_PRICING_CONFIG.isActive && LAUNCH_PRICING_CONFIG.claimedSlots < LAUNCH_PRICING_CONFIG.totalSlots,
+    launchPrice: LAUNCH_PRICING_CONFIG.launchPrice,
+    originalPrice: LAUNCH_PRICING_CONFIG.originalPrice,
+    savingsAmount: LAUNCH_PRICING_CONFIG.savingsAmount,
+    claimedSlots: LAUNCH_PRICING_CONFIG.claimedSlots,
+    totalSlots: LAUNCH_PRICING_CONFIG.totalSlots,
+    showCounter: LAUNCH_PRICING_CONFIG.showCounter,
+  };
   
   // Enhanced PPP data with competitor analysis
   const pppData: Record<string, { 
@@ -244,6 +305,7 @@ function calculatePPPPricing(countryCode: string, countryName: string): Omit<Cou
       currency: countryInfo.currency,
       annualSavings: countryInfo.annualSavings,
       localCompetitor: countryInfo.localCompetitor,
+      launchPricing,
     };
   }
 
@@ -258,6 +320,7 @@ function calculatePPPPricing(countryCode: string, countryName: string): Omit<Cou
     currency: 'USD',
     annualSavings: 300, // vs DataCamp $300+/year
     localCompetitor: 'DataCamp/Coursera',
+    launchPricing,
   };
 }
 

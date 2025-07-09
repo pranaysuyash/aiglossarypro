@@ -356,6 +356,15 @@ export const sectionItems = pgTable("section_items", {
   metadata: jsonb("metadata"),
   isAiGenerated: boolean("is_ai_generated").default(false),
   verificationStatus: varchar("verification_status", { length: 20 }).default("unverified"),
+  
+  // Enhanced Quality Tracking fields
+  evaluationScore: integer("evaluation_score").default(0), // 1-10 quality score
+  evaluationFeedback: text("evaluation_feedback"), // AI evaluation feedback
+  improvedContent: text("improved_content"), // AI-improved version of content
+  processingPhase: varchar("processing_phase", { length: 20 }).default("generated"), // 'generated', 'evaluated', 'improved', 'final'
+  promptVersion: varchar("prompt_version", { length: 20 }).default("v1.0"), // Track prompt template version
+  generationCost: decimal("generation_cost", { precision: 10, scale: 6 }).default("0"), // Cost for generating this content
+  
   createdAt: timestamp("created_at").defaultNow(),
   updatedAt: timestamp("updated_at").defaultNow(),
 }, (table) => ({
@@ -363,6 +372,8 @@ export const sectionItems = pgTable("section_items", {
   contentTypeIdx: index("idx_section_items_content_type").on(table.contentType),
   orderIdx: index("idx_section_items_order").on(table.sectionId, table.displayOrder),
   verificationIdx: index("idx_section_items_verification").on(table.verificationStatus),
+  evaluationScoreIdx: index("idx_section_items_evaluation_score").on(table.evaluationScore),
+  processingPhaseIdx: index("idx_section_items_processing_phase").on(table.processingPhase),
 }));
 
 // Model content versions table - stores different model outputs for comparison

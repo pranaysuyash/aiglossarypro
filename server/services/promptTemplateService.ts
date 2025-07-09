@@ -15,6 +15,41 @@ export interface PromptTemplate {
   updatedAt: Date;
 }
 
+export interface PromptTriplet {
+  generative: string;
+  evaluative: string;
+  improvement: string;
+}
+
+export interface EnhancedPromptTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: 'generation' | 'evaluation' | 'improvement' | 'triplet';
+  sectionType: string;
+  complexity: 'simple' | 'moderate' | 'complex';
+  
+  // Triplet prompts for Generate→Evaluate→Improve pipeline
+  prompts: PromptTriplet;
+  
+  // Metadata
+  metadata: {
+    estimatedTokens: number;
+    recommendedModel: string;
+    version: string;
+    createdAt: Date;
+    updatedAt: Date;
+    createdBy: string;
+    isDefault: boolean;
+    usageCount: number;
+    successRate: number;
+    averageQuality: number;
+  };
+  
+  // Variables that can be used in prompts
+  variables: string[];
+}
+
 export interface PromptVariables {
   termName: string;
   termDefinition?: string;
@@ -56,9 +91,11 @@ export interface GenerationResponse {
 export class PromptTemplateService {
   private templates: Map<string, PromptTemplate> = new Map();
   private defaultTemplates: Map<string, PromptTemplate> = new Map();
+  private tripletTemplates: Map<string, EnhancedPromptTemplate> = new Map();
 
   constructor() {
     this.initializeDefaultTemplates();
+    this.initializeTripletTemplates();
   }
 
   /**
@@ -281,6 +318,245 @@ Provide comprehensive guidance on measuring and evaluating performance.`,
   }
 
   /**
+   * Initialize default triplet templates for Generate→Evaluate→Improve pipeline
+   */
+  private initializeTripletTemplates(): void {
+    const tripletTemplates: EnhancedPromptTemplate[] = [
+      {
+        id: 'definition_overview_triplet',
+        name: 'Definition & Overview Triplet',
+        description: 'Complete triplet for generating, evaluating, and improving term definitions',
+        category: 'triplet',
+        sectionType: 'definition_overview',
+        complexity: 'simple',
+        prompts: {
+          generative: `Write a clear, comprehensive definition and overview for this AI/ML term.
+
+TERM: {{termName}}
+CONTEXT: {{termContext}}
+
+Requirements:
+- Start with a concise 1-2 sentence definition
+- Expand with a clear overview explaining the concept
+- Use accessible language while maintaining technical accuracy
+- Include the fundamental purpose and scope
+- Length: 150-250 words
+
+Focus on clarity and educational value.`,
+          
+          evaluative: `Evaluate this definition and overview for quality and educational value.
+
+TERM: {{termName}}
+CONTENT: {{content}}
+
+Rate from 1-10 based on:
+- Clarity and accessibility
+- Technical accuracy
+- Completeness of explanation
+- Educational value
+- Appropriate length and structure
+
+OUTPUT: JSON with "score" (1-10) and "feedback" explaining the rating.`,
+          
+          improvement: `Improve this definition and overview based on the evaluation feedback.
+
+ORIGINAL: {{originalContent}}
+FEEDBACK: {{evaluationFeedback}}
+
+Provide an improved version that addresses the feedback while maintaining clarity and educational value.`
+        },
+        metadata: {
+          estimatedTokens: 300,
+          recommendedModel: 'gpt-4.1-nano',
+          version: '1.0',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: 'system',
+          isDefault: true,
+          usageCount: 0,
+          successRate: 0.95,
+          averageQuality: 8.2
+        },
+        variables: ['termName', 'termContext', 'content', 'originalContent', 'evaluationFeedback']
+      },
+      
+      {
+        id: 'key_concepts_triplet',
+        name: 'Key Concepts Triplet',
+        description: 'Triplet for generating, evaluating, and improving key concepts',
+        category: 'triplet',
+        sectionType: 'key_concepts',
+        complexity: 'simple',
+        prompts: {
+          generative: `Identify and explain the key concepts essential for understanding this AI/ML term.
+
+TERM: {{termName}}
+CONTEXT: {{termContext}}
+
+Format as a bulleted list of 4-6 key concepts, each with:
+• Concept Name: Brief explanation (1-2 sentences)
+
+Focus on the most important concepts someone needs to understand this term.`,
+          
+          evaluative: `Evaluate the key concepts for completeness and educational value.
+
+TERM: {{termName}}
+CONTENT: {{content}}
+
+Rate from 1-10 based on:
+- Completeness of essential concepts
+- Clarity of explanations
+- Logical organization
+- Educational progression
+- Relevance to the main term
+
+OUTPUT: JSON with "score" (1-10) and "feedback" explaining the rating.`,
+          
+          improvement: `Improve the key concepts based on the evaluation feedback.
+
+ORIGINAL: {{originalContent}}
+FEEDBACK: {{evaluationFeedback}}
+
+Provide improved key concepts that address the feedback while maintaining clarity and completeness.`
+        },
+        metadata: {
+          estimatedTokens: 250,
+          recommendedModel: 'gpt-4.1-nano',
+          version: '1.0',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: 'system',
+          isDefault: true,
+          usageCount: 0,
+          successRate: 0.92,
+          averageQuality: 7.8
+        },
+        variables: ['termName', 'termContext', 'content', 'originalContent', 'evaluationFeedback']
+      },
+      
+      {
+        id: 'basic_examples_triplet',
+        name: 'Basic Examples Triplet',
+        description: 'Triplet for generating, evaluating, and improving examples',
+        category: 'triplet',
+        sectionType: 'basic_examples',
+        complexity: 'simple',
+        prompts: {
+          generative: `Provide clear, concrete examples to illustrate this AI/ML concept.
+
+TERM: {{termName}}
+CONTEXT: {{termContext}}
+
+Provide 2-3 specific, real-world examples that demonstrate the concept:
+1. [Example name]: [Clear explanation of how it demonstrates the concept]
+2. [Example name]: [Clear explanation]
+3. [Example name]: [Clear explanation]
+
+Use examples that are well-known and easy to understand.`,
+          
+          evaluative: `Evaluate the examples for clarity and educational effectiveness.
+
+TERM: {{termName}}
+CONTENT: {{content}}
+
+Rate from 1-10 based on:
+- Relevance to the main concept
+- Clarity and accessibility
+- Diversity of examples
+- Real-world applicability
+- Educational value
+
+OUTPUT: JSON with "score" (1-10) and "feedback" explaining the rating.`,
+          
+          improvement: `Improve the examples based on the evaluation feedback.
+
+ORIGINAL: {{originalContent}}
+FEEDBACK: {{evaluationFeedback}}
+
+Provide improved examples that address the feedback while maintaining clarity and relevance.`
+        },
+        metadata: {
+          estimatedTokens: 200,
+          recommendedModel: 'gpt-4.1-nano',
+          version: '1.0',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: 'system',
+          isDefault: true,
+          usageCount: 0,
+          successRate: 0.88,
+          averageQuality: 7.5
+        },
+        variables: ['termName', 'termContext', 'content', 'originalContent', 'evaluationFeedback']
+      },
+      
+      {
+        id: 'complex_reasoning_triplet',
+        name: 'Complex Reasoning Triplet',
+        description: 'Advanced triplet for complex AI/ML concepts requiring deep reasoning',
+        category: 'triplet',
+        sectionType: 'advanced_concepts',
+        complexity: 'complex',
+        prompts: {
+          generative: `Provide an advanced explanation of this complex AI/ML concept with mathematical foundations and theoretical background.
+
+TERM: {{termName}}
+CONTEXT: {{termContext}}
+
+Include:
+- Mathematical formulations (where applicable)
+- Theoretical foundations
+- Advanced implementation details
+- Research context and evolution
+- Connections to cutting-edge research
+
+Target audience: Advanced practitioners and researchers.`,
+          
+          evaluative: `Evaluate this advanced content for technical accuracy and completeness.
+
+TERM: {{termName}}
+CONTENT: {{content}}
+
+Rate from 1-10 based on:
+- Technical accuracy and precision
+- Mathematical correctness
+- Completeness of theoretical coverage
+- Research context accuracy
+- Appropriate complexity level
+
+OUTPUT: JSON with "score" (1-10) and "feedback" explaining the rating.`,
+          
+          improvement: `Improve this advanced content based on the evaluation feedback.
+
+ORIGINAL: {{originalContent}}
+FEEDBACK: {{evaluationFeedback}}
+
+Provide an improved version that addresses the feedback while maintaining technical rigor and accuracy.`
+        },
+        metadata: {
+          estimatedTokens: 800,
+          recommendedModel: 'o4-mini',
+          version: '1.0',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          createdBy: 'system',
+          isDefault: true,
+          usageCount: 0,
+          successRate: 0.85,
+          averageQuality: 8.8
+        },
+        variables: ['termName', 'termContext', 'content', 'originalContent', 'evaluationFeedback']
+      }
+    ];
+
+    tripletTemplates.forEach(template => {
+      this.tripletTemplates.set(template.id, template);
+    });
+
+    logger.info(`✅ Loaded ${tripletTemplates.length} triplet prompt templates`);
+  }
+
+  /**
    * Get a prompt template by ID
    */
   getTemplate(templateId: string): PromptTemplate | undefined {
@@ -292,6 +568,180 @@ Provide comprehensive guidance on measuring and evaluating performance.`,
    */
   getAllTemplates(): PromptTemplate[] {
     return Array.from(this.templates.values());
+  }
+
+  /**
+   * Get a triplet template by ID
+   */
+  getTripletTemplate(templateId: string): EnhancedPromptTemplate | undefined {
+    return this.tripletTemplates.get(templateId);
+  }
+
+  /**
+   * Get all triplet templates
+   */
+  getAllTripletTemplates(): EnhancedPromptTemplate[] {
+    return Array.from(this.tripletTemplates.values());
+  }
+
+  /**
+   * Get triplet templates by section type
+   */
+  getTripletTemplatesBySection(sectionType: string): EnhancedPromptTemplate[] {
+    return Array.from(this.tripletTemplates.values()).filter(
+      template => template.sectionType === sectionType
+    );
+  }
+
+  /**
+   * Get triplet templates by complexity
+   */
+  getTripletTemplatesByComplexity(complexity: 'simple' | 'moderate' | 'complex'): EnhancedPromptTemplate[] {
+    return Array.from(this.tripletTemplates.values()).filter(
+      template => template.complexity === complexity
+    );
+  }
+
+  /**
+   * Create a new triplet template
+   */
+  createTripletTemplate(template: Omit<EnhancedPromptTemplate, 'id' | 'metadata'>): EnhancedPromptTemplate {
+    const newTemplate: EnhancedPromptTemplate = {
+      ...template,
+      id: `triplet_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+      metadata: {
+        estimatedTokens: 300,
+        recommendedModel: 'gpt-4.1-nano',
+        version: '1.0',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        createdBy: 'user',
+        isDefault: false,
+        usageCount: 0,
+        successRate: 0,
+        averageQuality: 0
+      }
+    };
+
+    this.tripletTemplates.set(newTemplate.id, newTemplate);
+    return newTemplate;
+  }
+
+  /**
+   * Update a triplet template
+   */
+  updateTripletTemplate(templateId: string, updates: Partial<EnhancedPromptTemplate>): EnhancedPromptTemplate | null {
+    const existing = this.tripletTemplates.get(templateId);
+    if (!existing) return null;
+
+    const updated: EnhancedPromptTemplate = {
+      ...existing,
+      ...updates,
+      metadata: {
+        ...existing.metadata,
+        ...updates.metadata,
+        updatedAt: new Date()
+      }
+    };
+
+    this.tripletTemplates.set(templateId, updated);
+    return updated;
+  }
+
+  /**
+   * Delete a triplet template
+   */
+  deleteTripletTemplate(templateId: string): boolean {
+    const template = this.tripletTemplates.get(templateId);
+    if (!template || template.metadata.isDefault) {
+      return false; // Cannot delete default templates
+    }
+
+    return this.tripletTemplates.delete(templateId);
+  }
+
+  /**
+   * Generate content using a triplet template
+   */
+  async generateWithTriplet(
+    templateId: string,
+    variables: PromptVariables,
+    phase: 'generative' | 'evaluative' | 'improvement' = 'generative'
+  ): Promise<string> {
+    const template = this.tripletTemplates.get(templateId);
+    if (!template) {
+      throw new Error(`Triplet template not found: ${templateId}`);
+    }
+
+    let promptTemplate: string;
+    switch (phase) {
+      case 'generative':
+        promptTemplate = template.prompts.generative;
+        break;
+      case 'evaluative':
+        promptTemplate = template.prompts.evaluative;
+        break;
+      case 'improvement':
+        promptTemplate = template.prompts.improvement;
+        break;
+      default:
+        throw new Error(`Invalid phase: ${phase}`);
+    }
+
+    return this.processTemplate(promptTemplate, variables);
+  }
+
+  /**
+   * Process template with variables (shared method)
+   */
+  private processTemplate(template: string, variables: PromptVariables): string {
+    let rendered = template;
+
+    // Simple variable substitution
+    Object.entries(variables).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        const valueStr = Array.isArray(value) ? value.join(', ') : String(value);
+        rendered = rendered.replace(new RegExp(`{{${key}}}`, 'g'), valueStr);
+      }
+    });
+
+    // Handle conditional blocks (basic implementation)
+    rendered = rendered.replace(/{{#if\s+(\w+)}}(.*?){{\/if}}/gs, (match, condition, content) => {
+      return variables[condition] ? content : '';
+    });
+
+    // Handle array joins
+    rendered = rendered.replace(/{{join\s+(\w+)\s+"([^"]+)"}}/g, (match, arrayName, separator) => {
+      const array = variables[arrayName];
+      return Array.isArray(array) ? array.join(separator) : '';
+    });
+
+    // Clean up any remaining template syntax
+    rendered = rendered.replace(/{{[^}]+}}/g, '');
+
+    return rendered.trim();
+  }
+
+  /**
+   * Update usage statistics for a triplet template
+   */
+  updateTripletUsageStats(templateId: string, success: boolean, qualityScore?: number): void {
+    const template = this.tripletTemplates.get(templateId);
+    if (!template) return;
+
+    template.metadata.usageCount++;
+    
+    if (success) {
+      const totalSuccessful = template.metadata.usageCount * template.metadata.successRate;
+      template.metadata.successRate = (totalSuccessful + 1) / template.metadata.usageCount;
+    }
+
+    if (qualityScore !== undefined) {
+      const totalQuality = template.metadata.usageCount * template.metadata.averageQuality;
+      template.metadata.averageQuality = (totalQuality + qualityScore) / template.metadata.usageCount;
+    }
+
+    template.metadata.updatedAt = new Date();
   }
 
   /**

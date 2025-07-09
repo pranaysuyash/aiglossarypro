@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import mermaid from 'mermaid';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Copy, Download, ZoomIn, ZoomOut } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { sanitizeMermaidHTML } from '@/utils/sanitize';
+
+// Lazy load mermaid only when needed
+let mermaidModule: typeof import('mermaid') | null = null;
 
 interface MermaidDiagramProps {
   diagram: string;
@@ -32,8 +34,14 @@ export default function MermaidDiagram({
       setError('');
 
       try {
+        // Lazy load mermaid if not already loaded
+        if (!mermaidModule) {
+          const mermaidImport = await import('mermaid');
+          mermaidModule = mermaidImport;
+        }
+
         // Initialize mermaid with custom config
-        mermaid.initialize({
+        mermaidModule.default.initialize({
           startOnLoad: false,
           theme: 'default',
           securityLevel: 'loose',
@@ -46,7 +54,7 @@ export default function MermaidDiagram({
         const diagramId = `mermaid-${Math.random().toString(36).substr(2, 9)}`;
         
         // Render the diagram
-        const { svg } = await mermaid.render(diagramId, diagram);
+        const { svg } = await mermaidModule.default.render(diagramId, diagram);
         setDiagramSvg(svg);
       } catch (err) {
         console.error('Mermaid rendering error:', err);

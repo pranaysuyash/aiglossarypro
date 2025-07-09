@@ -1,12 +1,16 @@
-import { useState, useRef } from 'react';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark, oneLight } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Copy, Play, Download, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { useTheme } from 'next-themes';
+
+// Lazy load syntax highlighter components
+let syntaxHighlighterLoaded = false;
+let SyntaxHighlighter: any = null;
+let oneDark: any = null;
+let oneLight: any = null;
 
 interface CodeBlockProps {
   code: string;
@@ -34,11 +38,37 @@ export default function CodeBlock({
   const [isExpanded, setIsExpanded] = useState(false);
   const [output, setOutput] = useState<string>('');
   const [isExecuting, setIsExecuting] = useState(false);
+  const [syntaxHighlighterReady, setSyntaxHighlighterReady] = useState(false);
   const codeRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const { theme } = useTheme();
 
   const isDark = theme === 'dark';
+
+  // Load syntax highlighter on mount
+  useEffect(() => {
+    const loadSyntaxHighlighter = async () => {
+      if (!syntaxHighlighterLoaded) {
+        try {
+          const [highlighterModule, darkStyle, lightStyle] = await Promise.all([
+            import('react-syntax-highlighter'),
+            import('react-syntax-highlighter/dist/esm/styles/prism/one-dark'),
+            import('react-syntax-highlighter/dist/esm/styles/prism/one-light')
+          ]);
+          
+          SyntaxHighlighter = highlighterModule.Prism;
+          oneDark = darkStyle.default;
+          oneLight = lightStyle.default;
+          syntaxHighlighterLoaded = true;
+        } catch (error) {
+          console.error('Failed to load syntax highlighter:', error);
+        }
+      }
+      setSyntaxHighlighterReady(true);
+    };
+
+    loadSyntaxHighlighter();
+  }, []);
   
   // Language display mapping
   const languageLabels: Record<string, string> = {
@@ -246,23 +276,33 @@ export default function CodeBlock({
             maxHeight: needsExpansion && !isExpanded ? '300px' : maxHeight 
           }}
         >
-          <SyntaxHighlighter
-            language={language.toLowerCase()}
-            style={customStyle}
-            showLineNumbers={showLineNumbers}
-            wrapLines={true}
-            lineProps={(lineNumber) => ({
-              style: highlightLines.includes(lineNumber) 
-                ? { 
-                    backgroundColor: isDark ? 'rgba(255, 255, 0, 0.1)' : 'rgba(255, 255, 0, 0.2)',
-                    display: 'block',
-                    width: '100%'
-                  }
-                : {}
-            })}
-          >
-            {code}
-          </SyntaxHighlighter>
+          {syntaxHighlighterReady && SyntaxHighlighter ? (
+            <SyntaxHighlighter
+              language={language.toLowerCase()}
+              style={customStyle}
+              showLineNumbers={showLineNumbers}
+              wrapLines={true}
+              lineProps={(lineNumber) => ({
+                style: highlightLines.includes(lineNumber) 
+                  ? { 
+                      backgroundColor: isDark ? 'rgba(255, 255, 0, 0.1)' : 'rgba(255, 255, 0, 0.2)',
+                      display: 'block',
+                      width: '100%'
+                    }
+                  : {}
+              })}
+            >
+              {code}
+            </SyntaxHighlighter>
+          ) : (
+            // Fallback plain text while syntax highlighter loads
+            <pre 
+              className="p-4 bg-gray-50 dark:bg-gray-900 rounded overflow-x-auto text-sm font-mono"
+              style={{ lineHeight: '1.5' }}
+            >
+              {code}
+            </pre>
+          )}
         </div>
         
         {needsExpansion && !isExpanded && (

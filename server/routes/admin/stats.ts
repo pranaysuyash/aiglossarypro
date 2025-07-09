@@ -1,8 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { enhancedStorage as storage } from "../../enhancedStorage";
-import { mockIsAuthenticated } from "../../middleware/dev/mockAuth";
-import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
-import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
+import { authenticateFirebaseToken, requireFirebaseAdmin } from "../../middleware/firebaseAuth";
 import { features } from "../../config";
 import type { AdminStats, ApiResponse } from "../../../shared/types";
 import { log as logger } from "../../utils/logger";
@@ -12,12 +10,9 @@ import { HEALTH_STATUS } from "../../constants";
  * Admin statistics and dashboard routes
  */
 export function registerAdminStatsRoutes(app: Express): void {
-  // Choose authentication middleware based on environment
-  const authMiddleware = mockIsAuthenticated;
-  const tokenMiddleware = mockAuthenticateToken;
   
   // Admin dashboard statistics
-  app.get('/api/admin/stats', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/stats', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       // Set user context for enhanced storage
       const authReq = req as any;
@@ -51,7 +46,7 @@ export function registerAdminStatsRoutes(app: Express): void {
   });
 
   // System health check
-  app.get('/api/admin/health', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/health', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       // Provide basic health check
       const termCount = 1000; // Mock count for health check

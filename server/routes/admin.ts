@@ -1,7 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { enhancedStorage as storage } from "../enhancedStorage";
-import { requireAdmin, authenticateToken } from "../middleware/adminAuth";
-import { mockIsAuthenticated, mockAuthenticateToken } from "../middleware/dev/mockAuth";
+import { authenticateFirebaseToken, requireFirebaseAdmin } from "../middleware/firebaseAuth";
 import { features } from "../config";
 import type { AuthenticatedRequest, AdminStats, ApiResponse } from "../../shared/types";
 import express from 'express';
@@ -19,9 +18,6 @@ const router = express.Router();
  * Note: These routes should include proper admin role checking in production
  */
 export function registerAdminRoutes(app: Express): void {
-  // Choose authentication middleware based on environment
-  const authMiddleware = mockIsAuthenticated;
-  const tokenMiddleware = mockAuthenticateToken;
   
   /**
    * @openapi
@@ -89,7 +85,7 @@ export function registerAdminRoutes(app: Express): void {
    *               $ref: '#/components/schemas/ErrorResponse'
    */
   // Admin dashboard statistics
-  app.get('/api/admin/stats', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/stats', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const stats = await storage.getAdminStats();
       
@@ -172,7 +168,7 @@ export function registerAdminRoutes(app: Express): void {
    *               $ref: '#/components/schemas/ErrorResponse'
    */
   // Clear all data (dangerous operation)
-  app.delete('/api/admin/clear-data', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.delete('/api/admin/clear-data', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { confirm } = req.body;
       
@@ -268,7 +264,7 @@ export function registerAdminRoutes(app: Express): void {
    *               $ref: '#/components/schemas/ErrorResponse'
    */
   // System health check
-  app.get('/api/admin/health', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/health', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const [systemHealth, contentMetrics] = await Promise.all([
         storage.getSystemHealth(),
@@ -294,7 +290,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Database maintenance operations
-  app.post('/api/admin/maintenance', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.post('/api/admin/maintenance', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { operation } = req.body;
       
@@ -331,7 +327,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // User management
-  app.get('/api/admin/users', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/users', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { page = 1, limit = 50, search } = req.query;
       
@@ -373,7 +369,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Content moderation
-  app.get('/api/admin/content/pending', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/content/pending', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const pendingContent = await storage.getPendingContent();
       
@@ -390,7 +386,7 @@ export function registerAdminRoutes(app: Express): void {
     }
   });
 
-  app.post('/api/admin/content/:id/approve', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.post('/api/admin/content/:id/approve', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const result = await storage.approveContent(id);
@@ -409,7 +405,7 @@ export function registerAdminRoutes(app: Express): void {
     }
   });
 
-  app.post('/api/admin/content/:id/reject', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.post('/api/admin/content/:id/reject', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { id } = req.params;
       const { reason } = req.body;
@@ -536,7 +532,7 @@ export function registerAdminRoutes(app: Express): void {
    * Batch categorize multiple terms using AI
    * POST /api/admin/batch/categorize
    */
-  app.post('/api/admin/batch/categorize', authMiddleware, async (req: any, res: Response) => {
+  app.post('/api/admin/batch/categorize', authenticateFirebaseToken, requireFirebaseAdmin, async (req: any, res: Response) => {
     try {
       const { termIds, options = {} } = req.body;
       
@@ -688,7 +684,7 @@ Respond with JSON only.`
    * Batch enhance definitions using AI
    * POST /api/admin/batch/enhance-definitions
    */
-  app.post('/api/admin/batch/enhance-definitions', authMiddleware, async (req: any, res: Response) => {
+  app.post('/api/admin/batch/enhance-definitions', authenticateFirebaseToken, requireFirebaseAdmin, async (req: any, res: Response) => {
     try {
       const { termIds, options = {} } = req.body;
       const { 
@@ -826,7 +822,7 @@ Provide an enhanced definition following the guidelines above.`
    * Get batch operation status
    * GET /api/admin/batch/status/:operationId
    */
-  app.get('/api/admin/batch/status/:operationId', authMiddleware, async (req: any, res: Response) => {
+  app.get('/api/admin/batch/status/:operationId', authenticateFirebaseToken, requireFirebaseAdmin, async (req: any, res: Response) => {
     try {
       const { operationId } = req.params;
       

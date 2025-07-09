@@ -1,8 +1,7 @@
 import type { Express, Request, Response } from "express";
 import type { Job } from "bullmq";
 import { jobQueue, jobQueueManager } from "../../jobs/queue";
-import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
-import { requireAdmin } from "../../middleware/adminAuth";
+import { authenticateFirebaseToken, requireFirebaseAdmin } from "../../middleware/firebaseAuth";
 import { log as logger } from "../../utils/logger";
 import { JobType } from "../../jobs/types";
 
@@ -10,12 +9,9 @@ import { JobType } from "../../jobs/types";
  * Admin job management routes
  */
 export function registerAdminJobRoutes(app: Express): void {
-  // Choose authentication middleware based on environment
-  const authMiddleware = mockIsAuthenticated;
-  const tokenMiddleware = mockAuthenticateToken;
   
   // Get all import jobs
-  app.get('/api/admin/jobs/imports', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/jobs/imports', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       // Get active and recent jobs
       const excelQueue = jobQueueManager.getQueue(JobType.EXCEL_IMPORT);
@@ -78,7 +74,7 @@ export function registerAdminJobRoutes(app: Express): void {
   });
 
   // Get job details
-  app.get('/api/admin/jobs/:jobId', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/jobs/:jobId', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { jobId } = req.params;
       
@@ -143,7 +139,7 @@ export function registerAdminJobRoutes(app: Express): void {
   });
 
   // Cancel a job
-  app.post('/api/admin/jobs/:jobId/cancel', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.post('/api/admin/jobs/:jobId/cancel', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { jobId } = req.params;
       
@@ -192,7 +188,7 @@ export function registerAdminJobRoutes(app: Express): void {
   });
 
   // Retry a failed job
-  app.post('/api/admin/jobs/:jobId/retry', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.post('/api/admin/jobs/:jobId/retry', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { jobId } = req.params;
       
@@ -244,7 +240,7 @@ export function registerAdminJobRoutes(app: Express): void {
   });
 
   // Get queue statistics
-  app.get('/api/admin/jobs/stats', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/jobs/stats', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const stats: any = {};
       

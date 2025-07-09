@@ -1,8 +1,7 @@
 import { Router } from 'express';
 import { enhancedTripletProcessor } from '../../services/enhancedTripletProcessor';
 import { aiContentGenerationService } from '../../services/aiContentGenerationService';
-import { requireAdmin, authenticateToken } from '../../middleware/adminAuth';
-import { mockIsAuthenticated, mockAuthenticateToken } from '../../middleware/dev/mockAuth';
+import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';
 import { log as logger } from '../../utils/logger';
 import { db } from '../../db';
 import { aiUsageAnalytics } from '../../../shared/enhancedSchema';
@@ -10,14 +9,12 @@ import { desc, eq, and, gte, sql } from 'drizzle-orm';
 
 const router = Router();
 
-// Use development auth for now
-const authMiddleware = mockIsAuthenticated;
-const tokenMiddleware = mockAuthenticateToken;
+// Use proper Firebase authentication for admin routes
 
 /**
  * Get current processing status with quality metrics
  */
-router.get('/status', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.get('/status', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const status = enhancedTripletProcessor.getCurrentProcessingStatus();
     res.json({ success: true, data: status });
@@ -30,7 +27,7 @@ router.get('/status', authMiddleware, tokenMiddleware, requireAdmin, async (req,
 /**
  * Start column processing with quality pipeline
  */
-router.post('/start', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.post('/start', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { columnId, options } = req.body;
     
@@ -49,7 +46,7 @@ router.post('/start', authMiddleware, tokenMiddleware, requireAdmin, async (req,
 /**
  * Stop current processing
  */
-router.post('/stop', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.post('/stop', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const result = enhancedTripletProcessor.stopProcessing();
     res.json(result);
@@ -62,7 +59,7 @@ router.post('/stop', authMiddleware, tokenMiddleware, requireAdmin, async (req, 
 /**
  * Get available columns for processing
  */
-router.get('/columns', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.get('/columns', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const columns = enhancedTripletProcessor.getAvailableColumns();
     res.json({ success: true, data: columns });
@@ -75,7 +72,7 @@ router.get('/columns', authMiddleware, tokenMiddleware, requireAdmin, async (req
 /**
  * Generate content for a single term and section
  */
-router.post('/generate', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.post('/generate', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { termId, sectionName, model, temperature, maxTokens, regenerate, storeAsVersion } = req.body;
     
@@ -104,7 +101,7 @@ router.post('/generate', authMiddleware, tokenMiddleware, requireAdmin, async (r
 /**
  * Generate content with multiple models for comparison
  */
-router.post('/generate-multi-model', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.post('/generate-multi-model', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { termId, sectionName, models, temperature, maxTokens, templateId } = req.body;
     
@@ -135,7 +132,7 @@ router.post('/generate-multi-model', authMiddleware, tokenMiddleware, requireAdm
 /**
  * Get model versions for a term and section
  */
-router.get('/model-versions/:termId/:sectionName', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.get('/model-versions/:termId/:sectionName', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { termId, sectionName } = req.params;
     
@@ -154,7 +151,7 @@ router.get('/model-versions/:termId/:sectionName', authMiddleware, tokenMiddlewa
 /**
  * Select a model version as the chosen one
  */
-router.post('/select-model-version', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.post('/select-model-version', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { versionId } = req.body;
     
@@ -173,7 +170,7 @@ router.post('/select-model-version', authMiddleware, tokenMiddleware, requireAdm
 /**
  * Rate a model version
  */
-router.post('/rate-model-version', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.post('/rate-model-version', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { versionId, rating, notes } = req.body;
     
@@ -192,7 +189,7 @@ router.post('/rate-model-version', authMiddleware, tokenMiddleware, requireAdmin
 /**
  * Generate content for multiple sections of a term
  */
-router.post('/generate-bulk', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.post('/generate-bulk', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { termId, sectionNames, model, regenerate } = req.body;
     
@@ -217,7 +214,7 @@ router.post('/generate-bulk', authMiddleware, tokenMiddleware, requireAdmin, asy
 /**
  * Get generation statistics and analytics
  */
-router.get('/stats', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.get('/stats', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { timeframe = 'week', model } = req.query;
     
@@ -424,7 +421,7 @@ router.get('/stats', authMiddleware, tokenMiddleware, requireAdmin, async (req, 
 /**
  * Get quality summary for completed column
  */
-router.get('/quality/:columnId', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.get('/quality/:columnId', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { columnId } = req.params;
     
@@ -456,7 +453,7 @@ router.get('/quality/:columnId', authMiddleware, tokenMiddleware, requireAdmin, 
 /**
  * Get processing history
  */
-router.get('/history', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.get('/history', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { limit = 50, offset = 0 } = req.query;
     
@@ -499,7 +496,7 @@ router.get('/history', authMiddleware, tokenMiddleware, requireAdmin, async (req
 /**
  * Get advanced analytics data with comprehensive metrics
  */
-router.get('/advanced-stats', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.get('/advanced-stats', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { timeRange = 'week', model, section } = req.query;
     

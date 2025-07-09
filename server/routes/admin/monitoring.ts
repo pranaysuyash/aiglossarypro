@@ -1,6 +1,5 @@
 import type { Express, Request, Response } from "express";
-import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
-import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
+import { authenticateFirebaseToken, requireFirebaseAdmin } from "../../middleware/firebaseAuth";
 import { features } from "../../config";
 import { getPerformanceMetrics, resetPerformanceMetrics } from "../../middleware/performanceMonitor";
 import { log as logger } from "../../utils/logger";
@@ -9,12 +8,9 @@ import { log as logger } from "../../utils/logger";
  * Admin monitoring and analytics routes
  */
 export function registerAdminMonitoringRoutes(app: Express): void {
-  // Choose authentication middleware based on environment
-  const authMiddleware = mockIsAuthenticated;
-  const tokenMiddleware = mockAuthenticateToken;
   
   // Get performance metrics
-  app.get('/api/admin/performance', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/performance', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const metrics = getPerformanceMetrics();
       
@@ -36,7 +32,7 @@ export function registerAdminMonitoringRoutes(app: Express): void {
   });
   
   // Reset performance metrics
-  app.post('/api/admin/performance/reset', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.post('/api/admin/performance/reset', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       resetPerformanceMetrics();
       

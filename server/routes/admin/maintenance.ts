@@ -1,7 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { enhancedStorage as storage } from "../../enhancedStorage";
-import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
-import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
+import { authenticateFirebaseToken, requireFirebaseAdmin } from "../../middleware/firebaseAuth";
 import { features } from "../../config";
 import type { ApiResponse } from "../../../shared/types";
 import { log as logger } from "../../utils/logger";
@@ -21,12 +20,9 @@ type MaintenanceOperation = typeof MAINTENANCE_OPERATIONS[keyof typeof MAINTENAN
  * Admin system maintenance routes
  */
 export function registerAdminMaintenanceRoutes(app: Express): void {
-  // Choose authentication middleware based on environment
-  const authMiddleware = mockIsAuthenticated;
-  const tokenMiddleware = mockAuthenticateToken;
   
   // Database maintenance operations
-  app.post('/api/admin/maintenance', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.post('/api/admin/maintenance', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { operation } = req.body;
       
@@ -86,7 +82,7 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
   });
 
   // Get maintenance status/history
-  app.get('/api/admin/maintenance/status', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/maintenance/status', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       // Set user context for enhanced storage
       const authReq = req as any;
@@ -124,7 +120,7 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
   });
 
   // Clear all data (dangerous operation)
-  app.post('/api/admin/maintenance/clear-all', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.post('/api/admin/maintenance/clear-all', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { confirm } = req.body;
       
@@ -174,7 +170,7 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
   });
 
   // Database backup
-  app.post('/api/admin/maintenance/backup', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.post('/api/admin/maintenance/backup', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       // Set user context for enhanced storage
       const authReq = req as any;
@@ -209,7 +205,7 @@ export function registerAdminMaintenanceRoutes(app: Express): void {
   });
 
   // System health check
-  app.get('/api/admin/maintenance/health', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/maintenance/health', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       // Set user context for enhanced storage
       const authReq = req as any;

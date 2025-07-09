@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { db } from "../../db";
 import { enhancedTerms, categories, aiContentVerification, users } from "../../../shared/enhancedSchema";
 import { eq, and, or, like, gte, lte, desc, asc, sql, count } from "drizzle-orm";
-import { mockIsAuthenticated } from "../../middleware/dev/mockAuth";
+import { authenticateFirebaseToken, requireFirebaseAdmin } from "../../middleware/firebaseAuth";
 import { isUserAdmin } from "../../utils/authUtils";
 import { log as logger } from "../../utils/logger";
 import { aiService } from "../../aiService";
@@ -116,17 +116,9 @@ export function registerAdminTermsRoutes(app: Express): void {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.get('/api/admin/terms', mockIsAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/terms', authenticateFirebaseToken, requireFirebaseAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const isAdmin = await isUserAdmin(userId);
-      
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          error: 'Admin privileges required'
-        });
-      }
+      const userId = req.user.id;
 
       const {
         search = '',
@@ -348,17 +340,9 @@ export function registerAdminTermsRoutes(app: Express): void {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.post('/api/admin/terms/bulk-update', mockIsAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/terms/bulk-update', authenticateFirebaseToken, requireFirebaseAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const isAdmin = await isUserAdmin(userId);
-      
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          error: 'Admin privileges required'
-        });
-      }
+      const userId = req.user.id;
 
       const { changes } = req.body;
       
@@ -491,17 +475,9 @@ export function registerAdminTermsRoutes(app: Express): void {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.post('/api/admin/terms/bulk-verify', mockIsAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/terms/bulk-verify', authenticateFirebaseToken, requireFirebaseAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const isAdmin = await isUserAdmin(userId);
-      
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          error: 'Admin privileges required'
-        });
-      }
+      const userId = req.user.id;
 
       const { termIds, verified } = req.body;
       
@@ -543,17 +519,9 @@ export function registerAdminTermsRoutes(app: Express): void {
   });
 
   // AI-powered term quality analysis
-  app.post('/api/admin/terms/quality-analysis', mockIsAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/terms/quality-analysis', authenticateFirebaseToken, requireFirebaseAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const isAdmin = await isUserAdmin(userId);
-      
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          error: 'Admin privileges required'
-        });
-      }
+      const userId = req.user.id;
 
       const { termIds } = req.body;
       
@@ -726,17 +694,9 @@ export function registerAdminTermsRoutes(app: Express): void {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.get('/api/admin/terms/analytics', mockIsAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/terms/analytics', authenticateFirebaseToken, requireFirebaseAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const isAdmin = await isUserAdmin(userId);
-      
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          error: 'Admin privileges required'
-        });
-      }
+      const userId = req.user.id;
 
       // Get comprehensive term analytics
       const [totalStats] = await db
@@ -818,17 +778,9 @@ export function registerAdminTermsRoutes(app: Express): void {
   });
 
   // Export terms for external editing
-  app.get('/api/admin/terms/export', mockIsAuthenticated, async (req: any, res) => {
+  app.get('/api/admin/terms/export', authenticateFirebaseToken, requireFirebaseAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const isAdmin = await isUserAdmin(userId);
-      
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          error: 'Admin privileges required'
-        });
-      }
+      const userId = req.user.id;
 
       const { format = 'csv', category = '', status = '' } = req.query;
 
@@ -974,17 +926,9 @@ export function registerAdminTermsRoutes(app: Express): void {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.post('/api/admin/terms/create-single', mockIsAuthenticated, async (req: any, res) => {
+  app.post('/api/admin/terms/create-single', authenticateFirebaseToken, requireFirebaseAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const isAdmin = await isUserAdmin(userId);
-      
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          error: 'Admin privileges required'
-        });
-      }
+      const userId = req.user.id;
 
       const { name, shortDefinition, definition, category, useAI } = req.body;
 
@@ -1128,17 +1072,9 @@ export function registerAdminTermsRoutes(app: Express): void {
    *             schema:
    *               $ref: '#/components/schemas/ErrorResponse'
    */
-  app.delete('/api/admin/terms/:termId', mockIsAuthenticated, async (req: any, res) => {
+  app.delete('/api/admin/terms/:termId', authenticateFirebaseToken, requireFirebaseAdmin, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
-      const isAdmin = await isUserAdmin(userId);
-      
-      if (!isAdmin) {
-        return res.status(403).json({
-          success: false,
-          error: 'Admin privileges required'
-        });
-      }
+      const userId = req.user.id;
 
       const { termId } = req.params;
 

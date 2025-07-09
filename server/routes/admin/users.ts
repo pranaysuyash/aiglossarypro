@@ -1,7 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { enhancedStorage as storage } from "../../enhancedStorage";
-import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
-import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
+import { authenticateFirebaseToken, requireFirebaseAdmin } from "../../middleware/firebaseAuth";
 import { features } from "../../config";
 import type { ApiResponse } from "../../../shared/types";
 import { log as logger } from "../../utils/logger";
@@ -12,12 +11,9 @@ import { validateQuery, paginationSchema } from "../../utils/validation";
  * Admin user management routes
  */
 export function registerAdminUserRoutes(app: Express): void {
-  // Choose authentication middleware based on environment
-  const authMiddleware = mockIsAuthenticated;
-  const tokenMiddleware = mockAuthenticateToken;
   
   // Get all users with pagination and search
-  app.get('/api/admin/users', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/users', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { page = 1, limit = DEFAULT_LIMITS.PAGE_SIZE } = validateQuery(paginationSchema)(req);
       const { search } = req.query;
@@ -74,7 +70,7 @@ export function registerAdminUserRoutes(app: Express): void {
   });
 
   // Get user details by ID
-  app.get('/api/admin/users/:userId', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/users/:userId', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       
@@ -117,7 +113,7 @@ export function registerAdminUserRoutes(app: Express): void {
   });
 
   // Update user details
-  app.put('/api/admin/users/:userId', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.put('/api/admin/users/:userId', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       const updateData = req.body;
@@ -155,7 +151,7 @@ export function registerAdminUserRoutes(app: Express): void {
   });
 
   // Delete user
-  app.delete('/api/admin/users/:userId', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.delete('/api/admin/users/:userId', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       
@@ -191,7 +187,7 @@ export function registerAdminUserRoutes(app: Express): void {
   });
 
   // Get user activity/analytics
-  app.get('/api/admin/users/:userId/activity', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/users/:userId/activity', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
       

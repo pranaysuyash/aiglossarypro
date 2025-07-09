@@ -3,8 +3,7 @@ import crypto from 'crypto';
 import { optimizedStorage as storage } from "../optimizedStorage";
 import { log } from '../utils/logger';
 import { captureAPIError } from '../utils/sentry';
-import { requireAdmin, authenticateToken } from '../middleware/adminAuth';
-import { mockIsAuthenticated, mockAuthenticateToken } from '../middleware/dev/mockAuth';
+import { authenticateFirebaseToken, requireFirebaseAdmin } from '../middleware/firebaseAuth';
 import { features } from '../config';
 import { UserService } from '../services/userService';
 import { PRICING_CONSTANTS, HTTP_STATUS, ORDER_CONSTANTS, ENVIRONMENT_CONSTANTS } from '../utils/constants';
@@ -214,7 +213,7 @@ export function registerGumroadRoutes(app: Express): void {
   
   // Admin endpoint to manually grant lifetime access
   app.post('/api/gumroad/grant-access', 
-    [mockAuthenticateToken, requireAdmin],
+    [authenticateFirebaseToken, requireFirebaseAdmin],
     async (req: Request, res: Response) => {
     try {
       const { email, orderId } = req.body;
@@ -266,7 +265,7 @@ export function registerGumroadRoutes(app: Express): void {
 
   // TEST/DUMMY Purchase endpoint for development mode
   app.post('/api/gumroad/test-purchase', 
-    [mockAuthenticateToken, requireAdmin],
+    [authenticateFirebaseToken, requireFirebaseAdmin],
     async (req: Request, res: Response) => {
     try {
       // Only allow in development mode

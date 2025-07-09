@@ -1,7 +1,6 @@
 import type { Express, Request, Response } from "express";
 import { enhancedStorage as storage } from "../../enhancedStorage";
-import { mockIsAuthenticated, mockAuthenticateToken } from "../../middleware/dev/mockAuth";
-import { requireAdmin, authenticateToken } from "../../middleware/adminAuth";
+import { authenticateFirebaseToken, requireFirebaseAdmin } from "../../middleware/firebaseAuth";
 import { features } from "../../config";
 import type { ApiResponse } from "../../../shared/types";
 import { log as logger } from "../../utils/logger";
@@ -13,12 +12,9 @@ import { csvGenerators, sendCSVResponse } from "../../utils/csvHelpers";
  * Admin revenue tracking and analytics routes
  */
 export function registerAdminRevenueRoutes(app: Express): void {
-  // Choose authentication middleware based on environment
-  const authMiddleware = mockIsAuthenticated;
-  const tokenMiddleware = mockAuthenticateToken;
   
   // Revenue dashboard overview
-  app.get('/api/admin/revenue/dashboard', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/revenue/dashboard', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { period = TIME_PERIODS.THIRTY_DAYS } = req.query;
       
@@ -71,7 +67,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
   });
 
   // Recent purchases with user details
-  app.get('/api/admin/revenue/purchases', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/revenue/purchases', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { page = 1, limit = 50, status, currency } = req.query;
       
@@ -95,7 +91,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
   });
 
   // Revenue analytics and trends
-  app.get('/api/admin/revenue/analytics', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/revenue/analytics', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { period = TIME_PERIODS.THIRTY_DAYS, groupBy = 'day' } = req.query;
       
@@ -133,7 +129,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
   });
 
   // Export revenue data
-  app.get('/api/admin/revenue/export', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/revenue/export', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { format = 'csv', period = TIME_PERIODS.THIRTY_DAYS } = req.query;
       
@@ -165,7 +161,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
   });
 
   // Gumroad webhook verification status
-  app.get('/api/admin/revenue/webhook-status', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.get('/api/admin/revenue/webhook-status', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const webhookSecret = process.env.GUMROAD_WEBHOOK_SECRET;
       const hasWebhookSecret = !!webhookSecret;
@@ -196,7 +192,7 @@ export function registerAdminRevenueRoutes(app: Express): void {
   });
 
   // Manual purchase verification (for debugging)
-  app.post('/api/admin/revenue/verify-purchase', authMiddleware, tokenMiddleware, requireAdmin, async (req: Request, res: Response) => {
+  app.post('/api/admin/revenue/verify-purchase', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
     try {
       const { gumroadOrderId } = req.body;
       

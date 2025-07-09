@@ -1,6 +1,5 @@
 import { Router } from 'express';
-import { requireAdmin, authenticateToken } from '../../middleware/adminAuth';
-import { mockIsAuthenticated, mockAuthenticateToken } from '../../middleware/dev/mockAuth';
+import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';
 import { log as logger } from '../../utils/logger';
 import { db } from '../../db';
 import { eq, and, desc } from 'drizzle-orm';
@@ -8,9 +7,7 @@ import OpenAI from 'openai';
 
 const router = Router();
 
-// Use development auth for now
-const authMiddleware = mockIsAuthenticated;
-const tokenMiddleware = mockAuthenticateToken;
+// Use proper Firebase authentication for admin routes
 
 // In-memory template storage for demo purposes
 // In production, this would be stored in the database
@@ -169,7 +166,7 @@ let templateIdCounter = 4;
 /**
  * Get all prompt templates
  */
-router.get('/', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.get('/', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { category, sectionType, complexity } = req.query;
     
@@ -200,7 +197,7 @@ router.get('/', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) 
 /**
  * Get a specific template by ID
  */
-router.get('/:id', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.get('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const template = promptTemplates.find(t => t.id === id);
@@ -219,7 +216,7 @@ router.get('/:id', authMiddleware, tokenMiddleware, requireAdmin, async (req, re
 /**
  * Create a new template
  */
-router.post('/', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.post('/', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const {
       name,
@@ -276,7 +273,7 @@ router.post('/', authMiddleware, tokenMiddleware, requireAdmin, async (req, res)
 /**
  * Update an existing template
  */
-router.put('/:id', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.put('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const templateIndex = promptTemplates.findIndex(t => t.id === id);
@@ -326,7 +323,7 @@ router.put('/:id', authMiddleware, tokenMiddleware, requireAdmin, async (req, re
 /**
  * Delete a template
  */
-router.delete('/:id', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.delete('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const templateIndex = promptTemplates.findIndex(t => t.id === id);
@@ -358,7 +355,7 @@ router.delete('/:id', authMiddleware, tokenMiddleware, requireAdmin, async (req,
 /**
  * Test a template with a sample term
  */
-router.post('/test', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.post('/test', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { templateId, termName } = req.body;
     
@@ -521,7 +518,7 @@ router.post('/test', authMiddleware, tokenMiddleware, requireAdmin, async (req, 
 /**
  * Get template statistics
  */
-router.get('/stats/overview', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.get('/stats/overview', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const stats = {
       totalTemplates: promptTemplates.length,
@@ -559,7 +556,7 @@ router.get('/stats/overview', authMiddleware, tokenMiddleware, requireAdmin, asy
 /**
  * Duplicate a template
  */
-router.post('/:id/duplicate', authMiddleware, tokenMiddleware, requireAdmin, async (req, res) => {
+router.post('/:id/duplicate', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { name } = req.body;

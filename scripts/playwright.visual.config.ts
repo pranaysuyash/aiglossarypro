@@ -5,6 +5,7 @@ import { defineConfig, devices } from '@playwright/test';
  * Separate config for visual regression tests
  */
 export default defineConfig({
+  
   testDir: './tests/visual',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,

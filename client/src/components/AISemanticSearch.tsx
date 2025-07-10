@@ -1,5 +1,5 @@
 import { Brain, ExternalLink, Loader2, Search } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'wouter';
 import { useToast } from '../hooks/use-toast';
 import { Badge } from './ui/badge';
@@ -37,22 +37,7 @@ export function AISemanticSearch({
   const [hasSearched, setHasSearched] = useState(false);
   const { toast } = useToast();
 
-  // Debounced search
-  useEffect(() => {
-    if (!query.trim()) {
-      setResults([]);
-      setHasSearched(false);
-      return;
-    }
-
-    const timeoutId = setTimeout(() => {
-      performSearch(query);
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [query, performSearch]);
-
-  const performSearch = async (searchQuery: string) => {
+  const performSearch = useCallback(async (searchQuery: string) => {
     if (!searchQuery.trim()) return;
 
     setIsSearching(true);
@@ -86,7 +71,22 @@ export function AISemanticSearch({
     } finally {
       setIsSearching(false);
     }
-  };
+  }, [toast]);
+
+  // Debounced search
+  useEffect(() => {
+    if (!query.trim()) {
+      setResults([]);
+      setHasSearched(false);
+      return;
+    }
+
+    const timeoutId = setTimeout(() => {
+      performSearch(query);
+    }, 500);
+
+    return () => clearTimeout(timeoutId);
+  }, [query, performSearch]);
 
   const handleResultClick = (termId: string) => {
     onResultClick?.(termId);

@@ -78,12 +78,6 @@ export function ProgressVisualization({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (user) {
-      fetchProgressStats();
-    }
-  }, [user, fetchProgressStats]);
-
   const fetchProgressStats = async () => {
     try {
       setLoading(true);
@@ -105,6 +99,12 @@ export function ProgressVisualization({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (user) {
+      fetchProgressStats();
+    }
+  }, [user]);
 
   const handleUpgrade = () => {
     if (onUpgradeClick) {

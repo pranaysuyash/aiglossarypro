@@ -511,7 +511,7 @@ export default function SurpriseMe({
                             <span className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded">
                               {term}
                             </span>
-                            {idx < result.connectionPath?.length - 1 && (
+                            {idx < (result.connectionPath?.length || 0) - 1 && (
                               <ArrowRight className="w-3 h-3 text-gray-400" />
                             )}
                           </React.Fragment>

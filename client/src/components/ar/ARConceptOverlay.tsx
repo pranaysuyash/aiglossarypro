@@ -183,7 +183,6 @@ const ARConceptModel: React.FC<{
         anchorY="middle"
         outlineWidth={0.005}
         outlineColor="black"
-        billboard={true}
       >
         {concept.name}
       </Text>
@@ -291,7 +290,7 @@ const ARConceptConnections: React.FC<{
   return (
     <>
       {connections.map((connection, index) => (
-        <line key={index}>
+        <line key={`connection-${connection.from.x}-${connection.from.y}-${connection.from.z}-${index}`}>
           <bufferGeometry>
             <bufferAttribute
               attach="attributes-position"
@@ -439,6 +438,7 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
 
         {sessionState.isActive && (
           <button
+            type="button"
             onClick={clearAllConcepts}
             className="block px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
           >
@@ -454,6 +454,7 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
           <div className="space-y-2">
             {availableConcepts.map((concept) => (
               <button
+                type="button"
                 key={concept.id}
                 onClick={() => setSelectedConcept(concept)}
                 className={`w-full text-left p-2 rounded transition-colors ${

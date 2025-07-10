@@ -12,10 +12,11 @@ export function useAuth() {
     error,
     refetch,
   } = useQuery<IUser>({
-    queryKey: ['/auth/user'],
+    queryKey: ['/api/auth/user'],
     queryFn: getQueryFn({ on401: 'returnNull' }),
     retry: false,
     refetchOnWindowFocus: false,
+    refetchOnMount: false, // Don't refetch if data exists
     staleTime: 5 * 60 * 1000, // Consider data stale after 5 minutes
     gcTime: 10 * 60 * 1000, // Keep in cache for 10 minutes
   });
@@ -29,7 +30,7 @@ export function useAuth() {
       await signOutUser();
 
       // Call backend logout endpoint
-      await fetch('/auth/logout', {
+      await fetch('/api/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });

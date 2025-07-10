@@ -1,6 +1,9 @@
 import type { Express, Request, Response } from 'express';
 import type { AuthenticatedRequest } from '../../shared/types';
-import { mockIsAuthenticated } from '../middleware/dev/mockAuth';
+import { features } from '../config';
+import { authenticateToken } from '../middleware/adminAuth';
+import { mockAuthenticateToken, mockIsAuthenticated } from '../middleware/dev/mockAuth';
+import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
 import { parseId, parseNumericQuery, parsePagination } from '../middleware/inputValidation';
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { log as logger } from '../utils/logger';
@@ -30,8 +33,15 @@ import { canViewTerm, getUserAccessStatus } from '../utils/accessControl';
  * User-specific routes (favorites, progress, activity)
  */
 export function registerUserRoutes(app: Express): void {
-  // Choose authentication middleware based on environment
-  const authMiddleware = mockIsAuthenticated;
+  // Choose authentication middleware based on enabled features
+  const authMiddleware =
+    features.firebaseAuthEnabled || features.simpleAuthEnabled
+      ? multiAuthMiddleware
+      : multiAuthMiddleware; // Always use multiAuthMiddleware
+  const tokenMiddleware =
+    features.firebaseAuthEnabled || features.simpleAuthEnabled
+      ? authenticateToken
+      : authenticateToken; // Always use authenticateToken
 
   // Favorites management
   app.get(
@@ -40,7 +50,14 @@ export function registerUserRoutes(app: Express): void {
     parsePagination as any,
     async (req: any, res: Response) => {
       try {
-        const userId = req.user.claims.sub;
+        const userInfo = getUserInfo(req);
+        if (!userInfo) {
+          return res.status(401).json({
+            success: false,
+            message: 'Authentication required',
+          });
+        }
+        const userId = userInfo.id;
         const { page, limit, offset } = req.pagination;
 
         const result = await (storage as any).getUserFavoritesOptimized(userId, { limit, offset });
@@ -69,10 +86,18 @@ export function registerUserRoutes(app: Express): void {
   app.get(
     '/api/favorites/:id',
     authMiddleware as any,
+    tokenMiddleware,
     parseId() as any,
     async (req: any, res: Response) => {
       try {
-        const userId = req.user.claims.sub;
+        const userInfo = getUserInfo(req);
+        if (!userInfo) {
+          return res.status(401).json({
+            success: false,
+            message: 'Authentication required',
+          });
+        }
+        const userId = userInfo.id;
         const termId = req.parsedId;
 
         const isFavorite = await storage.isTermFavorite(userId, termId);
@@ -97,10 +122,18 @@ export function registerUserRoutes(app: Express): void {
   app.post(
     '/api/favorites/:id',
     authMiddleware as any,
+    tokenMiddleware,
     parseId() as any,
     async (req: any, res: Response) => {
       try {
-        const userId = req.user.claims.sub;
+        const userInfo = getUserInfo(req);
+        if (!userInfo) {
+          return res.status(401).json({
+            success: false,
+            message: 'Authentication required',
+          });
+        }
+        const userId = userInfo.id;
         const termId = req.parsedId;
 
         await storage.addFavorite(userId, termId);
@@ -374,14 +407,55 @@ export function registerUserRoutes(app: Express): void {
     }
   );
 
-  // Access status endpoint for monetization
+  // Access status endpoint for monetization - special endpoint that handles unauthenticated users
   app.get(
     '/api/user/access-status',
-    authMiddleware as any,
-    async (req: AuthenticatedRequest, res: Response) => {
+    async (req: Request, res: Response) => {
       try {
-        const userId = req.user.claims.sub;
-        const user = await storage.getUser(userId);
+        // Try to extract user info from JWT token if available
+        const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.auth_token;
+        let userInfo = null;
+        
+        if (token) {
+          try {
+            const { verifyToken } = await import('../auth/simpleAuth');
+            const decoded = verifyToken(token);
+            if (decoded) {
+              userInfo = {
+                id: decoded.sub,
+                email: decoded.email || '',
+                name: decoded.name || '',
+                provider: 'jwt',
+              };
+            }
+          } catch (error) {
+            // Token verification failed, continue as unauthenticated
+          }
+        }
+        if (!userInfo) {
+          // Return default unauthenticated status instead of error
+          return res.json({
+            success: true,
+            data: {
+              hasAccess: false,
+              accessType: 'unauthenticated',
+              subscriptionTier: 'free',
+              lifetimeAccess: false,
+              dailyViews: 0,
+              dailyLimit: 0,
+              remainingViews: 0,
+              daysUntilReset: 0,
+              purchaseDate: null,
+              isNewUser: false,
+              accountAge: 0,
+              canAccessPremiumFeatures: false,
+              isAdmin: false,
+              requiresAuth: true,
+            },
+          });
+        }
+
+        const user = await storage.getUser(userInfo.id);
 
         if (!user) {
           return res.status(404).json({
@@ -414,6 +488,7 @@ export function registerUserRoutes(app: Express): void {
           accountAge,
           canAccessPremiumFeatures: accessStatus.canAccessPremiumFeatures,
           isAdmin: accessStatus.isAdmin,
+          requiresAuth: false,
         };
 
         res.json({
@@ -425,9 +500,27 @@ export function registerUserRoutes(app: Express): void {
           error: error instanceof Error ? error.message : String(error),
           stack: error instanceof Error ? error.stack : undefined,
         });
-        res.status(500).json({
-          success: false,
-          message: 'Failed to fetch access status',
+        
+        // Return a graceful error response instead of 500
+        res.json({
+          success: true,
+          data: {
+            hasAccess: false,
+            accessType: 'error',
+            subscriptionTier: 'free',
+            lifetimeAccess: false,
+            dailyViews: 0,
+            dailyLimit: 0,
+            remainingViews: 0,
+            daysUntilReset: 0,
+            purchaseDate: null,
+            isNewUser: false,
+            accountAge: 0,
+            canAccessPremiumFeatures: false,
+            isAdmin: false,
+            requiresAuth: true,
+            error: 'Failed to fetch access status',
+          },
         });
       }
     }

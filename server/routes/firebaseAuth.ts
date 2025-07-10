@@ -4,6 +4,7 @@
  */
 
 import type { Express, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import type { ApiResponse, IUser } from '../../shared/types';
 import { generateToken } from '../auth/simpleAuth';
 import { createFirebaseUser, verifyFirebaseToken } from '../config/firebase';
@@ -244,8 +245,9 @@ export function registerFirebaseAuthRoutes(app: Express): void {
     // Set mock logout state for development
     if (process.env.NODE_ENV === 'development') {
       try {
-        const { setMockLogoutState } = require('../middleware/dev/mockAuth');
-        setMockLogoutState(true);
+        import('../middleware/dev/mockAuth').then(({ setMockLogoutState }) => {
+          setMockLogoutState(true);
+        });
       } catch (error) {
         console.warn('Could not set mock logout state:', error);
       }
@@ -265,7 +267,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
     const firebaseConfigured = !!(
       process.env.FIREBASE_PROJECT_ID &&
       process.env.FIREBASE_CLIENT_EMAIL &&
-      process.env.FIREBASE_PRIVATE_KEY
+      (process.env.FIREBASE_PRIVATE_KEY || process.env.FIREBASE_PRIVATE_KEY_BASE64)
     );
 
     res.json({
@@ -335,7 +337,6 @@ export function registerFirebaseAuthRoutes(app: Express): void {
 
       // For now, we'll use the JWT token verification
       // In production, you might want to verify against Firebase too
-      const jwt = require('jsonwebtoken');
       const decoded = jwt.verify(token, process.env.JWT_SECRET!);
 
       const user = await storage.getUser(decoded.sub);
@@ -394,7 +395,6 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       }
 
       // Verify JWT token
-      const jwt = require('jsonwebtoken');
       const decoded = jwt.verify(token, process.env.JWT_SECRET!);
 
       const user = await storage.getUser(decoded.sub);
@@ -463,7 +463,6 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       }
 
       // For now, we'll use the JWT token verification
-      const jwt = require('jsonwebtoken');
       const decoded = jwt.verify(token, process.env.JWT_SECRET!);
 
       const user = await storage.getUser(decoded.sub);

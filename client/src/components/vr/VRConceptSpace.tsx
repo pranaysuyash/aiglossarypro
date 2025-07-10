@@ -11,7 +11,7 @@
 
 import { Box, Line, OrbitControls, Sphere, Text } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { Controllers, Hands, useXR, VRButton, XR } from '@react-three/xr';
+import { useXR, VRButton, XR } from '@react-three/xr';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useWebXR } from '../../hooks/useWebXR';
@@ -143,7 +143,7 @@ const VRConceptConnections: React.FC<{
     <>
       {lines.map((line, index) => (
         <Line
-          key={index}
+          key={`line-${line.from.join(',')}-${line.to.join(',')}`}
           points={[line.from, line.to]}
           color={line.color}
           lineWidth={line.opacity > 0.5 ? 3 : 1}

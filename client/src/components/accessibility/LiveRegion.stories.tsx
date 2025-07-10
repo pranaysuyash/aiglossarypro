@@ -17,22 +17,17 @@ const meta: Meta<typeof LiveRegion> = {
   },
   args: {
     message: '',
-    priority: 'polite',
-    clearAfter: 5000,
+    level: 'polite',
   },
   argTypes: {
     message: {
       control: { type: 'text' },
       description: 'The message to announce to screen readers',
     },
-    priority: {
+    level: {
       control: { type: 'select' },
-      options: ['polite', 'assertive'],
+      options: ['polite', 'assertive', 'off'],
       description: 'How urgently the message should be announced',
-    },
-    clearAfter: {
-      control: { type: 'number' },
-      description: 'Clear message after X milliseconds (0 to disable)',
     },
   },
   tags: ['autodocs'],
@@ -44,7 +39,7 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   args: {
     message: 'This is a polite announcement',
-    priority: 'polite',
+    level: 'polite',
   },
   parameters: {
     docs: {
@@ -59,7 +54,7 @@ export const Default: Story = {
 export const AssertiveMessage: Story = {
   args: {
     message: 'Important: This is an urgent announcement!',
-    priority: 'assertive',
+    level: 'assertive',
   },
   parameters: {
     docs: {
@@ -73,8 +68,7 @@ export const AssertiveMessage: Story = {
 export const PersistentMessage: Story = {
   args: {
     message: 'This message will not clear automatically',
-    priority: 'polite',
-    clearAfter: 0, // Disable auto-clear
+    level: 'polite',
   },
   parameters: {
     docs: {
@@ -88,8 +82,7 @@ export const PersistentMessage: Story = {
 export const QuickClearMessage: Story = {
   args: {
     message: 'This message clears quickly',
-    priority: 'polite',
-    clearAfter: 2000, // Clear after 2 seconds
+    level: 'polite',
   },
   parameters: {
     docs: {
@@ -103,20 +96,20 @@ export const QuickClearMessage: Story = {
 export const InteractiveDemo: Story = {
   render: () => {
     const [currentMessage, setCurrentMessage] = React.useState('');
-    const [messagePriority, setMessagePriority] = React.useState<'polite' | 'assertive'>('polite');
+    const [messageLevel, setMessageLevel] = React.useState<'polite' | 'assertive'>('polite');
 
     const announcements = [
-      { text: 'Form saved successfully', priority: 'polite' as const },
-      { text: 'New message received', priority: 'polite' as const },
-      { text: 'Error: Please fix the form', priority: 'assertive' as const },
-      { text: 'Connection lost', priority: 'assertive' as const },
-      { text: 'Page loaded', priority: 'polite' as const },
-      { text: 'Search completed', priority: 'polite' as const },
+      { id: 'form-saved', text: 'Form saved successfully', level: 'polite' as const },
+      { id: 'message-received', text: 'New message received', level: 'polite' as const },
+      { id: 'form-error', text: 'Error: Please fix the form', level: 'assertive' as const },
+      { id: 'connection-lost', text: 'Connection lost', level: 'assertive' as const },
+      { id: 'page-loaded', text: 'Page loaded', level: 'polite' as const },
+      { id: 'search-complete', text: 'Search completed', level: 'polite' as const },
     ];
 
-    const handleAnnouncement = (message: string, priority: 'polite' | 'assertive') => {
+    const handleAnnouncement = (message: string, level: 'polite' | 'assertive') => {
       setCurrentMessage(message);
-      setMessagePriority(priority);
+      setMessageLevel(level);
     };
 
     return (
@@ -131,16 +124,16 @@ export const InteractiveDemo: Story = {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {announcements.map((announcement, index) => (
+          {announcements.map((announcement) => (
             <Button
-              key={index}
-              variant={announcement.priority === 'assertive' ? 'destructive' : 'outline'}
-              onClick={() => handleAnnouncement(announcement.text, announcement.priority)}
+              key={announcement.id}
+              variant={announcement.level === 'assertive' ? 'destructive' : 'outline'}
+              onClick={() => handleAnnouncement(announcement.text, announcement.level)}
               className="justify-start text-left"
             >
               <span className="flex flex-col items-start">
                 <span>{announcement.text}</span>
-                <span className="text-xs opacity-60">({announcement.priority})</span>
+                <span className="text-xs opacity-60">({announcement.level})</span>
               </span>
             </Button>
           ))}
@@ -153,7 +146,7 @@ export const InteractiveDemo: Story = {
               <strong>Message:</strong> {currentMessage || 'None'}
             </p>
             <p>
-              <strong>Priority:</strong> {messagePriority}
+              <strong>Level:</strong> {messageLevel}
             </p>
           </div>
         </div>
@@ -165,7 +158,7 @@ export const InteractiveDemo: Story = {
           </p>
         </div>
 
-        <LiveRegion message={currentMessage} priority={messagePriority} clearAfter={5000} />
+        <LiveRegion message={currentMessage} level={messageLevel} />
       </div>
     );
   },
@@ -250,7 +243,7 @@ export const FormFeedback: Story = {
 
       if (!formData.email) {
         newErrors.email = 'Email is required';
-      } else if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(formData.email)) {
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
         newErrors.email = 'Please enter a valid email';
       }
 
@@ -274,7 +267,7 @@ export const FormFeedback: Story = {
         <div className="space-y-4">
           <h3 className="text-lg font-semibold">Form with Live Region Feedback</h3>
           <p className="text-sm text-gray-600">
-            This form uses live regions to announce validation errors and success messages.
+            This form demonstrates how to use live regions for form validation feedback.
           </p>
         </div>
 
@@ -287,14 +280,16 @@ export const FormFeedback: Story = {
               id="name"
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
-              className={`w-full px-3 py-2 border rounded ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className={`w-full px-3 py-2 border rounded-md ${
+                errors.name ? 'border-red-500' : 'border-gray-300'
+              }`}
               aria-describedby={errors.name ? 'name-error' : undefined}
             />
             {errors.name && (
-              <p id="name-error" className="text-red-600 text-sm mt-1">
+              <div id="name-error" className="text-red-600 text-sm mt-1">
                 {errors.name}
-              </p>
+              </div>
             )}
           </div>
 
@@ -306,14 +301,16 @@ export const FormFeedback: Story = {
               id="email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
-              className={`w-full px-3 py-2 border rounded ${errors.email ? 'border-red-500' : 'border-gray-300'}`}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              className={`w-full px-3 py-2 border rounded-md ${
+                errors.email ? 'border-red-500' : 'border-gray-300'
+              }`}
               aria-describedby={errors.email ? 'email-error' : undefined}
             />
             {errors.email && (
-              <p id="email-error" className="text-red-600 text-sm mt-1">
+              <div id="email-error" className="text-red-600 text-sm mt-1">
                 {errors.email}
-              </p>
+              </div>
             )}
           </div>
 
@@ -322,136 +319,197 @@ export const FormFeedback: Story = {
           </Button>
         </form>
 
-        {/* Live Regions for Announcements */}
-        <LiveRegion
-          message={errorMessage}
-          priority="assertive"
-          clearAfter={0} // Don't auto-clear errors
-        />
+        <div className="text-xs text-gray-500">
+          <p>
+            <strong>Accessibility:</strong> Form errors are announced assertively, while success
+            messages are announced politely.
+          </p>
+        </div>
 
-        <LiveRegion message={successMessage} priority="polite" clearAfter={5000} />
-
-        {successMessage && (
-          <div className="p-3 bg-green-50 border border-green-200 rounded text-green-800 text-sm">
-            {successMessage}
-          </div>
-        )}
+        {/* Live regions for form feedback */}
+        <LiveRegion message={errorMessage} level="assertive" />
+        <LiveRegion message={successMessage} level="polite" />
       </div>
     );
   },
   parameters: {
     docs: {
       description: {
-        story: 'Practical example of using live regions for form validation feedback.',
+        story: 'Form validation example showing how to announce errors and success messages.',
       },
     },
   },
 };
 
-export const StatusUpdates: Story = {
+export const LoadingStates: Story = {
   render: () => {
-    const [status, setStatus] = React.useState<string>('');
-    const [progress, setProgress] = React.useState(0);
-    const [isProcessing, setIsProcessing] = React.useState(false);
+    const [loadingState, setLoadingState] = React.useState<
+      'idle' | 'loading' | 'success' | 'error'
+    >('idle');
+    const [currentMessage, setCurrentMessage] = React.useState('');
 
     const simulateProcess = async () => {
-      setIsProcessing(true);
-      setProgress(0);
-      setStatus('Starting process...');
+      setLoadingState('loading');
+      setCurrentMessage('Loading data...');
 
-      const steps = [
-        'Initializing...',
-        'Loading data...',
-        'Processing information...',
-        'Validating results...',
-        'Finalizing...',
-        'Process completed successfully!',
-      ];
+      // Simulate API call
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
-      for (let i = 0; i < steps.length; i++) {
-        await new Promise((resolve) => setTimeout(resolve, 1000));
-        setStatus(steps[i]);
-        setProgress(((i + 1) / steps.length) * 100);
+      // Randomly succeed or fail
+      const success = Math.random() > 0.3;
+
+      if (success) {
+        setLoadingState('success');
+        setCurrentMessage('Data loaded successfully!');
+      } else {
+        setLoadingState('error');
+        setCurrentMessage('Failed to load data. Please try again.');
       }
 
-      setIsProcessing(false);
+      // Reset after 3 seconds
+      setTimeout(() => {
+        setLoadingState('idle');
+        setCurrentMessage('');
+      }, 3000);
+    };
+
+    const getMessageLevel = (): 'polite' | 'assertive' => {
+      return loadingState === 'error' ? 'assertive' : 'polite';
     };
 
     return (
       <div className="space-y-6 w-full max-w-md">
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold">Process Status Updates</h3>
+          <h3 className="text-lg font-semibold">Loading State Announcements</h3>
           <p className="text-sm text-gray-600">
-            This example shows how to use live regions for progress updates.
+            This example shows how to announce loading states to screen readers.
           </p>
         </div>
 
         <div className="space-y-4">
-          <Button onClick={simulateProcess} disabled={isProcessing} className="w-full">
-            {isProcessing ? 'Processing...' : 'Start Process'}
+          <Button
+            onClick={simulateProcess}
+            disabled={loadingState === 'loading'}
+            className="w-full"
+            variant={loadingState === 'error' ? 'destructive' : 'default'}
+          >
+            {loadingState === 'loading' ? 'Loading...' : 'Load Data'}
           </Button>
 
-          {isProcessing && (
-            <div className="space-y-2">
-              <div className="w-full bg-gray-200 rounded-full h-2">
-                <div
-                  className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                  style={{ width: `${progress}%` }}
-                ></div>
-              </div>
-              <p className="text-sm text-center">{Math.round(progress)}% complete</p>
+          <div className="p-4 bg-gray-50 rounded-lg">
+            <h4 className="font-medium mb-2">Current State:</h4>
+            <div className="space-y-1 text-sm">
+              <p>
+                <strong>Status:</strong> {loadingState}
+              </p>
+              <p>
+                <strong>Message:</strong> {currentMessage || 'None'}
+              </p>
+              <p>
+                <strong>Level:</strong> {getMessageLevel()}
+              </p>
             </div>
-          )}
-
-          <div className="p-3 bg-gray-50 rounded text-sm min-h-[3rem] flex items-center">
-            <strong>Status:</strong>&nbsp;{status || 'Ready to start'}
           </div>
         </div>
 
-        <LiveRegion
-          message={status}
-          priority="polite"
-          clearAfter={0} // Keep status visible
-        />
+        <div className="text-xs text-gray-500">
+          <p>
+            <strong>Pattern:</strong> Loading and success states use polite announcements, while
+            errors use assertive announcements.
+          </p>
+        </div>
+
+        <LiveRegion message={currentMessage} level={getMessageLevel()} />
       </div>
     );
   },
   parameters: {
     docs: {
       description: {
-        story:
-          'Example of using live regions for process status updates and progress announcements.',
+        story: 'Loading state example showing different announcement priorities.',
       },
     },
   },
 };
 
-export const DarkMode: Story = {
-  args: {
-    message: 'Dark mode announcement',
-    priority: 'polite',
+export const MultipleRegions: Story = {
+  render: () => {
+    const [statusMessage, setStatusMessage] = React.useState('');
+    const [errorMessage, setErrorMessage] = React.useState('');
+    const [infoMessage, setInfoMessage] = React.useState('');
+
+    const showStatus = () => {
+      setStatusMessage('Status updated');
+      setTimeout(() => setStatusMessage(''), 3000);
+    };
+
+    const showError = () => {
+      setErrorMessage('An error occurred');
+      setTimeout(() => setErrorMessage(''), 3000);
+    };
+
+    const showInfo = () => {
+      setInfoMessage('Information message');
+      setTimeout(() => setInfoMessage(''), 3000);
+    };
+
+    return (
+      <div className="space-y-6 w-full max-w-md">
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold">Multiple Live Regions</h3>
+          <p className="text-sm text-gray-600">
+            This example shows how to use multiple live regions for different types of messages.
+          </p>
+        </div>
+
+        <div className="space-y-3">
+          <Button onClick={showStatus} variant="outline" className="w-full">
+            Show Status (Polite)
+          </Button>
+
+          <Button onClick={showError} variant="destructive" className="w-full">
+            Show Error (Assertive)
+          </Button>
+
+          <Button onClick={showInfo} variant="secondary" className="w-full">
+            Show Info (Off)
+          </Button>
+        </div>
+
+        <div className="p-4 bg-gray-50 rounded-lg">
+          <h4 className="font-medium mb-2">Active Messages:</h4>
+          <div className="space-y-1 text-sm">
+            <p>
+              <strong>Status:</strong> {statusMessage || 'None'}
+            </p>
+            <p>
+              <strong>Error:</strong> {errorMessage || 'None'}
+            </p>
+            <p>
+              <strong>Info:</strong> {infoMessage || 'None'}
+            </p>
+          </div>
+        </div>
+
+        <div className="text-xs text-gray-500">
+          <p>
+            <strong>Best Practice:</strong> Use separate live regions for different types of
+            messages to avoid conflicts.
+          </p>
+        </div>
+
+        {/* Multiple live regions for different message types */}
+        <LiveRegion message={statusMessage} level="polite" />
+        <LiveRegion message={errorMessage} level="assertive" />
+        <LiveRegion message={infoMessage} level="off" />
+      </div>
+    );
   },
   parameters: {
-    backgrounds: {
-      default: 'dark',
-    },
     docs: {
       description: {
-        story: 'Live region in dark mode (note: the component itself is always hidden visually).',
+        story: 'Example showing multiple live regions for different message types.',
       },
     },
   },
-  decorators: [
-    (Story) => (
-      <div className="dark">
-        <div className="text-white p-4">
-          <p>Live regions work the same in dark mode since they are screen reader only.</p>
-          <p className="text-sm text-gray-400 mt-2">
-            The live region component is present but visually hidden.
-          </p>
-          <Story />
-        </div>
-      </div>
-    ),
-  ],
 };

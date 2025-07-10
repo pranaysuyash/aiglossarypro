@@ -1,5 +1,5 @@
 import { Activity, AlertTriangle, CheckCircle, Flag, TrendingUp, Users } from 'lucide-react';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
@@ -54,11 +54,7 @@ export function AIFeedbackDashboard() {
   const [newStatus, setNewStatus] = useState<string>('');
   const { toast } = useToast();
 
-  useEffect(() => {
-    loadDashboardData();
-  }, [loadDashboardData]);
-
-  const loadDashboardData = async () => {
+  const loadDashboardData = useCallback(async () => {
     setLoading(true);
     try {
       // Load real feedback data
@@ -137,7 +133,11 @@ export function AIFeedbackDashboard() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
 
   const updateFeedbackStatus = async (feedbackId: string, status: string, notes: string) => {
     try {

@@ -26,7 +26,8 @@ async function request<T = any>(
   endpoint: string,
   data?: any
 ): Promise<ApiResponse<T>> {
-  const url = endpoint.startsWith('/') ? `/api${endpoint}` : endpoint;
+  // Fix double /api issue - only add /api if endpoint doesn't already start with /api
+  const url = endpoint.startsWith('/api') ? endpoint : endpoint.startsWith('/') ? `/api${endpoint}` : endpoint;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',

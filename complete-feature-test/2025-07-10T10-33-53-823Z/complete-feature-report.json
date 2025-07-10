@@ -1,0 +1,553 @@
+{
+  "timestamp": "2025-07-10T10:34:52.851Z",
+  "summary": {
+    "totalTests": 19,
+    "passed": 13,
+    "failed": 3,
+    "warnings": 3,
+    "categories": 8
+  },
+  "passRate": 68,
+  "categories": [
+    {
+      "name": "Backend API",
+      "tests": [
+        {
+          "category": "Backend API",
+          "testName": "Health Check",
+          "userType": "system",
+          "status": "PASS",
+          "message": "HTTP 200",
+          "details": {
+            "endpoint": "/api/health",
+            "statusCode": "200"
+          }
+        },
+        {
+          "category": "Backend API",
+          "testName": "Categories",
+          "userType": "system",
+          "status": "PASS",
+          "message": "HTTP 200",
+          "details": {
+            "endpoint": "/api/categories",
+            "statusCode": "200"
+          }
+        },
+        {
+          "category": "Backend API",
+          "testName": "Terms",
+          "userType": "system",
+          "status": "PASS",
+          "message": "HTTP 200",
+          "details": {
+            "endpoint": "/api/terms",
+            "statusCode": "200"
+          }
+        },
+        {
+          "category": "Backend API",
+          "testName": "Search Suggestions",
+          "userType": "system",
+          "status": "PASS",
+          "message": "HTTP 200",
+          "details": {
+            "endpoint": "/api/search/suggestions",
+            "statusCode": "200"
+          }
+        },
+        {
+          "category": "Backend API",
+          "testName": "Enhanced Terms",
+          "userType": "system",
+          "status": "PASS",
+          "message": "HTTP 200",
+          "details": {
+            "endpoint": "/api/enhanced/terms",
+            "statusCode": "200"
+          }
+        },
+        {
+          "category": "Backend API",
+          "testName": "Auth Check",
+          "userType": "system",
+          "status": "PASS",
+          "message": "HTTP 200",
+          "details": {
+            "endpoint": "/api/auth/check",
+            "statusCode": "200"
+          }
+        }
+      ],
+      "passed": 6,
+      "failed": 0,
+      "warnings": 0
+    },
+    {
+      "name": "Cookie Consent",
+      "tests": [
+        {
+          "category": "Cookie Consent",
+          "testName": "Cookie Implementation",
+          "userType": "guest",
+          "status": "PASS",
+          "message": "Cookie elements: 2, Analytics scripts: 0",
+          "screenshot": "guest-homepage-initial-1752143638909.png",
+          "details": {
+            "cookieElements": 2,
+            "posthogScript": 0,
+            "gaScript": 0
+          }
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "warnings": 0
+    },
+    {
+      "name": "Authentication",
+      "tests": [
+        {
+          "category": "Authentication",
+          "testName": "OAuth vs Regular Sign-up",
+          "userType": "guest",
+          "status": "PASS",
+          "message": "OAuth: Google ✓, GitHub ✓, Email Sign-up: ✓",
+          "screenshot": "guest-login-page-1752143643638.png",
+          "details": {
+            "googleButton": true,
+            "githubButton": true,
+            "emailSignUp": true,
+            "emailSignIn": true
+          }
+        },
+        {
+          "category": "Authentication",
+          "testName": "Test Users Feature",
+          "userType": "development",
+          "status": "WARNING",
+          "message": "Found 3 test accounts, 0 user types",
+          "screenshot": "guest-test-users-tab-1752143646241.png",
+          "details": {
+            "useAccountButtons": 3,
+            "userTypes": 0
+          }
+        },
+        {
+          "category": "Authentication",
+          "testName": "Form Auto-Population",
+          "userType": "free",
+          "status": "PASS",
+          "message": "Email: test@aimlglossary.com, Password: filled",
+          "screenshot": "guest-login-form-filled-1752143652133.png"
+        },
+        {
+          "category": "Authentication",
+          "testName": "Login Flow",
+          "userType": "free",
+          "status": "FAIL",
+          "message": "Post-login URL: http://localhost:5173/login | Errors: Route not found",
+          "screenshot": "guest-after-login-attempt-1752143662755.png",
+          "details": {
+            "currentUrl": "http://localhost:5173/login",
+            "loginSuccess": false,
+            "errorMessages": [
+              "Route not found"
+            ]
+          }
+        }
+      ],
+      "passed": 2,
+      "failed": 1,
+      "warnings": 1
+    },
+    {
+      "name": "Admin Functionality",
+      "tests": [
+        {
+          "category": "Admin Functionality",
+          "testName": "Admin Dashboard",
+          "userType": "admin",
+          "status": "WARNING",
+          "message": "Found 0 admin features",
+          "screenshot": "guest-admin-page-1752143666934.png",
+          "details": {
+            "dashboard": 0,
+            "generateButton": 0,
+            "userManagement": 0,
+            "contentManagement": 0,
+            "analytics": 0
+          }
+        }
+      ],
+      "passed": 0,
+      "failed": 0,
+      "warnings": 1
+    },
+    {
+      "name": "Search",
+      "tests": [
+        {
+          "category": "Search",
+          "testName": "Search Interface",
+          "userType": "guest",
+          "status": "PASS",
+          "message": "Search input: 3, Button: 4, Filters: 1, AI Search: 0",
+          "screenshot": "guest-search-page-1752143671091.png",
+          "details": {
+            "searchInput": 3,
+            "searchButton": 4,
+            "filters": 1,
+            "aiSearch": 0
+          }
+        },
+        {
+          "category": "Search",
+          "testName": "Search Results",
+          "userType": "guest",
+          "status": "WARNING",
+          "message": "Results: 0, Empty state: 0",
+          "screenshot": "guest-search-results-1752143673692.png",
+          "details": {
+            "results": 0,
+            "emptyState": 0
+          }
+        }
+      ],
+      "passed": 1,
+      "failed": 0,
+      "warnings": 1
+    },
+    {
+      "name": "Premium Features",
+      "tests": [
+        {
+          "category": "Premium Features",
+          "testName": "Premium Test",
+          "userType": "premium",
+          "status": "FAIL",
+          "message": "Error: Error: locator.count: Unexpected token \"=\" while parsing css selector \".locked, .premium-only, text=\"Premium Only\"\". Did you mean to CSS.escape it?"
+        }
+      ],
+      "passed": 0,
+      "failed": 1,
+      "warnings": 0
+    },
+    {
+      "name": "Gamification",
+      "tests": [
+        {
+          "category": "Gamification",
+          "testName": "Gamification Test",
+          "userType": "user",
+          "status": "FAIL",
+          "message": "Error: Error: locator.count: Unknown engine \"text*\" while parsing selector text*=\"streak\", .streak-counter"
+        }
+      ],
+      "passed": 0,
+      "failed": 1,
+      "warnings": 0
+    },
+    {
+      "name": "Responsive Design",
+      "tests": [
+        {
+          "category": "Responsive Design",
+          "testName": "mobile Layout",
+          "userType": "guest",
+          "status": "PASS",
+          "message": "Header: ✓, Nav: ✗, Menu: ✗",
+          "screenshot": "guest-responsive-mobile-1752143685069.png",
+          "details": {
+            "header": true,
+            "nav": false,
+            "menuButton": false,
+            "viewport": {
+              "name": "mobile",
+              "width": 375,
+              "height": 812
+            }
+          }
+        },
+        {
+          "category": "Responsive Design",
+          "testName": "tablet Layout",
+          "userType": "guest",
+          "status": "PASS",
+          "message": "Header: ✓, Nav: ✓, Menu: ✗",
+          "screenshot": "guest-responsive-tablet-1752143688438.png",
+          "details": {
+            "header": true,
+            "nav": true,
+            "menuButton": false,
+            "viewport": {
+              "name": "tablet",
+              "width": 768,
+              "height": 1024
+            }
+          }
+        },
+        {
+          "category": "Responsive Design",
+          "testName": "desktop Layout",
+          "userType": "guest",
+          "status": "PASS",
+          "message": "Header: ✓, Nav: ✓, Menu: ✗",
+          "screenshot": "guest-responsive-desktop-1752143691951.png",
+          "details": {
+            "header": true,
+            "nav": true,
+            "menuButton": false,
+            "viewport": {
+              "name": "desktop",
+              "width": 1920,
+              "height": 1080
+            }
+          }
+        }
+      ],
+      "passed": 3,
+      "failed": 0,
+      "warnings": 0
+    }
+  ],
+  "allResults": [
+    {
+      "category": "Backend API",
+      "testName": "Health Check",
+      "userType": "system",
+      "status": "PASS",
+      "message": "HTTP 200",
+      "details": {
+        "endpoint": "/api/health",
+        "statusCode": "200"
+      }
+    },
+    {
+      "category": "Backend API",
+      "testName": "Categories",
+      "userType": "system",
+      "status": "PASS",
+      "message": "HTTP 200",
+      "details": {
+        "endpoint": "/api/categories",
+        "statusCode": "200"
+      }
+    },
+    {
+      "category": "Backend API",
+      "testName": "Terms",
+      "userType": "system",
+      "status": "PASS",
+      "message": "HTTP 200",
+      "details": {
+        "endpoint": "/api/terms",
+        "statusCode": "200"
+      }
+    },
+    {
+      "category": "Backend API",
+      "testName": "Search Suggestions",
+      "userType": "system",
+      "status": "PASS",
+      "message": "HTTP 200",
+      "details": {
+        "endpoint": "/api/search/suggestions",
+        "statusCode": "200"
+      }
+    },
+    {
+      "category": "Backend API",
+      "testName": "Enhanced Terms",
+      "userType": "system",
+      "status": "PASS",
+      "message": "HTTP 200",
+      "details": {
+        "endpoint": "/api/enhanced/terms",
+        "statusCode": "200"
+      }
+    },
+    {
+      "category": "Backend API",
+      "testName": "Auth Check",
+      "userType": "system",
+      "status": "PASS",
+      "message": "HTTP 200",
+      "details": {
+        "endpoint": "/api/auth/check",
+        "statusCode": "200"
+      }
+    },
+    {
+      "category": "Cookie Consent",
+      "testName": "Cookie Implementation",
+      "userType": "guest",
+      "status": "PASS",
+      "message": "Cookie elements: 2, Analytics scripts: 0",
+      "screenshot": "guest-homepage-initial-1752143638909.png",
+      "details": {
+        "cookieElements": 2,
+        "posthogScript": 0,
+        "gaScript": 0
+      }
+    },
+    {
+      "category": "Authentication",
+      "testName": "OAuth vs Regular Sign-up",
+      "userType": "guest",
+      "status": "PASS",
+      "message": "OAuth: Google ✓, GitHub ✓, Email Sign-up: ✓",
+      "screenshot": "guest-login-page-1752143643638.png",
+      "details": {
+        "googleButton": true,
+        "githubButton": true,
+        "emailSignUp": true,
+        "emailSignIn": true
+      }
+    },
+    {
+      "category": "Authentication",
+      "testName": "Test Users Feature",
+      "userType": "development",
+      "status": "WARNING",
+      "message": "Found 3 test accounts, 0 user types",
+      "screenshot": "guest-test-users-tab-1752143646241.png",
+      "details": {
+        "useAccountButtons": 3,
+        "userTypes": 0
+      }
+    },
+    {
+      "category": "Authentication",
+      "testName": "Form Auto-Population",
+      "userType": "free",
+      "status": "PASS",
+      "message": "Email: test@aimlglossary.com, Password: filled",
+      "screenshot": "guest-login-form-filled-1752143652133.png"
+    },
+    {
+      "category": "Authentication",
+      "testName": "Login Flow",
+      "userType": "free",
+      "status": "FAIL",
+      "message": "Post-login URL: http://localhost:5173/login | Errors: Route not found",
+      "screenshot": "guest-after-login-attempt-1752143662755.png",
+      "details": {
+        "currentUrl": "http://localhost:5173/login",
+        "loginSuccess": false,
+        "errorMessages": [
+          "Route not found"
+        ]
+      }
+    },
+    {
+      "category": "Admin Functionality",
+      "testName": "Admin Dashboard",
+      "userType": "admin",
+      "status": "WARNING",
+      "message": "Found 0 admin features",
+      "screenshot": "guest-admin-page-1752143666934.png",
+      "details": {
+        "dashboard": 0,
+        "generateButton": 0,
+        "userManagement": 0,
+        "contentManagement": 0,
+        "analytics": 0
+      }
+    },
+    {
+      "category": "Search",
+      "testName": "Search Interface",
+      "userType": "guest",
+      "status": "PASS",
+      "message": "Search input: 3, Button: 4, Filters: 1, AI Search: 0",
+      "screenshot": "guest-search-page-1752143671091.png",
+      "details": {
+        "searchInput": 3,
+        "searchButton": 4,
+        "filters": 1,
+        "aiSearch": 0
+      }
+    },
+    {
+      "category": "Search",
+      "testName": "Search Results",
+      "userType": "guest",
+      "status": "WARNING",
+      "message": "Results: 0, Empty state: 0",
+      "screenshot": "guest-search-results-1752143673692.png",
+      "details": {
+        "results": 0,
+        "emptyState": 0
+      }
+    },
+    {
+      "category": "Premium Features",
+      "testName": "Premium Test",
+      "userType": "premium",
+      "status": "FAIL",
+      "message": "Error: Error: locator.count: Unexpected token \"=\" while parsing css selector \".locked, .premium-only, text=\"Premium Only\"\". Did you mean to CSS.escape it?"
+    },
+    {
+      "category": "Gamification",
+      "testName": "Gamification Test",
+      "userType": "user",
+      "status": "FAIL",
+      "message": "Error: Error: locator.count: Unknown engine \"text*\" while parsing selector text*=\"streak\", .streak-counter"
+    },
+    {
+      "category": "Responsive Design",
+      "testName": "mobile Layout",
+      "userType": "guest",
+      "status": "PASS",
+      "message": "Header: ✓, Nav: ✗, Menu: ✗",
+      "screenshot": "guest-responsive-mobile-1752143685069.png",
+      "details": {
+        "header": true,
+        "nav": false,
+        "menuButton": false,
+        "viewport": {
+          "name": "mobile",
+          "width": 375,
+          "height": 812
+        }
+      }
+    },
+    {
+      "category": "Responsive Design",
+      "testName": "tablet Layout",
+      "userType": "guest",
+      "status": "PASS",
+      "message": "Header: ✓, Nav: ✓, Menu: ✗",
+      "screenshot": "guest-responsive-tablet-1752143688438.png",
+      "details": {
+        "header": true,
+        "nav": true,
+        "menuButton": false,
+        "viewport": {
+          "name": "tablet",
+          "width": 768,
+          "height": 1024
+        }
+      }
+    },
+    {
+      "category": "Responsive Design",
+      "testName": "desktop Layout",
+      "userType": "guest",
+      "status": "PASS",
+      "message": "Header: ✓, Nav: ✓, Menu: ✗",
+      "screenshot": "guest-responsive-desktop-1752143691951.png",
+      "details": {
+        "header": true,
+        "nav": true,
+        "menuButton": false,
+        "viewport": {
+          "name": "desktop",
+          "width": 1920,
+          "height": 1080
+        }
+      }
+    }
+  ]
+}

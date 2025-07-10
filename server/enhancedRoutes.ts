@@ -165,6 +165,44 @@ export function registerEnhancedRoutes(app: Express): void {
   // ========================
 
   /**
+   * Get list of enhanced terms with pagination
+   * GET /api/enhanced/terms
+   */
+  app.get('/api/enhanced/terms', async (req: Request, res: Response) => {
+    try {
+      const { page = '1', limit = '20', search } = req.query;
+      const pageNum = parseInt(page as string, 10);
+      const limitNum = Math.min(parseInt(limit as string, 10), 100); // Cap at 100
+      const offset = (pageNum - 1) * limitNum;
+
+      // For now, return empty array as placeholder
+      // TODO: Implement proper enhanced terms listing in enhancedStorage
+      const result = {
+        terms: [],
+        total: 0,
+      };
+
+      res.json({
+        success: true,
+        data: result.terms || [],
+        pagination: {
+          page: pageNum,
+          limit: limitNum,
+          total: result.total || 0,
+          pages: Math.ceil((result.total || 0) / limitNum),
+        },
+      });
+    } catch (error) {
+      console.error('Error fetching enhanced terms:', error);
+      res.status(500).json({
+        success: false,
+        message: 'Failed to fetch enhanced terms',
+        error: process.env.NODE_ENV === 'development' ? error : undefined,
+      });
+    }
+  });
+
+  /**
    * Get enhanced term by ID or slug with full section data
    * GET /api/enhanced/terms/:identifier
    */

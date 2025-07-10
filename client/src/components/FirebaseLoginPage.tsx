@@ -287,7 +287,7 @@ export default function FirebaseLoginPage() {
       announce('Creating your account...', 'polite');
 
       // Create account in backend (which creates Firebase user)
-      const response = await api.post('/api/auth/firebase/register', {
+      const response = await api.post('/auth/firebase/register', {
         email,
         password,
         firstName,

@@ -12,7 +12,7 @@ export function useAuth() {
     error,
     refetch,
   } = useQuery<IUser>({
-    queryKey: ['/api/auth/user'],
+    queryKey: ['/auth/user'],
     queryFn: getQueryFn({ on401: 'returnNull' }),
     retry: false,
     refetchOnWindowFocus: false,
@@ -29,7 +29,7 @@ export function useAuth() {
       await signOutUser();
 
       // Call backend logout endpoint
-      await fetch('/api/auth/logout', {
+      await fetch('/auth/logout', {
         method: 'POST',
         credentials: 'include',
       });

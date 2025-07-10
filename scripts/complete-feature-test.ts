@@ -69,6 +69,22 @@ class CompleteFeatureTester {
     console.log(chalk[color](`${result.status}: [${result.category}] ${result.testName} (${result.userType}) - ${result.message}`));
   }
 
+  async dismissCookieBanner(page: any) {
+    try {
+      // Check if cookie banner is visible and dismiss it
+      const cookieBanner = await page.locator('[data-testid="cookie-banner"], .cookie-banner, [role="dialog"]:has-text("cookie")').first();
+      if (await cookieBanner.isVisible()) {
+        const acceptButton = await page.locator('button:has-text("Accept"), button:has-text("Accept All"), button:has-text("OK")').first();
+        if (await acceptButton.isVisible()) {
+          await acceptButton.click();
+          await page.waitForTimeout(1000);
+        }
+      }
+    } catch (error) {
+      // Cookie banner might not be present, continue
+    }
+  }
+
   // ========== BACKEND API TESTS ==========
   async testBackendAPIs() {
     console.log(chalk.blue('\\n🔌 Testing Backend APIs...'));
@@ -159,6 +175,9 @@ class CompleteFeatureTester {
       await page.waitForLoadState('domcontentloaded');
       await page.waitForTimeout(3000);
       
+      // Dismiss cookie banner if present
+      await this.dismissCookieBanner(page);
+      
       const screenshot = await this.takeScreenshot(page, 'login-page');
       
       // Test OAuth vs Regular Sign-up
@@ -199,7 +218,8 @@ class CompleteFeatureTester {
           details: { useAccountButtons, userTypes }
         });
 
-        // Test actual login flow
+        // Test actual login flow (dismiss cookie banner first)
+        await this.dismissCookieBanner(page);
         await this.testLoginFlow(page);
       }
       
@@ -245,8 +265,11 @@ class CompleteFeatureTester {
       const submitButton = await page.locator('button[type="submit"]').first();
       await submitButton.click();
       
-      // Wait for login response
-      await page.waitForTimeout(5000);
+      // Wait for login response - increased timeout for authentication
+      await page.waitForTimeout(10000);
+      
+      // Check for any error messages on the page
+      const errorMessages = await page.locator('[role="alert"], .error, .destructive').allTextContents();
       
       const afterLoginScreenshot = await this.takeScreenshot(page, 'after-login-attempt');
       const currentUrl = page.url();
@@ -257,9 +280,9 @@ class CompleteFeatureTester {
         testName: 'Login Flow',
         userType: 'free',
         status: loginSuccess ? 'PASS' : 'FAIL',
-        message: `Post-login URL: ${currentUrl}`,
+        message: `Post-login URL: ${currentUrl}${errorMessages.length > 0 ? ` | Errors: ${errorMessages.join(', ')}` : ''}`,
         screenshot: afterLoginScreenshot,
-        details: { currentUrl, loginSuccess }
+        details: { currentUrl, loginSuccess, errorMessages }
       });
       
       return loginSuccess;

@@ -18,6 +18,8 @@
     "perf:report": "tsx scripts/generate-performance-report.ts",
     "perf:dashboard": "tsx scripts/performance-dashboard.ts",
     "perf:ci": "tsx scripts/ci-performance-check.ts",
+    "lighthouse": "node scripts/lighthouse-test.js",
+    "lighthouse:ci": "lhci autorun --config=lighthouse.config.js",
     "setup:production-check": "tsx scripts/production-setup-checker.ts",
     "check:production": "tsx scripts/production-setup-checker.ts",
     "validate:production": "tsx scripts/production-validation.ts",

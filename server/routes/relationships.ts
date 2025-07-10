@@ -5,7 +5,7 @@ import { termRelationships } from '../../shared/enhancedSchema';
 import { categories, terms } from '../../shared/schema';
 import type { ApiResponse } from '../../shared/types';
 import { db } from '../db';
-import { validateParams, validateInput } from '../middleware/validateRequest';
+import { validateInput, validateParams } from '../middleware/validateRequest';
 import { log as logger } from '../utils/logger';
 
 // Validation schemas

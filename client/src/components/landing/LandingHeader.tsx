@@ -20,7 +20,11 @@ export function LandingHeader() {
           </div>
 
           {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8" role="navigation" aria-label="Main navigation">
+          <nav
+            className="hidden md:flex items-center space-x-8"
+            role="navigation"
+            aria-label="Main navigation"
+          >
             <a
               href="#preview"
               className="text-gray-600 hover:text-purple-600 font-medium transition-colors"

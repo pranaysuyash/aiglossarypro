@@ -1,7 +1,7 @@
 import path from 'node:path';
 import react from '@vitejs/plugin-react';
-import { defineConfig } from 'vite';
 import million from 'million/compiler';
+import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [million.vite({ auto: true }), react()],
@@ -16,13 +16,18 @@ export default defineConfig({
   build: {
     outDir: path.resolve(__dirname, 'dist/public'),
     emptyOutDir: true,
+    target: 'esnext',
+    minify: 'esbuild',
+    cssMinify: true,
+    reportCompressedSize: false, // Faster builds
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks: {
-          // React core libraries
+          // React core libraries (critical path)
           'vendor-react': ['react', 'react-dom', 'react-hook-form'],
 
-          // UI framework
+          // UI framework (high priority)
           'vendor-ui': [
             '@radix-ui/react-dialog',
             '@radix-ui/react-dropdown-menu',
@@ -33,35 +38,51 @@ export default defineConfig({
             '@radix-ui/react-scroll-area',
           ],
 
-          // Firebase and auth
+          // Firebase and auth (separate for caching)
           'vendor-firebase': ['firebase/app', 'firebase/auth'],
 
-          // Chart libraries
+          // Chart libraries (medium priority)
           'vendor-charts': ['recharts'],
 
-          // 3D visualization (lazy loaded)
+          // 3D visualization (lazy loaded, lowest priority)
           'vendor-3d': ['three', '@react-three/fiber', '@react-three/drei'],
 
-          // Code editor and syntax highlighting
+          // Code editor and syntax highlighting (lazy loaded)
           'vendor-editor': ['react-syntax-highlighter'],
 
-          // Diagram libraries
+          // Diagram libraries (lazy loaded)
           'vendor-diagrams': ['mermaid', 'cytoscape'],
 
           // Query and state management
           'vendor-query': ['@tanstack/react-query'],
 
-          // Utilities
+          // Utilities (small but frequent)
           'vendor-utils': ['date-fns', 'dompurify'],
 
-          // Math and formatting
+          // Math and formatting (specialized)
           'vendor-math': ['katex'],
         },
+        // Optimize chunk file names for better caching
+        chunkFileNames: (chunkInfo) => {
+          if (chunkInfo.facadeModuleId?.includes('node_modules')) {
+            return 'vendor/[name]-[hash].js';
+          }
+          return 'chunks/[name]-[hash].js';
+        },
+        entryFileNames: 'assets/[name]-[hash].js',
+        assetFileNames: (assetInfo) => {
+          if (assetInfo.name?.endsWith('.css')) {
+            return 'assets/styles/[name]-[hash].css';
+          }
+          return 'assets/[name]-[hash].[ext]';
+        },
+      },
+      treeshake: {
+        moduleSideEffects: false,
+        propertyReadSideEffects: false,
+        unknownGlobalSideEffects: false,
       },
     },
-    chunkSizeWarningLimit: 1000,
-    // Enable minification
-    minify: 'esbuild',
   },
   optimizeDeps: {
     include: ['react', 'react-dom'],

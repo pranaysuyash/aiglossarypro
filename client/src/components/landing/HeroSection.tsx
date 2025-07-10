@@ -193,11 +193,17 @@ export function HeroSection() {
         {/* Trust signals */}
         <div className="mt-8 text-gray-300 text-sm sm:text-base px-4 sm:px-0">
           <p className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4">
-            <span className="flex items-center gap-1"><span className="text-green-400">✅</span> 50 terms daily free</span>
+            <span className="flex items-center gap-1">
+              <span className="text-green-400">✅</span> 50 terms daily free
+            </span>
             <span className="hidden sm:inline">•</span>
-            <span className="flex items-center gap-1"><span className="text-green-400">✅</span> No credit card required</span>
+            <span className="flex items-center gap-1">
+              <span className="text-green-400">✅</span> No credit card required
+            </span>
             <span className="hidden sm:inline">•</span>
-            <span className="flex items-center gap-1"><span className="text-green-400">✅</span> Premium access available</span>
+            <span className="flex items-center gap-1">
+              <span className="text-green-400">✅</span> Premium access available
+            </span>
           </p>
         </div>
       </div>

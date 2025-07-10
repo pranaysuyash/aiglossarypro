@@ -111,7 +111,7 @@ export function registerEnhancedRoutes(app: Express): void {
         // Process the Excel file through the enhanced pipeline
         // const result = await processExcelUpload(req.file.buffer); // Function removed
         console.log('⚠️  Excel upload functionality has been disabled');
-        
+
         res.json({
           success: false,
           message: 'Excel upload functionality has been disabled',

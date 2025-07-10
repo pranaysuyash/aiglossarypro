@@ -51,7 +51,7 @@ module.exports = {
         'total-blocking-time': ['warn', { maxNumericValue: 200 }],
         // Performance metrics
         'speed-index': ['warn', { maxNumericValue: 3000 }],
-        'interactive': ['warn', { maxNumericValue: 3000 }],
+        interactive: ['warn', { maxNumericValue: 3000 }],
         // Resource optimization
         'unused-javascript': ['warn', { maxNumericValue: 20000 }],
         'render-blocking-resources': ['warn', { maxNumericValue: 500 }],

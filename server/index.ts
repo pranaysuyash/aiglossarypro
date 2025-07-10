@@ -50,7 +50,7 @@ import {
 } from './middleware/analyticsMiddleware';
 import { cdnCacheMiddleware } from './middleware/cdnCache';
 import { performanceMiddleware } from './middleware/compression';
-import { setupMockAuth } from './middleware/dev/mockAuth';
+// SECURITY: Mock authentication import removed for production safety
 import { errorHandler, gracefulShutdown, notFoundHandler } from './middleware/errorHandler';
 import loggingMiddleware from './middleware/loggingMiddleware';
 import { setupMultiAuth } from './middleware/multiAuth';
@@ -131,9 +131,11 @@ app.use(responseLoggingMiddleware);
       registerSimpleAuthRoutes(app);
       logger.info('✅ Simple JWT + OAuth authentication setup complete');
     } else {
-      // Development mock auth
-      setupMockAuth(app);
-      logger.info('✅ Mock authentication setup complete (development mode)');
+      // SECURITY: No fallback to mock authentication
+      logger.error('❌ CRITICAL SECURITY ERROR: No valid authentication method configured');
+      logger.error('❌ Configure Firebase Auth or Simple Auth before starting server');
+      logger.error('❌ Mock authentication has been disabled for security');
+      throw new Error('No valid authentication method configured. Server startup aborted for security.');
     }
   } catch (error) {
     logger.error('❌ Error setting up authentication', {

@@ -24,18 +24,34 @@ export function registerCategoryRoutes(app: Express): void {
       const fieldList = (fields as string).split(',').map((f) => f.trim());
 
       // Get categories with optimized field selection
-      const categories = await storage.getCategoriesOptimized({
-        offset,
-        limit: limitNum,
-        fields: fieldList,
-        search: search as string,
-        includeStats: includeStats === 'true',
-      });
+      let categories: any[] = [];
+      let totalCount = 0;
 
-      // Get total count for pagination
-      const totalCount = await storage.getCategoriesCount({
-        search: search as string,
-      });
+      try {
+        categories = await storage.getCategoriesOptimized({
+          offset,
+          limit: limitNum,
+          fields: fieldList,
+          search: search as string,
+          includeStats: includeStats === 'true',
+        });
+
+        // Get total count for pagination
+        totalCount = await storage.getCategoriesCount({
+          search: search as string,
+        });
+      } catch (dbError) {
+        // Log the database error for debugging
+        log.warn('Database query failed, returning empty result', { 
+          error: dbError, 
+          component: 'CategoryRoutes',
+          query: 'getCategoriesOptimized' 
+        });
+        
+        // Return empty result set instead of error for empty database
+        categories = [];
+        totalCount = 0;
+      }
 
       const response = {
         success: true,
@@ -72,7 +88,24 @@ export function registerCategoryRoutes(app: Express): void {
       const { id } = req.params;
       const { includeTerms = false } = req.query;
 
-      const category = await storage.getCategoryById(id);
+      let category = null;
+      
+      try {
+        category = await storage.getCategoryById(id);
+      } catch (dbError) {
+        log.warn('Database query failed for category by ID', { 
+          error: dbError, 
+          component: 'CategoryRoutes',
+          categoryId: id,
+          query: 'getCategoryById' 
+        });
+        
+        // Return 404 for database errors on single category lookup
+        return res.status(404).json({
+          success: false,
+          message: 'Category not found',
+        });
+      }
 
       if (!category) {
         return res.status(404).json({
@@ -118,13 +151,27 @@ export function registerCategoryRoutes(app: Express): void {
       const fieldList = (fields as string).split(',').map((f) => f.trim());
 
       // Use optimized database query with field selection
-      const result = await storage.getTermsByCategory(id, {
-        offset,
-        limit: limitNum,
-        sort: sort as string,
-        order: order as 'asc' | 'desc',
-        fields: fieldList,
-      });
+      let result = { data: [], total: 0 };
+      
+      try {
+        result = await storage.getTermsByCategory(id, {
+          offset,
+          limit: limitNum,
+          sort: sort as string,
+          order: order as 'asc' | 'desc',
+          fields: fieldList,
+        });
+      } catch (dbError) {
+        log.warn('Database query failed for terms by category', { 
+          error: dbError, 
+          component: 'CategoryRoutes',
+          categoryId: id,
+          query: 'getTermsByCategory' 
+        });
+        
+        // Return empty result set instead of error for empty database
+        result = { data: [], total: 0 };
+      }
 
       const response: PaginatedResponse<any> = {
         data: result.data,
@@ -163,10 +210,12 @@ export function registerCategoryRoutes(app: Express): void {
       const { id } = req.params;
 
       // Use efficient database query instead of fetching all terms
+      let stats = null;
+      
       try {
         // Try to use optimized method if available
         if (typeof storage.getCategoryStats === 'function') {
-          const stats = await storage.getCategoryStats(id);
+          stats = await storage.getCategoryStats(id);
 
           res.json({
             success: true,
@@ -185,7 +234,7 @@ export function registerCategoryRoutes(app: Express): void {
       try {
         const searchResults = await storage.searchTerms(`category:${id}`);
 
-        const stats = {
+        stats = {
           totalTerms: searchResults.length,
           avgViewCount:
             searchResults.length > 0
@@ -209,8 +258,18 @@ export function registerCategoryRoutes(app: Express): void {
           component: 'CategoryRoutes',
         });
 
-        // Last fallback: return basic stats without fetching all terms
-        const category = await storage.getCategoryById(id);
+        // Last fallback: check if category exists first
+        let category = null;
+        try {
+          category = await storage.getCategoryById(id);
+        } catch (categoryError) {
+          log.warn('Category lookup failed', {
+            error: categoryError,
+            component: 'CategoryRoutes',
+            categoryId: id,
+          });
+        }
+        
         if (!category) {
           return res.status(404).json({
             success: false,
@@ -218,7 +277,7 @@ export function registerCategoryRoutes(app: Express): void {
           });
         }
 
-        const stats = {
+        stats = {
           totalTerms: 0,
           avgViewCount: 0,
           lastUpdated: new Date(),

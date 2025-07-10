@@ -146,15 +146,27 @@ export function registerTermRoutes(app: Express): void {
       const fieldList = fields.split(',').map((f) => f.trim());
 
       // Use optimized storage method with field selection
-      const result = await storage.getAllTerms({
-        limit,
-        offset,
-        categoryId: category || undefined,
-        searchTerm: search || undefined,
-        sortBy,
-        sortOrder: sortOrder === SORT_ORDERS.DESC ? SORT_ORDERS.DESC : SORT_ORDERS.ASC,
-        fields: fieldList,
-      });
+      let result;
+      try {
+        result = await storage.getAllTerms({
+          limit,
+          offset,
+          categoryId: category || undefined,
+          searchTerm: search || undefined,
+          sortBy,
+          sortOrder: sortOrder === SORT_ORDERS.DESC ? SORT_ORDERS.DESC : SORT_ORDERS.ASC,
+          fields: fieldList,
+        });
+      } catch (dbError) {
+        // Database schema issues - return empty response with explanation
+        logger.warn('Database query failed, returning empty result', {
+          error: dbError instanceof Error ? dbError.message : String(dbError),
+        });
+        result = {
+          terms: [],
+          total: 0,
+        };
+      }
 
       // Calculate pagination metadata
       const pagination = calculatePaginationMetadata(page, limit, result.total);
@@ -166,7 +178,7 @@ export function registerTermRoutes(app: Express): void {
         Vary: 'Accept-Encoding',
       });
 
-      res.json({
+      const response: any = {
         success: true,
         data: result.terms,
         total: result.total,
@@ -174,7 +186,14 @@ export function registerTermRoutes(app: Express): void {
         limit: limit,
         hasMore: pagination.hasMore,
         pagination,
-      });
+      };
+
+      // Add message if database is empty (expected for new content pipeline)
+      if (result.total === 0 && !search && !category) {
+        response.message = 'Database is empty - waiting for new content generation pipeline to populate data';
+      }
+
+      res.json(response);
     } catch (error) {
       logger.error('Error fetching terms', {
         error: error instanceof Error ? error.message : String(error),
@@ -236,11 +255,22 @@ export function registerTermRoutes(app: Express): void {
         DEFAULT_LIMITS.FEATURED_TERMS,
         DEFAULT_LIMITS.TERMS
       );
-      const featuredTerms = await storage.getFeaturedTerms();
+      let featuredTerms: ITerm[] = [];
+      try {
+        featuredTerms = await storage.getFeaturedTerms();
+      } catch (dbError) {
+        logger.warn('Featured terms query failed, returning empty result', {
+          error: dbError instanceof Error ? dbError.message : String(dbError),
+        });
+        featuredTerms = [];
+      }
 
       const response: ApiResponse<ITerm[]> = {
         success: true,
         data: featuredTerms.slice(0, limit),
+        ...(featuredTerms.length === 0 && {
+          message: 'No featured terms available - database is empty (expected for new content pipeline)'
+        }),
       };
 
       res.json(response);

@@ -177,6 +177,9 @@ temp/chunked_*.json
 data/large_*.json
 data/processed_*.json
 
+# Large backup files (exceed GitHub 100MB limit)
+backups/**/database_backup.json
+
 # Large SQL import files (exceed GitHub 100MB limit)
 *.sql
 aiml_import_*.sql

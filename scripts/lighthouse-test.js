@@ -17,30 +17,34 @@ if (!existsSync(reportsDir)) {
 const runLighthouse = () => {
   const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
   const reportPath = path.join(reportsDir, `lighthouse-${timestamp}.html`);
-  
+
   console.log('🔍 Running Lighthouse performance audit...');
   console.log(`📊 Report will be saved to: ${reportPath}`);
-  
-  const lighthouse = spawn('npx', [
-    'lighthouse',
-    'http://localhost:5173',
-    '--output=html',
-    `--output-path=${reportPath}`,
-    '--chrome-flags=--headless --no-sandbox --disable-gpu',
-    '--throttling-method=provided',
-    '--only-categories=performance,accessibility,best-practices,seo',
-    '--disable-device-emulation',
-    '--quiet'
-  ], {
-    stdio: 'inherit',
-    shell: true
-  });
+
+  const lighthouse = spawn(
+    'npx',
+    [
+      'lighthouse',
+      'http://localhost:5173',
+      '--output=html',
+      `--output-path=${reportPath}`,
+      '--chrome-flags=--headless --no-sandbox --disable-gpu',
+      '--throttling-method=provided',
+      '--only-categories=performance,accessibility,best-practices,seo',
+      '--disable-device-emulation',
+      '--quiet',
+    ],
+    {
+      stdio: 'inherit',
+      shell: true,
+    }
+  );
 
   lighthouse.on('close', (code) => {
     if (code === 0) {
       console.log('✅ Lighthouse audit completed successfully!');
       console.log(`📊 View report: file://${reportPath}`);
-      
+
       // Basic performance metrics summary
       console.log('\n🚀 Performance Summary:');
       console.log('- Report generated with Core Web Vitals');
@@ -66,9 +70,9 @@ const runLighthouse = () => {
 // Check if development server is running
 const checkServer = () => {
   console.log('🔍 Checking if development server is running...');
-  
+
   const check = spawn('curl', ['-s', 'http://localhost:5173'], {
-    stdio: 'pipe'
+    stdio: 'pipe',
   });
 
   check.on('close', (code) => {

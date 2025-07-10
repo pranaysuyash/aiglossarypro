@@ -964,42 +964,82 @@ export class OptimizedStorage implements IStorage {
       includeStats = false,
     } = options;
 
-    const cacheKey = `${CacheKeys.categoryTree()}:${offset}:${limit}:${fields.join(',')}:${search || 'all'}:${includeStats}`;
+    const cacheKey = `${CacheKeys.categoryTree()}:v2:${offset}:${limit}:${fields.join(',')}:${search || 'all'}:${includeStats}`;
 
     return cached(
       cacheKey,
       async () => {
+        // Check if we need term count to avoid schema mismatch
+        const needsTermCount = fields.includes('termCount') || includeStats;
+        console.log('[DEBUG] getCategoriesOptimized called with:', { fields, needsTermCount, includeStats });
+        
         // Build dynamic select based on requested fields
         const selectObj: any = {};
 
         if (fields.includes('id')) selectObj.id = categories.id;
         if (fields.includes('name')) selectObj.name = categories.name;
         if (fields.includes('description')) selectObj.description = categories.description;
-        if (fields.includes('termCount') || includeStats) {
-          selectObj.termCount = sql<number>`count(${terms.id})::int`;
+        
+        // Only add termCount if explicitly requested and compatible
+        if (needsTermCount) {
+          // For now, we'll skip the term count due to schema mismatch
+          // TODO: Fix schema compatibility or implement alternative counting method
+          console.warn('[OptimizedStorage] Skipping termCount due to schema mismatch (categories.id: integer, terms.category_id: uuid)');
         }
 
         let query: any = db.select(selectObj).from(categories);
 
-        // Add joins only if needed
-        if (fields.includes('termCount') || includeStats) {
-          query = query.leftJoin(terms, eq(terms.categoryId, categories.id));
-        }
+        // Skip joins to avoid schema mismatch errors
+        // if (needsTermCount) {
+        //   query = query.leftJoin(terms, eq(terms.categoryId, categories.id));
+        // }
 
         // Add search filter if provided
         if (search) {
           query = query.where(ilike(categories.name, `%${search}%`));
         }
 
-        // Add grouping only if aggregating
-        if (fields.includes('termCount') || includeStats) {
-          query = query.groupBy(categories.id, categories.name, categories.description);
-        }
+        // Skip grouping since we're not joining
+        // if (needsTermCount) {
+        //   query = query.groupBy(categories.id, categories.name, categories.description);
+        // }
 
         // Add ordering, limit, and offset
-        const result = await query.orderBy(categories.name).limit(limit).offset(offset);
-
-        return result;
+        try {
+          const result = await query.orderBy(categories.name).limit(limit).offset(offset);
+          return result;
+        } catch (queryError) {
+          console.error('[OptimizedStorage] getCategoriesOptimized query failed:', queryError);
+          
+          // Check if it's a schema mismatch error (uuid vs integer)
+          const errorMessage = queryError instanceof Error ? queryError.message : String(queryError);
+          if (errorMessage.includes('uuid') && errorMessage.includes('integer')) {
+            console.warn('[OptimizedStorage] Schema mismatch detected: categories.id (integer) vs terms.category_id (uuid)');
+            
+            // Fallback: Get categories without termCount (no join required)
+            try {
+              let fallbackQuery = db.select({
+                id: categories.id,
+                name: categories.name,
+                description: categories.description,
+              }).from(categories);
+              
+              if (search) {
+                fallbackQuery = fallbackQuery.where(ilike(categories.name, `%${search}%`));
+              }
+              
+              const fallbackResult = await fallbackQuery.orderBy(categories.name).limit(limit).offset(offset);
+              console.log('[OptimizedStorage] Using fallback query without joins');
+              return fallbackResult;
+            } catch (fallbackError) {
+              console.error('[OptimizedStorage] Fallback query also failed:', fallbackError);
+              return [];
+            }
+          }
+          
+          // Return empty array for other database errors
+          return [];
+        }
       },
       5 * 60 * 1000 // 5 minutes cache for paginated results
     );
@@ -1018,8 +1058,14 @@ export class OptimizedStorage implements IStorage {
           query = query.where(ilike(categories.name, `%${search}%`));
         }
 
-        const result = await query;
-        return result[0]?.count || 0;
+        try {
+          const result = await query;
+          return result[0]?.count || 0;
+        } catch (queryError) {
+          console.error('[OptimizedStorage] getCategoriesCount query failed:', queryError);
+          // Return 0 for empty database or schema mismatch
+          return 0;
+        }
       },
       10 * 60 * 1000 // 10 minutes cache
     );

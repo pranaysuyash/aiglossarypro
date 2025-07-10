@@ -71,12 +71,8 @@ export async function requireAdmin(req: Request, res: Response, next: NextFuncti
       return;
     }
 
-    // In development mode with mock auth, allow admin access for dev user
-    if (req.user.id === 'dev-user-123') {
-      console.log('🔓 Development mode: Granting admin access to dev user');
-      next();
-      return;
-    }
+    // SECURITY: Removed development backdoor for production safety
+    // Production systems must use proper Firebase authentication only
 
     // Check if user has admin role
     const user = await db

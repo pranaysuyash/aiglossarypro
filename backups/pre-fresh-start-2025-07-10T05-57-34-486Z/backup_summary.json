@@ -1,0 +1,36 @@
+{
+  "timestamp": "2025-07-10T05:58:34.085Z",
+  "tables": [
+    {
+      "name": "terms",
+      "records": 10382,
+      "hasError": false
+    },
+    {
+      "name": "enhanced_terms",
+      "records": 10312,
+      "hasError": false
+    },
+    {
+      "name": "categories",
+      "records": 2001,
+      "hasError": false
+    },
+    {
+      "name": "term_sections",
+      "records": 164,
+      "hasError": false
+    },
+    {
+      "name": "users",
+      "records": 8,
+      "hasError": false
+    },
+    {
+      "name": "term_views",
+      "records": 0,
+      "hasError": false
+    }
+  ],
+  "totalRecords": 22867
+}

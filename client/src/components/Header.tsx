@@ -161,8 +161,8 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
       id="navigation"
       className={`bg-white shadow-sm sticky top-0 z-50 dark:bg-gray-800 transition-all duration-200 ${className || ''}`}
     >
-      <div className="container mx-auto px-3 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center py-3 sm:py-4 gap-2 sm:gap-4">
+      <div className="container mx-auto px-2 sm:px-4 lg:px-6 xl:px-8">
+        <div className="flex justify-between items-center py-2 sm:py-3 lg:py-4 gap-1 sm:gap-2">
           {/* Logo and Branding */}
           <div className="flex items-center space-x-2 min-w-0 flex-shrink-0">
             <Link
@@ -204,13 +204,13 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
           </div>
 
           {/* Right-side action icons */}
-          <div className="flex items-center space-x-2 flex-shrink-0">
+          <div className="flex items-center space-x-1 sm:space-x-2 flex-shrink-0">
             {/* Theme Toggle Button */}
             <Button
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              className="hidden sm:flex h-10 w-10 rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+              className="hidden md:flex h-8 w-8 lg:h-10 lg:w-10 rounded-lg transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-700"
               aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
               title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
             >
@@ -221,16 +221,17 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
               )}
             </Button>
 
-            {/* Surprise Me Button */}
+            {/* Surprise Me Button - More responsive */}
             <Link href="/surprise-me">
               <Button
                 variant="ghost"
                 size="sm"
-                className="hidden md:flex bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium px-3 py-2"
+                className="hidden md:flex bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium px-2 lg:px-3 py-2 text-xs lg:text-sm"
                 title="Discover amazing AI/ML terms you never knew existed!"
               >
-                <Sparkles className="w-4 h-4 mr-2" />
-                Surprise Me
+                <Sparkles className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                <span className="hidden xl:inline">Surprise Me</span>
+                <span className="xl:hidden">Surprise</span>
               </Button>
             </Link>
 
@@ -238,10 +239,11 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
             {user?.lifetimeAccess ? (
               <Badge
                 variant="secondary"
-                className="hidden lg:flex bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 px-4 py-2 font-medium"
+                className="hidden xl:flex bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 px-3 lg:px-4 py-1 lg:py-2 font-medium text-xs lg:text-sm"
               >
-                <Crown className="w-4 h-4 mr-2" />
-                Premium
+                <Crown className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                <span className="hidden lg:inline">Premium</span>
+                <span className="lg:hidden">Pro</span>
               </Badge>
             ) : (
               <>
@@ -249,7 +251,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                   <Button
                     variant="default"
                     size="sm"
-                    className="hidden lg:flex bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-4 py-2"
+                    className="hidden 2xl:flex bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-3 py-2 text-xs"
                   >
                     Get Lifetime Access
                   </Button>
@@ -258,18 +260,36 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                   <Button
                     variant="default"
                     size="sm"
-                    className="hidden md:flex lg:hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-3 py-2"
+                    className="hidden xl:flex 2xl:hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-2 py-2 text-xs"
+                  >
+                    Get Access
+                  </Button>
+                </Link>
+                <Link href="/lifetime">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="hidden lg:flex xl:hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-2 py-1 text-xs"
                   >
                     Upgrade
+                  </Button>
+                </Link>
+                <Link href="/lifetime">
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="hidden md:flex lg:hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-1.5 py-1 text-xs"
+                  >
+                    Pro
                   </Button>
                 </Link>
               </>
             )}
 
-            {/* Mobile Search Toggle */}
+            {/* Mobile Search Toggle - Show on mobile and small tablets */}
             <button
               type="button"
-              className={`sm:hidden h-10 w-10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center ${
+              className={`md:hidden h-10 w-10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center ${
                 mobileSearchOpen
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
@@ -287,7 +307,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
               />
             </button>
 
-            {/* User Dropdown or Sign In Button - Hide on mobile and tablet, show only on desktop */}
+            {/* User Dropdown or Sign In Button - More responsive */}
             {isAuthenticated ? (
               <div className="hidden lg:flex">
                 <DropdownMenu>
@@ -295,10 +315,10 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                     <Button
                       type="button"
                       variant="ghost"
-                      className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 h-10 w-10"
+                      className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 h-8 w-8 lg:h-10 lg:w-10"
                       aria-label={`User menu for ${userObj?.firstName || 'User'}`}
                     >
-                      <Avatar className="h-8 w-8">
+                      <Avatar className="h-6 w-6 lg:h-8 lg:w-8">
                         {userObj?.profileImageUrl && (
                           <AvatarImage
                             src={userObj.profileImageUrl}
@@ -306,11 +326,11 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                             className="object-cover"
                           />
                         )}
-                        <AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300">
+                        <AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300 text-xs lg:text-sm">
                           {initials}
                         </AvatarFallback>
                       </Avatar>
-                      <ChevronDown className="ml-1 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                      <ChevronDown className="ml-0.5 lg:ml-1 h-3 w-3 lg:h-4 lg:w-4 text-gray-500 dark:text-gray-400" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-56">
@@ -394,10 +414,11 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                   handleLogin();
                   handleMobileMenuClose();
                 }}
-                className="hidden lg:flex"
+                className="hidden lg:flex text-xs px-2 py-1"
               >
-                <User className="mr-2 h-4 w-4" />
-                Sign In
+                <User className="mr-1 lg:mr-2 h-3 w-3 lg:h-4 lg:w-4" />
+                <span className="hidden xl:inline">Sign In</span>
+                <span className="xl:hidden">Login</span>
               </Button>
             )}
 
@@ -455,7 +476,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
           <>
             {/* Backdrop */}
             <div
-              className="lg:hidden fixed inset-0 z-40 bg-black bg-opacity-50"
+              className="xl:hidden fixed inset-0 z-40 bg-black bg-opacity-50"
               onClick={handleMobileMenuClose}
               aria-hidden="true"
             />
@@ -464,7 +485,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
             <div
               id="mobile-navigation-menu"
               ref={mobileMenuRef as React.RefObject<HTMLDivElement>}
-              className="lg:hidden fixed top-0 right-0 z-50 w-80 max-w-[85vw] h-full bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out"
+              className="xl:hidden fixed top-0 right-0 z-50 w-80 max-w-[85vw] h-full bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out"
               role="dialog"
               aria-modal="true"
               aria-label="Mobile navigation menu"

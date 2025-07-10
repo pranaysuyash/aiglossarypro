@@ -79,6 +79,27 @@ const SearchBar = memo(function SearchBar({
     setSelectedIndex(-1);
   }, []);
 
+  const handleSearch = useCallback(() => {
+    if (query.trim()) {
+      onSearch(query.trim());
+      setShowSuggestions(false);
+    }
+  }, [query, onSearch]);
+
+  const handleSuggestionSelect = useCallback(
+    (suggestion: SearchSuggestion) => {
+      if (suggestion.type === 'term') {
+        navigate(`/term/${suggestion.id}`);
+      } else if (suggestion.type === 'category') {
+        setQuery(suggestion.name);
+        onSearch(suggestion.name);
+      }
+      setShowSuggestions(false);
+      setSelectedIndex(-1);
+    },
+    [navigate, onSearch]
+  );
+
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
       if (!showSuggestions) {
@@ -113,27 +134,6 @@ const SearchBar = memo(function SearchBar({
       }
     },
     [showSuggestions, suggestions, selectedIndex, handleSearch, handleSuggestionSelect]
-  );
-
-  const handleSearch = useCallback(() => {
-    if (query.trim()) {
-      onSearch(query.trim());
-      setShowSuggestions(false);
-    }
-  }, [query, onSearch]);
-
-  const handleSuggestionSelect = useCallback(
-    (suggestion: SearchSuggestion) => {
-      if (suggestion.type === 'term') {
-        navigate(`/term/${suggestion.id}`);
-      } else if (suggestion.type === 'category') {
-        setQuery(suggestion.name);
-        onSearch(suggestion.name);
-      }
-      setShowSuggestions(false);
-      setSelectedIndex(-1);
-    },
-    [navigate, onSearch]
   );
 
   const clearSearch = useCallback(() => {

@@ -128,10 +128,11 @@ export function Pricing() {
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
           {/* Free Tier */}
-          <Card className="border-2 border-green-200 shadow-lg">
-            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-1">
+          <div className="relative">
+            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-1 z-10">
               Free Tier
             </Badge>
+            <Card className="border-2 border-green-200 shadow-lg">
             <CardHeader className="bg-green-50">
               <CardTitle className="text-center">
                 <div className="text-2xl font-bold text-green-900">Free Tier</div>
@@ -179,6 +180,7 @@ export function Pricing() {
               </div>
             </CardContent>
           </Card>
+          </div>
 
           {/* Competitors */}
           <Card className="border border-gray-200">
@@ -215,10 +217,11 @@ export function Pricing() {
           </Card>
 
           {/* Premium Tier - Launch Special */}
-          <Card className="border-2 border-purple-500 shadow-xl relative">
-            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-1">
+          <div className="relative">
+            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-gradient-to-r from-green-500 to-emerald-500 text-white px-4 py-1 z-10">
               🎉 Launch Special
             </Badge>
+            <Card className="border-2 border-purple-500 shadow-xl">
             <CardHeader className="bg-purple-50">
               <CardTitle className="text-center">
                 <div className="text-2xl font-bold text-purple-900">Premium Preview</div>
@@ -317,6 +320,7 @@ export function Pricing() {
               </div>
             </CardContent>
           </Card>
+          </div>
         </div>
 
         {/* Test Purchase Button - Only visible in development */}

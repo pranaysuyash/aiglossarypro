@@ -280,6 +280,42 @@ export function registerFirebaseAuthRoutes(app: Express): void {
   });
 
   /**
+   * Standard login endpoint (redirects to Firebase login)
+   * POST /api/auth/login
+   */
+  app.post('/api/auth/login', (req: Request, res: Response) => {
+    // For compatibility, redirect to Firebase login
+    res.status(200).json({
+      success: false,
+      message: 'Please use Firebase authentication',
+      redirectTo: '/api/auth/firebase/login',
+      endpoints: {
+        firebase: '/api/auth/firebase/login',
+        register: '/api/auth/firebase/register',
+        providers: '/api/auth/providers'
+      }
+    });
+  });
+
+  /**
+   * Standard register endpoint (redirects to Firebase register)
+   * POST /api/auth/register
+   */
+  app.post('/api/auth/register', (req: Request, res: Response) => {
+    // For compatibility, redirect to Firebase register
+    res.status(200).json({
+      success: false,
+      message: 'Please use Firebase authentication',
+      redirectTo: '/api/auth/firebase/register',
+      endpoints: {
+        firebase: '/api/auth/firebase/login',
+        register: '/api/auth/firebase/register',
+        providers: '/api/auth/providers'
+      }
+    });
+  });
+
+  /**
    * Get current user from Firebase token
    * GET /api/auth/me
    */
@@ -332,6 +368,70 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       res.status(401).json({
         success: false,
         message: 'Invalid token',
+      });
+    }
+  });
+
+  /**
+   * Get current user - alias for /auth/me
+   * GET /api/auth/user
+   */
+  app.get('/api/auth/user', async (req: Request, res: Response) => {
+    try {
+      const authHeader = req.headers.authorization;
+      const token = authHeader?.startsWith('Bearer ')
+        ? authHeader.substring(7)
+        : req.cookies?.authToken;
+
+      if (!token) {
+        return res.status(401).json({
+          success: false,
+          message: 'Authentication required',
+          availableProviders: {
+            google: true,
+            github: true
+          }
+        });
+      }
+
+      // For now, we'll use the JWT token verification
+      const jwt = require('jsonwebtoken');
+      const decoded = jwt.verify(token, process.env.JWT_SECRET!);
+
+      const user = await storage.getUser(decoded.sub);
+
+      if (!user) {
+        return res.status(404).json({
+          success: false,
+          message: 'User not found',
+        });
+      }
+
+      const userData: IUser = {
+        id: user.id,
+        email: user.email!,
+        name: `${user.firstName} ${user.lastName}`.trim() || 'Unknown User',
+        avatar: user.profileImageUrl || undefined,
+        createdAt: user.createdAt || new Date(),
+        isAdmin: user.isAdmin || false,
+        lifetimeAccess: user.lifetimeAccess || false,
+        subscriptionTier: user.subscriptionTier || 'free',
+        purchaseDate: user.purchaseDate || undefined,
+      };
+
+      res.json({
+        success: true,
+        data: userData,
+      });
+    } catch (error) {
+      console.error('Get user error:', error);
+      res.status(401).json({
+        success: false,
+        message: 'Authentication required',
+        availableProviders: {
+          google: false,
+          github: false
+        }
       });
     }
   });

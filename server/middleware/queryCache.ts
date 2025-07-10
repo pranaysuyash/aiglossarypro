@@ -231,10 +231,15 @@ export async function cached<T>(
   }
 
   // Execute query and cache result
-  const result = await queryFn();
-  cacheInstance.set(key, result, ttlMs);
-
-  return result;
+  try {
+    const result = await queryFn();
+    cacheInstance.set(key, result, ttlMs);
+    return result;
+  } catch (error) {
+    // Log the error and re-throw it for the caller to handle
+    console.error(`[QueryCache] Query failed for key: ${key}`, error);
+    throw error;
+  }
 }
 
 // Cache key generators with better granularity

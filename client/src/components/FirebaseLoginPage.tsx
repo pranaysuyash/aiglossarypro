@@ -27,59 +27,6 @@ export default function FirebaseLoginPage() {
   const [lastName, setLastName] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
-  // Keyboard navigation for accessibility
-  useEffect(() => {
-    const handleKeyDown = (event: KeyboardEvent) => {
-      // Alt + L to focus login tab
-      if (event.altKey && event.key === 'l') {
-        event.preventDefault();
-        const loginTab = document.querySelector('[value="login"]') as HTMLElement;
-        loginTab?.click();
-        loginTab?.focus();
-        announce('Switched to login tab', 'polite');
-      }
-
-      // Alt + R to focus register tab
-      if (event.altKey && event.key === 'r') {
-        event.preventDefault();
-        const registerTab = document.querySelector('[value="register"]') as HTMLElement;
-        registerTab?.click();
-        registerTab?.focus();
-        announce('Switched to registration tab', 'polite');
-      }
-
-      // Alt + G for Google sign in
-      if (event.altKey && event.key === 'g') {
-        event.preventDefault();
-        if (!loading) {
-          handleOAuthLogin('google');
-          announce('Initiating Google sign-in', 'polite');
-        }
-      }
-
-      // Alt + H for GitHub sign in
-      if (event.altKey && event.key === 'h') {
-        event.preventDefault();
-        if (!loading) {
-          handleOAuthLogin('github');
-          announce('Initiating GitHub sign-in', 'polite');
-        }
-      }
-
-      // Show keyboard shortcuts help
-      if (event.key === '?' && event.shiftKey) {
-        event.preventDefault();
-        announce(
-          'Keyboard shortcuts: Alt+L for login tab, Alt+R for register tab, Alt+G for Google sign-in, Alt+H for GitHub sign-in',
-          'polite'
-        );
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [loading, announce, handleOAuthLogin]);
-
   const handleOAuthLogin = async (provider: 'google' | 'github') => {
     try {
       setLoading(true);
@@ -175,6 +122,59 @@ export default function FirebaseLoginPage() {
       setLoading(false);
     }
   };
+
+  // Keyboard navigation for accessibility
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Alt + L to focus login tab
+      if (event.altKey && event.key === 'l') {
+        event.preventDefault();
+        const loginTab = document.querySelector('[value="login"]') as HTMLElement;
+        loginTab?.click();
+        loginTab?.focus();
+        announce('Switched to login tab', 'polite');
+      }
+
+      // Alt + R to focus register tab
+      if (event.altKey && event.key === 'r') {
+        event.preventDefault();
+        const registerTab = document.querySelector('[value="register"]') as HTMLElement;
+        registerTab?.click();
+        registerTab?.focus();
+        announce('Switched to registration tab', 'polite');
+      }
+
+      // Alt + G for Google sign in
+      if (event.altKey && event.key === 'g') {
+        event.preventDefault();
+        if (!loading) {
+          handleOAuthLogin('google');
+          announce('Initiating Google sign-in', 'polite');
+        }
+      }
+
+      // Alt + H for GitHub sign in
+      if (event.altKey && event.key === 'h') {
+        event.preventDefault();
+        if (!loading) {
+          handleOAuthLogin('github');
+          announce('Initiating GitHub sign-in', 'polite');
+        }
+      }
+
+      // Show keyboard shortcuts help
+      if (event.key === '?' && event.shiftKey) {
+        event.preventDefault();
+        announce(
+          'Keyboard shortcuts: Alt+L for login tab, Alt+R for register tab, Alt+G for Google sign-in, Alt+H for GitHub sign-in',
+          'polite'
+        );
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [loading, announce, handleOAuthLogin]);
 
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -658,9 +658,22 @@ export default function FirebaseLoginPage() {
                     size="sm"
                     variant="outline"
                     className="w-full"
-                    onClick={() => {
+                    onClick={async () => {
                       setEmail('test@aimlglossary.com');
                       setPassword('testpass123');
+                      
+                      // First try to create the user if it doesn't exist
+                      try {
+                        await api.post('/api/auth/firebase/register', {
+                          email: 'test@aimlglossary.com',
+                          password: 'testpass123',
+                          firstName: 'Test',
+                          lastName: 'User',
+                        });
+                      } catch (error) {
+                        // User already exists or other error - continue with login
+                      }
+                      
                       // Switch to login tab
                       setTimeout(() => {
                         const loginTab = document.querySelector(
@@ -698,9 +711,22 @@ export default function FirebaseLoginPage() {
                     size="sm"
                     variant="outline"
                     className="w-full"
-                    onClick={() => {
+                    onClick={async () => {
                       setEmail('premium@aimlglossary.com');
                       setPassword('premiumpass123');
+                      
+                      // First try to create the user if it doesn't exist
+                      try {
+                        await api.post('/api/auth/firebase/register', {
+                          email: 'premium@aimlglossary.com',
+                          password: 'premiumpass123',
+                          firstName: 'Premium',
+                          lastName: 'User',
+                        });
+                      } catch (error) {
+                        // User already exists or other error - continue with login
+                      }
+                      
                       // Switch to login tab
                       setTimeout(() => {
                         const loginTab = document.querySelector(
@@ -736,9 +762,22 @@ export default function FirebaseLoginPage() {
                     size="sm"
                     variant="outline"
                     className="w-full"
-                    onClick={() => {
+                    onClick={async () => {
                       setEmail('admin@aimlglossary.com');
                       setPassword('adminpass123');
+                      
+                      // First try to create the user if it doesn't exist
+                      try {
+                        await api.post('/api/auth/firebase/register', {
+                          email: 'admin@aimlglossary.com',
+                          password: 'adminpass123',
+                          firstName: 'Admin',
+                          lastName: 'User',
+                        });
+                      } catch (error) {
+                        // User already exists or other error - continue with login
+                      }
+                      
                       // Switch to login tab
                       setTimeout(() => {
                         const loginTab = document.querySelector(

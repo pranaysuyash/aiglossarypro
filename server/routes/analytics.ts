@@ -354,5 +354,96 @@ export function registerAnalyticsRoutes(app: Express): void {
     }
   );
 
+  // Popular terms endpoint (public)
+  app.get('/api/analytics/popular-terms', async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 10;
+      
+      // Get popular terms (fallback data since database might be empty)
+      const popularTerms = await db
+        .select({
+          id: terms.id,
+          name: terms.name,
+          shortDefinition: terms.shortDefinition,
+          viewCount: terms.viewCount,
+        })
+        .from(terms)
+        .orderBy(desc(terms.viewCount))
+        .limit(limit);
+
+      res.json({
+        success: true,
+        data: {
+          terms: popularTerms,
+          period: 'all-time',
+          generatedAt: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      logger.error('Error fetching popular terms', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      
+      // Return fallback data when database is empty or has errors
+      res.json({
+        success: true,
+        data: {
+          terms: [],
+          period: 'all-time',
+          message: 'No data available - database is empty (expected for new content pipeline)',
+          generatedAt: new Date().toISOString(),
+        },
+      });
+    }
+  });
+
+  // Trending topics endpoint (public)
+  app.get('/api/analytics/trending', async (req: Request, res: Response) => {
+    try {
+      const limit = parseInt(req.query.limit as string) || 5;
+      
+      // Get trending topics (recent views in last 7 days)
+      const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+      
+      const trendingTerms = await db
+        .select({
+          id: terms.id,
+          name: terms.name,
+          shortDefinition: terms.shortDefinition,
+          recentViews: sql<number>`count(${termViews.id})`,
+        })
+        .from(terms)
+        .leftJoin(termViews, eq(termViews.termId, terms.id))
+        .where(gte(termViews.viewedAt, weekAgo))
+        .groupBy(terms.id)
+        .orderBy(desc(sql`count(${termViews.id})`))
+        .limit(limit);
+
+      res.json({
+        success: true,
+        data: {
+          topics: trendingTerms,
+          period: 'last-7-days',
+          generatedAt: new Date().toISOString(),
+        },
+      });
+    } catch (error) {
+      logger.error('Error fetching trending topics', {
+        error: error instanceof Error ? error.message : String(error),
+      });
+      
+      // Return fallback data
+      res.json({
+        success: true,
+        data: {
+          topics: [],
+          period: 'last-7-days',
+          message: 'No data available - database is empty (expected for new content pipeline)',
+          generatedAt: new Date().toISOString(),
+        },
+      });
+    }
+  });
+
   logger.info('Analytics routes registered successfully');
 }

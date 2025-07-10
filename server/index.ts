@@ -135,7 +135,9 @@ app.use(responseLoggingMiddleware);
       logger.error('❌ CRITICAL SECURITY ERROR: No valid authentication method configured');
       logger.error('❌ Configure Firebase Auth or Simple Auth before starting server');
       logger.error('❌ Mock authentication has been disabled for security');
-      throw new Error('No valid authentication method configured. Server startup aborted for security.');
+      throw new Error(
+        'No valid authentication method configured. Server startup aborted for security.'
+      );
     }
   } catch (error) {
     logger.error('❌ Error setting up authentication', {
@@ -167,8 +169,8 @@ app.use(responseLoggingMiddleware);
   const { createServer } = await import('node:http');
   const server = createServer(app);
 
-  // Setup Vite dev server in development, static files in production
-  if (serverConfig.nodeEnv === 'development') {
+  // Setup Vite dev server in development (only if not using separate frontend server), static files in production
+  if (serverConfig.nodeEnv === 'development' && !process.env.SEPARATE_FRONTEND_SERVER) {
     logger.info('🔧 Setting up Vite dev server for development...');
     try {
       await setupVite(app, server);
@@ -180,7 +182,7 @@ app.use(responseLoggingMiddleware);
       });
       process.exit(1);
     }
-  } else {
+  } else if (serverConfig.nodeEnv === 'production') {
     logger.info('📦 Setting up static file serving for production...');
     try {
       serveStatic(app);
@@ -192,6 +194,8 @@ app.use(responseLoggingMiddleware);
       });
       process.exit(1);
     }
+  } else {
+    logger.info('🔧 Development mode: Backend serves API only, frontend runs on separate Vite server');
   }
 
   // Add logging error handler

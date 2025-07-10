@@ -661,7 +661,7 @@ export default function FirebaseLoginPage() {
                     onClick={async () => {
                       setEmail('test@aimlglossary.com');
                       setPassword('testpass123');
-                      
+
                       // First try to create the user if it doesn't exist
                       try {
                         await api.post('/api/auth/firebase/register', {
@@ -673,7 +673,7 @@ export default function FirebaseLoginPage() {
                       } catch (error) {
                         // User already exists or other error - continue with login
                       }
-                      
+
                       // Switch to login tab
                       setTimeout(() => {
                         const loginTab = document.querySelector(
@@ -714,7 +714,7 @@ export default function FirebaseLoginPage() {
                     onClick={async () => {
                       setEmail('premium@aimlglossary.com');
                       setPassword('premiumpass123');
-                      
+
                       // First try to create the user if it doesn't exist
                       try {
                         await api.post('/api/auth/firebase/register', {
@@ -726,7 +726,7 @@ export default function FirebaseLoginPage() {
                       } catch (error) {
                         // User already exists or other error - continue with login
                       }
-                      
+
                       // Switch to login tab
                       setTimeout(() => {
                         const loginTab = document.querySelector(
@@ -765,7 +765,7 @@ export default function FirebaseLoginPage() {
                     onClick={async () => {
                       setEmail('admin@aimlglossary.com');
                       setPassword('adminpass123');
-                      
+
                       // First try to create the user if it doesn't exist
                       try {
                         await api.post('/api/auth/firebase/register', {
@@ -777,7 +777,7 @@ export default function FirebaseLoginPage() {
                       } catch (error) {
                         // User already exists or other error - continue with login
                       }
-                      
+
                       // Switch to login tab
                       setTimeout(() => {
                         const loginTab = document.querySelector(

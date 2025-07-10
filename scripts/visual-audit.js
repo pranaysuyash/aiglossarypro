@@ -1,6 +1,6 @@
 /**
  * Comprehensive Visual Audit Script for AI Glossary Pro
- * 
+ *
  * This script uses Playwright to:
  * 1. Test authentication flow with Firebase test users
  * 2. Navigate through all major components
@@ -24,20 +24,20 @@ const TEST_USERS = [
     email: 'test@aimlglossary.com',
     password: 'testpass123',
     type: 'regular',
-    name: 'Regular User'
+    name: 'Regular User',
   },
   {
     email: 'premium@aimlglossary.com',
     password: 'premiumpass123',
     type: 'premium',
-    name: 'Premium User'
+    name: 'Premium User',
   },
   {
     email: 'admin@aimlglossary.com',
     password: 'adminpass123',
     type: 'admin',
-    name: 'Admin User'
-  }
+    name: 'Admin User',
+  },
 ];
 
 // Viewport sizes to test
@@ -45,7 +45,7 @@ const VIEWPORTS = [
   { name: 'mobile', width: 375, height: 667 },
   { name: 'tablet', width: 768, height: 1024 },
   { name: 'laptop', width: 1366, height: 768 },
-  { name: 'desktop', width: 1920, height: 1080 }
+  { name: 'desktop', width: 1920, height: 1080 },
 ];
 
 // Routes to test
@@ -57,7 +57,7 @@ const ROUTES = [
   { path: '/categories', name: 'categories', auth: true },
   { path: '/settings', name: 'settings', auth: true },
   { path: '/profile', name: 'profile', auth: true },
-  { path: '/admin', name: 'admin', auth: 'admin' }
+  { path: '/admin', name: 'admin', auth: 'admin' },
 ];
 
 class VisualAuditor {
@@ -86,27 +86,27 @@ class VisualAuditor {
 
     // Test with Chromium (most common browser)
     const browser = await chromium.launch({ headless: false });
-    
+
     try {
       // Test each viewport size
       for (const viewport of VIEWPORTS) {
         console.log(`\\n📱 Testing ${viewport.name} (${viewport.width}x${viewport.height})`);
-        
+
         const context = await browser.newContext({
           viewport: { width: viewport.width, height: viewport.height },
-          userAgent: this.getUserAgent(viewport.name)
+          userAgent: this.getUserAgent(viewport.name),
         });
 
         const page = await context.newPage();
-        
+
         // Enable console logging
-        page.on('console', msg => {
+        page.on('console', (msg) => {
           if (msg.type() === 'error') {
             this.errors.push({
               viewport: viewport.name,
               type: 'console-error',
               message: msg.text(),
-              url: page.url()
+              url: page.url(),
             });
           }
         });
@@ -126,7 +126,7 @@ class VisualAuditor {
       this.errors.push({
         type: 'critical-error',
         message: error.message,
-        stack: error.stack
+        stack: error.stack,
       });
     } finally {
       await browser.close();
@@ -143,13 +143,13 @@ class VisualAuditor {
       await page.goto(BASE_URL);
       await page.waitForLoadState('networkidle');
       await this.takeScreenshot(page, 'landing-page', viewport);
-      
+
       // Test responsive header on landing page
       await this.testHeaderResponsiveness(page, viewport, false);
-      
+
       // Test hero section interactions
       await this.testHeroSection(page, viewport);
-      
+
       // Test scroll behavior
       await this.testScrollBehavior(page, viewport);
 
@@ -157,15 +157,14 @@ class VisualAuditor {
       await page.goto(`${BASE_URL}/login`);
       await page.waitForLoadState('networkidle');
       await this.takeScreenshot(page, 'login-page', viewport);
-      
+
       // Test login form interactions
       await this.testLoginForm(page, viewport);
-
     } catch (error) {
       this.errors.push({
         viewport: viewport.name,
         flow: 'unauthenticated',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -179,19 +178,20 @@ class VisualAuditor {
 
       // Test all authenticated routes
       for (const route of ROUTES) {
-        if (!route.auth || 
-            (route.auth === true) || 
-            (route.auth === 'admin' && user.type === 'admin')) {
-          
+        if (
+          !route.auth ||
+          route.auth === true ||
+          (route.auth === 'admin' && user.type === 'admin')
+        ) {
           await page.goto(`${BASE_URL}${route.path}`);
           await page.waitForLoadState('networkidle');
           await this.takeScreenshot(page, `${route.name}-${user.type}`, viewport);
-          
+
           // Test header responsiveness on authenticated pages
           if (route.path !== '/') {
             await this.testHeaderResponsiveness(page, viewport, true);
           }
-          
+
           // Test specific page interactions
           await this.testPageInteractions(page, route, viewport, user);
         }
@@ -199,13 +199,12 @@ class VisualAuditor {
 
       // Test logout flow
       await this.testLogout(page, viewport);
-
     } catch (error) {
       this.errors.push({
         viewport: viewport.name,
         user: user.name,
         flow: 'authenticated',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -217,7 +216,7 @@ class VisualAuditor {
     // Use test user tab if available
     if (await page.locator('[value="test"]').isVisible()) {
       await page.click('[value="test"]');
-      
+
       // Find the correct test user button
       const userButtons = await page.locator('button:has-text("Use This Account")').all();
       for (const button of userButtons) {
@@ -240,7 +239,7 @@ class VisualAuditor {
     // Switch to login tab and submit
     await page.click('[value="login"]');
     await page.click('button[type="submit"]:has-text("Sign In")');
-    
+
     // Wait for redirect
     await page.waitForLoadState('networkidle');
     this.currentUser = user;
@@ -258,15 +257,14 @@ class VisualAuditor {
         await page.click('[aria-label*="navigation menu"]');
         await page.click('text=Sign Out');
       }
-      
+
       await page.waitForLoadState('networkidle');
       await this.takeScreenshot(page, 'after-logout', viewport);
-      
     } catch (error) {
       this.errors.push({
         viewport: viewport.name,
         test: 'logout',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -279,43 +277,47 @@ class VisualAuditor {
       // Test theme toggle visibility
       const themeToggle = page.locator('button[aria-label*="Switch to"]');
       const isThemeToggleVisible = await themeToggle.isVisible();
-      
+
       this.results.push({
         viewport: viewport.name,
         test: 'header-theme-toggle',
         expected: viewport.width >= 768, // md breakpoint
         actual: isThemeToggleVisible,
-        passed: (viewport.width >= 768) === isThemeToggleVisible
+        passed: viewport.width >= 768 === isThemeToggleVisible,
       });
 
       // Test surprise me button visibility
       const surpriseButton = page.locator('text=Surprise');
       const isSurpriseVisible = await surpriseButton.isVisible();
-      
+
       this.results.push({
         viewport: viewport.name,
         test: 'header-surprise-button',
         expected: viewport.width >= 768, // md breakpoint
         actual: isSurpriseVisible,
-        passed: (viewport.width >= 768) === isSurpriseVisible
+        passed: viewport.width >= 768 === isSurpriseVisible,
       });
 
       // Test mobile menu
-      if (viewport.width < 1024) { // lg breakpoint
+      if (viewport.width < 1024) {
+        // lg breakpoint
         const mobileMenuButton = page.locator('[aria-label*="navigation menu"]');
         await mobileMenuButton.click();
         await page.waitForTimeout(500);
-        await this.takeScreenshot(page, `mobile-menu-${authenticated ? 'auth' : 'unauth'}`, viewport);
-        
+        await this.takeScreenshot(
+          page,
+          `mobile-menu-${authenticated ? 'auth' : 'unauth'}`,
+          viewport
+        );
+
         // Close mobile menu
         await page.press('body', 'Escape');
       }
-
     } catch (error) {
       this.errors.push({
         viewport: viewport.name,
         test: 'header-responsiveness',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -328,7 +330,7 @@ class VisualAuditor {
         const ctaButton = page.locator('text=Start for Free');
         await ctaButton.scrollIntoViewIfNeeded();
         await this.takeScreenshot(page, 'hero-section', viewport);
-        
+
         // Test button interaction
         await ctaButton.hover();
         await page.waitForTimeout(300);
@@ -338,7 +340,7 @@ class VisualAuditor {
       this.errors.push({
         viewport: viewport.name,
         test: 'hero-section',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -349,7 +351,7 @@ class VisualAuditor {
       const sections = [
         'section:has(h1:has-text("Master AI"))',
         'section:has(h2:has-text("Why Choose"))',
-        'section:has(h2:has-text("Pricing"))'
+        'section:has(h2:has-text("Pricing"))',
       ];
 
       for (let i = 0; i < sections.length; i++) {
@@ -364,7 +366,7 @@ class VisualAuditor {
       this.errors.push({
         viewport: viewport.name,
         test: 'scroll-behavior',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -375,22 +377,21 @@ class VisualAuditor {
       await page.click('[value="register"]');
       await page.waitForTimeout(300);
       await this.takeScreenshot(page, 'register-tab', viewport);
-      
+
       await page.click('[value="login"]');
       await page.waitForTimeout(300);
-      
+
       // Test password visibility toggle
       await page.fill('#password', 'testpassword');
       const passwordToggle = page.locator('[aria-label*="password"]');
       await passwordToggle.click();
       await page.waitForTimeout(300);
       await this.takeScreenshot(page, 'password-visible', viewport);
-      
     } catch (error) {
       this.errors.push({
         viewport: viewport.name,
         test: 'login-form',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -409,21 +410,20 @@ class VisualAuditor {
       // Test navigation elements
       const navLinks = page.locator('nav a');
       const linkCount = await navLinks.count();
-      
+
       this.results.push({
         viewport: viewport.name,
         route: route.name,
         user: user.type,
         test: 'navigation-links',
-        count: linkCount
+        count: linkCount,
       });
-
     } catch (error) {
       this.errors.push({
         viewport: viewport.name,
         route: route.name,
         test: 'page-interactions',
-        error: error.message
+        error: error.message,
       });
     }
   }
@@ -431,52 +431,56 @@ class VisualAuditor {
   async takeScreenshot(page, name, viewport) {
     const filename = `${viewport.name}-${name}-${Date.now()}.png`;
     const filepath = path.join(SCREENSHOTS_DIR, filename);
-    
-    await page.screenshot({ 
-      path: filepath, 
+
+    await page.screenshot({
+      path: filepath,
       fullPage: true,
-      quality: 80
+      quality: 80,
     });
-    
+
     this.screenshots.push({
       name,
       viewport: viewport.name,
       filename,
       filepath,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
   }
 
   getUserAgent(viewportName) {
     const userAgents = {
-      mobile: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1',
-      tablet: 'Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1',
-      laptop: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
-      desktop: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+      mobile:
+        'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1',
+      tablet:
+        'Mozilla/5.0 (iPad; CPU OS 14_7_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1',
+      laptop:
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
+      desktop:
+        'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36',
     };
     return userAgents[viewportName] || userAgents.desktop;
   }
 
   async generateReport() {
     const timestamp = new Date().toISOString();
-    
+
     const report = {
       audit: {
         timestamp,
         version: '1.0.0',
-        baseUrl: BASE_URL
+        baseUrl: BASE_URL,
       },
       summary: {
         totalTests: this.results.length,
-        passed: this.results.filter(r => r.passed !== false).length,
-        failed: this.results.filter(r => r.passed === false).length,
+        passed: this.results.filter((r) => r.passed !== false).length,
+        failed: this.results.filter((r) => r.passed === false).length,
         errors: this.errors.length,
-        screenshots: this.screenshots.length
+        screenshots: this.screenshots.length,
       },
       results: this.results,
       errors: this.errors,
       screenshots: this.screenshots,
-      recommendations: this.generateRecommendations()
+      recommendations: this.generateRecommendations(),
     };
 
     // Save JSON report
@@ -487,7 +491,9 @@ class VisualAuditor {
     await this.generateHTMLReport(report);
 
     console.log('\\n✅ Audit completed!');
-    console.log(`📊 Results: ${report.summary.passed} passed, ${report.summary.failed} failed, ${report.summary.errors} errors`);
+    console.log(
+      `📊 Results: ${report.summary.passed} passed, ${report.summary.failed} failed, ${report.summary.errors} errors`
+    );
     console.log(`📷 Screenshots: ${report.summary.screenshots} taken`);
     console.log(`📄 Report saved to: ${reportPath}`);
   }
@@ -496,34 +502,34 @@ class VisualAuditor {
     const recommendations = [];
 
     // Analyze responsive design issues
-    const responsiveIssues = this.results.filter(r => r.test.includes('header') && !r.passed);
+    const responsiveIssues = this.results.filter((r) => r.test.includes('header') && !r.passed);
     if (responsiveIssues.length > 0) {
       recommendations.push({
         category: 'Responsive Design',
         priority: 'high',
         issue: 'Header elements not responding correctly to viewport changes',
-        solution: 'Review Tailwind breakpoints and ensure proper responsive utilities'
+        solution: 'Review Tailwind breakpoints and ensure proper responsive utilities',
       });
     }
 
     // Analyze error patterns
-    const authErrors = this.errors.filter(e => e.flow === 'authenticated');
+    const authErrors = this.errors.filter((e) => e.flow === 'authenticated');
     if (authErrors.length > 0) {
       recommendations.push({
         category: 'Authentication',
         priority: 'critical',
         issue: 'Authentication flow errors detected',
-        solution: 'Review Firebase authentication implementation and error handling'
+        solution: 'Review Firebase authentication implementation and error handling',
       });
     }
 
     // Performance recommendations
-    if (this.errors.some(e => e.type === 'console-error')) {
+    if (this.errors.some((e) => e.type === 'console-error')) {
       recommendations.push({
         category: 'Performance',
         priority: 'medium',
         issue: 'Console errors detected during testing',
-        solution: 'Review and fix JavaScript errors in browser console'
+        solution: 'Review and fix JavaScript errors in browser console',
       });
     }
 
@@ -594,31 +600,45 @@ class VisualAuditor {
 
         <div class="section">
             <h2>🎯 Recommendations</h2>
-            ${report.recommendations.map(rec => `
+            ${report.recommendations
+              .map(
+                (rec) => `
                 <div class="recommendation priority-${rec.priority}">
                     <h4>${rec.category} (${rec.priority.toUpperCase()})</h4>
                     <p><strong>Issue:</strong> ${rec.issue}</p>
                     <p><strong>Solution:</strong> ${rec.solution}</p>
                 </div>
-            `).join('')}
+            `
+              )
+              .join('')}
         </div>
 
-        ${report.errors.length > 0 ? `
+        ${
+          report.errors.length > 0
+            ? `
         <div class="section">
             <h2>❌ Errors</h2>
-            ${report.errors.map(error => `
+            ${report.errors
+              .map(
+                (error) => `
                 <div class="error">
                     <strong>${error.type || 'Error'}:</strong> ${error.message}
                     ${error.viewport ? `<br><small>Viewport: ${error.viewport}</small>` : ''}
                 </div>
-            `).join('')}
+            `
+              )
+              .join('')}
         </div>
-        ` : ''}
+        `
+            : ''
+        }
 
         <div class="section">
             <h2>📷 Screenshots</h2>
             <div class="screenshots">
-                ${report.screenshots.map(screenshot => `
+                ${report.screenshots
+                  .map(
+                    (screenshot) => `
                     <div class="screenshot">
                         <img src="screenshots/${screenshot.filename}" alt="${screenshot.name}">
                         <div class="screenshot-info">
@@ -626,7 +646,9 @@ class VisualAuditor {
                             ${screenshot.viewport} • ${new Date(screenshot.timestamp).toLocaleTimeString()}
                         </div>
                     </div>
-                `).join('')}
+                `
+                  )
+                  .join('')}
             </div>
         </div>
     </div>

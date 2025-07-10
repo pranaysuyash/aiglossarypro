@@ -358,7 +358,7 @@ export function registerAnalyticsRoutes(app: Express): void {
   app.get('/api/analytics/popular-terms', async (req: Request, res: Response) => {
     try {
       const limit = parseInt(req.query.limit as string) || 10;
-      
+
       // Get popular terms (fallback data since database might be empty)
       const popularTerms = await db
         .select({
@@ -383,7 +383,7 @@ export function registerAnalyticsRoutes(app: Express): void {
       logger.error('Error fetching popular terms', {
         error: error instanceof Error ? error.message : String(error),
       });
-      
+
       // Return fallback data when database is empty or has errors
       res.json({
         success: true,
@@ -401,10 +401,10 @@ export function registerAnalyticsRoutes(app: Express): void {
   app.get('/api/analytics/trending', async (req: Request, res: Response) => {
     try {
       const limit = parseInt(req.query.limit as string) || 5;
-      
+
       // Get trending topics (recent views in last 7 days)
       const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      
+
       const trendingTerms = await db
         .select({
           id: terms.id,
@@ -431,7 +431,7 @@ export function registerAnalyticsRoutes(app: Express): void {
       logger.error('Error fetching trending topics', {
         error: error instanceof Error ? error.message : String(error),
       });
-      
+
       // Return fallback data
       res.json({
         success: true,

@@ -16,10 +16,10 @@ async function checkDatabaseStructure() {
   }
 
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  
+
   try {
     console.log('Checking database structure...\n');
-    
+
     // Check if categories table exists
     const categoriesExists = await pool.query(`
       SELECT EXISTS (
@@ -28,9 +28,9 @@ async function checkDatabaseStructure() {
         AND table_name = 'categories'
       );
     `);
-    
+
     console.log('Categories table exists:', categoriesExists.rows[0].exists);
-    
+
     if (categoriesExists.rows[0].exists) {
       // Check categories table structure
       const categoriesStructure = await pool.query(`
@@ -39,21 +39,21 @@ async function checkDatabaseStructure() {
         WHERE table_name = 'categories' 
         ORDER BY ordinal_position;
       `);
-      
+
       console.log('Categories table structure:');
       console.table(categoriesStructure.rows);
-      
+
       // Check if there are any categories
       const categoriesCount = await pool.query('SELECT COUNT(*) FROM categories');
       console.log('Categories count:', categoriesCount.rows[0].count);
-      
+
       if (Number(categoriesCount.rows[0].count) > 0) {
         const sampleCategories = await pool.query('SELECT * FROM categories LIMIT 3');
         console.log('Sample categories:');
         console.table(sampleCategories.rows);
       }
     }
-    
+
     // Check if terms table exists
     const termsExists = await pool.query(`
       SELECT EXISTS (
@@ -62,15 +62,15 @@ async function checkDatabaseStructure() {
         AND table_name = 'terms'
       );
     `);
-    
+
     console.log('\nTerms table exists:', termsExists.rows[0].exists);
-    
+
     if (termsExists.rows[0].exists) {
       // Check terms count
       const termsCount = await pool.query('SELECT COUNT(*) FROM terms');
       console.log('Terms count:', termsCount.rows[0].count);
     }
-    
+
     // List all tables
     const allTables = await pool.query(`
       SELECT table_name 
@@ -78,10 +78,9 @@ async function checkDatabaseStructure() {
       WHERE table_schema = 'public' 
       ORDER BY table_name;
     `);
-    
+
     console.log('\nAll tables in database:');
-    allTables.rows.forEach(row => console.log('-', row.table_name));
-    
+    allTables.rows.forEach((row) => console.log('-', row.table_name));
   } catch (error) {
     console.error('Database check failed:', error);
   } finally {

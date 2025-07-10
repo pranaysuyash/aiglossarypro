@@ -190,7 +190,8 @@ export function registerTermRoutes(app: Express): void {
 
       // Add message if database is empty (expected for new content pipeline)
       if (result.total === 0 && !search && !category) {
-        response.message = 'Database is empty - waiting for new content generation pipeline to populate data';
+        response.message =
+          'Database is empty - waiting for new content generation pipeline to populate data';
       }
 
       res.json(response);
@@ -269,7 +270,8 @@ export function registerTermRoutes(app: Express): void {
         success: true,
         data: featuredTerms.slice(0, limit),
         ...(featuredTerms.length === 0 && {
-          message: 'No featured terms available - database is empty (expected for new content pipeline)'
+          message:
+            'No featured terms available - database is empty (expected for new content pipeline)',
         }),
       };
 

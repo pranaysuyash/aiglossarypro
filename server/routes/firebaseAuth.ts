@@ -292,8 +292,8 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       endpoints: {
         firebase: '/api/auth/firebase/login',
         register: '/api/auth/firebase/register',
-        providers: '/api/auth/providers'
-      }
+        providers: '/api/auth/providers',
+      },
     });
   });
 
@@ -310,8 +310,8 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       endpoints: {
         firebase: '/api/auth/firebase/login',
         register: '/api/auth/firebase/register',
-        providers: '/api/auth/providers'
-      }
+        providers: '/api/auth/providers',
+      },
     });
   });
 
@@ -389,8 +389,8 @@ export function registerFirebaseAuthRoutes(app: Express): void {
           message: 'Authentication required',
           availableProviders: {
             google: true,
-            github: true
-          }
+            github: true,
+          },
         });
       }
 
@@ -430,8 +430,8 @@ export function registerFirebaseAuthRoutes(app: Express): void {
         message: 'Authentication required',
         availableProviders: {
           google: false,
-          github: false
-        }
+          github: false,
+        },
       });
     }
   });

@@ -1,0 +1,65 @@
+{
+  "timestamp": "2025-07-10T10:04:15.707Z",
+  "summary": {
+    "totalTests": 8,
+    "passed": 4,
+    "failed": 4,
+    "warnings": 0
+  },
+  "passRate": 50,
+  "results": [
+    {
+      "testName": "Cookie Consent Check",
+      "userType": "guest",
+      "status": "PASS",
+      "message": "Found 1 cookie-related elements",
+      "screenshot": "guest-homepage-1752141818715.png"
+    },
+    {
+      "testName": "Login Page Structure",
+      "userType": "guest",
+      "status": "PASS",
+      "message": "Found 3 tabs, Test Users: ✓, Sign In: ✓",
+      "screenshot": "guest-login-page-initial-1752141824032.png"
+    },
+    {
+      "testName": "Test Users Tab",
+      "userType": "guest",
+      "status": "PASS",
+      "message": "Found 3 \"Use This Account\" buttons",
+      "screenshot": "guest-test-users-tab-1752141827212.png"
+    },
+    {
+      "testName": "Form Auto-Population",
+      "userType": "free",
+      "status": "PASS",
+      "message": "Email: test@aimlglossary.com, Password: filled",
+      "screenshot": "guest-sign-in-tab-1752141836900.png"
+    },
+    {
+      "testName": "Login Flow",
+      "userType": "free",
+      "status": "FAIL",
+      "message": "URL after login: http://localhost:5173/login",
+      "screenshot": "guest-after-login-attempt-1752141843029.png"
+    },
+    {
+      "testName": "Responsive mobile",
+      "userType": "guest",
+      "status": "FAIL",
+      "message": "Error: Error: locator.isVisible: Error: strict mode violation: locator('nav, .navigation, header') resolved to 3 elements:\n    1) <nav aria-label=\"Skip navigation\" class=\"sr-only focus-within:not-sr-only\">…</nav> aka getByRole('navigation', { name: 'Skip navigation' })\n    2) <header class=\"sticky top-0 z-50 bg-gradient-to-b from-white/95 to-transparent backdrop-blur-sm border-b border-gray-200/50\">…</header> aka locator('header')\n    3) <nav role=\"navigation\" aria-label=\"Main navigation\" class=\"hidden md:flex items-center space-x-8\">…</nav> aka getByLabel('Main navigation')\n\nCall log:\n\u001b[2m    - checking visibility of locator('nav, .navigation, header')\u001b[22m\n"
+    },
+    {
+      "testName": "Responsive tablet",
+      "userType": "guest",
+      "status": "FAIL",
+      "message": "Error: Error: locator.isVisible: Error: strict mode violation: locator('nav, .navigation, header') resolved to 3 elements:\n    1) <nav aria-label=\"Skip navigation\" class=\"sr-only focus-within:not-sr-only\">…</nav> aka getByRole('navigation', { name: 'Skip navigation' })\n    2) <header class=\"sticky top-0 z-50 bg-gradient-to-b from-white/95 to-transparent backdrop-blur-sm border-b border-gray-200/50\">…</header> aka locator('header')\n    3) <nav role=\"navigation\" aria-label=\"Main navigation\" class=\"hidden md:flex items-center space-x-8\">…</nav> aka getByRole('navigation', { name: 'Main navigation' })\n\nCall log:\n\u001b[2m    - checking visibility of locator('nav, .navigation, header')\u001b[22m\n"
+    },
+    {
+      "testName": "Responsive desktop",
+      "userType": "guest",
+      "status": "FAIL",
+      "message": "Error: Error: locator.isVisible: Error: strict mode violation: locator('nav, .navigation, header') resolved to 3 elements:\n    1) <nav aria-label=\"Skip navigation\" class=\"sr-only focus-within:not-sr-only\">…</nav> aka getByRole('navigation', { name: 'Skip navigation' })\n    2) <header class=\"sticky top-0 z-50 bg-gradient-to-b from-white/95 to-transparent backdrop-blur-sm border-b border-gray-200/50\">…</header> aka locator('header')\n    3) <nav role=\"navigation\" aria-label=\"Main navigation\" class=\"hidden md:flex items-center space-x-8\">…</nav> aka getByRole('navigation', { name: 'Main navigation' })\n\nCall log:\n\u001b[2m    - checking visibility of locator('nav, .navigation, header')\u001b[22m\n"
+    }
+  ]
+}

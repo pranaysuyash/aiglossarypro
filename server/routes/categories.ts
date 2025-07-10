@@ -42,12 +42,12 @@ export function registerCategoryRoutes(app: Express): void {
         });
       } catch (dbError) {
         // Log the database error for debugging
-        log.warn('Database query failed, returning empty result', { 
-          error: dbError, 
+        log.warn('Database query failed, returning empty result', {
+          error: dbError,
           component: 'CategoryRoutes',
-          query: 'getCategoriesOptimized' 
+          query: 'getCategoriesOptimized',
         });
-        
+
         // Return empty result set instead of error for empty database
         categories = [];
         totalCount = 0;
@@ -89,17 +89,17 @@ export function registerCategoryRoutes(app: Express): void {
       const { includeTerms = false } = req.query;
 
       let category = null;
-      
+
       try {
         category = await storage.getCategoryById(id);
       } catch (dbError) {
-        log.warn('Database query failed for category by ID', { 
-          error: dbError, 
+        log.warn('Database query failed for category by ID', {
+          error: dbError,
           component: 'CategoryRoutes',
           categoryId: id,
-          query: 'getCategoryById' 
+          query: 'getCategoryById',
         });
-        
+
         // Return 404 for database errors on single category lookup
         return res.status(404).json({
           success: false,
@@ -152,7 +152,7 @@ export function registerCategoryRoutes(app: Express): void {
 
       // Use optimized database query with field selection
       let result = { data: [], total: 0 };
-      
+
       try {
         result = await storage.getTermsByCategory(id, {
           offset,
@@ -162,13 +162,13 @@ export function registerCategoryRoutes(app: Express): void {
           fields: fieldList,
         });
       } catch (dbError) {
-        log.warn('Database query failed for terms by category', { 
-          error: dbError, 
+        log.warn('Database query failed for terms by category', {
+          error: dbError,
           component: 'CategoryRoutes',
           categoryId: id,
-          query: 'getTermsByCategory' 
+          query: 'getTermsByCategory',
         });
-        
+
         // Return empty result set instead of error for empty database
         result = { data: [], total: 0 };
       }
@@ -211,7 +211,7 @@ export function registerCategoryRoutes(app: Express): void {
 
       // Use efficient database query instead of fetching all terms
       let stats = null;
-      
+
       try {
         // Try to use optimized method if available
         if (typeof storage.getCategoryStats === 'function') {
@@ -269,7 +269,7 @@ export function registerCategoryRoutes(app: Express): void {
             categoryId: id,
           });
         }
-        
+
         if (!category) {
           return res.status(404).json({
             success: false,

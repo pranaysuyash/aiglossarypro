@@ -16,10 +16,10 @@ async function testSchemaCompatibility() {
   }
 
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
-  
+
   try {
     console.log('Testing schema compatibility...\n');
-    
+
     // Test 1: Simple select from categories without joins
     console.log('1. Testing simple categories select');
     try {
@@ -29,7 +29,7 @@ async function testSchemaCompatibility() {
     } catch (error) {
       console.log('❌ Simple select failed:', error.message);
     }
-    
+
     // Test 2: Test with count
     console.log('\n2. Testing count query');
     try {
@@ -39,7 +39,7 @@ async function testSchemaCompatibility() {
     } catch (error) {
       console.log('❌ Count query failed:', error.message);
     }
-    
+
     // Test 3: Test the actual problematic query
     console.log('\n3. Testing the problematic join query');
     try {
@@ -60,7 +60,7 @@ async function testSchemaCompatibility() {
     } catch (error) {
       console.log('❌ Join query failed:', error.message);
     }
-    
+
     // Test 4: Check schema details
     console.log('\n4. Checking column types');
     const columnTypes = await pool.query(`
@@ -69,10 +69,9 @@ async function testSchemaCompatibility() {
       WHERE table_name IN ('categories', 'terms')
       ORDER BY table_name, ordinal_position
     `);
-    
+
     console.log('Column types:');
     console.table(columnTypes.rows);
-    
   } catch (error) {
     console.error('Schema compatibility test failed:', error);
   } finally {

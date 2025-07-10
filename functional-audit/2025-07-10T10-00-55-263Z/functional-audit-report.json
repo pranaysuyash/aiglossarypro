@@ -1,0 +1,112 @@
+{
+  "timestamp": "2025-07-10T10:02:41.635Z",
+  "summary": {
+    "totalTests": 8,
+    "passed": 0,
+    "failed": 3,
+    "warnings": 5,
+    "passRate": 0
+  },
+  "testResults": [
+    {
+      "testName": "Cookie Consent Check",
+      "userType": "guest",
+      "status": "WARNING",
+      "message": "No cookie consent modal found - may be disabled or already handled",
+      "screenshot": "guest-homepage-initial-1752141658552.png"
+    },
+    {
+      "testName": "Authentication Flow",
+      "userType": "free",
+      "status": "FAIL",
+      "message": "Authentication failed with error: TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#login-panel button:has-text(\"Sign In\")').first()\u001b[22m\n"
+    },
+    {
+      "testName": "Authentication Flow",
+      "userType": "premium",
+      "status": "FAIL",
+      "message": "Authentication failed with error: TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#login-panel button:has-text(\"Sign In\")').first()\u001b[22m\n"
+    },
+    {
+      "testName": "Authentication Flow",
+      "userType": "admin",
+      "status": "FAIL",
+      "message": "Authentication failed with error: TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('#login-panel button:has-text(\"Sign In\")').first()\u001b[22m\n"
+    },
+    {
+      "testName": "Mobile Menu (mobile)",
+      "userType": "guest",
+      "status": "WARNING",
+      "message": "Mobile menu button not found",
+      "screenshot": "guest-responsive-mobile-1752141759435.png"
+    },
+    {
+      "testName": "Navigation (mobile)",
+      "userType": "guest",
+      "status": "WARNING",
+      "message": "Navigation hidden on mobile",
+      "screenshot": "guest-responsive-mobile-1752141759435.png"
+    },
+    {
+      "testName": "Navigation (tablet)",
+      "userType": "guest",
+      "status": "WARNING",
+      "message": "Navigation hidden on tablet",
+      "screenshot": "guest-responsive-tablet-1752141760380.png"
+    },
+    {
+      "testName": "Navigation (desktop)",
+      "userType": "guest",
+      "status": "WARNING",
+      "message": "Navigation hidden on desktop",
+      "screenshot": "guest-responsive-desktop-1752141761434.png"
+    }
+  ],
+  "testUsers": [
+    {
+      "email": "test@aimlglossary.com",
+      "password": "testpass123",
+      "type": "free",
+      "expectedFeatures": [
+        "basic search",
+        "limited view count"
+      ],
+      "expectedLimitations": [
+        "daily view limits",
+        "upgrade prompts",
+        "restricted 42-section access"
+      ]
+    },
+    {
+      "email": "premium@aimlglossary.com",
+      "password": "premiumpass123",
+      "type": "premium",
+      "expectedFeatures": [
+        "unlimited access",
+        "42-section components",
+        "gamification",
+        "progress tracking"
+      ],
+      "expectedLimitations": []
+    },
+    {
+      "email": "admin@aimlglossary.com",
+      "password": "adminpass123",
+      "type": "admin",
+      "expectedFeatures": [
+        "admin dashboard",
+        "content generation",
+        "user management",
+        "all premium features"
+      ],
+      "expectedLimitations": []
+    }
+  ],
+  "recommendations": [
+    "Address 3 critical test failures to improve application stability",
+    "Investigate 5 warning conditions for potential improvements",
+    "Fix authentication flow issues - users may not be able to login properly",
+    "Review cookie consent implementation for GDPR compliance",
+    "Admin functionality needs attention - content management features may not be working"
+  ]
+}

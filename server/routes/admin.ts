@@ -8,6 +8,8 @@ import { enhancedStorage as storage } from "../enhancedStorage";
 import { authenticateToken, requireAdmin } from "../middleware/adminAuth";
 import { authenticateFirebaseToken, requireFirebaseAdmin } from "../middleware/firebaseAuth";
 import { log as logger } from '../utils/logger';
+import enhancedContentGenerationRoutes from './admin/enhancedContentGeneration';
+import templateManagementRoutes from './admin/templateManagement';
 
 
 const router = express.Router();
@@ -840,9 +842,6 @@ Provide an enhanced definition following the guidelines above.`
   });
 
   // Enhanced Content Generation routes
-  import enhancedContentGenerationRoutes from './admin/enhancedContentGeneration';
-  import templateManagementRoutes from './admin/templateManagement';
-  
   app.use('/api/admin/enhanced-triplet', enhancedContentGenerationRoutes);
   app.use('/api/admin/content', enhancedContentGenerationRoutes);
   app.use('/api/admin/templates', templateManagementRoutes);

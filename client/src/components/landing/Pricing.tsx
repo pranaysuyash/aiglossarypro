@@ -133,53 +133,53 @@ export function Pricing() {
               Free Tier
             </Badge>
             <Card className="border-2 border-green-200 shadow-lg">
-            <CardHeader className="bg-green-50">
-              <CardTitle className="text-center">
-                <div className="text-2xl font-bold text-green-900">Free Tier</div>
-                <div className="text-3xl font-bold text-green-900 mt-2">$0</div>
-                <div className="text-sm text-green-600">50 terms daily • No credit card</div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 pt-6">
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>50 AI/ML terms daily</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Code examples & applications</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Advanced search & filters</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Mobile optimized</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>1,500+ terms monthly</span>
-              </div>
-              <div className="pt-4">
-                <Button
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
-                  onClick={() => {
-                    trackConversion('free_start_click', {
-                      button_text: 'Start Free Now',
-                      position: 'pricing_table',
-                    });
-                    window.location.href = '/login';
-                  }}
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <span>Start Free Now</span>
-                    <ArrowRight className="w-4 h-4 flex-shrink-0" />
-                  </span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              <CardHeader className="bg-green-50">
+                <CardTitle className="text-center">
+                  <div className="text-2xl font-bold text-green-900">Free Tier</div>
+                  <div className="text-3xl font-bold text-green-900 mt-2">$0</div>
+                  <div className="text-sm text-green-600">50 terms daily • No credit card</div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-6">
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>50 AI/ML terms daily</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>Code examples & applications</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>Advanced search & filters</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>Mobile optimized</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>1,500+ terms monthly</span>
+                </div>
+                <div className="pt-4">
+                  <Button
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
+                    onClick={() => {
+                      trackConversion('free_start_click', {
+                        button_text: 'Start Free Now',
+                        position: 'pricing_table',
+                      });
+                      window.location.href = '/login';
+                    }}
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      <span>Start Free Now</span>
+                      <ArrowRight className="w-4 h-4 flex-shrink-0" />
+                    </span>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           {/* Competitors */}
@@ -222,104 +222,104 @@ export function Pricing() {
               🎉 Launch Special
             </Badge>
             <Card className="border-2 border-purple-500 shadow-xl">
-            <CardHeader className="bg-purple-50">
-              <CardTitle className="text-center">
-                <div className="text-2xl font-bold text-purple-900">Premium Preview</div>
-                <div className="flex items-center justify-center gap-2 mt-2">
-                  <div className="text-3xl font-bold text-purple-900">
-                    $
-                    {pricing.launchPricing.isActive
-                      ? pricing.launchPricing.launchPrice
-                      : pricing.launchPricing.originalPrice}
-                  </div>
-                  {pricing.launchPricing.isActive && (
-                    <div className="text-xl text-gray-500 line-through">
-                      ${pricing.launchPricing.originalPrice}
-                    </div>
-                  )}
-                </div>
-                <div className="text-sm text-purple-600">
-                  {pricing.launchPricing.isActive ? (
-                    <>
-                      lifetime access • Save ${pricing.launchPricing.savingsAmount} - First 500
-                      Customers Only
-                      <br />
-                      <span className="font-bold text-green-600">
-                        {pricing.launchPricing.claimedSlots}/{pricing.launchPricing.totalSlots}{' '}
-                        claimed
-                      </span>
-                    </>
-                  ) : (
-                    'lifetime access'
-                  )}
-                </div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 pt-6">
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Unlimited access to 10,000+ terms</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Interactive quizzes & exercises</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>AI-powered explanations</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Personalized learning paths</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Export & offline access</span>
-              </div>
-              <div className="pt-4">
-                <Button
-                  className="w-full bg-purple-600 hover:bg-purple-700 text-white min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
-                  onClick={() => {
-                    const currentPrice = pricing.launchPricing.isActive
-                      ? pricing.launchPricing.launchPrice
-                      : pricing.launchPricing.originalPrice;
-
-                    // Track analytics with launch pricing
-                    trackPurchaseIntent('launch_special_lifetime', currentPrice);
-
-                    // Track A/B test conversion
-                    trackConversion('launch_special_cta_click', {
-                      value: currentPrice,
-                      button_text: `Get Launch Special - $${currentPrice}`,
-                      position: 'pricing_table',
-                      originalPrice: pricing.launchPricing.originalPrice,
-                      discount: pricing.launchPricing.savingsAmount,
-                      slotsRemaining:
-                        pricing.launchPricing.totalSlots - pricing.launchPricing.claimedSlots,
-                    });
-
-                    // Open Gumroad with launch special discount
-                    const discountCode = pricing.launchPricing.isActive ? 'LAUNCH500' : '';
-                    const gumroadUrl = discountCode
-                      ? `https://pranaysuyash.gumroad.com/l/ggczfy/${discountCode}`
-                      : 'https://pranaysuyash.gumroad.com/l/ggczfy';
-
-                    window.open(gumroadUrl, '_blank');
-                  }}
-                >
-                  <span className="flex items-center justify-center gap-2">
-                    <span>
-                      Get Launch Special - $
+              <CardHeader className="bg-purple-50">
+                <CardTitle className="text-center">
+                  <div className="text-2xl font-bold text-purple-900">Premium Preview</div>
+                  <div className="flex items-center justify-center gap-2 mt-2">
+                    <div className="text-3xl font-bold text-purple-900">
+                      $
                       {pricing.launchPricing.isActive
                         ? pricing.launchPricing.launchPrice
                         : pricing.launchPricing.originalPrice}
+                    </div>
+                    {pricing.launchPricing.isActive && (
+                      <div className="text-xl text-gray-500 line-through">
+                        ${pricing.launchPricing.originalPrice}
+                      </div>
+                    )}
+                  </div>
+                  <div className="text-sm text-purple-600">
+                    {pricing.launchPricing.isActive ? (
+                      <>
+                        lifetime access • Save ${pricing.launchPricing.savingsAmount} - First 500
+                        Customers Only
+                        <br />
+                        <span className="font-bold text-green-600">
+                          {pricing.launchPricing.claimedSlots}/{pricing.launchPricing.totalSlots}{' '}
+                          claimed
+                        </span>
+                      </>
+                    ) : (
+                      'lifetime access'
+                    )}
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3 pt-6">
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>Unlimited access to 10,000+ terms</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>Interactive quizzes & exercises</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>AI-powered explanations</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>Personalized learning paths</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>Export & offline access</span>
+                </div>
+                <div className="pt-4">
+                  <Button
+                    className="w-full bg-purple-600 hover:bg-purple-700 text-white min-h-[48px] sm:min-h-[44px] text-base sm:text-sm font-semibold py-3 sm:py-2 touch-manipulation"
+                    onClick={() => {
+                      const currentPrice = pricing.launchPricing.isActive
+                        ? pricing.launchPricing.launchPrice
+                        : pricing.launchPricing.originalPrice;
+
+                      // Track analytics with launch pricing
+                      trackPurchaseIntent('launch_special_lifetime', currentPrice);
+
+                      // Track A/B test conversion
+                      trackConversion('launch_special_cta_click', {
+                        value: currentPrice,
+                        button_text: `Get Launch Special - $${currentPrice}`,
+                        position: 'pricing_table',
+                        originalPrice: pricing.launchPricing.originalPrice,
+                        discount: pricing.launchPricing.savingsAmount,
+                        slotsRemaining:
+                          pricing.launchPricing.totalSlots - pricing.launchPricing.claimedSlots,
+                      });
+
+                      // Open Gumroad with launch special discount
+                      const discountCode = pricing.launchPricing.isActive ? 'LAUNCH500' : '';
+                      const gumroadUrl = discountCode
+                        ? `https://pranaysuyash.gumroad.com/l/ggczfy/${discountCode}`
+                        : 'https://pranaysuyash.gumroad.com/l/ggczfy';
+
+                      window.open(gumroadUrl, '_blank');
+                    }}
+                  >
+                    <span className="flex items-center justify-center gap-2">
+                      <span>
+                        Get Launch Special - $
+                        {pricing.launchPricing.isActive
+                          ? pricing.launchPricing.launchPrice
+                          : pricing.launchPricing.originalPrice}
+                      </span>
+                      <ArrowRight className="w-4 h-4 flex-shrink-0" />
                     </span>
-                    <ArrowRight className="w-4 h-4 flex-shrink-0" />
-                  </span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           </div>
         </div>
 

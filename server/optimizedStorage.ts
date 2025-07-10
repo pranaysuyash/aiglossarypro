@@ -971,20 +971,26 @@ export class OptimizedStorage implements IStorage {
       async () => {
         // Check if we need term count to avoid schema mismatch
         const needsTermCount = fields.includes('termCount') || includeStats;
-        console.log('[DEBUG] getCategoriesOptimized called with:', { fields, needsTermCount, includeStats });
-        
+        console.log('[DEBUG] getCategoriesOptimized called with:', {
+          fields,
+          needsTermCount,
+          includeStats,
+        });
+
         // Build dynamic select based on requested fields
         const selectObj: any = {};
 
         if (fields.includes('id')) selectObj.id = categories.id;
         if (fields.includes('name')) selectObj.name = categories.name;
         if (fields.includes('description')) selectObj.description = categories.description;
-        
+
         // Only add termCount if explicitly requested and compatible
         if (needsTermCount) {
           // For now, we'll skip the term count due to schema mismatch
           // TODO: Fix schema compatibility or implement alternative counting method
-          console.warn('[OptimizedStorage] Skipping termCount due to schema mismatch (categories.id: integer, terms.category_id: uuid)');
+          console.warn(
+            '[OptimizedStorage] Skipping termCount due to schema mismatch (categories.id: integer, terms.category_id: uuid)'
+          );
         }
 
         let query: any = db.select(selectObj).from(categories);
@@ -1010,25 +1016,33 @@ export class OptimizedStorage implements IStorage {
           return result;
         } catch (queryError) {
           console.error('[OptimizedStorage] getCategoriesOptimized query failed:', queryError);
-          
+
           // Check if it's a schema mismatch error (uuid vs integer)
-          const errorMessage = queryError instanceof Error ? queryError.message : String(queryError);
+          const errorMessage =
+            queryError instanceof Error ? queryError.message : String(queryError);
           if (errorMessage.includes('uuid') && errorMessage.includes('integer')) {
-            console.warn('[OptimizedStorage] Schema mismatch detected: categories.id (integer) vs terms.category_id (uuid)');
-            
+            console.warn(
+              '[OptimizedStorage] Schema mismatch detected: categories.id (integer) vs terms.category_id (uuid)'
+            );
+
             // Fallback: Get categories without termCount (no join required)
             try {
-              let fallbackQuery = db.select({
-                id: categories.id,
-                name: categories.name,
-                description: categories.description,
-              }).from(categories);
-              
+              let fallbackQuery = db
+                .select({
+                  id: categories.id,
+                  name: categories.name,
+                  description: categories.description,
+                })
+                .from(categories);
+
               if (search) {
                 fallbackQuery = fallbackQuery.where(ilike(categories.name, `%${search}%`));
               }
-              
-              const fallbackResult = await fallbackQuery.orderBy(categories.name).limit(limit).offset(offset);
+
+              const fallbackResult = await fallbackQuery
+                .orderBy(categories.name)
+                .limit(limit)
+                .offset(offset);
               console.log('[OptimizedStorage] Using fallback query without joins');
               return fallbackResult;
             } catch (fallbackError) {
@@ -1036,7 +1050,7 @@ export class OptimizedStorage implements IStorage {
               return [];
             }
           }
-          
+
           // Return empty array for other database errors
           return [];
         }

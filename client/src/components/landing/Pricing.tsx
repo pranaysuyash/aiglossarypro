@@ -11,11 +11,10 @@ import { FreeTierMessaging } from './FreeTierMessaging';
 import { PPPBanner } from './PPPBanner';
 import { PricingCountdown } from './PricingCountdown';
 
-export function Pricing() {
+// Separate component for the comparison table to isolate DOM structure
+function ComparisonTable() {
   const pricing = useCountryPricing();
-  const { currentVariant } = useBackgroundABTest();
-  const { trackConversion } = useABTestTracking(currentVariant);
-
+  
   const comparison = [
     {
       feature: 'AI/ML Term Coverage',
@@ -56,6 +55,53 @@ export function Pricing() {
   ];
 
   return (
+    <div className="overflow-x-auto touch-manipulation">
+      <table className="w-full border border-gray-200 rounded-lg overflow-hidden bg-white shadow-lg sm:min-w-[600px]">
+        <thead className="bg-gray-50">
+          <tr>
+            <th className="text-left p-2 sm:p-4 font-semibold text-gray-900 border-b text-sm sm:text-base">
+              Features
+            </th>
+            <th className="text-center p-2 sm:p-4 font-semibold text-gray-900 border-b border-l text-sm sm:text-base">
+              Free Resources
+            </th>
+            <th className="text-center p-2 sm:p-4 font-semibold text-gray-900 border-b border-l text-sm sm:text-base">
+              DataCamp/Coursera
+            </th>
+            <th className="text-center p-2 sm:p-4 font-semibold text-white bg-purple-600 border-b border-l text-sm sm:text-base">
+              AI/ML Glossary Pro
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {comparison.map((row) => (
+            <tr key={row.feature} className="border-b border-gray-100">
+              <td className="p-2 sm:p-4 font-medium text-gray-900 text-sm sm:text-base">
+                {row.feature}
+              </td>
+              <td className="p-2 sm:p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+                {row.free}
+              </td>
+              <td className="p-2 sm:p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400 text-sm sm:text-base">
+                {row.competitors}
+              </td>
+              <td className="p-2 sm:p-4 text-center border-l border-gray-200 bg-purple-50 font-semibold text-purple-900 text-sm sm:text-base">
+                {row.us}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+export function Pricing() {
+  const pricing = useCountryPricing();
+  const { currentVariant } = useBackgroundABTest();
+  const { trackConversion } = useABTestTracking(currentVariant);
+
+  return (
     <section id="pricing" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12 sm:mb-16">
@@ -82,44 +128,7 @@ export function Pricing() {
 
         {/* Comparison Table */}
         <div className="mb-12 sm:mb-16 max-w-5xl mx-auto">
-          <div className="overflow-x-auto touch-manipulation">
-            <table className="w-full border border-gray-200 rounded-lg overflow-hidden bg-white shadow-lg sm:min-w-[600px]">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="text-left p-2 sm:p-4 font-semibold text-gray-900 border-b text-sm sm:text-base">
-                    Features
-                  </th>
-                  <th className="text-center p-2 sm:p-4 font-semibold text-gray-900 border-b border-l text-sm sm:text-base">
-                    Free Resources
-                  </th>
-                  <th className="text-center p-2 sm:p-4 font-semibold text-gray-900 border-b border-l text-sm sm:text-base">
-                    DataCamp/Coursera
-                  </th>
-                  <th className="text-center p-2 sm:p-4 font-semibold text-white bg-purple-600 border-b border-l text-sm sm:text-base">
-                    AI/ML Glossary Pro
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {comparison.map((row, index) => (
-                  <tr key={index} className="border-b border-gray-100">
-                    <td className="p-2 sm:p-4 font-medium text-gray-900 text-sm sm:text-base">
-                      {row.feature}
-                    </td>
-                    <td className="p-2 sm:p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                      {row.free}
-                    </td>
-                    <td className="p-2 sm:p-4 text-center border-l border-gray-200 text-gray-600 dark:text-gray-400 text-sm sm:text-base">
-                      {row.competitors}
-                    </td>
-                    <td className="p-2 sm:p-4 text-center border-l border-gray-200 bg-purple-50 font-semibold text-purple-900 text-sm sm:text-base">
-                      {row.us}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+          <ComparisonTable />
           <div className="text-center mt-4 text-sm text-gray-500 sm:hidden">
             ← Scroll to see all features →
           </div>

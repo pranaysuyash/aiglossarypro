@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { OptimizedImage } from './OptimizedImage';
+import { OptimizedImage } from './optimized-image';
 
 const meta: Meta<typeof OptimizedImage> = {
   title: 'UI Components/OptimizedImage',

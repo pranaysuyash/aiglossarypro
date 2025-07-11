@@ -1,0 +1,4363 @@
+{
+  "componentCoverage": {
+    "totalComponents": 228,
+    "totalStories": 230,
+    "coveragePercentage": "100.9",
+    "missingStories": [],
+    "byCategory": {
+      "Other": {
+        "total": 5,
+        "covered": 5
+      },
+      "Pages": {
+        "total": 39,
+        "covered": 39
+      },
+      "Components": {
+        "total": 80,
+        "covered": 80
+      },
+      "AR/VR": {
+        "total": 2,
+        "covered": 2
+      },
+      "UI Components": {
+        "total": 56,
+        "covered": 56
+      },
+      "Mobile": {
+        "total": 4,
+        "covered": 4
+      },
+      "Landing": {
+        "total": 20,
+        "covered": 20
+      },
+      "Analytics": {
+        "total": 4,
+        "covered": 4
+      },
+      "Admin": {
+        "total": 18,
+        "covered": 18
+      }
+    },
+    "detailedAnalysis": [
+      {
+        "component": "client/src/main.tsx",
+        "name": "main",
+        "category": "Other",
+        "hasStory": true,
+        "storyPath": "client/src/main.stories.tsx"
+      },
+      {
+        "component": "client/src/App.tsx",
+        "name": "App",
+        "category": "Other",
+        "hasStory": true,
+        "storyPath": "client/src/App.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/not-found.tsx",
+        "name": "not-found",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/not-found.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/XRExploration.tsx",
+        "name": "XRExploration",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/XRExploration.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/UserProgressDashboard.tsx",
+        "name": "UserProgressDashboard",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/UserProgressDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/Trending.tsx",
+        "name": "Trending",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/Trending.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/TermsOfService.tsx",
+        "name": "TermsOfService",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/TermsOfService.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/Terms.tsx",
+        "name": "Terms",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/Terms.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/TermDetail.tsx",
+        "name": "TermDetail",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/TermDetail.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/SurpriseMe.tsx",
+        "name": "SurpriseMe",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/SurpriseMe.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/SubcategoryDetail.tsx",
+        "name": "SubcategoryDetail",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/SubcategoryDetail.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/Subcategories.tsx",
+        "name": "Subcategories",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/Subcategories.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/Settings.tsx",
+        "name": "Settings",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/Settings.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/PurchaseSuccess.tsx",
+        "name": "PurchaseSuccess",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/PurchaseSuccess.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/Profile.tsx",
+        "name": "Profile",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/Profile.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/PrivacyPolicy.tsx",
+        "name": "PrivacyPolicy",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/PrivacyPolicy.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/PersonalizedHomepage.tsx",
+        "name": "PersonalizedHomepage",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/PersonalizedHomepage.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/OwnerDashboard.tsx",
+        "name": "OwnerDashboard",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/OwnerDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/Lifetime.tsx",
+        "name": "Lifetime",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/Lifetime.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/LearningPaths.tsx",
+        "name": "LearningPaths",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/LearningPaths.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/LearningPathDetail.tsx",
+        "name": "LearningPathDetail",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/LearningPathDetail.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/LandingPage.tsx",
+        "name": "LandingPage",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/LandingPage.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/Home.tsx",
+        "name": "Home",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/Home.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/Favorites.tsx",
+        "name": "Favorites",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/Favorites.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/ExampleEnhancedUsage.tsx",
+        "name": "ExampleEnhancedUsage",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/ExampleEnhancedUsage.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/EnhancedTermDetail.tsx",
+        "name": "EnhancedTermDetail",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/EnhancedTermDetail.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/Discovery.tsx",
+        "name": "Discovery",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/Discovery.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/Dashboard.tsx",
+        "name": "Dashboard",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/Dashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/CodeExamples.tsx",
+        "name": "CodeExamples",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/CodeExamples.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/Categories.tsx",
+        "name": "Categories",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/Categories.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/AnalyticsDashboard.tsx",
+        "name": "AnalyticsDashboard",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/AnalyticsDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/AdminDashboard.tsx",
+        "name": "AdminDashboard",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/AdminDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/Admin.tsx",
+        "name": "Admin",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/Admin.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/About.tsx",
+        "name": "About",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/About.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/AITools.tsx",
+        "name": "AITools",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/AITools.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/AISearch.tsx",
+        "name": "AISearch",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/AISearch.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/ABTestingDashboard.tsx",
+        "name": "ABTestingDashboard",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/ABTestingDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/3DVisualization.tsx",
+        "name": "3DVisualization",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/3DVisualization.stories.tsx"
+      },
+      {
+        "component": "client/src/utils/performanceMonitor.tsx",
+        "name": "performanceMonitor",
+        "category": "Other",
+        "hasStory": true,
+        "storyPath": "client/src/utils/performanceMonitor.stories.tsx"
+      },
+      {
+        "component": "client/src/components/VirtualizedTermList.tsx",
+        "name": "VirtualizedTermList",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/VirtualizedTermList.stories.tsx"
+      },
+      {
+        "component": "client/src/components/UpgradePrompt.tsx",
+        "name": "UpgradePrompt",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/UpgradePrompt.stories.tsx"
+      },
+      {
+        "component": "client/src/components/TrendingWidget.tsx",
+        "name": "TrendingWidget",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/TrendingWidget.stories.tsx"
+      },
+      {
+        "component": "client/src/components/TrendingDashboard.tsx",
+        "name": "TrendingDashboard",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/TrendingDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ThemeProvider.tsx",
+        "name": "ThemeProvider",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ThemeProvider.stories.tsx"
+      },
+      {
+        "component": "client/src/components/TestPurchaseButton.tsx",
+        "name": "TestPurchaseButton",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/TestPurchaseButton.stories.tsx"
+      },
+      {
+        "component": "client/src/components/TermCard.tsx",
+        "name": "TermCard",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/TermCard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/SurpriseMe.tsx",
+        "name": "SurpriseMe",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/SurpriseMe.stories.tsx"
+      },
+      {
+        "component": "client/src/components/SubcategoryCard.tsx",
+        "name": "SubcategoryCard",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/SubcategoryCard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/Sidebar.tsx",
+        "name": "Sidebar",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/Sidebar.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ShareMenu.tsx",
+        "name": "ShareMenu",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ShareMenu.stories.tsx"
+      },
+      {
+        "component": "client/src/components/SearchBar.tsx",
+        "name": "SearchBar",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/SearchBar.stories.tsx"
+      },
+      {
+        "component": "client/src/components/S3FileManagerDashboard.tsx",
+        "name": "S3FileManagerDashboard",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/S3FileManagerDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/S3FileBrowser.tsx",
+        "name": "S3FileBrowser",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/S3FileBrowser.stories.tsx"
+      },
+      {
+        "component": "client/src/components/RecommendedForYou.tsx",
+        "name": "RecommendedForYou",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/RecommendedForYou.stories.tsx"
+      },
+      {
+        "component": "client/src/components/PurchaseVerification.tsx",
+        "name": "PurchaseVerification",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/PurchaseVerification.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ProgressVisualization.tsx",
+        "name": "ProgressVisualization",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ProgressVisualization.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ProgressTracker.tsx",
+        "name": "ProgressTracker",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ProgressTracker.stories.tsx"
+      },
+      {
+        "component": "client/src/components/PremiumUpgradeSuccess.tsx",
+        "name": "PremiumUpgradeSuccess",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/PremiumUpgradeSuccess.stories.tsx"
+      },
+      {
+        "component": "client/src/components/PremiumBadge.tsx",
+        "name": "PremiumBadge",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/PremiumBadge.stories.tsx"
+      },
+      {
+        "component": "client/src/components/PredictiveAnalytics.tsx",
+        "name": "PredictiveAnalytics",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/PredictiveAnalytics.stories.tsx"
+      },
+      {
+        "component": "client/src/components/PersonalizedDashboard.tsx",
+        "name": "PersonalizedDashboard",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/PersonalizedDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/PerformanceTest.tsx",
+        "name": "PerformanceTest",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/PerformanceTest.stories.tsx"
+      },
+      {
+        "component": "client/src/components/PWAStatus.tsx",
+        "name": "PWAStatus",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/PWAStatus.stories.tsx"
+      },
+      {
+        "component": "client/src/components/Header.tsx",
+        "name": "Header",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/Header.stories.tsx"
+      },
+      {
+        "component": "client/src/components/FreeTierGate.tsx",
+        "name": "FreeTierGate",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/FreeTierGate.stories.tsx"
+      },
+      {
+        "component": "client/src/components/Footer.tsx",
+        "name": "Footer",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/Footer.stories.tsx"
+      },
+      {
+        "component": "client/src/components/FirebaseLoginPage.tsx",
+        "name": "FirebaseLoginPage",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/FirebaseLoginPage.stories.tsx"
+      },
+      {
+        "component": "client/src/components/FilePreview.tsx",
+        "name": "FilePreview",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/FilePreview.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ErrorBoundary.tsx",
+        "name": "ErrorBoundary",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ErrorBoundary.stories.tsx"
+      },
+      {
+        "component": "client/src/components/EnhancedTermCard.tsx",
+        "name": "EnhancedTermCard",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/EnhancedTermCard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/DragDropUploader.tsx",
+        "name": "DragDropUploader",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/DragDropUploader.stories.tsx"
+      },
+      {
+        "component": "client/src/components/CrossReferenceAnalytics.tsx",
+        "name": "CrossReferenceAnalytics",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/CrossReferenceAnalytics.stories.tsx"
+      },
+      {
+        "component": "client/src/components/CookieConsentBanner.tsx",
+        "name": "CookieConsentBanner",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/CookieConsentBanner.stories.tsx"
+      },
+      {
+        "component": "client/src/components/CategoryHierarchy.tsx",
+        "name": "CategoryHierarchy",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/CategoryHierarchy.stories.tsx"
+      },
+      {
+        "component": "client/src/components/CategoryCard.tsx",
+        "name": "CategoryCard",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/CategoryCard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/AdaptiveLearning.tsx",
+        "name": "AdaptiveLearning",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/AdaptiveLearning.stories.tsx"
+      },
+      {
+        "component": "client/src/components/AITermSuggestions.tsx",
+        "name": "AITermSuggestions",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/AITermSuggestions.stories.tsx"
+      },
+      {
+        "component": "client/src/components/AISemanticSearch.tsx",
+        "name": "AISemanticSearch",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/AISemanticSearch.stories.tsx"
+      },
+      {
+        "component": "client/src/components/AIFeedbackDashboard.tsx",
+        "name": "AIFeedbackDashboard",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/AIFeedbackDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/AIDefinitionImprover.tsx",
+        "name": "AIDefinitionImprover",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/AIDefinitionImprover.stories.tsx"
+      },
+      {
+        "component": "client/src/components/AIDefinitionGenerator.tsx",
+        "name": "AIDefinitionGenerator",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/AIDefinitionGenerator.stories.tsx"
+      },
+      {
+        "component": "client/src/components/AIContentFeedback.tsx",
+        "name": "AIContentFeedback",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/AIContentFeedback.stories.tsx"
+      },
+      {
+        "component": "client/src/components/AIAdminDashboard.tsx",
+        "name": "AIAdminDashboard",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/AIAdminDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/hooks/useFocusTrap.tsx",
+        "name": "useFocusTrap",
+        "category": "Other",
+        "hasStory": true,
+        "storyPath": "client/src/hooks/useFocusTrap.stories.tsx"
+      },
+      {
+        "component": "client/src/hooks/use-mobile.tsx",
+        "name": "use-mobile",
+        "category": "Other",
+        "hasStory": true,
+        "storyPath": "client/src/hooks/use-mobile.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/admin/AdminTermsDashboard.tsx",
+        "name": "AdminTermsDashboard",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/admin/AdminTermsDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/admin/AdminNewsletterDashboard.tsx",
+        "name": "AdminNewsletterDashboard",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/admin/AdminNewsletterDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/pages/admin/AdminContactsDashboard.tsx",
+        "name": "AdminContactsDashboard",
+        "category": "Pages",
+        "hasStory": true,
+        "storyPath": "client/src/pages/admin/AdminContactsDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/visualization/3DKnowledgeGraph.tsx",
+        "name": "3DKnowledgeGraph",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/visualization/3DKnowledgeGraph.stories.tsx"
+      },
+      {
+        "component": "client/src/components/testing/NavigationPerformanceTest.tsx",
+        "name": "NavigationPerformanceTest",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/testing/NavigationPerformanceTest.stories.tsx"
+      },
+      {
+        "component": "client/src/components/term/TermRelationships.tsx",
+        "name": "TermRelationships",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/term/TermRelationships.stories.tsx"
+      },
+      {
+        "component": "client/src/components/term/TermOverview.tsx",
+        "name": "TermOverview",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/term/TermOverview.stories.tsx"
+      },
+      {
+        "component": "client/src/components/term/TermHeader.tsx",
+        "name": "TermHeader",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/term/TermHeader.stories.tsx"
+      },
+      {
+        "component": "client/src/components/term/TermContentTabs.tsx",
+        "name": "TermContentTabs",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/term/TermContentTabs.stories.tsx"
+      },
+      {
+        "component": "client/src/components/term/TermActions.tsx",
+        "name": "TermActions",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/term/TermActions.stories.tsx"
+      },
+      {
+        "component": "client/src/components/term/RecommendedTerms.tsx",
+        "name": "RecommendedTerms",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/term/RecommendedTerms.stories.tsx"
+      },
+      {
+        "component": "client/src/components/vr/VRConceptSpace.tsx",
+        "name": "VRConceptSpace",
+        "category": "AR/VR",
+        "hasStory": true,
+        "storyPath": "client/src/components/vr/VRConceptSpace.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/video-player.tsx",
+        "name": "video-player",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/video-player.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/tooltip.tsx",
+        "name": "tooltip",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/tooltip.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/toggle.tsx",
+        "name": "toggle",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/toggle.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/toggle-group.tsx",
+        "name": "toggle-group",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/toggle-group.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/toaster.tsx",
+        "name": "toaster",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/toaster.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/toast.tsx",
+        "name": "toast",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/toast.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/textarea.tsx",
+        "name": "textarea",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/textarea.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/tabs.tsx",
+        "name": "tabs",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/tabs.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/table.tsx",
+        "name": "table",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/table.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/switch.tsx",
+        "name": "switch",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/switch.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/slider.tsx",
+        "name": "slider",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/slider.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/skeleton.tsx",
+        "name": "skeleton",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/skeleton.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/sidebar.tsx",
+        "name": "sidebar",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/sidebar.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/sheet.tsx",
+        "name": "sheet",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/sheet.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/separator.tsx",
+        "name": "separator",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/separator.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/select.tsx",
+        "name": "select",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/select.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/searchable-select.tsx",
+        "name": "searchable-select",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/searchable-select.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/scroll-area.tsx",
+        "name": "scroll-area",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/scroll-area.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/resizable.tsx",
+        "name": "resizable",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/resizable.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/radio-group.tsx",
+        "name": "radio-group",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/radio-group.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/progress.tsx",
+        "name": "progress",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/progress.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/popover.tsx",
+        "name": "popover",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/popover.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/pagination.tsx",
+        "name": "pagination",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/pagination.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/page-breadcrumb.tsx",
+        "name": "page-breadcrumb",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/page-breadcrumb.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/optimized-image.tsx",
+        "name": "optimized-image",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/optimized-image.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/navigation-menu.tsx",
+        "name": "navigation-menu",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/navigation-menu.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/menubar.tsx",
+        "name": "menubar",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/menubar.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/label.tsx",
+        "name": "label",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/label.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/input.tsx",
+        "name": "input",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/input.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/input-otp.tsx",
+        "name": "input-otp",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/input-otp.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/icons.tsx",
+        "name": "icons",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/icons.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/hover-card.tsx",
+        "name": "hover-card",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/hover-card.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/form.tsx",
+        "name": "form",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/form.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/focus-trapped-dialog.tsx",
+        "name": "focus-trapped-dialog",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/focus-trapped-dialog.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/file-input.tsx",
+        "name": "file-input",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/file-input.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/enhanced-table.tsx",
+        "name": "enhanced-table",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/enhanced-table.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/dropdown-menu.tsx",
+        "name": "dropdown-menu",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/dropdown-menu.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/drawer.tsx",
+        "name": "drawer",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/drawer.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/dialog.tsx",
+        "name": "dialog",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/dialog.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/context-menu.tsx",
+        "name": "context-menu",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/context-menu.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/confirmation-dialog.tsx",
+        "name": "confirmation-dialog",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/confirmation-dialog.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/command.tsx",
+        "name": "command",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/command.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/collapsible.tsx",
+        "name": "collapsible",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/collapsible.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/checkbox.tsx",
+        "name": "checkbox",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/checkbox.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/chart.tsx",
+        "name": "chart",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/chart.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/carousel.tsx",
+        "name": "carousel",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/carousel.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/card.tsx",
+        "name": "card",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/card.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/calendar.tsx",
+        "name": "calendar",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/calendar.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/button.tsx",
+        "name": "button",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/button.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/breadcrumb.tsx",
+        "name": "breadcrumb",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/breadcrumb.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/badge.tsx",
+        "name": "badge",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/badge.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/avatar.tsx",
+        "name": "avatar",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/avatar.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/aspect-ratio.tsx",
+        "name": "aspect-ratio",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/aspect-ratio.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/alert.tsx",
+        "name": "alert",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/alert.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/alert-dialog.tsx",
+        "name": "alert-dialog",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/alert-dialog.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ui/accordion.tsx",
+        "name": "accordion",
+        "category": "UI Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/ui/accordion.stories.tsx"
+      },
+      {
+        "component": "client/src/components/navigation/HierarchicalNavigation.tsx",
+        "name": "HierarchicalNavigation",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/navigation/HierarchicalNavigation.stories.tsx"
+      },
+      {
+        "component": "client/src/components/search/AdvancedSearch.tsx",
+        "name": "AdvancedSearch",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/search/AdvancedSearch.stories.tsx"
+      },
+      {
+        "component": "client/src/components/search/AISemanticSearch.tsx",
+        "name": "AISemanticSearch",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/search/AISemanticSearch.stories.tsx"
+      },
+      {
+        "component": "client/src/components/sections/SectionNavigator.tsx",
+        "name": "SectionNavigator",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/sections/SectionNavigator.stories.tsx"
+      },
+      {
+        "component": "client/src/components/sections/SectionLayoutManager.tsx",
+        "name": "SectionLayoutManager",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/sections/SectionLayoutManager.stories.tsx"
+      },
+      {
+        "component": "client/src/components/sections/SectionDisplay.tsx",
+        "name": "SectionDisplay",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/sections/SectionDisplay.stories.tsx"
+      },
+      {
+        "component": "client/src/components/sections/SectionContentRenderer.tsx",
+        "name": "SectionContentRenderer",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/sections/SectionContentRenderer.stories.tsx"
+      },
+      {
+        "component": "client/src/components/sections/HierarchicalNavigatorDemo.tsx",
+        "name": "HierarchicalNavigatorDemo",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/sections/HierarchicalNavigatorDemo.stories.tsx"
+      },
+      {
+        "component": "client/src/components/sections/HierarchicalNavigator.tsx",
+        "name": "HierarchicalNavigator",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/sections/HierarchicalNavigator.stories.tsx"
+      },
+      {
+        "component": "client/src/components/settings/UserPersonalizationSettings.tsx",
+        "name": "UserPersonalizationSettings",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/settings/UserPersonalizationSettings.stories.tsx"
+      },
+      {
+        "component": "client/src/components/mobile/TouchOptimizedScroll.tsx",
+        "name": "TouchOptimizedScroll",
+        "category": "Mobile",
+        "hasStory": true,
+        "storyPath": "client/src/components/mobile/TouchOptimizedScroll.stories.tsx"
+      },
+      {
+        "component": "client/src/components/mobile/MobileOptimizedLayout.tsx",
+        "name": "MobileOptimizedLayout",
+        "category": "Mobile",
+        "hasStory": true,
+        "storyPath": "client/src/components/mobile/MobileOptimizedLayout.stories.tsx"
+      },
+      {
+        "component": "client/src/components/mobile/MobileNavigation.tsx",
+        "name": "MobileNavigation",
+        "category": "Mobile",
+        "hasStory": true,
+        "storyPath": "client/src/components/mobile/MobileNavigation.stories.tsx"
+      },
+      {
+        "component": "client/src/components/mobile/MobileLayoutWrapper.tsx",
+        "name": "MobileLayoutWrapper",
+        "category": "Mobile",
+        "hasStory": true,
+        "storyPath": "client/src/components/mobile/MobileLayoutWrapper.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/WhatYouGet.tsx",
+        "name": "WhatYouGet",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/WhatYouGet.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/ValueProposition.tsx",
+        "name": "ValueProposition",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/ValueProposition.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/SocialProof.tsx",
+        "name": "SocialProof",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/SocialProof.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/PricingCountdown.tsx",
+        "name": "PricingCountdown",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/PricingCountdown.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/Pricing.tsx",
+        "name": "Pricing",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/Pricing.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/PriceDisplay.tsx",
+        "name": "PriceDisplay",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/PriceDisplay.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/PPPBanner.tsx",
+        "name": "PPPBanner",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/PPPBanner.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/LandingHeader.tsx",
+        "name": "LandingHeader",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/LandingHeader.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/HeroSection.tsx",
+        "name": "HeroSection",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/HeroSection.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/FreeTierMessaging.tsx",
+        "name": "FreeTierMessaging",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/FreeTierMessaging.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/FounderStory.tsx",
+        "name": "FounderStory",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/FounderStory.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/FinalCTA.tsx",
+        "name": "FinalCTA",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/FinalCTA.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/FAQ.tsx",
+        "name": "FAQ",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/FAQ.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/ContentPreview.tsx",
+        "name": "ContentPreview",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/ContentPreview.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/ContactForm.tsx",
+        "name": "ContactForm",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/ContactForm.stories.tsx"
+      },
+      {
+        "component": "client/src/components/interactive/SimulationPlayer.tsx",
+        "name": "SimulationPlayer",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/interactive/SimulationPlayer.stories.tsx"
+      },
+      {
+        "component": "client/src/components/interactive/MermaidDiagram.tsx",
+        "name": "MermaidDiagram",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/interactive/MermaidDiagram.stories.tsx"
+      },
+      {
+        "component": "client/src/components/interactive/InteractiveQuiz.tsx",
+        "name": "InteractiveQuiz",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/interactive/InteractiveQuiz.stories.tsx"
+      },
+      {
+        "component": "client/src/components/interactive/InteractiveElementsManager.tsx",
+        "name": "InteractiveElementsManager",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/interactive/InteractiveElementsManager.stories.tsx"
+      },
+      {
+        "component": "client/src/components/interactive/InteractiveDemo.tsx",
+        "name": "InteractiveDemo",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/interactive/InteractiveDemo.stories.tsx"
+      },
+      {
+        "component": "client/src/components/interactive/CodeBlock.tsx",
+        "name": "CodeBlock",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/interactive/CodeBlock.stories.tsx"
+      },
+      {
+        "component": "client/src/components/lazy/LazyPages.tsx",
+        "name": "LazyPages",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/lazy/LazyPages.stories.tsx"
+      },
+      {
+        "component": "client/src/components/lazy/LazyMermaid.tsx",
+        "name": "LazyMermaid",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/lazy/LazyMermaid.stories.tsx"
+      },
+      {
+        "component": "client/src/components/lazy/LazyComponents.tsx",
+        "name": "LazyComponents",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/lazy/LazyComponents.stories.tsx"
+      },
+      {
+        "component": "client/src/components/lazy/LazyChart.tsx",
+        "name": "LazyChart",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/lazy/LazyChart.stories.tsx"
+      },
+      {
+        "component": "client/src/components/examples/EnhancedFormExample.tsx",
+        "name": "EnhancedFormExample",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/examples/EnhancedFormExample.stories.tsx"
+      },
+      {
+        "component": "client/src/components/discovery/RelationshipGraph.tsx",
+        "name": "RelationshipGraph",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/discovery/RelationshipGraph.stories.tsx"
+      },
+      {
+        "component": "client/src/components/discovery/PersonalizedDiscoveryHub.tsx",
+        "name": "PersonalizedDiscoveryHub",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/discovery/PersonalizedDiscoveryHub.stories.tsx"
+      },
+      {
+        "component": "client/src/components/discovery/DynamicFilterPanel.tsx",
+        "name": "DynamicFilterPanel",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/discovery/DynamicFilterPanel.stories.tsx"
+      },
+      {
+        "component": "client/src/components/discovery/ConceptDiscovery.tsx",
+        "name": "ConceptDiscovery",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/discovery/ConceptDiscovery.stories.tsx"
+      },
+      {
+        "component": "client/src/components/ar/ARConceptOverlay.tsx",
+        "name": "ARConceptOverlay",
+        "category": "AR/VR",
+        "hasStory": true,
+        "storyPath": "client/src/components/ar/ARConceptOverlay.stories.tsx"
+      },
+      {
+        "component": "client/src/components/analytics/SectionViewTracker.tsx",
+        "name": "SectionViewTracker",
+        "category": "Analytics",
+        "hasStory": true,
+        "storyPath": "client/src/components/analytics/SectionViewTracker.stories.tsx"
+      },
+      {
+        "component": "client/src/components/analytics/ScrollDepthTracker.tsx",
+        "name": "ScrollDepthTracker",
+        "category": "Analytics",
+        "hasStory": true,
+        "storyPath": "client/src/components/analytics/ScrollDepthTracker.stories.tsx"
+      },
+      {
+        "component": "client/src/components/analytics/FormSubmissionTracker.tsx",
+        "name": "FormSubmissionTracker",
+        "category": "Analytics",
+        "hasStory": true,
+        "storyPath": "client/src/components/analytics/FormSubmissionTracker.stories.tsx"
+      },
+      {
+        "component": "client/src/components/analytics/AnalyticsDashboard.tsx",
+        "name": "AnalyticsDashboard",
+        "category": "Analytics",
+        "hasStory": true,
+        "storyPath": "client/src/components/analytics/AnalyticsDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/accessibility/SkipLinks.tsx",
+        "name": "SkipLinks",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/accessibility/SkipLinks.stories.tsx"
+      },
+      {
+        "component": "client/src/components/accessibility/LiveRegion.tsx",
+        "name": "LiveRegion",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/accessibility/LiveRegion.stories.tsx"
+      },
+      {
+        "component": "client/src/components/accessibility/FormErrorLiveRegion.tsx",
+        "name": "FormErrorLiveRegion",
+        "category": "Components",
+        "hasStory": true,
+        "storyPath": "client/src/components/accessibility/FormErrorLiveRegion.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/UserManagementDashboard.tsx",
+        "name": "UserManagementDashboard",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/UserManagementDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/TemplateManagement.tsx",
+        "name": "TemplateManagement",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/TemplateManagement.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/QualityEvaluationDashboard.tsx",
+        "name": "QualityEvaluationDashboard",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/QualityEvaluationDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/ModelComparison.tsx",
+        "name": "ModelComparison",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/ModelComparison.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/InlineContentEditor.tsx",
+        "name": "InlineContentEditor",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/InlineContentEditor.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/GenerationStatsDashboard.tsx",
+        "name": "GenerationStatsDashboard",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/GenerationStatsDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/EnhancedContentGenerationV2.tsx",
+        "name": "EnhancedContentGenerationV2",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/EnhancedContentGenerationV2.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/EnhancedContentGeneration.tsx",
+        "name": "EnhancedContentGeneration",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/EnhancedContentGeneration.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/EmergencyStopControls.tsx",
+        "name": "EmergencyStopControls",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/EmergencyStopControls.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/ContentModerationDashboard.tsx",
+        "name": "ContentModerationDashboard",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/ContentModerationDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/ContentManagementDashboard.tsx",
+        "name": "ContentManagementDashboard",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/ContentManagementDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/ContentImportDashboard.tsx",
+        "name": "ContentImportDashboard",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/ContentImportDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/ColumnBatchOperationsDashboard.tsx",
+        "name": "ColumnBatchOperationsDashboard",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/ColumnBatchOperationsDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/CacheMonitoring.tsx",
+        "name": "CacheMonitoring",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/CacheMonitoring.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/BulkTermEditor.tsx",
+        "name": "BulkTermEditor",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/BulkTermEditor.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/AdvancedAnalyticsDashboard.tsx",
+        "name": "AdvancedAnalyticsDashboard",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/AdvancedAnalyticsDashboard.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/AdminTermsManager.tsx",
+        "name": "AdminTermsManager",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/AdminTermsManager.stories.tsx"
+      },
+      {
+        "component": "client/src/components/admin/AIContentMonitor.tsx",
+        "name": "AIContentMonitor",
+        "category": "Admin",
+        "hasStory": true,
+        "storyPath": "client/src/components/admin/AIContentMonitor.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/backgrounds/NeuralNetworkBackground.tsx",
+        "name": "NeuralNetworkBackground",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/backgrounds/NeuralNetworkBackground.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/backgrounds/GeometricAIBackground.tsx",
+        "name": "GeometricAIBackground",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/backgrounds/GeometricAIBackground.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/backgrounds/FallbackBackground.tsx",
+        "name": "FallbackBackground",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/backgrounds/FallbackBackground.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/backgrounds/CodeTypingBackground.tsx",
+        "name": "CodeTypingBackground",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/backgrounds/CodeTypingBackground.stories.tsx"
+      },
+      {
+        "component": "client/src/components/landing/backgrounds/BackgroundTester.tsx",
+        "name": "BackgroundTester",
+        "category": "Landing",
+        "hasStory": true,
+        "storyPath": "client/src/components/landing/backgrounds/BackgroundTester.stories.tsx"
+      }
+    ]
+  },
+  "visualTesting": {
+    "hasVisualTests": true,
+    "visualTestFiles": 8,
+    "hasPlaywrightConfig": true,
+    "hasStorybookConfig": true,
+    "visualBaselines": 103,
+    "scripts": [
+      {
+        "file": "tests/visual/visual-audit-storybook.spec.ts",
+        "hasStorybookIntegration": true,
+        "hasScreenshotComparison": true,
+        "hasMultipleBrowsers": false,
+        "hasResponsiveTests": false,
+        "testCount": 1
+      },
+      {
+        "file": "tests/visual/term-detail.spec.ts",
+        "hasStorybookIntegration": false,
+        "hasScreenshotComparison": true,
+        "hasMultipleBrowsers": false,
+        "hasResponsiveTests": true,
+        "testCount": 4
+      },
+      {
+        "file": "tests/visual/settings-page.spec.ts",
+        "hasStorybookIntegration": false,
+        "hasScreenshotComparison": true,
+        "hasMultipleBrowsers": false,
+        "hasResponsiveTests": true,
+        "testCount": 4
+      },
+      {
+        "file": "tests/visual/search.spec.ts",
+        "hasStorybookIntegration": false,
+        "hasScreenshotComparison": true,
+        "hasMultipleBrowsers": false,
+        "hasResponsiveTests": true,
+        "testCount": 3
+      },
+      {
+        "file": "tests/visual/homepage.spec.ts",
+        "hasStorybookIntegration": false,
+        "hasScreenshotComparison": true,
+        "hasMultipleBrowsers": false,
+        "hasResponsiveTests": true,
+        "testCount": 6
+      },
+      {
+        "file": "tests/visual/hierarchical-navigation.spec.ts",
+        "hasStorybookIntegration": false,
+        "hasScreenshotComparison": false,
+        "hasMultipleBrowsers": false,
+        "hasResponsiveTests": true,
+        "testCount": 11
+      },
+      {
+        "file": "tests/visual/error-states.spec.ts",
+        "hasStorybookIntegration": false,
+        "hasScreenshotComparison": true,
+        "hasMultipleBrowsers": false,
+        "hasResponsiveTests": false,
+        "testCount": 5
+      },
+      {
+        "file": "tests/visual/ai-features.spec.ts",
+        "hasStorybookIntegration": false,
+        "hasScreenshotComparison": true,
+        "hasMultipleBrowsers": false,
+        "hasResponsiveTests": true,
+        "testCount": 5
+      }
+    ],
+    "storybookIntegration": {
+      "hasStorybookScript": true,
+      "hasVisualTestScript": true,
+      "hasStorybookBuild": true,
+      "scripts": [
+        "audit:visual",
+        "audit:visual:full",
+        "audit:visual:debug",
+        "audit:visual:enhanced",
+        "audit:visual:comprehensive",
+        "visual-test",
+        "visual-test:accessibility",
+        "visual-test:performance",
+        "visual-test:interaction",
+        "visual-test:component",
+        "visual-test:flow",
+        "visual-test:compare",
+        "visual-test:analyze",
+        "test:storybook",
+        "test:visual",
+        "test:visual:ui",
+        "test:visual:headed",
+        "test:visual:update",
+        "test:visual:chromium",
+        "test:visual:mobile",
+        "test:visual:cross-browser",
+        "test:visual:storybook",
+        "storybook",
+        "build-storybook"
+      ]
+    }
+  },
+  "storyQuality": {
+    "totalStories": 230,
+    "syntaxErrors": [],
+    "importIssues": [],
+    "typeScriptErrors": [],
+    "bestPractices": [
+      {
+        "file": "client/src/components/AIContentFeedback.stories.tsx",
+        "issue": "Missing autodocs tag"
+      },
+      {
+        "file": "client/src/components/landing/HeroSection.stories.tsx",
+        "issue": "Missing autodocs tag"
+      }
+    ],
+    "storyVariants": [
+      {
+        "file": "client/src/main.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "Architecture"
+        ]
+      },
+      {
+        "file": "client/src/App.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "Documentation"
+        ]
+      },
+      {
+        "file": "client/src/utils/performanceMonitor.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "Documentation"
+        ]
+      },
+      {
+        "file": "client/src/hooks/useFocusTrap.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "Documentation"
+        ]
+      },
+      {
+        "file": "client/src/hooks/use-mobile.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "Documentation"
+        ]
+      },
+      {
+        "file": "client/src/pages/not-found.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/XRExploration.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/UserProgressDashboard.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/Trending.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/TermsOfService.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/Terms.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/TermDetail.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/SurpriseMe.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/SubcategoryDetail.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/Subcategories.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/Settings.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/PurchaseSuccess.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/Profile.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/PrivacyPolicy.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/PersonalizedHomepage.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/OwnerDashboard.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/Lifetime.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/LearningPaths.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/LearningPathDetail.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/LandingPage.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/Home.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/Favorites.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/ExampleEnhancedUsage.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/EnhancedTermDetail.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/Discovery.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/Dashboard.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/CodeExamples.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/Categories.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/AnalyticsDashboard.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/AdminDashboard.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/Admin.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/About.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/AITools.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/AISearch.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/ABTestingDashboard.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/pages/3DVisualization.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/VirtualizedTermList.stories.tsx",
+        "count": 21,
+        "variants": [
+          "Default",
+          "LargeDataset",
+          "CompactView",
+          "WithSearch",
+          "WithFilters",
+          "WithSorting",
+          "GridLayout",
+          "WithSelectionMode",
+          "WithCustomActions",
+          "WithGrouping",
+          "LoadingState",
+          "EmptyState",
+          "WithInfiniteScroll",
+          "WithErrorState",
+          "PerformanceTest",
+          "WithHighlighting",
+          "MobileOptimized",
+          "WithAnalytics",
+          "AccessibleVersion",
+          "DarkMode",
+          "CustomStyling"
+        ]
+      },
+      {
+        "file": "client/src/components/UpgradePrompt.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/TrendingWidget.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/TrendingDashboard.stories.tsx",
+        "count": 7,
+        "variants": [
+          "Default",
+          "Loading",
+          "EmptyState",
+          "HighVelocity",
+          "MixedTrends",
+          "CategoryFocus",
+          "RealTimeUpdate"
+        ]
+      },
+      {
+        "file": "client/src/components/ThemeProvider.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/TestPurchaseButton.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/TermCard.stories.tsx",
+        "count": 7,
+        "variants": [
+          "Default",
+          "Favorited",
+          "SimpleTerm",
+          "ComplexTerm",
+          "LongTitle",
+          "NoSubcategories",
+          "GridLayout"
+        ]
+      },
+      {
+        "file": "client/src/components/SurpriseMe.stories.tsx",
+        "count": 5,
+        "variants": [
+          "Default",
+          "LoadingState",
+          "WithMultipleModes",
+          "ErrorState",
+          "WithAnalytics"
+        ]
+      },
+      {
+        "file": "client/src/components/SubcategoryCard.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/Sidebar.stories.tsx",
+        "count": 10,
+        "variants": [
+          "Default",
+          "Collapsed",
+          "WithActiveCategory",
+          "WithFilters",
+          "Mobile",
+          "WithSearchResults",
+          "UserPreferences",
+          "LoadingState",
+          "EmptyState",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ShareMenu.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/SearchBar.stories.tsx",
+        "count": 7,
+        "variants": [
+          "Default",
+          "WithInitialValue",
+          "Loading",
+          "WithSuggestions",
+          "Mobile",
+          "Focused",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/S3FileManagerDashboard.stories.tsx",
+        "count": 13,
+        "variants": [
+          "Default",
+          "FileUploadView",
+          "BulkOperations",
+          "SearchAndFilter",
+          "FileDetailsView",
+          "StorageAnalytics",
+          "AccessManagement",
+          "BackupAndSync",
+          "CDNManagement",
+          "LoadingState",
+          "ErrorState",
+          "EmptyState",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/S3FileBrowser.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/RecommendedForYou.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/PurchaseVerification.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ProgressVisualization.stories.tsx",
+        "count": 5,
+        "variants": [
+          "Default",
+          "NewUser",
+          "ActiveUser",
+          "PowerUser",
+          "LoadingState"
+        ]
+      },
+      {
+        "file": "client/src/components/ProgressTracker.stories.tsx",
+        "count": 9,
+        "variants": [
+          "NotLearned",
+          "Learned",
+          "Interactive",
+          "UnauthenticatedUser",
+          "LoadingState",
+          "ErrorState",
+          "InTermCard",
+          "MultipleTerms",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/PremiumUpgradeSuccess.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/PremiumBadge.stories.tsx",
+        "count": 11,
+        "variants": [
+          "PremiumDefault",
+          "PremiumCompact",
+          "PremiumIconOnly",
+          "FreeUserDefault",
+          "FreeUserCompact",
+          "FreeUserIconOnly",
+          "FreeUserHidden",
+          "NoAccessStatus",
+          "AllVariants",
+          "InContext",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/PredictiveAnalytics.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/PersonalizedDashboard.stories.tsx",
+        "count": 6,
+        "variants": [
+          "Default",
+          "Loading",
+          "BeginnerUser",
+          "ExpertUser",
+          "NoData",
+          "HighEngagement"
+        ]
+      },
+      {
+        "file": "client/src/components/PerformanceTest.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/PWAStatus.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/Header.stories.tsx",
+        "count": 5,
+        "variants": [
+          "Default",
+          "WithLongSearch",
+          "Mobile",
+          "Tablet",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/FreeTierGate.stories.tsx",
+        "count": 9,
+        "variants": [
+          "Default",
+          "WithAccess",
+          "DailyLimitReached",
+          "LowRemainingViews",
+          "NoPreview",
+          "CustomFallback",
+          "Loading",
+          "ShortContent",
+          "MobileView"
+        ]
+      },
+      {
+        "file": "client/src/components/Footer.stories.tsx",
+        "count": 5,
+        "variants": [
+          "Default",
+          "Mobile",
+          "Tablet",
+          "DarkMode",
+          "WithLongContent"
+        ]
+      },
+      {
+        "file": "client/src/components/FirebaseLoginPage.stories.tsx",
+        "count": 19,
+        "variants": [
+          "Default",
+          "WithRegistration",
+          "WithSocialProviders",
+          "PasswordReset",
+          "WithEmailVerification",
+          "LoadingState",
+          "WithValidationErrors",
+          "LoginError",
+          "WithMultiFactorAuth",
+          "EnterpriseSSO",
+          "CustomBranding",
+          "MobileOptimized",
+          "WithTermsAndPrivacy",
+          "FreeTrial",
+          "MaintenanceMode",
+          "RegionalCompliance",
+          "DarkMode",
+          "AccessibilityOptimized",
+          "DeveloperMode"
+        ]
+      },
+      {
+        "file": "client/src/components/FilePreview.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ErrorBoundary.stories.tsx",
+        "count": 10,
+        "variants": [
+          "Default",
+          "WithError",
+          "WithCustomFallback",
+          "InteractiveError",
+          "NestedErrorBoundaries",
+          "MultipleComponents",
+          "AsyncError",
+          "ErrorInEventHandler",
+          "ErrorRecovery",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/EnhancedTermCard.stories.tsx",
+        "count": 8,
+        "variants": [
+          "Default",
+          "Beginner",
+          "Advanced",
+          "WithoutCodeExamples",
+          "AIGenerated",
+          "Compact",
+          "Mobile",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/DragDropUploader.stories.tsx",
+        "count": 16,
+        "variants": [
+          "Default",
+          "ImagesOnly",
+          "DocumentsOnly",
+          "SingleFileUpload",
+          "WithCompression",
+          "MinimalInterface",
+          "LargeFileSupport",
+          "RestrictiveSettings",
+          "WithCallbacks",
+          "InteractiveDemo",
+          "AllFileTypes",
+          "ProductionConfig",
+          "ErrorStates",
+          "MobileOptimized",
+          "DarkMode",
+          "CustomizationExample"
+        ]
+      },
+      {
+        "file": "client/src/components/CrossReferenceAnalytics.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/CookieConsentBanner.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/CategoryHierarchy.stories.tsx",
+        "count": 11,
+        "variants": [
+          "Default",
+          "CompactVariant",
+          "WithoutIcons",
+          "ShortPath",
+          "LongPath",
+          "CustomIcons",
+          "GeneratedBreadcrumb",
+          "CategoryOnly",
+          "SubcategoryOnly",
+          "ResponsiveMobile",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/CategoryCard.stories.tsx",
+        "count": 9,
+        "variants": [
+          "Default",
+          "WithLongName",
+          "WithLowTermCount",
+          "WithHighTermCount",
+          "WithoutIcon",
+          "WithShortDescription",
+          "Mobile",
+          "DarkMode",
+          "Hover"
+        ]
+      },
+      {
+        "file": "client/src/components/AdaptiveLearning.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/AITermSuggestions.stories.tsx",
+        "count": 14,
+        "variants": [
+          "Default",
+          "WithFocusCategory",
+          "WithSpecificCategory",
+          "WithCustomClassName",
+          "DeepLearningFocus",
+          "ComputerVisionFocus",
+          "NLPFocus",
+          "DataScienceFocus",
+          "StatisticsFocus",
+          "AlgorithmsFocus",
+          "OptimizationFocus",
+          "ReinforcementLearningFocus",
+          "AllCategoriesMode",
+          "InteractiveDemo"
+        ]
+      },
+      {
+        "file": "client/src/components/AISemanticSearch.stories.tsx",
+        "count": 8,
+        "variants": [
+          "Default",
+          "WithInitialQuery",
+          "LoadingState",
+          "WithResults",
+          "EmptyResults",
+          "ErrorState",
+          "DarkMode",
+          "MobileView"
+        ]
+      },
+      {
+        "file": "client/src/components/AIFeedbackDashboard.stories.tsx",
+        "count": 5,
+        "variants": [
+          "Default",
+          "AdminView",
+          "FeedbackForm",
+          "AnalyticsView",
+          "LoadingState"
+        ]
+      },
+      {
+        "file": "client/src/components/AIDefinitionImprover.stories.tsx",
+        "count": 11,
+        "variants": [
+          "Default",
+          "WithLongDefinition",
+          "ImprovingState",
+          "WithImprovements",
+          "WithCustomImprovementTypes",
+          "ComparisonMode",
+          "MultipleVersions",
+          "ErrorState",
+          "WithFeedback",
+          "DarkMode",
+          "MobileView"
+        ]
+      },
+      {
+        "file": "client/src/components/AIDefinitionGenerator.stories.tsx",
+        "count": 10,
+        "variants": [
+          "Default",
+          "WithPrefilledTerm",
+          "GeneratingState",
+          "SuccessfulGeneration",
+          "WithCustomizationOptions",
+          "ErrorState",
+          "WithCategory",
+          "ReinforcementLearning",
+          "DarkMode",
+          "MobileView"
+        ]
+      },
+      {
+        "file": "client/src/components/AIContentFeedback.stories.tsx",
+        "count": 26,
+        "variants": [
+          "Default",
+          "WithSection",
+          "UnverifiedContent",
+          "NeedsReviewContent",
+          "FlaggedContent",
+          "VerifiedContent",
+          "ExpertReviewedContent",
+          "HumanGeneratedContent",
+          "DefinitionSectionFeedback",
+          "CharacteristicsSectionFeedback",
+          "ExamplesSectionFeedback",
+          "ImplementationSectionFeedback",
+          "ApplicationsSectionFeedback",
+          "FeedbackFormOpened",
+          "IncorrectFeedbackExample",
+          "IncompleteFeedbackExample",
+          "MisleadingFeedbackExample",
+          "OutdatedFeedbackExample",
+          "SuccessfulSubmission",
+          "SubmissionError",
+          "ValidationErrors",
+          "MobileView",
+          "TabletView",
+          "DarkMode",
+          "AccessibilityFeatures",
+          "CustomStyling"
+        ]
+      },
+      {
+        "file": "client/src/components/AIAdminDashboard.stories.tsx",
+        "count": 11,
+        "variants": [
+          "Default",
+          "WithHighActivity",
+          "AIServiceStatus",
+          "ContentModerationQueue",
+          "AnalyticsView",
+          "BulkOperations",
+          "UserFeedbackAnalysis",
+          "EmptyState",
+          "LoadingState",
+          "ErrorState",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/pages/admin/AdminTermsDashboard.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/pages/admin/AdminNewsletterDashboard.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/pages/admin/AdminContactsDashboard.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/vr/VRConceptSpace.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/visualization/3DKnowledgeGraph.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/testing/NavigationPerformanceTest.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/settings/UserPersonalizationSettings.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/term/TermRelationships.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/term/TermOverview.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/term/TermHeader.stories.tsx",
+        "count": 8,
+        "variants": [
+          "Default",
+          "WithLongName",
+          "Favorited",
+          "HighViewCount",
+          "RecentlyUpdated",
+          "Mobile",
+          "Tablet",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/term/TermContentTabs.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/term/TermActions.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/term/RecommendedTerms.stories.tsx",
+        "count": 15,
+        "variants": [
+          "Default",
+          "Empty",
+          "SingleTerm",
+          "TwoTerms",
+          "ManyTerms",
+          "WithFavorites",
+          "LongDefinitions",
+          "DifferentCategories",
+          "MobileView",
+          "TabletView",
+          "InteractiveDemo",
+          "CustomLayout",
+          "LoadingState",
+          "ErrorState",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/search/AdvancedSearch.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/search/AISemanticSearch.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/sections/SectionNavigator.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/sections/SectionLayoutManager.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/sections/SectionDisplay.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/sections/SectionContentRenderer.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/sections/HierarchicalNavigatorDemo.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/sections/HierarchicalNavigator.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/navigation/HierarchicalNavigation.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/mobile/TouchOptimizedScroll.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/mobile/MobileOptimizedLayout.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/mobile/MobileNavigation.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/mobile/MobileLayoutWrapper.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/lazy/LazyPages.stories.tsx",
+        "count": 2,
+        "variants": [
+          "LazyTermsStory",
+          "LazyTermsRaw"
+        ]
+      },
+      {
+        "file": "client/src/components/lazy/LazyMermaid.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/lazy/LazyComponents.stories.tsx",
+        "count": 2,
+        "variants": [
+          "AIFeedbackDashboard",
+          "AIFeedbackDashboardWrapped"
+        ]
+      },
+      {
+        "file": "client/src/components/lazy/LazyChart.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/WhatYouGet.stories.tsx",
+        "count": 8,
+        "variants": [
+          "Default",
+          "Mobile",
+          "Tablet",
+          "Desktop",
+          "WithDarkBackground",
+          "CompactVersion",
+          "WithPricing",
+          "FeatureHighlight"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/ValueProposition.stories.tsx",
+        "count": 9,
+        "variants": [
+          "Default",
+          "MobileView",
+          "TabletView",
+          "CustomContent",
+          "MinimalVersion",
+          "FeatureComparison",
+          "TestimonialIntegrated",
+          "InteractiveDemo",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/SocialProof.stories.tsx",
+        "count": 8,
+        "variants": [
+          "Default",
+          "Mobile",
+          "Tablet",
+          "Desktop",
+          "HighNumbers",
+          "WithAnimation",
+          "MinimalVersion",
+          "WithCustomTestimonials"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/PricingCountdown.stories.tsx",
+        "count": 3,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/Pricing.stories.tsx",
+        "count": 19,
+        "variants": [
+          "Default",
+          "WithYearlyToggle",
+          "WithStudentPricing",
+          "ComparisonView",
+          "WithTrialBanner",
+          "WithCustomCurrency",
+          "WithPPPBanner",
+          "WithTestimonials",
+          "WithFAQ",
+          "WithLimitedTimeOffer",
+          "WithUsageBasedPricing",
+          "WithAddOns",
+          "LoadingState",
+          "ErrorState",
+          "DarkMode",
+          "MobileOptimized",
+          "WithAnalytics",
+          "WithCustomization",
+          "WithExperimentalFeatures"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/PriceDisplay.stories.tsx",
+        "count": 14,
+        "variants": [
+          "Default",
+          "WithComparison",
+          "WithSavings",
+          "FullFeatures",
+          "SmallSize",
+          "MediumSize",
+          "ExtraLarge",
+          "LoadingState",
+          "InternationalPricing",
+          "NoDiscount",
+          "PricingCards",
+          "InlineUsage",
+          "CustomStyling",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/PPPBanner.stories.tsx",
+        "count": 3,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/LandingHeader.stories.tsx",
+        "count": 7,
+        "variants": [
+          "Default",
+          "Mobile",
+          "Tablet",
+          "Desktop",
+          "WithScrollBehavior",
+          "WithInternationalPricing",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/HeroSection.stories.tsx",
+        "count": 11,
+        "variants": [
+          "Default",
+          "WithDifferentPricing",
+          "LoadingState",
+          "MobileView",
+          "TabletView",
+          "HighContrastMode",
+          "WithCustomContent",
+          "InteractiveDemo",
+          "A11yOptimized",
+          "PerformanceOptimized",
+          "ComparisonVariants"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/FreeTierMessaging.stories.tsx",
+        "count": 3,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/FounderStory.stories.tsx",
+        "count": 8,
+        "variants": [
+          "Default",
+          "Mobile",
+          "Tablet",
+          "Desktop",
+          "WithAlternativeBackground",
+          "CompactVersion",
+          "WithRealPhoto",
+          "MinimalVersion"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/FinalCTA.stories.tsx",
+        "count": 3,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/FAQ.stories.tsx",
+        "count": 18,
+        "variants": [
+          "Default",
+          "WithSearch",
+          "CategorizedView",
+          "CompactLayout",
+          "WithCustomStyling",
+          "LoadingState",
+          "EmptyState",
+          "WithAnalytics",
+          "InteractiveFeatures",
+          "AdminMode",
+          "MultiLanguage",
+          "WithRichContent",
+          "PopularQuestions",
+          "DarkMode",
+          "MobileOptimized",
+          "AccessibleVersion",
+          "WithCustomActions",
+          "WithRelatedContent"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/ContentPreview.stories.tsx",
+        "count": 16,
+        "variants": [
+          "Default",
+          "WithInteractiveDemo",
+          "ShowcaseView",
+          "WithSearchDemo",
+          "ComparisonView",
+          "WithTestimonials",
+          "FeatureHighlight",
+          "WithStats",
+          "LoadingState",
+          "ErrorState",
+          "MobileOptimized",
+          "WithAnimation",
+          "CustomTheme",
+          "DarkMode",
+          "WithCallToAction",
+          "AccessibleVersion"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/ContactForm.stories.tsx",
+        "count": 7,
+        "variants": [
+          "Default",
+          "Compact",
+          "FullWidth",
+          "WithCustomStyling",
+          "InteractiveDemo",
+          "Mobile",
+          "Tablet"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/video-player.stories.tsx",
+        "count": 8,
+        "variants": [
+          "BasicVideo",
+          "AutoplayVideo",
+          "LoopingVideo",
+          "WithSubtitles",
+          "MinimalPlayer",
+          "ErrorState",
+          "InterviewFormat",
+          "TutorialVideo"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/tooltip.stories.tsx",
+        "count": 12,
+        "variants": [
+          "Default",
+          "WithIcon",
+          "HelpIcon",
+          "DifferentSides",
+          "WithDelay",
+          "LongContent",
+          "WithBadge",
+          "WithCustomStyling",
+          "DisabledTrigger",
+          "InteractiveTooltip",
+          "MultipleTooltips",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/toggle.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/toggle-group.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "SingleSelect"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/toaster.stories.tsx",
+        "count": 6,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "Disabled",
+          "Small",
+          "Large"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/toast.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/textarea.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/tabs.stories.tsx",
+        "count": 9,
+        "variants": [
+          "Default",
+          "WithIcons",
+          "WithBadges",
+          "VerticalTabs",
+          "DisabledTab",
+          "ManyTabs",
+          "NestedTabs",
+          "Interactive",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/table.stories.tsx",
+        "count": 8,
+        "variants": [
+          "Default",
+          "WithBadges",
+          "WithActions",
+          "WithSelection",
+          "DataTable",
+          "ResponsiveTable",
+          "EmptyState",
+          "WithFooter"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/switch.stories.tsx",
+        "count": 12,
+        "variants": [
+          "Default",
+          "Checked",
+          "Disabled",
+          "WithLabel",
+          "WithDescription",
+          "SettingsPanel",
+          "Interactive",
+          "FormExample",
+          "AccessibilityExample",
+          "CustomStyling",
+          "LoadingState",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/slider.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/skeleton.stories.tsx",
+        "count": 14,
+        "variants": [
+          "Default",
+          "Circle",
+          "Rectangle",
+          "CardSkeleton",
+          "ArticleSkeleton",
+          "ImageSkeleton",
+          "ButtonSkeleton",
+          "ListSkeleton",
+          "TableSkeleton",
+          "FormSkeleton",
+          "DashboardSkeleton",
+          "DifferentSizes",
+          "CustomShape",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/sidebar.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/sheet.stories.tsx",
+        "count": 12,
+        "variants": [
+          "Default",
+          "LeftSide",
+          "RightSide",
+          "TopSide",
+          "BottomSide",
+          "WithForm",
+          "WithScrollableContent",
+          "MobileBottomSheet",
+          "ControlledSheet",
+          "LoadingSheet",
+          "CustomWidth",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/separator.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/select.stories.tsx",
+        "count": 12,
+        "variants": [
+          "Default",
+          "WithLabel",
+          "WithGroups",
+          "WithDisabledOptions",
+          "Disabled",
+          "WithDefaultValue",
+          "LongOptions",
+          "ManyOptions",
+          "FormExample",
+          "CustomWidth",
+          "Interactive",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/searchable-select.stories.tsx",
+        "count": 14,
+        "variants": [
+          "Default",
+          "WithDescriptions",
+          "GroupedByCategory",
+          "CountriesGrouped",
+          "WithDisabledOptions",
+          "Disabled",
+          "EmptyState",
+          "CustomEmptyMessage",
+          "LongOptionsList",
+          "PreselectedValue",
+          "CompactWidth",
+          "CustomStyling",
+          "AIGlossaryExample",
+          "AllVariants"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/scroll-area.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithHorizontalScroll"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/resizable.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/radio-group.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithDisabledOption"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/progress.stories.tsx",
+        "count": 12,
+        "variants": [
+          "Default",
+          "Zero",
+          "Complete",
+          "DifferentValues",
+          "WithLabel",
+          "CustomColors",
+          "DifferentSizes",
+          "Animated",
+          "LoadingStates",
+          "Indeterminate",
+          "SkillLevels",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/popover.stories.tsx",
+        "count": 10,
+        "variants": [
+          "Default",
+          "WithForm",
+          "WithIcon",
+          "UserProfile",
+          "DatePicker",
+          "SharePopover",
+          "QuickActions",
+          "Positions",
+          "AIGlossaryExample",
+          "AllVariants"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/pagination.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/page-breadcrumb.stories.tsx",
+        "count": 6,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "Disabled",
+          "Small",
+          "Large"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/optimized-image.stories.tsx",
+        "count": 6,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "Disabled",
+          "Small",
+          "Large"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/navigation-menu.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "SimpleLinks"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/menubar.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/label.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/input.stories.tsx",
+        "count": 12,
+        "variants": [
+          "Default",
+          "WithValue",
+          "WithLabel",
+          "Disabled",
+          "Required",
+          "WithError",
+          "Password",
+          "Search",
+          "Number",
+          "LongValue",
+          "Focused",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/input-otp.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "FourDigit"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/icons.stories.tsx",
+        "count": 6,
+        "variants": [
+          "IconSizes",
+          "CommonIcons",
+          "ColoredIcons",
+          "DisabledState",
+          "SmallIcons",
+          "LargeIcons"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/hover-card.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProfile"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/form.stories.tsx",
+        "count": 5,
+        "variants": [
+          "BasicExample",
+          "ProfileExample",
+          "SettingsExample",
+          "ValidationStates",
+          "CompactForm"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/focus-trapped-dialog.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithoutTrap"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/file-input.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithError"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/enhanced-table.stories.tsx",
+        "count": 6,
+        "variants": [
+          "MLAlgorithmsComparison",
+          "DatasetsComparison",
+          "SimpleTable",
+          "LargeDataset",
+          "EmptyState",
+          "MinimalTable"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/dropdown-menu.stories.tsx",
+        "count": 8,
+        "variants": [
+          "Default",
+          "Simple",
+          "WithCheckboxes",
+          "WithRadioGroup",
+          "WithSubmenu",
+          "AIGlossaryActions",
+          "AdminActions",
+          "AllVariants"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/drawer.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/dialog.stories.tsx",
+        "count": 11,
+        "variants": [
+          "Default",
+          "WithForm",
+          "ConfirmationDialog",
+          "WithScrollableContent",
+          "WithoutTrigger",
+          "LoadingDialog",
+          "AlertDialog",
+          "SuccessDialog",
+          "NestedDialogs",
+          "CustomSizedDialog",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/context-menu.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithSubmenus"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/confirmation-dialog.stories.tsx",
+        "count": 10,
+        "variants": [
+          "Default",
+          "Destructive",
+          "WithDetails",
+          "CustomButtons",
+          "LongContent",
+          "SimpleConfirmation",
+          "LogoutConfirmation",
+          "UnsavedChanges",
+          "BulkAction",
+          "AllVariants"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/command.stories.tsx",
+        "count": 10,
+        "variants": [
+          "Default",
+          "Dialog",
+          "WithIcons",
+          "SearchResults",
+          "WithKeyboardShortcuts",
+          "Loading",
+          "EmptyState",
+          "RecentSearches",
+          "Categorized",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/collapsible.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithCustomStyling"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/checkbox.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/chart.stories.tsx",
+        "count": 6,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "Disabled",
+          "Small",
+          "Large"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/carousel.stories.tsx",
+        "count": 11,
+        "variants": [
+          "Default",
+          "AIGlossaryTerms",
+          "MultipleItems",
+          "ThreeItems",
+          "VerticalOrientation",
+          "ImageCarousel",
+          "AutoPlay",
+          "TestimonialCarousel",
+          "WithIndicators",
+          "NoNavigation",
+          "SingleItem"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/card.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "WithFooter",
+          "SimpleCard",
+          "NotificationCard"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/card-enhanced.stories.tsx",
+        "count": 10,
+        "variants": [
+          "Default",
+          "SimpleCard",
+          "WithHeaderOnly",
+          "TermCard",
+          "StatsCard",
+          "ArticleCard",
+          "CompactCard",
+          "LoadingCard",
+          "ErrorCard",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/calendar.stories.tsx",
+        "count": 13,
+        "variants": [
+          "Default",
+          "WithSelectedDate",
+          "MultipleSelection",
+          "RangeMode",
+          "WithDisabledDates",
+          "WeekendDisabled",
+          "PastDatesDisabled",
+          "FutureDatesDisabled",
+          "CustomStyling",
+          "WithoutOutsideDays",
+          "MinMaxDates",
+          "BookingCalendar",
+          "EventCalendar"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/button.stories.tsx",
+        "count": 10,
+        "variants": [
+          "Default",
+          "Secondary",
+          "Destructive",
+          "Outline",
+          "Ghost",
+          "Link",
+          "Large",
+          "Small",
+          "Disabled",
+          "WithIcon"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/button-enhanced.stories.tsx",
+        "count": 10,
+        "variants": [
+          "AllVariants",
+          "AllSizes",
+          "WithIcons",
+          "IconOnly",
+          "States",
+          "Loading",
+          "LongText",
+          "FullWidth",
+          "AsChild",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/breadcrumb.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/badge.stories.tsx",
+        "count": 12,
+        "variants": [
+          "Default",
+          "Secondary",
+          "Destructive",
+          "Outline",
+          "WithNumbers",
+          "StatusBadges",
+          "CategoryBadges",
+          "WithEmoji",
+          "LongText",
+          "Interactive",
+          "DarkMode",
+          "AllVariantsComparison"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/avatar.stories.tsx",
+        "count": 11,
+        "variants": [
+          "Default",
+          "FallbackOnly",
+          "BrokenImage",
+          "DifferentSizes",
+          "MultipleUsers",
+          "WithBorder",
+          "StatusIndicators",
+          "CustomColors",
+          "SquareVariant",
+          "Interactive",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/aspect-ratio.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Square",
+          "Portrait",
+          "WithPlaceholder"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/alert.stories.tsx",
+        "count": 11,
+        "variants": [
+          "Default",
+          "Destructive",
+          "Success",
+          "Warning",
+          "WithoutIcon",
+          "OnlyDescription",
+          "OnlyTitle",
+          "LongContent",
+          "WithActions",
+          "AllVariants",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/alert-dialog.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithCustomAction"
+        ]
+      },
+      {
+        "file": "client/src/components/ui/accordion.stories.tsx",
+        "count": 7,
+        "variants": [
+          "Default",
+          "Multiple",
+          "SingleItem",
+          "LongContent",
+          "CustomStyling",
+          "EmptyState",
+          "DisabledState"
+        ]
+      },
+      {
+        "file": "client/src/components/examples/EnhancedFormExample.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/interactive/SimulationPlayer.stories.tsx",
+        "count": 5,
+        "variants": [
+          "BubbleSort",
+          "LinearSearch",
+          "BinarySearchTree",
+          "AutoPlayDemo",
+          "BasicSimulation"
+        ]
+      },
+      {
+        "file": "client/src/components/interactive/MermaidDiagram.stories.tsx",
+        "count": 16,
+        "variants": [
+          "Default",
+          "MachineLearningPipeline",
+          "TransformerArchitecture",
+          "CNNVisualization",
+          "DecisionTree",
+          "ReinforcementLearning",
+          "WithCustomTheme",
+          "InteractiveWithZoom",
+          "LoadingState",
+          "ErrorState",
+          "WithExportOptions",
+          "ResponsiveDesign",
+          "WithStepByStepExplanation",
+          "ComparisonView",
+          "WithAnnotations",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/interactive/InteractiveQuiz.stories.tsx",
+        "count": 17,
+        "variants": [
+          "Default",
+          "AdvancedQuiz",
+          "MathematicsQuiz",
+          "TimedQuiz",
+          "PracticeMode",
+          "AssessmentMode",
+          "WithProgress",
+          "CustomStyling",
+          "AdaptiveQuiz",
+          "MultipleAttempts",
+          "WithHints",
+          "LoadingState",
+          "ErrorState",
+          "CompletedState",
+          "DarkMode",
+          "MobileView",
+          "AccessibleQuiz"
+        ]
+      },
+      {
+        "file": "client/src/components/interactive/InteractiveElementsManager.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/interactive/InteractiveDemo.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/interactive/CodeBlock.stories.tsx",
+        "count": 13,
+        "variants": [
+          "JavaScript",
+          "Python",
+          "WithHighlighting",
+          "SQL",
+          "ShortCode",
+          "LongCode",
+          "JSON",
+          "NoLineNumbers",
+          "ExecutableCode",
+          "MultipleLanguages",
+          "CustomStyling",
+          "InteractiveDemo",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/ar/ARConceptOverlay.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/discovery/RelationshipGraph.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/discovery/PersonalizedDiscoveryHub.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/discovery/DynamicFilterPanel.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/discovery/ConceptDiscovery.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/analytics/SectionViewTracker.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/analytics/ScrollDepthTracker.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/analytics/FormSubmissionTracker.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/analytics/AnalyticsDashboard.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/accessibility/SkipLinks.stories.tsx",
+        "count": 6,
+        "variants": [
+          "Default",
+          "FocusDemo",
+          "CustomSkipLinks",
+          "MinimalLayout",
+          "AccessibilityGuideline",
+          "DarkMode"
+        ]
+      },
+      {
+        "file": "client/src/components/accessibility/LiveRegion.stories.tsx",
+        "count": 9,
+        "variants": [
+          "Default",
+          "AssertiveMessage",
+          "PersistentMessage",
+          "QuickClearMessage",
+          "InteractiveDemo",
+          "WithCustomHook",
+          "FormFeedback",
+          "LoadingStates",
+          "MultipleRegions"
+        ]
+      },
+      {
+        "file": "client/src/components/accessibility/FormErrorLiveRegion.stories.tsx",
+        "count": 2,
+        "variants": [
+          "Default",
+          "WithProps"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/UserManagementDashboard.stories.tsx",
+        "count": 5,
+        "variants": [
+          "Default",
+          "Loading",
+          "EmptyUsers",
+          "PremiumUsers",
+          "AdminUsers"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/TemplateManagement.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/QualityEvaluationDashboard.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/ModelComparison.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/InlineContentEditor.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/GenerationStatsDashboard.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/EnhancedContentGenerationV2.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/EnhancedContentGeneration.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/EmergencyStopControls.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/ContentModerationDashboard.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/ContentManagementDashboard.stories.tsx",
+        "count": 5,
+        "variants": [
+          "Default",
+          "WithSelectedTerm",
+          "Loading",
+          "EmptyTerms",
+          "WithHighMetrics"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/ContentImportDashboard.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/ColumnBatchOperationsDashboard.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/CacheMonitoring.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/BulkTermEditor.stories.tsx",
+        "count": 8,
+        "variants": [
+          "Default",
+          "WithSelectedTerms",
+          "WithModifiedTerms",
+          "FilteredTerms",
+          "UnverifiedTerms",
+          "AIGeneratedTerms",
+          "EmptyState",
+          "SingleTerm"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/AdvancedAnalyticsDashboard.stories.tsx",
+        "count": 4,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error",
+          "WithPermissions"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/AdminTermsManager.stories.tsx",
+        "count": 5,
+        "variants": [
+          "Default",
+          "Loading",
+          "EmptyState",
+          "WithFilters",
+          "AIAnalytics"
+        ]
+      },
+      {
+        "file": "client/src/components/admin/AIContentMonitor.stories.tsx",
+        "count": 5,
+        "variants": [
+          "Default",
+          "Loading",
+          "HighPendingFeedback",
+          "CriticalIssues",
+          "HighPerformance"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/backgrounds/NeuralNetworkBackground.stories.tsx",
+        "count": 3,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/backgrounds/GeometricAIBackground.stories.tsx",
+        "count": 3,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/backgrounds/FallbackBackground.stories.tsx",
+        "count": 3,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/backgrounds/CodeTypingBackground.stories.tsx",
+        "count": 3,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error"
+        ]
+      },
+      {
+        "file": "client/src/components/landing/backgrounds/BackgroundTester.stories.tsx",
+        "count": 3,
+        "variants": [
+          "Default",
+          "Loading",
+          "Error"
+        ]
+      }
+    ]
+  },
+  "storybook": {
+    "config": {
+      "exists": true,
+      "hasReactSupport": true,
+      "hasTypeScriptSupport": false,
+      "hasEssentials": false,
+      "addons": []
+    },
+    "startup": {
+      "success": true,
+      "output": "Storybook configuration found",
+      "method": "config-check"
+    },
+    "integration": {
+      "hasStorybookScript": true,
+      "hasVisualTestScript": true,
+      "hasStorybookBuild": true,
+      "scripts": [
+        "audit:visual",
+        "audit:visual:full",
+        "audit:visual:debug",
+        "audit:visual:enhanced",
+        "audit:visual:comprehensive",
+        "visual-test",
+        "visual-test:accessibility",
+        "visual-test:performance",
+        "visual-test:interaction",
+        "visual-test:component",
+        "visual-test:flow",
+        "visual-test:compare",
+        "visual-test:analyze",
+        "test:storybook",
+        "test:visual",
+        "test:visual:ui",
+        "test:visual:headed",
+        "test:visual:update",
+        "test:visual:chromium",
+        "test:visual:mobile",
+        "test:visual:cross-browser",
+        "test:visual:storybook",
+        "storybook",
+        "build-storybook"
+      ]
+    }
+  },
+  "overall": {},
+  "errors": [],
+  "warnings": []
+}

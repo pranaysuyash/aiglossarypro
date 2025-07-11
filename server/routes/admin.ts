@@ -480,7 +480,7 @@ export function registerAdminRoutes(app: Express): void {
   });
 
   // Clear all cache entries
-  router.delete('/cache', authMiddleware, tokenMiddleware, requireAdmin, async (_req, res) => {
+  router.delete('/cache', authenticateToken, requireAdmin, async (_req, res) => {
     try {
       await cacheManager.clearAllCache();
       
@@ -499,7 +499,7 @@ export function registerAdminRoutes(app: Express): void {
 
 
   // Schedule automatic reprocessing (placeholder for future cron implementation)
-  router.post('/schedule/reprocess', authMiddleware, tokenMiddleware, requireAdmin, (req, res) => {
+  router.post('/schedule/reprocess', authenticateToken, requireAdmin, (req, res) => {
     try {
       const { schedule = 'weekly', files = [] } = req.body;
       

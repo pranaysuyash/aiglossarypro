@@ -1,9 +1,67 @@
 import { expect, test } from '@playwright/test';
+import AxeBuilder from '@axe-core/playwright';
 
 test.describe('Accessibility Compliance', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#main-content')).toBeVisible();
+  });
+
+  test.describe('WCAG 2.1 AA Compliance (Automated)', () => {
+    test('should pass axe-core accessibility scan on homepage', async ({ page }) => {
+      const accessibilityScanResults = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+        .analyze();
+
+      expect(accessibilityScanResults.violations).toEqual([]);
+    });
+
+    test('should pass axe-core scan on key application pages', async ({ page }) => {
+      const keyPages = [
+        '/',
+        '/terms',
+        '/categories',
+        '/search',
+        '/about'
+      ];
+
+      for (const pagePath of keyPages) {
+        await page.goto(pagePath);
+        await page.waitForLoadState('networkidle');
+        
+        const accessibilityScanResults = await new AxeBuilder({ page })
+          .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
+          .exclude('[data-test-exclude-axe]') // Allow excluding problematic third-party content
+          .analyze();
+
+        // Log violations for debugging but don't fail the test immediately
+        if (accessibilityScanResults.violations.length > 0) {
+          console.log(`Accessibility violations found on ${pagePath}:`);
+          accessibilityScanResults.violations.forEach(violation => {
+            console.log(`- ${violation.id}: ${violation.description}`);
+            console.log(`  Impact: ${violation.impact}`);
+            console.log(`  Nodes: ${violation.nodes.length}`);
+          });
+        }
+
+        // Fail only on critical violations
+        const criticalViolations = accessibilityScanResults.violations.filter(
+          violation => violation.impact === 'critical' || violation.impact === 'serious'
+        );
+        
+        expect(criticalViolations).toEqual([]);
+      }
+    });
+
+    test('should pass axe-core scan with specific rules', async ({ page }) => {
+      // Test specific accessibility rules that are most important
+      const accessibilityScanResults = await new AxeBuilder({ page })
+        .include('main') // Focus on main content area
+        .withRules(['color-contrast', 'keyboard-navigation', 'aria-labels', 'heading-order'])
+        .analyze();
+
+      expect(accessibilityScanResults.violations).toEqual([]);
+    });
   });
 
   test.describe('Keyboard Navigation', () => {

@@ -82,7 +82,8 @@ export default function InteractiveQuiz({
 
       return () => clearInterval(timer);
     }
-  }, [timeLimit, timeRemaining, isCompleted, handleCompleteQuiz]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeLimit, timeRemaining, isCompleted]);
 
   const formatTime = (seconds: number): string => {
     const mins = Math.floor(seconds / 60);

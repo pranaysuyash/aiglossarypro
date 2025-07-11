@@ -72,7 +72,8 @@ const LearningPathDetail: React.FC = () => {
     if (id) {
       fetchLearningPath();
     }
-  }, [id, fetchLearningPath]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [id]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;

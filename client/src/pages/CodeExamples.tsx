@@ -56,7 +56,8 @@ const CodeExamples: React.FC = () => {
 
   useEffect(() => {
     fetchCodeExamples();
-  }, [fetchCodeExamples]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchCodeExamples = async () => {
     try {

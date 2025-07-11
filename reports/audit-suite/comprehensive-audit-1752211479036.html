@@ -1,0 +1,262 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Audit Report - AIGlossaryPro</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 30px; }
+        .status { display: inline-block; padding: 8px 16px; border-radius: 4px; font-weight: bold; }
+        .status.passed { background: #d4edda; color: #155724; }
+        .status.failed { background: #f8d7da; color: #721c24; }
+        .status.partial { background: #fff3cd; color: #856404; }
+        .pillar { margin: 20px 0; padding: 20px; border-left: 4px solid #007bff; background: #f8f9fa; }
+        .pillar.failed { border-left-color: #dc3545; }
+        .pillar.passed { border-left-color: #28a745; }
+        .summary { display: flex; gap: 20px; margin: 10px 0; }
+        .metric { text-align: center; }
+        .metric-value { font-size: 24px; font-weight: bold; }
+        .metric-label { font-size: 12px; color: #666; }
+        .details { margin-top: 15px; }
+        .details summary { cursor: pointer; font-weight: bold; }
+        .details pre { background: #f1f1f1; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Comprehensive Audit Report</h1>
+            <p><strong>AIGlossaryPro</strong> - 2025-07-11T05:24:39.035Z</p>
+            <div class="status failed">FAILED</div>
+            <p>Total Duration: 164.29s</p>
+        </div>
+
+        <div class="executive-summary">
+            <h2>📊 Executive Summary</h2>
+            <div class="summary">
+                
+                    <div class="metric">
+                        <div class="metric-value text-danger">0</div>
+                        <div class="metric-label">visual</div>
+                    </div>
+                
+                    <div class="metric">
+                        <div class="metric-value text-danger">0</div>
+                        <div class="metric-label">accessibility</div>
+                    </div>
+                
+                    <div class="metric">
+                        <div class="metric-value text-danger">0</div>
+                        <div class="metric-label">performance</div>
+                    </div>
+                
+                    <div class="metric">
+                        <div class="metric-value text-danger">0</div>
+                        <div class="metric-label">functional</div>
+                    </div>
+                
+                    <div class="metric">
+                        <div class="metric-value text-danger">3102</div>
+                        <div class="metric-label">code-quality</div>
+                    </div>
+                
+            </div>
+        </div>
+
+        
+            <div class="pillar failed">
+                <h3>🎨 Visual & Interaction Correctness ❌</h3>
+                <div class="summary">
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Total</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Passed</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">1</div>
+                        <div class="metric-label">Failed</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Warnings</div>
+                    </div>
+                </div>
+                <p><strong>Duration:</strong> 32.24s</p>
+                
+                <details class="details">
+                    <summary>View Details</summary>
+                    <pre>[
+  {
+    "error": "Command failed: npx playwright test --config=playwright.config.js --reporter=json"
+  }
+]</pre>
+                </details>
+            </div>
+        
+            <div class="pillar failed">
+                <h3>♿ Accessibility (WCAG 2.1 AA) ❌</h3>
+                <div class="summary">
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Total</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Passed</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">1</div>
+                        <div class="metric-label">Failed</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Warnings</div>
+                    </div>
+                </div>
+                <p><strong>Duration:</strong> 0.79s</p>
+                
+                <details class="details">
+                    <summary>View Details</summary>
+                    <pre>[
+  {
+    "error": "Command failed: npx playwright test tests/e2e/accessibility.spec.ts --reporter=json"
+  }
+]</pre>
+                </details>
+            </div>
+        
+            <div class="pillar failed">
+                <h3>⚡ Performance Analysis ❌</h3>
+                <div class="summary">
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Total</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Passed</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">1</div>
+                        <div class="metric-label">Failed</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Warnings</div>
+                    </div>
+                </div>
+                <p><strong>Duration:</strong> 120.86s</p>
+                
+                <details class="details">
+                    <summary>View Details</summary>
+                    <pre>[
+  {
+    "error": "Command failed: npx playwright test tests/e2e/performance.spec.ts --reporter=json"
+  }
+]</pre>
+                </details>
+            </div>
+        
+            <div class="pillar failed">
+                <h3>🧪 Functional Correctness ❌</h3>
+                <div class="summary">
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Total</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Passed</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">1</div>
+                        <div class="metric-label">Failed</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Warnings</div>
+                    </div>
+                </div>
+                <p><strong>Duration:</strong> 0.77s</p>
+                
+                <details class="details">
+                    <summary>View Details</summary>
+                    <pre>[
+  {
+    "error": "Command failed: npx playwright test tests/e2e/authentication.spec.ts --reporter=json"
+  }
+]</pre>
+                </details>
+            </div>
+        
+            <div class="pillar failed">
+                <h3>📋 Code Quality & Best Practices ❌</h3>
+                <div class="summary">
+                    <div class="metric">
+                        <div class="metric-value">3102</div>
+                        <div class="metric-label">Total</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">0</div>
+                        <div class="metric-label">Passed</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">2750</div>
+                        <div class="metric-label">Failed</div>
+                    </div>
+                    <div class="metric">
+                        <div class="metric-value">352</div>
+                        <div class="metric-label">Warnings</div>
+                    </div>
+                </div>
+                <p><strong>Duration:</strong> 9.63s</p>
+                
+                <details class="details">
+                    <summary>View Details</summary>
+                    <pre>[
+  {
+    "type": "eslint",
+    "total": 0,
+    "errors": 0,
+    "warnings": 0,
+    "details": []
+  },
+  {
+    "type": "biome",
+    "total": 2776,
+    "errors": 2424,
+    "warnings": 352
+  },
+  {
+    "type": "typescript",
+    "count": 326,
+    "errors": [
+      "client/src/components/ar/ARConceptOverlay.tsx(216,33): error TS2345: Argument of type 'string' is not assignable to parameter of type '(results: XRHitTestResult[], getWorldMatrix: GetWorldMatrixFromXRHitTest) => void'.",
+      "client/src/components/vr/VRConceptSpace.tsx(197,11): error TS2339: Property 'player' does not exist on type 'Readonly<{ body?: XRBody | undefined; session?: XRSession | undefined; mediaBinding?: XRMediaBinding | undefined; originReferenceSpace?: XRReferenceSpace | undefined; ... 9 more ...; emulator?: XRDevice | undefined; } & WithRecord<...>>'.",
+      "client/src/components/vr/VRConceptSpace.tsx(205,21): error TS2339: Property 'gamepad' does not exist on type 'Navigator'.",
+      "client/src/components/vr/VRConceptSpace.tsx(335,13): error TS2322: Type '{ onEnterVR: () => Promise<void>; onExitVR: () => Promise<void>; className: string; }' is not assignable to type 'IntrinsicAttributes & Omit<Omit<{ store: XRStore; mode: XRSessionMode; onError?: ((error: any) => void) | undefined; children?: ReactNode | ((status: \"unsupported\" | ... 1 more ... | \"entered\") => ReactNode); } & Omit<...> & RefAttributes<...>, \"ref\">, \"mode\"> & RefAttributes<...>'.",
+      "client/src/components/vr/VRConceptSpace.tsx(378,10): error TS2741: Property 'store' is missing in type '{ children: (false | Element)[]; }' but required in type 'XRProperties'.",
+      "server/checkpointManager.ts(92,25): error TS2345: Argument of type '(data: Buffer) => crypto.Hash' is not assignable to parameter of type '(chunk: string | Buffer) => void'.",
+      "server/enhancedStorage.ts(623,5): error TS2322: Type 'OptimizedStorage' is not assignable to type 'IStorage'.",
+      "server/jobs/processors/dbBatchInsertProcessor.ts(214,36): error TS2769: No overload matches this call.",
+      "server/jobs/processors/dbBatchInsertProcessor.ts(215,36): error TS2769: No overload matches this call.",
+      "server/jobs/processors/qualityEvaluationProcessor.ts(8,39): error TS2307: Cannot find module '../../services/emailService' or its corresponding type declarations."
+    ]
+  }
+]</pre>
+                </details>
+            </div>
+        
+
+        <div class="footer">
+            <p><em>Generated by AIGlossaryPro Comprehensive Audit Suite</em></p>
+        </div>
+    </div>
+</body>
+</html>

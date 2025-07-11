@@ -45,8 +45,8 @@ export function useSurpriseAnalytics() {
         });
 
         // Also track in external analytics if available (GA4, etc.)
-        if (typeof gtag !== 'undefined') {
-          gtag('event', 'surprise_discovery', {
+        if (typeof (window as any).gtag !== 'undefined') {
+          (window as any).gtag('event', 'surprise_discovery', {
             custom_parameter_1: event.mode,
             custom_parameter_2: event.actionType,
             custom_parameter_3: event.confidenceScore,

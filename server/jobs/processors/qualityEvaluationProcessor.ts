@@ -1,10 +1,11 @@
-import type { Job } from 'bull';
+import type { Job } from 'bullmq';
 import { and, eq, lte, or } from 'drizzle-orm';
 import { enhancedTerms, sectionItems, sections } from '../../../shared/enhancedSchema';
 import { db } from '../../db';
 import { aiQualityEvaluationService } from '../../services/aiQualityEvaluationService';
 import { qualityAnalyticsService } from '../../services/qualityAnalyticsService';
 import { log as logger } from '../../utils/logger';
+import { emailService as email } from '../../services/emailService';
 
 export interface QualityEvaluationJobData {
   type: 'single' | 'batch' | 'scheduled-audit' | 'auto-evaluation';
@@ -113,7 +114,7 @@ async function processSingleEvaluation(job: Job<QualityEvaluationJobData>) {
     }
   } else {
     // Get full term content
-    content = `${term[0].name}\n\n${term[0].definition || ''}\n\n${term[0].examples || ''}`;
+    content = `${term[0].name}\n\n${term[0].fullDefinition || ''}`;
   }
 
   // Evaluate content
@@ -121,15 +122,15 @@ async function processSingleEvaluation(job: Job<QualityEvaluationJobData>) {
     termId,
     sectionName,
     content,
-    contentType,
+    contentType: contentType as 'definition' | 'example' | 'tutorial' | 'theory' | 'application' | 'general',
     model: options?.model,
   });
 
   // Update job progress
-  await job.progress(100);
+  await job.updateProgress(100);
 
   // Send email if requested
-  if (options?.emailReport && options?.recipients?.length > 0) {
+  if (options?.emailReport && options?.recipients && options.recipients.length > 0) {
     await sendEvaluationReport(term[0].name, result, options.recipients);
   }
 
@@ -159,7 +160,7 @@ async function processBatchEvaluation(job: Job<QualityEvaluationJobData>) {
         .limit(1);
 
       if (term.length > 0) {
-        const content = `${term[0].name}\n\n${term[0].definition || ''}\n\n${term[0].examples || ''}`;
+        const content = `${term[0].name}\n\n${term[0].fullDefinition || ''}`;
 
         evaluations.push({
           termId,
@@ -170,7 +171,7 @@ async function processBatchEvaluation(job: Job<QualityEvaluationJobData>) {
       }
 
       processed++;
-      await job.progress((processed / termIds.length) * 100);
+      await job.updateProgress((processed / termIds.length) * 100);
     } catch (error) {
       logger.error(`Error preparing evaluation for term ${termId}:`, {
         error: error instanceof Error ? error.message : String(error),
@@ -185,7 +186,7 @@ async function processBatchEvaluation(job: Job<QualityEvaluationJobData>) {
   });
 
   // Send summary email if requested
-  if (options?.emailReport && options?.recipients?.length > 0) {
+  if (options?.emailReport && options?.recipients && options.recipients.length > 0) {
     await sendBatchEvaluationSummary(result, options.recipients);
   }
 
@@ -237,7 +238,7 @@ async function processScheduledAudit(job: Job<QualityEvaluationJobData>) {
   }
 
   // Send audit report
-  if (options?.recipients?.length > 0) {
+  if (options?.recipients && options.recipients.length > 0) {
     await sendAuditReport(
       report,
       flaggedContent,

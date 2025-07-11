@@ -1,9 +1,113 @@
 import { expect, test } from '@playwright/test';
+import { playAudit } from 'playwright-lighthouse';
 
 test.describe('Performance and Load Testing', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
     await expect(page.locator('#main-content')).toBeVisible();
+  });
+
+  test.describe('Lighthouse Performance Audits', () => {
+    test('should meet Lighthouse performance thresholds for homepage', async ({ page, browser }) => {
+      await page.goto('/');
+      
+      const results = await playAudit({
+        page,
+        reports: {
+          formats: {
+            json: true,
+            html: true,
+          },
+          name: 'homepage-lighthouse-report',
+          directory: 'reports/audit-suite/lighthouse'
+        },
+        thresholds: {
+          performance: 90,
+          accessibility: 90,
+          'best-practices': 80,
+          seo: 80,
+        }
+      });
+
+      console.log('Lighthouse scores:', {
+        performance: results.lhr.categories.performance.score * 100,
+        accessibility: results.lhr.categories.accessibility.score * 100,
+        bestPractices: results.lhr.categories['best-practices'].score * 100,
+        seo: results.lhr.categories.seo.score * 100,
+      });
+
+      // Assert that performance scores meet thresholds
+      expect(results.lhr.categories.performance.score * 100).toBeGreaterThanOrEqual(90);
+      expect(results.lhr.categories.accessibility.score * 100).toBeGreaterThanOrEqual(90);
+    });
+
+    test('should meet Lighthouse performance thresholds for key pages', async ({ page }) => {
+      const keyPages = [
+        { path: '/terms', name: 'terms-page' },
+        { path: '/categories', name: 'categories-page' },
+        { path: '/search', name: 'search-page' }
+      ];
+
+      for (const pageInfo of keyPages) {
+        await page.goto(pageInfo.path);
+        await page.waitForLoadState('networkidle');
+
+        const results = await playAudit({
+          page,
+          reports: {
+            formats: { json: true },
+            name: `${pageInfo.name}-lighthouse`,
+            directory: 'reports/audit-suite/lighthouse'
+          },
+          thresholds: {
+            performance: 85, // Slightly lower threshold for complex pages
+            accessibility: 90,
+          }
+        });
+
+        const performanceScore = results.lhr.categories.performance.score * 100;
+        console.log(`${pageInfo.path} performance score: ${performanceScore}`);
+        
+        expect(performanceScore).toBeGreaterThanOrEqual(85);
+      }
+    });
+
+    test('should analyze Core Web Vitals', async ({ page }) => {
+      await page.goto('/');
+      
+      const results = await playAudit({
+        page,
+        config: {
+          settings: {
+            onlyCategories: ['performance'],
+          }
+        }
+      });
+
+      const audits = results.lhr.audits;
+      
+      // Check Core Web Vitals
+      const coreWebVitals = {
+        lcp: audits['largest-contentful-paint']?.numericValue,
+        fid: audits['first-input-delay']?.numericValue,
+        cls: audits['cumulative-layout-shift']?.numericValue,
+        fcp: audits['first-contentful-paint']?.numericValue,
+        ttfb: audits['time-to-first-byte']?.numericValue,
+      };
+
+      console.log('Core Web Vitals:', coreWebVitals);
+
+      // Assert Core Web Vitals thresholds
+      if (coreWebVitals.lcp) {
+        expect(coreWebVitals.lcp).toBeLessThan(2500); // LCP < 2.5s
+      }
+      if (coreWebVitals.cls) {
+        expect(coreWebVitals.cls).toBeLessThan(0.1); // CLS < 0.1
+      }
+      if (coreWebVitals.fcp) {
+        expect(coreWebVitals.fcp).toBeLessThan(1800); // FCP < 1.8s
+      }
+    });
   });
 
   test.describe('Page Load Performance', () => {
@@ -64,7 +168,7 @@ test.describe('Performance and Load Testing', () => {
     });
 
     test('should load term detail pages efficiently', async ({ page }) => {
-      // Navigate to a term page
+      // Navigate to a term page (using relative URL since Playwright uses baseURL from config)
       await page.goto('/term/8b5bff9a-afb7-4691-a58e-adc2bf94f941');
 
       const startTime = Date.now();

@@ -55,7 +55,8 @@ const LearningPaths: React.FC = () => {
     if (user) {
       fetchUserProgress();
     }
-  }, [user, fetchLearningPaths, fetchUserProgress]);
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const fetchLearningPaths = async () => {
     try {

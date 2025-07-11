@@ -31,10 +31,6 @@ export default function AnalyticsDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [testResults, setTestResults] = useState<Record<string, boolean>>({});
 
-  useEffect(() => {
-    loadDebugInfo();
-  }, [loadDebugInfo]);
-
   const loadDebugInfo = async () => {
     setIsLoading(true);
     try {
@@ -52,6 +48,10 @@ export default function AnalyticsDashboard() {
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadDebugInfo();
+  }, []);
 
   const runAnalyticsTests = async () => {
     const results: Record<string, boolean> = {};

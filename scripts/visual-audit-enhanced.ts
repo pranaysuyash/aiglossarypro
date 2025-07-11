@@ -180,7 +180,7 @@ class EnhancedVisualAuditor {
   private browser: Browser | null = null;
   private context: BrowserContext | null = null;
   private viteProcess: any = null;
-  private baseUrl = process.env.BASE_URL || 'http://localhost:3001';
+  private baseUrl = process.env.BASE_URL || 'http://localhost:5173';
   private screenshotDir: string;
   private reportDir: string;
   private issues: VisualIssue[] = [];

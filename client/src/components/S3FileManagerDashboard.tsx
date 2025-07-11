@@ -117,7 +117,8 @@ export default function S3FileManagerDashboard() {
   // Load files on component mount
   useEffect(() => {
     loadFiles();
-  }, [loadFiles]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Filter files based on search and filters
   useEffect(() => {

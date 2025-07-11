@@ -380,8 +380,8 @@ const VRConceptSpace: React.FC<VRConceptSpaceProps> = ({
           <VREnvironment />
 
           {/* VR Controllers and Hand Tracking */}
-          <Controllers />
-          <Hands />
+          {/* <Controllers /> */}
+          {/* <Hands /> */}
 
           {/* Concept visualization */}
           <VRInteractionManager

@@ -144,7 +144,7 @@ router.post(
     try {
       const { termId, sectionName, templateId, model, temperature, maxTokens, regenerate } =
         req.body;
-      const userId = req.user?.uid;
+      const userId = req.user?.id;
 
       logger.info('AI content generation request', {
         termId,
@@ -268,7 +268,7 @@ router.post(
   async (req, res) => {
     try {
       const { termId, sectionNames, templateId, model, regenerate } = req.body;
-      const userId = req.user?.uid;
+      const userId = req.user?.id;
 
       logger.info('Bulk AI content generation request', {
         termId,
@@ -469,7 +469,7 @@ router.post(
         templateId: newTemplate.id,
         name,
         category,
-        userId: req.user?.uid,
+        userId: req.user?.id,
       });
 
       res.status(201).json({
@@ -551,7 +551,7 @@ router.put(
       logger.info('Updated prompt template', {
         templateId,
         updates: Object.keys(updates),
-        userId: req.user?.uid,
+        userId: req.user?.id,
       });
 
       res.json({
@@ -612,7 +612,7 @@ router.delete('/templates/:templateId', authenticateFirebaseToken, async (req, r
     if (deleted) {
       logger.info('Deleted prompt template', {
         templateId,
-        userId: req.user?.uid,
+        userId: req.user?.id,
       });
 
       res.json({

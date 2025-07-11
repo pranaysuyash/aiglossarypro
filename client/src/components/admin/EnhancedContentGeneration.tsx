@@ -11,6 +11,10 @@ import {
   Star,
   Target,
   TrendingUp,
+  Filter,
+  Settings,
+  Info,
+  AlertCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
@@ -30,6 +34,19 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { SearchableSelect } from '@/components/ui/searchable-select';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
+import { 
+  ALL_COLUMNS, 
+  getEssentialColumns, 
+  getColumnsByCategory,
+  getColumnCategories,
+  searchColumns,
+  COLUMN_CATEGORIES,
+  type ColumnDefinition 
+} from '@/constants/columns';
+import { Switch } from '@/components/ui/switch';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface GenerationRequest {
   termId: string;
@@ -97,28 +114,7 @@ interface Term {
   fullDefinition?: string;
 }
 
-const ESSENTIAL_COLUMNS = [
-  { id: 'term', name: 'Term Name', description: 'Core term name and variations', priority: 1 },
-  {
-    id: 'definition_overview',
-    name: 'Definition & Overview',
-    description: 'Clear, comprehensive definition',
-    priority: 2,
-  },
-  {
-    id: 'key_concepts',
-    name: 'Key Concepts',
-    description: 'Essential understanding points',
-    priority: 3,
-  },
-  {
-    id: 'basic_examples',
-    name: 'Basic Examples',
-    description: 'Concrete examples for clarity',
-    priority: 4,
-  },
-  { id: 'advantages', name: 'Advantages', description: 'Benefits and use cases', priority: 5 },
-];
+// Use centralized column definitions
 
 const AVAILABLE_MODELS = [
   { value: 'gpt-4.1-nano', label: 'GPT-4.1 Nano', cost: '$0.20/1M tokens', use: 'Simple content' },
@@ -135,6 +131,7 @@ export function EnhancedContentGeneration() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
+  // Single generation state
   const [selectedTerm, setSelectedTerm] = useState<Term | null>(null);
   const [selectedSection, setSelectedSection] = useState<string>('');
   const [selectedModel, setSelectedModel] = useState<string>('gpt-4.1-nano');
@@ -143,6 +140,19 @@ export function EnhancedContentGeneration() {
   const [regenerate, setRegenerate] = useState<boolean>(false);
   const [generatedContent, setGeneratedContent] = useState<string>('');
   const [showPreview, setShowPreview] = useState<boolean>(false);
+
+  // Column selection and filtering state
+  const [showAdvancedColumns, setShowAdvancedColumns] = useState<boolean>(false);
+  const [selectedCategory, setSelectedCategory] = useState<string>('');
+  const [columnSearchQuery, setColumnSearchQuery] = useState<string>('');
+
+  // Batch processing state
+  const [batchColumnId, setBatchColumnId] = useState<string>('');
+  const [showBatchConfirmation, setShowBatchConfirmation] = useState<boolean>(false);
+  const [batchProcessingDetails, setBatchProcessingDetails] = useState<string>('');
+
+  // Settings state
+  const [showAdvancedSettings, setShowAdvancedSettings] = useState<boolean>(false);
 
   // Query for terms
   const { data: termsData, isLoading: isLoadingTerms } = useQuery({
@@ -259,8 +269,58 @@ export function EnhancedContentGeneration() {
     });
   };
 
+  // Helper functions
+  const getAvailableColumns = () => {
+    let columns = showAdvancedColumns ? ALL_COLUMNS : getEssentialColumns();
+    
+    if (selectedCategory) {
+      columns = columns.filter(col => col.category === selectedCategory);
+    }
+    
+    if (columnSearchQuery) {
+      columns = searchColumns(columnSearchQuery).filter(col => 
+        showAdvancedColumns || col.isEssential
+      );
+    }
+    
+    return columns;
+  };
+
+  const getColumnOptions = () => {
+    return getAvailableColumns().map(col => ({
+      value: col.id,
+      label: col.name,
+      description: col.description,
+      category: col.category,
+    }));
+  };
+
   const handleStartColumnProcessing = (columnId: string) => {
-    startColumnProcessingMutation.mutate(columnId);
+    const column = ALL_COLUMNS.find(col => col.id === columnId);
+    if (!column) return;
+    
+    // Calculate estimated impact
+    const totalTerms = termsData?.data?.length || 0;
+    setBatchColumnId(columnId);
+    setBatchProcessingDetails(
+      `This will generate content for "${column.name}" across ${totalTerms} terms. ` +
+      `The process may take 10-30 minutes depending on the number of terms and selected model.`
+    );
+    setShowBatchConfirmation(true);
+  };
+
+  const confirmBatchProcessing = () => {
+    startColumnProcessingMutation.mutate(batchColumnId);
+    setShowBatchConfirmation(false);
+    setBatchColumnId('');
+    setBatchProcessingDetails('');
+  };
+
+  const handleSectionChange = (sectionId: string) => {
+    setSelectedSection(sectionId);
+    // Keep the selected term to allow easy switching between sections
+    setShowPreview(false);
+    setGeneratedContent('');
   };
 
   const getStatusColor = (status: string) => {
@@ -327,9 +387,9 @@ export function EnhancedContentGeneration() {
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <Brain className="w-5 h-5 mr-2" />
-                  Content Generation
+                  Generate Content for a Term
                 </CardTitle>
-                <CardDescription>Generate content for a specific term and section</CardDescription>
+                <CardDescription>Generate content for one specific term and section</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
@@ -345,29 +405,91 @@ export function EnhancedContentGeneration() {
                       <SelectValue placeholder="Choose a term..." />
                     </SelectTrigger>
                     <SelectContent>
-                      {termsData?.data?.map((term: Term) => (
-                        <SelectItem key={term.id} value={term.id}>
-                          {term.name}
-                        </SelectItem>
-                      ))}
+                      {isLoadingTerms ? (
+                        <SelectItem value="loading" disabled>Loading terms...</SelectItem>
+                      ) : (
+                        termsData?.data?.map((term: Term) => (
+                          <SelectItem key={term.id} value={term.id}>
+                            {term.name}
+                          </SelectItem>
+                        ))
+                      )}
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div>
-                  <Label htmlFor="section-select">Select Section</Label>
-                  <Select value={selectedSection} onValueChange={setSelectedSection}>
-                    <SelectTrigger id="section-select">
-                      <SelectValue placeholder="Choose a section..." />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ESSENTIAL_COLUMNS.map((column) => (
-                        <SelectItem key={column.id} value={column.id}>
-                          {column.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="section-select">Select Section</Label>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-4 h-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>Choose which section to generate content for</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
+                  <SearchableSelect
+                    value={selectedSection}
+                    onValueChange={handleSectionChange}
+                    placeholder="Choose a section..."
+                    searchPlaceholder="Search sections..."
+                    options={getColumnOptions()}
+                    groupByCategory={true}
+                    className="w-full"
+                  />
+                </div>
+
+                {/* Column Filtering Options */}
+                <div className="space-y-3 p-3 bg-muted/50 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-medium">Section Options</Label>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => setShowAdvancedSettings(!showAdvancedSettings)}
+                    >
+                      <Settings className="w-4 h-4 mr-1" />
+                      {showAdvancedSettings ? 'Hide' : 'Show'} Options
+                    </Button>
+                  </div>
+                  
+                  {showAdvancedSettings && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label htmlFor="show-advanced" className="text-sm">
+                          Show all sections ({ALL_COLUMNS.length} available)
+                        </Label>
+                        <Switch
+                          id="show-advanced"
+                          checked={showAdvancedColumns}
+                          onCheckedChange={setShowAdvancedColumns}
+                        />
+                      </div>
+                      
+                      {showAdvancedColumns && (
+                        <div>
+                          <Label htmlFor="category-filter" className="text-sm">Filter by Category</Label>
+                          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                            <SelectTrigger id="category-filter">
+                              <SelectValue placeholder="All categories" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="">All categories</SelectItem>
+                              {getColumnCategories().map((category) => (
+                                <SelectItem key={category} value={category}>
+                                  {category}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 <div>
@@ -563,39 +685,108 @@ export function EnhancedContentGeneration() {
             </Card>
           )}
 
-          {/* Essential Columns Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {ESSENTIAL_COLUMNS.map((column) => (
-              <Card key={column.id}>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span className="text-lg">{column.name}</span>
-                    <Badge variant="outline">Priority {column.priority}</Badge>
-                  </CardTitle>
-                  <CardDescription>{column.description}</CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <Button
-                    onClick={() => handleStartColumnProcessing(column.id)}
-                    disabled={startColumnProcessingMutation.isPending}
-                    className="w-full"
-                  >
-                    {startColumnProcessingMutation.isPending ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-                        Starting...
-                      </>
-                    ) : (
-                      <>
+          {/* Batch Processing Controls */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Play className="w-5 h-5 mr-2" />
+                Batch Column Processing
+              </CardTitle>
+              <CardDescription>
+                Generate content for a selected column across all terms
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label htmlFor="batch-column-select">Select Column to Process</Label>
+                <SearchableSelect
+                  value={batchColumnId}
+                  onValueChange={setBatchColumnId}
+                  placeholder="Choose a column to process..."
+                  searchPlaceholder="Search columns..."
+                  options={ALL_COLUMNS.map(col => ({
+                    value: col.id,
+                    label: col.name,
+                    description: col.description,
+                    category: col.category,
+                  }))}
+                  groupByCategory={true}
+                  className="w-full"
+                />
+              </div>
+
+              <div className="p-4 bg-muted/50 rounded-lg">
+                <h4 className="font-medium mb-2 flex items-center">
+                  <AlertCircle className="w-4 h-4 mr-2" />
+                  Batch Processing Information
+                </h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• This will generate content for ALL terms in the selected column</li>
+                  <li>• Processing may take 10-30 minutes depending on the number of terms</li>
+                  <li>• The process includes generation, quality evaluation, and improvement</li>
+                  <li>• You can monitor progress in the current status section above</li>
+                </ul>
+              </div>
+
+              <Button
+                onClick={() => handleStartColumnProcessing(batchColumnId)}
+                disabled={!batchColumnId || startColumnProcessingMutation.isPending}
+                className="w-full"
+                size="lg"
+              >
+                {startColumnProcessingMutation.isPending ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Starting Processing...
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4 mr-2" />
+                    Start Batch Processing
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Essential Columns Quick Actions */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center">
+                <Star className="w-5 h-5 mr-2" />
+                Quick Actions - Essential Columns
+              </CardTitle>
+              <CardDescription>
+                Fast access to process the most important content sections
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {getEssentialColumns().map((column) => (
+                  <Card key={column.id} className="border-2 border-primary/20">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="flex items-center justify-between text-base">
+                        <span>{column.name}</span>
+                        <Badge variant="outline">Priority {column.priority}</Badge>
+                      </CardTitle>
+                      <CardDescription className="text-sm">{column.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <Button
+                        onClick={() => handleStartColumnProcessing(column.id)}
+                        disabled={startColumnProcessingMutation.isPending}
+                        className="w-full"
+                        size="sm"
+                      >
                         <Play className="w-4 h-4 mr-2" />
-                        Start Processing
-                      </>
-                    )}
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                        Process
+                      </Button>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </TabsContent>
 
         <TabsContent value="quality-pipeline" className="space-y-4">
@@ -689,6 +880,19 @@ export function EnhancedContentGeneration() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Confirmation Dialog */}
+      <ConfirmationDialog
+        open={showBatchConfirmation}
+        onOpenChange={setShowBatchConfirmation}
+        onConfirm={confirmBatchProcessing}
+        title="Start Batch Processing?"
+        description="Are you sure you want to start batch processing for this column?"
+        details={batchProcessingDetails}
+        confirmText="Start Processing"
+        cancelText="Cancel"
+        variant="default"
+      />
     </div>
   );
 }

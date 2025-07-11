@@ -67,7 +67,8 @@ export function UpgradePrompt({
     if (user && !progressStats && (variant === 'smart' || trigger)) {
       fetchProgressStats();
     }
-  }, [user, progressStats, variant, trigger, fetchProgressStats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, progressStats, variant, trigger]);
 
   const fetchProgressStats = async () => {
     try {

@@ -6,7 +6,7 @@ type UserForTransformation = Partial<IUser> & {
   [key: string]: unknown;
 };
 
-interface IAdminUser extends IUser {
+interface IAdminUser extends Omit<IUser, 'purchaseDate'> {
   role: string;
   isActive: boolean;
   isAdmin: boolean;
@@ -62,7 +62,7 @@ export function transformUserForAdmin(user: UserForTransformation): Partial<IAdm
         : undefined),
     lastLoginAt:
       user.lastLoginAt ||
-      (user.last_login_at && typeof user.last_login_at !== 'object'
+      (user.last_login_at && (typeof user.last_login_at === 'string' || user.last_login_at instanceof Date)
         ? (user.last_login_at as Date | string)
         : undefined),
     termsViewed:

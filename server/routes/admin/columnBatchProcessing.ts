@@ -99,7 +99,7 @@ router.post(
   validateRequest(costEstimationRequestSchema),
   async (req: Request, res: Response) => {
     try {
-      const userId = req.user?.uid || 'unknown';
+      const userId = req.user?.id || 'unknown';
 
       logger.info(`Cost estimation requested by ${userId}:`, {
         sectionName: req.body.sectionName,
@@ -201,7 +201,7 @@ router.post(
   validateRequest(columnBatchRequestSchema),
   async (req: Request, res: Response) => {
     try {
-      const userId = req.user?.uid || 'unknown';
+      const userId = req.user?.id || 'unknown';
       const request = {
         ...req.body,
         metadata: {
@@ -387,7 +387,7 @@ router.get('/operations/:operationId', async (req: Request, res: Response) => {
 router.post('/operations/:operationId/pause', async (req: Request, res: Response) => {
   try {
     const { operationId } = req.params;
-    const userId = req.user?.uid || 'unknown';
+    const userId = req.user?.id || 'unknown';
 
     const success = await columnBatchProcessorService.pauseBatchOperation(operationId);
 
@@ -424,7 +424,7 @@ router.post('/operations/:operationId/pause', async (req: Request, res: Response
 router.post('/operations/:operationId/resume', async (req: Request, res: Response) => {
   try {
     const { operationId } = req.params;
-    const userId = req.user?.uid || 'unknown';
+    const userId = req.user?.id || 'unknown';
 
     const success = await columnBatchProcessorService.resumeBatchOperation(operationId);
 
@@ -461,7 +461,7 @@ router.post('/operations/:operationId/resume', async (req: Request, res: Respons
 router.post('/operations/:operationId/cancel', async (req: Request, res: Response) => {
   try {
     const { operationId } = req.params;
-    const userId = req.user?.uid || 'unknown';
+    const userId = req.user?.id || 'unknown';
 
     const success = await columnBatchProcessorService.cancelBatchOperation(operationId);
 
@@ -587,7 +587,7 @@ router.get('/safety/status', async (_req: Request, res: Response) => {
 router.post('/safety/emergency-stop', async (req: Request, res: Response) => {
   try {
     const { reason } = req.body;
-    const userId = req.user?.uid || 'unknown';
+    const userId = req.user?.id || 'unknown';
 
     if (!reason) {
       return res.status(400).json({
@@ -625,7 +625,7 @@ router.post('/safety/emergency-stop', async (req: Request, res: Response) => {
  */
 router.post('/safety/emergency-stop/deactivate', async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.uid || 'unknown';
+    const userId = req.user?.id || 'unknown';
 
     await batchSafetyControlsService.deactivateEmergencyStop(userId);
 
@@ -681,7 +681,7 @@ router.get('/costs/budgets', async (_req: Request, res: Response) => {
  */
 router.post('/costs/budgets', async (req: Request, res: Response) => {
   try {
-    const userId = req.user?.uid || 'unknown';
+    const userId = req.user?.id || 'unknown';
     const budgetData = {
       ...req.body,
       createdBy: userId,

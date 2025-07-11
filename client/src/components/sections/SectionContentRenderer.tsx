@@ -15,12 +15,15 @@ import CodeBlock from '../interactive/CodeBlock';
 import InteractiveQuiz from '../interactive/InteractiveQuiz';
 import MermaidDiagram from '../interactive/MermaidDiagram';
 import { OptimizedImage } from '../ui/optimized-image';
+import EnhancedTable from '../ui/enhanced-table';
+import VideoPlayer from '../ui/video-player';
+import SimulationPlayer from '../interactive/SimulationPlayer';
 
 interface SectionItem {
   id: number;
   label: string;
   content: string;
-  contentType: 'markdown' | 'mermaid' | 'image' | 'json' | 'interactive' | 'code';
+  contentType: 'markdown' | 'mermaid' | 'image' | 'json' | 'interactive' | 'code' | 'table' | 'video';
   displayOrder: number;
   metadata?: Record<string, any>;
   isAiGenerated: boolean;
@@ -38,7 +41,7 @@ interface Section {
 interface SectionContentRendererProps {
   sections: Section[];
   onInteraction?: (type: string, data: any) => void;
-  displayMode?: 'accordion' | 'tabs' | 'cards';
+  displayMode?: 'accordion' | 'tabs' | 'cards' | 'sidebar' | 'metadata';
   className?: string;
 }
 
@@ -117,6 +120,18 @@ export default function SectionContentRenderer({
                 className="mb-4"
               />
             );
+          } else if (interactiveData.type === 'simulation') {
+            return (
+              <SimulationPlayer
+                config={{
+                  title: item.label,
+                  description: item.metadata?.description,
+                  ...interactiveData.config
+                }}
+                onStepChange={(step, index) => handleInteraction('simulation_step', { step, index })}
+                className="mb-4"
+              />
+            );
           }
         } catch (error) {
           console.error('Failed to parse interactive content:', error);
@@ -156,6 +171,53 @@ export default function SectionContentRenderer({
               className="max-w-full h-auto rounded-lg"
             />
           </div>
+        );
+
+      case 'table':
+        try {
+          const tableData = JSON.parse(item.content);
+          const { columns, data, ...tableProps } = tableData;
+          
+          return (
+            <EnhancedTable
+              columns={columns}
+              data={data}
+              title={item.label}
+              description={item.metadata?.description}
+              searchable={item.metadata?.searchable !== false}
+              exportable={item.metadata?.exportable !== false}
+              pagination={item.metadata?.pagination !== false}
+              pageSize={item.metadata?.pageSize || 10}
+              className="mb-4"
+              {...tableProps}
+            />
+          );
+        } catch (error) {
+          console.error('Failed to parse table content:', error);
+          return (
+            <div className="p-4 border-2 border-dashed border-red-300 dark:border-red-600 rounded-lg">
+              <p className="text-red-600 dark:text-red-400">Error: Invalid table data format</p>
+              <p className="text-xs mt-2 text-gray-500">
+                Expected JSON with 'columns' and 'data' properties
+              </p>
+            </div>
+          );
+        }
+
+      case 'video':
+        return (
+          <VideoPlayer
+            src={item.content}
+            title={item.label}
+            description={item.metadata?.description}
+            poster={item.metadata?.poster}
+            autoplay={item.metadata?.autoplay || false}
+            controls={item.metadata?.controls !== false}
+            loop={item.metadata?.loop || false}
+            muted={item.metadata?.muted || false}
+            subtitles={item.metadata?.subtitles || []}
+            className="mb-4"
+          />
         );
 
       default:
@@ -317,6 +379,176 @@ export default function SectionContentRenderer({
     </div>
   );
 
+  const renderSidebarMode = () => {
+    const mainSections = sections.filter(section => {
+      const config = getSectionConfig(section.name);
+      return config.priority === 'high';
+    }).slice(0, 3);
+
+    const sidebarSections = sections.filter(section => !mainSections.includes(section));
+
+    return (
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Main Content */}
+        <div className="lg:col-span-3">
+          <div className="space-y-6">
+            {mainSections.map((section) => (
+              <Card key={section.id}>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    {(() => {
+                      const config = getSectionConfig(section.name);
+                      const IconComponent = config.icon;
+                      return <IconComponent className={`h-5 w-5 text-${config.color}-500`} />;
+                    })()}
+                    <span>{section.name}</span>
+                    {section.isCompleted && (
+                      <Badge variant="default" className="bg-green-100 text-green-700">
+                        ✓
+                      </Badge>
+                    )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>{renderSection(section)}</CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+
+        {/* Sidebar */}
+        <div className="lg:col-span-1">
+          <div className="sticky top-6 space-y-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Additional Sections</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {sidebarSections.map((section) => {
+                  const config = getSectionConfig(section.name);
+                  const IconComponent = config.icon;
+                  
+                  return (
+                    <div key={section.id} className="p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                      <div className="flex items-center space-x-2 mb-2">
+                        <IconComponent className={`h-4 w-4 text-${config.color}-500`} />
+                        <span className="font-medium text-sm">{section.name}</span>
+                        {section.isCompleted && (
+                          <Badge variant="outline" className="text-xs">✓</Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-600 dark:text-gray-400">
+                        {section.items.length} items
+                      </p>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderMetadataMode = () => {
+    const metadataSections = sections.filter(section => 
+      section.name.toLowerCase().includes('metadata') || 
+      section.name.toLowerCase().includes('reference') ||
+      section.name.toLowerCase().includes('glossary') ||
+      section.name.toLowerCase().includes('tags')
+    );
+
+    const contentSections = sections.filter(section => !metadataSections.includes(section));
+
+    return (
+      <div className="space-y-6">
+        {/* Metadata Overview */}
+        {metadataSections.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle>Metadata & References</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {metadataSections.map((section) => {
+                  const config = getSectionConfig(section.name);
+                  const IconComponent = config.icon;
+                  
+                  return (
+                    <div key={section.id} className="border rounded-lg p-4">
+                      <div className="flex items-center space-x-2 mb-3">
+                        <IconComponent className={`h-4 w-4 text-${config.color}-500`} />
+                        <h4 className="font-medium">{section.name}</h4>
+                        {section.isCompleted && (
+                          <Badge variant="outline" className="text-xs">✓</Badge>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        {section.items.slice(0, 3).map((item, index) => (
+                          <div key={index} className="text-sm text-gray-600 dark:text-gray-400">
+                            {item.label}
+                          </div>
+                        ))}
+                        {section.items.length > 3 && (
+                          <div className="text-xs text-gray-500">
+                            +{section.items.length - 3} more items
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Main Content Sections */}
+        <div className="grid grid-cols-1 gap-4">
+          {contentSections.map((section) => {
+            const config = getSectionConfig(section.name);
+            const IconComponent = config.icon;
+            
+            return (
+              <Card key={section.id}>
+                <CardHeader className="pb-3">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="flex items-center space-x-2">
+                      <IconComponent className={`h-4 w-4 text-${config.color}-500`} />
+                      <span className="text-base">{section.name}</span>
+                    </CardTitle>
+                    <div className="flex items-center space-x-2">
+                      <Badge variant="outline" className="text-xs">
+                        {section.items.length} items
+                      </Badge>
+                      {section.isCompleted && (
+                        <Badge variant="default" className="bg-green-100 text-green-700 text-xs">
+                          ✓
+                        </Badge>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pt-0">
+                  {section.items.slice(0, 2).map((item, index) => (
+                    <div key={index} className="mb-4 last:mb-0">
+                      {renderSectionItem(item)}
+                    </div>
+                  ))}
+                  {section.items.length > 2 && (
+                    <Button variant="outline" size="sm" className="mt-2">
+                      View {section.items.length - 2} more items
+                    </Button>
+                  )}
+                </CardContent>
+              </Card>
+            );
+          })}
+        </div>
+      </div>
+    );
+  };
+
   if (!sections || sections.length === 0) {
     return (
       <div className={`text-center py-8 ${className}`}>
@@ -345,7 +577,7 @@ export default function SectionContentRenderer({
         </div>
 
         {/* Display mode selector */}
-        <div className="flex items-center space-x-2 mb-4">
+        <div className="flex items-center space-x-2 mb-4 flex-wrap gap-2">
           <Button
             variant={displayMode === 'accordion' ? 'default' : 'outline'}
             size="sm"
@@ -367,12 +599,28 @@ export default function SectionContentRenderer({
           >
             Cards
           </Button>
+          <Button
+            variant={displayMode === 'sidebar' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => (displayMode = 'sidebar')}
+          >
+            Sidebar
+          </Button>
+          <Button
+            variant={displayMode === 'metadata' ? 'default' : 'outline'}
+            size="sm"
+            onClick={() => (displayMode = 'metadata')}
+          >
+            Metadata
+          </Button>
         </div>
       </div>
 
       {displayMode === 'accordion' && renderAccordionMode()}
       {displayMode === 'tabs' && renderTabsMode()}
       {displayMode === 'cards' && renderCardsMode()}
+      {displayMode === 'sidebar' && renderSidebarMode()}
+      {displayMode === 'metadata' && renderMetadataMode()}
     </div>
   );
 }

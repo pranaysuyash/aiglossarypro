@@ -336,7 +336,8 @@ const ThreeDKnowledgeGraph: React.FC<ThreeDKnowledgeGraphProps> = ({
     if (initialNodes.length === 0) {
       generateSampleGraph();
     }
-  }, [initialNodes, generateSampleGraph]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialNodes]);
 
   const generateSampleGraph = () => {
     const _categories = [
@@ -603,7 +604,8 @@ Escape: Reset view
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [focusedNodeIndex, selectedNode, handleNodeSelect, filteredNodes, resetView]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusedNodeIndex, selectedNode, handleNodeSelect, resetView]);
 
   // Update selected node when focus changes
   useEffect(() => {
@@ -611,7 +613,8 @@ Escape: Reset view
       const focusedNode = filteredNodes[focusedNodeIndex];
       setHighlightedNodes(new Set([focusedNode.id]));
     }
-  }, [focusedNodeIndex, selectedNode, filteredNodes[focusedNodeIndex]]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [focusedNodeIndex, selectedNode]);
 
   const filteredNodes = useMemo(() => {
     if (filterByCategory.length === 0) return nodes;

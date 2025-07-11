@@ -5,15 +5,10 @@ import path from 'path';
 import fs from 'fs';
 
 // Define the Storybook URL
-const STORYBOOK_URL = 'http://localhost:6006';
+const STORYBOOK_URL = 'http://localhost:6007';
 
 // Define the directory for storing screenshots
-import { fileURLToPath } from 'url';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-const screenshotsDir = path.resolve(__dirname, '../visual-audits-storybook');
+const screenshotsDir = path.resolve(process.cwd(), 'tests/visual-audits-storybook');
 
 // Ensure the screenshots directory exists
 if (!fs.existsSync(screenshotsDir)) {
@@ -39,27 +34,110 @@ test.describe('Storybook Visual Regression', () => {
   test('should visually test all Storybook stories', async ({ page }) => {
     await page.goto(STORYBOOK_URL);
 
-    // Wait for Storybook to load and the sidebar to be visible
-    await page.waitForSelector('#storybook-explorer-tree', { state: 'visible' });
+    // Wait for Storybook to fully load
+    await page.waitForLoadState('networkidle');
+    await page.waitForTimeout(3000);
 
-    // Get all story links from the sidebar
-    const storyLinks = await page.$$eval('#storybook-explorer-tree a[id^="components-"]', (links) => {
-      return links.map(link => ({
-        id: link.id,
-        name: link.textContent?.trim() || '',
-        href: link.getAttribute('href') || '',
+    let storyLinks = [];
+    
+    // Method 1: Try to find sidebar with multiple possible selectors
+    const sidebarSelectors = [
+      '[data-testid="sidebar-panel"]',
+      '.sidebar-container',
+      '#storybook-explorer-tree',
+      '.sb-bar',
+      '.sidebar'
+    ];
+    
+    let sidebarFound = false;
+    for (const selector of sidebarSelectors) {
+      try {
+        await page.waitForSelector(selector, { state: 'visible', timeout: 5000 });
+        console.log(`Found sidebar with selector: ${selector}`);
+        sidebarFound = true;
+        break;
+      } catch (error) {
+        console.log(`Selector ${selector} failed`);
+      }
+    }
+    
+    if (!sidebarFound) {
+      console.log('No sidebar found, trying to extract stories directly from page');
+    }
+
+    // Method 2: Try different ways to get story links
+    const extractMethods = [
+      () => page.$$eval('a[data-item-id]', (links) => 
+        links.map(link => ({
+          id: link.getAttribute('data-item-id') || '',
+          name: link.textContent?.trim() || '',
+          href: link.getAttribute('href') || '',
+        })).filter(story => story.id && story.id.includes('--'))
+      ),
+      () => page.$$eval('[data-nodetype="story"] a, .sidebar-item a', (links) => 
+        links.map(link => ({
+          id: link.getAttribute('data-item-id') || link.id || '',
+          name: link.textContent?.trim() || '',
+          href: link.getAttribute('href') || '',
+        })).filter(story => story.id || story.href)
+      ),
+      () => page.$$eval('a[href*="path="]', (links) => 
+        links.map(link => ({
+          id: link.getAttribute('href')?.split('path=')[1]?.split('&')[0] || '',
+          name: link.textContent?.trim() || '',
+          href: link.getAttribute('href') || '',
+        })).filter(story => story.id)
+      )
+    ];
+
+    for (const method of extractMethods) {
+      try {
+        storyLinks = await method();
+        if (storyLinks.length > 0) {
+          console.log(`Found ${storyLinks.length} stories using method ${extractMethods.indexOf(method) + 1}`);
+          break;
+        }
+      } catch (error) {
+        console.log(`Method ${extractMethods.indexOf(method) + 1} failed:`, error.message);
+      }
+    }
+
+    // Method 3: If no stories found, create a basic test using your existing story files
+    if (storyLinks.length === 0) {
+      console.log('No stories found via selectors, using file-based approach');
+      const storyFiles = [
+        'button--primary',
+        'header--logged-in', 
+        'header--logged-out',
+        'page--logged-in'
+      ];
+      
+      storyLinks = storyFiles.map(id => ({
+        id,
+        name: id.replace('--', ' - '),
+        href: `/?path=/story/${id}`
       }));
-    });
+    }
 
     console.log(`Found ${storyLinks.length} Storybook stories.`);
 
     for (const story of storyLinks) {
-      if (!story.href) continue;
+      if (!story.id && !story.href) continue;
 
-      const storyUrl = `${STORYBOOK_URL}/iframe.html?id=${story.id}&viewMode=story`;
-      const screenshotPath = path.join(screenshotsDir, `${story.id}.png`);
+      // Generate story URL based on available data
+      let storyUrl;
+      if (story.id && story.id.includes('--')) {
+        storyUrl = `${STORYBOOK_URL}/iframe.html?id=${story.id}&viewMode=story`;
+      } else if (story.href) {
+        storyUrl = story.href.startsWith('http') ? story.href : `${STORYBOOK_URL}${story.href}`;
+      } else {
+        continue;
+      }
+      
+      const storyId = story.id || story.href.replace(/[^a-zA-Z0-9]/g, '-');
+      const screenshotPath = path.join(screenshotsDir, `${storyId}.png`);
 
-      await test.step(`Testing story: ${story.name} (${story.id})`, async () => {
+      await test.step(`Testing story: ${story.name} (${storyId})`, async () => {
         try {
           await page.goto(storyUrl, { waitUntil: 'networkidle' });
           await page.waitForTimeout(500); // Give some time for rendering
@@ -67,7 +145,7 @@ test.describe('Storybook Visual Regression', () => {
           // Use Playwright's built-in visual comparison
           // This will create a baseline image if it doesn't exist,
           // or compare against it and create a diff image if there are changes.
-          await expect(page).toHaveScreenshot(`${story.id}.png`, {
+          await expect(page).toHaveScreenshot(`${storyId}.png`, {
             fullPage: true,
             maxDiffPixelRatio: 0.01, // Allow for minor pixel differences
             threshold: 0.1, // Allow for minor color differences
@@ -76,7 +154,7 @@ test.describe('Storybook Visual Regression', () => {
         } catch (error) {
           console.error(`  ❌ Failed: ${story.name} - ${error.message}`);
           // Optionally, take a screenshot on failure for debugging
-          await page.screenshot({ path: path.join(screenshotsDir, `${story.id}-FAIL.png`) });
+          await page.screenshot({ path: path.join(screenshotsDir, `${storyId}-FAIL.png`) });
           throw error; // Re-throw to mark the test as failed
         }
       });

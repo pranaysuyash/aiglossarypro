@@ -36,7 +36,7 @@ interface ScreenshotConfig {
 
 class SimpleVisualAuditor {
   // Base URL for the site under test – can be overridden via BASE_URL env var
-  private baseUrl = process.env.BASE_URL || 'http://localhost:3001';
+  private baseUrl = process.env.BASE_URL || 'http://localhost:5173';
   private outputDir: string;
   private viteProcess: any = null;
 

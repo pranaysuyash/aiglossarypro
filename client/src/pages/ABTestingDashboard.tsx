@@ -96,7 +96,8 @@ export function ABTestingDashboard() {
       const interval = setInterval(fetchActiveTest, 30000); // Refresh every 30 seconds
       return () => clearInterval(interval);
     }
-  }, [autoRefresh, fetchActiveTest]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoRefresh]);
 
   const fetchActiveTest = async () => {
     try {

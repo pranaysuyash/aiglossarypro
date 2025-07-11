@@ -51,10 +51,6 @@ export default function FilePreview({
   const [previewData, setPreviewData] = useState<PreviewData | null>(null);
   const [activeTab, setActiveTab] = useState('preview');
 
-  useEffect(() => {
-    loadPreview();
-  }, [loadPreview]);
-
   const getFileType = (fileName: string, _contentType?: string): PreviewData['type'] => {
     const extension = fileName.split('.').pop()?.toLowerCase();
 
@@ -155,6 +151,10 @@ export default function FilePreview({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    loadPreview();
+  }, []);
 
   const processCSVPreview = async (content: string): Promise<PreviewData> => {
     const lines = content.split('\n').filter((line) => line.trim());

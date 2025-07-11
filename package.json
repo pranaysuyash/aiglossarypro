@@ -31,6 +31,11 @@
     "build:cdn": "vite build --config vite.config.cdn.ts && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
     "build:analyze": "vite build --mode analyze && npx vite-bundle-analyzer dist/public",
     "start": "NODE_ENV=production node dist/index.js",
+    "clean": "node scripts/clean.js",
+    "clean:cache": "rm -rf node_modules/.vite .vite",
+    "clean:build": "rm -rf dist",
+    "clean:logs": "rm -f *.log",
+    "clean:all": "npm run clean",
     "check": "tsc",
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
@@ -45,7 +50,7 @@
     "db:search-indexes": "tsx server/scripts/applySearchIndexes.ts",
     "create:test-users": "tsx server/scripts/createTestUser.ts",
     "cleanup:categories": "tsx server/scripts/cleanupInvalidCategories.ts",
-    "audit:visual": "tsx scripts/visual-audit-simple.ts",
+    "audit:visual": "tsx scripts/comprehensive-audit-suite.ts visual",
     "audit:visual:full": "tsx scripts/visual-audit.ts",
     "audit:visual:debug": "tsx scripts/visual-audit-fixed.ts",
     "audit:visual:enhanced": "tsx scripts/visual-audit-enhanced.ts",
@@ -100,7 +105,11 @@
     "test:visual:mobile": "playwright test --config=playwright.visual.config.ts --project=mobile-chrome --project=mobile-safari",
     "test:visual:cross-browser": "playwright test --config=playwright.visual.config.ts --project=chromium-desktop --project=firefox-desktop --project=webkit-desktop",
     "test:visual:storybook": "playwright test",
-
+    "audit:all": "tsx scripts/comprehensive-audit-suite.ts all",
+    "audit:accessibility": "tsx scripts/comprehensive-audit-suite.ts accessibility",
+    "audit:performance": "tsx scripts/comprehensive-audit-suite.ts performance",
+    "audit:functional": "tsx scripts/comprehensive-audit-suite.ts functional",
+    "audit:code-quality": "tsx scripts/comprehensive-audit-suite.ts code-quality",
     "test:component": "vitest run tests/component",
     "test:unit": "vitest run tests/unit",
     "test:all": "npm run test:unit && npm run test:component && npm run test:visual",
@@ -297,6 +306,9 @@
     "eslint": "^9.30.0",
     "eslint-plugin-cypress": "^5.1.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "eslint-plugin-storybook": "^9.0.16",
     "globals": "^16.3.0",
     "jest-environment-jsdom-latest": "^26.6.2",
     "jest-fixed-jsdom": "^0.0.9",
@@ -306,6 +318,7 @@
     "nodemon": "^3.1.10",
     "ora": "^8.2.0",
     "playwright": "^1.54.0",
+    "playwright-lighthouse": "^4.0.0",
     "postcss": "^8.5.6",
     "react-scan": "^0.4.3",
     "sharp": "^0.33.5",
@@ -320,5 +333,10 @@
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"
+  },
+  "eslintConfig": {
+    "extends": [
+      "plugin:storybook/recommended"
+    ]
   }
 }

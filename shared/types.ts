@@ -6,6 +6,7 @@
 // User related types
 export interface IUser {
   id: string;
+  uid?: string; // Firebase UID
   email: string;
   name: string;
   firstName?: string;

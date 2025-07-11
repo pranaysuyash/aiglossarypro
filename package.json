@@ -123,7 +123,9 @@
     "lint:biome": "biome lint .",
     "lint:biome:fix": "biome lint . --write",
     "format:biome": "biome format . --write",
-    "check:biome": "biome check . --write"
+    "check:biome": "biome check . --write",
+    "stories:generate": "tsx scripts/generate-missing-stories.ts",
+    "stories:analyze": "tsx scripts/generate-missing-stories.ts --analyze-only"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.808.0",

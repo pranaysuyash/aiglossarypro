@@ -3,9 +3,11 @@ import { useState } from 'react';
 import { PurchaseVerification } from '../components/PurchaseVerification';
 import { TestPurchaseButton } from '../components/TestPurchaseButton';
 import { Button } from '../components/ui/button';
+import { useCountryPricing } from '../hooks/useCountryPricing';
 
 export default function Lifetime() {
   const [showVerification, setShowVerification] = useState(false);
+  const pricing = useCountryPricing();
 
   const handlePurchase = () => {
     window.open('https://pranaysuyash.gumroad.com/l/ggczfy/EARLY500', '_blank');
@@ -139,15 +141,19 @@ export default function Lifetime() {
           <h2 className="text-3xl font-bold mb-8">Simple, Fair Pricing</h2>
           <div className="bg-white p-8 rounded-lg shadow-lg">
             <div className="text-5xl font-bold text-blue-600 mb-4">
-              $179 <span className="text-2xl text-gray-500 line-through">$249</span>
+              ${pricing.localPrice} <span className="text-2xl text-gray-500 line-through">${pricing.originalPrice}</span>
             </div>
-            <div className="text-xl text-gray-600 dark:text-gray-400 mb-2">Early Bird Price</div>
+            <div className="text-xl text-gray-600 dark:text-gray-400 mb-2">
+              {pricing.isDiscounted ? 'Special Price for Your Region' : 'One-time Payment'}
+            </div>
             <div className="text-sm text-gray-500 mb-8">
-              Automatically adjusted for your country ($99-$249)
+              Automatically adjusted for your country • {pricing.currency} pricing
             </div>
             <ul className="text-left space-y-3 mb-8">
               {[
                 'All 10,000+ terms and definitions',
+                'Remove all ads permanently',
+                '42 detailed sections across AI/ML',
                 'Code examples and implementations',
                 'Lifetime updates and new content',
                 'Advanced search and filtering',
@@ -164,7 +170,7 @@ export default function Lifetime() {
               onClick={handlePurchase}
               className="w-full text-xl py-6 bg-blue-600 hover:bg-blue-700"
             >
-              Get Lifetime Access Now
+              Buy Now - Get Lifetime Access
             </Button>
             <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
               Early bird pricing • Save $70 • PPP automatically applied

@@ -39,11 +39,13 @@ interface ProgressStats {
 }
 
 interface UpgradePromptProps {
-  variant?: 'modal' | 'banner' | 'card' | 'smart';
+  variant?: 'modal' | 'banner' | 'card' | 'smart' | 'inline';
   className?: string;
   onClose?: () => void;
   trigger?: UpgradePromptTrigger;
   progressStats?: ProgressStats;
+  contentType?: 'section' | 'term' | 'feature';
+  contentTitle?: string;
 }
 
 export function UpgradePrompt({
@@ -52,6 +54,8 @@ export function UpgradePrompt({
   onClose,
   trigger,
   progressStats,
+  contentType = 'term',
+  contentTitle = '',
 }: UpgradePromptProps) {
   const { accessStatus } = useAccess();
   const { user } = useAuth();
@@ -340,6 +344,71 @@ export function UpgradePrompt({
             </p>
           </CardContent>
         </Card>
+      </div>
+    );
+  }
+
+  if (variant === 'inline') {
+    const getInlineContent = () => {
+      switch (contentType) {
+        case 'section':
+          return {
+            icon: <BookmarkIcon className="h-5 w-5 text-blue-500" />,
+            title: `Unlock ${contentTitle || 'this section'}`,
+            description: 'Get unlimited access to detailed explanations, examples, and advanced content.',
+            cta: 'Unlock All Sections',
+          };
+        case 'feature':
+          return {
+            icon: <Star className="h-5 w-5 text-purple-500" />,
+            title: `Premium Feature: ${contentTitle || 'Advanced Tools'}`,
+            description: 'This feature is available to premium users. Upgrade for full access.',
+            cta: 'Get Premium Access',
+          };
+        default:
+          return {
+            icon: <Zap className="h-5 w-5 text-yellow-500" />,
+            title: 'Daily limit reached',
+            description: `You've used your daily free views. Upgrade for unlimited ${contentTitle || 'terms'}.`,
+            cta: 'Get Unlimited Access',
+          };
+      }
+    };
+
+    const content = getInlineContent();
+
+    return (
+      <div className={`bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 my-4 ${className}`}>
+        <div className="flex items-start gap-3">
+          <div className="flex-shrink-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
+            {content.icon}
+          </div>
+          <div className="flex-1 min-w-0">
+            <h3 className="font-semibold text-gray-900 mb-1">{content.title}</h3>
+            <p className="text-sm text-gray-600 mb-3">{content.description}</p>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleUpgrade}
+                size="sm"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                {content.cta}
+              </Button>
+              <div className="text-xs text-gray-500">
+                $249 • One-time payment
+              </div>
+            </div>
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="flex-shrink-0 text-gray-400 hover:text-gray-600 p-1"
+              aria-label="Close"
+            >
+              ×
+            </button>
+          )}
+        </div>
       </div>
     );
   }

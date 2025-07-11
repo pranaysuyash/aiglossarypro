@@ -3,15 +3,18 @@ import { BarChart3, TrendingUp } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'wouter';
 import CategoryCard from '@/components/CategoryCard';
+import GoogleAd from '@/components/ads/GoogleAd';
 import Sidebar from '@/components/Sidebar';
 import TermCard from '@/components/TermCard';
 import { Button } from '@/components/ui/button';
 import { CategoryCardSkeleton, TermCardSkeleton } from '@/components/ui/skeleton';
 import { useAuth } from '@/hooks/useAuth';
+import { useAdPlacement } from '@/hooks/useAdSense';
 import type { ICategory, ITerm } from '@/interfaces/interfaces';
 
 export default function Home() {
   const { isAuthenticated } = useAuth();
+  const { adSlot: homepageAdSlot, canShowAd: canShowHomepageAd } = useAdPlacement('homepage');
 
   // Fetch featured categories
   const { data: categories, isLoading: categoriesLoading } = useQuery({
@@ -127,6 +130,18 @@ export default function Home() {
               )}
             </div>
           </div>
+
+          {/* Homepage Ad */}
+          {canShowHomepageAd && homepageAdSlot && (
+            <div className="mb-8">
+              <GoogleAd
+                slot={homepageAdSlot}
+                format="rectangle"
+                responsive={true}
+                className="flex justify-center"
+              />
+            </div>
+          )}
 
           {/* Featured Terms */}
           <div className="mb-12">

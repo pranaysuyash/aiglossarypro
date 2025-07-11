@@ -17,16 +17,24 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
   try {
     const today = new Date().toISOString().split('T')[0];
 
-    // Check if user is in grace period (new account)
+    // Check if user has premium access or is in grace period
     const userInfo = await db.execute(sql`
-      SELECT created_at FROM users WHERE id = ${userId}
+      SELECT created_at, lifetime_access FROM users WHERE id = ${userId}
     `);
 
     if (!userInfo.rows || userInfo.rows.length === 0) {
       return true; // Allow if user not found (shouldn't happen)
     }
 
-    const userCreatedAt = new Date((userInfo.rows[0] as any).created_at);
+    const user = userInfo.rows[0] as any;
+    
+    // Premium users have unlimited access
+    if (user.lifetime_access) {
+      console.log(`User ${userId} has premium access - unlimited views`);
+      return true;
+    }
+
+    const userCreatedAt = new Date(user.created_at);
     const daysSinceCreation = Math.floor(
       (Date.now() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24)
     );

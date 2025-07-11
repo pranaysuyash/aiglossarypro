@@ -1,0 +1,37 @@
+{
+  "entryPoints": {
+    "headerButton": true,
+    "inlinePrompts": true,
+    "freeTierGate": true,
+    "rateLimitModal": true
+  },
+  "pricingPage": {
+    "lifetimePage": true,
+    "benefitsOutline": true,
+    "pppPricing": true,
+    "gumroadIntegration": true,
+    "pricingComponent": true
+  },
+  "paymentFlow": {
+    "gumroadWebhook": true,
+    "successPage": true,
+    "purchaseVerification": true,
+    "accountUpgrade": true,
+    "emailConfirmation": true
+  },
+  "postUpgrade": {
+    "premiumBadge": true,
+    "adRemoval": true,
+    "limitReset": true,
+    "welcomeOnboarding": true,
+    "upgradeSuccess": true
+  },
+  "userFunnels": {
+    "tryThenBuy": true,
+    "directPurchase": true,
+    "gracePeriod": true,
+    "analytics": true
+  },
+  "errors": [],
+  "warnings": []
+}

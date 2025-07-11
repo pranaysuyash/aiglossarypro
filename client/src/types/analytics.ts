@@ -121,6 +121,26 @@ export const trackPurchase = (
   ga4Analytics.trackPurchase(transactionId, value, currency, items);
 };
 
+// Upgrade specific tracking
+export const trackUpgradeClick = (source: string, tier: string = 'lifetime'): void => {
+  trackEvent('upgrade_click', {
+    event_category: 'upgrade',
+    event_label: `${source}_to_${tier}`,
+    item_name: 'AI/ML Glossary Pro',
+    item_category: 'subscription',
+    value: 249,
+    currency: 'USD',
+  });
+};
+
+export const trackUpgradePageView = (source: string): void => {
+  trackEvent('upgrade_page_view', {
+    event_category: 'upgrade',
+    event_label: source,
+    item_name: 'AI/ML Glossary Pro',
+  });
+};
+
 // Page view tracking
 export const trackPageView = (pageTitle: string, pageLocation?: string): void => {
   ga4Analytics.trackPageView(pageTitle, pageLocation);

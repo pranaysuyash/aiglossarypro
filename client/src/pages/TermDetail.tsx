@@ -5,6 +5,7 @@ import { Link, useParams } from 'wouter';
 import { StructuredData, SEOMeta } from '@/components/SEO/StructuredData';
 import { AIDefinitionImprover } from '@/components/AIDefinitionImprover';
 import { FreeTierGate } from '@/components/FreeTierGate';
+import GoogleAd from '@/components/ads/GoogleAd';
 import ProgressTracker from '@/components/ProgressTracker';
 import ShareMenu from '@/components/ShareMenu';
 import Sidebar from '@/components/Sidebar';
@@ -23,6 +24,7 @@ import { OptimizedImage } from '@/components/ui/optimized-image';
 import { contentOutline } from '@/data/content-outline';
 import { useToast } from '@/hooks/use-toast';
 import { useAccess } from '@/hooks/useAccess';
+import { useAdPlacement } from '@/hooks/useAdSense';
 import { useAuth } from '@/hooks/useAuth';
 import { apiRequest } from '@/lib/queryClient';
 import { sanitizeHTML, sanitizeMathHTML } from '@/utils/sanitize';
@@ -32,6 +34,7 @@ export default function TermDetail() {
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const { accessStatus, isFreeTier } = useAccess();
+  const { adSlot: termDetailAdSlot, canShowAd: canShowTermDetailAd } = useAdPlacement('termDetail');
   const [shareMenuOpen, setShareMenuOpen] = useState(false);
 
   // Add CSS for section highlighting
@@ -410,6 +413,18 @@ export default function TermDetail() {
                   </FreeTierGate>
                 )}
               </div>
+
+              {/* Term Detail Ad */}
+              {canShowTermDetailAd && termDetailAdSlot && (
+                <div className="mb-8">
+                  <GoogleAd
+                    slot={termDetailAdSlot}
+                    format="rectangle"
+                    responsive={true}
+                    className="flex justify-center"
+                  />
+                </div>
+              )}
 
               {/* Hierarchical Navigation for 42 Sections + 295 Subsections */}
               {!term.isPreview && (

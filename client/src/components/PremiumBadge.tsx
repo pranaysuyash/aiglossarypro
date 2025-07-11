@@ -27,7 +27,7 @@ export function PremiumBadge({
     return (
       <div
         className={`inline-flex items-center ${className}`}
-        title={isPremium ? 'Premium Member' : 'Free User'}
+        title={isPremium ? '🌟 Pro Member' : 'Free User'}
       >
         {isPremium ? (
           <Crown className="w-4 h-4 text-yellow-500" />
@@ -54,8 +54,7 @@ export function PremiumBadge({
       >
         {isPremium ? (
           <>
-            <Crown className="w-3 h-3 mr-1" />
-            Premium
+            🌟 Pro
           </>
         ) : (
           'Free'
@@ -80,8 +79,7 @@ export function PremiumBadge({
     >
       {isPremium ? (
         <>
-          <Crown className="w-4 h-4 mr-2" />
-          Premium Member
+          🌟 Pro Member
         </>
       ) : (
         <>

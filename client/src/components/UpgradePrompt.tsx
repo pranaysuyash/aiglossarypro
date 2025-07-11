@@ -203,7 +203,7 @@ export function UpgradePrompt({
 
           <div className="border rounded-lg p-3 bg-gradient-to-r from-blue-50 to-purple-50">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">$129</div>
+              <div className="text-2xl font-bold text-blue-600">$249</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">One-time payment</div>
               <div className="text-xs text-green-600 font-medium mt-1">
                 Auto-adjusted for your region
@@ -313,7 +313,7 @@ export function UpgradePrompt({
 
             <div className="border rounded-lg p-3 bg-gradient-to-r from-blue-50 to-purple-50">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">$129</div>
+                <div className="text-2xl font-bold text-blue-600">$249</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">One-time payment</div>
                 <div className="text-xs text-green-600 font-medium mt-1">
                   Auto-adjusted for your region

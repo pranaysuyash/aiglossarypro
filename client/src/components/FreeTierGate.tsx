@@ -144,7 +144,7 @@ export function FreeTierGate({
 
           {/* Pricing */}
           <div className="bg-white rounded-lg p-4 border text-center">
-            <div className="text-2xl font-bold text-blue-600">$129</div>
+            <div className="text-2xl font-bold text-blue-600">$249</div>
             <div className="text-sm text-gray-600">One-time lifetime access</div>
             <div className="text-xs text-green-600 font-medium mt-1">
               🌍 Automatically adjusted for your region

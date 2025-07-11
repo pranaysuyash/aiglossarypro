@@ -529,43 +529,42 @@ export function registerUserRoutes(app: Express): void {
   // Daily usage statistics endpoint
   app.get(
     '/api/user/daily-usage',
-    authenticateUser,
+    authMiddleware as any,
     async (req: Request, res: Response) => {
       try {
         const userId = (req as any).user.claims.sub;
         const today = new Date().toISOString().split('T')[0];
         
-        // Get today's view count
-        const viewCount = await db.execute(sql`
-          SELECT COUNT(*) as count 
-          FROM user_term_views 
-          WHERE user_id = ${userId} 
-          AND DATE(viewed_at) = ${today}
-        `);
+        // Get user info using storage
+        const user = await storage.getUser(userId);
         
-        const todayViews = Number((viewCount.rows[0] as any)?.count || 0);
-        
-        // Get user info to check grace period
-        const userInfo = await db.execute(sql`
-          SELECT created_at FROM users WHERE id = ${userId}
-        `);
+        if (!user) {
+          return res.status(404).json({
+            success: false,
+            message: 'User not found',
+          });
+        }
+
+        // Use centralized access control logic
+        const accessStatus = getUserAccessStatus(user);
+        const dailyLimits = accessStatus.dailyLimits;
         
         let isInGracePeriod = false;
         let gracePeriodDaysLeft = 0;
         
-        if (userInfo.rows && userInfo.rows.length > 0) {
-          const userCreatedAt = new Date((userInfo.rows[0] as any).created_at);
-          const daysSinceCreation = Math.floor(
-            (Date.now() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24)
-          );
-          
-          const gracePeriodDays = 7; // Same as rate limiting config
-          isInGracePeriod = daysSinceCreation <= gracePeriodDays;
-          gracePeriodDaysLeft = Math.max(0, gracePeriodDays - daysSinceCreation);
-        }
+        const userCreatedAt = new Date(user.createdAt || new Date());
+        const daysSinceCreation = Math.floor(
+          (Date.now() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24)
+        );
         
-        const dailyLimit = 50; // Same as rate limiting config
-        const remainingViews = isInGracePeriod ? -1 : Math.max(0, dailyLimit - todayViews);
+        const gracePeriodDays = 7; // Same as rate limiting config
+        isInGracePeriod = daysSinceCreation <= gracePeriodDays;
+        gracePeriodDaysLeft = Math.max(0, gracePeriodDays - daysSinceCreation);
+        
+        const todayViews = dailyLimits.dailyViews;
+        
+        const dailyLimit = dailyLimits.limit;
+        const remainingViews = dailyLimits.remaining;
         
         res.json({
           success: true,

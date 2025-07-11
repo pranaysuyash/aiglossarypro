@@ -12,6 +12,8 @@
  * Gemini Approved: Option A naming approach with composition pattern
  */
 
+import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
+import OpenAI from 'openai';
 import type { AdminStats, IEnhancedTerm, ISection, ITerm } from '../shared/types';
 import { redisCache as enhancedRedisCache } from './config/redis';
 import { enhancedStorage as enhancedTermsStorage } from './enhancedTermsStorage';
@@ -847,11 +849,11 @@ export class EnhancedStorage implements IEnhancedStorage {
         totalTerms: contentMetrics.totalTerms,
         totalCategories: categories.length,
         totalViews: contentMetrics.totalViews || 0, // Add totalViews
-        recentActivity: [], // TODO: Implement activity tracking in Phase 2D
+        recentActivity: await this.getRecentActivity(),
         systemHealth: {
           database: (await this.checkDatabaseHealth()) ? 'healthy' : 'warning',
-          s3: 'healthy', // TODO: Implement S3 health check
-          ai: 'healthy', // TODO: Implement AI health check
+          s3: (await this.checkS3Health()).healthy ? 'healthy' : 'warning',
+          ai: (await this.checkAIHealth()).healthy ? 'healthy' : 'warning',
         },
       };
 
@@ -937,6 +939,177 @@ export class EnhancedStorage implements IEnhancedStorage {
     } catch (error) {
       console.error('[EnhancedStorage] Database health check failed:', error);
       return false;
+    }
+  }
+
+  async checkS3Health(): Promise<{ healthy: boolean; message: string; responseTime?: number }> {
+    const start = Date.now();
+
+    try {
+      // Check if S3 environment variables are configured
+      if (!process.env.AWS_S3_BUCKET_NAME || !process.env.AWS_REGION) {
+        return {
+          healthy: false,
+          message: 'S3 configuration missing (bucket name or region)',
+        };
+      }
+
+      // Check if credentials are available
+      if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+        return {
+          healthy: false,
+          message: 'S3 credentials missing (access key or secret)',
+        };
+      }
+
+      const s3Client = new S3Client({
+        region: process.env.AWS_REGION,
+        credentials: {
+          accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+          secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+        },
+      });
+
+      // Test bucket access
+      await s3Client.send(
+        new HeadBucketCommand({
+          Bucket: process.env.AWS_S3_BUCKET_NAME,
+        })
+      );
+
+      const responseTime = Date.now() - start;
+      return {
+        healthy: true,
+        message: 'S3 bucket accessible',
+        responseTime,
+      };
+    } catch (error) {
+      const responseTime = Date.now() - start;
+      console.error('[EnhancedStorage] S3 health check failed:', error);
+      return {
+        healthy: false,
+        message: `S3 health check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        responseTime,
+      };
+    }
+  }
+
+  async checkAIHealth(): Promise<{ healthy: boolean; message: string; responseTime?: number }> {
+    const start = Date.now();
+
+    try {
+      if (!process.env.OPENAI_API_KEY) {
+        return {
+          healthy: false,
+          message: 'OpenAI API key not configured',
+        };
+      }
+
+      const openai = new OpenAI({
+        apiKey: process.env.OPENAI_API_KEY,
+      });
+
+      // Test with a minimal request to check API connectivity
+      await openai.models.list();
+
+      const responseTime = Date.now() - start;
+      return {
+        healthy: true,
+        message: 'OpenAI API accessible',
+        responseTime,
+      };
+    } catch (error) {
+      const responseTime = Date.now() - start;
+      let message = 'OpenAI API check failed';
+
+      if (error instanceof Error) {
+        if (error.message.includes('401')) {
+          message = 'OpenAI API key invalid or unauthorized';
+        } else if (error.message.includes('429')) {
+          message = 'OpenAI API rate limit exceeded';
+        } else if (error.message.includes('timeout')) {
+          message = 'OpenAI API timeout';
+        } else {
+          message = `OpenAI API error: ${error.message}`;
+        }
+      }
+
+      console.error('[EnhancedStorage] AI health check failed:', error);
+      return {
+        healthy: false,
+        message,
+        responseTime,
+      };
+    }
+  }
+
+  async getRecentActivity(): Promise<any[]> {
+    try {
+      // Get recent term views and favorites from both storage layers
+      const [recentViews, recentFavorites] = await Promise.all([
+        // Get recent term views from optimized storage
+        this.baseStorage.getAllUsers({ limit: 5 }).then(async (users) => {
+          if (!users.data.length) return [];
+
+          // Get recent views for active users
+          const viewPromises = users.data.map(async (user) => {
+            return this.baseStorage.getRecentlyViewedTerms(user.id).then((views) =>
+              views.slice(0, 3).map((view) => ({
+                id: `view_${user.id}_${view.id}`,
+                userId: user.id,
+                action: 'view' as const,
+                entityType: 'term' as const,
+                entityId: view.id,
+                metadata: {
+                  termName: view.name,
+                  category: view.category,
+                  viewedAt: view.viewedAt,
+                },
+                createdAt: new Date(view.viewedAt),
+              }))
+            );
+          });
+
+          const allViews = await Promise.all(viewPromises);
+          return allViews.flat();
+        }),
+
+        // Get recent favorites
+        this.baseStorage.getAllUsers({ limit: 5 }).then(async (users) => {
+          if (!users.data.length) return [];
+
+          const favoritePromises = users.data.map(async (user) => {
+            return this.baseStorage.getUserFavorites(user.id).then((favorites) =>
+              favorites.slice(0, 2).map((fav) => ({
+                id: `favorite_${user.id}_${fav.id}`,
+                userId: user.id,
+                action: 'favorite' as const,
+                entityType: 'term' as const,
+                entityId: fav.id,
+                metadata: {
+                  termName: fav.name,
+                  category: fav.category,
+                  favoriteDate: fav.favoriteDate,
+                },
+                createdAt: new Date(fav.favoriteDate),
+              }))
+            );
+          });
+
+          const allFavorites = await Promise.all(favoritePromises);
+          return allFavorites.flat();
+        }),
+      ]);
+
+      // Combine and sort by creation date
+      const allActivity = [...recentViews, ...recentFavorites];
+      allActivity.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+
+      // Return the 10 most recent activities
+      return allActivity.slice(0, 10);
+    } catch (error) {
+      console.error('[EnhancedStorage] Error fetching recent activity:', error);
+      return [];
     }
   }
 

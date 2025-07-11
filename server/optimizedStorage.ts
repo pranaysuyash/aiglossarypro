@@ -10,6 +10,7 @@ import {
   categories,
   favorites,
   subcategories,
+  termSections,
   termSubcategories,
   terms,
   termViews,
@@ -984,31 +985,27 @@ export class OptimizedStorage implements IStorage {
         if (fields.includes('name')) selectObj.name = categories.name;
         if (fields.includes('description')) selectObj.description = categories.description;
 
-        // Only add termCount if explicitly requested and compatible
+        // Add termCount if explicitly requested
         if (needsTermCount) {
-          // For now, we'll skip the term count due to schema mismatch
-          // TODO: Fix schema compatibility or implement alternative counting method
-          console.warn(
-            '[OptimizedStorage] Skipping termCount due to schema mismatch (categories.id: integer, terms.category_id: uuid)'
-          );
+          selectObj.termCount = sql<number>`count(DISTINCT ${terms.id})`;
         }
 
         let query: any = db.select(selectObj).from(categories);
 
-        // Skip joins to avoid schema mismatch errors
-        // if (needsTermCount) {
-        //   query = query.leftJoin(terms, eq(terms.categoryId, categories.id));
-        // }
+        // Add join for term count if needed
+        if (needsTermCount) {
+          query = query.leftJoin(terms, eq(terms.categoryId, categories.id));
+        }
 
         // Add search filter if provided
         if (search) {
           query = query.where(ilike(categories.name, `%${search}%`));
         }
 
-        // Skip grouping since we're not joining
-        // if (needsTermCount) {
-        //   query = query.groupBy(categories.id, categories.name, categories.description);
-        // }
+        // Add grouping for term count aggregation
+        if (needsTermCount) {
+          query = query.groupBy(categories.id, categories.name, categories.description);
+        }
 
         // Add ordering, limit, and offset
         try {
@@ -2639,9 +2636,19 @@ export class OptimizedStorage implements IStorage {
     return cached(
       cacheKey,
       async () => {
-        // Check if sections table exists, for now return empty array
-        // TODO: Implement when sections table is ready
-        return [];
+        try {
+          // Get all sections for this term
+          const sections = await db
+            .select()
+            .from(termSections)
+            .where(eq(termSections.termId, termId))
+            .orderBy(desc(termSections.priority), asc(termSections.sectionName));
+
+          return sections;
+        } catch (error) {
+          console.error('[OptimizedStorage] Error fetching term sections:', error);
+          return [];
+        }
       },
       CacheKeys.SHORT_CACHE_TTL
     );
@@ -2653,9 +2660,18 @@ export class OptimizedStorage implements IStorage {
     return cached(
       cacheKey,
       async () => {
-        // Check if sections table exists, for now return null
-        // TODO: Implement when sections table is ready
-        return null;
+        try {
+          // Get specific section by ID
+          const [section] = await db
+            .select()
+            .from(termSections)
+            .where(eq(termSections.id, sectionId));
+
+          return section || null;
+        } catch (error) {
+          console.error('[OptimizedStorage] Error fetching section by ID:', error);
+          return null;
+        }
       },
       CacheKeys.SHORT_CACHE_TTL
     );
@@ -2667,15 +2683,59 @@ export class OptimizedStorage implements IStorage {
     return cached(
       cacheKey,
       async () => {
-        // Check if content gallery data exists, for now return empty
-        // TODO: Implement when gallery tables are ready
-        return {
-          sectionName,
-          items: [],
-          termCount: 0,
-          totalPages: 0,
-          currentPage: page,
-        };
+        try {
+          const offset = (page - 1) * limit;
+
+          // Get sections matching the section name with pagination
+          const sectionsQuery = await db
+            .select({
+              id: termSections.id,
+              termId: termSections.termId,
+              sectionName: termSections.sectionName,
+              sectionData: termSections.sectionData,
+              displayType: termSections.displayType,
+              priority: termSections.priority,
+              isInteractive: termSections.isInteractive,
+              createdAt: termSections.createdAt,
+              updatedAt: termSections.updatedAt,
+            })
+            .from(termSections)
+            .where(eq(termSections.sectionName, sectionName))
+            .orderBy(desc(termSections.priority), desc(termSections.createdAt))
+            .limit(limit)
+            .offset(offset);
+
+          // Get total count for pagination
+          const [{ count: totalCount }] = await db
+            .select({
+              count: sql<number>`count(*)`,
+            })
+            .from(termSections)
+            .where(eq(termSections.sectionName, sectionName));
+
+          const totalPages = Math.ceil(totalCount / limit);
+
+          return {
+            sectionName,
+            items: sectionsQuery,
+            termCount: totalCount,
+            totalPages,
+            currentPage: page,
+            hasNextPage: page < totalPages,
+            hasPrevPage: page > 1,
+          };
+        } catch (error) {
+          console.error('[OptimizedStorage] Error fetching content gallery:', error);
+          return {
+            sectionName,
+            items: [],
+            termCount: 0,
+            totalPages: 0,
+            currentPage: page,
+            hasNextPage: false,
+            hasPrevPage: false,
+          };
+        }
       },
       CacheKeys.MEDIUM_CACHE_TTL
     );
@@ -2729,15 +2789,81 @@ export class OptimizedStorage implements IStorage {
     return cached(
       cacheKey,
       async () => {
-        // For now, return empty results
-        // TODO: Implement full-text search across section content
-        return {
-          data: [],
-          total: 0,
-          hasMore: false,
-          page,
-          limit,
-        };
+        try {
+          const offset = (page - 1) * limit;
+          const searchQuery = `%${query}%`;
+
+          // Build where conditions
+          const whereConditions = [];
+
+          // Add text search on section data
+          whereConditions.push(
+            or(
+              sql`${termSections.sectionData}::text ILIKE ${searchQuery}`,
+              ilike(termSections.sectionName, searchQuery)
+            )
+          );
+
+          // Filter by content type if provided
+          if (contentType && contentType !== 'all') {
+            whereConditions.push(eq(termSections.displayType, contentType));
+          }
+
+          // Filter by section name if provided
+          if (sectionName && sectionName !== 'all') {
+            whereConditions.push(eq(termSections.sectionName, sectionName));
+          }
+
+          const whereClause = whereConditions.length > 0 ? and(...whereConditions) : undefined;
+
+          // Get search results with pagination
+          const results = await db
+            .select({
+              id: termSections.id,
+              termId: termSections.termId,
+              sectionName: termSections.sectionName,
+              sectionData: termSections.sectionData,
+              displayType: termSections.displayType,
+              priority: termSections.priority,
+              isInteractive: termSections.isInteractive,
+              createdAt: termSections.createdAt,
+              updatedAt: termSections.updatedAt,
+            })
+            .from(termSections)
+            .where(whereClause)
+            .orderBy(desc(termSections.priority), desc(termSections.createdAt))
+            .limit(limit)
+            .offset(offset);
+
+          // Get total count for pagination
+          const [{ count: totalCount }] = await db
+            .select({
+              count: sql<number>`count(*)`,
+            })
+            .from(termSections)
+            .where(whereClause);
+
+          const hasMore = offset + results.length < totalCount;
+
+          return {
+            data: results,
+            total: totalCount,
+            hasMore,
+            page,
+            limit,
+            totalPages: Math.ceil(totalCount / limit),
+          };
+        } catch (error) {
+          console.error('[OptimizedStorage] Error searching section content:', error);
+          return {
+            data: [],
+            total: 0,
+            hasMore: false,
+            page,
+            limit,
+            totalPages: 0,
+          };
+        }
       },
       CacheKeys.SHORT_CACHE_TTL
     );

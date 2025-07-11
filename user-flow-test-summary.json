@@ -1,0 +1,22 @@
+{
+  "serverImplementation": {
+    "gracePeriodFixed": true,
+    "previewEnhanced": true,
+    "dailyUsageEndpoint": true,
+    "userFriendlyLimiting": true
+  },
+  "clientImplementation": {
+    "dailyWarningComponent": true,
+    "dailyUsageHook": true,
+    "improvedTermDetailUX": true,
+    "headerUsageIntegration": true,
+    "seoComponents": true
+  },
+  "apiEndpoints": {
+    "serverStartup": false,
+    "routeStructure": true
+  },
+  "userExperience": {},
+  "errors": [],
+  "warnings": []
+}

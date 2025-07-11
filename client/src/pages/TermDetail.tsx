@@ -2,6 +2,7 @@ import { useQuery } from '@tanstack/react-query';
 import { ChevronRight, Copy, Heart, Share2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link, useParams } from 'wouter';
+import { StructuredData, SEOMeta } from '@/components/SEO/StructuredData';
 import { AIDefinitionImprover } from '@/components/AIDefinitionImprover';
 import { FreeTierGate } from '@/components/FreeTierGate';
 import ProgressTracker from '@/components/ProgressTracker';
@@ -234,7 +235,23 @@ export default function TermDetail() {
   }
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <>
+      {/* SEO Meta Tags */}
+      <SEOMeta 
+        title={`${term.name} - AI/ML Glossary`}
+        description={term.definition}
+        keywords={term.tags || [term.name, 'AI', 'ML', 'artificial intelligence', 'machine learning']}
+        canonical={`${window.location.origin}/term/${term.id}`}
+        ogType="article"
+      />
+      
+      {/* Structured Data */}
+      <StructuredData 
+        term={term}
+        type="term"
+      />
+      
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex flex-col md:flex-row gap-6">
         <Sidebar />
 
@@ -340,25 +357,50 @@ export default function TermDetail() {
                     <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                       {term.definition}
                     </p>
-                    <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
-                            Sign in to view full definition
-                          </h3>
-                          <p className="text-blue-700 dark:text-blue-300 text-sm">
-                            Get unlimited access to complete definitions, examples, and more
-                            features.
-                          </p>
+                    
+                    {/* Different messaging for auth required vs upgrade required */}
+                    {term.requiresUpgrade ? (
+                      <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold text-orange-900 dark:text-orange-100 mb-2">
+                              Daily limit reached
+                            </h3>
+                            <p className="text-orange-700 dark:text-orange-300 text-sm">
+                              You've viewed {term.limitInfo?.dailyLimit || 50} terms today. 
+                              Upgrade for unlimited access or try again tomorrow.
+                            </p>
+                          </div>
+                          <div className="flex space-x-2">
+                            <Button
+                              onClick={() => (window.location.href = '/upgrade')}
+                              className="bg-orange-600 hover:bg-orange-700 text-white"
+                            >
+                              Upgrade Now
+                            </Button>
+                          </div>
                         </div>
-                        <Button
-                          onClick={() => (window.location.href = '/login')}
-                          className="bg-blue-600 hover:bg-blue-700 text-white"
-                        >
-                          Sign In
-                        </Button>
                       </div>
-                    </div>
+                    ) : (
+                      <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <h3 className="font-semibold text-blue-900 dark:text-blue-100 mb-2">
+                              Sign in to view full definition
+                            </h3>
+                            <p className="text-blue-700 dark:text-blue-300 text-sm">
+                              {term.previewMessage || 'Get unlimited access to complete definitions, examples, and more features.'}
+                            </p>
+                          </div>
+                          <Button
+                            onClick={() => (window.location.href = '/login')}
+                            className="bg-blue-600 hover:bg-blue-700 text-white"
+                          >
+                            Sign In
+                          </Button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ) : (
                   <FreeTierGate termId={id}>
@@ -577,5 +619,6 @@ export default function TermDetail() {
         </main>
       </div>
     </div>
+    </>
   );
 }

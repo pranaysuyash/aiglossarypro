@@ -33,6 +33,7 @@ import {
 } from '@/components/ui/icons';
 import { useAccess } from '@/hooks/useAccess';
 import { useAuth } from '@/hooks/useAuth';
+import { useDailyUsage } from '@/hooks/useDailyUsage';
 import type { BaseComponentProps } from '@/types/common-props';
 
 interface HeaderProps extends BaseComponentProps {
@@ -47,6 +48,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
   const [, navigate] = useLocation();
   const { user, isAuthenticated, logout } = useAuth();
   const { theme, setTheme } = useTheme();
+  const { usage, shouldShowWarning } = useDailyUsage();
   const { accessStatus, isFreeTier, hasAccess: hasAccessToContent } = useAccess();
 
   // Focus trap for mobile menu - temporarily disabled for debugging
@@ -315,7 +317,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                     <Button
                       type="button"
                       variant="ghost"
-                      className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 h-8 w-8 lg:h-10 lg:w-10"
+                      className="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 h-8 w-8 lg:h-10 lg:w-10 relative"
                       aria-label={`User menu for ${userObj?.firstName || 'User'}`}
                     >
                       <Avatar className="h-6 w-6 lg:h-8 lg:w-8">
@@ -330,6 +332,11 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                           {initials}
                         </AvatarFallback>
                       </Avatar>
+                      {/* Daily limit warning indicator */}
+                      {shouldShowWarning && (
+                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-orange-500 rounded-full animate-pulse" 
+                             title={`${usage?.remainingViews || 0} views remaining today`} />
+                      )}
                       <ChevronDown className="ml-0.5 lg:ml-1 h-3 w-3 lg:h-4 lg:w-4 text-gray-500 dark:text-gray-400" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -340,6 +347,41 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                         <div className="px-2 py-1.5 text-sm font-medium text-yellow-600 dark:text-yellow-400 flex items-center">
                           <Crown className="w-4 h-4 mr-2" />
                           Premium Member
+                        </div>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+
+                    {/* Daily Usage Info for Free Users */}
+                    {!accessStatus?.lifetimeAccess && usage && !usage.isInGracePeriod && (
+                      <>
+                        <div className="px-2 py-1.5 text-xs text-gray-600 dark:text-gray-400">
+                          <div className="flex justify-between items-center">
+                            <span>Daily usage</span>
+                            <span className={`font-medium ${usage.remainingViews <= 10 ? 'text-orange-600 dark:text-orange-400' : ''}`}>
+                              {usage.todayViews}/{usage.dailyLimit}
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
+                            <div
+                              className={`h-1.5 rounded-full transition-all duration-300 ${
+                                usage.percentageUsed >= 90 ? 'bg-red-500' : 
+                                usage.percentageUsed >= 80 ? 'bg-orange-500' : 'bg-blue-500'
+                              }`}
+                              style={{ width: `${Math.min(usage.percentageUsed, 100)}%` }}
+                            />
+                          </div>
+                        </div>
+                        <DropdownMenuSeparator />
+                      </>
+                    )}
+
+                    {/* Grace Period Info */}
+                    {!accessStatus?.lifetimeAccess && usage?.isInGracePeriod && (
+                      <>
+                        <div className="px-2 py-1.5 text-xs text-green-600 dark:text-green-400 flex items-center">
+                          <Sparkles className="w-3 h-3 mr-1" />
+                          Grace period: {usage.gracePeriodDaysLeft} days left
                         </div>
                         <DropdownMenuSeparator />
                       </>

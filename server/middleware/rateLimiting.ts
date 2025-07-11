@@ -31,9 +31,10 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
       (Date.now() - userCreatedAt.getTime()) / (1000 * 60 * 60 * 24)
     );
 
-    // Skip rate limiting for accounts older than grace period
-    if (daysSinceCreation > DEFAULT_CONFIG.gracePeriodDays) {
-      return true;
+    // Apply rate limiting only to accounts older than grace period
+    if (daysSinceCreation <= DEFAULT_CONFIG.gracePeriodDays) {
+      console.log(`User ${userId} is in grace period (${daysSinceCreation}/${DEFAULT_CONFIG.gracePeriodDays} days)`);
+      return true; // Allow unlimited access during grace period
     }
 
     // Count today's views for this user

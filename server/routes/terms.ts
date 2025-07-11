@@ -900,18 +900,19 @@ export function registerTermRoutes(app: Express): void {
         if (!isAuthenticated) {
           const previewTerm = {
             ...term,
-            definition: term.definition ? `${term.definition.substring(0, 200)}...` : '',
+            definition: term.definition ? `${term.definition.substring(0, 150)}...` : '',
             longDefinition: term.longDefinition
-              ? `${term.longDefinition.substring(0, 300)}...`
+              ? `${term.longDefinition.substring(0, 250)}...`
               : '',
             isPreview: true,
             requiresAuth: true,
+            previewMessage: 'Sign in to view the complete definition, examples, and all 42 content sections',
           };
 
           const response: ApiResponse<any> = {
             success: true,
             data: previewTerm,
-            message: 'Sign in to view full definition',
+            message: 'Preview mode - Sign in for full access',
           };
 
           return res.json(response);

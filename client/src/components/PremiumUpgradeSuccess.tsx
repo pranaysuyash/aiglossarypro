@@ -7,22 +7,26 @@ import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { PremiumOnboarding } from './PremiumOnboarding';
 
 interface PremiumUpgradeSuccessProps {
   onClose?: () => void;
   autoRedirect?: boolean;
   showAsModal?: boolean;
+  showOnboarding?: boolean;
 }
 
 export function PremiumUpgradeSuccess({
   onClose,
   autoRedirect = true,
   showAsModal = false,
+  showOnboarding = true,
 }: PremiumUpgradeSuccessProps) {
   const { toast } = useToast();
   const { user, refetch } = useAuth();
   const [, navigate] = useLocation();
   const [countdown, setCountdown] = useState(10);
+  const [showOnboardingFlow, setShowOnboardingFlow] = useState(false);
 
   useEffect(() => {
     // Refetch user data to get updated premium status
@@ -80,6 +84,19 @@ export function PremiumUpgradeSuccess({
     : 'container mx-auto px-4 py-8';
 
   const cardClass = showAsModal ? 'max-w-2xl w-full mx-auto' : 'max-w-4xl mx-auto';
+
+  // Show onboarding flow if requested
+  if (showOnboardingFlow) {
+    return (
+      <PremiumOnboarding
+        showAsModal={showAsModal}
+        onComplete={() => {
+          setShowOnboardingFlow(false);
+          navigate('/dashboard');
+        }}
+      />
+    );
+  }
 
   return (
     <div className={containerClass}>
@@ -162,6 +179,17 @@ export function PremiumUpgradeSuccess({
 
           {/* Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-3 pt-4">
+            {showOnboarding && (
+              <Button
+                onClick={() => setShowOnboardingFlow(true)}
+                className="flex-1 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white font-medium"
+                size="lg"
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                Take Premium Tour
+              </Button>
+            )}
+
             <Button
               onClick={() => navigate('/dashboard?welcome=premium')}
               className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-medium"

@@ -4,8 +4,10 @@ import {
   getEmailVerificationTemplate,
   getLearningProgressTemplate,
   getPasswordResetEmailTemplate,
+  getPremiumWelcomeEmailTemplate,
   getSystemNotificationTemplate,
   getWelcomeEmailTemplate,
+  type PremiumWelcomeEmailData,
 } from './emailTemplates';
 import { log as logger } from './logger';
 
@@ -167,6 +169,20 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     });
     throw error;
   }
+}
+
+/**
+ * Send premium welcome email
+ */
+export async function sendPremiumWelcomeEmail(data: PremiumWelcomeEmailData): Promise<void> {
+  const template = getPremiumWelcomeEmailTemplate(data);
+  
+  await sendEmail({
+    to: [data.userEmail],
+    subject: template.subject,
+    html: template.html,
+    text: template.text,
+  });
 }
 
 /**

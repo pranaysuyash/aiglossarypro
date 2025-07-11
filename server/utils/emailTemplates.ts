@@ -8,6 +8,14 @@ export interface EmailTemplate {
   text?: string;
 }
 
+export interface PremiumWelcomeEmailData {
+  userName?: string;
+  userEmail: string;
+  purchaseDate: string;
+  orderId: string;
+  purchaseAmount: string;
+}
+
 const baseStyles = `
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   line-height: 1.6;
@@ -38,6 +46,18 @@ const footerStyles = `
   border-top: 1px solid #e5e7eb;
   color: #6b7280;
   font-size: 14px;
+`;
+
+const premiumButtonStyles = `
+  display: inline-block;
+  padding: 12px 24px;
+  background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 6px;
+  font-weight: 500;
+  margin: 10px 0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 `;
 
 /**
@@ -386,6 +406,137 @@ ${actionUrl && actionText ? `${actionText}: ${actionUrl}` : ''}
 
 Best regards,
 The AI Glossary Pro Team
+    `,
+  };
+}
+
+/**
+ * Premium welcome email template
+ */
+export function getPremiumWelcomeEmailTemplate(data: PremiumWelcomeEmailData): EmailTemplate {
+  const { userName, userEmail, purchaseDate, orderId, purchaseAmount } = data;
+  const displayName = userName || "Premium Member";
+  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const dashboardUrl = `${frontendUrl}/dashboard?welcome=premium`;
+
+  return {
+    subject: "🎉 Welcome to AI Glossary Pro Premium\! Your Lifetime Access is Ready",
+    html: `
+      <div style="${baseStyles}">
+        <div style="${containerStyles}">
+          <\!-- Header with Premium Badge -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <div style="background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%); color: white; padding: 12px 24px; border-radius: 25px; display: inline-block; font-weight: bold; margin-bottom: 20px;">
+              👑 Premium Member
+            </div>
+            <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Welcome to Premium\!</h1>
+          </div>
+          
+          <p style="font-size: 18px; color: #4b5563;">Hi ${displayName},</p>
+          
+          <p style="font-size: 16px; color: #4b5563;">
+            🎉 <strong>Congratulations\!</strong> Your upgrade to AI Glossary Pro Premium is now complete. You now have unlimited lifetime access to our entire AI/ML knowledge base.
+          </p>
+
+          <\!-- Purchase Summary -->
+          <div style="background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); padding: 20px; border-radius: 12px; margin: 25px 0; border-left: 4px solid #0ea5e9;">
+            <h3 style="color: #0c4a6e; margin-top: 0; font-size: 18px;">📋 Purchase Summary</h3>
+            <div style="background: white; padding: 15px; border-radius: 8px;">
+              <p style="margin: 5px 0; color: #374151;"><strong>Order ID:</strong> ${orderId}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Amount:</strong> ${purchaseAmount}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Purchase Date:</strong> ${purchaseDate}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Access Type:</strong> Lifetime Premium</p>
+            </div>
+          </div>
+
+          <\!-- What's Included -->
+          <div style="background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); padding: 20px; border-radius: 12px; margin: 25px 0; border-left: 4px solid #10b981;">
+            <h3 style="color: #065f46; margin-top: 0; font-size: 18px;">🚀 What's Included in Your Premium Access</h3>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; margin-top: 15px;">
+              <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #d1fae5;">
+                <div style="color: #059669; font-weight: bold; margin-bottom: 8px;">📚 Complete Knowledge Base</div>
+                <div style="color: #374151; font-size: 14px;">10,000+ AI/ML terms and definitions</div>
+              </div>
+              <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #d1fae5;">
+                <div style="color: #059669; font-weight: bold; margin-bottom: 8px;">🎯 42 Specialized Categories</div>
+                <div style="color: #374151; font-size: 14px;">From basics to advanced topics</div>
+              </div>
+              <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #d1fae5;">
+                <div style="color: #059669; font-weight: bold; margin-bottom: 8px;">🔄 Lifetime Updates</div>
+                <div style="color: #374151; font-size: 14px;">Always stay current with AI trends</div>
+              </div>
+              <div style="background: white; padding: 15px; border-radius: 8px; border: 1px solid #d1fae5;">
+                <div style="color: #059669; font-weight: bold; margin-bottom: 8px;">🤖 AI-Powered Tools</div>
+                <div style="color: #374151; font-size: 14px;">Advanced search and recommendations</div>
+              </div>
+            </div>
+          </div>
+
+          <\!-- CTA Button -->
+          <div style="text-align: center; margin: 30px 0;">
+            <a href="${dashboardUrl}" style="${premiumButtonStyles}">
+              🚀 Access Your Premium Dashboard
+            </a>
+          </div>
+
+          <\!-- Footer -->
+          <div style="${footerStyles}">
+            <p style="text-align: center; color: #6b7280; font-size: 16px; margin-bottom: 20px;">
+              Thank you for choosing AI Glossary Pro Premium\! 🚀
+            </p>
+            
+            <div style="text-align: center; margin-bottom: 20px;">
+              <a href="${frontendUrl}" style="color: #0ea5e9; text-decoration: none; margin: 0 10px;">Visit Website</a>
+              <span style="color: #d1d5db;">•</span>
+              <a href="${frontendUrl}/dashboard" style="color: #0ea5e9; text-decoration: none; margin: 0 10px;">Dashboard</a>
+              <span style="color: #d1d5db;">•</span>
+              <a href="${frontendUrl}/categories" style="color: #0ea5e9; text-decoration: none; margin: 0 10px;">Browse Categories</a>
+            </div>
+            
+            <p style="text-align: center; color: #9ca3af; font-size: 12px;">
+              This email was sent to ${userEmail} because you purchased AI Glossary Pro Premium.<br>
+              If you have any questions, please contact us at support@aiglossarypro.com
+            </p>
+          </div>
+        </div>
+      </div>
+    `,
+    text: `
+🎉 Welcome to AI Glossary Pro Premium\!
+
+Hi ${displayName},
+
+Congratulations\! Your upgrade to AI Glossary Pro Premium is now complete. You now have unlimited lifetime access to our entire AI/ML knowledge base.
+
+Purchase Summary:
+- Order ID: ${orderId}
+- Amount: ${purchaseAmount}
+- Purchase Date: ${purchaseDate}
+- Access Type: Lifetime Premium
+
+What's Included:
+• 10,000+ AI/ML terms and definitions
+• 42 specialized categories
+• Lifetime updates
+• AI-powered tools and search
+• Priority support
+
+Quick Start:
+1. Access your Premium Dashboard: ${dashboardUrl}
+2. Explore all 42 AI/ML categories
+3. Use advanced search to find specific topics
+4. Track your learning progress
+
+Premium Support:
+Email: support@aiglossarypro.com
+Help Center: ${frontendUrl}/help
+Contact Us: ${frontendUrl}/contact
+
+Thank you for choosing AI Glossary Pro Premium\!
+
+---
+This email was sent to ${userEmail}
+Contact us: support@aiglossarypro.com
     `,
   };
 }

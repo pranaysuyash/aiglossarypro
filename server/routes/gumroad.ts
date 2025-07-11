@@ -87,25 +87,20 @@ export function registerGumroadRoutes(app: Express): void {
           productName: product_name,
         });
 
-        // Send purchase confirmation email
+        // Send premium welcome email
         try {
-          await sendSystemNotificationEmail(
-            email,
-            'Payment Confirmation - AI Glossary Pro',
-            `Thank you for your purchase! Your lifetime access to AI Glossary Pro has been activated.
-            
-            Order ID: ${order_id}
-            Product: ${product_name}
-            Amount: ${currency} ${amount_cents / 100}
-            
-            You now have access to all premium features. Start exploring the comprehensive AI/ML glossary!`,
-            process.env.BASE_URL || 'https://aimlglossary.com',
-            'Access Your Account'
-          );
-          log.info('Purchase confirmation email sent', { email: `${email.substring(0, 3)}***` });
+          const { sendPremiumWelcomeEmail } = await import('../utils/email');
+          await sendPremiumWelcomeEmail({
+            userName: result.userName,
+            userEmail: email,
+            purchaseDate: new Date().toLocaleDateString(),
+            orderId: order_id,
+            purchaseAmount: `${currency} ${amount_cents / 100}`,
+          });
+          log.info('Premium welcome email sent', { email: `${email.substring(0, 3)}***` });
         } catch (emailError) {
           // Don't fail the purchase if email fails
-          log.error('Failed to send purchase confirmation email', {
+          log.error('Failed to send premium welcome email', {
             error: emailError instanceof Error ? emailError.message : String(emailError),
             email: `${email.substring(0, 3)}***`,
           });

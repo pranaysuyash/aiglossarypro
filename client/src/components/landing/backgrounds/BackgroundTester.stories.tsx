@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { BackgroundTester } from './BackgroundTester';
 
@@ -34,9 +35,8 @@ export const Default: Story = {
 
 export const Loading: Story = {
   args: {
-  "loading": true,
-  "isLoading": true
-},
+    onVariantChange: () => console.log('Variant changed'),
+  },
   parameters: {
     docs: {
       description: {
@@ -48,9 +48,8 @@ export const Loading: Story = {
 
 export const Error: Story = {
   args: {
-  "error": "Something went wrong",
-  "hasError": true
-},
+    onVariantChange: () => { /* throw new Error('Something went wrong'); */ },
+  },
   parameters: {
     docs: {
       description: {

@@ -520,7 +520,7 @@ export class ProgressTrackingService {
         const lastStreakDate = new Date(achievement.lastStreakDate || today);
         lastStreakDate.setHours(0, 0, 0, 0);
 
-        let newStreak = achievement.currentStreak;
+        let newStreak = achievement.currentStreak || 0;
 
         // Check if streak continues
         if (lastStreakDate.getTime() === yesterday.getTime()) {

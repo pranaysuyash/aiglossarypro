@@ -696,7 +696,8 @@ export class BatchProgressTrackingService extends EventEmitter {
     if (completedOps.length === 0) return 0;
 
     const totalTime = completedOps.reduce((sum, op) => {
-      const duration = op.timing.actualCompletion?.getTime() - op.timing.startedAt?.getTime();
+      if (!op.timing.actualCompletion || !op.timing.startedAt) return sum;
+      const duration = op.timing.actualCompletion.getTime() - op.timing.startedAt.getTime();
       return sum + duration;
     }, 0);
 

@@ -2,7 +2,7 @@ import type { Express, Request, Response } from 'express';
 import type { ApiResponse, ITerm, PaginatedResponse } from '../../shared/types';
 import { DEFAULT_LIMITS, SORT_ORDERS } from '../constants';
 import { mockIsAuthenticated } from '../middleware/dev/mockAuth';
-import { initializeRateLimiting } from '../middleware/rateLimiting';
+import { initializeRateLimiting, rateLimitMiddleware } from '../middleware/rateLimiting';
 import { termIdSchema } from '../middleware/security';
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { canViewTerm } from '../utils/accessControl';
@@ -881,6 +881,8 @@ export function registerTermRoutes(app: Express): void {
         return res.status(400).json({ error: 'Invalid term ID format' });
       }
     },
+    authMiddleware,
+    rateLimitMiddleware,
     async (req: Request, res: Response) => {
       try {
         const { id } = req.params;

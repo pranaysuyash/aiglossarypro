@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { RecommendedForYou } from './RecommendedForYou';
+import RecommendedForYou from './RecommendedForYou';
 
 const meta = {
   title: 'Components/RecommendedForYou',

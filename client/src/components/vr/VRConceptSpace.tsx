@@ -11,7 +11,7 @@
 
 import { Box, Line, OrbitControls, Sphere, Text } from '@react-three/drei';
 import { Canvas, useFrame } from '@react-three/fiber';
-import { useXR, VRButton, XR } from '@react-three/xr';
+import { createXRStore, VRButton, XR } from '@react-three/xr';
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { useWebXR } from '../../hooks/useWebXR';
@@ -298,24 +298,7 @@ const VRConceptSpace: React.FC<VRConceptSpaceProps> = ({
     [onConceptSelect]
   );
 
-  const handleVRSessionStart = useCallback(async () => {
-    try {
-      await initializeVRSession();
-      setIsVRReady(true);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to start VR session';
-      onError?.(message);
-    }
-  }, [initializeVRSession, onError]);
-
-  const handleVRSessionEnd = useCallback(async () => {
-    try {
-      await endSession();
-      setIsVRReady(false);
-    } catch (error) {
-      console.error('Error ending VR session:', error);
-    }
-  }, [endSession]);
+  const store = createXRStore();
 
   // Initialize VR when component mounts
   useEffect(() => {
@@ -332,9 +315,15 @@ const VRConceptSpace: React.FC<VRConceptSpaceProps> = ({
       {!sessionState.isActive && (
         <div className="absolute top-4 left-4 z-10">
           <VRButton
-            onEnterVR={handleVRSessionStart}
-            onExitVR={handleVRSessionEnd}
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+            store={store}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: '#2563eb',
+              color: 'white',
+              borderRadius: '8px',
+              border: 'none',
+              cursor: 'pointer',
+            }}
           />
         </div>
       )}
@@ -375,7 +364,7 @@ const VRConceptSpace: React.FC<VRConceptSpaceProps> = ({
         }}
       >
         {/* XR Provider for VR functionality */}
-        <XR>
+        <XR store={store}>
           {/* VR Environment */}
           <VREnvironment />
 

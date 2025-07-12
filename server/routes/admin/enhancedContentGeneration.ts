@@ -1,5 +1,5 @@
 import { and, desc, eq, gte, sql } from 'drizzle-orm';
-import { Router } from 'express';
+import { Request, Response, Router } from 'express';
 import { aiUsageAnalytics } from '../../../shared/enhancedSchema';
 import { db } from '../../db';
 import { authenticateFirebaseToken, requireFirebaseAdmin } from '../../middleware/firebaseAuth';
@@ -14,12 +14,14 @@ const router = Router();
 /**
  * Get current processing status with quality metrics
  */
-router.get('/status', authenticateFirebaseToken, requireFirebaseAdmin, async (_req, res) => {
+router.get('/status', authenticateFirebaseToken, requireFirebaseAdmin, async (_req: Request, res: Response) => {
   try {
     const status = enhancedTripletProcessor.getCurrentProcessingStatus();
     res.json({ success: true, data: status });
   } catch (error) {
-    logger.error('Error getting processing status:', error);
+    logger.error('Error getting processing status:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res
       .status(500)
       .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -29,7 +31,7 @@ router.get('/status', authenticateFirebaseToken, requireFirebaseAdmin, async (_r
 /**
  * Start column processing with quality pipeline
  */
-router.post('/start', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.post('/start', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const { columnId, options } = req.body;
 
@@ -43,7 +45,9 @@ router.post('/start', authenticateFirebaseToken, requireFirebaseAdmin, async (re
     );
     res.json(result);
   } catch (error) {
-    logger.error('Error starting column processing:', error);
+    logger.error('Error starting column processing:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res
       .status(500)
       .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -53,12 +57,14 @@ router.post('/start', authenticateFirebaseToken, requireFirebaseAdmin, async (re
 /**
  * Stop current processing
  */
-router.post('/stop', authenticateFirebaseToken, requireFirebaseAdmin, async (_req, res) => {
+router.post('/stop', authenticateFirebaseToken, requireFirebaseAdmin, async (_req: Request, res: Response) => {
   try {
     const result = enhancedTripletProcessor.stopProcessing();
     res.json(result);
   } catch (error) {
-    logger.error('Error stopping processing:', error);
+    logger.error('Error stopping processing:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res
       .status(500)
       .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -68,12 +74,14 @@ router.post('/stop', authenticateFirebaseToken, requireFirebaseAdmin, async (_re
 /**
  * Get available columns for processing
  */
-router.get('/columns', authenticateFirebaseToken, requireFirebaseAdmin, async (_req, res) => {
+router.get('/columns', authenticateFirebaseToken, requireFirebaseAdmin, async (_req: Request, res: Response) => {
   try {
     const columns = enhancedTripletProcessor.getAvailableColumns();
     res.json({ success: true, data: columns });
   } catch (error) {
-    logger.error('Error getting available columns:', error);
+    logger.error('Error getting available columns:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res
       .status(500)
       .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -83,7 +91,7 @@ router.get('/columns', authenticateFirebaseToken, requireFirebaseAdmin, async (_
 /**
  * Generate content for a single term and section
  */
-router.post('/generate', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.post('/generate', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const { termId, sectionName, model, temperature, maxTokens, regenerate, storeAsVersion } =
       req.body;
@@ -105,7 +113,9 @@ router.post('/generate', authenticateFirebaseToken, requireFirebaseAdmin, async 
 
     res.json(result);
   } catch (error) {
-    logger.error('Error generating content:', error);
+    logger.error('Error generating content:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res
       .status(500)
       .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -119,7 +129,7 @@ router.post(
   '/generate-multi-model',
   authenticateFirebaseToken,
   requireFirebaseAdmin,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const { termId, sectionName, models, temperature, maxTokens, templateId } = req.body;
 
@@ -142,7 +152,9 @@ router.post(
 
       res.json(result);
     } catch (error) {
-      logger.error('Error generating multi-model content:', error);
+      logger.error('Error generating multi-model content:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res
         .status(500)
         .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -157,7 +169,7 @@ router.get(
   '/model-versions/:termId/:sectionName',
   authenticateFirebaseToken,
   requireFirebaseAdmin,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const { termId, sectionName } = req.params;
 
@@ -170,7 +182,9 @@ router.get(
       const versions = await aiContentGenerationService.getModelVersions(termId, sectionName);
       res.json({ success: true, data: versions });
     } catch (error) {
-      logger.error('Error getting model versions:', error);
+      logger.error('Error getting model versions:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res
         .status(500)
         .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -185,7 +199,7 @@ router.post(
   '/select-model-version',
   authenticateFirebaseToken,
   requireFirebaseAdmin,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const { versionId } = req.body;
 
@@ -196,7 +210,9 @@ router.post(
       const result = await aiContentGenerationService.selectModelVersion(versionId, req.user?.id);
       res.json(result);
     } catch (error) {
-      logger.error('Error selecting model version:', error);
+      logger.error('Error selecting model version:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res
         .status(500)
         .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -211,7 +227,7 @@ router.post(
   '/rate-model-version',
   authenticateFirebaseToken,
   requireFirebaseAdmin,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const { versionId, rating, notes } = req.body;
 
@@ -227,7 +243,9 @@ router.post(
       );
       res.json(result);
     } catch (error) {
-      logger.error('Error rating model version:', error);
+      logger.error('Error rating model version:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res
         .status(500)
         .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -238,7 +256,7 @@ router.post(
 /**
  * Generate content for multiple sections of a term
  */
-router.post('/generate-bulk', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.post('/generate-bulk', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const { termId, sectionNames, model, regenerate } = req.body;
 
@@ -257,7 +275,9 @@ router.post('/generate-bulk', authenticateFirebaseToken, requireFirebaseAdmin, a
 
     res.json(result);
   } catch (error) {
-    logger.error('Error generating bulk content:', error);
+    logger.error('Error generating bulk content:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res
       .status(500)
       .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -267,7 +287,7 @@ router.post('/generate-bulk', authenticateFirebaseToken, requireFirebaseAdmin, a
 /**
  * Get generation statistics and analytics
  */
-router.get('/stats', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.get('/stats', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const { timeframe = 'week', model } = req.query;
 
@@ -475,7 +495,9 @@ router.get('/stats', authenticateFirebaseToken, requireFirebaseAdmin, async (req
 
     res.json({ success: true, data: stats });
   } catch (error) {
-    logger.error('Error getting generation statistics:', error);
+    logger.error('Error getting generation statistics:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res
       .status(500)
       .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -489,7 +511,7 @@ router.get(
   '/quality/:columnId',
   authenticateFirebaseToken,
   requireFirebaseAdmin,
-  async (req, res) => {
+  async (req: Request, res: Response) => {
     try {
       const { columnId } = req.params;
 
@@ -513,7 +535,9 @@ router.get(
 
       res.json({ success: true, data: qualitySummary });
     } catch (error) {
-      logger.error('Error getting quality summary:', error);
+      logger.error('Error getting quality summary:', {
+        error: error instanceof Error ? error.message : String(error),
+      });
       res
         .status(500)
         .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -524,7 +548,7 @@ router.get(
 /**
  * Get processing history
  */
-router.get('/history', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.get('/history', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const { limit = 50, offset = 0 } = req.query;
 
@@ -560,7 +584,9 @@ router.get('/history', authenticateFirebaseToken, requireFirebaseAdmin, async (r
       },
     });
   } catch (error) {
-    logger.error('Error getting processing history:', error);
+    logger.error('Error getting processing history:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res
       .status(500)
       .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });
@@ -570,7 +596,7 @@ router.get('/history', authenticateFirebaseToken, requireFirebaseAdmin, async (r
 /**
  * Get advanced analytics data with comprehensive metrics
  */
-router.get('/advanced-stats', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
+router.get('/advanced-stats', authenticateFirebaseToken, requireFirebaseAdmin, async (req: Request, res: Response) => {
   try {
     const { timeRange = 'week', model, section } = req.query;
 
@@ -851,7 +877,9 @@ router.get('/advanced-stats', authenticateFirebaseToken, requireFirebaseAdmin, a
 
     res.json({ success: true, data: advancedAnalytics });
   } catch (error) {
-    logger.error('Error getting advanced analytics:', error);
+    logger.error('Error getting advanced analytics:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res
       .status(500)
       .json({ success: false, error: error instanceof Error ? error.message : 'Unknown error' });

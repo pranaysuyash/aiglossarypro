@@ -683,13 +683,14 @@ export class SurpriseDiscoveryService {
 
     if (existing.length > 0) {
       const current = existing[0];
-      const newDiscoveryCount = current.discovery_count + 1;
+      const currentDiscoveryCount = current.discovery_count || 0;
+      const newDiscoveryCount = currentDiscoveryCount + 1;
       const newAvgSurprise = Math.round(
-        ((current.average_surprise_rating || 0) * current.discovery_count + surpriseRating * 100) /
+        ((current.average_surprise_rating || 0) * currentDiscoveryCount + surpriseRating * 100) /
           newDiscoveryCount
       );
       const newAvgRelevance = Math.round(
-        ((current.average_relevance_rating || 0) * current.discovery_count +
+        ((current.average_relevance_rating || 0) * currentDiscoveryCount +
           relevanceRating * 100) /
           newDiscoveryCount
       );

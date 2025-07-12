@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { PWAStatus } from './PWAStatus';
+import PWAStatus from './PWAStatus';
 
 const meta = {
   title: 'Components/PWAStatus',

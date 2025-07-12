@@ -1,3 +1,4 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from './input-otp';
 

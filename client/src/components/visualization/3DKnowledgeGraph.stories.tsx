@@ -1,3 +1,4 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import ThreeDKnowledgeGraph from './3DKnowledgeGraph';
 

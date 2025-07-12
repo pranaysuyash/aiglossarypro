@@ -1,3 +1,4 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { FocusTrappedDialog, FocusTrappedDialogTrigger, FocusTrappedDialogContent, FocusTrappedDialogHeader, FocusTrappedDialogTitle, FocusTrappedDialogDescription, FocusTrappedDialogFooter } from './focus-trapped-dialog';
 

@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -48,9 +49,13 @@ export const Default: Story = {
 
 export const Loading: Story = {
   args: {
-  "loading": true,
-  "isLoading": true
-},
+    content: "Loading content...",
+    termId: "loading-term",
+    termName: "Loading Term",
+    sectionName: "loading-section",
+    sectionLabel: "Loading Section",
+    onSave: async () => {},
+  },
   parameters: {
     docs: {
       description: {
@@ -62,9 +67,13 @@ export const Loading: Story = {
 
 export const Error: Story = {
   args: {
-  "error": "Something went wrong",
-  "hasError": true
-},
+    content: "Error loading content...",
+    termId: "error-term",
+    termName: "Error Term",
+    sectionName: "error-section",
+    sectionLabel: "Error Section",
+    onSave: async () => { return Promise.reject("Something went wrong"); },
+  },
   parameters: {
     docs: {
       description: {

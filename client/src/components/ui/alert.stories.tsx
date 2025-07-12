@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { AlertTriangle, CheckCircle, Info, XCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from './alert';

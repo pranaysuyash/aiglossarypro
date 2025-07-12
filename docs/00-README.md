@@ -38,7 +38,7 @@
 ### 📊 Current Status & Planning
 - [`DOCUMENTATION_UPDATE_PLAN.md`](./DOCUMENTATION_UPDATE_PLAN.md) - **Implementation roadmap**
 - [`AGENT_TASKS.md`](./AGENT_TASKS.md) - **Multi-agent task assignments**
-- [`CONSOLIDATED_TODOS_2025_01_12.md`](./CONSOLIDATED_TODOS_2025_01_12.md) - Current action items
+- [`todos/MASTER_TODO_INDEX.md`](./todos/MASTER_TODO_INDEX.md) - **Consolidated action items** ⭐ NEW!
 - [`PENDING_ACTIONS_FROM_USER_2025_01_12.md`](./PENDING_ACTIONS_FROM_USER_2025_01_12.md) - User requirements
 
 ### 🎯 Future Development

@@ -1,3 +1,4 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { LazyChart } from './LazyChart';
 
@@ -12,11 +13,16 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+      "type": "line",
+      "children": "// Chart content goes here"
+    },
 };
 
 export const WithProps: Story = {
   args: {
-    // Add relevant props here
+    type: "bar",
+    height: 300,
+    children: "Chart content"
   },
 };

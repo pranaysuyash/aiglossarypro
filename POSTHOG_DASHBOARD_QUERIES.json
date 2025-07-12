@@ -1,0 +1,652 @@
+{
+  "dashboards": [
+    {
+      "name": "AI Glossary Pro - Business KPIs",
+      "description": "Key business metrics and conversion tracking",
+      "tiles": [
+        {
+          "id": "monthly_revenue",
+          "name": "Monthly Revenue",
+          "type": "trend",
+          "query": {
+            "kind": "TrendsQuery",
+            "series": [
+              {
+                "event": "purchase_completed",
+                "properties": [
+                  {
+                    "key": "purchase_amount_cents",
+                    "operator": "gt",
+                    "value": 0,
+                    "type": "event"
+                  }
+                ],
+                "math": "sum",
+                "math_property": "purchase_amount_cents"
+              }
+            ],
+            "interval": "day",
+            "dateRange": {
+              "date_from": "-30d",
+              "date_to": null
+            },
+            "breakdown": {
+              "breakdown": "utm_source",
+              "breakdown_type": "event"
+            }
+          }
+        },
+        {
+          "id": "conversion_funnel",
+          "name": "Acquisition Funnel",
+          "type": "funnel",
+          "query": {
+            "kind": "FunnelsQuery",
+            "series": [
+              {
+                "event": "landing_page_view",
+                "name": "Landing Page Visit"
+              },
+              {
+                "event": "sample_term_view",
+                "name": "Sample Content Viewed"
+              },
+              {
+                "event": "signup_started",
+                "name": "Signup Started"
+              },
+              {
+                "event": "signup_completed",
+                "name": "Signup Completed"
+              },
+              {
+                "event": "purchase_completed",
+                "name": "Purchase Completed"
+              }
+            ],
+            "funnelWindowInterval": 14,
+            "funnelWindowIntervalUnit": "day",
+            "dateRange": {
+              "date_from": "-30d",
+              "date_to": null
+            }
+          }
+        },
+        {
+          "id": "daily_signups",
+          "name": "Daily New Signups",
+          "type": "trend",
+          "query": {
+            "kind": "TrendsQuery",
+            "series": [
+              {
+                "event": "signup_completed",
+                "properties": [
+                  {
+                    "key": "user_type",
+                    "operator": "exact",
+                    "value": "new",
+                    "type": "event"
+                  }
+                ]
+              }
+            ],
+            "interval": "day",
+            "dateRange": {
+              "date_from": "-7d",
+              "date_to": null
+            },
+            "breakdown": {
+              "breakdown": "utm_source",
+              "breakdown_type": "event"
+            }
+          }
+        },
+        {
+          "id": "mau",
+          "name": "Monthly Active Users",
+          "type": "trend",
+          "query": {
+            "kind": "TrendsQuery",
+            "series": [
+              {
+                "event": "*",
+                "math": "dau"
+              }
+            ],
+            "interval": "day",
+            "dateRange": {
+              "date_from": "-30d",
+              "date_to": null
+            },
+            "display": "ActionsLineGraph"
+          }
+        }
+      ]
+    },
+    {
+      "name": "A/B Testing Performance",
+      "description": "Experiment tracking and variant performance",
+      "tiles": [
+        {
+          "id": "landing_ab_test",
+          "name": "Landing Page A/B Test Conversion",
+          "type": "trend",
+          "query": {
+            "kind": "TrendsQuery",
+            "series": [
+              {
+                "event": "signup_completed",
+                "properties": [
+                  {
+                    "key": "experiment_variant",
+                    "operator": "is_set",
+                    "type": "person"
+                  }
+                ]
+              }
+            ],
+            "interval": "day",
+            "dateRange": {
+              "date_from": "-14d",
+              "date_to": null
+            },
+            "breakdown": {
+              "breakdown": "$feature/landingPageVariant",
+              "breakdown_type": "person"
+            }
+          }
+        },
+        {
+          "id": "experiment_sample_sizes",
+          "name": "Experiment Sample Sizes",
+          "type": "table",
+          "query": {
+            "kind": "TrendsQuery",
+            "series": [
+              {
+                "event": "experiment_exposure"
+              }
+            ],
+            "interval": "day",
+            "dateRange": {
+              "date_from": "-7d",
+              "date_to": null
+            },
+            "breakdown": {
+              "breakdown": "experiment_name",
+              "breakdown_type": "event"
+            },
+            "display": "ActionsTable"
+          }
+        },
+        {
+          "id": "cta_performance",
+          "name": "CTA Click-Through Rates",
+          "type": "trend",
+          "query": {
+            "kind": "TrendsQuery",
+            "series": [
+              {
+                "event": "cta_click",
+                "properties": [
+                  {
+                    "key": "cta_location",
+                    "operator": "exact",
+                    "value": "hero",
+                    "type": "event"
+                  }
+                ]
+              }
+            ],
+            "interval": "day",
+            "dateRange": {
+              "date_from": "-14d",
+              "date_to": null
+            },
+            "breakdown": {
+              "breakdown": "cta_variant",
+              "breakdown_type": "event"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Product Analytics",
+      "description": "User behavior and feature adoption metrics",
+      "tiles": [
+        {
+          "id": "sample_terms_performance",
+          "name": "Sample Terms Engagement",
+          "type": "table",
+          "query": {
+            "kind": "TrendsQuery",
+            "series": [
+              {
+                "event": "sample_term_view",
+                "properties": [
+                  {
+                    "key": "$current_url",
+                    "operator": "icontains",
+                    "value": "/sample/",
+                    "type": "event"
+                  }
+                ]
+              }
+            ],
+            "interval": "day",
+            "dateRange": {
+              "date_from": "-7d",
+              "date_to": null
+            },
+            "breakdown": {
+              "breakdown": "term_slug",
+              "breakdown_type": "event"
+            },
+            "display": "ActionsTable"
+          }
+        },
+        {
+          "id": "search_success_rate",
+          "name": "Search Success Rate",
+          "type": "trend",
+          "query": {
+            "kind": "FunnelsQuery",
+            "series": [
+              {
+                "event": "search_query",
+                "name": "Search Performed"
+              },
+              {
+                "event": "search_result_click",
+                "name": "Result Clicked"
+              }
+            ],
+            "funnelWindowInterval": 1,
+            "funnelWindowIntervalUnit": "hour",
+            "dateRange": {
+              "date_from": "-14d",
+              "date_to": null
+            }
+          }
+        },
+        {
+          "id": "device_usage",
+          "name": "Usage by Device Type",
+          "type": "pie",
+          "query": {
+            "kind": "TrendsQuery",
+            "series": [
+              {
+                "event": "$pageview"
+              }
+            ],
+            "interval": "day",
+            "dateRange": {
+              "date_from": "-7d",
+              "date_to": null
+            },
+            "breakdown": {
+              "breakdown": "$device_type",
+              "breakdown_type": "person"
+            },
+            "display": "ActionsPie"
+          }
+        },
+        {
+          "id": "feature_adoption",
+          "name": "Feature Adoption Rates",
+          "type": "table",
+          "query": {
+            "kind": "TrendsQuery",
+            "series": [
+              {
+                "event": "favorite_added"
+              },
+              {
+                "event": "progress_marked"
+              },
+              {
+                "event": "share_clicked"
+              },
+              {
+                "event": "export_used"
+              }
+            ],
+            "interval": "day",
+            "dateRange": {
+              "date_from": "-30d",
+              "date_to": null
+            },
+            "display": "ActionsTable"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Marketing Attribution",
+      "description": "Traffic sources and campaign performance",
+      "tiles": [
+        {
+          "id": "traffic_sources",
+          "name": "Traffic Sources",
+          "type": "pie",
+          "query": {
+            "kind": "TrendsQuery",
+            "series": [
+              {
+                "event": "$pageview",
+                "properties": [
+                  {
+                    "key": "$current_url",
+                    "operator": "exact",
+                    "value": "/",
+                    "type": "event"
+                  }
+                ]
+              }
+            ],
+            "interval": "day",
+            "dateRange": {
+              "date_from": "-30d",
+              "date_to": null
+            },
+            "breakdown": {
+              "breakdown": "utm_source",
+              "breakdown_type": "event"
+            },
+            "display": "ActionsPie"
+          }
+        },
+        {
+          "id": "campaign_conversion",
+          "name": "Campaign Conversion Rates",
+          "type": "table",
+          "query": {
+            "kind": "FunnelsQuery",
+            "series": [
+              {
+                "event": "$pageview",
+                "properties": [
+                  {
+                    "key": "utm_campaign",
+                    "operator": "is_set",
+                    "type": "event"
+                  }
+                ],
+                "name": "Campaign Visit"
+              },
+              {
+                "event": "signup_completed",
+                "name": "Signup"
+              }
+            ],
+            "funnelWindowInterval": 7,
+            "funnelWindowIntervalUnit": "day",
+            "dateRange": {
+              "date_from": "-30d",
+              "date_to": null
+            },
+            "breakdown": {
+              "breakdown": "utm_campaign",
+              "breakdown_type": "event"
+            }
+          }
+        },
+        {
+          "id": "referral_performance",
+          "name": "Referral Program Performance",
+          "type": "funnel",
+          "query": {
+            "kind": "FunnelsQuery",
+            "series": [
+              {
+                "event": "referral_click",
+                "name": "Referral Link Clicked"
+              },
+              {
+                "event": "signup_completed",
+                "properties": [
+                  {
+                    "key": "referrer_id",
+                    "operator": "is_set",
+                    "type": "person"
+                  }
+                ],
+                "name": "Referred User Signup"
+              },
+              {
+                "event": "purchase_completed",
+                "properties": [
+                  {
+                    "key": "referrer_id",
+                    "operator": "is_set",
+                    "type": "person"
+                  }
+                ],
+                "name": "Referred User Purchase"
+              }
+            ],
+            "funnelWindowInterval": 30,
+            "funnelWindowIntervalUnit": "day",
+            "dateRange": {
+              "date_from": "-60d",
+              "date_to": null
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Retention & Engagement",
+      "description": "User retention and long-term engagement metrics",
+      "tiles": [
+        {
+          "id": "user_retention",
+          "name": "User Retention Cohorts",
+          "type": "retention",
+          "query": {
+            "kind": "RetentionQuery",
+            "retentionFilter": {
+              "targetEntity": {
+                "id": "$pageview",
+                "type": "events"
+              },
+              "returningEntity": {
+                "id": "$pageview",
+                "type": "events"
+              },
+              "retentionType": "retention_first_time",
+              "retentionReference": "total",
+              "totalIntervals": 11
+            },
+            "dateRange": {
+              "date_from": "-84d",
+              "date_to": null
+            }
+          }
+        },
+        {
+          "id": "dau_wau",
+          "name": "Daily & Weekly Active Users",
+          "type": "trend",
+          "query": {
+            "kind": "TrendsQuery",
+            "series": [
+              {
+                "event": "*",
+                "math": "dau",
+                "name": "Daily Active Users"
+              },
+              {
+                "event": "*",
+                "math": "weekly_active",
+                "name": "Weekly Active Users"
+              }
+            ],
+            "interval": "day",
+            "dateRange": {
+              "date_from": "-90d",
+              "date_to": null
+            }
+          }
+        },
+        {
+          "id": "session_duration",
+          "name": "Average Session Duration",
+          "type": "trend",
+          "query": {
+            "kind": "TrendsQuery",
+            "series": [
+              {
+                "event": "$pageview",
+                "math": "avg",
+                "math_property": "$session_duration"
+              }
+            ],
+            "interval": "day",
+            "dateRange": {
+              "date_from": "-30d",
+              "date_to": null
+            },
+            "breakdown": {
+              "breakdown": "subscription_tier",
+              "breakdown_type": "person"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "cohorts": [
+    {
+      "name": "Power Users",
+      "description": "Users who viewed 10+ terms in last 30 days",
+      "filters": {
+        "properties": {
+          "type": "AND",
+          "values": [
+            {
+              "key": "term_view",
+              "type": "behavioral",
+              "value": "performed_event",
+              "operator": null,
+              "time_value": 30,
+              "time_interval": "day",
+              "total_periods": null,
+              "min_periods": null,
+              "event_filters": [],
+              "explicit_datetime": null,
+              "seq_event_filters": [],
+              "seq_time_value": null,
+              "seq_time_interval": "day",
+              "operator_value": 10
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Recent Signups",
+      "description": "Users who signed up in last 7 days",
+      "filters": {
+        "properties": {
+          "type": "AND",
+          "values": [
+            {
+              "key": "signup_completed",
+              "type": "behavioral",
+              "value": "performed_event",
+              "operator": null,
+              "time_value": 7,
+              "time_interval": "day"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Premium Users",
+      "description": "Users with lifetime access",
+      "filters": {
+        "properties": {
+          "type": "AND",
+          "values": [
+            {
+              "key": "subscription_tier",
+              "type": "person",
+              "value": "premium",
+              "operator": "exact"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "A/B Test Participants",
+      "description": "Users currently in experiments",
+      "filters": {
+        "properties": {
+          "type": "AND",
+          "values": [
+            {
+              "key": "$feature/landingPageVariant",
+              "type": "person",
+              "value": "is_set",
+              "operator": "is_set"
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "custom_events": [
+    {
+      "name": "sample_term_view",
+      "description": "User viewed a sample term page",
+      "properties": [
+        "term_slug",
+        "term_category",
+        "user_type",
+        "source"
+      ]
+    },
+    {
+      "name": "signup_started",
+      "description": "User began signup process",
+      "properties": [
+        "source",
+        "experiment_variant",
+        "referrer_id"
+      ]
+    },
+    {
+      "name": "purchase_completed",
+      "description": "User completed a purchase",
+      "properties": [
+        "purchase_amount_cents",
+        "gumroad_order_id",
+        "referrer_id"
+      ]
+    },
+    {
+      "name": "feature_used",
+      "description": "User used a product feature",
+      "properties": [
+        "feature_name",
+        "user_tier",
+        "session_duration"
+      ]
+    },
+    {
+      "name": "referral_click",
+      "description": "Someone clicked a referral link",
+      "properties": [
+        "referral_code",
+        "referrer_id",
+        "utm_source"
+      ]
+    }
+  ]
+}

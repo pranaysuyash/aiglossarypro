@@ -1,3 +1,4 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { LazyMermaid } from './LazyMermaid';
 
@@ -12,11 +13,14 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+      "diagram": "graph TD\\n  A[Start] --> B[End]"
+    },
 };
 
 export const WithProps: Story = {
   args: {
-    // Add relevant props here
+    diagram: "graph LR\nA --> B",
+    title: "Sample"
   },
 };

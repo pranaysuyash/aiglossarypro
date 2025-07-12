@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { BarChart } from './chart';
 
@@ -25,17 +26,21 @@ export const Default: Story = {
   render: () => (
     <BarChart
       data={[
-        { month: 'Jan', desktop: 186, mobile: 80 },
-        { month: 'Feb', desktop: 305, mobile: 200 },
-        { month: 'Mar', desktop: 237, mobile: 120 },
-        { month: 'Apr', desktop: 73, mobile: 190 },
-        { month: 'May', desktop: 209, mobile: 130 },
-        { month: 'Jun', desktop: 214, mobile: 140 },
+        { name: 'Jan', value: 186 },
+        { name: 'Feb', value: 305 },
+        { name: 'Mar', value: 237 },
+        { name: 'Apr', value: 73 },
+        { name: 'May', value: 209 },
+        { name: 'Jun', value: 214 },
       ]}
-      index="month"
-      categories={['desktop', 'mobile']}
-      colors={['#8884d8', '#82ca9d']}
-      yAxisWidth={48}
+      config={{
+        value: {
+          label: 'Desktop',
+          color: '#8884d8',
+        },
+      }}
+      xAxisKey="name"
+      yAxisKey="value"
     />
   ),
   parameters: {
@@ -49,14 +54,9 @@ export const Default: Story = {
 
 export const Loading: Story = {
   render: () => (
-    <BarChart
-      data={[]}
-      index="month"
-      categories={['desktop', 'mobile']}
-      colors={['#8884d8', '#82ca9d']}
-      yAxisWidth={48}
-      loading
-    />
+    <div className="flex items-center justify-center h-48">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+    </div>
   ),
   parameters: {
     docs: {
@@ -69,14 +69,12 @@ export const Loading: Story = {
 
 export const Error: Story = {
   render: () => (
-    <BarChart
-      data={[]}
-      index="month"
-      categories={['desktop', 'mobile']}
-      colors={['#8884d8', '#82ca9d']}
-      yAxisWidth={48}
-      error="Something went wrong"
-    />
+    <div className="flex items-center justify-center h-48 text-red-500">
+      <div className="text-center">
+        <div className="text-lg font-semibold">Error</div>
+        <div className="text-sm">Something went wrong</div>
+      </div>
+    </div>
   ),
   parameters: {
     docs: {
@@ -92,14 +90,18 @@ export const Disabled: Story = {
     <div className="opacity-50 pointer-events-none">
       <BarChart
         data={[
-          { month: 'Jan', desktop: 186, mobile: 80 },
-          { month: 'Feb', desktop: 305, mobile: 200 },
-          { month: 'Mar', desktop: 237, mobile: 120 },
+          { name: 'Jan', value: 186 },
+          { name: 'Feb', value: 305 },
+          { name: 'Mar', value: 237 },
         ]}
-        index="month"
-        categories={['desktop', 'mobile']}
-        colors={['#8884d8', '#82ca9d']}
-        yAxisWidth={48}
+        config={{
+          value: {
+            label: 'Desktop',
+            color: '#8884d8',
+          },
+        }}
+        xAxisKey="name"
+        yAxisKey="value"
       />
     </div>
   ),
@@ -117,14 +119,18 @@ export const Small: Story = {
     <div className="h-64">
       <BarChart
         data={[
-          { month: 'Jan', desktop: 186 },
-          { month: 'Feb', desktop: 305 },
-          { month: 'Mar', desktop: 237 },
+          { name: 'Jan', value: 186 },
+          { name: 'Feb', value: 305 },
+          { name: 'Mar', value: 237 },
         ]}
-        index="month"
-        categories={['desktop']}
-        colors={['#8884d8']}
-        yAxisWidth={48}
+        config={{
+          value: {
+            label: 'Desktop',
+            color: '#8884d8',
+          },
+        }}
+        xAxisKey="name"
+        yAxisKey="value"
       />
     </div>
   ),
@@ -142,19 +148,23 @@ export const Large: Story = {
     <div className="h-96">
       <BarChart
         data={[
-          { month: 'Jan', desktop: 186, mobile: 80, tablet: 120 },
-          { month: 'Feb', desktop: 305, mobile: 200, tablet: 150 },
-          { month: 'Mar', desktop: 237, mobile: 120, tablet: 90 },
-          { month: 'Apr', desktop: 73, mobile: 190, tablet: 110 },
-          { month: 'May', desktop: 209, mobile: 130, tablet: 160 },
-          { month: 'Jun', desktop: 214, mobile: 140, tablet: 180 },
-          { month: 'Jul', desktop: 155, mobile: 160, tablet: 140 },
-          { month: 'Aug', desktop: 280, mobile: 180, tablet: 200 },
+          { name: 'Jan', value: 186 },
+          { name: 'Feb', value: 305 },
+          { name: 'Mar', value: 237 },
+          { name: 'Apr', value: 73 },
+          { name: 'May', value: 209 },
+          { name: 'Jun', value: 214 },
+          { name: 'Jul', value: 155 },
+          { name: 'Aug', value: 280 },
         ]}
-        index="month"
-        categories={['desktop', 'mobile', 'tablet']}
-        colors={['#8884d8', '#82ca9d', '#ffc658']}
-        yAxisWidth={48}
+        config={{
+          value: {
+            label: 'Desktop',
+            color: '#8884d8',
+          },
+        }}
+        xAxisKey="name"
+        yAxisKey="value"
       />
     </div>
   ),

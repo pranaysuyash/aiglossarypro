@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { LandingHeader } from './LandingHeader';
 
@@ -52,9 +53,6 @@ const mockUseCountryPricing = () => ({
 });
 
 // Override the hook for Storybook
-jest.mock('@/hooks/useCountryPricing', () => ({
-  useCountryPricing: mockUseCountryPricing,
-}));
 
 export const Default: Story = {
   parameters: {
@@ -153,10 +151,7 @@ export const WithInternationalPricing: Story = {
       });
       
       // Temporarily override the hook
-      jest.doMock('@/hooks/useCountryPricing', () => ({
-        useCountryPricing: mockInternationalPricing,
-      }));
-      
+
       return <Story />;
     },
   ],

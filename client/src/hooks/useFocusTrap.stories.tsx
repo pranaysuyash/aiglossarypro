@@ -1,3 +1,4 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { useFocusTrap } from './useFocusTrap';
 import { useRef } from 'react';

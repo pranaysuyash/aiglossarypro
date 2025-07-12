@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { InteractiveDemo } from './InteractiveDemo';
+import InteractiveDemo from './InteractiveDemo';
 
 const meta = {
   title: 'Components/InteractiveDemo',

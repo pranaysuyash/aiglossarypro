@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { Breadcrumb } from './Breadcrumb';
+import { Breadcrumb } from './breadcrumb';
 
 const meta = {
   title: 'UI/Breadcrumb',

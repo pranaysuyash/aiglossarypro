@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { PredictiveAnalytics } from './PredictiveAnalytics';
+import PredictiveAnalytics from './PredictiveAnalytics';
 
 const meta = {
   title: 'Components/PredictiveAnalytics',
@@ -12,11 +13,14 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+    userId: 'user-123',
+  },
 };
 
 export const WithProps: Story = {
   args: {
-    // Add relevant props here
+    userId: 'user-456',
+    compact: true,
   },
 };

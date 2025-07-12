@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ITerm } from '@/interfaces/interfaces';
 import TermCard from './TermCard';

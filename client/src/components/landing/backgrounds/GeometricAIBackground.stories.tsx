@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { GeometricAIBackground } from './GeometricAIBackground';
 
@@ -34,8 +35,8 @@ export const Default: Story = {
 
 export const Loading: Story = {
   args: {
-  "loading": true,
-  "isLoading": true
+  "className": "animate-pulse",
+  "opacity": 0.5
 },
   parameters: {
     docs: {
@@ -48,8 +49,8 @@ export const Loading: Story = {
 
 export const Error: Story = {
   args: {
-  "error": "Something went wrong",
-  "hasError": true
+  "className": "opacity-50",
+  "opacity": 0.8
 },
   parameters: {
     docs: {

@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { useState } from 'react';
 import { SearchableSelect } from './searchable-select';
@@ -332,7 +333,7 @@ export const LongOptionsList: Story = {
       description: `This is the description for option ${i + 1}`,
       category: `Category ${Math.floor(i / 10) + 1}`,
     }));
-    
+
     return (
       <SelectWrapper
         options={longOptions}

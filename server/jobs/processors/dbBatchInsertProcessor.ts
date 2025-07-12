@@ -211,8 +211,8 @@ async function handleTermsBatch(
 
       if (result.length > 0) {
         // Check if this was an insert or update by checking created_at vs updated_at
-        const createdAt = new Date(result[0].createdAt);
-        const updatedAt = new Date(result[0].updatedAt);
+        const createdAt = new Date((result[0] as any).createdAt);
+        const updatedAt = new Date((result[0] as any).updatedAt);
 
         if (Math.abs(createdAt.getTime() - updatedAt.getTime()) < 1000) {
           inserted++;

@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { MobileLayoutWrapper } from './MobileLayoutWrapper';
+import MobileLayoutWrapper from './MobileLayoutWrapper';
 
 const meta = {
   title: 'Components/MobileLayoutWrapper',
@@ -12,11 +13,14 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+    children: <div>Layout content</div>
+  },
 };
 
 export const WithProps: Story = {
   args: {
-    // Add relevant props here
+    children: "Layout content",
+    enableMobileNav: true
   },
 };

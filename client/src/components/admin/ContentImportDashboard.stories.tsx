@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -6,7 +7,7 @@ const queryClient = new QueryClient({
     queries: { retry: false, staleTime: Infinity },
   },
 });
-import { ContentImportDashboard } from './ContentImportDashboard';
+import ContentImportDashboard from './ContentImportDashboard';
 
 const meta: Meta<typeof ContentImportDashboard> = {
   title: 'Admin/ContentImportDashboard',

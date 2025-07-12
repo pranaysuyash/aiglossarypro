@@ -1,3 +1,4 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { ToggleGroup, ToggleGroupItem } from './toggle-group';
 import { Bold, Italic, Underline } from 'lucide-react';

@@ -37,6 +37,8 @@ import {
 import { ThemeProvider } from '@/components/ThemeProvider';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { GuestConversionFab } from '@/components/GuestPreviewBanner';
+import GuestAwareTermDetail from '@/components/GuestAwareTermDetail';
 import { useAuth } from '@/hooks/useAuth';
 import Home from '@/pages/Home';
 import NotFound from '@/pages/not-found';
@@ -49,10 +51,13 @@ import {
 import { queryClient } from './lib/queryClient';
 import '@/utils/bundleAnalyzer'; // Initialize bundle analyzer
 import { useEffect, useState } from 'react';
+import { posthogExperiments } from '@/services/posthogExperiments';
+import { initAnalytics } from '@/lib/analytics';
+import { LandingPageGuard } from '@/components/LandingPageGuard';
 
-// Smart Term Detail component that chooses between enhanced and regular view
+// Smart Term Detail component that chooses between enhanced and regular view with guest support
 function SmartTermDetail() {
-  return <LazyTermDetailPage />;
+  return <GuestAwareTermDetail />;
 }
 
 // Protected Route component that redirects to login
@@ -83,7 +88,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 // Smart Landing Page wrapper that redirects authenticated users to app
 function SmartLandingPage() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const [, setLocation] = useLocation();
   const [hasRedirected, setHasRedirected] = useState(false);
 
@@ -91,35 +96,72 @@ function SmartLandingPage() {
   useEffect(() => {
     if (!isLoading && isAuthenticated && !hasRedirected) {
       setHasRedirected(true);
-      setLocation('/app');
+      
+      // Determine the best landing page for authenticated users
+      // Premium users go to app, free users might go to dashboard to see their progress
+      const redirectPath = user?.lifetimeAccess ? '/app' : '/dashboard';
+      
+      // Small delay to ensure smooth transition
+      setTimeout(() => {
+        setLocation(redirectPath);
+      }, 100);
     }
     // Reset redirect flag when user becomes unauthenticated
     if (!isAuthenticated) {
       setHasRedirected(false);
     }
-  }, [isAuthenticated, isLoading, setLocation, hasRedirected]);
+  }, [isAuthenticated, isLoading, setLocation, hasRedirected, user]);
 
   // Show loading while checking auth status
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-sm text-gray-600">Loading your experience...</p>
+        </div>
       </div>
     );
   }
 
   // Don't render anything while redirecting authenticated users
   if (isAuthenticated && hasRedirected) {
-    return null;
+    return (
+      <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-primary mx-auto mb-2"></div>
+          <p className="text-sm text-gray-600">Redirecting...</p>
+        </div>
+      </div>
+    );
   }
 
-  // New visitors see marketing page
-  return <LazyLandingPage />;
+  // New visitors see marketing page with A/B test
+  return <LandingPageGuard />;
 }
 
 function Router() {
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, user } = useAuth();
   const [location] = useLocation();
+
+  // Initialize analytics and experiments
+  useEffect(() => {
+    // Initialize analytics (PostHog, GA4)
+    initAnalytics();
+
+    // Initialize PostHog experiments with user context
+    const userProperties = {
+      is_authenticated: isAuthenticated,
+      user_type: isAuthenticated ? (user?.lifetimeAccess ? 'premium' : 'free') : 'guest',
+      page_path: location,
+      device_type: window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop',
+      browser: navigator.userAgent.includes('Chrome') ? 'chrome' : 
+               navigator.userAgent.includes('Safari') ? 'safari' : 
+               navigator.userAgent.includes('Firefox') ? 'firefox' : 'other',
+    };
+
+    posthogExperiments.initialize(user?.uid, userProperties);
+  }, [isAuthenticated, user, location]);
 
   // Preload components based on authentication status
   useEffect(() => {
@@ -147,8 +189,8 @@ function Router() {
     );
   }
 
-  // Check if we're on the landing page route
-  const isLandingPage = location === '/';
+  // Check if we're on the landing page route (including legacy route)
+  const isLandingPage = location === '/' || location === '/landing';
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -162,6 +204,7 @@ function Router() {
           <Route path="/" component={SmartLandingPage} />
           <Route path="/app" component={Home} />
           <Route path="/browse" component={Home} />
+          <Route path="/home" component={Home} />
           <Route path="/login" component={FirebaseLoginPage} />
           <Route path="/purchase-success" component={PurchaseSuccess} />
           <Route path="/lifetime" component={LazyLifetimePage} />
@@ -222,7 +265,9 @@ function Router() {
           </Route>
           <Route path="/about" component={LazyAboutPage} />
           <Route path="/privacy" component={LazyPrivacyPolicyPage} />
-          <Route path="/terms" component={LazyTermsOfServicePage} />
+          <Route path="/terms-of-service" component={LazyTermsOfServicePage} />
+          {/* Legacy redirect for old landing page route */}
+          <Route path="/landing" component={SmartLandingPage} />
           <Route component={NotFound} />
         </Switch>
       </main>
@@ -243,6 +288,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <Router />
+          <GuestConversionFab />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

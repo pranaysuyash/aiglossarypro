@@ -10,7 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import type { IEnhancedTerm, ITerm, ITermCardProps } from '@/interfaces/interfaces';
 import { apiRequest, queryClient } from '@/lib/queryClient';
-import { usePerformanceMonitor } from '@/utils/performanceMonitor';
+import { performanceMonitor } from '@/utils/performanceMonitor';
 import { getDifficultyColor, getProgressPercentage } from '@/utils/termUtils';
 import AIContentFeedback from './AIContentFeedback';
 import ShareMenu from './ShareMenu';
@@ -33,7 +33,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
   const [_isExpanded, _setIsExpanded] = useState(false);
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
-  const { measure } = usePerformanceMonitor('EnhancedTermCard');
+  const measureRender = () => performanceMonitor.mark('EnhancedTermCard_render');
   const [, navigate] = useLocation();
 
   const enhanced = isEnhancedTerm(term);
@@ -123,17 +123,8 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
 
   // Performance monitoring for render
   useEffect(() => {
-    measure(
-      () => {
-        // Component render logic measurement
-      },
-      {
-        termId: term.id,
-        displayMode,
-        enhanced,
-        featureCount: featureIcons.length,
-      }
-    );
+    measureRender();
+    performanceMonitor.trackCustomMetric('enhanced_term_card_render', performance.now());
   });
 
   const renderCompactCard = () => (

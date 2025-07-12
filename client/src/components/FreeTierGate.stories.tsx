@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FreeTierGate } from './FreeTierGate';
@@ -84,24 +85,10 @@ export const Default: Story = {
     showPreview: true,
     previewLength: 200,
   },
-  decorators: [
-    (Story) => {
-      // Mock no access
-      jest.doMock('../hooks/useAccess', () => ({
-        useTermAccess: () => mockUseTermAccess(false, {
-          subscriptionTier: 'free',
-          remainingViews: 35,
-          dailyLimit: 50,
-          lifetimeAccess: false
-        })
-      }));
-      return <Story />;
-    },
-  ],
   parameters: {
     docs: {
       description: {
-        story: 'Default free tier gate with preview and upgrade prompt.',
+        story: 'Default free tier gate with preview and upgrade prompt for users without access.',
       },
     },
   },
@@ -113,22 +100,10 @@ export const WithAccess: Story = {
     children: sampleContent,
     showPreview: true,
   },
-  decorators: [
-    (Story) => {
-      // Mock with access
-      jest.doMock('../hooks/useAccess', () => ({
-        useTermAccess: () => mockUseTermAccess(true, {
-          subscriptionTier: 'premium',
-          lifetimeAccess: true
-        })
-      }));
-      return <Story />;
-    },
-  ],
   parameters: {
     docs: {
       description: {
-        story: 'When user has access, content is shown directly without gate.',
+        story: 'Premium user with full access - content is shown directly without gate.',
       },
     },
   },
@@ -140,20 +115,6 @@ export const DailyLimitReached: Story = {
     children: sampleContent,
     showPreview: true,
   },
-  decorators: [
-    (Story) => {
-      // Mock daily limit reached
-      jest.doMock('../hooks/useAccess', () => ({
-        useTermAccess: () => mockUseTermAccess(false, {
-          subscriptionTier: 'free',
-          remainingViews: 0,
-          dailyLimit: 50,
-          lifetimeAccess: false
-        })
-      }));
-      return <Story />;
-    },
-  ],
   parameters: {
     docs: {
       description: {
@@ -169,20 +130,6 @@ export const LowRemainingViews: Story = {
     children: sampleContent,
     showPreview: true,
   },
-  decorators: [
-    (Story) => {
-      // Mock low remaining views
-      jest.doMock('../hooks/useAccess', () => ({
-        useTermAccess: () => mockUseTermAccess(false, {
-          subscriptionTier: 'free',
-          remainingViews: 3,
-          dailyLimit: 50,
-          lifetimeAccess: false
-        })
-      }));
-      return <Story />;
-    },
-  ],
   parameters: {
     docs: {
       description: {
@@ -198,19 +145,6 @@ export const NoPreview: Story = {
     children: sampleContent,
     showPreview: false,
   },
-  decorators: [
-    (Story) => {
-      jest.doMock('../hooks/useAccess', () => ({
-        useTermAccess: () => mockUseTermAccess(false, {
-          subscriptionTier: 'free',
-          remainingViews: 25,
-          dailyLimit: 50,
-          lifetimeAccess: false
-        })
-      }));
-      return <Story />;
-    },
-  ],
   parameters: {
     docs: {
       description: {
@@ -236,19 +170,6 @@ export const CustomFallback: Story = {
       </div>
     ),
   },
-  decorators: [
-    (Story) => {
-      jest.doMock('../hooks/useAccess', () => ({
-        useTermAccess: () => mockUseTermAccess(false, {
-          subscriptionTier: 'free',
-          remainingViews: 25,
-          dailyLimit: 50,
-          lifetimeAccess: false
-        })
-      }));
-      return <Story />;
-    },
-  ],
   parameters: {
     docs: {
       description: {
@@ -264,19 +185,6 @@ export const Loading: Story = {
     children: sampleContent,
     showPreview: true,
   },
-  decorators: [
-    (Story) => {
-      // Mock loading state
-      jest.doMock('../hooks/useAccess', () => ({
-        useTermAccess: () => ({
-          canViewTerm: false,
-          isLoading: true,
-          accessStatus: null
-        })
-      }));
-      return <Story />;
-    },
-  ],
   parameters: {
     docs: {
       description: {
@@ -298,19 +206,6 @@ export const ShortContent: Story = {
     showPreview: true,
     previewLength: 200,
   },
-  decorators: [
-    (Story) => {
-      jest.doMock('../hooks/useAccess', () => ({
-        useTermAccess: () => mockUseTermAccess(false, {
-          subscriptionTier: 'free',
-          remainingViews: 25,
-          dailyLimit: 50,
-          lifetimeAccess: false
-        })
-      }));
-      return <Story />;
-    },
-  ],
   parameters: {
     docs: {
       description: {
@@ -327,21 +222,11 @@ export const MobileView: Story = {
     showPreview: true,
   },
   decorators: [
-    (Story) => {
-      jest.doMock('../hooks/useAccess', () => ({
-        useTermAccess: () => mockUseTermAccess(false, {
-          subscriptionTier: 'free',
-          remainingViews: 15,
-          dailyLimit: 50,
-          lifetimeAccess: false
-        })
-      }));
-      return (
-        <div className="max-w-sm mx-auto p-4">
-          <Story />
-        </div>
-      );
-    },
+    (Story) => (
+      <div className="max-w-sm mx-auto p-4">
+        <Story />
+      </div>
+    ),
   ],
   parameters: {
     viewport: {

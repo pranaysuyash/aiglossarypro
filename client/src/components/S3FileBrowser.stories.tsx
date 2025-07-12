@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { S3FileBrowser } from './S3FileBrowser';
+import S3FileBrowser from './S3FileBrowser';
 
 const meta = {
   title: 'Components/S3FileBrowser',

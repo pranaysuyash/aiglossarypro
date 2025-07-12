@@ -17,6 +17,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
+import { GoogleAd } from '../components/ads/GoogleAd';
+import { useAuth } from '../hooks/useAuth';
 import type { ApiResponse, IEnhancedTerm, PaginatedResponse } from '../interfaces/interfaces';
 
 interface TermsApiResponse extends PaginatedResponse<IEnhancedTerm> {
@@ -45,6 +47,7 @@ export function Terms() {
   const [onlyWithMath, setOnlyWithMath] = useState(false);
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const { announce } = useLiveRegion();
+  const { isAuthenticated, user } = useAuth();
 
   const TERMS_PER_PAGE = 24;
 
@@ -272,6 +275,40 @@ export function Terms() {
     onlyWithMath && 'hasMath',
   ].filter(Boolean).length;
 
+  // Function to render terms grid with ads interspersed
+  const renderTermsWithAds = () => {
+    const items: React.ReactNode[] = [];
+    const isPremiumUser = user?.subscriptionTier === 'premium';
+    const shouldShowAds = !isPremiumUser; // Show ads for guest and free users
+
+    terms.forEach((term, index) => {
+      // Add term card
+      items.push(
+        <TermCard
+          key={term.id}
+          term={term}
+          onTermClick={() => setLocation(`/term/${term.slug}`)}
+        />
+      );
+
+      // Add ad after every 8 terms (but not for premium users)
+      if (shouldShowAds && (index + 1) % 8 === 0 && index < terms.length - 1) {
+        items.push(
+          <div key={`ad-${index}`} className="col-span-1 md:col-span-2 lg:col-span-3 xl:col-span-4">
+            <GoogleAd
+              slot="8765432109"
+              format="horizontal"
+              responsive={true}
+              className="w-full h-24 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200"
+            />
+          </div>
+        );
+      }
+    });
+
+    return items;
+  };
+
   if (error) {
     return (
       <div className="container mx-auto px-4 py-8">
@@ -468,13 +505,7 @@ export function Terms() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {terms.map((term) => (
-              <TermCard
-                key={term.id}
-                term={term}
-                onTermClick={() => setLocation(`/term/${term.slug}`)}
-              />
-            ))}
+            {renderTermsWithAds()}
           </div>
           {/* Pagination */}
           {totalPages > 1 && (

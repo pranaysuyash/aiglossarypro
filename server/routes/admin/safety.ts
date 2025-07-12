@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Request, Response, Router } from 'express';
 import { safetyService } from '../../services/safetyService';
 import { log as logger } from '../../utils/logger';
 
 const router = Router();
 
 // Get system status
-router.get('/status', async (_req, res) => {
+router.get('/status', async (_req: Request, res: Response) => {
   try {
     const status = safetyService.getSystemStatus();
     res.json(status);
@@ -18,7 +18,7 @@ router.get('/status', async (_req, res) => {
 });
 
 // Get safety metrics
-router.get('/metrics', async (_req, res) => {
+router.get('/metrics', async (_req: Request, res: Response) => {
   try {
     const metrics = safetyService.getSafetyMetrics();
     res.json(metrics);
@@ -31,7 +31,7 @@ router.get('/metrics', async (_req, res) => {
 });
 
 // Get safety limits
-router.get('/limits', async (_req, res) => {
+router.get('/limits', async (_req: Request, res: Response) => {
   try {
     const limits = safetyService.getSafetyLimits();
     res.json(limits);
@@ -44,7 +44,7 @@ router.get('/limits', async (_req, res) => {
 });
 
 // Update safety limits
-router.put('/limits', async (req, res) => {
+router.put('/limits', async (req: Request, res: Response) => {
   try {
     const { userId } = req.body;
     const limits = req.body;
@@ -57,35 +57,41 @@ router.put('/limits', async (req, res) => {
     logger.info('Safety limits updated', { userId, limits });
     res.json({ message: 'Safety limits updated successfully' });
   } catch (error) {
-    logger.error('Error updating safety limits:', error);
+    logger.error('Error updating safety limits:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to update safety limits' });
   }
 });
 
 // Get active alerts
-router.get('/alerts', async (_req, res) => {
+router.get('/alerts', async (_req: Request, res: Response) => {
   try {
     const alerts = safetyService.getActiveAlerts();
     res.json(alerts);
   } catch (error) {
-    logger.error('Error getting alerts:', error);
+    logger.error('Error getting alerts:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to get alerts' });
   }
 });
 
 // Get all alerts
-router.get('/alerts/all', async (_req, res) => {
+router.get('/alerts/all', async (_req: Request, res: Response) => {
   try {
     const alerts = safetyService.getAllAlerts();
     res.json(alerts);
   } catch (error) {
-    logger.error('Error getting all alerts:', error);
+    logger.error('Error getting all alerts:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to get all alerts' });
   }
 });
 
 // Acknowledge alert
-router.post('/alerts/:alertId/acknowledge', async (req, res) => {
+router.post('/alerts/:alertId/acknowledge', async (req: Request, res: Response) => {
   try {
     const { alertId } = req.params;
     const { userId } = req.body;
@@ -95,13 +101,15 @@ router.post('/alerts/:alertId/acknowledge', async (req, res) => {
     logger.info('Alert acknowledged', { alertId, userId });
     res.json({ message: 'Alert acknowledged successfully' });
   } catch (error) {
-    logger.error('Error acknowledging alert:', error);
+    logger.error('Error acknowledging alert:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to acknowledge alert' });
   }
 });
 
 // Activate emergency stop
-router.post('/emergency-stop', async (req, res) => {
+router.post('/emergency-stop', async (req: Request, res: Response) => {
   try {
     const { reason, userId } = req.body;
 
@@ -114,13 +122,15 @@ router.post('/emergency-stop', async (req, res) => {
     logger.warn('Emergency stop activated via API', { reason, userId });
     res.json({ message: 'Emergency stop activated successfully' });
   } catch (error) {
-    logger.error('Error activating emergency stop:', error);
+    logger.error('Error activating emergency stop:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to activate emergency stop' });
   }
 });
 
 // Deactivate emergency stop
-router.post('/emergency-stop/deactivate', async (req, res) => {
+router.post('/emergency-stop/deactivate', async (req: Request, res: Response) => {
   try {
     const { userId } = req.body;
 
@@ -129,13 +139,15 @@ router.post('/emergency-stop/deactivate', async (req, res) => {
     logger.info('Emergency stop deactivated via API', { userId });
     res.json({ message: 'Emergency stop deactivated successfully' });
   } catch (error) {
-    logger.error('Error deactivating emergency stop:', error);
+    logger.error('Error deactivating emergency stop:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to deactivate emergency stop' });
   }
 });
 
 // Check if operation can start
-router.post('/operations/check', async (req, res) => {
+router.post('/operations/check', async (req: Request, res: Response) => {
   try {
     const { operationId, estimatedCost = 0 } = req.body;
 
@@ -143,13 +155,15 @@ router.post('/operations/check', async (req, res) => {
 
     res.json(result);
   } catch (error) {
-    logger.error('Error checking operation permission:', error);
+    logger.error('Error checking operation permission:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to check operation permission' });
   }
 });
 
 // Start operation
-router.post('/operations/start', async (req, res) => {
+router.post('/operations/start', async (req: Request, res: Response) => {
   try {
     const { operationId, estimatedCost = 0 } = req.body;
 
@@ -158,13 +172,15 @@ router.post('/operations/start', async (req, res) => {
     logger.info('Operation started via API', { operationId, estimatedCost });
     res.json({ message: 'Operation started successfully' });
   } catch (error) {
-    logger.error('Error starting operation:', error);
-    res.status(500).json({ error: error.message || 'Failed to start operation' });
+    logger.error('Error starting operation:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to start operation' });
   }
 });
 
 // Stop operation
-router.post('/operations/stop', async (req, res) => {
+router.post('/operations/stop', async (req: Request, res: Response) => {
   try {
     const { operationId, reason = 'Manual stop' } = req.body;
 
@@ -173,13 +189,15 @@ router.post('/operations/stop', async (req, res) => {
     logger.info('Operation stopped via API', { operationId, reason });
     res.json({ message: 'Operation stopped successfully' });
   } catch (error) {
-    logger.error('Error stopping operation:', error);
+    logger.error('Error stopping operation:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to stop operation' });
   }
 });
 
 // Track cost
-router.post('/tracking/cost', async (req, res) => {
+router.post('/tracking/cost', async (req: Request, res: Response) => {
   try {
     const { operationId, cost } = req.body;
 
@@ -191,13 +209,15 @@ router.post('/tracking/cost', async (req, res) => {
 
     res.json({ message: 'Cost tracked successfully' });
   } catch (error) {
-    logger.error('Error tracking cost:', error);
+    logger.error('Error tracking cost:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to track cost' });
   }
 });
 
 // Track quality
-router.post('/tracking/quality', async (req, res) => {
+router.post('/tracking/quality', async (req: Request, res: Response) => {
   try {
     const { operationId, qualityScore } = req.body;
 
@@ -209,13 +229,15 @@ router.post('/tracking/quality', async (req, res) => {
 
     res.json({ message: 'Quality tracked successfully' });
   } catch (error) {
-    logger.error('Error tracking quality:', error);
+    logger.error('Error tracking quality:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to track quality' });
   }
 });
 
 // Track failure
-router.post('/tracking/failure', async (req, res) => {
+router.post('/tracking/failure', async (req: Request, res: Response) => {
   try {
     const { operationId, error } = req.body;
 
@@ -227,31 +249,37 @@ router.post('/tracking/failure', async (req, res) => {
 
     res.json({ message: 'Failure tracked successfully' });
   } catch (error) {
-    logger.error('Error tracking failure:', error);
+    logger.error('Error tracking failure:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to track failure' });
   }
 });
 
 // Reset daily metrics (for cron job)
-router.post('/reset/daily', async (_req, res) => {
+router.post('/reset/daily', async (_req: Request, res: Response) => {
   try {
     safetyService.resetDailyMetrics();
     logger.info('Daily metrics reset via API');
     res.json({ message: 'Daily metrics reset successfully' });
   } catch (error) {
-    logger.error('Error resetting daily metrics:', error);
+    logger.error('Error resetting daily metrics:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to reset daily metrics' });
   }
 });
 
 // Reset monthly metrics (for cron job)
-router.post('/reset/monthly', async (_req, res) => {
+router.post('/reset/monthly', async (_req: Request, res: Response) => {
   try {
     safetyService.resetMonthlyMetrics();
     logger.info('Monthly metrics reset via API');
     res.json({ message: 'Monthly metrics reset successfully' });
   } catch (error) {
-    logger.error('Error resetting monthly metrics:', error);
+    logger.error('Error resetting monthly metrics:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({ error: 'Failed to reset monthly metrics' });
   }
 });

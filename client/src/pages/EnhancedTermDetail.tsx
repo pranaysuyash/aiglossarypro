@@ -25,6 +25,8 @@ import { contentOutline } from '@/data/content-outline';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTermActions, useTermData } from '@/hooks/useTermData';
+import { useUpgradeModalTrigger } from '@/hooks/useTermWithUpgrade';
+import { FreeUserUpgradeModal } from '@/components/modals/FreeUserUpgradeModal';
 import { apiRequest } from '@/lib/queryClient';
 
 export default function EnhancedTermDetail() {
@@ -36,6 +38,15 @@ export default function EnhancedTermDetail() {
   const { toast } = useToast();
   const { isAuthenticated } = useAuth();
   const queryClient = useQueryClient();
+
+  // Check for upgrade scenarios
+  const {
+    showUpgradeModal,
+    setShowUpgradeModal,
+    upgradeReason,
+    dailyLimit,
+    upgradeMessage,
+  } = useUpgradeModalTrigger(id, isAuthenticated);
 
   // Add CSS for section highlighting
   useEffect(() => {
@@ -359,6 +370,19 @@ export default function EnhancedTermDetail() {
           </main>
         </div>
       </div>
+
+      {/* Free User Upgrade Modal */}
+      <FreeUserUpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onUpgrade={() => {
+          window.location.href = '/lifetime';
+        }}
+        viewsUsed={dailyLimit || 50} // Show as reached limit
+        dailyLimit={dailyLimit || 50}
+        isTrialUser={upgradeReason === 'trial_period'}
+        daysInTrial={upgradeReason === 'trial_period' ? 3 : 0} // Placeholder, could be calculated
+      />
     </ErrorBoundary>
   );
 }

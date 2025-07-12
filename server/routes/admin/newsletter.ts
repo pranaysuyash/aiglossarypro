@@ -1,5 +1,5 @@
 import { and, asc, count, desc, eq, inArray, isNotNull, like, or, sql } from 'drizzle-orm';
-import type { Express } from 'express';
+import type { Express, Request, Response } from 'express';
 import { z } from 'zod';
 import { contactSubmissions, newsletterSubscriptions } from '../../../shared/schema';
 import { db } from '../../db';
@@ -46,7 +46,7 @@ const updateContactStatusSchema = z.object({
 /**
  * Admin middleware to check if user can perform admin actions
  */
-function requireAdminAccess(req: any, res: any, next: any) {
+function requireAdminAccess(req: Request, res: Response, next: any) {
   try {
     const user = req.user;
 
@@ -57,7 +57,7 @@ function requireAdminAccess(req: any, res: any, next: any) {
       });
     }
 
-    if (!canPerformAdminAction(user)) {
+    if (!canPerformAdminAction(user as any)) {
       return res.status(403).json({
         success: false,
         message: 'Admin access required',
@@ -66,7 +66,9 @@ function requireAdminAccess(req: any, res: any, next: any) {
 
     next();
   } catch (error) {
-    log.error('Admin auth middleware error:', error);
+    log.error('Admin auth middleware error:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     return res.status(500).json({
       success: false,
       message: 'Internal server error',
@@ -77,7 +79,7 @@ function requireAdminAccess(req: any, res: any, next: any) {
 /**
  * Get newsletter subscriptions with filtering, search, and pagination
  */
-async function getNewsletterSubscriptions(req: any, res: any) {
+async function getNewsletterSubscriptions(req: Request, res: Response) {
   try {
     const filters = newsletterFiltersSchema.parse(req.query);
 
@@ -126,7 +128,7 @@ async function getNewsletterSubscriptions(req: any, res: any) {
 
     // Get subscriptions
     const orderBy =
-      order === 'desc' ? desc(newsletterSubscriptions[sort]) : asc(newsletterSubscriptions[sort]);
+      order === 'desc' ? desc(newsletterSubscriptions.createdAt) : asc(newsletterSubscriptions.createdAt);
 
     const subscriptions = await db
       .select({
@@ -206,7 +208,7 @@ async function getNewsletterSubscriptions(req: any, res: any) {
 /**
  * Get contact form submissions with filtering, search, and pagination
  */
-async function getContactSubmissions(req: any, res: any) {
+async function getContactSubmissions(req: Request, res: Response) {
   try {
     const filters = contactFiltersSchema.parse(req.query);
 
@@ -262,7 +264,7 @@ async function getContactSubmissions(req: any, res: any) {
 
     // Get submissions
     const orderBy =
-      order === 'desc' ? desc(contactSubmissions[sort]) : asc(contactSubmissions[sort]);
+      order === 'desc' ? desc(contactSubmissions.createdAt) : asc(contactSubmissions.createdAt);
 
     const submissions = await db
       .select()
@@ -320,7 +322,9 @@ async function getContactSubmissions(req: any, res: any) {
       });
     }
 
-    log.error('Get contact submissions error:', error);
+    log.error('Get contact submissions error:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve contact submissions',
@@ -331,7 +335,7 @@ async function getContactSubmissions(req: any, res: any) {
 /**
  * Get newsletter analytics - subscriptions over time, popular sources, etc.
  */
-async function getNewsletterAnalytics(req: any, res: any) {
+async function getNewsletterAnalytics(req: Request, res: Response) {
   try {
     const days = parseInt(req.query.days as string) || 30;
     const pastDate = new Date();
@@ -410,7 +414,9 @@ async function getNewsletterAnalytics(req: any, res: any) {
       },
     });
   } catch (error) {
-    log.error('Get newsletter analytics error:', error);
+    log.error('Get newsletter analytics error:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve newsletter analytics',
@@ -421,7 +427,7 @@ async function getNewsletterAnalytics(req: any, res: any) {
 /**
  * Get contact form analytics
  */
-async function getContactAnalytics(req: any, res: any) {
+async function getContactAnalytics(req: Request, res: Response) {
   try {
     const days = parseInt(req.query.days as string) || 30;
     const pastDate = new Date();
@@ -490,7 +496,9 @@ async function getContactAnalytics(req: any, res: any) {
       },
     });
   } catch (error) {
-    log.error('Get contact analytics error:', error);
+    log.error('Get contact analytics error:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve contact analytics',
@@ -501,7 +509,7 @@ async function getContactAnalytics(req: any, res: any) {
 /**
  * Export newsletter subscriptions as CSV
  */
-async function exportNewsletterSubscriptions(req: any, res: any) {
+async function exportNewsletterSubscriptions(req: Request, res: Response) {
   try {
     const filters = newsletterFiltersSchema.parse(req.query);
 
@@ -582,7 +590,9 @@ async function exportNewsletterSubscriptions(req: any, res: any) {
     );
     res.send(csvContent);
   } catch (error) {
-    log.error('Export newsletter subscriptions error:', error);
+    log.error('Export newsletter subscriptions error:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
       message: 'Failed to export newsletter subscriptions',
@@ -593,7 +603,7 @@ async function exportNewsletterSubscriptions(req: any, res: any) {
 /**
  * Export contact submissions as CSV
  */
-async function exportContactSubmissions(req: any, res: any) {
+async function exportContactSubmissions(req: Request, res: Response) {
   try {
     const filters = contactFiltersSchema.parse(req.query);
 
@@ -680,7 +690,9 @@ async function exportContactSubmissions(req: any, res: any) {
     );
     res.send(csvContent);
   } catch (error) {
-    log.error('Export contact submissions error:', error);
+    log.error('Export contact submissions error:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
       message: 'Failed to export contact submissions',
@@ -691,7 +703,7 @@ async function exportContactSubmissions(req: any, res: any) {
 /**
  * Update contact submission status
  */
-async function updateContactStatus(req: any, res: any) {
+async function updateContactStatus(req: Request, res: Response) {
   try {
     const { id } = req.params;
     const { status, notes } = updateContactStatusSchema.parse(req.body);
@@ -718,7 +730,9 @@ async function updateContactStatus(req: any, res: any) {
       });
     }
 
-    log.error('Update contact status error:', error);
+    log.error('Update contact status error:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
       message: 'Failed to update contact status',
@@ -729,7 +743,7 @@ async function updateContactStatus(req: any, res: any) {
 /**
  * Bulk actions for contact submissions
  */
-async function bulkContactActions(req: any, res: any) {
+async function bulkContactActions(req: Request, res: Response) {
   try {
     const { action, ids } = bulkActionSchema.parse(req.body);
 
@@ -778,7 +792,9 @@ async function bulkContactActions(req: any, res: any) {
       });
     }
 
-    log.error('Bulk contact actions error:', error);
+    log.error('Bulk contact actions error:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
     res.status(500).json({
       success: false,
       message: 'Failed to perform bulk action',

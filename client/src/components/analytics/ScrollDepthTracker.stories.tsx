@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { ScrollDepthTracker } from './ScrollDepthTracker';
+import ScrollDepthTracker from './ScrollDepthTracker';
 
 const meta = {
   title: 'Components/ScrollDepthTracker',

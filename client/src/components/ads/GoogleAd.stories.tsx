@@ -1,5 +1,6 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { GoogleAd } from './GoogleAd';
+import GoogleAd from './GoogleAd';
 
 const meta: Meta<typeof GoogleAd> = {
   title: 'Components/Ads/GoogleAd',

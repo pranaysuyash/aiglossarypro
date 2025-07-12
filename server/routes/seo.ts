@@ -9,6 +9,7 @@ import { categories, terms } from '../../shared/schema';
 import type { ApiResponse } from '../../shared/types';
 import { db } from '../db';
 import { log as logger } from '../utils/logger';
+import { sampleTermsSeoUtils } from '../../client/src/utils/sampleTermsSitemap';
 
 const seoRouter = Router();
 
@@ -65,6 +66,14 @@ seoRouter.get('/sitemap.xml', async (_req: Request, res: Response) => {
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  
+  <!-- Sample terms page -->
+  <url>
+    <loc>${baseUrl}/sample</loc>
+    <lastmod>${new Date().toISOString().split('T')[0]}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
 `;
 
     // Add category pages
@@ -91,6 +100,21 @@ seoRouter.get('/sitemap.xml', async (_req: Request, res: Response) => {
   </url>`;
     });
 
+    // Add sample term pages
+    const sampleTerms = sampleTermsSeoUtils.generateSitemap(baseUrl);
+    sampleTerms.forEach((sampleTerm) => {
+      // Skip the main /sample page as it's already added above
+      if (!sampleTerm.url.endsWith('/sample')) {
+        sitemap += `
+  <url>
+    <loc>${sampleTerm.url}</loc>
+    <lastmod>${sampleTerm.lastModified.split('T')[0]}</lastmod>
+    <changefreq>${sampleTerm.changeFrequency}</changefreq>
+    <priority>${sampleTerm.priority}</priority>
+  </url>`;
+      }
+    });
+
     sitemap += '\n</urlset>';
 
     res.setHeader('Content-Type', 'application/xml');
@@ -105,6 +129,31 @@ seoRouter.get('/sitemap.xml', async (_req: Request, res: Response) => {
   }
 });
 
+// Generate sample terms sitemap.xml
+seoRouter.get('/sitemap-sample-terms.xml', async (_req: Request, res: Response) => {
+  try {
+    const baseUrl = process.env.BASE_URL || 'https://aiglossarypro.com';
+    
+    // Generate XML sitemap specifically for sample terms
+    const sampleTermsXml = sampleTermsSeoUtils.generateXmlSitemap(baseUrl);
+    
+    res.setHeader('Content-Type', 'application/xml');
+    res.send(sampleTermsXml);
+    
+    logger.info('Sample terms sitemap generated successfully', {
+      termCount: sampleTermsSeoUtils.getSampleTermsCount(),
+      baseUrl
+    });
+  } catch (error) {
+    logger.error('Sample terms sitemap generation error:', {
+      error: error instanceof Error ? error.message : String(error),
+    });
+    res
+      .status(500)
+      .send('<?xml version="1.0" encoding="UTF-8"?><error>Sample terms sitemap generation failed</error>');
+  }
+});
+
 // Generate robots.txt
 seoRouter.get('/robots.txt', (_req: Request, res: Response) => {
   const baseUrl = process.env.BASE_URL || 'https://aiglossarypro.com';
@@ -115,8 +164,13 @@ Disallow: /api/
 Disallow: /admin/
 Disallow: /uploads/
 
-# Sitemap
+# Prioritize sample terms for SEO
+Allow: /sample/
+Allow: /sample
+
+# Sitemaps
 Sitemap: ${baseUrl}/sitemap.xml
+Sitemap: ${baseUrl}/sitemap-sample-terms.xml
 
 # Crawl-delay for respectful crawling
 Crawl-delay: 1`;
@@ -438,6 +492,11 @@ export function registerSeoRoutes(app: any): void {
   // Mount sitemap and robots at root level for direct access
   app.get('/sitemap.xml', async (req: Request, res: Response) => {
     req.url = '/sitemap.xml';
+    seoRouter(req, res, () => {});
+  });
+
+  app.get('/sitemap-sample-terms.xml', async (req: Request, res: Response) => {
+    req.url = '/sitemap-sample-terms.xml';
     seoRouter(req, res, () => {});
   });
 

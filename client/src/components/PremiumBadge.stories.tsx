@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { PremiumBadge } from './PremiumBadge';
 
@@ -46,12 +47,7 @@ export const PremiumDefault: Story = {
   decorators: [
     (Story) => {
       // Mock premium access
-      jest.doMock('../hooks/useAccess', () => ({
-        useAccess: () => mockUseAccess({
-          lifetimeAccess: true,
-          subscriptionTier: 'premium'
-        })
-      }));
+      
       return <Story />;
     },
   ],
@@ -71,12 +67,7 @@ export const PremiumCompact: Story = {
   },
   decorators: [
     (Story) => {
-      jest.doMock('../hooks/useAccess', () => ({
-        useAccess: () => mockUseAccess({
-          lifetimeAccess: true,
-          subscriptionTier: 'premium'
-        })
-      }));
+      
       return <Story />;
     },
   ],
@@ -96,12 +87,7 @@ export const PremiumIconOnly: Story = {
   },
   decorators: [
     (Story) => {
-      jest.doMock('../hooks/useAccess', () => ({
-        useAccess: () => mockUseAccess({
-          lifetimeAccess: true,
-          subscriptionTier: 'premium'
-        })
-      }));
+      
       return <Story />;
     },
   ],
@@ -122,12 +108,7 @@ export const FreeUserDefault: Story = {
   decorators: [
     (Story) => {
       // Mock free access
-      jest.doMock('../hooks/useAccess', () => ({
-        useAccess: () => mockUseAccess({
-          lifetimeAccess: false,
-          subscriptionTier: 'free'
-        })
-      }));
+      
       return <Story />;
     },
   ],
@@ -147,12 +128,7 @@ export const FreeUserCompact: Story = {
   },
   decorators: [
     (Story) => {
-      jest.doMock('../hooks/useAccess', () => ({
-        useAccess: () => mockUseAccess({
-          lifetimeAccess: false,
-          subscriptionTier: 'free'
-        })
-      }));
+      
       return <Story />;
     },
   ],
@@ -172,12 +148,7 @@ export const FreeUserIconOnly: Story = {
   },
   decorators: [
     (Story) => {
-      jest.doMock('../hooks/useAccess', () => ({
-        useAccess: () => mockUseAccess({
-          lifetimeAccess: false,
-          subscriptionTier: 'free'
-        })
-      }));
+      
       return <Story />;
     },
   ],
@@ -197,12 +168,7 @@ export const FreeUserHidden: Story = {
   },
   decorators: [
     (Story) => {
-      jest.doMock('../hooks/useAccess', () => ({
-        useAccess: () => mockUseAccess({
-          lifetimeAccess: false,
-          subscriptionTier: 'free'
-        })
-      }));
+      
       return (
         <div className="p-4 border border-gray-200 rounded-lg">
           <p className="text-sm text-gray-600 mb-2">
@@ -233,9 +199,7 @@ export const NoAccessStatus: Story = {
   decorators: [
     (Story) => {
       // Mock no access status
-      jest.doMock('../hooks/useAccess', () => ({
-        useAccess: () => mockUseAccess(null)
-      }));
+      
       return (
         <div className="p-4 border border-gray-200 rounded-lg">
           <p className="text-sm text-gray-600 mb-2">
@@ -261,12 +225,7 @@ export const NoAccessStatus: Story = {
 export const AllVariants: Story = {
   decorators: [
     (Story) => {
-      jest.doMock('../hooks/useAccess', () => ({
-        useAccess: () => mockUseAccess({
-          lifetimeAccess: true,
-          subscriptionTier: 'premium'
-        })
-      }));
+      
       return (
         <div className="space-y-6">
           <div className="space-y-3">
@@ -311,12 +270,7 @@ export const AllVariants: Story = {
 export const InContext: Story = {
   decorators: [
     (Story) => {
-      jest.doMock('../hooks/useAccess', () => ({
-        useAccess: () => mockUseAccess({
-          lifetimeAccess: true,
-          subscriptionTier: 'premium'
-        })
-      }));
+      
       return (
         <div className="space-y-6">
           {/* In a user profile card */}
@@ -371,12 +325,7 @@ export const DarkMode: Story = {
   },
   decorators: [
     (Story) => {
-      jest.doMock('../hooks/useAccess', () => ({
-        useAccess: () => mockUseAccess({
-          lifetimeAccess: true,
-          subscriptionTier: 'premium'
-        })
-      }));
+      
       return (
         <div className="dark bg-gray-900 p-6 rounded-lg">
           <div className="space-y-4">

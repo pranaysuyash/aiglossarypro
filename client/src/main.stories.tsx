@@ -1,3 +1,4 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

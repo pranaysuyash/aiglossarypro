@@ -1,3 +1,4 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { HierarchicalNavigation } from './HierarchicalNavigation';
 
@@ -12,11 +13,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+      "contentStructure": []
+    },
 };
 
 export const WithProps: Story = {
   args: {
-    // Add relevant props here
+    contentStructure: []
   },
 };

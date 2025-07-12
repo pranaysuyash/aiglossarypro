@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { CrossReferenceAnalytics } from './CrossReferenceAnalytics';
+import CrossReferenceAnalytics from './CrossReferenceAnalytics';
 
 const meta = {
   title: 'Components/CrossReferenceAnalytics',

@@ -206,7 +206,7 @@ async function calculateSkillLevel(
 
   // Factor in learning path completions
   learningProgress.forEach((progress) => {
-    if (progress.completionPercentage > 50) {
+    if ((progress.completionPercentage || 0) > 50) {
       const difficulty = progress.difficultyLevel;
       if (difficulty && Object.hasOwn(difficultyScores, difficulty)) {
         difficultyScores[difficulty as keyof typeof difficultyScores] += 50;

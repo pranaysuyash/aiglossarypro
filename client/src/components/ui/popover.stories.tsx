@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { Calendar, Settings, User, Info, Heart, Star, MessageSquare, Share2, MoreVertical } from 'lucide-react';
 import { Button } from './button';

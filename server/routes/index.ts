@@ -22,10 +22,12 @@ import { registerCategoryRoutes } from './categories';
 import { registerCodeExamplesRoutes } from './codeExamples';
 import { registerContentRoutes } from './content';
 import { registerCrossReferenceRoutes } from './crossReference';
+import customerServiceRoutes from './customerService';
 import { registerEarlyBirdRoutes } from './earlyBird';
 import { registerEngagementRoutes } from './engagement';
 import { registerFeedbackRoutes } from './feedback';
 import { registerGumroadRoutes } from './gumroad';
+import gumroadWebhookRoutes from './gumroadWebhooks';
 import { registerJobRoutes } from './jobs';
 import { registerLearningPathsRoutes } from './learningPaths';
 import { registerMediaRoutes } from './media';
@@ -46,9 +48,11 @@ import { registerSubcategoryRoutes } from './subcategories';
 // Import surprise discovery routes
 import surpriseDiscoveryRoutes from './surpriseDiscovery';
 import { registerTermRoutes } from './terms';
+import { registerGuestPreviewRoutes } from './guestPreview';
 import { registerTrendingRoutes } from './trending';
 import { registerUserRoutes } from './user';
 import { registerUserProgressRoutes } from './user/progress';
+import { referralRoutes } from './referral';
 
 /**
  * Main route registration function
@@ -71,6 +75,8 @@ export async function registerRoutes(app: Express): Promise<void> {
     registerSubcategoryRoutes(app);
     logger.info('✅ Subcategory routes registered - 21,993 subcategories now accessible');
     registerTermRoutes(app);
+    registerGuestPreviewRoutes(app);
+    logger.info('✅ Guest preview routes registered - unauthenticated preview access enabled');
     registerSectionRoutes(app);
     logger.info('✅ Section routes registered - 42-section content API now available');
     registerSearchRoutes(app);
@@ -95,6 +101,10 @@ export async function registerRoutes(app: Express): Promise<void> {
     // Register cross-reference routes (for automatic term linking)
     registerCrossReferenceRoutes(app);
     logger.info('✅ Cross-reference routes registered');
+
+    // Register customer service routes
+    app.use('/api/support', customerServiceRoutes);
+    logger.info('✅ Customer service routes registered');
 
     // Register analytics routes
     registerAnalyticsRoutes(app);
@@ -123,6 +133,14 @@ export async function registerRoutes(app: Express): Promise<void> {
     // Register Gumroad monetization routes
     registerGumroadRoutes(app);
     logger.info('✅ Gumroad monetization routes registered');
+
+    // Register Gumroad webhook routes
+    app.use('/api/webhooks/gumroad', gumroadWebhookRoutes);
+    logger.info('✅ Gumroad webhook routes registered');
+
+    // Register referral system routes
+    app.use('/api/referral', referralRoutes);
+    logger.info('✅ Referral system routes registered');
 
     // Register early bird pricing routes
     registerEarlyBirdRoutes(app);

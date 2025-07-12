@@ -46,7 +46,7 @@ export function hasPremiumAccess(user: UserWithAccessControl): boolean {
 }
 
 /**
- * Check if user is in trial period
+ * Check if user is in trial period (7 days unlimited access for new accounts)
  */
 export function isInTrialPeriod(
   user: UserWithAccessControl,
@@ -54,7 +54,10 @@ export function isInTrialPeriod(
 ): boolean {
   if (!user) return false;
 
-  // Check account creation date for trial (NEW LOGIC - fixes issue with new users)
+  // Premium users don't need trial
+  if (hasPremiumAccess(user)) return false;
+
+  // Check account creation date for trial
   const creationDateValue = user.createdAt || user.created_at;
   if (creationDateValue) {
     const createdDate = new Date(creationDateValue);
@@ -62,16 +65,6 @@ export function isInTrialPeriod(
     trialEndDate.setDate(trialEndDate.getDate() + config.trialDays);
 
     return new Date() <= trialEndDate;
-  }
-
-  // Fallback: Check purchase date (for existing users with purchase history)
-  const purchaseDateValue = user.purchaseDate || user.purchase_date;
-  if (purchaseDateValue) {
-    const purchaseDate = new Date(purchaseDateValue);
-    const trialEndDate = new Date(purchaseDate);
-    trialEndDate.setDate(trialEndDate.getDate() + config.trialDays);
-
-    if (new Date() <= trialEndDate) return true;
   }
 
   return false;
@@ -89,8 +82,7 @@ export function hasUserAccess(
   // Premium access
   if (hasPremiumAccess(user)) return true;
 
-  // Trial period access
-  if (isInTrialPeriod(user, config)) return true;
+  // No trial period - removed
 
   // Free tier has limited access
   return true; // Free users can still access with daily limits
@@ -112,10 +104,7 @@ export function getDailyLimits(
     return { limit: Number.MAX_SAFE_INTEGER, isUnlimited: true };
   }
 
-  // Trial users have unlimited access during trial
-  if (isInTrialPeriod(user, config)) {
-    return { limit: Number.MAX_SAFE_INTEGER, isUnlimited: true };
-  }
+  // No trial period - free users get daily limits immediately
 
   // Free tier users have daily limits
   return { limit: config.dailyLimitFree, isUnlimited: false };
@@ -171,10 +160,7 @@ export function canViewTerm(
     return { canView: true, reason: 'premium_access' };
   }
 
-  // Trial period access
-  if (isInTrialPeriod(user, config)) {
-    return { canView: true, reason: 'trial_period' };
-  }
+  // No trial period - removed
 
   // Free tier - check daily limits
   const { remaining, dailyViews, limit } = getRemainingDailyViews(user, config);
@@ -223,8 +209,7 @@ export function canAccessPremiumFeature(user: UserWithAccessControl): boolean {
   // Premium users can access premium features
   if (hasPremiumAccess(user)) return true;
 
-  // Trial users can access premium features during trial
-  if (isInTrialPeriod(user)) return true;
+  // No trial period - removed
 
   return false;
 }
@@ -254,12 +239,10 @@ export function getUserAccessStatus(
 
   const isAdmin = canPerformAdminAction(user);
   const isPremium = hasPremiumAccess(user);
-  const isTrial = isInTrialPeriod(user, config);
   const dailyLimits = getRemainingDailyViews(user, config);
 
-  let accessType: 'premium' | 'trial' | 'free' | 'none' = 'none';
+  let accessType: 'premium' | 'free' | 'none' = 'none';
   if (isPremium) accessType = 'premium';
-  else if (isTrial) accessType = 'trial';
   else accessType = 'free';
 
   return {

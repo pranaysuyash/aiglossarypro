@@ -1,6 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
 import { setMockCountryPricing } from '@/hooks/__mocks__/useCountryPricing';
+import { posthogExperiments } from '@/services/posthogExperiments';
 import { HeroSection } from './HeroSection';
 
 const createMockPricing = (overrides = {}) => ({
@@ -491,6 +492,94 @@ export const ComparisonVariants: Story = {
     docs: {
       description: {
         story: 'Comparison of different hero section variants for A/B testing purposes.',
+      },
+    },
+  },
+};
+
+// PostHog Experiment Stories
+const mockExperimentDecorator = (variant: 'control' | 'sample' | 'explore') => (Story: React.ComponentType) => {
+  // Mock the PostHog experiment hook
+  React.useEffect(() => {
+    // Mock the experiment service
+    (posthogExperiments as any).getExperimentVariant = () => variant;
+  }, []);
+
+  return <Story />;
+};
+
+export const PostHogExperiment_Control: Story = {
+  decorators: [mockExperimentDecorator('control')],
+  parameters: {
+    docs: {
+      description: {
+        story: 'PostHog Experiment - Control variant with "Start for Free" CTA leading to signup page.',
+      },
+    },
+  },
+};
+
+export const PostHogExperiment_Sample: Story = {
+  decorators: [mockExperimentDecorator('sample')],
+  parameters: {
+    docs: {
+      description: {
+        story: 'PostHog Experiment - Sample variant with "Explore Free Samples" CTA leading to /sample page. Includes search icon and different messaging focused on immediate value without signup.',
+      },
+    },
+  },
+};
+
+export const PostHogExperiment_Explore: Story = {
+  decorators: [mockExperimentDecorator('explore')],
+  parameters: {
+    docs: {
+      description: {
+        story: 'PostHog Experiment - Explore variant with "Start Exploring" CTA and messaging focused on discovery and exploration of the full glossary.',
+      },
+    },
+  },
+};
+
+export const PostHogExperiment_Comparison: Story = {
+  render: () => (
+    <div className="space-y-8">
+      <div>
+        <h3 className="text-lg font-semibold mb-4 px-4 bg-blue-100 py-2 rounded">
+          Control: "Start for Free" → /login
+        </h3>
+        {React.createElement(() => {
+          (posthogExperiments as any).getExperimentVariant = () => 'control';
+          return <HeroSection />;
+        })}
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4 px-4 bg-green-100 py-2 rounded">
+          Sample: "Explore Free Samples" → /sample (No signup required)
+        </h3>
+        {React.createElement(() => {
+          (posthogExperiments as any).getExperimentVariant = () => 'sample';
+          return <HeroSection />;
+        })}
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-semibold mb-4 px-4 bg-purple-100 py-2 rounded">
+          Explore: "Start Exploring" → /login (Discovery focused)
+        </h3>
+        {React.createElement(() => {
+          (posthogExperiments as any).getExperimentVariant = () => 'explore';
+          return <HeroSection />;
+        })}
+      </div>
+    </div>
+  ),
+  parameters: {
+    layout: 'fullscreen',
+    docs: {
+      description: {
+        story: 'Side-by-side comparison of all PostHog experiment variants to visualize the differences in messaging, icons, and destination pages.',
       },
     },
   },

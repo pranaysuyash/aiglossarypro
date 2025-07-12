@@ -1,8 +1,8 @@
 import { and, eq, inArray, or, sql } from 'drizzle-orm';
 import type { Express, Request, Response } from 'express';
 import { z } from 'zod';
-import { termRelationships } from '../../shared/enhancedSchema';
-import { categories, terms } from '../../shared/schema';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, no-unused-vars
+import { termRelationships, enhancedTerms, categories, subcategories } from '../../shared/enhancedSchema';
 import type { ApiResponse } from '../../shared/types';
 import { db } from '../db';
 import { validateInput, validateParams } from '../middleware/validateRequest';
@@ -31,6 +31,7 @@ interface GraphNode {
   category?: string;
   subcategory?: string;
   definition?: string;
+  description?: string;
   level?: number;
   viewCount?: number;
   hasImplementation?: boolean;
@@ -65,11 +66,8 @@ export function registerRelationshipRoutes(app: Express): void {
         const strengthThreshold = minStrength || 0;
 
         // Get the central term
-        const centralTerm = await db.query.terms.findFirst({
-          where: eq(terms.id, termId),
-          with: {
-            category: true,
-          },
+        const centralTerm = await db.query.enhancedTerms.findFirst({
+          where: eq(enhancedTerms.id, termId),
         });
 
         if (!centralTerm) {
@@ -89,8 +87,8 @@ export function registerRelationshipRoutes(app: Express): void {
           id: centralTerm.id,
           name: centralTerm.name,
           type: 'term',
-          category: centralTerm.category?.name,
-          definition: centralTerm.shortDefinition || centralTerm.definition,
+          category: centralTerm.mainCategories?.[0] || undefined,
+          definition: centralTerm.shortDefinition || centralTerm.fullDefinition,
           level: 0,
           viewCount: centralTerm.viewCount,
         });
@@ -123,11 +121,8 @@ export function registerRelationshipRoutes(app: Express): void {
           // Process outgoing relationships
           for (const rel of outgoingRelationships) {
             if (!processedNodeIds.has(rel.toTermId)) {
-              const relatedTerm = await db.query.terms.findFirst({
-                where: eq(terms.id, rel.toTermId),
-                with: {
-                  category: true,
-                },
+              const relatedTerm = await db.query.enhancedTerms.findFirst({
+                where: eq(enhancedTerms.id, rel.toTermId),
               });
 
               if (relatedTerm) {
@@ -135,8 +130,8 @@ export function registerRelationshipRoutes(app: Express): void {
                   id: relatedTerm.id,
                   name: relatedTerm.name,
                   type: 'term',
-                  category: relatedTerm.category?.name,
-                  definition: relatedTerm.shortDefinition || relatedTerm.definition,
+                  category: relatedTerm.mainCategories?.[0] || undefined,
+                  definition: relatedTerm.shortDefinition || relatedTerm.fullDefinition,
                   level: level + 1,
                   viewCount: relatedTerm.viewCount,
                 });
@@ -156,11 +151,8 @@ export function registerRelationshipRoutes(app: Express): void {
           // Process incoming relationships
           for (const rel of incomingRelationships) {
             if (!processedNodeIds.has(rel.fromTermId)) {
-              const relatedTerm = await db.query.terms.findFirst({
-                where: eq(terms.id, rel.fromTermId),
-                with: {
-                  category: true,
-                },
+              const relatedTerm = await db.query.enhancedTerms.findFirst({
+                where: eq(enhancedTerms.id, rel.fromTermId),
               });
 
               if (relatedTerm) {
@@ -168,8 +160,8 @@ export function registerRelationshipRoutes(app: Express): void {
                   id: relatedTerm.id,
                   name: relatedTerm.name,
                   type: 'term',
-                  category: relatedTerm.category?.name,
-                  definition: relatedTerm.shortDefinition || relatedTerm.definition,
+                  category: relatedTerm.mainCategories?.[0] || undefined,
+                  definition: relatedTerm.shortDefinition || relatedTerm.fullDefinition,
                   level: level + 1,
                   viewCount: relatedTerm.viewCount,
                 });
@@ -196,7 +188,7 @@ export function registerRelationshipRoutes(app: Express): void {
           // Add category nodes and links
           const categoryIds = new Set(nodes.map((n) => n.category).filter(Boolean));
 
-          for (const categoryName of categoryIds) {
+          for (const categoryName of Array.from(categoryIds)) {
             const category = await db.query.categories.findFirst({
               where: eq(categories.name, categoryName),
             });
@@ -229,10 +221,10 @@ export function registerRelationshipRoutes(app: Express): void {
 
         // Get all unique categories and subcategories for filtering
         const categoriesResult = await db.query.categories.findMany();
-        allCategories = categoriesResult.map((c) => c.name);
+        allCategories = categoriesResult.map((c) => c.name as string);
 
         const subcategoriesResult = await db.query.subcategories.findMany();
-        allSubcategories = subcategoriesResult.map((s) => s.name);
+        allSubcategories = subcategoriesResult.map((s) => s.name as string);
 
         const response: ApiResponse<{
           nodes: GraphNode[];
@@ -268,14 +260,11 @@ export function registerRelationshipRoutes(app: Express): void {
     validateInput({ body: bulkRelationshipQuerySchema }),
     async (req: Request, res: Response) => {
       try {
-        const { termIds, depth } = req.body;
+        const { termIds } = req.body;
 
         // Fetch all terms
-        const termsData = await db.query.terms.findMany({
-          where: inArray(terms.id, termIds),
-          with: {
-            category: true,
-          },
+        const termsData = await db.query.enhancedTerms.findMany({
+          where: inArray(enhancedTerms.id, termIds),
         });
 
         if (termsData.length === 0) {
@@ -300,8 +289,8 @@ export function registerRelationshipRoutes(app: Express): void {
           id: term.id,
           name: term.name,
           type: 'term',
-          category: term.category?.name,
-          definition: term.shortDefinition || term.definition,
+          category: term.mainCategories?.[0] || undefined,
+          definition: term.shortDefinition || term.fullDefinition,
           viewCount: term.viewCount,
         }));
 
@@ -343,15 +332,15 @@ export function registerRelationshipRoutes(app: Express): void {
       // Get most connected terms
       const mostConnected = await db
         .select({
-          termId: terms.id,
-          termName: terms.name,
+          termId: enhancedTerms.id,
+          termName: enhancedTerms.name,
           connectionCount: sql<number>`
             (SELECT COUNT(*) FROM ${termRelationships} 
-             WHERE ${termRelationships.fromTermId} = ${terms.id} 
-             OR ${termRelationships.toTermId} = ${terms.id})
+             WHERE ${termRelationships.fromTermId} = ${enhancedTerms.id} 
+             OR ${termRelationships.toTermId} = ${enhancedTerms.id})
           `.as('connectionCount'),
         })
-        .from(terms)
+        .from(enhancedTerms)
         .orderBy(sql`connectionCount DESC`)
         .limit(10);
 
@@ -424,8 +413,8 @@ export function registerRelationshipRoutes(app: Express): void {
         const { relationships } = req.body;
 
         // Verify term exists
-        const term = await db.query.terms.findFirst({
-          where: eq(terms.id, termId),
+        const term = await db.query.enhancedTerms.findFirst({
+          where: eq(enhancedTerms.id, termId),
         });
 
         if (!term) {

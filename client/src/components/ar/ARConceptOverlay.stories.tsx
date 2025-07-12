@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { ARConceptOverlay } from './ARConceptOverlay';
+import ARConceptOverlay from './ARConceptOverlay';
 
 const meta = {
   title: 'Components/ARConceptOverlay',

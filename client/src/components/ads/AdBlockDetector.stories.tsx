@@ -1,5 +1,6 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { AdBlockDetector } from './AdBlockDetector';
+import AdBlockDetector from './AdBlockDetector';
 
 const meta: Meta<typeof AdBlockDetector> = {
   title: 'Components/Ads/AdBlockDetector',

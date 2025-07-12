@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { InteractiveElementsManager } from './InteractiveElementsManager';
+import InteractiveElementsManager from './InteractiveElementsManager';
 
 const meta = {
   title: 'Components/InteractiveElementsManager',
@@ -12,11 +13,29 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+      "elements": []
+    },
 };
 
 export const WithProps: Story = {
   args: {
-    // Add relevant props here
+    elements: [
+      {
+        id: "1",
+        termId: "term-123",
+        sectionName: "Example Section",
+        elementType: "code",
+        elementData: {
+          title: "Sample Code",
+          description: "A simple code example",
+          code: "console.log('Hello World');",
+          language: "javascript",
+        },
+        displayOrder: 1,
+        isActive: true,
+        createdAt: "2024-01-01T00:00:00Z",
+      }
+    ]
   },
 };

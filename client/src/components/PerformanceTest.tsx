@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { perfMonitor } from '@/utils/performanceMonitor';
+import { performanceMonitor } from '@/utils/performanceMonitor';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 
@@ -31,7 +31,7 @@ export function PerformanceTest() {
   // Log performance on unmount
   useEffect(() => {
     return () => {
-      perfMonitor.logReport();
+      console.log('Performance metrics:', performanceMonitor.getMetrics());
     };
   }, []);
 

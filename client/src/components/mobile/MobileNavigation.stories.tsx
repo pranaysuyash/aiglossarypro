@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { MobileNavigation } from './MobileNavigation';
+import MobileNavigation from './MobileNavigation';
 
 const meta = {
   title: 'Components/MobileNavigation',

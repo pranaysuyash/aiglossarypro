@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { AnalyticsDashboard } from './AnalyticsDashboard';
+import AnalyticsDashboard from './AnalyticsDashboard';
 
 const meta = {
   title: 'Components/AnalyticsDashboard',

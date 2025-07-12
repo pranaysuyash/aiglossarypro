@@ -622,7 +622,7 @@ export class EnhancedStorage implements IEnhancedStorage {
   private context?: RequestContext;
 
   constructor(
-    private baseStorage: IStorage = optimizedStorage,
+    private baseStorage: IStorage = optimizedStorage as IStorage,
     private termsStorage = enhancedTermsStorage
   ) {
     // Compose with both optimizedStorage and enhancedTermsStorage
@@ -1054,7 +1054,7 @@ export class EnhancedStorage implements IEnhancedStorage {
           // Get recent views for active users
           const viewPromises = users.data.map(async (user) => {
             return this.baseStorage.getRecentlyViewedTerms(user.id).then((views) =>
-              views.slice(0, 3).map((view) => ({
+              views.slice(0, 3).map((view: any) => ({
                 id: `view_${user.id}_${view.id}`,
                 userId: user.id,
                 action: 'view' as const,
@@ -1063,9 +1063,9 @@ export class EnhancedStorage implements IEnhancedStorage {
                 metadata: {
                   termName: view.name,
                   category: view.category,
-                  viewedAt: view.viewedAt,
+                  viewedAt: view.viewedAt || new Date().toISOString(),
                 },
-                createdAt: new Date(view.viewedAt),
+                createdAt: new Date(view.viewedAt || new Date()),
               }))
             );
           });
@@ -1080,7 +1080,7 @@ export class EnhancedStorage implements IEnhancedStorage {
 
           const favoritePromises = users.data.map(async (user) => {
             return this.baseStorage.getUserFavorites(user.id).then((favorites) =>
-              favorites.slice(0, 2).map((fav) => ({
+              favorites.slice(0, 2).map((fav: any) => ({
                 id: `favorite_${user.id}_${fav.id}`,
                 userId: user.id,
                 action: 'favorite' as const,
@@ -1089,9 +1089,9 @@ export class EnhancedStorage implements IEnhancedStorage {
                 metadata: {
                   termName: fav.name,
                   category: fav.category,
-                  favoriteDate: fav.favoriteDate,
+                  favoriteDate: fav.favoriteDate || new Date().toISOString(),
                 },
-                createdAt: new Date(fav.favoriteDate),
+                createdAt: new Date(fav.favoriteDate || new Date()),
               }))
             );
           });

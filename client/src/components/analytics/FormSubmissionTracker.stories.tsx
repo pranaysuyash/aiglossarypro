@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { FormSubmissionTracker } from './FormSubmissionTracker';
+import FormSubmissionTracker from './FormSubmissionTracker';
 
 const meta = {
   title: 'Components/FormSubmissionTracker',
@@ -12,11 +13,19 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+    formType: 'contact',
+    formLocation: 'home-page',
+    children: <div>Form content goes here</div>,
+  },
 };
 
 export const WithProps: Story = {
   args: {
-    // Add relevant props here
+    formType: 'newsletter',
+    formLocation: 'sidebar',
+    formId: 'newsletter-signup',
+    children: <div>Newsletter subscription form</div>,
+    metadata: { source: 'sidebar-widget' },
   },
 };

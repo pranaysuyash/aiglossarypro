@@ -1,3 +1,4 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
 import { useMobile } from './use-mobile';
 
@@ -17,7 +18,7 @@ const MobileDetectionDemo = () => {
         </div>
         <div className="text-xs text-gray-600">
           <p>Screen width: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}px</p>
-          <p>Breakpoint: {isMobile ? '< 768px' : '≥ 768px'}</p>
+          <p>Breakpoint: {isMobile ? '&lt; 768px' : '≥ 768px'}</p>
         </div>
         <div className="mt-4 p-3 bg-white rounded border text-sm">
           <strong>Usage:</strong>
@@ -50,7 +51,7 @@ export const Documentation: Story = {
     <div className="max-w-lg">
       <h2 className="text-xl font-bold mb-4">useMobile Hook</h2>
       <p className="text-gray-600 mb-4">
-        A React hook that detects if the current viewport is mobile-sized (< 768px).
+        A React hook that detects if the current viewport is mobile-sized (&lt; 768px).
       </p>
       <div className="bg-gray-100 p-4 rounded">
         <h4 className="font-semibold mb-2">Features:</h4>

@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { FreeTierMessaging } from './FreeTierMessaging';
 
@@ -33,10 +34,7 @@ export const Default: Story = {
 };
 
 export const Loading: Story = {
-  args: {
-  "loading": true,
-  "isLoading": true
-},
+  args: {},
   parameters: {
     docs: {
       description: {
@@ -47,10 +45,7 @@ export const Loading: Story = {
 };
 
 export const Error: Story = {
-  args: {
-  "error": "Something went wrong",
-  "hasError": true
-},
+  args: {},
   parameters: {
     docs: {
       description: {

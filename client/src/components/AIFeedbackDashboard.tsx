@@ -1,6 +1,7 @@
-import { Activity, AlertTriangle, CheckCircle, Flag, TrendingUp, Users } from 'lucide-react';
+import { Activity, AlertTriangle, CheckCircle, Flag, TrendingUp, Users, Shield, ShieldAlert } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '../hooks/use-toast';
+import { useAdminAuth } from '../hooks/useAdminAuth';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -53,6 +54,7 @@ export function AIFeedbackDashboard() {
   const [reviewNotes, setReviewNotes] = useState('');
   const [newStatus, setNewStatus] = useState<string>('');
   const { toast } = useToast();
+  const { isAuthorized, isLoading: authLoading, error: authError, redirectToLogin } = useAdminAuth();
 
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
@@ -113,16 +115,40 @@ export function AIFeedbackDashboard() {
         }
       }
 
-      // Set verification stats with realistic estimates based on real data
-      const totalTerms = analytics?.totalRequests || 1000;
-      setVerificationStats({
-        total: totalTerms,
-        unverified: Math.floor(totalTerms * 0.25),
-        verified: Math.floor(totalTerms * 0.65),
-        flagged: Math.floor(totalTerms * 0.03),
-        needsReview: Math.floor(totalTerms * 0.05),
-        expertReviewed: Math.floor(totalTerms * 0.02),
-      });
+      // Get real verification stats from dedicated endpoint
+      try {
+        const verificationResponse = await fetch('/api/admin/content/verification-stats');
+        if (verificationResponse.ok) {
+          const verificationData = await verificationResponse.json();
+          if (verificationData.success && verificationData.data) {
+            setVerificationStats(verificationData.data);
+          } else {
+            throw new Error('Failed to get verification stats');
+          }
+        } else {
+          throw new Error(`HTTP error! status: ${verificationResponse.status}`);
+        }
+      } catch (verificationError) {
+        console.error('Error fetching verification stats:', verificationError);
+        // Fallback to calculation based on current data
+        const totalTerms = analytics?.totalRequests || 1000;
+        const flaggedFromFeedback = feedbackList.filter(f => f.severity === 'high' || f.severity === 'critical').length;
+        
+        setVerificationStats({
+          total: totalTerms,
+          unverified: Math.floor(totalTerms * 0.15),
+          verified: Math.floor(totalTerms * 0.75),
+          flagged: flaggedFromFeedback,
+          needsReview: Math.floor(totalTerms * 0.05),
+          expertReviewed: Math.floor(totalTerms * 0.05),
+        });
+        
+        toast({
+          title: 'Warning',
+          description: 'Using fallback verification stats. Some data may not be current.',
+          variant: 'destructive',
+        });
+      }
     } catch (error) {
       console.error('Error loading dashboard data:', error);
       toast({
@@ -212,6 +238,39 @@ export function AIFeedbackDashboard() {
         return 'bg-gray-100 text-gray-800';
     }
   };
+
+  // Handle authentication and authorization
+  if (authLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-4">
+        <div className="flex items-center space-x-2">
+          <Shield className="h-8 w-8 text-blue-600 animate-pulse" />
+          <span className="text-lg">Verifying admin access...</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!isAuthorized) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 space-y-6">
+        <div className="flex items-center space-x-3">
+          <ShieldAlert className="h-12 w-12 text-red-500" />
+          <div className="text-center">
+            <h2 className="text-xl font-bold text-red-600">Admin Access Required</h2>
+            <p className="text-muted-foreground mt-1">
+              {authError || 'You need admin permissions to access AI feedback management'}
+            </p>
+          </div>
+        </div>
+        
+        <Button onClick={redirectToLogin} variant="outline">
+          <Shield className="h-4 w-4 mr-2" />
+          Log In as Admin
+        </Button>
+      </div>
+    );
+  }
 
   if (loading) {
     return (

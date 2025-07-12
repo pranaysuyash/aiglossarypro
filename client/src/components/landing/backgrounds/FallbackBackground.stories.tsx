@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { FallbackBackground } from './FallbackBackground';
 
@@ -34,9 +35,8 @@ export const Default: Story = {
 
 export const Loading: Story = {
   args: {
-  "loading": true,
-  "isLoading": true
-},
+    className: 'animate-pulse',
+  },
   parameters: {
     docs: {
       description: {
@@ -48,9 +48,8 @@ export const Loading: Story = {
 
 export const Error: Story = {
   args: {
-  "error": "Something went wrong",
-  "hasError": true
-},
+    className: 'opacity-50 grayscale',
+  },
   parameters: {
     docs: {
       description: {

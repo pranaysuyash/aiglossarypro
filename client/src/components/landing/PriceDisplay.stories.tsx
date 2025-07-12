@@ -1,5 +1,5 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import type React from 'react';
 import { PriceDisplay } from './PriceDisplay';
 
 // Helper to create mock pricing data

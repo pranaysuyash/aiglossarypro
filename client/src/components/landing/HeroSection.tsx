@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Code, Users } from 'lucide-react';
+import { ArrowRight, BookOpen, Code, Users, Search } from 'lucide-react';
 import { useEffect } from 'react';
 import { BACKGROUND_COMPONENTS, BackgroundTester } from '@/components/landing/backgrounds';
 import { Badge } from '@/components/ui/badge';
@@ -7,15 +7,43 @@ import { useBackgroundABTest } from '@/hooks/useBackgroundABTest';
 import { useCountryPricing } from '@/hooks/useCountryPricing';
 import { useABTestTracking } from '@/services/abTestingService';
 import { useGA4 } from '@/types/analytics';
+import { useExperiment } from '@/services/posthogExperiments';
 
 export function HeroSection() {
   const pricing = useCountryPricing();
   const { currentVariant, trackInteraction, isClient, setVariant } = useBackgroundABTest();
   const { trackPageView, trackConversion, trackEngagement } = useABTestTracking(currentVariant);
   const { trackSectionView, trackCTAClick, trackLandingPageFunnel } = useGA4();
+  
+  // PostHog experiment for CTA messaging
+  const ctaExperiment = useExperiment('landingPageCTA', 'control');
 
   // Get the background component for current variant
   const BackgroundComponent = BACKGROUND_COMPONENTS[currentVariant];
+
+  // Get CTA text based on experiment variant
+  const getCTAText = () => {
+    switch (ctaExperiment.variant) {
+      case 'sample':
+        return 'Explore Free Samples';
+      case 'explore':
+        return 'Start Exploring';
+      default:
+        return 'Start for Free';
+    }
+  };
+
+  // Get CTA description based on experiment variant
+  const getCTADescription = () => {
+    switch (ctaExperiment.variant) {
+      case 'sample':
+        return 'Browse 10+ curated AI/ML definitions • No signup required';
+      case 'explore':
+        return 'Dive into 10,000+ terms • No credit card required';
+      default:
+        return 'No credit card required • Instant access';
+    }
+  };
 
   // Track page view when component mounts
   useEffect(() => {
@@ -71,15 +99,27 @@ export function HeroSection() {
 
     // Track conversion with A/B testing service
     trackConversion('hero_cta_click', {
-      button_text: 'Start for Free',
+      button_text: getCTAText(),
       position: 'hero_main',
+      cta_variant: ctaExperiment.variant,
+    });
+
+    // Track PostHog experiment conversion
+    ctaExperiment.trackConversion('hero_cta_click', 1, {
+      button_text: getCTAText(),
+      position: 'hero_main',
+      background_variant: currentVariant,
     });
 
     // Track with GA4
-    trackCTAClick('Start for Free', 'hero_main', 'hero');
+    trackCTAClick(getCTAText(), 'hero_main', 'hero');
 
     // Track funnel progression
     trackLandingPageFunnel('cta_click');
+    ctaExperiment.trackFunnelStep('cta_click', {
+      cta_text: getCTAText(),
+      background: currentVariant,
+    });
 
     // Track analytics (legacy)
     if (typeof window !== 'undefined' && (window as any).gtag) {
@@ -88,12 +128,17 @@ export function HeroSection() {
         event_label: 'hero_button',
         custom_map: {
           background_variant: currentVariant,
+          cta_variant: ctaExperiment.variant,
         },
       });
     }
 
-    // Redirect to free signup
-    window.location.href = '/login';
+    // Redirect based on CTA variant
+    if (ctaExperiment.variant === 'sample') {
+      window.location.href = '/sample';
+    } else {
+      window.location.href = '/login';
+    }
   };
 
   const handleSecondaryClick = () => {
@@ -103,6 +148,14 @@ export function HeroSection() {
     trackConversion('see_whats_inside_click', {
       button_text: "See What's Inside",
       position: 'hero_secondary',
+      cta_variant: ctaExperiment.variant,
+    });
+
+    // Track PostHog experiment feature usage
+    ctaExperiment.trackFeatureUsage('secondary_cta', {
+      button_text: "See What's Inside",
+      position: 'hero_secondary',
+      background_variant: currentVariant,
     });
 
     // Track with GA4
@@ -110,6 +163,10 @@ export function HeroSection() {
 
     // Track hero engagement for funnel
     trackLandingPageFunnel('hero_engagement');
+    ctaExperiment.trackFunnelStep('hero_engagement', {
+      action: 'secondary_cta_click',
+      background: currentVariant,
+    });
 
     document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' });
   };
@@ -166,16 +223,19 @@ export function HeroSection() {
             size="lg"
             className="bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white px-8 sm:px-10 py-4 sm:py-5 text-lg sm:text-xl font-bold rounded-xl shadow-2xl transition-all transform hover:scale-105 hover:shadow-purple-500/25 w-full sm:w-auto min-h-[56px] sm:min-h-[60px] touch-manipulation focus:ring-4 focus:ring-purple-500/50 focus:outline-none"
             onClick={handleCTAClick}
-            aria-label="Start your free AI/ML learning journey"
+            aria-label={`${getCTAText()} - ${getCTADescription()}`}
           >
             <span className="flex items-center justify-center gap-2">
-              <span>Start for Free</span>
+              {ctaExperiment.variant === 'sample' && (
+                <Search className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
+              )}
+              <span>{getCTAText()}</span>
               <ArrowRight className="w-5 h-5 sm:w-6 sm:h-6 flex-shrink-0" />
             </span>
           </Button>
 
           <p className="text-gray-400 text-sm sm:text-base leading-relaxed">
-            No credit card required • Instant access
+            {getCTADescription()}
           </p>
 
           <div className="pt-4 flex justify-center">

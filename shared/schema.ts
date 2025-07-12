@@ -45,6 +45,9 @@ export const users = pgTable('users', {
   dailyViews: integer('daily_views').default(0),
   lastViewReset: timestamp('last_view_reset').defaultNow(),
 
+  // REFERRAL SYSTEM
+  referrerId: varchar('referrer_id').references(() => users.id),
+
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),
 });
@@ -947,3 +950,474 @@ export const cacheMetrics = pgTable(
 
 export type CacheMetric = typeof cacheMetrics.$inferSelect;
 export type InsertCacheMetric = typeof cacheMetrics.$inferInsert;
+
+// ============================
+// CUSTOMER SERVICE SYSTEM
+// ============================
+
+// Support ticket priorities and statuses
+export const TICKET_PRIORITIES = ['low', 'medium', 'high', 'urgent'] as const;
+export const TICKET_STATUSES = ['open', 'in_progress', 'waiting_for_customer', 'resolved', 'closed'] as const;
+export const TICKET_TYPES = ['general', 'technical', 'billing', 'refund', 'feature_request', 'bug_report'] as const;
+
+// Support tickets table
+export const supportTickets = pgTable(
+  'support_tickets',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    ticketNumber: varchar('ticket_number', { length: 20 }).unique().notNull(), // e.g., "TICK-2025-001"
+    userId: varchar('user_id').references(() => users.id, { onDelete: 'cascade' }),
+    assignedToId: varchar('assigned_to_id').references(() => users.id, { onDelete: 'set null' }),
+    
+    // Customer information (in case ticket created without user account)
+    customerEmail: varchar('customer_email', { length: 255 }).notNull(),
+    customerName: varchar('customer_name', { length: 100 }),
+    
+    // Ticket details
+    subject: varchar('subject', { length: 255 }).notNull(),
+    description: text('description').notNull(),
+    type: varchar('type', { length: 20 }).notNull().default('general'), // TICKET_TYPES
+    priority: varchar('priority', { length: 10 }).notNull().default('medium'), // TICKET_PRIORITIES
+    status: varchar('status', { length: 20 }).notNull().default('open'), // TICKET_STATUSES
+    
+    // Related information
+    purchaseId: uuid('purchase_id').references(() => purchases.id, { onDelete: 'set null' }),
+    gumroadOrderId: varchar('gumroad_order_id'), // For linking to Gumroad orders
+    
+    // Metadata
+    tags: text('tags').array(), // searchable tags
+    metadata: jsonb('metadata').default({}), // Additional context data
+    customerContext: jsonb('customer_context').default({}), // Browser, OS, etc.
+    
+    // Timestamps
+    firstResponseAt: timestamp('first_response_at'),
+    lastResponseAt: timestamp('last_response_at'),
+    resolvedAt: timestamp('resolved_at'),
+    closedAt: timestamp('closed_at'),
+    dueDate: timestamp('due_date'),
+    
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    ticketNumberIdx: index('support_tickets_ticket_number_idx').on(table.ticketNumber),
+    userIdIdx: index('support_tickets_user_id_idx').on(table.userId),
+    assignedToIdx: index('support_tickets_assigned_to_idx').on(table.assignedToId),
+    customerEmailIdx: index('support_tickets_customer_email_idx').on(table.customerEmail),
+    statusIdx: index('support_tickets_status_idx').on(table.status),
+    priorityIdx: index('support_tickets_priority_idx').on(table.priority),
+    typeIdx: index('support_tickets_type_idx').on(table.type),
+    purchaseIdIdx: index('support_tickets_purchase_id_idx').on(table.purchaseId),
+    createdAtIdx: index('support_tickets_created_at_idx').on(table.createdAt),
+    dueDateIdx: index('support_tickets_due_date_idx').on(table.dueDate),
+  })
+);
+
+// Ticket messages table (for conversation thread)
+export const ticketMessages = pgTable(
+  'ticket_messages',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    ticketId: uuid('ticket_id')
+      .notNull()
+      .references(() => supportTickets.id, { onDelete: 'cascade' }),
+    senderId: varchar('sender_id').references(() => users.id, { onDelete: 'set null' }),
+    senderType: varchar('sender_type', { length: 20 }).notNull(), // 'customer', 'agent', 'system'
+    senderEmail: varchar('sender_email', { length: 255 }),
+    senderName: varchar('sender_name', { length: 100 }),
+    
+    content: text('content').notNull(),
+    contentType: varchar('content_type', { length: 20 }).default('text'), // text, html, markdown
+    isInternal: boolean('is_internal').default(false), // Internal notes only visible to agents
+    isAutoResponse: boolean('is_auto_response').default(false),
+    
+    // Metadata
+    metadata: jsonb('metadata').default({}),
+    
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    ticketIdIdx: index('ticket_messages_ticket_id_idx').on(table.ticketId),
+    senderIdIdx: index('ticket_messages_sender_id_idx').on(table.senderId),
+    senderTypeIdx: index('ticket_messages_sender_type_idx').on(table.senderType),
+    createdAtIdx: index('ticket_messages_created_at_idx').on(table.createdAt),
+    isInternalIdx: index('ticket_messages_is_internal_idx').on(table.isInternal),
+  })
+);
+
+// Ticket attachments table
+export const ticketAttachments = pgTable(
+  'ticket_attachments',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    ticketId: uuid('ticket_id')
+      .notNull()
+      .references(() => supportTickets.id, { onDelete: 'cascade' }),
+    messageId: uuid('message_id').references(() => ticketMessages.id, { onDelete: 'cascade' }),
+    
+    fileName: varchar('file_name', { length: 255 }).notNull(),
+    originalFileName: varchar('original_file_name', { length: 255 }).notNull(),
+    fileSize: integer('file_size').notNull(), // in bytes
+    mimeType: varchar('mime_type', { length: 100 }).notNull(),
+    fileUrl: text('file_url').notNull(), // S3 or other storage URL
+    
+    uploadedById: varchar('uploaded_by_id').references(() => users.id, { onDelete: 'set null' }),
+    
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => ({
+    ticketIdIdx: index('ticket_attachments_ticket_id_idx').on(table.ticketId),
+    messageIdIdx: index('ticket_attachments_message_id_idx').on(table.messageId),
+    uploadedByIdx: index('ticket_attachments_uploaded_by_idx').on(table.uploadedById),
+    createdAtIdx: index('ticket_attachments_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Knowledge base articles table
+export const knowledgeBaseArticles = pgTable(
+  'knowledge_base_articles',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    slug: varchar('slug', { length: 255 }).unique().notNull(),
+    title: varchar('title', { length: 255 }).notNull(),
+    content: text('content').notNull(),
+    excerpt: text('excerpt'),
+    
+    // Organization
+    categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
+    tags: text('tags').array(),
+    
+    // Publishing
+    isPublished: boolean('is_published').default(false),
+    publishedAt: timestamp('published_at'),
+    authorId: varchar('author_id').references(() => users.id, { onDelete: 'set null' }),
+    
+    // Analytics
+    viewCount: integer('view_count').default(0),
+    helpfulVotes: integer('helpful_votes').default(0),
+    notHelpfulVotes: integer('not_helpful_votes').default(0),
+    
+    // SEO
+    metaTitle: varchar('meta_title', { length: 255 }),
+    metaDescription: text('meta_description'),
+    
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    slugIdx: index('knowledge_base_articles_slug_idx').on(table.slug),
+    titleIdx: index('knowledge_base_articles_title_idx').on(table.title),
+    categoryIdIdx: index('knowledge_base_articles_category_id_idx').on(table.categoryId),
+    isPublishedIdx: index('knowledge_base_articles_is_published_idx').on(table.isPublished),
+    authorIdIdx: index('knowledge_base_articles_author_id_idx').on(table.authorId),
+    viewCountIdx: index('knowledge_base_articles_view_count_idx').on(table.viewCount),
+    createdAtIdx: index('knowledge_base_articles_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Automated response templates table
+export const responseTemplates = pgTable(
+  'response_templates',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 255 }).notNull(),
+    subject: varchar('subject', { length: 255 }),
+    content: text('content').notNull(),
+    
+    // Trigger conditions
+    triggerType: varchar('trigger_type', { length: 50 }).notNull(), // 'ticket_created', 'status_changed', 'manual'
+    triggerConditions: jsonb('trigger_conditions').default({}), // JSON conditions for auto-triggers
+    
+    // Configuration
+    isActive: boolean('is_active').default(true),
+    isAutoResponse: boolean('is_auto_response').default(false),
+    ticketTypes: text('ticket_types').array(), // Which ticket types this applies to
+    
+    // Metadata
+    createdById: varchar('created_by_id').references(() => users.id, { onDelete: 'set null' }),
+    usageCount: integer('usage_count').default(0),
+    
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    nameIdx: index('response_templates_name_idx').on(table.name),
+    triggerTypeIdx: index('response_templates_trigger_type_idx').on(table.triggerType),
+    isActiveIdx: index('response_templates_is_active_idx').on(table.isActive),
+    createdByIdx: index('response_templates_created_by_idx').on(table.createdById),
+  })
+);
+
+// Refund requests table (integrated with Gumroad)
+export const refundRequests = pgTable(
+  'refund_requests',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    ticketId: uuid('ticket_id').references(() => supportTickets.id, { onDelete: 'cascade' }),
+    purchaseId: uuid('purchase_id').references(() => purchases.id, { onDelete: 'cascade' }),
+    userId: varchar('user_id').references(() => users.id, { onDelete: 'cascade' }),
+    
+    // Gumroad integration
+    gumroadOrderId: varchar('gumroad_order_id').notNull(),
+    gumroadRefundId: varchar('gumroad_refund_id'), // Set when processed
+    
+    // Request details
+    reason: text('reason').notNull(),
+    refundType: varchar('refund_type', { length: 20 }).notNull(), // 'full', 'partial'
+    requestedAmount: integer('requested_amount').notNull(), // in cents
+    refundedAmount: integer('refunded_amount'), // actual refunded amount
+    
+    // Status tracking
+    status: varchar('status', { length: 20 }).notNull().default('pending'), // pending, approved, rejected, processed, failed
+    adminNotes: text('admin_notes'),
+    customerNotification: text('customer_notification'),
+    
+    // Timestamps
+    processedAt: timestamp('processed_at'),
+    approvedAt: timestamp('approved_at'),
+    rejectedAt: timestamp('rejected_at'),
+    
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    ticketIdIdx: index('refund_requests_ticket_id_idx').on(table.ticketId),
+    purchaseIdIdx: index('refund_requests_purchase_id_idx').on(table.purchaseId),
+    userIdIdx: index('refund_requests_user_id_idx').on(table.userId),
+    gumroadOrderIdIdx: index('refund_requests_gumroad_order_id_idx').on(table.gumroadOrderId),
+    statusIdx: index('refund_requests_status_idx').on(table.status),
+    createdAtIdx: index('refund_requests_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Customer service metrics table
+export const customerServiceMetrics = pgTable(
+  'customer_service_metrics',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    metricType: varchar('metric_type', { length: 50 }).notNull(), // 'response_time', 'resolution_time', 'satisfaction', 'volume'
+    metricPeriod: varchar('metric_period', { length: 20 }).notNull(), // 'daily', 'weekly', 'monthly'
+    metricDate: timestamp('metric_date').notNull(),
+    
+    // Metric values
+    totalTickets: integer('total_tickets').default(0),
+    openTickets: integer('open_tickets').default(0),
+    resolvedTickets: integer('resolved_tickets').default(0),
+    avgResponseTimeHours: integer('avg_response_time_hours'), // in hours
+    avgResolutionTimeHours: integer('avg_resolution_time_hours'), // in hours
+    firstResponseSla: integer('first_response_sla'), // percentage met
+    resolutionSla: integer('resolution_sla'), // percentage met
+    customerSatisfaction: integer('customer_satisfaction'), // average rating * 100
+    
+    // Agent performance
+    agentId: varchar('agent_id').references(() => users.id, { onDelete: 'cascade' }),
+    agentTicketsHandled: integer('agent_tickets_handled').default(0),
+    agentAvgResponseTime: integer('agent_avg_response_time'), // in hours
+    
+    metadata: jsonb('metadata').default({}),
+    
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => ({
+    metricTypeIdx: index('customer_service_metrics_type_idx').on(table.metricType),
+    metricPeriodIdx: index('customer_service_metrics_period_idx').on(table.metricPeriod),
+    metricDateIdx: index('customer_service_metrics_date_idx').on(table.metricDate),
+    agentIdIdx: index('customer_service_metrics_agent_id_idx').on(table.agentId),
+    createdAtIdx: index('customer_service_metrics_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Customer satisfaction feedback table
+export const customerFeedback = pgTable(
+  'customer_feedback',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    ticketId: uuid('ticket_id')
+      .notNull()
+      .references(() => supportTickets.id, { onDelete: 'cascade' }),
+    userId: varchar('user_id').references(() => users.id, { onDelete: 'set null' }),
+    
+    // Feedback details
+    rating: integer('rating').notNull(), // 1-5 scale
+    comment: text('comment'),
+    feedbackType: varchar('feedback_type', { length: 20 }).default('resolution'), // resolution, response_time, agent_quality
+    
+    // Context
+    agentId: varchar('agent_id').references(() => users.id, { onDelete: 'set null' }),
+    metadata: jsonb('metadata').default({}),
+    
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => ({
+    ticketIdIdx: index('customer_feedback_ticket_id_idx').on(table.ticketId),
+    userIdIdx: index('customer_feedback_user_id_idx').on(table.userId),
+    ratingIdx: index('customer_feedback_rating_idx').on(table.rating),
+    agentIdIdx: index('customer_feedback_agent_id_idx').on(table.agentId),
+    feedbackTypeIdx: index('customer_feedback_feedback_type_idx').on(table.feedbackType),
+    createdAtIdx: index('customer_feedback_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Customer service schemas for validation
+export const insertSupportTicketSchema = createInsertSchema(supportTickets).omit({
+  id: true,
+  ticketNumber: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertTicketMessageSchema = createInsertSchema(ticketMessages).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertKnowledgeBaseArticleSchema = createInsertSchema(knowledgeBaseArticles).omit({
+  id: true,
+  viewCount: true,
+  helpfulVotes: true,
+  notHelpfulVotes: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertRefundRequestSchema = createInsertSchema(refundRequests).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertCustomerFeedbackSchema = createInsertSchema(customerFeedback).omit({
+  id: true,
+  createdAt: true,
+} as const);
+
+// Type exports for customer service system
+export type SupportTicket = typeof supportTickets.$inferSelect;
+export type InsertSupportTicket = z.infer<typeof insertSupportTicketSchema>;
+export type TicketMessage = typeof ticketMessages.$inferSelect;
+export type InsertTicketMessage = z.infer<typeof insertTicketMessageSchema>;
+export type TicketAttachment = typeof ticketAttachments.$inferSelect;
+export type InsertTicketAttachment = typeof ticketAttachments.$inferInsert;
+export type KnowledgeBaseArticle = typeof knowledgeBaseArticles.$inferSelect;
+export type InsertKnowledgeBaseArticle = z.infer<typeof insertKnowledgeBaseArticleSchema>;
+export type ResponseTemplate = typeof responseTemplates.$inferSelect;
+export type InsertResponseTemplate = typeof responseTemplates.$inferInsert;
+export type RefundRequest = typeof refundRequests.$inferSelect;
+export type InsertRefundRequest = z.infer<typeof insertRefundRequestSchema>;
+export type CustomerServiceMetric = typeof customerServiceMetrics.$inferSelect;
+export type InsertCustomerServiceMetric = typeof customerServiceMetrics.$inferInsert;
+export type CustomerFeedback = typeof customerFeedback.$inferSelect;
+export type InsertCustomerFeedback = z.infer<typeof insertCustomerFeedbackSchema>;
+
+// ============================
+// REFERRAL SYSTEM
+// ============================
+
+// Referral payouts table for tracking Gumroad commission payouts
+export const referralPayouts = pgTable(
+  'referral_payouts',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    referrerId: varchar('referrer_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    referredUserId: varchar('referred_user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    gumroadOrderId: varchar('gumroad_order_id').notNull(),
+    purchaseAmountCents: integer('purchase_amount_cents').notNull(),
+    referralPercentage: integer('referral_percentage').notNull().default(30),
+    payoutAmountCents: integer('payout_amount_cents').notNull(),
+    gumroadPayoutId: varchar('gumroad_payout_id'), // Set when Gumroad processes the payout
+    status: varchar('status', { length: 20 }).notNull().default('pending'), // pending, processed, failed
+    processedAt: timestamp('processed_at'),
+    errorMessage: text('error_message'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    referrerIdx: index('referral_payouts_referrer_idx').on(table.referrerId),
+    referredUserIdx: index('referral_payouts_referred_user_idx').on(table.referredUserId),
+    gumroadOrderIdx: index('referral_payouts_gumroad_order_idx').on(table.gumroadOrderId),
+    statusIdx: index('referral_payouts_status_idx').on(table.status),
+  })
+);
+
+// Referral links table for tracking referral campaigns and click analytics
+export const referralLinks = pgTable(
+  'referral_links',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: varchar('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    referralCode: varchar('referral_code', { length: 20 }).notNull().unique(),
+    campaignName: varchar('campaign_name', { length: 100 }),
+    isActive: boolean('is_active').default(true),
+    clickCount: integer('click_count').default(0),
+    conversionCount: integer('conversion_count').default(0),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    userIdx: index('referral_links_user_idx').on(table.userId),
+    codeIdx: index('referral_links_code_idx').on(table.referralCode),
+    activeIdx: index('referral_links_active_idx').on(table.isActive),
+  })
+);
+
+// Referral clicks table for tracking click analytics
+export const referralClicks = pgTable(
+  'referral_clicks',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    referralLinkId: uuid('referral_link_id')
+      .notNull()
+      .references(() => referralLinks.id, { onDelete: 'cascade' }),
+    referralCode: varchar('referral_code', { length: 20 }).notNull(),
+    ipAddress: varchar('ip_address', { length: 64 }), // Hashed IP for privacy
+    userAgent: text('user_agent'),
+    referer: text('referer'),
+    countryCode: varchar('country_code', { length: 2 }),
+    utm: jsonb('utm'), // UTM parameters
+    sessionId: varchar('session_id', { length: 255 }),
+    converted: boolean('converted').default(false),
+    convertedAt: timestamp('converted_at'),
+    metadata: jsonb('metadata').default({}),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => ({
+    linkIdx: index('referral_clicks_link_idx').on(table.referralLinkId),
+    codeIdx: index('referral_clicks_code_idx').on(table.referralCode),
+    convertedIdx: index('referral_clicks_converted_idx').on(table.converted),
+    createdAtIdx: index('referral_clicks_created_at_idx').on(table.createdAt),
+  })
+);
+
+// Validation schemas for referral system
+export const insertReferralPayoutSchema = createInsertSchema(referralPayouts).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertReferralLinkSchema = createInsertSchema(referralLinks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertReferralClickSchema = createInsertSchema(referralClicks).omit({
+  id: true,
+  createdAt: true,
+} as const);
+
+// Type exports for referral system
+export type ReferralPayout = typeof referralPayouts.$inferSelect;
+export type InsertReferralPayout = z.infer<typeof insertReferralPayoutSchema>;
+export type ReferralLink = typeof referralLinks.$inferSelect;
+export type InsertReferralLink = z.infer<typeof insertReferralLinkSchema>;
+export type ReferralClick = typeof referralClicks.$inferSelect;
+export type InsertReferralClick = z.infer<typeof insertReferralClickSchema>;

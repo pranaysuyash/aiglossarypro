@@ -24,13 +24,13 @@ export function GoogleAd({
   style = {},
   lazy = true,
 }: GoogleAdProps) {
-  const { user, accessStatus } = useAuth();
+  const { user } = useAuth();
   const adRef = useRef<HTMLDivElement>(null);
   const [adLoaded, setAdLoaded] = useState(false);
   const [isInView, setIsInView] = useState(!lazy);
 
   // Don't show ads to premium users
-  if (accessStatus?.lifetimeAccess) {
+  if (user?.lifetimeAccess) {
     return null;
   }
 
@@ -185,7 +185,7 @@ export function GoogleAd({
       )}
 
       {/* Upgrade prompt for premium users */}
-      {accessStatus?.lifetimeAccess && (
+      {user?.lifetimeAccess && (
         <div
           style={{
             ...adStyle,

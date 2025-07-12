@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { CodeTypingBackground } from './CodeTypingBackground';
 
@@ -34,9 +35,11 @@ export const Default: Story = {
 
 export const Loading: Story = {
   args: {
-  "loading": true,
-  "isLoading": true
-},
+    className: 'animate-pulse',
+    opacity: 0.5,
+    linesCount: 5,
+    typingSpeed: 100,
+  },
   parameters: {
     docs: {
       description: {
@@ -48,9 +51,11 @@ export const Loading: Story = {
 
 export const Error: Story = {
   args: {
-  "error": "Something went wrong",
-  "hasError": true
-},
+    className: 'text-red-500',
+    opacity: 0.8,
+    linesCount: 3,
+    typingSpeed: 200,
+  },
   parameters: {
     docs: {
       description: {

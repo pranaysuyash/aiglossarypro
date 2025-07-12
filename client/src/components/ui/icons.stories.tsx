@@ -1,3 +1,4 @@
+import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { iconSizes, Activity, AlertCircle, Book, Heart, Star, Settings, Search, User } from './icons';
 

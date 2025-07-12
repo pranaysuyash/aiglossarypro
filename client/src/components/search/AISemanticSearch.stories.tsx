@@ -1,5 +1,6 @@
+import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { AISemanticSearch } from './AISemanticSearch';
+import AISemanticSearch from './AISemanticSearch';
 
 const meta = {
   title: 'Components/AISemanticSearch',

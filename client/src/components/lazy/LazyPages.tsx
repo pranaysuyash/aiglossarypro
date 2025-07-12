@@ -37,7 +37,7 @@ export const LazyUserProgressDashboard = lazy(() => import('@/pages/UserProgress
 export const LazyEnhancedTermDetail = lazy(() => import('@/pages/EnhancedTermDetail'));
 export const LazyLifetime = lazy(() => import('@/pages/Lifetime'));
 export const LazyProfile = lazy(() => import('@/pages/Profile'));
-export const LazyLandingPage = lazy(() => import('@/pages/LandingPage'));
+export const LazyLandingPageComponent = lazy(() => import('@/pages/LandingPage'));
 export const LazyLandingA = lazy(() => import('@/pages/LandingA'));
 export const LazyAbout = lazy(() => import('@/pages/About'));
 export const LazyLearningPaths = lazy(() => import('@/pages/LearningPaths'));
@@ -82,7 +82,7 @@ export const LazyProgressPage = withLazyLoading(LazyUserProgressDashboard);
 export const LazyTermDetailPage = withLazyLoading(LazyEnhancedTermDetail);
 export const LazyLifetimePage = withLazyLoading(LazyLifetime);
 export const LazyProfilePage = withLazyLoading(LazyProfile);
-export const LazyLandingPage = withLazyLoading(LazyLanding);
+export const LazyLandingPage = withLazyLoading(LazyLandingPageComponent);
 export const LazyAboutPage = withLazyLoading(LazyAbout);
 
 export const LazyLearningPathsPage = withLazyLoading(LazyLearningPaths);

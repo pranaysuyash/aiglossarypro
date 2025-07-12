@@ -29,7 +29,7 @@ export function MobileCheckout({
   const [errorMessage, setErrorMessage] = useState('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { toast } = useToast();
-  const { user, refreshAuth } = useAuth();
+  const { user, refetch } = useAuth();
 
   // Detect if user is on mobile device
   const isMobile = () => {
@@ -65,7 +65,7 @@ export function MobileCheckout({
           
           // Refresh user authentication to get updated pro status
           try {
-            await refreshAuth();
+            await refetch();
             
             toast({
               title: '🎉 Purchase Successful!',
@@ -105,7 +105,7 @@ export function MobileCheckout({
     return () => {
       window.removeEventListener('message', handleMessage);
     };
-  }, [isOpen, onClose, onSuccess, refreshAuth, toast]);
+  }, [isOpen, onClose, onSuccess, refetch, toast]);
 
   // Build Gumroad URL with mobile optimization
   const buildGumroadUrl = () => {
@@ -115,7 +115,7 @@ export function MobileCheckout({
       overlay: 'true',
       // Pass user info if available
       ...(user?.email && { email: user.email }),
-      ...(user?.displayName && { name: user.displayName }),
+      ...(user?.name && { name: user.name }),
       // Mobile-specific parameters
       mobile: 'true',
       // Enable Apple Pay / Google Pay

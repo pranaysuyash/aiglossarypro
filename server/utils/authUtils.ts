@@ -34,7 +34,7 @@ export async function isEmailAdmin(email: string): Promise<boolean> {
     return user.length > 0 && user[0].isAdmin === true;
   } catch (error) {
     console.error('Error checking admin status by email:', error);
-    // Fallback to hardcoded admin for development
-    return email === 'admin@example.com';
+    // Security: No fallback to hardcoded admin in production
+    return false;
   }
 }

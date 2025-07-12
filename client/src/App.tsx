@@ -171,11 +171,8 @@ function Router() {
     if (isAuthenticated) {
       preloadForAuthenticatedUser();
 
-      // Check if user is admin and preload admin components
-      // This would typically be determined by user role
-      // For now, we'll use a simple check or context
-      const isAdmin = localStorage.getItem('userRole') === 'admin';
-      if (isAdmin) {
+      // Check if user is admin via proper authentication and preload admin components
+      if (user?.isAdmin) {
         preloadForAdmin();
       }
     }

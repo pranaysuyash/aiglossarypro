@@ -6,6 +6,7 @@ import { Brain, Search, X, Zap } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { BaseComponentProps } from '@/types/common-props';
+import { sanitizeHTML } from '@/utils/sanitize';
 
 interface SearchBarProps extends BaseComponentProps {
   onSearch: (query: string) => void;
@@ -275,7 +276,7 @@ const SearchBar = memo(function SearchBar({
                       {suggestion.highlightedName ? (
                         <span
                           className="search-highlighted"
-                          dangerouslySetInnerHTML={{ __html: suggestion.highlightedName }}
+                          dangerouslySetInnerHTML={{ __html: sanitizeHTML(suggestion.highlightedName) }}
                         />
                       ) : (
                         suggestion.name

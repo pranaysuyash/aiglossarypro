@@ -12,6 +12,7 @@ import type { ITerm } from '@/interfaces/interfaces';
 import { apiRequest, queryClient } from '@/lib/queryClient';
 import { cn } from '@/lib/utils';
 import type { BaseComponentProps } from '@/types/common-props';
+import { sanitizeHTML } from '@/utils/sanitize';
 import ShareMenu from './ShareMenu';
 
 interface TermCardProps extends BaseComponentProps {
@@ -38,7 +39,7 @@ const HighlightedText = memo(
       return (
         <span
           className={cn('search-highlighted', className)}
-          dangerouslySetInnerHTML={{ __html: htmlText }}
+          dangerouslySetInnerHTML={{ __html: sanitizeHTML(htmlText) }}
         />
       );
     }

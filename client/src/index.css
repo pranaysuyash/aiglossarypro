@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import mathematical expression styles */
+@import './styles/math.css';
+
 /* Search highlighting styles */
 .search-highlighted mark {
   background-color: #fef08a;

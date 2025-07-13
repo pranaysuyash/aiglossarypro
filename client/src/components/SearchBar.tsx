@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { BaseComponentProps } from '@/types/common-props';
 import { sanitizeHTML } from '@/utils/sanitize';
+import { MathAwareText } from '@/components/math/MathAwareText';
 
 interface SearchBarProps extends BaseComponentProps {
   onSearch: (query: string) => void;
@@ -274,12 +275,19 @@ const SearchBar = memo(function SearchBar({
                   <div>
                     <div className="font-medium text-gray-900 dark:text-gray-100">
                       {suggestion.highlightedName ? (
-                        <span
+                        <MathAwareText
+                          content={suggestion.highlightedName}
+                          isHTML={true}
                           className="search-highlighted"
-                          dangerouslySetInnerHTML={{ __html: sanitizeHTML(suggestion.highlightedName) }}
+                          mathClassName="search-result"
+                          allowHTML={true}
                         />
                       ) : (
-                        suggestion.name
+                        <MathAwareText
+                          content={suggestion.name}
+                          className=""
+                          mathClassName="search-result"
+                        />
                       )}
                     </div>
                     {suggestion.category && (

@@ -1,0 +1,117 @@
+/* Mathematical Expression Styles */
+
+.math-renderer {
+  @apply inline-block;
+  font-family: 'KaTeX_Main', 'Times New Roman', serif;
+}
+
+.math-display {
+  @apply block text-center my-4;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+
+.math-inline {
+  @apply inline-block align-baseline;
+  margin: 0 2px;
+}
+
+.math-expression {
+  @apply text-blue-600 dark:text-blue-400;
+}
+
+/* KaTeX overrides for dark mode */
+.dark .katex {
+  color: inherit;
+}
+
+.dark .katex .mord {
+  color: inherit;
+}
+
+.dark .katex .mrel {
+  color: #60a5fa; /* blue-400 */
+}
+
+.dark .katex .mbin {
+  color: #34d399; /* emerald-400 */
+}
+
+.dark .katex .mop {
+  color: #f59e0b; /* amber-500 */
+}
+
+.dark .katex .mpunct {
+  color: #94a3b8; /* slate-400 */
+}
+
+/* Responsive math expressions */
+@media (max-width: 640px) {
+  .math-display {
+    font-size: 0.9em;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Math rendering in term definitions */
+.term-definition .math-renderer {
+  @apply text-gray-800 dark:text-gray-200;
+}
+
+.term-definition .math-display {
+  @apply bg-gray-50 dark:bg-gray-700 p-4 rounded-lg border-l-4 border-blue-500;
+}
+
+/* Math in search results */
+.search-result .math-renderer {
+  @apply text-sm;
+}
+
+.search-result .math-display {
+  @apply text-base;
+}
+
+/* Hover effects for interactive math */
+.math-renderer:hover {
+  @apply cursor-pointer;
+}
+
+.math-renderer.interactive:hover {
+  @apply bg-blue-50 dark:bg-blue-900/20 rounded px-1;
+  transition: background-color 0.2s ease;
+}
+
+/* Error styling */
+.math-renderer .katex-error {
+  @apply text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 px-2 py-1 rounded text-sm;
+}
+
+/* Loading state */
+.math-renderer.loading {
+  @apply animate-pulse bg-gray-200 dark:bg-gray-700 rounded;
+  min-height: 1em;
+  min-width: 2em;
+}
+
+/* Accessibility improvements */
+.math-renderer[role="img"] {
+  outline: none;
+}
+
+.math-renderer[role="img"]:focus {
+  @apply ring-2 ring-blue-500 ring-opacity-50 rounded;
+}
+
+/* Print styles */
+@media print {
+  .math-renderer {
+    color: black !important;
+    background: transparent !important;
+  }
+  
+  .math-display {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}

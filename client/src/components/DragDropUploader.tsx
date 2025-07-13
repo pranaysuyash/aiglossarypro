@@ -40,7 +40,7 @@ interface DragDropUploaderProps extends BaseComponentProps {
 export default function DragDropUploader({
   onUploadComplete,
   onUploadError,
-  acceptedTypes = ['.xlsx', '.xls', '.csv', '.json', '.txt'],
+  acceptedTypes = ['.csv', '.json', '.txt'], // Removed Excel support - using AI generation instead
   maxFileSize = 100 * 1024 * 1024, // 100MB
   maxFiles = 10,
   enableCompression = false,
@@ -340,9 +340,6 @@ export default function DragDropUploader({
   const getFileIcon = useCallback((fileName: string) => {
     const extension = fileName.split('.').pop()?.toLowerCase();
     switch (extension) {
-      case 'xlsx':
-      case 'xls':
-        return <FileSpreadsheet className="h-5 w-5 text-green-500" />;
       case 'csv':
         return <FileSpreadsheet className="h-5 w-5 text-blue-500" />;
       case 'json':

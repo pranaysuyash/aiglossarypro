@@ -31,6 +31,8 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Slider } from '../ui/slider';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
+import { GoogleAd } from '../ads/GoogleAd';
+import { useAdPlacement } from '../../hooks/useAdPlacement';
 
 interface SemanticSearchResult {
   id: string;
@@ -513,12 +515,13 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({ className = '', onR
               </div>
             ) : (
               <div className="space-y-4">
-                {searchResults?.results.map((result) => (
-                  <div
-                    key={result.id}
-                    className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
-                    onClick={() => handleResultClick(result)}
-                  >
+                {searchResults?.results.map((result, index) => (
+                  <>
+                    <div
+                      key={result.id}
+                      className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
+                      onClick={() => handleResultClick(result)}
+                    >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
@@ -570,7 +573,16 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({ className = '', onR
 
                       <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0 ml-2" />
                     </div>
-                  </div>
+                    </div>
+                    {/* Show ad every 8th result for free users */}
+                    {index > 0 && (index + 1) % 8 === 0 && useAdPlacement({ location: 'search_results' }).canShowAd && (
+                      <GoogleAd
+                        slot={import.meta.env.VITE_AD_SLOT_SEARCH_RESULTS || ''}
+                        format="horizontal"
+                        className="my-6"
+                      />
+                    )}
+                  </>
                 ))}
 
                 {/* Load More Button */}

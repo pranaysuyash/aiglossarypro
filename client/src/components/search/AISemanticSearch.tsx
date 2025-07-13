@@ -32,7 +32,7 @@ import { Label } from '../ui/label';
 import { Slider } from '../ui/slider';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
 import { GoogleAd } from '../ads/GoogleAd';
-import { useAdPlacement } from '../../hooks/useAdPlacement';
+import { useAdPlacement } from '../../hooks/useAdSense';
 
 interface SemanticSearchResult {
   id: string;

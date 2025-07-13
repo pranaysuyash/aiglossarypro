@@ -19,7 +19,7 @@
  * - npm run audit:code-quality       # Code quality only
  */
 
-import { execSync } from 'child_process';
+import { execSync, spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -58,6 +58,7 @@ interface AuditSuiteResult {
 class ComprehensiveAuditSuite {
   private results: AuditResult[] = [];
   private startTime: number = 0;
+  private serverProcess: ChildProcessWithoutNullStreams | null = null;
 
   constructor() {
     this.startTime = Date.now();
@@ -65,6 +66,9 @@ class ComprehensiveAuditSuite {
 
   async runAll(): Promise<AuditSuiteResult> {
     console.log('🚀 Starting Comprehensive Audit Suite...\n');
+
+    // Start the development server first
+    await this.startDevelopmentServer();
 
     const pillars = [
       { name: 'visual', description: 'Visual & Interaction Correctness' },
@@ -74,17 +78,22 @@ class ComprehensiveAuditSuite {
       { name: 'code-quality', description: 'Code Quality & Best Practices' }
     ];
 
-    for (const pillar of pillars) {
-      console.log(`\n📊 Running ${pillar.description}...`);
-      const result = await this.runPillar(pillar.name);
-      this.results.push(result);
-    }
+    try {
+      for (const pillar of pillars) {
+        console.log(`\n📊 Running ${pillar.description}...`);
+        const result = await this.runPillar(pillar.name);
+        this.results.push(result);
+      }
 
-    const finalResult = this.generateFinalReport();
-    console.log('\n✨ Comprehensive Audit Suite Complete!');
-    console.log(`📄 Report available at: ${finalResult.reportPath}`);
-    
-    return finalResult;
+      const finalResult = this.generateFinalReport();
+      console.log('\n✨ Comprehensive Audit Suite Complete!');
+      console.log(`📄 Report available at: ${finalResult.reportPath}`);
+      
+      return finalResult;
+    } finally {
+      // Always cleanup the server process
+      await this.stopDevelopmentServer();
+    }
   }
 
   async runPillar(pillarName: string): Promise<AuditResult> {
@@ -775,6 +784,114 @@ class ComprehensiveAuditSuite {
     };
     return titles[pillar] || pillar;
   }
+
+  async startDevelopmentServer(): Promise<void> {
+    console.log('🚀 Starting development server with npm run dev:smart...');
+    
+    try {
+      // Check if server is already running (frontend at 5173)
+      const isRunning = await this.checkServerRunning('http://localhost:5173', 5000);
+      if (isRunning) {
+        console.log('✅ Development server is already running at http://localhost:5173');
+        return;
+      }
+
+      // Start the server
+      this.serverProcess = spawn('npm', ['run', 'dev:smart'], {
+        cwd: projectRoot,
+        stdio: ['pipe', 'pipe', 'pipe'],
+        shell: true,
+        detached: false
+      });
+
+      if (this.serverProcess.stdout) {
+        this.serverProcess.stdout.on('data', (data) => {
+          const output = data.toString();
+          if (output.includes('Frontend server is ready') || output.includes('Development Environment Ready') || output.includes('localhost:5173')) {
+            console.log('✅ Development server started successfully');
+          }
+        });
+      }
+
+      if (this.serverProcess.stderr) {
+        this.serverProcess.stderr.on('data', (data) => {
+          const error = data.toString();
+          if (!error.includes('ExperimentalWarning')) {
+            console.log('Server stderr:', error);
+          }
+        });
+      }
+
+      // Wait for server to start up
+      console.log('⏳ Waiting for development server to start...');
+      const serverStarted = await this.waitForServer('http://localhost:5173', 90000); // Increased timeout for dev server startup
+      
+      if (!serverStarted) {
+        throw new Error('Development server failed to start within 90 seconds');
+      }
+
+      console.log('✅ Development server is ready for testing at http://localhost:5173');
+    } catch (error) {
+      console.error('Failed to start development server:', error.message);
+      await this.stopDevelopmentServer();
+      throw error;
+    }
+  }
+
+  async stopDevelopmentServer(): Promise<void> {
+    if (this.serverProcess) {
+      console.log('🛑 Stopping development server...');
+      
+      try {
+        // Try graceful shutdown first
+        this.serverProcess.kill('SIGTERM');
+        
+        // Wait a bit for graceful shutdown
+        await new Promise(resolve => setTimeout(resolve, 3000));
+        
+        // Force kill if still running
+        if (!this.serverProcess.killed) {
+          this.serverProcess.kill('SIGKILL');
+        }
+        
+        console.log('✅ Development server stopped');
+      } catch (error) {
+        console.error('Error stopping development server:', error.message);
+      }
+      
+      this.serverProcess = null;
+    }
+  }
+
+  private async checkServerRunning(url: string, timeout: number = 5000): Promise<boolean> {
+    try {
+      const result = await this.executeCommand(
+        `curl --head --silent --fail --connect-timeout ${timeout / 1000} ${url}`,
+        { timeout, allowFailure: true }
+      );
+      return result.includes('200 OK') || result.includes('HTTP/');
+    } catch {
+      return false;
+    }
+  }
+
+  private async waitForServer(url: string, timeout: number = 30000): Promise<boolean> {
+    const startTime = Date.now();
+    const checkInterval = 2000; // Check every 2 seconds
+
+    while (Date.now() - startTime < timeout) {
+      const isRunning = await this.checkServerRunning(url, 3000);
+      if (isRunning) {
+        return true;
+      }
+      
+      await new Promise(resolve => setTimeout(resolve, checkInterval));
+      process.stdout.write('.');
+    }
+    
+    process.stdout.write('\n');
+    return false;
+  }
 }
 
 // CLI Interface
@@ -786,11 +903,24 @@ async function main() {
 
   if (pillar && pillar !== 'all') {
     console.log(`🚀 Running ${pillar} audit...`);
-    const result = await suite.runPillar(pillar);
-    console.log(`✨ ${pillar} audit complete!`);
-    console.log(`Status: ${result.status}`);
-    console.log(`Duration: ${(result.duration / 1000).toFixed(2)}s`);
-    console.log(`Summary: ${result.summary.passed}/${result.summary.total} passed`);
+    
+    try {
+      // Start development server for individual pillar runs too
+      if (['visual', 'accessibility', 'performance', 'functional'].includes(pillar)) {
+        await suite.startDevelopmentServer();
+      }
+      
+      const result = await suite.runPillar(pillar);
+      console.log(`✨ ${pillar} audit complete!`);
+      console.log(`Status: ${result.status}`);
+      console.log(`Duration: ${(result.duration / 1000).toFixed(2)}s`);
+      console.log(`Summary: ${result.summary.passed}/${result.summary.total} passed`);
+    } finally {
+      // Cleanup server for individual runs
+      if (['visual', 'accessibility', 'performance', 'functional'].includes(pillar)) {
+        await suite.stopDevelopmentServer();
+      }
+    }
   } else {
     await suite.runAll();
   }

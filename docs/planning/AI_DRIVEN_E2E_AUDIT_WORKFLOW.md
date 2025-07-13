@@ -31,14 +31,16 @@ This workflow will be orchestrated by a new script, for example `scripts/run-ai-
 
 *   **Action:** The orchestrator will execute an enhanced version of the `comprehensive-functional-audit.ts` script.
 *   **Enhancements:**
-    *   **Capture Everything:** The script will be modified to capture a screenshot after **every significant user action** (e.g., a `click`, `fill`, `press`, or `selectOption` call). This ensures a visual record of the application's state before and after each key event.
+    *   **Capture Everything:** The script will be modified to capture a screenshot after **every significant user action**. A user action is defined as any event that can change the state or appearance of the UI, including but not limited to: `click`, `fill` (form input), `press` (keyboard events), `hover`, `drag`, `scroll`, and `selectOption`. This ensures a visual record of the application's state before and after each key event.
     *   **Record Video:** Playwright's video recording feature will be enabled to capture a complete video of each user flow (e.g., the entire admin login, search/filter process, and content generation journey).
     *   **Test All Components In-Context:** The script will be extended to not only navigate pages but also to systematically interact with every major component it finds on a page. This includes, but is not limited to:
-        *   Clicking every button.
+        *   Clicking every button and interactive element.
+        *   Hovering over elements to trigger tooltips or style changes.
         *   Opening every dropdown/modal.
         *   Applying all search and filter options.
         *   Filling out and submitting all forms.
         *   Scrolling through entire pages and sections to test for lazy-loading and layout shifts.
+        *   Dragging any draggable elements (e.g., sliders, re-orderable lists).
     *   **Run Accessibility Scans:** At each key interaction step, an `axe-core` accessibility scan will be executed to catch violations as they appear, directly fulfilling Pillar 2 of the PRD.
     *   **Cover All User Flows:** This explicitly includes executing the complete authentication and usage flows for each test user type (`free`, `premium`, and `admin`) as a prerequisite for testing role-specific features.
 *   **Output:** A rich set of screenshots, videos, and accessibility scan results from realistic user journeys, stored in a timestamped directory.

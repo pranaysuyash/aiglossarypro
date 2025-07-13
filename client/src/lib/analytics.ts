@@ -66,7 +66,7 @@ export const trackTermView = (termId: string, termName: string, section?: string
   });
 };
 
-export const trackSearch = (query: string, resultsCount: number, filters?: any) => {
+export const trackSearch = (query: string, resultsCount: number, filters?: Record<string, unknown>) => {
   // PostHog tracking
   posthog.capture('search_performed', {
     query,
@@ -93,7 +93,7 @@ export const trackSearch = (query: string, resultsCount: number, filters?: any) 
   });
 };
 
-export const trackUserAction = (action: string, properties: any = {}) => {
+export const trackUserAction = (action: string, properties: Record<string, unknown> = {}) => {
   // PostHog tracking
   posthog.capture(action, {
     ...properties,
@@ -330,17 +330,17 @@ const calculateReportPerformanceScore = (report: {
 export const initReactScanIntegration = () => {
   if (import.meta.env.DEV && typeof window !== 'undefined') {
     // Listen for React Scan events
-    window.addEventListener('react-scan-metric', (event: any) => {
+    window.addEventListener('react-scan-metric', (event: CustomEvent<PerformanceMetric>) => {
       const metric = event.detail as PerformanceMetric;
       trackPerformanceMetric(metric);
     });
 
-    window.addEventListener('react-scan-slow-render', (event: any) => {
+    window.addEventListener('react-scan-slow-render', (event: CustomEvent<{ component: string; renderTime: number; stackTrace?: string }>) => {
       const { component, renderTime, stackTrace } = event.detail;
       trackSlowRender(component, renderTime, stackTrace);
     });
 
-    window.addEventListener('react-scan-memory-leak', (event: any) => {
+    window.addEventListener('react-scan-memory-leak', (event: CustomEvent<{ component: string; memoryUsage: number; previousUsage?: number }>) => {
       const { component, memoryUsage, previousUsage } = event.detail;
       trackMemoryLeak(component, memoryUsage, previousUsage);
     });

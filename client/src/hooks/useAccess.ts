@@ -20,7 +20,7 @@ export interface AccessCheckResult {
   isFreeTier: boolean;
   hasReachedLimit: boolean;
   canViewTerm: boolean;
-  refetch: () => Promise<any>;
+  refetch: () => Promise<Record<string, unknown>>;
 }
 
 /**

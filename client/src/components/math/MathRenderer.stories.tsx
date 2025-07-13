@@ -177,19 +177,15 @@ export const MathTextExample: Story = {
   render: () => (
     <div className="max-w-2xl space-y-4">
       <MathText className="text-base leading-relaxed">
-        The loss function $\\loss(\\params) = \\frac{1}{m} \\sum_{i=1}^{m} (f_\\params(x^{(i)}) - y^{(i)})^2$ 
-        measures prediction errors in supervised learning.
+        {"The loss function $\\\\loss(\\\\params) = \\\\frac{1}{m} \\\\sum_{i=1}^{m} (f_\\\\params(x^{(i)}) - y^{(i)})^2$ measures prediction errors in supervised learning."}
       </MathText>
       
       <MathText className="text-base leading-relaxed">
-        In deep learning, we often use the ReLU activation function: 
-        $$\\ReLU(x) = \\max(0, x)$$
-        which helps with the vanishing gradient problem.
+        {"In deep learning, we often use the ReLU activation function: $$\\\\ReLU(x) = \\\\max(0, x)$$ which helps with the vanishing gradient problem."}
       </MathText>
       
       <MathText className="text-base leading-relaxed">
-        The gradient descent update rule is $\\params := \\params - \\alpha \\gradient \\loss$ 
-        where $\\alpha$ is the learning rate.
+        {"The gradient descent update rule is $\\\\params := \\\\params - \\\\alpha \\\\gradient \\\\loss$ where $\\\\alpha$ is the learning rate."}
       </MathText>
     </div>
   ),

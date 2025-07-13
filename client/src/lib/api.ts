@@ -2,7 +2,7 @@
  * Simple API utility for making HTTP requests
  */
 
-interface ApiResponse<T = any> {
+interface ApiResponse<T = Record<string, unknown>> {
   success: boolean;
   data?: T;
   error?: string;
@@ -11,9 +11,9 @@ interface ApiResponse<T = any> {
 
 class ApiError extends Error {
   status: number;
-  response?: any;
+  response?: unknown;
 
-  constructor(message: string, status: number, response?: any) {
+  constructor(message: string, status: number, response?: unknown) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
@@ -21,10 +21,10 @@ class ApiError extends Error {
   }
 }
 
-async function request<T = any>(
+async function request<T = Record<string, unknown>>(
   method: string,
   endpoint: string,
-  data?: any
+  data?: Record<string, unknown>
 ): Promise<ApiResponse<T>> {
   // Fix double /api issue - only add /api if endpoint doesn't already start with /api
   const url = endpoint.startsWith('/api') ? endpoint : endpoint.startsWith('/') ? `/api${endpoint}` : endpoint;
@@ -71,11 +71,11 @@ async function request<T = any>(
 }
 
 export const api = {
-  get: <T = any>(endpoint: string) => request<T>('GET', endpoint),
-  post: <T = any>(endpoint: string, data?: any) => request<T>('POST', endpoint, data),
-  put: <T = any>(endpoint: string, data?: any) => request<T>('PUT', endpoint, data),
-  patch: <T = any>(endpoint: string, data?: any) => request<T>('PATCH', endpoint, data),
-  delete: <T = any>(endpoint: string) => request<T>('DELETE', endpoint),
+  get: <T = Record<string, unknown>>(endpoint: string) => request<T>('GET', endpoint),
+  post: <T = Record<string, unknown>>(endpoint: string, data?: Record<string, unknown>) => request<T>('POST', endpoint, data),
+  put: <T = Record<string, unknown>>(endpoint: string, data?: Record<string, unknown>) => request<T>('PUT', endpoint, data),
+  patch: <T = Record<string, unknown>>(endpoint: string, data?: Record<string, unknown>) => request<T>('PATCH', endpoint, data),
+  delete: <T = Record<string, unknown>>(endpoint: string) => request<T>('DELETE', endpoint),
 };
 
 export type { ApiResponse, ApiError };

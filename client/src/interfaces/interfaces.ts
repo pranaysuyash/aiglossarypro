@@ -105,7 +105,7 @@ export interface ITermSection {
   id: string;
   termId: string;
   sectionName: string;
-  sectionData: any; // JSON data specific to each section type
+  sectionData: Record<string, unknown>; // JSON data specific to each section type
   displayType: 'card' | 'sidebar' | 'main' | 'modal' | 'metadata';
   priority: number; // 1-10 for ordering
   isInteractive: boolean;
@@ -149,7 +149,7 @@ export interface IInteractiveElement {
 
     // For demos/simulations
     demoUrl?: string;
-    simulationConfig?: any;
+    simulationConfig?: Record<string, unknown>;
   };
   displayOrder: number;
   isActive: boolean;
@@ -307,5 +307,5 @@ export interface IAdvancedSearchProps {
 export interface ISectionDisplayProps {
   section: ITermSection;
   userSettings?: IEnhancedUserSettings;
-  onInteraction?: (interactionType: string, data?: any) => void;
+  onInteraction?: (interactionType: string, data?: unknown) => void;
 }

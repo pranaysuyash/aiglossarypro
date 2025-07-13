@@ -317,7 +317,7 @@ export function getErrorMessage(error: unknown): string {
 }
 
 // Utility function to format validation errors
-export function formatValidationError(field: string, type: string, value?: any): string {
+export function formatValidationError(field: string, type: string, value?: string | number): string {
   switch (type) {
     case 'required':
       return errorMessages.validation.required(field);

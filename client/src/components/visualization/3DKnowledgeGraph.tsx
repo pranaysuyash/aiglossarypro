@@ -336,7 +336,7 @@ const ThreeDKnowledgeGraph: React.FC<ThreeDKnowledgeGraphProps> = ({
     if (initialNodes.length === 0) {
       generateSampleGraph();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [initialNodes]);
 
   const generateSampleGraph = () => {

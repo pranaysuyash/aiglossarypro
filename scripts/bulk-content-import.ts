@@ -117,7 +117,7 @@ async function bulkImportContent(config: ImportConfig = DEFAULT_CONFIG): Promise
     console.log(`Found ${existingCategories.length} categories in database`);
 
     // Filter terms based on configuration
-    let termsToProcess: Array<{ categoryName: string; term: EssentialTerm }> = [];
+    const termsToProcess: Array<{ categoryName: string; term: EssentialTerm }> = [];
 
     for (const [categoryName, categoryTerms] of Object.entries(ESSENTIAL_AI_TERMS)) {
       // Apply category filter

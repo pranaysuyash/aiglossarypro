@@ -318,7 +318,7 @@ export class SupportTicketService {
   ) {
     try {
       const offset = (page - 1) * limit;
-      let whereConditions = [];
+      const whereConditions = [];
 
       // Text search in subject, description, and ticket number
       if (query) {
@@ -598,7 +598,7 @@ export class KnowledgeBaseService {
 
   static async searchArticles(query: string, categoryId?: string, published = true) {
     try {
-      let whereConditions = [];
+      const whereConditions = [];
 
       // Text search
       if (query) {

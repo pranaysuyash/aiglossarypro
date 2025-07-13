@@ -146,7 +146,7 @@ class GoogleSearchConsoleSubmitter {
     console.log(`📋 Sitemaps to submit: ${this.config.sitemapUrls.length}`);
 
     let successCount = 0;
-    let totalCount = this.config.sitemapUrls.length;
+    const totalCount = this.config.sitemapUrls.length;
 
     for (const sitemapUrl of this.config.sitemapUrls) {
       const success = await this.submitSitemap(sitemapUrl);

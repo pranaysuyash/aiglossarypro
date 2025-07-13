@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { UserPersonalizationSettings } from './UserPersonalizationSettings';
+import UserPersonalizationSettings from './UserPersonalizationSettings';
 
 const meta = {
   title: 'Components/UserPersonalizationSettings',

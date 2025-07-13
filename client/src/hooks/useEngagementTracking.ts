@@ -97,7 +97,7 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
     location,
     device,
     generateSessionId, // Track initial page view
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   ]);
 
   // Track interaction
@@ -400,7 +400,7 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
         readingMetrics.readingVelocity
       ),
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [session, readingMetrics]);
 
   // Calculate engagement level

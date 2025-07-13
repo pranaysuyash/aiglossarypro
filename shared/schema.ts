@@ -46,7 +46,7 @@ export const users = pgTable('users', {
   lastViewReset: timestamp('last_view_reset').defaultNow(),
 
   // REFERRAL SYSTEM
-  referrerId: varchar('referrer_id').references(() => users.id),
+  referrerId: varchar('referrer_id'),
 
   createdAt: timestamp('created_at').defaultNow(),
   updatedAt: timestamp('updated_at').defaultNow(),

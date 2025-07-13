@@ -291,7 +291,7 @@ class ServiceWorkerManager {
     return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
   }
 
-  public async queueAction(type: string, data: any): Promise<void> {
+  public async queueAction(type: string, data: Record<string, unknown>): Promise<void> {
     try {
       const request = indexedDB.open('ai-glossary-queue', 1);
 

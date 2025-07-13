@@ -40,7 +40,10 @@ class CDNFallbackManager {
 
   constructor() {
     // Get CDN config from build-time constants or environment
-    this.config = (window as any).__CDN_CONFIG__ || {
+    const windowWithCDN = window as Window & {
+      __CDN_CONFIG__?: CDNConfig;
+    };
+    this.config = windowWithCDN.__CDN_CONFIG__ || {
       enabled: false,
       baseUrl: '',
       zones: { assets: '/assets/', images: '/images/', fonts: '/fonts/' },
@@ -200,7 +203,15 @@ class CDNFallbackManager {
   /**
    * Get CDN status summary
    */
-  public getStatus(): any {
+  public getStatus(): {
+    status: 'healthy' | 'degraded' | 'failed' | 'unknown';
+    message: string;
+    successRate?: number;
+    fallbackRate?: number;
+    averageLoadTime?: number;
+    failedUrlsCount?: number;
+    isEnabled?: boolean;
+  } {
     const recentMetrics = this.metrics.slice(-20);
 
     if (recentMetrics.length === 0) {
@@ -475,7 +486,15 @@ export function checkCDNHealth(): Promise<boolean> {
   return cdnFallback.checkCDNHealth();
 }
 
-export function getCDNStatus(): any {
+export function getCDNStatus(): {
+  status: 'healthy' | 'degraded' | 'failed' | 'unknown';
+  message: string;
+  successRate?: number;
+  fallbackRate?: number;
+  averageLoadTime?: number;
+  failedUrlsCount?: number;
+  isEnabled?: boolean;
+} {
   return cdnFallback.getStatus();
 }
 

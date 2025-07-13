@@ -56,7 +56,10 @@ export class PerformanceBenchmark {
   // Measure memory usage
   getMemoryUsage(): number {
     if ('memory' in performance) {
-      return (performance as any).memory.usedJSHeapSize || 0;
+      const performanceWithMemory = performance as Performance & {
+        memory?: { usedJSHeapSize: number };
+      };
+      return performanceWithMemory.memory?.usedJSHeapSize || 0;
     }
     return 0;
   }
@@ -120,7 +123,7 @@ export const withPerformanceTracking = <P extends object>(
 
 // Search performance testing
 export const benchmarkSearch = async (
-  searchFunction: (query: string) => Promise<any[]> | any[],
+  searchFunction: (query: string) => Promise<unknown[]> | unknown[],
   queries: string[],
   iterations: number = 5
 ): Promise<{
@@ -237,7 +240,10 @@ export const detectMemoryLeaks = async (
     window.gc();
   }
 
-  const initialMemory = (performance as any).memory?.usedJSHeapSize || 0;
+  const performanceWithMemory = performance as Performance & {
+    memory?: { usedJSHeapSize: number };
+  };
+  const initialMemory = performanceWithMemory.memory?.usedJSHeapSize || 0;
 
   for (let i = 0; i < iterations; i++) {
     await operation();
@@ -255,37 +261,52 @@ export const detectMemoryLeaks = async (
 
   await new Promise((resolve) => setTimeout(resolve, 100)); // Allow GC to complete
 
-  const finalMemory = (performance as any).memory?.usedJSHeapSize || 0;
+  const finalMemory = performanceWithMemory.memory?.usedJSHeapSize || 0;
   const memoryGrowth = finalMemory - initialMemory;
   const leaked = memoryGrowth > 1024 * 1024; // Consider >1MB growth as potential leak
 
   return { initialMemory, finalMemory, memoryGrowth, leaked };
 };
 
+export interface TestDataSection {
+  id: string;
+  name: string;
+  subsections?: TestDataSection[];
+}
+
+export interface TestData {
+  sections?: TestDataSection[];
+}
+
+export interface BenchmarkOperations {
+  render: () => void;
+  search: (query: string) => Promise<unknown[]>;
+  expand: (nodeId: string) => void;
+  collapse: (nodeId: string) => void;
+}
+
 // Comprehensive benchmark suite
 export const runComprehensiveBenchmark = async (
   component: HTMLElement,
-  testData: any,
-  operations: {
-    render: () => void;
-    search: (query: string) => Promise<any[]>;
-    expand: (nodeId: string) => void;
-    collapse: (nodeId: string) => void;
-  }
+  testData: TestData,
+  operations: BenchmarkOperations
 ): Promise<BenchmarkResult> => {
   const benchmark = new PerformanceBenchmark();
   const testName = `Navigation_${testData.sections?.length || 0}_sections`;
 
   // Environment info
+  const navigatorWithMemory = navigator as Navigator & {
+    deviceMemory?: number;
+  };
   const environment = {
     userAgent: navigator.userAgent,
     viewport: { width: window.innerWidth, height: window.innerHeight },
-    deviceMemory: (navigator as any).deviceMemory,
+    deviceMemory: navigatorWithMemory.deviceMemory,
     hardwareConcurrency: navigator.hardwareConcurrency,
   };
 
   // Dataset size analysis
-  const countNodes = (sections: any[]): number => {
+  const countNodes = (sections: TestDataSection[]): number => {
     return sections.reduce((count, section) => {
       let nodeCount = 1; // Count the section itself
       if (section.subsections) {
@@ -295,7 +316,7 @@ export const runComprehensiveBenchmark = async (
     }, 0);
   };
 
-  const getMaxDepth = (sections: any[], currentDepth: number = 0): number => {
+  const getMaxDepth = (sections: TestDataSection[], currentDepth: number = 0): number => {
     return sections.reduce((maxDepth, section) => {
       const depth = currentDepth + 1;
       if (section.subsections) {

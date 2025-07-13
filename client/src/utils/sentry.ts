@@ -89,7 +89,7 @@ export const captureUIError = (
     component?: string;
     action?: string;
     userId?: string;
-    props?: any;
+    props?: Record<string, unknown>;
   }
 ) => {
   Sentry.withScope((scope) => {
@@ -181,7 +181,11 @@ export const measurePerformance = (name: string, fn: () => void) => {
 // React Error Boundary HOC
 export const withErrorBoundary = <P extends object>(
   Component: React.ComponentType<P>,
-  errorBoundaryOptions?: any
+  errorBoundaryOptions?: {
+    fallback?: React.ComponentType<{ error: unknown; resetError: () => void }>;
+    onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
+    showDialog?: boolean;
+  }
 ) => {
   const ErrorFallback = ({ error, resetError }: { error: unknown; resetError: () => void }) => {
     const _errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';

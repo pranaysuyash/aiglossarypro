@@ -5,8 +5,8 @@ declare global {
   interface Window {
     gtag?: (
       command: 'config' | 'event' | 'js' | 'set',
-      targetId: string | Date | Record<string, any>,
-      config?: Record<string, any>
+      targetId: string | Date | Record<string, unknown>,
+      config?: Record<string, unknown>
     ) => void;
   }
 }
@@ -112,11 +112,19 @@ export const trackABTestView = (testId: string, variant: string, testType: strin
   ga4Analytics.trackABTestView(testId, variant, testType);
 };
 
+export interface PurchaseItem {
+  item_id: string;
+  item_name: string;
+  item_category?: string;
+  quantity?: number;
+  price?: number;
+}
+
 export const trackPurchase = (
   transactionId: string,
   value: number,
   currency: string = 'USD',
-  items: any[]
+  items: PurchaseItem[]
 ): void => {
   ga4Analytics.trackPurchase(transactionId, value, currency, items);
 };

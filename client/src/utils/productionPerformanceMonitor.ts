@@ -75,7 +75,7 @@ class ProductionPerformanceMonitor {
     }
   }
 
-  private recordMetric(metric: any) {
+  private recordMetric(metric: { name: string; value: number }) {
     const performanceMetric: PerformanceMetric = {
       name: metric.name,
       value: metric.value,

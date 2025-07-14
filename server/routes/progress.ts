@@ -2,18 +2,20 @@ import { desc, eq } from 'drizzle-orm';
 import type { Express } from 'express';
 import { enhancedTerms, users, userTermHistory } from '../../shared/enhancedSchema';
 import { db } from '../db';
+import { getUserInfo, multiAuthMiddleware } from '../middleware/multiAuth';
 import ProgressTrackingService from '../services/progressTrackingService';
 import type { AuthenticatedRequest } from '../types/express';
 import { log as logger } from '../utils/logger';
 
 export function registerProgressRoutes(app: Express): void {
   // Get comprehensive progress statistics
-  app.get('/api/progress/stats', async (req, res) => {
+  app.get('/api/progress/stats', multiAuthMiddleware, async (req, res) => {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
-      if (!userId) {
+      const userInfo = getUserInfo(req);
+      if (!userInfo) {
         return res.status(401).json({ error: 'Authentication required' });
       }
+      const userId = userInfo.id;
 
       logger.info(`Fetching progress stats for user: ${userId}`);
 
@@ -28,12 +30,13 @@ export function registerProgressRoutes(app: Express): void {
   });
 
   // Track term interaction
-  app.post('/api/progress/track-interaction', async (req, res) => {
+  app.post('/api/progress/track-interaction', multiAuthMiddleware, async (req, res) => {
     try {
-      const userId = (req as AuthenticatedRequest).user?.id;
-      if (!userId) {
+      const userInfo = getUserInfo(req);
+      if (!userInfo) {
         return res.status(401).json({ error: 'Authentication required' });
       }
+      const userId = userInfo.id;
 
       const { termId, sectionsViewed = [], timeSpentSeconds = 0 } = req.body;
 

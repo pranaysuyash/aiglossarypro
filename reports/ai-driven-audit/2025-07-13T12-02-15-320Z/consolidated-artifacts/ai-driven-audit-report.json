@@ -1,0 +1,48 @@
+{
+  "timestamp": "2025-07-13T11-53-25-092Z",
+  "status": "failed",
+  "coverageValidation": {
+    "passed": false,
+    "coveragePercentage": 0,
+    "missingStories": 0
+  },
+  "functionalTesting": {
+    "totalUsers": 0,
+    "totalActions": 0,
+    "totalScreenshots": 0,
+    "accessibilityViolations": 0
+  },
+  "artifacts": {
+    "screenshots": [],
+    "videos": [],
+    "accessibilityReports": [],
+    "functionalReports": []
+  },
+  "reportPath": "",
+  "duration": 0,
+  "configuration": {
+    "skipCoverage": false,
+    "fullCapture": false,
+    "aiAnalysis": false,
+    "fixStories": false,
+    "outputDir": "/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/reports/ai-driven-audit/2025-07-13T11-53-25-092Z",
+    "timestamp": "2025-07-13T11-53-25-092Z"
+  },
+  "workflow": {
+    "steps": [
+      "Storybook Coverage Validation",
+      "Enhanced Functional Testing",
+      "Artifact Consolidation",
+      "AI Analysis Prompt Generation",
+      "AI Analysis Execution",
+      "Report Generation"
+    ],
+    "completedSteps": 4
+  },
+  "nextSteps": [
+    "Review generated AI analysis prompt",
+    "Manually run AI analysis with provided artifacts",
+    "Implement fixes based on findings",
+    "Re-run audit to verify improvements"
+  ]
+}

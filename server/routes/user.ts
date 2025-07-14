@@ -478,7 +478,7 @@ export function registerUserRoutes(app: Express): void {
           hasAccess: accessStatus.hasAccess,
           accessType: accessStatus.accessType,
           subscriptionTier: user.subscriptionTier || 'free',
-          lifetimeAccess: user.lifetimeAccess || false,
+          lifetimeAccess: user.lifetimeAccess || user.isAdmin || false,
           dailyViews: dailyLimits.dailyViews,
           dailyLimit: dailyLimits.limit,
           remainingViews: dailyLimits.remaining,

@@ -663,7 +663,7 @@ export default function FirebaseLoginPage() {
                       <strong>Email:</strong> test@aimlglossary.com
                     </div>
                     <div>
-                      <strong>Password:</strong> testpass123
+                      <strong>Password:</strong> testpassword123
                     </div>
                   </div>
                   <Button
@@ -672,13 +672,13 @@ export default function FirebaseLoginPage() {
                     className="w-full"
                     onClick={async () => {
                       setEmail('test@aimlglossary.com');
-                      setPassword('testpass123');
+                      setPassword('testpassword123');
 
                       // First try to create the user if it doesn't exist
                       try {
                         await api.post('/api/auth/firebase/register', {
                           email: 'test@aimlglossary.com',
-                          password: 'testpass123',
+                          password: 'testpassword123',
                           firstName: 'Test',
                           lastName: 'User',
                         });
@@ -716,7 +716,7 @@ export default function FirebaseLoginPage() {
                       <strong>Email:</strong> premium@aimlglossary.com
                     </div>
                     <div>
-                      <strong>Password:</strong> premiumpass123
+                      <strong>Password:</strong> testpassword123
                     </div>
                   </div>
                   <Button
@@ -725,13 +725,13 @@ export default function FirebaseLoginPage() {
                     className="w-full"
                     onClick={async () => {
                       setEmail('premium@aimlglossary.com');
-                      setPassword('premiumpass123');
+                      setPassword('testpassword123');
 
                       // First try to create the user if it doesn't exist
                       try {
                         await api.post('/api/auth/firebase/register', {
                           email: 'premium@aimlglossary.com',
-                          password: 'premiumpass123',
+                          password: 'testpassword123',
                           firstName: 'Premium',
                           lastName: 'User',
                         });

@@ -62,8 +62,8 @@ export function UpgradePrompt({
   const [stats, setStats] = useState<ProgressStats | null>(progressStats || null);
   const [_loading, setLoading] = useState(false);
 
-  // Don't show upgrade prompt for premium users
-  if (accessStatus?.lifetimeAccess) {
+  // Don't show upgrade prompt for premium users or admin users
+  if (accessStatus?.lifetimeAccess || user?.isAdmin) {
     return null;
   }
 
@@ -77,9 +77,10 @@ export function UpgradePrompt({
   const fetchProgressStats = async () => {
     try {
       setLoading(true);
+      const authToken = localStorage.getItem('authToken');
       const response = await fetch('/api/progress/stats', {
         headers: {
-          Authorization: `Bearer ${user?.token}`,
+          Authorization: `Bearer ${authToken}`,
         },
       });
 

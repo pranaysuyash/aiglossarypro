@@ -58,21 +58,21 @@ class ComprehensiveFunctionalAuditor {
   private testUsers: TestUser[] = [
     {
       email: 'test@aimlglossary.com',
-      password: 'testpass123',
+      password: 'testpassword123',
       type: 'free',
       expectedFeatures: ['basic search', 'limited view count'],
       expectedLimitations: ['daily view limits', 'upgrade prompts', 'restricted 42-section access']
     },
     {
       email: 'premium@aimlglossary.com',
-      password: 'premiumpass123',
+      password: 'testpassword123',
       type: 'premium',
       expectedFeatures: ['unlimited access', '42-section components', 'gamification', 'progress tracking'],
       expectedLimitations: []
     },
     {
       email: 'admin@aimlglossary.com',
-      password: 'adminpass123',
+      password: 'testpassword123',
       type: 'admin',
       expectedFeatures: ['admin dashboard', 'content generation', 'user management', 'all premium features'],
       expectedLimitations: []

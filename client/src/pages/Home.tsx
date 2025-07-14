@@ -75,7 +75,7 @@ export default function Home() {
                 </Link>
               ) : (
                 <Button
-                  onClick={() => (window.location.href = '/api/login')}
+                  onClick={() => (window.location.href = '/login')}
                   className="bg-white text-primary-600 hover:bg-gray-50"
                 >
                   Sign in to track progress

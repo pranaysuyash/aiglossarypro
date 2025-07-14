@@ -87,6 +87,22 @@ export function ProgressVisualization({
         },
       });
 
+      if (response.status === 404 || response.status === 400) {
+        // New user with no progress data - show empty stats instead of error
+        setStats({
+          totalTermsViewed: 0,
+          totalBookmarks: 0,
+          currentStreak: 0,
+          bestStreak: 0,
+          categoriesExplored: 0,
+          timeSpentMinutes: 0,
+          achievements: [],
+          dailyStats: [],
+          upgradePromptTriggers: []
+        });
+        return;
+      }
+
       if (!response.ok) {
         throw new Error('Failed to fetch progress stats');
       }

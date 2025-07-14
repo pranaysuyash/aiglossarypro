@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
+import { useQueryClient } from '@tanstack/react-query';
 import { useLiveRegion } from '@/components/accessibility/LiveRegion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -17,6 +18,7 @@ export default function FirebaseLoginPage() {
   const [, navigate] = useLocation();
   const { toast } = useToast();
   const { announce } = useLiveRegion();
+  const queryClient = useQueryClient();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,6 +49,11 @@ export default function FirebaseLoginPage() {
       if (response.success) {
         // Store token in localStorage for API calls
         localStorage.setItem('authToken', response.data.token);
+
+        // Update React Query cache with user data to maintain auth state
+        queryClient.setQueryData(['/api/auth/user'], response.data.user);
+        await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         // Check for premium status
         const userType = response.data.user.lifetimeAccess ? 'Premium' : 'Free';
@@ -197,6 +204,11 @@ export default function FirebaseLoginPage() {
 
       if (response.success) {
         localStorage.setItem('authToken', response.data.token);
+
+        // Update React Query cache with user data to maintain auth state
+        queryClient.setQueryData(['/api/auth/user'], response.data.user);
+        await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
+        await new Promise(resolve => setTimeout(resolve, 100));
 
         // Check for premium status
         const userType = response.data.user.lifetimeAccess ? 'Premium' : 'Free';

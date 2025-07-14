@@ -88,12 +88,12 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
         // Use the improved logout function from useAuth hook
         await logout();
 
-        // Navigate to landing page after successful logout
-        window.location.assign('/');
+        // Navigate to app home page after successful logout
+        window.location.assign('/app');
       } catch (error) {
         console.error('Logout error:', error);
-        // Fallback: force navigation to landing page even if logout fails
-        window.location.assign('/');
+        // Fallback: force navigation to app home page even if logout fails
+        window.location.assign('/app');
       }
     }
   };

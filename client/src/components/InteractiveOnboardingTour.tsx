@@ -164,7 +164,7 @@ export function InteractiveOnboardingTour({
         'Team collaboration tools'
       ],
       highlights: [
-        'One-time payment of $179',
+        'One-time payment of $179 (was $249)',
         'No recurring subscriptions',
         'Money-back guarantee'
       ],

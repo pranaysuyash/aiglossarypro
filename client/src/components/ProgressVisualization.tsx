@@ -1,14 +1,14 @@
 import {
-  AwardIcon,
-  BarChartIcon,
-  BookmarkIcon,
-  BookOpenIcon,
-  CalendarDaysIcon,
-  ClockIcon,
-  FlameIcon,
-  TrendingUpIcon,
-  TrophyIcon,
-  ZapIcon,
+  Award,
+  BarChart,
+  Bookmark,
+  BookOpen,
+  CalendarDays,
+  Clock,
+  Flame,
+  TrendingUp,
+  Trophy,
+  Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '../hooks/useAuth';
@@ -180,18 +180,18 @@ export function ProgressVisualization({
   const streakStatus = getStreakStatus();
 
   // Achievement icons mapping
-  const getAchievementIcon = (type: string) => {
+  const getAchievement = (type: string) => {
     switch (type) {
       case 'daily_streak':
-        return <FlameIcon className="h-5 w-5" />;
+        return <Flame className="h-5 w-5" />;
       case 'bookmarks_created':
-        return <BookmarkIcon className="h-5 w-5" />;
+        return <Bookmark className="h-5 w-5" />;
       case 'terms_viewed':
-        return <BookOpenIcon className="h-5 w-5" />;
+        return <BookOpen className="h-5 w-5" />;
       case 'categories_explored':
-        return <BarChartIcon className="h-5 w-5" />;
+        return <BarChart className="h-5 w-5" />;
       default:
-        return <AwardIcon className="h-5 w-5" />;
+        return <Award className="h-5 w-5" />;
     }
   };
 
@@ -218,7 +218,7 @@ export function ProgressVisualization({
         <Card className="border-orange-200 bg-gradient-to-r from-orange-50 to-yellow-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-orange-800">
-              <ZapIcon className="h-5 w-5" />
+              <Zap className="h-5 w-5" />
               Ready to Unlock Your Full Potential?
             </CardTitle>
           </CardHeader>
@@ -255,7 +255,7 @@ export function ProgressVisualization({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Terms Explored</CardTitle>
-            <BookOpenIcon className="h-4 w-4 text-muted-foreground" />
+            <BookOpen className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-blue-600">{stats.totalTermsViewed}</div>
@@ -269,7 +269,7 @@ export function ProgressVisualization({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Bookmarks</CardTitle>
-            <BookmarkIcon className="h-4 w-4 text-muted-foreground" />
+            <Bookmark className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">{stats.totalBookmarks}</div>
@@ -295,7 +295,7 @@ export function ProgressVisualization({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Current Streak</CardTitle>
-            <FlameIcon className="h-4 w-4 text-muted-foreground" />
+            <Flame className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className={`text-2xl font-bold ${streakStatus.color}`}>{stats.currentStreak}</div>
@@ -312,7 +312,7 @@ export function ProgressVisualization({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Time Spent</CardTitle>
-            <ClockIcon className="h-4 w-4 text-muted-foreground" />
+            <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
@@ -326,7 +326,7 @@ export function ProgressVisualization({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Categories</CardTitle>
-            <BarChartIcon className="h-4 w-4 text-muted-foreground" />
+            <BarChart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-indigo-600">{stats.categoriesExplored}</div>
@@ -338,13 +338,13 @@ export function ProgressVisualization({
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Latest Achievement</CardTitle>
-            <TrophyIcon className="h-4 w-4 text-muted-foreground" />
+            <Trophy className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             {stats.achievements.length > 0 ? (
               <>
                 <div className="flex items-center gap-2 text-yellow-600">
-                  {getAchievementIcon(stats.achievements[0].type)}
+                  {getAchievement(stats.achievements[0].type)}
                   <span className="text-lg font-bold">{stats.achievements[0].value}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
@@ -363,7 +363,7 @@ export function ProgressVisualization({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <AwardIcon className="h-5 w-5" />
+              <Award className="h-5 w-5" />
               Achievements
             </CardTitle>
             <CardDescription>Your learning milestones and accomplishments</CardDescription>
@@ -375,7 +375,7 @@ export function ProgressVisualization({
                   key={achievement.id}
                   className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"
                 >
-                  <div className="text-yellow-600">{getAchievementIcon(achievement.type)}</div>
+                  <div className="text-yellow-600">{getAchievement(achievement.type)}</div>
                   <div className="flex-1">
                     <div className="font-medium text-sm">
                       {getAchievementName(achievement.type)}
@@ -413,7 +413,7 @@ export function ProgressVisualization({
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TrendingUpIcon className="h-5 w-5" />
+              <TrendingUp className="h-5 w-5" />
               Recent Activity
             </CardTitle>
             <CardDescription>Your learning activity over the last 7 days</CardDescription>
@@ -423,7 +423,7 @@ export function ProgressVisualization({
               {stats.dailyStats.slice(-7).map((day, index) => (
                 <div key={index} className="flex items-center justify-between text-sm">
                   <div className="flex items-center gap-2">
-                    <CalendarDaysIcon className="h-4 w-4 text-gray-400" />
+                    <CalendarDays className="h-4 w-4 text-gray-400" />
                     <span>{new Date(day.date).toLocaleDateString()}</span>
                   </div>
                   <div className="flex items-center gap-4 text-xs">

@@ -26,6 +26,7 @@ interface RedisClient {
   del(key: string): Promise<void>;
   exists(key: string): Promise<boolean>;
   expire(key: string, ttl: number): Promise<void>;
+  ttl(key: string): Promise<number>;
   flushdb(): Promise<void>;
   quit(): Promise<void>;
   isConnected(): boolean;
@@ -57,6 +58,10 @@ class ProductionRedisClient implements RedisClient {
 
   async expire(key: string, ttl: number): Promise<void> {
     await this.ioredisClient.expire(key, ttl);
+  }
+
+  async ttl(key: string): Promise<number> {
+    return await this.ioredisClient.ttl(key);
   }
 
   async flushdb(): Promise<void> {
@@ -117,6 +122,14 @@ class MockRedisClient implements RedisClient {
     if (entry) {
       entry.expires = Date.now() + ttl * 1000;
     }
+  }
+
+  async ttl(key: string): Promise<number> {
+    const entry = this.cache.get(key);
+    if (!entry || !entry.expires) return -1;
+    
+    const remaining = Math.floor((entry.expires - Date.now()) / 1000);
+    return remaining > 0 ? remaining : -2;
   }
 
   async flushdb(): Promise<void> {
@@ -196,12 +209,25 @@ const createRedisClient = (): RedisClient => {
 // Initialize Redis client
 redisClient = createRedisClient();
 
-// Redis utilities for enhanced storage
+// Stale-while-revalidate cache entry interface
+interface StaleWhileRevalidateEntry<T> {
+  data: T;
+  timestamp: number;
+  staleTimestamp: number;
+}
+
+// Redis utilities for enhanced storage with stale-while-revalidate support
 export class RedisCache {
   private prefix = 'enhanced_storage:';
+  private stalePrefix = 'stale:';
+  private revalidationJobs = new Map<string, Promise<any>>();
 
   private getKey(key: string): string {
     return `${this.prefix}${key}`;
+  }
+
+  private getStaleKey(key: string): string {
+    return `${this.prefix}${this.stalePrefix}${key}`;
   }
 
   async get<T>(key: string): Promise<T | null> {
@@ -223,6 +249,130 @@ export class RedisCache {
     } catch (error) {
       console.error('[RedisCache] Set error:', error);
       // Don't throw - caching failures should be non-fatal
+    }
+  }
+
+  /**
+   * Stale-while-revalidate cache implementation
+   * Returns stale data immediately while revalidating in the background
+   */
+  async getStaleWhileRevalidate<T>(
+    key: string,
+    revalidateFn: () => Promise<T>,
+    options: {
+      ttl: number; // Fresh cache duration
+      staleTtl: number; // How long to serve stale data
+      revalidateThreshold?: number; // When to trigger background revalidation (default: 80% of ttl)
+    }
+  ): Promise<T | null> {
+    try {
+      const cacheKey = this.getKey(key);
+      const staleKey = this.getStaleKey(key);
+      
+      // Try to get fresh data
+      const cachedValue = await redisClient.get(cacheKey);
+      if (cachedValue) {
+        const entry: StaleWhileRevalidateEntry<T> = JSON.parse(cachedValue);
+        
+        // Check if we should trigger background revalidation
+        const now = Date.now();
+        const age = now - entry.timestamp;
+        const revalidateThreshold = options.revalidateThreshold || 0.8;
+        const shouldRevalidate = age > (options.ttl * 1000 * revalidateThreshold);
+        
+        if (shouldRevalidate && !this.revalidationJobs.has(key)) {
+          // Start background revalidation
+          this.startBackgroundRevalidation(key, revalidateFn, options);
+        }
+        
+        return entry.data;
+      }
+      
+      // Try to get stale data
+      const staleValue = await redisClient.get(staleKey);
+      if (staleValue) {
+        const staleEntry: StaleWhileRevalidateEntry<T> = JSON.parse(staleValue);
+        
+        // Start revalidation if not already running
+        if (!this.revalidationJobs.has(key)) {
+          this.startBackgroundRevalidation(key, revalidateFn, options);
+        }
+        
+        console.log(`[RedisCache] Serving stale data for key: ${key}`);
+        return staleEntry.data;
+      }
+      
+      // No cached data available, fetch fresh
+      console.log(`[RedisCache] No cached data for key: ${key}, fetching fresh`);
+      const freshData = await revalidateFn();
+      await this.setStaleWhileRevalidate(key, freshData, options);
+      
+      return freshData;
+      
+    } catch (error) {
+      console.error('[RedisCache] Stale-while-revalidate error:', error);
+      
+      // Fallback: try to execute revalidate function
+      try {
+        return await revalidateFn();
+      } catch (revalidateError) {
+        console.error('[RedisCache] Revalidate function failed:', revalidateError);
+        return null;
+      }
+    }
+  }
+
+  private async startBackgroundRevalidation<T>(
+    key: string,
+    revalidateFn: () => Promise<T>,
+    options: { ttl: number; staleTtl: number }
+  ): Promise<void> {
+    // Prevent multiple revalidation jobs for the same key
+    if (this.revalidationJobs.has(key)) {
+      return;
+    }
+    
+    const revalidationPromise = (async () => {
+      try {
+        console.log(`[RedisCache] Starting background revalidation for key: ${key}`);
+        const freshData = await revalidateFn();
+        await this.setStaleWhileRevalidate(key, freshData, options);
+        console.log(`[RedisCache] Background revalidation completed for key: ${key}`);
+      } catch (error) {
+        console.error(`[RedisCache] Background revalidation failed for key: ${key}`, error);
+      } finally {
+        this.revalidationJobs.delete(key);
+      }
+    })();
+    
+    this.revalidationJobs.set(key, revalidationPromise);
+  }
+
+  private async setStaleWhileRevalidate<T>(
+    key: string,
+    value: T,
+    options: { ttl: number; staleTtl: number }
+  ): Promise<void> {
+    try {
+      const now = Date.now();
+      const entry: StaleWhileRevalidateEntry<T> = {
+        data: value,
+        timestamp: now,
+        staleTimestamp: now + (options.ttl * 1000)
+      };
+      
+      const serialized = JSON.stringify(entry);
+      const cacheKey = this.getKey(key);
+      const staleKey = this.getStaleKey(key);
+      
+      // Set fresh cache
+      await redisClient.set(cacheKey, serialized, options.ttl);
+      
+      // Set stale cache with longer TTL
+      await redisClient.set(staleKey, serialized, options.staleTtl);
+      
+    } catch (error) {
+      console.error('[RedisCache] Set stale-while-revalidate error:', error);
     }
   }
 
@@ -294,10 +444,32 @@ export const CacheKeys = {
   termRelationships: (termId: string) => `relationships:${termId}`,
   recommendations: (userId: string) => `recommendations:${userId}`,
 
-  // TTL constants (in milliseconds)
-  SHORT_CACHE_TTL: 5 * 60 * 1000, // 5 minutes
-  MEDIUM_CACHE_TTL: 30 * 60 * 1000, // 30 minutes
-  LONG_CACHE_TTL: 60 * 60 * 1000, // 1 hour
+  // TTL constants (in seconds for Redis, in milliseconds for reference)
+  SHORT_CACHE_TTL: 5 * 60, // 5 minutes
+  MEDIUM_CACHE_TTL: 30 * 60, // 30 minutes
+  LONG_CACHE_TTL: 60 * 60, // 1 hour
+  
+  // Stale-while-revalidate configurations
+  SWR_CONFIG: {
+    // High-frequency data (search results, trending)
+    HIGH_FREQUENCY: {
+      ttl: 2 * 60, // 2 minutes fresh
+      staleTtl: 10 * 60, // 10 minutes stale
+      revalidateThreshold: 0.7 // Revalidate after 70% of TTL
+    },
+    // Medium-frequency data (term content, user preferences)
+    MEDIUM_FREQUENCY: {
+      ttl: 15 * 60, // 15 minutes fresh
+      staleTtl: 60 * 60, // 1 hour stale
+      revalidateThreshold: 0.8 // Revalidate after 80% of TTL
+    },
+    // Low-frequency data (admin stats, system metrics)
+    LOW_FREQUENCY: {
+      ttl: 60 * 60, // 1 hour fresh
+      staleTtl: 4 * 60 * 60, // 4 hours stale
+      revalidateThreshold: 0.9 // Revalidate after 90% of TTL
+    }
+  }
 };
 
 export default redis;

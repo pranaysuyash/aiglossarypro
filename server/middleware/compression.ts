@@ -2,47 +2,135 @@
  * Response Compression Middleware
  *
  * Implements intelligent compression for API responses to reduce network payload
- * and improve response times. Uses gzip compression with appropriate thresholds.
+ * and improve response times. Supports Brotli (preferred) and gzip compression
+ * with appropriate thresholds and optimal settings for modern browsers.
+ * 
+ * Features:
+ * - Brotli compression (better compression ratio, 20-30% smaller than gzip)
+ * - Gzip fallback for older browsers
+ * - Smart compression thresholds (1KB minimum)
+ * - Compression ratio monitoring
+ * - HTTP/2 optimized headers
  */
 
 import { promisify } from 'node:util';
-import { gzip } from 'node:zlib';
+import { brotliCompress, gzip } from 'node:zlib';
 import type { NextFunction, Request, Response } from 'express';
 
 const gzipAsync = promisify(gzip);
+const brotliAsync = promisify(brotliCompress);
 
-// Simple compression middleware without external dependencies
+// Enhanced compression middleware with Brotli and gzip support
 export async function compressionMiddleware(req: Request, res: Response, next: NextFunction) {
   const originalJson = res.json;
-  const _originalSend = res.send;
+  const originalSend = res.send;
 
   // Override res.json to add compression
   res.json = function (this: Response, body: any) {
     const jsonString = JSON.stringify(body);
     const sizeInBytes = Buffer.byteLength(jsonString, 'utf8');
 
-    // Only compress if the response is large enough and client accepts gzip
-    if (sizeInBytes > 1024 && req.headers['accept-encoding']?.includes('gzip')) {
-      gzipAsync(Buffer.from(jsonString, 'utf8'))
-        .then((compressed) => {
-          this.set({
-            'Content-Encoding': 'gzip',
-            'Content-Type': 'application/json',
-            'Content-Length': compressed.length.toString(),
-            'X-Original-Size': sizeInBytes.toString(),
-            'X-Compressed-Size': compressed.length.toString(),
-            'X-Compression-Ratio': `${((1 - compressed.length / sizeInBytes) * 100).toFixed(2)}%`,
-          });
-          this.end(compressed);
+    // Only compress if the response is large enough (1KB threshold)
+    if (sizeInBytes > 1024) {
+      const acceptEncoding = req.headers['accept-encoding'] || '';
+      
+      // Prefer Brotli if supported (better compression ratio)
+      if (acceptEncoding.includes('br')) {
+        brotliAsync(Buffer.from(jsonString, 'utf8'), {
+          params: {
+            [require('zlib').constants.BROTLI_PARAM_QUALITY]: 6, // Balance between speed and compression
+            [require('zlib').constants.BROTLI_PARAM_SIZE_HINT]: sizeInBytes
+          }
         })
-        .catch(() => {
-          // Fallback to uncompressed
-          originalJson.call(this, body);
-        });
-      return this;
-    } else {
-      return originalJson.call(this, body);
+          .then((compressed) => {
+            this.set({
+              'Content-Encoding': 'br',
+              'Content-Type': 'application/json',
+              'Content-Length': compressed.length.toString(),
+              'X-Original-Size': sizeInBytes.toString(),
+              'X-Compressed-Size': compressed.length.toString(),
+              'X-Compression-Ratio': `${((1 - compressed.length / sizeInBytes) * 100).toFixed(2)}%`,
+              'X-Compression-Method': 'brotli'
+            });
+            this.end(compressed);
+          })
+          .catch(() => {
+            // Fallback to uncompressed
+            originalJson.call(this, body);
+          });
+        return this;
+      }
+      // Fallback to gzip
+      else if (acceptEncoding.includes('gzip')) {
+        gzipAsync(Buffer.from(jsonString, 'utf8'))
+          .then((compressed) => {
+            this.set({
+              'Content-Encoding': 'gzip',
+              'Content-Type': 'application/json',
+              'Content-Length': compressed.length.toString(),
+              'X-Original-Size': sizeInBytes.toString(),
+              'X-Compressed-Size': compressed.length.toString(),
+              'X-Compression-Ratio': `${((1 - compressed.length / sizeInBytes) * 100).toFixed(2)}%`,
+              'X-Compression-Method': 'gzip'
+            });
+            this.end(compressed);
+          })
+          .catch(() => {
+            // Fallback to uncompressed
+            originalJson.call(this, body);
+          });
+        return this;
+      }
     }
+    
+    // No compression needed or supported
+    return originalJson.call(this, body);
+  } as any;
+
+  // Override res.send for other content types
+  res.send = function (this: Response, body: any) {
+    if (typeof body === 'string' && body.length > 1024) {
+      const acceptEncoding = req.headers['accept-encoding'] || '';
+      const sizeInBytes = Buffer.byteLength(body, 'utf8');
+      
+      if (acceptEncoding.includes('br')) {
+        brotliAsync(Buffer.from(body, 'utf8'))
+          .then((compressed) => {
+            this.set({
+              'Content-Encoding': 'br',
+              'Content-Length': compressed.length.toString(),
+              'X-Original-Size': sizeInBytes.toString(),
+              'X-Compressed-Size': compressed.length.toString(),
+              'X-Compression-Ratio': `${((1 - compressed.length / sizeInBytes) * 100).toFixed(2)}%`,
+              'X-Compression-Method': 'brotli'
+            });
+            this.end(compressed);
+          })
+          .catch(() => {
+            originalSend.call(this, body);
+          });
+        return this;
+      } else if (acceptEncoding.includes('gzip')) {
+        gzipAsync(Buffer.from(body, 'utf8'))
+          .then((compressed) => {
+            this.set({
+              'Content-Encoding': 'gzip',
+              'Content-Length': compressed.length.toString(),
+              'X-Original-Size': sizeInBytes.toString(),
+              'X-Compressed-Size': compressed.length.toString(),
+              'X-Compression-Ratio': `${((1 - compressed.length / sizeInBytes) * 100).toFixed(2)}%`,
+              'X-Compression-Method': 'gzip'
+            });
+            this.end(compressed);
+          })
+          .catch(() => {
+            originalSend.call(this, body);
+          });
+        return this;
+      }
+    }
+    
+    return originalSend.call(this, body);
   } as any;
 
   next();
@@ -86,6 +174,14 @@ export function cacheOptimizationMiddleware(_req: Request, res: Response, next: 
     }
   } else {
     res.set('Vary', 'Accept-Encoding');
+  }
+
+  // Add compression method info for better cache management
+  res.set('X-Compression-Enabled', 'gzip, br');
+  
+  // Set optimal cache control for compressed responses
+  if (!res.getHeader('Cache-Control')) {
+    res.set('Cache-Control', 'public, max-age=300'); // 5 minutes default for API responses
   }
 
   next();

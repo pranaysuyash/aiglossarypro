@@ -1,12 +1,12 @@
 import {
-  BarChartIcon,
-  BookmarkIcon,
-  CalendarDaysIcon,
+  BarChart,
+  Bookmark,
+  CalendarDays,
   Clock,
-  FlameIcon,
+  Flame,
   Globe,
   Star,
-  TrophyIcon,
+  Trophy,
   Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
@@ -110,15 +110,15 @@ export function UpgradePrompt({
     const getIcon = () => {
       switch (triggerData.type) {
         case 'bookmark_limit':
-          return <BookmarkIcon className="h-6 w-6 text-purple-500" />;
+          return <Bookmark className="h-6 w-6 text-purple-500" />;
         case 'high_engagement':
-          return <TrophyIcon className="h-6 w-6 text-yellow-500" />;
+          return <Trophy className="h-6 w-6 text-yellow-500" />;
         case 'streak_milestone':
-          return <FlameIcon className="h-6 w-6 text-orange-500" />;
+          return <Flame className="h-6 w-6 text-orange-500" />;
         case 'category_exploration':
-          return <BarChartIcon className="h-6 w-6 text-blue-500" />;
+          return <BarChart className="h-6 w-6 text-blue-500" />;
         case 'historical_access':
-          return <CalendarDaysIcon className="h-6 w-6 text-green-500" />;
+          return <CalendarDays className="h-6 w-6 text-green-500" />;
         default:
           return <Star className="h-6 w-6 text-blue-500" />;
       }
@@ -189,19 +189,19 @@ export function UpgradePrompt({
           {stats && (
             <div className="grid grid-cols-2 gap-4 text-sm bg-white/50 p-3 rounded-lg">
               <div className="flex items-center gap-2">
-                <BookmarkIcon className="h-4 w-4 text-purple-500" />
+                <Bookmark className="h-4 w-4 text-purple-500" />
                 <span>{stats.totalBookmarks} bookmarks</span>
               </div>
               <div className="flex items-center gap-2">
-                <FlameIcon className="h-4 w-4 text-orange-500" />
+                <Flame className="h-4 w-4 text-orange-500" />
                 <span>{stats.currentStreak} day streak</span>
               </div>
               <div className="flex items-center gap-2">
-                <TrophyIcon className="h-4 w-4 text-yellow-500" />
+                <Trophy className="h-4 w-4 text-yellow-500" />
                 <span>{stats.totalTermsViewed} terms</span>
               </div>
               <div className="flex items-center gap-2">
-                <BarChartIcon className="h-4 w-4 text-blue-500" />
+                <BarChart className="h-4 w-4 text-blue-500" />
                 <span>{stats.categoriesExplored} categories</span>
               </div>
             </div>
@@ -209,7 +209,8 @@ export function UpgradePrompt({
 
           <div className="border rounded-lg p-3 bg-gradient-to-r from-blue-50 to-purple-50">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">${PRICING_CONFIG.LIFETIME_PRICE}</div>
+              <div className="text-sm text-gray-500 line-through">${PRICING_CONFIG.ORIGINAL_PRICE}</div>
+              <div className="text-2xl font-bold text-blue-600">${PRICING_CONFIG.LAUNCH_DISCOUNT_PRICE}</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">One-time payment</div>
               <div className="text-xs text-green-600 font-medium mt-1">
                 Auto-adjusted for your region
@@ -319,7 +320,8 @@ export function UpgradePrompt({
 
             <div className="border rounded-lg p-3 bg-gradient-to-r from-blue-50 to-purple-50">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">${PRICING_CONFIG.LIFETIME_PRICE}</div>
+                <div className="text-sm text-gray-500 line-through">${PRICING_CONFIG.ORIGINAL_PRICE}</div>
+                <div className="text-2xl font-bold text-blue-600">${PRICING_CONFIG.LAUNCH_DISCOUNT_PRICE}</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">One-time payment</div>
                 <div className="text-xs text-green-600 font-medium mt-1">
                   Auto-adjusted for your region
@@ -355,7 +357,7 @@ export function UpgradePrompt({
       switch (contentType) {
         case 'section':
           return {
-            icon: <BookmarkIcon className="h-5 w-5 text-blue-500" />,
+            icon: <Bookmark className="h-5 w-5 text-blue-500" />,
             title: `Unlock ${contentTitle || 'this section'}`,
             description: 'Get unlimited access to detailed explanations, examples, and advanced content.',
             cta: 'Unlock All Sections',
@@ -397,7 +399,7 @@ export function UpgradePrompt({
                 {content.cta}
               </Button>
               <div className="text-xs text-gray-500">
-                ${PRICING_CONFIG.LIFETIME_PRICE} • One-time payment
+                ${PRICING_CONFIG.LAUNCH_DISCOUNT_PRICE} • One-time payment
               </div>
             </div>
           </div>

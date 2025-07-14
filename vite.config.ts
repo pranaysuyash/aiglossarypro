@@ -2,9 +2,45 @@ import path from 'node:path';
 import react from '@vitejs/plugin-react';
 import million from 'million/compiler';
 import { defineConfig } from 'vite';
+import { VitePWA } from 'vite-plugin-pwa';
+import { lucideTreeShakePlugin } from './client/vite-lucide-plugin';
 
 export default defineConfig({
-  plugins: [million.vite({ auto: true }), react()],
+  plugins: [
+    million.vite({ auto: true }), 
+    react(),
+    lucideTreeShakePlugin(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https?:\/\/.*\/api\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'api-cache',
+              expiration: {
+                maxEntries: 10,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
+              },
+            },
+          },
+          {
+            urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp)$/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'images-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 30 days
+              },
+            },
+          },
+        ],
+      },
+    })
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, 'client', 'src'),
@@ -61,6 +97,9 @@ export default defineConfig({
 
           // Math and formatting (specialized)
           'vendor-math': ['katex'],
+
+          // Icons (separate chunk for better caching)
+          'vendor-icons': ['lucide-react'],
         },
         // Optimize chunk file names for better caching
         chunkFileNames: (chunkInfo) => {
@@ -85,7 +124,25 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['react', 'react-dom'],
+    include: [
+      'react', 
+      'react-dom',
+      // Pre-bundle commonly used lucide icons
+      'lucide-react/dist/esm/icons/search',
+      'lucide-react/dist/esm/icons/menu',
+      'lucide-react/dist/esm/icons/user',
+      'lucide-react/dist/esm/icons/home',
+      'lucide-react/dist/esm/icons/settings',
+      'lucide-react/dist/esm/icons/book-open',
+      'lucide-react/dist/esm/icons/heart',
+      'lucide-react/dist/esm/icons/star',
+      'lucide-react/dist/esm/icons/eye',
+      'lucide-react/dist/esm/icons/check',
+      'lucide-react/dist/esm/icons/x',
+      'lucide-react/dist/esm/icons/arrow-right',
+      'lucide-react/dist/esm/icons/chevron-down',
+      'lucide-react/dist/esm/icons/loader-2'
+    ],
     exclude: ['three', 'mermaid', 'cytoscape', 'katex'], // Heavy libs that should be lazy loaded
   },
   server: {

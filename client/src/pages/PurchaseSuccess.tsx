@@ -16,7 +16,7 @@ export default function PurchaseSuccess() {
       window.gtag('event', 'purchase_success', {
         event_category: 'ecommerce',
         event_label: 'lifetime_access',
-        value: 179,
+        value: 179, // Launch discount price (originally $249)
       });
     }
   }, [refetch]);

@@ -23,7 +23,7 @@ import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import ThreeDKnowledgeGraph from '../components/visualization/3DKnowledgeGraph';
+import Lazy3DKnowledgeGraph from '../components/visualization/Lazy3DKnowledgeGraph';
 
 interface GraphNode {
   id: string;
@@ -121,7 +121,7 @@ const ThreeDVisualizationPage: React.FC = () => {
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
               {/* Main Visualization */}
               <div className="lg:col-span-3">
-                <ThreeDKnowledgeGraph onNodeSelect={handleNodeSelect} className="w-full" />
+                <Lazy3DKnowledgeGraph onNodeSelect={handleNodeSelect} className="w-full" />
               </div>
 
               {/* Information Panel */}

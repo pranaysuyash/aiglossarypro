@@ -195,7 +195,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
           </div>
 
           {/* Search Bars for different screen sizes */}
-          <div className="hidden lg:flex flex-1 max-w-xl mx-8">
+          <div className="hidden lg:flex flex-1 max-w-xl mx-8" data-testid="search-input">
             <SearchBar onSearch={handleSearch} />
           </div>
           <div className="hidden md:flex lg:hidden flex-1 max-w-md mx-4">
@@ -612,6 +612,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                         handleMobileMenuClose();
                       }}
                       className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] cursor-pointer"
+                      data-testid="dashboard-nav"
                     >
                       <BarChart3 className="mr-3 h-5 w-5" /> Dashboard
                     </Link>
@@ -622,6 +623,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                         handleMobileMenuClose();
                       }}
                       className="mobile-nav-item flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] cursor-pointer"
+                      data-testid="categories-nav"
                     >
                       <Grid3X3 className="mr-3 h-5 w-5" /> Categories
                     </Link>

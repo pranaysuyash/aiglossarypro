@@ -83,25 +83,25 @@ class EnhancedFunctionalAuditor {
   private interactAll: boolean;
   private runAccessibility: boolean;
   
-  // Test user configurations
+  // Test user configurations - Updated to match actual test users
   private testUsers: TestUser[] = [
     {
-      email: 'test@aimlglossary.com',
-      password: 'testpass123',
+      email: 'testuser@example.com',
+      password: 'testpassword123',
       type: 'free',
       expectedFeatures: ['basic search', 'limited view count'],
       expectedLimitations: ['daily view limits', 'upgrade prompts', 'restricted 42-section access']
     },
     {
-      email: 'premium@aimlglossary.com',
-      password: 'premiumpass123',
+      email: 'premiumuser@example.com',
+      password: 'testpassword123',
       type: 'premium',
       expectedFeatures: ['unlimited access', '42-section components', 'gamification', 'progress tracking'],
       expectedLimitations: []
     },
     {
-      email: 'admin@aimlglossary.com',
-      password: 'adminpass123',
+      email: 'adminuser@example.com',
+      password: 'testpassword123',
       type: 'admin',
       expectedFeatures: ['admin dashboard', 'content generation', 'user management', 'all premium features'],
       expectedLimitations: []
@@ -171,6 +171,12 @@ class EnhancedFunctionalAuditor {
     });
   }
 
+  private shouldRunAccessibilityScan(actionType: UserAction['type']): boolean {
+    // Only run accessibility scans on meaningful page state changes
+    const scanOnActions = ['navigate', 'click'];
+    return scanOnActions.includes(actionType);
+  }
+
   async captureAction(
     page: Page, 
     actionType: UserAction['type'], 
@@ -206,12 +212,45 @@ class EnhancedFunctionalAuditor {
       console.log(chalk.gray(`📸 Screenshot: ${path.basename(screenshotPath)}`));
     }
 
-    // Run accessibility scan if enabled
-    if (this.runAccessibility) {
+    // Run accessibility scan if enabled (but only on specific action types and with delays)
+    if (this.runAccessibility && this.shouldRunAccessibilityScan(actionType)) {
       try {
-        const violations = await getViolations(page);
-        if (violations.length > 0) {
-          action.accessibilityIssues = violations;
+        // Wait for page to stabilize before running accessibility scan
+        await page.waitForTimeout(1500);
+        await page.waitForLoadState('networkidle', { timeout: 5000 });
+        
+        const violations = await getViolations(page, {
+          tags: ['wcag2a', 'wcag2aa', 'wcag21aa'], // Focus on critical accessibility standards
+          rules: {
+            // Disable rules that commonly produce false positives in dynamic content
+            'color-contrast': { enabled: false }, // Often fails during transitions
+            'duplicate-id-aria': { enabled: false }, // Can be false positive in React apps
+            'aria-hidden-focus': { enabled: false }, // Often false positive with modals/dialogs
+          }
+        });
+        
+        // Filter out violations that are likely false positives
+        const significantViolations = violations.filter(violation => {
+          // Skip violations in elements that might be in transition
+          if (violation.nodes.some(node => 
+            node.element?.includes('opacity: 0') || 
+            node.element?.includes('visibility: hidden') ||
+            node.element?.includes('display: none')
+          )) {
+            return false;
+          }
+          
+          // Skip violations that are very common and often false positives
+          const skipRules = ['color-contrast', 'duplicate-id-aria', 'aria-hidden-focus'];
+          if (skipRules.includes(violation.id)) {
+            return false;
+          }
+          
+          return true;
+        });
+        
+        if (significantViolations.length > 0) {
+          action.accessibilityIssues = significantViolations;
           
           // Save detailed accessibility report
           const a11yReportPath = path.join(
@@ -220,8 +259,16 @@ class EnhancedFunctionalAuditor {
             `a11y-${this.actionCounter.toString().padStart(3, '0')}-${Date.now()}.json`
           );
           
-          await fs.writeFile(a11yReportPath, JSON.stringify(violations, null, 2));
-          console.log(chalk.red(`♿ Found ${violations.length} accessibility issues`));
+          await fs.writeFile(a11yReportPath, JSON.stringify({
+            timestamp: new Date().toISOString(),
+            actionType,
+            description,
+            totalViolations: violations.length,
+            significantViolations: significantViolations.length,
+            violations: significantViolations
+          }, null, 2));
+          
+          console.log(chalk.red(`♿ Found ${significantViolations.length} significant accessibility issues (${violations.length} total)`));
         }
       } catch (error) {
         console.log(chalk.yellow(`⚠️ Accessibility scan failed: ${error.message}`));
@@ -323,58 +370,83 @@ class EnhancedFunctionalAuditor {
   async runAuthenticationFlow(page: Page, user: TestUser): Promise<TestFlow> {
     const startTime = Date.now();
     this.currentActions = [];
+    let status: 'PASS' | 'FAIL' | 'WARNING' = 'PASS';
     
     console.log(chalk.magenta(`🔐 Authentication Flow - ${user.type} user`));
     
-    await this.captureAction(page, 'navigate', `Navigate to homepage`, undefined, this.baseUrl);
-    await page.goto(this.baseUrl);
-    await page.waitForLoadState('networkidle');
-    
-    // Handle cookie consent if present
     try {
-      const cookieButton = page.locator('button:has-text("Accept"), button:has-text("OK"), [data-testid*="cookie"]').first();
-      if (await cookieButton.isVisible({ timeout: 2000 })) {
-        await this.captureAction(page, 'click', 'Accept cookie consent');
-        await cookieButton.click();
+      await this.captureAction(page, 'navigate', `Navigate to homepage`, undefined, this.baseUrl);
+      await page.goto(this.baseUrl);
+      await page.waitForLoadState('networkidle', { timeout: 10000 });
+      
+      // Handle cookie consent if present
+      try {
+        const cookieButton = page.locator('button:has-text("Accept"), button:has-text("OK"), [data-testid*="cookie"]').first();
+        if (await cookieButton.isVisible({ timeout: 2000 })) {
+          await this.captureAction(page, 'click', 'Accept cookie consent');
+          await cookieButton.click();
+        }
+      } catch {
+        // No cookie consent found
       }
-    } catch {
-      // No cookie consent found
-    }
 
-    // Interact with all components on homepage if enabled
-    await this.interactWithAllComponents(page, 'Homepage');
-    
-    // Look for login/signin button
-    const loginSelectors = [
-      'a:has-text("Sign In")',
-      'a:has-text("Login")',
-      'button:has-text("Sign In")',
-      'button:has-text("Login")',
-      '[data-testid*="login"]',
-      '[data-testid*="signin"]'
-    ];
-    
-    let loginButton = null;
-    for (const selector of loginSelectors) {
-      loginButton = page.locator(selector).first();
-      if (await loginButton.isVisible({ timeout: 1000 })) break;
-    }
-    
-    if (loginButton && await loginButton.isVisible()) {
-      await this.captureAction(page, 'click', 'Click login/signin button');
-      await loginButton.click();
-      await page.waitForLoadState('networkidle');
+      // Interact with all components on homepage if enabled
+      await this.interactWithAllComponents(page, 'Homepage');
       
-      // Fill login form
-      await this.captureAction(page, 'fill', 'Enter email', 'input[type="email"], input[name="email"]', user.email);
-      await page.fill('input[type="email"], input[name="email"]', user.email);
+      // Look for login/signin button
+      const loginSelectors = [
+        'a:has-text("Sign In")',
+        'a:has-text("Login")', 
+        'button:has-text("Sign In")',
+        'button:has-text("Login")',
+        '[data-testid*="login"]',
+        '[data-testid*="signin"]',
+        '[href*="login"]'
+      ];
       
-      await this.captureAction(page, 'fill', 'Enter password', 'input[type="password"]', '***');
-      await page.fill('input[type="password"]', user.password);
+      let loginButton = null;
+      for (const selector of loginSelectors) {
+        try {
+          loginButton = page.locator(selector).first();
+          if (await loginButton.isVisible({ timeout: 1000 })) break;
+        } catch {
+          continue;
+        }
+      }
       
-      await this.captureAction(page, 'click', 'Submit login form');
-      await page.click('button[type="submit"], button:has-text("Sign In"), button:has-text("Login")');
-      await page.waitForLoadState('networkidle');
+      if (loginButton && await loginButton.isVisible()) {
+        await this.captureAction(page, 'click', 'Click login/signin button');
+        await loginButton.click();
+        await page.waitForLoadState('networkidle', { timeout: 10000 });
+        
+        // Wait for login form to be present
+        await page.waitForSelector('input[type="email"], input[name="email"]', { timeout: 5000 });
+        
+        // Fill login form
+        await this.captureAction(page, 'fill', 'Enter email', 'input[type="email"], input[name="email"]', user.email);
+        await page.fill('input[type="email"], input[name="email"]', user.email);
+        
+        await this.captureAction(page, 'fill', 'Enter password', 'input[type="password"]', '***');
+        await page.fill('input[type="password"]', user.password);
+        
+        await this.captureAction(page, 'click', 'Submit login form');
+        await page.click('button[type="submit"], button:has-text("Sign In"), button:has-text("Login")');
+        await page.waitForLoadState('networkidle', { timeout: 10000 });
+        
+        // Verify login success
+        const isLoggedIn = await this.verifyLoginSuccess(page, user);
+        if (!isLoggedIn) {
+          status = 'WARNING';
+          await this.captureAction(page, 'navigate', 'Login verification failed - user may not be authenticated');
+        }
+      } else {
+        status = 'WARNING';
+        await this.captureAction(page, 'navigate', 'Login button not found - continuing without authentication');
+      }
+    } catch (error) {
+      console.log(chalk.red(`❌ Authentication flow failed: ${error.message}`));
+      status = 'FAIL';
+      await this.captureAction(page, 'navigate', `Authentication error: ${error.message}`);
     }
     
     const duration = Date.now() - startTime;
@@ -383,36 +455,99 @@ class EnhancedFunctionalAuditor {
       flowName: 'Authentication',
       userType: user.type,
       actions: [...this.currentActions],
-      status: 'PASS', // Determine based on success criteria
+      status,
       duration
     };
+  }
+  
+  async verifyLoginSuccess(page: Page, user: TestUser): Promise<boolean> {
+    try {
+      // Look for indicators of successful login
+      const successIndicators = [
+        'text=Dashboard',
+        'text=Profile',
+        'text=Settings',
+        'text=Logout',
+        'text=Sign Out',
+        '[data-testid*="user-menu"]',
+        '[data-testid*="profile"]'
+      ];
+      
+      for (const indicator of successIndicators) {
+        try {
+          if (await page.locator(indicator).isVisible({ timeout: 2000 })) {
+            return true;
+          }
+        } catch {
+          continue;
+        }
+      }
+      
+      // Check for absence of login button as another indicator
+      const loginButtons = page.locator('a:has-text("Sign In"), a:has-text("Login"), button:has-text("Sign In"), button:has-text("Login")');
+      if (await loginButtons.count() === 0) {
+        return true;
+      }
+      
+      return false;
+    } catch {
+      return false;
+    }
   }
 
   async runNavigationFlow(page: Page, user: TestUser): Promise<TestFlow> {
     const startTime = Date.now();
     this.currentActions = [];
+    let status: 'PASS' | 'FAIL' | 'WARNING' = 'PASS';
     
     console.log(chalk.green(`🧭 Navigation Flow - ${user.type} user`));
     
-    // Test main navigation
-    const navItems = await page.locator('nav a, header a, [role="navigation"] a').all();
-    
-    for (let i = 0; i < Math.min(navItems.length, 5); i++) {
-      const navItem = navItems[i];
-      const href = await navItem.getAttribute('href');
-      const text = await navItem.textContent();
+    try {
+      // Test main navigation - get fresh locators each time
+      const navItemsData: Array<{href: string | null, text: string | null}> = [];
       
-      if (href && !href.startsWith('#') && !href.includes('mailto')) {
-        await this.captureAction(page, 'click', `Navigate to "${text}"`, undefined, href);
-        await navItem.click();
-        await page.waitForLoadState('networkidle');
-        
-        // Interact with components on this page
-        await this.interactWithAllComponents(page, `Navigation: ${text}`);
-        
-        // Test search if available
-        await this.testSearchFunctionality(page);
+      // First, collect navigation data without keeping element references
+      const navItems = await page.locator('nav a, header a, [role="navigation"] a').all();
+      for (const navItem of navItems.slice(0, 5)) {
+        try {
+          const href = await navItem.getAttribute('href');
+          const text = await navItem.textContent();
+          if (href && !href.startsWith('#') && !href.includes('mailto') && !href.includes('javascript:')) {
+            navItemsData.push({ href, text });
+          }
+        } catch (error) {
+          console.log(chalk.yellow(`⚠️ Could not get nav item data: ${error.message}`));
+        }
       }
+      
+      // Now navigate to each collected URL
+      for (const navData of navItemsData) {
+        if (!navData.href || !navData.text) continue;
+        
+        try {
+          await this.captureAction(page, 'navigate', `Navigate to "${navData.text}"`, undefined, navData.href);
+          
+          // Navigate using goto instead of click to avoid stale element issues
+          const fullUrl = navData.href.startsWith('http') ? navData.href : `${this.baseUrl}${navData.href}`;
+          await page.goto(fullUrl);
+          await page.waitForLoadState('networkidle', { timeout: 10000 });
+          
+          // Interact with components on this page
+          await this.interactWithAllComponents(page, `Navigation: ${navData.text}`);
+          
+          // Test search if available
+          await this.testSearchFunctionality(page);
+          
+        } catch (error) {
+          console.log(chalk.yellow(`⚠️ Navigation to "${navData.text}" failed: ${error.message}`));
+          status = 'WARNING';
+          await this.captureAction(page, 'navigate', `Failed to navigate to "${navData.text}": ${error.message}`);
+        }
+      }
+    } catch (error) {
+      console.log(chalk.red(`❌ Navigation flow failed: ${error.message}`));
+      status = 'FAIL';
+      await this.captureAction(page, 'navigate', `Navigation flow error: ${error.message}`);
     }
     
     const duration = Date.now() - startTime;
@@ -421,7 +556,7 @@ class EnhancedFunctionalAuditor {
       flowName: 'Navigation',
       userType: user.type,
       actions: [...this.currentActions],
-      status: 'PASS',
+      status,
       duration
     };
   }

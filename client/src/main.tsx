@@ -50,6 +50,9 @@ initAnalytics();
 // Initialize React Scan integration
 initReactScanIntegration();
 
+// Initialize PWA Service Worker
+import './utils/serviceWorkerRegistration';
+
 const root = createRoot(document.getElementById('root')!);
 
 root.render(

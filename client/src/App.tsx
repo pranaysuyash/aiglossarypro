@@ -39,6 +39,9 @@ import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import { GuestConversionFab } from '@/components/GuestPreviewBanner';
 import GuestAwareTermDetail from '@/components/GuestAwareTermDetail';
+import { OnboardingTour, useOnboarding } from '@/components/onboarding/OnboardingTour';
+import PWAInstallBanner from '@/components/PWAInstallBanner';
+import OfflineStatus from '@/components/OfflineStatus';
 import { useAuth } from '@/hooks/useAuth';
 import Home from '@/pages/Home';
 import NotFound from '@/pages/not-found';
@@ -279,6 +282,8 @@ function Router() {
 }
 
 function App() {
+  const { showOnboarding, completeOnboarding, dismissOnboarding } = useOnboarding();
+
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="ai-ml-glossary-theme">
@@ -286,6 +291,13 @@ function App() {
           <Toaster />
           <Router />
           <GuestConversionFab />
+          <PWAInstallBanner />
+          <OfflineStatus />
+          <OnboardingTour
+            isVisible={showOnboarding}
+            onComplete={completeOnboarding}
+            onDismiss={dismissOnboarding}
+          />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

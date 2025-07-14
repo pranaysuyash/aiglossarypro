@@ -165,9 +165,45 @@ app.use(responseLoggingMiddleware);
   // Use configurable port
   const port = serverConfig.port;
 
-  // Create HTTP server instance
-  const { createServer } = await import('node:http');
-  const server = createServer(app);
+  // Create HTTP/2 server in production, HTTP/1.1 in development for better debugging
+  let server: any;
+  if (serverConfig.nodeEnv === 'production') {
+    try {
+      const { createSecureServer } = await import('node:http2');
+      const fs = await import('node:fs');
+      
+      // Check if SSL certificates exist for HTTP/2
+      const sslKeyPath = process.env.SSL_KEY_PATH;
+      const sslCertPath = process.env.SSL_CERT_PATH;
+      
+      if (sslKeyPath && sslCertPath && fs.existsSync(sslKeyPath) && fs.existsSync(sslCertPath)) {
+        const options = {
+          key: fs.readFileSync(sslKeyPath),
+          cert: fs.readFileSync(sslCertPath),
+          allowHTTP1: true // Enable HTTP/1.1 fallback
+        };
+        
+        server = createSecureServer(options, app);
+        logger.info('✅ HTTP/2 server with TLS enabled');
+      } else {
+        // Fallback to HTTP/1.1 if no SSL certificates
+        const { createServer } = await import('node:http');
+        server = createServer(app);
+        logger.warn('⚠️ SSL certificates not found, falling back to HTTP/1.1');
+        logger.info('💡 To enable HTTP/2, set SSL_KEY_PATH and SSL_CERT_PATH environment variables');
+      }
+    } catch (error) {
+      // Fallback to HTTP/1.1 if HTTP/2 setup fails
+      const { createServer } = await import('node:http');
+      server = createServer(app);
+      logger.warn('⚠️ HTTP/2 setup failed, falling back to HTTP/1.1', { error: error.message });
+    }
+  } else {
+    // Use HTTP/1.1 in development for better debugging
+    const { createServer } = await import('node:http');
+    server = createServer(app);
+    logger.info('🔧 HTTP/1.1 server for development (better debugging)');
+  }
 
   // Setup Vite dev server in development (only if not using separate frontend server), static files in production
   if (serverConfig.nodeEnv === 'development' && !process.env.SEPARATE_FRONTEND_SERVER) {

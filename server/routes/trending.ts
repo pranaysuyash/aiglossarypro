@@ -6,6 +6,7 @@
 import { and, avg, count, desc, eq, gte, sql } from 'drizzle-orm';
 import type { Express, Request, Response } from 'express';
 import { categories, terms, termViews } from '../../shared/schema';
+import { CacheKeys, redisCache } from '../config/redis';
 import { db } from '../db';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';
@@ -279,7 +280,32 @@ export function registerTrendingRoutes(app: Express): void {
         offset: parseInt(offset as string),
       };
 
-      const trendingTerms = await getTrendingTerms(filters);
+      // Create cache key based on filters
+      const cacheKey = `trending_terms:${JSON.stringify(filters)}`;
+
+      // Use stale-while-revalidate for trending data (high frequency updates)
+      const trendingTerms = await redisCache.getStaleWhileRevalidate(
+        cacheKey,
+        () => getTrendingTerms(filters),
+        CacheKeys.SWR_CONFIG.HIGH_FREQUENCY
+      );
+
+      // Fallback if cache fails
+      if (!trendingTerms) {
+        const freshTerms = await getTrendingTerms(filters);
+        res.json({
+          success: true,
+          data: freshTerms,
+          filters,
+          pagination: {
+            limit: filters.limit,
+            offset: filters.offset,
+            total: freshTerms.length,
+          },
+          cacheStatus: 'miss'
+        });
+        return;
+      }
 
       res.json({
         success: true,
@@ -290,6 +316,7 @@ export function registerTrendingRoutes(app: Express): void {
           offset: filters.offset,
           total: trendingTerms.length,
         },
+        cacheStatus: 'hit'
       });
     } catch (error) {
       console.error('Get trending terms error:', error);

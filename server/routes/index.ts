@@ -50,6 +50,7 @@ import surpriseDiscoveryRoutes from './surpriseDiscovery';
 import { registerTermRoutes } from './terms';
 import { registerGuestPreviewRoutes } from './guestPreview';
 import { registerTrendingRoutes } from './trending';
+import referralsRoutes from './referrals';
 import { registerUserRoutes } from './user';
 import { registerUserProgressRoutes } from './user/progress';
 import { referralRoutes } from './referral';
@@ -140,6 +141,7 @@ export async function registerRoutes(app: Express): Promise<void> {
 
     // Register referral system routes
     app.use('/api/referral', referralRoutes);
+    app.use('/api/referrals', referralsRoutes);
     logger.info('✅ Referral system routes registered');
 
     // Register early bird pricing routes

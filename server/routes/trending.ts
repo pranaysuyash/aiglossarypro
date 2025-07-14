@@ -5,7 +5,7 @@
 
 import { and, avg, count, desc, eq, gte, sql } from 'drizzle-orm';
 import type { Express, Request, Response } from 'express';
-import { categories, termAnalytics, terms, userInteractions } from '../../shared/schema';
+import { categories, terms, termViews } from '../../shared/schema';
 import { db } from '../db';
 import { multiAuthMiddleware } from '../middleware/multiAuth';
 import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';
@@ -95,52 +95,28 @@ async function getTrendingTerms(filters: TrendingFilters): Promise<TrendingTerm[
       shortDefinition: terms.shortDefinition,
       categoryId: terms.categoryId,
       categoryName: categories.name,
-      viewCount: sql<number>`COALESCE(${termAnalytics.viewCount}, 0)`,
+      viewCount: sql<number>`COALESCE(${terms.viewCount}, 0)`,
       recentViews: sql<number>`
         COALESCE(
-          (SELECT COUNT(*) FROM ${userInteractions} 
-           WHERE ${userInteractions.termId} = ${terms.id} 
-           AND ${userInteractions.interactionType} = 'view'
-           AND ${userInteractions.timestamp} >= ${startTime.toISOString()}), 
+          (SELECT COUNT(*) FROM ${termViews} 
+           WHERE ${termViews.termId} = ${terms.id} 
+           AND ${termViews.viewedAt} >= ${startTime.toISOString()}), 
           0
         )`,
       previousViews: sql<number>`
         COALESCE(
-          (SELECT COUNT(*) FROM ${userInteractions} 
-           WHERE ${userInteractions.termId} = ${terms.id} 
-           AND ${userInteractions.interactionType} = 'view'
-           AND ${userInteractions.timestamp} >= ${previousStartTime.toISOString()}
-           AND ${userInteractions.timestamp} < ${startTime.toISOString()}), 
+          (SELECT COUNT(*) FROM ${termViews} 
+           WHERE ${termViews.termId} = ${terms.id} 
+           AND ${termViews.viewedAt} >= ${previousStartTime.toISOString()}
+           AND ${termViews.viewedAt} < ${startTime.toISOString()}), 
           0
         )`,
-      averageTimeSpent: sql<number>`
-        COALESCE(
-          (SELECT AVG(${userInteractions.duration}) FROM ${userInteractions} 
-           WHERE ${userInteractions.termId} = ${terms.id} 
-           AND ${userInteractions.interactionType} = 'view'
-           AND ${userInteractions.timestamp} >= ${startTime.toISOString()}), 
-          0
-        )`,
-      shareCount: sql<number>`
-        COALESCE(
-          (SELECT COUNT(*) FROM ${userInteractions} 
-           WHERE ${userInteractions.termId} = ${terms.id} 
-           AND ${userInteractions.interactionType} = 'share'
-           AND ${userInteractions.timestamp} >= ${startTime.toISOString()}), 
-          0
-        )`,
-      bookmarkCount: sql<number>`
-        COALESCE(
-          (SELECT COUNT(*) FROM ${userInteractions} 
-           WHERE ${userInteractions.termId} = ${terms.id} 
-           AND ${userInteractions.interactionType} = 'bookmark'
-           AND ${userInteractions.timestamp} >= ${startTime.toISOString()}), 
-          0
-        )`,
+      averageTimeSpent: sql<number>`0`,
+      shareCount: sql<number>`0`,
+      bookmarkCount: sql<number>`0`,
     })
     .from(terms)
-    .leftJoin(categories, eq(terms.categoryId, categories.id))
-    .leftJoin(termAnalytics, eq(terms.id, termAnalytics.termId));
+    .leftJoin(categories, eq(terms.categoryId, categories.id));
 
   // Add category filter if specified
   if (category) {
@@ -250,10 +226,8 @@ async function getTrendingAnalytics(timeRange: string): Promise<TrendingAnalytic
   // Get total trending terms (terms with recent activity)
   const totalTrendingResult = await db
     .select({ count: count() })
-    .from(userInteractions)
-    .where(
-      and(eq(userInteractions.interactionType, 'view'), gte(userInteractions.timestamp, startTime))
-    );
+    .from(termViews)
+    .where(gte(termViews.viewedAt, startTime));
 
   // Get top trending categories
   const topCategoriesResult = await db
@@ -262,12 +236,10 @@ async function getTrendingAnalytics(timeRange: string): Promise<TrendingAnalytic
       categoryName: categories.name,
       trendingCount: count(),
     })
-    .from(userInteractions)
-    .leftJoin(terms, eq(userInteractions.termId, terms.id))
+    .from(termViews)
+    .leftJoin(terms, eq(termViews.termId, terms.id))
     .leftJoin(categories, eq(terms.categoryId, categories.id))
-    .where(
-      and(eq(userInteractions.interactionType, 'view'), gte(userInteractions.timestamp, startTime))
-    )
+    .where(gte(termViews.viewedAt, startTime))
     .groupBy(terms.categoryId, categories.name)
     .orderBy(desc(count()))
     .limit(5);
@@ -372,23 +344,22 @@ export function registerTrendingRoutes(app: Express): void {
           id: categories.id,
           name: categories.name,
           description: categories.description,
-          viewCount: count(userInteractions.id),
-          uniqueTermsViewed: sql<number>`COUNT(DISTINCT ${userInteractions.termId})`,
-          averageEngagement: avg(userInteractions.duration),
+          viewCount: count(termViews.id),
+          uniqueTermsViewed: sql<number>`COUNT(DISTINCT ${termViews.termId})`,
+          averageEngagement: sql<number>`0`,
         })
         .from(categories)
         .leftJoin(terms, eq(categories.id, terms.categoryId))
         .leftJoin(
-          userInteractions,
+          termViews,
           and(
-            eq(terms.id, userInteractions.termId),
-            eq(userInteractions.interactionType, 'view'),
-            gte(userInteractions.timestamp, startTime)
+            eq(terms.id, termViews.termId),
+            gte(termViews.viewedAt, startTime)
           )
         )
         .groupBy(categories.id, categories.name, categories.description)
-        .having(sql`COUNT(${userInteractions.id}) > 0`)
-        .orderBy(desc(count(userInteractions.id)))
+        .having(sql`COUNT(${termViews.id}) > 0`)
+        .orderBy(desc(count(termViews.id)))
         .limit(parseInt(limit as string));
 
       res.json({
@@ -423,15 +394,14 @@ export function registerTrendingRoutes(app: Express): void {
           );
         }
 
-        // Record the interaction
-        await db.insert(userInteractions).values({
-          userId: user?.id || 'anonymous',
-          termId,
-          interactionType,
-          duration: duration || null,
-          metadata: metadata || {},
-          timestamp: new Date(),
-        });
+        // Record the interaction (only for views, since termViews table only tracks views)
+        if (interactionType === 'view') {
+          await db.insert(termViews).values({
+            userId: user?.id || null,
+            termId,
+            viewedAt: new Date(),
+          });
+        }
 
         res.json({
           success: true,

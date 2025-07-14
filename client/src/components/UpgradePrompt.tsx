@@ -12,6 +12,7 @@ import {
 import { useEffect, useState } from 'react';
 import { useAccess } from '../hooks/useAccess';
 import { useAuth } from '../hooks/useAuth';
+import { PRICING_CONFIG } from '@/config/pricing';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -208,7 +209,7 @@ export function UpgradePrompt({
 
           <div className="border rounded-lg p-3 bg-gradient-to-r from-blue-50 to-purple-50">
             <div className="text-center">
-              <div className="text-2xl font-bold text-blue-600">$249</div>
+              <div className="text-2xl font-bold text-blue-600">${PRICING_CONFIG.LIFETIME_PRICE}</div>
               <div className="text-sm text-gray-600 dark:text-gray-400">One-time payment</div>
               <div className="text-xs text-green-600 font-medium mt-1">
                 Auto-adjusted for your region
@@ -318,7 +319,7 @@ export function UpgradePrompt({
 
             <div className="border rounded-lg p-3 bg-gradient-to-r from-blue-50 to-purple-50">
               <div className="text-center">
-                <div className="text-2xl font-bold text-blue-600">$249</div>
+                <div className="text-2xl font-bold text-blue-600">${PRICING_CONFIG.LIFETIME_PRICE}</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">One-time payment</div>
                 <div className="text-xs text-green-600 font-medium mt-1">
                   Auto-adjusted for your region
@@ -396,7 +397,7 @@ export function UpgradePrompt({
                 {content.cta}
               </Button>
               <div className="text-xs text-gray-500">
-                $249 • One-time payment
+                ${PRICING_CONFIG.LIFETIME_PRICE} • One-time payment
               </div>
             </div>
           </div>

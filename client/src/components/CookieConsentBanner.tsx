@@ -305,9 +305,9 @@ export default function CookieConsentBanner({
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => setIsVisible(false)}
+                onClick={handleAcceptEssential}
                 className="flex-shrink-0 hover:bg-gray-100 dark:hover:bg-gray-800"
-                aria-label="Close cookie banner"
+                aria-label="Close cookie banner (Accept Essential Only)"
               >
                 <X className="h-4 w-4" />
               </Button>

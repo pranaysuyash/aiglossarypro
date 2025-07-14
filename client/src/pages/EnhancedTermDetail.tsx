@@ -292,7 +292,7 @@ export default function EnhancedTermDetail() {
                           }
                           className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                         >
-                          Upgrade to Lifetime Access - $249
+                          Upgrade to Lifetime Access - $179
                         </Button>
                         <Button variant="outline" className="text-gray-600 dark:text-gray-300">
                           Try Again Tomorrow

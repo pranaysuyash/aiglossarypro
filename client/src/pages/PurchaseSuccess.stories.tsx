@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { PurchaseSuccess } from './PurchaseSuccess';
+import PurchaseSuccess from './PurchaseSuccess';
 
 const meta = {
   title: 'Pages/PurchaseSuccess',

@@ -66,14 +66,17 @@ export function use3DCompatibility(): ThreeDCompatibility {
       const gl = webgl2 || webgl1;
       const webglVersion = webgl2 ? '2' : '1';
       
+      // Cast to proper WebGL type
+      const webglContext = gl as WebGLRenderingContext;
+      
       // Get WebGL info
-      const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
-      const renderer = debugInfo ? gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
-      const vendor = debugInfo ? gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : gl.getParameter(gl.VENDOR);
+      const debugInfo = webglContext.getExtension('WEBGL_debug_renderer_info');
+      const renderer = debugInfo ? webglContext.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : webglContext.getParameter(webglContext.RENDERER);
+      const vendor = debugInfo ? webglContext.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : webglContext.getParameter(webglContext.VENDOR);
       
       // Get capabilities
-      const maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
-      const maxViewportDims = gl.getParameter(gl.MAX_VIEWPORT_DIMS) as [number, number];
+      const maxTextureSize = webglContext.getParameter(webglContext.MAX_TEXTURE_SIZE);
+      const maxViewportDims = webglContext.getParameter(webglContext.MAX_VIEWPORT_DIMS) as [number, number];
       
       // Detect mobile
       const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);

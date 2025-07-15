@@ -5,6 +5,8 @@ import CookieConsentBanner from '@/components/CookieConsentBanner';
 import FirebaseLoginPage from '@/components/FirebaseLoginPage';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import { useEffect, useState } from 'react';
+import { reportWebVitals, preloadCriticalAssets, checkPerformanceBudget } from '@/utils/performance';
 // Lazy load heavy pages to reduce initial bundle size
 import {
   LazyAboutPage,
@@ -42,6 +44,7 @@ import GuestAwareTermDetail from '@/components/GuestAwareTermDetail';
 import { OnboardingTour, useOnboarding } from '@/components/onboarding/OnboardingTour';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
 import OfflineStatus from '@/components/OfflineStatus';
+import { UrgencyBanner, StickyUrgencyBar } from '@/components/UrgencyIndicators';
 import { useAuth } from '@/hooks/useAuth';
 import Home from '@/pages/Home';
 import NotFound from '@/pages/not-found';
@@ -53,7 +56,6 @@ import {
 } from '@/utils/preloadComponents';
 import { queryClient } from './lib/queryClient';
 import '@/utils/bundleAnalyzer'; // Initialize bundle analyzer
-import { useEffect, useState } from 'react';
 import { posthogExperiments } from '@/services/posthogExperiments';
 import { initAnalytics } from '@/lib/analytics';
 import { LandingPageGuard } from '@/components/LandingPageGuard';
@@ -93,27 +95,26 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function SmartLandingPage() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [, setLocation] = useLocation();
-  const [hasRedirected, setHasRedirected] = useState(false);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
 
   // Handle authenticated user redirect with better state management
   useEffect(() => {
-    if (!isLoading && isAuthenticated && !hasRedirected) {
-      setHasRedirected(true);
+    // Only check once when loading is complete
+    if (!isLoading && !hasCheckedAuth) {
+      setHasCheckedAuth(true);
       
-      // Determine the best landing page for authenticated users
-      // Premium users go to app, free users might go to dashboard to see their progress
-      const redirectPath = user?.lifetimeAccess ? '/app' : '/dashboard';
-      
-      // Small delay to ensure smooth transition
-      setTimeout(() => {
-        setLocation(redirectPath);
-      }, 100);
+      if (isAuthenticated) {
+        // Determine the best landing page for authenticated users
+        // Premium users go to app, free users might go to dashboard to see their progress
+        const redirectPath = user?.lifetimeAccess ? '/app' : '/dashboard';
+        
+        // Small delay to ensure smooth transition
+        setTimeout(() => {
+          setLocation(redirectPath);
+        }, 100);
+      }
     }
-    // Reset redirect flag when user becomes unauthenticated
-    if (!isAuthenticated) {
-      setHasRedirected(false);
-    }
-  }, [isAuthenticated, isLoading, setLocation, hasRedirected, user]);
+  }, [isAuthenticated, isLoading, setLocation, hasCheckedAuth, user]);
 
   // Show loading while checking auth status
   if (isLoading) {
@@ -127,8 +128,8 @@ function SmartLandingPage() {
     );
   }
 
-  // Don't render anything while redirecting authenticated users
-  if (isAuthenticated && hasRedirected) {
+  // Don't render landing page for authenticated users
+  if (isAuthenticated && hasCheckedAuth) {
     return (
       <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-50 to-purple-50">
         <div className="text-center">
@@ -147,7 +148,7 @@ function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
   const [location] = useLocation();
 
-  // Initialize analytics and experiments
+  // Initialize analytics, experiments, and performance monitoring
   useEffect(() => {
     // Initialize analytics (PostHog, GA4)
     initAnalytics();
@@ -164,6 +165,30 @@ function Router() {
     };
 
     posthogExperiments.initialize(user?.uid, userProperties);
+
+    // Initialize performance monitoring
+    preloadCriticalAssets();
+    
+    // Report web vitals
+    reportWebVitals((metric) => {
+      console.log('[Web Vitals]', metric);
+      // Send to analytics if needed
+      if (window.gtag) {
+        window.gtag('event', metric.name, {
+          value: Math.round(metric.value),
+          metric_id: metric.id,
+          metric_value: metric.value,
+          metric_delta: metric.delta,
+        });
+      }
+    });
+
+    // Check performance budget in development
+    if (import.meta.env.DEV) {
+      setTimeout(() => {
+        checkPerformanceBudget();
+      }, 3000);
+    }
   }, [isAuthenticated, user, location]);
 
   // Preload components based on authentication status
@@ -195,6 +220,9 @@ function Router() {
   return (
     <div className="flex flex-col min-h-screen">
       <SkipLinks />
+      
+      {/* Urgency banner - show on landing page only */}
+      {isLandingPage && <UrgencyBanner />}
 
       {/* Only show main header if NOT on landing page */}
       {!isLandingPage && <Header />}
@@ -277,27 +305,45 @@ function Router() {
 
       {/* Cookie Consent Banner - Show on all pages */}
       <CookieConsentBanner />
+      
+      {/* Sticky urgency bar - show on landing page only */}
+      {isLandingPage && <StickyUrgencyBar />}
     </div>
   );
 }
 
-function App() {
-  const { showOnboarding, completeOnboarding, dismissOnboarding } = useOnboarding();
+function AppContent() {
+  const { showOnboarding, completeOnboarding, dismissOnboarding, checkAndShowOnboarding } = useOnboarding();
+  const { isAuthenticated } = useAuth();
 
+  // Handle onboarding logic with proper authentication check
+  useEffect(() => {
+    const cleanup = checkAndShowOnboarding(isAuthenticated);
+    return cleanup;
+  }, [isAuthenticated, checkAndShowOnboarding]);
+
+  return (
+    <>
+      <Toaster />
+      <Router />
+      <GuestConversionFab />
+      <PWAInstallBanner />
+      <OfflineStatus />
+      <OnboardingTour
+        isVisible={showOnboarding}
+        onComplete={completeOnboarding}
+        onDismiss={dismissOnboarding}
+      />
+    </>
+  );
+}
+
+function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider defaultTheme="light" storageKey="ai-ml-glossary-theme">
         <TooltipProvider>
-          <Toaster />
-          <Router />
-          <GuestConversionFab />
-          <PWAInstallBanner />
-          <OfflineStatus />
-          <OnboardingTour
-            isVisible={showOnboarding}
-            onComplete={completeOnboarding}
-            onDismiss={dismissOnboarding}
-          />
+          <AppContent />
         </TooltipProvider>
       </ThemeProvider>
     </QueryClientProvider>

@@ -768,6 +768,448 @@ export const insertDailyTermSelectionsSchema = createInsertSchema(dailyTermSelec
   createdAt: true,
 } as const);
 
+// Companies in AI/ML space (from migration)
+export const companies = pgTable(
+  'companies',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 200 }).notNull(),
+    description: text('description'),
+    foundingYear: integer('founding_year'),
+    headquarters: varchar('headquarters', { length: 200 }),
+    companySize: varchar('company_size', { length: 50 }),
+    specializations: text('specializations').array().default([]),
+    websiteUrl: text('website_url'),
+    logoUrl: text('logo_url'),
+    fundingInfo: jsonb('funding_info').default({}),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    specializationsIdx: index('companies_specializations_idx').on(table.specializations),
+    nameIdx: index('companies_name_idx').on(table.name),
+  })
+);
+
+// People in AI/ML space (from migration)
+export const people = pgTable(
+  'people',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 200 }).notNull(),
+    title: varchar('title', { length: 200 }),
+    bio: text('bio'),
+    companyId: uuid('company_id').references(() => companies.id),
+    areasOfExpertise: text('areas_of_expertise').array().default([]),
+    socialLinks: jsonb('social_links').default({}),
+    imageUrl: text('image_url'),
+    notableWorks: text('notable_works').array().default([]),
+    location: varchar('location', { length: 200 }),
+    websiteUrl: text('website_url'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    companyIdx: index('people_company_idx').on(table.companyId),
+    expertiseIdx: index('people_expertise_idx').on(table.areasOfExpertise),
+    nameIdx: index('people_name_idx').on(table.name),
+  })
+);
+
+// Datasets (from migration)
+export const datasets = pgTable(
+  'datasets',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 200 }).notNull(),
+    description: text('description'),
+    sourceUrl: text('source_url'),
+    license: varchar('license', { length: 100 }),
+    sizeInfo: varchar('size_info', { length: 100 }),
+    format: varchar('format', { length: 50 }),
+    categories: text('categories').array().default([]),
+    downloadCount: integer('download_count').default(0),
+    lastUpdated: timestamp('last_updated'),
+    metadata: jsonb('metadata').default({}),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => ({
+    categoriesIdx: index('datasets_categories_idx').on(table.categories),
+    nameIdx: index('datasets_name_idx').on(table.name),
+  })
+);
+
+// Resources/tools/websites (from migration)
+export const resources = pgTable(
+  'resources',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    title: varchar('title', { length: 200 }).notNull(),
+    url: text('url').notNull(),
+    description: text('description'),
+    resourceType: varchar('resource_type', { length: 50 }), // 'tutorial', 'tool', 'documentation', 'blog'
+    difficultyLevel: varchar('difficulty_level', { length: 20 }), // 'beginner', 'intermediate', 'advanced'
+    tags: text('tags').array().default([]),
+    rating: decimal('rating', { precision: 3, scale: 2 }),
+    reviewCount: integer('review_count').default(0),
+    lastChecked: timestamp('last_checked'),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => ({
+    tagsIdx: index('resources_tags_idx').on(table.tags),
+    typeIdx: index('resources_type_idx').on(table.resourceType),
+    ratingIdx: index('resources_rating_idx').on(table.rating),
+  })
+);
+
+// Entity linking tables - connects terms to people, companies, datasets, resources
+export const entityLinks = pgTable(
+  'entity_links',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    termId: uuid('term_id')
+      .notNull()
+      .references(() => enhancedTerms.id, { onDelete: 'cascade' }),
+    
+    // Entity reference (one of these will be populated)
+    personId: uuid('person_id').references(() => people.id, { onDelete: 'cascade' }),
+    companyId: uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }),
+    datasetId: uuid('dataset_id').references(() => datasets.id, { onDelete: 'cascade' }),
+    resourceId: uuid('resource_id').references(() => resources.id, { onDelete: 'cascade' }),
+    
+    // Link metadata
+    linkType: varchar('link_type', { length: 50 }).notNull(), // 'created_by', 'works_for', 'uses_dataset', 'recommends_resource', etc.
+    relevanceScore: integer('relevance_score').default(5), // 1-10 relevance rating
+    description: text('description'), // Optional description of the relationship
+    
+    // Admin tracking
+    createdBy: varchar('created_by').references(() => users.id),
+    verifiedBy: varchar('verified_by').references(() => users.id),
+    verificationStatus: varchar('verification_status', { length: 20 }).default('unverified'), // 'unverified', 'verified', 'flagged'
+    
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    termIdx: index('entity_links_term_idx').on(table.termId),
+    personIdx: index('entity_links_person_idx').on(table.personId),
+    companyIdx: index('entity_links_company_idx').on(table.companyId),
+    datasetIdx: index('entity_links_dataset_idx').on(table.datasetId),
+    resourceIdx: index('entity_links_resource_idx').on(table.resourceId),
+    typeIdx: index('entity_links_type_idx').on(table.linkType),
+    verificationIdx: index('entity_links_verification_idx').on(table.verificationStatus),
+  })
+);
+
+// Community contributions system
+export const contributions = pgTable(
+  'contributions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: varchar('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    
+    // Contribution type and target
+    contributionType: varchar('contribution_type', { length: 50 }).notNull(), 
+    // 'term_edit', 'new_person', 'new_company', 'new_dataset', 'new_resource', 'entity_link', 'content_correction'
+    
+    // Target entity (one of these will be populated)
+    termId: uuid('term_id').references(() => enhancedTerms.id, { onDelete: 'cascade' }),
+    personId: uuid('person_id').references(() => people.id, { onDelete: 'cascade' }),
+    companyId: uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }),
+    datasetId: uuid('dataset_id').references(() => datasets.id, { onDelete: 'cascade' }),
+    resourceId: uuid('resource_id').references(() => resources.id, { onDelete: 'cascade' }),
+    
+    // Contribution content
+    originalData: jsonb('original_data'), // Original entity data
+    proposedData: jsonb('proposed_data').notNull(), // User's proposed changes/additions
+    changeDescription: text('change_description').notNull(), // User's explanation
+    
+    // Moderation workflow
+    status: varchar('status', { length: 20 }).default('pending'), // 'pending', 'approved', 'rejected', 'needs_review'
+    moderatedBy: varchar('moderated_by').references(() => users.id),
+    moderatedAt: timestamp('moderated_at'),
+    moderationNotes: text('moderation_notes'),
+    
+    // Quality tracking
+    communityScore: integer('community_score').default(0), // Community upvotes/downvotes
+    qualityFlags: text('quality_flags').array().default([]), // 'spam', 'inappropriate', 'inaccurate', etc.
+    
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    userIdx: index('contributions_user_idx').on(table.userId),
+    typeIdx: index('contributions_type_idx').on(table.contributionType),
+    statusIdx: index('contributions_status_idx').on(table.status),
+    termIdx: index('contributions_term_idx').on(table.termId),
+    scoreIdx: index('contributions_score_idx').on(table.communityScore),
+    createdAtIdx: index('contributions_created_idx').on(table.createdAt),
+  })
+);
+
+// User reputation and gamification for contributions
+export const userReputation = pgTable(
+  'user_reputation',
+  {
+    userId: varchar('user_id')
+      .primaryKey()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    
+    // Reputation scores
+    totalScore: integer('total_score').default(0),
+    contributionScore: integer('contribution_score').default(0), // From approved contributions
+    moderationScore: integer('moderation_score').default(0), // From moderation activities
+    communityScore: integer('community_score').default(0), // From community interactions
+    
+    // Achievement counters
+    approvedContributions: integer('approved_contributions').default(0),
+    helpfulVotes: integer('helpful_votes').default(0),
+    moderationActions: integer('moderation_actions').default(0),
+    
+    // Badges and levels
+    badges: text('badges').array().default([]), // Array of earned badge IDs
+    reputationLevel: varchar('reputation_level', { length: 20 }).default('novice'), 
+    // 'novice', 'contributor', 'expert', 'moderator', 'master'
+    
+    // Privileges
+    canModerate: boolean('can_moderate').default(false),
+    canCreateDirectly: boolean('can_create_directly').default(false), // Skip moderation for trusted users
+    
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    totalScoreIdx: index('user_reputation_total_score_idx').on(table.totalScore),
+    levelIdx: index('user_reputation_level_idx').on(table.reputationLevel),
+    contributionScoreIdx: index('user_reputation_contribution_idx').on(table.contributionScore),
+  })
+);
+
+// Subscription plans (from migration)
+export const subscriptionPlans = pgTable(
+  'subscription_plans',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 100 }).notNull(),
+    priceMonthly: decimal('price_monthly', { precision: 10, scale: 2 }),
+    priceYearly: decimal('price_yearly', { precision: 10, scale: 2 }),
+    features: jsonb('features').notNull(),
+    maxUsers: integer('max_users'),
+    stripePriceId: varchar('stripe_price_id', { length: 100 }),
+    isActive: boolean('is_active').default(true),
+    createdAt: timestamp('created_at').defaultNow(),
+  },
+  (table) => ({
+    nameIdx: index('subscription_plans_name_idx').on(table.name),
+    activeIdx: index('subscription_plans_active_idx').on(table.isActive),
+  })
+);
+
+// User subscriptions (from migration)
+export const userSubscriptions = pgTable(
+  'user_subscriptions',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    userId: varchar('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    planId: uuid('plan_id')
+      .notNull()
+      .references(() => subscriptionPlans.id),
+    stripeSubscriptionId: varchar('stripe_subscription_id', { length: 100 }),
+    status: varchar('status', { length: 50 }).notNull(), // 'active', 'canceled', 'past_due'
+    currentPeriodStart: timestamp('current_period_start'),
+    currentPeriodEnd: timestamp('current_period_end'),
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    userIdx: index('user_subscriptions_user_idx').on(table.userId),
+    statusIdx: index('user_subscriptions_status_idx').on(table.status),
+    planIdx: index('user_subscriptions_plan_idx').on(table.planId),
+  })
+);
+
+// Teams for enterprise features
+export const teams = pgTable(
+  'teams',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 200 }).notNull(),
+    description: text('description'),
+    subscriptionId: uuid('subscription_id').references(() => userSubscriptions.id),
+    
+    // Team settings
+    settings: jsonb('settings').default({}),
+    maxMembers: integer('max_members').default(10),
+    
+    // Owner information
+    ownerId: varchar('owner_id')
+      .notNull()
+      .references(() => users.id),
+    
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    ownerIdx: index('teams_owner_idx').on(table.ownerId),
+    nameIdx: index('teams_name_idx').on(table.name),
+  })
+);
+
+// Team memberships
+export const teamMemberships = pgTable(
+  'team_memberships',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    teamId: uuid('team_id')
+      .notNull()
+      .references(() => teams.id, { onDelete: 'cascade' }),
+    userId: varchar('user_id')
+      .notNull()
+      .references(() => users.id, { onDelete: 'cascade' }),
+    
+    role: varchar('role', { length: 20 }).default('member'), // 'member', 'admin', 'owner'
+    permissions: text('permissions').array().default([]), // Specific permissions
+    
+    joinedAt: timestamp('joined_at').defaultNow(),
+    invitedBy: varchar('invited_by').references(() => users.id),
+    status: varchar('status', { length: 20 }).default('active'), // 'active', 'invited', 'suspended'
+  },
+  (table) => ({
+    teamIdx: index('team_memberships_team_idx').on(table.teamId),
+    userIdx: index('team_memberships_user_idx').on(table.userId),
+    roleIdx: index('team_memberships_role_idx').on(table.role),
+    statusIdx: index('team_memberships_status_idx').on(table.status),
+    uniqueTeamUser: unique('team_memberships_unique').on(table.teamId, table.userId),
+  })
+);
+
+// API keys for enterprise access
+export const apiKeys = pgTable(
+  'api_keys',
+  {
+    id: uuid('id').primaryKey().defaultRandom(),
+    name: varchar('name', { length: 100 }).notNull(),
+    keyHash: varchar('key_hash', { length: 256 }).notNull().unique(), // Hashed API key
+    keyPrefix: varchar('key_prefix', { length: 10 }).notNull(), // First few chars for identification
+    
+    // Ownership
+    userId: varchar('user_id').references(() => users.id, { onDelete: 'cascade' }),
+    teamId: uuid('team_id').references(() => teams.id, { onDelete: 'cascade' }),
+    
+    // Permissions and limits
+    permissions: text('permissions').array().default([]), // API endpoints allowed
+    rateLimit: integer('rate_limit').default(1000), // Requests per hour
+    
+    // Usage tracking
+    totalRequests: integer('total_requests').default(0),
+    lastUsed: timestamp('last_used'),
+    
+    // Status
+    isActive: boolean('is_active').default(true),
+    expiresAt: timestamp('expires_at'),
+    
+    createdAt: timestamp('created_at').defaultNow(),
+    updatedAt: timestamp('updated_at').defaultNow(),
+  },
+  (table) => ({
+    keyHashIdx: index('api_keys_hash_idx').on(table.keyHash),
+    userIdx: index('api_keys_user_idx').on(table.userId),
+    teamIdx: index('api_keys_team_idx').on(table.teamId),
+    activeIdx: index('api_keys_active_idx').on(table.isActive),
+  })
+);
+
+// Insert schemas for new tables
+export const insertPersonSchema = createInsertSchema(people).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertCompanySchema = createInsertSchema(companies).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertDatasetSchema = createInsertSchema(datasets).omit({
+  id: true,
+  createdAt: true,
+} as const);
+
+export const insertResourceSchema = createInsertSchema(resources).omit({
+  id: true,
+  createdAt: true,
+} as const);
+
+export const insertEntityLinkSchema = createInsertSchema(entityLinks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertContributionSchema = createInsertSchema(contributions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertTeamSchema = createInsertSchema(teams).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+export const insertTeamMembershipSchema = createInsertSchema(teamMemberships).omit({
+  id: true,
+  joinedAt: true,
+} as const);
+
+export const insertApiKeySchema = createInsertSchema(apiKeys).omit({
+  id: true,
+  totalRequests: true,
+  lastUsed: true,
+  createdAt: true,
+  updatedAt: true,
+} as const);
+
+// Types for new tables
+export type Person = typeof people.$inferSelect;
+export type InsertPerson = z.infer<typeof insertPersonSchema>;
+
+export type Company = typeof companies.$inferSelect;
+export type InsertCompany = z.infer<typeof insertCompanySchema>;
+
+export type Dataset = typeof datasets.$inferSelect;
+export type InsertDataset = z.infer<typeof insertDatasetSchema>;
+
+export type Resource = typeof resources.$inferSelect;
+export type InsertResource = z.infer<typeof insertResourceSchema>;
+
+export type EntityLink = typeof entityLinks.$inferSelect;
+export type InsertEntityLink = z.infer<typeof insertEntityLinkSchema>;
+
+export type Contribution = typeof contributions.$inferSelect;
+export type InsertContribution = z.infer<typeof insertContributionSchema>;
+
+export type UserReputation = typeof userReputation.$inferSelect;
+
+export type SubscriptionPlan = typeof subscriptionPlans.$inferSelect;
+export type UserSubscription = typeof userSubscriptions.$inferSelect;
+
+export type Team = typeof teams.$inferSelect;
+export type InsertTeam = z.infer<typeof insertTeamSchema>;
+
+export type TeamMembership = typeof teamMemberships.$inferSelect;
+export type InsertTeamMembership = z.infer<typeof insertTeamMembershipSchema>;
+
+export type ApiKey = typeof apiKeys.$inferSelect;
+export type InsertApiKey = z.infer<typeof insertApiKeySchema>;
+
 // Re-export A/B testing tables
 export {
   type ABTest,

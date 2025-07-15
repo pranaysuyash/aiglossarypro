@@ -1,0 +1,37 @@
+{
+  "overview": {
+    "totalTerms": 5,
+    "completedTerms": 5,
+    "gapPercentage": 0,
+    "completionRate": 100
+  },
+  "criticalGaps": {
+    "missingDefinitions": {
+      "count": 0,
+      "percentage": 0
+    },
+    "missingShortDefinitions": {
+      "count": 0,
+      "percentage": 0
+    },
+    "uncategorizedTerms": {
+      "count": 0,
+      "percentage": 0
+    },
+    "lowQualityTerms": {
+      "count": 0,
+      "percentage": 0
+    }
+  },
+  "enhancementOpportunities": {
+    "missingCodeExamples": {
+      "count": 0,
+      "percentage": 0
+    },
+    "missingInteractiveElements": {
+      "count": 0,
+      "percentage": 0
+    }
+  },
+  "generatedAt": "2025-07-15T06:36:34.956Z"
+}

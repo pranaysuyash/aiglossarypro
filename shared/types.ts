@@ -9,6 +9,7 @@ export interface IUser {
   uid?: string; // Firebase UID
   email: string;
   name: string;
+  displayName?: string;
   firstName?: string;
   lastName?: string;
   profileImageUrl?: string;

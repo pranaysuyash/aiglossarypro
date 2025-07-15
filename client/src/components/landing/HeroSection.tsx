@@ -17,6 +17,12 @@ export function HeroSection() {
   
   // PostHog experiment for CTA messaging
   const ctaExperiment = useExperiment('landingPageCTA', 'control');
+  
+  // PostHog experiment for headline variations
+  const headlineExperiment = useExperiment('landingPageHeadline', 'control');
+  
+  // PostHog experiment for social proof placement
+  const socialProofExperiment = useExperiment('socialProofPlacement', 'control');
 
   // Get the background component for current variant
   const BackgroundComponent = BACKGROUND_COMPONENTS[currentVariant];
@@ -28,6 +34,16 @@ export function HeroSection() {
         return 'Explore Free Samples';
       case 'explore':
         return 'Start Exploring';
+      case 'urgency':
+        return 'Get Instant Access';
+      case 'benefit':
+        return 'Master AI/ML Today';
+      case 'social_proof':
+        return 'Join 1,000+ Professionals';
+      case 'value':
+        return 'Get Lifetime Access';
+      case 'action':
+        return 'Start Learning Now';
       default:
         return 'Start for Free';
     }
@@ -40,8 +56,50 @@ export function HeroSection() {
         return 'Browse 10+ curated AI/ML definitions • No signup required';
       case 'explore':
         return 'Dive into 10,000+ terms • No credit card required';
+      case 'urgency':
+        return 'Limited time offer • Start now, upgrade anytime';
+      case 'benefit':
+        return 'Transform your AI knowledge • Free to start';
+      case 'social_proof':
+        return 'Trusted by ML engineers at top companies • Free trial';
+      case 'value':
+        return 'One-time payment • Never pay monthly again';
+      case 'action':
+        return 'Begin your AI/ML journey • Free to start';
       default:
         return 'No credit card required • Instant access';
+    }
+  };
+
+  // Get headline text based on experiment variant
+  const getHeadlineText = () => {
+    switch (headlineExperiment.variant) {
+      case 'savings_focused':
+        return 'Save $150 • Get Lifetime AI/ML Access';
+      case 'content_focused':
+        return 'Master AI with 10,000+ Curated Terms';
+      case 'urgency_focused':
+        return 'Limited Time: Complete AI/ML Reference';
+      case 'benefit_focused':
+        return 'From Beginner to Expert in AI/ML';
+      default:
+        return 'Master AI & Machine Learning';
+    }
+  };
+
+  // Get subheadline text based on experiment variant
+  const getSubheadlineText = () => {
+    switch (headlineExperiment.variant) {
+      case 'savings_focused':
+        return 'Don\'t pay monthly subscriptions forever. Get lifetime access to our comprehensive AI/ML reference for less than most courses cost.';
+      case 'content_focused':
+        return 'The most comprehensive AI/ML reference with code examples, real-world applications, and expert explanations.';
+      case 'urgency_focused':
+        return 'Early bird pricing ends soon. Join 1,000+ professionals who chose the complete AI/ML reference solution.';
+      case 'benefit_focused':
+        return 'Transform your career with the ultimate AI/ML learning resource. From fundamentals to advanced concepts.';
+      default:
+        return 'The most comprehensive AI/ML reference with 10,000+ terms, code examples, and real-world applications.';
     }
   };
 
@@ -59,6 +117,18 @@ export function HeroSection() {
 
       // Track landing page funnel - page view
       trackLandingPageFunnel('page_view');
+
+      // Track headline experiment exposure
+      headlineExperiment.trackConversion('headline_exposure', 1, {
+        headline_variant: headlineExperiment.variant,
+        headline_text: getHeadlineText(),
+      });
+
+      // Track social proof experiment exposure
+      socialProofExperiment.trackConversion('social_proof_exposure', 1, {
+        social_proof_variant: socialProofExperiment.variant,
+        placement: socialProofExperiment.variant,
+      });
 
       // Track scroll depth
       let maxScroll = 0;
@@ -109,6 +179,13 @@ export function HeroSection() {
       button_text: getCTAText(),
       position: 'hero_main',
       background_variant: currentVariant,
+    });
+
+    // Track headline experiment conversion
+    headlineExperiment.trackConversion('hero_cta_click', 1, {
+      headline_variant: headlineExperiment.variant,
+      headline_text: getHeadlineText(),
+      cta_text: getCTAText(),
     });
 
     // Track with GA4
@@ -180,25 +257,27 @@ export function HeroSection() {
 
       {/* Content overlay */}
       <div className="relative z-10 max-w-7xl mx-auto text-center">
-        {/* Social proof badge */}
-        <Badge
-          variant="secondary"
-          className="mb-6 px-4 py-2 text-sm sm:text-base font-medium bg-white/10 text-white hover:bg-white/20 mx-auto"
-        >
-          <Users className="w-4 h-4 mr-2" />
-          Join 1,000+ AI/ML professionals
-        </Badge>
+        {/* Social proof badge - positioning based on A/B test */}
+        {socialProofExperiment.variant !== 'bottom' && (
+          <Badge
+            variant="secondary"
+            className="mb-6 px-4 py-2 text-sm sm:text-base font-medium bg-white/10 text-white hover:bg-white/20 mx-auto"
+          >
+            <Users className="w-4 h-4 mr-2" />
+            {socialProofExperiment.variant === 'numbers' 
+              ? '1,000+ professionals learning AI/ML' 
+              : 'Join 1,000+ AI/ML professionals'}
+          </Badge>
+        )}
 
         {/* Main headline */}
         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl xl:text-8xl font-bold tracking-tight mb-6 leading-tight sm:leading-tight md:leading-tight lg:leading-tight drop-shadow-lg">
-          Master AI & Machine Learning
+          {getHeadlineText()}
         </h1>
 
         {/* Subheadline */}
         <p className="text-xl sm:text-2xl md:text-3xl text-gray-200 mb-8 max-w-4xl mx-auto leading-relaxed px-4 sm:px-0 drop-shadow">
-          The most comprehensive AI/ML reference with{' '}
-          <span className="text-purple-300 font-semibold">10,000+ terms</span>, code examples, and
-          real-world applications.
+          {getSubheadlineText()}
         </p>
 
         {/* Value props */}
@@ -266,6 +345,19 @@ export function HeroSection() {
             </span>
           </p>
         </div>
+        
+        {/* Social proof badge - bottom placement for A/B test */}
+        {socialProofExperiment.variant === 'bottom' && (
+          <div className="mt-6">
+            <Badge
+              variant="secondary"
+              className="px-4 py-2 text-sm sm:text-base font-medium bg-white/10 text-white hover:bg-white/20 mx-auto"
+            >
+              <Users className="w-4 h-4 mr-2" />
+              Trusted by 1,000+ AI/ML professionals
+            </Badge>
+          </div>
+        )}
       </div>
 
       {/* Development background tester */}

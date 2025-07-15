@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { Trending } from './Trending';
+import Trending from './Trending';
 
 const meta = {
   title: 'Pages/Trending',

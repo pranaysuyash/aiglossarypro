@@ -45,7 +45,7 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
   const [selectedType, setSelectedType] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedExample, setSelectedExample] = useState<CodeExample | null>(null);
-  const [showCreateModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Build query parameters
   const queryParams = new URLSearchParams();

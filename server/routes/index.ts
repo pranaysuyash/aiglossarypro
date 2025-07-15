@@ -48,6 +48,8 @@ import { registerSubcategoryRoutes } from './subcategories';
 // Import surprise discovery routes
 import surpriseDiscoveryRoutes from './surpriseDiscovery';
 import { registerTermRoutes } from './terms';
+import { registerDailyTermsRoutes } from './dailyTerms';
+import { registerContentManagementRoutes } from './admin/contentManagement';
 import { registerGuestPreviewRoutes } from './guestPreview';
 import { registerTrendingRoutes } from './trending';
 import referralsRoutes from './referrals';
@@ -76,6 +78,8 @@ export async function registerRoutes(app: Express): Promise<void> {
     registerSubcategoryRoutes(app);
     logger.info('✅ Subcategory routes registered - 21,993 subcategories now accessible');
     registerTermRoutes(app);
+    registerDailyTermsRoutes(app);
+    registerContentManagementRoutes(app);
     registerGuestPreviewRoutes(app);
     logger.info('✅ Guest preview routes registered - unauthenticated preview access enabled');
     registerSectionRoutes(app);

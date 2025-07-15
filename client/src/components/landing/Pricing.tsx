@@ -5,11 +5,13 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { useBackgroundABTest } from '@/hooks/useBackgroundABTest';
 import { useCountryPricing } from '@/hooks/useCountryPricing';
 import { useABTestTracking } from '@/services/abTestingService';
+import { useExperiment } from '@/services/posthogExperiments';
 import { trackPurchaseIntent } from '@/types/analytics';
 import { TestPurchaseButton } from '../TestPurchaseButton';
 import { FreeTierMessaging } from './FreeTierMessaging';
 import { PPPBanner } from './PPPBanner';
 import { PricingCountdown } from './PricingCountdown';
+import { FreeTierBanner, TrustBadge } from '../TrustBuilding';
 
 // Separate component for the comparison table to isolate DOM structure
 function ComparisonTable() {
@@ -100,17 +102,57 @@ export function Pricing() {
   const pricing = useCountryPricing();
   const { currentVariant } = useBackgroundABTest();
   const { trackConversion } = useABTestTracking(currentVariant);
+  
+  // PostHog experiment for pricing display variations
+  const pricingExperiment = useExperiment('pricingDisplay', 'control');
+
+  // Get pricing section title based on experiment variant
+  const getPricingSectionTitle = () => {
+    switch (pricingExperiment.variant) {
+      case 'value_focused':
+        return 'Save $150 • One-Time Payment Only';
+      case 'simple':
+        return 'Simple Pricing';
+      case 'comparison':
+        return 'Compare Your Options';
+      case 'benefit_focused':
+        return 'Free Tier + Lifetime Upgrade';
+      default:
+        return 'Free Tier + Premium Option';
+    }
+  };
+
+  // Get pricing section subtitle based on experiment variant
+  const getPricingSectionSubtitle = () => {
+    switch (pricingExperiment.variant) {
+      case 'value_focused':
+        return 'Stop paying monthly subscriptions. Get lifetime access for less than most annual plans.';
+      case 'simple':
+        return 'Try free, upgrade once for lifetime access to everything.';
+      case 'comparison':
+        return 'See how we compare to expensive alternatives.';
+      case 'benefit_focused':
+        return 'Start learning immediately with 50 terms daily. Unlock everything with one payment.';
+      default:
+        return 'Start with 50 terms daily. Upgrade for unlimited access plus premium features.';
+    }
+  };
 
   return (
     <section id="pricing" className="py-12 sm:py-16 md:py-20 px-4 sm:px-6 lg:px-8 bg-gray-50">
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-12 sm:mb-16">
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
-            Free Tier + Premium Option
+            {getPricingSectionTitle()}
           </h2>
           <p className="text-lg sm:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto px-4 sm:px-0">
-            Start with 50 terms daily. Upgrade for unlimited access plus premium features.
+            {getPricingSectionSubtitle()}
           </p>
+        </div>
+
+        {/* Trust Building Banner */}
+        <div className="mb-8 max-w-4xl mx-auto">
+          <FreeTierBanner />
         </div>
 
         {/* Early Bird Countdown */}
@@ -126,21 +168,27 @@ export function Pricing() {
         {/* PPP Banner */}
         <PPPBanner />
 
-        {/* Comparison Table */}
-        <div className="mb-12 sm:mb-16 max-w-5xl mx-auto">
-          <ComparisonTable />
-          <div className="text-center mt-4 text-sm text-gray-500 sm:hidden">
-            ← Scroll to see all features →
+        {/* Comparison Table - show based on experiment variant */}
+        {(pricingExperiment.variant === 'comparison' || pricingExperiment.variant === 'control') && (
+          <div className="mb-12 sm:mb-16 max-w-5xl mx-auto">
+            <ComparisonTable />
+            <div className="text-center mt-4 text-sm text-gray-500 sm:hidden">
+              ← Scroll to see all features →
+            </div>
           </div>
-        </div>
+        )}
 
         {/* Pricing Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto">
+        <div className={`${
+          pricingExperiment.variant === 'simple' 
+            ? 'grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto'
+            : 'grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto'
+        }`}>
           {/* Free Tier */}
           <div className="relative">
-            <Badge className="absolute -top-3 left-1/2 transform -translate-x-1/2 bg-green-600 text-white px-4 py-1 z-10">
-              Free Tier
-            </Badge>
+            <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">
+              <TrustBadge />
+            </div>
             <Card className="border-2 border-green-200 shadow-lg">
               <CardHeader className="bg-green-50">
                 <CardTitle className="text-center">
@@ -191,39 +239,41 @@ export function Pricing() {
             </Card>
           </div>
 
-          {/* Competitors */}
-          <Card className="border border-gray-200">
-            <CardHeader>
-              <CardTitle className="text-center">
-                <div className="text-2xl font-bold text-gray-700">Competitors</div>
-                <div className="text-3xl font-bold text-gray-900 mt-2">$300+</div>
-                <div className="text-sm text-gray-500">per year, recurring</div>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Structured content</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <Check className="w-4 h-4 text-green-500" />
-                <span>Some code examples</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <X className="w-4 h-4 text-red-500" />
-                <span>Expensive subscriptions</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <X className="w-4 h-4 text-red-500" />
-                <span>Limited AI/ML focus</span>
-              </div>
-              <div className="pt-4">
-                <Button variant="outline" className="w-full" disabled>
-                  Too Expensive
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Competitors - hide in simple variant */}
+          {pricingExperiment.variant !== 'simple' && (
+            <Card className="border border-gray-200">
+              <CardHeader>
+                <CardTitle className="text-center">
+                  <div className="text-2xl font-bold text-gray-700">Competitors</div>
+                  <div className="text-3xl font-bold text-gray-900 mt-2">$300+</div>
+                  <div className="text-sm text-gray-500">per year, recurring</div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>Structured content</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <Check className="w-4 h-4 text-green-500" />
+                  <span>Some code examples</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <X className="w-4 h-4 text-red-500" />
+                  <span>Expensive subscriptions</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <X className="w-4 h-4 text-red-500" />
+                  <span>Limited AI/ML focus</span>
+                </div>
+                <div className="pt-4">
+                  <Button variant="outline" className="w-full" disabled>
+                    Too Expensive
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Premium Tier - Launch Special */}
           <div className="relative">
@@ -305,6 +355,13 @@ export function Pricing() {
                         discount: pricing.launchPricing.savingsAmount,
                         slotsRemaining:
                           pricing.launchPricing.totalSlots - pricing.launchPricing.claimedSlots,
+                      });
+
+                      // Track pricing experiment conversion
+                      pricingExperiment.trackConversion('premium_cta_click', currentPrice, {
+                        pricing_variant: pricingExperiment.variant,
+                        price: currentPrice,
+                        discount_active: pricing.launchPricing.isActive,
                       });
 
                       // Open Gumroad with launch special discount

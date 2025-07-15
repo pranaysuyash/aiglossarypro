@@ -9,6 +9,7 @@ import { registerAdminJobRoutes } from './jobs';
 import { registerAdminMaintenanceRoutes } from './maintenance';
 import { registerAdminMonitoringRoutes } from './monitoring';
 import { registerAdminNewsletterRoutes } from './newsletter';
+import peopleRoutes from './people';
 import { registerAdminRevenueRoutes } from './revenue';
 import safetyRoutes from './safety';
 import { registerAdminStatsRoutes } from './stats';
@@ -52,6 +53,10 @@ export function registerAdminRoutes(app: Express): void {
   // Register safety routes
   app.use('/api/admin/safety', safetyRoutes);
   logger.info('✅ Safety routes registered at /api/admin/safety');
+
+  // Register people routes (feature-flagged for future release)
+  app.use('/api/admin/people', peopleRoutes);
+  logger.info('✅ People routes registered at /api/admin/people (feature-flagged)');
 
   logger.info('✅ All admin routes registered successfully');
 }

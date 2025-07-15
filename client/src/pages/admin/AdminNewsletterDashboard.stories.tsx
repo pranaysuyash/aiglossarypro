@@ -7,7 +7,7 @@ const queryClient = new QueryClient({
     queries: { retry: false, staleTime: Infinity },
   },
 });
-import { AdminNewsletterDashboard } from './AdminNewsletterDashboard';
+import AdminNewsletterDashboard from './AdminNewsletterDashboard';
 
 const meta: Meta<typeof AdminNewsletterDashboard> = {
   title: 'Admin/AdminNewsletterDashboard',

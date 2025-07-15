@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { TermContentTabs } from './TermContentTabs';
+import TermContentTabs from './TermContentTabs';
 
 const meta = {
   title: 'Components/TermContentTabs',

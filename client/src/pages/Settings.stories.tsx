@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { Settings } from './Settings';
+import Settings from './Settings';
 
 const meta = {
   title: 'Pages/Settings',

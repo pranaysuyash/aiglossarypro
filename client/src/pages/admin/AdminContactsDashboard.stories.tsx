@@ -7,7 +7,7 @@ const queryClient = new QueryClient({
     queries: { retry: false, staleTime: Infinity },
   },
 });
-import { AdminContactsDashboard } from './AdminContactsDashboard';
+import AdminContactsDashboard from './AdminContactsDashboard';
 
 const meta: Meta<typeof AdminContactsDashboard> = {
   title: 'Admin/AdminContactsDashboard',

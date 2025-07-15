@@ -1,7 +1,7 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth } from '../middleware/auth';
-import { db } from '../lib/database';
+import { pool } from '../db';
 import { nanoid } from 'nanoid';
 
 const router = Router();
@@ -40,7 +40,7 @@ router.post('/generate-code', requireAuth, async (req, res) => {
     const userId = req.user!.uid;
 
     // Check if user already has a referral code
-    const existingCode = await db.query(
+    const existingCode = await pool.query(
       'SELECT referral_code FROM user_referrals WHERE user_id = $1 AND is_active = true',
       [userId]
     );
@@ -58,7 +58,7 @@ router.post('/generate-code', requireAuth, async (req, res) => {
     
     // Ensure code is unique
     while (true) {
-      const existing = await db.query(
+      const existing = await pool.query(
         'SELECT id FROM user_referrals WHERE referral_code = $1',
         [referralCode]
       );
@@ -68,7 +68,7 @@ router.post('/generate-code', requireAuth, async (req, res) => {
     }
 
     // Create referral code record
-    await db.query(`
+    await pool.query(`
       INSERT INTO user_referrals (user_id, referral_code, is_active, created_at)
       VALUES ($1, $2, true, NOW())
     `, [userId, referralCode]);
@@ -97,7 +97,7 @@ router.get('/stats', requireAuth, async (req, res) => {
     const userId = req.user!.uid;
 
     // Get user's referral code
-    const referralCodeResult = await db.query(
+    const referralCodeResult = await pool.query(
       'SELECT referral_code FROM user_referrals WHERE user_id = $1 AND is_active = true',
       [userId]
     );
@@ -129,7 +129,7 @@ router.get('/stats', requireAuth, async (req, res) => {
       WHERE referrer_code = $1
     `;
 
-    const statsResult = await db.query(statsQuery, [referralCode]);
+    const statsResult = await pool.query(statsQuery, [referralCode]);
     const stats = statsResult.rows[0];
 
     // Get recent referral activity
@@ -147,7 +147,7 @@ router.get('/stats', requireAuth, async (req, res) => {
       LIMIT 10
     `;
 
-    const recentReferralsResult = await db.query(recentReferralsQuery, [referralCode]);
+    const recentReferralsResult = await pool.query(recentReferralsQuery, [referralCode]);
 
     res.json({
       totalReferrals: parseInt(stats.total_referrals),
@@ -184,7 +184,7 @@ router.post('/track', async (req, res) => {
     const { referralCode, action, metadata } = trackReferralSchema.parse(req.body);
 
     // Get referrer information
-    const referrerResult = await db.query(
+    const referrerResult = await pool.query(
       'SELECT user_id FROM user_referrals WHERE referral_code = $1 AND is_active = true',
       [referralCode]
     );
@@ -198,7 +198,7 @@ router.post('/track', async (req, res) => {
     const referrerId = referrerResult.rows[0].user_id;
 
     // Calculate current tier and rewards
-    const tierResult = await db.query(`
+    const tierResult = await pool.query(`
       SELECT COUNT(CASE WHEN status = 'completed' THEN 1 END) as successful_referrals
       FROM referral_tracking 
       WHERE referrer_code = $1
@@ -215,7 +215,7 @@ router.post('/track', async (req, res) => {
     const rewardAmount = baseReward * tierMultiplier;
 
     // Track the referral action
-    const trackingResult = await db.query(`
+    const trackingResult = await pool.query(`
       INSERT INTO referral_tracking (
         referrer_user_id,
         referrer_code,
@@ -241,7 +241,7 @@ router.post('/track', async (req, res) => {
 
     // If this is a completed purchase, update user rewards
     if (action === 'purchase') {
-      await db.query(`
+      await pool.query(`
         UPDATE users 
         SET referral_credits = COALESCE(referral_credits, 0) + $1,
             updated_at = NOW()
@@ -278,7 +278,7 @@ router.get('/validate/:code', async (req, res) => {
   try {
     const { code } = req.params;
 
-    const result = await db.query(`
+    const result = await pool.query(`
       SELECT 
         ur.user_id,
         ur.referral_code,
@@ -339,7 +339,7 @@ router.get('/leaderboard', async (req, res) => {
       LIMIT $1
     `;
 
-    const result = await db.query(leaderboardQuery, [limit]);
+    const result = await pool.query(leaderboardQuery, [limit]);
 
     res.json({
       leaderboard: result.rows.map((row, index) => ({
@@ -379,7 +379,7 @@ router.post('/claim', requireAuth, async (req, res) => {
         AND rt.claimed = false
     `;
 
-    const rewardsResult = await db.query(rewardsQuery, [userId]);
+    const rewardsResult = await pool.query(rewardsQuery, [userId]);
 
     if (rewardsResult.rows.length === 0) {
       return res.json({
@@ -395,14 +395,14 @@ router.post('/claim', requireAuth, async (req, res) => {
 
     // Mark rewards as claimed
     const rewardIds = rewardsResult.rows.map(row => row.id);
-    await db.query(`
+    await pool.query(`
       UPDATE referral_tracking 
       SET claimed = true, claimed_at = NOW()
       WHERE id = ANY($1)
     `, [rewardIds]);
 
     // Add credits to user account
-    await db.query(`
+    await pool.query(`
       UPDATE users 
       SET referral_credits = COALESCE(referral_credits, 0) + $1,
           updated_at = NOW()

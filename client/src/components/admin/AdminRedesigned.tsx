@@ -28,6 +28,7 @@ import AdminDashboard from './AdminDashboard';
 import ContentOverview from './ContentOverview';
 import CodeExamplesManagement from './CodeExamplesManagement';
 import LearningPathsManagement from './LearningPathsManagement';
+import ContentManagementTools from './ContentManagementTools';
 
 export default function AdminRedesigned() {
   const { user, isAuthenticated } = useAuth();
@@ -93,6 +94,8 @@ export default function AdminRedesigned() {
       // Content Operations
       case 'content-overview':
         return <ContentOverview />;
+      case 'content-management':
+        return <ContentManagementTools />;
       case 'content-import':
         return <ContentImportDashboard />;
       case 'content-analytics':

@@ -5,7 +5,7 @@ import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
 import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
-import { useToast } from '../ui/use-toast';
+import { useToast } from '../../hooks/use-toast';
 
 interface ReferralStats {
   totalReferrals: number;

@@ -1,4 +1,4 @@
-import { AlertTriangle, Home, RefreshCw } from 'lucide-react';
+import { AlertTriangle, Home, RefreshCw, Mail } from 'lucide-react';
 import type React from 'react';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { ERROR_MESSAGES } from '@/constants/messages';
@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 import type { BaseComponentProps } from '@/types/common-props';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { handleErrorBoundary, ErrorSeverity, ErrorCategory } from '@/utils/errorTracking';
 
 interface Props extends BaseComponentProps {
   fallback?: ReactNode;
@@ -41,6 +42,9 @@ export class ErrorBoundary extends Component<Props, State> {
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Error caught by boundary:', error, errorInfo);
+
+    // Send to error tracking service
+    handleErrorBoundary(error, { componentStack: errorInfo.componentStack || '' });
 
     // Log to external service in production
     if (process.env.NODE_ENV === 'production') {

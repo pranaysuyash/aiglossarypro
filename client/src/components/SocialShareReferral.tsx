@@ -233,7 +233,7 @@ export function SocialShareReferral({
             {/* Share Buttons */}
             <div className="grid grid-cols-2 gap-2">
               {/* Native Share (if available) */}
-              {navigator.share && (
+              {typeof navigator.share === 'function' && (
                 <Button
                   variant="outline"
                   onClick={handleNativeShare}

@@ -4,8 +4,11 @@ export interface ExperimentFlags {
   // Landing page experiments
   landingPageVariant: 'control' | 'marketing_sample';
   landingPageBackground: 'control' | 'neural' | 'geometric' | 'fallback';
-  landingPageCTA: 'control' | 'sample' | 'explore';
+  landingPageCTA: 'control' | 'sample' | 'explore' | 'urgency' | 'benefit' | 'social_proof' | 'value' | 'action';
   landingPageMessaging: 'control' | 'focused' | 'technical';
+  landingPageHeadline: 'control' | 'benefit_focused' | 'problem_solution' | 'social_proof' | 'authority' | 'curiosity' | 'value_prop' | 'savings_focused' | 'content_focused' | 'urgency_focused';
+  socialProofPlacement: 'control' | 'above_fold' | 'below_hero' | 'in_features' | 'near_cta' | 'bottom' | 'numbers';
+  urgencyMessaging: 'control' | 'time_limited' | 'quantity_limited' | 'social_pressure' | 'seasonal';
   
   // User experience experiments
   freeUserLimit: 'control' | 'expanded';
@@ -16,6 +19,20 @@ export interface ExperimentFlags {
   upgradePrompts: 'control' | 'value_focused' | 'urgency';
   paymentFlow: 'control' | 'mobile_optimized' | 'one_click';
   socialProof: 'control' | 'testimonials' | 'usage_stats';
+  
+  // New A/B test experiments
+  exitIntentVariant: 'control' | 'value_focused' | 'urgency' | 'social_proof';
+  trustBadgeStyle: 'minimal' | 'detailed' | 'animated';
+  trustBadgePlacement: 'inline' | 'floating';
+  floatingPricingVariant: 'control' | 'discount_focused' | 'urgency' | 'value';
+  mediaLogosStyle: 'control' | 'animated' | 'carousel' | 'grid';
+  mediaLogosPhrase: 'control' | 'authority' | 'social_proof' | 'credibility';
+  mediaLogosPlacement: 'above_fold' | 'below_fold' | 'in_features' | 'near_cta';
+  
+  // Additional missing experiments
+  pricingDisplay: 'value' | 'fallback' | 'action' | 'inline' | 'control' | 'marketing_sample' | 'neural' | 'geometric' | 'sample' | 'explore' | 'urgency' | 'benefit' | 'social_proof' | 'focused' | 'technical' | 'benefit_focused' | 'problem_solution' | 'authority' | 'curiosity' | 'value_prop' | 'above_fold' | 'below_hero' | 'in_features' | 'near_cta' | 'time_limited' | 'quantity_limited' | 'social_pressure' | 'seasonal' | 'expanded' | 'interactive' | 'simplified' | 'enhanced' | 'ai_powered' | 'value_focused' | 'mobile_optimized' | 'one_click' | 'testimonials' | 'usage_stats' | 'minimal' | 'detailed' | 'animated' | 'floating' | 'discount_focused' | 'carousel' | 'grid' | 'credibility' | 'below_fold' | 'simple' | 'comparison';
+  landingPageCopy: 'value' | 'fallback' | 'action' | 'inline' | 'control' | 'marketing_sample' | 'neural' | 'geometric' | 'sample' | 'explore' | 'urgency' | 'benefit' | 'social_proof' | 'focused' | 'technical' | 'benefit_focused' | 'problem_solution' | 'authority' | 'curiosity' | 'value_prop' | 'above_fold' | 'below_hero' | 'in_features' | 'near_cta' | 'time_limited' | 'quantity_limited' | 'social_pressure' | 'seasonal' | 'expanded' | 'interactive' | 'simplified' | 'enhanced' | 'ai_powered' | 'value_focused' | 'mobile_optimized' | 'one_click' | 'testimonials' | 'usage_stats' | 'minimal' | 'detailed' | 'animated' | 'floating' | 'discount_focused' | 'carousel' | 'grid' | 'credibility' | 'below_fold' | 'pain_focused' | 'solution_focused' | 'urgency_focused';
+  urgencyTactics: 'value' | 'fallback' | 'action' | 'inline' | 'control' | 'marketing_sample' | 'neural' | 'geometric' | 'sample' | 'explore' | 'urgency' | 'benefit' | 'social_proof' | 'focused' | 'technical' | 'benefit_focused' | 'problem_solution' | 'authority' | 'curiosity' | 'value_prop' | 'above_fold' | 'below_hero' | 'in_features' | 'near_cta' | 'time_limited' | 'quantity_limited' | 'social_pressure' | 'seasonal' | 'expanded' | 'interactive' | 'simplified' | 'enhanced' | 'ai_powered' | 'value_focused' | 'mobile_optimized' | 'one_click' | 'testimonials' | 'usage_stats' | 'minimal' | 'detailed' | 'animated' | 'floating' | 'discount_focused' | 'carousel' | 'grid' | 'credibility' | 'below_fold';
 }
 
 export interface ExperimentMetrics {
@@ -174,12 +191,22 @@ class PostHogExperimentsService {
       'landingPageBackground',
       'landingPageCTA', 
       'landingPageMessaging',
+      'landingPageHeadline',
+      'socialProofPlacement',
+      'urgencyMessaging',
       'freeUserLimit',
       'onboardingFlow',
       'searchExperience',
       'upgradePrompts',
       'paymentFlow',
-      'socialProof'
+      'socialProof',
+      'exitIntentVariant',
+      'trustBadgeStyle',
+      'trustBadgePlacement',
+      'floatingPricingVariant',
+      'mediaLogosStyle',
+      'mediaLogosPhrase',
+      'mediaLogosPlacement'
     ];
     
     experimentKeys.forEach(key => {

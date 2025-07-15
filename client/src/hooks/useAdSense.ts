@@ -13,12 +13,12 @@ interface AdSenseConfig {
 }
 
 export function useAdSense() {
-  const { accessStatus } = useAuth();
+  const { user } = useAuth();
   const [config, setConfig] = useState<AdSenseConfig | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Check if ads should be shown (only for free tier users)
-  const shouldShowAds = !accessStatus?.lifetimeAccess && 
+  const shouldShowAds = !user?.lifetimeAccess && 
                        import.meta.env.VITE_ADSENSE_ENABLED === 'true';
 
   useEffect(() => {
@@ -96,8 +96,8 @@ export function useAdSense() {
       });
     }
 
-    if (window.posthog) {
-      window.posthog.capture(`ad_${eventName}`, {
+    if ((window as any).posthog) {
+      (window as any).posthog.capture(`ad_${eventName}`, {
         ad_slot: adSlot,
         ...additionalData,
       });

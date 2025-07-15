@@ -99,18 +99,18 @@ export default function SectionDisplay({
       );
     }
 
-    if (sectionData.type === 'markdown' && sectionData.content) {
+    if ((sectionData as any).type === 'markdown' && (sectionData as any).content) {
       return (
         <div className="prose dark:prose-invert max-w-none">
-          <ReactMarkdown>{sectionData.content}</ReactMarkdown>
+          <ReactMarkdown>{(sectionData as any).content}</ReactMarkdown>
         </div>
       );
     }
 
-    if (sectionData.type === 'list' && sectionData.items) {
+    if ((sectionData as any).type === 'list' && (sectionData as any).items) {
       return (
         <ul className="space-y-2">
-          {sectionData.items.map((item: any, index: number) => (
+          {((sectionData as any).items as any[]).map((item: any, index: number) => (
             <li key={index} className="flex items-start space-x-2">
               <span className="text-blue-500 mt-1">•</span>
               <div>
@@ -133,13 +133,13 @@ export default function SectionDisplay({
       );
     }
 
-    if (sectionData.type === 'table' && sectionData.headers && sectionData.rows) {
+    if ((sectionData as any).type === 'table' && (sectionData as any).headers && (sectionData as any).rows) {
       return (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse border border-gray-200 dark:border-gray-700">
             <thead>
               <tr className="bg-gray-50 dark:bg-gray-800">
-                {sectionData.headers.map((header: string, index: number) => (
+                {((sectionData as any).headers as string[]).map((header: string, index: number) => (
                   <th
                     key={index}
                     className="border border-gray-200 dark:border-gray-700 p-2 text-left font-medium"
@@ -150,7 +150,7 @@ export default function SectionDisplay({
               </tr>
             </thead>
             <tbody>
-              {sectionData.rows.map((row: string[], rowIndex: number) => (
+              {((sectionData as any).rows as string[][]).map((row: string[], rowIndex: number) => (
                 <tr key={rowIndex} className="even:bg-gray-50 dark:even:bg-gray-800/50">
                   {row.map((cell, cellIndex) => (
                     <td key={cellIndex} className="border border-gray-200 dark:border-gray-700 p-2">
@@ -165,10 +165,10 @@ export default function SectionDisplay({
       );
     }
 
-    if (sectionData.type === 'key-value' && sectionData.pairs) {
+    if ((sectionData as any).type === 'key-value' && (sectionData as any).pairs) {
       return (
         <div className="space-y-3">
-          {sectionData.pairs.map((pair: any, index: number) => (
+          {((sectionData as any).pairs as any[]).map((pair: any, index: number) => (
             <div key={index} className="border-l-2 border-blue-200 dark:border-blue-800 pl-4">
               <dt className="font-medium text-gray-900 dark:text-gray-100">
                 {pair.key || pair.term}

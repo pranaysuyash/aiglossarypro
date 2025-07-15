@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import { GuestAwareTermDetail } from './GuestAwareTermDetail';
+import GuestAwareTermDetail from './GuestAwareTermDetail';
 
 const meta: Meta<typeof GuestAwareTermDetail> = {
   title: 'Components/GuestAwareTermDetail',

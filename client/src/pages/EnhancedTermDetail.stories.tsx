@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { EnhancedTermDetail } from './EnhancedTermDetail';
+import EnhancedTermDetail from './EnhancedTermDetail';
 
 const meta = {
   title: 'Pages/EnhancedTermDetail',

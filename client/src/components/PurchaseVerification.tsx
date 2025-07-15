@@ -49,10 +49,10 @@ export function PurchaseVerification({ onVerified, className = '' }: PurchaseVer
     try {
       const response = await api.post('/gumroad/verify-purchase', { email: email.trim() });
 
-      if (response.data.success) {
+      if (response.data?.success) {
         setResult({
           success: true,
-          message: response.data.message,
+          message: response.data.message || 'Verification successful',
           user: response.data.user,
         });
 
@@ -68,7 +68,7 @@ export function PurchaseVerification({ onVerified, className = '' }: PurchaseVer
       } else {
         setResult({
           success: false,
-          message: response.data.error || 'Verification failed',
+          message: response.data?.error || 'Verification failed',
         });
       }
     } catch (err: any) {

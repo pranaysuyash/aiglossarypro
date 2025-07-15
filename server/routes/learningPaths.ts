@@ -125,14 +125,31 @@ export function registerLearningPathsRoutes(app: Express): void {
     try {
       const { id } = req.params;
 
-      // Get the learning path
-      const path = await db.select().from(learningPaths).where(eq(learningPaths.id, id)).limit(1);
+      // Check if the id is a UUID or a slug
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+      
+      // Get the learning path - try by ID first, then by slug (if name matches)
+      let path;
+      if (isUuid) {
+        path = await db.select().from(learningPaths).where(eq(learningPaths.id, id)).limit(1);
+      } else {
+        // If not UUID, try to find by name (slug-like)
+        path = await db.select().from(learningPaths).where(eq(learningPaths.name, id.replace(/-/g, ' '))).limit(1);
+        
+        // If still not found, try exact match with slug formatting
+        if (!path || path.length === 0) {
+          path = await db.select().from(learningPaths)
+            .where(sql`LOWER(REPLACE(${learningPaths.name}, ' ', '-')) = LOWER(${id})`)
+            .limit(1);
+        }
+      }
 
       if (!path || path.length === 0) {
         return sendErrorResponse(res, ErrorCode.RESOURCE_NOT_FOUND, 'Learning path not found');
       }
 
-      // Get the steps with term information
+      // Get the steps with term information using the actual path ID
+      const actualPathId = path[0].id;
       const steps = await db
         .select({
           id: learningPathSteps.id,
@@ -149,7 +166,7 @@ export function registerLearningPathsRoutes(app: Express): void {
         })
         .from(learningPathSteps)
         .leftJoin(sql`terms`, eq(learningPathSteps.term_id, sql`terms.id`))
-        .where(eq(learningPathSteps.learning_path_id, id))
+        .where(eq(learningPathSteps.learning_path_id, actualPathId))
         .orderBy(asc(learningPathSteps.step_order));
 
       res.json({
@@ -267,8 +284,23 @@ export function registerLearningPathsRoutes(app: Express): void {
           });
         }
 
-        // Check if path exists
-        const path = await db.select().from(learningPaths).where(eq(learningPaths.id, id)).limit(1);
+        // Check if path exists - handle both UUID and slug
+        const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+        
+        let path;
+        if (isUuid) {
+          path = await db.select().from(learningPaths).where(eq(learningPaths.id, id)).limit(1);
+        } else {
+          // If not UUID, try to find by name (slug-like)
+          path = await db.select().from(learningPaths).where(eq(learningPaths.name, id.replace(/-/g, ' '))).limit(1);
+          
+          // If still not found, try exact match with slug formatting
+          if (!path || path.length === 0) {
+            path = await db.select().from(learningPaths)
+              .where(sql`LOWER(REPLACE(${learningPaths.name}, ' ', '-')) = LOWER(${id})`)
+              .limit(1);
+          }
+        }
 
         if (!path || path.length === 0) {
           return res.status(404).json({
@@ -277,6 +309,9 @@ export function registerLearningPathsRoutes(app: Express): void {
           });
         }
 
+        // Use the actual path ID for all operations
+        const actualPathId = path[0].id;
+
         // Check if user already started this path
         const existingProgress = await db
           .select()
@@ -284,7 +319,7 @@ export function registerLearningPathsRoutes(app: Express): void {
           .where(
             and(
               eq(userLearningProgress.user_id, user.id),
-              eq(userLearningProgress.learning_path_id, id)
+              eq(userLearningProgress.learning_path_id, actualPathId)
             )
           )
           .limit(1);
@@ -301,14 +336,14 @@ export function registerLearningPathsRoutes(app: Express): void {
         const firstStep = await db
           .select()
           .from(learningPathSteps)
-          .where(eq(learningPathSteps.learning_path_id, id))
+          .where(eq(learningPathSteps.learning_path_id, actualPathId))
           .orderBy(asc(learningPathSteps.step_order))
           .limit(1);
 
         // Create progress entry
         const progressData: InsertUserLearningProgress = {
           user_id: user.id,
-          learning_path_id: id,
+          learning_path_id: actualPathId,
           current_step_id: firstStep[0]?.id || null,
           completion_percentage: 0,
           time_spent: 0,
@@ -323,7 +358,7 @@ export function registerLearningPathsRoutes(app: Express): void {
             view_count: sql`${learningPaths.view_count} + 1`,
             updated_at: new Date(),
           })
-          .where(eq(learningPaths.id, id));
+          .where(eq(learningPaths.id, actualPathId));
 
         res.json({
           success: true,

@@ -11,15 +11,27 @@ import { Pricing } from '@/components/landing/Pricing';
 import { SocialProof } from '@/components/landing/SocialProof';
 import { ValueProposition } from '@/components/landing/ValueProposition';
 import { WhatYouGet } from '@/components/landing/WhatYouGet';
+import { ExitIntentPopup, TrustBadges, FloatingPricingWidget, MediaLogos } from '@/components/ab-tests';
+import { SuccessStoriesSection } from '@/components/SuccessStories';
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
+      {/* A/B Test Components */}
+      <ExitIntentPopup />
+      <FloatingPricingWidget />
+      
       {/* Landing Header - separate from main app header */}
       <LandingHeader />
 
       {/* Hero Section */}
       <HeroSection />
+      
+      {/* Media Logos - Above fold variant */}
+      <MediaLogos placement="above_fold" />
+
+      {/* Trust Badges - Inline variant */}
+      <TrustBadges placement="inline" variant="minimal" />
 
       {/* Value Proposition */}
       <ValueProposition />
@@ -42,9 +54,18 @@ export default function LandingPage() {
 
       {/* Social Proof */}
       <SocialProof />
+      
+      {/* Success Stories */}
+      <SuccessStoriesSection />
+      
+      {/* Media Logos - Below fold variant */}
+      <MediaLogos placement="below_fold" />
 
       {/* Pricing */}
       <Pricing />
+      
+      {/* Trust Badges - Near CTA variant */}
+      <TrustBadges placement="inline" variant="detailed" />
 
       {/* FAQ */}
       <FAQ />

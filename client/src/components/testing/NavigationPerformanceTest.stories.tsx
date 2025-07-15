@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { NavigationPerformanceTest } from './NavigationPerformanceTest';
+import NavigationPerformanceTest from './NavigationPerformanceTest';
 
 const meta = {
   title: 'Components/NavigationPerformanceTest',

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { Dashboard } from './Dashboard';
+import Dashboard from './Dashboard';
 
 const meta = {
   title: 'Pages/Dashboard',

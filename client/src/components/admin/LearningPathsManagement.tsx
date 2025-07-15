@@ -54,7 +54,7 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedPath, setSelectedPath] = useState<LearningPath | null>(null);
-  const [showCreateModal] = useState(false);
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   // Build query parameters
   const queryParams = new URLSearchParams();

@@ -11,8 +11,9 @@
  * - Bundle size optimization
  */
 
-// Core UI Icons
+// All Icons - Consolidated Export
 export {
+  // Core UI Icons
   ArrowLeft,
   ArrowRight,
   ArrowUpDown,
@@ -71,22 +72,18 @@ export {
   Crown,
   Circle,
   Square,
-  Dot
-} from 'lucide-react';
-
-// Navigation Icons
-export {
+  Dot,
+  
+  // Navigation Icons
   PanelLeft,
   Sidebar as SidebarIcon,
   Grid3x3,
   List,
   Layers,
   Route,
-  Network
-} from 'lucide-react';
-
-// Content Icons
-export {
+  Network,
+  
+  // Content Icons
   FileText,
   FileSpreadsheet,
   Folder,
@@ -96,22 +93,18 @@ export {
   Bold,
   Italic,
   Underline,
-  Link as LinkIcon
-} from 'lucide-react';
-
-// Media Icons
-export {
+  Link as LinkIcon,
+  
+  // Media Icons
   Play,
   Pause,
   SkipForward,
   SkipBack,
   Volume2,
   VolumeX,
-  Mic
-} from 'lucide-react';
-
-// Analytics & Charts
-export {
+  Mic,
+  
+  // Analytics & Charts
   BarChart3,
   TrendingUp,
   TrendingDown,
@@ -120,11 +113,9 @@ export {
   Cpu,
   Brain,
   TestTube,
-  Flag
-} from 'lucide-react';
-
-// Status & Alerts
-export {
+  Flag,
+  
+  // Status & Alerts
   AlertCircle,
   AlertTriangle,
   CheckCircle as SuccessIcon,
@@ -132,11 +123,9 @@ export {
   Info as InfoIcon,
   Wifi,
   WifiOff,
-  CloudOff
-} from 'lucide-react';
-
-// User Actions
-export {
+  CloudOff,
+  
+  // User Actions
   UserCheck,
   UserPlus,
   MessageCircle,
@@ -148,76 +137,38 @@ export {
   GripVertical
 } from 'lucide-react';
 
-// Navigation & Layout
+// Additional Icons - Not already exported above
 export {
+  // Navigation & Layout
   Maximize,
   Maximize2,
   Minimize,
   Minimize2,
-  ZoomIn,
-  ZoomOut,
   Repeat,
-  RotateCcw
-} from 'lucide-react';
-
-// Social & External
-export {
+  RotateCcw,
+  
+  // Social & External
   Facebook,
   Twitter,
   Linkedin,
   Github,
-  Share as ShareIcon
-} from 'lucide-react';
-
-// Business & Commerce
-export {
-  DollarSign,
+  Share as ShareIcon,
+  
+  // Business & Commerce
   CreditCard,
   Gift as GiftIcon,
-  Smartphone
-} from 'lucide-react';
-
-// Development & Tools  
-export {
+  DollarSign as DollarSignIcon,
+  Smartphone as SmartphoneIcon,
+  
+  // Development & Tools  
   GitBranch,
   Cookie,
   Wand2,
   Lightbulb,
-  History
-} from 'lucide-react';
-
-// Additional missing icons from the codebase scan
-export {
-  // Missing icons that appeared in the grep results
-  Bot,
-  Code,
-  Cpu,
-  Crown,
-  Database,
-  DollarSign,
-  Filter,
-  Flag,
-  Folder,
-  FolderOpen,
-  Grid3x3,
-  Layers,
-  List,
-  MessageCircle,
-  MessageSquare,
-  Network,
-  Quote,
-  Route,
-  SlidersHorizontal,
-  SortAsc,
-  SortDesc,
-  Smartphone,
-  TestTube,
-  UserCheck,
-  UserPlus,
-  Wifi,
-  WifiOff,
-  ZoomIn,
-  ZoomOut
+  History,
+  
+  // Additional missing icons
+  Bot
 } from 'lucide-react';
 
 // Icon type for consistent usage

@@ -575,7 +575,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({ className = '', onR
                     </div>
                     </div>
                     {/* Show ad every 8th result for free users */}
-                    {index > 0 && (index + 1) % 8 === 0 && useAdPlacement({ location: 'search_results' }).canShowAd && (
+                    {index > 0 && (index + 1) % 8 === 0 && useAdPlacement('searchResults').canShowAd && (
                       <GoogleAd
                         slot={import.meta.env.VITE_AD_SLOT_SEARCH_RESULTS || ''}
                         format="horizontal"

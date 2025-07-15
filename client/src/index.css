@@ -1,9 +1,9 @@
+/* Import mathematical expression styles */
+@import './styles/math.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-/* Import mathematical expression styles */
-@import './styles/math.css';
 
 /* Search highlighting styles */
 .search-highlighted mark {

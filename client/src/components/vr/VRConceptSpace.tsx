@@ -202,7 +202,7 @@ const VRInteractionManager: React.FC<{
       onConceptSelect(conceptId);
 
       // Provide haptic feedback if supported
-      if (navigator.gamepad) {
+      if ('getGamepads' in navigator) {
         const gamepads = navigator.getGamepads();
         gamepads.forEach((gamepad) => {
           if (gamepad?.hapticActuators && gamepad.hapticActuators.length > 0) {

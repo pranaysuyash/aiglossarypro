@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { Categories } from './Categories';
+import Categories from './Categories';
 
 const meta = {
   title: 'Pages/Categories',

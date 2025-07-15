@@ -46,20 +46,21 @@ export default function FirebaseLoginPage() {
       // Exchange Firebase token for JWT
       const response = await api.post('/auth/firebase/login', { idToken });
 
-      if (response.success) {
+      if (response.success && response.data) {
         // Store token in localStorage for API calls
-        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('authToken', (response.data as any).token);
 
         // Update React Query cache with user data to maintain auth state
-        queryClient.setQueryData(['/api/auth/user'], response.data.user);
+        queryClient.setQueryData(['/api/auth/user'], (response.data as any).user);
         await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // Check for premium status
-        const userType = response.data.user.lifetimeAccess ? 'Premium' : 'Free';
-        const welcomeMessage = response.data.user.lifetimeAccess
-          ? `Welcome back, ${response.data.user.email}! Your premium access is active.`
-          : `Welcome back, ${response.data.user.email}!`;
+        const userData = (response.data as any).user;
+        const userType = userData.lifetimeAccess ? 'Premium' : 'Free';
+        const welcomeMessage = userData.lifetimeAccess
+          ? `Welcome back, ${userData.email}! Your premium access is active.`
+          : `Welcome back, ${userData.email}!`;
 
         toast({
           title: `${userType} User - Welcome back!`,
@@ -68,14 +69,14 @@ export default function FirebaseLoginPage() {
         });
 
         announce(
-          `Successfully signed in as ${response.data.user.email}${response.data.user.lifetimeAccess ? ' with premium access' : ''}`,
+          `Successfully signed in as ${userData.email}${userData.lifetimeAccess ? ' with premium access' : ''}`,
           'polite'
         );
 
         // Redirect based on user type and status
-        if (response.data.user.isAdmin) {
+        if (userData.isAdmin) {
           navigate('/admin');
-        } else if (response.data.user.lifetimeAccess) {
+        } else if (userData.lifetimeAccess) {
           navigate('/dashboard?welcome=premium');
         } else {
           navigate('/dashboard?welcome=true');
@@ -202,17 +203,18 @@ export default function FirebaseLoginPage() {
       // Exchange Firebase token for JWT
       const response = await api.post('/auth/firebase/login', { idToken });
 
-      if (response.success) {
+      if (response.success && response.data) {
         localStorage.setItem('authToken', response.data.token);
 
         // Update React Query cache with user data to maintain auth state
-        queryClient.setQueryData(['/api/auth/user'], response.data.user);
+        queryClient.setQueryData(['/api/auth/user'], (response.data as any).user);
         await queryClient.invalidateQueries({ queryKey: ['/api/auth/user'] });
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // Check for premium status
-        const userType = response.data.user.lifetimeAccess ? 'Premium' : 'Free';
-        const welcomeMessage = response.data.user.lifetimeAccess
+        const userData = response.data.user;
+        const userType = userData?.lifetimeAccess ? 'Premium' : 'Free';
+        const welcomeMessage = userData?.lifetimeAccess
           ? `Welcome back! Your premium access is active.`
           : `Welcome back!`;
 
@@ -223,14 +225,14 @@ export default function FirebaseLoginPage() {
         });
 
         announce(
-          `Successfully signed in as ${response.data.user.email}${response.data.user.lifetimeAccess ? ' with premium access' : ''}`,
+          `Successfully signed in as ${userData?.email}${userData?.lifetimeAccess ? ' with premium access' : ''}`,
           'polite'
         );
 
         // Redirect based on user type and status
-        if (response.data.user.isAdmin) {
+        if (userData?.isAdmin) {
           navigate('/admin');
-        } else if (response.data.user.lifetimeAccess) {
+        } else if (userData?.lifetimeAccess) {
           navigate('/dashboard?welcome=premium');
         } else {
           navigate('/dashboard?welcome=true');

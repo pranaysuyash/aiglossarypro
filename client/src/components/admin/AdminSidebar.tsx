@@ -122,6 +122,7 @@ export const defaultSidebarSections: SidebarSection[] = [
     icon: FileText,
     items: [
       { id: 'content-overview', title: 'Content Overview', badge: '1.2k' },
+      { id: 'content-management', title: 'Content Management', icon: Settings },
       { id: 'content-import', title: 'Import & Export' },
       { id: 'content-analytics', title: 'Content Analytics' },
       { id: 'content-moderation', title: 'Content Moderation' },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { Subcategories } from './Subcategories';
+import Subcategories from './Subcategories';
 
 const meta = {
   title: 'Pages/Subcategories',

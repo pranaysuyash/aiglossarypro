@@ -1,0 +1,14 @@
+{
+  "highPriority": {
+    "description": "Terms requiring immediate attention (quality score < 40)",
+    "terms": []
+  },
+  "mediumPriority": {
+    "description": "Terms needing improvement (quality score 40-69)",
+    "terms": []
+  },
+  "quickWins": {
+    "description": "Terms close to completion (quality score 70-79)",
+    "terms": []
+  }
+}

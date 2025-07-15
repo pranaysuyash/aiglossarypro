@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { VRConceptSpace } from './VRConceptSpace';
+import VRConceptSpace from './VRConceptSpace';
 
 const meta = {
   title: 'Components/VRConceptSpace',

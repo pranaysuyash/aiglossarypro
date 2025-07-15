@@ -16,6 +16,8 @@ import { PRICING_CONFIG } from '@/config/pricing';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { MiniSuccessStories } from './SuccessStories';
+import { TrustBadge } from './TrustBuilding';
 
 interface UpgradePromptTrigger {
   type:
@@ -40,7 +42,7 @@ interface ProgressStats {
 }
 
 interface UpgradePromptProps {
-  variant?: 'modal' | 'banner' | 'card' | 'smart' | 'inline';
+  variant?: 'modal' | 'banner' | 'card' | 'smart' | 'inline' | 'enhanced';
   className?: string;
   onClose?: () => void;
   trigger?: UpgradePromptTrigger;
@@ -300,6 +302,9 @@ export function UpgradePrompt({
             <div className="mx-auto w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-4">
               <Star className="h-6 w-6 text-white" />
             </div>
+            <div className="flex justify-center mb-2">
+              <TrustBadge />
+            </div>
             <CardTitle className="text-xl">Daily Limit Reached</CardTitle>
             <CardDescription>
               You've viewed {viewsUsed} out of {dailyLimit} free terms today. Upgrade for unlimited
@@ -413,6 +418,88 @@ export function UpgradePrompt({
             </button>
           )}
         </div>
+      </div>
+    );
+  }
+
+  // Enhanced variant with success stories
+  if (variant === 'enhanced') {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+        <Card className={`max-w-2xl w-full ${className}`}>
+          <CardHeader className="text-center">
+            <div className="mx-auto w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-4">
+              <Star className="h-6 w-6 text-white" />
+            </div>
+            <div className="flex justify-center mb-2">
+              <TrustBadge />
+            </div>
+            <CardTitle className="text-xl">Ready to Unlock Everything?</CardTitle>
+            <CardDescription>
+              You've used {viewsUsed} of {dailyLimit} free terms today. Join thousands who upgraded for lifetime access.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="grid md:grid-cols-2 gap-6">
+              {/* Left side - Upgrade details */}
+              <div className="space-y-4">
+                <div className="border rounded-lg p-4 bg-gradient-to-r from-blue-50 to-purple-50">
+                  <div className="text-center">
+                    <div className="text-sm text-gray-500 line-through">${PRICING_CONFIG.ORIGINAL_PRICE}</div>
+                    <div className="text-3xl font-bold text-blue-600">${PRICING_CONFIG.LAUNCH_DISCOUNT_PRICE}</div>
+                    <div className="text-sm text-gray-600 dark:text-gray-400">One-time payment</div>
+                    <div className="text-xs text-green-600 font-medium mt-1">
+                      Auto-adjusted for your region
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Zap className="h-4 w-4 text-yellow-500" />
+                    <span>Unlimited access to 10,000+ terms</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Trophy className="h-4 w-4 text-purple-500" />
+                    <span>Interactive quizzes & exercises</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Globe className="h-4 w-4 text-green-500" />
+                    <span>Export & offline access</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <Star className="h-4 w-4 text-blue-500" />
+                    <span>Lifetime updates included</span>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Right side - Success Stories */}
+              <div>
+                <MiniSuccessStories />
+              </div>
+            </div>
+            
+            <div className="flex gap-3">
+              <Button
+                onClick={handleUpgrade}
+                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                size="lg"
+              >
+                Get Lifetime Access Now
+              </Button>
+              {onClose && (
+                <Button variant="outline" onClick={onClose}>
+                  Maybe Later
+                </Button>
+              )}
+            </div>
+            
+            <p className="text-xs text-center text-gray-500 dark:text-gray-400">
+              No subscription • One-time payment • 7-day money-back guarantee
+            </p>
+          </CardContent>
+        </Card>
       </div>
     );
   }

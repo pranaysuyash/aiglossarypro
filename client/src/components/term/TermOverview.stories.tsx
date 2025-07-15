@@ -1,6 +1,6 @@
 import React from 'react';
 import { Meta, StoryObj } from '@storybook/react';
-import { TermOverview } from './TermOverview';
+import TermOverview from './TermOverview';
 
 const meta = {
   title: 'Components/TermOverview',

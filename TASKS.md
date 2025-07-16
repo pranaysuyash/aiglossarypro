@@ -101,3 +101,8 @@ The following critical tasks have been validated and resolved:
 - **Description**: Integrate ArXiv and Google Scholar APIs, implement quality assessment algorithms, and develop personal resource libraries and collaborative collections.
 - **Status**: 🟡 IN PROGRESS (Analysis and planning complete, awaiting API key provision)
 - **Dependencies**: External API access/credentials for ArXiv and Google Scholar.
+
+### Production Content Population
+- **Description**: Run AI content generation for core 1000+ terms, validate content quality, import using bulk admin dashboard tools, and set up category relationships.
+- **Status**: 🟡 IN PROGRESS (Guide provided, awaiting user execution)
+- **Dependencies**: Existing AI content generation and bulk import tools.

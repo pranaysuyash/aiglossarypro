@@ -127,6 +127,8 @@
   - Audit accessibility compliance using axe-core
   - Fix accessibility violations in key components
   - Implement proper ARIA labels and keyboard navigation
+  - Ensure WCAG 2.1 AA compliance across all user interfaces
+  - Test with screen readers and assistive technologies
   - _Requirements: 5.4_
 
 - [-] 6. Error Handling and Monitoring Enhancement
@@ -234,7 +236,9 @@
 - [ ] 10.1 User Analytics Enhancement
   - Improve PostHog integration in client/src/lib/analytics.ts
   - Implement privacy-compliant user behavior tracking
-  - Add conversion funnel analysis
+  - Add conversion funnel analysis for premium conversion
+  - Create user journey tracking for learning paths
+  - Implement feature usage analytics for product decisions
   - _Requirements: 10.1_
 
 - [ ] 10.2 Performance Analytics Dashboard
@@ -260,6 +264,7 @@
   - Implement configuration templates for different environments
   - Add secret management and security validation
   - Validate all 47+ environment variables from .env.production.example
+  - Create automated validation script for environment completeness
   - _Requirements: 11.1, 14.1, 14.2_
 
 - [ ] 11.2 Health Check System Implementation

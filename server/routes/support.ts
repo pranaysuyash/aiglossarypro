@@ -6,7 +6,7 @@ import { asyncHandler } from '../middleware/errorHandler.js';
 import { validateAuth } from '../middleware/auth.js';
 import { validateAdminAuth } from '../middleware/adminAuth.js';
 import { z } from 'zod';
-import { uploadFileToS3 } from '../s3';
+import { uploadFileToS3 } from '../s3Service.js';
 
 // Configure multer for file uploads
 const upload = multer({

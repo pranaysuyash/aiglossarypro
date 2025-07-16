@@ -2,7 +2,9 @@ import type { Express } from 'express';
 import multer from 'multer';
 import { supportService } from '../services/supportService';
 import { log } from '../utils/logger';
-import { asyncHandler, validateAuth, validateAdminAuth } from './routeUtils';
+import { asyncHandler } from '../middleware/errorHandler.js';
+import { validateAuth } from '../middleware/auth.js';
+import { validateAdminAuth } from '../middleware/adminAuth.js';
 import { z } from 'zod';
 import { uploadFileToS3 } from '../s3';
 

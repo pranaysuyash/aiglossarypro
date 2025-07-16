@@ -81,11 +81,3 @@ export const MathRenderer: React.FC<MathRendererProps> = ({
     />
   );
 };
-
-// Inline math text component for convenience
-export const MathText: React.FC<{ children: string; className?: string }> = ({ 
-  children, 
-  className 
-}) => {
-  return <MathRenderer expression={children} displayMode={false} className={className} />;
-};

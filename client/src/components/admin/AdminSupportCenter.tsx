@@ -11,22 +11,24 @@ import {
   CardHeader, 
   CardTitle 
 } from '../ui/card';
+import { Badge } from '../ui/badge';
+import { Button } from '../ui/button';
+import { Input } from '../ui/input';
 import { 
-  Badge, 
-  Button, 
-  Input, 
   Select, 
   SelectContent, 
   SelectItem, 
   SelectTrigger, 
-  SelectValue,
-  Textarea,
+  SelectValue 
+} from '../ui/select';
+import { Textarea } from '../ui/textarea';
+import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '../ui';
+} from '../ui/dialog';
 import { 
   Search, 
   Filter, 

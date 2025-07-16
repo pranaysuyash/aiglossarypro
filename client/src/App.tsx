@@ -8,6 +8,7 @@ import Footer from '@/components/Footer';
 import GuestAwareTermDetail from '@/components/GuestAwareTermDetail';
 import { GuestConversionFab } from '@/components/GuestPreviewBanner';
 import Header from '@/components/Header';
+import { ga4Analytics } from '@/lib/ga4Analytics';
 // Lazy load heavy pages to reduce initial bundle size
 import {
   LazyAboutPage,
@@ -198,6 +199,12 @@ function Router() {
       }, 3000);
     }
   }, [isAuthenticated, user, location]);
+
+  // Track page views with GA4
+  useEffect(() => {
+    // Track page view whenever location changes
+    ga4Analytics.trackPageView(document.title, window.location.href);
+  }, [location]);
 
   // Preload components based on authentication status
   useEffect(() => {

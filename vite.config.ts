@@ -212,21 +212,7 @@ export default defineConfig({
     include: [
       'react',
       'react-dom',
-      // Pre-bundle commonly used lucide icons
-      'lucide-react/dist/esm/icons/search',
-      'lucide-react/dist/esm/icons/menu',
-      'lucide-react/dist/esm/icons/user',
-      'lucide-react/dist/esm/icons/home',
-      'lucide-react/dist/esm/icons/settings',
-      'lucide-react/dist/esm/icons/book-open',
-      'lucide-react/dist/esm/icons/heart',
-      'lucide-react/dist/esm/icons/star',
-      'lucide-react/dist/esm/icons/eye',
-      'lucide-react/dist/esm/icons/check',
-      'lucide-react/dist/esm/icons/x',
-      'lucide-react/dist/esm/icons/arrow-right',
-      'lucide-react/dist/esm/icons/chevron-down',
-      'lucide-react/dist/esm/icons/loader-2',
+      'lucide-react', // Keep main lucide-react for broad usage
     ],
     exclude: ['three', 'mermaid', 'cytoscape', 'katex'], // Heavy libs that should be lazy loaded
   },
@@ -242,6 +228,24 @@ export default defineConfig({
     // Enhanced development server configuration
     hmr: {
       overlay: true, // Show error overlay in development
+    },
+    watch: {
+      ignored: [
+        '**/node_modules/**',
+        '**/dist/**',
+        '**/build/**',
+        '**/logs/**',
+        '**/.git/**',
+        '**/.vscode/**',
+        '**/cache/**',
+        '**/tmp/**',
+        '**/temp/**',
+        '**/artifacts/**',
+        '**/reports/**',
+        '**/test-results/**',
+        '**/playwright-report/**',
+        '**/coverage/**',
+      ],
     },
     // Better error reporting
     fs: {

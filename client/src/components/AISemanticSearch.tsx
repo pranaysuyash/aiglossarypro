@@ -18,6 +18,9 @@ interface SemanticSearchResult {
     definition: string;
     category: string;
   };
+  semanticSimilarity?: number;
+  conceptRelationships?: string[];
+  suggestedPrerequisites?: string[];
 }
 
 interface AISemanticSearchProps {
@@ -189,6 +192,40 @@ export function AISemanticSearch({
                   {result.explanation}
                 </p>
               </div>
+
+              {result.semanticSimilarity !== undefined && (
+                <div className="mt-2">
+                  <Badge variant="outline" className="text-xs">
+                    Semantic Similarity: {Math.round(result.semanticSimilarity * 100)}%
+                  </Badge>
+                </div>
+              )}
+
+              {result.conceptRelationships && result.conceptRelationships.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium text-gray-700">Concept Relationships:</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {result.conceptRelationships.map((rel, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {rel}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {result.suggestedPrerequisites && result.suggestedPrerequisites.length > 0 && (
+                <div className="mt-2">
+                  <p className="text-sm font-medium text-gray-700">Suggested Prerequisites:</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {result.suggestedPrerequisites.map((prereq, index) => (
+                      <Badge key={index} variant="secondary" className="text-xs">
+                        {prereq}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         ))}

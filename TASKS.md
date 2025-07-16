@@ -96,3 +96,8 @@ The following critical tasks have been validated and resolved:
 ### Replace placeholder GA4 measurement ID
 - **Description**: This is a configuration task that requires obtaining a GA4 measurement ID from Google Analytics and setting `VITE_GA4_MEASUREMENT_ID` in `.env.production`.
 - **Status**: ✅ RESOLVED (GA4 Measurement ID `G-PGJ3NP5TR7` provided and assumed to be configured by user)
+
+### Enhanced Resource Curation Engine
+- **Description**: Integrate ArXiv and Google Scholar APIs, implement quality assessment algorithms, and develop personal resource libraries and collaborative collections.
+- **Status**: 🟡 IN PROGRESS (Analysis and planning complete, awaiting API key provision)
+- **Dependencies**: External API access/credentials for ArXiv and Google Scholar.

@@ -243,14 +243,15 @@ npm install --save-dev @types/three@^0.160.0 @types/dompurify@^3.0.0
 - **Dependencies**: Community features design
 
 #### 17. Enhanced Resource Curation Engine
-- **Current State**: Basic references exist
+- **Current State**: Basic references exist. Analysis of API options (ArXiv, Google Scholar via third-party) and high-level plan for backend/frontend integration and data modeling completed.
 - **Tasks**:
   - ArXiv and Google Scholar API integration
   - Quality assessment algorithms
   - Personal resource libraries
   - Collaborative collections
 - **Effort**: 2-3 weeks
-- **Dependencies**: External API access
+- **Dependencies**: External API access (ArXiv API key, Google Scholar third-party API key/subscription)
+- **Status**: 🟡 IN PROGRESS (Analysis and planning complete, awaiting API key provision)
 
 #### 18. Skill Assessment System
 - **Current State**: Not implemented

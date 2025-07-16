@@ -97,6 +97,25 @@ export const CSV_CONSTANTS = {
   ],
 } as const;
 
+// Section names for terms
+export const SECTION_NAMES = [
+  'definition',
+  'keyPoints',
+  'examples',
+  'realWorldApplications',
+  'commonPitfalls',
+  'bestPractices',
+  'prerequisites',
+  'relatedConcepts',
+  'furtherReading',
+  'practiceProblems',
+  'codeExamples',
+  'visualizations',
+  'historicalContext',
+  'futureDirections',
+  'faq'
+] as const;
+
 // Pagination constants
 export const PAGINATION_CONSTANTS = {
   // Default limits

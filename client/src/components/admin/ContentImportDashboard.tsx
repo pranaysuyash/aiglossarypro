@@ -55,7 +55,7 @@ export default function ContentImportDashboard() {
     queryKey: ['/api/admin/jobs/imports'],
     queryFn: async () => {
       const response = await fetch('/api/admin/jobs/imports');
-      if (!response.ok) throw new Error('Failed to fetch import jobs');
+      if (!response.ok) {throw new Error('Failed to fetch import jobs');}
       return response.json();
     },
     refetchInterval: 2000, // Poll every 2 seconds for updates
@@ -80,10 +80,10 @@ export default function ContentImportDashboard() {
         body: formData,
       });
 
-      if (!response.ok) throw new Error('Failed to upload file');
+      if (!response.ok) {throw new Error('Failed to upload file');}
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast({
         title: 'Import started',
         description: `Import job ${data.data.jobId} has been queued`,
@@ -91,10 +91,10 @@ export default function ContentImportDashboard() {
       setSelectedFile(null);
       refetchJobs();
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Import failed',
-        description: error.message,
+        description: error?.message,
         variant: 'destructive',
       });
     },
@@ -109,7 +109,7 @@ export default function ContentImportDashboard() {
         body: JSON.stringify(termData),
       });
 
-      if (!response.ok) throw new Error('Failed to create term');
+      if (!response.ok) {throw new Error('Failed to create term');}
       return response.json();
     },
     onSuccess: () => {
@@ -126,10 +126,10 @@ export default function ContentImportDashboard() {
       });
       queryClient.invalidateQueries({ queryKey: ['/api/terms'] });
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Creation failed',
-        description: error.message,
+        description: error?.message,
         variant: 'destructive',
       });
     },
@@ -278,7 +278,7 @@ export default function ContentImportDashboard() {
                 <Input
                   id="term-name"
                   value={singleTermData.name}
-                  onChange={(e) => setSingleTermData({ ...singleTermData, name: e.target.value })}
+                  onChange={e => setSingleTermData({ ...singleTermData, name: e.target.value })}
                   placeholder="e.g., Machine Learning"
                 />
               </div>
@@ -288,9 +288,7 @@ export default function ContentImportDashboard() {
                 <Input
                   id="category"
                   value={singleTermData.category}
-                  onChange={(e) =>
-                    setSingleTermData({ ...singleTermData, category: e.target.value })
-                  }
+                  onChange={e => setSingleTermData({ ...singleTermData, category: e.target.value })}
                   placeholder="e.g., Artificial Intelligence"
                 />
               </div>
@@ -300,7 +298,7 @@ export default function ContentImportDashboard() {
                 <Input
                   id="short-definition"
                   value={singleTermData.shortDefinition}
-                  onChange={(e) =>
+                  onChange={e =>
                     setSingleTermData({
                       ...singleTermData,
                       shortDefinition: e.target.value,
@@ -315,7 +313,7 @@ export default function ContentImportDashboard() {
                 <Textarea
                   id="definition"
                   value={singleTermData.definition}
-                  onChange={(e) =>
+                  onChange={e =>
                     setSingleTermData({ ...singleTermData, definition: e.target.value })
                   }
                   placeholder="Detailed definition..."
@@ -328,9 +326,7 @@ export default function ContentImportDashboard() {
                   type="checkbox"
                   id="use-ai"
                   checked={singleTermData.useAI}
-                  onChange={(e) =>
-                    setSingleTermData({ ...singleTermData, useAI: e.target.checked })
-                  }
+                  onChange={e => setSingleTermData({ ...singleTermData, useAI: e.target.checked })}
                   className="rounded"
                 />
                 <Label htmlFor="use-ai" className="cursor-pointer">

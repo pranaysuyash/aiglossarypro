@@ -85,7 +85,7 @@ class NavigationPerformanceTester {
     console.log(`Running test: ${testName}...`);
 
     // Simulate test execution time
-    await new Promise((resolve) => setTimeout(resolve, Math.random() * 1000 + 500));
+    await new Promise(resolve => setTimeout(resolve, Math.random() * 1000 + 500));
 
     // Generate realistic performance metrics based on dataset size
     const nodeCount = datasetSize.totalNodes;
@@ -188,9 +188,9 @@ class NavigationPerformanceTester {
 
   private generateReport(): PerformanceReport {
     const executionTime = Date.now() - this.startTime;
-    const passedTests = this.results.filter((r) => r.status === 'passed').length;
-    const failedTests = this.results.filter((r) => r.status === 'failed').length;
-    const warningTests = this.results.filter((r) => r.status === 'warning').length;
+    const passedTests = this.results.filter(r => r.status === 'passed').length;
+    const failedTests = this.results.filter(r => r.status === 'failed').length;
+    const warningTests = this.results.filter(r => r.status === 'warning').length;
 
     const avgRenderTime =
       this.results.reduce((sum, r) => sum + r.metrics.renderTime, 0) / this.results.length;
@@ -223,8 +223,8 @@ class NavigationPerformanceTester {
   private generateRecommendations(): string[] {
     const recommendations: string[] = [];
 
-    const failedTests = this.results.filter((r) => r.status === 'failed');
-    const warningTests = this.results.filter((r) => r.status === 'warning');
+    const failedTests = this.results.filter(r => r.status === 'failed');
+    const warningTests = this.results.filter(r => r.status === 'warning');
 
     if (failedTests.length > 0) {
       recommendations.push(
@@ -252,8 +252,8 @@ class NavigationPerformanceTester {
       );
     }
 
-    const largeDatasetTests = this.results.filter((r) => r.datasetSize.totalNodes > 1000);
-    if (largeDatasetTests.some((r) => r.status !== 'passed')) {
+    const largeDatasetTests = this.results.filter(r => r.datasetSize.totalNodes > 1000);
+    if (largeDatasetTests.some(r => r.status !== 'passed')) {
       recommendations.push(
         'Large datasets require optimization. Enable virtual scrolling for datasets > 100 nodes.'
       );
@@ -313,14 +313,14 @@ class NavigationPerformanceTester {
 |-----------|--------|-------------|---------|-------------|-------------|
 ${report.tests
   .map(
-    (test) =>
+    test =>
       `| ${test.testName} | ${test.status === 'passed' ? '✅' : test.status === 'warning' ? '⚠️' : '❌'} | ${formatTime(test.metrics.renderTime)} | ${formatBytes(test.metrics.memoryUsage)} | ${formatTime(test.metrics.searchTime)} | ${formatTime(test.metrics.interactionLatency)} |`
   )
   .join('\n')}
 
 ## Recommendations
 
-${report.recommendations.map((rec) => `- ${rec}`).join('\n')}
+${report.recommendations.map(rec => `- ${rec}`).join('\n')}
 
 ## Environment
 

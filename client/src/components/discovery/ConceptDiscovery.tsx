@@ -21,7 +21,7 @@ import { RelationshipGraph } from './RelationshipGraph';
 
 interface ConceptDiscoveryProps {
   initialTermId?: string;
-  className?: string;
+  className?: string | undefined;
 }
 
 interface GraphData {
@@ -100,7 +100,7 @@ export function ConceptDiscovery({ initialTermId, className = '' }: ConceptDisco
             filteredRelationships: data.data.relationships?.length || 0,
           });
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error fetching relationships:', error);
         toast({
           title: 'Error',
@@ -138,35 +138,35 @@ export function ConceptDiscovery({ initialTermId, className = '' }: ConceptDisco
 
   // Apply filters and update stats
   useEffect(() => {
-    if (!graphData.nodes.length) return;
+    if (!graphData.nodes.length) {return;}
 
     // Apply filters to calculate new stats
     const filteredLinks = graphData.links.filter(
-      (link) =>
+      link =>
         filters.relationshipTypes.includes(link.type) &&
         link.strength >= filters.relationshipStrength[0] &&
         link.strength <= filters.relationshipStrength[1]
     );
 
     const connectedNodeIds = new Set<string>();
-    filteredLinks.forEach((link) => {
+    filteredLinks.forEach(link => {
       connectedNodeIds.add(link.source);
       connectedNodeIds.add(link.target);
     });
 
-    const filteredNodes = graphData.nodes.filter((node) => {
+    const filteredNodes = graphData.nodes.filter(node => {
       // Apply node type filter
-      if (!filters.nodeTypes.includes(node.type)) return false;
+      if (!filters.nodeTypes.includes(node.type)) {return false;}
 
       // Apply category filter
       if (filters.categories.length > 0 && node.category) {
-        if (!filters.categories.includes(node.category)) return false;
+        if (!filters.categories.includes(node.category)) {return false;}
       }
 
       // Apply search filter
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();
-        if (!node.name.toLowerCase().includes(query)) return false;
+        if (!node.name.toLowerCase().includes(query)) {return false;}
       }
 
       // Apply connection filter
@@ -211,7 +211,7 @@ export function ConceptDiscovery({ initialTermId, className = '' }: ConceptDisco
 
       {/* Placeholder for future concept map implementation */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {graphData.categories.map((category) => (
+        {graphData.categories.map(category => (
           <Card key={category} className="hover:shadow-lg transition-shadow">
             <CardHeader className="pb-3">
               <CardTitle className="text-sm font-medium">{category}</CardTitle>
@@ -219,9 +219,9 @@ export function ConceptDiscovery({ initialTermId, className = '' }: ConceptDisco
             <CardContent>
               <div className="space-y-2">
                 {graphData.nodes
-                  .filter((node) => node.category === category && node.type === 'term')
+                  .filter(node => node.category === category && node.type === 'term')
                   .slice(0, 5)
-                  .map((node) => (
+                  .map(node => (
                     <div
                       key={node.id}
                       className="flex items-center justify-between cursor-pointer hover:text-blue-600"
@@ -235,9 +235,9 @@ export function ConceptDiscovery({ initialTermId, className = '' }: ConceptDisco
                     </div>
                   ))}
               </div>
-              {graphData.nodes.filter((node) => node.category === category).length > 5 && (
+              {graphData.nodes.filter(node => node.category === category).length > 5 && (
                 <p className="text-xs text-gray-500 mt-2">
-                  +{graphData.nodes.filter((node) => node.category === category).length - 5} more
+                  +{graphData.nodes.filter(node => node.category === category).length - 5} more
                 </p>
               )}
             </CardContent>
@@ -286,7 +286,7 @@ export function ConceptDiscovery({ initialTermId, className = '' }: ConceptDisco
 
         {/* Visualization Area */}
         <div className="lg:col-span-3">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as any)}>
+          <Tabs value={activeTab} onValueChange={v => setActiveTab(v as any)}>
             <TabsList className="grid w-full grid-cols-3">
               <TabsTrigger value="graph" className="flex items-center gap-2">
                 <Network className="h-4 w-4" />
@@ -369,7 +369,7 @@ export function ConceptDiscovery({ initialTermId, className = '' }: ConceptDisco
                   <div>
                     <p className="text-sm text-gray-500">Categories</p>
                     <p className="text-2xl font-semibold">
-                      {new Set(graphData.nodes.map((n) => n.category)).size}
+                      {new Set(graphData.nodes.map(n => n.category)).size}
                     </p>
                   </div>
                   <div>

@@ -27,7 +27,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '.
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface CrossReferenceAnalyticsProps {
-  className?: string;
+  className?: string | undefined;
   termIds?: string[];
 }
 
@@ -58,11 +58,11 @@ const CrossReferenceAnalytics: React.FC<CrossReferenceAnalyticsProps> = ({
 
   // Processed data for visualizations
   const hubTermsData = useMemo(() => {
-    if (!metricsQuery.data) return [];
+    if (!metricsQuery.data) {return [];}
     return analytics
       .getHubTerms(metricsQuery.data, 0.5)
       .slice(0, 10)
-      .map((term) => ({
+      .map(term => ({
         name: term.termName.slice(0, 20),
         hubScore: Math.round(term.hubScore * 100),
         incoming: term.incomingReferences,
@@ -72,8 +72,8 @@ const CrossReferenceAnalytics: React.FC<CrossReferenceAnalyticsProps> = ({
   }, [metricsQuery.data, analytics]);
 
   const flowsData = useMemo(() => {
-    if (!flowsQuery.data) return [];
-    return flowsQuery.data.slice(0, 15).map((flow) => ({
+    if (!flowsQuery.data) {return [];}
+    return flowsQuery.data.slice(0, 15).map(flow => ({
       name: `${flow.sourceTermName} → ${flow.targetTermName}`,
       flow: flow.flowCount,
       timeGap: Math.round(flow.averageTimeGap / 60), // Convert to minutes
@@ -83,7 +83,7 @@ const CrossReferenceAnalytics: React.FC<CrossReferenceAnalyticsProps> = ({
   }, [flowsQuery.data]);
 
   const pathwayTypeData = useMemo(() => {
-    if (!pathwaysQuery.data) return [];
+    if (!pathwaysQuery.data) {return [];}
     const typeCount = pathwaysQuery.data.reduce(
       (acc, pathway) => {
         acc[pathway.pathwayType] = (acc[pathway.pathwayType] || 0) + 1;
@@ -100,8 +100,8 @@ const CrossReferenceAnalytics: React.FC<CrossReferenceAnalyticsProps> = ({
   }, [pathwaysQuery.data]);
 
   const effectivenessData = useMemo(() => {
-    if (!pathwaysQuery.data) return [];
-    return pathwaysQuery.data.slice(0, 10).map((pathway) => ({
+    if (!pathwaysQuery.data) {return [];}
+    return pathwaysQuery.data.slice(0, 10).map(pathway => ({
       name: pathway.termNames.slice(0, 3).join(' → '),
       effectiveness: Math.round(pathway.learningEffectiveness * 100),
       frequency: pathway.frequency,
@@ -429,7 +429,7 @@ const CrossReferenceAnalytics: React.FC<CrossReferenceAnalyticsProps> = ({
                   <span className="text-sm text-gray-600">Min frequency:</span>
                   <Select
                     value={minFrequency.toString()}
-                    onValueChange={(value) => setMinFrequency(parseInt(value))}
+                    onValueChange={value => setMinFrequency(parseInt(value))}
                   >
                     <SelectTrigger className="w-20">
                       <SelectValue />

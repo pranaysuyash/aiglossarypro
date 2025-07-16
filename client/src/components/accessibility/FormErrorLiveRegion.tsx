@@ -5,7 +5,7 @@ import { cn } from '@/lib/utils';
 
 interface FormErrorLiveRegionProps {
   message?: string;
-  className?: string;
+  className?: string | undefined;
   level?: 'polite' | 'assertive';
 }
 
@@ -30,12 +30,12 @@ export function FormErrorLiveRegion({
       }, 100);
 
       return () => clearTimeout(timer);
-    } else {
+    } 
       setLiveMessage('');
-    }
+    
   }, [message]);
 
-  if (!liveMessage) return null;
+  if (!liveMessage) {return null;}
 
   return (
     <div
@@ -54,7 +54,7 @@ export function FormErrorLiveRegion({
 
 interface FormErrorDisplayProps {
   message?: string;
-  className?: string;
+  className?: string | undefined;
   showVisually?: boolean;
 }
 
@@ -69,7 +69,7 @@ export function FormErrorDisplay({
   className,
   showVisually = true,
 }: FormErrorDisplayProps) {
-  if (!message) return null;
+  if (!message) {return null;}
 
   return (
     <>
@@ -145,7 +145,7 @@ interface FormFieldWithErrorProps {
   error?: string;
   label?: string;
   id?: string;
-  className?: string;
+  className?: string | undefined;
   required?: boolean;
 }
 

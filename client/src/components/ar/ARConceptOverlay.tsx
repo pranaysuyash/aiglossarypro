@@ -49,14 +49,14 @@ const ARReticle: React.FC<{
 }> = ({ visible, position }) => {
   const reticleRef = useRef<THREE.Group>(null);
 
-  useFrame((_state) => {
+  useFrame(_state => {
     if (reticleRef.current && visible) {
       // Animate reticle rotation
       reticleRef.current.rotation.z += 0.05;
     }
   });
 
-  if (!visible) return null;
+  if (!visible) {return null;}
 
   return (
     <group ref={reticleRef} position={position.toArray()}>
@@ -96,7 +96,7 @@ const ARConceptModel: React.FC<{
   const groupRef = useRef<THREE.Group>(null);
   const [isHovered, setIsHovered] = useState(false);
 
-  useFrame((state) => {
+  useFrame(state => {
     if (groupRef.current) {
       // Gentle floating animation
       groupRef.current.position.y =
@@ -214,7 +214,7 @@ const ARPlacementSystem: React.FC<{
 
   // Hit test for surface detection
   const hitTestRef = useRef<THREE.Vector3 | null>(null);
-  
+
   // Simple hit test effect - mock implementation for now
   useEffect(() => {
     // This would be the real hit test logic in a production app
@@ -223,7 +223,7 @@ const ARPlacementSystem: React.FC<{
       setReticleVisible(true);
       setReticlePosition(new THREE.Vector3(0, 0, -1));
     };
-    
+
     mockHitTest();
   }, []);
 
@@ -274,9 +274,9 @@ const ARConceptConnections: React.FC<{
       color: string;
     }> = [];
 
-    placedConcepts.forEach((concept) => {
-      concept.connections.forEach((connectionId) => {
-        const targetConcept = placedConcepts.find((c) => c.id === connectionId);
+    placedConcepts.forEach(concept => {
+      concept.connections.forEach(connectionId => {
+        const targetConcept = placedConcepts.find(c => c.id === connectionId);
         if (targetConcept) {
           lines.push({
             from: concept.position,
@@ -293,7 +293,9 @@ const ARConceptConnections: React.FC<{
   return (
     <>
       {connections.map((connection, index) => (
-        <line key={`connection-${connection.from.x}-${connection.from.y}-${connection.from.z}-${index}`}>
+        <line
+          key={`connection-${connection.from.x}-${connection.from.y}-${connection.from.z}-${index}`}
+        >
           <bufferGeometry>
             <bufferAttribute
               attach="attributes-position"
@@ -371,8 +373,8 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
   const _handleARSessionStart = useCallback(async () => {
     try {
       await initializeARSession();
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to start AR session';
+    } catch (error: any) {
+      const message = error instanceof Error ? error?.message : 'Failed to start AR session';
       onError?.(message);
     }
   }, [initializeARSession, onError]);
@@ -382,7 +384,7 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
       await endSession();
       setPlacedConcepts([]);
       setSelectedConcept(null);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error ending AR session:', error);
     }
   }, [endSession]);
@@ -395,7 +397,7 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
         timestamp: Date.now(),
       };
 
-      setPlacedConcepts((prev) => [...prev, placedConcept]);
+      setPlacedConcepts(prev => [...prev, placedConcept]);
       setSelectedConcept(null);
       onConceptPlace?.(concept, position);
 
@@ -455,7 +457,7 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
         <div className="absolute top-4 right-4 z-10 bg-black bg-opacity-80 rounded-lg p-4 max-w-xs">
           <h3 className="text-white font-bold mb-3">Select Concept to Place</h3>
           <div className="space-y-2">
-            {availableConcepts.map((concept) => (
+            {availableConcepts.map(concept => (
               <button
                 type="button"
                 key={concept.id}
@@ -519,7 +521,7 @@ const ARConceptOverlay: React.FC<ARConceptOverlayProps> = ({
           />
 
           {/* Render Placed Concepts */}
-          {placedConcepts.map((concept) => (
+          {placedConcepts.map(concept => (
             <ARConceptModel
               key={`${concept.id}-${concept.timestamp}`}
               concept={concept}

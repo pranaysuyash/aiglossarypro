@@ -16,19 +16,24 @@ const meta: Meta<typeof OfflineStatus> = {
     onSync: { action: 'sync triggered' },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
         <div className="max-w-4xl mx-auto space-y-4">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">AI Glossary Pro</h1>
           <p className="text-gray-600 dark:text-gray-400">
-            Check the online/offline status indicator in the top-right corner.
-            When offline, a banner will appear at the top.
+            Check the online/offline status indicator in the top-right corner. When offline, a
+            banner will appear at the top.
           </p>
-          
+
           {/* Sample content */}
           {Array.from({ length: 10 }, (_, i) => (
-            <div key={i} className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-              <h3 className="font-semibold text-gray-900 dark:text-gray-100">Cached Term {i + 1}</h3>
+            <div
+              key={i}
+              className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+            >
+              <h3 className="font-semibold text-gray-900 dark:text-gray-100">
+                Cached Term {i + 1}
+              </h3>
               <p className="text-gray-600 dark:text-gray-400 mt-1">
                 This term is available offline. Sync status is managed automatically.
               </p>
@@ -91,11 +96,29 @@ export const WithPendingSync: Story = {
   },
   beforeEach: () => {
     // Add some mock sync queue items
-    localStorage.setItem('sync_queue', JSON.stringify([
-      { id: '1', type: 'favorite', data: { termId: 'neural-network' }, timestamp: new Date().toISOString() },
-      { id: '2', type: 'progress', data: { termId: 'machine-learning', progress: 100 }, timestamp: new Date().toISOString() },
-      { id: '3', type: 'view', data: { termId: 'deep-learning' }, timestamp: new Date().toISOString() },
-    ]));
+    localStorage.setItem(
+      'sync_queue',
+      JSON.stringify([
+        {
+          id: '1',
+          type: 'favorite',
+          data: { termId: 'neural-network' },
+          timestamp: new Date().toISOString(),
+        },
+        {
+          id: '2',
+          type: 'progress',
+          data: { termId: 'machine-learning', progress: 100 },
+          timestamp: new Date().toISOString(),
+        },
+        {
+          id: '3',
+          type: 'view',
+          data: { termId: 'deep-learning' },
+          timestamp: new Date().toISOString(),
+        },
+      ])
+    );
   },
 };
 
@@ -105,24 +128,27 @@ export const WithCachedTerms: Story = {
   },
   beforeEach: () => {
     // Add mock cached terms
-    localStorage.setItem('cached_terms', JSON.stringify([
-      {
-        id: 'neural-network',
-        title: 'Neural Network',
-        definition: 'A computing system inspired by biological neural networks...',
-        category: 'Deep Learning',
-        cachedAt: new Date().toISOString(),
-        lastViewed: new Date().toISOString(),
-      },
-      {
-        id: 'machine-learning',
-        title: 'Machine Learning',
-        definition: 'A subset of AI that enables computers to learn...',
-        category: 'AI Fundamentals',
-        cachedAt: new Date().toISOString(),
-        lastViewed: new Date().toISOString(),
-      },
-    ]));
+    localStorage.setItem(
+      'cached_terms',
+      JSON.stringify([
+        {
+          id: 'neural-network',
+          title: 'Neural Network',
+          definition: 'A computing system inspired by biological neural networks...',
+          category: 'Deep Learning',
+          cachedAt: new Date().toISOString(),
+          lastViewed: new Date().toISOString(),
+        },
+        {
+          id: 'machine-learning',
+          title: 'Machine Learning',
+          definition: 'A subset of AI that enables computers to learn...',
+          category: 'AI Fundamentals',
+          cachedAt: new Date().toISOString(),
+          lastViewed: new Date().toISOString(),
+        },
+      ])
+    );
   },
   play: async () => {
     // Simulate going offline
@@ -198,9 +224,12 @@ export const BackOnline: Story = {
   },
   beforeEach: () => {
     // Add some sync queue items to demonstrate auto-sync
-    localStorage.setItem('sync_queue', JSON.stringify([
-      { id: '1', type: 'favorite', data: { termId: 'ai' }, timestamp: new Date().toISOString() },
-    ]));
+    localStorage.setItem(
+      'sync_queue',
+      JSON.stringify([
+        { id: '1', type: 'favorite', data: { termId: 'ai' }, timestamp: new Date().toISOString() },
+      ])
+    );
   },
   play: async () => {
     // Start offline
@@ -209,7 +238,7 @@ export const BackOnline: Story = {
       value: false,
     });
     window.dispatchEvent(new Event('offline'));
-    
+
     // Come back online after 2 seconds
     setTimeout(() => {
       Object.defineProperty(navigator, 'onLine', {

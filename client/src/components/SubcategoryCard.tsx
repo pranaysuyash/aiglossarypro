@@ -123,7 +123,7 @@ const SubcategoryCard = memo(
                   <Link
                     href={`/subcategories/${subcategory.id}`}
                     className="text-sm text-primary hover:text-primary-dark font-medium flex items-center space-x-1 group-hover:translate-x-1 transition-transform"
-                    onClick={(e) => e.stopPropagation()}
+                    onClick={e => e.stopPropagation()}
                   >
                     <span>View Terms</span>
                     <ArrowRight className="w-3 h-3" />

@@ -1,4 +1,4 @@
-import { Request, Response, Router } from 'express';
+import { type Request, type Response, Router } from 'express';
 import { safetyService } from '../../services/safetyService';
 import { log as logger } from '../../utils/logger';
 
@@ -113,7 +113,7 @@ router.post('/emergency-stop', async (req: Request, res: Response) => {
   try {
     const { reason, userId } = req.body;
 
-    if (!reason || !reason.trim()) {
+    if (!reason?.trim()) {
       return res.status(400).json({ error: 'Reason is required for emergency stop' });
     }
 
@@ -175,7 +175,9 @@ router.post('/operations/start', async (req: Request, res: Response) => {
     logger.error('Error starting operation:', {
       error: error instanceof Error ? error.message : String(error),
     });
-    res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to start operation' });
+    res
+      .status(500)
+      .json({ error: error instanceof Error ? error.message : 'Failed to start operation' });
   }
 });
 

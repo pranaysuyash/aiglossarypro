@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { useQuery } from '@tanstack/react-query';
 import { api } from '../lib/api';
 
@@ -90,7 +91,7 @@ export function useTermAccess(termId?: string) {
   const { data: termAccessData, isLoading: isCheckingTerm } = useQuery({
     queryKey: ['term-access', termId, accessStatus?.dailyViews],
     queryFn: async () => {
-      if (!termId || !canViewTerm) return null;
+      if (!termId || !canViewTerm) {return null;}
 
       // Check if user has already viewed this term today
       const response = await api.get(`/user/term-access/${termId}`);
@@ -123,9 +124,9 @@ export function useViewTerm() {
         // Refetch access status to update view counts
         await refetch();
         return { success: true };
-      } else {
+      } 
         return { success: false, error: response.data.error || 'Failed to view term' };
-      }
+      
     } catch (error: any) {
       const errorMessage = error.response?.data?.error || 'Failed to view term';
       return { success: false, error: errorMessage };

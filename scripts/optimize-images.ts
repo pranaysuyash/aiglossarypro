@@ -1,9 +1,9 @@
-import sharp from 'sharp';
-import fs from 'fs';
-import path from 'path';
-import { glob } from 'glob';
 import chalk from 'chalk';
+import fs from 'fs';
+import { glob } from 'glob';
 import ora from 'ora';
+import path from 'path';
+import sharp from 'sharp';
 
 interface ImageOptimizationOptions {
   inputDir: string;
@@ -46,12 +46,12 @@ class ImageOptimizer {
 
     // Process each image
     for (const imagePath of images) {
-      await this.processImage(
-        path.join(inputDir, imagePath),
-        outputDir,
-        imagePath,
-        { formats, sizes, quality, preserveOriginal }
-      );
+      await this.processImage(path.join(inputDir, imagePath), outputDir, imagePath, {
+        formats,
+        sizes,
+        quality,
+        preserveOriginal,
+      });
     }
 
     // Summary
@@ -95,13 +95,7 @@ class ImageOptimizer {
             path.extname(relativePath)
           );
 
-          await this.saveOptimized(
-            image,
-            outputPath,
-            width,
-            format,
-            options.quality
-          );
+          await this.saveOptimized(image, outputPath, width, format, options.quality);
 
           totalNewSize += fs.statSync(outputPath).size;
         }
@@ -111,7 +105,7 @@ class ImageOptimizer {
       if (options.preserveOriginal && metadata.width) {
         for (const format of options.formats) {
           if (format === 'original') continue;
-          
+
           const outputPath = this.getOutputPath(
             outputSubdir,
             baseName,
@@ -120,13 +114,7 @@ class ImageOptimizer {
             path.extname(relativePath)
           );
 
-          await this.saveOptimized(
-            image,
-            outputPath,
-            metadata.width,
-            format,
-            options.quality
-          );
+          await this.saveOptimized(image, outputPath, metadata.width, format, options.quality);
 
           totalNewSize += fs.statSync(outputPath).size;
         }
@@ -176,7 +164,7 @@ class ImageOptimizer {
       case 'avif':
         pipeline = pipeline.avif({ quality, effort: 6 });
         break;
-      case 'original':
+      case 'original': {
         const ext = path.extname(outputPath).toLowerCase();
         if (ext === '.jpg' || ext === '.jpeg') {
           pipeline = pipeline.jpeg({ quality, progressive: true });
@@ -184,6 +172,7 @@ class ImageOptimizer {
           pipeline = pipeline.png({ quality, compressionLevel: 9 });
         }
         break;
+      }
     }
 
     await pipeline.toFile(outputPath);
@@ -218,9 +207,7 @@ export function generatePictureElement(
   const baseName = path.basename(imagePath, path.extname(imagePath));
   const widths = [320, 640, 768, 1024, 1280, 1920];
 
-  const webpSrcset = widths
-    .map(w => `/images/${baseName}-${w}w.webp ${w}w`)
-    .join(', ');
+  const webpSrcset = widths.map(w => `/images/${baseName}-${w}w.webp ${w}w`).join(', ');
 
   const fallbackSrcset = widths
     .map(w => `/images/${baseName}-${w}w${path.extname(imagePath)} ${w}w`)
@@ -251,7 +238,7 @@ export function generatePictureElement(
 // CLI interface
 if (require.main === module) {
   const args = process.argv.slice(2);
-  
+
   const options: ImageOptimizationOptions = {
     inputDir: args[0] || './client/public/images',
     outputDir: args[1] || './client/public/images/optimized',

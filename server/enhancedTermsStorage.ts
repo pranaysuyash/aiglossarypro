@@ -90,7 +90,7 @@ class EnhancedStorage {
 
     const [term] = await db.select().from(enhancedTerms).where(termCondition);
 
-    if (!term) return null;
+    if (!term) {return null;}
 
     // Get all sections for this term
     const sections = await db
@@ -169,7 +169,7 @@ class EnhancedStorage {
 
     // Category filters
     if (categories) {
-      const categoryList = categories.split(',').map((c) => c.trim());
+      const categoryList = categories.split(',').map(c => c.trim());
       searchConditions.push(
         or(
           sql`${enhancedTerms.mainCategories} && ARRAY[${categoryList.join(',')}]::text[]`,
@@ -194,7 +194,7 @@ class EnhancedStorage {
 
     // Application domain filter
     if (applicationDomains) {
-      const domainList = applicationDomains.split(',').map((d) => d.trim());
+      const domainList = applicationDomains.split(',').map(d => d.trim());
       searchConditions.push(
         sql`${enhancedTerms.applicationDomains} && ARRAY[${domainList.join(',')}]::text[]`
       );
@@ -202,7 +202,7 @@ class EnhancedStorage {
 
     // Technique filter
     if (techniques) {
-      const techniqueList = techniques.split(',').map((t) => t.trim());
+      const techniqueList = techniques.split(',').map(t => t.trim());
       searchConditions.push(
         sql`${enhancedTerms.techniques} && ARRAY[${techniqueList.join(',')}]::text[]`
       );
@@ -273,14 +273,14 @@ class EnhancedStorage {
 
     // Category filters
     if (mainCategories) {
-      const categoryList = mainCategories.split(',').map((c) => c.trim());
+      const categoryList = mainCategories.split(',').map(c => c.trim());
       filterConditions.push(
         sql`${enhancedTerms.mainCategories} && ARRAY[${categoryList.join(',')}]::text[]`
       );
     }
 
     if (subCategories) {
-      const subCategoryList = subCategories.split(',').map((c) => c.trim());
+      const subCategoryList = subCategories.split(',').map(c => c.trim());
       filterConditions.push(
         sql`${enhancedTerms.subCategories} && ARRAY[${subCategoryList.join(',')}]::text[]`
       );
@@ -292,14 +292,14 @@ class EnhancedStorage {
     }
 
     if (applicationDomains) {
-      const domainList = applicationDomains.split(',').map((d) => d.trim());
+      const domainList = applicationDomains.split(',').map(d => d.trim());
       filterConditions.push(
         sql`${enhancedTerms.applicationDomains} && ARRAY[${domainList.join(',')}]::text[]`
       );
     }
 
     if (techniques) {
-      const techniqueList = techniques.split(',').map((t) => t.trim());
+      const techniqueList = techniques.split(',').map(t => t.trim());
       filterConditions.push(
         sql`${enhancedTerms.techniques} && ARRAY[${techniqueList.join(',')}]::text[]`
       );

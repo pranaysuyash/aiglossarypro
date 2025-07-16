@@ -66,7 +66,7 @@ async function debugTerm() {
     console.log('\n🔍 Checking page source for term data...');
     const scripts = await page.locator('script').allInnerTexts();
     const hasTermData = scripts.some(
-      (script) => script.includes('isPreview') || script.includes('"preview"')
+      script => script.includes('isPreview') || script.includes('"preview"')
     );
     console.log(`📜 Term data in scripts: ${hasTermData ? '✅ Found' : '❌ Not found'}`);
 

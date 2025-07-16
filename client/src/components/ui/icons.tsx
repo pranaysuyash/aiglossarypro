@@ -267,7 +267,7 @@ export {
 
 // Common icon props type for consistency
 export interface IconProps {
-  className?: string;
+  className?: string | undefined;
   size?: number | string;
   color?: string;
   strokeWidth?: number | string;
@@ -291,7 +291,7 @@ export const Icon = ({
   ...props
 }: {
   children: React.ReactNode;
-  className?: string;
+  className?: string | undefined;
   size?: number | keyof typeof iconSizes;
 } & React.HTMLAttributes<HTMLSpanElement>) => {
   const iconSize = typeof size === 'number' ? size : iconSizes[size];

@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { PricingCountdown } from './PricingCountdown';
 
@@ -9,9 +8,9 @@ const meta: Meta<typeof PricingCountdown> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Landing page marketing component for the AIGlossaryPro application.'
-      }
-    }
+        component: 'Landing page marketing component for the AIGlossaryPro application.',
+      },
+    },
   },
   tags: ['autodocs'],
   argTypes: {
@@ -23,14 +22,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  
   parameters: {
     docs: {
       description: {
-        story: 'Default PricingCountdown component state.'
-      }
-    }
-  }
+        story: 'Default PricingCountdown component state.',
+      },
+    },
+  },
 };
 
 export const Loading: Story = {
@@ -38,10 +36,10 @@ export const Loading: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'PricingCountdown in loading state.'
-      }
-    }
-  }
+        story: 'PricingCountdown in loading state.',
+      },
+    },
+  },
 };
 
 export const Error: Story = {
@@ -49,8 +47,8 @@ export const Error: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'PricingCountdown displaying error state.'
-      }
-    }
-  }
+        story: 'PricingCountdown displaying error state.',
+      },
+    },
+  },
 };

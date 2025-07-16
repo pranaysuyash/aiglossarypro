@@ -87,8 +87,8 @@ async function identifyInvalidCategories(): Promise<string[]> {
     const categoryName = category.name.toLowerCase();
 
     // Check against invalid patterns
-    const isInvalid = invalidPatterns.some((pattern) => pattern.test(categoryName));
-    const isTooSpecific = tooSpecificPatterns.some((pattern) => pattern.test(categoryName));
+    const isInvalid = invalidPatterns.some(pattern => pattern.test(categoryName));
+    const isTooSpecific = tooSpecificPatterns.some(pattern => pattern.test(categoryName));
 
     // Additional checks
     const isSingleWord = categoryName.split(' ').length === 1 && categoryName.length < 4;
@@ -225,7 +225,7 @@ async function cleanupInvalidCategories(): Promise<CleanupStats> {
 
         if (subcatsToRemove.length > 0) {
           // First remove term-subcategory relationships
-          const subcatIds = subcatsToRemove.map((sc) => sc.id);
+          const subcatIds = subcatsToRemove.map(sc => sc.id);
           await db
             .delete(termSubcategories)
             .where(inArray(termSubcategories.subcategoryId, subcatIds));
@@ -267,7 +267,7 @@ async function cleanupInvalidCategories(): Promise<CleanupStats> {
 
     if (stats.errors.length > 0) {
       log.error('Errors during cleanup:');
-      stats.errors.forEach((error) => log.error(`  - ${error}`));
+      stats.errors.forEach(error => log.error(`  - ${error}`));
     }
   } catch (error) {
     const errorMsg = `Fatal error during cleanup: ${error}`;
@@ -285,12 +285,12 @@ export { cleanupInvalidCategories, identifyInvalidCategories };
 // Run if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   cleanupInvalidCategories()
-    .then((stats) => {
+    .then(stats => {
       console.log('\n🎉 Cleanup completed successfully!');
       console.log('Stats:', stats);
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('💥 Cleanup failed:', error);
       process.exit(1);
     });

@@ -2,7 +2,7 @@
 
 .math-renderer {
   @apply inline-block;
-  font-family: 'KaTeX_Main', 'Times New Roman', serif;
+  font-family: "KaTeX_Main", "Times New Roman", serif;
 }
 
 .math-display {
@@ -12,8 +12,9 @@
 }
 
 .math-inline {
-  @apply inline-block align-baseline;
+  @apply inline-block;
   margin: 0 2px;
+  vertical-align: baseline;
 }
 
 .math-expression {
@@ -100,7 +101,7 @@
 }
 
 .math-renderer[role="img"]:focus {
-  @apply ring-2 ring-blue-500 ring-opacity-50 rounded;
+  @apply ring-2 ring-blue-500/50 rounded;
 }
 
 /* Print styles */
@@ -109,7 +110,7 @@
     color: black !important;
     background: transparent !important;
   }
-  
+
   .math-display {
     break-inside: avoid;
     page-break-inside: avoid;

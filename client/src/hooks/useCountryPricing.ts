@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 interface CountryPricing {
   basePrice: number;
   localPrice: number;
+  originalPrice?: number;
   discount: number;
   countryCode: string;
   countryName: string;
@@ -11,6 +12,7 @@ interface CountryPricing {
   loading: boolean;
   annualSavings: number; // vs competitors
   localCompetitor: string;
+  isDiscounted?: boolean;
   launchPricing: {
     isActive: boolean;
     launchPrice: number;
@@ -37,6 +39,7 @@ export function useCountryPricing() {
   const [pricing, setPricing] = useState<CountryPricing>({
     basePrice: 249,
     localPrice: 249,
+    originalPrice: 249,
     discount: 0,
     countryCode: 'US',
     countryName: 'United States',
@@ -45,6 +48,7 @@ export function useCountryPricing() {
     loading: true,
     annualSavings: 300,
     localCompetitor: 'DataCamp',
+    isDiscounted: false,
     launchPricing: {
       isActive: LAUNCH_PRICING_CONFIG.isActive,
       launchPrice: LAUNCH_PRICING_CONFIG.launchPrice,
@@ -67,9 +71,9 @@ export function useCountryPricing() {
           },
         }).catch(() => null);
 
-        if (!response || !response.ok) {
+        if (!response?.ok) {
           // Fallback to default US pricing
-          setPricing((prev) => ({ ...prev, loading: false }));
+          setPricing(prev => ({ ...prev, loading: false }));
           return;
         }
 
@@ -93,7 +97,7 @@ export function useCountryPricing() {
         });
       } catch (error) {
         console.error('Country detection failed:', error);
-        setPricing((prev) => ({
+        setPricing(prev => ({
           ...prev,
           loading: false,
           launchPricing: {
@@ -310,6 +314,7 @@ function calculatePPPPricing(
     return {
       basePrice,
       localPrice,
+      originalPrice: basePrice,
       discount: countryInfo.discount,
       countryCode,
       countryName,
@@ -317,6 +322,7 @@ function calculatePPPPricing(
       currency: countryInfo.currency,
       annualSavings: countryInfo.annualSavings,
       localCompetitor: countryInfo.localCompetitor,
+      isDiscounted: true,
       launchPricing,
     };
   }
@@ -325,6 +331,7 @@ function calculatePPPPricing(
   return {
     basePrice,
     localPrice: basePrice,
+    originalPrice: basePrice,
     discount: 0,
     countryCode: countryCode || 'US',
     countryName: countryName || 'United States',
@@ -332,6 +339,7 @@ function calculatePPPPricing(
     currency: 'USD',
     annualSavings: 300, // vs DataCamp $300+/year
     localCompetitor: 'DataCamp/Coursera',
+    isDiscounted: false,
     launchPricing,
   };
 }

@@ -1793,330 +1793,207 @@
       {
         "file": "client/src/main.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "Architecture"
-        ]
+        "variants": ["Default", "Architecture"]
       },
       {
         "file": "client/src/App.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "Documentation"
-        ]
+        "variants": ["Default", "Documentation"]
       },
       {
         "file": "client/src/utils/performanceMonitor.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "Documentation"
-        ]
+        "variants": ["Default", "Documentation"]
       },
       {
         "file": "client/src/hooks/useFocusTrap.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "Documentation"
-        ]
+        "variants": ["Default", "Documentation"]
       },
       {
         "file": "client/src/hooks/use-mobile.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "Documentation"
-        ]
+        "variants": ["Default", "Documentation"]
       },
       {
         "file": "client/src/pages/not-found.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/XRExploration.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/UserProgressDashboard.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/Trending.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/TermsOfService.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/Terms.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/TermDetail.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/SurpriseMe.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/SubcategoryDetail.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/Subcategories.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/Settings.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/PurchaseSuccess.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/Profile.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/PrivacyPolicy.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/PersonalizedHomepage.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/OwnerDashboard.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/Lifetime.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/LearningPaths.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/LearningPathDetail.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/LandingPage.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/Home.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/Favorites.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/ExampleEnhancedUsage.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/EnhancedTermDetail.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/Discovery.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/Dashboard.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/CodeExamples.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/Categories.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/AnalyticsDashboard.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/AdminDashboard.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/Admin.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/About.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/AITools.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/AISearch.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/ABTestingDashboard.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/pages/3DVisualization.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/VirtualizedTermList.stories.tsx",
@@ -2148,18 +2025,12 @@
       {
         "file": "client/src/components/UpgradePrompt.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/TrendingWidget.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/TrendingDashboard.stories.tsx",
@@ -2177,18 +2048,12 @@
       {
         "file": "client/src/components/ThemeProvider.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/TestPurchaseButton.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/TermCard.stories.tsx",
@@ -2206,21 +2071,12 @@
       {
         "file": "client/src/components/SurpriseMe.stories.tsx",
         "count": 5,
-        "variants": [
-          "Default",
-          "LoadingState",
-          "WithMultipleModes",
-          "ErrorState",
-          "WithAnalytics"
-        ]
+        "variants": ["Default", "LoadingState", "WithMultipleModes", "ErrorState", "WithAnalytics"]
       },
       {
         "file": "client/src/components/SubcategoryCard.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/Sidebar.stories.tsx",
@@ -2241,10 +2097,7 @@
       {
         "file": "client/src/components/ShareMenu.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/SearchBar.stories.tsx",
@@ -2281,37 +2134,22 @@
       {
         "file": "client/src/components/S3FileBrowser.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/RecommendedForYou.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/PurchaseVerification.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ProgressVisualization.stories.tsx",
         "count": 5,
-        "variants": [
-          "Default",
-          "NewUser",
-          "ActiveUser",
-          "PowerUser",
-          "LoadingState"
-        ]
+        "variants": ["Default", "NewUser", "ActiveUser", "PowerUser", "LoadingState"]
       },
       {
         "file": "client/src/components/ProgressTracker.stories.tsx",
@@ -2331,10 +2169,7 @@
       {
         "file": "client/src/components/PremiumUpgradeSuccess.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/PremiumBadge.stories.tsx",
@@ -2356,49 +2191,27 @@
       {
         "file": "client/src/components/PredictiveAnalytics.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/PersonalizedDashboard.stories.tsx",
         "count": 6,
-        "variants": [
-          "Default",
-          "Loading",
-          "BeginnerUser",
-          "ExpertUser",
-          "NoData",
-          "HighEngagement"
-        ]
+        "variants": ["Default", "Loading", "BeginnerUser", "ExpertUser", "NoData", "HighEngagement"]
       },
       {
         "file": "client/src/components/PerformanceTest.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/PWAStatus.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/Header.stories.tsx",
         "count": 5,
-        "variants": [
-          "Default",
-          "WithLongSearch",
-          "Mobile",
-          "Tablet",
-          "DarkMode"
-        ]
+        "variants": ["Default", "WithLongSearch", "Mobile", "Tablet", "DarkMode"]
       },
       {
         "file": "client/src/components/FreeTierGate.stories.tsx",
@@ -2418,13 +2231,7 @@
       {
         "file": "client/src/components/Footer.stories.tsx",
         "count": 5,
-        "variants": [
-          "Default",
-          "Mobile",
-          "Tablet",
-          "DarkMode",
-          "WithLongContent"
-        ]
+        "variants": ["Default", "Mobile", "Tablet", "DarkMode", "WithLongContent"]
       },
       {
         "file": "client/src/components/FirebaseLoginPage.stories.tsx",
@@ -2454,10 +2261,7 @@
       {
         "file": "client/src/components/FilePreview.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ErrorBoundary.stories.tsx",
@@ -2514,18 +2318,12 @@
       {
         "file": "client/src/components/CrossReferenceAnalytics.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/CookieConsentBanner.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/CategoryHierarchy.stories.tsx",
@@ -2562,10 +2360,7 @@
       {
         "file": "client/src/components/AdaptiveLearning.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/AITermSuggestions.stories.tsx",
@@ -2604,13 +2399,7 @@
       {
         "file": "client/src/components/AIFeedbackDashboard.stories.tsx",
         "count": 5,
-        "variants": [
-          "Default",
-          "AdminView",
-          "FeedbackForm",
-          "AnalyticsView",
-          "LoadingState"
-        ]
+        "variants": ["Default", "AdminView", "FeedbackForm", "AnalyticsView", "LoadingState"]
       },
       {
         "file": "client/src/components/AIDefinitionImprover.stories.tsx",
@@ -2697,72 +2486,42 @@
       {
         "file": "client/src/pages/admin/AdminTermsDashboard.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/pages/admin/AdminNewsletterDashboard.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/pages/admin/AdminContactsDashboard.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/vr/VRConceptSpace.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/visualization/3DKnowledgeGraph.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/testing/NavigationPerformanceTest.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/term/TermRelationships.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/term/TermOverview.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/term/TermHeader.stories.tsx",
@@ -2781,18 +2540,12 @@
       {
         "file": "client/src/components/term/TermContentTabs.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/term/TermActions.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/term/RecommendedTerms.stories.tsx",
@@ -2818,146 +2571,92 @@
       {
         "file": "client/src/components/search/AdvancedSearch.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/search/AISemanticSearch.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/settings/UserPersonalizationSettings.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/navigation/HierarchicalNavigation.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/sections/SectionNavigator.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/sections/SectionLayoutManager.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/sections/SectionDisplay.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/sections/SectionContentRenderer.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/sections/HierarchicalNavigatorDemo.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/sections/HierarchicalNavigator.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/mobile/TouchOptimizedScroll.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/mobile/MobileOptimizedLayout.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/mobile/MobileNavigation.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/mobile/MobileLayoutWrapper.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/lazy/LazyPages.stories.tsx",
         "count": 2,
-        "variants": [
-          "LazyTermsStory",
-          "LazyTermsRaw"
-        ]
+        "variants": ["LazyTermsStory", "LazyTermsRaw"]
       },
       {
         "file": "client/src/components/lazy/LazyMermaid.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/lazy/LazyComponents.stories.tsx",
         "count": 2,
-        "variants": [
-          "AIFeedbackDashboard",
-          "AIFeedbackDashboardWrapped"
-        ]
+        "variants": ["AIFeedbackDashboard", "AIFeedbackDashboardWrapped"]
       },
       {
         "file": "client/src/components/lazy/LazyChart.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/landing/WhatYouGet.stories.tsx",
@@ -3005,11 +2704,7 @@
       {
         "file": "client/src/components/landing/PricingCountdown.stories.tsx",
         "count": 3,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error"
-        ]
+        "variants": ["Default", "Loading", "Error"]
       },
       {
         "file": "client/src/components/landing/Pricing.stories.tsx",
@@ -3059,11 +2754,7 @@
       {
         "file": "client/src/components/landing/PPPBanner.stories.tsx",
         "count": 3,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error"
-        ]
+        "variants": ["Default", "Loading", "Error"]
       },
       {
         "file": "client/src/components/landing/LandingHeader.stories.tsx",
@@ -3098,11 +2789,7 @@
       {
         "file": "client/src/components/landing/FreeTierMessaging.stories.tsx",
         "count": 3,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error"
-        ]
+        "variants": ["Default", "Loading", "Error"]
       },
       {
         "file": "client/src/components/landing/FounderStory.stories.tsx",
@@ -3121,11 +2808,7 @@
       {
         "file": "client/src/components/landing/FinalCTA.stories.tsx",
         "count": 3,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error"
-        ]
+        "variants": ["Default", "Loading", "Error"]
       },
       {
         "file": "client/src/components/landing/FAQ.stories.tsx",
@@ -3221,46 +2904,27 @@
       {
         "file": "client/src/components/ui/toggle.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/toggle-group.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "SingleSelect"
-        ]
+        "variants": ["Default", "SingleSelect"]
       },
       {
         "file": "client/src/components/ui/toaster.stories.tsx",
         "count": 6,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "Disabled",
-          "Small",
-          "Large"
-        ]
+        "variants": ["Default", "Loading", "Error", "Disabled", "Small", "Large"]
       },
       {
         "file": "client/src/components/ui/toast.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/textarea.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/tabs.stories.tsx",
@@ -3312,10 +2976,7 @@
       {
         "file": "client/src/components/ui/slider.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/skeleton.stories.tsx",
@@ -3340,10 +3001,7 @@
       {
         "file": "client/src/components/ui/sidebar.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/sheet.stories.tsx",
@@ -3366,10 +3024,7 @@
       {
         "file": "client/src/components/ui/separator.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/select.stories.tsx",
@@ -3412,26 +3067,17 @@
       {
         "file": "client/src/components/ui/scroll-area.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithHorizontalScroll"
-        ]
+        "variants": ["Default", "WithHorizontalScroll"]
       },
       {
         "file": "client/src/components/ui/resizable.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/radio-group.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithDisabledOption"
-        ]
+        "variants": ["Default", "WithDisabledOption"]
       },
       {
         "file": "client/src/components/ui/progress.stories.tsx",
@@ -3470,58 +3116,32 @@
       {
         "file": "client/src/components/ui/pagination.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/page-breadcrumb.stories.tsx",
         "count": 6,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "Disabled",
-          "Small",
-          "Large"
-        ]
+        "variants": ["Default", "Loading", "Error", "Disabled", "Small", "Large"]
       },
       {
         "file": "client/src/components/ui/optimized-image.stories.tsx",
         "count": 6,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "Disabled",
-          "Small",
-          "Large"
-        ]
+        "variants": ["Default", "Loading", "Error", "Disabled", "Small", "Large"]
       },
       {
         "file": "client/src/components/ui/navigation-menu.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "SimpleLinks"
-        ]
+        "variants": ["Default", "SimpleLinks"]
       },
       {
         "file": "client/src/components/ui/menubar.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/label.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/input.stories.tsx",
@@ -3544,10 +3164,7 @@
       {
         "file": "client/src/components/ui/input-otp.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "FourDigit"
-        ]
+        "variants": ["Default", "FourDigit"]
       },
       {
         "file": "client/src/components/ui/icons.stories.tsx",
@@ -3564,10 +3181,7 @@
       {
         "file": "client/src/components/ui/hover-card.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProfile"
-        ]
+        "variants": ["Default", "WithProfile"]
       },
       {
         "file": "client/src/components/ui/form.stories.tsx",
@@ -3583,18 +3197,12 @@
       {
         "file": "client/src/components/ui/focus-trapped-dialog.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithoutTrap"
-        ]
+        "variants": ["Default", "WithoutTrap"]
       },
       {
         "file": "client/src/components/ui/file-input.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithError"
-        ]
+        "variants": ["Default", "WithError"]
       },
       {
         "file": "client/src/components/ui/enhanced-table.stories.tsx",
@@ -3625,10 +3233,7 @@
       {
         "file": "client/src/components/ui/drawer.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/dialog.stories.tsx",
@@ -3650,10 +3255,7 @@
       {
         "file": "client/src/components/ui/context-menu.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithSubmenus"
-        ]
+        "variants": ["Default", "WithSubmenus"]
       },
       {
         "file": "client/src/components/ui/confirmation-dialog.stories.tsx",
@@ -3690,30 +3292,17 @@
       {
         "file": "client/src/components/ui/collapsible.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithCustomStyling"
-        ]
+        "variants": ["Default", "WithCustomStyling"]
       },
       {
         "file": "client/src/components/ui/checkbox.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/chart.stories.tsx",
         "count": 6,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "Disabled",
-          "Small",
-          "Large"
-        ]
+        "variants": ["Default", "Loading", "Error", "Disabled", "Small", "Large"]
       },
       {
         "file": "client/src/components/ui/carousel.stories.tsx",
@@ -3735,12 +3324,7 @@
       {
         "file": "client/src/components/ui/card.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "WithFooter",
-          "SimpleCard",
-          "NotificationCard"
-        ]
+        "variants": ["Default", "WithFooter", "SimpleCard", "NotificationCard"]
       },
       {
         "file": "client/src/components/ui/card-enhanced.stories.tsx",
@@ -3812,10 +3396,7 @@
       {
         "file": "client/src/components/ui/breadcrumb.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ui/badge.stories.tsx",
@@ -3855,12 +3436,7 @@
       {
         "file": "client/src/components/ui/aspect-ratio.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Square",
-          "Portrait",
-          "WithPlaceholder"
-        ]
+        "variants": ["Default", "Square", "Portrait", "WithPlaceholder"]
       },
       {
         "file": "client/src/components/ui/alert.stories.tsx",
@@ -3882,10 +3458,7 @@
       {
         "file": "client/src/components/ui/alert-dialog.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithCustomAction"
-        ]
+        "variants": ["Default", "WithCustomAction"]
       },
       {
         "file": "client/src/components/ui/accordion.stories.tsx",
@@ -3903,10 +3476,7 @@
       {
         "file": "client/src/components/examples/EnhancedFormExample.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/interactive/SimulationPlayer.stories.tsx",
@@ -3967,18 +3537,12 @@
       {
         "file": "client/src/components/interactive/InteractiveElementsManager.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/interactive/InteractiveDemo.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/interactive/CodeBlock.stories.tsx",
@@ -4002,74 +3566,47 @@
       {
         "file": "client/src/components/discovery/RelationshipGraph.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/discovery/PersonalizedDiscoveryHub.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/discovery/DynamicFilterPanel.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/discovery/ConceptDiscovery.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/ar/ARConceptOverlay.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/analytics/SectionViewTracker.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/analytics/ScrollDepthTracker.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/analytics/FormSubmissionTracker.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/analytics/AnalyticsDashboard.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/accessibility/SkipLinks.stories.tsx",
@@ -4101,152 +3638,77 @@
       {
         "file": "client/src/components/accessibility/FormErrorLiveRegion.stories.tsx",
         "count": 2,
-        "variants": [
-          "Default",
-          "WithProps"
-        ]
+        "variants": ["Default", "WithProps"]
       },
       {
         "file": "client/src/components/admin/UserManagementDashboard.stories.tsx",
         "count": 5,
-        "variants": [
-          "Default",
-          "Loading",
-          "EmptyUsers",
-          "PremiumUsers",
-          "AdminUsers"
-        ]
+        "variants": ["Default", "Loading", "EmptyUsers", "PremiumUsers", "AdminUsers"]
       },
       {
         "file": "client/src/components/admin/TemplateManagement.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/QualityEvaluationDashboard.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/ModelComparison.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/InlineContentEditor.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/GenerationStatsDashboard.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/EnhancedContentGenerationV2.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/EnhancedContentGeneration.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/EmergencyStopControls.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/ContentModerationDashboard.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/ContentManagementDashboard.stories.tsx",
         "count": 5,
-        "variants": [
-          "Default",
-          "WithSelectedTerm",
-          "Loading",
-          "EmptyTerms",
-          "WithHighMetrics"
-        ]
+        "variants": ["Default", "WithSelectedTerm", "Loading", "EmptyTerms", "WithHighMetrics"]
       },
       {
         "file": "client/src/components/admin/ContentImportDashboard.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/ColumnBatchOperationsDashboard.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/CacheMonitoring.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/BulkTermEditor.stories.tsx",
@@ -4265,23 +3727,12 @@
       {
         "file": "client/src/components/admin/AdvancedAnalyticsDashboard.stories.tsx",
         "count": 4,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error",
-          "WithPermissions"
-        ]
+        "variants": ["Default", "Loading", "Error", "WithPermissions"]
       },
       {
         "file": "client/src/components/admin/AdminTermsManager.stories.tsx",
         "count": 5,
-        "variants": [
-          "Default",
-          "Loading",
-          "EmptyState",
-          "WithFilters",
-          "AIAnalytics"
-        ]
+        "variants": ["Default", "Loading", "EmptyState", "WithFilters", "AIAnalytics"]
       },
       {
         "file": "client/src/components/admin/AIContentMonitor.stories.tsx",
@@ -4297,47 +3748,27 @@
       {
         "file": "client/src/components/landing/backgrounds/NeuralNetworkBackground.stories.tsx",
         "count": 3,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error"
-        ]
+        "variants": ["Default", "Loading", "Error"]
       },
       {
         "file": "client/src/components/landing/backgrounds/GeometricAIBackground.stories.tsx",
         "count": 3,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error"
-        ]
+        "variants": ["Default", "Loading", "Error"]
       },
       {
         "file": "client/src/components/landing/backgrounds/FallbackBackground.stories.tsx",
         "count": 3,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error"
-        ]
+        "variants": ["Default", "Loading", "Error"]
       },
       {
         "file": "client/src/components/landing/backgrounds/CodeTypingBackground.stories.tsx",
         "count": 3,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error"
-        ]
+        "variants": ["Default", "Loading", "Error"]
       },
       {
         "file": "client/src/components/landing/backgrounds/BackgroundTester.stories.tsx",
         "count": 3,
-        "variants": [
-          "Default",
-          "Loading",
-          "Error"
-        ]
+        "variants": ["Default", "Loading", "Error"]
       }
     ]
   },

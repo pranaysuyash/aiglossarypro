@@ -1,5 +1,4 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { SectionNavigator } from './SectionNavigator';
 
 const meta = {
@@ -13,7 +12,11 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+    sections: [],
+    userProgress: [],
+    onSectionClick: () => {},
+  },
 };
 
 export const WithProps: Story = {

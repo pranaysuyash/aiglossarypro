@@ -438,7 +438,7 @@ class HierarchicalMigrationTester {
       this.testResults.validationResults.errors.length === 0,
     ];
 
-    const passedChecks = checks.filter((check) => check).length;
+    const passedChecks = checks.filter(check => check).length;
     return Math.round((passedChecks / checks.length) * 100);
   }
 
@@ -515,7 +515,7 @@ class HierarchicalMigrationTester {
     // Create some sample user progress
     for (const term of terms.slice(0, 2)) {
       // Only for first 2 terms
-      const termSections = sections.filter((s) => s.termId === term.id);
+      const termSections = sections.filter(s => s.termId === term.id);
 
       for (const section of termSections.slice(0, 3)) {
         // Only for first 3 sections
@@ -619,11 +619,11 @@ async function main() {
 
   const options = {
     useExistingData: args.includes('--use-existing'),
-    termCount: parseInt(args.find((arg) => arg.startsWith('--terms='))?.split('=')[1] || '3'),
+    termCount: parseInt(args.find(arg => arg.startsWith('--terms='))?.split('=')[1] || '3'),
     sectionsPerTerm: parseInt(
-      args.find((arg) => arg.startsWith('--sections='))?.split('=')[1] || '5'
+      args.find(arg => arg.startsWith('--sections='))?.split('=')[1] || '5'
     ),
-    itemsPerSection: parseInt(args.find((arg) => arg.startsWith('--items='))?.split('=')[1] || '3'),
+    itemsPerSection: parseInt(args.find(arg => arg.startsWith('--items='))?.split('=')[1] || '3'),
     cleanupAfter: !args.includes('--no-cleanup'),
   };
 
@@ -636,7 +636,7 @@ async function main() {
 
 // Run if called directly
 if (require.main === module) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
   });

@@ -16,7 +16,7 @@ import { downloadFileFromS3 } from './s3Service';
 export async function runPythonExcelProcessor(
   bucketName: string,
   fileKey?: string,
-  _region: string = 'ap-south-1',
+  _region = 'ap-south-1',
   maxChunks?: number
 ): Promise<any> {
   return new Promise(async (resolve, reject) => {
@@ -273,7 +273,7 @@ export async function importProcessedData(data: any): Promise<any> {
 export async function processAndImportFromS3(
   bucketName: string = process.env.S3_BUCKET_NAME || '',
   fileKey?: string,
-  region: string = 'ap-south-1',
+  region = 'ap-south-1',
   maxChunks?: number
 ): Promise<any> {
   try {

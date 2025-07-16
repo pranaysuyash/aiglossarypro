@@ -26,7 +26,7 @@ class CrossReferenceAnalyticsService {
     if (!targetTerms) {
       // Get all terms if none specified
       const allTerms = await db.select({ id: terms.id }).from(terms).limit(100);
-      targetTerms = allTerms.map((t) => t.id);
+      targetTerms = allTerms.map(t => t.id);
     }
 
     // Bulk fetch all term information to avoid N+1 queries
@@ -38,10 +38,10 @@ class CrossReferenceAnalyticsService {
       })
       .from(terms)
       .leftJoin(categories, eq(terms.categoryId, categories.id))
-      .where(sql`${terms.id} IN (${targetTerms.map((id) => `'${id}'`).join(',')})`);
+      .where(sql`${terms.id} IN (${targetTerms.map(id => `'${id}'`).join(',')})`);
 
     const allTermInfo = await termInfoQuery;
-    const termInfoMap = new Map(allTermInfo.map((term) => [term.id, term]));
+    const termInfoMap = new Map(allTermInfo.map(term => [term.id, term]));
 
     // Bulk calculate reference data for all terms
     const allIncomingRefs = await this.bulkCalculateIncomingReferences(targetTerms);
@@ -52,7 +52,7 @@ class CrossReferenceAnalyticsService {
 
     for (const termId of targetTerms) {
       const term = termInfoMap.get(termId);
-      if (!term) continue;
+      if (!term) {continue;}
 
       const incomingRefs = allIncomingRefs.get(termId) || [];
       const outgoingRefs = allOutgoingRefs.get(termId) || [];
@@ -162,7 +162,7 @@ class CrossReferenceAnalyticsService {
   /**
    * Discover learning pathways from user navigation patterns
    */
-  async discoverLearningPathways(minFrequency: number = 5): Promise<LearningPathway[]> {
+  async discoverLearningPathways(minFrequency = 5): Promise<LearningPathway[]> {
     // Get sequential navigation patterns within sessions
     const pathwayQuery = sql`
       WITH session_paths AS (
@@ -281,13 +281,13 @@ class CrossReferenceAnalyticsService {
 
     // Get top hub terms (high incoming and outgoing references)
     const topHubTerms = crossReferenceMetrics
-      .filter((m) => m.hubScore > 0.7)
+      .filter(m => m.hubScore > 0.7)
       .sort((a, b) => b.hubScore - a.hubScore)
       .slice(0, 10);
 
     // Get top bridge terms (connect different categories)
     const topBridgeTerms = crossReferenceMetrics
-      .filter((m) => m.bridgeScore > 0.6)
+      .filter(m => m.bridgeScore > 0.6)
       .sort((a, b) => b.bridgeScore - a.bridgeScore)
       .slice(0, 10);
 
@@ -302,9 +302,9 @@ class CrossReferenceAnalyticsService {
         learningPathways.reduce((sum, p) => sum + p.completionRate, 0) / learningPathways.length,
       optimalPathLength: 4, // Based on research on optimal learning sequences
       recommendedSequences: learningPathways
-        .filter((p) => p.recommendationScore > 0.8)
+        .filter(p => p.recommendationScore > 0.8)
         .slice(0, 5)
-        .map((p) => p.termNames),
+        .map(p => p.termNames),
     };
 
     return {
@@ -447,7 +447,7 @@ class CrossReferenceAnalyticsService {
   }
 
   private classifyPathwayType(pathway: string[]): LearningPathway['pathwayType'] {
-    if (pathway.length <= 3) return 'linear';
+    if (pathway.length <= 3) {return 'linear';}
     // This would need more sophisticated analysis
     return 'branching';
   }
@@ -462,7 +462,7 @@ class CrossReferenceAnalyticsService {
       { targetCategory: string; strength: number; bridgeTerms: Set<string> }
     >();
 
-    flows.forEach((flow) => {
+    flows.forEach(flow => {
       if (flow.categoryBridge) {
         const key = `${flow.sourceTermName}-${flow.targetTermName}`;
         if (!connections.has(key)) {

@@ -1,0 +1,22 @@
+{
+  "enabled": true,
+  "name": "Build Health Check",
+  "description": "Monitors for task completion and automatically validates that the code is building and running properly",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "package.json",
+      "vite.config.ts",
+      "tsconfig.json",
+      "client/src/**/*.tsx",
+      "client/src/**/*.ts",
+      "server/**/*.ts",
+      "shared/**/*.ts"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A task has been completed. Please check if the code is running and building properly by:\n\n1. Running `npm run build` to verify the build process works\n2. Running `npm run dev:smart` to check if the development server starts successfully\n3. Testing key functionality like the homepage, search, and term pages\n4. Checking for any TypeScript errors or build warnings\n5. Validating that all imports and dependencies are working correctly\n\nIf there are any issues, provide specific fixes and re-run the validation process."
+  }
+}

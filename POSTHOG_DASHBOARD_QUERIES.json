@@ -605,48 +605,27 @@
     {
       "name": "sample_term_view",
       "description": "User viewed a sample term page",
-      "properties": [
-        "term_slug",
-        "term_category",
-        "user_type",
-        "source"
-      ]
+      "properties": ["term_slug", "term_category", "user_type", "source"]
     },
     {
       "name": "signup_started",
       "description": "User began signup process",
-      "properties": [
-        "source",
-        "experiment_variant",
-        "referrer_id"
-      ]
+      "properties": ["source", "experiment_variant", "referrer_id"]
     },
     {
       "name": "purchase_completed",
       "description": "User completed a purchase",
-      "properties": [
-        "purchase_amount_cents",
-        "gumroad_order_id",
-        "referrer_id"
-      ]
+      "properties": ["purchase_amount_cents", "gumroad_order_id", "referrer_id"]
     },
     {
       "name": "feature_used",
       "description": "User used a product feature",
-      "properties": [
-        "feature_name",
-        "user_tier",
-        "session_duration"
-      ]
+      "properties": ["feature_name", "user_tier", "session_duration"]
     },
     {
       "name": "referral_click",
       "description": "Someone clicked a referral link",
-      "properties": [
-        "referral_code",
-        "referrer_id",
-        "utm_source"
-      ]
+      "properties": ["referral_code", "referrer_id", "utm_source"]
     }
   ]
 }

@@ -43,7 +43,7 @@ export default function ScrollDepthTracker({
         } else if (scope === 'section' && sectionId) {
           // Section-specific scroll tracking
           const sectionElement = document.getElementById(sectionId);
-          if (!sectionElement) return;
+          if (!sectionElement) {return;}
 
           const sectionTop = sectionElement.offsetTop;
           const sectionHeight = sectionElement.offsetHeight;
@@ -119,7 +119,7 @@ export function useScrollDepthTracking(
       scrollPercentage = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
     } else if (scope === 'section' && sectionId) {
       const sectionElement = document.getElementById(sectionId);
-      if (!sectionElement) return 0;
+      if (!sectionElement) {return 0;}
 
       const sectionTop = sectionElement.offsetTop;
       const sectionHeight = sectionElement.offsetHeight;
@@ -137,7 +137,7 @@ export function useScrollDepthTracking(
 
     // Find the highest milestone reached
     const reachedMilestone = milestones
-      .filter((milestone) => scrollPercentage >= milestone)
+      .filter(milestone => scrollPercentage >= milestone)
       .sort((a, b) => b - a)[0];
 
     if (reachedMilestone) {
@@ -156,7 +156,7 @@ export function useScrollDepthTracking(
         return docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
       } else if (scope === 'section' && sectionId) {
         const sectionElement = document.getElementById(sectionId);
-        if (!sectionElement) return 0;
+        if (!sectionElement) {return 0;}
 
         const sectionTop = sectionElement.offsetTop;
         const sectionHeight = sectionElement.offsetHeight;

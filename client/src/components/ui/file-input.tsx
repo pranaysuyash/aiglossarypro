@@ -5,13 +5,13 @@ import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
 
 export interface FileInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
-  label?: string;
-  accept?: string;
-  className?: string;
+  label?: string | undefined;
+  accept?: string | undefined;
+  className?: string | undefined;
   icon?: React.ReactNode;
-  helperText?: string;
+  helperText?: string | undefined;
   onFilesSelected?: (files: FileList | null) => void;
-  error?: string;
+  error?: string | undefined;
 }
 
 const FileInput = React.forwardRef<HTMLInputElement, FileInputProps>(

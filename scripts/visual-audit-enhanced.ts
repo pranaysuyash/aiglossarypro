@@ -260,7 +260,7 @@ class EnhancedVisualAuditor {
       }
 
       // Wait before retrying
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     console.warn(chalk.yellow('    ⚠ Server health check timeout, proceeding anyway...'));
@@ -690,7 +690,7 @@ class EnhancedVisualAuditor {
         break;
 
       case 'scroll':
-        await page.evaluate((pixels) => {
+        await page.evaluate(pixels => {
           window.scrollBy(0, pixels as number);
         }, action.value || 100);
         break;
@@ -945,7 +945,7 @@ class EnhancedVisualAuditor {
         const element = elements[i];
         await element.focus();
 
-        const hasFocusIndicator = await element.evaluate((el) => {
+        const hasFocusIndicator = await element.evaluate(el => {
           const styles = window.getComputedStyle(el);
           const focusStyles = window.getComputedStyle(el, ':focus');
 
@@ -1046,18 +1046,18 @@ class EnhancedVisualAuditor {
     try {
       // Get Chrome DevTools performance metrics
       const _metrics = await page.evaluate(() => {
-        return new Promise((resolve) => {
-          const observer = new PerformanceObserver((list) => {
+        return new Promise(resolve => {
+          const observer = new PerformanceObserver(list => {
             const entries = list.getEntries();
-            const navEntry = entries.find((entry) => entry.entryType === 'navigation') as any;
+            const navEntry = entries.find(entry => entry.entryType === 'navigation') as any;
             const paintEntries = performance.getEntriesByType('paint');
 
             resolve({
               domContentLoaded: navEntry?.domContentLoadedEventEnd || 0,
               loadComplete: navEntry?.loadEventEnd || 0,
-              firstPaint: paintEntries.find((e) => e.name === 'first-paint')?.startTime || 0,
+              firstPaint: paintEntries.find(e => e.name === 'first-paint')?.startTime || 0,
               firstContentfulPaint:
-                paintEntries.find((e) => e.name === 'first-contentful-paint')?.startTime || 0,
+                paintEntries.find(e => e.name === 'first-contentful-paint')?.startTime || 0,
             });
           });
 
@@ -1345,11 +1345,11 @@ class EnhancedVisualAuditor {
                 <div class="metric-label">Total Issues</div>
             </div>
             <div class="metric">
-                <div class="metric-value">${this.issues.filter((i) => i.severity === 'critical').length}</div>
+                <div class="metric-value">${this.issues.filter(i => i.severity === 'critical').length}</div>
                 <div class="metric-label">Critical Issues</div>
             </div>
             <div class="metric">
-                <div class="metric-value">${this.issues.filter((i) => i.severity === 'high').length}</div>
+                <div class="metric-value">${this.issues.filter(i => i.severity === 'high').length}</div>
                 <div class="metric-label">High Priority</div>
             </div>
             <div class="metric">
@@ -1409,7 +1409,7 @@ class EnhancedVisualAuditor {
 
     return sortedIssues
       .map(
-        (issue) => `
+        issue => `
         <div class="issue ${issue.severity}">
             <h3><span class="severity-${issue.severity}">[${issue.severity.toUpperCase()}]</span> ${issue.description}</h3>
             <p><strong>Page:</strong> ${issue.page}</p>
@@ -1426,7 +1426,7 @@ class EnhancedVisualAuditor {
   private generateHTMLPerformance(): string {
     return this.performanceMetrics
       .map(
-        (metric) => `
+        metric => `
         <div class="performance-chart">
             <h3>${metric.page}</h3>
             <div class="summary">
@@ -1479,11 +1479,11 @@ class EnhancedVisualAuditor {
   }
 
   private generateHTMLAccessibility(): string {
-    const accessibilityIssues = this.issues.filter((i) => i.category === 'accessibility');
+    const accessibilityIssues = this.issues.filter(i => i.category === 'accessibility');
 
     return accessibilityIssues
       .map(
-        (issue) => `
+        issue => `
         <div class="issue ${issue.severity}">
             <h3><span class="severity-${issue.severity}">[${issue.severity.toUpperCase()}]</span> ${issue.description}</h3>
             <p><strong>Page:</strong> ${issue.page}</p>
@@ -1502,7 +1502,7 @@ class EnhancedVisualAuditor {
 
     return screenshots
       .map(
-        (screenshot) => `
+        screenshot => `
         <div style="margin: 20px 0;">
             <h3>${screenshot.name}</h3>
             <img src="screenshots/${screenshot.path}" alt="${screenshot.name}" class="screenshot" />
@@ -1544,7 +1544,7 @@ class EnhancedVisualAuditor {
       '"': '&quot;',
       "'": '&#039;',
     };
-    return text.replace(/[&<>"']/g, (m) => map[m]);
+    return text.replace(/[&<>"']/g, m => map[m]);
   }
 
   private async generateMarkdownReport() {
@@ -1554,16 +1554,16 @@ Generated: ${new Date().toISOString()}
 ## Executive Summary
 
 - **Total Issues Found:** ${this.issues.length}
-- **Critical Issues:** ${this.issues.filter((i) => i.severity === 'critical').length}
-- **High Priority Issues:** ${this.issues.filter((i) => i.severity === 'high').length}
-- **Medium Priority Issues:** ${this.issues.filter((i) => i.severity === 'medium').length}
-- **Low Priority Issues:** ${this.issues.filter((i) => i.severity === 'low').length}
+- **Critical Issues:** ${this.issues.filter(i => i.severity === 'critical').length}
+- **High Priority Issues:** ${this.issues.filter(i => i.severity === 'high').length}
+- **Medium Priority Issues:** ${this.issues.filter(i => i.severity === 'medium').length}
+- **Low Priority Issues:** ${this.issues.filter(i => i.severity === 'low').length}
 
 ## Performance Summary
 
 ${this.performanceMetrics
   .map(
-    (m) => `
+    m => `
 ### ${m.page}
 - First Contentful Paint: ${(m.fcp / 1000).toFixed(2)}s
 - Largest Contentful Paint: ${(m.lcp / 1000).toFixed(2)}s
@@ -1584,9 +1584,9 @@ ${
 ## Critical Issues
 
 ${this.issues
-  .filter((i) => i.severity === 'critical')
+  .filter(i => i.severity === 'critical')
   .map(
-    (issue) => `
+    issue => `
 ### ${issue.description}
 - **Page:** ${issue.page}
 - **Category:** ${issue.category}
@@ -1599,9 +1599,9 @@ ${issue.wcagViolation ? `- **WCAG:** ${issue.wcagViolation}` : ''}
 ## High Priority Issues
 
 ${this.issues
-  .filter((i) => i.severity === 'high')
+  .filter(i => i.severity === 'high')
   .map(
-    (issue) => `
+    issue => `
 ### ${issue.description}
 - **Page:** ${issue.page}
 - **Category:** ${issue.category}
@@ -1646,11 +1646,11 @@ Full HTML report available at: \`index.html\`
       timestamp: this.timestamp,
       summary: {
         totalIssues: this.issues.length,
-        criticalIssues: this.issues.filter((i) => i.severity === 'critical').length,
-        highPriorityIssues: this.issues.filter((i) => i.severity === 'high').length,
-        mediumPriorityIssues: this.issues.filter((i) => i.severity === 'medium').length,
-        lowPriorityIssues: this.issues.filter((i) => i.severity === 'low').length,
-        pagesAudited: new Set(this.issues.map((i) => i.page)).size,
+        criticalIssues: this.issues.filter(i => i.severity === 'critical').length,
+        highPriorityIssues: this.issues.filter(i => i.severity === 'high').length,
+        mediumPriorityIssues: this.issues.filter(i => i.severity === 'medium').length,
+        lowPriorityIssues: this.issues.filter(i => i.severity === 'low').length,
+        pagesAudited: new Set(this.issues.map(i => i.page)).size,
       },
       issues: this.issues,
       performanceMetrics: this.performanceMetrics,
@@ -1662,8 +1662,8 @@ Full HTML report available at: \`index.html\`
 
   private async generateTaskList() {
     const tasks = this.issues
-      .filter((i) => i.severity === 'critical' || i.severity === 'high')
-      .map((issue) => ({
+      .filter(i => i.severity === 'critical' || i.severity === 'high')
+      .map(issue => ({
         title: issue.description,
         page: issue.page,
         severity: issue.severity,
@@ -1701,7 +1701,7 @@ ${task.recommendation}
 
 - Total High Priority Tasks: ${tasks.length}
 - Estimated Total Effort: ${this.calculateTotalEffort(tasks)}
-- Categories: ${[...new Set(tasks.map((t) => t.category))].join(', ')}
+- Categories: ${[...new Set(tasks.map(t => t.category))].join(', ')}
 `;
 
     await fs.writeFile(path.join(this.reportDir, 'task-list.md'), taskListContent);

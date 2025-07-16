@@ -65,13 +65,13 @@ export class CDNMonitoringService {
   }
 
   private getCDNProvider(): string {
-    if (process.env.USE_CLOUDFLARE_CDN === 'true') return 'cloudflare';
-    if (process.env.USE_CLOUDFRONT_CDN === 'true') return 'cloudfront';
+    if (process.env.USE_CLOUDFLARE_CDN === 'true') {return 'cloudflare';}
+    if (process.env.USE_CLOUDFRONT_CDN === 'true') {return 'cloudfront';}
     return 'local';
   }
 
   private setupPeriodicMonitoring(): void {
-    if (process.env.CDN_MONITORING_ENABLED !== 'true') return;
+    if (process.env.CDN_MONITORING_ENABLED !== 'true') {return;}
 
     // Health checks every 30 seconds
     setInterval(async () => {
@@ -245,7 +245,7 @@ export class CDNMonitoringService {
     // For local/origin metrics, we collect basic server stats
     const healthChecks = await this.runHealthChecks();
     const successfulChecks = healthChecks.filter(
-      (check) => check.status >= 200 && check.status < 400
+      check => check.status >= 200 && check.status < 400
     );
     const avgResponseTime =
       healthChecks.reduce((sum, check) => sum + check.responseTime, 0) / healthChecks.length;
@@ -281,13 +281,13 @@ export class CDNMonitoringService {
       (analytics.totals.requests?.http_status_4xx + analytics.totals.requests?.http_status_5xx) /
       (analytics.totals.requests?.all || 1);
 
-    if (errorRate > 0.1) return 'down';
-    if (cacheHitRatio < 0.7 || errorRate > 0.05) return 'degraded';
+    if (errorRate > 0.1) {return 'down';}
+    if (cacheHitRatio < 0.7 || errorRate > 0.05) {return 'degraded';}
     return 'healthy';
   }
 
   async checkAlerts(): Promise<void> {
-    if (this.metrics.length === 0) return;
+    if (this.metrics.length === 0) {return;}
 
     const latestMetrics = this.metrics[this.metrics.length - 1];
     const alerts: string[] = [];
@@ -425,8 +425,8 @@ export class CDNMonitoringService {
   }
 
   private getCDNFromHeaders(headers: any): string {
-    if (headers.get('cf-ray')) return 'cloudflare';
-    if (headers.get('x-amz-cf-id')) return 'cloudfront';
+    if (headers.get('cf-ray')) {return 'cloudflare';}
+    if (headers.get('x-amz-cf-id')) {return 'cloudfront';}
     return 'origin';
   }
 
@@ -491,7 +491,7 @@ export class CDNMonitoringService {
     const totalBandwidth = metrics.reduce((sum, m) => sum + m.bandwidth, 0);
     const totalRequests = metrics.reduce((sum, m) => sum + m.requests, 0);
 
-    const healthyPeriods = metrics.filter((m) => m.status === 'healthy').length;
+    const healthyPeriods = metrics.filter(m => m.status === 'healthy').length;
     const uptime = (healthyPeriods / metrics.length) * 100;
 
     return {

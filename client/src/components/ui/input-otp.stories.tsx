@@ -1,6 +1,5 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from './input-otp';
+import type { Meta, StoryObj } from '@storybook/react';
+import { InputOTP, InputOTPGroup, InputOTPSeparator, InputOTPSlot } from './input-otp';
 
 const meta = {
   title: 'UI/InputOTP',
@@ -13,6 +12,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
+  args: {},
+  render: () => <InputOTP maxLength={6} />,
+};
+
+export const WithSeparator: Story = {
+  args: {},
   render: () => (
     <InputOTP maxLength={6}>
       <InputOTPGroup>

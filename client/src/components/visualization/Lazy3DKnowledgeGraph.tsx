@@ -1,16 +1,16 @@
 /**
  * Lazy-Loaded 3D Knowledge Graph Component
- * 
+ *
  * This wrapper provides lazy loading for the heavy 3D visualization component
  * with proper loading states, error boundaries, and performance optimizations.
  */
 
-import React, { Suspense, lazy, useEffect, useState } from 'react';
-import { AlertCircle, Box, Loader2, Network, Zap, AlertTriangle } from 'lucide-react';
+import { AlertCircle, AlertTriangle, Box, Loader2, Network, Zap } from 'lucide-react';
+import React, { lazy, Suspense, useEffect, useState } from 'react';
+import { use3DSettings } from '../../hooks/use3DCompatibility';
+import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Badge } from '../ui/badge';
-import { use3DSettings } from '../../hooks/use3DCompatibility';
 
 // Lazy load the heavy 3D component
 const ThreeDKnowledgeGraph = lazy(() => import('./3DKnowledgeGraph'));
@@ -36,7 +36,7 @@ interface GraphEdge {
 }
 
 interface Lazy3DKnowledgeGraphProps {
-  className?: string;
+  className?: string | undefined;
   onNodeSelect?: (node: GraphNode) => void;
   initialNodes?: GraphNode[];
   initialEdges?: GraphEdge[];
@@ -46,22 +46,22 @@ interface Lazy3DKnowledgeGraphProps {
 // Loading component with animation and information
 function ThreeDLoadingState() {
   const [loadingText, setLoadingText] = useState('Initializing 3D Engine...');
-  
+
   useEffect(() => {
     const messages = [
       'Initializing 3D Engine...',
       'Loading Three.js Components...',
       'Preparing Knowledge Graph...',
       'Rendering 3D Scene...',
-      'Almost Ready!'
+      'Almost Ready!',
     ];
-    
+
     let index = 0;
     const interval = setInterval(() => {
       index = (index + 1) % messages.length;
       setLoadingText(messages[index]);
     }, 1000);
-    
+
     return () => clearInterval(interval);
   }, []);
 
@@ -72,14 +72,12 @@ function ThreeDLoadingState() {
           <Loader2 className="h-12 w-12 animate-spin text-blue-500 mx-auto" />
           <Box className="h-6 w-6 absolute top-3 left-1/2 transform -translate-x-1/2 text-blue-300 animate-pulse" />
         </div>
-        
+
         <div className="space-y-2">
           <h3 className="text-lg font-semibold">Loading 3D Visualization</h3>
-          <p className="text-sm text-gray-600 dark:text-gray-400">
-            {loadingText}
-          </p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{loadingText}</p>
         </div>
-        
+
         <div className="flex justify-center space-x-2">
           <Badge variant="outline" className="text-xs">
             Three.js
@@ -91,9 +89,10 @@ function ThreeDLoadingState() {
             Interactive
           </Badge>
         </div>
-        
+
         <p className="text-xs text-gray-500 max-w-md">
-          Loading advanced 3D visualization components. This may take a few seconds on slower devices.
+          Loading advanced 3D visualization components. This may take a few seconds on slower
+          devices.
         </p>
       </CardContent>
     </Card>
@@ -106,7 +105,7 @@ function ThreeDErrorState({ onRetry }: { onRetry: () => void }) {
     <Card className="w-full h-[600px] flex items-center justify-center border-red-200">
       <CardContent className="text-center space-y-4">
         <AlertCircle className="h-12 w-12 text-red-500 mx-auto" />
-        
+
         <div className="space-y-2">
           <h3 className="text-lg font-semibold text-red-900 dark:text-red-100">
             3D Visualization Error
@@ -115,20 +114,20 @@ function ThreeDErrorState({ onRetry }: { onRetry: () => void }) {
             Failed to load the 3D visualization component.
           </p>
         </div>
-        
+
         <div className="space-y-3">
           <p className="text-xs text-gray-600 dark:text-gray-400 max-w-md">
-            This could be due to WebGL compatibility issues or network problems.
-            Try refreshing the page or check if your browser supports WebGL.
+            This could be due to WebGL compatibility issues or network problems. Try refreshing the
+            page or check if your browser supports WebGL.
           </p>
-          
+
           <div className="flex justify-center space-x-2">
             <Button onClick={onRetry} variant="outline" size="sm">
               Retry Loading
             </Button>
-            <Button 
+            <Button
               onClick={() => window.open('https://get.webgl.org/', '_blank')}
-              variant="ghost" 
+              variant="ghost"
               size="sm"
             >
               Check WebGL Support
@@ -141,37 +140,58 @@ function ThreeDErrorState({ onRetry }: { onRetry: () => void }) {
 }
 
 // Launch button for manual loading
-function ThreeDLaunchButton({ 
-  onLaunch, 
-  compatibility 
-}: { 
+function ThreeDLaunchButton({
+  onLaunch,
+  compatibility,
+}: {
   onLaunch: () => void;
   compatibility: ReturnType<typeof use3DSettings>;
 }) {
   const getQualityBadge = () => {
     switch (compatibility.recommendation) {
       case 'optimal':
-        return <Badge variant="default" className="text-xs bg-green-500"><Zap className="h-3 w-3 mr-1" />Optimal</Badge>;
+        return (
+          <Badge variant="default" className="text-xs bg-green-500">
+            <Zap className="h-3 w-3 mr-1" />
+            Optimal
+          </Badge>
+        );
       case 'reduced':
-        return <Badge variant="secondary" className="text-xs"><AlertTriangle className="h-3 w-3 mr-1" />Reduced Quality</Badge>;
+        return (
+          <Badge variant="secondary" className="text-xs">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            Reduced Quality
+          </Badge>
+        );
       case 'minimal':
-        return <Badge variant="outline" className="text-xs"><AlertTriangle className="h-3 w-3 mr-1" />Basic Mode</Badge>;
+        return (
+          <Badge variant="outline" className="text-xs">
+            <AlertTriangle className="h-3 w-3 mr-1" />
+            Basic Mode
+          </Badge>
+        );
       case 'unsupported':
-        return <Badge variant="destructive" className="text-xs"><AlertCircle className="h-3 w-3 mr-1" />Unsupported</Badge>;
+        return (
+          <Badge variant="destructive" className="text-xs">
+            <AlertCircle className="h-3 w-3 mr-1" />
+            Unsupported
+          </Badge>
+        );
     }
   };
 
   const getDescription = () => {
     if (compatibility.recommendation === 'unsupported') {
-      return "WebGL is not supported on this device. 3D visualization is not available.";
+      return 'WebGL is not supported on this device. 3D visualization is not available.';
     }
-    
-    const baseDescription = "Interactive 3D visualization of AI/ML concepts and their relationships. Explore the knowledge graph in an immersive 3D environment.";
-    
+
+    const baseDescription =
+      'Interactive 3D visualization of AI/ML concepts and their relationships. Explore the knowledge graph in an immersive 3D environment.';
+
     if (compatibility.warnings.length > 0) {
       return `${baseDescription} Note: ${compatibility.warnings[0]}`;
     }
-    
+
     return baseDescription;
   };
 
@@ -182,18 +202,24 @@ function ThreeDLaunchButton({
       <CardContent className="text-center space-y-6">
         <div className="space-y-4">
           <div className="relative">
-            <Network className={`h-16 w-16 mx-auto ${isDisabled ? 'text-gray-400' : 'text-blue-500'}`} />
-            {!isDisabled && <Loader2 className="h-6 w-6 absolute -top-1 -right-1 text-blue-300 animate-spin" />}
+            <Network
+              className={`h-16 w-16 mx-auto ${isDisabled ? 'text-gray-400' : 'text-blue-500'}`}
+            />
+            {!isDisabled && (
+              <Loader2 className="h-6 w-6 absolute -top-1 -right-1 text-blue-300 animate-spin" />
+            )}
           </div>
-          
+
           <div className="space-y-2">
             <h3 className="text-xl font-semibold">3D Knowledge Graph</h3>
-            <p className={`max-w-md ${isDisabled ? 'text-gray-500' : 'text-gray-600 dark:text-gray-400'}`}>
+            <p
+              className={`max-w-md ${isDisabled ? 'text-gray-500' : 'text-gray-600 dark:text-gray-400'}`}
+            >
               {getDescription()}
             </p>
           </div>
         </div>
-        
+
         <div className="space-y-4">
           <div className="flex justify-center space-x-2 flex-wrap gap-2">
             <Badge variant="secondary" className="text-xs">
@@ -210,25 +236,19 @@ function ThreeDLaunchButton({
               </Badge>
             )}
           </div>
-          
-          <Button 
-            onClick={onLaunch} 
-            size="lg" 
-            className="px-8" 
-            disabled={isDisabled}
-          >
+
+          <Button onClick={onLaunch} size="lg" className="px-8" disabled={isDisabled}>
             <Network className="h-5 w-5 mr-2" />
             {isDisabled ? 'Not Available' : 'Launch 3D Visualization'}
           </Button>
-          
+
           <div className="space-y-2">
             <p className="text-xs text-gray-500">
-              {isDisabled 
+              {isDisabled
                 ? 'This device does not support WebGL rendering'
-                : 'Loads Three.js and 3D rendering components on demand'
-              }
+                : 'Loads Three.js and 3D rendering components on demand'}
             </p>
-            
+
             {compatibility.warnings.length > 0 && (
               <div className="text-xs text-amber-600 dark:text-amber-400 space-y-1">
                 {compatibility.warnings.slice(0, 2).map((warning, index) => (
@@ -251,7 +271,7 @@ export default function Lazy3DKnowledgeGraph({
   onNodeSelect,
   initialNodes,
   initialEdges,
-  autoLoad = false
+  autoLoad = false,
 }: Lazy3DKnowledgeGraphProps) {
   const compatibility = use3DSettings();
   const [shouldLoad, setShouldLoad] = useState(autoLoad || compatibility.shouldLoadEagerly);
@@ -299,11 +319,14 @@ export default function Lazy3DKnowledgeGraph({
 }
 
 // Simple error boundary component
-class ErrorBoundary extends React.Component<{
-  children: React.ReactNode;
-  onError: () => void;
-  retryKey: number;
-}, { hasError: boolean }> {
+class ErrorBoundary extends React.Component<
+  {
+    children: React.ReactNode;
+    onError: () => void;
+    retryKey: number;
+  },
+  { hasError: boolean }
+> {
   constructor(props: any) {
     super(props);
     this.state = { hasError: false };

@@ -352,7 +352,7 @@ test.describe('AI Features Integration', () => {
           // Should show intelligent completion
           const suggestions = await suggestionItems.allTextContents();
           const hasIntelligentSuggestions = suggestions.some(
-            (s) =>
+            s =>
               s.toLowerCase().includes('network') ||
               s.toLowerCase().includes('neural') ||
               s.toLowerCase().includes('deep learning')
@@ -477,7 +477,7 @@ test.describe('AI Features Integration', () => {
             // Should be related to previously viewed content
             const recommendationTexts = await recommendations.allTextContents();
             const hasRelatedContent = recommendationTexts.some(
-              (text) =>
+              text =>
                 text.toLowerCase().includes('machine') ||
                 text.toLowerCase().includes('learning') ||
                 text.toLowerCase().includes('probability')
@@ -591,9 +591,9 @@ test.describe('AI Features Integration', () => {
   test.describe('AI Performance and Error Handling', () => {
     test('should handle AI service timeouts gracefully', async ({ page }) => {
       // Mock slow AI response by intercepting network
-      await page.route('**/api/ai/**', async (route) => {
+      await page.route('**/api/ai/**', async route => {
         // Simulate timeout
-        await new Promise((resolve) => setTimeout(resolve, 10000));
+        await new Promise(resolve => setTimeout(resolve, 10000));
         route.continue();
       });
 
@@ -631,7 +631,7 @@ test.describe('AI Features Integration', () => {
 
     test('should show appropriate error messages for AI service failures', async ({ page }) => {
       // Mock AI service error
-      await page.route('**/api/ai/**', async (route) => {
+      await page.route('**/api/ai/**', async route => {
         route.fulfill({
           status: 503,
           contentType: 'application/json',

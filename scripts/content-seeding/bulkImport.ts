@@ -120,7 +120,7 @@ async function bulkImport(): Promise<void> {
 
     // Step 2: Filter by category if specified
     const filteredRecords = targetCategory
-      ? importRecords.filter((record) =>
+      ? importRecords.filter(record =>
           record.category?.toLowerCase().includes(targetCategory.toLowerCase())
         )
       : importRecords;
@@ -129,7 +129,7 @@ async function bulkImport(): Promise<void> {
 
     // Step 3: Get existing data for deduplication
     const existingTerms = await db.select().from(terms);
-    const existingTermNames = new Set(existingTerms.map((t) => t.name.toLowerCase()));
+    const existingTermNames = new Set(existingTerms.map(t => t.name.toLowerCase()));
     const existingCategories = await db.select().from(categories);
 
     logger.info(
@@ -181,7 +181,7 @@ async function bulkImport(): Promise<void> {
 
     reportImportStats(stats);
   } catch (error) {
-    logger.error('Fatal error in bulk import:', error);
+    logger.error('Fatal error in bulk import:', error as Record<string, unknown>);
     process.exit(1);
   }
 }
@@ -210,7 +210,7 @@ async function loadImportData(format: ImportFormat, sourcePath: string): Promise
 async function loadEssentialTerms(): Promise<ImportRecord[]> {
   const essentialTerms = getAllEssentialTerms();
 
-  return essentialTerms.map((term) => ({
+  return essentialTerms.map(term => ({
     name: term.name,
     category: getCategoryForTerm(term.name),
     priority: term.priority,
@@ -225,7 +225,7 @@ async function loadEssentialTerms(): Promise<ImportRecord[]> {
  */
 function getCategoryForTerm(termName: string): string {
   for (const [category, terms] of Object.entries(ESSENTIAL_AI_TERMS)) {
-    if (terms.some((t) => t.name === termName || t.aliases?.includes(termName))) {
+    if (terms.some(t => t.name === termName || t.aliases?.includes(termName))) {
       return category;
     }
   }
@@ -245,7 +245,7 @@ async function loadCSVData(csvPath: string): Promise<ImportRecord[]> {
 
     createReadStream(csvPath)
       .pipe(csv())
-      .on('data', (row) => {
+      .on('data', row => {
         try {
           const record: ImportRecord = {
             name: row.name || row.term || row.title,
@@ -280,7 +280,7 @@ async function loadCSVData(csvPath: string): Promise<ImportRecord[]> {
             records.push(record);
           }
         } catch (error) {
-          logger.warn(`Error parsing CSV row:`, error);
+          logger.warn(`Error parsing CSV row:`, error as Record<string, unknown>);
         }
       })
       .on('end', () => {
@@ -325,7 +325,7 @@ async function loadJSONData(jsonPath: string): Promise<ImportRecord[]> {
 
     throw new Error('Unsupported JSON structure');
   } catch (error) {
-    logger.error('Error loading JSON data:', error);
+    logger.error('Error loading JSON data:', error as Record<string, unknown>);
     throw error;
   }
 }
@@ -372,8 +372,8 @@ function parseCSVArray(value: string): string[] {
 
   return value
     .split(',')
-    .map((item) => item.trim().replace(/^["']|["']$/g, ''))
-    .filter((item) => item.length > 0);
+    .map(item => item.trim().replace(/^["']|["']$/g, ''))
+    .filter(item => item.length > 0);
 }
 
 /**
@@ -383,7 +383,7 @@ function parseCSVApplications(value: string): Array<{ name: string; description:
   if (!value || typeof value !== 'string') return [];
 
   const items = parseCSVArray(value);
-  return items.map((item) => {
+  return items.map(item => {
     const [name, ...descParts] = item.split(':');
     return {
       name: name.trim(),
@@ -474,7 +474,7 @@ async function processBatch(
       }
     } catch (error) {
       results.errors++;
-      logger.error(`  ❌ Error importing ${record.name}:`, error);
+      logger.error(`  ❌ Error importing ${record.name}:`, error as Record<string, unknown>);
     }
   }
 
@@ -491,7 +491,7 @@ async function ensureCategoryExists(
 ): Promise<string | null> {
   // Check if category already exists
   const existing = existingCategories.find(
-    (cat) => cat.name.toLowerCase() === categoryName.toLowerCase()
+    cat => cat.name.toLowerCase() === categoryName.toLowerCase()
   );
 
   if (existing) {
@@ -515,7 +515,7 @@ async function ensureCategoryExists(
       logger.info(`  📁 Created category: ${categoryName}`);
       return newCategory[0].id;
     } catch (error) {
-      logger.error(`Failed to create category ${categoryName}:`, error);
+      logger.error(`Failed to create category ${categoryName}:`, error as Record<string, unknown>);
       return null;
     }
   } else {
@@ -556,15 +556,15 @@ async function enhanceRecord(record: ImportRecord): Promise<void> {
         const content = await aiService.generateSectionContent(record.name, 'Key Characteristics');
         record.characteristics = content
           .split('\n')
-          .map((line) => line.replace(/^[•\-\d.]\s*/, '').trim())
-          .filter((line) => line.length > 0)
+          .map(line => line.replace(/^[•\-\d.]\s*/, '').trim())
+          .filter(line => line.length > 0)
           .slice(0, 5);
       } catch (_error) {
         // Non-critical error
       }
     }
   } catch (error) {
-    logger.warn(`Failed to enhance record ${record.name}:`, error);
+    logger.warn(`Failed to enhance record ${record.name}:`, error as Record<string, unknown>);
   }
 }
 
@@ -699,12 +699,12 @@ async function createSampleFiles(): Promise<void> {
 if (require.main === module) {
   // Check if user wants to create sample files
   if (args.includes('--create-samples')) {
-    createSampleFiles().catch((error) => {
+    createSampleFiles().catch(error => {
       logger.error('Failed to create sample files:', error);
       process.exit(1);
     });
   } else {
-    bulkImport().catch((error) => {
+    bulkImport().catch(error => {
       logger.error('Bulk import failed:', error);
       process.exit(1);
     });

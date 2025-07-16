@@ -1,5 +1,5 @@
-import { posthog } from './analytics';
 import { posthogExperiments } from '@/services/posthogExperiments';
+import { posthog } from './analytics';
 import { ga4Analytics } from './ga4Analytics';
 
 export interface ConversionEvent {
@@ -28,7 +28,7 @@ class EnhancedAnalyticsService {
   private sessionStartTime: Date = new Date();
   private conversionFunnel: string[] = [
     'landing_view',
-    'hero_engagement', 
+    'hero_engagement',
     'content_exploration',
     'cta_click',
     'signup_start',
@@ -36,7 +36,7 @@ class EnhancedAnalyticsService {
     'first_usage',
     'feature_adoption',
     'upgrade_consideration',
-    'upgrade_complete'
+    'upgrade_complete',
   ];
 
   // Enhanced conversion tracking with experiment context
@@ -91,7 +91,7 @@ class EnhancedAnalyticsService {
   // Track user journey with experiment context
   trackJourneyStep(step: Omit<UserJourneyStep, 'timestamp' | 'experiment_context'>) {
     const activeExperiments = posthogExperiments.getActiveExperiments();
-    
+
     const journeyStep: UserJourneyStep = {
       ...step,
       timestamp: new Date(),
@@ -125,24 +125,16 @@ class EnhancedAnalyticsService {
 
     // Update experiment contexts
     Object.entries(activeExperiments).forEach(([flagKey, variant]) => {
-      posthogExperiments.trackExperimentFunnel(
-        flagKey as any,
-        variant as any,
-        step.step_name,
-        {
-          step_type: step.step_type,
-          page_path: step.page_path,
-          journey_position: this.userJourney.length,
-        }
-      );
+      posthogExperiments.trackExperimentFunnel(flagKey as any, variant as any, step.step_name, {
+        step_type: step.step_type,
+        page_path: step.page_path,
+        journey_position: this.userJourney.length,
+      });
     });
   }
 
   // Track feature usage with A/B testing context
-  trackFeatureUsageWithExperiments(
-    feature_name: string,
-    usage_data: Record<string, any> = {}
-  ) {
+  trackFeatureUsageWithExperiments(feature_name: string, usage_data: Record<string, any> = {}) {
     const activeExperiments = posthogExperiments.getActiveExperiments();
 
     posthog.capture('feature_usage_enhanced', {
@@ -182,11 +174,7 @@ class EnhancedAnalyticsService {
   }
 
   // Track conversion funnel with dropout analysis
-  trackFunnelProgression(
-    step_name: string,
-    position: number,
-    experiments: Record<string, string>
-  ) {
+  trackFunnelProgression(step_name: string, position: number, experiments: Record<string, string>) {
     const previousSteps = this.userJourney
       .filter(step => this.getFunnelPosition(step.step_name) < position)
       .map(step => step.step_name);
@@ -230,9 +218,7 @@ class EnhancedAnalyticsService {
     experimentExposures: string[];
   } {
     const uniqueExperiments = new Set(
-      this.userJourney
-        .map(step => Object.keys(step.experiment_context || {}))
-        .flat()
+      this.userJourney.flatMap(step => Object.keys(step.experiment_context || {}))
     );
 
     const lastStep = this.userJourney[this.userJourney.length - 1];
@@ -259,21 +245,19 @@ class EnhancedAnalyticsService {
   private identifyDropoutPoints(currentPosition: number): string[] {
     const expectedSteps = this.conversionFunnel.slice(0, currentPosition);
     const actualSteps = this.userJourney.map(step => step.step_name);
-    
+
     return expectedSteps.filter(step => !actualSteps.includes(step));
   }
 
   private calculateEngagementScore(): number {
-    if (this.userJourney.length === 0) return 0;
+    if (this.userJourney.length === 0) {return 0;}
 
     const interactionSteps = this.userJourney.filter(
       step => step.step_type === 'interaction'
     ).length;
-    
+
     const sessionMinutes = this.getSessionDuration() / 60;
-    const pageViews = this.userJourney.filter(
-      step => step.step_type === 'page_view'
-    ).length;
+    const pageViews = this.userJourney.filter(step => step.step_type === 'page_view').length;
 
     // Engagement score formula: interactions + time-based score + page depth
     const timeScore = Math.min(sessionMinutes * 2, 20); // Max 20 points for time
@@ -286,28 +270,30 @@ class EnhancedAnalyticsService {
   private calculateDropoutRisk(): number {
     const sessionDuration = this.getSessionDuration();
     const lastActivity = this.userJourney[this.userJourney.length - 1];
-    
-    if (!lastActivity) return 100;
+
+    if (!lastActivity) {return 100;}
 
     const timeSinceLastActivity = (Date.now() - lastActivity.timestamp.getTime()) / 1000;
-    
+
     // Risk factors
     let risk = 0;
-    
+
     // Time-based risk
-    if (timeSinceLastActivity > 300) risk += 40; // 5 minutes inactive
-    else if (timeSinceLastActivity > 120) risk += 20; // 2 minutes inactive
-    
+    if (timeSinceLastActivity > 300)
+      {risk += 40;} // 5 minutes inactive
+    else if (timeSinceLastActivity > 120) {risk += 20;} // 2 minutes inactive
+
     // Engagement-based risk
     const engagementScore = this.calculateEngagementScore();
-    if (engagementScore < 20) risk += 30;
-    else if (engagementScore < 40) risk += 15;
-    
+    if (engagementScore < 20) {risk += 30;}
+    else if (engagementScore < 40) {risk += 15;}
+
     // Funnel position risk
     const lastFunnelPosition = this.getFunnelPosition(lastActivity.step_name);
-    if (lastFunnelPosition === 0) risk += 30; // Not in funnel
-    else if (lastFunnelPosition < 3) risk += 20; // Early in funnel
-    
+    if (lastFunnelPosition === 0)
+      {risk += 30;} // Not in funnel
+    else if (lastFunnelPosition < 3) {risk += 20;} // Early in funnel
+
     return Math.min(risk, 100);
   }
 
@@ -315,7 +301,7 @@ class EnhancedAnalyticsService {
   resetSession() {
     this.userJourney = [];
     this.sessionStartTime = new Date();
-    
+
     posthog.capture('session_reset', {
       timestamp: new Date().toISOString(),
     });
@@ -328,7 +314,7 @@ export const enhancedAnalytics = new EnhancedAnalyticsService();
 // React hooks for easy component integration
 export function useEnhancedAnalytics() {
   return {
-    trackConversion: (event: ConversionEvent) => 
+    trackConversion: (event: ConversionEvent) =>
       enhancedAnalytics.trackConversionWithExperiments(event),
     trackJourneyStep: (step: Omit<UserJourneyStep, 'timestamp' | 'experiment_context'>) =>
       enhancedAnalytics.trackJourneyStep(step),

@@ -17,7 +17,7 @@ interface SectionLayoutManagerProps {
   sections: ITermSection[];
   userSettings?: IEnhancedUserSettings;
   onInteraction?: (sectionId: string, interactionType: string, data?: any) => void;
-  className?: string;
+  className?: string | undefined;
 }
 
 type LayoutType = 'grid' | 'list' | 'sidebar' | 'tabbed';
@@ -36,7 +36,7 @@ export default function SectionLayoutManager({
 
   // Filter sections based on user preferences and current filter
   const filteredSections = sections
-    .filter((section) => {
+    .filter(section => {
       // Filter by display type
       if (filterType !== 'all' && section.displayType !== filterType) {
         return false;
@@ -165,7 +165,7 @@ export default function SectionLayoutManager({
 
       <div className="flex items-center space-x-2">
         <Badge variant="outline">{filteredSections.length} sections</Badge>
-        {Object.keys(groupedSections).map((type) => (
+        {Object.keys(groupedSections).map(type => (
           <Badge key={type} variant="secondary" className="text-xs">
             {type}: {groupedSections[type].length}
           </Badge>
@@ -176,7 +176,7 @@ export default function SectionLayoutManager({
 
   const renderListLayout = () => (
     <div className="space-y-4">
-      {filteredSections.map((section) => (
+      {filteredSections.map(section => (
         <SectionDisplay
           key={section.id}
           section={section}
@@ -191,7 +191,7 @@ export default function SectionLayoutManager({
 
   const renderGridLayout = () => (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-      {filteredSections.map((section) => (
+      {filteredSections.map(section => (
         <SectionDisplay
           key={section.id}
           section={section}
@@ -207,7 +207,7 @@ export default function SectionLayoutManager({
   const renderSidebarLayout = () => (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
       <div className="lg:col-span-1 space-y-2">
-        {groupedSections.sidebar?.map((section) => (
+        {groupedSections.sidebar?.map(section => (
           <SectionDisplay
             key={section.id}
             section={section}
@@ -222,8 +222,8 @@ export default function SectionLayoutManager({
         )}
       </div>
       <div className="lg:col-span-3 space-y-4">
-        {['main', 'card', 'modal', 'metadata'].map((type) =>
-          groupedSections[type]?.map((section) => (
+        {['main', 'card', 'modal', 'metadata'].map(type =>
+          groupedSections[type]?.map(section => (
             <SectionDisplay
               key={section.id}
               section={section}
@@ -240,20 +240,20 @@ export default function SectionLayoutManager({
 
   const renderTabbedLayout = () => {
     const tabTypes = Object.keys(groupedSections);
-    if (tabTypes.length === 0) return <div>No sections available</div>;
+    if (tabTypes.length === 0) {return <div>No sections available</div>;}
 
     return (
       <Tabs defaultValue={tabTypes[0]} className="w-full">
         <TabsList className="grid w-full grid-cols-5">
-          {tabTypes.map((type) => (
+          {tabTypes.map(type => (
             <TabsTrigger key={type} value={type} className="capitalize">
               {type} ({groupedSections[type].length})
             </TabsTrigger>
           ))}
         </TabsList>
-        {tabTypes.map((type) => (
+        {tabTypes.map(type => (
           <TabsContent key={type} value={type} className="space-y-4">
-            {groupedSections[type].map((section) => (
+            {groupedSections[type].map(section => (
               <SectionDisplay
                 key={section.id}
                 section={section}

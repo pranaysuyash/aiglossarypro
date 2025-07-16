@@ -22,13 +22,13 @@ interface QuizQuestion {
 
 interface InteractiveQuizProps {
   questions: QuizQuestion[];
-  title?: string;
-  description?: string;
+  title?: string | undefined;
+  description?: string | undefined;
   timeLimit?: number; // in seconds
   showExplanations?: boolean;
   allowRetry?: boolean;
   onComplete?: (result: QuizResult) => void;
-  className?: string;
+  className?: string | undefined;
 }
 
 interface QuizResult {
@@ -71,7 +71,7 @@ export default function InteractiveQuiz({
   useEffect(() => {
     if (timeLimit && timeRemaining > 0 && !isCompleted) {
       const timer = setInterval(() => {
-        setTimeRemaining((prev) => {
+        setTimeRemaining(prev => {
           if (prev <= 1) {
             handleCompleteQuiz();
             return 0;
@@ -92,7 +92,7 @@ export default function InteractiveQuiz({
   };
 
   const handleAnswerChange = (questionId: string, answer: string | string[]) => {
-    setUserAnswers((prev) => ({
+    setUserAnswers(prev => ({
       ...prev,
       [questionId]: answer,
     }));
@@ -107,7 +107,7 @@ export default function InteractiveQuiz({
 
       return (
         correctAnswers.length === userAnswersArray.length &&
-        correctAnswers.every((answer) => userAnswersArray.includes(answer.toString()))
+        correctAnswers.every(answer => userAnswersArray.includes(answer.toString()))
       );
     }
 
@@ -118,7 +118,7 @@ export default function InteractiveQuiz({
   };
 
   const calculateResult = (): QuizResult => {
-    const answers = questions.map((question) => {
+    const answers = questions.map(question => {
       const userAnswer = userAnswers[question.id] || '';
       const isCorrect = isCorrectAnswer(question, userAnswer);
       const points = isCorrect ? question.points || 1 : 0;
@@ -163,7 +163,7 @@ export default function InteractiveQuiz({
 
   const handleNextQuestion = () => {
     if (currentQuestionIndex < totalQuestions - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
+      setCurrentQuestionIndex(prev => prev + 1);
     } else {
       handleCompleteQuiz();
     }
@@ -171,7 +171,7 @@ export default function InteractiveQuiz({
 
   const handlePreviousQuestion = () => {
     if (currentQuestionIndex > 0) {
-      setCurrentQuestionIndex((prev) => prev - 1);
+      setCurrentQuestionIndex(prev => prev - 1);
     }
   };
 
@@ -193,7 +193,7 @@ export default function InteractiveQuiz({
         return (
           <RadioGroup
             value={(userAnswer as string) || ''}
-            onValueChange={(value) => handleAnswerChange(question.id, value)}
+            onValueChange={value => handleAnswerChange(question.id, value)}
             className="mt-4"
           >
             {question.options?.map((option, index) => (
@@ -211,7 +211,7 @@ export default function InteractiveQuiz({
         return (
           <RadioGroup
             value={(userAnswer as string) || ''}
-            onValueChange={(value) => handleAnswerChange(question.id, value)}
+            onValueChange={value => handleAnswerChange(question.id, value)}
             className="mt-4"
           >
             <div className="flex items-center space-x-2">
@@ -233,7 +233,7 @@ export default function InteractiveQuiz({
         return (
           <Input
             value={(userAnswer as string) || ''}
-            onChange={(e) => handleAnswerChange(question.id, e.target.value)}
+            onChange={e => handleAnswerChange(question.id, e.target.value)}
             placeholder="Type your answer here..."
             className="mt-4"
           />
@@ -247,14 +247,14 @@ export default function InteractiveQuiz({
                 <Checkbox
                   id={`${question.id}-${index}`}
                   checked={Array.isArray(userAnswer) ? userAnswer.includes(option) : false}
-                  onCheckedChange={(checked) => {
+                  onCheckedChange={checked => {
                     const currentAnswers = Array.isArray(userAnswer) ? userAnswer : [];
                     if (checked) {
                       handleAnswerChange(question.id, [...currentAnswers, option]);
                     } else {
                       handleAnswerChange(
                         question.id,
-                        currentAnswers.filter((a) => a !== option)
+                        currentAnswers.filter(a => a !== option)
                       );
                     }
                   }}
@@ -273,11 +273,11 @@ export default function InteractiveQuiz({
   };
 
   const renderResults = () => {
-    if (!result) return null;
+    if (!result) {return null;}
 
     const getScoreColor = (percentage: number) => {
-      if (percentage >= 80) return 'text-green-600 dark:text-green-400';
-      if (percentage >= 60) return 'text-yellow-600 dark:text-yellow-400';
+      if (percentage >= 80) {return 'text-green-600 dark:text-green-400';}
+      if (percentage >= 60) {return 'text-yellow-600 dark:text-yellow-400';}
       return 'text-red-600 dark:text-red-400';
     };
 
@@ -303,8 +303,8 @@ export default function InteractiveQuiz({
           <div className="space-y-4">
             <h4 className="text-lg font-semibold">Review Your Answers</h4>
             {questions.map((question, index) => {
-              const answer = result.answers.find((a) => a.questionId === question.id);
-              if (!answer) return null;
+              const answer = result.answers.find(a => a.questionId === question.id);
+              if (!answer) {return null;}
 
               return (
                 <Card key={question.id} className="border-l-4 border-l-gray-200">

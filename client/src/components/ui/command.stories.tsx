@@ -1,6 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import {
   Command,
   CommandDialog,
@@ -214,7 +213,7 @@ export const SearchResults: Story = {
     ];
 
     const filteredTerms = terms.filter(
-      (term) =>
+      term =>
         term.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         term.category.toLowerCase().includes(searchTerm.toLowerCase())
     );
@@ -230,7 +229,7 @@ export const SearchResults: Story = {
           <CommandEmpty>No terms found for "{searchTerm}"</CommandEmpty>
           {filteredTerms.length > 0 && (
             <CommandGroup heading={`${filteredTerms.length} Results`}>
-              {filteredTerms.map((term) => (
+              {filteredTerms.map(term => (
                 <CommandItem key={term.name} className="flex flex-col items-start">
                   <div className="flex items-center w-full">
                     <span className="font-medium">{term.name}</span>
@@ -357,7 +356,7 @@ export const RecentSearches: Story = {
           <CommandEmpty>No results found.</CommandEmpty>
           {searchValue === '' && (
             <CommandGroup heading="Recent Searches">
-              {recentSearches.map((search) => (
+              {recentSearches.map(search => (
                 <CommandItem key={search} onSelect={() => setSearchValue(search)}>
                   <span className="mr-2">🕒</span>
                   <span>{search}</span>

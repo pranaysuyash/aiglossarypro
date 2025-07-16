@@ -110,7 +110,7 @@ class ComprehensiveVisualAuditor {
         console.log(chalk.green('✅ Vite server ready'));
         return;
       } catch (_error) {
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
     throw new Error('Vite server failed to start');
@@ -928,7 +928,7 @@ class ComprehensiveVisualAuditor {
           break;
 
         case 'scroll':
-          await page.evaluate((pixels) => {
+          await page.evaluate(pixels => {
             window.scrollBy(0, pixels as number);
           }, action.value || 500);
           console.log(chalk.green(`    ✓ Scrolled: ${action.value || 500}px`));
@@ -989,14 +989,22 @@ class ComprehensiveVisualAuditor {
       // Interactions directory might not exist
     }
 
+    interface Issue {
+      type: string;
+      file: string;
+      description: string;
+      severity?: string;
+      recommendation?: string;
+    }
+
     const analysisResults = {
       totalScreenshots: screenshots.length + interactionScreenshots.length,
-      criticalIssues: [],
-      warnings: [],
-      passedChecks: [],
-      detectedComponents: [],
-      responsiveIssues: [],
-      accessibilityIssues: [],
+      criticalIssues: [] as Issue[],
+      warnings: [] as Issue[],
+      passedChecks: [] as Issue[],
+      detectedComponents: [] as any[],
+      responsiveIssues: [] as any[],
+      accessibilityIssues: [] as any[],
     };
 
     // Analyze each screenshot by filename patterns to detect issues
@@ -1068,7 +1076,7 @@ class ComprehensiveVisualAuditor {
     }
 
     // Check for common issues based on our previous analysis
-    if (screenshots.some((s) => s.includes('categories-page-error'))) {
+    if (screenshots.some(s => s.includes('categories-page-error'))) {
       analysisResults.criticalIssues.push({
         type: 'Data Loading Failure',
         file: 'categories-page-error.png',
@@ -1099,12 +1107,11 @@ class ComprehensiveVisualAuditor {
       timestamp: new Date().toISOString(),
       summary: {
         totalTests: this.getComprehensiveTestConfigs().length,
-        pagesAudited: new Set(this.getComprehensiveTestConfigs().map((c) => c.url)).size,
-        breakpointsTested: this.getComprehensiveTestConfigs().filter((c) => c.viewport).length,
-        userFlowsTested: this.getComprehensiveTestConfigs().filter((c) => c.userFlows).length,
-        accessibilityTests: this.getComprehensiveTestConfigs().filter((c) => c.accessibility)
-          .length,
-        videosRecorded: this.getComprehensiveTestConfigs().filter((c) => c.recordVideo).length,
+        pagesAudited: new Set(this.getComprehensiveTestConfigs().map(c => c.url)).size,
+        breakpointsTested: this.getComprehensiveTestConfigs().filter(c => c.viewport).length,
+        userFlowsTested: this.getComprehensiveTestConfigs().filter(c => c.userFlows).length,
+        accessibilityTests: this.getComprehensiveTestConfigs().filter(c => c.accessibility).length,
+        videosRecorded: this.getComprehensiveTestConfigs().filter(c => c.recordVideo).length,
         totalScreenshots: analysis.totalScreenshots,
         criticalIssues: analysis.criticalIssues.length,
         warnings: analysis.warnings.length,
@@ -1171,7 +1178,7 @@ class ComprehensiveVisualAuditor {
       analysis.criticalIssues.length > 0
         ? analysis.criticalIssues
             .map(
-              (issue) => `
+              issue => `
         <div class="issue critical">
           <span class="status-indicator status-critical"></span>
           <strong>${issue.type}</strong>
@@ -1190,7 +1197,7 @@ class ComprehensiveVisualAuditor {
       analysis.warnings.length > 0
         ? analysis.warnings
             .map(
-              (warning) => `
+              warning => `
         <div class="issue warning">
           <span class="status-indicator status-warning"></span>
           <strong>${warning.type}</strong>
@@ -1206,7 +1213,7 @@ class ComprehensiveVisualAuditor {
     <h2>✅ Passed Checks</h2>
     ${analysis.passedChecks
       .map(
-        (check) => `
+        check => `
       <div class="issue passed">
         <span class="status-indicator status-passed"></span>
         <strong>${check.type}</strong>
@@ -1220,7 +1227,7 @@ class ComprehensiveVisualAuditor {
     <h2>🔧 Detected Interactive Components</h2>
     ${analysis.detectedComponents
       .map(
-        (component) => `
+        component => `
       <div class="issue component">
         <span class="status-indicator" style="background: #007bff;"></span>
         <strong>${component.type}</strong>
@@ -1235,7 +1242,7 @@ class ComprehensiveVisualAuditor {
   <h2>📋 Test Configurations</h2>
   ${report.configurations
     .map(
-      (config) => `
+      config => `
     <div class="test">
       <h3>${config.name}</h3>
       <p><strong>URL:</strong> ${config.url}</p>

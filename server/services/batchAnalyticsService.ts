@@ -230,24 +230,24 @@ export class BatchAnalyticsService extends EventEmitter {
   ): Promise<BatchPerformanceReport> {
     const cacheKey = `perf-${startDate.getTime()}-${endDate.getTime()}-${JSON.stringify(filters)}`;
     const cached = this.getCachedReport(cacheKey);
-    if (cached) return cached;
+    if (cached) {return cached;}
 
     logger.info('Generating batch performance report:', { startDate, endDate, filters });
 
     try {
       // Get all operations in the period
       const allOperations = columnBatchProcessorService.getOperationHistory(10000);
-      const operations = allOperations.filter((op) => {
+      const operations = allOperations.filter(op => {
         const inPeriod =
           op.timing.startedAt && op.timing.startedAt >= startDate && op.timing.startedAt <= endDate;
 
-        if (!inPeriod) return false;
+        if (!inPeriod) {return false;}
 
-        if (filters?.sectionName && op.sectionName !== filters.sectionName) return false;
+        if (filters?.sectionName && op.sectionName !== filters.sectionName) {return false;}
         if (filters?.userId && op.configuration.metadata?.initiatedBy !== filters.userId)
-          return false;
+          {return false;}
         if (filters?.model && op.configuration.processingOptions.model !== filters.model)
-          return false;
+          {return false;}
 
         return true;
       });
@@ -260,7 +260,7 @@ export class BatchAnalyticsService extends EventEmitter {
       );
       const totalCost = operations.reduce((sum, op) => sum + op.costs.actualCost, 0);
 
-      const completedOps = operations.filter((op) => op.status === 'completed');
+      const completedOps = operations.filter(op => op.status === 'completed');
       const avgOperationTime =
         completedOps.length > 0
           ? completedOps.reduce((sum, op) => {
@@ -414,7 +414,7 @@ export class BatchAnalyticsService extends EventEmitter {
   ): Promise<CostOptimizationReport> {
     const cacheKey = `cost-opt-${startDate.getTime()}-${endDate.getTime()}`;
     const cached = this.getCachedReport(cacheKey);
-    if (cached) return cached;
+    if (cached) {return cached;}
 
     logger.info('Generating cost optimization report:', { startDate, endDate });
 
@@ -453,7 +453,7 @@ export class BatchAnalyticsService extends EventEmitter {
 
       // Get budget utilization
       const budgets = costManagementService.getBudgets();
-      const activeBudgets = budgets.filter((b) => b.status === 'active');
+      const activeBudgets = budgets.filter(b => b.status === 'active');
       const totalBudget = activeBudgets.reduce((sum, b) => sum + b.totalBudget, 0);
       const usedBudget = activeBudgets.reduce((sum, b) => sum + b.usedBudget, 0);
       const budgetUtilization = totalBudget > 0 ? (usedBudget / totalBudget) * 100 : 0;
@@ -492,7 +492,7 @@ export class BatchAnalyticsService extends EventEmitter {
   async generateQualityReport(startDate: Date, endDate: Date): Promise<QualityAnalysisReport> {
     const cacheKey = `quality-${startDate.getTime()}-${endDate.getTime()}`;
     const cached = this.getCachedReport(cacheKey);
-    if (cached) return cached;
+    if (cached) {return cached;}
 
     logger.info('Generating quality analysis report:', { startDate, endDate });
 
@@ -500,7 +500,7 @@ export class BatchAnalyticsService extends EventEmitter {
       const operations = columnBatchProcessorService
         .getOperationHistory(1000)
         .filter(
-          (op) =>
+          op =>
             op.timing.startedAt &&
             op.timing.startedAt >= startDate &&
             op.timing.startedAt <= endDate &&
@@ -508,7 +508,7 @@ export class BatchAnalyticsService extends EventEmitter {
         );
 
       // Calculate overall quality metrics
-      const allMetrics = operations.map((op) => op.result?.qualityMetrics).filter((m) => m);
+      const allMetrics = operations.map(op => op.result?.qualityMetrics).filter(m => m);
 
       const overallQuality = {
         averageContentLength:
@@ -531,7 +531,7 @@ export class BatchAnalyticsService extends EventEmitter {
       }
 
       const sectionQuality = Array.from(sectionGroups.entries()).map(([sectionName, ops]) => {
-        const sectionMetrics = ops.map((op) => op.result?.qualityMetrics).filter((m) => m);
+        const sectionMetrics = ops.map(op => op.result?.qualityMetrics).filter(m => m);
 
         return {
           sectionName,
@@ -879,7 +879,7 @@ export class BatchAnalyticsService extends EventEmitter {
       dayEnd.setHours(23, 59, 59, 999);
 
       const dayOps = operations.filter(
-        (op) =>
+        op =>
           op.timing.startedAt && op.timing.startedAt >= dayStart && op.timing.startedAt <= dayEnd
       );
 
@@ -936,7 +936,7 @@ export class BatchAnalyticsService extends EventEmitter {
     return Array.from(sectionGroups.entries()).map(([sectionName, ops]) => {
       const totalTerms = ops.reduce((sum, op) => sum + op.progress.processedTerms, 0);
       const totalCost = ops.reduce((sum, op) => sum + op.costs.actualCost, 0);
-      const completedOps = ops.filter((op) => op.status === 'completed');
+      const completedOps = ops.filter(op => op.status === 'completed');
 
       const avgTime =
         completedOps.length > 0

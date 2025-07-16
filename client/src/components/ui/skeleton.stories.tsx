@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { Skeleton } from './skeleton';
 
@@ -15,7 +14,7 @@ const meta: Meta<typeof Skeleton> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-md p-4">
         <Story />
       </div>
@@ -353,7 +352,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-md p-4 dark">
         <Story />
       </div>

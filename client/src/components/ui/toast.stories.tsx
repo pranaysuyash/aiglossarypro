@@ -1,6 +1,5 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { Toast } from './Toast';
+import type { Meta, StoryObj } from '@storybook/react';
+import { Toast } from './toast';
 
 const meta = {
   title: 'UI/Toast',

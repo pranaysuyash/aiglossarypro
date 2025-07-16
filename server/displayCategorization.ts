@@ -300,7 +300,7 @@ export class ContentOrganizer {
   static organizeForCard(sections: Map<string, any>): any {
     const cardData: any = {};
 
-    DEFAULT_LAYOUT.cardContent.forEach((sectionName) => {
+    DEFAULT_LAYOUT.cardContent.forEach(sectionName => {
       if (sections.has(sectionName)) {
         const sectionData = sections.get(sectionName);
         cardData[sectionName] = ContentOrganizer.extractCardSummary(sectionData, sectionName);
@@ -313,7 +313,7 @@ export class ContentOrganizer {
   static organizeForSidebar(sections: Map<string, any>): any {
     const sidebarData: any = {};
 
-    DEFAULT_LAYOUT.sidebarContent.forEach((sectionName) => {
+    DEFAULT_LAYOUT.sidebarContent.forEach(sectionName => {
       if (sections.has(sectionName)) {
         sidebarData[sectionName] = sections.get(sectionName);
       }
@@ -325,7 +325,7 @@ export class ContentOrganizer {
   static organizeForMain(sections: Map<string, any>): any[] {
     const mainSections: any[] = [];
 
-    DEFAULT_LAYOUT.mainContent.forEach((sectionName) => {
+    DEFAULT_LAYOUT.mainContent.forEach(sectionName => {
       if (sections.has(sectionName)) {
         const sectionData = sections.get(sectionName);
         const config = SECTION_DISPLAY_CONFIG[sectionName];
@@ -346,7 +346,7 @@ export class ContentOrganizer {
   static organizeForModal(sections: Map<string, any>): any[] {
     const modalSections: any[] = [];
 
-    DEFAULT_LAYOUT.modalContent.forEach((sectionName) => {
+    DEFAULT_LAYOUT.modalContent.forEach(sectionName => {
       if (sections.has(sectionName)) {
         const sectionData = sections.get(sectionName);
         const config = SECTION_DISPLAY_CONFIG[sectionName];
@@ -373,7 +373,7 @@ export class ContentOrganizer {
     filterData.techniques = categories.techniques;
 
     // Extract other filterable data
-    DEFAULT_LAYOUT.filterableData.forEach((sectionName) => {
+    DEFAULT_LAYOUT.filterableData.forEach(sectionName => {
       if (sections.has(sectionName)) {
         const sectionData = sections.get(sectionName);
         filterData[sectionName] = ContentOrganizer.extractFilterableValues(sectionData);
@@ -393,7 +393,7 @@ export class ContentOrganizer {
   static extractSearchData(sections: Map<string, any>): string {
     let searchText = '';
 
-    DEFAULT_LAYOUT.searchableData.forEach((sectionName) => {
+    DEFAULT_LAYOUT.searchableData.forEach(sectionName => {
       if (sections.has(sectionName)) {
         const sectionData = sections.get(sectionName);
         searchText += ` ${ContentOrganizer.extractSearchableText(sectionData)}`;
@@ -425,7 +425,7 @@ export class ContentOrganizer {
     if (Array.isArray(sectionData)) {
       values.push(...sectionData);
     } else if (typeof sectionData === 'object') {
-      Object.values(sectionData).forEach((value) => {
+      Object.values(sectionData).forEach(value => {
         if (Array.isArray(value)) {
           values.push(...value);
         } else if (typeof value === 'string') {
@@ -436,7 +436,7 @@ export class ContentOrganizer {
       values.push(sectionData);
     }
 
-    return values.filter((v) => v && v.length > 0);
+    return values.filter(v => v && v.length > 0);
   }
 
   private static extractSearchableText(sectionData: any): string {
@@ -445,7 +445,7 @@ export class ContentOrganizer {
     if (typeof sectionData === 'string') {
       text = sectionData;
     } else if (typeof sectionData === 'object') {
-      Object.values(sectionData).forEach((value) => {
+      Object.values(sectionData).forEach(value => {
         if (typeof value === 'string') {
           text += ` ${value}`;
         } else if (Array.isArray(value)) {
@@ -465,9 +465,9 @@ export class ContentOrganizer {
     const hasImplementation = sections.has('Implementation');
     const hasPrerequisites = sections.has('Prerequisites');
 
-    if (hasAdvancedMath && hasImplementation) return 'Advanced';
-    if (hasImplementation && hasPrerequisites) return 'Intermediate';
-    if (hasPrerequisites) return 'Beginner';
+    if (hasAdvancedMath && hasImplementation) {return 'Advanced';}
+    if (hasImplementation && hasPrerequisites) {return 'Intermediate';}
+    if (hasPrerequisites) {return 'Beginner';}
 
     return 'Beginner';
   }

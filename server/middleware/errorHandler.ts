@@ -73,7 +73,7 @@ class ErrorLogger {
         endpoint: req.path,
         method: req.method,
         userAgent: req.get('user-agent'),
-        ip: req.ip || req.connection.remoteAddress,
+        ip: req.ip || req.socket.remoteAddress,
         body: this.sanitizeData(req.body),
         query: req.query,
         params: req.params,
@@ -106,14 +106,14 @@ class ErrorLogger {
   }
 
   private sanitizeData(data: any): any {
-    if (!data) return data;
+    if (!data) {return data;}
 
     const sensitiveFields = ['password', 'token', 'secret', 'key', 'auth'];
     const sanitized = JSON.parse(JSON.stringify(data));
 
     const sanitizeObject = (obj: any) => {
       for (const key in obj) {
-        if (sensitiveFields.some((field) => key.toLowerCase().includes(field))) {
+        if (sensitiveFields.some(field => key.toLowerCase().includes(field))) {
           obj[key] = '[REDACTED]';
         } else if (typeof obj[key] === 'object' && obj[key] !== null) {
           sanitizeObject(obj[key]);
@@ -138,19 +138,19 @@ class ErrorLogger {
     }
   }
 
-  getRecentErrors(limit: number = 50): LoggedError[] {
+  getRecentErrors(limit = 50): LoggedError[] {
     return this.errorLog.slice(0, limit);
   }
 
-  getErrorsByCategory(category: ErrorCategory, limit: number = 50): LoggedError[] {
-    return this.errorLog.filter((err) => err.category === category).slice(0, limit);
+  getErrorsByCategory(category: ErrorCategory, limit = 50): LoggedError[] {
+    return this.errorLog.filter(err => err.category === category).slice(0, limit);
   }
 
   getErrorStats(): { [key: string]: number } {
     const stats: { [key: string]: number } = {};
 
     // Count by category
-    this.errorLog.forEach((error) => {
+    this.errorLog.forEach(error => {
       const key = `${error.category}_${error.severity}`;
       stats[key] = (stats[key] || 0) + 1;
     });
@@ -347,7 +347,7 @@ export const gracefulShutdown = (server: any) => {
   process.on('SIGINT', shutdown);
 
   // Handle uncaught exceptions
-  process.on('uncaughtException', async (error) => {
+  process.on('uncaughtException', async error => {
     console.error('❌ Uncaught Exception:', error);
     await errorLogger.logError(error, {} as Request, ErrorCategory.UNKNOWN, 'critical');
     process.exit(1);

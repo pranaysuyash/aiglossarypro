@@ -150,7 +150,7 @@ class AdaptiveContentService {
    */
   async generateAdaptiveRecommendations(
     userId: string,
-    count: number = 10
+    count = 10
   ): Promise<AdaptiveRecommendation[]> {
     const learningPattern = await this.analyzeLearningPatterns(userId);
     const userProfile = await this.getUserProfile(userId);
@@ -217,12 +217,12 @@ class AdaptiveContentService {
     const recommendations = await this.generateAdaptiveRecommendations(userId, 5);
 
     const strengthAreas = learningPattern.categoryAffinities
-      .filter((ca) => ca.masteryLevel > 0.7)
-      .map((ca) => ca.categoryName);
+      .filter(ca => ca.masteryLevel > 0.7)
+      .map(ca => ca.categoryName);
 
     const improvementAreas = learningPattern.categoryAffinities
-      .filter((ca) => ca.masteryLevel < 0.4 && ca.affinityScore > 0.1)
-      .map((ca) => ca.categoryName);
+      .filter(ca => ca.masteryLevel < 0.4 && ca.affinityScore > 0.1)
+      .map(ca => ca.categoryName);
 
     const engagementTrends = await this.calculateEngagementTrends(userId);
     const adaptiveAdjustments = this.calculateAdaptiveAdjustments(learningPattern);
@@ -294,7 +294,7 @@ class AdaptiveContentService {
     // Group interactions by session
     const sessions = new Map<string, UserInteraction[]>();
 
-    interactions.forEach((interaction) => {
+    interactions.forEach(interaction => {
       const metadata = interaction.metadata as any;
       const sessionId = metadata?.sessionId as string;
       if (sessionId) {
@@ -306,8 +306,8 @@ class AdaptiveContentService {
     });
 
     // Calculate session metrics
-    const sessionLengths = Array.from(sessions.values()).map((session) => {
-      if (session.length < 2) return 0;
+    const sessionLengths = Array.from(sessions.values()).map(session => {
+      if (session.length < 2) {return 0;}
       const start = new Date(session[session.length - 1].timestamp);
       const end = new Date(session[0].timestamp);
       return (end.getTime() - start.getTime()) / 1000 / 60; // minutes
@@ -333,9 +333,9 @@ class AdaptiveContentService {
 
   private async analyzeContentPreferences(_userId: string, interactions: UserInteraction[]) {
     // Analyze interaction patterns to determine content preferences
-    const _viewInteractions = interactions.filter((i) => i.interactionType === 'view');
-    const _shareInteractions = interactions.filter((i) => i.interactionType === 'share');
-    const _favoriteInteractions = interactions.filter((i) => i.interactionType === 'favorite');
+    const _viewInteractions = interactions.filter(i => i.interactionType === 'view');
+    const _shareInteractions = interactions.filter(i => i.interactionType === 'share');
+    const _favoriteInteractions = interactions.filter(i => i.interactionType === 'favorite');
 
     // Mock analysis - in practice, would analyze content types and engagement
     return {
@@ -349,10 +349,10 @@ class AdaptiveContentService {
   private async analyzeCategoryAffinities(_userId: string, interactions: UserInteraction[]) {
     // Get term categories from interactions
     const termIds = [
-      ...new Set(interactions.map((i) => i.termId).filter((id): id is string => Boolean(id))),
+      ...new Set(interactions.map(i => i.termId).filter((id): id is string => Boolean(id))),
     ];
 
-    if (termIds.length === 0) return [];
+    if (termIds.length === 0) {return [];}
 
     // Get category data for these terms
     const termCategories = await db
@@ -375,8 +375,8 @@ class AdaptiveContentService {
       }
     >();
 
-    interactions.forEach((interaction) => {
-      const termCategory = termCategories.find((tc) => tc.termId === interaction.termId);
+    interactions.forEach(interaction => {
+      const termCategory = termCategories.find(tc => tc.termId === interaction.termId);
       if (termCategory?.categoryId) {
         const key = termCategory.categoryId;
         if (!categoryStats.has(key)) {
@@ -409,14 +409,14 @@ class AdaptiveContentService {
     sessionPatterns: any
   ): LearningPattern['learningStyle'] {
     // Analyze patterns to determine learning style
-    const searchCount = interactions.filter((i) => i.interactionType === 'search').length;
-    const viewCount = interactions.filter((i) => i.interactionType === 'view').length;
+    const searchCount = interactions.filter(i => i.interactionType === 'search').length;
+    const viewCount = interactions.filter(i => i.interactionType === 'view').length;
     const explorationRatio = searchCount / Math.max(viewCount, 1);
 
-    if (explorationRatio > 0.3) return 'exploratory';
+    if (explorationRatio > 0.3) {return 'exploratory';}
     if (sessionPatterns.sessionCount > 10 && sessionPatterns.averageLength > 20)
-      return 'project-based';
-    if (explorationRatio < 0.1) return 'reference';
+      {return 'project-based';}
+    if (explorationRatio < 0.1) {return 'reference';}
     return 'sequential';
   }
 
@@ -425,15 +425,15 @@ class AdaptiveContentService {
   ): LearningPattern['preferredDifficulty'] {
     // Mock analysis - would analyze difficulty of engaged content
     const rand = Math.random();
-    if (rand < 0.3) return 'beginner';
-    if (rand < 0.7) return 'intermediate';
+    if (rand < 0.3) {return 'beginner';}
+    if (rand < 0.7) {return 'intermediate';}
     return 'advanced';
   }
 
   private analyzeProgressionPatterns(interactions: UserInteraction[]) {
-    const viewInteractions = interactions.filter((i) => i.interactionType === 'view');
-    const _uniqueTerms = new Set(viewInteractions.map((i) => i.termId));
-    const sessionCount = new Set(interactions.map((i) => (i.metadata as any)?.sessionId)).size;
+    const viewInteractions = interactions.filter(i => i.interactionType === 'view');
+    const _uniqueTerms = new Set(viewInteractions.map(i => i.termId));
+    const sessionCount = new Set(interactions.map(i => (i.metadata as any)?.sessionId)).size;
 
     return {
       averageTermsPerSession: viewInteractions.length / Math.max(sessionCount, 1),
@@ -463,7 +463,7 @@ class AdaptiveContentService {
         and(eq(userInteractions.userId, userId), eq(userInteractions.interactionType, 'view'))
       );
 
-    const viewedIds = viewedTermIds.map((v) => v.termId).filter((id): id is string => Boolean(id));
+    const viewedIds = viewedTermIds.map(v => v.termId).filter((id): id is string => Boolean(id));
 
     // Get candidate terms from preferred categories
     const candidateTerms = await db
@@ -489,7 +489,7 @@ class AdaptiveContentService {
   ): Promise<AdaptiveRecommendation> {
     // Calculate recommendation score based on multiple factors
     const categoryAffinity =
-      pattern.categoryAffinities.find((ca) => ca.categoryId === term.categoryId)?.affinityScore ||
+      pattern.categoryAffinities.find(ca => ca.categoryId === term.categoryId)?.affinityScore ||
       0.1;
 
     const difficultyMatch = this.calculateDifficultyMatch(
@@ -524,9 +524,9 @@ class AdaptiveContentService {
     _pattern: LearningPattern
   ): AdaptiveRecommendation['recommendationType'] {
     const rand = Math.random();
-    if (rand < 0.4) return 'next_logical';
-    if (rand < 0.7) return 'fill_gap';
-    if (rand < 0.9) return 'explore_new';
+    if (rand < 0.4) {return 'next_logical';}
+    if (rand < 0.7) {return 'fill_gap';}
+    if (rand < 0.9) {return 'explore_new';}
     return 'review_weak';
   }
 
@@ -558,9 +558,9 @@ class AdaptiveContentService {
   private determineOrganizationType(
     pattern: LearningPattern
   ): ContentOrganization['organizationType'] {
-    if (pattern.learningStyle === 'sequential') return 'pathway-optimized';
-    if (pattern.categoryAffinities.length > 3) return 'category-clustered';
-    if (pattern.preferredDifficulty === 'beginner') return 'difficulty-based';
+    if (pattern.learningStyle === 'sequential') {return 'pathway-optimized';}
+    if (pattern.categoryAffinities.length > 3) {return 'category-clustered';}
+    if (pattern.preferredDifficulty === 'beginner') {return 'difficulty-based';}
     return 'interest-driven';
   }
 
@@ -573,9 +573,9 @@ class AdaptiveContentService {
     const sections = [];
 
     if (organizationType === 'category-clustered') {
-      const categories = [...new Set(recommendations.map((r) => r.categoryName))];
+      const categories = [...new Set(recommendations.map(r => r.categoryName))];
       categories.forEach((category, index) => {
-        const categoryTerms = recommendations.filter((r) => r.categoryName === category);
+        const categoryTerms = recommendations.filter(r => r.categoryName === category);
         sections.push({
           sectionId: `category_${index}`,
           title: `${category} Concepts`,

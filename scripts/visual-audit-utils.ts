@@ -65,7 +65,7 @@ export function calculateContrast(color1: ColorInfo, color2: ColorInfo): Contras
  */
 export function calculateLuminance(rgb: { r: number; g: number; b: number }): number {
   const { r, g, b } = rgb;
-  const [rs, gs, bs] = [r, g, b].map((c) => {
+  const [rs, gs, bs] = [r, g, b].map(c => {
     c = c / 255;
     return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
   });
@@ -97,7 +97,7 @@ export async function extractColors(
   background: ColorInfo;
   foreground: ColorInfo;
 }> {
-  const colors = await page.evaluate((sel) => {
+  const colors = await page.evaluate(sel => {
     const element = document.querySelector(sel);
     if (!element) return null;
 
@@ -156,7 +156,7 @@ function parseRgbString(rgbString: string): { r: number; g: number; b: number } 
  * Convert RGB to hex color
  */
 function rgbToHex(rgb: { r: number; g: number; b: number }): string {
-  return `#${[rgb.r, rgb.g, rgb.b].map((x) => x.toString(16).padStart(2, '0')).join('')}`;
+  return `#${[rgb.r, rgb.g, rgb.b].map(x => x.toString(16).padStart(2, '0')).join('')}`;
 }
 
 /**
@@ -251,7 +251,7 @@ export async function waitForNetworkIdle(page: Page, timeout = 3000): Promise<vo
   let pendingRequests = 0;
   let idleTimer: NodeJS.Timeout | null = null;
 
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const checkIdle = () => {
       if (pendingRequests === 0) {
         idleTimer = setTimeout(() => resolve(), 500);
@@ -296,16 +296,16 @@ export async function extractTextHierarchy(page: Page): Promise<{
   links: { text: string; href: string }[];
 }> {
   return await page.evaluate(() => {
-    const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6')).map((h) => ({
+    const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(h => ({
       level: parseInt(h.tagName[1]),
       text: h.textContent?.trim() || '',
     }));
 
     const paragraphs = Array.from(document.querySelectorAll('p'))
-      .map((p) => p.textContent?.trim() || '')
-      .filter((text) => text.length > 0);
+      .map(p => p.textContent?.trim() || '')
+      .filter(text => text.length > 0);
 
-    const links = Array.from(document.querySelectorAll('a[href]')).map((a) => ({
+    const links = Array.from(document.querySelectorAll('a[href]')).map(a => ({
       text: a.textContent?.trim() || '',
       href: (a as HTMLAnchorElement).href,
     }));
@@ -349,7 +349,7 @@ export async function checkAnimationPerformance(page: Page): Promise<{
 
     // Monitor long tasks
     if ('PerformanceObserver' in window) {
-      const observer = new PerformanceObserver((list) => {
+      const observer = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
           if (entry.duration > 50) {
             (window as any).__performanceMetrics.longTasks++;
@@ -392,7 +392,7 @@ export async function measureElementTiming(
     await page.waitForSelector(selector, { state: 'visible', timeout: 10000 });
     const renderTime = Date.now() - startTime;
 
-    const isVisible = await page.evaluate((sel) => {
+    const isVisible = await page.evaluate(sel => {
       const element = document.querySelector(sel);
       if (!element) return false;
 
@@ -423,9 +423,9 @@ export function generatePerformanceSummary(metrics: any[]): string {
 - Time to Interactive: ${(avgTTI / 1000).toFixed(2)}s
 
 ### Performance Distribution
-- Excellent (< 1.8s FCP): ${metrics.filter((m) => m.fcp < 1800).length}
-- Good (1.8s - 3s FCP): ${metrics.filter((m) => m.fcp >= 1800 && m.fcp < 3000).length}
-- Needs Improvement (> 3s FCP): ${metrics.filter((m) => m.fcp >= 3000).length}
+- Excellent (< 1.8s FCP): ${metrics.filter(m => m.fcp < 1800).length}
+- Good (1.8s - 3s FCP): ${metrics.filter(m => m.fcp >= 1800 && m.fcp < 3000).length}
+- Needs Improvement (> 3s FCP): ${metrics.filter(m => m.fcp >= 3000).length}
 `;
 }
 
@@ -471,7 +471,7 @@ export async function createVisualDiffReport(
     <h1>Visual Regression Report</h1>
     ${diffs
       .map(
-        (diff) => `
+        diff => `
         <div class="diff-container">
             <div class="diff-header">
                 <h2>${diff.name}</h2>

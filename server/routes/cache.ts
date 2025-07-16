@@ -16,7 +16,7 @@ router.get('/status', requireAdmin, async (_req, res) => {
 
     const status = {
       totalCacheEntries: cacheEntries.length,
-      cacheEntries: cacheEntries.map((entry) => ({
+      cacheEntries: cacheEntries.map(entry => ({
         fileName: path.basename(entry.filePath),
         fileSizeMB: (entry.fileSize / (1024 * 1024)).toFixed(2),
         termCount: entry.termCount,

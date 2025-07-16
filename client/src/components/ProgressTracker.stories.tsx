@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Check } from 'lucide-react';
-import React from 'react';
 import { Button } from '@/components/ui/button';
 
 // Create a mock query client for stories
@@ -33,7 +32,7 @@ const MockProgressTracker = ({ termId, isLearned: initialIsLearned }: MockProgre
     setIsLoading(true);
 
     // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
     setIsLearned(!isLearned);
     setIsLoading(false);
@@ -89,7 +88,7 @@ const meta: Meta<typeof MockProgressTracker> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="w-full max-w-2xl">
           <Story />
@@ -240,7 +239,7 @@ export const LoadingState: Story = {
         setIsLoading(true);
 
         // Simulate longer API delay to show loading state
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
 
         setIsLearned(!isLearned);
         setIsLoading(false);
@@ -324,7 +323,7 @@ export const ErrorState: Story = {
 
         try {
           // Simulate API delay then error
-          await new Promise((resolve) => setTimeout(resolve, 1000));
+          await new Promise(resolve => setTimeout(resolve, 1000));
           throw new Error('Failed to update progress');
         } catch (_error) {
           alert('Error: Failed to update progress. Please try again.');
@@ -482,13 +481,13 @@ export const MultipleTerms: Story = {
       },
     ];
 
-    const learnedCount = terms.filter((term) => term.isLearned).length;
+    const learnedCount = terms.filter(term => term.isLearned).length;
 
     return (
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Your Learning Progress</h3>
         <div className="grid gap-4">
-          {terms.map((term) => (
+          {terms.map(term => (
             <div key={term.id} className="border rounded-lg overflow-hidden">
               <div className="p-4">
                 <h4 className="font-semibold mb-1">{term.title}</h4>
@@ -531,7 +530,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="w-full max-w-2xl dark">
           <Story />

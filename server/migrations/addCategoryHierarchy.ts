@@ -151,7 +151,7 @@ export async function addCategoryHierarchy(): Promise<void> {
     // First pass: Insert top-level categories
     const categoryMap = new Map<string, string>();
 
-    for (const category of CATEGORY_HIERARCHY.filter((c) => !c.parent)) {
+    for (const category of CATEGORY_HIERARCHY.filter(c => !c.parent)) {
       try {
         const result = await db.execute(sql`
           INSERT INTO categories (name, description, level, display_order, icon_name, color_scheme, is_featured, path)
@@ -179,7 +179,7 @@ export async function addCategoryHierarchy(): Promise<void> {
     }
 
     // Second pass: Insert subcategories
-    for (const category of CATEGORY_HIERARCHY.filter((c) => c.parent)) {
+    for (const category of CATEGORY_HIERARCHY.filter(c => c.parent)) {
       try {
         const parentId = categoryMap.get(category.parent!);
         if (!parentId) {
@@ -322,7 +322,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log('\n✅ Category hierarchy migration completed successfully');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('\n💥 Migration failed:', error);
       process.exit(1);
     });

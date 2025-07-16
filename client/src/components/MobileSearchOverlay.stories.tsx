@@ -11,7 +11,8 @@ const meta: Meta<typeof MobileSearchOverlay> = {
     },
     docs: {
       description: {
-        component: 'Full-screen mobile search overlay with touch-optimized interface, voice search, and filtering capabilities',
+        component:
+          'Full-screen mobile search overlay with touch-optimized interface, voice search, and filtering capabilities',
       },
     },
   },
@@ -28,7 +29,7 @@ type Story = StoryObj<typeof MobileSearchOverlay>;
 export const Default: Story = {
   args: {
     isOpen: true,
-    placeholder: "Search 10,000+ AI/ML terms...",
+    placeholder: 'Search 10,000+ AI/ML terms...',
     showVoiceSearch: true,
   },
 };
@@ -36,8 +37,8 @@ export const Default: Story = {
 export const WithInitialQuery: Story = {
   args: {
     isOpen: true,
-    initialQuery: "neural network",
-    placeholder: "Search 10,000+ AI/ML terms...",
+    initialQuery: 'neural network',
+    placeholder: 'Search 10,000+ AI/ML terms...',
     showVoiceSearch: true,
   },
 };
@@ -46,14 +47,14 @@ export const NoVoiceSearch: Story = {
   args: {
     isOpen: true,
     showVoiceSearch: false,
-    placeholder: "Search AI/ML definitions...",
+    placeholder: 'Search AI/ML definitions...',
   },
 };
 
 export const CustomPlaceholder: Story = {
   args: {
     isOpen: true,
-    placeholder: "What AI concept are you looking for?",
+    placeholder: 'What AI concept are you looking for?',
     showVoiceSearch: true,
   },
 };
@@ -73,13 +74,16 @@ export const WithRecentSearches: Story = {
   },
   beforeEach: () => {
     // Set up mock recent searches in localStorage
-    localStorage.setItem('mobile_recent_searches', JSON.stringify([
-      'neural network',
-      'machine learning',
-      'deep learning',
-      'artificial intelligence',
-      'gradient descent'
-    ]));
+    localStorage.setItem(
+      'mobile_recent_searches',
+      JSON.stringify([
+        'neural network',
+        'machine learning',
+        'deep learning',
+        'artificial intelligence',
+        'gradient descent',
+      ])
+    );
   },
 };
 
@@ -121,7 +125,7 @@ export const DarkMode: Story = {
 export const LoadingState: Story = {
   args: {
     isOpen: true,
-    initialQuery: "loading example",
+    initialQuery: 'loading example',
     showVoiceSearch: true,
   },
   parameters: {
@@ -136,7 +140,7 @@ export const LoadingState: Story = {
 export const NoResults: Story = {
   args: {
     isOpen: true,
-    initialQuery: "xyznoresults",
+    initialQuery: 'xyznoresults',
     showVoiceSearch: true,
   },
   parameters: {

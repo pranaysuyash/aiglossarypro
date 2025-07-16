@@ -155,7 +155,7 @@ export const useWebXR = (): WebXRHook => {
       throw new Error('Immersive VR not supported on this device');
     }
 
-    setSessionState((prev) => ({ ...prev, isLoading: true, error: null }));
+    setSessionState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const xr = (navigator as any).xr;
@@ -187,7 +187,7 @@ export const useWebXR = (): WebXRHook => {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to initialize VR session';
-      setSessionState((prev) => ({
+      setSessionState(prev => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
@@ -204,7 +204,7 @@ export const useWebXR = (): WebXRHook => {
       throw new Error('Immersive AR not supported on this device');
     }
 
-    setSessionState((prev) => ({ ...prev, isLoading: true, error: null }));
+    setSessionState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const xr = (navigator as any).xr;
@@ -236,7 +236,7 @@ export const useWebXR = (): WebXRHook => {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to initialize AR session';
-      setSessionState((prev) => ({
+      setSessionState(prev => ({
         ...prev,
         isLoading: false,
         error: errorMessage,
@@ -253,7 +253,7 @@ export const useWebXR = (): WebXRHook => {
       throw new Error('Inline XR not supported on this device');
     }
 
-    setSessionState((prev) => ({ ...prev, isLoading: true, error: null }));
+    setSessionState(prev => ({ ...prev, isLoading: true, error: null }));
 
     try {
       const xr = (navigator as any).xr;
@@ -280,7 +280,7 @@ export const useWebXR = (): WebXRHook => {
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Failed to initialize inline session';
-      setSessionState((prev) => ({
+      setSessionState(prev => ({
         ...prev,
         isLoading: false,
         error: errorMessage,

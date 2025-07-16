@@ -65,7 +65,7 @@ export function BackgroundTester({ onVariantChange }: BackgroundTesterProps) {
         </CardHeader>
         <CardContent className="space-y-3">
           <div className="grid grid-cols-2 gap-2">
-            {variants.map((variant) => (
+            {variants.map(variant => (
               <Button
                 key={variant.key}
                 variant={currentVariant === variant.key ? 'default' : 'outline'}
@@ -86,7 +86,7 @@ export function BackgroundTester({ onVariantChange }: BackgroundTesterProps) {
               max="1"
               step="0.1"
               value={opacity}
-              onChange={(e) => setOpacity(parseFloat(e.target.value))}
+              onChange={e => setOpacity(parseFloat(e.target.value))}
               className="w-full h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer"
             />
           </div>
@@ -94,11 +94,11 @@ export function BackgroundTester({ onVariantChange }: BackgroundTesterProps) {
           <div className="text-xs text-slate-400">
             Current:{' '}
             <span className="text-white">
-              {variants.find((v) => v.key === currentVariant)?.label}
+              {variants.find(v => v.key === currentVariant)?.label}
             </span>
             <br />
             <span className="text-slate-500">
-              {variants.find((v) => v.key === currentVariant)?.description}
+              {variants.find(v => v.key === currentVariant)?.description}
             </span>
           </div>
         </CardContent>

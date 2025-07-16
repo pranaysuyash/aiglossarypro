@@ -7,12 +7,12 @@
 
 import chalk from 'chalk';
 import 'dotenv/config';
-import { ProductionConfigValidator } from './production-configuration-validator';
-import { productionEmailService } from '../server/services/productionEmailService';
 import { analyticsService } from '../server/config/analytics';
-import { isSentryEnabled, initializeSentry } from '../server/config/sentry';
 import { checkSecurityConfiguration } from '../server/config/security';
+import { initializeSentry, isSentryEnabled } from '../server/config/sentry';
 import { enhancedStorage } from '../server/enhancedStorage';
+import { productionEmailService } from '../server/services/productionEmailService';
+import { ProductionConfigValidator } from './production-configuration-validator';
 
 interface ValidationResult {
   category: string;
@@ -49,14 +49,8 @@ class ComprehensiveProductionValidator {
 
   private async validateConfiguration(): Promise<void> {
     console.log(chalk.blue('🔧 Validating Configuration...'));
-    
-    const criticalVars = [
-      'NODE_ENV',
-      'DATABASE_URL',
-      'SESSION_SECRET',
-      'JWT_SECRET',
-      'BASE_URL',
-    ];
+
+    const criticalVars = ['NODE_ENV', 'DATABASE_URL', 'SESSION_SECRET', 'JWT_SECRET', 'BASE_URL'];
 
     const recommendedVars = [
       'EMAIL_FROM',
@@ -109,7 +103,7 @@ class ComprehensiveProductionValidator {
 
   private async validateDatabase(): Promise<void> {
     console.log(chalk.blue('🗄️  Validating Database...'));
-    
+
     let score = 0;
     const maxScore = 10;
     const details: string[] = [];
@@ -139,7 +133,7 @@ class ComprehensiveProductionValidator {
       const startTime = Date.now();
       await enhancedStorage.checkDatabaseHealth();
       const responseTime = Date.now() - startTime;
-      
+
       if (responseTime < 100) {
         details.push(`✅ Database response time: ${responseTime}ms (excellent)`);
         score += 2;
@@ -161,9 +155,10 @@ class ComprehensiveProductionValidator {
       // Check backup configuration
       details.push('ℹ️  Backup configuration should be verified manually');
       score += 1; // Assume configured for now
-      
     } catch (error) {
-      criticalIssues.push(`Database validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      criticalIssues.push(
+        `Database validation failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
       details.push('❌ Database validation error');
     }
 
@@ -179,7 +174,7 @@ class ComprehensiveProductionValidator {
 
   private async validateEmail(): Promise<void> {
     console.log(chalk.blue('📧 Validating Email Service...'));
-    
+
     let score = 0;
     const maxScore = 8;
     const details: string[] = [];
@@ -187,7 +182,7 @@ class ComprehensiveProductionValidator {
 
     try {
       const emailStatus = productionEmailService.getServiceStatus();
-      
+
       if (emailStatus.available) {
         details.push(`✅ Email service available (${emailStatus.service})`);
         score += 3;
@@ -216,9 +211,10 @@ class ComprehensiveProductionValidator {
       } else {
         details.push('⚠️  Email sender information incomplete');
       }
-
     } catch (error) {
-      details.push(`❌ Email validation error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      details.push(
+        `❌ Email validation error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
     }
 
     this.results.push({
@@ -233,7 +229,7 @@ class ComprehensiveProductionValidator {
 
   private async validateMonitoring(): Promise<void> {
     console.log(chalk.blue('📊 Validating Monitoring & Analytics...'));
-    
+
     let score = 0;
     const maxScore = 10;
     const details: string[] = [];
@@ -300,7 +296,7 @@ class ComprehensiveProductionValidator {
 
   private async validateSecurity(): Promise<void> {
     console.log(chalk.blue('🔒 Validating Security Configuration...'));
-    
+
     const securityCheck = checkSecurityConfiguration();
     let score = 0;
     const maxScore = 10;
@@ -329,7 +325,12 @@ class ComprehensiveProductionValidator {
 
     this.results.push({
       category: 'Security',
-      status: securityCheck.status === 'secure' ? 'pass' : securityCheck.status === 'warnings' ? 'warn' : 'fail',
+      status:
+        securityCheck.status === 'secure'
+          ? 'pass'
+          : securityCheck.status === 'warnings'
+            ? 'warn'
+            : 'fail',
       score,
       maxScore,
       details,
@@ -339,7 +340,7 @@ class ComprehensiveProductionValidator {
 
   private async validatePerformance(): Promise<void> {
     console.log(chalk.blue('⚡ Validating Performance Configuration...'));
-    
+
     let score = 0;
     const maxScore = 8;
     const details: string[] = [];
@@ -354,7 +355,11 @@ class ComprehensiveProductionValidator {
     }
 
     // Check CDN configuration
-    if (process.env.CDN_URL || process.env.BASE_URL?.includes('vercel') || process.env.BASE_URL?.includes('netlify')) {
+    if (
+      process.env.CDN_URL ||
+      process.env.BASE_URL?.includes('vercel') ||
+      process.env.BASE_URL?.includes('netlify')
+    ) {
       details.push('✅ CDN likely configured');
       score += 2;
     } else {
@@ -386,7 +391,7 @@ class ComprehensiveProductionValidator {
 
   private async validateBusiness(): Promise<void> {
     console.log(chalk.blue('💰 Validating Business Configuration...'));
-    
+
     let score = 0;
     const maxScore = 8;
     const details: string[] = [];
@@ -401,11 +406,7 @@ class ComprehensiveProductionValidator {
     }
 
     // Check product configuration
-    const productVars = [
-      'VITE_GUMROAD_PRODUCT_URL',
-      'VITE_GUMROAD_BASE_PRICE',
-      'VITE_PPP_ENABLED',
-    ];
+    const productVars = ['VITE_GUMROAD_PRODUCT_URL', 'VITE_GUMROAD_BASE_PRICE', 'VITE_PPP_ENABLED'];
 
     const configuredProducts = productVars.filter(v => !!process.env[v]);
     if (configuredProducts.length >= 2) {
@@ -459,11 +460,16 @@ class ComprehensiveProductionValidator {
 
     for (const result of this.results) {
       const statusIcon = result.status === 'pass' ? '✅' : result.status === 'warn' ? '⚠️' : '❌';
-      const statusColor = result.status === 'pass' ? 'green' : result.status === 'warn' ? 'yellow' : 'red';
+      const statusColor =
+        result.status === 'pass' ? 'green' : result.status === 'warn' ? 'yellow' : 'red';
       const percentage = Math.round((result.score / result.maxScore) * 100);
-      
-      console.log(chalk[statusColor].bold(`${statusIcon} ${result.category}: ${percentage}% (${result.score}/${result.maxScore})`));
-      
+
+      console.log(
+        chalk[statusColor].bold(
+          `${statusIcon} ${result.category}: ${percentage}% (${result.score}/${result.maxScore})`
+        )
+      );
+
       for (const detail of result.details) {
         console.log(`   ${detail}`);
       }
@@ -474,19 +480,24 @@ class ComprehensiveProductionValidator {
           console.log(chalk.red(`   • ${issue}`));
         }
       }
-      
+
       console.log();
     }
   }
 
   private generateRecommendations(): void {
     const overallPercentage = Math.round((this.overallScore / this.maxPossibleScore) * 100);
-    const criticalIssues = this.results.reduce((total, result) => total + result.criticalIssues.length, 0);
+    const criticalIssues = this.results.reduce(
+      (total, result) => total + result.criticalIssues.length,
+      0
+    );
     const failingCategories = this.results.filter(r => r.status === 'fail').length;
 
     console.log(chalk.blue.bold('📋 Production Readiness Assessment\n'));
-    
-    console.log(`Overall Score: ${overallPercentage}% (${this.overallScore}/${this.maxPossibleScore})`);
+
+    console.log(
+      `Overall Score: ${overallPercentage}% (${this.overallScore}/${this.maxPossibleScore})`
+    );
     console.log(`Critical Issues: ${criticalIssues}`);
     console.log(`Failing Categories: ${failingCategories}`);
 
@@ -511,7 +522,7 @@ class ComprehensiveProductionValidator {
     }
 
     console.log(chalk.blue.bold('\n📝 Next Steps:'));
-    
+
     if (criticalIssues > 0) {
       console.log(chalk.red('1. 🚨 Fix all critical issues listed above'));
       console.log(chalk.yellow('2. Re-run validation: npm run config:validate'));
@@ -560,7 +571,7 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
   process.exit(0);
 }
 
-main().catch((error) => {
+main().catch(error => {
   console.error(chalk.red.bold('\n❌ Validation failed:'), error);
   process.exit(1);
 });

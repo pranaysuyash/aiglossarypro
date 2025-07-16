@@ -62,7 +62,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log('Search optimizations setup complete');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Setup failed:', error);
       process.exit(1);
     });

@@ -79,9 +79,9 @@ export function ContentManagementDashboard() {
     queryKey: ['enhanced-terms', searchQuery],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchQuery) params.append('search', searchQuery);
+      if (searchQuery) {params.append('search', searchQuery);}
       const response = await fetch(`/api/admin/enhanced-terms?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch terms');
+      if (!response.ok) {throw new Error('Failed to fetch terms');}
       return response.json();
     },
   });
@@ -91,7 +91,7 @@ export function ContentManagementDashboard() {
     queryKey: ['content-metrics'],
     queryFn: async () => {
       const response = await fetch('/api/admin/content-metrics');
-      if (!response.ok) throw new Error('Failed to fetch metrics');
+      if (!response.ok) {throw new Error('Failed to fetch metrics');}
       return response.json();
     },
   });
@@ -100,9 +100,9 @@ export function ContentManagementDashboard() {
   const { data: termSections = [] } = useQuery({
     queryKey: ['term-sections', selectedTerm?.id],
     queryFn: async () => {
-      if (!selectedTerm) return [];
+      if (!selectedTerm) {return [];}
       const response = await fetch(`/api/admin/terms/${selectedTerm.id}/sections`);
-      if (!response.ok) throw new Error('Failed to fetch sections');
+      if (!response.ok) {throw new Error('Failed to fetch sections');}
       return response.json();
     },
     enabled: !!selectedTerm,
@@ -112,12 +112,12 @@ export function ContentManagementDashboard() {
   const { data: sectionContent, refetch: refetchContent } = useQuery({
     queryKey: ['section-content', selectedTerm?.id, selectedSection],
     queryFn: async () => {
-      if (!selectedTerm || !selectedSection) return null;
+      if (!selectedTerm || !selectedSection) {return null;}
       const response = await fetch(
         `/api/admin/terms/${selectedTerm.id}/sections/${selectedSection}/content`
       );
       if (!response.ok) {
-        if (response.status === 404) return null;
+        if (response.status === 404) {return null;}
         throw new Error('Failed to fetch content');
       }
       return response.json();
@@ -138,7 +138,7 @@ export function ContentManagementDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
       });
-      if (!response.ok) throw new Error('Failed to generate content');
+      if (!response.ok) {throw new Error('Failed to generate content');}
       return response.json();
     },
     onSuccess: () => {
@@ -149,10 +149,10 @@ export function ContentManagementDashboard() {
       refetchContent();
       queryClient.invalidateQueries({ queryKey: ['content-metrics'] });
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Error',
-        description: `Generation failed: ${error.message}`,
+        description: `Generation failed: ${error?.message}`,
         variant: 'destructive',
       });
     },
@@ -169,7 +169,7 @@ export function ContentManagementDashboard() {
           body: JSON.stringify({ content: params.content }),
         }
       );
-      if (!response.ok) throw new Error('Failed to save content');
+      if (!response.ok) {throw new Error('Failed to save content');}
       return response.json();
     },
     onSuccess: () => {
@@ -178,7 +178,7 @@ export function ContentManagementDashboard() {
   });
 
   const handleGenerateContent = async () => {
-    if (!selectedTerm) return;
+    if (!selectedTerm) {return;}
 
     await generateContent.mutateAsync({
       termId: selectedTerm.id,
@@ -188,7 +188,7 @@ export function ContentManagementDashboard() {
   };
 
   const handleSaveContent = async (content: string) => {
-    if (!selectedTerm) return;
+    if (!selectedTerm) {return;}
 
     await saveContent.mutateAsync({
       termId: selectedTerm.id,
@@ -199,9 +199,9 @@ export function ContentManagementDashboard() {
 
   const getSectionInfo = (sectionName: string) => {
     return (
-      SECTION_DEFINITIONS.find((s) => s.name === sectionName) || {
+      SECTION_DEFINITIONS.find(s => s.name === sectionName) || {
         name: sectionName,
-        label: sectionName.replace(/_/g, ' ').replace(/\b\w/g, (l) => l.toUpperCase()),
+        label: sectionName.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
         priority: 5,
       }
     );
@@ -275,7 +275,7 @@ export function ContentManagementDashboard() {
               <Input
                 placeholder="Search terms..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -346,7 +346,7 @@ export function ContentManagementDashboard() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {SECTION_DEFINITIONS.map((section) => (
+                      {SECTION_DEFINITIONS.map(section => (
                         <SelectItem key={section.name} value={section.name}>
                           <div className="flex items-center justify-between w-full">
                             <span>{section.label}</span>

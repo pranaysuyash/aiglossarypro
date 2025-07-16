@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { BookOpen, FolderOpen, Home } from 'lucide-react';
 import CategoryHierarchy, { createCategoryBreadcrumb } from './CategoryHierarchy';
@@ -10,7 +9,8 @@ const meta: Meta<typeof CategoryHierarchy> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Breadcrumb navigation component for showing hierarchical category structure with icons and responsive design.',
+        component:
+          'Breadcrumb navigation component for showing hierarchical category structure with icons and responsive design.',
       },
     },
   },
@@ -149,7 +149,11 @@ export const CustomIcons: Story = {
     items: [
       { label: 'Home', href: '/app', icon: <Home className="w-4 h-4" /> },
       { label: 'AI Categories', href: '/categories', icon: <FolderOpen className="w-4 h-4" /> },
-      { label: 'Natural Language Processing', href: '/categories/nlp', icon: <BookOpen className="w-4 h-4" /> },
+      {
+        label: 'Natural Language Processing',
+        href: '/categories/nlp',
+        icon: <BookOpen className="w-4 h-4" />,
+      },
       { label: 'BERT Model', isCurrentPage: true, icon: <BookOpen className="w-4 h-4" /> },
     ],
     showIcons: true,
@@ -259,7 +263,7 @@ export const DarkMode: Story = {
     className: 'dark',
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="dark bg-gray-900 p-6 rounded-lg">
         <Story />
       </div>

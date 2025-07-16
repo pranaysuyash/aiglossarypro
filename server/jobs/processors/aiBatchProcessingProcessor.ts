@@ -77,7 +77,7 @@ export async function aiBatchProcessingProcessor(
       });
 
       // Create individual AI generation jobs for each term in the batch
-      const jobPromises = batch.map(async (term) => {
+      const jobPromises = batch.map(async term => {
         try {
           const jobId = await jobQueueManager.addJob(
             JobType.AI_CONTENT_GENERATION,
@@ -108,7 +108,7 @@ export async function aiBatchProcessingProcessor(
         }
       });
 
-      const createdJobIds = (await Promise.all(jobPromises)).filter((id) => id !== null);
+      const createdJobIds = (await Promise.all(jobPromises)).filter(id => id !== null);
 
       // Wait for batch completion with timeout
       const batchTimeout = 300000; // 5 minutes per batch
@@ -116,13 +116,11 @@ export async function aiBatchProcessingProcessor(
 
       while (Date.now() - batchStartTime < batchTimeout) {
         const jobStatuses = await Promise.all(
-          createdJobIds.map((id) =>
-            jobQueueManager.getJobStatus(JobType.AI_CONTENT_GENERATION, id!)
-          )
+          createdJobIds.map(id => jobQueueManager.getJobStatus(JobType.AI_CONTENT_GENERATION, id!))
         );
 
         const completed = jobStatuses.filter(
-          (status) => status && (status.state === 'completed' || status.state === 'failed')
+          status => status && (status.state === 'completed' || status.state === 'failed')
         );
 
         if (completed.length === createdJobIds.length) {
@@ -131,13 +129,13 @@ export async function aiBatchProcessingProcessor(
         }
 
         // Wait before checking again
-        await new Promise((resolve) => setTimeout(resolve, 2000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
 
       // Collect results from completed jobs
       const batchResults = await Promise.all(
-        createdJobIds.map(async (jobId) => {
-          if (!jobId) return null;
+        createdJobIds.map(async jobId => {
+          if (!jobId) {return null;}
 
           const status = await jobQueueManager.getJobStatus(JobType.AI_CONTENT_GENERATION, jobId);
           if (status?.state === 'completed' && status.result) {
@@ -153,8 +151,8 @@ export async function aiBatchProcessingProcessor(
       );
 
       logger.info(`Batch ${batchIndex + 1} completed:`, {
-        processed: batchResults.filter((r) => r !== null).length,
-        failed: batch.length - batchResults.filter((r) => r !== null).length,
+        processed: batchResults.filter(r => r !== null).length,
+        failed: batch.length - batchResults.filter(r => r !== null).length,
         totalCost: result.totalCost,
       });
     }

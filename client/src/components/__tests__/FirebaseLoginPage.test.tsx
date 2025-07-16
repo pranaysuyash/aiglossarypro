@@ -1,9 +1,9 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import FirebaseLoginPage from '../FirebaseLoginPage';
-import { signInWithGoogle, signInWithEmail } from '@/lib/firebase';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { api } from '@/lib/api';
+import { signInWithEmail, signInWithGoogle } from '@/lib/firebase';
+import FirebaseLoginPage from '../FirebaseLoginPage';
 
 // Mock dependencies
 vi.mock('@/lib/firebase', () => ({

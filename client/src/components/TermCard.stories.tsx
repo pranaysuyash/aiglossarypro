@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import type { ITerm } from '@/interfaces/interfaces';
 import TermCard from './TermCard';
@@ -72,7 +71,7 @@ const meta: Meta<typeof TermCard> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-[350px]">
         <Story />
       </div>

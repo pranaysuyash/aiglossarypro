@@ -27,7 +27,7 @@ export class AIChangeDetector {
   async analyzeContentChanges(
     filePath: string,
     newDataSample: any,
-    forceReprocess: boolean = false
+    forceReprocess = false
   ): Promise<ChangeAnalysis> {
     if (forceReprocess) {
       return {
@@ -182,9 +182,9 @@ Consider minor changes:
     let recommendedAction: 'skip' | 'reprocess' | 'partial_update' = 'skip';
     const changedSections: string[] = [];
 
-    if (termsDiff > 0) changedSections.push('terms');
-    if (categoriesDiff > 0) changedSections.push('categories');
-    if (subcategoriesDiff > 0) changedSections.push('subcategories');
+    if (termsDiff > 0) {changedSections.push('terms');}
+    if (categoriesDiff > 0) {changedSections.push('categories');}
+    if (subcategoriesDiff > 0) {changedSections.push('subcategories');}
 
     if (changeScore > 20) {
       recommendedAction = 'reprocess';

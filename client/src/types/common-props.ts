@@ -9,8 +9,8 @@ import type { HTMLAttributes, ReactNode } from 'react';
  * Base props that most components should extend
  */
 export interface BaseComponentProps {
-  className?: string;
-  id?: string;
+  className?: string | undefined;
+  id?: string | undefined;
   children?: ReactNode;
 }
 
@@ -27,7 +27,7 @@ export interface ToggleableProps {
  */
 export interface LoadableProps {
   isLoading?: boolean;
-  loadingText?: string;
+  loadingText?: string | undefined;
 }
 
 /**
@@ -52,14 +52,14 @@ export type StyleVariant = 'default' | 'primary' | 'secondary' | 'outline' | 'gh
  * Props for components with size variants
  */
 export interface SizeProps {
-  size?: SizeVariant;
+  size?: SizeVariant | undefined;
 }
 
 /**
  * Props for components with style variants
  */
 export interface VariantProps {
-  variant?: StyleVariant;
+  variant?: StyleVariant | undefined;
 }
 
 /**
@@ -71,7 +71,7 @@ export interface FormComponentProps<T = any> {
   onSubmit?: (value: T) => void;
   disabled?: boolean;
   required?: boolean;
-  error?: string;
+  error?: string | undefined;
 }
 
 /**
@@ -81,7 +81,7 @@ export interface DataDisplayProps<T = any> {
   data?: T;
   loading?: boolean;
   error?: Error | null;
-  emptyMessage?: string;
+  emptyMessage?: string | undefined;
 }
 
 /**
@@ -100,8 +100,8 @@ export interface CallbackProps {
  * Props for modal/dialog components
  */
 export interface ModalProps extends BaseComponentProps, ToggleableProps {
-  title?: string;
-  description?: string;
+  title?: string | undefined;
+  description?: string | undefined;
   onClose?: () => void;
 }
 
@@ -112,7 +112,7 @@ export interface ListProps<T = any> extends BaseComponentProps {
   items: T[];
   renderItem?: (item: T, index: number) => ReactNode;
   onItemClick?: (item: T, index: number) => void;
-  emptyMessage?: string;
+  emptyMessage?: string | undefined;
 }
 
 /**

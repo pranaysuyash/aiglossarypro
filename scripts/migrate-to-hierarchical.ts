@@ -227,7 +227,7 @@ class HierarchicalMigrator {
       results.push(...batchResults);
 
       // Add small delay to avoid overwhelming the database
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     return results;
@@ -266,7 +266,7 @@ class HierarchicalMigrator {
 
     // Get current sections for this term
     const currentSections = await this.getCurrentSections(term.id);
-    const currentSectionItems = await this.getCurrentSectionItems(currentSections.map((s) => s.id));
+    const currentSectionItems = await this.getCurrentSectionItems(currentSections.map(s => s.id));
     const userProgress = await this.getUserProgress(term.id);
 
     // Create hierarchical structure
@@ -374,7 +374,7 @@ class HierarchicalMigrator {
 
     // Create a map for quick lookups
     const sectionItemsBySection = new Map<string, FlatSectionItem[]>();
-    currentSectionItems.forEach((item) => {
+    currentSectionItems.forEach(item => {
       if (!sectionItemsBySection.has(item.sectionId)) {
         sectionItemsBySection.set(item.sectionId, []);
       }
@@ -385,7 +385,7 @@ class HierarchicalMigrator {
     const processNode = (node: ContentNode, path: string, depth: number, parentPath?: string) => {
       // Find matching current section or create new one
       const existingSection = currentSections.find(
-        (s) =>
+        s =>
           s.name.toLowerCase() === node.name.toLowerCase() ||
           s.name.toLowerCase().includes(node.name.toLowerCase())
       );
@@ -403,7 +403,7 @@ class HierarchicalMigrator {
           contentType: node.contentType || 'markdown',
           metadata: node.metadata || {},
           content: existingSection ? this.aggregateContent(sectionItems) : null,
-          items: sectionItems.map((item) => ({
+          items: sectionItems.map(item => ({
             label: item.label,
             content: item.content,
             contentType: item.contentType,
@@ -449,7 +449,7 @@ class HierarchicalMigrator {
 
     return items
       .sort((a, b) => a.displayOrder - b.displayOrder)
-      .map((item) => {
+      .map(item => {
         if (item.content) {
           return `### ${item.label}\n\n${item.content}`;
         }
@@ -487,8 +487,8 @@ class HierarchicalMigrator {
     const _pathMapping = new Map<string, string>();
 
     // For each old progress record, find the best matching new section
-    oldProgress.forEach((progress) => {
-      const matchingSection = newSections.find((section) =>
+    oldProgress.forEach(progress => {
+      const matchingSection = newSections.find(section =>
         section.sectionData.items?.some(
           (item: any) => item.originalSectionId === progress.sectionId
         )
@@ -533,7 +533,7 @@ class HierarchicalMigrator {
   private async updateUserProgress(progress: UserProgressData[]): Promise<void> {
     // Delete old progress records
     if (progress.length > 0) {
-      const termIds = [...new Set(progress.map((p) => p.termId))];
+      const termIds = [...new Set(progress.map(p => p.termId))];
       for (const termId of termIds) {
         await this.db.execute(sql`DELETE FROM user_progress WHERE term_id = ${termId}`);
       }
@@ -556,11 +556,11 @@ class HierarchicalMigrator {
    * Update enhanced_terms table with hierarchical metadata
    */
   private async updateTermMetadata(termId: string, sections: HierarchicalSection[]): Promise<void> {
-    const hasInteractive = sections.some((s) => s.isInteractive);
-    const hasCodeExamples = sections.some((s) =>
+    const hasInteractive = sections.some(s => s.isInteractive);
+    const hasCodeExamples = sections.some(s =>
       s.sectionData.items?.some((item: any) => item.contentType === 'code')
     );
-    const hasCaseStudies = sections.some((s) => s.sectionName.toLowerCase().includes('case study'));
+    const hasCaseStudies = sections.some(s => s.sectionName.toLowerCase().includes('case study'));
 
     await this.db.execute(
       sql`
@@ -582,7 +582,7 @@ class HierarchicalMigrator {
     console.log('🔍 Verifying migration integrity...');
 
     const totalTerms = results.length;
-    const successfulMigrations = results.filter((r) => r.migrated).length;
+    const successfulMigrations = results.filter(r => r.migrated).length;
     const failedMigrations = totalTerms - successfulMigrations;
 
     console.log(`📊 Migration Results:`);
@@ -642,8 +642,8 @@ class HierarchicalMigrator {
       timestamp: new Date().toISOString(),
       isDryRun: this.isDryRun,
       totalRecords: this.migrationLog.length,
-      successCount: this.migrationLog.filter((l) => l.type === 'success').length,
-      errorCount: this.migrationLog.filter((l) => l.type === 'error').length,
+      successCount: this.migrationLog.filter(l => l.type === 'success').length,
+      errorCount: this.migrationLog.filter(l => l.type === 'error').length,
       logs: this.migrationLog,
     };
 
@@ -675,7 +675,7 @@ async function main() {
       output: process.stdout,
     });
 
-    const answer = await new Promise<string>((resolve) => {
+    const answer = await new Promise<string>(resolve => {
       readline.question('Do you want to continue? (yes/no): ', resolve);
     });
 
@@ -693,7 +693,7 @@ async function main() {
 
 // Run if called directly
 if (require.main === module) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
   });

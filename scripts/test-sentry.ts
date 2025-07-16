@@ -8,15 +8,15 @@
 import chalk from 'chalk';
 import 'dotenv/config';
 import {
-  initializeSentry,
+  addBreadcrumb,
   captureException,
   captureMessage,
-  addBreadcrumb,
-  setUser,
-  setTag,
-  isSentryEnabled,
   flushSentry,
+  initializeSentry,
+  isSentryEnabled,
   Sentry,
+  setTag,
+  setUser,
 } from '../server/config/sentry';
 
 console.log(chalk.blue.bold('🚨 Testing AI Glossary Pro Sentry Configuration\n'));
@@ -25,10 +25,10 @@ async function testSentryConfiguration() {
   try {
     // Initialize Sentry
     initializeSentry();
-    
+
     // Check Sentry status
     const enabled = isSentryEnabled();
-    
+
     console.log(chalk.cyan('🚨 Sentry Service Status:'));
     console.log(`   DSN Configured: ${process.env.SENTRY_DSN ? chalk.green('✓') : chalk.red('✗')}`);
     console.log(`   Environment: ${process.env.NODE_ENV || 'development'}`);
@@ -100,7 +100,7 @@ async function testSentryFeatures() {
         test_data: 'This is test data for Sentry configuration',
       },
     });
-    
+
     if (messageId) {
       console.log(chalk.green(`✓ Message captured with ID: ${messageId}`));
     } else {
@@ -113,7 +113,7 @@ async function testSentryFeatures() {
     testError.stack = `Error: This is a test error for Sentry configuration
     at testSentryFeatures (/test/sentry.ts:123:45)
     at main (/test/sentry.ts:200:12)`;
-    
+
     const exceptionId = captureException(testError, {
       user: {
         id: 'test-user-123',
@@ -133,7 +133,9 @@ async function testSentryFeatures() {
     if (exceptionId) {
       console.log(chalk.green(`✓ Exception captured with ID: ${exceptionId}`));
     } else {
-      console.log(chalk.yellow('⚠️  Exception capture returned undefined (disabled in development)'));
+      console.log(
+        chalk.yellow('⚠️  Exception capture returned undefined (disabled in development)')
+      );
     }
 
     // Test transaction (performance monitoring)
@@ -155,7 +157,7 @@ async function testSentryFeatures() {
     // Flush Sentry data
     console.log(chalk.blue('Flushing Sentry data...'));
     const flushed = await flushSentry(3000);
-    
+
     if (flushed) {
       console.log(chalk.green('✓ Sentry data flushed successfully'));
     } else {
@@ -163,14 +165,18 @@ async function testSentryFeatures() {
     }
 
     console.log(chalk.green.bold('\n🎉 All Sentry features tested successfully!'));
-    
+
     if (isSentryEnabled()) {
       console.log(chalk.blue('📊 Check your Sentry dashboard for test events:'));
-      console.log(chalk.blue(`   Dashboard: ${process.env.SENTRY_DSN?.split('@')[1]?.split('/')[0] || 'sentry.io'}`));
+      console.log(
+        chalk.blue(
+          `   Dashboard: ${process.env.SENTRY_DSN?.split('@')[1]?.split('/')[0] || 'sentry.io'}`
+        )
+      );
     } else {
       console.log(chalk.blue('ℹ️  No events sent (Sentry disabled in development mode)'));
     }
-    
+
     return true;
   } catch (error) {
     console.error(chalk.red('\n❌ Sentry features testing failed:'), error);
@@ -186,7 +192,7 @@ async function testSentryIntegration() {
     console.log(chalk.blue('Testing Express integration simulation...'));
     const expressError = new Error('Express route error simulation');
     expressError.name = 'ValidationError';
-    
+
     captureException(expressError, {
       tags: {
         component: 'express',
@@ -206,7 +212,7 @@ async function testSentryIntegration() {
     console.log(chalk.blue('Testing database error simulation...'));
     const dbError = new Error('Database connection timeout');
     dbError.name = 'DatabaseError';
-    
+
     captureException(dbError, {
       tags: {
         component: 'database',
@@ -234,19 +240,19 @@ async function main() {
   const testFeatures = args.includes('--features') || args.includes('-f');
   const testIntegration = args.includes('--integration') || args.includes('-i');
   const testAll = args.includes('--all') || args.includes('-a');
-  
+
   if (testAll) {
     console.log(chalk.blue('🔄 Running comprehensive Sentry tests...\n'));
-    
+
     const configResult = await testSentryConfiguration();
     if (!configResult) {
       console.log(chalk.red('\n❌ Configuration test failed - skipping other tests'));
       process.exit(1);
     }
-    
+
     const featuresResult = await testSentryFeatures();
     const integrationResult = await testSentryIntegration();
-    
+
     if (configResult && featuresResult && integrationResult) {
       console.log(chalk.green.bold('\n🚀 All Sentry tests passed! Error tracking is ready.'));
     } else {
@@ -276,7 +282,9 @@ if (process.argv.includes('--help') || process.argv.includes('-h')) {
   console.log('  SENTRY_DSN                           # Required: Sentry Data Source Name');
   console.log('  SENTRY_ENVIRONMENT                   # Environment (production, staging, etc.)');
   console.log('  SENTRY_RELEASE                       # Release version');
-  console.log('  NODE_ENV                             # Must be "production" for Sentry to be active\n');
+  console.log(
+    '  NODE_ENV                             # Must be "production" for Sentry to be active\n'
+  );
   console.log('Setup Instructions:');
   console.log('  1. Create account at https://sentry.io');
   console.log('  2. Create new Node.js project');

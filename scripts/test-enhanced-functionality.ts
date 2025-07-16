@@ -32,7 +32,7 @@ async function testEnhancedTermDisplay(page: Page): Promise<TestResult[]> {
     await page.waitForTimeout(2000); // Wait for app to fully load
 
     // Test 1: Check if frontend can access enhanced API
-    const apiResponse = await page.evaluate(async (termId) => {
+    const apiResponse = await page.evaluate(async termId => {
       try {
         const response = await fetch(`/api/enhanced/terms/${termId}`);
         const data = await response.json();
@@ -138,8 +138,8 @@ async function testEnhancedTermDisplay(page: Page): Promise<TestResult[]> {
         // Look for section indicators
         const sectionElements = await page.$$eval(
           '[data-section], .section, .term-section, [class*="section"]',
-          (elements) =>
-            elements.map((el) => ({
+          elements =>
+            elements.map(el => ({
               tag: el.tagName,
               className: el.className,
               id: el.id,
@@ -160,14 +160,14 @@ async function testEnhancedTermDisplay(page: Page): Promise<TestResult[]> {
         // Test 4: Check for interactive elements
         const interactiveElements = await page.$$eval(
           'button, [role="button"], .interactive, [data-interactive], .quiz, .mermaid, code, pre, canvas, svg, [contenteditable], input, textarea, select',
-          (elements) =>
-            elements.map((el) => ({
+          elements =>
+            elements.map(el => ({
               tag: el.tagName,
               className: el.className,
               type: el.getAttribute('type'),
               role: el.getAttribute('role'),
               id: el.id,
-              contentEditable: el.contentEditable,
+              contentEditable: (el as HTMLElement).contentEditable || 'inherit',
             }))
         );
 
@@ -259,7 +259,7 @@ async function testSearchFunctionality(page: Page): Promise<TestResult[]> {
       ];
 
       const foundTerms = searchTerms.filter(
-        (term) =>
+        term =>
           bodyText.toLowerCase().includes(term.toLowerCase()) ||
           pageContent.toLowerCase().includes(term.toLowerCase())
       );
@@ -360,7 +360,7 @@ async function testTermPageFeatures(page: Page, results: TestResult[]) {
     if (sectionsElement) {
       const sectionCount = await page.$$eval(
         '[data-section], .section-item, .content-section',
-        (elements) => elements.length
+        elements => elements.length
       );
 
       results.push({
@@ -371,11 +371,11 @@ async function testTermPageFeatures(page: Page, results: TestResult[]) {
     }
 
     // Test for enhanced metadata display
-    const categories = await page.$$eval('[data-category], .category, .main-category', (elements) =>
-      elements.map((el) => el.textContent?.trim())
+    const categories = await page.$$eval('[data-category], .category, .main-category', elements =>
+      elements.map(el => el.textContent?.trim())
     );
     const hasEnhancedCategories = categories.some(
-      (cat) =>
+      cat =>
         cat && ['Probability Theory', 'Mathematical Functions', 'Fourier Analysis'].includes(cat)
     );
 
@@ -533,7 +533,7 @@ async function testMermaidDiagrams(page: Page, results: TestResult[]) {
         // Check if it's rendered as SVG (indicates successful Mermaid rendering)
         for (const element of elements) {
           const svgContent = await element.$('svg');
-          const hasContent = await element.evaluate((el) => el.textContent?.length > 10);
+          const hasContent = await element.evaluate(el => el.textContent?.length > 10);
 
           if (svgContent || hasContent) {
             mermaidDetails += `Found rendered diagram in ${selector} (${svgContent ? 'SVG' : 'text'}); `;
@@ -555,16 +555,16 @@ async function testMermaidDiagrams(page: Page, results: TestResult[]) {
 
     if (!mermaidFound) {
       // Check for Mermaid source code that should be rendered
-      const mermaidSource = await page.$$eval('code, pre', (elements) =>
+      const mermaidSource = await page.$$eval('code, pre', elements =>
         elements
           .filter(
-            (el) =>
+            el =>
               el.textContent?.includes('graph') ||
               el.textContent?.includes('flowchart') ||
               el.textContent?.includes('sequenceDiagram') ||
               el.className?.includes('mermaid')
           )
-          .map((el) => ({
+          .map(el => ({
             tag: el.tagName,
             className: el.className,
             content: el.textContent?.slice(0, 100),
@@ -598,8 +598,8 @@ async function testCodeExamples(page: Page, results: TestResult[]) {
     // Check for code blocks and syntax highlighting
     const codeElements = await page.$$eval(
       'code, pre, .code-block, .highlight, [class*="language-"]',
-      (elements) =>
-        elements.map((el) => ({
+      elements =>
+        elements.map(el => ({
           tag: el.tagName,
           className: el.className,
           hasContent: el.textContent?.length > 10,
@@ -610,8 +610,8 @@ async function testCodeExamples(page: Page, results: TestResult[]) {
         }))
     );
 
-    const hasCodeExamples = codeElements.filter((el) => el.hasContent).length > 0;
-    const hasSyntaxHighlighting = codeElements.filter((el) => el.hasSyntaxHighlighting).length > 0;
+    const hasCodeExamples = codeElements.filter(el => el.hasContent).length > 0;
+    const hasSyntaxHighlighting = codeElements.filter(el => el.hasSyntaxHighlighting).length > 0;
 
     if (hasCodeExamples) {
       const screenshot = path.join(OUTPUT_DIR, 'screenshots', 'code-examples.png');
@@ -620,7 +620,7 @@ async function testCodeExamples(page: Page, results: TestResult[]) {
       results.push({
         test: 'Code Examples',
         success: true,
-        details: `Found ${codeElements.length} code blocks, ${hasSyntaxHighlighting ? 'with' : 'without'} syntax highlighting. Languages: ${[...new Set(codeElements.map((el) => el.language))].join(', ')}`,
+        details: `Found ${codeElements.length} code blocks, ${hasSyntaxHighlighting ? 'with' : 'without'} syntax highlighting. Languages: ${[...new Set(codeElements.map(el => el.language))].join(', ')}`,
         screenshot,
       });
 
@@ -663,7 +663,7 @@ async function testCodeExamples(page: Page, results: TestResult[]) {
 }
 
 async function generateReport(allResults: TestResult[]) {
-  const successCount = allResults.filter((r) => r.success).length;
+  const successCount = allResults.filter(r => r.success).length;
   const totalCount = allResults.length;
 
   const report = `
@@ -676,7 +676,7 @@ async function generateReport(allResults: TestResult[]) {
 
 ${allResults
   .map(
-    (result) => `
+    result => `
 ### ${result.test}
 - **Status:** ${result.success ? '✅ PASS' : '❌ FAIL'}
 - **Details:** ${result.details}
@@ -700,11 +700,11 @@ The enhanced functionality test covered:
 
 ### Key Findings:
 ${
-  allResults.filter((r) => !r.success).length === 0
+  allResults.filter(r => !r.success).length === 0
     ? '- All tests passed! Enhanced functionality is working correctly.'
     : allResults
-        .filter((r) => !r.success)
-        .map((r) => `- ❌ ${r.test}: ${r.details}`)
+        .filter(r => !r.success)
+        .map(r => `- ❌ ${r.test}: ${r.details}`)
         .join('\n')
 }
 
@@ -752,7 +752,7 @@ async function runEnhancedFunctionalityTest() {
     const _report = await generateReport(allResults);
 
     console.log('\n📋 Test Results Summary:');
-    allResults.forEach((result) => {
+    allResults.forEach(result => {
       console.log(`${result.success ? '✅' : '❌'} ${result.test}: ${result.details}`);
     });
 

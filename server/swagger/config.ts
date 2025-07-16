@@ -32,18 +32,18 @@ Most endpoints require authentication via JWT tokens. Admin endpoints require ad
 - Lifetime updates as the field evolves
 
 ## Support
-- Email: support@aimlglossarypro.com
+- Email: support@aiglossarypro.com
 - Response time: <24 hours
 - 30-day money-back guarantee
       `,
       contact: {
         name: 'AI/ML Glossary Pro Support',
-        email: 'support@aimlglossarypro.com',
-        url: 'https://aimlglossarypro.com',
+        email: 'support@aiglossarypro.com',
+        url: 'https://aiglossarypro.com',
       },
       license: {
         name: 'Proprietary License',
-        url: 'https://aimlglossarypro.com/license',
+        url: 'https://aiglossarypro.com/license',
       },
     },
     servers: [
@@ -52,7 +52,7 @@ Most endpoints require authentication via JWT tokens. Admin endpoints require ad
         description: 'Development server',
       },
       {
-        url: 'https://api.aimlglossarypro.com',
+        url: 'https://api.aiglossarypro.com',
         description: 'Production server',
       },
     ],

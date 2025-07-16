@@ -47,29 +47,29 @@ function SEOMeta({ term }: { term: SampleTerm }) {
     const structuredData = {
       '@context': 'https://schema.org',
       '@type': 'DefinedTerm',
-      'name': term.title,
-      'description': term.definition,
-      'inDefinedTermSet': {
+      name: term.title,
+      description: term.definition,
+      inDefinedTermSet: {
         '@type': 'DefinedTermSet',
-        'name': 'AI Glossary Pro',
-        'description': 'Comprehensive AI and Machine Learning Glossary',
-        'url': window.location.origin
+        name: 'AI Glossary Pro',
+        description: 'Comprehensive AI and Machine Learning Glossary',
+        url: window.location.origin,
       },
-      'termCode': term.id,
-      'url': window.location.href,
-      'sameAs': term.seoMetadata.canonicalUrl,
-      'additionalType': term.category,
-      'audience': {
+      termCode: term.id,
+      url: window.location.href,
+      sameAs: term.seoMetadata.canonicalUrl,
+      additionalType: term.category,
+      audience: {
         '@type': 'Audience',
-        'audienceType': 'AI Professionals, Students, Researchers'
+        audienceType: 'AI Professionals, Students, Researchers',
       },
-      'educationalLevel': term.complexity,
-      'keywords': term.tags,
-      'publisher': {
+      educationalLevel: term.complexity,
+      keywords: term.tags,
+      publisher: {
         '@type': 'Organization',
-        'name': 'AI Glossary Pro',
-        'url': window.location.origin
-      }
+        name: 'AI Glossary Pro',
+        url: window.location.origin,
+      },
     };
 
     const scriptTag = document.createElement('script');
@@ -106,10 +106,10 @@ export default function SampleTerm() {
 
     // Get the sample term by slug
     const foundTerm = getSampleTermBySlug(slug);
-    
+
     if (foundTerm) {
       setTerm(foundTerm);
-      
+
       // Track sample term view for analytics
       console.log('Sample term view:', {
         termId: foundTerm.id,
@@ -117,12 +117,12 @@ export default function SampleTerm() {
         category: foundTerm.category,
         timestamp: new Date().toISOString(),
         referrer: document.referrer,
-        userAgent: navigator.userAgent
+        userAgent: navigator.userAgent,
       });
     } else {
       setTerm(null);
     }
-    
+
     setIsLoading(false);
   }, [slug]);
 
@@ -131,18 +131,19 @@ export default function SampleTerm() {
     console.log('Signup wall triggered from sample term:', {
       termId: term?.id,
       slug: term?.slug,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     });
 
     toast({
       title: '🔓 Unlock 9,990+ More Terms',
-      description: 'Create your free account to access the complete AI/ML glossary with 50 terms daily.',
+      description:
+        'Create your free account to access the complete AI/ML glossary with 50 terms daily.',
       duration: 5000,
     });
 
     // In a real implementation, this would open the signup modal
     // For now, we'll redirect to the signup page
-    window.location.href = '/signup?ref=sample-term&term=' + (term?.slug || '');
+    window.location.href = `/signup?ref=sample-term&term=${  term?.slug || ''}`;
   };
 
   if (isLoading) {
@@ -164,23 +165,24 @@ export default function SampleTerm() {
             Term Not Found
           </h1>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
-            The sample term you're looking for doesn't exist. Check out our available sample terms below.
+            The sample term you're looking for doesn't exist. Check out our available sample terms
+            below.
           </p>
           <div className="space-y-2">
-            <a 
-              href="/sample/neural-network" 
+            <a
+              href="/sample/neural-network"
               className="block text-blue-600 hover:text-blue-700 underline"
             >
               Neural Network
             </a>
-            <a 
-              href="/sample/machine-learning" 
+            <a
+              href="/sample/machine-learning"
               className="block text-blue-600 hover:text-blue-700 underline"
             >
               Machine Learning
             </a>
-            <a 
-              href="/sample/artificial-intelligence" 
+            <a
+              href="/sample/artificial-intelligence"
               className="block text-blue-600 hover:text-blue-700 underline"
             >
               Artificial Intelligence
@@ -194,10 +196,7 @@ export default function SampleTerm() {
   return (
     <>
       <SEOMeta term={term} />
-      <SampleTermPage 
-        term={term} 
-        onSignupWall={handleSignupWall}
-      />
+      <SampleTermPage term={term} onSignupWall={handleSignupWall} />
     </>
   );
 }

@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { FallbackBackground } from './FallbackBackground';
 
@@ -9,9 +8,9 @@ const meta: Meta<typeof FallbackBackground> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Landing page marketing component for the AIGlossaryPro application.'
-      }
-    }
+        component: 'Landing page marketing component for the AIGlossaryPro application.',
+      },
+    },
   },
   tags: ['autodocs'],
   argTypes: {
@@ -23,14 +22,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  
   parameters: {
     docs: {
       description: {
-        story: 'Default FallbackBackground component state.'
-      }
-    }
-  }
+        story: 'Default FallbackBackground component state.',
+      },
+    },
+  },
 };
 
 export const Loading: Story = {
@@ -40,10 +38,10 @@ export const Loading: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'FallbackBackground in loading state.'
-      }
-    }
-  }
+        story: 'FallbackBackground in loading state.',
+      },
+    },
+  },
 };
 
 export const Error: Story = {
@@ -53,8 +51,8 @@ export const Error: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'FallbackBackground displaying error state.'
-      }
-    }
-  }
+        story: 'FallbackBackground displaying error state.',
+      },
+    },
+  },
 };

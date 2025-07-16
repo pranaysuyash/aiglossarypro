@@ -1,24 +1,24 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useAuth } from './useAuth';
 import {
-  GuestSession,
+  getConversionFunnelAnalytics,
+  getConversionSession,
+  getConversionSessionAnalytics,
+  markConversionCompleted,
+  trackConversionEvent,
+} from '../services/conversionTracking';
+import {
   canGuestPreview,
+  type GuestSession,
   getGuestSession,
   getRemainingPreviews,
+  getSessionAnalytics,
   hasReachedPreviewLimit,
   recordCtaClick,
   recordGuestPreview,
   resetGuestSession,
   trackGuestPageView,
-  getSessionAnalytics,
 } from '../utils/guestSession';
-import {
-  trackConversionEvent,
-  getConversionSession,
-  getConversionFunnelAnalytics,
-  getConversionSessionAnalytics,
-  markConversionCompleted,
-} from '../services/conversionTracking';
+import { useAuth } from './useAuth';
 
 export interface GuestPreviewState {
   isGuest: boolean;
@@ -75,59 +75,68 @@ export function useGuestPreview(): GuestPreviewState & GuestPreviewActions {
     }
   }, [isAuthenticated]);
 
-  const recordPreview = useCallback((termId: string): boolean => {
-    if (isAuthenticated || !session) {
-      return true; // Authenticated users can always view
-    }
+  const recordPreview = useCallback(
+    (termId: string): boolean => {
+      if (isAuthenticated || !session) {
+        return true; // Authenticated users can always view
+      }
 
-    if (!canGuestPreview(session)) {
-      // Track that user hit the limit
+      if (!canGuestPreview(session)) {
+        // Track that user hit the limit
+        trackConversionEvent({
+          eventType: 'guest_cta_click',
+          termId,
+          metadata: { limitReached: true, action: 'view_attempt' },
+        });
+        return false;
+      }
+
+      const updatedSession = recordGuestPreview(termId);
+      setSession(updatedSession);
+
+      // Track the preview event for conversion analysis
+      trackConversionEvent({
+        eventType: 'guest_view',
+        termId,
+        metadata: {
+          previewNumber: updatedSession.previewsUsed,
+          remainingPreviews: updatedSession.previewsLimit - updatedSession.previewsUsed,
+        },
+      });
+
+      return true;
+    },
+    [isAuthenticated, session]
+  );
+
+  const recordCta = useCallback(
+    (ctaType: string) => {
+      recordCtaClick(ctaType);
+
+      // Track conversion event
       trackConversionEvent({
         eventType: 'guest_cta_click',
-        termId,
-        metadata: { limitReached: true, action: 'view_attempt' },
+        ctaType,
+        metadata: {
+          hasReachedLimit: hasReachedPreviewLimit(),
+          previewsUsed: session?.previewsUsed || 0,
+        },
       });
-      return false;
-    }
 
-    const updatedSession = recordGuestPreview(termId);
-    setSession(updatedSession);
-
-    // Track the preview event for conversion analysis
-    trackConversionEvent({
-      eventType: 'guest_view',
-      termId,
-      metadata: {
-        previewNumber: updatedSession.previewsUsed,
-        remainingPreviews: updatedSession.previewsLimit - updatedSession.previewsUsed,
-      },
-    });
-
-    return true;
-  }, [isAuthenticated, session]);
-
-  const recordCta = useCallback((ctaType: string) => {
-    recordCtaClick(ctaType);
-    
-    // Track conversion event
-    trackConversionEvent({
-      eventType: 'guest_cta_click',
-      ctaType,
-      metadata: {
-        hasReachedLimit: hasReachedPreviewLimit(),
-        previewsUsed: session?.previewsUsed || 0,
-      },
-    });
-    
-    refreshSession();
-  }, [refreshSession, session]);
-
-  const trackPageView = useCallback((page: string) => {
-    if (!isAuthenticated) {
-      trackGuestPageView(page);
       refreshSession();
-    }
-  }, [isAuthenticated, refreshSession]);
+    },
+    [refreshSession, session]
+  );
+
+  const trackPageView = useCallback(
+    (page: string) => {
+      if (!isAuthenticated) {
+        trackGuestPageView(page);
+        refreshSession();
+      }
+    },
+    [isAuthenticated, refreshSession]
+  );
 
   const resetSession = useCallback(() => {
     resetGuestSession();
@@ -166,19 +175,19 @@ export function useGuestPreview(): GuestPreviewState & GuestPreviewActions {
 export function useTermPreview(termId?: string) {
   const { isAuthenticated } = useAuth();
   const guestPreview = useGuestPreview();
-  
+
   const canViewTerm = useCallback(() => {
-    if (!termId) return false;
-    
+    if (!termId) {return false;}
+
     if (isAuthenticated) {
       return true; // Authenticated users handled by existing access control
     }
-    
+
     // Check if guest has already viewed this term
     if (guestPreview.session?.viewedTerms.includes(termId)) {
       return true; // Already viewed, allow access
     }
-    
+
     return guestPreview.canPreview;
   }, [termId, isAuthenticated, guestPreview.canPreview, guestPreview.session]);
 
@@ -186,7 +195,7 @@ export function useTermPreview(termId?: string) {
     if (!termId || isAuthenticated) {
       return true;
     }
-    
+
     return guestPreview.recordPreview(termId);
   }, [termId, isAuthenticated, guestPreview]);
 
@@ -207,21 +216,21 @@ export function useGuestConversion() {
   const guestPreview = useGuestPreview();
 
   const getConversionLikelihood = useCallback(() => {
-    if (isAuthenticated) return 0; // Already converted
-    
+    if (isAuthenticated) {return 0;} // Already converted
+
     const sessionAnalytics = getConversionSessionAnalytics();
     return sessionAnalytics.conversionLikelihood;
   }, [isAuthenticated]);
 
   const getFunnelAnalytics = useCallback(() => {
-    if (isAuthenticated) return null;
-    
+    if (isAuthenticated) {return null;}
+
     return getConversionFunnelAnalytics();
   }, [isAuthenticated]);
 
   const getSessionAnalytics = useCallback(() => {
-    if (isAuthenticated) return null;
-    
+    if (isAuthenticated) {return null;}
+
     return getConversionSessionAnalytics();
   }, [isAuthenticated]);
 
@@ -231,36 +240,39 @@ export function useGuestConversion() {
   }, [getSessionAnalytics]);
 
   const shouldShowAggresiveCta = useCallback(() => {
-    if (isAuthenticated) return false;
-    
+    if (isAuthenticated) {return false;}
+
     const sessionAnalytics = getSessionAnalytics();
-    return guestPreview.hasReachedLimit || 
-           sessionAnalytics?.segmentType === 'high_intent' ||
-           sessionAnalytics?.conversionLikelihood >= 60;
+    return (
+      guestPreview.hasReachedLimit ||
+      sessionAnalytics?.segmentType === 'high_intent' ||
+      sessionAnalytics?.conversionLikelihood >= 60
+    );
   }, [isAuthenticated, guestPreview.hasReachedLimit, getSessionAnalytics]);
 
   const getRecommendedCta = useCallback(() => {
-    if (isAuthenticated) return null;
-    
+    if (isAuthenticated) {return null;}
+
     const funnelAnalytics = getFunnelAnalytics();
     const sessionAnalytics = getSessionAnalytics();
-    
+
     if (guestPreview.hasReachedLimit) {
       return 'unlock_more_terms';
     }
-    
+
     if (sessionAnalytics?.segmentType === 'high_intent') {
       return 'premium_offer';
     }
-    
+
     if (funnelAnalytics?.currentStep === 'preview' && sessionAnalytics?.pageViews >= 2) {
       return 'engaged_user_offer';
     }
-    
-    if (sessionAnalytics?.sessionDuration > 5 * 60 * 1000) { // 5 minutes
+
+    if (sessionAnalytics?.sessionDuration > 5 * 60 * 1000) {
+      // 5 minutes
       return 'time_based_offer';
     }
-    
+
     return 'general_signup';
   }, [isAuthenticated, guestPreview, getFunnelAnalytics, getSessionAnalytics]);
 
@@ -290,7 +302,7 @@ export function useGuestConversion() {
  */
 export function useGuestPageTracking() {
   const { trackPageView } = useGuestPreview();
-  
+
   useEffect(() => {
     trackPageView(window.location.pathname);
   }, [trackPageView]);

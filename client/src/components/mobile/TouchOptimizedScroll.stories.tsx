@@ -1,5 +1,4 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import TouchOptimizedScroll from './TouchOptimizedScroll';
 
 const meta = {
@@ -28,6 +27,6 @@ export const Default: Story = {
 
 export const WithProps: Story = {
   args: {
-    children: "Scrollable content"
+    children: 'Scrollable content',
   },
 };

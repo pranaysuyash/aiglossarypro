@@ -137,7 +137,7 @@ describe('Database Storage Operations', () => {
 
       expect(Array.isArray(results)).toBe(true);
       // Should find our test term
-      const foundTerm = results.find((t) => t.name === testTerm.name);
+      const foundTerm = results.find(t => t.name === testTerm.name);
       expect(foundTerm).toBeDefined();
     });
   });
@@ -149,7 +149,7 @@ describe('Database Storage Operations', () => {
       expect(Array.isArray(categories)).toBe(true);
       expect(categories.length).toBeGreaterThan(0);
 
-      const testCat = categories.find((c) => c.name === testCategory.name);
+      const testCat = categories.find(c => c.name === testCategory.name);
       expect(testCat).toBeDefined();
     });
 
@@ -157,7 +157,7 @@ describe('Database Storage Operations', () => {
       const terms = await storage.getTermsByCategory(categoryId);
 
       expect(Array.isArray(terms)).toBe(true);
-      const testTermInCategory = terms.find((t) => t.name === testTerm.name);
+      const testTermInCategory = terms.find(t => t.name === testTerm.name);
       expect(testTermInCategory).toBeDefined();
     });
   });
@@ -168,13 +168,13 @@ describe('Database Storage Operations', () => {
       await storage.addFavorite(testUser.id, termId);
 
       const favorites = await storage.getFavorites(testUser.id);
-      expect(favorites.some((f) => f.id === termId)).toBe(true);
+      expect(favorites.some(f => f.id === termId)).toBe(true);
 
       // Remove favorite
       await storage.removeFavorite(testUser.id, termId);
 
       const favoritesAfterRemoval = await storage.getFavorites(testUser.id);
-      expect(favoritesAfterRemoval.some((f) => f.id === termId)).toBe(false);
+      expect(favoritesAfterRemoval.some(f => f.id === termId)).toBe(false);
     });
 
     it('should handle duplicate favorite additions gracefully', async () => {
@@ -183,7 +183,7 @@ describe('Database Storage Operations', () => {
       await storage.addFavorite(testUser.id, termId);
 
       const favorites = await storage.getFavorites(testUser.id);
-      const favoriteCount = favorites.filter((f) => f.id === termId).length;
+      const favoriteCount = favorites.filter(f => f.id === termId).length;
       expect(favoriteCount).toBe(1); // Should only have one instance
 
       // Clean up

@@ -3,20 +3,20 @@
  */
 
 import {
-  getGuestSession,
-  saveGuestSession,
   canGuestPreview,
-  recordGuestPreview,
+  getGuestSession,
   getRemainingPreviews,
-  hasReachedPreviewLimit,
-  resetGuestSession,
   getSessionAnalytics,
+  hasReachedPreviewLimit,
+  recordGuestPreview,
+  resetGuestSession,
+  saveGuestSession,
 } from '../guestSession';
 
 // Mock localStorage
 const mockLocalStorage = (() => {
   let store: Record<string, string> = {};
-  
+
   return {
     getItem: jest.fn((key: string) => store[key] || null),
     setItem: jest.fn((key: string, value: string) => {
@@ -46,13 +46,13 @@ Object.defineProperty(window, 'location', {
 describe('Guest Session Management', () => {
   beforeEach(() => {
     mockLocalStorage.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   describe('getGuestSession', () => {
     it('creates a new session when none exists', () => {
       const session = getGuestSession();
-      
+
       expect(session).toBeDefined();
       expect(session.previewsUsed).toBe(0);
       expect(session.previewsLimit).toBe(2);
@@ -76,9 +76,9 @@ describe('Guest Session Management', () => {
           ctaClicks: 0,
         },
       };
-      
+
       mockLocalStorage.setItem('aiglossary_guest_session', JSON.stringify(existingSession));
-      
+
       const session = getGuestSession();
       expect(session.sessionId).toBe('test-session');
       expect(session.previewsUsed).toBe(1);
@@ -91,8 +91,8 @@ describe('Guest Session Management', () => {
         previewsLimit: 2,
         viewedTerms: ['term1'],
         sessionId: 'expired-session',
-        firstVisit: Date.now() - (25 * 60 * 60 * 1000), // 25 hours ago
-        lastActivity: Date.now() - (24 * 60 * 60 * 1000), // 24 hours ago
+        firstVisit: Date.now() - 25 * 60 * 60 * 1000, // 25 hours ago
+        lastActivity: Date.now() - 24 * 60 * 60 * 1000, // 24 hours ago
         conversionTracking: {
           landingPage: '/old-path',
           timeOnSite: 1000,
@@ -100,9 +100,9 @@ describe('Guest Session Management', () => {
           ctaClicks: 0,
         },
       };
-      
+
       mockLocalStorage.setItem('aiglossary_guest_session', JSON.stringify(expiredSession));
-      
+
       const session = getGuestSession();
       expect(session.sessionId).not.toBe('expired-session');
       expect(session.previewsUsed).toBe(0);
@@ -127,7 +127,7 @@ describe('Guest Session Management', () => {
     it('records new term preview correctly', () => {
       resetGuestSession();
       const updatedSession = recordGuestPreview('term1');
-      
+
       expect(updatedSession.previewsUsed).toBe(1);
       expect(updatedSession.viewedTerms).toContain('term1');
       expect(updatedSession.conversionTracking.termsViewed).toBe(1);
@@ -137,7 +137,7 @@ describe('Guest Session Management', () => {
       resetGuestSession();
       recordGuestPreview('term1');
       const updatedSession = recordGuestPreview('term1'); // Same term again
-      
+
       expect(updatedSession.previewsUsed).toBe(1); // Should not increment
       expect(updatedSession.viewedTerms).toEqual(['term1']);
     });
@@ -146,7 +146,7 @@ describe('Guest Session Management', () => {
       resetGuestSession();
       recordGuestPreview('term1');
       const updatedSession = recordGuestPreview('term2');
-      
+
       expect(updatedSession.previewsUsed).toBe(2);
       expect(updatedSession.viewedTerms).toEqual(['term1', 'term2']);
     });
@@ -156,10 +156,10 @@ describe('Guest Session Management', () => {
     it('returns correct remaining previews', () => {
       resetGuestSession();
       expect(getRemainingPreviews()).toBe(2);
-      
+
       recordGuestPreview('term1');
       expect(getRemainingPreviews()).toBe(1);
-      
+
       recordGuestPreview('term2');
       expect(getRemainingPreviews()).toBe(0);
     });
@@ -169,7 +169,7 @@ describe('Guest Session Management', () => {
     it('returns false when previews are available', () => {
       resetGuestSession();
       expect(hasReachedPreviewLimit()).toBe(false);
-      
+
       recordGuestPreview('term1');
       expect(hasReachedPreviewLimit()).toBe(false);
     });
@@ -187,9 +187,9 @@ describe('Guest Session Management', () => {
       resetGuestSession();
       recordGuestPreview('term1');
       recordGuestPreview('term2');
-      
+
       const analytics = getSessionAnalytics();
-      
+
       expect(analytics.previewsUsed).toBe(2);
       expect(analytics.hasReachedLimit).toBe(true);
       expect(analytics.termsViewed).toBe(2);
@@ -201,7 +201,7 @@ describe('Guest Session Management', () => {
       // Simulate time passing
       session.lastActivity = session.firstVisit + 60000; // 1 minute later
       saveGuestSession(session);
-      
+
       const analytics = getSessionAnalytics();
       expect(analytics.timeOnSite).toBeGreaterThan(0);
     });
@@ -211,9 +211,9 @@ describe('Guest Session Management', () => {
     it('clears session from localStorage', () => {
       const session = getGuestSession();
       recordGuestPreview('term1');
-      
+
       resetGuestSession();
-      
+
       expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('aiglossary_guest_session');
     });
   });
@@ -222,12 +222,12 @@ describe('Guest Session Management', () => {
 describe('Guest Session Edge Cases', () => {
   beforeEach(() => {
     mockLocalStorage.clear();
-    jest.clearAllMocks();
+    vi.clearAllMocks();
   });
 
   it('handles corrupted localStorage data gracefully', () => {
     mockLocalStorage.setItem('aiglossary_guest_session', 'invalid-json');
-    
+
     const session = getGuestSession();
     expect(session).toBeDefined();
     expect(session.previewsUsed).toBe(0);
@@ -237,23 +237,23 @@ describe('Guest Session Edge Cases', () => {
     mockLocalStorage.setItem.mockImplementation(() => {
       throw new Error('Storage quota exceeded');
     });
-    
+
     const session = getGuestSession();
     expect(session).toBeDefined();
-    
+
     // Should not throw when saving fails
     expect(() => saveGuestSession(session)).not.toThrow();
   });
 
   it('handles missing window object gracefully', () => {
     const originalWindow = global.window;
-    
+
     // @ts-ignore
     delete global.window;
-    
+
     const session = getGuestSession();
     expect(session).toBeDefined();
-    
+
     global.window = originalWindow;
   });
 });

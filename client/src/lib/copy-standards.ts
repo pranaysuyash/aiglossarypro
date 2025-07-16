@@ -311,20 +311,24 @@ export const a11yLabels = {
 
 // Utility function to get consistent error message
 export function getErrorMessage(error: unknown): string {
-  if (typeof error === 'string') return error;
-  if (error instanceof Error) return error.message;
+  if (typeof error === 'string') {return error;}
+  if (error instanceof Error) {return error.message;}
   return errorMessages.generic;
 }
 
 // Utility function to format validation errors
-export function formatValidationError(field: string, type: string, value?: string | number): string {
+export function formatValidationError(
+  field: string,
+  type: string,
+  value?: string | number
+): string {
   switch (type) {
     case 'required':
       return errorMessages.validation.required(field);
     case 'tooShort':
-      return errorMessages.validation.tooShort(field, value);
+      return errorMessages.validation.tooShort(field, Number(value) || 0);
     case 'tooLong':
-      return errorMessages.validation.tooLong(field, value);
+      return errorMessages.validation.tooLong(field, Number(value) || 0);
     case 'invalidFormat':
       return errorMessages.validation.invalidFormat(field);
     default:

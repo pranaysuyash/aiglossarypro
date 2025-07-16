@@ -117,18 +117,18 @@ class AIService {
     setInterval(() => this.savePersistentCache(), 5 * 60 * 1000);
   }
 
-  private checkRateLimit(identifier: string = 'default'): boolean {
+  private checkRateLimit(identifier = 'default'): boolean {
     const now = Date.now();
     const requests = this.rateLimiter.get(identifier) || [];
 
     // Clean old requests
     const recentRequests = requests.filter(
-      (timestamp) => now - timestamp < 24 * 60 * 60 * 1000 // Keep last 24 hours
+      timestamp => now - timestamp < 24 * 60 * 60 * 1000 // Keep last 24 hours
     );
 
     // Check limits
-    const lastMinute = recentRequests.filter((ts) => now - ts < 60 * 1000).length;
-    const lastHour = recentRequests.filter((ts) => now - ts < 60 * 60 * 1000).length;
+    const lastMinute = recentRequests.filter(ts => now - ts < 60 * 1000).length;
+    const lastHour = recentRequests.filter(ts => now - ts < 60 * 60 * 1000).length;
     const lastDay = recentRequests.length;
 
     if (
@@ -199,7 +199,7 @@ class AIService {
 
   private calculateCost(model: string, inputTokens: number, outputTokens: number): number {
     const costs = this.modelConfig.costs[model as keyof typeof this.modelConfig.costs];
-    if (!costs) return 0;
+    if (!costs) {return 0;}
 
     return (inputTokens / 1000) * costs.input + (outputTokens / 1000) * costs.output;
   }
@@ -289,7 +289,7 @@ class AIService {
         logger.info(`AI operation attempt ${attempt} failed, retrying in ${delay}ms:`, {
           error: errorMessage,
         });
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
 
@@ -299,8 +299,8 @@ class AIService {
   // Smart OpenAI call with cost optimization and model fallback
   private async callOpenAIWithRetry(
     prompt: string,
-    systemPrompt: string = 'You are an AI/ML educational content assistant.',
-    attempt: number = 0
+    systemPrompt = 'You are an AI/ML educational content assistant.',
+    attempt = 0
   ): Promise<string> {
     const model =
       attempt < this.MAX_RETRIES ? this.modelConfig.primary : this.modelConfig.secondary;
@@ -328,7 +328,7 @@ class AIService {
         logger.info(
           `OpenAI call attempt ${attempt + 1} failed, retrying with ${attempt >= 1 ? this.modelConfig.secondary : this.modelConfig.primary} in ${delay}ms`
         );
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise(resolve => setTimeout(resolve, delay));
         return this.callOpenAIWithRetry(prompt, systemPrompt, attempt + 1);
       }
       throw error;
@@ -588,7 +588,7 @@ Your definitions will be marked as AI-generated and subject to expert review. Pr
   async semanticSearch(
     query: string,
     terms: ITerm[],
-    limit: number = 10,
+    limit = 10,
     userId?: string
   ): Promise<AISearchResponse> {
     const cacheKey = `search:${query}:${limit}:${terms.length}`;
@@ -774,7 +774,7 @@ Focus on accuracy, clarity, and practical understanding.
     categories: ICategory[],
     focusCategory?: string
   ): string {
-    const categoryNames = categories.map((c) => c.name).join(', ');
+    const categoryNames = categories.map(c => c.name).join(', ');
     const sampleTerms = existingTerms.slice(0, 20).join(', ');
 
     return `
@@ -809,7 +809,7 @@ Return a JSON object with this structure:
     definition: string,
     categories: ICategory[]
   ): string {
-    const categoryNames = categories.map((c) => c.name).join(', ');
+    const categoryNames = categories.map(c => c.name).join(', ');
 
     return `
 Categorize the following AI/ML term into the most appropriate category:
@@ -833,7 +833,7 @@ Choose the category that best represents the primary focus of this term.
 
   private buildSemanticSearchPrompt(query: string, terms: ITerm[], limit: number): string {
     const termSummaries = terms
-      .map((t) => `${t.id}: ${t.name} - ${t.shortDefinition || t.definition.substring(0, 100)}`)
+      .map(t => `${t.id}: ${t.name} - ${t.shortDefinition || t.definition.substring(0, 100)}`)
       .join('\n');
 
     return `
@@ -997,13 +997,13 @@ Keep the core meaning intact while enhancing clarity and usefulness.
     await this.savePersistentCache();
   }
 
-  getRateLimitStatus(identifier: string = 'default'): object {
+  getRateLimitStatus(identifier = 'default'): object {
     const requests = this.rateLimiter.get(identifier) || [];
     const now = Date.now();
 
     return {
-      requestsLastMinute: requests.filter((ts) => now - ts < 60 * 1000).length,
-      requestsLastHour: requests.filter((ts) => now - ts < 60 * 60 * 1000).length,
+      requestsLastMinute: requests.filter(ts => now - ts < 60 * 1000).length,
+      requestsLastHour: requests.filter(ts => now - ts < 60 * 60 * 1000).length,
       requestsLastDay: requests.length,
       limits: this.rateLimitConfig,
     };

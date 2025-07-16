@@ -99,7 +99,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log('🎉 Clean data import successful!');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('💥 Clean data import failed:', error);
       process.exit(1);
     });

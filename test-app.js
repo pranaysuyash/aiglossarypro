@@ -9,12 +9,12 @@ async function testApp() {
   console.log('🔍 Testing app loading...');
 
   // Listen for console logs
-  page.on('console', (msg) => {
+  page.on('console', msg => {
     console.log(`Browser ${msg.type()}: ${msg.text()}`);
   });
 
   // Listen for errors
-  page.on('pageerror', (error) => {
+  page.on('pageerror', error => {
     console.error('❌ Page error:', error.message);
   });
 

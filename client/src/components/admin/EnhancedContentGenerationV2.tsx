@@ -243,11 +243,11 @@ export function EnhancedContentGenerationV2() {
     queryKey: ['terms', searchTerm, filterCategory],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (searchTerm) params.append('search', searchTerm);
-      if (filterCategory !== 'all') params.append('category', filterCategory);
+      if (searchTerm) {params.append('search', searchTerm);}
+      if (filterCategory !== 'all') {params.append('category', filterCategory);}
 
       const response = await fetch(`/api/terms?${params.toString()}`);
-      if (!response.ok) throw new Error('Failed to fetch terms');
+      if (!response.ok) {throw new Error('Failed to fetch terms');}
       return response.json();
     },
   });
@@ -257,7 +257,7 @@ export function EnhancedContentGenerationV2() {
     queryKey: ['content-templates'],
     queryFn: async () => {
       const response = await fetch('/api/admin/templates');
-      if (!response.ok) throw new Error('Failed to fetch templates');
+      if (!response.ok) {throw new Error('Failed to fetch templates');}
       return response.json();
     },
   });
@@ -267,7 +267,7 @@ export function EnhancedContentGenerationV2() {
     queryKey: ['content-generation-analytics'],
     queryFn: async () => {
       const response = await fetch('/api/admin/analytics/content-generation');
-      if (!response.ok) throw new Error('Failed to fetch analytics');
+      if (!response.ok) {throw new Error('Failed to fetch analytics');}
       return response.json();
     },
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -277,7 +277,7 @@ export function EnhancedContentGenerationV2() {
   const { data: costEstimate, isLoading: isLoadingCost } = useQuery({
     queryKey: ['cost-estimate', selectedModel, maxTokens, selectedSection],
     queryFn: async () => {
-      if (!selectedSection || !selectedModel) return null;
+      if (!selectedSection || !selectedModel) {return null;}
 
       const response = await fetch('/api/admin/cost-estimate', {
         method: 'POST',
@@ -289,7 +289,7 @@ export function EnhancedContentGenerationV2() {
           batchMode,
         }),
       });
-      if (!response.ok) throw new Error('Failed to fetch cost estimate');
+      if (!response.ok) {throw new Error('Failed to fetch cost estimate');}
       return response.json();
     },
     enabled: !!(selectedSection && selectedModel),
@@ -303,7 +303,7 @@ export function EnhancedContentGenerationV2() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
       });
-      if (!response.ok) throw new Error('Failed to generate content');
+      if (!response.ok) {throw new Error('Failed to generate content');}
       return response.json();
     },
     onSuccess: (data: EnhancedGenerationResponse) => {
@@ -326,10 +326,10 @@ export function EnhancedContentGenerationV2() {
         });
       }
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Generation Error',
-        description: error instanceof Error ? error.message : 'Failed to generate content',
+        description: error instanceof Error ? error?.message : 'Failed to generate content',
         variant: 'destructive',
       });
     },
@@ -343,7 +343,7 @@ export function EnhancedContentGenerationV2() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(template),
       });
-      if (!response.ok) throw new Error('Failed to save template');
+      if (!response.ok) {throw new Error('Failed to save template');}
       return response.json();
     },
     onSuccess: () => {
@@ -478,12 +478,12 @@ export function EnhancedContentGenerationV2() {
                         id="term-search"
                         placeholder="Search terms..."
                         value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
+                        onChange={e => setSearchTerm(e.target.value)}
                         className="mb-2"
                       />
                       <Select
                         value={selectedTerm?.id || ''}
-                        onValueChange={(value) => {
+                        onValueChange={value => {
                           const term = termsData?.data?.find((t: any) => t.id === value);
                           setSelectedTerm(term || null);
                         }}
@@ -508,7 +508,7 @@ export function EnhancedContentGenerationV2() {
                           <SelectValue placeholder="Choose a section..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {CONTENT_CATEGORIES.map((category) => (
+                          {CONTENT_CATEGORIES.map(category => (
                             <SelectItem key={category.id} value={category.id}>
                               <div className="flex items-center space-x-2">
                                 <Badge variant="outline" className={category.color}>
@@ -527,7 +527,7 @@ export function EnhancedContentGenerationV2() {
                   <div>
                     <Label>AI Model Selection</Label>
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-2">
-                      {ENHANCED_MODEL_CONFIGURATIONS.map((model) => (
+                      {ENHANCED_MODEL_CONFIGURATIONS.map(model => (
                         <Card
                           key={model.id}
                           className={`cursor-pointer transition-all hover:shadow-md ${
@@ -594,7 +594,7 @@ export function EnhancedContentGenerationV2() {
                           <Label>Temperature: {temperature}</Label>
                           <Slider
                             value={[temperature]}
-                            onValueChange={(value) => setTemperature(value[0])}
+                            onValueChange={value => setTemperature(value[0])}
                             max={2}
                             min={0}
                             step={0.1}
@@ -605,7 +605,7 @@ export function EnhancedContentGenerationV2() {
                           <Label>Max Tokens: {maxTokens}</Label>
                           <Slider
                             value={[maxTokens]}
-                            onValueChange={(value) => setMaxTokens(value[0])}
+                            onValueChange={value => setMaxTokens(value[0])}
                             max={4000}
                             min={100}
                             step={100}
@@ -618,7 +618,7 @@ export function EnhancedContentGenerationV2() {
                         <Label>Quality Threshold: {qualityThreshold}/10</Label>
                         <Slider
                           value={[qualityThreshold]}
-                          onValueChange={(value) => setQualityThreshold(value[0])}
+                          onValueChange={value => setQualityThreshold(value[0])}
                           max={10}
                           min={1}
                           step={1}
@@ -669,7 +669,7 @@ export function EnhancedContentGenerationV2() {
                         <Label>Custom Prompt (Optional)</Label>
                         <Textarea
                           value={customPrompt}
-                          onChange={(e) => setCustomPrompt(e.target.value)}
+                          onChange={e => setCustomPrompt(e.target.value)}
                           placeholder="Override default prompt template..."
                           className="mt-2"
                         />

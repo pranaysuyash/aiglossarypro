@@ -213,7 +213,7 @@ export async function setupMultiAuth(app: Express) {
 
     // Check if req.logout exists (Passport.js method)
     if (typeof req.logout === 'function') {
-      req.logout((err) => {
+      req.logout(err => {
         if (err) {
           log.error('Logout error', { error: err.message });
           return res.status(500).json({ success: false, message: 'Logout failed' });
@@ -318,7 +318,7 @@ export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
 export function getUserInfo(
   req: Request
 ): { id: string; email: string; name: string; provider: string } | null {
-  if (!req.user) return null;
+  if (!req.user) {return null;}
 
   const user = req.user as any;
 

@@ -1,7 +1,7 @@
-import { useEffect, useState, Suspense } from 'react';
-import { useExperiment } from '@/services/posthogExperiments';
+import { Suspense, useEffect, useState } from 'react';
+import { LazyLandingA, LazyLandingPage } from '@/components/lazy/LazyPages';
 import { posthog } from '@/lib/analytics';
-import { LazyLandingPage, LazyLandingA } from '@/components/lazy/LazyPages';
+import { useExperiment } from '@/services/posthogExperiments';
 
 /**
  * Landing Page A/B Test Guard
@@ -10,22 +10,22 @@ import { LazyLandingPage, LazyLandingA } from '@/components/lazy/LazyPages';
 export function LandingPageGuard() {
   const [isLoading, setIsLoading] = useState(true);
   const landingExperiment = useExperiment('landingPageVariant', 'control');
-  
+
   useEffect(() => {
     // Track experiment exposure
     posthog.capture('landing_page_experiment_exposure', {
       variant: landingExperiment.variant,
       timestamp: new Date().toISOString(),
     });
-    
+
     // Small delay to ensure PostHog is initialized
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 100);
-    
+
     return () => clearTimeout(timer);
   }, [landingExperiment.variant]);
-  
+
   // Show loading state briefly to avoid flicker
   if (isLoading) {
     return (
@@ -36,10 +36,11 @@ export function LandingPageGuard() {
       </div>
     );
   }
-  
+
   // Route to appropriate landing page variant with Suspense
-  const LandingComponent = landingExperiment.variant === 'marketing_sample' ? LazyLandingA : LazyLandingPage;
-  
+  const LandingComponent =
+    landingExperiment.variant === 'marketing_sample' ? LazyLandingA : LazyLandingPage;
+
   return (
     <Suspense
       fallback={
@@ -61,7 +62,7 @@ export function LandingPageGuard() {
 // Hook for components that need to know which landing variant is active
 export function useLandingVariant() {
   const experiment = useExperiment('landingPageVariant', 'control');
-  
+
   return {
     variant: experiment.variant,
     isMarketingVariant: experiment.variant === 'marketing_sample',

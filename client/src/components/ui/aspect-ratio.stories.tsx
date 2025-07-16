@@ -1,5 +1,4 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { AspectRatio } from './aspect-ratio';
 
 const meta = {
@@ -57,7 +56,10 @@ export const Portrait: Story = {
 export const WithPlaceholder: Story = {
   render: () => (
     <div className="w-[450px]">
-      <AspectRatio ratio={16 / 9} className="bg-gray-200 rounded-md flex items-center justify-center">
+      <AspectRatio
+        ratio={16 / 9}
+        className="bg-gray-200 rounded-md flex items-center justify-center"
+      >
         <div className="text-gray-500 text-center">
           <div className="text-2xl mb-2">📷</div>
           <div className="text-sm">16:9 Aspect Ratio</div>

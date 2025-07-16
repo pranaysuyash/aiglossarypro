@@ -64,7 +64,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
   const queryClient = useQueryClient();
 
   const [terms, setTerms] = useState<BulkEditTerm[]>(
-    initialTerms.map((term) => ({
+    initialTerms.map(term => ({
       ...term,
       selected: false,
       modified: false,
@@ -83,8 +83,8 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
   const saveBulkChangesMutation = useMutation({
     mutationFn: async (updatedTerms: BulkEditTerm[]) => {
       const changes = updatedTerms
-        .filter((term) => term.modified)
-        .map((term) => ({
+        .filter(term => term.modified)
+        .map(term => ({
           id: term.id,
           name: term.name,
           shortDefinition: term.shortDefinition,
@@ -104,13 +104,13 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
         body: JSON.stringify({ changes }),
       });
 
-      if (!response.ok) throw new Error('Failed to save bulk changes');
+      if (!response.ok) {throw new Error('Failed to save bulk changes');}
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       // Reset modified flags
-      setTerms((prev) =>
-        prev.map((term) => ({
+      setTerms(prev =>
+        prev.map(term => ({
           ...term,
           modified: false,
           originalData: { ...term },
@@ -124,10 +124,10 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
         description: `Updated ${data.updatedCount} terms successfully`,
       });
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to save changes',
+        description: error instanceof Error ? error?.message : 'Failed to save changes',
         variant: 'destructive',
       });
     },
@@ -155,16 +155,16 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
         }
 
         // Small delay to prevent rate limiting
-        await new Promise((resolve) => setTimeout(resolve, 500));
+        await new Promise(resolve => setTimeout(resolve, 500));
       }
 
       return results;
     },
-    onSuccess: (results) => {
+    onSuccess: results => {
       // Apply AI improvements to terms
-      setTerms((prev) =>
-        prev.map((term) => {
-          const improvement = results.find((r) => r.termId === term.id);
+      setTerms(prev =>
+        prev.map(term => {
+          const improvement = results.find(r => r.termId === term.id);
           if (improvement) {
             return {
               ...term,
@@ -189,20 +189,20 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
         description: `Generated improvements for ${results.length} terms. Review and save changes.`,
       });
     },
-    onError: (error) => {
+    onError: error => {
       setBulkOperationInProgress(false);
       setBulkOperation(null);
       setProgress(0);
 
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to generate AI improvements',
+        description: error instanceof Error ? error?.message : 'Failed to generate AI improvements',
         variant: 'destructive',
       });
     },
   });
 
-  const filteredTerms = terms.filter((term) => {
+  const filteredTerms = terms.filter(term => {
     const matchesSearch =
       !searchFilter ||
       term.name.toLowerCase().includes(searchFilter.toLowerCase()) ||
@@ -214,12 +214,12 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const selectedTerms = filteredTerms.filter((term) => term.selected);
-  const modifiedTerms = terms.filter((term) => term.modified);
+  const selectedTerms = filteredTerms.filter(term => term.selected);
+  const modifiedTerms = terms.filter(term => term.modified);
 
   const handleSelectAll = useCallback((checked: boolean) => {
-    setTerms((prev) =>
-      prev.map((term) => ({
+    setTerms(prev =>
+      prev.map(term => ({
         ...term,
         selected: checked,
       }))
@@ -227,14 +227,14 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
   }, []);
 
   const handleSelectTerm = useCallback((termId: string, checked: boolean) => {
-    setTerms((prev) =>
-      prev.map((term) => (term.id === termId ? { ...term, selected: checked } : term))
+    setTerms(prev =>
+      prev.map(term => (term.id === termId ? { ...term, selected: checked } : term))
     );
   }, []);
 
   const handleTermChange = useCallback((termId: string, field: string, value: any) => {
-    setTerms((prev) =>
-      prev.map((term) =>
+    setTerms(prev =>
+      prev.map(term =>
         term.id === termId
           ? {
               ...term,
@@ -248,9 +248,9 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
 
   const handleBulkCategoryChange = useCallback(
     (category: string) => {
-      const selectedIds = selectedTerms.map((term) => term.id);
-      setTerms((prev) =>
-        prev.map((term) =>
+      const selectedIds = selectedTerms.map(term => term.id);
+      setTerms(prev =>
+        prev.map(term =>
           selectedIds.includes(term.id) ? { ...term, category, modified: true } : term
         )
       );
@@ -265,9 +265,9 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
 
   const handleBulkVerificationChange = useCallback(
     (status: 'verified' | 'unverified' | 'flagged') => {
-      const selectedIds = selectedTerms.map((term) => term.id);
-      setTerms((prev) =>
-        prev.map((term) =>
+      const selectedIds = selectedTerms.map(term => term.id);
+      setTerms(prev =>
+        prev.map(term =>
           selectedIds.includes(term.id)
             ? { ...term, verificationStatus: status, modified: true }
             : term
@@ -292,7 +292,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
       return;
     }
 
-    const termIds = selectedTerms.map((term) => term.id);
+    const termIds = selectedTerms.map(term => term.id);
     aiImproveMutation.mutate(termIds);
   }, [selectedTerms, aiImproveMutation, toast]);
 
@@ -310,8 +310,8 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
   }, [modifiedTerms, terms, saveBulkChangesMutation, toast]);
 
   const handleDiscardChanges = useCallback(() => {
-    setTerms((prev) =>
-      prev.map((term) => ({
+    setTerms(prev =>
+      prev.map(term => ({
         ...term.originalData,
         selected: term.selected,
         modified: false,
@@ -352,7 +352,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
     },
   ];
 
-  const _getStatusColor = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case 'verified':
         return 'bg-green-100 text-green-800';
@@ -365,7 +365,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
     }
   };
 
-  const categories = [...new Set(terms.map((term) => term.category))].filter(Boolean);
+  const categories = [...new Set(terms.map(term => term.category))].filter(Boolean);
   const statuses = ['verified', 'unverified', 'flagged'];
 
   return (
@@ -439,7 +439,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                     id="search"
                     placeholder="Search by name or definition..."
                     value={searchFilter}
-                    onChange={(e) => setSearchFilter(e.target.value)}
+                    onChange={e => setSearchFilter(e.target.value)}
                   />
                 </div>
                 <div>
@@ -450,7 +450,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">All Categories</SelectItem>
-                      {categories.map((cat) => (
+                      {categories.map(cat => (
                         <SelectItem key={cat} value={cat}>
                           {cat}
                         </SelectItem>
@@ -466,7 +466,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="">All Statuses</SelectItem>
-                      {statuses.map((status) => (
+                      {statuses.map(status => (
                         <SelectItem key={status} value={status}>
                           {status.charAt(0).toUpperCase() + status.slice(1)}
                         </SelectItem>
@@ -492,7 +492,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                         <SelectValue placeholder="Change Category" />
                       </SelectTrigger>
                       <SelectContent>
-                        {categories.map((cat) => (
+                        {categories.map(cat => (
                           <SelectItem key={cat} value={cat}>
                             {cat}
                           </SelectItem>
@@ -548,25 +548,25 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {filteredTerms.map((term) => (
+                    {filteredTerms.map(term => (
                       <TableRow key={term.id} className={term.modified ? 'bg-blue-50' : ''}>
                         <TableCell>
                           <Checkbox
                             checked={term.selected}
-                            onCheckedChange={(checked) => handleSelectTerm(term.id, !!checked)}
+                            onCheckedChange={checked => handleSelectTerm(term.id, !!checked)}
                           />
                         </TableCell>
                         <TableCell>
                           <Input
                             value={term.name}
-                            onChange={(e) => handleTermChange(term.id, 'name', e.target.value)}
+                            onChange={e => handleTermChange(term.id, 'name', e.target.value)}
                             className="border-0 bg-transparent p-0 h-auto"
                           />
                         </TableCell>
                         <TableCell>
                           <Textarea
                             value={term.shortDefinition}
-                            onChange={(e) =>
+                            onChange={e =>
                               handleTermChange(term.id, 'shortDefinition', e.target.value)
                             }
                             className="border-0 bg-transparent p-0 h-auto resize-none"
@@ -576,13 +576,13 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                         <TableCell>
                           <Select
                             value={term.category}
-                            onValueChange={(value) => handleTermChange(term.id, 'category', value)}
+                            onValueChange={value => handleTermChange(term.id, 'category', value)}
                           >
                             <SelectTrigger className="border-0 bg-transparent p-0 h-auto">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {categories.map((cat) => (
+                              {categories.map(cat => (
                                 <SelectItem key={cat} value={cat}>
                                   {cat}
                                 </SelectItem>
@@ -593,7 +593,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                         <TableCell>
                           <Select
                             value={term.verificationStatus}
-                            onValueChange={(value) =>
+                            onValueChange={value =>
                               handleTermChange(term.id, 'verificationStatus', value)
                             }
                           >
@@ -601,7 +601,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              {statuses.map((status) => (
+                              {statuses.map(status => (
                                 <SelectItem key={status} value={status}>
                                   {status.charAt(0).toUpperCase() + status.slice(1)}
                                 </SelectItem>
@@ -661,7 +661,7 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                 <div className="text-center py-8 text-gray-500">No pending changes</div>
               ) : (
                 <div className="space-y-4">
-                  {modifiedTerms.map((term) => (
+                  {modifiedTerms.map(term => (
                     <div key={term.id} className="border rounded-lg p-4 space-y-2">
                       <div className="flex items-center justify-between">
                         <h3 className="font-medium">{term.name}</h3>

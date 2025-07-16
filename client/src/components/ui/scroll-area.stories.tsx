@@ -1,5 +1,4 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { ScrollArea, ScrollBar } from './scroll-area';
 
 const meta = {
@@ -31,7 +30,10 @@ export const WithHorizontalScroll: Story = {
     <ScrollArea className="w-96 whitespace-nowrap rounded-md border">
       <div className="flex w-max space-x-4 p-4">
         {Array.from({ length: 20 }, (_, i) => (
-          <div key={i} className="shrink-0 w-[150px] h-[100px] rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center">
+          <div
+            key={i}
+            className="shrink-0 w-[150px] h-[100px] rounded-md border-2 border-dashed border-gray-300 flex items-center justify-center"
+          >
             Item {i + 1}
           </div>
         ))}

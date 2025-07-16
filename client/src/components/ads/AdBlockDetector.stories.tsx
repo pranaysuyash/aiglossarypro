@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import AdBlockDetector from './AdBlockDetector';
 
@@ -9,7 +8,8 @@ const meta: Meta<typeof AdBlockDetector> = {
     layout: 'padded',
     docs: {
       description: {
-        component: 'Detects ad blockers and shows appropriate messaging to encourage whitelisting or premium upgrade.',
+        component:
+          'Detects ad blockers and shows appropriate messaging to encourage whitelisting or premium upgrade.',
       },
     },
   },

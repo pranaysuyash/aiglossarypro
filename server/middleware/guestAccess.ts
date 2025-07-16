@@ -57,15 +57,18 @@ function generateGuestSessionId(): string {
  * Get or create guest session
  */
 function getOrCreateGuestSession(req: Request): GuestServerSession {
-  const sessionId = req.headers['x-guest-session-id'] as string || 
-                   req.cookies?.guest_session_id ||
-                   generateGuestSessionId();
-  
-  const ipAddress = (req.headers['x-forwarded-for'] as string || req.connection.remoteAddress || '').split(',')[0].trim();
+  const sessionId =
+    (req.headers['x-guest-session-id'] as string) ||
+    req.cookies?.guest_session_id ||
+    generateGuestSessionId();
+
+  const ipAddress = ((req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || '')
+    .split(',')[0]
+    .trim();
   const userAgent = req.headers['user-agent'] || '';
-  
+
   let session = guestSessions.get(sessionId);
-  
+
   if (!session) {
     session = {
       sessionId,
@@ -80,7 +83,7 @@ function getOrCreateGuestSession(req: Request): GuestServerSession {
   } else {
     // Update last activity
     session.lastActivity = Date.now();
-    
+
     // Check if session has expired
     if (Date.now() - session.firstVisit > DEFAULT_GUEST_CONFIG.sessionDuration) {
       // Reset expired session
@@ -89,7 +92,7 @@ function getOrCreateGuestSession(req: Request): GuestServerSession {
       session.firstVisit = Date.now();
     }
   }
-  
+
   return session;
 }
 
@@ -98,7 +101,7 @@ function getOrCreateGuestSession(req: Request): GuestServerSession {
  */
 function isRouteAllowedForGuests(path: string): boolean {
   const { allowedRoutes, blockedRoutes } = DEFAULT_GUEST_CONFIG;
-  
+
   // Check blocked routes first (more restrictive)
   for (const blockedRoute of blockedRoutes) {
     const pattern = blockedRoute.replace(/\*/g, '.*').replace(/:\w+/g, '[^/]+');
@@ -107,7 +110,7 @@ function isRouteAllowedForGuests(path: string): boolean {
       return false;
     }
   }
-  
+
   // Check allowed routes
   for (const allowedRoute of allowedRoutes) {
     const pattern = allowedRoute.replace(/\*/g, '.*').replace(/:\w+/g, '[^/]+');
@@ -116,7 +119,7 @@ function isRouteAllowedForGuests(path: string): boolean {
       return true;
     }
   }
-  
+
   // Default public routes that don't require authentication
   const publicRoutes = [
     '/api/health',
@@ -126,14 +129,14 @@ function isRouteAllowedForGuests(path: string): boolean {
     '/api/trending$',
     '/api/auth/.*',
   ];
-  
+
   for (const publicRoute of publicRoutes) {
     const regex = new RegExp(`^${publicRoute}`);
     if (regex.test(path)) {
       return true;
     }
   }
-  
+
   return false;
 }
 
@@ -143,12 +146,12 @@ function isRouteAllowedForGuests(path: string): boolean {
 export const guestAccessMiddleware: RequestHandler = (req, res, next) => {
   const isAuthenticated = req.user;
   const requestPath = req.path;
-  
+
   // If user is authenticated, proceed normally
   if (isAuthenticated) {
     return next();
   }
-  
+
   // Check if route is allowed for guests
   if (!isRouteAllowedForGuests(requestPath)) {
     return res.status(401).json({
@@ -158,14 +161,14 @@ export const guestAccessMiddleware: RequestHandler = (req, res, next) => {
       authRequired: true,
     });
   }
-  
+
   // For guest preview routes, check session limits
   if (requestPath.includes('preview') || requestPath.includes('term')) {
     const guestSession = getOrCreateGuestSession(req);
-    
+
     // Add guest session to request for use in route handlers
     (req as any).guestSession = guestSession;
-    
+
     // Set guest session cookie for client tracking
     res.cookie('guest_session_id', guestSession.sessionId, {
       maxAge: DEFAULT_GUEST_CONFIG.sessionDuration,
@@ -173,7 +176,7 @@ export const guestAccessMiddleware: RequestHandler = (req, res, next) => {
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
     });
-    
+
     log.info('Guest access granted', {
       sessionId: guestSession.sessionId,
       path: requestPath,
@@ -181,7 +184,7 @@ export const guestAccessMiddleware: RequestHandler = (req, res, next) => {
       ipAddress: guestSession.ipAddress,
     });
   }
-  
+
   next();
 };
 
@@ -190,7 +193,7 @@ export const guestAccessMiddleware: RequestHandler = (req, res, next) => {
  */
 export const guestPreviewLimitMiddleware: RequestHandler = (req, res, next) => {
   const guestSession = (req as any).guestSession as GuestServerSession;
-  
+
   if (!guestSession) {
     return res.status(401).json({
       success: false,
@@ -198,7 +201,7 @@ export const guestPreviewLimitMiddleware: RequestHandler = (req, res, next) => {
       guestPreview: false,
     });
   }
-  
+
   if (guestSession.previewsUsed >= DEFAULT_GUEST_CONFIG.allowedPreviews) {
     return res.status(403).json({
       success: false,
@@ -210,7 +213,7 @@ export const guestPreviewLimitMiddleware: RequestHandler = (req, res, next) => {
       authRequired: true,
     });
   }
-  
+
   next();
 };
 
@@ -222,25 +225,25 @@ export function recordGuestTermView(guestSession: GuestServerSession, termId: st
     // Already viewed this term, don't count it again
     return true;
   }
-  
+
   if (guestSession.previewsUsed >= DEFAULT_GUEST_CONFIG.allowedPreviews) {
     return false;
   }
-  
+
   guestSession.previewsUsed += 1;
   guestSession.viewedTerms.push(termId);
   guestSession.lastActivity = Date.now();
-  
+
   // Update session in store
   guestSessions.set(guestSession.sessionId, guestSession);
-  
+
   log.info('Guest term view recorded', {
     sessionId: guestSession.sessionId,
     termId,
     previewsUsed: guestSession.previewsUsed,
     previewsRemaining: DEFAULT_GUEST_CONFIG.allowedPreviews - guestSession.previewsUsed,
   });
-  
+
   return true;
 }
 
@@ -249,11 +252,11 @@ export function recordGuestTermView(guestSession: GuestServerSession, termId: st
  */
 export function getGuestSessionStats(sessionId: string) {
   const session = guestSessions.get(sessionId);
-  
+
   if (!session) {
     return null;
   }
-  
+
   return {
     sessionId: session.sessionId,
     previewsUsed: session.previewsUsed,
@@ -271,17 +274,17 @@ export function getGuestSessionStats(sessionId: string) {
 export function cleanupExpiredGuestSessions(): void {
   const now = Date.now();
   const expiredSessions: string[] = [];
-  
+
   for (const [sessionId, session] of guestSessions.entries()) {
     if (now - session.lastActivity > DEFAULT_GUEST_CONFIG.sessionDuration) {
       expiredSessions.push(sessionId);
     }
   }
-  
+
   for (const sessionId of expiredSessions) {
     guestSessions.delete(sessionId);
   }
-  
+
   if (expiredSessions.length > 0) {
     log.info('Cleaned up expired guest sessions', {
       count: expiredSessions.length,
@@ -296,20 +299,24 @@ export function cleanupExpiredGuestSessions(): void {
 export function getGuestAnalytics() {
   const sessions = Array.from(guestSessions.values());
   const now = Date.now();
-  
+
   const analytics = {
     totalSessions: sessions.length,
     activeSessions: sessions.filter(s => now - s.lastActivity < 30 * 60 * 1000).length, // Active in last 30 minutes
-    averagePreviewsUsed: sessions.reduce((sum, s) => sum + s.previewsUsed, 0) / sessions.length || 0,
-    conversionCandidates: sessions.filter(s => s.previewsUsed >= DEFAULT_GUEST_CONFIG.allowedPreviews).length,
-    averageTimeOnSite: sessions.reduce((sum, s) => sum + (now - s.firstVisit), 0) / sessions.length || 0,
+    averagePreviewsUsed:
+      sessions.reduce((sum, s) => sum + s.previewsUsed, 0) / sessions.length || 0,
+    conversionCandidates: sessions.filter(
+      s => s.previewsUsed >= DEFAULT_GUEST_CONFIG.allowedPreviews
+    ).length,
+    averageTimeOnSite:
+      sessions.reduce((sum, s) => sum + (now - s.firstVisit), 0) / sessions.length || 0,
     sessionsByPreviewsUsed: {
       0: sessions.filter(s => s.previewsUsed === 0).length,
       1: sessions.filter(s => s.previewsUsed === 1).length,
       2: sessions.filter(s => s.previewsUsed >= 2).length,
     },
   };
-  
+
   return analytics;
 }
 

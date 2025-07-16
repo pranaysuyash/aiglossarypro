@@ -309,7 +309,7 @@ Provide comprehensive guidance on measuring and evaluating performance.`,
     ];
 
     // Load default templates
-    defaultTemplates.forEach((template) => {
+    defaultTemplates.forEach(template => {
       this.defaultTemplates.set(template.id, template as PromptTemplate);
       this.templates.set(template.id, template as PromptTemplate);
     });
@@ -549,7 +549,7 @@ Provide an improved version that addresses the feedback while maintaining techni
       },
     ];
 
-    tripletTemplates.forEach((template) => {
+    tripletTemplates.forEach(template => {
       this.tripletTemplates.set(template.id, template);
     });
 
@@ -589,7 +589,7 @@ Provide an improved version that addresses the feedback while maintaining techni
    */
   getTripletTemplatesBySection(sectionType: string): EnhancedPromptTemplate[] {
     return Array.from(this.tripletTemplates.values()).filter(
-      (template) => template.sectionType === sectionType
+      template => template.sectionType === sectionType
     );
   }
 
@@ -600,7 +600,7 @@ Provide an improved version that addresses the feedback while maintaining techni
     complexity: 'simple' | 'moderate' | 'complex'
   ): EnhancedPromptTemplate[] {
     return Array.from(this.tripletTemplates.values()).filter(
-      (template) => template.complexity === complexity
+      template => template.complexity === complexity
     );
   }
 
@@ -639,7 +639,7 @@ Provide an improved version that addresses the feedback while maintaining techni
     updates: Partial<EnhancedPromptTemplate>
   ): EnhancedPromptTemplate | null {
     const existing = this.tripletTemplates.get(templateId);
-    if (!existing) return null;
+    if (!existing) {return null;}
 
     const updated: EnhancedPromptTemplate = {
       ...existing,
@@ -734,7 +734,7 @@ Provide an improved version that addresses the feedback while maintaining techni
    */
   updateTripletUsageStats(templateId: string, success: boolean, qualityScore?: number): void {
     const template = this.tripletTemplates.get(templateId);
-    if (!template) return;
+    if (!template) {return;}
 
     template.metadata.usageCount++;
 
@@ -756,7 +756,7 @@ Provide an improved version that addresses the feedback while maintaining techni
    * Get templates by category
    */
   getTemplatesByCategory(category: string): PromptTemplate[] {
-    return Array.from(this.templates.values()).filter((t) => t.category === category);
+    return Array.from(this.templates.values()).filter(t => t.category === category);
   }
 
   /**
@@ -983,7 +983,7 @@ Provide an improved version that addresses the feedback while maintaining techni
     const templates = Array.from(this.templates.values());
     const categories: { [category: string]: number } = {};
 
-    templates.forEach((template) => {
+    templates.forEach(template => {
       categories[template.category] = (categories[template.category] || 0) + 1;
     });
 

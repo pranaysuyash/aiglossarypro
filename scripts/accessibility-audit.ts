@@ -609,19 +609,19 @@ class WCAGAccessibilityAuditor {
     // Summary statistics
     const totalIssues = this.results.reduce(
       (sum, result) =>
-        sum + result.results.filter((r) => r.status === 'fail' || r.status === 'partial').length,
+        sum + result.results.filter(r => r.status === 'fail' || r.status === 'partial').length,
       0
     );
 
     const criticalIssues = this.results.reduce(
       (sum, result) =>
-        sum + result.results.filter((r) => r.impact === 'critical' && r.status !== 'pass').length,
+        sum + result.results.filter(r => r.impact === 'critical' && r.status !== 'pass').length,
       0
     );
 
     const highIssues = this.results.reduce(
       (sum, result) =>
-        sum + result.results.filter((r) => r.impact === 'high' && r.status !== 'pass').length,
+        sum + result.results.filter(r => r.impact === 'high' && r.status !== 'pass').length,
       0
     );
 
@@ -639,7 +639,7 @@ class WCAGAccessibilityAuditor {
 
     for (const result of this.results) {
       const criticalCount = result.results.filter(
-        (r) => r.impact === 'critical' && r.status !== 'pass'
+        r => r.impact === 'critical' && r.status !== 'pass'
       ).length;
 
       const status =
@@ -701,10 +701,10 @@ class WCAGAccessibilityAuditor {
       report.push(`### ${issueNumber}. ${impactIcon} ${issue.criterion} - ${issue.component}`);
       report.push('');
       report.push('**Issues:**');
-      issue.issues.forEach((iss) => report.push(`- ${iss}`));
+      issue.issues.forEach(iss => report.push(`- ${iss}`));
       report.push('');
       report.push('**Recommendations:**');
-      issue.recommendations.slice(0, 3).forEach((rec) => report.push(`- ${rec}`));
+      issue.recommendations.slice(0, 3).forEach(rec => report.push(`- ${rec}`));
       report.push('');
       issueNumber++;
     }
@@ -719,19 +719,19 @@ class WCAGAccessibilityAuditor {
       report.push('');
 
       // Group results by status
-      const passResults = result.results.filter((r) => r.status === 'pass');
-      const partialResults = result.results.filter((r) => r.status === 'partial');
-      const failResults = result.results.filter((r) => r.status === 'fail');
+      const passResults = result.results.filter(r => r.status === 'pass');
+      const partialResults = result.results.filter(r => r.status === 'partial');
+      const failResults = result.results.filter(r => r.status === 'fail');
 
       if (passResults.length > 0) {
         report.push(`**✅ Passing (${passResults.length}):**`);
-        passResults.forEach((r) => report.push(`- ${r.criterion}`));
+        passResults.forEach(r => report.push(`- ${r.criterion}`));
         report.push('');
       }
 
       if (partialResults.length > 0) {
         report.push(`**⚠️ Partial Compliance (${partialResults.length}):**`);
-        partialResults.forEach((r) => {
+        partialResults.forEach(r => {
           report.push(`- **${r.criterion}**`);
           if (r.issues.length > 0) {
             report.push(`  - Issues: ${r.issues.join(', ')}`);
@@ -742,7 +742,7 @@ class WCAGAccessibilityAuditor {
 
       if (failResults.length > 0) {
         report.push(`**❌ Failing (${failResults.length}):**`);
-        failResults.forEach((r) => {
+        failResults.forEach(r => {
           report.push(`- **${r.criterion}**`);
           if (r.issues.length > 0) {
             report.push(`  - Issues: ${r.issues.join(', ')}`);
@@ -821,13 +821,12 @@ class WCAGAccessibilityAuditor {
         averageScore: this.overallScore,
         criticalIssues: this.results.reduce(
           (sum, result) =>
-            sum +
-            result.results.filter((r) => r.impact === 'critical' && r.status !== 'pass').length,
+            sum + result.results.filter(r => r.impact === 'critical' && r.status !== 'pass').length,
           0
         ),
         highPriorityIssues: this.results.reduce(
           (sum, result) =>
-            sum + result.results.filter((r) => r.impact === 'high' && r.status !== 'pass').length,
+            sum + result.results.filter(r => r.impact === 'high' && r.status !== 'pass').length,
           0
         ),
       },

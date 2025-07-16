@@ -2,21 +2,21 @@
 
 /**
  * Content Management Optimization Script
- * 
+ *
  * This script optimizes the content management system for production use
  * by implementing missing features and improving existing ones.
  */
 
 import { and, eq, isNull, sql } from 'drizzle-orm';
 import { db } from '../server/db';
-import { 
-  enhancedTerms, 
-  sections, 
-  sectionItems,
-  aiContentVerification,
-  aiUsageAnalytics
-} from '../shared/enhancedSchema';
 import { log as logger } from '../server/utils/logger';
+import {
+  aiContentVerification,
+  aiUsageAnalytics,
+  enhancedTerms,
+  sectionItems,
+  sections,
+} from '../shared/enhancedSchema';
 
 // Content quality thresholds
 const QUALITY_THRESHOLDS = {
@@ -24,21 +24,21 @@ const QUALITY_THRESHOLDS = {
   MIN_SHORT_DEFINITION_LENGTH: 20,
   MAX_SHORT_DEFINITION_LENGTH: 150,
   MIN_QUALITY_SCORE: 70,
-  BATCH_SIZE: 100
+  BATCH_SIZE: 100,
 };
 
 // Section priority mapping
 const SECTION_PRIORITIES = {
-  'definition_overview': 1,
-  'key_characteristics': 1,
-  'real_world_applications': 1,
-  'related_concepts': 2,
-  'tools_technologies': 2,
-  'implementation_details': 2,
-  'advantages_benefits': 3,
-  'challenges_limitations': 3,
-  'best_practices': 3,
-  'future_directions': 4
+  definition_overview: 1,
+  key_characteristics: 1,
+  real_world_applications: 1,
+  related_concepts: 2,
+  tools_technologies: 2,
+  implementation_details: 2,
+  advantages_benefits: 3,
+  challenges_limitations: 3,
+  best_practices: 3,
+  future_directions: 4,
 };
 
 /**
@@ -46,24 +46,24 @@ const SECTION_PRIORITIES = {
  */
 async function optimizeContentImport() {
   logger.info('🔧 Optimizing Content Import Process');
-  
+
   try {
     // Create indexes for faster imports
     await db.execute(sql`
       CREATE INDEX IF NOT EXISTS idx_enhanced_terms_name_lower 
       ON enhanced_terms(LOWER(name));
     `);
-    
+
     await db.execute(sql`
       CREATE INDEX IF NOT EXISTS idx_sections_term_id_name 
       ON sections(term_id, name);
     `);
-    
+
     await db.execute(sql`
       CREATE INDEX IF NOT EXISTS idx_section_items_section_id_label 
       ON section_items(section_id, label);
     `);
-    
+
     // Create batch job tracking table if not exists
     await db.execute(sql`
       CREATE TABLE IF NOT EXISTS batch_import_jobs (
@@ -82,7 +82,7 @@ async function optimizeContentImport() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    
+
     logger.info('✅ Content import optimization completed');
   } catch (error) {
     logger.error('Error optimizing content import:', error);
@@ -95,7 +95,7 @@ async function optimizeContentImport() {
  */
 async function setupContentQualityScoring() {
   logger.info('📊 Setting up Content Quality Scoring System');
-  
+
   try {
     // Create quality scoring function
     await db.execute(sql`
@@ -147,7 +147,7 @@ async function setupContentQualityScoring() {
       END;
       $$ LANGUAGE plpgsql;
     `);
-    
+
     // Create content quality tracking table
     await db.execute(sql`
       CREATE TABLE IF NOT EXISTS content_quality_metrics (
@@ -163,7 +163,7 @@ async function setupContentQualityScoring() {
         UNIQUE(term_id, section_name)
       );
     `);
-    
+
     logger.info('✅ Content quality scoring system set up');
   } catch (error) {
     logger.error('Error setting up quality scoring:', error);
@@ -176,7 +176,7 @@ async function setupContentQualityScoring() {
  */
 async function implementContentPerformanceTracking() {
   logger.info('📈 Implementing Content Performance Tracking');
-  
+
   try {
     // Create content engagement tracking
     await db.execute(sql`
@@ -195,7 +195,7 @@ async function implementContentPerformanceTracking() {
         UNIQUE(term_id, section_name)
       );
     `);
-    
+
     // Create content generation cost tracking
     await db.execute(sql`
       CREATE TABLE IF NOT EXISTS content_generation_costs (
@@ -211,7 +211,7 @@ async function implementContentPerformanceTracking() {
         metadata JSONB
       );
     `);
-    
+
     // Create aggregated analytics view
     await db.execute(sql`
       CREATE OR REPLACE VIEW content_analytics_summary AS
@@ -232,7 +232,7 @@ async function implementContentPerformanceTracking() {
       LEFT JOIN content_generation_costs cgc ON cgc.term_id = et.id
       GROUP BY et.id, et.name;
     `);
-    
+
     logger.info('✅ Content performance tracking implemented');
   } catch (error) {
     logger.error('Error implementing performance tracking:', error);
@@ -245,7 +245,7 @@ async function implementContentPerformanceTracking() {
  */
 async function createContentTemplateSystem() {
   logger.info('📝 Creating Content Template Management System');
-  
+
   try {
     // Default templates for each section
     const defaultTemplates = [
@@ -263,8 +263,15 @@ async function createContentTemplateSystem() {
 - {key_point_1}
 - {key_point_2}
 - {key_point_3}`,
-        variables: ['term_name', 'brief_explanation', 'detailed_explanation', 'key_point_1', 'key_point_2', 'key_point_3'],
-        description: 'Standard definition template for AI/ML terms'
+        variables: [
+          'term_name',
+          'brief_explanation',
+          'detailed_explanation',
+          'key_point_1',
+          'key_point_2',
+          'key_point_3',
+        ],
+        description: 'Standard definition template for AI/ML terms',
       },
       {
         name: 'real_world_applications',
@@ -280,8 +287,17 @@ async function createContentTemplateSystem() {
 
 ### Case Studies
 {case_study_examples}`,
-        variables: ['term_name', 'industry_1', 'application_1', 'industry_2', 'application_2', 'industry_3', 'application_3', 'case_study_examples'],
-        description: 'Template for documenting real-world applications'
+        variables: [
+          'term_name',
+          'industry_1',
+          'application_1',
+          'industry_2',
+          'application_2',
+          'industry_3',
+          'application_3',
+          'case_study_examples',
+        ],
+        description: 'Template for documenting real-world applications',
       },
       {
         name: 'implementation_details',
@@ -302,11 +318,20 @@ async function createContentTemplateSystem() {
 1. {step_1}
 2. {step_2}
 3. {step_3}`,
-        variables: ['requirement_1', 'requirement_2', 'requirement_3', 'language', 'code_example', 'step_1', 'step_2', 'step_3'],
-        description: 'Technical implementation template with code examples'
-      }
+        variables: [
+          'requirement_1',
+          'requirement_2',
+          'requirement_3',
+          'language',
+          'code_example',
+          'step_1',
+          'step_2',
+          'step_3',
+        ],
+        description: 'Technical implementation template with code examples',
+      },
     ];
-    
+
     // Create content templates table and insert default templates
     await db.execute(sql`
       CREATE TABLE IF NOT EXISTS content_templates (
@@ -322,7 +347,7 @@ async function createContentTemplateSystem() {
         updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    
+
     // Insert default templates
     for (const template of defaultTemplates) {
       await db.execute(sql`
@@ -331,7 +356,7 @@ async function createContentTemplateSystem() {
         ON CONFLICT (name) DO NOTHING;
       `);
     }
-    
+
     logger.info(`✅ Created ${defaultTemplates.length} content templates`);
   } catch (error) {
     logger.error('Error creating template system:', error);
@@ -344,7 +369,7 @@ async function createContentTemplateSystem() {
  */
 async function optimizeBatchProcessing() {
   logger.info('⚡ Optimizing Batch Processing');
-  
+
   try {
     // Create batch processing functions
     await db.execute(sql`
@@ -389,7 +414,7 @@ async function optimizeBatchProcessing() {
       END;
       $$ LANGUAGE plpgsql;
     `);
-    
+
     // Create batch status monitoring
     await db.execute(sql`
       CREATE OR REPLACE VIEW batch_processing_status AS
@@ -402,7 +427,7 @@ async function optimizeBatchProcessing() {
       FROM batch_job_status
       WHERE created_at > CURRENT_TIMESTAMP - INTERVAL '24 hours';
     `);
-    
+
     logger.info('✅ Batch processing optimization completed');
   } catch (error) {
     logger.error('Error optimizing batch processing:', error);
@@ -415,7 +440,7 @@ async function optimizeBatchProcessing() {
  */
 async function setupContentValidationWorkflows() {
   logger.info('✔️ Setting up Content Validation Workflows');
-  
+
   try {
     // Create validation rules table
     await db.execute(sql`
@@ -430,7 +455,7 @@ async function setupContentValidationWorkflows() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    
+
     // Insert default validation rules
     const validationRules = [
       {
@@ -438,24 +463,24 @@ async function setupContentValidationWorkflows() {
         rule_type: 'length',
         section_name: 'definition_overview',
         validation_function: 'LENGTH(content) >= 100',
-        severity: 'error'
+        severity: 'error',
       },
       {
         rule_name: 'no_placeholder_text',
         rule_type: 'content',
         section_name: null,
         validation_function: "content NOT LIKE '%TODO%' AND content NOT LIKE '%TBD%'",
-        severity: 'warning'
+        severity: 'warning',
       },
       {
         rule_name: 'proper_markdown_structure',
         rule_type: 'format',
         section_name: null,
         validation_function: "content ~ '^#{1,6}\\s'",
-        severity: 'info'
-      }
+        severity: 'info',
+      },
     ];
-    
+
     for (const rule of validationRules) {
       await db.execute(sql`
         INSERT INTO content_validation_rules (rule_name, rule_type, section_name, validation_function, severity)
@@ -463,7 +488,7 @@ async function setupContentValidationWorkflows() {
         ON CONFLICT (rule_name) DO NOTHING;
       `);
     }
-    
+
     // Create validation results tracking
     await db.execute(sql`
       CREATE TABLE IF NOT EXISTS content_validation_results (
@@ -476,7 +501,7 @@ async function setupContentValidationWorkflows() {
         validated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    
+
     logger.info('✅ Content validation workflows set up');
   } catch (error) {
     logger.error('Error setting up validation workflows:', error);
@@ -489,7 +514,7 @@ async function setupContentValidationWorkflows() {
  */
 async function createContentExportSystems() {
   logger.info('💾 Creating Content Export and Backup Systems');
-  
+
   try {
     // Create export job tracking
     await db.execute(sql`
@@ -510,7 +535,7 @@ async function createContentExportSystems() {
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       );
     `);
-    
+
     // Create export function
     await db.execute(sql`
       CREATE OR REPLACE FUNCTION export_content_to_json(
@@ -559,7 +584,7 @@ async function createContentExportSystems() {
       END;
       $$ LANGUAGE plpgsql;
     `);
-    
+
     logger.info('✅ Content export systems created');
   } catch (error) {
     logger.error('Error creating export systems:', error);
@@ -573,9 +598,9 @@ async function createContentExportSystems() {
 async function runOptimizations() {
   logger.info('🚀 Starting Content Management Optimizations');
   logger.info('==========================================\n');
-  
+
   const startTime = Date.now();
-  
+
   try {
     // Run all optimizations
     await optimizeContentImport();
@@ -585,19 +610,18 @@ async function runOptimizations() {
     await optimizeBatchProcessing();
     await setupContentValidationWorkflows();
     await createContentExportSystems();
-    
+
     const duration = Date.now() - startTime;
-    
+
     logger.info('\n==========================================');
     logger.info('✅ All Optimizations Completed Successfully');
     logger.info(`Total time: ${(duration / 1000).toFixed(2)} seconds`);
     logger.info('==========================================\n');
-    
+
     // Generate optimization report
     const report = await generateOptimizationReport();
     logger.info('📊 Optimization Report:');
     logger.info(JSON.stringify(report, null, 2));
-    
   } catch (error) {
     logger.error('Fatal error during optimization:', error);
     process.exit(1);
@@ -610,9 +634,9 @@ async function runOptimizations() {
 async function generateOptimizationReport() {
   const report: any = {
     timestamp: new Date().toISOString(),
-    optimizations_applied: []
+    optimizations_applied: [],
   };
-  
+
   // Check what was created/optimized
   try {
     // Check indexes
@@ -623,17 +647,17 @@ async function generateOptimizationReport() {
       AND indexname LIKE 'idx_%'
     `);
     report.indexes_created = indexes.rows.length;
-    
+
     // Check templates
     const templates = await db.execute(sql`SELECT COUNT(*) as count FROM content_templates`);
     report.templates_created = templates.rows[0]?.count || 0;
-    
+
     // Check validation rules
     const rules = await db.execute(sql`
       SELECT COUNT(*) as count FROM content_validation_rules
     `);
     report.validation_rules = rules.rows[0]?.count || 0;
-    
+
     // Check batch processing capability
     const batchCapability = await db.execute(sql`
       SELECT proname 
@@ -641,15 +665,14 @@ async function generateOptimizationReport() {
       WHERE proname = 'process_content_batch'
     `);
     report.batch_processing_enabled = batchCapability.rows.length > 0;
-    
+
     report.status = 'SUCCESS';
     report.ready_for_production = true;
-    
   } catch (error) {
     report.status = 'PARTIAL';
     report.error = error instanceof Error ? error.message : 'Unknown error';
   }
-  
+
   return report;
 }
 

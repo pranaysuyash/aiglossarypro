@@ -29,7 +29,7 @@ async function checkData() {
     if (parseInt(regularTerms.rows[0].count as string) > 0) {
       console.log('\nSample regular terms:');
       const sampleTerms = await db.execute(sql`SELECT id, name FROM terms LIMIT 5`);
-      sampleTerms.rows.forEach((term) => {
+      sampleTerms.rows.forEach(term => {
         console.log(`- ${term.name} (ID: ${term.id})`);
       });
     }
@@ -37,7 +37,7 @@ async function checkData() {
     if (parseInt(enhancedTerms.rows[0].count as string) > 0) {
       console.log('\nSample enhanced terms:');
       const sampleEnhanced = await db.execute(sql`SELECT id, name FROM enhanced_terms LIMIT 5`);
-      sampleEnhanced.rows.forEach((term) => {
+      sampleEnhanced.rows.forEach(term => {
         console.log(`- ${term.name} (ID: ${term.id})`);
       });
     }

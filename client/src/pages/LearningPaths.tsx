@@ -3,12 +3,12 @@ import { BookOpen, Clock, Search, TrendingUp, Users } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'wouter';
+import type { ICategory, ITerm } from '@/interfaces/interfaces';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
 import { useAuth } from '../hooks/useAuth';
-import type { ICategory, ITerm } from '@/interfaces/interfaces';
 
 interface LearningPath {
   id: string;
@@ -50,19 +50,19 @@ const LearningPaths: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Fetch categories and terms to generate dynamic learning paths
-  const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
+  const { data: categoriesData, isLoading: categoriesLoading } = useQuery<{data?: any[]} | any[]>({
     queryKey: ['/api/categories'],
     refetchOnWindowFocus: false,
   });
 
-  const { data: termsData, isLoading: termsLoading } = useQuery({
+  const { data: termsData, isLoading: termsLoading } = useQuery<{data?: any[]} | any[]>({
     queryKey: ['/api/terms'],
     refetchOnWindowFocus: false,
   });
 
   // Generate dynamic learning paths based on actual categories and terms
   const paths = useMemo(() => {
-    if (!categoriesData || !termsData) return [];
+    if (!categoriesData || !termsData) {return [];}
 
     const categories = Array.isArray(categoriesData) ? categoriesData : categoriesData.data || [];
     const terms = Array.isArray(termsData) ? termsData : termsData.data || [];
@@ -72,7 +72,8 @@ const LearningPaths: React.FC = () => {
       {
         id: 'ai-fundamentals',
         name: 'AI Fundamentals for Beginners',
-        description: 'Start your AI journey with essential concepts and terminology. Perfect for complete beginners who want to understand the basics of artificial intelligence.',
+        description:
+          'Start your AI journey with essential concepts and terminology. Perfect for complete beginners who want to understand the basics of artificial intelligence.',
         difficulty_level: 'beginner',
         estimated_duration: 45,
         category_id: null,
@@ -81,7 +82,7 @@ const LearningPaths: React.FC = () => {
           'Understand what AI is and how it works',
           'Learn key AI terminology and concepts',
           'Explore different types of AI applications',
-          'Build foundation for advanced AI topics'
+          'Build foundation for advanced AI topics',
         ],
         is_official: true,
         view_count: 1250,
@@ -93,7 +94,8 @@ const LearningPaths: React.FC = () => {
       {
         id: 'ml-complete-path',
         name: 'Complete Machine Learning Path',
-        description: 'Comprehensive learning path covering all aspects of machine learning from supervised to unsupervised learning and everything in between.',
+        description:
+          'Comprehensive learning path covering all aspects of machine learning from supervised to unsupervised learning and everything in between.',
         difficulty_level: 'intermediate',
         estimated_duration: 120,
         category_id: null,
@@ -102,7 +104,7 @@ const LearningPaths: React.FC = () => {
           'Master supervised and unsupervised learning',
           'Understand evaluation metrics and model selection',
           'Apply ML algorithms to real-world problems',
-          'Build end-to-end ML projects'
+          'Build end-to-end ML projects',
         ],
         is_official: true,
         view_count: 890,
@@ -114,7 +116,8 @@ const LearningPaths: React.FC = () => {
       {
         id: 'deep-learning-mastery',
         name: 'Deep Learning Mastery',
-        description: 'Advanced path for mastering neural networks, CNNs, RNNs, and modern deep learning architectures. Includes hands-on implementation.',
+        description:
+          'Advanced path for mastering neural networks, CNNs, RNNs, and modern deep learning architectures. Includes hands-on implementation.',
         difficulty_level: 'advanced',
         estimated_duration: 180,
         category_id: null,
@@ -123,7 +126,7 @@ const LearningPaths: React.FC = () => {
           'Build neural networks from scratch',
           'Master CNN and RNN architectures',
           'Understand attention mechanisms and transformers',
-          'Deploy deep learning models in production'
+          'Deploy deep learning models in production',
         ],
         is_official: true,
         view_count: 675,
@@ -131,18 +134,18 @@ const LearningPaths: React.FC = () => {
         rating: 4.8,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      }
+      },
     ];
 
     // Create category-based paths
     const categoryPaths = categories.slice(0, 6).map((category: ICategory, index: number) => {
-      const categoryTerms = terms.filter((term: ITerm) => 
-        term.category === category.name || term.categoryId === category.id
+      const categoryTerms = terms.filter(
+        (term: ITerm) => term.category === category.name || term.categoryId === category.id
       );
 
       const difficultyLevels = ['beginner', 'intermediate', 'advanced'];
       const difficulty = difficultyLevels[index % 3];
-      
+
       const estimatedDuration = Math.max(30, categoryTerms.length * 5); // 5 minutes per term, minimum 30 minutes
 
       return {
@@ -152,14 +155,17 @@ const LearningPaths: React.FC = () => {
         difficulty_level: difficulty,
         estimated_duration: estimatedDuration,
         category_id: category.id,
-        prerequisites: difficulty === 'beginner' ? [] : 
-                      difficulty === 'intermediate' ? ['Basic AI/ML knowledge'] : 
-                      ['Intermediate AI/ML', 'Programming experience'],
+        prerequisites:
+          difficulty === 'beginner'
+            ? []
+            : difficulty === 'intermediate'
+              ? ['Basic AI/ML knowledge']
+              : ['Intermediate AI/ML', 'Programming experience'],
         learning_objectives: [
           `Understand core ${category.name} concepts`,
           `Apply ${category.name} techniques in practice`,
           `Explain ${category.name} to others`,
-          'Build real-world projects'
+          'Build real-world projects',
         ],
         is_official: true,
         view_count: Math.floor(Math.random() * 500) + 100,
@@ -167,7 +173,7 @@ const LearningPaths: React.FC = () => {
         rating: 4.2 + Math.random() * 0.7,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-        terms: categoryTerms.slice(0, 10) // Limit to first 10 terms for performance
+        terms: categoryTerms.slice(0, 10), // Limit to first 10 terms for performance
       } as LearningPath & { terms: ITerm[] };
     });
 
@@ -190,7 +196,7 @@ const LearningPaths: React.FC = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
       });
-      if (!response.ok) throw new Error('Failed to fetch user progress');
+      if (!response.ok) {throw new Error('Failed to fetch user progress');}
       const data = await response.json();
       setUserProgress(data.data || []);
     } catch (err) {
@@ -249,21 +255,21 @@ const LearningPaths: React.FC = () => {
     return hours > 0 ? `${hours}h ${mins}m` : `${mins}m`;
   };
 
-  const filteredPaths = paths.filter((path) => {
+  const filteredPaths = paths.filter(path => {
     const matchesSearch =
       path.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       path.description?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    if (filter === 'all') return matchesSearch;
-    if (filter === 'official') return matchesSearch && path.is_official;
-    if (filter === 'beginner') return matchesSearch && path.difficulty_level === 'beginner';
-    if (filter === 'intermediate') return matchesSearch && path.difficulty_level === 'intermediate';
-    if (filter === 'advanced') return matchesSearch && path.difficulty_level === 'advanced';
+    if (filter === 'all') {return matchesSearch;}
+    if (filter === 'official') {return matchesSearch && path.is_official;}
+    if (filter === 'beginner') {return matchesSearch && path.difficulty_level === 'beginner';}
+    if (filter === 'intermediate') {return matchesSearch && path.difficulty_level === 'intermediate';}
+    if (filter === 'advanced') {return matchesSearch && path.difficulty_level === 'advanced';}
     return matchesSearch;
   });
 
   const getUserProgressForPath = (pathId: string) => {
-    return userProgress.find((p) => p.learning_path_id === pathId);
+    return userProgress.find(p => p.learning_path_id === pathId);
   };
 
   if (loading) {
@@ -305,14 +311,14 @@ const LearningPaths: React.FC = () => {
               type="text"
               placeholder="Search learning paths..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
           <div className="flex gap-2">
             <select
               value={filter}
-              onChange={(e) => setFilter(e.target.value)}
+              onChange={e => setFilter(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Paths</option>
@@ -329,7 +335,7 @@ const LearningPaths: React.FC = () => {
           <div className="mb-8">
             <h2 className="text-xl font-semibold mb-4">Your Progress</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {userProgress.map((progress) => (
+              {userProgress.map(progress => (
                 <Card key={progress.id} className="border-l-4 border-l-blue-500">
                   <CardHeader className="pb-2">
                     <CardTitle className="text-lg">{progress.path.name}</CardTitle>
@@ -356,7 +362,7 @@ const LearningPaths: React.FC = () => {
 
       {/* Learning Paths Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredPaths.map((path) => {
+        {filteredPaths.map(path => {
           const userProgressForPath = getUserProgressForPath(path.id);
 
           return (
@@ -452,10 +458,9 @@ const LearningPaths: React.FC = () => {
           <BookOpen className="w-16 h-16 text-gray-300 mx-auto mb-4" />
           <h3 className="text-lg font-medium text-gray-900 mb-2">No learning paths found</h3>
           <p className="text-gray-500">
-            {searchTerm 
-              ? 'Try adjusting your search terms or browse all categories' 
-              : 'Learning paths are being generated from your available categories and terms'
-            }
+            {searchTerm
+              ? 'Try adjusting your search terms or browse all categories'
+              : 'Learning paths are being generated from your available categories and terms'}
           </p>
           {!searchTerm && (
             <div className="mt-4">
@@ -465,9 +470,7 @@ const LearningPaths: React.FC = () => {
                 </Button>
               </Link>
               <Link href="/terms">
-                <Button variant="outline">
-                  Explore Terms
-                </Button>
+                <Button variant="outline">Explore Terms</Button>
               </Link>
             </div>
           )}

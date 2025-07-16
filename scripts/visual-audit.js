@@ -100,7 +100,7 @@ class VisualAuditor {
         const page = await context.newPage();
 
         // Enable console logging
-        page.on('console', (msg) => {
+        page.on('console', msg => {
           if (msg.type() === 'error') {
             this.errors.push({
               viewport: viewport.name,
@@ -472,8 +472,8 @@ class VisualAuditor {
       },
       summary: {
         totalTests: this.results.length,
-        passed: this.results.filter((r) => r.passed !== false).length,
-        failed: this.results.filter((r) => r.passed === false).length,
+        passed: this.results.filter(r => r.passed !== false).length,
+        failed: this.results.filter(r => r.passed === false).length,
         errors: this.errors.length,
         screenshots: this.screenshots.length,
       },
@@ -502,7 +502,7 @@ class VisualAuditor {
     const recommendations = [];
 
     // Analyze responsive design issues
-    const responsiveIssues = this.results.filter((r) => r.test.includes('header') && !r.passed);
+    const responsiveIssues = this.results.filter(r => r.test.includes('header') && !r.passed);
     if (responsiveIssues.length > 0) {
       recommendations.push({
         category: 'Responsive Design',
@@ -513,7 +513,7 @@ class VisualAuditor {
     }
 
     // Analyze error patterns
-    const authErrors = this.errors.filter((e) => e.flow === 'authenticated');
+    const authErrors = this.errors.filter(e => e.flow === 'authenticated');
     if (authErrors.length > 0) {
       recommendations.push({
         category: 'Authentication',
@@ -524,7 +524,7 @@ class VisualAuditor {
     }
 
     // Performance recommendations
-    if (this.errors.some((e) => e.type === 'console-error')) {
+    if (this.errors.some(e => e.type === 'console-error')) {
       recommendations.push({
         category: 'Performance',
         priority: 'medium',
@@ -602,7 +602,7 @@ class VisualAuditor {
             <h2>🎯 Recommendations</h2>
             ${report.recommendations
               .map(
-                (rec) => `
+                rec => `
                 <div class="recommendation priority-${rec.priority}">
                     <h4>${rec.category} (${rec.priority.toUpperCase()})</h4>
                     <p><strong>Issue:</strong> ${rec.issue}</p>
@@ -620,7 +620,7 @@ class VisualAuditor {
             <h2>❌ Errors</h2>
             ${report.errors
               .map(
-                (error) => `
+                error => `
                 <div class="error">
                     <strong>${error.type || 'Error'}:</strong> ${error.message}
                     ${error.viewport ? `<br><small>Viewport: ${error.viewport}</small>` : ''}
@@ -638,7 +638,7 @@ class VisualAuditor {
             <div class="screenshots">
                 ${report.screenshots
                   .map(
-                    (screenshot) => `
+                    screenshot => `
                     <div class="screenshot">
                         <img src="screenshots/${screenshot.filename}" alt="${screenshot.name}">
                         <div class="screenshot-info">

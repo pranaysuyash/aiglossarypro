@@ -1,9 +1,8 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { Checkbox } from './Checkbox';
+import type { Meta, StoryObj } from '@storybook/react';
+import { Checkbox } from './checkbox';
 
 const meta = {
-  title: 'UI/Checkbox',
+  title: 'U./checkbox',
   component: Checkbox,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

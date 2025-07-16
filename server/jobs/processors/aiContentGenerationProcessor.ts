@@ -149,7 +149,7 @@ export async function aiContentGenerationProcessor(
             }
 
             // Wait before retry with exponential backoff
-            await new Promise((resolve) => setTimeout(resolve, 2 ** attempts * 1000));
+            await new Promise(resolve => setTimeout(resolve, 2 ** attempts * 1000));
           }
         }
 
@@ -255,9 +255,9 @@ function parseGeneratedContent(section: string, content: string): any {
       // Parse as list items
       const items = cleanContent
         .split('\n')
-        .filter((line) => line.trim())
-        .map((line) => line.replace(/^[-*•]\s*/, '').trim())
-        .filter((line) => line.length > 0);
+        .filter(line => line.trim())
+        .map(line => line.replace(/^[-*•]\s*/, '').trim())
+        .filter(line => line.length > 0);
       return { items };
     }
 
@@ -278,7 +278,7 @@ function parseGeneratedContent(section: string, content: string): any {
       const explanations = cleanContent
         .replace(codeRegex, '')
         .split('\n')
-        .filter((line) => line.trim())
+        .filter(line => line.trim())
         .join('\n');
 
       return { codeBlocks, explanations };
@@ -288,8 +288,8 @@ function parseGeneratedContent(section: string, content: string): any {
       // Parse paper entries
       const papers = cleanContent
         .split('\n\n')
-        .filter((entry) => entry.trim())
-        .map((entry) => {
+        .filter(entry => entry.trim())
+        .map(entry => {
           const lines = entry.split('\n');
           const title = lines[0]?.replace(/^[-*•]\s*/, '').trim();
           const summary = lines.slice(1).join(' ').trim();
@@ -302,7 +302,7 @@ function parseGeneratedContent(section: string, content: string): any {
       // Parse as structured learning steps
       const steps = cleanContent
         .split(/\d+\.\s+/)
-        .filter((step) => step.trim())
+        .filter(step => step.trim())
         .map((step, index) => ({
           order: index + 1,
           content: step.trim(),

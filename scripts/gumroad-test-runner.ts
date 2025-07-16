@@ -1,9 +1,9 @@
 #!/usr/bin/env tsx
 
+import chalk from 'chalk';
 import { execSync } from 'child_process';
 import fs from 'fs-extra';
 import path from 'path';
-import chalk from 'chalk';
 
 interface TestSuite {
   name: string;
@@ -26,43 +26,48 @@ class GumroadTestRunner {
   private testSuites: TestSuite[] = [
     {
       name: 'Webhook Security & Integration',
-      description: 'Tests HMAC signature verification, webhook payload processing, and security measures',
+      description:
+        'Tests HMAC signature verification, webhook payload processing, and security measures',
       testFile: 'tests/gumroad/webhook.test.ts',
       category: 'security',
       priority: 'critical',
-      estimatedDuration: 30
+      estimatedDuration: 30,
     },
     {
       name: 'Purchase Flow Testing',
-      description: 'Tests complete purchase flows including mobile, error handling, and accessibility',
+      description:
+        'Tests complete purchase flows including mobile, error handling, and accessibility',
       testFile: 'tests/gumroad/purchase-flow.test.ts',
       category: 'functionality',
       priority: 'critical',
-      estimatedDuration: 45
+      estimatedDuration: 45,
     },
     {
       name: 'Bundle Optimization Validation',
-      description: 'Validates bundle size optimizations, Million.js integration, and performance improvements',
+      description:
+        'Validates bundle size optimizations, Million.js integration, and performance improvements',
       testFile: 'tests/gumroad/bundle-optimization.test.ts',
       category: 'performance',
       priority: 'high',
-      estimatedDuration: 60
+      estimatedDuration: 60,
     },
     {
       name: 'Country-Based Pricing (PPP)',
-      description: 'Tests dynamic pricing, country detection, VPN handling, and mobile PPP experience',
+      description:
+        'Tests dynamic pricing, country detection, VPN handling, and mobile PPP experience',
       testFile: 'tests/gumroad/country-pricing.test.ts',
       category: 'functionality',
       priority: 'high',
-      estimatedDuration: 25
+      estimatedDuration: 25,
     },
     {
       name: 'Email System Testing',
-      description: 'Tests premium welcome emails, templates, sending, and integration with webhooks',
+      description:
+        'Tests premium welcome emails, templates, sending, and integration with webhooks',
       testFile: 'tests/gumroad/email-testing.test.ts',
       category: 'functionality',
       priority: 'medium',
-      estimatedDuration: 20
+      estimatedDuration: 20,
     },
     {
       name: 'Production Readiness',
@@ -70,19 +75,21 @@ class GumroadTestRunner {
       testFile: 'tests/gumroad/production-readiness.test.ts',
       category: 'integration',
       priority: 'critical',
-      estimatedDuration: 40
-    }
+      estimatedDuration: 40,
+    },
   ];
 
   private results: TestResult[] = [];
 
-  async runAllTests(options: {
-    category?: string;
-    priority?: string;
-    parallel?: boolean;
-    generateReport?: boolean;
-    coverage?: boolean;
-  } = {}): Promise<void> {
+  async runAllTests(
+    options: {
+      category?: string;
+      priority?: string;
+      parallel?: boolean;
+      generateReport?: boolean;
+      coverage?: boolean;
+    } = {}
+  ): Promise<void> {
     console.log(chalk.blue.bold('\n🧪 Gumroad Testing & Validation Suite\n'));
     console.log(chalk.gray('Testing the core Gumroad systems for production readiness\n'));
 
@@ -120,7 +127,7 @@ class GumroadTestRunner {
     console.log(chalk.yellow.bold('📋 Test Plan:\n'));
 
     const totalDuration = suites.reduce((sum, suite) => sum + suite.estimatedDuration, 0);
-    
+
     console.log(chalk.cyan(`Tests to run: ${suites.length}`));
     console.log(chalk.cyan(`Estimated duration: ${Math.ceil(totalDuration / 60)} minutes\n`));
 
@@ -129,19 +136,21 @@ class GumroadTestRunner {
         critical: '🔴',
         high: '🟠',
         medium: '🟡',
-        low: '🟢'
+        low: '🟢',
       }[suite.priority];
 
       const categoryIcon = {
         security: '🔒',
         functionality: '⚙️',
         performance: '⚡',
-        integration: '🔗'
+        integration: '🔗',
       }[suite.category];
 
       console.log(`${index + 1}. ${priorityIcon} ${categoryIcon} ${chalk.bold(suite.name)}`);
       console.log(`   ${chalk.gray(suite.description)}`);
-      console.log(`   ${chalk.dim(`~${suite.estimatedDuration}s | ${suite.category} | ${suite.priority}`)}\n`);
+      console.log(
+        `   ${chalk.dim(`~${suite.estimatedDuration}s | ${suite.category} | ${suite.priority}`)}\n`
+      );
     });
   }
 
@@ -150,7 +159,7 @@ class GumroadTestRunner {
 
     for (const [index, suite] of suites.entries()) {
       console.log(chalk.blue(`[${index + 1}/${suites.length}] Running ${suite.name}...`));
-      
+
       const result = await this.runSingleTest(suite, options);
       this.results.push(result);
 
@@ -194,16 +203,16 @@ class GumroadTestRunner {
 
       // Build test command
       let command = `npx vitest run ${suite.testFile}`;
-      
+
       if (options.coverage) {
         command += ' --coverage';
       }
 
       // Run the test
-      const output = execSync(command, { 
+      const output = execSync(command, {
         encoding: 'utf-8',
         cwd: process.cwd(),
-        stdio: 'pipe'
+        stdio: 'pipe',
       });
 
       const duration = Math.round((Date.now() - start) / 1000);
@@ -222,17 +231,16 @@ class GumroadTestRunner {
         passed: true,
         duration,
         coverage,
-        details: 'All tests passed'
+        details: 'All tests passed',
       };
-
     } catch (error) {
       const duration = Math.round((Date.now() - start) / 1000);
-      
+
       return {
         suite: suite.name,
         passed: false,
         duration,
-        details: error instanceof Error ? error.message : 'Unknown error'
+        details: error instanceof Error ? error.message : 'Unknown error',
       };
     }
   }
@@ -248,15 +256,15 @@ class GumroadTestRunner {
         passed: this.results.filter(r => r.passed).length,
         failed: this.results.filter(r => !r.passed).length,
         totalDuration: this.results.reduce((sum, r) => sum + r.duration, 0),
-        averageCoverage: this.calculateAverageCoverage()
+        averageCoverage: this.calculateAverageCoverage(),
       },
       results: this.results,
       testSuites: this.testSuites,
       environment: {
         nodeVersion: process.version,
         platform: process.platform,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      },
     };
 
     // Write JSON report
@@ -321,17 +329,23 @@ class GumroadTestRunner {
                 <div class="metric-value">${report.summary.totalDuration}s</div>
                 <div class="metric-label">Total Duration</div>
             </div>
-            ${report.summary.averageCoverage ? `
+            ${
+              report.summary.averageCoverage
+                ? `
             <div class="metric">
                 <div class="metric-value">${report.summary.averageCoverage.toFixed(1)}%</div>
                 <div class="metric-label">Avg Coverage</div>
             </div>
-            ` : ''}
+            `
+                : ''
+            }
         </div>
         
         <div class="results">
             <h2>Test Results</h2>
-            ${report.results.map((result: any) => `
+            ${report.results
+              .map(
+                (result: any) => `
                 <div class="test-result ${result.passed ? 'passed' : 'failed'}">
                     <div class="test-name">${result.passed ? '✅' : '❌'} ${result.suite}</div>
                     <div class="test-details">
@@ -340,7 +354,9 @@ class GumroadTestRunner {
                         ${result.details ? ` | ${result.details}` : ''}
                     </div>
                 </div>
-            `).join('')}
+            `
+              )
+              .join('')}
         </div>
         
         <div class="footer">
@@ -356,7 +372,7 @@ class GumroadTestRunner {
   private calculateAverageCoverage(): number | null {
     const coverageResults = this.results.filter(r => r.coverage !== undefined);
     if (coverageResults.length === 0) return null;
-    
+
     const total = coverageResults.reduce((sum, r) => sum + (r.coverage || 0), 0);
     return total / coverageResults.length;
   }
@@ -384,7 +400,9 @@ class GumroadTestRunner {
       console.log(chalk.red.bold('❌ Some tests failed. Please review the results above.'));
       process.exit(1);
     } else {
-      console.log(chalk.green.bold('✅ All tests passed! Gumroad integration is ready for production.'));
+      console.log(
+        chalk.green.bold('✅ All tests passed! Gumroad integration is ready for production.')
+      );
     }
   }
 }
@@ -395,19 +413,29 @@ async function main() {
   const runner = new GumroadTestRunner();
 
   const options = {
-    category: args.includes('--security') ? 'security' :
-              args.includes('--functionality') ? 'functionality' :
-              args.includes('--performance') ? 'performance' :
-              args.includes('--integration') ? 'integration' : undefined,
-    
-    priority: args.includes('--critical') ? 'critical' :
-              args.includes('--high') ? 'high' :
-              args.includes('--medium') ? 'medium' :
-              args.includes('--low') ? 'low' : undefined,
-    
+    category: args.includes('--security')
+      ? 'security'
+      : args.includes('--functionality')
+        ? 'functionality'
+        : args.includes('--performance')
+          ? 'performance'
+          : args.includes('--integration')
+            ? 'integration'
+            : undefined,
+
+    priority: args.includes('--critical')
+      ? 'critical'
+      : args.includes('--high')
+        ? 'high'
+        : args.includes('--medium')
+          ? 'medium'
+          : args.includes('--low')
+            ? 'low'
+            : undefined,
+
     parallel: args.includes('--parallel'),
     generateReport: args.includes('--report'),
-    coverage: args.includes('--coverage')
+    coverage: args.includes('--coverage'),
   };
 
   if (args.includes('--help')) {

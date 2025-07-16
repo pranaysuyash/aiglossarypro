@@ -281,7 +281,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log('\n✅ Enhanced performance indexes applied successfully');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('\n💥 Failed to apply enhanced indexes:', error);
       process.exit(1);
     });

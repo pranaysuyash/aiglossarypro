@@ -17,12 +17,12 @@ async function testEmailConfiguration() {
   try {
     // Check service status first
     const status = productionEmailService.getServiceStatus();
-    
+
     console.log(chalk.cyan('📊 Email Service Status:'));
     console.log(`   Available: ${status.available ? chalk.green('✓') : chalk.red('✗')}`);
     console.log(`   Service: ${status.service}`);
     console.log(`   Enabled: ${status.configured ? chalk.green('✓') : chalk.yellow('⚠️')}`);
-    
+
     if (!status.available) {
       console.log(chalk.red('\n❌ No email service configured!'));
       console.log(chalk.yellow('💡 Configure either:'));
@@ -39,9 +39,9 @@ async function testEmailConfiguration() {
 
     // Test email sending
     console.log(chalk.cyan(`\n📧 Sending test email to: ${TEST_EMAIL}`));
-    
+
     const success = await productionEmailService.testConfiguration(TEST_EMAIL);
-    
+
     if (success) {
       console.log(chalk.green.bold('\n✅ Email test successful!'));
       console.log(chalk.green('📬 Check your inbox for the test email'));
@@ -68,7 +68,9 @@ async function testAllEmailTypes() {
     // Test welcome email
     console.log(chalk.blue('Testing welcome email...'));
     const welcomeSuccess = await productionEmailService.sendWelcomeEmail(TEST_EMAIL, 'Test User');
-    console.log(welcomeSuccess ? chalk.green('✓ Welcome email sent') : chalk.red('✗ Welcome email failed'));
+    console.log(
+      welcomeSuccess ? chalk.green('✓ Welcome email sent') : chalk.red('✗ Welcome email failed')
+    );
 
     // Test premium welcome email
     console.log(chalk.blue('Testing premium welcome email...'));
@@ -76,15 +78,26 @@ async function testAllEmailTypes() {
       userName: 'Test User',
       orderNumber: 'TEST-12345',
     });
-    console.log(premiumSuccess ? chalk.green('✓ Premium welcome email sent') : chalk.red('✗ Premium welcome email failed'));
+    console.log(
+      premiumSuccess
+        ? chalk.green('✓ Premium welcome email sent')
+        : chalk.red('✗ Premium welcome email failed')
+    );
 
     // Test password reset email
     console.log(chalk.blue('Testing password reset email...'));
-    const resetSuccess = await productionEmailService.sendPasswordResetEmail(TEST_EMAIL, 'test-token-123');
-    console.log(resetSuccess ? chalk.green('✓ Password reset email sent') : chalk.red('✗ Password reset email failed'));
+    const resetSuccess = await productionEmailService.sendPasswordResetEmail(
+      TEST_EMAIL,
+      'test-token-123'
+    );
+    console.log(
+      resetSuccess
+        ? chalk.green('✓ Password reset email sent')
+        : chalk.red('✗ Password reset email failed')
+    );
 
     const allSuccess = welcomeSuccess && premiumSuccess && resetSuccess;
-    
+
     if (allSuccess) {
       console.log(chalk.green.bold('\n🎉 All email types working correctly!'));
     } else {
@@ -102,16 +115,16 @@ async function testAllEmailTypes() {
 async function main() {
   const args = process.argv.slice(2);
   const testAllTypes = args.includes('--all') || args.includes('-a');
-  
+
   if (testAllTypes) {
     console.log(chalk.blue('🔄 Running comprehensive email tests...\n'));
-    
+
     // Test configuration first
     await testEmailConfiguration();
-    
+
     // Then test all email types
     const allTypesSuccess = await testAllEmailTypes();
-    
+
     if (allTypesSuccess) {
       console.log(chalk.green.bold('\n🚀 All email tests passed! Production ready.'));
     } else {

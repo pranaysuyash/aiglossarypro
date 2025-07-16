@@ -65,9 +65,7 @@ export function SampleTermPage({ term, onSignupWall }: SampleTermPageProps) {
                 </p>
               </div>
             </div>
-            <Badge className={getComplexityColor(term.complexity)}>
-              {term.complexity}
-            </Badge>
+            <Badge className={getComplexityColor(term.complexity)}>{term.complexity}</Badge>
           </div>
         </div>
       </div>
@@ -87,12 +85,12 @@ export function SampleTermPage({ term, onSignupWall }: SampleTermPageProps) {
                 <p className="text-lg leading-relaxed text-gray-700 dark:text-gray-300">
                   {term.definition}
                 </p>
-                
+
                 {/* Tags */}
                 <div className="flex flex-wrap gap-2 mt-4">
                   {term.tags.map((tag, index) => (
-                    <Badge 
-                      key={index} 
+                    <Badge
+                      key={index}
                       variant="secondary"
                       className="bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
                     >
@@ -160,13 +158,11 @@ export function SampleTermPage({ term, onSignupWall }: SampleTermPageProps) {
                 <CardTitle className="text-orange-900 dark:text-orange-100">
                   Related Terms
                 </CardTitle>
-                <CardDescription>
-                  Explore connected concepts
-                </CardDescription>
+                <CardDescription>Explore connected concepts</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {term.relatedTerms.map((relatedTerm) => (
+                  {term.relatedTerms.map(relatedTerm => (
                     <div
                       key={relatedTerm.id}
                       className={`p-3 rounded-lg border transition-all duration-200 ${
@@ -185,9 +181,7 @@ export function SampleTermPage({ term, onSignupWall }: SampleTermPageProps) {
                             {relatedTerm.category}
                           </p>
                         </div>
-                        {relatedTerm.locked && (
-                          <Lock className="w-4 h-4 text-gray-400" />
-                        )}
+                        {relatedTerm.locked && <Lock className="w-4 h-4 text-gray-400" />}
                       </div>
                     </div>
                   ))}
@@ -208,12 +202,12 @@ export function SampleTermPage({ term, onSignupWall }: SampleTermPageProps) {
               <CardContent>
                 <div className="space-y-4">
                   <div className="text-sm text-yellow-800 dark:text-yellow-200">
-                    ✅ 50 terms per day<br />
-                    ✅ Advanced search & filtering<br />
-                    ✅ Bookmark favorites<br />
-                    ✅ Track learning progress
+                    ✅ 50 terms per day
+                    <br />✅ Advanced search & filtering
+                    <br />✅ Bookmark favorites
+                    <br />✅ Track learning progress
                   </div>
-                  <Button 
+                  <Button
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
                     onClick={handleLockedTermClick}
                   >
@@ -230,9 +224,7 @@ export function SampleTermPage({ term, onSignupWall }: SampleTermPageProps) {
             {/* Navigation Help */}
             <Card>
               <CardHeader>
-                <CardTitle className="text-gray-900 dark:text-gray-100">
-                  Explore More
-                </CardTitle>
+                <CardTitle className="text-gray-900 dark:text-gray-100">Explore More</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -275,11 +267,7 @@ export function SampleTermPage({ term, onSignupWall }: SampleTermPageProps) {
               <Button className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
                 Sign Up Free
               </Button>
-              <Button 
-                variant="ghost" 
-                className="w-full"
-                onClick={() => setSignupModalOpen(false)}
-              >
+              <Button variant="ghost" className="w-full" onClick={() => setSignupModalOpen(false)}>
                 Maybe Later
               </Button>
             </CardContent>

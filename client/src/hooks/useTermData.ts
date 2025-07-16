@@ -99,7 +99,7 @@ export function useTermData(id: string | undefined, isAuthenticated: boolean) {
 
 export function useTermActions(id: string | undefined, _isAuthenticated: boolean) {
   const trackView = async () => {
-    if (!id) return;
+    if (!id) {return;}
     try {
       await apiRequest('POST', `/api/enhanced/terms/${id}/view`, null);
     } catch (error) {

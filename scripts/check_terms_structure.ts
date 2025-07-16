@@ -14,7 +14,7 @@ async function checkTermsStructure() {
     `);
 
     console.log('Terms table columns:');
-    structure.rows.forEach((col) => {
+    structure.rows.forEach(col => {
       console.log(`- ${col.column_name}: ${col.data_type} (nullable: ${col.is_nullable})`);
     });
 
@@ -25,7 +25,7 @@ async function checkTermsStructure() {
     if (sample.rows.length > 0) {
       const firstTerm = sample.rows[0];
       console.log('\nFirst term structure:');
-      Object.keys(firstTerm).forEach((key) => {
+      Object.keys(firstTerm).forEach(key => {
         const value = firstTerm[key];
         const valueStr = value
           ? typeof value === 'string'

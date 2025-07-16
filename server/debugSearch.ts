@@ -144,7 +144,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log('\n✅ Debug completed');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('❌ Debug failed:', error);
       process.exit(1);
     });

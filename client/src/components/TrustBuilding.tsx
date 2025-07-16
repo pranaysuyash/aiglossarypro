@@ -1,5 +1,5 @@
-import React from 'react';
-import { Shield, Zap, Gift, ArrowRight } from 'lucide-react';
+import { ArrowRight, Gift, Shield, Zap } from 'lucide-react';
+import type React from 'react';
 import { Link } from 'wouter';
 
 export const TrustBadge: React.FC = () => {
@@ -26,18 +26,14 @@ export const FreeTierBanner: React.FC = () => {
         <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
           <div className="flex items-center gap-2">
             <Gift className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <span className="font-semibold text-gray-900 dark:text-white">
-              50 Terms Daily
-            </span>
+            <span className="font-semibold text-gray-900 dark:text-white">50 Terms Daily</span>
           </div>
           <div className="flex items-center gap-2">
             <Zap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />
-            <span className="font-semibold text-gray-900 dark:text-white">
-              Forever Free
-            </span>
+            <span className="font-semibold text-gray-900 dark:text-white">Forever Free</span>
           </div>
           <Link
-            to="/signup"
+            to="/login"
             className="inline-flex items-center gap-2 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors"
           >
             Get Started Free
@@ -73,19 +69,19 @@ export const TrustSection: React.FC = () => {
   const trustPoints = [
     {
       icon: <Gift className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />,
-      title: "Start Free, Stay Free",
-      description: "50 daily AI explanations forever - no hidden fees or trials"
+      title: 'Start Free, Stay Free',
+      description: '50 daily AI explanations forever - no hidden fees or trials',
     },
     {
       icon: <Shield className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />,
-      title: "No Credit Card Required",
-      description: "Begin learning immediately without any payment information"
+      title: 'No Credit Card Required',
+      description: 'Begin learning immediately without any payment information',
     },
     {
       icon: <Zap className="w-5 h-5 text-indigo-600 dark:text-indigo-400" />,
-      title: "Upgrade When Ready",
-      description: "Love it? Unlock unlimited access with a one-time lifetime purchase"
-    }
+      title: 'Upgrade When Ready',
+      description: 'Love it? Unlock unlimited access with a one-time lifetime purchase',
+    },
   ];
 
   return (
@@ -103,7 +99,7 @@ export const TrustSection: React.FC = () => {
           Join thousands of learners who started free and upgraded to lifetime access
         </p>
         <Link
-          to="/signup"
+          to="/login"
           className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg hover:from-indigo-700 hover:to-purple-700 transition-all transform hover:scale-105"
         >
           Start Learning Free
@@ -119,9 +115,7 @@ export const RiskFreeBadge: React.FC = () => {
     <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-full border border-green-200 dark:border-green-800">
       <Shield className="w-5 h-5 text-green-600 dark:text-green-400" />
       <div className="text-left">
-        <div className="text-sm font-bold text-green-800 dark:text-green-300">
-          Risk-Free Trial
-        </div>
+        <div className="text-sm font-bold text-green-800 dark:text-green-300">Risk-Free Trial</div>
         <div className="text-xs text-green-700 dark:text-green-400">
           50 terms daily - forever free
         </div>

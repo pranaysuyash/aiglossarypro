@@ -1,12 +1,13 @@
 import { QueryClientProvider } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { Route, Switch, useLocation } from 'wouter';
 import SkipLinks from '@/components/accessibility/SkipLinks';
 import CookieConsentBanner from '@/components/CookieConsentBanner';
 import FirebaseLoginPage from '@/components/FirebaseLoginPage';
 import Footer from '@/components/Footer';
+import GuestAwareTermDetail from '@/components/GuestAwareTermDetail';
+import { GuestConversionFab } from '@/components/GuestPreviewBanner';
 import Header from '@/components/Header';
-import { useEffect, useState } from 'react';
-import { reportWebVitals, preloadCriticalAssets, checkPerformanceBudget } from '@/utils/performance';
 // Lazy load heavy pages to reduce initial bundle size
 import {
   LazyAboutPage,
@@ -19,7 +20,6 @@ import {
   LazyDashboardPage,
   LazyDiscoveryPage,
   LazyFavoritesPage,
-  LazyLandingPage,
   LazyLearningPathDetailPage,
   LazyLearningPathsPage,
   LazyLifetimePage,
@@ -30,25 +30,28 @@ import {
   LazySubcategoriesPage,
   LazySubcategoryDetailPage,
   LazySurpriseMePage,
-  LazyTermDetailPage,
   LazyTermsOfServicePage,
   LazyTermsPage,
   LazyThreeDVisualizationPage,
   LazyTrendingPage,
+  LazySupportCenterPage,
 } from '@/components/lazy/LazyPages';
-import { ThemeProvider } from '@/components/ThemeProvider';
-import { Toaster } from '@/components/ui/toaster';
-import { TooltipProvider } from '@/components/ui/tooltip';
-import { GuestConversionFab } from '@/components/GuestPreviewBanner';
-import GuestAwareTermDetail from '@/components/GuestAwareTermDetail';
+import OfflineStatus from '@/components/OfflineStatus';
 import { OnboardingTour, useOnboarding } from '@/components/onboarding/OnboardingTour';
 import PWAInstallBanner from '@/components/PWAInstallBanner';
-import OfflineStatus from '@/components/OfflineStatus';
-import { UrgencyBanner, StickyUrgencyBar } from '@/components/UrgencyIndicators';
+import { ThemeProvider } from '@/components/ThemeProvider';
+import { StickyUrgencyBar, UrgencyBanner } from '@/components/UrgencyIndicators';
+import { Toaster } from '@/components/ui/toaster';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { useAuth } from '@/hooks/useAuth';
 import Home from '@/pages/Home';
 import NotFound from '@/pages/not-found';
 import PurchaseSuccess from '@/pages/PurchaseSuccess';
+import {
+  checkPerformanceBudget,
+  preloadCriticalAssets,
+  reportWebVitals,
+} from '@/utils/performance';
 import {
   preloadForAdmin,
   preloadForAuthenticatedUser,
@@ -56,9 +59,9 @@ import {
 } from '@/utils/preloadComponents';
 import { queryClient } from './lib/queryClient';
 import '@/utils/bundleAnalyzer'; // Initialize bundle analyzer
-import { posthogExperiments } from '@/services/posthogExperiments';
-import { initAnalytics } from '@/lib/analytics';
 import { LandingPageGuard } from '@/components/LandingPageGuard';
+import { initAnalytics } from '@/lib/analytics';
+import { posthogExperiments } from '@/services/posthogExperiments';
 
 // Smart Term Detail component that chooses between enhanced and regular view with guest support
 function SmartTermDetail() {
@@ -102,12 +105,12 @@ function SmartLandingPage() {
     // Only check once when loading is complete
     if (!isLoading && !hasCheckedAuth) {
       setHasCheckedAuth(true);
-      
+
       if (isAuthenticated) {
         // Determine the best landing page for authenticated users
         // Premium users go to app, free users might go to dashboard to see their progress
         const redirectPath = user?.lifetimeAccess ? '/app' : '/dashboard';
-        
+
         // Small delay to ensure smooth transition
         setTimeout(() => {
           setLocation(redirectPath);
@@ -158,19 +161,24 @@ function Router() {
       is_authenticated: isAuthenticated,
       user_type: isAuthenticated ? (user?.lifetimeAccess ? 'premium' : 'free') : 'guest',
       page_path: location,
-      device_type: window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop',
-      browser: navigator.userAgent.includes('Chrome') ? 'chrome' : 
-               navigator.userAgent.includes('Safari') ? 'safari' : 
-               navigator.userAgent.includes('Firefox') ? 'firefox' : 'other',
+      device_type:
+        window.innerWidth < 768 ? 'mobile' : window.innerWidth < 1024 ? 'tablet' : 'desktop',
+      browser: navigator.userAgent.includes('Chrome')
+        ? 'chrome'
+        : navigator.userAgent.includes('Safari')
+          ? 'safari'
+          : navigator.userAgent.includes('Firefox')
+            ? 'firefox'
+            : 'other',
     };
 
     posthogExperiments.initialize(user?.uid, userProperties);
 
     // Initialize performance monitoring
     preloadCriticalAssets();
-    
+
     // Report web vitals
-    reportWebVitals((metric) => {
+    reportWebVitals(metric => {
       console.log('[Web Vitals]', metric);
       // Send to analytics if needed
       if (window.gtag) {
@@ -220,7 +228,7 @@ function Router() {
   return (
     <div className="flex flex-col min-h-screen">
       <SkipLinks />
-      
+
       {/* Urgency banner - show on landing page only */}
       {isLandingPage && <UrgencyBanner />}
 
@@ -294,6 +302,11 @@ function Router() {
           <Route path="/about" component={LazyAboutPage} />
           <Route path="/privacy" component={LazyPrivacyPolicyPage} />
           <Route path="/terms-of-service" component={LazyTermsOfServicePage} />
+          <Route path="/support">
+            <ProtectedRoute>
+              <LazySupportCenterPage />
+            </ProtectedRoute>
+          </Route>
           {/* Legacy redirect for old landing page route */}
           <Route path="/landing" component={SmartLandingPage} />
           <Route component={NotFound} />
@@ -305,7 +318,7 @@ function Router() {
 
       {/* Cookie Consent Banner - Show on all pages */}
       <CookieConsentBanner />
-      
+
       {/* Sticky urgency bar - show on landing page only */}
       {isLandingPage && <StickyUrgencyBar />}
     </div>
@@ -313,7 +326,8 @@ function Router() {
 }
 
 function AppContent() {
-  const { showOnboarding, completeOnboarding, dismissOnboarding, checkAndShowOnboarding } = useOnboarding();
+  const { showOnboarding, completeOnboarding, dismissOnboarding, checkAndShowOnboarding } =
+    useOnboarding();
   const { isAuthenticated } = useAuth();
 
   // Handle onboarding logic with proper authentication check

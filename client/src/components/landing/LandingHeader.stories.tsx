@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { LandingHeader } from './LandingHeader';
 
@@ -9,12 +8,13 @@ const meta: Meta<typeof LandingHeader> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Landing page header with navigation, logo, and CTA buttons. Features responsive design and analytics tracking.',
+        component:
+          'Landing page header with navigation, logo, and CTA buttons. Features responsive design and analytics tracking.',
       },
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-screen bg-gray-50">
         <Story />
         <div className="p-8">
@@ -105,7 +105,7 @@ export const Desktop: Story = {
 
 export const WithScrollBehavior: Story = {
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-[200vh] bg-gray-50">
         <Story />
         <div className="p-8">
@@ -119,8 +119,8 @@ export const WithScrollBehavior: Story = {
                 <h3 className="font-semibold">Content Section {i + 1}</h3>
                 <p className="text-gray-600">
                   Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor
-                  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis
-                  nostrud exercitation ullamco laboris.
+                  incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud
+                  exercitation ullamco laboris.
                 </p>
               </div>
             ))}
@@ -132,7 +132,8 @@ export const WithScrollBehavior: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Landing header with sticky behavior demonstration. Scroll to see the header remain at the top.',
+        story:
+          'Landing header with sticky behavior demonstration. Scroll to see the header remain at the top.',
       },
     },
   },
@@ -140,7 +141,7 @@ export const WithScrollBehavior: Story = {
 
 export const WithInternationalPricing: Story = {
   decorators: [
-    (Story) => {
+    Story => {
       // Mock different pricing for this story
       const mockInternationalPricing = () => ({
         localPrice: 99,
@@ -149,7 +150,7 @@ export const WithInternationalPricing: Story = {
         countryCode: 'DE',
         isLoading: false,
       });
-      
+
       // Temporarily override the hook
 
       return <Story />;
@@ -158,7 +159,8 @@ export const WithInternationalPricing: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Landing header with international pricing (EUR) showing localized pricing in CTA buttons.',
+        story:
+          'Landing header with international pricing (EUR) showing localized pricing in CTA buttons.',
       },
     },
   },
@@ -166,7 +168,7 @@ export const WithInternationalPricing: Story = {
 
 export const DarkMode: Story = {
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-screen bg-gray-900">
         <div className="dark">
           <Story />

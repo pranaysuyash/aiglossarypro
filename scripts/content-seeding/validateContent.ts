@@ -119,10 +119,10 @@ async function validateContent(): Promise<void> {
         validationResults.push(result);
 
         // Auto-fix if requested
-        if (shouldFix && result.issues.some((issue) => issue.fixable)) {
+        if (shouldFix && result.issues.some(issue => issue.fixable)) {
           await autoFixIssues(
             term,
-            result.issues.filter((issue) => issue.fixable)
+            result.issues.filter(issue => issue.fixable)
           );
         }
 
@@ -132,11 +132,11 @@ async function validateContent(): Promise<void> {
 
         if (result.issues.length > 0) {
           logger.info(
-            `  Issues: ${result.issues.length} (${result.issues.filter((i) => i.fixable).length} fixable)`
+            `  Issues: ${result.issues.length} (${result.issues.filter(i => i.fixable).length} fixable)`
           );
         }
       } catch (error) {
-        logger.error(`Error validating term ${term.name}:`, error);
+        logger.error(`Error validating term ${term.name}:`, error as Record<string, unknown>);
       }
     }
 
@@ -153,7 +153,7 @@ async function validateContent(): Promise<void> {
 
     displayValidationSummary(report, duration);
   } catch (error) {
-    logger.error('Fatal error in content validation:', error);
+    logger.error('Fatal error in content validation:', error as Record<string, unknown>);
     process.exit(1);
   }
 }
@@ -170,7 +170,7 @@ async function getTermsToValidate(targetTerm: string): Promise<any[]> {
       .where(eq(terms.name, targetTerm))
       .limit(1);
 
-    return termResult.map((row) => ({ ...row.terms, category: row.categories?.name }));
+    return termResult.map(row => ({ ...row.terms, category: row.categories?.name }));
   } else {
     const termsResult = await db
       .select()
@@ -178,7 +178,7 @@ async function getTermsToValidate(targetTerm: string): Promise<any[]> {
       .leftJoin(categories, eq(terms.categoryId, categories.id))
       .orderBy(terms.name);
 
-    return termsResult.map((row) => ({ ...row.terms, category: row.categories?.name }));
+    return termsResult.map(row => ({ ...row.terms, category: row.categories?.name }));
   }
 }
 
@@ -218,7 +218,7 @@ async function validateTerm(term: any, validationType: ValidationType): Promise<
   }
 
   // Calculate overall score
-  const scores = [qualityScore, completenessScore, consistencyScore].filter((s) => s > 0);
+  const scores = [qualityScore, completenessScore, consistencyScore].filter(s => s > 0);
   const overallScore =
     scores.length > 0 ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : 0;
 
@@ -456,7 +456,7 @@ async function validateConsistency(
     issues.push({
       type: 'warning',
       category: 'Consistency',
-      message: `Found ${duplicates.length} similar terms: ${duplicates.map((d) => d.name).join(', ')}`,
+      message: `Found ${duplicates.length} similar terms: ${duplicates.map(d => d.name).join(', ')}`,
       termId: term.id,
       termName: term.name,
       fixable: false,
@@ -468,7 +468,7 @@ async function validateConsistency(
   const terminologyIssues = checkTerminologyConsistency(term);
   if (terminologyIssues.length > 0) {
     issues.push(
-      ...terminologyIssues.map((issue) => ({
+      ...terminologyIssues.map(issue => ({
         type: 'info' as const,
         category: 'Consistency',
         message: issue,
@@ -512,7 +512,7 @@ async function autoFixIssues(term: any, fixableIssues: ValidationIssue[]): Promi
           logger.info(`    ⚠️  No auto-fix available for: ${issue.fixAction}`);
       }
     } catch (error) {
-      logger.error(`    ❌ Failed to fix ${issue.fixAction}:`, error);
+      logger.error(`    ❌ Failed to fix ${issue.fixAction}:`, error as Record<string, unknown>);
     }
   }
 }
@@ -534,7 +534,7 @@ async function regenerateDefinition(term: any): Promise<void> {
 
     logger.info(`    ✅ Regenerated definition for ${term.name}`);
   } catch (error) {
-    logger.error(`    ❌ Failed to regenerate definition:`, error);
+    logger.error(`    ❌ Failed to regenerate definition:`, error as Record<string, unknown>);
   }
 }
 
@@ -552,7 +552,7 @@ async function improveDefinition(term: any): Promise<void> {
 
     logger.info(`    ✅ Improved definition for ${term.name}`);
   } catch (error) {
-    logger.error(`    ❌ Failed to improve definition:`, error);
+    logger.error(`    ❌ Failed to improve definition:`, error as Record<string, unknown>);
   }
 }
 
@@ -570,7 +570,7 @@ async function generateShortDefinition(term: any): Promise<void> {
       logger.info(`    ✅ Generated short definition for ${term.name}`);
     }
   } catch (error) {
-    logger.error(`    ❌ Failed to generate short definition:`, error);
+    logger.error(`    ❌ Failed to generate short definition:`, error as Record<string, unknown>);
   }
 }
 
@@ -579,8 +579,8 @@ async function generateCharacteristics(term: any): Promise<void> {
     const content = await aiService.generateSectionContent(term.name, 'Key Characteristics');
     const characteristics = content
       .split('\n')
-      .map((line) => line.replace(/^[•\-\d.]\s*/, '').trim())
-      .filter((line) => line.length > 0)
+      .map(line => line.replace(/^[•\-\d.]\s*/, '').trim())
+      .filter(line => line.length > 0)
       .slice(0, 5);
 
     if (characteristics.length > 0) {
@@ -589,7 +589,7 @@ async function generateCharacteristics(term: any): Promise<void> {
       logger.info(`    ✅ Generated ${characteristics.length} characteristics for ${term.name}`);
     }
   } catch (error) {
-    logger.error(`    ❌ Failed to generate characteristics:`, error);
+    logger.error(`    ❌ Failed to generate characteristics:`, error as Record<string, unknown>);
   }
 }
 
@@ -598,11 +598,11 @@ async function generateApplications(term: any): Promise<void> {
     const content = await aiService.generateSectionContent(term.name, 'Applications');
     const appLines = content
       .split('\n')
-      .map((line) => line.replace(/^[•\-\d.]\s*/, '').trim())
-      .filter((line) => line.length > 0)
+      .map(line => line.replace(/^[•\-\d.]\s*/, '').trim())
+      .filter(line => line.length > 0)
       .slice(0, 5);
 
-    const applications = appLines.map((line) => ({
+    const applications = appLines.map(line => ({
       name: line.split(':')[0]?.trim() || line.substring(0, 50),
       description: line.includes(':') ? line.split(':').slice(1).join(':').trim() : line,
     }));
@@ -613,7 +613,7 @@ async function generateApplications(term: any): Promise<void> {
       logger.info(`    ✅ Generated ${applications.length} applications for ${term.name}`);
     }
   } catch (error) {
-    logger.error(`    ❌ Failed to generate applications:`, error);
+    logger.error(`    ❌ Failed to generate applications:`, error as Record<string, unknown>);
   }
 }
 
@@ -630,7 +630,7 @@ function assessTextQuality(text: string): number {
   else if (text.length < 100) score -= 15;
 
   // Sentence structure
-  const sentences = text.split(/[.!?]+/).filter((s) => s.trim().length > 0);
+  const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
   if (sentences.length < 2) score -= 20;
 
   // Word variety
@@ -649,7 +649,7 @@ function assessTextQuality(text: string): number {
     'training',
     'optimization',
   ];
-  const hasTechnicalTerms = technicalWords.some((word) => text.toLowerCase().includes(word));
+  const hasTechnicalTerms = technicalWords.some(word => text.toLowerCase().includes(word));
   if (!hasTechnicalTerms) score -= 10;
 
   return Math.max(score, 0);
@@ -683,16 +683,16 @@ async function checkDefinitionConsistency(
     definition
       .toLowerCase()
       .split(/\s+/)
-      .filter((word) => word.length > 3)
+      .filter(word => word.length > 3)
   );
   const shortWords = new Set(
     shortDefinition
       .toLowerCase()
       .split(/\s+/)
-      .filter((word) => word.length > 3)
+      .filter(word => word.length > 3)
   );
 
-  const overlap = [...defWords].filter((word) => shortWords.has(word)).length;
+  const overlap = [...defWords].filter(word => shortWords.has(word)).length;
   const maxWords = Math.max(defWords.size, shortWords.size);
 
   return maxWords > 0 ? (overlap / maxWords) * 100 : 0;
@@ -706,9 +706,9 @@ async function checkCategoryConsistency(
   // Check if term appears in essential terms for this category
   const essentialTerms = ESSENTIAL_AI_TERMS[category] || [];
   const isEssential = essentialTerms.some(
-    (t) =>
+    t =>
       t.name.toLowerCase() === termName.toLowerCase() ||
-      t.aliases?.some((alias) => alias.toLowerCase() === termName.toLowerCase())
+      t.aliases?.some(alias => alias.toLowerCase() === termName.toLowerCase())
   );
 
   if (isEssential) return 100;
@@ -725,7 +725,7 @@ async function checkCategoryConsistency(
 
   const keywords = categoryKeywords[category] || [];
   const definitionLower = definition.toLowerCase();
-  const matches = keywords.filter((keyword) => definitionLower.includes(keyword)).length;
+  const matches = keywords.filter(keyword => definitionLower.includes(keyword)).length;
 
   return keywords.length > 0 ? (matches / keywords.length) * 100 : 70;
 }
@@ -792,9 +792,9 @@ function generateValidationReport(results: ValidationResult[]): ValidationReport
   const totalTerms = results.length;
 
   // Calculate summary statistics
-  const qualityScores = results.map((r) => r.qualityScore).filter((s) => s > 0);
-  const completenessScores = results.map((r) => r.completenessScore).filter((s) => s > 0);
-  const consistencyScores = results.map((r) => r.consistencyScore).filter((s) => s > 0);
+  const qualityScores = results.map(r => r.qualityScore).filter(s => s > 0);
+  const completenessScores = results.map(r => r.completenessScore).filter(s => s > 0);
+  const consistencyScores = results.map(r => r.consistencyScore).filter(s => s > 0);
 
   const averageQualityScore =
     qualityScores.length > 0
@@ -809,11 +809,11 @@ function generateValidationReport(results: ValidationResult[]): ValidationReport
       ? Math.round(consistencyScores.reduce((a, b) => a + b, 0) / consistencyScores.length)
       : 0;
 
-  const allIssues = results.flatMap((r) => r.issues);
+  const allIssues = results.flatMap(r => r.issues);
   const totalIssues = allIssues.length;
-  const fixableIssues = allIssues.filter((i) => i.fixable).length;
+  const fixableIssues = allIssues.filter(i => i.fixable).length;
 
-  const termsAboveThreshold = results.filter((r) => r.overallScore >= qualityThreshold).length;
+  const termsAboveThreshold = results.filter(r => r.overallScore >= qualityThreshold).length;
   const termsBelowThreshold = totalTerms - termsAboveThreshold;
 
   // Category breakdown would require category data
@@ -860,7 +860,7 @@ async function saveValidationReport(report: ValidationReport): Promise<void> {
 
     logger.info(`📄 Summary report saved: ${summaryFilepath}`);
   } catch (error) {
-    logger.error('Failed to save validation report:', error);
+    logger.error('Failed to save validation report:', error as Record<string, unknown>);
   }
 }
 
@@ -948,7 +948,7 @@ function displayValidationSummary(report: ValidationReport, duration: number): v
  * Main execution
  */
 if (require.main === module) {
-  validateContent().catch((error) => {
+  validateContent().catch(error => {
     logger.error('Content validation failed:', error);
     process.exit(1);
   });

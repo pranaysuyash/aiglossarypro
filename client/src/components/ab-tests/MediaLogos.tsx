@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
-import { useExperiment } from '@/services/posthogExperiments';
 import { trackUserAction } from '@/lib/analytics';
+import { useExperiment } from '@/services/posthogExperiments';
 
 interface MediaLogo {
   name: string;
@@ -19,10 +19,10 @@ const MEDIA_LOGOS: MediaLogo[] = [
 ];
 
 const TRUST_PHRASES: Record<string, string> = {
-  control: "As Featured In",
-  authority: "Trusted By Industry Leaders",
-  social_proof: "Join 10,000+ Professionals Using",
-  credibility: "Recommended By Top Publications"
+  control: 'As Featured In',
+  authority: 'Trusted By Industry Leaders',
+  social_proof: 'Join 10,000+ Professionals Using',
+  credibility: 'Recommended By Top Publications',
 };
 
 interface MediaLogosProps {
@@ -30,26 +30,17 @@ interface MediaLogosProps {
 }
 
 export function MediaLogos({ placement = 'below_fold' }: MediaLogosProps) {
-  const { variant: styleVariant, trackFeatureUsage } = useExperiment(
-    'mediaLogosStyle',
-    'control'
-  );
+  const { variant: styleVariant, trackFeatureUsage } = useExperiment('mediaLogosStyle', 'control');
 
-  const { variant: phraseVariant } = useExperiment(
-    'mediaLogosPhrase',
-    'control'
-  );
+  const { variant: phraseVariant } = useExperiment('mediaLogosPhrase', 'control');
 
-  const { variant: placementVariant } = useExperiment(
-    'mediaLogosPlacement',
-    placement
-  );
+  const { variant: placementVariant } = useExperiment('mediaLogosPlacement', placement);
 
   useEffect(() => {
     trackFeatureUsage('media_logos_viewed', {
       style: styleVariant,
       phrase: phraseVariant,
-      placement: placementVariant
+      placement: placementVariant,
     });
   }, [styleVariant, phraseVariant, placementVariant, trackFeatureUsage]);
 
@@ -57,7 +48,7 @@ export function MediaLogos({ placement = 'below_fold' }: MediaLogosProps) {
     trackUserAction('media_logo_clicked', {
       logo: logo.name,
       style: styleVariant,
-      placement: placementVariant
+      placement: placementVariant,
     });
   };
 
@@ -78,10 +69,12 @@ export function MediaLogos({ placement = 'below_fold' }: MediaLogosProps) {
   };
 
   return (
-    <section className={`
+    <section
+      className={`
       py-12 sm:py-16
       ${placementVariant === 'above_fold' ? 'bg-gradient-to-b from-gray-50 to-white' : 'bg-gray-50'}
-    `}>
+    `}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2 className="text-center text-sm font-semibold text-gray-600 uppercase tracking-wide mb-8">
           {trustPhrase}
@@ -92,28 +85,22 @@ export function MediaLogos({ placement = 'below_fold' }: MediaLogosProps) {
   );
 }
 
-function DefaultLogos({ 
-  logos, 
-  onLogoClick 
-}: { 
-  logos: MediaLogo[]; 
+function DefaultLogos({
+  logos,
+  onLogoClick,
+}: {
+  logos: MediaLogo[];
   onLogoClick: (logo: MediaLogo) => void;
 }) {
   return (
     <div className="flex flex-wrap items-center justify-center gap-8 sm:gap-12">
-      {logos.map((logo) => (
-        <button
-          key={logo.name}
-          onClick={() => onLogoClick(logo)}
-          className="group cursor-pointer"
-        >
-          <div 
+      {logos.map(logo => (
+        <button key={logo.name} onClick={() => onLogoClick(logo)} className="group cursor-pointer">
+          <div
             className="bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors"
             style={{ width: logo.width, height: logo.height }}
           >
-            <span className="text-gray-600 font-bold text-sm">
-              {logo.placeholder}
-            </span>
+            <span className="text-gray-600 font-bold text-sm">{logo.placeholder}</span>
           </div>
         </button>
       ))}
@@ -121,11 +108,11 @@ function DefaultLogos({
   );
 }
 
-function AnimatedLogos({ 
-  logos, 
-  onLogoClick 
-}: { 
-  logos: MediaLogo[]; 
+function AnimatedLogos({
+  logos,
+  onLogoClick,
+}: {
+  logos: MediaLogo[];
   onLogoClick: (logo: MediaLogo) => void;
 }) {
   return (
@@ -137,7 +124,7 @@ function AnimatedLogos({
           className="group cursor-pointer animate-fadeInUp"
           style={{ animationDelay: `${index * 100}ms` }}
         >
-          <div 
+          <div
             className="bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transform transition-all hover:scale-110"
             style={{ width: logo.width, height: logo.height }}
           >
@@ -151,11 +138,11 @@ function AnimatedLogos({
   );
 }
 
-function CarouselLogos({ 
-  logos, 
-  onLogoClick 
-}: { 
-  logos: MediaLogo[]; 
+function CarouselLogos({
+  logos,
+  onLogoClick,
+}: {
+  logos: MediaLogo[];
   onLogoClick: (logo: MediaLogo) => void;
 }) {
   return (
@@ -168,13 +155,11 @@ function CarouselLogos({
             onClick={() => onLogoClick(logo)}
             className="flex-shrink-0 mx-6 cursor-pointer"
           >
-            <div 
+            <div
               className="bg-gray-200 rounded-lg flex items-center justify-center hover:bg-gray-300 transition-colors"
               style={{ width: logo.width, height: logo.height }}
             >
-              <span className="text-gray-600 font-bold text-sm">
-                {logo.placeholder}
-              </span>
+              <span className="text-gray-600 font-bold text-sm">{logo.placeholder}</span>
             </div>
           </button>
         ))}
@@ -183,29 +168,23 @@ function CarouselLogos({
   );
 }
 
-function GridLogos({ 
-  logos, 
-  onLogoClick 
-}: { 
-  logos: MediaLogo[]; 
+function GridLogos({
+  logos,
+  onLogoClick,
+}: {
+  logos: MediaLogo[];
   onLogoClick: (logo: MediaLogo) => void;
 }) {
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-      {logos.map((logo) => (
-        <button
-          key={logo.name}
-          onClick={() => onLogoClick(logo)}
-          className="group cursor-pointer"
-        >
+      {logos.map(logo => (
+        <button key={logo.name} onClick={() => onLogoClick(logo)} className="group cursor-pointer">
           <div className="bg-white rounded-lg shadow-md p-4 flex items-center justify-center hover:shadow-lg transition-shadow">
-            <div 
+            <div
               className="bg-gray-200 rounded flex items-center justify-center"
               style={{ width: '100%', height: 40 }}
             >
-              <span className="text-gray-600 font-bold text-xs">
-                {logo.placeholder}
-              </span>
+              <span className="text-gray-600 font-bold text-xs">{logo.placeholder}</span>
             </div>
           </div>
         </button>

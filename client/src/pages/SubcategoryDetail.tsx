@@ -62,7 +62,7 @@ export default function SubcategoryDetail() {
 
   // Filter terms locally for immediate feedback
   const filteredTerms = terms.filter((term: ITerm) => {
-    if (!searchTerm) return true;
+    if (!searchTerm) {return true;}
     return (
       term.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       term.definition?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -91,7 +91,7 @@ export default function SubcategoryDetail() {
 
   const handleLoadMore = () => {
     if (hasMore) {
-      setPage((prev) => prev + 1);
+      setPage(prev => prev + 1);
     }
   };
 
@@ -200,7 +200,7 @@ export default function SubcategoryDetail() {
             <Input
               placeholder="Search terms in this subcategory..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>

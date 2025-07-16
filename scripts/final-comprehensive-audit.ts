@@ -59,13 +59,13 @@ async function comprehensiveAudit() {
     const screenshots: string[] = [];
 
     // Listen for console errors
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         errors.push(`Console Error: ${msg.text()}`);
       }
     });
 
-    page.on('pageerror', (error) => {
+    page.on('pageerror', error => {
       errors.push(`Page Error: ${error.message}`);
     });
 
@@ -97,7 +97,7 @@ async function comprehensiveAudit() {
       // Get page elements
       const elements = await page.evaluate(() => {
         const headings = Array.from(document.querySelectorAll('h1, h2, h3, h4, h5, h6')).map(
-          (h) => h.textContent || ''
+          h => h.textContent || ''
         );
         const searchInputs = document.querySelectorAll(
           'input[type="text"], input[placeholder*="search"], input[placeholder*="Search"]'
@@ -205,9 +205,9 @@ async function comprehensiveAudit() {
     auditDate: new Date().toISOString(),
     summary: {
       totalPages: results.length,
-      pagesWithHierarchicalNav: results.filter((r) => r.features.hierarchicalNavigation).length,
-      pagesWithSearch: results.filter((r) => r.features.searchFunctionality).length,
-      pagesWithErrors: results.filter((r) => r.performance.errors.length > 0).length,
+      pagesWithHierarchicalNav: results.filter(r => r.features.hierarchicalNavigation).length,
+      pagesWithSearch: results.filter(r => r.features.searchFunctionality).length,
+      pagesWithErrors: results.filter(r => r.performance.errors.length > 0).length,
       averageLoadTime: results.reduce((sum, r) => sum + r.performance.loadTime, 0) / results.length,
     },
     results,

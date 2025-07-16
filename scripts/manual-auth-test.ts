@@ -63,7 +63,7 @@ class ManualAuthTester {
         console.log(chalk.cyan('📍 Step 6: Clicking Sign In button...'));
 
         // Listen for network requests
-        page.on('response', (response) => {
+        page.on('response', response => {
           if (response.url().includes('/auth/firebase/login')) {
             console.log(chalk.blue(`📡 API Response: ${response.status()} - ${response.url()}`));
           }

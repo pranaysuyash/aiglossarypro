@@ -8,7 +8,8 @@ const meta: Meta<typeof LandingA> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Landing Page A - Marketing-focused variant with sample CTA emphasis. This variant is part of the A/B test comparing marketing messaging with sample content discovery.',
+        component:
+          'Landing Page A - Marketing-focused variant with sample CTA emphasis. This variant is part of the A/B test comparing marketing messaging with sample content discovery.',
       },
     },
   },
@@ -34,7 +35,8 @@ export const MobileView: Story = {
     },
     docs: {
       description: {
-        story: 'Mobile-optimized view of Landing Page A with responsive layout and touch-friendly CTAs.',
+        story:
+          'Mobile-optimized view of Landing Page A with responsive layout and touch-friendly CTAs.',
       },
     },
   },
@@ -60,7 +62,8 @@ export const DarkMode: Story = {
     },
     docs: {
       description: {
-        story: 'Dark mode variant of Landing Page A (Note: This landing uses fixed light theme for marketing consistency).',
+        story:
+          'Dark mode variant of Landing Page A (Note: This landing uses fixed light theme for marketing consistency).',
       },
     },
   },
@@ -123,7 +126,7 @@ export const ComparisonWithControl: Story = {
             <li>• Prominent free samples CTA</li>
           </ul>
         </div>
-        
+
         <LandingA />
       </div>
     );
@@ -131,7 +134,8 @@ export const ComparisonWithControl: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Landing Page A with comparison notes highlighting the marketing-focused approach vs control.',
+        story:
+          'Landing Page A with comparison notes highlighting the marketing-focused approach vs control.',
       },
     },
   },
@@ -145,12 +149,12 @@ export const InteractiveElements: Story = {
       pricing: 0,
       final: 0,
     });
-    
+
     React.useEffect(() => {
       const handleClick = (e: MouseEvent) => {
         const target = e.target as HTMLElement;
         const button = target.closest('button');
-        
+
         if (button?.textContent?.includes('Explore Free Samples')) {
           setClicks(prev => ({ ...prev, hero: prev.hero + 1 }));
         } else if (button?.textContent?.includes('Browse All Free Samples')) {
@@ -161,11 +165,11 @@ export const InteractiveElements: Story = {
           setClicks(prev => ({ ...prev, final: prev.final + 1 }));
         }
       };
-      
+
       document.addEventListener('click', handleClick);
       return () => document.removeEventListener('click', handleClick);
     }, []);
-    
+
     return (
       <div>
         <div className="fixed bottom-4 right-4 z-50 bg-white rounded-lg shadow-lg p-4 max-w-xs">
@@ -184,20 +188,21 @@ export const InteractiveElements: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Interactive demo showing click tracking for different CTAs to analyze user engagement patterns.',
+        story:
+          'Interactive demo showing click tracking for different CTAs to analyze user engagement patterns.',
       },
     },
   },
 };
 
 // Import React for interactive stories
-import React from 'react';
 
 export const PerformanceOptimized: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Performance-optimized version of Landing Page A with lazy loading and optimized images.',
+        story:
+          'Performance-optimized version of Landing Page A with lazy loading and optimized images.',
       },
     },
     performance: {

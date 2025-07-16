@@ -150,7 +150,7 @@ export function AdminTermsManager() {
       });
 
       const response = await fetch(`/api/terms?${params}&admin=true`);
-      if (!response.ok) throw new Error('Failed to fetch terms');
+      if (!response.ok) {throw new Error('Failed to fetch terms');}
       return response.json();
     },
     enabled: !!user,
@@ -161,7 +161,7 @@ export function AdminTermsManager() {
     queryKey: ['categories'],
     queryFn: async () => {
       const response = await fetch('/api/categories');
-      if (!response.ok) throw new Error('Failed to fetch categories');
+      if (!response.ok) {throw new Error('Failed to fetch categories');}
       return response.json();
     },
   });
@@ -171,7 +171,7 @@ export function AdminTermsManager() {
     queryKey: ['ai-analytics'],
     queryFn: async () => {
       const response = await fetch('/api/ai/analytics?timeframe=7d');
-      if (!response.ok) throw new Error('Failed to fetch AI analytics');
+      if (!response.ok) {throw new Error('Failed to fetch AI analytics');}
       return response.json();
     },
     enabled: !!user,
@@ -185,7 +185,7 @@ export function AdminTermsManager() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(termData),
       });
-      if (!response.ok) throw new Error('Failed to create term');
+      if (!response.ok) {throw new Error('Failed to create term');}
       return response.json();
     },
     onSuccess: () => {
@@ -195,10 +195,10 @@ export function AdminTermsManager() {
       setAIGeneratedContent(null);
       toast({ title: 'Success', description: 'Term created successfully' });
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create term',
+        description: error instanceof Error ? error?.message : 'Failed to create term',
         variant: 'destructive',
       });
     },
@@ -220,20 +220,20 @@ export function AdminTermsManager() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ term, category, context }),
       });
-      if (!response.ok) throw new Error('Failed to generate definition');
+      if (!response.ok) {throw new Error('Failed to generate definition');}
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       setAIGeneratedContent(data.data);
       toast({
         title: 'AI Definition Generated',
         description: 'Review the generated content before saving',
       });
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to generate definition',
+        description: error instanceof Error ? error?.message : 'Failed to generate definition',
         variant: 'destructive',
       });
     },
@@ -245,10 +245,10 @@ export function AdminTermsManager() {
       const response = await fetch(
         `/api/ai/term-suggestions${category ? `?category=${category}` : ''}`
       );
-      if (!response.ok) throw new Error('Failed to get suggestions');
+      if (!response.ok) {throw new Error('Failed to get suggestions');}
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       setAISuggestions(data.data.suggestions);
       setIsAIAssistantOpen(true);
     },
@@ -260,10 +260,10 @@ export function AdminTermsManager() {
       const response = await fetch(`/api/ai/improve-definition/${termId}`, {
         method: 'POST',
       });
-      if (!response.ok) throw new Error('Failed to improve definition');
+      if (!response.ok) {throw new Error('Failed to improve definition');}
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       setAIGeneratedContent(data.data);
       setSelectedTerm(data.originalTerm);
       toast({
@@ -281,7 +281,7 @@ export function AdminTermsManager() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ termIds, verified }),
       });
-      if (!response.ok) throw new Error('Failed to update verification status');
+      if (!response.ok) {throw new Error('Failed to update verification status');}
       return response.json();
     },
     onSuccess: () => {
@@ -292,7 +292,7 @@ export function AdminTermsManager() {
   });
 
   const handleFilterChange = (key: keyof TermFilters, value: any) => {
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
       [key]: value,
       page: key === 'page' ? value : 1,
@@ -309,9 +309,9 @@ export function AdminTermsManager() {
 
   const handleSelectTerm = (id: string, checked: boolean) => {
     if (checked) {
-      setSelectedTerms((prev) => [...prev, id]);
+      setSelectedTerms(prev => [...prev, id]);
     } else {
-      setSelectedTerms((prev) => prev.filter((termId) => termId !== id));
+      setSelectedTerms(prev => prev.filter(termId => termId !== id));
     }
   };
 
@@ -387,9 +387,9 @@ export function AdminTermsManager() {
   };
 
   const getQualityColor = (score?: number) => {
-    if (!score) return 'text-gray-500';
-    if (score >= 80) return 'text-green-600';
-    if (score >= 60) return 'text-yellow-600';
+    if (!score) {return 'text-gray-500';}
+    if (score >= 80) {return 'text-green-600';}
+    if (score >= 60) {return 'text-yellow-600';}
     return 'text-red-600';
   };
 
@@ -570,7 +570,7 @@ export function AdminTermsManager() {
                     id="search-filter"
                     placeholder="Search terms..."
                     value={filters.search}
-                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    onChange={e => handleFilterChange('search', e.target.value)}
                   />
                 </div>
 
@@ -578,7 +578,7 @@ export function AdminTermsManager() {
                   <Label htmlFor="category-filter">Category</Label>
                   <Select
                     value={filters.category}
-                    onValueChange={(value) => handleFilterChange('category', value)}
+                    onValueChange={value => handleFilterChange('category', value)}
                   >
                     <SelectTrigger id="category-filter">
                       <SelectValue placeholder="All Categories" />
@@ -598,7 +598,7 @@ export function AdminTermsManager() {
                   <Label htmlFor="verification-filter">Verification</Label>
                   <Select
                     value={filters.verificationStatus}
-                    onValueChange={(value) => handleFilterChange('verificationStatus', value)}
+                    onValueChange={value => handleFilterChange('verificationStatus', value)}
                   >
                     <SelectTrigger id="verification-filter">
                       <SelectValue />
@@ -616,7 +616,7 @@ export function AdminTermsManager() {
                   <Label htmlFor="ai-filter">AI Generated</Label>
                   <Select
                     value={filters.aiGenerated}
-                    onValueChange={(value) => handleFilterChange('aiGenerated', value)}
+                    onValueChange={value => handleFilterChange('aiGenerated', value)}
                   >
                     <SelectTrigger id="ai-filter">
                       <SelectValue />
@@ -706,7 +706,7 @@ export function AdminTermsManager() {
                           <TableCell>
                             <Checkbox
                               checked={selectedTerms.includes(term.id)}
-                              onCheckedChange={(checked) => handleSelectTerm(term.id, !!checked)}
+                              onCheckedChange={checked => handleSelectTerm(term.id, !!checked)}
                             />
                           </TableCell>
                           <TableCell>
@@ -955,7 +955,7 @@ export function AdminTermsManager() {
                 <Input
                   id="term-name"
                   value={newTerm.name}
-                  onChange={(e) => setNewTerm((prev) => ({ ...prev, name: e.target.value }))}
+                  onChange={e => setNewTerm(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="Enter term name..."
                 />
               </div>
@@ -963,7 +963,7 @@ export function AdminTermsManager() {
                 <Label htmlFor="term-category">Category</Label>
                 <Select
                   value={newTerm.category}
-                  onValueChange={(value) => setNewTerm((prev) => ({ ...prev, category: value }))}
+                  onValueChange={value => setNewTerm(prev => ({ ...prev, category: value }))}
                 >
                   <SelectTrigger id="term-category">
                     <SelectValue placeholder="Select category" />
@@ -984,7 +984,7 @@ export function AdminTermsManager() {
               <Textarea
                 id="term-context"
                 value={newTerm.context}
-                onChange={(e) => setNewTerm((prev) => ({ ...prev, context: e.target.value }))}
+                onChange={e => setNewTerm(prev => ({ ...prev, context: e.target.value }))}
                 placeholder="Provide additional context to help AI generate better content..."
                 rows={3}
               />

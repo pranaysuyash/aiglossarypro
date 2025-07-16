@@ -3,11 +3,11 @@ import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useToast } from '../hooks/use-toast';
 import { useAuth } from '../hooks/useAuth';
+import { PremiumOnboarding } from './PremiumOnboarding';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { PremiumOnboarding } from './PremiumOnboarding';
 
 interface PremiumUpgradeSuccessProps {
   onClose?: () => void;
@@ -42,7 +42,7 @@ export function PremiumUpgradeSuccess({
     // Countdown for auto-redirect
     if (autoRedirect) {
       const timer = setInterval(() => {
-        setCountdown((prev) => {
+        setCountdown(prev => {
           if (prev <= 1) {
             clearInterval(timer);
             navigate('/dashboard?welcome=premium');

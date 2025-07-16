@@ -30,7 +30,7 @@ class BundleAnalyzer {
   private initializeObservers(): void {
     // Monitor resource loading
     if ('PerformanceObserver' in window) {
-      const resourceObserver = new PerformanceObserver((list) => {
+      const resourceObserver = new PerformanceObserver(list => {
         for (const entry of list.getEntries()) {
           const resource = entry as PerformanceResourceTiming;
           if (resource.name.includes('.js') && resource.name.includes('assets')) {
@@ -122,7 +122,7 @@ class BundleAnalyzer {
   }
 
   private formatBytes(bytes: number): string {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {return '0 Bytes';}
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
@@ -133,7 +133,7 @@ class BundleAnalyzer {
   monitorWebVitals(): void {
     if ('PerformanceObserver' in window) {
       // Largest Contentful Paint
-      const lcpObserver = new PerformanceObserver((list) => {
+      const lcpObserver = new PerformanceObserver(list => {
         const entries = list.getEntries();
         const lastEntry = entries[entries.length - 1] as PerformanceEntry;
         console.log(`🎯 LCP: ${lastEntry.startTime.toFixed(2)}ms`);
@@ -143,9 +143,9 @@ class BundleAnalyzer {
       this.observers.push(lcpObserver);
 
       // First Input Delay
-      const fidObserver = new PerformanceObserver((list) => {
+      const fidObserver = new PerformanceObserver(list => {
         const entries = list.getEntries();
-        entries.forEach((entry) => {
+        entries.forEach(entry => {
           const performanceEntry = entry as PerformanceEventTiming;
           if (performanceEntry.processingStart) {
             const fid = performanceEntry.processingStart - entry.startTime;
@@ -180,7 +180,7 @@ class BundleAnalyzer {
 
     if (recommendations.length > 0) {
       console.group('💡 Bundle Optimization Recommendations');
-      recommendations.forEach((rec) => console.log(`• ${rec}`));
+      recommendations.forEach(rec => console.log(`• ${rec}`));
       console.groupEnd();
     } else {
       console.log('✅ Bundle efficiency looks good!');
@@ -188,7 +188,7 @@ class BundleAnalyzer {
   }
 
   destroy(): void {
-    this.observers.forEach((observer) => observer.disconnect());
+    this.observers.forEach(observer => observer.disconnect());
     this.observers = [];
   }
 }

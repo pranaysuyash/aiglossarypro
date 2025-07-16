@@ -1,153 +1,153 @@
 {
-  "provider": "local",
-  "environment": "development",
-  "timestamp": "2025-07-04T19:05:35.225Z",
-  "totalTests": 17,
-  "passedTests": 0,
-  "failedTests": 17,
-  "averageResponseTime": 2.5518970588235277,
-  "cacheHitRatio": 0,
-  "totalSize": 0,
-  "results": [
-    {
-      "test": "Main HTML",
-      "url": "http://localhost:5173/",
-      "success": false,
-      "responseTime": 10.49362499999998,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/ failed, reason: "
-    },
-    {
-      "test": "Main HTML",
-      "url": "http://localhost:5173/",
-      "success": false,
-      "responseTime": 1.4274579999999446,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/ failed, reason: "
-    },
-    {
-      "test": "Main HTML",
-      "url": "http://localhost:5173/",
-      "success": false,
-      "responseTime": 1.5507089999999835,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/ failed, reason: "
-    },
-    {
-      "test": "Main CSS",
-      "url": "http://localhost:5173/assets/css/index-buECVVeL.css",
-      "success": false,
-      "responseTime": 0.9756249999999795,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/assets/css/index-buECVVeL.css failed, reason: "
-    },
-    {
-      "test": "Main CSS",
-      "url": "http://localhost:5173/assets/css/index-buECVVeL.css",
-      "success": false,
-      "responseTime": 4.4427499999999895,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/assets/css/index-buECVVeL.css failed, reason: "
-    },
-    {
-      "test": "Main CSS",
-      "url": "http://localhost:5173/assets/css/index-buECVVeL.css",
-      "success": false,
-      "responseTime": 3.0077499999999873,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/assets/css/index-buECVVeL.css failed, reason: "
-    },
-    {
-      "test": "React Bundle",
-      "url": "http://localhost:5173/assets/js/react-CF7zPgoF.js",
-      "success": false,
-      "responseTime": 1.5797089999999798,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/assets/js/react-CF7zPgoF.js failed, reason: "
-    },
-    {
-      "test": "React Bundle",
-      "url": "http://localhost:5173/assets/js/react-CF7zPgoF.js",
-      "success": false,
-      "responseTime": 3.277749999999969,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/assets/js/react-CF7zPgoF.js failed, reason: "
-    },
-    {
-      "test": "React Bundle",
-      "url": "http://localhost:5173/assets/js/react-CF7zPgoF.js",
-      "success": false,
-      "responseTime": 5.412291000000096,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/assets/js/react-CF7zPgoF.js failed, reason: "
-    },
-    {
-      "test": "Main App Bundle",
-      "url": "http://localhost:5173/assets/js/index-BchRB8Cu.js",
-      "success": false,
-      "responseTime": 3.5817499999999427,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/assets/js/index-BchRB8Cu.js failed, reason: "
-    },
-    {
-      "test": "Main App Bundle",
-      "url": "http://localhost:5173/assets/js/index-BchRB8Cu.js",
-      "success": false,
-      "responseTime": 1.9858329999999569,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/assets/js/index-BchRB8Cu.js failed, reason: "
-    },
-    {
-      "test": "Main App Bundle",
-      "url": "http://localhost:5173/assets/js/index-BchRB8Cu.js",
-      "success": false,
-      "responseTime": 1.6232919999999922,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/assets/js/index-BchRB8Cu.js failed, reason: "
-    },
-    {
-      "test": "CodeBlock Bundle",
-      "url": "http://localhost:5173/assets/js/CodeBlock-CWwux32z.js",
-      "success": false,
-      "responseTime": 0.7740000000000009,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/assets/js/CodeBlock-CWwux32z.js failed, reason: "
-    },
-    {
-      "test": "Charts Bundle",
-      "url": "http://localhost:5173/assets/js/charts-eRnGJoUm.js",
-      "success": false,
-      "responseTime": 1.0261670000001004,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/assets/js/charts-eRnGJoUm.js failed, reason: "
-    },
-    {
-      "test": "Mermaid Bundle",
-      "url": "http://localhost:5173/assets/js/mermaid-DUnRj_xi.js",
-      "success": false,
-      "responseTime": 0.8188750000001619,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/assets/js/mermaid-DUnRj_xi.js failed, reason: "
-    },
-    {
-      "test": "API Health Check",
-      "url": "http://localhost:5173/api/health",
-      "success": false,
-      "responseTime": 0.7457079999999223,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/api/health failed, reason: "
-    },
-    {
-      "test": "Favicon",
-      "url": "http://localhost:5173/favicon.ico",
-      "success": false,
-      "responseTime": 0.6589579999999842,
-      "statusCode": 0,
-      "error": "request to http://localhost:5173/favicon.ico failed, reason: "
-    }
-  ],
-  "recommendations": [
-    "Low cache hit ratio (0.0%). Consider warming the cache or adjusting cache headers.",
-    "17 tests failed. Check CDN configuration and asset availability."
-  ]
+	"provider": "local",
+	"environment": "development",
+	"timestamp": "2025-07-04T19:05:35.225Z",
+	"totalTests": 17,
+	"passedTests": 0,
+	"failedTests": 17,
+	"averageResponseTime": 2.5518970588235277,
+	"cacheHitRatio": 0,
+	"totalSize": 0,
+	"results": [
+		{
+			"test": "Main HTML",
+			"url": "http://localhost:5173/",
+			"success": false,
+			"responseTime": 10.49362499999998,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/ failed, reason: "
+		},
+		{
+			"test": "Main HTML",
+			"url": "http://localhost:5173/",
+			"success": false,
+			"responseTime": 1.4274579999999446,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/ failed, reason: "
+		},
+		{
+			"test": "Main HTML",
+			"url": "http://localhost:5173/",
+			"success": false,
+			"responseTime": 1.5507089999999835,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/ failed, reason: "
+		},
+		{
+			"test": "Main CSS",
+			"url": "http://localhost:5173/assets/css/index-buECVVeL.css",
+			"success": false,
+			"responseTime": 0.9756249999999795,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/assets/css/index-buECVVeL.css failed, reason: "
+		},
+		{
+			"test": "Main CSS",
+			"url": "http://localhost:5173/assets/css/index-buECVVeL.css",
+			"success": false,
+			"responseTime": 4.4427499999999895,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/assets/css/index-buECVVeL.css failed, reason: "
+		},
+		{
+			"test": "Main CSS",
+			"url": "http://localhost:5173/assets/css/index-buECVVeL.css",
+			"success": false,
+			"responseTime": 3.0077499999999873,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/assets/css/index-buECVVeL.css failed, reason: "
+		},
+		{
+			"test": "React Bundle",
+			"url": "http://localhost:5173/assets/js/react-CF7zPgoF.js",
+			"success": false,
+			"responseTime": 1.5797089999999798,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/assets/js/react-CF7zPgoF.js failed, reason: "
+		},
+		{
+			"test": "React Bundle",
+			"url": "http://localhost:5173/assets/js/react-CF7zPgoF.js",
+			"success": false,
+			"responseTime": 3.277749999999969,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/assets/js/react-CF7zPgoF.js failed, reason: "
+		},
+		{
+			"test": "React Bundle",
+			"url": "http://localhost:5173/assets/js/react-CF7zPgoF.js",
+			"success": false,
+			"responseTime": 5.412291000000096,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/assets/js/react-CF7zPgoF.js failed, reason: "
+		},
+		{
+			"test": "Main App Bundle",
+			"url": "http://localhost:5173/assets/js/index-BchRB8Cu.js",
+			"success": false,
+			"responseTime": 3.5817499999999427,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/assets/js/index-BchRB8Cu.js failed, reason: "
+		},
+		{
+			"test": "Main App Bundle",
+			"url": "http://localhost:5173/assets/js/index-BchRB8Cu.js",
+			"success": false,
+			"responseTime": 1.9858329999999569,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/assets/js/index-BchRB8Cu.js failed, reason: "
+		},
+		{
+			"test": "Main App Bundle",
+			"url": "http://localhost:5173/assets/js/index-BchRB8Cu.js",
+			"success": false,
+			"responseTime": 1.6232919999999922,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/assets/js/index-BchRB8Cu.js failed, reason: "
+		},
+		{
+			"test": "CodeBlock Bundle",
+			"url": "http://localhost:5173/assets/js/CodeBlock-CWwux32z.js",
+			"success": false,
+			"responseTime": 0.7740000000000009,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/assets/js/CodeBlock-CWwux32z.js failed, reason: "
+		},
+		{
+			"test": "Charts Bundle",
+			"url": "http://localhost:5173/assets/js/charts-eRnGJoUm.js",
+			"success": false,
+			"responseTime": 1.0261670000001004,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/assets/js/charts-eRnGJoUm.js failed, reason: "
+		},
+		{
+			"test": "Mermaid Bundle",
+			"url": "http://localhost:5173/assets/js/mermaid-DUnRj_xi.js",
+			"success": false,
+			"responseTime": 0.8188750000001619,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/assets/js/mermaid-DUnRj_xi.js failed, reason: "
+		},
+		{
+			"test": "API Health Check",
+			"url": "http://localhost:5173/api/health",
+			"success": false,
+			"responseTime": 0.7457079999999223,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/api/health failed, reason: "
+		},
+		{
+			"test": "Favicon",
+			"url": "http://localhost:5173/favicon.ico",
+			"success": false,
+			"responseTime": 0.6589579999999842,
+			"statusCode": 0,
+			"error": "request to http://localhost:5173/favicon.ico failed, reason: "
+		}
+	],
+	"recommendations": [
+		"Low cache hit ratio (0.0%). Consider warming the cache or adjusting cache headers.",
+		"17 tests failed. Check CDN configuration and asset availability."
+	]
 }

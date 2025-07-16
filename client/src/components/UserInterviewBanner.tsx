@@ -25,12 +25,12 @@ export function UserInterviewBanner({
 
   // Check if user should see the interview banner
   const shouldShowBanner = () => {
-    if (!user) return false;
+    if (!user) {return false;}
 
     // Check if already participated or declined
     const hasDeclined = localStorage.getItem('interview_declined');
     const hasAccepted = localStorage.getItem('interview_accepted');
-    if (hasDeclined || hasAccepted) return false;
+    if (hasDeclined || hasAccepted) {return false;}
 
     // Check if user is eligible (1 in 10 new signups)
     const isEligible = localStorage.getItem('interview_eligible');
@@ -46,20 +46,23 @@ export function UserInterviewBanner({
 
   // Show banner after delay for new users
   useEffect(() => {
-    if (!user) return;
+    if (!user) {return;}
 
-    const timer = setTimeout(() => {
-      if (shouldShowBanner()) {
-        setIsVisible(true);
-      }
-    }, showOnlyForNewUsers ? 5000 : 1000); // 5 seconds for new users, 1 second for testing
+    const timer = setTimeout(
+      () => {
+        if (shouldShowBanner()) {
+          setIsVisible(true);
+        }
+      },
+      showOnlyForNewUsers ? 5000 : 1000
+    ); // 5 seconds for new users, 1 second for testing
 
     return () => clearTimeout(timer);
   }, [user, showOnlyForNewUsers]);
 
   const handleAccept = async () => {
     setIsSubmitting(true);
-    
+
     try {
       // Mark user as interview candidate in database
       const response = await fetch('/api/user-research/register', {
@@ -79,23 +82,24 @@ export function UserInterviewBanner({
         // Store acceptance in localStorage
         localStorage.setItem('interview_accepted', 'true');
         localStorage.setItem('interview_accepted_date', new Date().toISOString());
-        
+
         // Open Calendly link
         const calendlyUrl = 'https://calendly.com/ai-glossary-pro/user-interview';
         window.open(calendlyUrl, '_blank');
-        
+
         toast({
           title: '🎉 Thank you!',
-          description: 'Your feedback will help us improve AI Glossary Pro. A $20 voucher will be sent after your interview.',
+          description:
+            'Your feedback will help us improve AI Glossary Pro. A $20 voucher will be sent after your interview.',
           duration: 6000,
         });
-        
+
         onAccept?.();
         setIsVisible(false);
       } else {
         throw new Error('Failed to register for interview');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to register for interview:', error);
       toast({
         title: 'Registration Failed',
@@ -110,13 +114,13 @@ export function UserInterviewBanner({
   const handleDecline = () => {
     localStorage.setItem('interview_declined', 'true');
     localStorage.setItem('interview_declined_date', new Date().toISOString());
-    
+
     toast({
       title: 'No problem!',
       description: 'You can always participate later from your dashboard.',
       duration: 3000,
     });
-    
+
     onDecline?.();
     setIsVisible(false);
   };
@@ -126,13 +130,13 @@ export function UserInterviewBanner({
     const nextShowDate = new Date();
     nextShowDate.setDate(nextShowDate.getDate() + 7);
     localStorage.setItem('interview_maybe_later', nextShowDate.toISOString());
-    
+
     toast({
-      title: 'We\'ll ask again later',
+      title: "We'll ask again later",
       description: 'This invitation will reappear in a week.',
       duration: 3000,
     });
-    
+
     setIsVisible(false);
   };
 
@@ -166,7 +170,7 @@ export function UserInterviewBanner({
                     </CardDescription>
                   </div>
                 </div>
-                
+
                 <Button
                   variant="ghost"
                   size="icon"
@@ -177,7 +181,7 @@ export function UserInterviewBanner({
                 </Button>
               </div>
             </CardHeader>
-            
+
             <CardContent className="space-y-4">
               {/* What's Involved */}
               <div className="space-y-2">
@@ -207,7 +211,8 @@ export function UserInterviewBanner({
               {/* Benefits Highlight */}
               <div className="bg-gradient-to-r from-blue-100 to-indigo-100 dark:from-blue-900/30 dark:to-indigo-900/30 rounded-lg p-3 border border-blue-200 dark:border-blue-800">
                 <p className="text-sm text-blue-800 dark:text-blue-200 font-medium">
-                  🎯 Your feedback directly influences our product roadmap and helps us build better AI learning tools!
+                  🎯 Your feedback directly influences our product roadmap and helps us build better
+                  AI learning tools!
                 </p>
               </div>
 
@@ -234,7 +239,7 @@ export function UserInterviewBanner({
                     </>
                   )}
                 </Button>
-                
+
                 <div className="flex space-x-2">
                   <Button
                     variant="outline"
@@ -243,7 +248,7 @@ export function UserInterviewBanner({
                   >
                     Maybe Later
                   </Button>
-                  
+
                   <Button
                     variant="ghost"
                     onClick={handleDecline}
@@ -253,7 +258,7 @@ export function UserInterviewBanner({
                   </Button>
                 </div>
               </div>
-              
+
               {/* Privacy Note */}
               <div className="text-center">
                 <p className="text-xs text-gray-500 dark:text-gray-400">
@@ -276,7 +281,7 @@ export function useUserResearch() {
   const { user } = useAuth();
 
   useEffect(() => {
-    if (!user) return;
+    if (!user) {return;}
 
     const eligible = localStorage.getItem('interview_eligible') === 'true';
     const accepted = localStorage.getItem('interview_accepted') === 'true';

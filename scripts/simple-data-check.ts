@@ -68,7 +68,7 @@ async function checkDatabaseContent() {
 
     if (neuralNetworkTerms.length > 0) {
       console.log('✅ Found Neural Network terms:');
-      neuralNetworkTerms.forEach((term) => {
+      neuralNetworkTerms.forEach(term => {
         console.log(`   - ${term.name} (${term.category})`);
       });
     } else {

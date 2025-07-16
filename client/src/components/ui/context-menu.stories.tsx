@@ -1,6 +1,15 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuLabel, ContextMenuCheckboxItem, ContextMenuRadioItem, ContextMenuRadioGroup } from './context-menu';
+import type { Meta, StoryObj } from '@storybook/react';
+import {
+  ContextMenu,
+  ContextMenuCheckboxItem,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuLabel,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
+  ContextMenuSeparator,
+  ContextMenuTrigger,
+} from './context-menu';
 
 const meta = {
   title: 'UI/ContextMenu',

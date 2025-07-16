@@ -161,7 +161,7 @@ async function completeReset() {
     console.log(`Empty tables: ${emptyCount}/${allTables.length}`);
 
     // Success criteria
-    const contentTables = allTables.filter((t) => t !== 'users');
+    const contentTables = allTables.filter(t => t !== 'users');
     const emptyContentTables = emptyCount - (totalRecords === 0 ? 1 : 0); // Subtract users if they're empty
 
     if (emptyContentTables === contentTables.length) {

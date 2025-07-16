@@ -200,8 +200,8 @@ export class NotificationService {
       logger.info('Notification sent', {
         type: notification.type,
         priority: notification.priority,
-        channels: results.map((r) => r.channel),
-        success: results.every((r) => r.success),
+        channels: results.map(r => r.channel),
+        success: results.every(r => r.success),
       });
 
       return results;
@@ -363,7 +363,7 @@ Time: ${notification.timestamp.toLocaleString()}
 
       if (notification.metadata.errors && notification.metadata.errors.length > 0) {
         body += `\nErrors (${notification.metadata.errors.length}):\n`;
-        notification.metadata.errors.slice(0, 5).forEach((error) => {
+        notification.metadata.errors.slice(0, 5).forEach(error => {
           body += `- ${error.termName}: ${error.error}\n`;
         });
         if (notification.metadata.errors.length > 5) {
@@ -461,8 +461,8 @@ Time: ${notification.timestamp.toLocaleString()}
         title: notification.title,
         message: notification.message,
         priority: notification.priority,
-        channels: results.map((r) => r.channel),
-        success: results.every((r) => r.success),
+        channels: results.map(r => r.channel),
+        success: results.every(r => r.success),
         results,
         metadata: notification.metadata,
         createdAt: notification.timestamp,

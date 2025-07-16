@@ -1,6 +1,6 @@
 /**
  * 3D Compatibility Detection Hook
- * 
+ *
  * Detects device capabilities for 3D rendering and provides recommendations
  * for optimal user experience with WebGL content.
  */
@@ -36,18 +36,18 @@ export function use3DCompatibility(): ThreeDCompatibility {
     isHighPerformance: false,
     isMobile: false,
     recommendation: 'unsupported',
-    warnings: []
+    warnings: [],
   });
 
   useEffect(() => {
     const detectCompatibility = (): ThreeDCompatibility => {
       const warnings: string[] = [];
-      
+
       // Check WebGL support
       const canvas = document.createElement('canvas');
       const webgl1 = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
       const webgl2 = canvas.getContext('webgl2');
-      
+
       if (!webgl1 && !webgl2) {
         return {
           isWebGLSupported: false,
@@ -57,49 +57,58 @@ export function use3DCompatibility(): ThreeDCompatibility {
           maxTextureSize: 0,
           maxViewportDims: [0, 0],
           isHighPerformance: false,
-          isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent),
+          isMobile: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+            navigator.userAgent
+          ),
           recommendation: 'unsupported',
-          warnings: ['WebGL is not supported on this device']
+          warnings: ['WebGL is not supported on this device'],
         };
       }
 
       const gl = webgl2 || webgl1;
       const webglVersion = webgl2 ? '2' : '1';
-      
+
       // Cast to proper WebGL type
       const webglContext = gl as WebGLRenderingContext;
-      
+
       // Get WebGL info
       const debugInfo = webglContext.getExtension('WEBGL_debug_renderer_info');
-      const renderer = debugInfo ? webglContext.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL) : webglContext.getParameter(webglContext.RENDERER);
-      const vendor = debugInfo ? webglContext.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL) : webglContext.getParameter(webglContext.VENDOR);
-      
+      const renderer = debugInfo
+        ? webglContext.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL)
+        : webglContext.getParameter(webglContext.RENDERER);
+      const vendor = debugInfo
+        ? webglContext.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL)
+        : webglContext.getParameter(webglContext.VENDOR);
+
       // Get capabilities
       const maxTextureSize = webglContext.getParameter(webglContext.MAX_TEXTURE_SIZE);
-      const maxViewportDims = webglContext.getParameter(webglContext.MAX_VIEWPORT_DIMS) as [number, number];
-      
+      const maxViewportDims = webglContext.getParameter(webglContext.MAX_VIEWPORT_DIMS) as [
+        number,
+        number,
+      ];
+
       // Detect mobile
-      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-      
+      const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+        navigator.userAgent
+      );
+
       // Performance detection
       let isHighPerformance = true;
-      
+
       // Check for integrated graphics (lower performance)
-      const lowPerformanceGPUs = [
-        'intel', 'mesa', 'llvmpipe', 'software', 'swiftshader'
-      ];
-      
+      const lowPerformanceGPUs = ['intel', 'mesa', 'llvmpipe', 'software', 'swiftshader'];
+
       if (lowPerformanceGPUs.some(gpu => renderer.toLowerCase().includes(gpu))) {
         isHighPerformance = false;
         warnings.push('Integrated graphics detected - may impact 3D performance');
       }
-      
+
       // Check texture size capabilities
       if (maxTextureSize < 2048) {
         isHighPerformance = false;
         warnings.push('Limited texture support detected');
       }
-      
+
       // Check memory (if available)
       let memoryInfo;
       if ('memory' in performance) {
@@ -107,25 +116,26 @@ export function use3DCompatibility(): ThreeDCompatibility {
         memoryInfo = {
           totalJSHeapSize: memory.totalJSHeapSize,
           usedJSHeapSize: memory.usedJSHeapSize,
-          jsHeapSizeLimit: memory.jsHeapSizeLimit
+          jsHeapSizeLimit: memory.jsHeapSizeLimit,
         };
-        
+
         // Check available memory
         const availableMemory = memory.jsHeapSizeLimit - memory.usedJSHeapSize;
-        if (availableMemory < 50 * 1024 * 1024) { // Less than 50MB
+        if (availableMemory < 50 * 1024 * 1024) {
+          // Less than 50MB
           warnings.push('Low available memory - may impact 3D performance');
         }
       }
-      
+
       // Mobile-specific checks
       if (isMobile) {
         isHighPerformance = false;
         warnings.push('Mobile device detected - using optimized 3D settings');
       }
-      
+
       // Determine recommendation
       let recommendation: 'optimal' | 'reduced' | 'minimal' | 'unsupported' = 'optimal';
-      
+
       if (!gl) {
         recommendation = 'unsupported';
       } else if (warnings.length >= 3 || maxTextureSize < 1024) {
@@ -133,7 +143,7 @@ export function use3DCompatibility(): ThreeDCompatibility {
       } else if (!isHighPerformance || warnings.length >= 1) {
         recommendation = 'reduced';
       }
-      
+
       return {
         isWebGLSupported: true,
         webglVersion,
@@ -145,7 +155,7 @@ export function use3DCompatibility(): ThreeDCompatibility {
         isMobile,
         memoryInfo,
         recommendation,
-        warnings
+        warnings,
       };
     };
 
@@ -160,7 +170,7 @@ export function use3DCompatibility(): ThreeDCompatibility {
  */
 export function use3DSettings() {
   const compatibility = use3DCompatibility();
-  
+
   const settings = {
     optimal: {
       antialias: true,
@@ -168,7 +178,7 @@ export function use3DSettings() {
       maxParticles: 5000,
       enablePostProcessing: true,
       pixelRatio: Math.min(window.devicePixelRatio, 2),
-      enablePhysics: true
+      enablePhysics: true,
     },
     reduced: {
       antialias: true,
@@ -176,7 +186,7 @@ export function use3DSettings() {
       maxParticles: 2000,
       enablePostProcessing: false,
       pixelRatio: 1,
-      enablePhysics: true
+      enablePhysics: true,
     },
     minimal: {
       antialias: false,
@@ -184,20 +194,21 @@ export function use3DSettings() {
       maxParticles: 500,
       enablePostProcessing: false,
       pixelRatio: 1,
-      enablePhysics: false
-    }
+      enablePhysics: false,
+    },
   };
-  
-  const currentSettings = compatibility.recommendation === 'unsupported' 
-    ? settings.minimal 
-    : settings[compatibility.recommendation as keyof typeof settings] || settings.minimal;
-  
+
+  const currentSettings =
+    compatibility.recommendation === 'unsupported'
+      ? settings.minimal
+      : settings[compatibility.recommendation as keyof typeof settings] || settings.minimal;
+
   return {
     ...compatibility,
     settings: currentSettings,
     shouldLoadEagerly: compatibility.recommendation === 'optimal' && !compatibility.isMobile,
     shouldShowWarning: compatibility.warnings.length > 0,
-    shouldUseReducedQuality: compatibility.recommendation !== 'optimal'
+    shouldUseReducedQuality: compatibility.recommendation !== 'optimal',
   };
 }
 
@@ -209,7 +220,7 @@ export function use3DPerformanceMonitor() {
     fps: 0,
     frameTime: 0,
     memoryUsage: 0,
-    isOptimal: true
+    isOptimal: true,
   });
 
   const updatePerformance = (fps: number, frameTime: number) => {
@@ -217,7 +228,7 @@ export function use3DPerformanceMonitor() {
       fps,
       frameTime,
       memoryUsage: (performance as any).memory?.usedJSHeapSize || 0,
-      isOptimal: fps >= 30 && frameTime <= 33 // 30 FPS target
+      isOptimal: fps >= 30 && frameTime <= 33, // 30 FPS target
     }));
   };
 
@@ -225,6 +236,6 @@ export function use3DPerformanceMonitor() {
     performance,
     updatePerformance,
     isPerformanceGood: performance.fps >= 30,
-    shouldReduceQuality: performance.fps < 20
+    shouldReduceQuality: performance.fps < 20,
   };
 }

@@ -515,7 +515,7 @@ test.describe('Purchase and Premium Features', () => {
 
       // Test clicking upgrade prompt
       if (foundUpgradePrompts > 0) {
-        const firstPrompt = upgradePrompts.find(async (prompt) => (await prompt.count()) > 0);
+        const firstPrompt = upgradePrompts.find(async prompt => (await prompt.count()) > 0);
         if (firstPrompt) {
           await firstPrompt.click();
           await page.waitForTimeout(2000);

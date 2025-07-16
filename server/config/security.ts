@@ -3,7 +3,7 @@
  * Implements security headers, rate limiting, and security best practices
  */
 
-import type { Express, Request, Response, NextFunction } from 'express';
+import type { Express, NextFunction, Request, Response } from 'express';
 import rateLimit from 'express-rate-limit';
 import helmet from 'helmet';
 import { log as logger } from '../utils/logger';
@@ -59,43 +59,34 @@ function getSecurityConfig(): SecurityConfig {
           styleSrc: [
             "'self'",
             "'unsafe-inline'",
-            "https://fonts.googleapis.com",
-            "https://cdn.jsdelivr.net",
+            'https://fonts.googleapis.com',
+            'https://cdn.jsdelivr.net',
           ],
           scriptSrc: [
             "'self'",
             "'unsafe-inline'", // Required for some React functionality
-            "https://www.googletagmanager.com",
-            "https://www.google-analytics.com",
-            "https://gumroad.com",
-            "https://assets.gumroad.com",
+            'https://www.googletagmanager.com',
+            'https://www.google-analytics.com',
+            'https://gumroad.com',
+            'https://assets.gumroad.com',
           ],
-          imgSrc: [
-            "'self'",
-            "data:",
-            "https:",
-            "blob:",
-          ],
-          fontSrc: [
-            "'self'",
-            "https://fonts.gstatic.com",
-            "data:",
-          ],
+          imgSrc: ["'self'", 'data:', 'https:', 'blob:'],
+          fontSrc: ["'self'", 'https://fonts.gstatic.com', 'data:'],
           connectSrc: [
             "'self'",
-            "https://api.openai.com",
-            "https://www.google-analytics.com",
-            "https://analytics.google.com",
-            "https://app.posthog.com",
-            "https://o4504609969086464.ingest.sentry.io",
-            "wss://aiglossary.pro",
-            "ws://localhost:*", // Development WebSocket
+            'https://api.openai.com',
+            'https://www.google-analytics.com',
+            'https://analytics.google.com',
+            'https://app.posthog.com',
+            'https://o4504609969086464.ingest.sentry.io',
+            'wss://aiglossarypro.com',
+            'ws://localhost:*', // Development WebSocket
           ],
           frameSrc: [
             "'self'",
-            "https://gumroad.com",
-            "https://www.youtube.com",
-            "https://player.vimeo.com",
+            'https://gumroad.com',
+            'https://www.youtube.com',
+            'https://player.vimeo.com',
           ],
           objectSrc: ["'none'"],
           baseUri: ["'self'"],
@@ -104,8 +95,8 @@ function getSecurityConfig(): SecurityConfig {
         },
       },
       crossOriginEmbedderPolicy: false, // Disabled for compatibility
-      crossOriginOpenerPolicy: { policy: "same-origin-allow-popups" },
-      crossOriginResourcePolicy: { policy: "cross-origin" },
+      crossOriginOpenerPolicy: { policy: 'same-origin-allow-popups' },
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
       hsts: {
         maxAge: 31536000, // 1 year
         includeSubDomains: true,
@@ -151,19 +142,18 @@ export function configureSecurityMiddleware(app: Express): void {
   app.use((req: Request, res: Response, next: NextFunction) => {
     // Prevent MIME type sniffing
     res.setHeader('X-Content-Type-Options', 'nosniff');
-    
+
     // Prevent clickjacking
     res.setHeader('X-Frame-Options', 'SAMEORIGIN');
-    
+
     // Enable XSS filtering
     res.setHeader('X-XSS-Protection', '1; mode=block');
-    
+
     // Referrer policy
     res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
-    
+
     // Permissions policy (formerly Feature Policy)
-    res.setHeader('Permissions-Policy', 
-      'camera=(), microphone=(), geolocation=(), payment=()');
+    res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=()');
 
     next();
   });
@@ -192,7 +182,7 @@ export function configureRateLimiting(app: Express): void {
     },
     keyGenerator: (req: Request): string => {
       // Use X-Forwarded-For header if behind proxy, otherwise use remoteAddress
-      return req.headers['x-forwarded-for'] as string || req.socket.remoteAddress || 'unknown';
+      return (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
     },
     onLimitReached: (req: Request) => {
       logger.warn('Rate limit exceeded', {
@@ -237,9 +227,11 @@ export function configureRateLimiting(app: Express): void {
     legacyHeaders: false,
     skip: (req: Request) => {
       // Skip for health checks and webhooks
-      return req.path.startsWith('/health') || 
-             req.path.startsWith('/api/health') ||
-             req.path.startsWith('/api/webhooks');
+      return (
+        req.path.startsWith('/health') ||
+        req.path.startsWith('/api/health') ||
+        req.path.startsWith('/api/webhooks')
+      );
     },
   });
 
@@ -279,8 +271,8 @@ export function configureCORS(app: Express): void {
 
   app.use((req: Request, res: Response, next: NextFunction) => {
     const origin = req.headers.origin;
-    const allowedOrigins = Array.isArray(config.cors.origin) 
-      ? config.cors.origin 
+    const allowedOrigins = Array.isArray(config.cors.origin)
+      ? config.cors.origin
       : [config.cors.origin as string];
 
     // Check if origin is allowed
@@ -295,8 +287,10 @@ export function configureCORS(app: Express): void {
     }
 
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 
-      'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-CSRF-Token');
+    res.setHeader(
+      'Access-Control-Allow-Headers',
+      'Origin, X-Requested-With, Content-Type, Accept, Authorization, X-CSRF-Token'
+    );
     res.setHeader('Access-Control-Max-Age', '86400'); // 24 hours
 
     // Handle preflight requests
@@ -321,15 +315,14 @@ export function configureInputValidation(app: Express): void {
   // Middleware to limit request body size
   app.use((req: Request, res: Response, next: NextFunction) => {
     const maxSize = parseInt(process.env.MAX_REQUEST_SIZE || '1048576'); // 1MB default
-    
-    if (req.headers['content-length'] && 
-        parseInt(req.headers['content-length']) > maxSize) {
+
+    if (req.headers['content-length'] && parseInt(req.headers['content-length']) > maxSize) {
       return res.status(413).json({
         error: 'Request too large',
         message: 'Request body exceeds maximum size limit',
       });
     }
-    
+
     next();
   });
 
@@ -339,9 +332,7 @@ export function configureInputValidation(app: Express): void {
     Object.keys(req.query).forEach(key => {
       if (typeof req.query[key] === 'string') {
         // Remove potentially dangerous characters
-        req.query[key] = (req.query[key] as string)
-          .replace(/[<>'"]/g, '')
-          .trim();
+        req.query[key] = (req.query[key] as string).replace(/[<>'"]/g, '').trim();
       }
     });
 
@@ -358,11 +349,11 @@ export function configureSecurityMonitoring(app: Express): void {
   // Log suspicious requests
   app.use((req: Request, res: Response, next: NextFunction) => {
     const suspiciousPatterns = [
-      /\.\./,           // Directory traversal
-      /<script/i,       // XSS attempts
+      /\.\./, // Directory traversal
+      /<script/i, // XSS attempts
       /union.*select/i, // SQL injection
       /base64_decode/i, // Code injection
-      /eval\(/i,        // Code execution
+      /eval\(/i, // Code execution
     ];
 
     const requestData = JSON.stringify({
@@ -372,9 +363,7 @@ export function configureSecurityMonitoring(app: Express): void {
       headers: req.headers,
     });
 
-    const isSuspicious = suspiciousPatterns.some(pattern => 
-      pattern.test(requestData)
-    );
+    const isSuspicious = suspiciousPatterns.some(pattern => pattern.test(requestData));
 
     if (isSuspicious) {
       logger.warn('Suspicious request detected', {
@@ -420,22 +409,23 @@ export function checkSecurityConfiguration(): {
   }>;
 } {
   const checks = [];
-  
+
   // Check environment
   checks.push({
     name: 'Environment',
     status: process.env.NODE_ENV === 'production' ? 'pass' : 'warn',
-    message: process.env.NODE_ENV === 'production' 
-      ? 'Running in production mode' 
-      : 'Not running in production mode',
+    message:
+      process.env.NODE_ENV === 'production'
+        ? 'Running in production mode'
+        : 'Not running in production mode',
   });
 
   // Check HTTPS
   checks.push({
     name: 'HTTPS',
     status: process.env.BASE_URL?.startsWith('https://') ? 'pass' : 'warn',
-    message: process.env.BASE_URL?.startsWith('https://') 
-      ? 'HTTPS configured' 
+    message: process.env.BASE_URL?.startsWith('https://')
+      ? 'HTTPS configured'
       : 'HTTPS not configured in BASE_URL',
   });
 
@@ -443,25 +433,27 @@ export function checkSecurityConfiguration(): {
   checks.push({
     name: 'Session Secret',
     status: (process.env.SESSION_SECRET?.length || 0) >= 32 ? 'pass' : 'fail',
-    message: (process.env.SESSION_SECRET?.length || 0) >= 32 
-      ? 'Session secret is secure' 
-      : 'Session secret is too short or missing',
+    message:
+      (process.env.SESSION_SECRET?.length || 0) >= 32
+        ? 'Session secret is secure'
+        : 'Session secret is too short or missing',
   });
 
   checks.push({
     name: 'JWT Secret',
     status: (process.env.JWT_SECRET?.length || 0) >= 32 ? 'pass' : 'fail',
-    message: (process.env.JWT_SECRET?.length || 0) >= 32 
-      ? 'JWT secret is secure' 
-      : 'JWT secret is too short or missing',
+    message:
+      (process.env.JWT_SECRET?.length || 0) >= 32
+        ? 'JWT secret is secure'
+        : 'JWT secret is too short or missing',
   });
 
   // Check CORS
   checks.push({
     name: 'CORS Origin',
     status: process.env.CORS_ORIGIN ? 'pass' : 'warn',
-    message: process.env.CORS_ORIGIN 
-      ? 'CORS origin configured' 
+    message: process.env.CORS_ORIGIN
+      ? 'CORS origin configured'
       : 'CORS origin not specifically configured',
   });
 

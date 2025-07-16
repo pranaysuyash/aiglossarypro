@@ -4,6 +4,7 @@ import { Link, useRoute } from 'wouter';
 import { AIDefinitionImprover } from '@/components/AIDefinitionImprover';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import InteractiveElementsManager from '@/components/interactive/InteractiveElementsManager';
+import { FreeUserUpgradeModal } from '@/components/modals/FreeUserUpgradeModal';
 import ProgressTracker from '@/components/ProgressTracker';
 import Sidebar from '@/components/Sidebar';
 import { HierarchicalNavigator } from '@/components/sections/HierarchicalNavigator';
@@ -26,7 +27,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/hooks/useAuth';
 import { useTermActions, useTermData } from '@/hooks/useTermData';
 import { useUpgradeModalTrigger } from '@/hooks/useTermWithUpgrade';
-import { FreeUserUpgradeModal } from '@/components/modals/FreeUserUpgradeModal';
 import { apiRequest } from '@/lib/queryClient';
 
 export default function EnhancedTermDetail() {
@@ -40,13 +40,8 @@ export default function EnhancedTermDetail() {
   const queryClient = useQueryClient();
 
   // Check for upgrade scenarios
-  const {
-    showUpgradeModal,
-    setShowUpgradeModal,
-    upgradeReason,
-    dailyLimit,
-    upgradeMessage,
-  } = useUpgradeModalTrigger(id, isAuthenticated);
+  const { showUpgradeModal, setShowUpgradeModal, upgradeReason, dailyLimit, upgradeMessage } =
+    useUpgradeModalTrigger(id, isAuthenticated);
 
   // Add CSS for section highlighting
   useEffect(() => {
@@ -332,10 +327,10 @@ export default function EnhancedTermDetail() {
                     <HierarchicalNavigator
                       sections={contentOutline.sections}
                       onNodeClick={handleSectionNavigation}
-                      searchable={true}
-                      collapsible={true}
-                      showProgress={true}
-                      showInteractiveElements={true}
+                      searchable
+                      collapsible
+                      showProgress
+                      showInteractiveElements
                       currentPath={id ? `0.0` : undefined}
                       className="p-4"
                     />

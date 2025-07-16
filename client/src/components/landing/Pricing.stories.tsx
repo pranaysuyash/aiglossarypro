@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { Pricing } from './Pricing';
 
@@ -198,7 +197,7 @@ export const WithTrialBanner: Story = {
 
 export const WithCustomCurrency: Story = {
   args: {
-    plans: basicPricingData.map((plan) => ({
+    plans: basicPricingData.map(plan => ({
       ...plan,
       price: plan.price ? plan.price * 0.85 : null,
       currency: 'EUR',
@@ -280,7 +279,7 @@ export const WithFAQ: Story = {
 
 export const WithLimitedTimeOffer: Story = {
   args: {
-    plans: basicPricingData.map((plan) => ({
+    plans: basicPricingData.map(plan => ({
       ...plan,
       limitedOffer:
         plan.id === 'pro'
@@ -332,7 +331,7 @@ export const WithUsageBasedPricing: Story = {
 
 export const WithAddOns: Story = {
   args: {
-    plans: basicPricingData.map((plan) => ({
+    plans: basicPricingData.map(plan => ({
       ...plan,
       addOns:
         plan.id === 'pro' || plan.id === 'team'

@@ -12,7 +12,7 @@ import TouchOptimizedScroll from './TouchOptimizedScroll';
 
 interface MobileLayoutWrapperProps {
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
   enableMobileNav?: boolean;
   enableTouchScroll?: boolean;
   enablePullToRefresh?: boolean;
@@ -35,7 +35,7 @@ const MobileLayoutWrapper: React.FC<MobileLayoutWrapperProps> = ({
 
   // Apply mobile-specific CSS custom properties
   useEffect(() => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === 'undefined') {return;}
 
     const root = document.documentElement;
 
@@ -77,7 +77,7 @@ const MobileLayoutWrapper: React.FC<MobileLayoutWrapperProps> = ({
       // Prevent zoom on input focus (iOS)
       if (device.isIOS) {
         const inputs = document.querySelectorAll('input, textarea, select');
-        inputs.forEach((input) => {
+        inputs.forEach(input => {
           input.addEventListener('focus', () => {
             viewport?.setAttribute(
               'content',
@@ -152,7 +152,7 @@ const MobileLayoutWrapper: React.FC<MobileLayoutWrapperProps> = ({
         pullToRefresh={enablePullToRefresh}
         onPullToRefresh={onPullToRefresh}
         showScrollIndicator={device.isMobile}
-        autoHideScrollbar={true}
+        autoHideScrollbar
       >
         <div className={contentClasses}>{children}</div>
       </TouchOptimizedScroll>

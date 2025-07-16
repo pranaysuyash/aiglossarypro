@@ -8,15 +8,16 @@ import { useABTestTracking } from '@/services/abTestingService';
 import { useExperiment } from '@/services/posthogExperiments';
 import { trackPurchaseIntent } from '@/types/analytics';
 import { TestPurchaseButton } from '../TestPurchaseButton';
+import { FreeTierBanner, TrustBadge } from '../TrustBuilding';
 import { FreeTierMessaging } from './FreeTierMessaging';
 import { PPPBanner } from './PPPBanner';
 import { PricingCountdown } from './PricingCountdown';
-import { FreeTierBanner, TrustBadge } from '../TrustBuilding';
 
 // Separate component for the comparison table to isolate DOM structure
-function ComparisonTable() {
+// @ts-ignore - Disable Million.js optimization for this component
+const ComparisonTable = /*#__PURE__*/ function ComparisonTable() {
   const pricing = useCountryPricing();
-  
+
   const comparison = [
     {
       feature: 'AI/ML Term Coverage',
@@ -76,7 +77,7 @@ function ComparisonTable() {
           </tr>
         </thead>
         <tbody>
-          {comparison.map((row) => (
+          {comparison.map(row => (
             <tr key={row.feature} className="border-b border-gray-100">
               <td className="p-2 sm:p-4 font-medium text-gray-900 text-sm sm:text-base">
                 {row.feature}
@@ -102,7 +103,7 @@ export function Pricing() {
   const pricing = useCountryPricing();
   const { currentVariant } = useBackgroundABTest();
   const { trackConversion } = useABTestTracking(currentVariant);
-  
+
   // PostHog experiment for pricing display variations
   const pricingExperiment = useExperiment('pricingDisplay', 'control');
 
@@ -169,7 +170,8 @@ export function Pricing() {
         <PPPBanner />
 
         {/* Comparison Table - show based on experiment variant */}
-        {(pricingExperiment.variant === 'comparison' || pricingExperiment.variant === 'control') && (
+        {(pricingExperiment.variant === 'comparison' ||
+          pricingExperiment.variant === 'control') && (
           <div className="mb-12 sm:mb-16 max-w-5xl mx-auto">
             <ComparisonTable />
             <div className="text-center mt-4 text-sm text-gray-500 sm:hidden">
@@ -179,11 +181,13 @@ export function Pricing() {
         )}
 
         {/* Pricing Cards */}
-        <div className={`${
-          pricingExperiment.variant === 'simple' 
-            ? 'grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto'
-            : 'grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto'
-        }`}>
+        <div
+          className={`${
+            pricingExperiment.variant === 'simple'
+              ? 'grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 max-w-4xl mx-auto'
+              : 'grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 max-w-5xl mx-auto'
+          }`}
+        >
           {/* Free Tier */}
           <div className="relative">
             <div className="absolute -top-4 left-1/2 transform -translate-x-1/2 z-10">

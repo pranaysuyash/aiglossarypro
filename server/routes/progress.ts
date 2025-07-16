@@ -237,7 +237,7 @@ export function registerProgressRoutes(app: Express): void {
       }
 
       const stats = await ProgressTrackingService.getUserProgressStats(userId);
-      const highPriorityTriggers = stats.upgradePromptTriggers.filter((t) => t.severity === 'high');
+      const highPriorityTriggers = stats.upgradePromptTriggers.filter(t => t.severity === 'high');
 
       res.json({
         shouldShow: stats.upgradePromptTriggers.length > 0,

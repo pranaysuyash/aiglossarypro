@@ -203,9 +203,9 @@ class ABTestVerifier {
 
     // Summary
     const totalTests = this.results.length;
-    const passedTests = this.results.filter((r) => r.status === 'pass').length;
-    const failedTests = this.results.filter((r) => r.status === 'fail').length;
-    const warningTests = this.results.filter((r) => r.status === 'warning').length;
+    const passedTests = this.results.filter(r => r.status === 'pass').length;
+    const failedTests = this.results.filter(r => r.status === 'fail').length;
+    const warningTests = this.results.filter(r => r.status === 'warning').length;
 
     console.log('📈 Summary:');
     console.log(`  Total Checks: ${totalTests}`);

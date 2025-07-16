@@ -197,7 +197,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     // Combine categories with their subcategories
-    const result = categoriesWithCount.map((category) => ({
+    const result = categoriesWithCount.map(category => ({
       ...category,
       subcategories: subcategoriesByCategory.get(category.id) || [],
     }));
@@ -263,7 +263,7 @@ export class DatabaseStorage implements IStorage {
 
     // Return without subcategories for now to fix performance
     // TODO: Implement efficient subcategory loading if needed
-    return featuredTerms.map((term) => ({
+    return featuredTerms.map(term => ({
       ...term,
       subcategories: [], // Empty for performance - can be populated later if needed
     }));
@@ -333,7 +333,7 @@ export class DatabaseStorage implements IStorage {
     return {
       ...term,
       updatedAt: formattedDate,
-      subcategories: termSubcats.map((sc) => sc.name),
+      subcategories: termSubcats.map(sc => sc.name),
       relatedTerms,
     };
   }
@@ -355,7 +355,7 @@ export class DatabaseStorage implements IStorage {
       .limit(10);
 
     // Format the dates
-    return recentViews.map((view) => ({
+    return recentViews.map(view => ({
       id: view.termId,
       name: view.name,
       category: view.category,
@@ -438,7 +438,7 @@ export class DatabaseStorage implements IStorage {
 
       resultWithSubcats.push({
         ...term,
-        subcategories: termSubcats.map((sc) => sc.name),
+        subcategories: termSubcats.map(sc => sc.name),
       });
     }
 
@@ -485,7 +485,7 @@ export class DatabaseStorage implements IStorage {
         category: fav.category,
         categoryId: fav.categoryId,
         favoriteDate: fav.createdAt?.toISOString() || new Date().toISOString(),
-        subcategories: termSubcats.map((sc) => sc.name),
+        subcategories: termSubcats.map(sc => sc.name),
       });
     }
 
@@ -873,7 +873,7 @@ export class DatabaseStorage implements IStorage {
       .from(termViews)
       .where(eq(termViews.userId, userId));
 
-    const viewedTermIds = viewedTerms.map((v) => v.termId);
+    const viewedTermIds = viewedTerms.map(v => v.termId);
 
     // Get categories from viewed terms
     const viewedCategories = await db
@@ -889,7 +889,7 @@ export class DatabaseStorage implements IStorage {
       )
       .groupBy(terms.categoryId);
 
-    const categoryIds = viewedCategories.map((c) => c.categoryId);
+    const categoryIds = viewedCategories.map(c => c.categoryId);
 
     // Get related terms from the same categories, excluding already viewed
     const recommendedTerms = await db
@@ -954,7 +954,7 @@ export class DatabaseStorage implements IStorage {
       result.push({
         ...term,
         isFavorite: !!favorite,
-        subcategories: termSubcats.map((sc) => sc.name),
+        subcategories: termSubcats.map(sc => sc.name),
       });
     }
 
@@ -1044,7 +1044,7 @@ export class DatabaseStorage implements IStorage {
         result.push({
           ...relTerm,
           isFavorite,
-          subcategories: termSubcats.map((sc) => sc.name),
+          subcategories: termSubcats.map(sc => sc.name),
         });
       }
 
@@ -1230,12 +1230,12 @@ export class DatabaseStorage implements IStorage {
         createdAt: user?.createdAt,
       },
       favorites,
-      learned: learned.map((item) => ({
+      learned: learned.map(item => ({
         termId: item.termId,
         name: item.name,
         learnedAt: item.learnedAt?.toISOString() || new Date().toISOString(),
       })),
-      views: views.map((item) => ({
+      views: views.map(item => ({
         termId: item.termId,
         name: item.name,
         viewedAt: item.viewedAt?.toISOString() || new Date().toISOString(),
@@ -1411,8 +1411,8 @@ export class DatabaseStorage implements IStorage {
 
     // Filter out null currencies and ensure string type
     return result
-      .filter((r) => r.currency != null)
-      .map((r) => ({
+      .filter(r => r.currency != null)
+      .map(r => ({
         currency: r.currency as string,
         amount: r.amount,
         count: r.count,
@@ -1558,7 +1558,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(sql`SUM(${purchases.amount}) DESC`)
       .limit(limit);
 
-    return result.filter((r) => r.country); // Filter out null countries
+    return result.filter(r => r.country); // Filter out null countries
   }
 
   async getConversionFunnel(): Promise<{

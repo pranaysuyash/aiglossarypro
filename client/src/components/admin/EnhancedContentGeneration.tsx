@@ -1,28 +1,30 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
+  AlertCircle,
   ArrowRight,
   BarChart3,
   Bot,
   Brain,
   Eye,
+  Filter,
+  Info,
   Play,
   RefreshCw,
+  Settings,
   Sparkles,
   Star,
   Target,
   TrendingUp,
-  Filter,
-  Settings,
-  Info,
-  AlertCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Progress } from '@/components/ui/progress';
+import { SearchableSelect } from '@/components/ui/searchable-select';
 import {
   Select,
   SelectContent,
@@ -31,22 +33,20 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Textarea } from '@/components/ui/textarea';
-import { useToast } from '@/hooks/use-toast';
-import { SearchableSelect } from '@/components/ui/searchable-select';
-import { ConfirmationDialog } from '@/components/ui/confirmation-dialog';
-import { 
-  ALL_COLUMNS, 
-  getEssentialColumns, 
-  getColumnsByCategory,
-  getColumnCategories,
-  searchColumns,
-  COLUMN_CATEGORIES,
-  type ColumnDefinition 
-} from '@/constants/columns';
-import { Switch } from '@/components/ui/switch';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import {
+  ALL_COLUMNS,
+  COLUMN_CATEGORIES,
+  type ColumnDefinition,
+  getColumnCategories,
+  getColumnsByCategory,
+  getEssentialColumns,
+  searchColumns,
+} from '@/constants/columns';
+import { useToast } from '@/hooks/use-toast';
 
 interface GenerationRequest {
   termId: string;
@@ -159,7 +159,7 @@ export function EnhancedContentGeneration() {
     queryKey: ['terms'],
     queryFn: async () => {
       const response = await fetch('/api/terms');
-      if (!response.ok) throw new Error('Failed to fetch terms');
+      if (!response.ok) {throw new Error('Failed to fetch terms');}
       return response.json();
     },
   });
@@ -169,7 +169,7 @@ export function EnhancedContentGeneration() {
     queryKey: ['enhanced-content-generation-status'],
     queryFn: async () => {
       const response = await fetch('/api/admin/enhanced-triplet/status');
-      if (!response.ok) throw new Error('Failed to fetch processing status');
+      if (!response.ok) {throw new Error('Failed to fetch processing status');}
       return response.json();
     },
     refetchInterval: 2000, // Refetch every 2 seconds when processing is active
@@ -184,7 +184,7 @@ export function EnhancedContentGeneration() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(request),
       });
-      if (!response.ok) throw new Error('Failed to generate content');
+      if (!response.ok) {throw new Error('Failed to generate content');}
       return response.json();
     },
     onSuccess: (data: GenerationResponse) => {
@@ -203,10 +203,10 @@ export function EnhancedContentGeneration() {
         });
       }
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Generation Error',
-        description: error instanceof Error ? error.message : 'Failed to generate content',
+        description: error instanceof Error ? error?.message : 'Failed to generate content',
         variant: 'destructive',
       });
     },
@@ -229,10 +229,10 @@ export function EnhancedContentGeneration() {
           },
         }),
       });
-      if (!response.ok) throw new Error('Failed to start column processing');
+      if (!response.ok) {throw new Error('Failed to start column processing');}
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       if (data.success) {
         toast({
           title: 'Processing Started',
@@ -272,17 +272,17 @@ export function EnhancedContentGeneration() {
   // Helper functions
   const getAvailableColumns = () => {
     let columns = showAdvancedColumns ? ALL_COLUMNS : getEssentialColumns();
-    
+
     if (selectedCategory) {
       columns = columns.filter(col => col.category === selectedCategory);
     }
-    
+
     if (columnSearchQuery) {
-      columns = searchColumns(columnSearchQuery).filter(col => 
-        showAdvancedColumns || col.isEssential
+      columns = searchColumns(columnSearchQuery).filter(
+        col => showAdvancedColumns || col.isEssential
       );
     }
-    
+
     return columns;
   };
 
@@ -297,14 +297,14 @@ export function EnhancedContentGeneration() {
 
   const handleStartColumnProcessing = (columnId: string) => {
     const column = ALL_COLUMNS.find(col => col.id === columnId);
-    if (!column) return;
-    
+    if (!column) {return;}
+
     // Calculate estimated impact
     const totalTerms = termsData?.data?.length || 0;
     setBatchColumnId(columnId);
     setBatchProcessingDetails(
       `This will generate content for "${column.name}" across ${totalTerms} terms. ` +
-      `The process may take 10-30 minutes depending on the number of terms and selected model.`
+        `The process may take 10-30 minutes depending on the number of terms and selected model.`
     );
     setShowBatchConfirmation(true);
   };
@@ -341,9 +341,9 @@ export function EnhancedContentGeneration() {
   };
 
   const getQualityColor = (score: number) => {
-    if (score >= 9) return 'text-green-600';
-    if (score >= 7) return 'text-blue-600';
-    if (score >= 5) return 'text-yellow-600';
+    if (score >= 9) {return 'text-green-600';}
+    if (score >= 7) {return 'text-blue-600';}
+    if (score >= 5) {return 'text-yellow-600';}
     return 'text-red-600';
   };
 
@@ -389,14 +389,16 @@ export function EnhancedContentGeneration() {
                   <Brain className="w-5 h-5 mr-2" />
                   Generate Content for a Term
                 </CardTitle>
-                <CardDescription>Generate content for one specific term and section</CardDescription>
+                <CardDescription>
+                  Generate content for one specific term and section
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
                   <Label htmlFor="term-select">Select Term</Label>
                   <Select
                     value={selectedTerm?.id || ''}
-                    onValueChange={(value) => {
+                    onValueChange={value => {
                       const term = termsData?.data?.find((t: Term) => t.id === value);
                       setSelectedTerm(term || null);
                     }}
@@ -406,7 +408,9 @@ export function EnhancedContentGeneration() {
                     </SelectTrigger>
                     <SelectContent>
                       {isLoadingTerms ? (
-                        <SelectItem value="loading" disabled>Loading terms...</SelectItem>
+                        <SelectItem value="loading" disabled>
+                          Loading terms...
+                        </SelectItem>
                       ) : (
                         termsData?.data?.map((term: Term) => (
                           <SelectItem key={term.id} value={term.id}>
@@ -438,7 +442,7 @@ export function EnhancedContentGeneration() {
                     placeholder="Choose a section..."
                     searchPlaceholder="Search sections..."
                     options={getColumnOptions()}
-                    groupByCategory={true}
+                    groupByCategory
                     className="w-full"
                   />
                 </div>
@@ -456,7 +460,7 @@ export function EnhancedContentGeneration() {
                       {showAdvancedSettings ? 'Hide' : 'Show'} Options
                     </Button>
                   </div>
-                  
+
                   {showAdvancedSettings && (
                     <div className="space-y-3">
                       <div className="flex items-center justify-between">
@@ -469,17 +473,19 @@ export function EnhancedContentGeneration() {
                           onCheckedChange={setShowAdvancedColumns}
                         />
                       </div>
-                      
+
                       {showAdvancedColumns && (
                         <div>
-                          <Label htmlFor="category-filter" className="text-sm">Filter by Category</Label>
+                          <Label htmlFor="category-filter" className="text-sm">
+                            Filter by Category
+                          </Label>
                           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                             <SelectTrigger id="category-filter">
                               <SelectValue placeholder="All categories" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="">All categories</SelectItem>
-                              {getColumnCategories().map((category) => (
+                              {getColumnCategories().map(category => (
                                 <SelectItem key={category} value={category}>
                                   {category}
                                 </SelectItem>
@@ -499,7 +505,7 @@ export function EnhancedContentGeneration() {
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
-                      {AVAILABLE_MODELS.map((model) => (
+                      {AVAILABLE_MODELS.map(model => (
                         <SelectItem key={model.value} value={model.value}>
                           <div className="flex flex-col">
                             <span>{model.label}</span>
@@ -523,7 +529,7 @@ export function EnhancedContentGeneration() {
                       max="2"
                       step="0.1"
                       value={temperature}
-                      onChange={(e) => setTemperature(parseFloat(e.target.value))}
+                      onChange={e => setTemperature(parseFloat(e.target.value))}
                     />
                   </div>
                   <div>
@@ -534,7 +540,7 @@ export function EnhancedContentGeneration() {
                       min="100"
                       max="4000"
                       value={maxTokens}
-                      onChange={(e) => setMaxTokens(parseInt(e.target.value))}
+                      onChange={e => setMaxTokens(parseInt(e.target.value))}
                     />
                   </div>
                 </div>
@@ -544,7 +550,7 @@ export function EnhancedContentGeneration() {
                     type="checkbox"
                     id="regenerate"
                     checked={regenerate}
-                    onChange={(e) => setRegenerate(e.target.checked)}
+                    onChange={e => setRegenerate(e.target.checked)}
                   />
                   <Label htmlFor="regenerate">Force regeneration (overwrite existing)</Label>
                 </div>
@@ -710,7 +716,7 @@ export function EnhancedContentGeneration() {
                     description: col.description,
                     category: col.category,
                   }))}
-                  groupByCategory={true}
+                  groupByCategory
                   className="w-full"
                 />
               </div>
@@ -762,7 +768,7 @@ export function EnhancedContentGeneration() {
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {getEssentialColumns().map((column) => (
+                {getEssentialColumns().map(column => (
                   <Card key={column.id} className="border-2 border-primary/20">
                     <CardHeader className="pb-3">
                       <CardTitle className="flex items-center justify-between text-base">

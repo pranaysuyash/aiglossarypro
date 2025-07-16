@@ -111,11 +111,11 @@ const AdminNewsletterDashboard: React.FC = () => {
     queryFn: async (): Promise<NewsletterData> => {
       const params = new URLSearchParams();
       Object.entries(filters).forEach(([key, value]) => {
-        if (value) params.append(key, value.toString());
+        if (value) {params.append(key, value.toString());}
       });
 
       const response = await fetch(`/api/admin/newsletter/subscriptions?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch newsletter subscriptions');
+      if (!response.ok) {throw new Error('Failed to fetch newsletter subscriptions');}
       const result = await response.json();
       return result.data;
     },
@@ -127,7 +127,7 @@ const AdminNewsletterDashboard: React.FC = () => {
     queryKey: ['admin-newsletter-analytics'],
     queryFn: async () => {
       const response = await fetch('/api/admin/newsletter/analytics');
-      if (!response.ok) throw new Error('Failed to fetch newsletter analytics');
+      if (!response.ok) {throw new Error('Failed to fetch newsletter analytics');}
       const result = await response.json();
       return result.data;
     },
@@ -136,7 +136,7 @@ const AdminNewsletterDashboard: React.FC = () => {
 
   // Handle filter changes
   const handleFilterChange = (key: keyof NewsletterFilters, value: string | number) => {
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
       [key]: value,
       page: key === 'page' ? Number(value) : 1, // Reset page when other filters change
@@ -146,7 +146,7 @@ const AdminNewsletterDashboard: React.FC = () => {
   // Handle bulk selection
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedSubscriptions(newsletterData?.subscriptions.map((sub) => sub.id) || []);
+      setSelectedSubscriptions(newsletterData?.subscriptions.map(sub => sub.id) || []);
     } else {
       setSelectedSubscriptions([]);
     }
@@ -154,15 +154,15 @@ const AdminNewsletterDashboard: React.FC = () => {
 
   const handleSelectSubscription = (id: number, checked: boolean) => {
     if (checked) {
-      setSelectedSubscriptions((prev) => [...prev, id]);
+      setSelectedSubscriptions(prev => [...prev, id]);
     } else {
-      setSelectedSubscriptions((prev) => prev.filter((subId) => subId !== id));
+      setSelectedSubscriptions(prev => prev.filter(subId => subId !== id));
     }
   };
 
   // Handle bulk actions
   const handleBulkAction = async (action: 'unsubscribe') => {
-    if (selectedSubscriptions.length === 0) return;
+    if (selectedSubscriptions.length === 0) {return;}
 
     setBulkActionLoading(true);
     try {
@@ -177,11 +177,11 @@ const AdminNewsletterDashboard: React.FC = () => {
         }),
       });
 
-      if (!response.ok) throw new Error('Bulk action failed');
+      if (!response.ok) {throw new Error('Bulk action failed');}
 
       await refetchSubscriptions();
       setSelectedSubscriptions([]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Bulk action error:', error);
     } finally {
       setBulkActionLoading(false);
@@ -199,7 +199,7 @@ const AdminNewsletterDashboard: React.FC = () => {
       });
 
       const response = await fetch(`/api/admin/newsletter/export?${params}`);
-      if (!response.ok) throw new Error('Export failed');
+      if (!response.ok) {throw new Error('Export failed');}
 
       const blob = await response.blob();
       const url = window.URL.createObjectURL(blob);
@@ -210,7 +210,7 @@ const AdminNewsletterDashboard: React.FC = () => {
       a.click();
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Export error:', error);
     }
   };
@@ -345,7 +345,7 @@ const AdminNewsletterDashboard: React.FC = () => {
                   <Label htmlFor="status-filter">Status</Label>
                   <Select
                     value={filters.status}
-                    onValueChange={(value) => handleFilterChange('status', value)}
+                    onValueChange={value => handleFilterChange('status', value)}
                   >
                     <SelectTrigger id="status-filter">
                       <SelectValue />
@@ -364,7 +364,7 @@ const AdminNewsletterDashboard: React.FC = () => {
                     id="search-filter"
                     placeholder="Search emails..."
                     value={filters.search}
-                    onChange={(e) => handleFilterChange('search', e.target.value)}
+                    onChange={e => handleFilterChange('search', e.target.value)}
                   />
                 </div>
 
@@ -374,7 +374,7 @@ const AdminNewsletterDashboard: React.FC = () => {
                     id="utm-source-filter"
                     placeholder="Filter by UTM source..."
                     value={filters.utm_source}
-                    onChange={(e) => handleFilterChange('utm_source', e.target.value)}
+                    onChange={e => handleFilterChange('utm_source', e.target.value)}
                   />
                 </div>
 
@@ -384,7 +384,7 @@ const AdminNewsletterDashboard: React.FC = () => {
                     id="language-filter"
                     placeholder="Filter by language..."
                     value={filters.language}
-                    onChange={(e) => handleFilterChange('language', e.target.value)}
+                    onChange={e => handleFilterChange('language', e.target.value)}
                   />
                 </div>
               </div>
@@ -450,12 +450,12 @@ const AdminNewsletterDashboard: React.FC = () => {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {newsletterData?.subscriptions.map((subscription) => (
+                      {newsletterData?.subscriptions.map(subscription => (
                         <TableRow key={subscription.id}>
                           <TableCell>
                             <Checkbox
                               checked={selectedSubscriptions.includes(subscription.id)}
-                              onCheckedChange={(checked) =>
+                              onCheckedChange={checked =>
                                 handleSelectSubscription(subscription.id, !!checked)
                               }
                             />

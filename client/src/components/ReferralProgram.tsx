@@ -1,5 +1,16 @@
-import { Calendar, Copy, DollarSign, Gift, Link, Mail, Share2, TrendingUp, Users } from 'lucide-react';
+import {
+  Calendar,
+  Copy,
+  DollarSign,
+  Gift,
+  Link,
+  Mail,
+  Share2,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 import { useState } from 'react';
+import { useToast } from '../hooks/use-toast';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
@@ -8,7 +19,6 @@ import { Label } from './ui/label';
 import { Progress } from './ui/progress';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from './ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
-import { useToast } from '../hooks/use-toast';
 
 interface ReferralStats {
   totalReferrals: number;
@@ -46,22 +56,46 @@ export function ReferralProgram() {
   const stats: ReferralStats = {
     totalReferrals: 15,
     successfulReferrals: 8,
-    totalEarnings: 496.00,
-    pendingEarnings: 124.00,
+    totalEarnings: 496.0,
+    pendingEarnings: 124.0,
     currentTierProgress: 8,
     nextTierThreshold: 10,
   };
 
   const referralTiers: ReferralTier[] = [
-    { name: 'Starter', threshold: 0, commission: 0.25, badge: '🌱', color: 'bg-green-100 text-green-800' },
-    { name: 'Advocate', threshold: 5, commission: 0.30, badge: '⭐', color: 'bg-blue-100 text-blue-800' },
-    { name: 'Champion', threshold: 10, commission: 0.35, badge: '🏆', color: 'bg-purple-100 text-purple-800' },
-    { name: 'Elite', threshold: 25, commission: 0.40, badge: '💎', color: 'bg-yellow-100 text-yellow-800' },
+    {
+      name: 'Starter',
+      threshold: 0,
+      commission: 0.25,
+      badge: '🌱',
+      color: 'bg-green-100 text-green-800',
+    },
+    {
+      name: 'Advocate',
+      threshold: 5,
+      commission: 0.3,
+      badge: '⭐',
+      color: 'bg-blue-100 text-blue-800',
+    },
+    {
+      name: 'Champion',
+      threshold: 10,
+      commission: 0.35,
+      badge: '🏆',
+      color: 'bg-purple-100 text-purple-800',
+    },
+    {
+      name: 'Elite',
+      threshold: 25,
+      commission: 0.4,
+      badge: '💎',
+      color: 'bg-yellow-100 text-yellow-800',
+    },
   ];
 
-  const currentTier = referralTiers
-    .filter(tier => stats.successfulReferrals >= tier.threshold)
-    .pop() || referralTiers[0];
+  const currentTier =
+    referralTiers.filter(tier => stats.successfulReferrals >= tier.threshold).pop() ||
+    referralTiers[0];
 
   const nextTier = referralTiers.find(tier => tier.threshold > stats.successfulReferrals);
 
@@ -72,7 +106,7 @@ export function ReferralProgram() {
       status: 'converted',
       sentAt: new Date('2024-01-15'),
       convertedAt: new Date('2024-01-16'),
-      commission: 62.00,
+      commission: 62.0,
       commissionStatus: 'paid',
     },
     {
@@ -81,7 +115,7 @@ export function ReferralProgram() {
       status: 'converted',
       sentAt: new Date('2024-01-20'),
       convertedAt: new Date('2024-01-22'),
-      commission: 62.00,
+      commission: 62.0,
       commissionStatus: 'paid',
     },
     {
@@ -89,7 +123,7 @@ export function ReferralProgram() {
       email: 'mike@example.com',
       status: 'pending',
       sentAt: new Date('2024-02-01'),
-      commission: 62.00,
+      commission: 62.0,
       commissionStatus: 'pending',
     },
     {
@@ -97,7 +131,7 @@ export function ReferralProgram() {
       email: 'lisa@example.com',
       status: 'signed_up',
       sentAt: new Date('2024-02-05'),
-      commission: 62.00,
+      commission: 62.0,
       commissionStatus: 'pending',
     },
   ];
@@ -221,15 +255,18 @@ Best regards!`;
           <CardTitle className="flex items-center space-x-2">
             <span>{currentTier.badge}</span>
             <span>Current Tier: {currentTier.name}</span>
-            <Badge className={currentTier.color}>{(currentTier.commission * 100).toFixed(0)}% Commission</Badge>
+            <Badge className={currentTier.color}>
+              {(currentTier.commission * 100).toFixed(0)}% Commission
+            </Badge>
           </CardTitle>
           <CardDescription>
             {nextTier ? (
               <>
-                Refer {nextTier.threshold - stats.successfulReferrals} more users to reach {nextTier.name} tier and earn {(nextTier.commission * 100).toFixed(0)}% commission
+                Refer {nextTier.threshold - stats.successfulReferrals} more users to reach{' '}
+                {nextTier.name} tier and earn {(nextTier.commission * 100).toFixed(0)}% commission
               </>
             ) : (
-              'You\'ve reached the highest tier! Keep referring to maximize your earnings.'
+              "You've reached the highest tier! Keep referring to maximize your earnings."
             )}
           </CardDescription>
         </CardHeader>
@@ -238,10 +275,12 @@ Best regards!`;
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Progress to {nextTier.name}</span>
-                <span>{stats.successfulReferrals}/{nextTier.threshold}</span>
+                <span>
+                  {stats.successfulReferrals}/{nextTier.threshold}
+                </span>
               </div>
-              <Progress 
-                value={(stats.successfulReferrals / nextTier.threshold) * 100} 
+              <Progress
+                value={(stats.successfulReferrals / nextTier.threshold) * 100}
                 className="h-2"
               />
             </div>
@@ -249,7 +288,7 @@ Best regards!`;
 
           {/* Tier Benefits */}
           <div className="mt-4 grid grid-cols-1 md:grid-cols-4 gap-4">
-            {referralTiers.map((tier) => (
+            {referralTiers.map(tier => (
               <div
                 key={tier.name}
                 className={`p-3 rounded-lg border ${
@@ -295,7 +334,8 @@ Best regards!`;
             <CardHeader>
               <CardTitle>Your Referral Link</CardTitle>
               <CardDescription>
-                Share this link with others to earn {(currentTier.commission * 100).toFixed(0)}% commission on their purchases
+                Share this link with others to earn {(currentTier.commission * 100).toFixed(0)}%
+                commission on their purchases
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
@@ -323,10 +363,13 @@ Best regards!`;
                     readOnly
                     className="font-mono text-sm max-w-xs"
                   />
-                  <Button 
+                  <Button
                     onClick={() => {
                       navigator.clipboard.writeText(referralCode);
-                      toast({ title: 'Code Copied!', description: 'Referral code copied to clipboard.' });
+                      toast({
+                        title: 'Code Copied!',
+                        description: 'Referral code copied to clipboard.',
+                      });
                     }}
                     variant="outline"
                   >
@@ -340,9 +383,7 @@ Best regards!`;
           <Card>
             <CardHeader>
               <CardTitle>Share via Email</CardTitle>
-              <CardDescription>
-                Send a personalized invitation to your contacts
-              </CardDescription>
+              <CardDescription>Send a personalized invitation to your contacts</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -351,7 +392,7 @@ Best regards!`;
                   id="custom-message"
                   placeholder="Add a personal note to your invitation..."
                   value={customMessage}
-                  onChange={(e) => setCustomMessage(e.target.value)}
+                  onChange={e => setCustomMessage(e.target.value)}
                 />
               </div>
 
@@ -388,7 +429,7 @@ Best regards!`;
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {referralActivity.map((activity) => (
+                  {referralActivity.map(activity => (
                     <TableRow key={activity.id}>
                       <TableCell className="font-medium">{activity.email}</TableCell>
                       <TableCell>{getStatusBadge(activity.status)}</TableCell>
@@ -422,20 +463,22 @@ Best regards!`;
           <Card>
             <CardHeader>
               <CardTitle>Earnings Summary</CardTitle>
-              <CardDescription>
-                View your commission history and payout details
-              </CardDescription>
+              <CardDescription>View your commission history and payout details</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="p-4 border rounded-lg">
                     <div className="text-sm text-gray-600 dark:text-gray-400">Total Earned</div>
-                    <div className="text-2xl font-bold text-green-600">${stats.totalEarnings.toFixed(2)}</div>
+                    <div className="text-2xl font-bold text-green-600">
+                      ${stats.totalEarnings.toFixed(2)}
+                    </div>
                   </div>
                   <div className="p-4 border rounded-lg">
                     <div className="text-sm text-gray-600 dark:text-gray-400">Pending</div>
-                    <div className="text-2xl font-bold text-orange-600">${stats.pendingEarnings.toFixed(2)}</div>
+                    <div className="text-2xl font-bold text-orange-600">
+                      ${stats.pendingEarnings.toFixed(2)}
+                    </div>
                   </div>
                   <div className="p-4 border rounded-lg">
                     <div className="text-sm text-gray-600 dark:text-gray-400">Next Payout</div>
@@ -444,12 +487,17 @@ Best regards!`;
                 </div>
 
                 <div className="p-4 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
-                  <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">Payout Information</h4>
+                  <h4 className="font-medium text-blue-900 dark:text-blue-100 mb-2">
+                    Payout Information
+                  </h4>
                   <div className="text-sm text-blue-800 dark:text-blue-200 space-y-1">
                     <p>• Commissions are paid monthly on the last day of each month</p>
                     <p>• Minimum payout threshold: $50</p>
                     <p>• Payments are processed via PayPal or bank transfer</p>
-                    <p>• Commission rate: {(currentTier.commission * 100).toFixed(0)}% of each $249 purchase</p>
+                    <p>
+                      • Commission rate: {(currentTier.commission * 100).toFixed(0)}% of each $249
+                      purchase
+                    </p>
                   </div>
                 </div>
               </div>

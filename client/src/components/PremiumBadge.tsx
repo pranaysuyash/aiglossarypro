@@ -4,7 +4,7 @@ import { Badge } from './ui/badge';
 
 interface PremiumBadgeProps {
   variant?: 'default' | 'compact' | 'icon-only';
-  className?: string;
+  className?: string | undefined;
   showFreeStatus?: boolean;
 }
 
@@ -16,10 +16,10 @@ export function PremiumBadge({
   const { accessStatus } = useAccess();
 
   // Don't render anything if no access status
-  if (!accessStatus) return null;
+  if (!accessStatus) {return null;}
 
   // Don't show free status unless explicitly requested
-  if (!accessStatus.lifetimeAccess && !showFreeStatus) return null;
+  if (!accessStatus.lifetimeAccess && !showFreeStatus) {return null;}
 
   const isPremium = accessStatus.lifetimeAccess;
 
@@ -52,13 +52,7 @@ export function PremiumBadge({
           ${className}
         `}
       >
-        {isPremium ? (
-          <>
-            🌟 Pro
-          </>
-        ) : (
-          'Free'
-        )}
+        {isPremium ? <>🌟 Pro</> : 'Free'}
       </Badge>
     );
   }
@@ -78,9 +72,7 @@ export function PremiumBadge({
       `}
     >
       {isPremium ? (
-        <>
-          🌟 Pro Member
-        </>
+        <>🌟 Pro Member</>
       ) : (
         <>
           <Star className="w-4 h-4 mr-1" />

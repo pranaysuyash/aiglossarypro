@@ -58,7 +58,7 @@ export class CheckpointManager {
   private autoSaveTimer: NodeJS.Timeout | null = null;
 
   constructor(
-    fileName: string = 'processing_checkpoint.json',
+    fileName = 'processing_checkpoint.json',
     options: CheckpointManagerOptions = {}
   ) {
     this.options = {
@@ -203,7 +203,7 @@ export class CheckpointManager {
    * Mark a cell as completed
    */
   markCellCompleted(row: number, col: number, processingTime?: number): void {
-    if (!this.currentCheckpoint) return;
+    if (!this.currentCheckpoint) {return;}
 
     const key = `${row}-${col}`;
     if (!this.currentCheckpoint.completedCells[key]) {
@@ -223,7 +223,7 @@ export class CheckpointManager {
    * Check if a cell is already completed
    */
   isCellCompleted(row: number, col: number): boolean {
-    if (!this.currentCheckpoint) return false;
+    if (!this.currentCheckpoint) {return false;}
     const key = `${row}-${col}`;
     return !!this.currentCheckpoint.completedCells[key];
   }
@@ -237,9 +237,9 @@ export class CheckpointManager {
     term: string,
     section: string,
     error: string,
-    retryCount: number = 0
+    retryCount = 0
   ): void {
-    if (!this.currentCheckpoint) return;
+    if (!this.currentCheckpoint) {return;}
 
     this.currentCheckpoint.errorLog.push({
       timestamp: new Date().toISOString(),
@@ -266,13 +266,13 @@ export class CheckpointManager {
     cacheMisses?: number;
     costEstimate?: number;
   }): void {
-    if (!this.currentCheckpoint) return;
+    if (!this.currentCheckpoint) {return;}
 
     const perf = this.currentCheckpoint.performance;
-    if (metrics.apiCalls) perf.totalApiCalls += metrics.apiCalls;
-    if (metrics.cacheHits) perf.cacheHits += metrics.cacheHits;
-    if (metrics.cacheMisses) perf.cacheMisses += metrics.cacheMisses;
-    if (metrics.costEstimate) perf.costEstimate += metrics.costEstimate;
+    if (metrics.apiCalls) {perf.totalApiCalls += metrics.apiCalls;}
+    if (metrics.cacheHits) {perf.cacheHits += metrics.cacheHits;}
+    if (metrics.cacheMisses) {perf.cacheMisses += metrics.cacheMisses;}
+    if (metrics.costEstimate) {perf.costEstimate += metrics.costEstimate;}
   }
 
   /**
@@ -309,13 +309,13 @@ export class CheckpointManager {
     for (let rowIdx = 0; rowIdx < rows.length; rowIdx++) {
       const row = rows[rowIdx];
       const term = row[0] || '';
-      if (!term) continue;
+      if (!term) {continue;}
 
       for (let colIdx = 1; colIdx < headers.length; colIdx++) {
         const excelRow = rowIdx + 2; // Excel is 1-indexed, plus header row
 
         // Skip if already completed or has content
-        if (this.isCellCompleted(excelRow, colIdx) || row[colIdx]) continue;
+        if (this.isCellCompleted(excelRow, colIdx) || row[colIdx]) {continue;}
 
         tasks.push({
           rowIdx,
@@ -334,7 +334,7 @@ export class CheckpointManager {
    * Check if processing is compatible with different processor
    */
   isCompatibleWith(_otherProcessorType: 'typescript' | 'nodejs' | 'python'): boolean {
-    if (!this.currentCheckpoint) return true;
+    if (!this.currentCheckpoint) {return true;}
 
     // All processors are compatible with the unified checkpoint format
     return true;
@@ -344,7 +344,7 @@ export class CheckpointManager {
    * Convert to smart_processor.cjs format for backward compatibility
    */
   exportToLegacyFormat(): { [key: string]: boolean } {
-    if (!this.currentCheckpoint) return {};
+    if (!this.currentCheckpoint) {return {};}
 
     return this.currentCheckpoint.completedCells;
   }
@@ -353,7 +353,7 @@ export class CheckpointManager {
    * Import from smart_processor.cjs format
    */
   importFromLegacyFormat(legacyCheckpoint: { [key: string]: boolean }): void {
-    if (!this.currentCheckpoint) return;
+    if (!this.currentCheckpoint) {return;}
 
     this.currentCheckpoint.completedCells = { ...legacyCheckpoint };
     this.currentCheckpoint.processedCells = Object.keys(legacyCheckpoint).length;
@@ -363,7 +363,7 @@ export class CheckpointManager {
    * Generate processing report
    */
   generateReport(): string {
-    if (!this.currentCheckpoint) return 'No checkpoint data available';
+    if (!this.currentCheckpoint) {return 'No checkpoint data available';}
 
     const progress = this.getProgress();
     const perf = this.currentCheckpoint.performance;
@@ -416,7 +416,7 @@ export class CheckpointManager {
 
       // Keep only last 5 backups
       const backups = await fs.readdir(backupDir);
-      const checkpointBackups = backups.filter((f) => f.startsWith('checkpoint_')).sort();
+      const checkpointBackups = backups.filter(f => f.startsWith('checkpoint_')).sort();
 
       if (checkpointBackups.length > 5) {
         const toDelete = checkpointBackups.slice(0, -5);
@@ -444,7 +444,7 @@ export class CheckpointManager {
 
 // Export convenience functions for backward compatibility
 export async function loadLegacyCheckpoint(
-  filePath: string = 'checkpoint.json'
+  filePath = 'checkpoint.json'
 ): Promise<{ [key: string]: boolean }> {
   try {
     const content = await fs.readFile(filePath, 'utf-8');
@@ -456,7 +456,7 @@ export async function loadLegacyCheckpoint(
 
 export async function saveLegacyCheckpoint(
   checkpoint: { [key: string]: boolean },
-  filePath: string = 'checkpoint.json'
+  filePath = 'checkpoint.json'
 ): Promise<void> {
   const tmpFile = `${filePath}.tmp`;
   await fs.writeFile(tmpFile, JSON.stringify(checkpoint, null, 2), 'utf-8');

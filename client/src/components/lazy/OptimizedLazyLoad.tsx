@@ -1,7 +1,7 @@
-import { lazy, Suspense, useEffect, useState, ComponentType } from 'react';
-import { useInView } from '@/hooks/useInView';
-import { Skeleton } from '@/components/ui/skeleton';
+import { type ComponentType, lazy, Suspense, useEffect, useState } from 'react';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { Skeleton } from '@/components/ui/skeleton';
+import { useInView } from '@/hooks/useInView';
 
 interface OptimizedLazyLoadProps {
   // Component import function
@@ -58,13 +58,13 @@ export function OptimizedLazyLoad({
     }
 
     const promise = importFn()
-      .then((module) => {
+      .then(module => {
         const comp = module.default;
         componentCache.set(componentKey, comp);
         preloadPromises.delete(componentKey);
         return comp;
       })
-      .catch((err) => {
+      .catch(err => {
         preloadPromises.delete(componentKey);
         throw err;
       });
@@ -81,12 +81,15 @@ export function OptimizedLazyLoad({
       setError(null);
     } catch (err) {
       setError(err as Error);
-      
+
       if (retryCount < retryAttempts) {
-        setTimeout(() => {
-          setRetryCount(prev => prev + 1);
-          loadComponent();
-        }, retryDelay * (retryCount + 1));
+        setTimeout(
+          () => {
+            setRetryCount(prev => prev + 1);
+            loadComponent();
+          },
+          retryDelay * (retryCount + 1)
+        );
       }
     }
   };
@@ -112,9 +115,7 @@ export function OptimizedLazyLoad({
         fallback={
           errorFallback || (
             <div className="p-4 text-center">
-              <p className="text-red-600 dark:text-red-400">
-                Failed to load component
-              </p>
+              <p className="text-red-600 dark:text-red-400">Failed to load component</p>
               <button
                 onClick={() => {
                   setRetryCount(0);
@@ -201,7 +202,7 @@ export function usePreloadOnInteraction(
         const module = await importFn();
         componentCache.set(key, module.default);
         setIsPreloaded(true);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to preload component:', error);
       }
     }

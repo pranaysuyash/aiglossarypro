@@ -52,7 +52,7 @@ export class AIRecommendationService {
    */
   async getPersonalizedRecommendations(
     userId: string,
-    limit: number = 10
+    limit = 10
   ): Promise<RecommendedPath[]> {
     try {
       // Build user profile
@@ -63,7 +63,7 @@ export class AIRecommendationService {
 
       // Score each candidate path
       const scoredPaths = await Promise.all(
-        candidatePaths.map((path) => this.scorePath(path, userProfile))
+        candidatePaths.map(path => this.scorePath(path, userProfile))
       );
 
       // Sort by score and return top recommendations
@@ -122,9 +122,9 @@ export class AIRecommendationService {
 
         // Favorite terms
         db
-          .select({ term_id: favorites.term_id })
+          .select({ term_id: favorites.termId })
           .from(favorites)
-          .where(eq(favorites.user_id, userId)),
+          .where(eq(favorites.userId, userId)),
 
         // User interactions for category preferences
         db
@@ -133,8 +133,8 @@ export class AIRecommendationService {
             interaction_count: sql<number>`count(*)`,
           })
           .from(userInteractions)
-          .leftJoin(terms, eq(userInteractions.term_id, terms.id))
-          .where(eq(userInteractions.user_id, userId))
+          .leftJoin(terms, eq(userInteractions.termId, terms.id))
+          .where(eq(userInteractions.userId, userId))
           .groupBy(sql`terms.category_id`)
           .orderBy(desc(sql`count(*)`))
           .limit(5),
@@ -158,11 +158,11 @@ export class AIRecommendationService {
 
     return {
       userId,
-      completedPaths: completedPathsResult.map((p) => p.path_id),
-      currentPaths: currentPathsResult.map((p) => p.path_id),
-      favoriteTerms: favoriteTermsResult.map((f) => f.term_id),
+      completedPaths: completedPathsResult.map(p => p.path_id),
+      currentPaths: currentPathsResult.map(p => p.path_id),
+      favoriteTerms: favoriteTermsResult.map(f => f.term_id),
       difficultyPreference,
-      categoryPreferences: interactionsResult.map((i) => i.category_id).filter(Boolean),
+      categoryPreferences: interactionsResult.map(i => i.category_id).filter(Boolean) as string[],
       averageSessionTime: avgSessionTime,
       skillLevel,
     };
@@ -178,9 +178,9 @@ export class AIRecommendationService {
     score += completedPaths.length * 15;
 
     // Bonus for in-progress paths with high completion
-    currentPaths.forEach((path) => {
+    currentPaths.forEach(path => {
       const completion = Number(path.completion_percentage) || 0;
-      if (completion > 50) score += completion / 10;
+      if (completion > 50) {score += completion / 10;}
     });
 
     // Cap at 100
@@ -194,8 +194,8 @@ export class AIRecommendationService {
     skillLevel: number,
     _completedPaths: any[]
   ): 'beginner' | 'intermediate' | 'advanced' {
-    if (skillLevel < 30) return 'beginner';
-    if (skillLevel < 70) return 'intermediate';
+    if (skillLevel < 30) {return 'beginner';}
+    if (skillLevel < 70) {return 'intermediate';}
     return 'advanced';
   }
 
@@ -242,7 +242,7 @@ export class AIRecommendationService {
     // 1. Difficulty level matching (25 points max)
     const difficultyScore = this.scoreDifficulty(path.difficulty_level, userProfile);
     score += difficultyScore.score;
-    if (difficultyScore.reason) reasoning.push(difficultyScore.reason);
+    if (difficultyScore.reason) {reasoning.push(difficultyScore.reason);}
 
     // 2. Category preference (20 points max)
     if (userProfile.categoryPreferences.includes(path.category_id)) {
@@ -254,22 +254,22 @@ export class AIRecommendationService {
     // 3. Prerequisites satisfaction (15 points max)
     const prereqScore = await this.scorePrerequisites(path, userProfile);
     score += prereqScore.score;
-    if (prereqScore.reason) reasoning.push(prereqScore.reason);
+    if (prereqScore.reason) {reasoning.push(prereqScore.reason);}
 
     // 4. Duration preference (10 points max)
     const durationScore = this.scoreDuration(path.estimated_duration, userProfile);
     score += durationScore.score;
-    if (durationScore.reason) reasoning.push(durationScore.reason);
+    if (durationScore.reason) {reasoning.push(durationScore.reason);}
 
     // 5. Popularity and quality (15 points max)
     const popularityScore = this.scorePopularity(path);
     score += popularityScore.score;
-    if (popularityScore.reason) reasoning.push(popularityScore.reason);
+    if (popularityScore.reason) {reasoning.push(popularityScore.reason);}
 
     // 6. Content relevance based on favorite terms (15 points max)
     const relevanceScore = await this.scoreContentRelevance(path, userProfile);
     score += relevanceScore.score;
-    if (relevanceScore.reason) reasoning.push(relevanceScore.reason);
+    if (relevanceScore.reason) {reasoning.push(relevanceScore.reason);}
 
     return {
       pathId: path.id,
@@ -299,9 +299,9 @@ export class AIRecommendationService {
         score: 15,
         reason: `Slightly ${pathLevel > userPref ? 'challenging' : 'easier'} than your usual level`,
       };
-    } else {
+    } 
       return { score: 5 };
-    }
+    
   }
 
   /**
@@ -326,9 +326,9 @@ export class AIRecommendationService {
       return { score: 15, reason: 'You meet all prerequisites' };
     } else if (satisfactionRate >= 0.5) {
       return { score: 10, reason: 'You meet most prerequisites' };
-    } else {
+    } 
       return { score: 0, reason: 'Missing some prerequisites' };
-    }
+    
   }
 
   /**
@@ -346,9 +346,9 @@ export class AIRecommendationService {
       return { score: 10, reason: 'Duration matches your typical learning sessions' };
     } else if (durationHours <= avgSessionHours * 4) {
       return { score: 6, reason: 'Moderate time commitment' };
-    } else {
+    } 
       return { score: 3 };
-    }
+    
   }
 
   /**
@@ -399,10 +399,10 @@ export class AIRecommendationService {
       .from(learningPathSteps)
       .where(eq(learningPathSteps.learning_path_id, path.id));
 
-    const pathTermIds = pathTerms.map((t) => t.term_id).filter(Boolean);
+    const pathTermIds = pathTerms.map(t => t.term_id).filter(Boolean);
 
     // Calculate overlap with user's favorites
-    const overlap = pathTermIds.filter((termId) => userProfile.favoriteTerms.includes(termId));
+    const overlap = pathTermIds.filter(termId => userProfile.favoriteTerms.includes(termId));
 
     if (overlap.length > 0) {
       const relevanceScore = Math.min((overlap.length / pathTermIds.length) * 15, 15);
@@ -421,31 +421,31 @@ export class AIRecommendationService {
   private async enrichRecommendations(
     scoredPaths: RecommendationScore[]
   ): Promise<RecommendedPath[]> {
-    if (scoredPaths.length === 0) return [];
+    if (scoredPaths.length === 0) {return [];}
 
-    const pathIds = scoredPaths.map((p) => p.pathId);
+    const pathIds = scoredPaths.map(p => p.pathId);
 
     const pathsData = await db
       .select()
       .from(learningPaths)
       .where(inArray(learningPaths.id, pathIds));
 
-    return scoredPaths.map((scored) => {
-      const pathData = pathsData.find((p) => p.id === scored.pathId);
-      if (!pathData) throw new Error(`Path data not found for ${scored.pathId}`);
+    return scoredPaths.map(scored => {
+      const pathData = pathsData.find(p => p.id === scored.pathId);
+      if (!pathData) {throw new Error(`Path data not found for ${scored.pathId}`);}
 
       return {
         id: pathData.id,
         name: pathData.name,
-        description: pathData.description,
-        difficulty_level: pathData.difficulty_level,
-        estimated_duration: pathData.estimated_duration,
-        category_id: pathData.category_id,
-        completion_count: pathData.completion_count,
-        rating: pathData.rating,
+        description: pathData.description || '',
+        difficulty_level: pathData.difficulty_level || 'beginner',
+        estimated_duration: pathData.estimated_duration || 0,
+        category_id: pathData.category_id || '',
+        completion_count: pathData.completion_count || 0,
+        rating: pathData.rating || 0,
         recommendationScore: Math.round(scored.score),
         reasoning: scored.reasoning,
-        isOfficial: pathData.is_official,
+        isOfficial: pathData.is_official || false,
       };
     });
   }
@@ -461,25 +461,25 @@ export class AIRecommendationService {
       .orderBy(desc(learningPaths.completion_count), desc(learningPaths.view_count))
       .limit(limit);
 
-    return popularPaths.map((path) => ({
+    return popularPaths.map(path => ({
       id: path.id,
       name: path.name,
-      description: path.description,
-      difficulty_level: path.difficulty_level,
-      estimated_duration: path.estimated_duration,
-      category_id: path.category_id,
-      completion_count: path.completion_count,
-      rating: path.rating,
+      description: path.description || '',
+      difficulty_level: path.difficulty_level || 'beginner',
+      estimated_duration: path.estimated_duration || 0,
+      category_id: path.category_id || '',
+      completion_count: path.completion_count || 0,
+      rating: path.rating || 0,
       recommendationScore: 50, // Neutral score for fallback
       reasoning: ['Popular learning path'],
-      isOfficial: path.is_official,
+      isOfficial: path.is_official || false,
     }));
   }
 
   /**
    * Get trending learning paths (recently popular)
    */
-  async getTrendingPaths(limit: number = 5): Promise<RecommendedPath[]> {
+  async getTrendingPaths(limit = 5): Promise<RecommendedPath[]> {
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
@@ -508,18 +508,18 @@ export class AIRecommendationService {
       .orderBy(desc(sql`count(${userLearningProgress.id})`))
       .limit(limit);
 
-    return trendingPaths.map((path) => ({
+    return trendingPaths.map(path => ({
       id: path.id,
       name: path.name,
-      description: path.description,
-      difficulty_level: path.difficulty_level,
-      estimated_duration: path.estimated_duration,
-      category_id: path.category_id,
-      completion_count: path.completion_count,
-      rating: path.rating,
+      description: path.description || '',
+      difficulty_level: path.difficulty_level || 'beginner',
+      estimated_duration: path.estimated_duration || 0,
+      category_id: path.category_id || '',
+      completion_count: path.completion_count || 0,
+      rating: path.rating || 0,
       recommendationScore: 75,
       reasoning: [`Trending: ${path.recent_starts} new learners this month`],
-      isOfficial: path.is_official,
+      isOfficial: path.is_official || false,
     }));
   }
 }

@@ -57,7 +57,7 @@ export default function S3FileBrowser() {
         if (Array.isArray(data)) {
           // Original endpoint format (/api/s3/files)
           setFiles(
-            data.map((file) => ({
+            data.map(file => ({
               key: file.key,
               size: file.size,
               lastModified: file.lastModified,
@@ -88,9 +88,9 @@ export default function S3FileBrowser() {
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} bytes`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    if (bytes < 1024) {return `${bytes} bytes`;}
+    if (bytes < 1024 * 1024) {return `${(bytes / 1024).toFixed(1)} KB`;}
+    if (bytes < 1024 * 1024 * 1024) {return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;}
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
   };
 
@@ -103,8 +103,8 @@ export default function S3FileBrowser() {
     return parts[parts.length - 1];
   };
 
-  const handleProcessFile = async (shouldImport: boolean = false) => {
-    if (!selectedFile) return;
+  const handleProcessFile = async (shouldImport = false) => {
+    if (!selectedFile) {return;}
 
     setProcessing(true);
     setResult(null);
@@ -187,7 +187,7 @@ export default function S3FileBrowser() {
                   </tr>
                 </thead>
                 <tbody className="divide-y">
-                  {files.map((file) => (
+                  {files.map(file => (
                     <tr
                       key={file.key}
                       onClick={() => handleSelectFile(file)}
@@ -220,7 +220,7 @@ export default function S3FileBrowser() {
                   type="number"
                   placeholder="Leave empty to process all"
                   value={maxChunks || ''}
-                  onChange={(e) =>
+                  onChange={e =>
                     setMaxChunks(e.target.value ? parseInt(e.target.value) : undefined)
                   }
                 />

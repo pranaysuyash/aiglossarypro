@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
 import DragDropUploader from './DragDropUploader';
 
 const meta: Meta<typeof DragDropUploader> = {
@@ -15,7 +14,7 @@ const meta: Meta<typeof DragDropUploader> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="p-6 max-w-4xl mx-auto">
         <Story />
       </div>
@@ -180,11 +179,11 @@ export const RestrictiveSettings: Story = {
 
 export const WithCallbacks: Story = {
   args: {
-    onUploadComplete: (results) => {
+    onUploadComplete: results => {
       console.log('Upload completed:', results);
       alert(`Successfully uploaded ${results.length} file(s)!`);
     },
-    onUploadError: (error) => {
+    onUploadError: error => {
       console.error('Upload error:', error);
       alert(`Upload failed: ${error}`);
     },
@@ -204,12 +203,12 @@ export const InteractiveDemo: Story = {
     const [uploadErrors, setUploadErrors] = React.useState<string[]>([]);
 
     const handleUploadComplete = (results: any[]) => {
-      setUploadResults((prev) => [...prev, ...results]);
+      setUploadResults(prev => [...prev, ...results]);
       console.log('Upload completed:', results);
     };
 
     const handleUploadError = (error: string) => {
-      setUploadErrors((prev) => [...prev, error]);
+      setUploadErrors(prev => [...prev, error]);
       console.error('Upload error:', error);
     };
 
@@ -328,11 +327,11 @@ export const ProductionConfig: Story = {
     maxFiles: 10,
     enableCompression: true,
     showPreview: true,
-    onUploadComplete: (results) => {
+    onUploadComplete: results => {
       console.log('Production upload completed:', results);
       // In production, this would handle the uploaded files
     },
-    onUploadError: (error) => {
+    onUploadError: error => {
       console.error('Production upload error:', error);
       // In production, this would handle error reporting
     },
@@ -357,7 +356,7 @@ export const ErrorStates: Story = {
             <input
               type="checkbox"
               checked={simulateError}
-              onChange={(e) => setSimulateError(e.target.checked)}
+              onChange={e => setSimulateError(e.target.checked)}
             />
             <span>Simulate upload errors</span>
           </label>
@@ -367,14 +366,14 @@ export const ErrorStates: Story = {
           acceptedTypes={['.csv', '.json']}
           maxFileSize={5 * 1024 * 1024} // 5MB - small to test size errors
           maxFiles={3} // Small number to test max files error
-          onUploadComplete={(results) => {
+          onUploadComplete={results => {
             if (simulateError) {
               console.log('Simulated success despite error flag');
             } else {
               console.log('Upload completed:', results);
             }
           }}
-          onUploadError={(error) => {
+          onUploadError={error => {
             console.error('Upload error:', error);
           }}
         />
@@ -440,7 +439,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="p-6 max-w-4xl mx-auto dark">
         <Story />
       </div>
@@ -459,7 +458,7 @@ export const CustomizationExample: Story = {
     });
 
     const handleConfigChange = (key: string, value: any) => {
-      setConfig((prev) => ({ ...prev, [key]: value }));
+      setConfig(prev => ({ ...prev, [key]: value }));
     };
 
     return (
@@ -473,7 +472,7 @@ export const CustomizationExample: Story = {
               <input
                 type="number"
                 value={config.maxFileSize / (1024 * 1024)}
-                onChange={(e) =>
+                onChange={e =>
                   handleConfigChange('maxFileSize', Number(e.target.value) * 1024 * 1024)
                 }
                 className="w-full px-3 py-2 border rounded"
@@ -487,7 +486,7 @@ export const CustomizationExample: Story = {
               <input
                 type="number"
                 value={config.maxFiles}
-                onChange={(e) => handleConfigChange('maxFiles', Number(e.target.value))}
+                onChange={e => handleConfigChange('maxFiles', Number(e.target.value))}
                 className="w-full px-3 py-2 border rounded"
                 min="1"
                 max="50"
@@ -499,7 +498,7 @@ export const CustomizationExample: Story = {
                 <input
                   type="checkbox"
                   checked={config.enableCompression}
-                  onChange={(e) => handleConfigChange('enableCompression', e.target.checked)}
+                  onChange={e => handleConfigChange('enableCompression', e.target.checked)}
                 />
                 <span className="text-sm">Enable Compression</span>
               </label>
@@ -510,7 +509,7 @@ export const CustomizationExample: Story = {
                 <input
                   type="checkbox"
                   checked={config.showPreview}
-                  onChange={(e) => handleConfigChange('showPreview', e.target.checked)}
+                  onChange={e => handleConfigChange('showPreview', e.target.checked)}
                 />
                 <span className="text-sm">Show Preview</span>
               </label>
@@ -521,8 +520,8 @@ export const CustomizationExample: Story = {
         {/* Dynamic Uploader */}
         <DragDropUploader
           {...config}
-          onUploadComplete={(results) => console.log('Dynamic upload completed:', results)}
-          onUploadError={(error) => console.error('Dynamic upload error:', error)}
+          onUploadComplete={results => console.log('Dynamic upload completed:', results)}
+          onUploadError={error => console.error('Dynamic upload error:', error)}
         />
       </div>
     );

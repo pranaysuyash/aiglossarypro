@@ -428,7 +428,7 @@ That was the code.`;
       const result = generateTOC(sections, 2);
 
       expect(result).toHaveLength(2);
-      expect(result.every((item) => item.level <= 2)).toBe(true);
+      expect(result.every(item => item.level <= 2)).toBe(true);
     });
   });
 });

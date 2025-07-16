@@ -70,7 +70,7 @@ export class ProgressTrackingService {
     userId: string,
     termId: string,
     sectionsViewed: string[] = [],
-    timeSpentSeconds: number = 0
+    timeSpentSeconds = 0
   ): Promise<void> {
     try {
       // Check if interaction already exists
@@ -216,7 +216,7 @@ export class ProgressTrackingService {
   }
 
   // Get user's bookmarked terms
-  static async getUserBookmarks(userId: string, limit: number = 50): Promise<any[]> {
+  static async getUserBookmarks(userId: string, limit = 50): Promise<any[]> {
     try {
       const bookmarks = await db
         .select({
@@ -261,8 +261,8 @@ export class ProgressTrackingService {
         ProgressTrackingService.getCategoriesExplored(userId),
       ]);
 
-      const currentStreak = achievements.find((a) => a.type === 'daily_streak')?.currentStreak || 0;
-      const bestStreak = achievements.find((a) => a.type === 'daily_streak')?.bestStreak || 0;
+      const currentStreak = achievements.find(a => a.type === 'daily_streak')?.currentStreak || 0;
+      const bestStreak = achievements.find(a => a.type === 'daily_streak')?.bestStreak || 0;
 
       const upgradePromptTriggers = await ProgressTrackingService.getUpgradePromptTriggers(userId, {
         totalTermsViewed,
@@ -320,7 +320,7 @@ export class ProgressTrackingService {
       .where(eq(userTermHistory.userId, userId));
 
     const categories = result[0]?.categories || [];
-    return categories.filter((cat) => cat !== null).length;
+    return categories.filter(cat => cat !== null).length;
   }
 
   // Get user achievements
@@ -331,7 +331,7 @@ export class ProgressTrackingService {
       .where(eq(userAchievements.userId, userId))
       .orderBy(desc(userAchievements.unlockedAt));
 
-    return achievements.map((a) => ({
+    return achievements.map(a => ({
       id: a.id,
       type: a.achievementType,
       value: a.achievementValue,
@@ -346,7 +346,7 @@ export class ProgressTrackingService {
   }
 
   // Get daily statistics for the last 30 days
-  private static async getDailyStats(userId: string, days: number = 30): Promise<DailyStats[]> {
+  private static async getDailyStats(userId: string, days = 30): Promise<DailyStats[]> {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - days);
 
@@ -369,7 +369,7 @@ export class ProgressTrackingService {
       .groupBy(sql`DATE(${userTermHistory.lastAccessedAt})`)
       .orderBy(sql`DATE(${userTermHistory.lastAccessedAt})`);
 
-    return stats.map((stat) => ({
+    return stats.map(stat => ({
       date: stat.date,
       termsViewed: stat.termsViewed,
       timeSpent: Number(stat.timeSpent) || 0,

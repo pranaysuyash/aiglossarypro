@@ -147,16 +147,16 @@ class ABTestReportingService {
     const statisticalSignificance: Record<string, any> = {};
 
     // Calculate conversion rates
-    metrics.forEach((metric) => {
+    metrics.forEach(metric => {
       conversionRates[metric.variant] =
         metric.pageViews > 0 ? (metric.trialSignups / metric.pageViews) * 100 : 0;
     });
 
     // Calculate statistical significance between variants
     if (metrics.length >= 2) {
-      const control = metrics.find((m) => m.variant === 'default') || metrics[0];
+      const control = metrics.find(m => m.variant === 'default') || metrics[0];
 
-      metrics.forEach((metric) => {
+      metrics.forEach(metric => {
         if (metric.variant !== control.variant) {
           statisticalSignificance[metric.variant] = calculateStatisticalSignificance(
             control.trialSignups,
@@ -170,7 +170,7 @@ class ABTestReportingService {
 
     // Determine winner
     const winner = determineWinner(
-      metrics.map((m) => ({
+      metrics.map(m => ({
         variant: m.variant,
         conversionRate: conversionRates[m.variant],
       })),
@@ -224,7 +224,7 @@ class ABTestReportingService {
     }
 
     // Device-specific insights
-    metrics.forEach((metric) => {
+    metrics.forEach(metric => {
       const deviceBreakdown = metric.deviceBreakdown as Record<string, number>;
       const mobilePercentage = ((deviceBreakdown.mobile || 0) / metric.totalSessions) * 100;
 
@@ -236,7 +236,7 @@ class ABTestReportingService {
     });
 
     // Bounce rate insights
-    metrics.forEach((metric) => {
+    metrics.forEach(metric => {
       if (metric.bounceRate && metric.bounceRate > 0.7) {
         recommendations.push(
           `${metric.variant} variant has high bounce rate (${(metric.bounceRate * 100).toFixed(0)}%). Consider improving engagement.`
@@ -368,7 +368,7 @@ class ABTestReportingService {
       <tbody>
         ${metrics
           .map(
-            (m) => `
+            m => `
         <tr>
           <td>${m.variant}</td>
           <td>${m.pageViews.toLocaleString()}</td>
@@ -396,7 +396,7 @@ class ABTestReportingService {
     <h2>Recommendations</h2>
     ${analysis.recommendations
       .map(
-        (rec) => `
+        rec => `
     <div class="recommendation">${rec}</div>
     `
       )
@@ -405,7 +405,7 @@ class ABTestReportingService {
     <h2>Detailed Metrics</h2>
     ${metrics
       .map(
-        (m) => `
+        m => `
     <div class="metric-card">
       <h3>${m.variant} Variant</h3>
       <p><strong>CTA Clicks:</strong> ${m.ctaClicks}</p>

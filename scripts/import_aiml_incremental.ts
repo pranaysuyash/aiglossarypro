@@ -53,8 +53,8 @@ async function main() {
       console.log('📁 Available files in data directory:');
       const dataDir = './data';
       if (fs.existsSync(dataDir)) {
-        const files = fs.readdirSync(dataDir).filter((f) => f.endsWith('.xlsx'));
-        files.forEach((f) => console.log(`   - ${f}`));
+        const files = fs.readdirSync(dataDir).filter(f => f.endsWith('.xlsx'));
+        files.forEach(f => console.log(`   - ${f}`));
 
         if (files.length > 0) {
           console.log(`\n🔄 Using first available file: ${files[0]}`);
@@ -278,7 +278,7 @@ async function getProcessingStatus(): Promise<void> {
 
   const processingFiles = fs
     .readdirSync(tempDir)
-    .filter((f) => f.includes('processed_chunked_') || f.includes('converted_')).length;
+    .filter(f => f.includes('processed_chunked_') || f.includes('converted_')).length;
 
   if (processingFiles > 0) {
     console.log(`   📁 Found ${processingFiles} temporary processing files`);

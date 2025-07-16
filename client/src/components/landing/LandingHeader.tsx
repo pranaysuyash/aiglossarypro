@@ -28,7 +28,7 @@ export function LandingHeader() {
             <a
               href="#preview"
               className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault();
                 document.getElementById('preview')?.scrollIntoView({ behavior: 'smooth' });
               }}
@@ -38,7 +38,7 @@ export function LandingHeader() {
             <a
               href="#pricing"
               className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault();
                 document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' });
               }}
@@ -48,7 +48,7 @@ export function LandingHeader() {
             <a
               href="#faq"
               className="text-gray-600 hover:text-purple-600 font-medium transition-colors"
-              onClick={(e) => {
+              onClick={e => {
                 e.preventDefault();
                 document.getElementById('faq')?.scrollIntoView({ behavior: 'smooth' });
               }}

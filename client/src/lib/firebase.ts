@@ -30,14 +30,14 @@ const firebaseConfig = {
 // Validate Firebase configuration
 const requiredConfigKeys = ['apiKey', 'authDomain', 'projectId', 'appId'];
 const missingKeys = requiredConfigKeys.filter(
-  (key) => !firebaseConfig[key as keyof typeof firebaseConfig]
+  key => !firebaseConfig[key as keyof typeof firebaseConfig]
 );
 
 if (missingKeys.length > 0) {
   console.error('❌ Missing Firebase configuration keys:', missingKeys);
   console.error(
     'Please check your .env file for the following VITE_FIREBASE_* variables:',
-    missingKeys.map((key) => `VITE_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`)
+    missingKeys.map(key => `VITE_FIREBASE_${key.replace(/([A-Z])/g, '_$1').toUpperCase()}`)
   );
 }
 
@@ -185,7 +185,7 @@ export function onAuthChange(callback: (user: User | null) => void) {
 export async function getIdToken(): Promise<string | null> {
   try {
     const user = getCurrentUser();
-    if (!user) return null;
+    if (!user) {return null;}
 
     return await user.getIdToken();
   } catch (error) {
@@ -200,7 +200,7 @@ export async function getIdToken(): Promise<string | null> {
 export async function refreshIdToken(): Promise<string | null> {
   try {
     const user = getCurrentUser();
-    if (!user) return null;
+    if (!user) {return null;}
 
     return await user.getIdToken(true); // Force refresh
   } catch (error) {
@@ -211,3 +211,9 @@ export async function refreshIdToken(): Promise<string | null> {
 
 // Export auth instance
 export { auth };
+
+// Google Sign In
+export const signInWithGoogle = async () => {
+  const provider = new GoogleAuthProvider();
+  return signInWithPopup(auth!, provider);
+};

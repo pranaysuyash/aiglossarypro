@@ -1,6 +1,5 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { Collapsible, CollapsibleTrigger, CollapsibleContent } from './collapsible';
+import type { Meta, StoryObj } from '@storybook/react';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible';
 
 const meta = {
   title: 'UI/Collapsible',
@@ -20,15 +19,9 @@ export const Default: Story = {
         <span className="text-xs text-gray-500">Toggle</span>
       </CollapsibleTrigger>
       <CollapsibleContent className="space-y-2 px-4">
-        <div className="rounded-md border px-4 py-3 font-mono text-sm">
-          @radix-ui/primitives
-        </div>
-        <div className="rounded-md border px-4 py-3 font-mono text-sm">
-          @radix-ui/colors
-        </div>
-        <div className="rounded-md border px-4 py-3 font-mono text-sm">
-          @stitches/react
-        </div>
+        <div className="rounded-md border px-4 py-3 font-mono text-sm">@radix-ui/primitives</div>
+        <div className="rounded-md border px-4 py-3 font-mono text-sm">@radix-ui/colors</div>
+        <div className="rounded-md border px-4 py-3 font-mono text-sm">@stitches/react</div>
       </CollapsibleContent>
     </Collapsible>
   ),

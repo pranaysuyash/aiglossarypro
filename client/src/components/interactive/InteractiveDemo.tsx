@@ -365,7 +365,7 @@ model.summary()
 ];
 
 interface InteractiveDemoProps {
-  className?: string;
+  className?: string | undefined;
 }
 
 export default function InteractiveDemo({ className }: InteractiveDemoProps) {
@@ -374,23 +374,23 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
 
   // Filter terms based on search query
   const filteredTerms = useMemo(() => {
-    if (!searchQuery.trim()) return DEMO_TERMS;
+    if (!searchQuery.trim()) {return DEMO_TERMS;}
 
     const query = searchQuery.toLowerCase();
     return DEMO_TERMS.filter(
-      (term) =>
+      term =>
         term.name.toLowerCase().includes(query) ||
         term.category.toLowerCase().includes(query) ||
         term.technicalDefinition.toLowerCase().includes(query) ||
         term.plainEnglishExplanation.toLowerCase().includes(query) ||
-        term.keywords.some((keyword) => keyword.includes(query)) ||
-        term.useCases.some((useCase) => useCase.toLowerCase().includes(query))
+        term.keywords.some(keyword => keyword.includes(query)) ||
+        term.useCases.some(useCase => useCase.toLowerCase().includes(query))
     );
   }, [searchQuery]);
 
   // Highlight matching text
   const highlightText = useCallback((text: string, query: string) => {
-    if (!query.trim()) return text;
+    if (!query.trim()) {return text;}
 
     const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
     const parts = text.split(regex);
@@ -562,7 +562,7 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
               type="text"
               placeholder="Search AI/ML terms..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="pl-10 pr-4 py-3 text-lg"
             />
           </div>
@@ -580,7 +580,7 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
           {/* Terms Grid */}
           {filteredTerms.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredTerms.map((term) => (
+              {filteredTerms.map(term => (
                 <TermCard key={term.id} term={term} />
               ))}
             </div>
@@ -595,7 +595,7 @@ export default function InteractiveDemo({ className }: InteractiveDemoProps) {
                 </p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {['neural network', 'transformer', 'machine learning', 'deep learning', 'AI'].map(
-                    (suggestion) => (
+                    suggestion => (
                       <Button
                         key={suggestion}
                         variant="outline"

@@ -18,7 +18,7 @@ interface TouchScrollState {
 
 interface TouchOptimizedScrollProps {
   children: ReactNode;
-  className?: string;
+  className?: string | undefined;
   onScroll?: (scrollTop: number, scrollDirection: 'up' | 'down') => void;
   onScrollEnd?: () => void;
   enableMomentum?: boolean;
@@ -56,7 +56,7 @@ const TouchOptimizedScroll: React.FC<TouchOptimizedScrollProps> = ({
 
   // Calculate scroll progress
   const updateScrollProgress = useCallback(() => {
-    if (!scrollRef.current) return;
+    if (!scrollRef.current) {return;}
 
     const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
     const maxScroll = scrollHeight - clientHeight;
@@ -68,7 +68,7 @@ const TouchOptimizedScroll: React.FC<TouchOptimizedScrollProps> = ({
   // Handle momentum scrolling
   const applyMomentum = useCallback(
     (velocity: number) => {
-      if (!enableMomentum || !scrollRef.current || Math.abs(velocity) < 0.1) return;
+      if (!enableMomentum || !scrollRef.current || Math.abs(velocity) < 0.1) {return;}
 
       const element = scrollRef.current;
       const friction = 0.95;
@@ -102,7 +102,7 @@ const TouchOptimizedScroll: React.FC<TouchOptimizedScrollProps> = ({
   // Touch start handler
   const handleTouchStart = useCallback(
     (event: TouchEvent) => {
-      if (!scrollRef.current) return;
+      if (!scrollRef.current) {return;}
 
       const touch = event.touches[0];
       touchStateRef.current = {
@@ -115,7 +115,7 @@ const TouchOptimizedScroll: React.FC<TouchOptimizedScrollProps> = ({
       };
 
       setIsScrolling(true);
-      if (autoHideScrollbar) setShowScrollbar(true);
+      if (autoHideScrollbar) {setShowScrollbar(true);}
 
       // Cancel any ongoing momentum
       if (animationFrameRef.current) {
@@ -129,7 +129,7 @@ const TouchOptimizedScroll: React.FC<TouchOptimizedScrollProps> = ({
   // Touch move handler
   const handleTouchMove = useCallback(
     (event: TouchEvent) => {
-      if (!touchStateRef.current || !scrollRef.current) return;
+      if (!touchStateRef.current || !scrollRef.current) {return;}
 
       const touch = event.touches[0];
       const currentTime = Date.now();
@@ -176,7 +176,7 @@ const TouchOptimizedScroll: React.FC<TouchOptimizedScrollProps> = ({
   // Touch end handler
   const handleTouchEnd = useCallback(
     async (event: TouchEvent) => {
-      if (!touchStateRef.current || !scrollRef.current) return;
+      if (!touchStateRef.current || !scrollRef.current) {return;}
 
       const touch = event.changedTouches[0];
       const totalTime = Date.now() - touchStateRef.current.startTime;
@@ -261,7 +261,7 @@ const TouchOptimizedScroll: React.FC<TouchOptimizedScrollProps> = ({
   // Set up event listeners
   useEffect(() => {
     const element = scrollRef.current;
-    if (!element) return;
+    if (!element) {return;}
 
     // Touch events
     const options: AddEventListenerOptions = { passive: false };

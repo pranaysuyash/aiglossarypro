@@ -25,7 +25,7 @@ export function PerformanceTest() {
 
   // Track renders
   useEffect(() => {
-    setRenderCount((prev) => prev + 1);
+    setRenderCount(prev => prev + 1);
   });
 
   // Log performance on unmount
@@ -56,7 +56,7 @@ export function PerformanceTest() {
 
           {/* This list rendering is optimized by Million.js */}
           <div className="max-h-96 overflow-y-auto border rounded p-2">
-            {items.map((item) => (
+            {items.map(item => (
               <div key={item.id} className="p-2 hover:bg-gray-100 cursor-pointer text-sm">
                 {item.value}
               </div>

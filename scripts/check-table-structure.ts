@@ -18,7 +18,7 @@ async function checkTableStructure() {
     `);
 
     console.log('📋 Current table structure:');
-    result.rows.forEach((row) => {
+    result.rows.forEach(row => {
       console.log(
         `  ${row.column_name}: ${row.data_type} ${row.is_nullable === 'NO' ? 'NOT NULL' : 'NULL'} ${row.column_default ? `DEFAULT ${row.column_default}` : ''}`
       );

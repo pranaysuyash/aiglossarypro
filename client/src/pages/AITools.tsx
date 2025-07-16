@@ -112,7 +112,7 @@ export default function AIToolsPage() {
                 <CardContent>
                   <AISemanticSearch
                     placeholder="Search with AI understanding (e.g., 'algorithms that learn from data')"
-                    onResultClick={(termId) => {
+                    onResultClick={termId => {
                       // Navigate to term
                       window.open(`/term/${termId}`, '_blank');
                     }}
@@ -231,7 +231,7 @@ export default function AIToolsPage() {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  {(user as any)?.email === 'admin@example.com' ? (
+                  {user?.isAdmin ? (
                     <div className="space-y-6">
                       {/* Batch Categorization */}
                       <div className="p-6 border border-purple-200 rounded-lg">

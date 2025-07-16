@@ -473,7 +473,7 @@ async function main(): Promise<void> {
   }
 
   // Override environment if specified
-  const envIndex = args.findIndex((arg) => arg === '--env');
+  const envIndex = args.findIndex(arg => arg === '--env');
   if (envIndex !== -1 && args[envIndex + 1]) {
     config.environment = args[envIndex + 1] as any;
   }

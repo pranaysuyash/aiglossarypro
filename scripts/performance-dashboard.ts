@@ -102,11 +102,11 @@ class PerformanceDashboard {
   }
 
   private setupSocketIO(): void {
-    this.io.on('connection', (socket) => {
+    this.io.on('connection', socket => {
       console.log('📊 Dashboard client connected');
 
       // Send initial data
-      this.getDashboardData().then((data) => {
+      this.getDashboardData().then(data => {
         socket.emit('dashboard-data', data);
       });
 
@@ -136,13 +136,13 @@ class PerformanceDashboard {
     const metrics = await this.loadPerformanceMetrics();
     const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
 
-    return metrics.filter((metric) => metric.timestamp > fiveMinutesAgo);
+    return metrics.filter(metric => metric.timestamp > fiveMinutesAgo);
   }
 
   private async loadPerformanceMetrics(): Promise<PerformanceMetric[]> {
     try {
       const files = await fs.readdir(this.reportsDir);
-      const jsonFiles = files.filter((file) => file.endsWith('.json'));
+      const jsonFiles = files.filter(file => file.endsWith('.json'));
 
       const allMetrics: PerformanceMetric[] = [];
 
@@ -169,8 +169,8 @@ class PerformanceDashboard {
     const totalRenders = metrics.length;
     const totalRenderTime = metrics.reduce((sum, m) => sum + m.renderTime, 0);
     const averageRenderTime = totalRenderTime / totalRenders || 0;
-    const uniqueComponents = new Set(metrics.map((m) => m.component)).size;
-    const slowRenders = metrics.filter((m) => m.renderTime > 50).length;
+    const uniqueComponents = new Set(metrics.map(m => m.component)).size;
+    const slowRenders = metrics.filter(m => m.renderTime > 50).length;
 
     return {
       totalRenders,
@@ -183,7 +183,7 @@ class PerformanceDashboard {
   private calculateComponentStats(metrics: PerformanceMetric[]) {
     const componentMap = new Map<string, PerformanceMetric[]>();
 
-    metrics.forEach((metric) => {
+    metrics.forEach(metric => {
       if (!componentMap.has(metric.component)) {
         componentMap.set(metric.component, []);
       }
@@ -195,7 +195,7 @@ class PerformanceDashboard {
         component,
         renderCount: items.length,
         avgRenderTime: items.reduce((sum, item) => sum + item.renderTime, 0) / items.length,
-        maxRenderTime: Math.max(...items.map((item) => item.renderTime)),
+        maxRenderTime: Math.max(...items.map(item => item.renderTime)),
         memoryUsage: items.reduce((sum, item) => sum + item.memoryUsage, 0) / items.length,
       }))
       .sort((a, b) => b.avgRenderTime - a.avgRenderTime)
@@ -208,7 +208,7 @@ class PerformanceDashboard {
 
     // Check for recent slow renders
     const recentSlowRenders = metrics.filter(
-      (m) => m.renderTime > 100 && now - m.timestamp < 60000 // Last minute
+      m => m.renderTime > 100 && now - m.timestamp < 60000 // Last minute
     );
 
     if (recentSlowRenders.length > 0) {
@@ -221,7 +221,7 @@ class PerformanceDashboard {
 
     // Check for memory issues
     const highMemoryUsage = metrics.filter(
-      (m) => m.memoryUsage > 100 && now - m.timestamp < 300000 // Last 5 minutes
+      m => m.memoryUsage > 100 && now - m.timestamp < 300000 // Last 5 minutes
     );
 
     if (highMemoryUsage.length > 0) {
@@ -234,9 +234,9 @@ class PerformanceDashboard {
 
     // Check for frequent re-renders
     const componentRenderCounts = new Map<string, number>();
-    const recentMetrics = metrics.filter((m) => now - m.timestamp < 60000); // Last minute
+    const recentMetrics = metrics.filter(m => now - m.timestamp < 60000); // Last minute
 
-    recentMetrics.forEach((m) => {
+    recentMetrics.forEach(m => {
       componentRenderCounts.set(m.component, (componentRenderCounts.get(m.component) || 0) + 1);
     });
 

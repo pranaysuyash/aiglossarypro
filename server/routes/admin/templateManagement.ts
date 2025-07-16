@@ -171,15 +171,15 @@ router.get('/', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res
     let filteredTemplates = [...promptTemplates];
 
     if (category) {
-      filteredTemplates = filteredTemplates.filter((t) => t.category === category);
+      filteredTemplates = filteredTemplates.filter(t => t.category === category);
     }
 
     if (sectionType) {
-      filteredTemplates = filteredTemplates.filter((t) => t.sectionType === sectionType);
+      filteredTemplates = filteredTemplates.filter(t => t.sectionType === sectionType);
     }
 
     if (complexity) {
-      filteredTemplates = filteredTemplates.filter((t) => t.complexity === complexity);
+      filteredTemplates = filteredTemplates.filter(t => t.complexity === complexity);
     }
 
     // Sort by usage count descending
@@ -202,7 +202,7 @@ router.get('/', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res
 router.get('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const template = promptTemplates.find((t) => t.id === id);
+    const template = promptTemplates.find(t => t.id === id);
 
     if (!template) {
       return res.status(404).json({ success: false, error: 'Template not found' });
@@ -286,7 +286,7 @@ router.post('/', authenticateFirebaseToken, requireFirebaseAdmin, async (req, re
 router.put('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const templateIndex = promptTemplates.findIndex((t) => t.id === id);
+    const templateIndex = promptTemplates.findIndex(t => t.id === id);
 
     if (templateIndex === -1) {
       return res.status(404).json({ success: false, error: 'Template not found' });
@@ -303,7 +303,7 @@ router.put('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, 
         'improvementPrompt',
       ];
       const updateFields = Object.keys(req.body);
-      const invalidFields = updateFields.filter((field) => !allowedFields.includes(field));
+      const invalidFields = updateFields.filter(field => !allowedFields.includes(field));
 
       if (invalidFields.length > 0) {
         return res.status(400).json({
@@ -343,7 +343,7 @@ router.put('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, 
 router.delete('/:id', authenticateFirebaseToken, requireFirebaseAdmin, async (req, res) => {
   try {
     const { id } = req.params;
-    const templateIndex = promptTemplates.findIndex((t) => t.id === id);
+    const templateIndex = promptTemplates.findIndex(t => t.id === id);
 
     if (templateIndex === -1) {
       return res.status(404).json({ success: false, error: 'Template not found' });
@@ -385,7 +385,7 @@ router.post('/test', authenticateFirebaseToken, requireFirebaseAdmin, async (req
       });
     }
 
-    const template = promptTemplates.find((t) => t.id === templateId);
+    const template = promptTemplates.find(t => t.id === templateId);
     if (!template) {
       return res.status(404).json({ success: false, error: 'Template not found' });
     }
@@ -549,27 +549,27 @@ router.get(
       const stats = {
         totalTemplates: promptTemplates.length,
         byComplexity: {
-          simple: promptTemplates.filter((t) => t.complexity === 'simple').length,
-          moderate: promptTemplates.filter((t) => t.complexity === 'moderate').length,
-          complex: promptTemplates.filter((t) => t.complexity === 'complex').length,
+          simple: promptTemplates.filter(t => t.complexity === 'simple').length,
+          moderate: promptTemplates.filter(t => t.complexity === 'moderate').length,
+          complex: promptTemplates.filter(t => t.complexity === 'complex').length,
         },
         byCategory: {
-          generation: promptTemplates.filter((t) => t.category === 'generation').length,
-          evaluation: promptTemplates.filter((t) => t.category === 'evaluation').length,
-          improvement: promptTemplates.filter((t) => t.category === 'improvement').length,
+          generation: promptTemplates.filter(t => t.category === 'generation').length,
+          evaluation: promptTemplates.filter(t => t.category === 'evaluation').length,
+          improvement: promptTemplates.filter(t => t.category === 'improvement').length,
         },
         totalUsage: promptTemplates.reduce((sum, t) => sum + t.metadata.usageCount, 0),
         mostUsed: promptTemplates
           .sort((a, b) => b.metadata.usageCount - a.metadata.usageCount)
           .slice(0, 5)
-          .map((t) => ({
+          .map(t => ({
             id: t.id,
             name: t.name,
             usageCount: t.metadata.usageCount,
             sectionType: t.sectionType,
           })),
-        defaultTemplates: promptTemplates.filter((t) => t.metadata.isDefault).length,
-        customTemplates: promptTemplates.filter((t) => !t.metadata.isDefault).length,
+        defaultTemplates: promptTemplates.filter(t => t.metadata.isDefault).length,
+        customTemplates: promptTemplates.filter(t => !t.metadata.isDefault).length,
       };
 
       res.json({ success: true, data: stats });
@@ -590,7 +590,7 @@ router.post('/:id/duplicate', authenticateFirebaseToken, requireFirebaseAdmin, a
     const { id } = req.params;
     const { name } = req.body;
 
-    const originalTemplate = promptTemplates.find((t) => t.id === id);
+    const originalTemplate = promptTemplates.find(t => t.id === id);
     if (!originalTemplate) {
       return res.status(404).json({ success: false, error: 'Template not found' });
     }
@@ -631,7 +631,7 @@ function calculateCost(model: string, promptTokens: number, completionTokens: nu
   };
 
   const modelCosts = costs[model];
-  if (!modelCosts) return 0;
+  if (!modelCosts) {return 0;}
 
   return (promptTokens / 1000) * modelCosts.input + (completionTokens / 1000) * modelCosts.output;
 }

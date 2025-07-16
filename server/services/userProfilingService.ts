@@ -120,8 +120,8 @@ export async function generateUserProfile(userId: string): Promise<UserProfile> 
 async function calculateCategoryInterests(interactions: any[]): Promise<CategoryInterest[]> {
   const categoryMap = new Map<string, CategoryInterest>();
 
-  interactions.forEach((interaction) => {
-    if (!interaction.categoryId) return;
+  interactions.forEach(interaction => {
+    if (!interaction.categoryId) {return;}
 
     const key = interaction.categoryId;
     if (!categoryMap.has(key)) {
@@ -160,10 +160,10 @@ async function calculateCategoryInterests(interactions: any[]): Promise<Category
 
   // Normalize scores and return sorted array
   const categories = Array.from(categoryMap.values());
-  const maxScore = Math.max(...categories.map((c) => c.interestScore));
+  const maxScore = Math.max(...categories.map(c => c.interestScore));
 
   return categories
-    .map((category) => ({
+    .map(category => ({
       ...category,
       interestScore: maxScore > 0 ? (category.interestScore / maxScore) * 100 : 0,
     }))
@@ -196,7 +196,7 @@ async function calculateSkillLevel(
     expert: 0,
   };
 
-  interactions.forEach((interaction) => {
+  interactions.forEach(interaction => {
     const difficulty = interaction.difficultyLevel;
     if (difficulty && Object.hasOwn(difficultyScores, difficulty)) {
       const duration = interaction.duration || 30;
@@ -205,7 +205,7 @@ async function calculateSkillLevel(
   });
 
   // Factor in learning path completions
-  learningProgress.forEach((progress) => {
+  learningProgress.forEach(progress => {
     if ((progress.completionPercentage || 0) > 50) {
       const difficulty = progress.difficultyLevel;
       if (difficulty && Object.hasOwn(difficultyScores, difficulty)) {
@@ -231,7 +231,7 @@ function calculateLearningStyle(interactions: any[]): UserProfile['learningStyle
     mixed: 0,
   };
 
-  interactions.forEach((interaction) => {
+  interactions.forEach(interaction => {
     const duration = interaction.duration || 30;
 
     // Visual learners: shorter sessions, more frequent interactions
@@ -263,12 +263,12 @@ function calculateLearningStyle(interactions: any[]): UserProfile['learningStyle
  */
 function calculateActivityLevel(interactions: any[]): UserProfile['activityLevel'] {
   const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-  const recentInteractions = interactions.filter((i) => new Date(i.timestamp) >= sevenDaysAgo);
+  const recentInteractions = interactions.filter(i => new Date(i.timestamp) >= sevenDaysAgo);
 
   const dailyAverage = recentInteractions.length / 7;
 
-  if (dailyAverage >= 10) return 'high';
-  if (dailyAverage >= 3) return 'moderate';
+  if (dailyAverage >= 10) {return 'high';}
+  if (dailyAverage >= 3) {return 'moderate';}
   return 'low';
 }
 
@@ -278,7 +278,7 @@ function calculateActivityLevel(interactions: any[]): UserProfile['activityLevel
 function calculatePreferredContentTypes(interactions: any[]): string[] {
   const typeScores = new Map<string, number>();
 
-  interactions.forEach((interaction) => {
+  interactions.forEach(interaction => {
     const type = interaction.interactionType;
     typeScores.set(type, (typeScores.get(type) || 0) + 1);
   });
@@ -294,8 +294,8 @@ function calculatePreferredContentTypes(interactions: any[]): string[] {
  */
 function extractRecentTopics(interactions: any[], since: Date): string[] {
   const recentTerms = interactions
-    .filter((i) => new Date(i.timestamp) >= since)
-    .map((i) => i.termName)
+    .filter(i => new Date(i.timestamp) >= since)
+    .map(i => i.termName)
     .filter(Boolean);
 
   // Get unique recent terms
@@ -306,7 +306,7 @@ function extractRecentTopics(interactions: any[], since: Date): string[] {
  * Calculate overall engagement score
  */
 function calculateEngagementScore(interactions: any[]): number {
-  if (interactions.length === 0) return 0;
+  if (interactions.length === 0) {return 0;}
 
   const totalDuration = interactions.reduce((sum, i) => sum + (i.duration || 30), 0);
   const avgDuration = totalDuration / interactions.length;
@@ -314,7 +314,7 @@ function calculateEngagementScore(interactions: any[]): number {
   // Factors: frequency, duration, variety of interactions
   const frequencyScore = Math.min(interactions.length / 50, 1) * 30;
   const durationScore = Math.min(avgDuration / 300, 1) * 40;
-  const varietyScore = (new Set(interactions.map((i) => i.interactionType)).size / 4) * 30;
+  const varietyScore = (new Set(interactions.map(i => i.interactionType)).size / 4) * 30;
 
   return Math.round(frequencyScore + durationScore + varietyScore);
 }
@@ -331,7 +331,7 @@ function generatePersonalityVector(
   const vector: number[] = [];
 
   // Interest dimensions (top 5 categories)
-  interests.slice(0, 5).forEach((interest) => {
+  interests.slice(0, 5).forEach(interest => {
     vector.push(interest.interestScore / 100);
   });
 
@@ -360,7 +360,7 @@ function generatePersonalityVector(
  */
 export async function generatePersonalizedRecommendations(
   userProfile: UserProfile,
-  limit: number = 10
+  limit = 10
 ): Promise<PersonalizedRecommendation[]> {
   const recommendations: PersonalizedRecommendation[] = [];
 
@@ -387,7 +387,7 @@ async function getTrendingRecommendations(
   userProfile: UserProfile
 ): Promise<PersonalizedRecommendation[]> {
   const topInterests = userProfile.interests.slice(0, 3);
-  if (topInterests.length === 0) return [];
+  if (topInterests.length === 0) {return [];}
 
   const recommendations: PersonalizedRecommendation[] = [];
 
@@ -405,7 +405,7 @@ async function getTrendingRecommendations(
       .orderBy(desc(termAnalytics.viewCount))
       .limit(2);
 
-    trendingTerms.forEach((term) => {
+    trendingTerms.forEach(term => {
       recommendations.push({
         type: 'term',
         id: term.id,
@@ -431,7 +431,7 @@ async function getTrendingRecommendations(
 async function getExplorationRecommendations(
   userProfile: UserProfile
 ): Promise<PersonalizedRecommendation[]> {
-  const exploredCategoryIds = userProfile.interests.map((i) => i.categoryId);
+  const exploredCategoryIds = userProfile.interests.map(i => i.categoryId);
 
   const unexploredCategories = await db
     .select({
@@ -440,10 +440,10 @@ async function getExplorationRecommendations(
       description: categories.description,
     })
     .from(categories)
-    .where(sql`${categories.id} NOT IN (${exploredCategoryIds.map((id) => `'${id}'`).join(',')})`)
+    .where(sql`${categories.id} NOT IN (${exploredCategoryIds.map(id => `'${id}'`).join(',')})`)
     .limit(3);
 
-  return unexploredCategories.map((category) => ({
+  return unexploredCategories.map(category => ({
     type: 'category' as const,
     id: category.id,
     title: category.name,
@@ -482,8 +482,8 @@ async function getLearningPathRecommendations(
     )
     .limit(3);
 
-  suitablePaths.forEach((path) => {
-    const categoryInterest = userProfile.interests.find((i) => i.categoryId === path.categoryId);
+  suitablePaths.forEach(path => {
+    const categoryInterest = userProfile.interests.find(i => i.categoryId === path.categoryId);
     const relevanceScore = categoryInterest ? categoryInterest.interestScore * 0.9 : 40;
 
     recommendations.push({

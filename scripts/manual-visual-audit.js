@@ -72,7 +72,7 @@ async function runVisualAudit() {
 Date: ${new Date().toLocaleDateString()}
 
 ## Screenshots Captured
-${configs.map((config) => `- ${config.name}.png - ${config.url} (${config.viewport.width}x${config.viewport.height})`).join('\n')}
+${configs.map(config => `- ${config.name}.png - ${config.url} (${config.viewport.width}x${config.viewport.height})`).join('\n')}
 
 ## Issues Found
 <!-- Fill in your findings here -->

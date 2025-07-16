@@ -56,18 +56,18 @@ const CodeExamples: React.FC = () => {
 
   useEffect(() => {
     fetchCodeExamples();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchCodeExamples = async () => {
     try {
       const params = new URLSearchParams();
-      if (languageFilter !== 'all') params.append('language', languageFilter);
-      if (difficultyFilter !== 'all') params.append('difficulty', difficultyFilter);
-      if (typeFilter !== 'all') params.append('type', typeFilter);
+      if (languageFilter !== 'all') {params.append('language', languageFilter);}
+      if (difficultyFilter !== 'all') {params.append('difficulty', difficultyFilter);}
+      if (typeFilter !== 'all') {params.append('type', typeFilter);}
 
       const response = await fetch(`/api/code-examples?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch code examples');
+      if (!response.ok) {throw new Error('Failed to fetch code examples');}
       const data = await response.json();
       setExamples(data.data || []);
     } catch (err) {
@@ -93,11 +93,11 @@ const CodeExamples: React.FC = () => {
         body: JSON.stringify({ vote }),
       });
 
-      if (!response.ok) throw new Error('Failed to vote');
+      if (!response.ok) {throw new Error('Failed to vote');}
 
       // Update local state
       setExamples(
-        examples.map((example) =>
+        examples.map(example =>
           example.id === exampleId
             ? {
                 ...example,
@@ -142,7 +142,7 @@ const CodeExamples: React.FC = () => {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to run example');
+      if (!response.ok) {throw new Error('Failed to run example');}
 
       alert('Code executed successfully! (This is a simulation)');
     } catch (err) {
@@ -185,7 +185,7 @@ const CodeExamples: React.FC = () => {
     }
   };
 
-  const filteredExamples = examples.filter((example) => {
+  const filteredExamples = examples.filter(example => {
     const matchesSearch =
       example.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       example.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -193,7 +193,7 @@ const CodeExamples: React.FC = () => {
     return matchesSearch;
   });
 
-  const languages = [...new Set(examples.map((e) => e.language))];
+  const languages = [...new Set(examples.map(e => e.language))];
   const difficulties = ['beginner', 'intermediate', 'advanced'];
   const types = ['implementation', 'visualization', 'exercise'];
 
@@ -236,7 +236,7 @@ const CodeExamples: React.FC = () => {
               type="text"
               placeholder="Search code examples..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             />
           </div>
@@ -244,11 +244,11 @@ const CodeExamples: React.FC = () => {
           <div className="flex flex-wrap gap-4">
             <select
               value={languageFilter}
-              onChange={(e) => setLanguageFilter(e.target.value)}
+              onChange={e => setLanguageFilter(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Languages</option>
-              {languages.map((lang) => (
+              {languages.map(lang => (
                 <option key={lang} value={lang}>
                   {getLanguageIcon(lang)} {lang}
                 </option>
@@ -257,11 +257,11 @@ const CodeExamples: React.FC = () => {
 
             <select
               value={difficultyFilter}
-              onChange={(e) => setDifficultyFilter(e.target.value)}
+              onChange={e => setDifficultyFilter(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Difficulties</option>
-              {difficulties.map((diff) => (
+              {difficulties.map(diff => (
                 <option key={diff} value={diff}>
                   {diff.charAt(0).toUpperCase() + diff.slice(1)}
                 </option>
@@ -270,11 +270,11 @@ const CodeExamples: React.FC = () => {
 
             <select
               value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value)}
+              onChange={e => setTypeFilter(e.target.value)}
               className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="all">All Types</option>
-              {types.map((type) => (
+              {types.map(type => (
                 <option key={type} value={type}>
                   {type.charAt(0).toUpperCase() + type.slice(1)}
                 </option>
@@ -286,7 +286,7 @@ const CodeExamples: React.FC = () => {
 
       {/* Examples Grid */}
       <div className="space-y-6">
-        {filteredExamples.map((example) => (
+        {filteredExamples.map(example => (
           <Card key={example.id} className="overflow-hidden">
             <CardHeader>
               <div className="flex justify-between items-start">

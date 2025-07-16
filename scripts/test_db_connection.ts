@@ -40,7 +40,7 @@ async function testDatabaseConnection() {
     `);
 
     console.log('📊 Found tables:', tablesResult.rows.length);
-    tablesResult.rows.forEach((row) => {
+    tablesResult.rows.forEach(row => {
       console.log(`  - ${row.table_name}`);
     });
 

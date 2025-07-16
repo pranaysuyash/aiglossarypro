@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import CategoryCard from './CategoryCard';
 
@@ -27,7 +26,7 @@ const meta: Meta<typeof CategoryCard> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-sm p-4">
         <Story />
       </div>
@@ -170,7 +169,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-sm p-4 dark">
         <Story />
       </div>

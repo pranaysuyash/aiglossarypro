@@ -27,7 +27,11 @@ async function request<T = Record<string, unknown>>(
   data?: Record<string, unknown>
 ): Promise<ApiResponse<T>> {
   // Fix double /api issue - only add /api if endpoint doesn't already start with /api
-  const url = endpoint.startsWith('/api') ? endpoint : endpoint.startsWith('/') ? `/api${endpoint}` : endpoint;
+  const url = endpoint.startsWith('/api')
+    ? endpoint
+    : endpoint.startsWith('/')
+      ? `/api${endpoint}`
+      : endpoint;
 
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
@@ -72,9 +76,12 @@ async function request<T = Record<string, unknown>>(
 
 export const api = {
   get: <T = Record<string, unknown>>(endpoint: string) => request<T>('GET', endpoint),
-  post: <T = Record<string, unknown>>(endpoint: string, data?: Record<string, unknown>) => request<T>('POST', endpoint, data),
-  put: <T = Record<string, unknown>>(endpoint: string, data?: Record<string, unknown>) => request<T>('PUT', endpoint, data),
-  patch: <T = Record<string, unknown>>(endpoint: string, data?: Record<string, unknown>) => request<T>('PATCH', endpoint, data),
+  post: <T = Record<string, unknown>>(endpoint: string, data?: Record<string, unknown>) =>
+    request<T>('POST', endpoint, data),
+  put: <T = Record<string, unknown>>(endpoint: string, data?: Record<string, unknown>) =>
+    request<T>('PUT', endpoint, data),
+  patch: <T = Record<string, unknown>>(endpoint: string, data?: Record<string, unknown>) =>
+    request<T>('PATCH', endpoint, data),
   delete: <T = Record<string, unknown>>(endpoint: string) => request<T>('DELETE', endpoint),
 };
 

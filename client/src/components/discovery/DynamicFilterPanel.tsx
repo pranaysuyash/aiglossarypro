@@ -61,7 +61,7 @@ interface DynamicFilterPanelProps {
   onFilterChange: (filters: DynamicFilter) => void;
   availableCategories: string[];
   availableSubcategories: string[];
-  className?: string;
+  className?: string | undefined;
 
   // Analytics data for showing impact
   currentStats?: {
@@ -124,7 +124,7 @@ export function DynamicFilterPanel({
     const currentArray = (filters[key] as string[]) || [];
     const newArray = checked
       ? [...currentArray, value]
-      : currentArray.filter((item) => item !== value);
+      : currentArray.filter(item => item !== value);
 
     updateFilter(key as any, newArray);
   };
@@ -137,27 +137,27 @@ export function DynamicFilterPanel({
     let count = 0;
 
     // Count array filters
-    ['categories', 'subcategories', 'difficultyLevels'].forEach((key) => {
+    ['categories', 'subcategories', 'difficultyLevels'].forEach(key => {
       count += (filters[key as keyof DynamicFilter] as string[]).length;
     });
 
     // Count boolean filters
     ['hasImplementation', 'hasInteractiveElements', 'hasCaseStudies', 'hasCodeExamples'].forEach(
-      (key) => {
-        if (filters[key as keyof DynamicFilter] !== null) count++;
+      key => {
+        if (filters[key as keyof DynamicFilter] !== null) {count++;}
       }
     );
 
     // Count other filters
-    if (filters.searchQuery) count++;
-    if (filters.depth !== DEFAULT_FILTERS.depth) count++;
-    if (filters.showOrphans !== DEFAULT_FILTERS.showOrphans) count++;
+    if (filters.searchQuery) {count++;}
+    if (filters.depth !== DEFAULT_FILTERS.depth) {count++;}
+    if (filters.showOrphans !== DEFAULT_FILTERS.showOrphans) {count++;}
 
     return count;
   };
 
   const renderImpactBadge = () => {
-    if (!currentStats) return null;
+    if (!currentStats) {return null;}
 
     const _percentageNodes = Math.round(
       (currentStats.filteredNodes / currentStats.totalNodes) * 100
@@ -212,7 +212,7 @@ export function DynamicFilterPanel({
             id="search"
             placeholder="Filter by term name..."
             value={filters.searchQuery}
-            onChange={(e) => updateFilter('searchQuery', e.target.value)}
+            onChange={e => updateFilter('searchQuery', e.target.value)}
             className="h-9"
           />
         </div>
@@ -238,12 +238,12 @@ export function DynamicFilterPanel({
             <div className="space-y-2">
               <Label className="text-xs font-medium">Types</Label>
               <div className="space-y-2">
-                {['prerequisite', 'related', 'extends', 'alternative'].map((type) => (
+                {['prerequisite', 'related', 'extends', 'alternative'].map(type => (
                   <div key={type} className="flex items-center space-x-2">
                     <Checkbox
                       id={`rel-${type}`}
                       checked={filters.relationshipTypes.includes(type)}
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={checked =>
                         updateArrayFilter('relationshipTypes', type, checked as boolean)
                       }
                     />
@@ -265,7 +265,7 @@ export function DynamicFilterPanel({
               </div>
               <Slider
                 value={filters.relationshipStrength}
-                onValueChange={(value) =>
+                onValueChange={value =>
                   updateFilter('relationshipStrength', value as [number, number])
                 }
                 min={0}
@@ -285,7 +285,7 @@ export function DynamicFilterPanel({
               </div>
               <Slider
                 value={[filters.depth]}
-                onValueChange={(value) => updateFilter('depth', value[0])}
+                onValueChange={value => updateFilter('depth', value[0])}
                 min={1}
                 max={4}
                 step={1}
@@ -316,12 +316,12 @@ export function DynamicFilterPanel({
             <div className="space-y-2">
               <Label className="text-xs font-medium">Types</Label>
               <div className="space-y-2">
-                {['term', 'category', 'subcategory'].map((type) => (
+                {['term', 'category', 'subcategory'].map(type => (
                   <div key={type} className="flex items-center space-x-2">
                     <Checkbox
                       id={`node-${type}`}
                       checked={filters.nodeTypes.includes(type)}
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={checked =>
                         updateArrayFilter('nodeTypes', type, checked as boolean)
                       }
                     />
@@ -339,12 +339,12 @@ export function DynamicFilterPanel({
                 <Label className="text-xs font-medium">Categories</Label>
                 <ScrollArea className="h-32">
                   <div className="space-y-2 pr-3">
-                    {availableCategories.map((category) => (
+                    {availableCategories.map(category => (
                       <div key={category} className="flex items-center space-x-2">
                         <Checkbox
                           id={`cat-${category}`}
                           checked={filters.categories.includes(category)}
-                          onCheckedChange={(checked) =>
+                          onCheckedChange={checked =>
                             updateArrayFilter('categories', category, checked as boolean)
                           }
                         />
@@ -362,12 +362,12 @@ export function DynamicFilterPanel({
             <div className="space-y-2">
               <Label className="text-xs font-medium">Difficulty</Label>
               <div className="space-y-2">
-                {['Beginner', 'Intermediate', 'Advanced', 'Expert'].map((level) => (
+                {['Beginner', 'Intermediate', 'Advanced', 'Expert'].map(level => (
                   <div key={level} className="flex items-center space-x-2">
                     <Checkbox
                       id={`diff-${level}`}
                       checked={filters.difficultyLevels.includes(level)}
-                      onCheckedChange={(checked) =>
+                      onCheckedChange={checked =>
                         updateArrayFilter('difficultyLevels', level, checked as boolean)
                       }
                     />
@@ -412,7 +412,7 @@ export function DynamicFilterPanel({
                   <Switch
                     id={key}
                     checked={filters[key as keyof DynamicFilter] === true}
-                    onCheckedChange={(checked) => updateFilter(key as any, checked ? true : null)}
+                    onCheckedChange={checked => updateFilter(key as any, checked ? true : null)}
                   />
                 </div>
               ))}
@@ -482,7 +482,7 @@ export function DynamicFilterPanel({
               <Switch
                 id="show-orphans"
                 checked={filters.showOrphans}
-                onCheckedChange={(checked) => updateFilter('showOrphans', checked)}
+                onCheckedChange={checked => updateFilter('showOrphans', checked)}
               />
             </div>
           </CollapsibleContent>

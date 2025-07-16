@@ -32,7 +32,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface PredictiveAnalyticsProps {
   userId: string;
-  className?: string;
+  className?: string | undefined;
   compact?: boolean;
 }
 
@@ -76,7 +76,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
 
   const formatPercentage = (value: number) => `${Math.round(value * 100)}%`;
   const formatTime = (minutes: number) => {
-    if (minutes < 60) return `${Math.round(minutes)}m`;
+    if (minutes < 60) {return `${Math.round(minutes)}m`;}
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = Math.round(minutes % 60);
     return `${hours}h ${remainingMinutes}m`;
@@ -161,7 +161,7 @@ const PredictiveAnalytics: React.FC<PredictiveAnalyticsProps> = ({
         <div className="flex items-center gap-2">
           <select
             value={selectedTimeframe}
-            onChange={(e) => setSelectedTimeframe(e.target.value as '7d' | '30d' | '90d')}
+            onChange={e => setSelectedTimeframe(e.target.value as '7d' | '30d' | '90d')}
             className="px-3 py-1 border rounded-md text-sm"
           >
             <option value="7d">Last 7 days</option>

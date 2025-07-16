@@ -67,10 +67,7 @@
       "email": "test@aimlglossary.com",
       "password": "testpass123",
       "type": "free",
-      "expectedFeatures": [
-        "basic search",
-        "limited view count"
-      ],
+      "expectedFeatures": ["basic search", "limited view count"],
       "expectedLimitations": [
         "daily view limits",
         "upgrade prompts",

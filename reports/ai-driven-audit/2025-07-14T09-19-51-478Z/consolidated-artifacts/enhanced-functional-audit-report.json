@@ -62,9 +62,7 @@
                       "none": [],
                       "impact": "serious",
                       "html": "<html><head></head><body></body></html>",
-                      "target": [
-                        "html"
-                      ],
+                      "target": ["html"],
                       "failureSummary": "Fix any of the following:\n  Document does not have a non-empty <title> element"
                     }
                   ]
@@ -102,9 +100,7 @@
                       "none": [],
                       "impact": "serious",
                       "html": "<html><head></head><body></body></html>",
-                      "target": [
-                        "html"
-                      ],
+                      "target": ["html"],
                       "failureSummary": "Fix any of the following:\n  The <html> element does not have a lang attribute"
                     }
                   ]
@@ -112,10 +108,7 @@
                 {
                   "id": "landmark-one-main",
                   "impact": "moderate",
-                  "tags": [
-                    "cat.semantics",
-                    "best-practice"
-                  ],
+                  "tags": ["cat.semantics", "best-practice"],
                   "description": "Ensure the document has a main landmark",
                   "help": "Document should have one main landmark",
                   "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-one-main?application=axeAPI",
@@ -134,9 +127,7 @@
                       "none": [],
                       "impact": "moderate",
                       "html": "<html><head></head><body></body></html>",
-                      "target": [
-                        "html"
-                      ],
+                      "target": ["html"],
                       "failureSummary": "Fix all of the following:\n  Document does not have a main landmark"
                     }
                   ]
@@ -144,10 +135,7 @@
                 {
                   "id": "page-has-heading-one",
                   "impact": "moderate",
-                  "tags": [
-                    "cat.semantics",
-                    "best-practice"
-                  ],
+                  "tags": ["cat.semantics", "best-practice"],
                   "description": "Ensure that the page, or at least one of its frames contains a level-one heading",
                   "help": "Page should contain a level-one heading",
                   "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/page-has-heading-one?application=axeAPI",
@@ -166,9 +154,7 @@
                       "none": [],
                       "impact": "moderate",
                       "html": "<html><head></head><body></body></html>",
-                      "target": [
-                        "html"
-                      ],
+                      "target": ["html"],
                       "failureSummary": "Fix all of the following:\n  Page must have a level-one heading"
                     }
                   ]
@@ -279,9 +265,7 @@
                       "none": [],
                       "impact": "serious",
                       "html": "<html><head></head><body></body></html>",
-                      "target": [
-                        "html"
-                      ],
+                      "target": ["html"],
                       "failureSummary": "Fix any of the following:\n  Document does not have a non-empty <title> element"
                     }
                   ]
@@ -319,9 +303,7 @@
                       "none": [],
                       "impact": "serious",
                       "html": "<html><head></head><body></body></html>",
-                      "target": [
-                        "html"
-                      ],
+                      "target": ["html"],
                       "failureSummary": "Fix any of the following:\n  The <html> element does not have a lang attribute"
                     }
                   ]
@@ -329,10 +311,7 @@
                 {
                   "id": "landmark-one-main",
                   "impact": "moderate",
-                  "tags": [
-                    "cat.semantics",
-                    "best-practice"
-                  ],
+                  "tags": ["cat.semantics", "best-practice"],
                   "description": "Ensure the document has a main landmark",
                   "help": "Document should have one main landmark",
                   "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-one-main?application=axeAPI",
@@ -351,9 +330,7 @@
                       "none": [],
                       "impact": "moderate",
                       "html": "<html><head></head><body></body></html>",
-                      "target": [
-                        "html"
-                      ],
+                      "target": ["html"],
                       "failureSummary": "Fix all of the following:\n  Document does not have a main landmark"
                     }
                   ]
@@ -361,10 +338,7 @@
                 {
                   "id": "page-has-heading-one",
                   "impact": "moderate",
-                  "tags": [
-                    "cat.semantics",
-                    "best-practice"
-                  ],
+                  "tags": ["cat.semantics", "best-practice"],
                   "description": "Ensure that the page, or at least one of its frames contains a level-one heading",
                   "help": "Page should contain a level-one heading",
                   "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/page-has-heading-one?application=axeAPI",
@@ -383,9 +357,7 @@
                       "none": [],
                       "impact": "moderate",
                       "html": "<html><head></head><body></body></html>",
-                      "target": [
-                        "html"
-                      ],
+                      "target": ["html"],
                       "failureSummary": "Fix all of the following:\n  Page must have a level-one heading"
                     }
                   ]
@@ -496,9 +468,7 @@
                       "none": [],
                       "impact": "serious",
                       "html": "<html><head></head><body></body></html>",
-                      "target": [
-                        "html"
-                      ],
+                      "target": ["html"],
                       "failureSummary": "Fix any of the following:\n  Document does not have a non-empty <title> element"
                     }
                   ]
@@ -536,9 +506,7 @@
                       "none": [],
                       "impact": "serious",
                       "html": "<html><head></head><body></body></html>",
-                      "target": [
-                        "html"
-                      ],
+                      "target": ["html"],
                       "failureSummary": "Fix any of the following:\n  The <html> element does not have a lang attribute"
                     }
                   ]
@@ -546,10 +514,7 @@
                 {
                   "id": "landmark-one-main",
                   "impact": "moderate",
-                  "tags": [
-                    "cat.semantics",
-                    "best-practice"
-                  ],
+                  "tags": ["cat.semantics", "best-practice"],
                   "description": "Ensure the document has a main landmark",
                   "help": "Document should have one main landmark",
                   "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/landmark-one-main?application=axeAPI",
@@ -568,9 +533,7 @@
                       "none": [],
                       "impact": "moderate",
                       "html": "<html><head></head><body></body></html>",
-                      "target": [
-                        "html"
-                      ],
+                      "target": ["html"],
                       "failureSummary": "Fix all of the following:\n  Document does not have a main landmark"
                     }
                   ]
@@ -578,10 +541,7 @@
                 {
                   "id": "page-has-heading-one",
                   "impact": "moderate",
-                  "tags": [
-                    "cat.semantics",
-                    "best-practice"
-                  ],
+                  "tags": ["cat.semantics", "best-practice"],
                   "description": "Ensure that the page, or at least one of its frames contains a level-one heading",
                   "help": "Page should contain a level-one heading",
                   "helpUrl": "https://dequeuniversity.com/rules/axe/4.10/page-has-heading-one?application=axeAPI",
@@ -600,9 +560,7 @@
                       "none": [],
                       "impact": "moderate",
                       "html": "<html><head></head><body></body></html>",
-                      "target": [
-                        "html"
-                      ],
+                      "target": ["html"],
                       "failureSummary": "Fix all of the following:\n  Page must have a level-one heading"
                     }
                   ]

@@ -415,12 +415,12 @@ The AI Glossary Pro Team
  */
 export function getPremiumWelcomeEmailTemplate(data: PremiumWelcomeEmailData): EmailTemplate {
   const { userName, userEmail, purchaseDate, orderId, purchaseAmount } = data;
-  const displayName = userName || "Premium Member";
-  const frontendUrl = process.env.FRONTEND_URL || "http://localhost:5173";
+  const displayName = userName || 'Premium Member';
+  const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
   const dashboardUrl = `${frontendUrl}/dashboard?welcome=premium`;
 
   return {
-    subject: "🎉 Welcome to AI Glossary Pro Premium\! Your Lifetime Access is Ready",
+    subject: '🎉 Welcome to AI Glossary Pro Premium\! Your Lifetime Access is Ready',
     html: `
       <div style="${baseStyles}">
         <div style="${containerStyles}">

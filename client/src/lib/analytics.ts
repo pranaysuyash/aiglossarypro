@@ -19,7 +19,19 @@ interface PerformanceThresholds {
   renderCount: number;
 }
 
+// Helper to check if analytics should be disabled
+const isAnalyticsDisabled = () => {
+  // Only disable in development when VITE_DISABLE_ANALYTICS is true
+  return import.meta.env.DEV && import.meta.env.VITE_DISABLE_ANALYTICS === 'true';
+};
+
 export const initAnalytics = () => {
+  // Check if analytics is disabled
+  if (isAnalyticsDisabled()) {
+    console.log('📊 Analytics disabled for local development');
+    return;
+  }
+
   // Initialize PostHog
   if (typeof window !== 'undefined' && import.meta.env.VITE_POSTHOG_KEY) {
     posthog.init(import.meta.env.VITE_POSTHOG_KEY, {
@@ -27,8 +39,8 @@ export const initAnalytics = () => {
       autocapture: true,
       capture_pageview: true,
       capture_pageleave: true,
-      loaded: (posthog) => {
-        if (import.meta.env.DEV) posthog.debug();
+      loaded: posthog => {
+        if (import.meta.env.DEV) {posthog.debug();}
       },
     });
   }
@@ -39,6 +51,9 @@ export const initAnalytics = () => {
 
 // Custom event tracking with dual tracking (PostHog + GA4)
 export const trackTermView = (termId: string, termName: string, section?: string) => {
+  // Check if analytics is disabled
+  if (isAnalyticsDisabled()) {return;}
+
   // PostHog tracking
   posthog.capture('term_viewed', {
     term_id: termId,
@@ -66,7 +81,14 @@ export const trackTermView = (termId: string, termName: string, section?: string
   });
 };
 
-export const trackSearch = (query: string, resultsCount: number, filters?: Record<string, unknown>) => {
+export const trackSearch = (
+  query: string,
+  resultsCount: number,
+  filters?: Record<string, unknown>
+) => {
+  // Check if analytics is disabled
+  if (isAnalyticsDisabled()) {return;}
+
   // PostHog tracking
   posthog.capture('search_performed', {
     query,
@@ -94,6 +116,9 @@ export const trackSearch = (query: string, resultsCount: number, filters?: Recor
 };
 
 export const trackUserAction = (action: string, properties: Record<string, unknown> = {}) => {
+  // Check if analytics is disabled
+  if (isAnalyticsDisabled()) {return;}
+
   // PostHog tracking
   posthog.capture(action, {
     ...properties,
@@ -103,10 +128,10 @@ export const trackUserAction = (action: string, properties: Record<string, unkno
   // GA4 tracking - determine event type based on action
   if (action.includes('cta') || action.includes('click')) {
     ga4Analytics.trackCTAClick(
-      properties.button_text || action,
-      properties.location || 'unknown',
-      properties.section || 'general',
-      properties.value || 1
+      String(properties.button_text) || action,
+      String(properties.location) || 'unknown',
+      String(properties.section) || 'general',
+      Number(properties.value) || 1
     );
   } else {
     ga4Analytics.trackEngagement({
@@ -130,8 +155,11 @@ const PERFORMANCE_THRESHOLDS: PerformanceThresholds = {
 };
 
 export const trackPerformanceMetric = (metric: PerformanceMetric) => {
+  // Check if analytics is disabled
+  if (isAnalyticsDisabled()) {return;}
+
   // Only track in development mode
-  if (!import.meta.env.DEV) return;
+  if (!import.meta.env.DEV) {return;}
 
   const isSlowRender = metric.renderTime > PERFORMANCE_THRESHOLDS.renderTime;
   const isHighMemoryUsage = metric.memoryUsage > PERFORMANCE_THRESHOLDS.memoryUsage;
@@ -171,6 +199,9 @@ export const trackPerformanceMetric = (metric: PerformanceMetric) => {
 };
 
 export const trackSlowRender = (component: string, renderTime: number, stackTrace?: string) => {
+  // Check if analytics is disabled
+  if (isAnalyticsDisabled()) {return;}
+
   // Track to PostHog
   posthog.capture('slow_render_detected', {
     component,
@@ -198,6 +229,9 @@ export const trackSlowRender = (component: string, renderTime: number, stackTrac
 };
 
 export const trackMemoryLeak = (component: string, memoryUsage: number, previousUsage?: number) => {
+  // Check if analytics is disabled
+  if (isAnalyticsDisabled()) {return;}
+
   const growthRate = previousUsage ? ((memoryUsage - previousUsage) / previousUsage) * 100 : 0;
 
   // Track to PostHog
@@ -235,6 +269,9 @@ export const trackPerformanceReport = (report: {
   memoryUsage: number;
   duration: number;
 }) => {
+  // Check if analytics is disabled
+  if (isAnalyticsDisabled()) {return;}
+
   // Track to PostHog
   posthog.capture('performance_report_generated', {
     total_renders: report.totalRenders,
@@ -335,18 +372,24 @@ export const initReactScanIntegration = () => {
       trackPerformanceMetric(metric);
     });
 
-    window.addEventListener('react-scan-slow-render', (event: CustomEvent<{ component: string; renderTime: number; stackTrace?: string }>) => {
-      const { component, renderTime, stackTrace } = event.detail;
-      trackSlowRender(component, renderTime, stackTrace);
-    });
+    window.addEventListener(
+      'react-scan-slow-render',
+      (event: CustomEvent<{ component: string; renderTime: number; stackTrace?: string }>) => {
+        const { component, renderTime, stackTrace } = event.detail;
+        trackSlowRender(component, renderTime, stackTrace);
+      }
+    );
 
-    window.addEventListener('react-scan-memory-leak', (event: CustomEvent<{ component: string; memoryUsage: number; previousUsage?: number }>) => {
-      const { component, memoryUsage, previousUsage } = event.detail;
-      trackMemoryLeak(component, memoryUsage, previousUsage);
-    });
+    window.addEventListener(
+      'react-scan-memory-leak',
+      (event: CustomEvent<{ component: string; memoryUsage: number; previousUsage?: number }>) => {
+        const { component, memoryUsage, previousUsage } = event.detail;
+        trackMemoryLeak(component, memoryUsage, previousUsage);
+      }
+    );
 
     console.log('🔍 React Scan analytics integration initialized');
   }
 };
 
-export { posthog };
+export { posthog, isAnalyticsDisabled };

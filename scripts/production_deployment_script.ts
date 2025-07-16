@@ -93,7 +93,7 @@ class ProductionDeployment {
     // Check required environment variables
     const requiredEnvVars = ['DATABASE_URL', 'SESSION_SECRET', 'NODE_ENV'];
 
-    const missingVars = requiredEnvVars.filter((varName) => !process.env[varName]);
+    const missingVars = requiredEnvVars.filter(varName => !process.env[varName]);
     if (missingVars.length > 0) {
       throw new Error(`Missing required environment variables: ${missingVars.join(', ')}`);
     }
@@ -315,7 +315,7 @@ class ProductionDeployment {
       const serverProcess = exec('npm start');
 
       // Wait for server to start
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise(resolve => setTimeout(resolve, 5000));
 
       try {
         // Test key endpoints
@@ -468,7 +468,7 @@ async function runProductionDeployment() {
 
   // Parse command line arguments
   const args = process.argv.slice(2);
-  const environment = (args.find((arg) => arg.startsWith('--env='))?.split('=')[1] ||
+  const environment = (args.find(arg => arg.startsWith('--env='))?.split('=')[1] ||
     'development') as 'development' | 'staging' | 'production';
   const skipDataImport = args.includes('--skip-data');
   const enablePerformanceOptimizations =

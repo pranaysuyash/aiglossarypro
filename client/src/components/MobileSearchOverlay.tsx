@@ -1,5 +1,17 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { ArrowLeft, Bookmark, ChevronRight, Clock, Filter, Heart, Mic, Search, Star, TrendingUp, X } from 'lucide-react';
+import {
+  ArrowLeft,
+  Bookmark,
+  ChevronRight,
+  Clock,
+  Filter,
+  Heart,
+  Mic,
+  Search,
+  Star,
+  TrendingUp,
+  X,
+} from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'wouter';
 import { useToast } from '../hooks/use-toast';
@@ -35,9 +47,9 @@ export function MobileSearchOverlay({
   onClose,
   onResultClick,
   onFavoriteToggle,
-  placeholder = "Search 10,000+ AI/ML terms...",
+  placeholder = 'Search 10,000+ AI/ML terms...',
   showVoiceSearch = true,
-  initialQuery = "",
+  initialQuery = '',
 }: MobileSearchOverlayProps) {
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SearchResult[]>([]);
@@ -54,7 +66,8 @@ export function MobileSearchOverlay({
     {
       id: '1',
       title: 'Neural Network',
-      definition: 'A computing system inspired by biological neural networks that process information through interconnected nodes.',
+      definition:
+        'A computing system inspired by biological neural networks that process information through interconnected nodes.',
       category: 'Deep Learning',
       complexity: 'Intermediate',
       tags: ['Deep Learning', 'AI', 'Machine Learning'],
@@ -64,7 +77,8 @@ export function MobileSearchOverlay({
     {
       id: '2',
       title: 'Machine Learning',
-      definition: 'A subset of AI that enables computers to learn and improve from experience without being explicitly programmed.',
+      definition:
+        'A subset of AI that enables computers to learn and improve from experience without being explicitly programmed.',
       category: 'AI Fundamentals',
       complexity: 'Beginner',
       tags: ['AI', 'Learning', 'Algorithms'],
@@ -74,7 +88,8 @@ export function MobileSearchOverlay({
     {
       id: '3',
       title: 'Transformer Architecture',
-      definition: 'A neural network architecture that revolutionized NLP by using self-attention mechanisms.',
+      definition:
+        'A neural network architecture that revolutionized NLP by using self-attention mechanisms.',
       category: 'Deep Learning',
       complexity: 'Advanced',
       tags: ['Transformers', 'NLP', 'Attention'],
@@ -84,7 +99,8 @@ export function MobileSearchOverlay({
     {
       id: '4',
       title: 'Gradient Descent',
-      definition: 'An optimization algorithm used to minimize the loss function in machine learning models.',
+      definition:
+        'An optimization algorithm used to minimize the loss function in machine learning models.',
       category: 'Optimization',
       complexity: 'Intermediate',
       tags: ['Optimization', 'Training', 'Algorithms'],
@@ -94,7 +110,8 @@ export function MobileSearchOverlay({
     {
       id: '5',
       title: 'Convolutional Neural Network',
-      definition: 'A deep learning algorithm particularly effective for image recognition and computer vision tasks.',
+      definition:
+        'A deep learning algorithm particularly effective for image recognition and computer vision tasks.',
       category: 'Computer Vision',
       complexity: 'Advanced',
       tags: ['CNN', 'Computer Vision', 'Deep Learning'],
@@ -132,15 +149,16 @@ export function MobileSearchOverlay({
       }
 
       setIsLoading(true);
-      
+
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 300));
-      
+
       // Filter mock results based on query
-      const filteredResults = mockResults.filter(result =>
-        result.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        result.definition.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        result.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+      const filteredResults = mockResults.filter(
+        result =>
+          result.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          result.definition.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          result.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
       );
 
       setResults(filteredResults);
@@ -213,9 +231,7 @@ export function MobileSearchOverlay({
   const handleFavoriteToggle = (resultId: string) => {
     setResults(prev =>
       prev.map(result =>
-        result.id === resultId
-          ? { ...result, isFavorite: !result.isFavorite }
-          : result
+        result.id === resultId ? { ...result, isFavorite: !result.isFavorite } : result
       )
     );
     onFavoriteToggle?.(resultId);
@@ -246,25 +262,20 @@ export function MobileSearchOverlay({
         >
           {/* Header */}
           <div className="flex items-center space-x-3 p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onClose}
-              className="flex-shrink-0"
-            >
+            <Button variant="ghost" size="icon" onClick={onClose} className="flex-shrink-0">
               <ArrowLeft className="w-5 h-5" />
             </Button>
-            
+
             <div className="flex-1 relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
               <Input
                 ref={inputRef}
                 value={query}
-                onChange={(e) => handleSearchChange(e.target.value)}
+                onChange={e => handleSearchChange(e.target.value)}
                 placeholder={placeholder}
                 className="pl-10 pr-20 h-12 text-lg border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400"
               />
-              
+
               {/* Voice Search Button */}
               {showVoiceSearch && (
                 <Button
@@ -279,7 +290,7 @@ export function MobileSearchOverlay({
                   <Mic className={`w-5 h-5 ${isVoiceListening ? 'animate-pulse' : ''}`} />
                 </Button>
               )}
-              
+
               {/* Clear Button */}
               {query && (
                 <Button
@@ -318,9 +329,11 @@ export function MobileSearchOverlay({
                 <div className="p-4 space-y-3">
                   {/* Category Filters */}
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Categories</h4>
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Categories
+                    </h4>
                     <div className="flex flex-wrap gap-2">
-                      {categories.map((category) => (
+                      {categories.map(category => (
                         <Badge
                           key={category}
                           variant={selectedFilters.includes(category) ? 'default' : 'outline'}
@@ -338,12 +351,14 @@ export function MobileSearchOverlay({
                       ))}
                     </div>
                   </div>
-                  
+
                   {/* Complexity Filters */}
                   <div>
-                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Complexity</h4>
+                    <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Complexity
+                    </h4>
                     <div className="flex flex-wrap gap-2">
-                      {complexityLevels.map((level) => (
+                      {complexityLevels.map(level => (
                         <Badge
                           key={level}
                           variant={selectedFilters.includes(level) ? 'default' : 'outline'}
@@ -391,7 +406,7 @@ export function MobileSearchOverlay({
                     </div>
                   </div>
                 )}
-                
+
                 {/* Popular Terms */}
                 <div>
                   <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-3 flex items-center">
@@ -399,15 +414,19 @@ export function MobileSearchOverlay({
                     Popular Terms
                   </h3>
                   <div className="grid gap-3">
-                    {mockResults.slice(0, 3).map((result) => (
+                    {mockResults.slice(0, 3).map(result => (
                       <button
                         key={result.id}
                         onClick={() => handleResultClick(result)}
                         className="flex items-center space-x-3 p-3 text-left bg-gray-50 dark:bg-gray-800 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                       >
                         <div className="flex-1">
-                          <h4 className="font-medium text-gray-900 dark:text-gray-100">{result.title}</h4>
-                          <p className="text-sm text-gray-600 dark:text-gray-400">{result.category}</p>
+                          <h4 className="font-medium text-gray-900 dark:text-gray-100">
+                            {result.title}
+                          </h4>
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
+                            {result.category}
+                          </p>
                         </div>
                         <Star className="w-4 h-4 text-yellow-500" />
                       </button>
@@ -426,7 +445,7 @@ export function MobileSearchOverlay({
                   </div>
                 ) : results.length > 0 ? (
                   <div className="p-4 space-y-3">
-                    {results.map((result) => (
+                    {results.map(result => (
                       <motion.div
                         key={result.id}
                         initial={{ opacity: 0, y: 20 }}
@@ -445,7 +464,7 @@ export function MobileSearchOverlay({
                               {result.definition}
                             </p>
                           </button>
-                          
+
                           <Button
                             variant="ghost"
                             size="icon"
@@ -454,10 +473,12 @@ export function MobileSearchOverlay({
                               result.isFavorite ? 'text-red-500' : 'text-gray-400'
                             }`}
                           >
-                            <Heart className={`w-5 h-5 ${result.isFavorite ? 'fill-current' : ''}`} />
+                            <Heart
+                              className={`w-5 h-5 ${result.isFavorite ? 'fill-current' : ''}`}
+                            />
                           </Button>
                         </div>
-                        
+
                         <div className="flex items-center justify-between">
                           <div className="flex items-center space-x-2">
                             <Badge variant="outline" className="text-xs">
@@ -467,7 +488,7 @@ export function MobileSearchOverlay({
                               {result.complexity}
                             </Badge>
                           </div>
-                          
+
                           {result.popularity && (
                             <div className="flex items-center text-xs text-gray-500">
                               <TrendingUp className="w-3 h-3 mr-1" />
@@ -477,7 +498,7 @@ export function MobileSearchOverlay({
                         </div>
                       </motion.div>
                     ))}
-                    
+
                     {/* Load More Button */}
                     <Button
                       variant="outline"

@@ -326,7 +326,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
     });
 
     // Start processing asynchronously
-    this.processBatchOperation(operationId, terms).catch((error) => {
+    this.processBatchOperation(operationId, terms).catch(error => {
       logger.error(`Batch operation ${operationId} failed:`, { error: error.message });
       operation.status = 'failed';
       this.emit('operation:failed', { operationId, error: error.message });
@@ -398,7 +398,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
     );
 
     // Continue processing
-    this.processBatchOperation(operationId, termsToProcess, true).catch((error) => {
+    this.processBatchOperation(operationId, termsToProcess, true).catch(error => {
       logger.error(`Resumed batch operation ${operationId} failed:`, { error: error.message });
       operation.status = 'failed';
       this.emit('operation:failed', { operationId, error: error.message });
@@ -454,14 +454,14 @@ export class ColumnBatchProcessorService extends EventEmitter {
    */
   getActiveOperations(): ColumnBatchOperation[] {
     return Array.from(this.operations.values()).filter(
-      (op) => op.status === 'running' || op.status === 'paused' || op.status === 'pending'
+      op => op.status === 'running' || op.status === 'paused' || op.status === 'pending'
     );
   }
 
   /**
    * Get operation history
    */
-  getOperationHistory(limit: number = 50): ColumnBatchOperation[] {
+  getOperationHistory(limit = 50): ColumnBatchOperation[] {
     return Array.from(this.operations.values())
       .sort((a, b) => (b.timing.startedAt?.getTime() || 0) - (a.timing.startedAt?.getTime() || 0))
       .slice(0, limit);
@@ -482,12 +482,12 @@ export class ColumnBatchProcessorService extends EventEmitter {
 
     const allOperations = Array.from(this.operations.values());
     const todayOperations = allOperations.filter(
-      (op) => op.timing.startedAt && op.timing.startedAt >= todayStart
+      op => op.timing.startedAt && op.timing.startedAt >= todayStart
     );
 
-    const completedOperations = allOperations.filter((op) => op.status === 'completed');
+    const completedOperations = allOperations.filter(op => op.status === 'completed');
     const successfulOperations = completedOperations.filter(
-      (op) => op.result && op.result.successCount > op.result.failureCount
+      op => op.result && op.result.successCount > op.result.failureCount
     );
 
     const averageOperationTime =
@@ -512,7 +512,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
   private async processBatchOperation(
     operationId: string,
     terms: Array<{ id: string; name: string }>,
-    _isResume: boolean = false
+    _isResume = false
   ): Promise<void> {
     const operation = this.operations.get(operationId);
     if (!operation) {
@@ -572,7 +572,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
 
         // Delay between batch groups
         if (i + maxConcurrentBatches < batches.length) {
-          await new Promise((resolve) =>
+          await new Promise(resolve =>
             setTimeout(resolve, this.RATE_LIMITS.minDelayBetweenBatches)
           );
         }
@@ -621,7 +621,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
     batchIndex: number
   ): Promise<void> {
     const operation = this.operations.get(operationId);
-    if (!operation) return;
+    if (!operation) {return;}
 
     logger.info(
       `Processing batch ${batchIndex} with ${batch.length} terms for operation ${operationId}`
@@ -630,7 +630,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
     const batchStartTime = Date.now();
 
     // Create sub-jobs for each term in the batch
-    const subJobPromises = batch.map(async (term) => {
+    const subJobPromises = batch.map(async term => {
       try {
         const jobId = await jobQueueManager.addJob(
           JobType.AI_CONTENT_GENERATION,
@@ -676,7 +676,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
       }
     });
 
-    const jobIds = (await Promise.all(subJobPromises)).filter((id) => id !== null) as string[];
+    const jobIds = (await Promise.all(subJobPromises)).filter(id => id !== null) as string[];
 
     // Wait for batch completion with timeout
     const batchTimeout = 600000; // 10 minutes per batch
@@ -690,11 +690,11 @@ export class ColumnBatchProcessorService extends EventEmitter {
 
       // Check job statuses
       const statusChecks = await Promise.all(
-        jobIds.map((jobId) => jobQueueManager.getJobStatus(JobType.AI_CONTENT_GENERATION, jobId))
+        jobIds.map(jobId => jobQueueManager.getJobStatus(JobType.AI_CONTENT_GENERATION, jobId))
       );
 
       const completed = statusChecks.filter(
-        (status) => status && (status.state === 'completed' || status.state === 'failed')
+        status => status && (status.state === 'completed' || status.state === 'failed')
       );
 
       // Update costs and progress
@@ -735,7 +735,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
       }
 
       // Wait before checking again
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
     }
 
     const batchProcessingTime = Date.now() - batchStartTime;
@@ -812,13 +812,13 @@ export class ColumnBatchProcessorService extends EventEmitter {
         );
 
         if (request.filterOptions.hasContent !== undefined) {
-          if (request.filterOptions.hasContent && !hasContentForSection) continue;
-          if (!request.filterOptions.hasContent && hasContentForSection) continue;
+          if (request.filterOptions.hasContent && !hasContentForSection) {continue;}
+          if (!request.filterOptions.hasContent && hasContentForSection) {continue;}
         }
 
         if (request.filterOptions.isAiGenerated !== undefined) {
           const isAiGenerated = await this.isTermContentAiGenerated(term.id, request.sectionName);
-          if (request.filterOptions.isAiGenerated !== isAiGenerated) continue;
+          if (request.filterOptions.isAiGenerated !== isAiGenerated) {continue;}
         }
 
         filteredTerms.push(term);
@@ -995,7 +995,7 @@ export class ColumnBatchProcessorService extends EventEmitter {
     // Check hourly limit
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     const recentOps = Array.from(this.operations.values()).filter(
-      (op) => op.timing.startedAt && op.timing.startedAt > oneHourAgo
+      op => op.timing.startedAt && op.timing.startedAt > oneHourAgo
     );
 
     if (recentOps.length >= this.RATE_LIMITS.maxOperationsPerHour) {

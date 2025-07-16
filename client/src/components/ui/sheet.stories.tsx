@@ -1,5 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import type React from 'react';
 import { useState } from 'react';
 import { Badge } from './badge';
 import { Button } from './button';
@@ -256,7 +256,7 @@ export const WithForm: Story = {
               <Input
                 id="termName"
                 value={formData.termName}
-                onChange={(e) => setFormData({ ...formData, termName: e.target.value })}
+                onChange={e => setFormData({ ...formData, termName: e.target.value })}
                 placeholder="Enter term name"
               />
             </div>
@@ -265,7 +265,7 @@ export const WithForm: Story = {
               <Textarea
                 id="definition"
                 value={formData.definition}
-                onChange={(e) => setFormData({ ...formData, definition: e.target.value })}
+                onChange={e => setFormData({ ...formData, definition: e.target.value })}
                 placeholder="Enter definition"
                 rows={4}
               />
@@ -276,7 +276,7 @@ export const WithForm: Story = {
                 <Input
                   id="category"
                   value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  onChange={e => setFormData({ ...formData, category: e.target.value })}
                   placeholder="e.g., Machine Learning"
                 />
               </div>
@@ -285,7 +285,7 @@ export const WithForm: Story = {
                 <select
                   id="difficulty"
                   value={formData.difficulty}
-                  onChange={(e) => setFormData({ ...formData, difficulty: e.target.value })}
+                  onChange={e => setFormData({ ...formData, difficulty: e.target.value })}
                   className="w-full p-2 border rounded"
                 >
                   <option value="beginner">Beginner</option>
@@ -299,7 +299,7 @@ export const WithForm: Story = {
               <Input
                 id="tags"
                 value={formData.tags}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                onChange={e => setFormData({ ...formData, tags: e.target.value })}
                 placeholder="comma, separated, tags"
               />
             </div>
@@ -431,7 +431,7 @@ export const LoadingSheet: Story = {
 
     const handleAction = async () => {
       setLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       setLoading(false);
     };
 

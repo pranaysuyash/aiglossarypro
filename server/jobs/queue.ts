@@ -43,7 +43,7 @@ export class JobQueueManager extends EventEmitter {
   private workers: Map<JobType, Worker> = new Map();
   private queueEvents: Map<JobType, QueueEvents> = new Map();
   private redisConnection: Redis;
-  private isInitialized: boolean = false;
+  private isInitialized = false;
 
   constructor() {
     super();
@@ -272,7 +272,7 @@ export class JobQueueManager extends EventEmitter {
     // Create workers for each job type
     for (const [jobType, processor] of processorMap) {
       const queue = this.queues.get(jobType);
-      if (!queue) continue;
+      if (!queue) {continue;}
 
       const worker = new Worker(
         queue.name,
@@ -297,7 +297,7 @@ export class JobQueueManager extends EventEmitter {
       );
 
       // Add worker event listeners
-      worker.on('completed', (job) => {
+      worker.on('completed', job => {
         this.emit('job:completed', { jobType, jobId: job.id, result: job.returnvalue });
       });
 
@@ -383,7 +383,7 @@ export class JobQueueManager extends EventEmitter {
     }));
 
     const addedJobs = await queue.addBulk(bulkJobs);
-    const jobIds = addedJobs.map((job) => job.id!);
+    const jobIds = addedJobs.map(job => job.id!);
 
     logger.info(`Added ${jobIds.length} jobs to queue ${queue.name}`);
     return jobIds;
@@ -539,8 +539,8 @@ export class JobQueueManager extends EventEmitter {
    */
   async cleanQueue(
     type: JobType,
-    grace: number = 3600000, // 1 hour default
-    limit: number = 1000,
+    grace = 3600000, // 1 hour default
+    limit = 1000,
     status: 'completed' | 'failed' = 'completed'
   ): Promise<string[]> {
     const queue = this.queues.get(type);

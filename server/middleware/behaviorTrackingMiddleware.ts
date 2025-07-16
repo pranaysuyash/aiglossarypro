@@ -34,7 +34,7 @@ export const behaviorTrackingMiddleware = (
     req.session?.id || (req.headers['x-session-id'] as string) || generateSessionId();
 
   // Hash IP address for privacy
-  const ipAddress = hashIP(req.ip || req.connection.remoteAddress || '');
+  const ipAddress = hashIP(req.ip || req.socket.remoteAddress || '');
 
   // Extract user ID if authenticated
   const userId = (req as any).user?.claims?.sub;
@@ -79,7 +79,7 @@ export const trackUserAction = async (
   entityId: string,
   additionalContext?: Record<string, any>
 ) => {
-  if (!req.trackingContext?.userId) return;
+  if (!req.trackingContext?.userId) {return;}
 
   try {
     await personalizationService.trackBehaviorEvent({
@@ -131,7 +131,7 @@ export const enhancedBehaviorTracking = (options: {
  * Track page views
  */
 async function trackPageView(context: TrackingContext, path: string, query: any) {
-  if (!context.userId) return;
+  if (!context.userId) {return;}
 
   try {
     // Determine entity type and ID from path
@@ -167,7 +167,7 @@ async function trackAPIInteraction(
   statusCode: number,
   responseTime: number
 ) {
-  if (!context.userId) return;
+  if (!context.userId) {return;}
 
   try {
     const { entityType, entityId } = parsePathForEntity(path);
@@ -278,7 +278,7 @@ function shouldTrackPath(path: string): boolean {
     '.eot',
   ];
 
-  return !excludePaths.some((exclude) => path.includes(exclude));
+  return !excludePaths.some(exclude => path.includes(exclude));
 }
 
 /**

@@ -1,30 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import {
+  AlertCircle,
+  Calendar,
+  CheckCircle,
+  Clock,
+  Download,
+  Eye,
+  Filter,
+  Mail,
+  MessageSquare,
+  Plus,
+  RefreshCw,
+  Search,
+  TrendingUp,
+  Users,
+  XCircle,
+} from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
-import { Badge } from '../ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
-import { Textarea } from '../ui/textarea';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
-import { 
-  Clock, 
-  MessageSquare, 
-  AlertCircle, 
-  CheckCircle, 
-  XCircle, 
-  Search,
-  Filter,
-  Users,
-  TrendingUp,
-  RefreshCw,
-  Eye,
-  Plus,
-  Mail,
-  Download,
-  Calendar,
-} from 'lucide-react';
+import { Textarea } from '../ui/textarea';
 
 interface SupportTicket {
   id: string;
@@ -133,7 +134,9 @@ export const SupportDashboard: React.FC = () => {
           <CardContent className="p-6 text-center">
             <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
-            <p className="text-gray-600">You need admin privileges to access the support dashboard.</p>
+            <p className="text-gray-600">
+              You need admin privileges to access the support dashboard.
+            </p>
           </CardContent>
         </Card>
       </div>
@@ -155,7 +158,7 @@ export const SupportDashboard: React.FC = () => {
 
       const response = await fetch(`/api/support/tickets?${params}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
         },
       });
 
@@ -164,7 +167,7 @@ export const SupportDashboard: React.FC = () => {
         setTickets(data.data.tickets);
         setTotalPages(data.data.totalPages);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching tickets:', error);
     } finally {
       setLoading(false);
@@ -175,7 +178,7 @@ export const SupportDashboard: React.FC = () => {
     try {
       const response = await fetch('/api/support/metrics/daily', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
         },
       });
 
@@ -183,7 +186,7 @@ export const SupportDashboard: React.FC = () => {
         const data = await response.json();
         setMetrics(data.data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching metrics:', error);
     }
   };
@@ -194,7 +197,7 @@ export const SupportDashboard: React.FC = () => {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
         },
         body: JSON.stringify({ status, internalNote }),
       });
@@ -206,7 +209,7 @@ export const SupportDashboard: React.FC = () => {
           setSelectedTicket(updatedTicket);
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating ticket status:', error);
     }
   };
@@ -215,7 +218,7 @@ export const SupportDashboard: React.FC = () => {
     try {
       const response = await fetch(`/api/support/tickets/${ticketId}`, {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
         },
       });
 
@@ -223,21 +226,21 @@ export const SupportDashboard: React.FC = () => {
         const data = await response.json();
         return data.data;
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching ticket details:', error);
     }
     return null;
   };
 
   const addMessage = async () => {
-    if (!selectedTicket || !newMessage.trim()) return;
+    if (!selectedTicket || !newMessage.trim()) {return;}
 
     try {
       const response = await fetch(`/api/support/tickets/${selectedTicket.id}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
         },
         body: JSON.stringify({
           content: newMessage,
@@ -252,7 +255,7 @@ export const SupportDashboard: React.FC = () => {
         const updatedTicket = await fetchTicketDetails(selectedTicket.id);
         setSelectedTicket(updatedTicket);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error adding message:', error);
     }
   };
@@ -262,11 +265,11 @@ export const SupportDashboard: React.FC = () => {
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
+    if (bytes === 0) {return '0 Bytes';}
     const k = 1024;
     const sizes = ['Bytes', 'KB', 'MB', 'GB'];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    return `${parseFloat((bytes / k ** i).toFixed(2))  } ${  sizes[i]}`;
   };
 
   useEffect(() => {
@@ -363,7 +366,7 @@ export const SupportDashboard: React.FC = () => {
                 <Input
                   placeholder="Search tickets..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -431,7 +434,7 @@ export const SupportDashboard: React.FC = () => {
             </div>
           ) : (
             <div className="space-y-4">
-              {tickets.map((ticket) => {
+              {tickets.map(ticket => {
                 const TypeIcon = typeIcons[ticket.type as keyof typeof typeIcons];
                 return (
                   <div
@@ -463,7 +466,10 @@ export const SupportDashboard: React.FC = () => {
                           {ticket.assignedAgent && (
                             <>
                               <span>•</span>
-                              <span>Assigned to {ticket.assignedAgent.firstName} {ticket.assignedAgent.lastName}</span>
+                              <span>
+                                Assigned to {ticket.assignedAgent.firstName}{' '}
+                                {ticket.assignedAgent.lastName}
+                              </span>
                             </>
                           )}
                         </div>
@@ -481,11 +487,7 @@ export const SupportDashboard: React.FC = () => {
           {/* Pagination */}
           {totalPages > 1 && (
             <div className="flex items-center justify-center gap-2 mt-6">
-              <Button
-                variant="outline"
-                disabled={page === 1}
-                onClick={() => setPage(page - 1)}
-              >
+              <Button variant="outline" disabled={page === 1} onClick={() => setPage(page - 1)}>
                 Previous
               </Button>
               <span className="text-sm text-gray-600">
@@ -531,17 +533,31 @@ export const SupportDashboard: React.FC = () => {
                   <div className="grid grid-cols-2 gap-4">
                     <div>
                       <h4 className="font-semibold mb-2">Customer Information</h4>
-                      <p><strong>Name:</strong> {selectedTicket.customerName || 'N/A'}</p>
-                      <p><strong>Email:</strong> {selectedTicket.customerEmail}</p>
-                      <p><strong>User ID:</strong> {selectedTicket.userId || 'Guest'}</p>
+                      <p>
+                        <strong>Name:</strong> {selectedTicket.customerName || 'N/A'}
+                      </p>
+                      <p>
+                        <strong>Email:</strong> {selectedTicket.customerEmail}
+                      </p>
+                      <p>
+                        <strong>User ID:</strong> {selectedTicket.userId || 'Guest'}
+                      </p>
                     </div>
                     <div>
                       <h4 className="font-semibold mb-2">Ticket Information</h4>
-                      <p><strong>Created:</strong> {formatDate(selectedTicket.createdAt)}</p>
-                      <p><strong>Type:</strong> {selectedTicket.type}</p>
-                      <p><strong>Priority:</strong> {selectedTicket.priority}</p>
+                      <p>
+                        <strong>Created:</strong> {formatDate(selectedTicket.createdAt)}
+                      </p>
+                      <p>
+                        <strong>Type:</strong> {selectedTicket.type}
+                      </p>
+                      <p>
+                        <strong>Priority:</strong> {selectedTicket.priority}
+                      </p>
                       {selectedTicket.dueDate && (
-                        <p><strong>Due Date:</strong> {formatDate(selectedTicket.dueDate)}</p>
+                        <p>
+                          <strong>Due Date:</strong> {formatDate(selectedTicket.dueDate)}
+                        </p>
                       )}
                     </div>
                   </div>
@@ -560,15 +576,24 @@ export const SupportDashboard: React.FC = () => {
                     <div>
                       <h4 className="font-semibold mb-2">Attachments</h4>
                       <div className="space-y-2">
-                        {selectedTicket.attachments.map((attachment) => (
-                          <div key={attachment.id} className="flex items-center gap-3 p-2 border rounded">
+                        {selectedTicket.attachments.map(attachment => (
+                          <div
+                            key={attachment.id}
+                            className="flex items-center gap-3 p-2 border rounded"
+                          >
                             <Download className="h-4 w-4" />
                             <div className="flex-1">
                               <p className="font-medium">{attachment.originalFileName}</p>
-                              <p className="text-sm text-gray-600">{formatFileSize(attachment.fileSize)}</p>
+                              <p className="text-sm text-gray-600">
+                                {formatFileSize(attachment.fileSize)}
+                              </p>
                             </div>
                             <Button variant="outline" size="sm" asChild>
-                              <a href={attachment.fileUrl} target="_blank" rel="noopener noreferrer">
+                              <a
+                                href={attachment.fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
                                 Download
                               </a>
                             </Button>
@@ -582,15 +607,15 @@ export const SupportDashboard: React.FC = () => {
                 <TabsContent value="messages" className="space-y-4">
                   {selectedTicket.messages && selectedTicket.messages.length > 0 ? (
                     <div className="space-y-4 max-h-96 overflow-y-auto">
-                      {selectedTicket.messages.map((message) => (
+                      {selectedTicket.messages.map(message => (
                         <div
                           key={message.id}
                           className={`p-4 rounded-lg ${
                             message.senderType === 'customer'
                               ? 'bg-blue-50 border-l-4 border-blue-500'
                               : message.isInternal
-                              ? 'bg-yellow-50 border-l-4 border-yellow-500'
-                              : 'bg-gray-50 border-l-4 border-gray-500'
+                                ? 'bg-yellow-50 border-l-4 border-yellow-500'
+                                : 'bg-gray-50 border-l-4 border-gray-500'
                           }`}
                         >
                           <div className="flex items-center justify-between mb-2">
@@ -629,7 +654,7 @@ export const SupportDashboard: React.FC = () => {
                     <Textarea
                       placeholder="Type your response..."
                       value={newMessage}
-                      onChange={(e) => setNewMessage(e.target.value)}
+                      onChange={e => setNewMessage(e.target.value)}
                       rows={4}
                     />
                     <div className="flex items-center justify-between">
@@ -638,7 +663,7 @@ export const SupportDashboard: React.FC = () => {
                           type="checkbox"
                           id="internal"
                           checked={isInternal}
-                          onChange={(e) => setIsInternal(e.target.checked)}
+                          onChange={e => setIsInternal(e.target.checked)}
                         />
                         <label htmlFor="internal" className="text-sm">
                           Internal note (not visible to customer)
@@ -663,8 +688,12 @@ export const SupportDashboard: React.FC = () => {
                         In Progress
                       </Button>
                       <Button
-                        variant={selectedTicket.status === 'waiting_for_customer' ? 'default' : 'outline'}
-                        onClick={() => updateTicketStatus(selectedTicket.id, 'waiting_for_customer')}
+                        variant={
+                          selectedTicket.status === 'waiting_for_customer' ? 'default' : 'outline'
+                        }
+                        onClick={() =>
+                          updateTicketStatus(selectedTicket.id, 'waiting_for_customer')
+                        }
                       >
                         Waiting for Customer
                       </Button>

@@ -1,19 +1,19 @@
 import React from 'react';
-import { useAuth } from '@/hooks/useAuth';
-import { useAdPlacement } from '@/hooks/useAdSense';
 import GoogleAd from '@/components/ads/GoogleAd';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useAdPlacement } from '@/hooks/useAdSense';
+import { useAuth } from '@/hooks/useAuth';
 
 /**
  * AdTestPage - Development testing page for AdSense integration
- * 
+ *
  * This page is used to test AdSense functionality in development:
  * - Different ad formats and placements
  * - Premium user exclusion
  * - Lazy loading behavior
  * - Environment configuration
- * 
+ *
  * Remove this page from production build
  */
 
@@ -27,15 +27,15 @@ export default function AdTestPage() {
   const [testMode, setTestMode] = React.useState(false);
 
   const userStatus = React.useMemo(() => {
-    if (!isAuthenticated) return 'Guest User';
-    if (user?.lifetimeAccess) return 'Premium User (Lifetime Access)';
+    if (!isAuthenticated) {return 'Guest User';}
+    if (user?.lifetimeAccess) {return 'Premium User (Lifetime Access)';}
     return 'Free User';
   }, [isAuthenticated, user]);
 
   const adsenseConfig = {
     enabled: import.meta.env.VITE_ADSENSE_ENABLED === 'true',
     clientId: import.meta.env.VITE_ADSENSE_CLIENT_ID,
-    environment: import.meta.env.DEV ? 'Development' : 'Production'
+    environment: import.meta.env.DEV ? 'Development' : 'Production',
   };
 
   return (
@@ -45,7 +45,7 @@ export default function AdTestPage() {
         <p className="text-gray-600 mb-4">
           This page is for testing AdSense integration in development. Remove from production.
         </p>
-        
+
         {/* Status Information */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
           <Card>
@@ -59,7 +59,7 @@ export default function AdTestPage() {
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">AdSense Config</CardTitle>
@@ -76,7 +76,7 @@ export default function AdTestPage() {
               </p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm">Ad Slots</CardTitle>
@@ -103,16 +103,10 @@ export default function AdTestPage() {
       <div className="mb-8">
         <h2 className="text-xl font-semibold mb-4">Test Controls</h2>
         <div className="flex gap-4">
-          <Button
-            onClick={() => setTestMode(!testMode)}
-            variant={testMode ? "default" : "outline"}
-          >
+          <Button onClick={() => setTestMode(!testMode)} variant={testMode ? 'default' : 'outline'}>
             {testMode ? 'Hide' : 'Show'} Test Ads
           </Button>
-          <Button
-            onClick={() => window.location.reload()}
-            variant="outline"
-          >
+          <Button onClick={() => window.location.reload()} variant="outline">
             Reload Page
           </Button>
         </div>
@@ -128,16 +122,15 @@ export default function AdTestPage() {
                 <GoogleAd
                   slot={homepageAdSlot}
                   format="rectangle"
-                  responsive={true}
+                  responsive
                   lazy={false}
                   className="mx-auto"
                 />
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  {user?.lifetimeAccess 
-                    ? "Premium user - no ads shown" 
-                    : "AdSense disabled or slot not configured"
-                  }
+                  {user?.lifetimeAccess
+                    ? 'Premium user - no ads shown'
+                    : 'AdSense disabled or slot not configured'}
                 </div>
               )}
             </Card>
@@ -150,16 +143,15 @@ export default function AdTestPage() {
                 <GoogleAd
                   slot={searchAdSlot}
                   format="horizontal"
-                  responsive={true}
+                  responsive
                   lazy={false}
                   className="mx-auto"
                 />
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  {user?.lifetimeAccess 
-                    ? "Premium user - no ads shown" 
-                    : "AdSense disabled or slot not configured"
-                  }
+                  {user?.lifetimeAccess
+                    ? 'Premium user - no ads shown'
+                    : 'AdSense disabled or slot not configured'}
                 </div>
               )}
             </Card>
@@ -170,18 +162,12 @@ export default function AdTestPage() {
               <h2 className="text-xl font-semibold mb-4">Content Area Ad</h2>
               <Card className="p-4">
                 {canShowTermDetailAd && termDetailAdSlot ? (
-                  <GoogleAd
-                    slot={termDetailAdSlot}
-                    format="fluid"
-                    responsive={true}
-                    lazy={false}
-                  />
+                  <GoogleAd slot={termDetailAdSlot} format="fluid" responsive lazy={false} />
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    {user?.lifetimeAccess 
-                      ? "Premium user - no ads shown" 
-                      : "AdSense disabled or slot not configured"
-                    }
+                    {user?.lifetimeAccess
+                      ? 'Premium user - no ads shown'
+                      : 'AdSense disabled or slot not configured'}
                   </div>
                 )}
               </Card>
@@ -199,10 +185,9 @@ export default function AdTestPage() {
                   />
                 ) : (
                   <div className="text-center py-8 text-gray-500">
-                    {user?.lifetimeAccess 
-                      ? "Premium user - no ads shown" 
-                      : "AdSense disabled or slot not configured"
-                    }
+                    {user?.lifetimeAccess
+                      ? 'Premium user - no ads shown'
+                      : 'AdSense disabled or slot not configured'}
                   </div>
                 )}
               </Card>
@@ -214,28 +199,29 @@ export default function AdTestPage() {
             <p className="text-gray-600 mb-4">
               Scroll down to see the ad load when it comes into view (lazy loading test)
             </p>
-            
+
             {/* Spacer to push ad below fold */}
             <div className="h-screen bg-gradient-to-b from-blue-50 to-purple-50 rounded-lg flex items-center justify-center">
               <p className="text-gray-500">Scroll down to test lazy loading...</p>
             </div>
-            
+
             <Card className="p-4 mt-4">
-              <h3 className="text-lg font-medium mb-4">Lazy Loaded Ad (should load when scrolled into view)</h3>
+              <h3 className="text-lg font-medium mb-4">
+                Lazy Loaded Ad (should load when scrolled into view)
+              </h3>
               {canShowHomepageAd && homepageAdSlot ? (
                 <GoogleAd
                   slot={homepageAdSlot}
                   format="rectangle"
-                  responsive={true}
-                  lazy={true}  // Enable lazy loading
+                  responsive
+                  lazy // Enable lazy loading
                   className="mx-auto"
                 />
               ) : (
                 <div className="text-center py-8 text-gray-500">
-                  {user?.lifetimeAccess 
-                    ? "Premium user - no ads shown" 
-                    : "AdSense disabled or slot not configured"
-                  }
+                  {user?.lifetimeAccess
+                    ? 'Premium user - no ads shown'
+                    : 'AdSense disabled or slot not configured'}
                 </div>
               )}
             </Card>
@@ -247,8 +233,12 @@ export default function AdTestPage() {
       <div className="mt-12 p-6 bg-gray-50 rounded-lg">
         <h3 className="text-lg font-semibold mb-3">Testing Instructions</h3>
         <ol className="list-decimal list-inside space-y-2 text-sm">
-          <li>Set <code>VITE_ADSENSE_ENABLED=true</code> in your .env file</li>
-          <li>Configure <code>VITE_ADSENSE_CLIENT_ID</code> with your AdSense publisher ID</li>
+          <li>
+            Set <code>VITE_ADSENSE_ENABLED=true</code> in your .env file
+          </li>
+          <li>
+            Configure <code>VITE_ADSENSE_CLIENT_ID</code> with your AdSense publisher ID
+          </li>
           <li>Set up ad slot IDs for each placement type</li>
           <li>Test with different user types (guest, free, premium)</li>
           <li>Check browser console for AdSense-related errors</li>

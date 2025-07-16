@@ -11,7 +11,7 @@ interface Node {
 }
 
 interface NeuralNetworkBackgroundProps {
-  className?: string;
+  className?: string | undefined;
   opacity?: number;
   nodeCount?: number;
   maxConnections?: number;
@@ -53,10 +53,10 @@ export function NeuralNetworkBackground({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {return;}
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {return;}
 
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
@@ -106,7 +106,7 @@ export function NeuralNetworkBackground({
 
       // Update node positions if animation is allowed
       if (!isReducedMotion.current) {
-        nodes.forEach((node) => {
+        nodes.forEach(node => {
           node.x += node.vx;
           node.y += node.vy;
           node.pulse += node.pulseSpeed;
@@ -128,7 +128,7 @@ export function NeuralNetworkBackground({
       ctx.lineWidth = 1;
 
       nodes.forEach((node, _index) => {
-        node.connections.forEach((targetIndex) => {
+        node.connections.forEach(targetIndex => {
           const target = nodes[targetIndex];
           const distance = Math.sqrt((node.x - target.x) ** 2 + (node.y - target.y) ** 2);
 
@@ -146,7 +146,7 @@ export function NeuralNetworkBackground({
       });
 
       // Draw nodes
-      nodes.forEach((node) => {
+      nodes.forEach(node => {
         const pulseSize = isReducedMotion.current ? 1 : 1 + Math.sin(node.pulse) * 0.3;
         const radius = 2 * pulseSize;
         const alpha = opacity * (0.6 + Math.sin(node.pulse) * 0.4);

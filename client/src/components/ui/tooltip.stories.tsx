@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { HelpCircle, Info, Settings } from 'lucide-react';
 import { Badge } from './badge';
@@ -18,7 +17,7 @@ const meta: Meta<typeof Tooltip> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <TooltipProvider>
         <div className="p-20">
           <Story />

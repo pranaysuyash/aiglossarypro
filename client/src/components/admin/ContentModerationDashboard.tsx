@@ -86,7 +86,7 @@ export default function ContentModerationDashboard() {
         limit: '100',
       });
       const response = await fetch(`/api/admin/terms?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch terms');
+      if (!response.ok) {throw new Error('Failed to fetch terms');}
       return response.json();
     },
   });
@@ -96,7 +96,7 @@ export default function ContentModerationDashboard() {
     queryKey: ['/api/categories'],
     queryFn: async () => {
       const response = await fetch('/api/categories');
-      if (!response.ok) throw new Error('Failed to fetch categories');
+      if (!response.ok) {throw new Error('Failed to fetch categories');}
       return response.json();
     },
   });
@@ -106,7 +106,7 @@ export default function ContentModerationDashboard() {
     queryKey: ['/api/admin/terms/analytics'],
     queryFn: async () => {
       const response = await fetch('/api/admin/terms/analytics');
-      if (!response.ok) throw new Error('Failed to fetch analytics');
+      if (!response.ok) {throw new Error('Failed to fetch analytics');}
       return response.json();
     },
     enabled: showAnalytics,
@@ -120,7 +120,7 @@ export default function ContentModerationDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ changes: [term] }),
       });
-      if (!response.ok) throw new Error('Failed to update term');
+      if (!response.ok) {throw new Error('Failed to update term');}
       return response.json();
     },
     onSuccess: () => {
@@ -131,10 +131,10 @@ export default function ContentModerationDashboard() {
       });
       setShowEditDialog(false);
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Update failed',
-        description: error.message,
+        description: error?.message,
         variant: 'destructive',
       });
     },
@@ -148,7 +148,7 @@ export default function ContentModerationDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ termIds, verified }),
       });
-      if (!response.ok) throw new Error('Failed to verify terms');
+      if (!response.ok) {throw new Error('Failed to verify terms');}
       return response.json();
     },
     onSuccess: () => {
@@ -159,10 +159,10 @@ export default function ContentModerationDashboard() {
       });
       setSelectedTerms([]);
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Update failed',
-        description: error.message,
+        description: error?.message,
         variant: 'destructive',
       });
     },
@@ -176,20 +176,20 @@ export default function ContentModerationDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ termIds }),
       });
-      if (!response.ok) throw new Error('Failed to analyze quality');
+      if (!response.ok) {throw new Error('Failed to analyze quality');}
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/terms'] });
       toast({
         title: 'Quality analysis complete',
         description: `Analyzed ${data.data.length} terms.`,
       });
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Analysis failed',
-        description: error.message,
+        description: error?.message,
         variant: 'destructive',
       });
     },
@@ -229,8 +229,8 @@ export default function ContentModerationDashboard() {
   };
 
   const toggleTermSelection = (termId: string) => {
-    setSelectedTerms((prev) =>
-      prev.includes(termId) ? prev.filter((id) => id !== termId) : [...prev, termId]
+    setSelectedTerms(prev =>
+      prev.includes(termId) ? prev.filter(id => id !== termId) : [...prev, termId]
     );
   };
 
@@ -322,7 +322,7 @@ export default function ContentModerationDashboard() {
                 <Input
                   placeholder="Search by name or definition..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={e => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
@@ -505,14 +505,14 @@ export default function ContentModerationDashboard() {
                 <Label>Term Name</Label>
                 <Input
                   value={editingTerm.name}
-                  onChange={(e) => setEditingTerm({ ...editingTerm, name: e.target.value })}
+                  onChange={e => setEditingTerm({ ...editingTerm, name: e.target.value })}
                 />
               </div>
               <div>
                 <Label>Short Definition</Label>
                 <Input
                   value={editingTerm.shortDefinition}
-                  onChange={(e) =>
+                  onChange={e =>
                     setEditingTerm({
                       ...editingTerm,
                       shortDefinition: e.target.value,
@@ -524,7 +524,7 @@ export default function ContentModerationDashboard() {
                 <Label>Full Definition</Label>
                 <Textarea
                   value={editingTerm.definition}
-                  onChange={(e) => setEditingTerm({ ...editingTerm, definition: e.target.value })}
+                  onChange={e => setEditingTerm({ ...editingTerm, definition: e.target.value })}
                   rows={4}
                 />
               </div>
@@ -533,7 +533,7 @@ export default function ContentModerationDashboard() {
                   <Label>Category</Label>
                   <Input
                     value={editingTerm.category}
-                    onChange={(e) => setEditingTerm({ ...editingTerm, category: e.target.value })}
+                    onChange={e => setEditingTerm({ ...editingTerm, category: e.target.value })}
                   />
                 </div>
                 <div>

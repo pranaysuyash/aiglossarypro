@@ -276,7 +276,7 @@ export class VersioningService {
         .where(eq(termVersions.termId, termId))
         .orderBy(desc(termVersions.createdAt));
 
-      return versions.map((v) => ({
+      return versions.map(v => ({
         id: v.id,
         termId: v.termId,
         version: v.version,
@@ -353,10 +353,10 @@ export class VersioningService {
   }> {
     try {
       const versions = await this.getVersionHistory(termId);
-      const currentVersion = versions.find((v) => v.isActive) || null;
+      const currentVersion = versions.find(v => v.isActive) || null;
 
       const qualityTrend = versions
-        .map((v) => ({
+        .map(v => ({
           version: v.version,
           score: v.qualityMetrics.overallScore,
           date: v.createdAt,
@@ -572,7 +572,7 @@ Consider: accuracy, clarity, completeness, and practical value for AI/ML practit
       return ['No versions available for analysis'];
     }
 
-    const currentVersion = versions.find((v) => v.isActive);
+    const currentVersion = versions.find(v => v.isActive);
     if (!currentVersion) {
       recommendations.push('No active version set - review and promote a version');
     }

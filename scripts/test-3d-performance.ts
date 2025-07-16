@@ -152,8 +152,8 @@ class Performance3DGraphTester {
       });
 
       // Update node connections
-      const sourceNode = nodes.find((n) => n.id === sourceId);
-      const targetNode = nodes.find((n) => n.id === targetId);
+      const sourceNode = nodes.find(n => n.id === sourceId);
+      const targetNode = nodes.find(n => n.id === targetId);
 
       if (sourceNode) sourceNode.connections.push(targetId);
       if (targetNode) targetNode.connections.push(sourceId);
@@ -206,7 +206,7 @@ class Performance3DGraphTester {
 
         // Attraction forces for connected nodes (simulated)
         for (const connectionId of node.connections) {
-          const connectedNode = nodes.find((n) => n.id === connectionId);
+          const connectedNode = nodes.find(n => n.id === connectionId);
           if (connectedNode && connectedNode.x !== undefined) {
             const dx = (connectedNode.x - node.x!) * 0.1;
             const dy = (connectedNode.y! - node.y!) * 0.1;
@@ -502,7 +502,7 @@ class Performance3DGraphTester {
       this.results.push(result);
 
       // Add delay between tests to allow system recovery
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
     }
 
     return this.results;
@@ -521,8 +521,8 @@ class Performance3DGraphTester {
     ];
 
     // Summary statistics
-    const successful = this.results.filter((r) => r.success).length;
-    const failed = this.results.filter((r) => !r.success).length;
+    const successful = this.results.filter(r => r.success).length;
+    const failed = this.results.filter(r => !r.success).length;
 
     report.push(`- Total tests: ${this.results.length}`);
     report.push(`- Successful: ${successful}`);
@@ -531,7 +531,7 @@ class Performance3DGraphTester {
 
     // Find maximum viable configuration
     const maxViableConfig = this.results
-      .filter((r) => r.success && r.metrics.frameRate >= 30)
+      .filter(r => r.success && r.metrics.frameRate >= 30)
       .sort((a, b) => b.config.nodes - a.config.nodes)[0];
 
     if (maxViableConfig) {
@@ -570,13 +570,13 @@ class Performance3DGraphTester {
 
         if (result.recommendations.length > 0) {
           report.push('**Recommendations:**');
-          result.recommendations.forEach((rec) => {
+          result.recommendations.forEach(rec => {
             report.push(`- ${rec}`);
           });
         }
       } else {
         report.push('**Errors:**');
-        result.errors.forEach((error) => {
+        result.errors.forEach(error => {
           report.push(`- ${error}`);
         });
       }
@@ -617,7 +617,7 @@ class Performance3DGraphTester {
       '8. **WebGL Fallback**: Provide canvas-based fallback for WebGL failures',
     ];
 
-    globalRecommendations.forEach((rec) => {
+    globalRecommendations.forEach(rec => {
       report.push(rec);
     });
 
@@ -642,11 +642,11 @@ class Performance3DGraphTester {
       results: this.results,
       summary: {
         totalTests: this.results.length,
-        successful: this.results.filter((r) => r.success).length,
-        failed: this.results.filter((r) => !r.success).length,
+        successful: this.results.filter(r => r.success).length,
+        failed: this.results.filter(r => !r.success).length,
         maxViableNodes:
           this.results
-            .filter((r) => r.success && r.metrics.frameRate >= 30)
+            .filter(r => r.success && r.metrics.frameRate >= 30)
             .sort((a, b) => b.config.nodes - a.config.nodes)[0]?.config.nodes || 0,
       },
     };

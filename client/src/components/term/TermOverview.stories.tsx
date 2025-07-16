@@ -1,5 +1,4 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import TermOverview from './TermOverview';
 
 const meta = {
@@ -13,7 +12,15 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+    term: {
+      id: 1,
+      name: 'Test Term',
+      definition: 'Test definition',
+      slug: 'test-term',
+    },
+    isEnhanced: false,
+  },
 };
 
 export const WithProps: Story = {

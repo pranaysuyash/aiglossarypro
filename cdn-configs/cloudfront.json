@@ -3,10 +3,7 @@
   "version": "1.0.0",
   "description": "AWS CloudFront CDN configuration for optimal performance and security",
   "distribution": {
-    "aliases": [
-      "aiglossarypro.com",
-      "www.aiglossarypro.com"
-    ],
+    "aliases": ["aiglossarypro.com", "www.aiglossarypro.com"],
     "comment": "AIGlossaryPro Production CDN",
     "default_cache_behavior": {
       "target_origin_id": "aiglossarypro-origin",
@@ -28,21 +25,10 @@
       },
       "allowed_methods": {
         "quantity": 7,
-        "items": [
-          "GET",
-          "HEAD",
-          "OPTIONS",
-          "PUT",
-          "POST",
-          "PATCH",
-          "DELETE"
-        ],
+        "items": ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"],
         "cached_methods": {
           "quantity": 2,
-          "items": [
-            "GET",
-            "HEAD"
-          ]
+          "items": ["GET", "HEAD"]
         }
       },
       "forwarded_values": {
@@ -70,10 +56,7 @@
         "max_ttl": 31536000,
         "allowed_methods": {
           "quantity": 2,
-          "items": [
-            "GET",
-            "HEAD"
-          ]
+          "items": ["GET", "HEAD"]
         }
       },
       {
@@ -87,10 +70,7 @@
         "max_ttl": 31536000,
         "allowed_methods": {
           "quantity": 2,
-          "items": [
-            "GET",
-            "HEAD"
-          ]
+          "items": ["GET", "HEAD"]
         }
       },
       {
@@ -104,10 +84,7 @@
         "max_ttl": 31536000,
         "allowed_methods": {
           "quantity": 2,
-          "items": [
-            "GET",
-            "HEAD"
-          ]
+          "items": ["GET", "HEAD"]
         }
       },
       {
@@ -122,15 +99,7 @@
         "max_ttl": 0,
         "allowed_methods": {
           "quantity": 7,
-          "items": [
-            "GET",
-            "HEAD",
-            "OPTIONS",
-            "PUT",
-            "POST",
-            "PATCH",
-            "DELETE"
-          ]
+          "items": ["GET", "HEAD", "OPTIONS", "PUT", "POST", "PATCH", "DELETE"]
         }
       },
       {
@@ -144,11 +113,7 @@
         "max_ttl": 86400,
         "allowed_methods": {
           "quantity": 3,
-          "items": [
-            "GET",
-            "HEAD",
-            "OPTIONS"
-          ]
+          "items": ["GET", "HEAD", "OPTIONS"]
         }
       }
     ],
@@ -163,10 +128,7 @@
           "origin_protocol_policy": "https-only",
           "origin_ssl_protocols": {
             "quantity": 3,
-            "items": [
-              "TLSv1.2",
-              "TLSv1.3"
-            ]
+            "items": ["TLSv1.2", "TLSv1.3"]
           },
           "origin_read_timeout": 30,
           "origin_keepalive_timeout": 5
@@ -258,10 +220,7 @@
         },
         "headers_config": {
           "header_behavior": "whitelist",
-          "headers": [
-            "Accept-Language",
-            "Authorization"
-          ]
+          "headers": ["Accept-Language", "Authorization"]
         },
         "cookies_config": {
           "cookie_behavior": "all"
@@ -282,9 +241,7 @@
         },
         "headers_config": {
           "header_behavior": "whitelist",
-          "headers": [
-            "*"
-          ]
+          "headers": ["*"]
         },
         "cookies_config": {
           "cookie_behavior": "all"
@@ -298,11 +255,7 @@
       "comment": "Custom origin request policy",
       "headers_config": {
         "header_behavior": "whitelist",
-        "headers": [
-          "Accept-Language",
-          "User-Agent",
-          "Referer"
-        ]
+        "headers": ["Accept-Language", "User-Agent", "Referer"]
       },
       "cookies_config": {
         "cookie_behavior": "all"
@@ -316,9 +269,7 @@
       "comment": "Pass all headers to origin (for API endpoints)",
       "headers_config": {
         "header_behavior": "whitelist",
-        "headers": [
-          "*"
-        ]
+        "headers": ["*"]
       },
       "cookies_config": {
         "cookie_behavior": "all"
@@ -368,29 +319,15 @@
         "access_control_allow_credentials": false,
         "access_control_allow_headers": {
           "quantity": 3,
-          "items": [
-            "Content-Type",
-            "Authorization",
-            "X-Requested-With"
-          ]
+          "items": ["Content-Type", "Authorization", "X-Requested-With"]
         },
         "access_control_allow_methods": {
           "quantity": 7,
-          "items": [
-            "GET",
-            "POST",
-            "PUT",
-            "DELETE",
-            "HEAD",
-            "OPTIONS",
-            "PATCH"
-          ]
+          "items": ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"]
         },
         "access_control_allow_origin": {
           "quantity": 1,
-          "items": [
-            "*"
-          ]
+          "items": ["*"]
         },
         "access_control_expose_headers": {
           "quantity": 0
@@ -436,9 +373,7 @@
         "threshold": 5,
         "comparison_operator": "GreaterThanThreshold",
         "evaluation_periods": 2,
-        "alarm_actions": [
-          "arn:aws:sns:us-east-1:123456789012:aiglossarypro-alerts"
-        ]
+        "alarm_actions": ["arn:aws:sns:us-east-1:123456789012:aiglossarypro-alerts"]
       },
       {
         "name": "High5xxErrorRate",
@@ -446,9 +381,7 @@
         "threshold": 2,
         "comparison_operator": "GreaterThanThreshold",
         "evaluation_periods": 2,
-        "alarm_actions": [
-          "arn:aws:sns:us-east-1:123456789012:aiglossarypro-alerts"
-        ]
+        "alarm_actions": ["arn:aws:sns:us-east-1:123456789012:aiglossarypro-alerts"]
       },
       {
         "name": "LowCacheHitRate",
@@ -456,9 +389,7 @@
         "threshold": 80,
         "comparison_operator": "LessThanThreshold",
         "evaluation_periods": 3,
-        "alarm_actions": [
-          "arn:aws:sns:us-east-1:123456789012:aiglossarypro-alerts"
-        ]
+        "alarm_actions": ["arn:aws:sns:us-east-1:123456789012:aiglossarypro-alerts"]
       }
     ]
   }

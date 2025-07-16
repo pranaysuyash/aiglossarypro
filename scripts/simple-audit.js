@@ -16,7 +16,7 @@ async function simpleAudit() {
   const errors = [];
 
   // Track console errors
-  page.on('console', (msg) => {
+  page.on('console', msg => {
     if (
       msg.type() === 'error' &&
       !msg.text().includes('401') &&
@@ -154,8 +154,8 @@ async function simpleAudit() {
   console.log('📊 AUDIT SUMMARY');
   console.log('='.repeat(50));
 
-  const passed = results.filter((r) => r.passed).length;
-  const failed = results.filter((r) => !r.passed).length;
+  const passed = results.filter(r => r.passed).length;
+  const failed = results.filter(r => !r.passed).length;
 
   console.log(`✅ Passed: ${passed}`);
   console.log(`❌ Failed: ${failed}`);
@@ -163,14 +163,14 @@ async function simpleAudit() {
   console.log(`📊 Success Rate: ${Math.round((passed / results.length) * 100)}%`);
 
   console.log('\\n📋 DETAILED RESULTS:');
-  results.forEach((result) => {
+  results.forEach(result => {
     const status = result.passed ? '✅' : '❌';
     console.log(`   ${status} ${result.test}`);
   });
 
   if (errors.length > 0) {
     console.log('\\n🚨 ERRORS:');
-    errors.forEach((error) => {
+    errors.forEach(error => {
       console.log(`   ❌ ${error.type}: ${error.message}`);
     });
   }

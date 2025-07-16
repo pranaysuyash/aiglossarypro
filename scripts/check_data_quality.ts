@@ -55,7 +55,7 @@ async function checkDataQuality() {
         .limit(3);
 
       console.log(`\n🔍 "${searchTerm}":`);
-      found.forEach((term) => {
+      found.forEach(term => {
         console.log(`  ✅ ID: ${term.id}, Name: "${term.name}", Category: "${term.category}"`);
       });
     }

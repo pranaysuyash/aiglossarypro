@@ -1,5 +1,5 @@
-import { Badge } from '@/components/ui/badge';
 import { MathText } from '@/components/math/MathRenderer';
+import { Badge } from '@/components/ui/badge';
 import type { IEnhancedTerm, ITerm } from '@/interfaces/interfaces';
 
 interface TermOverviewProps {
@@ -14,7 +14,7 @@ export default function TermOverview({ term, isEnhanced }: TermOverviewProps) {
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-6">
       <h2 className="text-xl font-semibold mb-4">Definition</h2>
       <div className="prose dark:prose-invert max-w-none">
-        <MathText 
+        <MathText
           className="text-gray-700 dark:text-gray-300 leading-relaxed block"
           mathClassName="math-expression"
         >

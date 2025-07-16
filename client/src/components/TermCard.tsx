@@ -138,7 +138,7 @@ const TermCard = memo(function TermCard({
           sectionsViewed: ['overview'], // Card view counts as overview section
           timeSpentSeconds: 5, // Estimate for card view
         });
-      } catch (error) {
+      } catch (error: any) {
         // Silent fail - don't interrupt user experience
         console.warn('Failed to track term interaction:', error);
       }
@@ -253,7 +253,7 @@ const TermCard = memo(function TermCard({
     try {
       await apiRequest('POST', `/api/terms/${term.id}/view`, null);
       onTermClick?.(term.id);
-    } catch (error) {
+    } catch (error: any) {
       // Silent fail - not critical for UX
       console.error('Failed to log term view', error);
     }

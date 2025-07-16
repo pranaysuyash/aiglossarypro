@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { PremiumOnboarding } from './PremiumOnboarding';
 
@@ -9,7 +8,8 @@ const meta: Meta<typeof PremiumOnboarding> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Interactive onboarding flow for new premium users, guiding them through key features and capabilities.',
+        component:
+          'Interactive onboarding flow for new premium users, guiding them through key features and capabilities.',
       },
     },
   },

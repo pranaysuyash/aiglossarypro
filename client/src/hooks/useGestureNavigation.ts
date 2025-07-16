@@ -49,7 +49,7 @@ export const useGestureNavigation = (settings: Partial<GestureSettings> = {}) =>
   // Haptic feedback utility
   const triggerHaptic = useCallback(
     (type: 'light' | 'medium' | 'heavy' = 'light') => {
-      if (!config.enableHaptic || !('vibrate' in navigator)) return;
+      if (!config.enableHaptic || !('vibrate' in navigator)) {return;}
 
       const patterns = {
         light: [10],
@@ -104,7 +104,7 @@ export const useGestureNavigation = (settings: Partial<GestureSettings> = {}) =>
   // Handle navigation based on gestures
   const handleSwipeNavigation = useCallback(
     (gesture: SwipeGesture) => {
-      if (!config.enableSwipeNavigation) return;
+      if (!config.enableSwipeNavigation) {return;}
 
       const currentPath = window.location.pathname;
 
@@ -166,7 +166,7 @@ export const useGestureNavigation = (settings: Partial<GestureSettings> = {}) =>
   // Touch event handlers
   const handleTouchStart = useCallback(
     (event: TouchEvent) => {
-      if (event.touches.length !== 1) return; // Only handle single touch
+      if (event.touches.length !== 1) {return;} // Only handle single touch
 
       const touch = event.touches[0];
       touchStartRef.current = {
@@ -182,7 +182,7 @@ export const useGestureNavigation = (settings: Partial<GestureSettings> = {}) =>
   );
 
   const handleTouchMove = useCallback((event: TouchEvent) => {
-    if (!touchStartRef.current || event.touches.length !== 1) return;
+    if (!touchStartRef.current || event.touches.length !== 1) {return;}
 
     // Prevent default scrolling for horizontal swipes
     const touch = event.touches[0];
@@ -196,7 +196,7 @@ export const useGestureNavigation = (settings: Partial<GestureSettings> = {}) =>
 
   const handleTouchEnd = useCallback(
     (event: TouchEvent) => {
-      if (!touchStartRef.current || event.changedTouches.length !== 1) return;
+      if (!touchStartRef.current || event.changedTouches.length !== 1) {return;}
 
       const touch = event.changedTouches[0];
       touchEndRef.current = {
@@ -228,7 +228,7 @@ export const useGestureNavigation = (settings: Partial<GestureSettings> = {}) =>
 
   // Set up event listeners
   useEffect(() => {
-    if (!('ontouchstart' in window)) return; // Not a touch device
+    if (!('ontouchstart' in window)) {return;} // Not a touch device
 
     const options: AddEventListenerOptions = { passive: false };
 
@@ -246,17 +246,17 @@ export const useGestureNavigation = (settings: Partial<GestureSettings> = {}) =>
   // Gesture pattern recognition
   const getGesturePattern = useCallback(() => {
     const recentGestures = gestureHistory.current.slice(-3);
-    if (recentGestures.length < 2) return null;
+    if (recentGestures.length < 2) {return null;}
 
     // Detect common patterns
-    const directions = recentGestures.map((g) => g.direction);
+    const directions = recentGestures.map(g => g.direction);
 
-    if (directions.every((d) => d === 'left')) return 'swipe_left_sequence';
-    if (directions.every((d) => d === 'right')) return 'swipe_right_sequence';
+    if (directions.every(d => d === 'left')) {return 'swipe_left_sequence';}
+    if (directions.every(d => d === 'right')) {return 'swipe_right_sequence';}
     if (directions.join('') === 'updown' || directions.join('') === 'downup')
-      return 'shake_vertical';
+      {return 'shake_vertical';}
     if (directions.join('') === 'leftright' || directions.join('') === 'rightleft')
-      return 'shake_horizontal';
+      {return 'shake_horizontal';}
 
     return null;
   }, []);
@@ -264,7 +264,7 @@ export const useGestureNavigation = (settings: Partial<GestureSettings> = {}) =>
   // Gesture statistics
   const getGestureStats = useCallback(() => {
     const gestures = gestureHistory.current;
-    if (gestures.length === 0) return null;
+    if (gestures.length === 0) {return null;}
 
     const avgVelocity = gestures.reduce((sum, g) => sum + g.velocity, 0) / gestures.length;
     const avgDistance = gestures.reduce((sum, g) => sum + g.distance, 0) / gestures.length;

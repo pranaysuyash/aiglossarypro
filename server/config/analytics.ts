@@ -137,11 +137,7 @@ class AnalyticsService {
   /**
    * Track page view
    */
-  trackPageView(
-    distinctId: string,
-    url: string,
-    properties: Record<string, any> = {}
-  ): void {
+  trackPageView(distinctId: string, url: string, properties: Record<string, any> = {}): void {
     this.track(distinctId, '$pageview', {
       $current_url: url,
       ...properties,
@@ -153,7 +149,12 @@ class AnalyticsService {
    */
   trackBusinessEvent(
     distinctId: string,
-    event: 'user_registered' | 'premium_purchased' | 'payment_completed' | 'search_performed' | 'term_viewed',
+    event:
+      | 'user_registered'
+      | 'premium_purchased'
+      | 'payment_completed'
+      | 'search_performed'
+      | 'term_viewed',
     properties: Record<string, any> = {}
   ): void {
     this.track(distinctId, event, {
@@ -183,7 +184,12 @@ class AnalyticsService {
    */
   trackMilestone(
     distinctId: string,
-    milestone: 'first_search' | 'first_term_view' | 'profile_completed' | 'first_bookmark' | 'premium_trial_started',
+    milestone:
+      | 'first_search'
+      | 'first_term_view'
+      | 'profile_completed'
+      | 'first_bookmark'
+      | 'premium_trial_started',
     properties: Record<string, any> = {}
   ): void {
     this.track(distinctId, 'milestone_reached', {
@@ -227,10 +233,7 @@ class AnalyticsService {
   /**
    * Set user properties (for user profiles)
    */
-  setUserProperties(
-    distinctId: string,
-    properties: Record<string, any>
-  ): void {
+  setUserProperties(distinctId: string, properties: Record<string, any>): void {
     if (!this.posthog || !this.config.posthog.enabled) {
       logger.debug('Analytics disabled - user properties not set:', { distinctId, properties });
       return;
@@ -252,10 +255,7 @@ class AnalyticsService {
   /**
    * Create alias for user (link anonymous to identified user)
    */
-  alias(
-    distinctId: string,
-    alias: string
-  ): void {
+  alias(distinctId: string, alias: string): void {
     if (!this.posthog || !this.config.posthog.enabled) {
       logger.debug('Analytics disabled - alias not created:', { distinctId, alias });
       return;
@@ -279,7 +279,7 @@ class AnalyticsService {
   async getFeatureFlag(
     key: string,
     distinctId: string,
-    defaultValue: boolean = false
+    defaultValue = false
   ): Promise<boolean> {
     if (!this.posthog || !this.config.posthog.enabled) {
       logger.debug('Analytics disabled - returning default feature flag:', { key, defaultValue });
@@ -298,7 +298,7 @@ class AnalyticsService {
   /**
    * Flush analytics data (useful for serverless or before shutdown)
    */
-  async flush(timeout: number = 3000): Promise<void> {
+  async flush(timeout = 3000): Promise<void> {
     if (!this.posthog) {
       return;
     }

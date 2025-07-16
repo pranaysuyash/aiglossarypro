@@ -1,12 +1,12 @@
-import { AlertTriangle, Home, RefreshCw, Mail } from 'lucide-react';
+import { AlertTriangle, Home, Mail, RefreshCw } from 'lucide-react';
 import type React from 'react';
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { ERROR_MESSAGES } from '@/constants/messages';
 import { cn } from '@/lib/utils';
 import type { BaseComponentProps } from '@/types/common-props';
+import { ErrorCategory, ErrorSeverity, handleErrorBoundary } from '@/utils/errorTracking';
 import { Button } from './ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
-import { handleErrorBoundary, ErrorSeverity, ErrorCategory } from '@/utils/errorTracking';
 
 interface Props extends BaseComponentProps {
   fallback?: ReactNode;
@@ -59,7 +59,7 @@ export class ErrorBoundary extends Component<Props, State> {
     // Implementation for external error logging
     // Could send to Sentry, LogRocket, etc.
     const errorData = {
-      message: error.message,
+      message: error?.message,
       stack: error.stack,
       componentStack: errorInfo.componentStack,
       errorId: this.state.errorId,
@@ -75,7 +75,7 @@ export class ErrorBoundary extends Component<Props, State> {
   private handleRetry = () => {
     if (this.retryCount < this.maxRetries) {
       this.retryCount++;
-      this.setState({ hasError: false, error: undefined });
+      this.setState({ hasError: false, error: undefined, errorId: '' });
     }
   };
 
@@ -125,7 +125,7 @@ export class ErrorBoundary extends Component<Props, State> {
                     Error Details (Dev Mode)
                   </summary>
                   <pre className="mt-2 text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-auto max-h-32">
-                    {this.state.error.message}
+                    {this.state.error?.message}
                   </pre>
                 </details>
               )}

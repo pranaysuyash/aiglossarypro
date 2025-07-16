@@ -1,7 +1,7 @@
-import React, { useEffect, useState, useCallback } from 'react';
-import { X, Clock, Zap, Shield, CheckCircle } from 'lucide-react';
-import { useExperiment } from '@/services/posthogExperiments';
+import { CheckCircle, Clock, Shield, X, Zap } from 'lucide-react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { trackUserAction } from '@/lib/analytics';
+import { useExperiment } from '@/services/posthogExperiments';
 
 interface ExitIntentVariant {
   title: string;
@@ -15,45 +15,45 @@ interface ExitIntentVariant {
 const EXIT_INTENT_VARIANTS: Record<string, ExitIntentVariant> = {
   control: {
     title: "Wait! Don't Leave Empty-Handed",
-    description: "Get instant access to the most comprehensive AI/ML glossary",
-    cta: "Get Access Now",
-    offer: "Special offer: 20% off for the next 24 hours"
+    description: 'Get instant access to the most comprehensive AI/ML glossary',
+    cta: 'Get Access Now',
+    offer: 'Special offer: 20% off for the next 24 hours',
   },
   value_focused: {
-    title: "Your AI Knowledge Journey Starts Here",
-    description: "Join 10,000+ professionals mastering AI/ML concepts",
-    cta: "Start Learning Now",
+    title: 'Your AI Knowledge Journey Starts Here',
+    description: 'Join 10,000+ professionals mastering AI/ML concepts',
+    cta: 'Start Learning Now',
     features: [
-      "3,500+ AI/ML terms explained",
-      "Interactive visualizations",
-      "Daily updates with new terms",
-      "Export to Anki/Notion"
-    ]
+      '3,500+ AI/ML terms explained',
+      'Interactive visualizations',
+      'Daily updates with new terms',
+      'Export to Anki/Notion',
+    ],
   },
   urgency: {
-    title: "Last Chance: 30% Off Today Only",
-    description: "This exclusive discount expires when you leave",
-    cta: "Claim Your Discount",
-    urgency: "Offer expires in 05:00",
-    offer: "Save $14 - Today Only!"
+    title: 'Last Chance: 30% Off Today Only',
+    description: 'This exclusive discount expires when you leave',
+    cta: 'Claim Your Discount',
+    urgency: 'Offer expires in 05:00',
+    offer: 'Save $14 - Today Only!',
   },
   social_proof: {
-    title: "Join 10,000+ AI Professionals",
-    description: "See why industry leaders choose AI Glossary Pro",
-    cta: "Join the Community",
+    title: 'Join 10,000+ AI Professionals',
+    description: 'See why industry leaders choose AI Glossary Pro',
+    cta: 'Join the Community',
     features: [
-      "Trusted by researchers at top universities",
-      "Used by engineers at FAANG companies",
-      "Recommended by AI influencers"
-    ]
-  }
+      'Trusted by researchers at top universities',
+      'Used by engineers at FAANG companies',
+      'Recommended by AI influencers',
+    ],
+  },
 };
 
 export function ExitIntentPopup() {
   const [isVisible, setIsVisible] = useState(false);
   const [hasBeenShown, setHasBeenShown] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(300); // 5 minutes
-  
+
   const { variant, trackConversion, trackFeatureUsage } = useExperiment(
     'exitIntentVariant',
     'control'
@@ -65,7 +65,7 @@ export function ExitIntentPopup() {
   useEffect(() => {
     if (variant === 'urgency' && isVisible && timeRemaining > 0) {
       const timer = setInterval(() => {
-        setTimeRemaining((prev) => {
+        setTimeRemaining(prev => {
           if (prev <= 1) {
             clearInterval(timer);
             return 0;
@@ -79,19 +79,22 @@ export function ExitIntentPopup() {
   }, [variant, isVisible, timeRemaining]);
 
   // Exit intent detection
-  const handleMouseLeave = useCallback((e: MouseEvent) => {
-    // Only trigger if mouse leaves from the top of the viewport
-    if (e.clientY <= 0 && !hasBeenShown) {
-      setIsVisible(true);
-      setHasBeenShown(true);
-      trackFeatureUsage('exit_intent_triggered');
-      trackUserAction('exit_intent_popup_shown', { variant });
-    }
-  }, [hasBeenShown, trackFeatureUsage, variant]);
+  const handleMouseLeave = useCallback(
+    (e: MouseEvent) => {
+      // Only trigger if mouse leaves from the top of the viewport
+      if (e.clientY <= 0 && !hasBeenShown) {
+        setIsVisible(true);
+        setHasBeenShown(true);
+        trackFeatureUsage('exit_intent_triggered');
+        trackUserAction('exit_intent_popup_shown', { variant });
+      }
+    },
+    [hasBeenShown, trackFeatureUsage, variant]
+  );
 
   useEffect(() => {
     // Don't show on mobile devices
-    if (window.innerWidth < 768) return;
+    if (window.innerWidth < 768) {return;}
 
     // Add exit intent listener after a delay
     const timer = setTimeout(() => {
@@ -122,21 +125,18 @@ export function ExitIntentPopup() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (!isVisible) return null;
+  if (!isVisible) {return null;}
 
   return (
     <>
       {/* Backdrop */}
-      <div 
-        className="fixed inset-0 bg-black/50 z-50 animate-fadeIn"
-        onClick={handleClose}
-      />
-      
+      <div className="fixed inset-0 bg-black/50 z-50 animate-fadeIn" onClick={handleClose} />
+
       {/* Popup */}
       <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        <div 
+        <div
           className="bg-white rounded-2xl shadow-2xl max-w-lg w-full animate-slideUp"
-          onClick={(e) => e.stopPropagation()}
+          onClick={e => e.stopPropagation()}
         >
           {/* Close button */}
           <button
@@ -164,9 +164,7 @@ export function ExitIntentPopup() {
             </h2>
 
             {/* Description */}
-            <p className="text-gray-600 text-center mb-6">
-              {currentVariant.description}
-            </p>
+            <p className="text-gray-600 text-center mb-6">{currentVariant.description}</p>
 
             {/* Urgency timer */}
             {variant === 'urgency' && currentVariant.urgency && (

@@ -75,7 +75,7 @@ const TrendingDashboard: React.FC = () => {
       });
 
       const response = await fetch(`/api/trending/terms?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch trending terms');
+      if (!response.ok) {throw new Error('Failed to fetch trending terms');}
       return response.json();
     },
     refetchInterval: 30000, // Refresh every 30 seconds
@@ -86,7 +86,7 @@ const TrendingDashboard: React.FC = () => {
     queryKey: ['trending-analytics', filters.timeRange],
     queryFn: async () => {
       const response = await fetch(`/api/trending/analytics?timeRange=${filters.timeRange}`);
-      if (!response.ok) throw new Error('Failed to fetch trending analytics');
+      if (!response.ok) {throw new Error('Failed to fetch trending analytics');}
       return response.json();
     },
     refetchInterval: 60000, // Refresh every minute
@@ -97,7 +97,7 @@ const TrendingDashboard: React.FC = () => {
     queryKey: ['trending-categories', filters.timeRange],
     queryFn: async () => {
       const response = await fetch(`/api/trending/categories?timeRange=${filters.timeRange}`);
-      if (!response.ok) throw new Error('Failed to fetch trending categories');
+      if (!response.ok) {throw new Error('Failed to fetch trending categories');}
       return response.json();
     },
     refetchInterval: 60000,
@@ -112,7 +112,7 @@ const TrendingDashboard: React.FC = () => {
   };
 
   const formatTimeSpent = (seconds: number): string => {
-    if (seconds < 60) return `${Math.round(seconds)}s`;
+    if (seconds < 60) {return `${Math.round(seconds)}s`;}
     return `${Math.round(seconds / 60)}m`;
   };
 
@@ -176,9 +176,7 @@ const TrendingDashboard: React.FC = () => {
               <label className="text-sm font-medium">Time Range</label>
               <Select
                 value={filters.timeRange}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, timeRange: value as any }))
-                }
+                onValueChange={value => setFilters(prev => ({ ...prev, timeRange: value as any }))}
               >
                 <SelectTrigger className="w-32">
                   <SelectValue />
@@ -196,9 +194,7 @@ const TrendingDashboard: React.FC = () => {
               <label className="text-sm font-medium">Trend Type</label>
               <Select
                 value={filters.trendType}
-                onValueChange={(value) =>
-                  setFilters((prev) => ({ ...prev, trendType: value as any }))
-                }
+                onValueChange={value => setFilters(prev => ({ ...prev, trendType: value as any }))}
               >
                 <SelectTrigger className="w-40">
                   <SelectValue />

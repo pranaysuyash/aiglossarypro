@@ -190,7 +190,7 @@ class PredictiveAnalyticsService {
 
     // Group interactions by day to estimate sessions
     const sessionsByDay = new Map<string, typeof interactions>();
-    interactions.forEach((interaction) => {
+    interactions.forEach(interaction => {
       const day = interaction.timestamp.toDateString();
       if (!sessionsByDay.has(day)) {
         sessionsByDay.set(day, []);
@@ -203,7 +203,7 @@ class PredictiveAnalyticsService {
 
     // Analyze time preferences
     const hourCounts = new Map<number, number>();
-    interactions.forEach((interaction) => {
+    interactions.forEach(interaction => {
       const hour = new Date(interaction.timestamp).getHours();
       hourCounts.set(hour, (hourCounts.get(hour) || 0) + 1);
     });
@@ -239,12 +239,12 @@ class PredictiveAnalyticsService {
         and(eq(userInteractions.userId, userId), gte(userInteractions.timestamp, thirtyDaysAgo))
       );
 
-    if (interactions.length === 0) return 0.5; // Default middle score
+    if (interactions.length === 0) {return 0.5;} // Default middle score
 
     let comprehensionScore = 0;
     let totalInteractions = 0;
 
-    interactions.forEach((interaction) => {
+    interactions.forEach(interaction => {
       totalInteractions++;
 
       switch (interaction.type) {
@@ -303,7 +303,7 @@ class PredictiveAnalyticsService {
       .orderBy(desc(count(userInteractions.id)))
       .limit(5);
 
-    return categoryEngagement.map((c) => c.categoryName);
+    return categoryEngagement.map(c => c.categoryName);
   }
 
   private async identifyStrengthAreas(userId: string): Promise<string[]> {
@@ -333,7 +333,7 @@ class PredictiveAnalyticsService {
       )
       .limit(3);
 
-    return strengths.map((area) => area.categoryName);
+    return strengths.map(area => area.categoryName);
   }
 
   private async identifyImprovementAreas(userId: string): Promise<string[]> {
@@ -363,7 +363,7 @@ class PredictiveAnalyticsService {
       )
       .limit(3);
 
-    return improvements.map((area) => area.categoryName);
+    return improvements.map(area => area.categoryName);
   }
 
   private async calculateCompletionRate(profile: UserLearningProfile): Promise<number> {
@@ -399,13 +399,13 @@ class PredictiveAnalyticsService {
 
     if (comprehension >= thresholds.min && comprehension <= thresholds.max) {
       return 1.0;
-    } else {
+    } 
       const distance = Math.min(
         Math.abs(comprehension - thresholds.min),
         Math.abs(comprehension - thresholds.max)
       );
       return Math.max(0, 1 - distance * 2);
-    }
+    
   }
 
   private async calculateEngagementScore(profile: UserLearningProfile): Promise<number> {
@@ -632,14 +632,14 @@ class PredictiveAnalyticsService {
 
   // Helper methods
   private getTimeSlotName(hour: number): string {
-    if (hour < 6) return 'Late Night';
-    if (hour < 12) return 'Morning';
-    if (hour < 18) return 'Afternoon';
+    if (hour < 6) {return 'Late Night';}
+    if (hour < 12) {return 'Morning';}
+    if (hour < 18) {return 'Afternoon';}
     return 'Evening';
   }
 
   private calculateConsistencyScore(sessionsByDay: Map<string, any[]>): number {
-    if (sessionsByDay.size < 2) return 0;
+    if (sessionsByDay.size < 2) {return 0;}
 
     // Simple consistency based on days with activity
     const daysWithActivity = sessionsByDay.size;
@@ -655,10 +655,10 @@ class PredictiveAnalyticsService {
       .where(eq(userInteractions.userId, userId))
       .limit(20);
 
-    if (interactions.length === 0) return 'Morning';
+    if (interactions.length === 0) {return 'Morning';}
 
     const hourCounts = new Map<string, number>();
-    interactions.forEach((interaction) => {
+    interactions.forEach(interaction => {
       const hour = new Date(interaction.timestamp).getHours();
       const timeSlot = this.getTimeSlotName(hour);
       hourCounts.set(timeSlot, (hourCounts.get(timeSlot) || 0) + 1);
@@ -705,7 +705,7 @@ class PredictiveAnalyticsService {
       )
       .limit(5);
 
-    return strengths.map((s) => s.categoryName);
+    return strengths.map(s => s.categoryName);
   }
 
   private async getLastActivity(userId: string): Promise<Date> {

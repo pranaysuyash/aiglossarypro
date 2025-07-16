@@ -40,7 +40,7 @@ export function parsePagination(req: Request, res: Response, next: NextFunction)
 /**
  * Parse and validate ID parameter
  */
-export function parseId(paramName: string = 'id') {
+export function parseId(paramName = 'id') {
   return (req: Request, res: Response, next: NextFunction): void => {
     try {
       const id = req.params[paramName];

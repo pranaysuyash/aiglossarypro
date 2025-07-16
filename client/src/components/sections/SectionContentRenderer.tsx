@@ -14,16 +14,24 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CodeBlock from '../interactive/CodeBlock';
 import InteractiveQuiz from '../interactive/InteractiveQuiz';
 import MermaidDiagram from '../interactive/MermaidDiagram';
-import { OptimizedImage } from '../ui/optimized-image';
-import EnhancedTable from '../ui/enhanced-table';
-import VideoPlayer from '../ui/video-player';
 import SimulationPlayer from '../interactive/SimulationPlayer';
+import EnhancedTable from '../ui/enhanced-table';
+import { OptimizedImage } from '../ui/optimized-image';
+import VideoPlayer from '../ui/video-player';
 
 interface SectionItem {
   id: number;
   label: string;
   content: string;
-  contentType: 'markdown' | 'mermaid' | 'image' | 'json' | 'interactive' | 'code' | 'table' | 'video';
+  contentType:
+    | 'markdown'
+    | 'mermaid'
+    | 'image'
+    | 'json'
+    | 'interactive'
+    | 'code'
+    | 'table'
+    | 'video';
   displayOrder: number;
   metadata?: Record<string, any>;
   isAiGenerated: boolean;
@@ -42,7 +50,7 @@ interface SectionContentRendererProps {
   sections: Section[];
   onInteraction?: (type: string, data: any) => void;
   displayMode?: 'accordion' | 'tabs' | 'cards' | 'sidebar' | 'metadata';
-  className?: string;
+  className?: string | undefined;
 }
 
 export default function SectionContentRenderer({
@@ -100,7 +108,7 @@ export default function SectionContentRenderer({
             code={item.content}
             language={item.metadata?.language || 'text'}
             title={item.label}
-            showLineNumbers={true}
+            showLineNumbers
             className="mb-4"
           />
         );
@@ -116,7 +124,7 @@ export default function SectionContentRenderer({
               <InteractiveQuiz
                 questions={interactiveData.questions || []}
                 title={item.label}
-                onComplete={(result) => handleInteraction('quiz_completed', result)}
+                onComplete={result => handleInteraction('quiz_completed', result)}
                 className="mb-4"
               />
             );
@@ -126,14 +134,16 @@ export default function SectionContentRenderer({
                 config={{
                   title: item.label,
                   description: item.metadata?.description,
-                  ...interactiveData.config
+                  ...interactiveData.config,
                 }}
-                onStepChange={(step, index) => handleInteraction('simulation_step', { step, index })}
+                onStepChange={(step, index) =>
+                  handleInteraction('simulation_step', { step, index })
+                }
                 className="mb-4"
               />
             );
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('Failed to parse interactive content:', error);
         }
         return (
@@ -177,7 +187,7 @@ export default function SectionContentRenderer({
         try {
           const tableData = JSON.parse(item.content);
           const { columns, data, ...tableProps } = tableData;
-          
+
           return (
             <EnhancedTable
               columns={columns}
@@ -192,7 +202,7 @@ export default function SectionContentRenderer({
               {...tableProps}
             />
           );
-        } catch (error) {
+        } catch (error: any) {
           console.error('Failed to parse table content:', error);
           return (
             <div className="p-4 border-2 border-dashed border-red-300 dark:border-red-600 rounded-lg">
@@ -252,7 +262,7 @@ export default function SectionContentRenderer({
         <div className="space-y-4">
           {section.items
             .sort((a, b) => a.displayOrder - b.displayOrder)
-            .map((item) => (
+            .map(item => (
               <div key={item.id} className="border-l-2 border-gray-200 dark:border-gray-700 pl-4">
                 <div className="flex items-center justify-between mb-2">
                   <h4 className="font-medium text-sm">{item.label}</h4>
@@ -282,7 +292,7 @@ export default function SectionContentRenderer({
     <Accordion type="multiple" className="w-full">
       {sections
         .sort((a, b) => a.displayOrder - b.displayOrder)
-        .map((section) => {
+        .map(section => {
           const config = getSectionConfig(section.name);
           const IconComponent = config.icon;
 
@@ -314,7 +324,7 @@ export default function SectionContentRenderer({
   const renderTabsMode = () => {
     const prioritySections = sections
       .sort((a, b) => a.displayOrder - b.displayOrder)
-      .filter((section) => {
+      .filter(section => {
         const config = getSectionConfig(section.name);
         return config.priority === 'high';
       })
@@ -323,7 +333,7 @@ export default function SectionContentRenderer({
     return (
       <Tabs value={activeSection} onValueChange={setActiveSection}>
         <TabsList className="grid w-full grid-cols-3 lg:grid-cols-6">
-          {prioritySections.map((section) => {
+          {prioritySections.map(section => {
             const config = getSectionConfig(section.name);
             const IconComponent = config.icon;
 
@@ -340,7 +350,7 @@ export default function SectionContentRenderer({
           })}
         </TabsList>
 
-        {prioritySections.map((section) => (
+        {prioritySections.map(section => (
           <TabsContent key={section.id} value={section.id.toString()}>
             <Card>
               <CardContent className="pt-6">{renderSection(section)}</CardContent>
@@ -355,7 +365,7 @@ export default function SectionContentRenderer({
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {sections
         .sort((a, b) => a.displayOrder - b.displayOrder)
-        .map((section) => {
+        .map(section => {
           const config = getSectionConfig(section.name);
           const IconComponent = config.icon;
 
@@ -380,10 +390,12 @@ export default function SectionContentRenderer({
   );
 
   const renderSidebarMode = () => {
-    const mainSections = sections.filter(section => {
-      const config = getSectionConfig(section.name);
-      return config.priority === 'high';
-    }).slice(0, 3);
+    const mainSections = sections
+      .filter(section => {
+        const config = getSectionConfig(section.name);
+        return config.priority === 'high';
+      })
+      .slice(0, 3);
 
     const sidebarSections = sections.filter(section => !mainSections.includes(section));
 
@@ -392,7 +404,7 @@ export default function SectionContentRenderer({
         {/* Main Content */}
         <div className="lg:col-span-3">
           <div className="space-y-6">
-            {mainSections.map((section) => (
+            {mainSections.map(section => (
               <Card key={section.id}>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
@@ -423,17 +435,22 @@ export default function SectionContentRenderer({
                 <CardTitle className="text-base">Additional Sections</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {sidebarSections.map((section) => {
+                {sidebarSections.map(section => {
                   const config = getSectionConfig(section.name);
                   const IconComponent = config.icon;
-                  
+
                   return (
-                    <div key={section.id} className="p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer">
+                    <div
+                      key={section.id}
+                      className="p-3 border rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
+                    >
                       <div className="flex items-center space-x-2 mb-2">
                         <IconComponent className={`h-4 w-4 text-${config.color}-500`} />
                         <span className="font-medium text-sm">{section.name}</span>
                         {section.isCompleted && (
-                          <Badge variant="outline" className="text-xs">✓</Badge>
+                          <Badge variant="outline" className="text-xs">
+                            ✓
+                          </Badge>
                         )}
                       </div>
                       <p className="text-xs text-gray-600 dark:text-gray-400">
@@ -451,11 +468,12 @@ export default function SectionContentRenderer({
   };
 
   const renderMetadataMode = () => {
-    const metadataSections = sections.filter(section => 
-      section.name.toLowerCase().includes('metadata') || 
-      section.name.toLowerCase().includes('reference') ||
-      section.name.toLowerCase().includes('glossary') ||
-      section.name.toLowerCase().includes('tags')
+    const metadataSections = sections.filter(
+      section =>
+        section.name.toLowerCase().includes('metadata') ||
+        section.name.toLowerCase().includes('reference') ||
+        section.name.toLowerCase().includes('glossary') ||
+        section.name.toLowerCase().includes('tags')
     );
 
     const contentSections = sections.filter(section => !metadataSections.includes(section));
@@ -470,17 +488,19 @@ export default function SectionContentRenderer({
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {metadataSections.map((section) => {
+                {metadataSections.map(section => {
                   const config = getSectionConfig(section.name);
                   const IconComponent = config.icon;
-                  
+
                   return (
                     <div key={section.id} className="border rounded-lg p-4">
                       <div className="flex items-center space-x-2 mb-3">
                         <IconComponent className={`h-4 w-4 text-${config.color}-500`} />
                         <h4 className="font-medium">{section.name}</h4>
                         {section.isCompleted && (
-                          <Badge variant="outline" className="text-xs">✓</Badge>
+                          <Badge variant="outline" className="text-xs">
+                            ✓
+                          </Badge>
                         )}
                       </div>
                       <div className="space-y-2">
@@ -505,10 +525,10 @@ export default function SectionContentRenderer({
 
         {/* Main Content Sections */}
         <div className="grid grid-cols-1 gap-4">
-          {contentSections.map((section) => {
+          {contentSections.map(section => {
             const config = getSectionConfig(section.name);
             const IconComponent = config.icon;
-            
+
             return (
               <Card key={section.id}>
                 <CardHeader className="pb-3">
@@ -571,7 +591,7 @@ export default function SectionContentRenderer({
           <div className="flex items-center space-x-2">
             <Badge variant="outline">{sections.length} sections</Badge>
             <Badge variant="secondary">
-              {sections.filter((s) => s.isCompleted).length} completed
+              {sections.filter(s => s.isCompleted).length} completed
             </Badge>
           </div>
         </div>

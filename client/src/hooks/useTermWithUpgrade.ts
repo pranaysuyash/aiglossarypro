@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import type { ITerm } from '@/interfaces/interfaces';
 
 interface TermApiResponse {
@@ -37,18 +37,26 @@ interface TermWithUpgradeState {
 export function useTermWithUpgrade(id: string | undefined): TermWithUpgradeState {
   const [upgradeState, setUpgradeState] = useState<{
     requiresUpgrade: boolean;
-    limitInfo?: any;
+    limitInfo?: {
+      dailyLimit: number;
+      resetTime: string;
+      reason: string;
+    };
     upgradeMessage?: string;
   }>({
     requiresUpgrade: false,
   });
 
   // Custom query that fetches full response
-  const { data: fullResponse, isLoading, error } = useQuery<TermApiResponse>({
+  const {
+    data: fullResponse,
+    isLoading,
+    error,
+  } = useQuery<TermApiResponse>({
     queryKey: [`/api/terms/${id}/full`],
     queryFn: async () => {
-      if (!id) throw new Error('No term ID provided');
-      
+      if (!id) {throw new Error('No term ID provided');}
+
       const headers: Record<string, string> = {};
       const token = localStorage.getItem('authToken');
       if (token) {

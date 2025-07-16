@@ -69,7 +69,7 @@ class QuickAppTest {
 
     // Check for console errors
     const logs: string[] = [];
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         logs.push(msg.text());
       }
@@ -79,7 +79,7 @@ class QuickAppTest {
 
     if (logs.length > 0) {
       console.log(chalk.yellow(`⚠️ Console errors: ${logs.length}`));
-      logs.forEach((log) => console.log(chalk.gray(`  - ${log}`)));
+      logs.forEach(log => console.log(chalk.gray(`  - ${log}`)));
     } else {
       console.log(chalk.green('✅ No console errors'));
     }

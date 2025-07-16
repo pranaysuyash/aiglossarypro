@@ -75,7 +75,7 @@ class PerformanceAnalyzer {
 
     try {
       const files = await fs.readdir(this.reportsDir);
-      const jsonFiles = files.filter((file) => file.endsWith('.json'));
+      const jsonFiles = files.filter(file => file.endsWith('.json'));
 
       for (const file of jsonFiles) {
         const filePath = path.join(this.reportsDir, file);
@@ -108,13 +108,13 @@ class PerformanceAnalyzer {
 
     // Find slowest components
     const slowestComponents = metrics
-      .filter((m) => m.renderTime > 16) // > 16ms (60fps threshold)
+      .filter(m => m.renderTime > 16) // > 16ms (60fps threshold)
       .sort((a, b) => b.renderTime - a.renderTime)
       .slice(0, 10);
 
     // Detect potential memory leaks
     const memoryLeaks = metrics
-      .filter((m) => m.memoryUsage > 50) // > 50MB
+      .filter(m => m.memoryUsage > 50) // > 50MB
       .sort((a, b) => b.memoryUsage - a.memoryUsage)
       .slice(0, 5);
 
@@ -140,7 +140,7 @@ class PerformanceAnalyzer {
 
     // Check for frequent re-renders
     const componentRenderCounts = new Map<string, number>();
-    metrics.forEach((m) => {
+    metrics.forEach(m => {
       componentRenderCounts.set(m.component, (componentRenderCounts.get(m.component) || 0) + 1);
     });
 
@@ -158,7 +158,7 @@ class PerformanceAnalyzer {
     }
 
     // Check for slow renders
-    const slowRenders = metrics.filter((m) => m.renderTime > 50);
+    const slowRenders = metrics.filter(m => m.renderTime > 50);
     if (slowRenders.length > 0) {
       recommendations.push(
         `${slowRenders.length} renders took longer than 50ms. Consider using React.memo() or useMemo() for expensive computations.`
@@ -173,7 +173,7 @@ class PerformanceAnalyzer {
     }
 
     // Check for memory issues
-    const highMemoryUsage = metrics.filter((m) => m.memoryUsage > 100);
+    const highMemoryUsage = metrics.filter(m => m.memoryUsage > 100);
     if (highMemoryUsage.length > 0) {
       recommendations.push(
         `High memory usage detected. Consider implementing proper cleanup in useEffect hooks and removing unused dependencies.`
@@ -190,7 +190,7 @@ class PerformanceAnalyzer {
   private calculateDuration(metrics: PerformanceMetric[]): number {
     if (metrics.length === 0) return 0;
 
-    const timestamps = metrics.map((m) => m.timestamp).sort((a, b) => a - b);
+    const timestamps = metrics.map(m => m.timestamp).sort((a, b) => a - b);
     return timestamps[timestamps.length - 1] - timestamps[0];
   }
 
@@ -258,7 +258,7 @@ class PerformanceAnalyzer {
             <ul class="component-list">
                 ${analysis.slowestComponents
                   .map(
-                    (comp) => `
+                    comp => `
                     <li class="component-item">
                         <span>${comp.component}</span>
                         <span class="render-time">${comp.renderTime.toFixed(2)}ms</span>
@@ -278,7 +278,7 @@ class PerformanceAnalyzer {
             <ul class="component-list">
                 ${analysis.memoryLeaks
                   .map(
-                    (comp) => `
+                    comp => `
                     <li class="component-item">
                         <span>${comp.component}</span>
                         <span class="memory-usage">${comp.memoryUsage.toFixed(2)}MB</span>
@@ -295,7 +295,7 @@ class PerformanceAnalyzer {
         <div class="recommendations">
             ${analysis.recommendations
               .map(
-                (rec) => `
+                rec => `
                 <div class="recommendation">• ${rec}</div>
             `
               )

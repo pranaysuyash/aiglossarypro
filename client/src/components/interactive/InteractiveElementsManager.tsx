@@ -1,16 +1,16 @@
-import { ExternalLink, Play } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import type { IInteractiveElement } from '@/interfaces/interfaces';
+import { ExternalLink, Play } from 'lucide-react';
 import CodeBlock from './CodeBlock';
 import InteractiveQuiz from './InteractiveQuiz';
 import MermaidDiagram from './MermaidDiagram';
 
 interface InteractiveElementsManagerProps {
   elements: IInteractiveElement[];
-  onInteraction?: (elementId: string, interactionType: string, data?: any) => void;
-  className?: string;
+  onInteraction?: (elementId: string, interactionType: string, data?: unknown) => void;
+  className?: string | undefined;
 }
 
 export default function InteractiveElementsManager({
@@ -18,7 +18,7 @@ export default function InteractiveElementsManager({
   onInteraction,
   className = '',
 }: InteractiveElementsManagerProps) {
-  const handleInteraction = (elementId: string, type: string, data?: any) => {
+  const handleInteraction = (elementId: string, type: string, data?: unknown) => {
     if (onInteraction) {
       onInteraction(elementId, type, data);
     }
@@ -31,7 +31,7 @@ export default function InteractiveElementsManager({
       case 'mermaid':
         return (
           <MermaidDiagram
-            diagram={elementData.diagram || ''}
+            diagram={elementData.diagram ?? ''}
             title={elementData.title}
             description={elementData.description}
             className="mb-4"
@@ -41,12 +41,12 @@ export default function InteractiveElementsManager({
       case 'code':
         return (
           <CodeBlock
-            code={elementData.code || ''}
-            language={elementData.language || 'text'}
+            code={elementData.code ?? ''}
+            language={elementData.language ?? 'text'}
             title={elementData.title}
             description={elementData.description}
-            executable={elementData.executable || false}
-            highlightLines={elementData.highlightLines || []}
+            executable={elementData.executable ?? false}
+            highlightLines={elementData.highlightLines ?? []}
             className="mb-4"
           />
         );
@@ -54,13 +54,13 @@ export default function InteractiveElementsManager({
       case 'quiz':
         return (
           <InteractiveQuiz
-            questions={elementData.questions || []}
-            title={elementData.title || 'Quiz'}
+            questions={elementData.questions ?? []}
+            title={elementData.title ?? 'Quiz'}
             description={elementData.description}
-            timeLimit={elementData.timeLimit}
+            {...(elementData.timeLimit !== undefined && { timeLimit: elementData.timeLimit })}
             showExplanations={elementData.showExplanations !== false}
             allowRetry={elementData.allowRetry !== false}
-            onComplete={(result) => handleInteraction(element.id, 'quiz_completed', result)}
+            onComplete={result => handleInteraction(element.id, 'quiz_completed', result)}
             className="mb-4"
           />
         );
@@ -73,7 +73,7 @@ export default function InteractiveElementsManager({
                 <div>
                   <CardTitle className="flex items-center space-x-2">
                     <Play className="h-5 w-5" />
-                    <span>{elementData.title || 'Interactive Demo'}</span>
+                    <span>{elementData.title ?? 'Interactive Demo'}</span>
                   </CardTitle>
                   {elementData.description && (
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -91,7 +91,7 @@ export default function InteractiveElementsManager({
                     <iframe
                       src={elementData.demoUrl}
                       className="w-full h-full"
-                      title={elementData.title || 'Interactive Demo'}
+                      title={elementData.title ?? 'Interactive Demo'}
                       allowFullScreen
                       sandbox="allow-scripts allow-same-origin allow-forms"
                     />
@@ -125,7 +125,7 @@ export default function InteractiveElementsManager({
                 <div>
                   <CardTitle className="flex items-center space-x-2">
                     <Play className="h-5 w-5" />
-                    <span>{elementData.title || 'Interactive Simulation'}</span>
+                    <span>{elementData.title ?? 'Interactive Simulation'}</span>
                   </CardTitle>
                   {elementData.description && (
                     <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
@@ -172,8 +172,8 @@ export default function InteractiveElementsManager({
   return (
     <div className={className}>
       {sortedElements
-        .filter((element) => element.isActive)
-        .map((element) => (
+        .filter(element => element.isActive)
+        .map(element => (
           <div key={element.id}>{renderElement(element)}</div>
         ))}
     </div>

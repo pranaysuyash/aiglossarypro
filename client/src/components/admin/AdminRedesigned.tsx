@@ -1,14 +1,10 @@
-import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Zap } from 'lucide-react';
-import { useAuth } from '../../hooks/useAuth';
-
+import React, { useState } from 'react';
 // Import existing components
-import { AIAdminDashboard } from '@/components/AIAdminDashboard';
 import { AdvancedAnalyticsDashboard } from '@/components/admin/AdvancedAnalyticsDashboard';
 import { ColumnBatchOperationsDashboard } from '@/components/admin/ColumnBatchOperationsDashboard';
 import ContentImportDashboard from '@/components/admin/ContentImportDashboard';
-import { ContentManagementDashboard } from '@/components/admin/ContentManagementDashboard';
 import ContentModerationDashboard from '@/components/admin/ContentModerationDashboard';
 import { EmergencyStopControls } from '@/components/admin/EmergencyStopControls';
 import { EnhancedContentGenerationV2 } from '@/components/admin/EnhancedContentGenerationV2';
@@ -18,20 +14,19 @@ import { QualityEvaluationDashboard } from '@/components/admin/QualityEvaluation
 import TemplateManagement from '@/components/admin/TemplateManagement';
 import UserManagementDashboard from '@/components/admin/UserManagementDashboard';
 import S3FileBrowser from '@/components/S3FileBrowser';
-import AdminContactsDashboard from '@/pages/admin/AdminContactsDashboard';
 import AdminNewsletterDashboard from '@/pages/admin/AdminNewsletterDashboard';
-
+import { useAuth } from '../../hooks/useAuth';
+import AdminDashboard from './AdminDashboard';
+import AdminHeader from './AdminHeader';
 // Import new components
 import AdminSidebar, { defaultSidebarSections } from './AdminSidebar';
-import AdminHeader from './AdminHeader';
-import AdminDashboard from './AdminDashboard';
-import ContentOverview from './ContentOverview';
 import CodeExamplesManagement from './CodeExamplesManagement';
-import LearningPathsManagement from './LearningPathsManagement';
 import ContentManagementTools from './ContentManagementTools';
+import ContentOverview from './ContentOverview';
+import LearningPathsManagement from './LearningPathsManagement';
 
 export default function AdminRedesigned() {
-  const { user, isAuthenticated } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [sidebarExpanded, setSidebarExpanded] = useState(true);
   const [activeSection, setActiveSection] = useState('dashboard');
   const [activeView, setActiveView] = useState('dashboard');
@@ -43,11 +38,11 @@ export default function AdminRedesigned() {
     retry: false,
   });
 
-  const hasAccess = isAuthenticated && (!isAdminLoading && adminData && !(adminData as any)?.error);
+  const hasAccess = isAuthenticated && !isAdminLoading && adminData && !(adminData as any)?.error;
 
   const handleSectionClick = (sectionId: string) => {
     setActiveSection(sectionId);
-    
+
     if (sectionId === 'dashboard') {
       setActiveView('dashboard');
     } else {
@@ -90,7 +85,7 @@ export default function AdminRedesigned() {
     switch (activeView) {
       case 'dashboard':
         return <AdminDashboard onQuickAction={handleQuickAction} />;
-      
+
       // Content Operations
       case 'content-overview':
         return <ContentOverview />;
@@ -99,18 +94,20 @@ export default function AdminRedesigned() {
       case 'content-import':
         return <ContentImportDashboard />;
       case 'content-analytics':
-        return <div className="bg-white rounded-lg border p-8 text-center">
-          <Zap className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Content Analytics</h3>
-          <p className="text-gray-600">Content-specific analytics will be implemented here.</p>
-        </div>;
+        return (
+          <div className="bg-white rounded-lg border p-8 text-center">
+            <Zap className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Content Analytics</h3>
+            <p className="text-gray-600">Content-specific analytics will be implemented here.</p>
+          </div>
+        );
       case 'content-moderation':
         return <ContentModerationDashboard />;
       case 'content-code-examples':
         return <CodeExamplesManagement />;
       case 'content-learning-paths':
         return <LearningPathsManagement />;
-      
+
       // AI Tools
       case 'ai-generation':
         return <EnhancedContentGenerationV2 />;
@@ -122,51 +119,59 @@ export default function AdminRedesigned() {
         return <ModelComparison />;
       case 'ai-templates':
         return <TemplateManagement />;
-      
+
       // Analytics & Monitoring
       case 'analytics-performance':
         return <GenerationStatsDashboard />;
       case 'analytics-costs':
-        return <div className="bg-white rounded-lg border p-8 text-center">
-          <Zap className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Cost Tracking</h3>
-          <p className="text-gray-600">AI usage cost tracking will be implemented here.</p>
-        </div>;
+        return (
+          <div className="bg-white rounded-lg border p-8 text-center">
+            <Zap className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Cost Tracking</h3>
+            <p className="text-gray-600">AI usage cost tracking will be implemented here.</p>
+          </div>
+        );
       case 'analytics-quality':
-        return <div className="bg-white rounded-lg border p-8 text-center">
-          <Zap className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Quality Metrics</h3>
-          <p className="text-gray-600">Quality metrics dashboard will be implemented here.</p>
-        </div>;
+        return (
+          <div className="bg-white rounded-lg border p-8 text-center">
+            <Zap className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">Quality Metrics</h3>
+            <p className="text-gray-600">Quality metrics dashboard will be implemented here.</p>
+          </div>
+        );
       case 'analytics-advanced':
         return <AdvancedAnalyticsDashboard />;
-      
+
       // Administration
       case 'admin-users':
         return <UserManagementDashboard />;
       case 'admin-system':
-        return <div className="bg-white rounded-lg border p-8 text-center">
-          <Zap className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">System Settings</h3>
-          <p className="text-gray-600">System configuration settings will be implemented here.</p>
-        </div>;
+        return (
+          <div className="bg-white rounded-lg border p-8 text-center">
+            <Zap className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">System Settings</h3>
+            <p className="text-gray-600">System configuration settings will be implemented here.</p>
+          </div>
+        );
       case 'admin-emergency':
         return <EmergencyStopControls />;
       case 'admin-newsletter':
         return <AdminNewsletterDashboard />;
       case 'admin-s3':
         return <S3FileBrowser />;
-      
+
       default:
-        return <div className="bg-white rounded-lg border p-8 text-center">
-          <Zap className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            {activeView.charAt(0).toUpperCase() + activeView.slice(1).replace('-', ' ')}
-          </h3>
-          <p className="text-gray-600">
-            This section showcases the improved navigation and layout structure.
-          </p>
-        </div>;
+        return (
+          <div className="bg-white rounded-lg border p-8 text-center">
+            <Zap className="w-16 h-16 mx-auto text-gray-400 mb-4" />
+            <h3 className="text-lg font-medium text-gray-900 mb-2">
+              {activeView.charAt(0).toUpperCase() + activeView.slice(1).replace('-', ' ')}
+            </h3>
+            <p className="text-gray-600">
+              This section showcases the improved navigation and layout structure.
+            </p>
+          </div>
+        );
     }
   };
 
@@ -219,15 +224,10 @@ export default function AdminRedesigned() {
       {/* Main Content */}
       <div className="flex-1 flex flex-col min-w-0">
         {/* Header */}
-        <AdminHeader
-          currentView={activeView}
-          currentSection={activeSection}
-        />
+        <AdminHeader currentView={activeView} currentSection={activeSection} />
 
         {/* Content Area */}
-        <div className="flex-1 p-6 overflow-auto">
-          {renderContent()}
-        </div>
+        <div className="flex-1 p-6 overflow-auto">{renderContent()}</div>
       </div>
     </div>
   );

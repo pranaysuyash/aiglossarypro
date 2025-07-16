@@ -1,6 +1,6 @@
-import { asc, desc, eq, ilike, or } from 'drizzle-orm';
+import { asc, desc, ilike, or } from 'drizzle-orm';
 import type { Express, Request, Response } from 'express';
-import { categories, enhancedTerms as terms } from '../../shared/enhancedSchema';
+import { enhancedTerms as terms } from '../../shared/enhancedSchema';
 import type { ApiResponse, SearchResult } from '../../shared/types';
 import { db } from '../db';
 import { enhancedStorage as storage } from '../enhancedStorage';
@@ -35,9 +35,6 @@ export function registerSearchRoutes(app: Express): void {
           page = 1,
           limit = 20,
           category,
-          subcategory,
-          difficulty,
-          tags,
           sort = 'relevance',
         } = req.query;
 
@@ -62,17 +59,17 @@ export function registerSearchRoutes(app: Express): void {
 
         // Helper function to highlight search terms
         const highlightSearchTerms = (text: string, query: string): string => {
-          if (!text || !query) return text;
+          if (!text || !query) {return text;}
           const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
           return text.replace(regex, '<mark>$1</mark>');
         };
 
         // Transform search response to match shared types with highlighting
         const searchResult: SearchResult = {
-          terms: searchResponse.results.map((result) => ({
+          terms: searchResponse.results.map(result => ({
             id: result.id,
             name: result.name,
-            definition: result.definition,
+            definition: result.definition || result.shortDefinition || '',
             shortDefinition: result.shortDefinition,
             category: result.category?.name || 'Uncategorized',
             categoryId: result.category?.id,
@@ -132,20 +129,20 @@ export function registerSearchRoutes(app: Express): void {
       // TODO: Add searchCategories(query, limit) method to enhancedStorage in Phase 2
       const allCategories = await storage.getCategories();
       const categorySuggestions = allCategories
-        .filter((cat) => cat.name.toLowerCase().includes(query.toLowerCase()))
+        .filter(cat => cat.name.toLowerCase().includes(query.toLowerCase()))
         .slice(0, 3)
-        .map((cat) => ({ name: cat.name }));
+        .map(cat => ({ name: cat.name }));
 
       // Helper function to highlight search terms
       const highlightSearchTerms = (text: string, query: string): string => {
-        if (!text || !query) return text;
+        if (!text || !query) {return text;}
         const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
         return text.replace(regex, '<mark>$1</mark>');
       };
 
       // Combine suggestions in a more structured format with highlighting
       const allSuggestions = [
-        ...termSuggestions.map((name) => ({
+        ...termSuggestions.map(name => ({
           id: `term-${name}`,
           name,
           type: 'term',
@@ -176,12 +173,8 @@ export function registerSearchRoutes(app: Express): void {
     try {
       const {
         q,
-        threshold = 0.3,
         limit = 20,
         page = 1,
-        category,
-        difficulty,
-        sort = 'relevance',
       } = req.query;
 
       if (!q || typeof q !== 'string' || q.trim().length === 0) {
@@ -196,19 +189,17 @@ export function registerSearchRoutes(app: Express): void {
         .select({
           id: terms.id,
           name: terms.name,
-          definition: terms.definition,
+          definition: terms.fullDefinition,
           shortDefinition: terms.shortDefinition,
           viewCount: terms.viewCount,
-          categoryId: categories.id,
-          categoryName: categories.name,
+          mainCategories: terms.mainCategories,
         })
         .from(terms)
-        .leftJoin(categories, eq(terms.categoryId, categories.id))
-        .where(or(ilike(terms.name, `%${q.trim()}%`), ilike(terms.definition, `%${q.trim()}%`)))
+        .where(or(ilike(terms.name, `%${q.trim()}%`), ilike(terms.fullDefinition, `%${q.trim()}%`)))
         .orderBy(desc(terms.viewCount), asc(terms.name))
         .limit(100);
 
-      const transformedResults = searchResults.map((result) => ({
+      const transformedResults = searchResults.map(result => ({
         id: result.id || '',
         name: result.name || '',
         definition: result.definition || '',
@@ -216,12 +207,9 @@ export function registerSearchRoutes(app: Express): void {
         viewCount: result.viewCount || 0,
         relevanceScore: 1, // Basic relevance score
         category:
-          result.categoryId && result.categoryName
-            ? {
-                id: result.categoryId,
-                name: result.categoryName,
-              }
-            : undefined,
+          result.mainCategories && result.mainCategories.length > 0
+            ? result.mainCategories[0]
+            : 'General',
         createdAt: new Date(),
         updatedAt: new Date(),
       }));
@@ -257,7 +245,7 @@ export function registerSearchRoutes(app: Express): void {
   // Popular search terms
   app.get('/api/search/popular', async (req: Request, res: Response) => {
     try {
-      const { limit = 10, timeframe = '7d' } = req.query;
+      const { limit = 10 } = req.query;
 
       // Use optimized popular terms for better performance
       const popularTerms = await getOptimizedPopularTerms(parseInt(limit as string));

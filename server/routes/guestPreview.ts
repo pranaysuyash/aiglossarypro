@@ -1,15 +1,15 @@
 import type { Express, Request, Response } from 'express';
 import type { ApiResponse, ITerm } from '../../shared/types';
-import { termIdSchema } from '../middleware/security';
-import { optimizedStorage as storage } from '../optimizedStorage';
-import { log as logger } from '../utils/logger';
 import {
+  getGuestAnalytics,
+  getGuestSessionStats,
   guestAccessMiddleware,
   guestPreviewLimitMiddleware,
   recordGuestTermView,
-  getGuestSessionStats,
-  getGuestAnalytics,
 } from '../middleware/guestAccess';
+import { termIdSchema } from '../middleware/security';
+import { optimizedStorage as storage } from '../optimizedStorage';
+import { log as logger } from '../utils/logger';
 
 /**
  * Guest preview routes for unauthenticated access
@@ -45,12 +45,12 @@ export function registerGuestPreviewRoutes(app: Express): void {
     async (req: Request, res: Response) => {
       try {
         const { id } = req.params;
-        
+
         // Validate term ID format
         try {
           termIdSchema.parse(id);
         } catch (_error) {
-          return res.status(400).json({ 
+          return res.status(400).json({
             success: false,
             error: 'Invalid term ID format',
             guestPreview: true,
@@ -70,7 +70,7 @@ export function registerGuestPreviewRoutes(app: Express): void {
 
         // Record the guest view if they haven't seen this term before
         const viewRecorded = recordGuestTermView(guestSession, id);
-        
+
         if (!viewRecorded) {
           return res.status(403).json({
             success: false,
@@ -95,7 +95,8 @@ export function registerGuestPreviewRoutes(app: Express): void {
           viewCount: term.viewCount,
           isPreview: true,
           guestPreview: true,
-          previewMessage: 'This is a guest preview. Sign up for free to access the complete definition and all features.',
+          previewMessage:
+            'This is a guest preview. Sign up for free to access the complete definition and all features.',
           sectionsAvailable: ['Definition', 'Basic Examples', 'Category'],
           sectionsLocked: [
             'Detailed Examples',
@@ -109,7 +110,8 @@ export function registerGuestPreviewRoutes(app: Express): void {
           ],
           upgradePrompt: {
             title: 'Unlock the Complete AI/ML Glossary',
-            description: 'Get full access to all 42 content sections for each term, including examples, use cases, and code snippets.',
+            description:
+              'Get full access to all 42 content sections for each term, including examples, use cases, and code snippets.',
             features: [
               '10,372+ comprehensive AI/ML definitions',
               '42 detailed sections per term',
@@ -177,7 +179,7 @@ export function registerGuestPreviewRoutes(app: Express): void {
   app.get('/api/guest/session-status', guestAccessMiddleware, (req: Request, res: Response) => {
     try {
       const guestSession = (req as any).guestSession;
-      
+
       if (!guestSession) {
         return res.status(400).json({
           success: false,
@@ -274,7 +276,6 @@ export function registerGuestPreviewRoutes(app: Express): void {
         sessionStats,
         message: `Found ${previewResults.length} results (limited preview)`,
       });
-
     } catch (error) {
       logger.error('Error in guest search preview', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -305,9 +306,9 @@ export function registerGuestPreviewRoutes(app: Express): void {
     try {
       // Get categories with limited information
       const categories = await storage.getAllCategories();
-      
+
       // Limit and simplify category data for guests
-      const previewCategories = categories.slice(0, 12).map((category) => ({
+      const previewCategories = categories.slice(0, 12).map(category => ({
         id: category.id,
         name: category.name,
         description: category.description ? `${category.description.substring(0, 100)}...` : '',
@@ -321,7 +322,6 @@ export function registerGuestPreviewRoutes(app: Express): void {
         guestPreview: true,
         message: 'Categories preview (limited)',
       });
-
     } catch (error) {
       logger.error('Error getting categories preview', {
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -342,7 +342,7 @@ export function registerGuestPreviewRoutes(app: Express): void {
     try {
       // Basic auth check (should be replaced with proper admin auth)
       const authHeader = req.headers.authorization;
-      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      if (!authHeader?.startsWith('Bearer ')) {
         return res.status(401).json({
           success: false,
           error: 'Admin authentication required',
@@ -356,7 +356,6 @@ export function registerGuestPreviewRoutes(app: Express): void {
         data: analytics,
         timestamp: new Date().toISOString(),
       });
-
     } catch (error) {
       logger.error('Error getting guest analytics', {
         error: error instanceof Error ? error.message : 'Unknown error',

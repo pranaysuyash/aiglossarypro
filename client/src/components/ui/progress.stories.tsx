@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
-import Progress from './progress';
+import { Progress } from './progress';
 
 const meta: Meta<typeof Progress> = {
   title: 'UI/Progress',
@@ -15,7 +14,7 @@ const meta: Meta<typeof Progress> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-md p-4">
         <Story />
       </div>
@@ -211,7 +210,7 @@ export const Animated: Story = {
 
     React.useEffect(() => {
       const timer = setInterval(() => {
-        setProgress((oldProgress) => {
+        setProgress(oldProgress => {
           const newProgress = oldProgress + 1;
           if (newProgress >= 100) {
             return 0; // Reset to 0 when it reaches 100
@@ -416,7 +415,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-md p-4 dark">
         <Story />
       </div>

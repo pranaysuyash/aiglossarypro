@@ -103,7 +103,7 @@ describe('Application Integration Tests', () => {
         agent.get('/api/categories'),
       ]);
 
-      responses.forEach((response) => {
+      responses.forEach(response => {
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
       });
@@ -260,7 +260,7 @@ describe('Application Integration Tests', () => {
       const responses = await Promise.all(requests);
       const duration = Date.now() - startTime;
 
-      responses.forEach((response) => {
+      responses.forEach(response => {
         expect(response.status).toBe(200);
       });
 
@@ -271,12 +271,12 @@ describe('Application Integration Tests', () => {
       const searchQueries = ['machine', 'learning', 'neural', 'data', 'algorithm'];
 
       const startTime = Date.now();
-      const searchPromises = searchQueries.map((query) => agent.get(`/api/search?q=${query}`));
+      const searchPromises = searchQueries.map(query => agent.get(`/api/search?q=${query}`));
 
       const responses = await Promise.all(searchPromises);
       const duration = Date.now() - startTime;
 
-      responses.forEach((response) => {
+      responses.forEach(response => {
         expect(response.status).toBe(200);
         expect(response.body.success).toBe(true);
       });

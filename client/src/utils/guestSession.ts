@@ -49,11 +49,11 @@ export function getGuestSession(config: GuestPreviewConfig = DEFAULT_CONFIG): Gu
     }
 
     const session: GuestSession = JSON.parse(stored);
-    
+
     // Check if session has expired
     const now = Date.now();
     const sessionAge = now - session.firstVisit;
-    
+
     if (sessionAge > config.sessionDuration) {
       return createNewGuestSession(config);
     }
@@ -61,7 +61,7 @@ export function getGuestSession(config: GuestPreviewConfig = DEFAULT_CONFIG): Gu
     // Update last activity
     session.lastActivity = now;
     session.conversionTracking.timeOnSite = now - session.firstVisit;
-    
+
     return session;
   } catch (error) {
     console.warn('Failed to parse guest session, creating new one:', error);
@@ -117,7 +117,7 @@ export function canGuestPreview(session?: GuestSession): boolean {
  */
 export function recordGuestPreview(termId: string): GuestSession {
   const session = getGuestSession();
-  
+
   // Don't count if already viewed this term
   if (session.viewedTerms.includes(termId)) {
     return session;
@@ -140,7 +140,7 @@ export function recordCtaClick(ctaType: string): void {
   const session = getGuestSession();
   session.conversionTracking.ctaClicks += 1;
   session.lastActivity = Date.now();
-  
+
   saveGuestSession(session);
 
   // Track the CTA click event for analytics
@@ -205,7 +205,7 @@ export function trackGuestPageView(page: string): void {
   const session = getGuestSession();
   session.lastActivity = Date.now();
   session.conversionTracking.timeOnSite = session.lastActivity - session.firstVisit;
-  
+
   saveGuestSession(session);
 
   // Track page view for analytics
@@ -225,7 +225,7 @@ export function trackGuestPageView(page: string): void {
  */
 export function getSessionAnalytics() {
   const session = getGuestSession();
-  
+
   return {
     sessionId: session.sessionId,
     isNewSession: session.conversionTracking.timeOnSite < 60000, // Less than 1 minute
@@ -244,16 +244,16 @@ export function getSessionAnalytics() {
  */
 function calculateEngagementScore(session: GuestSession): number {
   let score = 0;
-  
+
   // Time on site (up to 30 points)
   const timeMinutes = session.conversionTracking.timeOnSite / (1000 * 60);
   score += Math.min(30, timeMinutes * 2);
-  
+
   // Terms viewed (up to 30 points)
   score += Math.min(30, session.conversionTracking.termsViewed * 15);
-  
+
   // CTA clicks (up to 40 points)
   score += Math.min(40, session.conversionTracking.ctaClicks * 20);
-  
+
   return Math.round(score);
 }

@@ -206,7 +206,7 @@ export async function optimizedSearch(
  */
 export async function optimizedSearchSuggestions(
   query: string,
-  limit: number = 10
+  limit = 10
 ): Promise<string[]> {
   if (!query || query.length < 2) {
     return [];
@@ -225,7 +225,7 @@ export async function optimizedSearchSuggestions(
         .orderBy(desc(terms.viewCount), asc(terms.name))
         .limit(limit);
 
-      return results.map((r) => r.name);
+      return results.map(r => r.name);
     },
     5 * 60 * 1000 // 5 minutes cache for suggestions
   );
@@ -234,7 +234,7 @@ export async function optimizedSearchSuggestions(
 /**
  * Get trending/popular search terms
  */
-export async function getPopularSearchTerms(limit: number = 10): Promise<OptimizedSearchResult[]> {
+export async function getPopularSearchTerms(limit = 10): Promise<OptimizedSearchResult[]> {
   return await cached(
     `popular-search-terms:${limit}`,
     async () => {

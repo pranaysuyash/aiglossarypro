@@ -145,9 +145,9 @@ const FormMessage = React.forwardRef<
 
   // Announce new errors to screen readers
   React.useEffect(() => {
-    if (error?.message && error.message !== prevErrorRef.current) {
-      announce(`Form validation error: ${error.message}`, 'assertive');
-      prevErrorRef.current = error.message;
+    if (error?.message && error?.message !== prevErrorRef.current) {
+      announce(`Form validation error: ${error?.message}`, 'assertive');
+      prevErrorRef.current = error?.message;
     } else if (!error && prevErrorRef.current) {
       prevErrorRef.current = null;
     }

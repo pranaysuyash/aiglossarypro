@@ -1,4 +1,14 @@
-import { Copy, ExternalLink, Facebook, Link as LinkIcon, Mail, MessageCircle, Share2, Twitter, Users } from 'lucide-react';
+import {
+  Copy,
+  ExternalLink,
+  Facebook,
+  Link as LinkIcon,
+  Mail,
+  MessageCircle,
+  Share2,
+  Twitter,
+  Users,
+} from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { useAuth } from '../hooks/useAuth';
@@ -26,7 +36,7 @@ interface ReferralStats {
 
 export function SocialShareReferral({
   termId,
-  termTitle = "AI Glossary Pro",
+  termTitle = 'AI Glossary Pro',
   termDefinition,
   showInline = false,
 }: SocialShareReferralProps) {
@@ -35,7 +45,7 @@ export function SocialShareReferral({
   const [referralStats, setReferralStats] = useState<ReferralStats>({
     totalReferrals: 12,
     conversions: 3,
-    pendingEarnings: 125.50,
+    pendingEarnings: 125.5,
     totalEarnings: 875.25,
     conversionRate: 25.0,
   });
@@ -46,14 +56,14 @@ export function SocialShareReferral({
   const generateReferralUrl = (platform?: string) => {
     const baseUrl = window.location.origin;
     const referralCode = user?.uid || 'demo123';
-    
+
     if (termId) {
       // Sharing a specific term
       return `${baseUrl}/term/${termId}?ref=${referralCode}${platform ? `&utm_source=${platform}` : ''}`;
-    } else {
+    } 
       // Sharing the main site
       return `${baseUrl}?ref=${referralCode}${platform ? `&utm_source=${platform}` : ''}`;
-    }
+    
   };
 
   const getShareText = () => {
@@ -72,7 +82,7 @@ export function SocialShareReferral({
         description: 'Your referral link has been copied to clipboard.',
         duration: 3000,
       });
-    } catch (error) {
+    } catch (error: any) {
       // Fallback for older browsers
       const textArea = document.createElement('textarea');
       textArea.value = url;
@@ -80,7 +90,7 @@ export function SocialShareReferral({
       textArea.select();
       document.execCommand('copy');
       document.body.removeChild(textArea);
-      
+
       toast({
         title: '🔗 Link Copied!',
         description: 'Your referral link has been copied to clipboard.',
@@ -105,19 +115,19 @@ export function SocialShareReferral({
         shareUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(url)}&summary=${encodeURIComponent(text)}`;
         break;
       case 'whatsapp':
-        shareUrl = `https://wa.me/?text=${encodeURIComponent(text + ' ' + url)}`;
+        shareUrl = `https://wa.me/?text=${encodeURIComponent(`${text  } ${  url}`)}`;
         break;
       case 'email':
-        shareUrl = `mailto:?subject=${encodeURIComponent('Check out AI Glossary Pro')}&body=${encodeURIComponent(text + '\n\n' + url)}`;
+        shareUrl = `mailto:?subject=${encodeURIComponent('Check out AI Glossary Pro')}&body=${encodeURIComponent(`${text  }\n\n${  url}`)}`;
         break;
     }
 
     if (shareUrl) {
       window.open(shareUrl, '_blank', 'width=600,height=400');
-      
+
       // Track share event
       console.log('Share tracked:', { platform, termId, userId: user?.uid });
-      
+
       toast({
         title: '📤 Shared!',
         description: `Shared via ${platform}. You'll earn 25% commission for any purchases!`,
@@ -134,13 +144,13 @@ export function SocialShareReferral({
           text: getShareText(),
           url: generateReferralUrl('native'),
         });
-        
+
         toast({
           title: '📤 Shared!',
-          description: 'Thanks for sharing! You\'ll earn commission for any purchases.',
+          description: "Thanks for sharing! You'll earn commission for any purchases.",
           duration: 4000,
         });
-      } catch (error) {
+      } catch (error: any) {
         console.log('Native share cancelled or failed');
       }
     }
@@ -177,7 +187,7 @@ export function SocialShareReferral({
           <span>Share This Term</span>
         </Button>
       </PopoverTrigger>
-      
+
       <PopoverContent className="w-96" align="end">
         <Card className="border-0 shadow-none">
           <CardHeader className="pb-4">
@@ -189,7 +199,7 @@ export function SocialShareReferral({
               Share this term and earn 25% commission on any Pro purchases from your link!
             </CardDescription>
           </CardHeader>
-          
+
           <CardContent className="space-y-4">
             {/* Custom Message */}
             <div>
@@ -198,7 +208,7 @@ export function SocialShareReferral({
               </label>
               <Textarea
                 value={customMessage}
-                onChange={(e) => setCustomMessage(e.target.value)}
+                onChange={e => setCustomMessage(e.target.value)}
                 placeholder={getShareText()}
                 className="min-h-[80px] text-sm"
                 maxLength={280}
@@ -214,11 +224,7 @@ export function SocialShareReferral({
                 Your Referral Link
               </label>
               <div className="flex items-center space-x-2">
-                <Input
-                  value={generateReferralUrl()}
-                  readOnly
-                  className="text-sm"
-                />
+                <Input value={generateReferralUrl()} readOnly className="text-sm" />
                 <Button
                   variant="outline"
                   size="icon"
@@ -243,7 +249,7 @@ export function SocialShareReferral({
                   <span>Share</span>
                 </Button>
               )}
-              
+
               {/* Twitter */}
               <Button
                 variant="outline"
@@ -253,7 +259,7 @@ export function SocialShareReferral({
                 <Twitter className="w-4 h-4 text-blue-400" />
                 <span>Twitter</span>
               </Button>
-              
+
               {/* Facebook */}
               <Button
                 variant="outline"
@@ -263,7 +269,7 @@ export function SocialShareReferral({
                 <Facebook className="w-4 h-4 text-blue-600" />
                 <span>Facebook</span>
               </Button>
-              
+
               {/* LinkedIn */}
               <Button
                 variant="outline"
@@ -273,7 +279,7 @@ export function SocialShareReferral({
                 <LinkIcon className="w-4 h-4 text-blue-700" />
                 <span>LinkedIn</span>
               </Button>
-              
+
               {/* WhatsApp */}
               <Button
                 variant="outline"
@@ -283,7 +289,7 @@ export function SocialShareReferral({
                 <MessageCircle className="w-4 h-4 text-green-500" />
                 <span>WhatsApp</span>
               </Button>
-              
+
               {/* Email */}
               <Button
                 variant="outline"
@@ -301,7 +307,7 @@ export function SocialShareReferral({
                 <Users className="w-4 h-4 mr-2" />
                 Your Referral Stats
               </h4>
-              
+
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div className="text-center">
                   <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
@@ -309,21 +315,21 @@ export function SocialShareReferral({
                   </div>
                   <div className="text-gray-600 dark:text-gray-400">Referrals</div>
                 </div>
-                
+
                 <div className="text-center">
                   <div className="text-lg font-bold text-green-600 dark:text-green-400">
                     {referralStats.conversions}
                   </div>
                   <div className="text-gray-600 dark:text-gray-400">Conversions</div>
                 </div>
-                
+
                 <div className="text-center">
                   <div className="text-lg font-bold text-purple-600 dark:text-purple-400">
                     {referralStats.conversionRate}%
                   </div>
                   <div className="text-gray-600 dark:text-gray-400">Rate</div>
                 </div>
-                
+
                 <div className="text-center">
                   <div className="text-lg font-bold text-orange-600 dark:text-orange-400">
                     ${referralStats.pendingEarnings}
@@ -331,7 +337,7 @@ export function SocialShareReferral({
                   <div className="text-gray-600 dark:text-gray-400">Pending</div>
                 </div>
               </div>
-              
+
               <Button
                 variant="ghost"
                 className="w-full mt-3 text-blue-600 hover:text-blue-700"

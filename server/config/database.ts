@@ -3,7 +3,7 @@
  * Optimized database settings for production deployment
  */
 
-import { Pool, PoolConfig } from 'pg';
+import { Pool, type PoolConfig } from 'pg';
 import { log as logger } from '../utils/logger';
 
 interface DatabaseConfig extends PoolConfig {
@@ -19,7 +19,7 @@ interface DatabaseConfig extends PoolConfig {
  */
 export function getProductionDatabaseConfig(): DatabaseConfig {
   const isProduction = process.env.NODE_ENV === 'production';
-  
+
   const config: DatabaseConfig = {
     // Connection settings
     host: process.env.PGHOST,
@@ -27,26 +27,28 @@ export function getProductionDatabaseConfig(): DatabaseConfig {
     database: process.env.PGDATABASE,
     user: process.env.PGUSER,
     password: process.env.PGPASSWORD,
-    
+
     // Production connection pooling
-    min: isProduction ? 2 : 1,           // Minimum connections in pool
-    max: isProduction ? 20 : 5,          // Maximum connections in pool
-    
+    min: isProduction ? 2 : 1, // Minimum connections in pool
+    max: isProduction ? 20 : 5, // Maximum connections in pool
+
     // Timeout settings
-    connectionTimeoutMillis: 10000,      // 10 seconds to establish connection
-    idleTimeoutMillis: 300000,           // 5 minutes for idle connections
-    statement_timeout: 30000,            // 30 seconds for SQL statements
-    query_timeout: 30000,                // 30 seconds for queries
-    
+    connectionTimeoutMillis: 10000, // 10 seconds to establish connection
+    idleTimeoutMillis: 300000, // 5 minutes for idle connections
+    statement_timeout: 30000, // 30 seconds for SQL statements
+    query_timeout: 30000, // 30 seconds for queries
+
     // SSL configuration for production
-    ssl: isProduction ? {
-      rejectUnauthorized: false,         // Allow self-signed certificates (common in cloud)
-      sslmode: 'require',
-    } : false,
-    
+    ssl: isProduction
+      ? {
+          rejectUnauthorized: false, // Allow self-signed certificates (common in cloud)
+          sslmode: 'require',
+        }
+      : false,
+
     // Application name for monitoring
     application_name: `ai-glossary-pro-${process.env.NODE_ENV || 'development'}`,
-    
+
     // Keep connections alive
     keepAlive: true,
     keepAliveInitialDelayMillis: 10000,
@@ -55,13 +57,13 @@ export function getProductionDatabaseConfig(): DatabaseConfig {
   // Use DATABASE_URL if provided (common in cloud deployments)
   if (process.env.DATABASE_URL) {
     const dbUrl = new URL(process.env.DATABASE_URL);
-    
+
     config.host = dbUrl.hostname;
     config.port = parseInt(dbUrl.port) || 5432;
     config.database = dbUrl.pathname.slice(1); // Remove leading slash
     config.user = dbUrl.username;
     config.password = dbUrl.password;
-    
+
     // Extract SSL mode from search params
     const sslMode = dbUrl.searchParams.get('sslmode');
     if (sslMode === 'require' || sslMode === 'prefer') {
@@ -80,7 +82,7 @@ export function getProductionDatabaseConfig(): DatabaseConfig {
  */
 export function createProductionDatabasePool(): Pool {
   const config = getProductionDatabaseConfig();
-  
+
   logger.info('Creating database pool with configuration:', {
     host: config.host,
     port: config.port,
@@ -95,7 +97,7 @@ export function createProductionDatabasePool(): Pool {
   const pool = new Pool(config);
 
   // Pool event handlers for monitoring
-  pool.on('connect', (client) => {
+  pool.on('connect', client => {
     logger.debug('Database client connected', {
       processID: client.processID,
       totalCount: pool.totalCount,
@@ -104,7 +106,7 @@ export function createProductionDatabasePool(): Pool {
     });
   });
 
-  pool.on('acquire', (client) => {
+  pool.on('acquire', client => {
     logger.debug('Database client acquired', {
       processID: client.processID,
       totalCount: pool.totalCount,
@@ -113,7 +115,7 @@ export function createProductionDatabasePool(): Pool {
     });
   });
 
-  pool.on('remove', (client) => {
+  pool.on('remove', client => {
     logger.debug('Database client removed', {
       processID: client.processID,
       totalCount: pool.totalCount,
@@ -154,20 +156,20 @@ export async function checkDatabaseHealth(pool: Pool): Promise<{
   error?: string;
 }> {
   const startTime = Date.now();
-  
+
   try {
     const client = await pool.connect();
-    
+
     try {
       // Test basic connectivity
-      const result = await client.query('SELECT NOW(), version(), current_setting($1), current_setting($2)', [
-        'timezone',
-        'server_encoding'
-      ]);
-      
+      const result = await client.query(
+        'SELECT NOW(), version(), current_setting($1), current_setting($2)',
+        ['timezone', 'server_encoding']
+      );
+
       const responseTime = Date.now() - startTime;
       const row = result.rows[0];
-      
+
       return {
         healthy: true,
         responseTime,
@@ -177,7 +179,7 @@ export async function checkDatabaseHealth(pool: Pool): Promise<{
           waitingCount: pool.waitingCount,
         },
         serverInfo: {
-          version: row.version.split(' ')[0] + ' ' + row.version.split(' ')[1], // e.g., "PostgreSQL 14.5"
+          version: `${row.version.split(' ')[0]  } ${  row.version.split(' ')[1]}`, // e.g., "PostgreSQL 14.5"
           timezone: row.current_setting,
           encoding: row.current_setting,
         },
@@ -187,7 +189,7 @@ export async function checkDatabaseHealth(pool: Pool): Promise<{
     }
   } catch (error) {
     const responseTime = Date.now() - startTime;
-    
+
     return {
       healthy: false,
       responseTime,
@@ -224,7 +226,7 @@ export async function getDatabaseMetrics(pool: Pool): Promise<{
 }> {
   try {
     const client = await pool.connect();
-    
+
     try {
       // Get database size information
       const sizeQuery = `
@@ -232,16 +234,17 @@ export async function getDatabaseMetrics(pool: Pool): Promise<{
           pg_size_pretty(pg_database_size(current_database())) as total_size,
           (SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public') as table_count
       `;
-      
+
       const sizeResult = await client.query(sizeQuery);
       const sizeRow = sizeResult.rows[0];
-      
+
       return {
         connectionPool: {
           total: pool.totalCount,
           idle: pool.idleCount,
           waiting: pool.waitingCount,
-          utilization: Math.round((pool.totalCount - pool.idleCount) / pool.totalCount * 100) || 0,
+          utilization:
+            Math.round(((pool.totalCount - pool.idleCount) / pool.totalCount) * 100) || 0,
         },
         performance: {
           // These would need pg_stat_statements extension for real metrics
@@ -259,7 +262,7 @@ export async function getDatabaseMetrics(pool: Pool): Promise<{
     }
   } catch (error) {
     logger.error('Error getting database metrics:', error);
-    
+
     return {
       connectionPool: {
         total: pool.totalCount,
@@ -298,25 +301,25 @@ export class DatabaseMaintenance {
    */
   async analyzeTables(): Promise<void> {
     const client = await this.pool.connect();
-    
+
     try {
       logger.info('Starting database table analysis...');
-      
+
       // Get all user tables
       const tablesResult = await client.query(`
         SELECT tablename 
         FROM pg_tables 
         WHERE schemaname = 'public'
       `);
-      
+
       // Analyze each table
       for (const row of tablesResult.rows) {
         const tableName = row.tablename;
         logger.debug(`Analyzing table: ${tableName}`);
-        
+
         await client.query(`ANALYZE "${tableName}"`);
       }
-      
+
       logger.info('Database table analysis completed');
     } finally {
       client.release();
@@ -326,14 +329,16 @@ export class DatabaseMaintenance {
   /**
    * Get table statistics for monitoring
    */
-  async getTableStatistics(): Promise<Array<{
-    tableName: string;
-    rowCount: number;
-    totalSize: string;
-    indexSize: string;
-  }>> {
+  async getTableStatistics(): Promise<
+    Array<{
+      tableName: string;
+      rowCount: number;
+      totalSize: string;
+      indexSize: string;
+    }>
+  > {
     const client = await this.pool.connect();
-    
+
     try {
       const result = await client.query(`
         SELECT 
@@ -346,10 +351,10 @@ export class DatabaseMaintenance {
         WHERE schemaname = 'public'
         ORDER BY tablename, attname
       `);
-      
+
       // Group by table
       const tables = new Map();
-      
+
       for (const row of result.rows) {
         if (!tables.has(row.tablename)) {
           tables.set(row.tablename, {
@@ -357,14 +362,14 @@ export class DatabaseMaintenance {
             columns: [],
           });
         }
-        
+
         tables.get(row.tablename).columns.push({
           column: row.attname,
           distinctValues: row.n_distinct,
           correlation: row.correlation,
         });
       }
-      
+
       return Array.from(tables.values());
     } finally {
       client.release();
@@ -374,13 +379,15 @@ export class DatabaseMaintenance {
   /**
    * Check for missing indexes
    */
-  async checkMissingIndexes(): Promise<Array<{
-    table: string;
-    column: string;
-    reason: string;
-  }>> {
+  async checkMissingIndexes(): Promise<
+    Array<{
+      table: string;
+      column: string;
+      reason: string;
+    }>
+  > {
     const client = await this.pool.connect();
-    
+
     try {
       // This is a simplified version - in practice, you'd analyze query logs
       const result = await client.query(`
@@ -398,7 +405,7 @@ export class DatabaseMaintenance {
             AND indexdef LIKE '%' || c.column_name || '%'
           )
       `);
-      
+
       return result.rows.map(row => ({
         table: row.table_name,
         column: row.column_name,

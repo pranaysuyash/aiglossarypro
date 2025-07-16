@@ -31,16 +31,16 @@ export const defaultAccessConfig: AccessControlConfig = {
  * Check if user has premium access (lifetime or subscription)
  */
 export function hasPremiumAccess(user: UserWithAccessControl): boolean {
-  if (!user) return false;
+  if (!user) {return false;}
 
   // Admin always has access
-  if (user.isAdmin || user.role === 'admin') return true;
+  if (user.isAdmin || user.role === 'admin') {return true;}
 
   // Check lifetime access
-  if (user.lifetimeAccess || user.lifetime_access) return true;
+  if (user.lifetimeAccess || user.lifetime_access) {return true;}
 
   // Check active subscription
-  if (user.subscriptionTier && user.subscriptionTier !== 'free') return true;
+  if (user.subscriptionTier && user.subscriptionTier !== 'free') {return true;}
 
   return false;
 }
@@ -52,10 +52,10 @@ export function isInTrialPeriod(
   user: UserWithAccessControl,
   config: AccessControlConfig = defaultAccessConfig
 ): boolean {
-  if (!user) return false;
+  if (!user) {return false;}
 
   // Premium users don't need trial
-  if (hasPremiumAccess(user)) return false;
+  if (hasPremiumAccess(user)) {return false;}
 
   // Check account creation date for trial
   const creationDateValue = user.createdAt || user.created_at;
@@ -77,10 +77,10 @@ export function hasUserAccess(
   user: UserWithAccessControl,
   config: AccessControlConfig = defaultAccessConfig
 ): boolean {
-  if (!user) return false;
+  if (!user) {return false;}
 
   // Premium access
-  if (hasPremiumAccess(user)) return true;
+  if (hasPremiumAccess(user)) {return true;}
 
   // No trial period - removed
 
@@ -186,10 +186,10 @@ export function canViewTerm(
  * @returns {boolean}
  */
 export function canPerformAdminAction(user: UserWithAccessControl): boolean {
-  if (!user) return false;
+  if (!user) {return false;}
 
   // Check if user is admin
-  if (user.isAdmin || user.role === 'admin') return true;
+  if (user.isAdmin || user.role === 'admin') {return true;}
 
   // Could add more granular permissions here based on action type
   return false;
@@ -201,13 +201,13 @@ export function canPerformAdminAction(user: UserWithAccessControl): boolean {
  * @returns {boolean}
  */
 export function canAccessPremiumFeature(user: UserWithAccessControl): boolean {
-  if (!user) return false;
+  if (!user) {return false;}
 
   // Admin can access all features
-  if (canPerformAdminAction(user)) return true;
+  if (canPerformAdminAction(user)) {return true;}
 
   // Premium users can access premium features
-  if (hasPremiumAccess(user)) return true;
+  if (hasPremiumAccess(user)) {return true;}
 
   // No trial period - removed
 
@@ -242,8 +242,8 @@ export function getUserAccessStatus(
   const dailyLimits = getRemainingDailyViews(user, config);
 
   let accessType: 'premium' | 'free' | 'none' = 'none';
-  if (isPremium) accessType = 'premium';
-  else accessType = 'free';
+  if (isPremium) {accessType = 'premium';}
+  else {accessType = 'free';}
 
   return {
     hasAccess: hasUserAccess(user, config),

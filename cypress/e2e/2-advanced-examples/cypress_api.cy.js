@@ -33,7 +33,7 @@ context('Cypress APIs', () => {
 
       cy.get('button')
         .console('info')
-        .then((_$button) => {
+        .then(_$button => {
           // subject is still $button
         });
     });

@@ -1,12 +1,12 @@
-import { Eye, Lock, Zap, UserCheck, Clock } from 'lucide-react';
-import { type ReactNode, useState, useEffect } from 'react';
+import { Clock, Eye, Lock, UserCheck, Zap } from 'lucide-react';
+import { type ReactNode, useEffect, useState } from 'react';
 import { useTermAccess } from '../hooks/useAccess';
 import { useAuth } from '../hooks/useAuth';
-import { useGuestPreview, useGuestConversion } from '../hooks/useGuestPreview';
+import { useGuestConversion, useGuestPreview } from '../hooks/useGuestPreview';
+import { GoogleAd } from './ads/GoogleAd';
 import { UpgradePrompt } from './UpgradePrompt';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { GoogleAd } from './ads/GoogleAd';
 
 interface FreeTierGateProps {
   termId?: string;
@@ -54,22 +54,22 @@ export function FreeTierGate({
     if (canViewTerm) {
       return <>{children}</>;
     }
-    
+
     // If custom fallback is provided for authenticated users, use it
     if (fallback) {
       return <>{fallback}</>;
     }
   } else {
     // Guest user logic
-    const canGuestView = termId ? 
-      guestPreview.session?.viewedTerms.includes(termId) || guestPreview.canPreview :
-      guestPreview.canPreview;
-    
+    const canGuestView = termId
+      ? guestPreview.session?.viewedTerms.includes(termId) || guestPreview.canPreview
+      : guestPreview.canPreview;
+
     if (canGuestView && termId && !guestPreview.session?.viewedTerms.includes(termId)) {
       // Record the preview view
       guestPreview.recordPreview(termId);
     }
-    
+
     // Show preview for guests if they can view or have already viewed this term
     if (canGuestView || (termId && guestPreview.session?.viewedTerms.includes(termId))) {
       return (
@@ -83,8 +83,8 @@ export function FreeTierGate({
                   Preview Mode ({guestPreview.previewsRemaining} views remaining)
                 </span>
               </div>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 size="sm"
                 onClick={() => {
                   guestPreview.recordCta('preview_banner_signup');
@@ -97,31 +97,26 @@ export function FreeTierGate({
               </Button>
             </div>
           )}
-          
+
           {/* Content */}
           {children}
-          
+
           {/* Ad placement for free users (after content, before CTA) */}
-          <GoogleAd
-            slot="1234567890"
-            format="rectangle"
-            responsive={true}
-            className="my-4"
-          />
-          
+          <GoogleAd slot="1234567890" format="rectangle" responsive className="my-4" />
+
           {/* Guest CTA after content */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-lg p-4 text-center">
             <h3 className="font-semibold mb-2">
-              {guestPreview.hasReachedLimit 
-                ? "You've reached your preview limit!" 
-                : "Like what you see?"}
+              {guestPreview.hasReachedLimit
+                ? "You've reached your preview limit!"
+                : 'Like what you see?'}
             </h3>
             <p className="text-sm opacity-90 mb-3">
               {guestPreview.hasReachedLimit
-                ? "Sign up for free to unlock unlimited access to all AI/ML terms and features."
-                : "Sign up for free to track your progress and access premium features."}
+                ? 'Sign up for free to unlock unlimited access to all AI/ML terms and features.'
+                : 'Sign up for free to track your progress and access premium features.'}
             </p>
-            <Button 
+            <Button
               onClick={() => {
                 guestPreview.recordCta('post_content_signup');
                 setShowUpgradeModal(true);
@@ -139,7 +134,7 @@ export function FreeTierGate({
   // Extract preview text from children if showPreview is true
   const getPreviewText = (content: ReactNode, isGuest = false): string => {
     const maxLength = isGuest ? guestPreviewLength : previewLength;
-    
+
     if (typeof content === 'string') {
       return content.length > maxLength ? `${content.substring(0, maxLength)}...` : content;
     }
@@ -152,13 +147,15 @@ export function FreeTierGate({
       }
     }
 
-    return isGuest ? 'Get full access to premium content...' : 'Premium content preview not available...';
+    return isGuest
+      ? 'Get full access to premium content...'
+      : 'Premium content preview not available...';
   };
 
   const isFreeTier = accessStatus?.subscriptionTier === 'free';
   const remainingViews = accessStatus?.remainingViews || 0;
   const hasReachedLimit = isFreeTier && remainingViews <= 0;
-  
+
   // Determine the context for the gate display
   const isGuestContext = !isAuthenticated;
 
@@ -176,28 +173,35 @@ export function FreeTierGate({
       <Card className="border-2 border-dashed border-gray-300 bg-gradient-to-br from-blue-50 to-purple-50">
         <CardHeader className="text-center pb-4">
           <div className="mx-auto w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center mb-3">
-            {isGuestContext ? <UserCheck className="h-6 w-6 text-white" /> : <Lock className="h-6 w-6 text-white" />}
+            {isGuestContext ? (
+              <UserCheck className="h-6 w-6 text-white" />
+            ) : (
+              <Lock className="h-6 w-6 text-white" />
+            )}
           </div>
 
           <CardTitle className="text-lg">
-            {isGuestContext ? (
-              guestPreview.hasReachedLimit ? 'Preview Limit Reached' : 'Start Your Free Preview'
-            ) : (
-              hasReachedLimit ? 'Daily Limit Reached' : 'Premium Content'
-            )}
+            {isGuestContext
+              ? guestPreview.hasReachedLimit
+                ? 'Preview Limit Reached'
+                : 'Start Your Free Preview'
+              : hasReachedLimit
+                ? 'Daily Limit Reached'
+                : 'Premium Content'}
           </CardTitle>
 
           <CardDescription className="text-center max-w-md mx-auto">
             {isGuestContext ? (
               guestPreview.hasReachedLimit ? (
                 <>
-                  You've previewed {guestPreview.previewsUsed} terms. Sign up for free to unlock unlimited access 
-                  to all {10372} AI/ML definitions and track your learning progress.
+                  You've previewed {guestPreview.previewsUsed} terms. Sign up for free to unlock
+                  unlimited access to all {10372} AI/ML definitions and track your learning
+                  progress.
                 </>
               ) : (
                 <>
-                  Preview {guestPreview.previewsRemaining} terms for free, then sign up for unlimited access 
-                  to our comprehensive AI/ML glossary with {10372} definitions.
+                  Preview {guestPreview.previewsRemaining} terms for free, then sign up for
+                  unlimited access to our comprehensive AI/ML glossary with {10372} definitions.
                 </>
               )
             ) : hasReachedLimit ? (
@@ -216,7 +220,8 @@ export function FreeTierGate({
 
         <CardContent className="space-y-4">
           {/* Usage indicator */}
-          {((isGuestContext && !guestPreview.hasReachedLimit) || (isFreeTier && !hasReachedLimit)) && (
+          {((isGuestContext && !guestPreview.hasReachedLimit) ||
+            (isFreeTier && !hasReachedLimit)) && (
             <div className="bg-white rounded-lg p-3 border">
               <div className="flex items-center justify-between text-sm mb-2">
                 <span className="flex items-center gap-1">
@@ -231,9 +236,9 @@ export function FreeTierGate({
                 <div
                   className="bg-blue-500 h-2 rounded-full transition-all duration-300"
                   style={{
-                    width: isGuestContext ? 
-                      `${Math.max(0, (guestPreview.previewsRemaining / 2) * 100)}%` :
-                      `${Math.max(0, (remainingViews / (accessStatus?.dailyLimit || 50)) * 100)}%`,
+                    width: isGuestContext
+                      ? `${Math.max(0, (guestPreview.previewsRemaining / 2) * 100)}%`
+                      : `${Math.max(0, (remainingViews / (accessStatus?.dailyLimit || 50)) * 100)}%`,
                   }}
                 />
               </div>
@@ -313,11 +318,9 @@ export function FreeTierGate({
           </div>
 
           <p className="text-xs text-center text-gray-500">
-            {isGuestContext ? (
-              "Free account includes progress tracking • Premium unlocks everything"
-            ) : (
-              "7-day money-back guarantee • Instant access • One-time payment"
-            )}
+            {isGuestContext
+              ? 'Free account includes progress tracking • Premium unlocks everything'
+              : '7-day money-back guarantee • Instant access • One-time payment'}
           </p>
         </CardContent>
       </Card>

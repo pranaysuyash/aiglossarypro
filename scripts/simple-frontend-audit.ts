@@ -211,9 +211,9 @@ class SimpleFrontendAuditor {
   }
 
   generateReport(): void {
-    const passed = this.results.filter((r) => r.status === 'pass').length;
-    const warnings = this.results.filter((r) => r.status === 'warning').length;
-    const failed = this.results.filter((r) => r.status === 'fail').length;
+    const passed = this.results.filter(r => r.status === 'pass').length;
+    const warnings = this.results.filter(r => r.status === 'warning').length;
+    const failed = this.results.filter(r => r.status === 'fail').length;
 
     console.log('\n📊 AUDIT RESULTS SUMMARY');
     console.log('========================');

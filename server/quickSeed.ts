@@ -133,7 +133,7 @@ async function quickSeed() {
   try {
     // Get existing categories
     const existingCategories = await db.select().from(categories);
-    const categoryMap = new Map(existingCategories.map((cat) => [cat.name, cat.id]));
+    const categoryMap = new Map(existingCategories.map(cat => [cat.name, cat.id]));
 
     for (const termData of sampleTerms) {
       // Find the category ID
@@ -194,7 +194,7 @@ async function quickSeed() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   quickSeed()
     .then(() => process.exit(0))
-    .catch((error) => {
+    .catch(error => {
       console.error(error);
       process.exit(1);
     });

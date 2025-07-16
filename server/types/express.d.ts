@@ -17,6 +17,7 @@ declare global {
 
     interface Request {
       user?: User;
+      firebaseUser?: User;
       requestId: string;
       isAuthenticated?: () => boolean;
     }

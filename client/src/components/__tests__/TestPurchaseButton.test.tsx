@@ -1,9 +1,9 @@
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import TestPurchaseButton from '../TestPurchaseButton';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/lib/api';
+import { TestPurchaseButton } from '../TestPurchaseButton';
 
 // Mock dependencies
 vi.mock('@/hooks/useAuth');
@@ -143,7 +143,7 @@ describe('TestPurchaseButton', () => {
 
     // Create a promise that we can control
     let resolvePromise: any;
-    const purchasePromise = new Promise((resolve) => {
+    const purchasePromise = new Promise(resolve => {
       resolvePromise = resolve;
     });
 

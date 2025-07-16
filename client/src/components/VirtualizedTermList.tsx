@@ -12,7 +12,7 @@ interface VirtualizedTermListProps {
   loadNextPage?: () => Promise<void>;
   onTermClick?: (termId: string) => void;
   onFavoriteToggle?: (termId: string, isFavorite: boolean) => void;
-  className?: string;
+  className?: string | undefined;
   itemHeight?: number;
   height?: number;
   width?: number;
@@ -45,7 +45,7 @@ const VirtualizedTermList: React.FC<VirtualizedTermListProps> = ({
 
   // Load more items when needed
   const loadMoreItems = useCallback(async () => {
-    if (isNextPageLoading || !loadNextPage) return;
+    if (isNextPageLoading || !loadNextPage) {return;}
     await loadNextPage();
   }, [isNextPageLoading, loadNextPage]);
 
@@ -73,7 +73,7 @@ const VirtualizedTermList: React.FC<VirtualizedTermListProps> = ({
             term={term}
             onTermClick={onTermClick}
             onFavoriteToggle={onFavoriteToggle}
-            compact={true} // Enable compact mode for virtualized lists
+            compact // Enable compact mode for virtualized lists
           />
         </div>
       );

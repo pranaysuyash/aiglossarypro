@@ -239,7 +239,7 @@ export class CostManagementService extends EventEmitter {
    */
   getActiveBudgets(date: Date = new Date()): CostBudget[] {
     return Array.from(this.budgets.values()).filter(
-      (budget) => budget.status === 'active' && date >= budget.startDate && date <= budget.endDate
+      budget => budget.status === 'active' && date >= budget.startDate && date <= budget.endDate
     );
   }
 
@@ -479,28 +479,28 @@ export class CostManagementService extends EventEmitter {
       averageCostPerRequest: totalRequests > 0 ? totalCost / totalRequests : 0,
       averageTokensPerRequest: totalRequests > 0 ? totalTokens / totalRequests : 0,
       breakdown: {
-        byModel: byModel.map((item) => ({
+        byModel: byModel.map(item => ({
           model: item.model,
           cost: item.cost,
           requests: item.requests,
           tokens: item.tokens,
           percentage: totalCost > 0 ? (item.cost / totalCost) * 100 : 0,
         })),
-        byOperation: byOperation.map((item) => ({
+        byOperation: byOperation.map(item => ({
           operation: item.operation,
           cost: item.cost,
           requests: item.requests,
           tokens: item.tokens,
           percentage: totalCost > 0 ? (item.cost / totalCost) * 100 : 0,
         })),
-        byUser: byUser.map((item) => ({
+        byUser: byUser.map(item => ({
           userId: item.userId || 'unknown',
           cost: item.cost,
           requests: item.requests,
           tokens: item.tokens,
           percentage: totalCost > 0 ? (item.cost / totalCost) * 100 : 0,
         })),
-        byDay: byDay.map((item) => ({
+        byDay: byDay.map(item => ({
           date: item.date,
           cost: item.cost,
           requests: item.requests,
@@ -533,7 +533,7 @@ export class CostManagementService extends EventEmitter {
    * Get unacknowledged alerts
    */
   getUnacknowledgedAlerts(): CostAlert[] {
-    return this.getCostAlerts().filter((alert) => !alert.acknowledged);
+    return this.getCostAlerts().filter(alert => !alert.acknowledged);
   }
 
   /**
@@ -700,7 +700,7 @@ export class CostManagementService extends EventEmitter {
 
     // Check if we already have a recent alert of this type for this budget
     const recentAlerts = Array.from(this.alerts.values()).filter(
-      (alert) =>
+      alert =>
         alert.budgetId === budget.id &&
         alert.type === type &&
         Date.now() - alert.triggeredAt.getTime() < 60 * 60 * 1000 // Within last hour

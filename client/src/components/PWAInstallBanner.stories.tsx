@@ -11,7 +11,8 @@ const meta: Meta<typeof PWAInstallBanner> = {
     },
     docs: {
       description: {
-        component: 'PWA installation banner that appears after 3+ mobile visits or offline events, with native install prompt support',
+        component:
+          'PWA installation banner that appears after 3+ mobile visits or offline events, with native install prompt support',
       },
     },
   },
@@ -20,17 +21,20 @@ const meta: Meta<typeof PWAInstallBanner> = {
     onDismiss: { action: 'banner dismissed' },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
         <div className="max-w-md mx-auto space-y-4">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">AI Glossary Pro</h1>
           <p className="text-gray-600 dark:text-gray-400">
             The PWA install banner will appear at the bottom of the screen.
           </p>
-          
+
           {/* Sample content */}
           {Array.from({ length: 10 }, (_, i) => (
-            <div key={i} className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div
+              key={i}
+              className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+            >
               <h3 className="font-semibold text-gray-900 dark:text-gray-100">Neural Network</h3>
               <p className="text-gray-600 dark:text-gray-400 mt-1">
                 A computing system inspired by biological neural networks...

@@ -10,7 +10,7 @@ async function debugSelectors() {
     console.log('🔍 Debugging Login Page Selectors...');
 
     // Listen for console errors
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         console.log('❌ Console Error:', msg.text());
       }
@@ -33,8 +33,8 @@ async function debugSelectors() {
     }
 
     // Get all input elements
-    const inputs = await page.$$eval('input', (elements) =>
-      elements.map((el) => ({
+    const inputs = await page.$$eval('input', elements =>
+      elements.map(el => ({
         type: el.type,
         name: el.name,
         id: el.id,
@@ -46,8 +46,8 @@ async function debugSelectors() {
     console.log('📝 Found inputs:', inputs);
 
     // Get all button elements
-    const buttons = await page.$$eval('button', (elements) =>
-      elements.map((el) => ({
+    const buttons = await page.$$eval('button', elements =>
+      elements.map(el => ({
         type: el.type,
         textContent: el.textContent?.trim(),
         className: el.className,
@@ -58,8 +58,8 @@ async function debugSelectors() {
     console.log('🔘 Found buttons:', buttons);
 
     // Check for forms
-    const forms = await page.$$eval('form', (elements) =>
-      elements.map((el) => ({
+    const forms = await page.$$eval('form', elements =>
+      elements.map(el => ({
         action: el.action,
         method: el.method,
         className: el.className,
@@ -84,15 +84,15 @@ async function debugSelectors() {
     await page.waitForTimeout(2000);
 
     // Get all search-related elements
-    const searchElements = await page.$$eval('input', (elements) =>
+    const searchElements = await page.$$eval('input', elements =>
       elements
         .filter(
-          (el) =>
+          el =>
             el.type === 'search' ||
             el.placeholder?.toLowerCase().includes('search') ||
             el.name?.toLowerCase().includes('search')
         )
-        .map((el) => ({
+        .map(el => ({
           type: el.type,
           name: el.name,
           id: el.id,

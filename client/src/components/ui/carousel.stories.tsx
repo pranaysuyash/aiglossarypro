@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
 import { Card, CardContent } from './card';
 import {
   Carousel,
@@ -397,7 +396,7 @@ export const WithIndicators: Story = {
     return (
       <div className="w-full max-w-xs space-y-4">
         <Carousel
-          setApi={(api) => {
+          setApi={api => {
             if (!api) return;
             setCurrent(api.selectedScrollSnap());
             api.on('select', () => {

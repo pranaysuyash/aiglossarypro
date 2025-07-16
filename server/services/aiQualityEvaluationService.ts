@@ -44,7 +44,10 @@ export interface QualityEvaluationResult {
       total: number;
     };
     cost: number;
+    termName?: string;
   };
+  success?: boolean;
+  error?: string;
 }
 
 export interface EvaluationRequest {
@@ -281,7 +284,7 @@ export class AIQualityEvaluationService {
         successCount++;
 
         // Add delay to avoid rate limits
-        await new Promise((resolve) => setTimeout(resolve, 200));
+        await new Promise(resolve => setTimeout(resolve, 200));
       } catch (error) {
         failureCount++;
         logger.error(`Batch evaluation error for ${evaluation.termId}:`, {
@@ -587,7 +590,7 @@ Return as JSON:
             verificationStatus: this.getVerificationStatus(result.overallScore),
             confidenceLevel: this.getConfidenceLevel(result.overallScore),
             lastReviewedAt: new Date(),
-            aiReviewNotes: JSON.stringify({
+            expertReviewNotes: JSON.stringify({
               overallScore: result.overallScore,
               dimensions: result.dimensions,
               summary: result.summary,
@@ -677,9 +680,9 @@ Return as JSON:
    * Get verification status based on score
    */
   private getVerificationStatus(score: number): string {
-    if (score >= this.QUALITY_THRESHOLDS.excellent) return 'verified';
-    if (score >= this.QUALITY_THRESHOLDS.good) return 'reviewed';
-    if (score >= this.QUALITY_THRESHOLDS.acceptable) return 'needs_review';
+    if (score >= this.QUALITY_THRESHOLDS.excellent) {return 'verified';}
+    if (score >= this.QUALITY_THRESHOLDS.good) {return 'reviewed';}
+    if (score >= this.QUALITY_THRESHOLDS.acceptable) {return 'needs_review';}
     return 'rejected';
   }
 
@@ -687,8 +690,8 @@ Return as JSON:
    * Get confidence level based on score
    */
   private getConfidenceLevel(score: number): string {
-    if (score >= this.QUALITY_THRESHOLDS.excellent) return 'high';
-    if (score >= this.QUALITY_THRESHOLDS.good) return 'medium';
+    if (score >= this.QUALITY_THRESHOLDS.excellent) {return 'high';}
+    if (score >= this.QUALITY_THRESHOLDS.good) {return 'medium';}
     return 'low';
   }
 
@@ -771,7 +774,7 @@ Return as JSON:
   /**
    * Auto-flag low quality content
    */
-  async autoFlagLowQualityContent(_minScore: number = 5.5): Promise<{
+  async autoFlagLowQualityContent(_minScore = 5.5): Promise<{
     flaggedCount: number;
     flaggedTerms: Array<{
       termId: string;

@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react';
-import { X, ChevronLeft, ChevronRight, CheckCircle } from 'lucide-react';
+import { CheckCircle, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { useAuth } from '../../hooks/useAuth';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { useAuth } from '../../hooks/useAuth';
 
 interface OnboardingStep {
   id: string;
@@ -21,12 +21,14 @@ const onboardingSteps: OnboardingStep[] = [
   {
     id: 'welcome',
     title: 'Welcome to AI/ML Glossary Pro!',
-    description: 'Your comprehensive guide to understanding AI and Machine Learning terminology. Let\'s take a quick tour to get you started.',
+    description:
+      "Your comprehensive guide to understanding AI and Machine Learning terminology. Let's take a quick tour to get you started.",
   },
   {
     id: 'search',
     title: 'Powerful Search',
-    description: 'Use our advanced search to find any AI/ML term quickly. Try searching for "neural network" or "machine learning".',
+    description:
+      'Use our advanced search to find any AI/ML term quickly. Try searching for "neural network" or "machine learning".',
     target: '[data-testid="search-input"]',
     position: 'bottom',
     action: {
@@ -37,7 +39,8 @@ const onboardingSteps: OnboardingStep[] = [
   {
     id: 'categories',
     title: 'Explore by Categories',
-    description: 'Browse terms organized by categories like Deep Learning, Natural Language Processing, Computer Vision, and more.',
+    description:
+      'Browse terms organized by categories like Deep Learning, Natural Language Processing, Computer Vision, and more.',
     target: '[data-testid="categories-nav"]',
     position: 'bottom',
     action: {
@@ -48,7 +51,8 @@ const onboardingSteps: OnboardingStep[] = [
   {
     id: 'dashboard',
     title: 'Track Your Progress',
-    description: 'Your dashboard shows your learning streak, bookmarked terms, and progress across different AI/ML domains.',
+    description:
+      'Your dashboard shows your learning streak, bookmarked terms, and progress across different AI/ML domains.',
     target: '[data-testid="dashboard-nav"]',
     position: 'bottom',
     action: {
@@ -59,7 +63,8 @@ const onboardingSteps: OnboardingStep[] = [
   {
     id: 'features',
     title: 'Premium Features',
-    description: 'Unlock unlimited access to all 10,372+ terms, advanced search, bookmarks, and progress tracking.',
+    description:
+      'Unlock unlimited access to all 10,372+ terms, advanced search, bookmarks, and progress tracking.',
     action: {
       text: 'Learn More',
       href: '/lifetime',
@@ -235,10 +240,10 @@ export function OnboardingTour({ isVisible, onComplete, onDismiss }: OnboardingT
 // Hook to manage onboarding state
 export function useOnboarding() {
   const [showOnboarding, setShowOnboarding] = useState(false);
-  
+
   // Don't use useAuth here to avoid QueryClient dependency issues
   // Will be handled by the component that uses this hook
-  
+
   const completeOnboarding = () => {
     localStorage.setItem('hasSeenOnboarding', 'true');
     setShowOnboarding(false);
@@ -257,14 +262,14 @@ export function useOnboarding() {
   const checkAndShowOnboarding = (isAuthenticated: boolean) => {
     // Check if user has seen onboarding
     const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
-    
+
     // Show onboarding for new authenticated users who haven't seen it
     if (isAuthenticated && !hasSeenOnboarding) {
       // Small delay to ensure components are mounted
       const timer = setTimeout(() => {
         setShowOnboarding(true);
       }, 1000);
-      
+
       return () => clearTimeout(timer);
     }
   };

@@ -97,7 +97,7 @@ async function setupTestUsers() {
   if (successCount === TEST_USERS.length) {
     console.log('🎉 All test users are ready!');
     console.log('\\n💡 You can now use these accounts in the login page:');
-    TEST_USERS.forEach((user) => {
+    TEST_USERS.forEach(user => {
       console.log(`   ${user.type.toUpperCase()}: ${user.email} / ${user.password}`);
     });
   } else {

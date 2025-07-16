@@ -155,7 +155,7 @@ export function registerCrossReferenceRoutes(app: Express): void {
             (sum, result) => sum + result.linksAdded,
             0
           ),
-          termsWithLinks: Array.from(results.values()).filter((result) => result.linksAdded > 0)
+          termsWithLinks: Array.from(results.values()).filter(result => result.linksAdded > 0)
             .length,
         };
 

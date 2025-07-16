@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
 import CodeBlock from './CodeBlock';
 
 const CodeBlockDecorator = (Story: any, _context: any) => {
@@ -735,7 +734,7 @@ public class KMeans {
           <label className="font-medium">Language:</label>
           <select
             value={selectedLanguage}
-            onChange={(e) => setSelectedLanguage(e.target.value)}
+            onChange={e => setSelectedLanguage(e.target.value)}
             className="px-3 py-1 border rounded"
           >
             <option value="python">Python</option>
@@ -747,7 +746,7 @@ public class KMeans {
             <input
               type="checkbox"
               checked={showExecutable}
-              onChange={(e) => setShowExecutable(e.target.checked)}
+              onChange={e => setShowExecutable(e.target.checked)}
             />
             <span>Make executable</span>
           </label>
@@ -785,7 +784,7 @@ export const DarkMode: Story = {
       },
     },
   },
-  render: (args) => (
+  render: args => (
     <div className="dark bg-gray-900 p-6 rounded-lg">
       <CodeBlock {...args} />
     </div>

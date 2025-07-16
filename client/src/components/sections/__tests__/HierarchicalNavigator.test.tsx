@@ -84,7 +84,7 @@ vi.mock('@/components/ui/badge', () => ({
   }: {
     children: React.ReactNode;
     variant?: string;
-    className?: string;
+    className?: string | undefined;
   }) => (
     <span data-testid="badge" data-variant={variant} className={className}>
       {children}
@@ -198,7 +198,7 @@ describe('HierarchicalNavigator', () => {
         <HierarchicalNavigator
           sections={mockSectionsArray}
           onNodeClick={mockOnNodeClick}
-          searchable={true}
+          searchable
         />
       );
 
@@ -225,7 +225,7 @@ describe('HierarchicalNavigator', () => {
         <HierarchicalNavigator
           sections={mockSearchableContent}
           onNodeClick={mockOnNodeClick}
-          searchable={true}
+          searchable
         />
       );
 
@@ -242,7 +242,7 @@ describe('HierarchicalNavigator', () => {
         <HierarchicalNavigator
           sections={mockSearchableContent}
           onNodeClick={mockOnNodeClick}
-          searchable={true}
+          searchable
         />
       );
 
@@ -259,7 +259,7 @@ describe('HierarchicalNavigator', () => {
         <HierarchicalNavigator
           sections={mockSearchableContent}
           onNodeClick={mockOnNodeClick}
-          searchable={true}
+          searchable
         />
       );
 
@@ -275,7 +275,7 @@ describe('HierarchicalNavigator', () => {
         <HierarchicalNavigator
           sections={mockSearchableContent}
           onNodeClick={mockOnNodeClick}
-          searchable={true}
+          searchable
         />
       );
 
@@ -296,14 +296,14 @@ describe('HierarchicalNavigator', () => {
         <HierarchicalNavigator
           sections={mockSectionsArray}
           onNodeClick={mockOnNodeClick}
-          collapsible={true}
+          collapsible
         />
       );
 
       // Should have expand/collapse buttons for sections with subsections
       const expandButtons = screen
         .getAllByTestId('button')
-        .filter((button) => button.getAttribute('data-size') === 'sm');
+        .filter(button => button.getAttribute('data-size') === 'sm');
       expect(expandButtons.length).toBeGreaterThan(0);
     });
 
@@ -312,7 +312,7 @@ describe('HierarchicalNavigator', () => {
         <HierarchicalNavigator
           sections={mockSectionsArray}
           onNodeClick={mockOnNodeClick}
-          collapsible={true}
+          collapsible
         />
       );
 
@@ -326,14 +326,14 @@ describe('HierarchicalNavigator', () => {
         <HierarchicalNavigator
           sections={mockSectionsArray}
           onNodeClick={mockOnNodeClick}
-          collapsible={true}
+          collapsible
         />
       );
 
       // Find the first expand/collapse button and click it
       const expandButtons = screen
         .getAllByTestId('button')
-        .filter((button) => button.getAttribute('data-size') === 'sm');
+        .filter(button => button.getAttribute('data-size') === 'sm');
 
       if (expandButtons.length > 0) {
         await user.click(expandButtons[0]);
@@ -361,13 +361,13 @@ describe('HierarchicalNavigator', () => {
         <HierarchicalNavigator
           sections={mockSectionsArray}
           onNodeClick={mockOnNodeClick}
-          collapsible={true}
+          collapsible
         />
       );
 
       const expandButtons = screen
         .getAllByTestId('button')
-        .filter((button) => button.getAttribute('data-size') === 'sm');
+        .filter(button => button.getAttribute('data-size') === 'sm');
 
       if (expandButtons.length > 0) {
         await user.click(expandButtons[0]);
@@ -383,7 +383,7 @@ describe('HierarchicalNavigator', () => {
           sections={mockSectionsArray}
           onNodeClick={mockOnNodeClick}
           userProgress={mockUserProgress}
-          showProgress={true}
+          showProgress
         />
       );
 
@@ -411,7 +411,7 @@ describe('HierarchicalNavigator', () => {
           sections={mockSectionsArray}
           onNodeClick={mockOnNodeClick}
           userProgress={mockUserProgress}
-          showProgress={true}
+          showProgress
         />
       );
 
@@ -426,7 +426,7 @@ describe('HierarchicalNavigator', () => {
           sections={mockSectionsArray}
           onNodeClick={mockOnNodeClick}
           userProgress={mockUserProgress}
-          showProgress={true}
+          showProgress
         />
       );
 
@@ -442,7 +442,7 @@ describe('HierarchicalNavigator', () => {
           sections={mockSectionsArray}
           onNodeClick={mockOnNodeClick}
           userProgress={mockUserProgress}
-          showProgress={true}
+          showProgress
         />
       );
 
@@ -457,7 +457,7 @@ describe('HierarchicalNavigator', () => {
         <HierarchicalNavigator
           sections={[mockInteractiveSection]}
           onNodeClick={mockOnNodeClick}
-          showInteractiveElements={true}
+          showInteractiveElements
         />
       );
 
@@ -482,7 +482,7 @@ describe('HierarchicalNavigator', () => {
         <HierarchicalNavigator
           sections={mockSectionsArray}
           onNodeClick={mockOnNodeClick}
-          showInteractiveElements={true}
+          showInteractiveElements
         />
       );
 
@@ -569,7 +569,7 @@ describe('HierarchicalNavigator', () => {
       const nodeElements = screen
         .getAllByRole('button')
         .filter(
-          (el) => el.textContent?.includes('Introduction to AI') && el.hasAttribute('tabindex')
+          el => el.textContent?.includes('Introduction to AI') && el.hasAttribute('tabindex')
         );
 
       if (nodeElements.length > 0) {
@@ -589,7 +589,7 @@ describe('HierarchicalNavigator', () => {
       const nodeElements = screen
         .getAllByRole('button')
         .filter(
-          (el) => el.textContent?.includes('Introduction to AI') && el.hasAttribute('tabindex')
+          el => el.textContent?.includes('Introduction to AI') && el.hasAttribute('tabindex')
         );
 
       if (nodeElements.length > 0) {
@@ -657,7 +657,7 @@ describe('HierarchicalNavigator', () => {
       const nodeContainers = screen
         .getAllByRole('button')
         .filter(
-          (button) =>
+          button =>
             button.querySelector('span') && button.textContent?.includes('Introduction to AI')
         );
       if (nodeContainers.length > 0) {
@@ -670,7 +670,7 @@ describe('HierarchicalNavigator', () => {
 
       // Look for elements with role button and tabindex
       const buttonElements = screen.getAllByRole('button');
-      const interactiveElements = buttonElements.filter((el) => el.hasAttribute('tabindex'));
+      const interactiveElements = buttonElements.filter(el => el.hasAttribute('tabindex'));
       expect(interactiveElements.length).toBeGreaterThan(0);
     });
 
@@ -679,7 +679,7 @@ describe('HierarchicalNavigator', () => {
 
       // Find a focusable element
       const buttons = screen.getAllByRole('button');
-      const focusableButton = buttons.find((button) => button.hasAttribute('tabindex'));
+      const focusableButton = buttons.find(button => button.hasAttribute('tabindex'));
 
       if (focusableButton) {
         focusableButton.focus();
@@ -805,8 +805,8 @@ describe('HierarchicalNavigator', () => {
           sections={mockSectionsArray}
           onNodeClick={mockOnNodeClick}
           userProgress={mockUserProgress}
-          showProgress={true}
-          showInteractiveElements={true}
+          showProgress
+          showInteractiveElements
         />
       );
 

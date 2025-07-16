@@ -18,8 +18,7 @@ export function useAdSense() {
   const [isLoaded, setIsLoaded] = useState(false);
 
   // Check if ads should be shown (only for free tier users)
-  const shouldShowAds = !user?.lifetimeAccess && 
-                       import.meta.env.VITE_ADSENSE_ENABLED === 'true';
+  const shouldShowAds = !user?.lifetimeAccess && import.meta.env.VITE_ADSENSE_ENABLED === 'true';
 
   useEffect(() => {
     // Initialize AdSense configuration
@@ -49,14 +48,12 @@ export function useAdSense() {
 
   // Load AdSense script
   useEffect(() => {
-    if (!config || !shouldShowAds || isLoaded) return;
+    if (!config || !shouldShowAds || isLoaded) {return;}
 
     const loadAdSense = async () => {
       try {
         // Check if script is already loaded
-        const existingScript = document.querySelector(
-          `script[src*="googlesyndication.com"]`
-        );
+        const existingScript = document.querySelector(`script[src*="googlesyndication.com"]`);
 
         if (existingScript) {
           setIsLoaded(true);
@@ -115,7 +112,7 @@ export function useAdSense() {
 // Helper hook for specific ad placements
 export function useAdPlacement(placement: keyof AdSenseConfig['slots']) {
   const { config, shouldShowAds, trackAdEvent } = useAdSense();
-  
+
   const adSlot = config?.slots[placement];
   const canShowAd = shouldShowAds && !!adSlot;
 

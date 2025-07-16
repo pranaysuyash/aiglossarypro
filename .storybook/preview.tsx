@@ -159,7 +159,7 @@ const preview: Preview = {
       },
       defaultTheme: 'light',
     }),
-    (Story) => (
+    Story => (
       <Router>
         <QueryClientProvider client={queryClient}>
           <Story />

@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import TrendingDashboard from './TrendingDashboard';
@@ -18,12 +17,13 @@ const meta: Meta<typeof TrendingDashboard> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Real-time trending dashboard showing popular terms, categories, and engagement analytics with filtering and time-based insights.',
+        component:
+          'Real-time trending dashboard showing popular terms, categories, and engagement analytics with filtering and time-based insights.',
       },
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen bg-gray-50 p-6">
           <Story />
@@ -42,7 +42,8 @@ const mockTrendingTerms = [
   {
     id: 'term-1',
     name: 'Large Language Models',
-    shortDefinition: 'AI models trained on vast amounts of text data to understand and generate human-like text.',
+    shortDefinition:
+      'AI models trained on vast amounts of text data to understand and generate human-like text.',
     categoryName: 'Natural Language Processing',
     viewCount: 15420,
     recentViews: 2340,
@@ -52,7 +53,7 @@ const mockTrendingTerms = [
     percentageChange: 245.6,
     averageTimeSpent: 485,
     shareCount: 156,
-    bookmarkCount: 89
+    bookmarkCount: 89,
   },
   {
     id: 'term-2',
@@ -67,12 +68,13 @@ const mockTrendingTerms = [
     percentageChange: 156.3,
     averageTimeSpent: 520,
     shareCount: 203,
-    bookmarkCount: 145
+    bookmarkCount: 145,
   },
   {
     id: 'term-3',
     name: 'Generative AI',
-    shortDefinition: 'AI systems that can create new content, including text, images, and other media.',
+    shortDefinition:
+      'AI systems that can create new content, including text, images, and other media.',
     categoryName: 'Machine Learning',
     viewCount: 11200,
     recentViews: 1650,
@@ -82,7 +84,7 @@ const mockTrendingTerms = [
     percentageChange: 189.4,
     averageTimeSpent: 390,
     shareCount: 178,
-    bookmarkCount: 112
+    bookmarkCount: 112,
   },
   {
     id: 'term-4',
@@ -97,7 +99,7 @@ const mockTrendingTerms = [
     percentageChange: 89.7,
     averageTimeSpent: 445,
     shareCount: 134,
-    bookmarkCount: 98
+    bookmarkCount: 98,
   },
   {
     id: 'term-5',
@@ -112,7 +114,7 @@ const mockTrendingTerms = [
     percentageChange: 12.4,
     averageTimeSpent: 380,
     shareCount: 89,
-    bookmarkCount: 67
+    bookmarkCount: 67,
   },
   {
     id: 'term-6',
@@ -127,8 +129,8 @@ const mockTrendingTerms = [
     percentageChange: -8.3,
     averageTimeSpent: 420,
     shareCount: 95,
-    bookmarkCount: 78
-  }
+    bookmarkCount: 78,
+  },
 ];
 
 const mockTrendingCategories = [
@@ -138,7 +140,7 @@ const mockTrendingCategories = [
     description: 'AI techniques for understanding and processing human language',
     viewCount: 45680,
     trendDirection: 'up',
-    percentageChange: 67.4
+    percentageChange: 67.4,
   },
   {
     id: 'cat-2',
@@ -146,7 +148,7 @@ const mockTrendingCategories = [
     description: 'AI systems that create new content and media',
     viewCount: 38920,
     trendDirection: 'up',
-    percentageChange: 134.8
+    percentageChange: 134.8,
   },
   {
     id: 'cat-3',
@@ -154,7 +156,7 @@ const mockTrendingCategories = [
     description: 'Neural networks with multiple layers for complex pattern recognition',
     viewCount: 32450,
     trendDirection: 'up',
-    percentageChange: 23.7
+    percentageChange: 23.7,
   },
   {
     id: 'cat-4',
@@ -162,7 +164,7 @@ const mockTrendingCategories = [
     description: 'AI techniques for analyzing and understanding visual content',
     viewCount: 28760,
     trendDirection: 'stable',
-    percentageChange: 5.2
+    percentageChange: 5.2,
   },
   {
     id: 'cat-5',
@@ -170,8 +172,8 @@ const mockTrendingCategories = [
     description: 'Learning through interaction with an environment',
     viewCount: 19340,
     trendDirection: 'down',
-    percentageChange: -12.6
-  }
+    percentageChange: -12.6,
+  },
 ];
 
 const mockAnalytics = {
@@ -180,9 +182,9 @@ const mockAnalytics = {
   topCategories: [
     { categoryId: 'cat-1', name: 'Natural Language Processing', trendingCount: 156 },
     { categoryId: 'cat-2', name: 'Generative AI', trendingCount: 134 },
-    { categoryId: 'cat-3', name: 'Deep Learning', trendingCount: 98 }
+    { categoryId: 'cat-3', name: 'Deep Learning', trendingCount: 98 },
   ],
-  trendingChangeFromPrevious: 15.7
+  trendingChangeFromPrevious: 15.7,
 };
 
 // Mock fetch for Storybook
@@ -190,33 +192,36 @@ const mockFetch = (url: string) => {
   if (url.includes('/api/trending/terms')) {
     return Promise.resolve({
       ok: true,
-      json: () => Promise.resolve({
-        data: mockTrendingTerms
-      })
+      json: () =>
+        Promise.resolve({
+          data: mockTrendingTerms,
+        }),
     });
   }
-  
+
   if (url.includes('/api/trending/categories')) {
     return Promise.resolve({
       ok: true,
-      json: () => Promise.resolve({
-        data: mockTrendingCategories
-      })
+      json: () =>
+        Promise.resolve({
+          data: mockTrendingCategories,
+        }),
     });
   }
-  
+
   if (url.includes('/api/trending/analytics')) {
     return Promise.resolve({
       ok: true,
-      json: () => Promise.resolve({
-        data: mockAnalytics
-      })
+      json: () =>
+        Promise.resolve({
+          data: mockAnalytics,
+        }),
     });
   }
-  
+
   return Promise.resolve({
     ok: true,
-    json: () => Promise.resolve({})
+    json: () => Promise.resolve({}),
   });
 };
 
@@ -235,7 +240,7 @@ export const Default: Story = {
 
 export const Loading: Story = {
   decorators: [
-    (Story) => {
+    Story => {
       const loadingQueryClient = new QueryClient({
         defaultOptions: {
           queries: {
@@ -264,7 +269,7 @@ export const Loading: Story = {
 
 export const EmptyState: Story = {
   decorators: [
-    (Story) => {
+    Story => {
       const emptyQueryClient = new QueryClient({
         defaultOptions: {
           queries: {
@@ -272,28 +277,30 @@ export const EmptyState: Story = {
           },
         },
       });
-      
+
       // Mock empty response
       global.fetch = ((url: string) => {
         if (url.includes('/api/trending/terms')) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({
-              data: []
-            })
+            json: () =>
+              Promise.resolve({
+                data: [],
+              }),
           });
         }
         if (url.includes('/api/trending/categories')) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({
-              data: []
-            })
+            json: () =>
+              Promise.resolve({
+                data: [],
+              }),
           });
         }
         return mockFetch(url);
       }) as any;
-      
+
       return (
         <QueryClientProvider client={emptyQueryClient}>
           <div className="min-h-screen bg-gray-50 p-6">
@@ -314,7 +321,7 @@ export const EmptyState: Story = {
 
 export const HighVelocity: Story = {
   decorators: [
-    (Story) => {
+    Story => {
       const highVelocityQueryClient = new QueryClient({
         defaultOptions: {
           queries: {
@@ -322,25 +329,26 @@ export const HighVelocity: Story = {
           },
         },
       });
-      
+
       // Mock high velocity data
       global.fetch = ((url: string) => {
         if (url.includes('/api/trending/terms')) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({
-              data: mockTrendingTerms.map(term => ({
-                ...term,
-                velocityScore: Math.min(100, term.velocityScore + 20),
-                percentageChange: term.percentageChange * 2,
-                trendDirection: 'up' as const
-              }))
-            })
+            json: () =>
+              Promise.resolve({
+                data: mockTrendingTerms.map(term => ({
+                  ...term,
+                  velocityScore: Math.min(100, term.velocityScore + 20),
+                  percentageChange: term.percentageChange * 2,
+                  trendDirection: 'up' as const,
+                })),
+              }),
           });
         }
         return mockFetch(url);
       }) as any;
-      
+
       return (
         <QueryClientProvider client={highVelocityQueryClient}>
           <div className="min-h-screen bg-gray-50 p-6">
@@ -361,7 +369,7 @@ export const HighVelocity: Story = {
 
 export const MixedTrends: Story = {
   decorators: [
-    (Story) => {
+    Story => {
       const mixedTrendsQueryClient = new QueryClient({
         defaultOptions: {
           queries: {
@@ -369,27 +377,52 @@ export const MixedTrends: Story = {
           },
         },
       });
-      
+
       // Mock mixed trends data
       global.fetch = ((url: string) => {
         if (url.includes('/api/trending/terms')) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({
-              data: [
-                { ...mockTrendingTerms[0], trendDirection: 'up' as const, percentageChange: 156.7 },
-                { ...mockTrendingTerms[1], trendDirection: 'down' as const, percentageChange: -23.4 },
-                { ...mockTrendingTerms[2], trendDirection: 'stable' as const, percentageChange: 2.1 },
-                { ...mockTrendingTerms[3], trendDirection: 'up' as const, percentageChange: 89.3 },
-                { ...mockTrendingTerms[4], trendDirection: 'down' as const, percentageChange: -45.8 },
-                { ...mockTrendingTerms[5], trendDirection: 'stable' as const, percentageChange: -1.2 }
-              ]
-            })
+            json: () =>
+              Promise.resolve({
+                data: [
+                  {
+                    ...mockTrendingTerms[0],
+                    trendDirection: 'up' as const,
+                    percentageChange: 156.7,
+                  },
+                  {
+                    ...mockTrendingTerms[1],
+                    trendDirection: 'down' as const,
+                    percentageChange: -23.4,
+                  },
+                  {
+                    ...mockTrendingTerms[2],
+                    trendDirection: 'stable' as const,
+                    percentageChange: 2.1,
+                  },
+                  {
+                    ...mockTrendingTerms[3],
+                    trendDirection: 'up' as const,
+                    percentageChange: 89.3,
+                  },
+                  {
+                    ...mockTrendingTerms[4],
+                    trendDirection: 'down' as const,
+                    percentageChange: -45.8,
+                  },
+                  {
+                    ...mockTrendingTerms[5],
+                    trendDirection: 'stable' as const,
+                    percentageChange: -1.2,
+                  },
+                ],
+              }),
           });
         }
         return mockFetch(url);
       }) as any;
-      
+
       return (
         <QueryClientProvider client={mixedTrendsQueryClient}>
           <div className="min-h-screen bg-gray-50 p-6">
@@ -410,7 +443,7 @@ export const MixedTrends: Story = {
 
 export const CategoryFocus: Story = {
   decorators: [
-    (Story) => {
+    Story => {
       const categoryFocusQueryClient = new QueryClient({
         defaultOptions: {
           queries: {
@@ -418,24 +451,25 @@ export const CategoryFocus: Story = {
           },
         },
       });
-      
+
       // Mock category-focused data
       global.fetch = ((url: string) => {
         if (url.includes('/api/trending/categories')) {
           return Promise.resolve({
             ok: true,
-            json: () => Promise.resolve({
-              data: mockTrendingCategories.map(cat => ({
-                ...cat,
-                viewCount: cat.viewCount * 1.5,
-                percentageChange: cat.percentageChange * 1.3
-              }))
-            })
+            json: () =>
+              Promise.resolve({
+                data: mockTrendingCategories.map(cat => ({
+                  ...cat,
+                  viewCount: cat.viewCount * 1.5,
+                  percentageChange: cat.percentageChange * 1.3,
+                })),
+              }),
           });
         }
         return mockFetch(url);
       }) as any;
-      
+
       return (
         <QueryClientProvider client={categoryFocusQueryClient}>
           <div className="min-h-screen bg-gray-50 p-6">
@@ -456,7 +490,7 @@ export const CategoryFocus: Story = {
 
 export const RealTimeUpdate: Story = {
   decorators: [
-    (Story) => {
+    Story => {
       const realTimeQueryClient = new QueryClient({
         defaultOptions: {
           queries: {
@@ -465,7 +499,7 @@ export const RealTimeUpdate: Story = {
           },
         },
       });
-      
+
       return (
         <QueryClientProvider client={realTimeQueryClient}>
           <div className="min-h-screen bg-gray-50 p-6">

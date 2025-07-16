@@ -109,7 +109,7 @@ export function CacheMonitoring() {
       const response = await fetch('/api/cache-analytics/stats');
       const data = await response.json();
       setStats(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching cache stats:', error);
     }
   }, []);
@@ -119,7 +119,7 @@ export function CacheMonitoring() {
       const response = await fetch('/api/cache-analytics/real-time');
       const data = await response.json();
       setRealTimeMetrics(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching real-time metrics:', error);
     }
   }, []);
@@ -129,7 +129,7 @@ export function CacheMonitoring() {
       const response = await fetch('/api/cache-analytics/health');
       const data = await response.json();
       setHealth(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching cache health:', error);
     }
   }, []);
@@ -139,7 +139,7 @@ export function CacheMonitoring() {
       const response = await fetch('/api/cache-analytics/report');
       const data = await response.json();
       setReport(data);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching cache report:', error);
     }
   }, []);
@@ -153,7 +153,7 @@ export function CacheMonitoring() {
       );
       const data = await response.json();
       setHistoricalData(data.metrics || []);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching historical data:', error);
     }
   }, []);
@@ -184,7 +184,7 @@ export function CacheMonitoring() {
     }
 
     return () => {
-      if (interval) clearInterval(interval);
+      if (interval) {clearInterval(interval);}
     };
   }, [autoRefresh, fetchAllData, fetchStats, fetchRealTimeMetrics, fetchHealth]);
 
@@ -214,15 +214,15 @@ export function CacheMonitoring() {
   };
 
   const getHealthBadge = (health: CacheHealth | null) => {
-    if (!health) return null;
+    if (!health) {return null;}
 
     if (health.healthy) {
       return <Badge className="bg-green-500">Healthy</Badge>;
     } else if (health.warnings.length <= 2) {
       return <Badge className="bg-yellow-500">Warning</Badge>;
-    } else {
+    } 
       return <Badge className="bg-red-500">Critical</Badge>;
-    }
+    
   };
 
   const formatPercentage = (value: number) => `${(value * 100).toFixed(1)}%`;
@@ -456,7 +456,7 @@ export function CacheMonitoring() {
               </CardHeader>
               <CardContent className="space-y-4">
                 {stats &&
-                  ['query', 'search', 'user'].map((cacheType) => {
+                  ['query', 'search', 'user'].map(cacheType => {
                     const cache = stats[cacheType as keyof typeof stats] as CacheTypeStats;
                     return (
                       <div key={cacheType} className="space-y-2">

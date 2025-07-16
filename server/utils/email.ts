@@ -1,5 +1,6 @@
 import type { Transporter } from 'nodemailer';
 import nodemailer from 'nodemailer';
+import { Resend } from 'resend';
 import {
   getEmailVerificationTemplate,
   getLearningProgressTemplate,
@@ -35,6 +36,9 @@ interface EmailConfig {
 
 // Create transporter singleton
 let transporter: Transporter | null = null;
+
+// Initialize Resend client if API key is provided
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 function createTransporter(): Transporter {
   if (transporter) {
@@ -125,6 +129,43 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
   }
 
   try {
+    // Use Resend if available (preferred)
+    if (resend) {
+      logger.info('Using Resend for email delivery');
+
+      const { data, error } = await resend.emails.send({
+        from: `${process.env.EMAIL_FROM_NAME || 'AI Glossary Pro'} <${fromEmail}>`,
+        to: to,
+        subject,
+        html,
+        text: text || html.replace(/<[^>]*>/g, ''), // Strip HTML tags for text version
+        attachments: attachments?.map(att => ({
+          filename: att.filename,
+          content: att.content instanceof Buffer ? att.content : Buffer.from(att.content),
+        })),
+      });
+
+      if (error) {
+        logger.error('Resend email failed', {
+          error,
+          to,
+          subject,
+        });
+        throw new Error(`Resend email failed: ${error.message}`);
+      }
+
+      logger.info('Email sent successfully via Resend', {
+        messageId: data?.id,
+        to,
+        subject,
+        preview: `${html.substring(0, 200)}...`,
+      });
+
+      return;
+    }
+
+    // Fall back to SMTP if Resend is not configured
+    logger.info('Using SMTP for email delivery');
     const emailTransporter = createTransporter();
 
     // Verify transporter configuration
@@ -154,7 +195,7 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
     // Send the email
     const result = await emailTransporter.sendMail(mailOptions);
 
-    logger.info('Email sent successfully', {
+    logger.info('Email sent successfully via SMTP', {
       messageId: result.messageId,
       to,
       subject,
@@ -176,7 +217,7 @@ export async function sendEmail(options: EmailOptions): Promise<void> {
  */
 export async function sendPremiumWelcomeEmail(data: PremiumWelcomeEmailData): Promise<void> {
   const template = getPremiumWelcomeEmailTemplate(data);
-  
+
   await sendEmail({
     to: [data.userEmail],
     subject: template.subject,
@@ -295,5 +336,175 @@ export async function sendSystemNotificationEmail(
     subject: template.subject,
     html: template.html,
     text: template.text,
+  });
+}
+
+/**
+ * Build purchase instructions HTML email template
+ */
+export function buildPurchaseInstructionsHtml(email: string): string {
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <style>
+        body { 
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+          line-height: 1.6;
+          color: #333;
+          max-width: 600px;
+          margin: 0 auto;
+          padding: 20px;
+        }
+        .container {
+          background-color: #f8f9fa;
+          border-radius: 8px;
+          padding: 30px;
+          margin: 20px 0;
+        }
+        .header {
+          text-align: center;
+          margin-bottom: 30px;
+        }
+        .button {
+          display: inline-block;
+          background-color: #007bff;
+          color: white !important;
+          padding: 12px 30px;
+          text-decoration: none;
+          border-radius: 5px;
+          margin: 20px 0;
+        }
+        .steps {
+          background-color: white;
+          border-radius: 5px;
+          padding: 20px;
+          margin: 20px 0;
+        }
+        .step {
+          margin: 15px 0;
+          padding-left: 30px;
+          position: relative;
+        }
+        .step::before {
+          content: attr(data-step);
+          position: absolute;
+          left: 0;
+          background-color: #007bff;
+          color: white;
+          width: 24px;
+          height: 24px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-size: 14px;
+          font-weight: bold;
+        }
+        .footer {
+          text-align: center;
+          color: #666;
+          font-size: 14px;
+          margin-top: 30px;
+        }
+        .support-note {
+          background-color: #e9ecef;
+          padding: 15px;
+          border-radius: 5px;
+          margin-top: 20px;
+          font-size: 14px;
+        }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🎉 Your AI Glossary Pro Access is Ready!</h1>
+          <p>Thank you for purchasing lifetime access to AI Glossary Pro.</p>
+        </div>
+        
+        <p>Hi there,</p>
+        
+        <p>Your purchase has been confirmed, and your lifetime access is ready to activate. Follow these simple steps to get started:</p>
+        
+        <div class="steps">
+          <div class="step" data-step="1">
+            <strong>Visit AI Glossary Pro</strong><br>
+            Go to <a href="https://aiglossarypro.com">aiglossarypro.com</a>
+          </div>
+          
+          <div class="step" data-step="2">
+            <strong>Sign In</strong><br>
+            Click "Sign in with Google" or "Sign in with GitHub"<br>
+            <em>Important: Use this email address (${email}) when signing in</em>
+          </div>
+          
+          <div class="step" data-step="3">
+            <strong>Enjoy Lifetime Access</strong><br>
+            That's it! You now have full access to all premium features.
+          </div>
+        </div>
+        
+        <center>
+          <a href="https://aiglossarypro.com" class="button">Go to AI Glossary Pro →</a>
+        </center>
+        
+        <div class="support-note">
+          <strong>Need help?</strong><br>
+          If you use a different email address for your Google or GitHub account, just reply to this email and we'll transfer your license. We're here to help!
+        </div>
+        
+        <div class="footer">
+          <p>Welcome to the AI Glossary Pro community!</p>
+          <p style="color: #999;">This email was sent to ${email} because a purchase was made using this email address.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+/**
+ * Build purchase instructions text email template
+ */
+export function buildPurchaseInstructionsText(email: string): string {
+  return `
+🎉 Your AI Glossary Pro Access is Ready!
+
+Thank you for purchasing lifetime access to AI Glossary Pro.
+
+Your purchase has been confirmed, and your lifetime access is ready to activate. Follow these simple steps to get started:
+
+1. Visit AI Glossary Pro
+   Go to https://aiglossarypro.com
+
+2. Sign In
+   Click "Sign in with Google" or "Sign in with GitHub"
+   Important: Use this email address (${email}) when signing in
+
+3. Enjoy Lifetime Access
+   That's it! You now have full access to all premium features.
+
+Need help?
+If you use a different email address for your Google or GitHub account, just reply to this email and we'll transfer your license. We're here to help!
+
+Welcome to the AI Glossary Pro community!
+
+---
+This email was sent to ${email} because a purchase was made using this email address.
+  `.trim();
+}
+
+/**
+ * Send purchase confirmation email with login instructions
+ */
+export async function sendPurchaseInstructionsEmail(email: string): Promise<void> {
+  await sendEmail({
+    to: [email],
+    subject: '🎉 Your AI Glossary Pro access is ready!',
+    html: buildPurchaseInstructionsHtml(email),
+    text: buildPurchaseInstructionsText(email),
   });
 }

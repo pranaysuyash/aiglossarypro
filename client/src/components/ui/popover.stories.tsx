@@ -1,11 +1,20 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { Calendar, Settings, User, Info, Heart, Star, MessageSquare, Share2, MoreVertical } from 'lucide-react';
+import {
+  Calendar,
+  Heart,
+  Info,
+  MessageSquare,
+  MoreVertical,
+  Settings,
+  Share2,
+  Star,
+  User,
+} from 'lucide-react';
 import { Button } from './button';
 import { Input } from './input';
 import { Label } from './label';
-import { Textarea } from './textarea';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
+import { Textarea } from './textarea';
 
 const meta: Meta<typeof Popover> = {
   title: 'UI/Popover',
@@ -14,7 +23,8 @@ const meta: Meta<typeof Popover> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Popover component built with Radix UI primitives, providing flexible content overlays with customizable positioning and styling.',
+        component:
+          'Popover component built with Radix UI primitives, providing flexible content overlays with customizable positioning and styling.',
       },
     },
   },
@@ -62,9 +72,7 @@ export const WithForm: Story = {
         <div className="space-y-4">
           <div className="space-y-2">
             <h4 className="font-medium leading-none">Profile Settings</h4>
-            <p className="text-sm text-muted-foreground">
-              Update your profile information below.
-            </p>
+            <p className="text-sm text-muted-foreground">Update your profile information below.</p>
           </div>
           <div className="space-y-3">
             <div className="space-y-2">
@@ -80,7 +88,9 @@ export const WithForm: Story = {
               <Textarea id="bio" placeholder="Tell us about yourself" rows={3} />
             </div>
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" size="sm">Cancel</Button>
+              <Button variant="outline" size="sm">
+                Cancel
+              </Button>
               <Button size="sm">Save</Button>
             </div>
           </div>
@@ -111,7 +121,8 @@ export const WithIcon: Story = {
           <div className="space-y-1">
             <p className="text-sm font-medium">Information</p>
             <p className="text-sm text-muted-foreground">
-              This feature helps you understand how AI models process information and make decisions.
+              This feature helps you understand how AI models process information and make
+              decisions.
             </p>
           </div>
         </div>
@@ -213,7 +224,9 @@ export const DatePicker: Story = {
               </div>
             </div>
             <div className="flex justify-end space-x-2">
-              <Button variant="outline" size="sm">Cancel</Button>
+              <Button variant="outline" size="sm">
+                Cancel
+              </Button>
               <Button size="sm">Select</Button>
             </div>
           </div>
@@ -243,9 +256,7 @@ export const SharePopover: Story = {
         <div className="space-y-4">
           <div className="space-y-2">
             <h4 className="font-medium">Share this term</h4>
-            <p className="text-sm text-muted-foreground">
-              Share "Machine Learning" with others
-            </p>
+            <p className="text-sm text-muted-foreground">Share "Machine Learning" with others</p>
           </div>
           <div className="space-y-2">
             <Label htmlFor="share-url">Share URL</Label>
@@ -256,15 +267,23 @@ export const SharePopover: Story = {
                 readOnly
                 className="flex-1"
               />
-              <Button size="sm" variant="outline">Copy</Button>
+              <Button size="sm" variant="outline">
+                Copy
+              </Button>
             </div>
           </div>
           <div className="space-y-2">
             <Label>Share on social media</Label>
             <div className="flex space-x-2">
-              <Button variant="outline" size="sm">Twitter</Button>
-              <Button variant="outline" size="sm">LinkedIn</Button>
-              <Button variant="outline" size="sm">Facebook</Button>
+              <Button variant="outline" size="sm">
+                Twitter
+              </Button>
+              <Button variant="outline" size="sm">
+                LinkedIn
+              </Button>
+              <Button variant="outline" size="sm">
+                Facebook
+              </Button>
             </div>
           </div>
         </div>
@@ -409,10 +428,18 @@ export const AIGlossaryExample: Story = {
               <div className="space-y-2">
                 <h4 className="font-medium">Term Details</h4>
                 <div className="text-sm space-y-1">
-                  <p><strong>Category:</strong> Artificial Intelligence</p>
-                  <p><strong>Difficulty:</strong> Intermediate</p>
-                  <p><strong>Related Terms:</strong> Deep Learning, Neural Networks, AI</p>
-                  <p><strong>Last Updated:</strong> December 2024</p>
+                  <p>
+                    <strong>Category:</strong> Artificial Intelligence
+                  </p>
+                  <p>
+                    <strong>Difficulty:</strong> Intermediate
+                  </p>
+                  <p>
+                    <strong>Related Terms:</strong> Deep Learning, Neural Networks, AI
+                  </p>
+                  <p>
+                    <strong>Last Updated:</strong> December 2024
+                  </p>
                 </div>
               </div>
               <div className="space-y-2">
@@ -485,7 +512,9 @@ export const AllVariants: Story = {
               <div className="space-y-3">
                 <Label htmlFor="quick-name">Name</Label>
                 <Input id="quick-name" placeholder="Enter name" />
-                <Button size="sm" className="w-full">Save</Button>
+                <Button size="sm" className="w-full">
+                  Save
+                </Button>
               </div>
             </PopoverContent>
           </Popover>

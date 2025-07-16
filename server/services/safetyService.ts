@@ -109,8 +109,8 @@ class SafetyService {
     this.limits.emergencyStopActive = false;
 
     // Find and resolve emergency alerts
-    const emergencyAlerts = this.alerts.filter((a) => a.type === 'emergency' && !a.acknowledged);
-    emergencyAlerts.forEach((alert) => {
+    const emergencyAlerts = this.alerts.filter(a => a.type === 'emergency' && !a.acknowledged);
+    emergencyAlerts.forEach(alert => {
       alert.acknowledged = true;
       alert.autoResolved = true;
     });
@@ -161,7 +161,7 @@ class SafetyService {
   // Operation Management
   async canStartOperation(
     _operationId: string,
-    estimatedCost: number = 0
+    estimatedCost = 0
   ): Promise<{ allowed: boolean; reason?: string }> {
     // Check emergency stop
     if (this.limits.emergencyStopActive) {
@@ -189,7 +189,7 @@ class SafetyService {
     return { allowed: true };
   }
 
-  async startOperation(operationId: string, estimatedCost: number = 0): Promise<void> {
+  async startOperation(operationId: string, estimatedCost = 0): Promise<void> {
     const check = await this.canStartOperation(operationId, estimatedCost);
     if (!check.allowed) {
       throw new Error(`Cannot start operation: ${check.reason}`);
@@ -201,7 +201,7 @@ class SafetyService {
     logger.info('Operation started', { operationId, activeOperations: this.activeOperations.size });
   }
 
-  async stopOperation(operationId: string, reason: string = 'Manual stop'): Promise<void> {
+  async stopOperation(operationId: string, reason = 'Manual stop'): Promise<void> {
     this.activeOperations.delete(operationId);
     this.metrics.activeOperations = this.activeOperations.size;
 
@@ -279,7 +279,7 @@ class SafetyService {
   }
 
   async acknowledgeAlert(alertId: string, userId?: string): Promise<void> {
-    const alert = this.alerts.find((a) => a.id === alertId);
+    const alert = this.alerts.find(a => a.id === alertId);
     if (alert) {
       alert.acknowledged = true;
       logger.info('Alert acknowledged', { alertId, userId });
@@ -296,7 +296,7 @@ class SafetyService {
   }
 
   getActiveAlerts(): SafetyAlert[] {
-    return this.alerts.filter((a) => !a.acknowledged);
+    return this.alerts.filter(a => !a.acknowledged);
   }
 
   getAllAlerts(): SafetyAlert[] {
@@ -311,7 +311,7 @@ class SafetyService {
     criticalAlerts: number;
   } {
     const criticalAlerts = this.alerts.filter(
-      (a) => !a.acknowledged && a.severity === 'critical'
+      a => !a.acknowledged && a.severity === 'critical'
     ).length;
 
     let status: 'healthy' | 'warning' | 'critical' | 'emergency' = 'healthy';

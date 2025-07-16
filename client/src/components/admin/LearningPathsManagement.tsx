@@ -1,10 +1,21 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Search, Plus, Edit, Trash2, Eye, Users, Clock,
-  BookOpen, Play, Pause, CheckCircle, Star,
-  BarChart3, GraduationCap
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  BarChart3,
+  BookOpen,
+  CheckCircle,
+  Clock,
+  Edit,
+  Eye,
+  GraduationCap,
+  Pause,
+  Play,
+  Plus,
+  Search,
+  Star,
+  Trash2,
+  Users,
 } from 'lucide-react';
+import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 
 interface LearningPath {
@@ -48,7 +59,7 @@ interface LearningPathsManagementProps {
 export default function LearningPathsManagement({ onPathSelect }: LearningPathsManagementProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -58,24 +69,27 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
 
   // Build query parameters
   const queryParams = new URLSearchParams();
-  if (selectedDifficulty !== 'all') queryParams.set('difficulty', selectedDifficulty);
-  if (selectedCategory !== 'all') queryParams.set('category', selectedCategory);
+  if (selectedDifficulty !== 'all') {queryParams.set('difficulty', selectedDifficulty);}
+  if (selectedCategory !== 'all') {queryParams.set('category', selectedCategory);}
   queryParams.set('limit', '50');
 
   // Fetch learning paths
-  const { data: pathsData, isLoading } = useQuery<{ data: LearningPath[], pagination: any }>({
-    queryKey: ['/api/learning-paths', { difficulty: selectedDifficulty, category: selectedCategory }],
+  const { data: pathsData, isLoading } = useQuery<{ data: LearningPath[]; pagination: any }>({
+    queryKey: [
+      '/api/learning-paths',
+      { difficulty: selectedDifficulty, category: selectedCategory },
+    ],
     queryFn: async () => {
       const response = await fetch(`/api/learning-paths?${queryParams.toString()}`, {
         headers: {
-          'Authorization': `Bearer ${user?.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch learning paths');
       }
-      
+
       return response.json();
     },
     enabled: !!user?.token,
@@ -87,15 +101,15 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
       const response = await fetch(`/api/learning-paths/${pathId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${user?.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Failed to delete learning path');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -109,20 +123,20 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
 
   // Toggle publish status
   const togglePublishMutation = useMutation({
-    mutationFn: async ({ pathId, isPublished }: { pathId: string, isPublished: boolean }) => {
+    mutationFn: async ({ pathId, isPublished }: { pathId: string; isPublished: boolean }) => {
       const response = await fetch(`/api/learning-paths/${pathId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
         body: JSON.stringify({ is_published: !isPublished }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to update learning path');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -136,10 +150,14 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
   };
 
   const handleDeletePath = async (pathId: string) => {
-    if (window.confirm('Are you sure you want to delete this learning path? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to delete this learning path? This action cannot be undone.'
+      )
+    ) {
       try {
         await deleteMutation.mutateAsync(pathId);
-      } catch (error) {
+      } catch (error: any) {
         // Handle delete error silently
       }
     }
@@ -147,11 +165,11 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
 
   const handleTogglePublish = async (path: LearningPath) => {
     try {
-      await togglePublishMutation.mutateAsync({ 
-        pathId: path.id, 
-        isPublished: path.is_published 
+      await togglePublishMutation.mutateAsync({
+        pathId: path.id,
+        isPublished: path.is_published,
       });
-    } catch (error) {
+    } catch (error: any) {
       // Handle toggle error silently
     }
   };
@@ -173,29 +191,32 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
   };
 
   const formatDuration = (minutes: number) => {
-    if (minutes < 60) return `${minutes}m`;
+    if (minutes < 60) {return `${minutes}m`;}
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
     return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
   };
 
   const getCompletionRate = (path: LearningPath) => {
-    if (path.view_count === 0) return 0;
+    if (path.view_count === 0) {return 0;}
     return Math.round((path.completion_count / path.view_count) * 100);
   };
 
-  const filteredPaths = pathsData?.data?.filter(path => {
-    const matchesSearch = !searchQuery || 
-      path.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      path.description?.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = selectedStatus === 'all' || 
-      (selectedStatus === 'published' && path.is_published) ||
-      (selectedStatus === 'draft' && !path.is_published) ||
-      (selectedStatus === 'official' && path.is_official);
-    
-    return matchesSearch && matchesStatus;
-  }) || [];
+  const filteredPaths =
+    pathsData?.data?.filter(path => {
+      const matchesSearch =
+        !searchQuery ||
+        path.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        path.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesStatus =
+        selectedStatus === 'all' ||
+        (selectedStatus === 'published' && path.is_published) ||
+        (selectedStatus === 'draft' && !path.is_published) ||
+        (selectedStatus === 'official' && path.is_official);
+
+      return matchesSearch && matchesStatus;
+    }) || [];
 
   if (isLoading) {
     return (
@@ -222,7 +243,7 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
             <BarChart3 className="w-4 h-4 mr-2" />
             Analytics
           </button>
-          <button 
+          <button
             onClick={() => setShowCreateModal(true)}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
           >
@@ -242,15 +263,15 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Search learning paths..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
-          
-          <select 
+
+          <select
             className="border border-gray-300 rounded-md px-3 py-2"
             value={selectedDifficulty}
-            onChange={(e) => setSelectedDifficulty(e.target.value)}
+            onChange={e => setSelectedDifficulty(e.target.value)}
           >
             <option value="all">All Levels</option>
             <option value="beginner">Beginner</option>
@@ -258,10 +279,10 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
             <option value="advanced">Advanced</option>
           </select>
 
-          <select 
+          <select
             className="border border-gray-300 rounded-md px-3 py-2"
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={e => setSelectedCategory(e.target.value)}
           >
             <option value="all">All Categories</option>
             <option value="machine-learning">Machine Learning</option>
@@ -270,10 +291,10 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
             <option value="computer-vision">Computer Vision</option>
           </select>
 
-          <select 
+          <select
             className="border border-gray-300 rounded-md px-3 py-2"
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
+            onChange={e => setSelectedStatus(e.target.value)}
           >
             <option value="all">All Status</option>
             <option value="published">Published</option>
@@ -286,13 +307,15 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
       {/* Content Layout */}
       <div className="flex space-x-6">
         {/* Paths Table */}
-        <div className={`bg-white rounded-lg border overflow-hidden ${selectedPath ? 'flex-1' : 'w-full'}`}>
+        <div
+          className={`bg-white rounded-lg border overflow-hidden ${selectedPath ? 'flex-1' : 'w-full'}`}
+        >
           <div className="px-6 py-4 border-b bg-gray-50">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Learning Paths ({filteredPaths.length})</h3>
             </div>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
@@ -321,9 +344,9 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredPaths.map((path) => (
-                  <tr 
-                    key={path.id} 
+                {filteredPaths.map(path => (
+                  <tr
+                    key={path.id}
                     className={`hover:bg-gray-50 cursor-pointer ${selectedPath?.id === path.id ? 'bg-blue-50' : ''}`}
                     onClick={() => handlePathClick(path)}
                   >
@@ -353,7 +376,9 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(path.difficulty_level)}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(path.difficulty_level)}`}
+                      >
                         <GraduationCap className="w-3 h-3 mr-1" />
                         {path.difficulty_level}
                       </span>
@@ -399,14 +424,18 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-6 py-4 text-right" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center justify-end space-x-2">
-                        <button 
+                        <button
                           onClick={() => handleTogglePublish(path)}
                           className={`text-gray-400 hover:${path.is_published ? 'text-yellow-600' : 'text-green-600'}`}
                           title={path.is_published ? 'Unpublish' : 'Publish'}
                         >
-                          {path.is_published ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
+                          {path.is_published ? (
+                            <Pause className="w-4 h-4" />
+                          ) : (
+                            <Play className="w-4 h-4" />
+                          )}
                         </button>
                         <button className="text-gray-400 hover:text-blue-600">
                           <Eye className="w-4 h-4" />
@@ -414,7 +443,7 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
                         <button className="text-gray-400 hover:text-blue-600">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDeletePath(path.id)}
                           className="text-gray-400 hover:text-red-600"
                         >
@@ -434,14 +463,14 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
           <div className="w-96 bg-white border rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Path Details</h3>
-              <button 
+              <button
                 onClick={() => setSelectedPath(null)}
                 className="text-gray-400 hover:text-gray-600"
               >
                 ×
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <div className="text-sm font-medium text-gray-700">Name</div>
@@ -453,25 +482,29 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
                   </span>
                 )}
               </div>
-              
+
               <div>
                 <div className="text-sm font-medium text-gray-700">Description</div>
                 <div className="text-sm text-gray-600">{selectedPath.description}</div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium text-gray-700">Difficulty</div>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(selectedPath.difficulty_level)}`}>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(selectedPath.difficulty_level)}`}
+                  >
                     {selectedPath.difficulty_level}
                   </span>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-700">Duration</div>
-                  <div className="text-sm text-gray-900">{formatDuration(selectedPath.estimated_duration)}</div>
+                  <div className="text-sm text-gray-900">
+                    {formatDuration(selectedPath.estimated_duration)}
+                  </div>
                 </div>
               </div>
-              
+
               <div>
                 <div className="text-sm font-medium text-gray-700">Learning Objectives</div>
                 <div className="space-y-1 mt-1">
@@ -487,7 +520,7 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
                   )}
                 </div>
               </div>
-              
+
               <div>
                 <div className="text-sm font-medium text-gray-700">Prerequisites</div>
                 <div className="space-y-1 mt-1">
@@ -503,18 +536,22 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
                   )}
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium text-gray-700">Views</div>
-                  <div className="text-lg font-semibold text-blue-600">{selectedPath.view_count}</div>
+                  <div className="text-lg font-semibold text-blue-600">
+                    {selectedPath.view_count}
+                  </div>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-700">Completions</div>
-                  <div className="text-lg font-semibold text-green-600">{selectedPath.completion_count}</div>
+                  <div className="text-lg font-semibold text-green-600">
+                    {selectedPath.completion_count}
+                  </div>
                 </div>
               </div>
-              
+
               <div>
                 <div className="text-sm font-medium text-gray-700">Completion Rate</div>
                 <div className="flex items-center mt-1">
@@ -527,7 +564,7 @@ export default function LearningPathsManagement({ onPathSelect }: LearningPathsM
                   <span className="text-sm font-medium">{getCompletionRate(selectedPath)}%</span>
                 </div>
               </div>
-              
+
               <div className="flex space-x-2 pt-4">
                 <button className="flex-1 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
                   Edit Path

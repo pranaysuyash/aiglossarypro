@@ -197,7 +197,7 @@ describe('API Endpoints', () => {
       const responses = await Promise.all(requests);
 
       // At least one should succeed
-      expect(responses.some((r) => r.status === 200)).toBe(true);
+      expect(responses.some(r => r.status === 200)).toBe(true);
     });
 
     it('should validate input parameters', async () => {
@@ -242,7 +242,7 @@ describe('API Endpoints', () => {
 
       const responses = await Promise.all(concurrentRequests);
 
-      responses.forEach((response) => {
+      responses.forEach(response => {
         expect(response.status).toBe(200);
         expect(response.body).toHaveProperty('success', true);
       });

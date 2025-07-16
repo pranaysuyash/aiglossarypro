@@ -128,7 +128,9 @@ async function getNewsletterSubscriptions(req: Request, res: Response) {
 
     // Get subscriptions
     const orderBy =
-      order === 'desc' ? desc(newsletterSubscriptions.createdAt) : asc(newsletterSubscriptions.createdAt);
+      order === 'desc'
+        ? desc(newsletterSubscriptions.createdAt)
+        : asc(newsletterSubscriptions.createdAt);
 
     const subscriptions = await db
       .select({
@@ -568,7 +570,7 @@ async function exportNewsletterSubscriptions(req: Request, res: Response) {
       'Created At',
       'Unsubscribed At',
     ];
-    const csvRows = subscriptions.map((sub) => [
+    const csvRows = subscriptions.map(sub => [
       sub.email,
       sub.status,
       sub.language,
@@ -580,7 +582,7 @@ async function exportNewsletterSubscriptions(req: Request, res: Response) {
     ]);
 
     const csvContent = [csvHeaders, ...csvRows]
-      .map((row) => row.map((field) => `"${field}"`).join(','))
+      .map(row => row.map(field => `"${field}"`).join(','))
       .join('\n');
 
     res.setHeader('Content-Type', 'text/csv');
@@ -664,7 +666,7 @@ async function exportContactSubmissions(req: Request, res: Response) {
       'Updated At',
       'Notes',
     ];
-    const csvRows = submissions.map((sub) => [
+    const csvRows = submissions.map(sub => [
       sub.name,
       sub.email,
       sub.subject,
@@ -680,7 +682,7 @@ async function exportContactSubmissions(req: Request, res: Response) {
     ]);
 
     const csvContent = [csvHeaders, ...csvRows]
-      .map((row) => row.map((field) => `"${field}"`).join(','))
+      .map(row => row.map(field => `"${field}"`).join(','))
       .join('\n');
 
     res.setHeader('Content-Type', 'text/csv');

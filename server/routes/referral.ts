@@ -26,13 +26,13 @@ const setReferrerSchema = z.object({
  */
 router.get('/stats', authenticateFirebaseToken, async (req, res) => {
   try {
-    const userId = req.firebaseUser?.uid;
+    const userId = req.firebaseUser?.id;
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
     const stats = await ReferralService.getReferralStats(userId);
-    
+
     res.json({
       success: true,
       data: stats,
@@ -40,9 +40,9 @@ router.get('/stats', authenticateFirebaseToken, async (req, res) => {
   } catch (error) {
     logger.error('Error getting referral stats', {
       error: error instanceof Error ? error.message : String(error),
-      userId: req.firebaseUser?.uid,
+      userId: req.firebaseUser?.id,
     });
-    
+
     res.status(500).json({
       error: 'Failed to get referral statistics',
     });
@@ -55,13 +55,13 @@ router.get('/stats', authenticateFirebaseToken, async (req, res) => {
  */
 router.get('/links', authenticateFirebaseToken, async (req, res) => {
   try {
-    const userId = req.firebaseUser?.uid;
+    const userId = req.firebaseUser?.id;
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
     const links = await ReferralService.getUserReferralLinks(userId);
-    
+
     res.json({
       success: true,
       data: links,
@@ -69,9 +69,9 @@ router.get('/links', authenticateFirebaseToken, async (req, res) => {
   } catch (error) {
     logger.error('Error getting referral links', {
       error: error instanceof Error ? error.message : String(error),
-      userId: req.firebaseUser?.uid,
+      userId: req.firebaseUser?.id,
     });
-    
+
     res.status(500).json({
       error: 'Failed to get referral links',
     });
@@ -84,7 +84,7 @@ router.get('/links', authenticateFirebaseToken, async (req, res) => {
  */
 router.post('/links/generate', authenticateFirebaseToken, async (req, res) => {
   try {
-    const userId = req.firebaseUser?.uid;
+    const userId = req.firebaseUser?.id;
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
     }
@@ -99,11 +99,11 @@ router.post('/links/generate', authenticateFirebaseToken, async (req, res) => {
 
     const { campaignName } = validation.data;
     const referralCode = await ReferralService.generateReferralCode(userId, campaignName);
-    
+
     // Generate the full referral URL
     const baseUrl = process.env.FRONTEND_URL || 'https://aiglossarypro.com';
     const referralUrl = `${baseUrl}?ref=${referralCode}`;
-    
+
     res.json({
       success: true,
       data: {
@@ -115,9 +115,9 @@ router.post('/links/generate', authenticateFirebaseToken, async (req, res) => {
   } catch (error) {
     logger.error('Error generating referral link', {
       error: error instanceof Error ? error.message : String(error),
-      userId: req.firebaseUser?.uid,
+      userId: req.firebaseUser?.id,
     });
-    
+
     res.status(500).json({
       error: 'Failed to generate referral link',
     });
@@ -130,14 +130,14 @@ router.post('/links/generate', authenticateFirebaseToken, async (req, res) => {
  */
 router.get('/payouts', authenticateFirebaseToken, async (req, res) => {
   try {
-    const userId = req.firebaseUser?.uid;
+    const userId = req.firebaseUser?.id;
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
     }
 
     const limit = Math.min(parseInt(req.query.limit as string) || 10, 50);
     const payouts = await ReferralService.getUserReferralPayouts(userId, limit);
-    
+
     res.json({
       success: true,
       data: payouts,
@@ -145,9 +145,9 @@ router.get('/payouts', authenticateFirebaseToken, async (req, res) => {
   } catch (error) {
     logger.error('Error getting referral payouts', {
       error: error instanceof Error ? error.message : String(error),
-      userId: req.firebaseUser?.uid,
+      userId: req.firebaseUser?.id,
     });
-    
+
     res.status(500).json({
       error: 'Failed to get referral payouts',
     });
@@ -169,18 +169,20 @@ router.post('/track-click', async (req, res) => {
     }
 
     const { referralCode, utm } = validation.data;
-    
+
     // Extract context from request
     const context = {
-      ipAddress: req.ip || req.connection.remoteAddress,
+      ipAddress: req.ip || req.socket.remoteAddress,
       userAgent: req.headers['user-agent'],
       referer: req.headers.referer,
       utm,
-      sessionId: req.sessionID,
+      sessionId:
+        (req.headers['x-session-id'] as string) ||
+        `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
     };
 
     await ReferralService.trackReferralClick(referralCode, context);
-    
+
     res.json({
       success: true,
       message: 'Referral click tracked',
@@ -190,7 +192,7 @@ router.post('/track-click', async (req, res) => {
       error: error instanceof Error ? error.message : String(error),
       body: req.body,
     });
-    
+
     res.status(500).json({
       error: 'Failed to track referral click',
     });
@@ -203,7 +205,7 @@ router.post('/track-click', async (req, res) => {
  */
 router.post('/set-referrer', authenticateFirebaseToken, async (req, res) => {
   try {
-    const userId = req.firebaseUser?.uid;
+    const userId = req.firebaseUser?.id;
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
     }
@@ -218,13 +220,13 @@ router.post('/set-referrer', authenticateFirebaseToken, async (req, res) => {
 
     const { referralCode } = validation.data;
     const success = await ReferralService.setUserReferrer(userId, referralCode);
-    
+
     if (!success) {
       return res.status(400).json({
         error: 'Invalid referral code or self-referral attempt',
       });
     }
-    
+
     res.json({
       success: true,
       message: 'Referrer set successfully',
@@ -232,10 +234,10 @@ router.post('/set-referrer', authenticateFirebaseToken, async (req, res) => {
   } catch (error) {
     logger.error('Error setting user referrer', {
       error: error instanceof Error ? error.message : String(error),
-      userId: req.firebaseUser?.uid,
+      userId: req.firebaseUser?.id,
       body: req.body,
     });
-    
+
     res.status(500).json({
       error: 'Failed to set referrer',
     });
@@ -249,7 +251,7 @@ router.post('/set-referrer', authenticateFirebaseToken, async (req, res) => {
 router.get('/validate/:code', async (req, res) => {
   try {
     const { code } = req.params;
-    
+
     if (!code || code.length < 4) {
       return res.status(400).json({
         error: 'Invalid referral code format',
@@ -258,14 +260,16 @@ router.get('/validate/:code', async (req, res) => {
 
     // Track the click for validation
     const context = {
-      ipAddress: req.ip || req.connection.remoteAddress,
+      ipAddress: req.ip || req.socket.remoteAddress,
       userAgent: req.headers['user-agent'],
       referer: req.headers.referer,
-      sessionId: req.sessionID,
+      sessionId:
+        (req.headers['x-session-id'] as string) ||
+        `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`,
     };
 
     await ReferralService.trackReferralClick(code, context);
-    
+
     res.json({
       success: true,
       valid: true,
@@ -276,7 +280,7 @@ router.get('/validate/:code', async (req, res) => {
       error: error instanceof Error ? error.message : String(error),
       code: req.params.code,
     });
-    
+
     res.json({
       success: true,
       valid: false,

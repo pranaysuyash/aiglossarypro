@@ -47,7 +47,7 @@ export function AIDefinitionGenerator({
     queryKey: ['categories'],
     queryFn: async () => {
       const response = await fetch('/api/categories');
-      if (!response.ok) throw new Error('Failed to fetch categories');
+      if (!response.ok) {throw new Error('Failed to fetch categories');}
       return response.json();
     },
   });
@@ -95,12 +95,12 @@ export function AIDefinitionGenerator({
       } else {
         throw new Error(result.error || 'Failed to generate definition');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating definition:', error);
       announce(`Failed to generate definition for ${term.trim()}`, 'assertive');
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to generate definition',
+        description: error instanceof Error ? error?.message : 'Failed to generate definition',
         variant: 'destructive',
       });
     } finally {
@@ -145,7 +145,7 @@ export function AIDefinitionGenerator({
               <Input
                 placeholder="Enter AI/ML term (e.g., Neural Network)"
                 value={term}
-                onChange={(e) => setTerm(e.target.value)}
+                onChange={e => setTerm(e.target.value)}
                 disabled={isGenerating}
               />
             </div>
@@ -153,7 +153,7 @@ export function AIDefinitionGenerator({
               <label className="text-sm font-medium">Category (Optional)</label>
               <Select
                 value={category || 'none'}
-                onValueChange={(value) => setCategory(value === 'none' ? '' : value)}
+                onValueChange={value => setCategory(value === 'none' ? '' : value)}
                 disabled={isGenerating}
               >
                 <SelectTrigger>
@@ -176,7 +176,7 @@ export function AIDefinitionGenerator({
             <Textarea
               placeholder="Provide additional context or specific focus for the definition..."
               value={context}
-              onChange={(e) => setContext(e.target.value)}
+              onChange={e => setContext(e.target.value)}
               disabled={isGenerating}
               rows={3}
             />

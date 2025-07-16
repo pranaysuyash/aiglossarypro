@@ -1,6 +1,5 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { AdminDashboard } from './AdminDashboard';
+import type { Meta, StoryObj } from '@storybook/react';
+import AdminDashboard from './AdminDashboard';
 
 const meta = {
   title: 'Pages/AdminDashboard',

@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { FAQ } from './FAQ';
 
@@ -160,7 +159,7 @@ export const EmptyState: Story = {
 
 export const WithAnalytics: Story = {
   args: {
-    faqs: defaultFAQData.map((faq) => ({
+    faqs: defaultFAQData.map(faq => ({
       ...faq,
       views: Math.floor(Math.random() * 1000) + 100,
       helpful: Math.floor(Math.random() * 50) + 10,
@@ -342,7 +341,7 @@ export const WithCustomActions: Story = {
 
 export const WithRelatedContent: Story = {
   args: {
-    faqs: defaultFAQData.map((faq) => ({
+    faqs: defaultFAQData.map(faq => ({
       ...faq,
       relatedLinks: [
         { title: 'Documentation', url: '/docs', type: 'internal' },
@@ -350,9 +349,9 @@ export const WithRelatedContent: Story = {
         { title: 'Community Forum', url: '/community', type: 'external' },
       ],
       relatedFAQs: defaultFAQData
-        .filter((related) => related.id !== faq.id && related.category === faq.category)
+        .filter(related => related.id !== faq.id && related.category === faq.category)
         .slice(0, 2)
-        .map((related) => ({ id: related.id, question: related.question })),
+        .map(related => ({ id: related.id, question: related.question })),
     })),
     showRelatedContent: true,
   },

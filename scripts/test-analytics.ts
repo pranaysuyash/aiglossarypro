@@ -15,12 +15,20 @@ async function testAnalyticsConfiguration() {
   try {
     // Check analytics status
     const status = analyticsService.getStatus();
-    
+
     console.log(chalk.cyan('📊 Analytics Service Status:'));
-    console.log(`   PostHog Configured: ${status.posthog.configured ? chalk.green('✓') : chalk.red('✗')}`);
-    console.log(`   PostHog Enabled: ${status.posthog.enabled ? chalk.green('✓') : chalk.yellow('⚠️')}`);
-    console.log(`   Google Analytics Configured: ${status.googleAnalytics.configured ? chalk.green('✓') : chalk.red('✗')}`);
-    console.log(`   Google Analytics Enabled: ${status.googleAnalytics.enabled ? chalk.green('✓') : chalk.yellow('⚠️')}`);
+    console.log(
+      `   PostHog Configured: ${status.posthog.configured ? chalk.green('✓') : chalk.red('✗')}`
+    );
+    console.log(
+      `   PostHog Enabled: ${status.posthog.enabled ? chalk.green('✓') : chalk.yellow('⚠️')}`
+    );
+    console.log(
+      `   Google Analytics Configured: ${status.googleAnalytics.configured ? chalk.green('✓') : chalk.red('✗')}`
+    );
+    console.log(
+      `   Google Analytics Enabled: ${status.googleAnalytics.enabled ? chalk.green('✓') : chalk.yellow('⚠️')}`
+    );
 
     if (!status.posthog.configured && !status.googleAnalytics.configured) {
       console.log(chalk.yellow('\n⚠️  No analytics services configured'));
@@ -33,10 +41,10 @@ async function testAnalyticsConfiguration() {
     // Test PostHog if configured
     if (status.posthog.configured && status.posthog.enabled) {
       console.log(chalk.cyan('\n🧪 Testing PostHog Analytics...'));
-      
+
       try {
         const testResults = await analyticsService.testConfiguration();
-        
+
         if (testResults.posthog) {
           console.log(chalk.green('✅ PostHog test successful'));
         } else {
@@ -51,7 +59,9 @@ async function testAnalyticsConfiguration() {
     if (status.googleAnalytics.configured) {
       console.log(chalk.cyan('\n🧪 Checking Google Analytics Configuration...'));
       console.log(chalk.green('✅ Google Analytics measurement ID configured'));
-      console.log(chalk.blue('ℹ️  Google Analytics runs client-side - check browser console for tracking'));
+      console.log(
+        chalk.blue('ℹ️  Google Analytics runs client-side - check browser console for tracking')
+      );
     }
 
     return true;
@@ -65,7 +75,7 @@ async function testAnalyticsEvents() {
   console.log(chalk.cyan('\n📈 Testing Analytics Events...\n'));
 
   const testUserId = 'test-user-analytics';
-  
+
   try {
     // Test basic tracking
     console.log(chalk.blue('Testing event tracking...'));
@@ -126,7 +136,7 @@ async function testAnalyticsEvents() {
 
     console.log(chalk.green.bold('\n🎉 All analytics events tested successfully!'));
     console.log(chalk.blue('📊 Check your PostHog dashboard for test events'));
-    
+
     return true;
   } catch (error) {
     console.error(chalk.red('\n❌ Analytics events testing failed:'), error);
@@ -138,7 +148,7 @@ async function testFeatureFlags() {
   console.log(chalk.cyan('\n🚩 Testing Feature Flags...\n'));
 
   const testUserId = 'test-user-feature-flags';
-  
+
   try {
     // Test getting a feature flag
     console.log(chalk.blue('Testing feature flag retrieval...'));
@@ -158,18 +168,18 @@ async function main() {
   const testEvents = args.includes('--events') || args.includes('-e');
   const testFlags = args.includes('--flags') || args.includes('-f');
   const testAll = args.includes('--all') || args.includes('-a');
-  
+
   if (testAll) {
     console.log(chalk.blue('🔄 Running comprehensive analytics tests...\n'));
-    
+
     const configResult = await testAnalyticsConfiguration();
     if (!configResult) {
       process.exit(1);
     }
-    
+
     const eventsResult = await testAnalyticsEvents();
     const flagsResult = await testFeatureFlags();
-    
+
     if (configResult && eventsResult && flagsResult) {
       console.log(chalk.green.bold('\n🚀 All analytics tests passed! Configuration is working.'));
     } else {

@@ -106,7 +106,7 @@ router.get('/results/:testId', async (req, res) => {
     const mockResults = {
       testId,
       status: config.status,
-      variants: config.variants.map((variant) => ({
+      variants: config.variants.map(variant => ({
         variant,
         sessions: Math.floor(Math.random() * 1000) + 100,
         conversions: Math.floor(Math.random() * 50) + 10,

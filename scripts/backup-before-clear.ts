@@ -37,7 +37,7 @@ async function backupDatabase() {
   // Create summary
   const summary = {
     timestamp: new Date().toISOString(),
-    tables: Object.keys(backup).map((table) => ({
+    tables: Object.keys(backup).map(table => ({
       name: table,
       records: backup[table].count,
       hasError: Boolean(backup[table].error),

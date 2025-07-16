@@ -4,10 +4,10 @@
  */
 
 import type { Express, Request, Response } from 'express';
-import { enhancedStorage } from '../enhancedStorage';
-import { productionEmailService } from '../services/productionEmailService';
 import { analyticsService } from '../config/analytics';
 import { isSentryEnabled } from '../config/sentry';
+import { enhancedStorage } from '../enhancedStorage';
+import { productionEmailService } from '../services/productionEmailService';
 import { log as logger } from '../utils/logger';
 
 interface HealthStatus {
@@ -50,12 +50,11 @@ interface DetailedHealthCheck {
 }
 
 export function registerHealthCheckRoutes(app: Express): void {
-  
   /**
    * Basic health check - fast response for load balancers
    * GET /health
    */
-  app.get('/health', (req: Request, res: Response) => {
+  app.get('/health', (_req: Request, res: Response) => {
     res.status(200).json({
       status: 'healthy',
       timestamp: new Date().toISOString(),
@@ -67,7 +66,7 @@ export function registerHealthCheckRoutes(app: Express): void {
    * Liveness probe - checks if application is running
    * GET /health/live
    */
-  app.get('/health/live', (req: Request, res: Response) => {
+  app.get('/health/live', (_req: Request, res: Response) => {
     res.status(200).json({
       status: 'alive',
       timestamp: new Date().toISOString(),
@@ -80,11 +79,11 @@ export function registerHealthCheckRoutes(app: Express): void {
    * Readiness probe - checks if application is ready to serve traffic
    * GET /health/ready
    */
-  app.get('/health/ready', async (req: Request, res: Response) => {
+  app.get('/health/ready', async (_req: Request, res: Response) => {
     try {
       const checks = await performReadinessChecks();
       const allHealthy = checks.every(check => check.status === 'healthy');
-      
+
       res.status(allHealthy ? 200 : 503).json({
         status: allHealthy ? 'ready' : 'not_ready',
         timestamp: new Date().toISOString(),
@@ -103,11 +102,11 @@ export function registerHealthCheckRoutes(app: Express): void {
    * Detailed health check - comprehensive status for monitoring
    * GET /health/detailed
    */
-  app.get('/health/detailed', async (req: Request, res: Response) => {
+  app.get('/health/detailed', async (_req: Request, res: Response) => {
     try {
       const healthCheck = await performDetailedHealthCheck();
       const status = determineOverallStatus(healthCheck.services);
-      
+
       res.status(status === 'healthy' ? 200 : status === 'degraded' ? 200 : 503).json(healthCheck);
     } catch (error) {
       logger.error('Detailed health check failed:', error);
@@ -123,7 +122,7 @@ export function registerHealthCheckRoutes(app: Express): void {
    * Database health check
    * GET /health/database
    */
-  app.get('/health/database', async (req: Request, res: Response) => {
+  app.get('/health/database', async (_req: Request, res: Response) => {
     try {
       const dbHealth = await checkDatabaseHealth();
       res.status(dbHealth.status === 'healthy' ? 200 : 503).json(dbHealth);
@@ -141,7 +140,7 @@ export function registerHealthCheckRoutes(app: Express): void {
    * Email service health check
    * GET /health/email
    */
-  app.get('/health/email', async (req: Request, res: Response) => {
+  app.get('/health/email', async (_req: Request, res: Response) => {
     try {
       const emailHealth = await checkEmailHealth();
       res.status(emailHealth.status === 'healthy' ? 200 : 503).json(emailHealth);
@@ -159,7 +158,7 @@ export function registerHealthCheckRoutes(app: Express): void {
    * Analytics health check
    * GET /health/analytics
    */
-  app.get('/health/analytics', async (req: Request, res: Response) => {
+  app.get('/health/analytics', async (_req: Request, res: Response) => {
     try {
       const analyticsHealth = await checkAnalyticsHealth();
       res.status(200).json(analyticsHealth); // Analytics is non-critical
@@ -177,13 +176,13 @@ export function registerHealthCheckRoutes(app: Express): void {
    * Dependencies health check
    * GET /health/dependencies
    */
-  app.get('/health/dependencies', async (req: Request, res: Response) => {
+  app.get('/health/dependencies', async (_req: Request, res: Response) => {
     try {
       const dependencies = await checkAllDependencies();
       const criticalDepsHealthy = dependencies
         .filter(dep => dep.details?.critical)
         .every(dep => dep.status === 'healthy');
-      
+
       res.status(criticalDepsHealthy ? 200 : 503).json({
         status: criticalDepsHealthy ? 'healthy' : 'degraded',
         timestamp: new Date().toISOString(),
@@ -203,17 +202,14 @@ export function registerHealthCheckRoutes(app: Express): void {
  * Perform basic readiness checks for critical services
  */
 async function performReadinessChecks(): Promise<ServiceHealth[]> {
-  const checks: Promise<ServiceHealth>[] = [
-    checkDatabaseHealth(),
-    checkEmailHealth(),
-  ];
+  const checks: Promise<ServiceHealth>[] = [checkDatabaseHealth(), checkEmailHealth()];
 
   const results = await Promise.allSettled(checks);
-  
+
   return results.map((result, index) => {
     if (result.status === 'fulfilled') {
       return result.value;
-    } else {
+    } 
       const serviceNames = ['database', 'email'];
       return {
         name: serviceNames[index] || 'unknown',
@@ -221,7 +217,7 @@ async function performReadinessChecks(): Promise<ServiceHealth[]> {
         message: 'Check failed to execute',
         lastChecked: new Date().toISOString(),
       };
-    }
+    
   });
 }
 
@@ -267,11 +263,11 @@ async function performDetailedHealthCheck(): Promise<DetailedHealthCheck> {
  */
 async function checkDatabaseHealth(): Promise<ServiceHealth> {
   const startTime = Date.now();
-  
+
   try {
     const isHealthy = await enhancedStorage.checkDatabaseHealth();
     const responseTime = Date.now() - startTime;
-    
+
     if (isHealthy) {
       return {
         name: 'database',
@@ -284,7 +280,7 @@ async function checkDatabaseHealth(): Promise<ServiceHealth> {
           connection_time_ms: responseTime,
         },
       };
-    } else {
+    } 
       return {
         name: 'database',
         status: 'unhealthy',
@@ -295,7 +291,7 @@ async function checkDatabaseHealth(): Promise<ServiceHealth> {
           critical: true,
         },
       };
-    }
+    
   } catch (error) {
     const responseTime = Date.now() - startTime;
     return {
@@ -316,11 +312,11 @@ async function checkDatabaseHealth(): Promise<ServiceHealth> {
  */
 async function checkEmailHealth(): Promise<ServiceHealth> {
   const startTime = Date.now();
-  
+
   try {
     const emailStatus = productionEmailService.getServiceStatus();
     const responseTime = Date.now() - startTime;
-    
+
     if (emailStatus.available && emailStatus.configured) {
       return {
         name: 'email',
@@ -347,7 +343,7 @@ async function checkEmailHealth(): Promise<ServiceHealth> {
           enabled: emailStatus.configured,
         },
       };
-    } else {
+    } 
       return {
         name: 'email',
         status: 'unhealthy',
@@ -358,7 +354,7 @@ async function checkEmailHealth(): Promise<ServiceHealth> {
           critical: true,
         },
       };
-    }
+    
   } catch (error) {
     const responseTime = Date.now() - startTime;
     return {
@@ -379,13 +375,13 @@ async function checkEmailHealth(): Promise<ServiceHealth> {
  */
 async function checkAnalyticsHealth(): Promise<ServiceHealth> {
   const startTime = Date.now();
-  
+
   try {
     const analyticsStatus = analyticsService.getStatus();
     const responseTime = Date.now() - startTime;
-    
+
     const hasAnalytics = analyticsStatus.posthog.enabled || analyticsStatus.googleAnalytics.enabled;
-    
+
     return {
       name: 'analytics',
       status: hasAnalytics ? 'healthy' : 'degraded',
@@ -418,11 +414,11 @@ async function checkAnalyticsHealth(): Promise<ServiceHealth> {
  */
 async function checkMonitoringHealth(): Promise<ServiceHealth> {
   const startTime = Date.now();
-  
+
   try {
     const sentryEnabled = isSentryEnabled();
     const responseTime = Date.now() - startTime;
-    
+
     return {
       name: 'monitoring',
       status: sentryEnabled ? 'healthy' : 'degraded',
@@ -462,11 +458,11 @@ async function checkAllDependencies(): Promise<ServiceHealth[]> {
   ];
 
   const results = await Promise.allSettled(checks);
-  
+
   return results.map((result, index) => {
     if (result.status === 'fulfilled') {
       return result.value;
-    } else {
+    } 
       const serviceNames = ['database', 'email', 'analytics', 'monitoring'];
       return {
         name: serviceNames[index] || 'unknown',
@@ -477,7 +473,7 @@ async function checkAllDependencies(): Promise<ServiceHealth[]> {
           critical: ['database', 'email'].includes(serviceNames[index]),
         },
       };
-    }
+    
   });
 }
 
@@ -488,13 +484,15 @@ function determineOverallStatus(services: ServiceHealth[]): 'healthy' | 'degrade
   const criticalServices = services.filter(s => s.details?.critical);
   const hasUnhealthyCritical = criticalServices.some(s => s.status === 'unhealthy');
   const hasDegradedCritical = criticalServices.some(s => s.status === 'degraded');
-  const hasUnhealthyNonCritical = services.some(s => !s.details?.critical && s.status === 'unhealthy');
-  
+  const hasUnhealthyNonCritical = services.some(
+    s => !s.details?.critical && s.status === 'unhealthy'
+  );
+
   if (hasUnhealthyCritical) {
     return 'unhealthy';
   } else if (hasDegradedCritical || hasUnhealthyNonCritical) {
     return 'degraded';
-  } else {
+  } 
     return 'healthy';
-  }
+  
 }

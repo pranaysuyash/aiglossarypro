@@ -11,7 +11,7 @@ import { getAuth as getAdminAuth } from 'firebase-admin/auth';
 let adminInitialized = false;
 
 export function initializeFirebaseAdmin() {
-  if (adminInitialized) return;
+  if (adminInitialized) {return;}
 
   try {
     // Use service account credentials from environment

@@ -114,7 +114,7 @@ async function discoverRoutes(): Promise<string[]> {
     const paths = new Set<string>();
     for (const pattern of routePatterns) {
       const matches = [...src.matchAll(pattern)];
-      matches.forEach((m) => {
+      matches.forEach(m => {
         let path = m[1];
         if (!path.startsWith('/')) path = `/${path}`;
         if (!path.includes(':') && !path.includes('*')) {
@@ -129,7 +129,7 @@ async function discoverRoutes(): Promise<string[]> {
     paths.add('/terms');
     paths.add('/categories');
 
-    return Array.from(paths).filter((p) => p && p.length > 0);
+    return Array.from(paths).filter(p => p && p.length > 0);
   } catch (_error) {
     console.log(chalk.yellow('⚠️  Route discovery failed, using defaults'));
     return ['/', '/terms', '/categories', '/dashboard', '/settings', '/login'];
@@ -342,7 +342,7 @@ async function performComprehensiveInteractions(
           if (submitButton) {
             await submitButton.click();
           } else {
-            await form.evaluate((f) => (f as HTMLFormElement).submit());
+            await form.evaluate(f => (f as HTMLFormElement).submit());
           }
 
           await page.waitForLoadState('networkidle', { timeout: 10000 });
@@ -441,7 +441,7 @@ async function getPageMetrics(page: Page): Promise<RouteResult['pageMetrics']> {
     const errors: string[] = [];
     const warnings: string[] = [];
 
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         errors.push(msg.text());
       } else if (msg.type() === 'warning') {
@@ -478,7 +478,7 @@ async function analyzeWithAI(report: AuditReport): Promise<void> {
         critical_issues: findCriticalIssues(report),
         recommendations: generateRecommendations(report),
       },
-      route_analysis: report.routes.map((route) => ({
+      route_analysis: report.routes.map(route => ({
         route: route.route,
         ui_issues: analyzeUIIssues(route),
         ux_issues: analyzeUXIssues(route),
@@ -508,7 +508,7 @@ async function analyzeWithAI(report: AuditReport): Promise<void> {
 function calculateOverallScore(report: AuditReport): number {
   const totalInteractions = report.summary.totalInteractions;
   const successfulInteractions = report.routes.reduce(
-    (acc, route) => acc + route.interactions.filter((i) => i.success).length,
+    (acc, route) => acc + route.interactions.filter(i => i.success).length,
     0
   );
 
@@ -524,14 +524,14 @@ function findCriticalIssues(report: AuditReport): string[] {
   }
 
   // Check for console errors
-  report.routes.forEach((route) => {
+  report.routes.forEach(route => {
     if (route.pageMetrics.errors.length > 0) {
       issues.push(`Console errors on ${route.route}: ${route.pageMetrics.errors.length} errors`);
     }
   });
 
   // Check for missing interactive elements
-  report.routes.forEach((route) => {
+  report.routes.forEach(route => {
     if (route.pageMetrics.elements.buttons === 0 && route.pageMetrics.elements.links === 0) {
       issues.push(`No interactive elements found on ${route.route}`);
     }
@@ -547,9 +547,9 @@ function generateRecommendations(report: AuditReport): string[] {
     recommendations.push('Optimize page load times - average load time exceeds 3 seconds');
   }
 
-  const routesWithForms = report.routes.filter((r) => r.pageMetrics.elements.forms > 0);
-  const formsWithErrors = routesWithForms.filter((r) =>
-    r.interactions.some((i) => i.type === 'form' && !i.success)
+  const routesWithForms = report.routes.filter(r => r.pageMetrics.elements.forms > 0);
+  const formsWithErrors = routesWithForms.filter(r =>
+    r.interactions.some(i => i.type === 'form' && !i.success)
   );
 
   if (formsWithErrors.length > 0) {
@@ -572,7 +572,7 @@ function analyzeUIIssues(route: RouteResult): string[] {
 function analyzeUXIssues(route: RouteResult): string[] {
   const issues: string[] = [];
 
-  const failedClicks = route.interactions.filter((i) => i.type === 'click' && !i.success);
+  const failedClicks = route.interactions.filter(i => i.type === 'click' && !i.success);
   if (failedClicks.length > 0) {
     issues.push(`${failedClicks.length} clickable elements failed to respond`);
   }
@@ -583,7 +583,7 @@ function analyzeUXIssues(route: RouteResult): string[] {
 function analyzeAccessibilityIssues(route: RouteResult): string[] {
   const issues: string[] = [];
 
-  const keyboardNav = route.interactions.find((i) => i.type === 'keyboard');
+  const keyboardNav = route.interactions.find(i => i.type === 'keyboard');
   if (!keyboardNav || !keyboardNav.success) {
     issues.push('Keyboard navigation may be problematic');
   }
@@ -604,10 +604,10 @@ function analyzePerformanceIssues(route: RouteResult): string[] {
 function analyzeInteractionFlows(report: AuditReport): string[] {
   const issues: string[] = [];
 
-  report.routes.forEach((route) => {
+  report.routes.forEach(route => {
     const interactions = route.interactions;
-    const clickInteractions = interactions.filter((i) => i.type === 'click');
-    const failedClicks = clickInteractions.filter((i) => !i.success);
+    const clickInteractions = interactions.filter(i => i.type === 'click');
+    const failedClicks = clickInteractions.filter(i => !i.success);
 
     if (failedClicks.length > clickInteractions.length * 0.3) {
       issues.push(
@@ -622,9 +622,9 @@ function analyzeInteractionFlows(report: AuditReport): string[] {
 function analyzeFormUsability(report: AuditReport): string[] {
   const issues: string[] = [];
 
-  report.routes.forEach((route) => {
-    const formInteractions = route.interactions.filter((i) => i.type === 'form');
-    const failedForms = formInteractions.filter((i) => !i.success);
+  report.routes.forEach(route => {
+    const formInteractions = route.interactions.filter(i => i.type === 'form');
+    const failedForms = formInteractions.filter(i => !i.success);
 
     if (failedForms.length > 0) {
       issues.push(
@@ -726,7 +726,7 @@ async function generateHTMLReport(report: AuditReport, analysis: any): Promise<v
                 <h2>📊 Route Analysis</h2>
                 ${report.routes
                   .map(
-                    (route) => `
+                    route => `
                     <div class="route-card">
                         <div class="route-header">
                             <h3>${route.route}</h3>
@@ -763,7 +763,7 @@ async function generateHTMLReport(report: AuditReport, analysis: any): Promise<v
                                 ${route.interactions
                                   .slice(0, 6)
                                   .map(
-                                    (interaction) => `
+                                    interaction => `
                                     <div class="interaction ${interaction.success ? 'success' : 'failed'}">
                                         <strong>${interaction.type}</strong>: ${interaction.element}
                                         <br><small>${interaction.success ? '✅ Success' : '❌ Failed'} (${interaction.timing}ms)</small>
@@ -858,7 +858,7 @@ class AutoAuditor {
         await page.screenshot({ path: finalScreenshot, fullPage: true });
 
         totalInteractions += interactions.length;
-        successfulInteractions += interactions.filter((i) => i.success).length;
+        successfulInteractions += interactions.filter(i => i.success).length;
 
         results.push({
           route,
@@ -871,7 +871,7 @@ class AutoAuditor {
 
         console.log(
           chalk.green(
-            `  ✅ Completed ${route}: ${interactions.length} interactions, ${interactions.filter((i) => i.success).length} successful`
+            `  ✅ Completed ${route}: ${interactions.length} interactions, ${interactions.filter(i => i.success).length} successful`
           )
         );
       } catch (error) {

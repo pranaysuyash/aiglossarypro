@@ -179,17 +179,17 @@ class MigrationSetupValidator {
     console.log('\n📊 Validation Summary');
     console.log('====================');
 
-    const passed = this.results.filter((r) => r.passed).length;
+    const passed = this.results.filter(r => r.passed).length;
     const total = this.results.length;
     const percentage = Math.round((passed / total) * 100);
 
     console.log(`\n✅ Passed: ${passed}/${total} (${percentage}%)`);
     console.log(`❌ Failed: ${total - passed}/${total}`);
 
-    const failedChecks = this.results.filter((r) => !r.passed);
+    const failedChecks = this.results.filter(r => !r.passed);
     if (failedChecks.length > 0) {
       console.log('\n❌ Failed Checks:');
-      failedChecks.forEach((check) => {
+      failedChecks.forEach(check => {
         console.log(`  - ${check.check}: ${check.message}`);
       });
 
@@ -228,7 +228,7 @@ async function main() {
 }
 
 // Run if this is the main module
-main().catch((error) => {
+main().catch(error => {
   console.error('Fatal error:', error);
   process.exit(1);
 });

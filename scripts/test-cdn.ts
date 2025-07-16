@@ -185,7 +185,7 @@ class CDNTester {
       // Find CSS files
       const cssFiles = await this.findFiles(path.join(assetsPath, 'css'), '.css');
       if (cssFiles.length > 0) {
-        const mainCss = tests.find((t) => t.name === 'Main CSS');
+        const mainCss = tests.find(t => t.name === 'Main CSS');
         if (mainCss) {
           mainCss.url = `${this.baseUrl}/assets/css/${cssFiles[0]}`;
         }
@@ -197,27 +197,27 @@ class CDNTester {
       // Update URLs with actual file names
       for (const test of tests) {
         if (test.url.includes('react-*.js')) {
-          const reactFile = jsFiles.find((f) => f.includes('react-'));
+          const reactFile = jsFiles.find(f => f.includes('react-'));
           if (reactFile) test.url = `${this.baseUrl}/assets/js/${reactFile}`;
         }
 
         if (test.url.includes('index-*.js')) {
-          const indexFile = jsFiles.find((f) => f.includes('index-'));
+          const indexFile = jsFiles.find(f => f.includes('index-'));
           if (indexFile) test.url = `${this.baseUrl}/assets/js/${indexFile}`;
         }
 
         if (test.url.includes('CodeBlock-*.js')) {
-          const codeBlockFile = jsFiles.find((f) => f.includes('CodeBlock-'));
+          const codeBlockFile = jsFiles.find(f => f.includes('CodeBlock-'));
           if (codeBlockFile) test.url = `${this.baseUrl}/assets/js/${codeBlockFile}`;
         }
 
         if (test.url.includes('charts-*.js')) {
-          const chartsFile = jsFiles.find((f) => f.includes('charts-'));
+          const chartsFile = jsFiles.find(f => f.includes('charts-'));
           if (chartsFile) test.url = `${this.baseUrl}/assets/js/${chartsFile}`;
         }
 
         if (test.url.includes('mermaid-*.js')) {
-          const mermaidFile = jsFiles.find((f) => f.includes('mermaid-'));
+          const mermaidFile = jsFiles.find(f => f.includes('mermaid-'));
           if (mermaidFile) test.url = `${this.baseUrl}/assets/js/${mermaidFile}`;
         }
       }
@@ -225,13 +225,13 @@ class CDNTester {
       this.log(`Could not read built assets: ${error}`, 'warn');
     }
 
-    return tests.filter((test) => !test.url.includes('*'));
+    return tests.filter(test => !test.url.includes('*'));
   }
 
   private async findFiles(dir: string, extension: string): Promise<string[]> {
     try {
       const files = await fs.readdir(dir);
-      return files.filter((file) => file.endsWith(extension));
+      return files.filter(file => file.endsWith(extension));
     } catch (_error) {
       return [];
     }
@@ -308,8 +308,8 @@ class CDNTester {
     const tests = await this.getTestUrls();
     this.log(`Running ${tests.length} performance tests`);
 
-    const criticalTests = tests.filter((t) => t.critical);
-    const nonCriticalTests = tests.filter((t) => !t.critical);
+    const criticalTests = tests.filter(t => t.critical);
+    const nonCriticalTests = tests.filter(t => !t.critical);
 
     // Test critical assets
     for (const test of criticalTests) {
@@ -347,9 +347,9 @@ class CDNTester {
   }
 
   private generateSummary(): TestSummary {
-    const passedTests = this.results.filter((r) => r.success);
-    const failedTests = this.results.filter((r) => !r.success);
-    const cacheHits = this.results.filter((r) => r.cacheStatus?.includes('HIT'));
+    const passedTests = this.results.filter(r => r.success);
+    const failedTests = this.results.filter(r => !r.success);
+    const cacheHits = this.results.filter(r => r.cacheStatus?.includes('HIT'));
 
     const averageResponseTime =
       this.results.reduce((sum, r) => sum + r.responseTime, 0) / this.results.length;
@@ -382,7 +382,7 @@ class CDNTester {
       );
     }
 
-    const largeAssets = this.results.filter((r) => (r.contentLength || 0) > 1024 * 1024);
+    const largeAssets = this.results.filter(r => (r.contentLength || 0) > 1024 * 1024);
     if (largeAssets.length > 0) {
       recommendations.push(
         `Found ${largeAssets.length} assets larger than 1MB. Consider optimization.`
@@ -446,7 +446,7 @@ class CDNTester {
     }
 
     console.log('\nDETAILED RESULTS:');
-    summary.results.forEach((result) => {
+    summary.results.forEach(result => {
       const status = result.success ? '✓' : '✗';
       const size = result.contentLength ? this.formatBytes(result.contentLength) : 'N/A';
       console.log(
@@ -462,7 +462,7 @@ class CDNTester {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 
   public async runTests(): Promise<void> {
@@ -506,17 +506,17 @@ async function main(): Promise<void> {
     config.cdnProvider = 'local';
   }
 
-  const envIndex = args.findIndex((arg) => arg === '--env');
+  const envIndex = args.findIndex(arg => arg === '--env');
   if (envIndex !== -1 && args[envIndex + 1]) {
     config.environment = args[envIndex + 1] as any;
   }
 
-  const iterIndex = args.findIndex((arg) => arg === '--iterations');
+  const iterIndex = args.findIndex(arg => arg === '--iterations');
   if (iterIndex !== -1 && args[iterIndex + 1]) {
     config.iterations = parseInt(args[iterIndex + 1]) || 3;
   }
 
-  const timeoutIndex = args.findIndex((arg) => arg === '--timeout');
+  const timeoutIndex = args.findIndex(arg => arg === '--timeout');
   if (timeoutIndex !== -1 && args[timeoutIndex + 1]) {
     config.timeout = parseInt(args[timeoutIndex + 1]) || 30000;
   }

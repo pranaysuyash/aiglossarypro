@@ -120,15 +120,15 @@ export default function UserProgressDashboard() {
   }
 
   const formatTime = (minutes: number): string => {
-    if (minutes < 60) return `${minutes}m`;
+    if (minutes < 60) {return `${minutes}m`;}
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
     return `${hours}h ${remainingMinutes}m`;
   };
 
   const getStreakIcon = (streak: number) => {
-    if (streak >= 30) return <Trophy className="h-5 w-5 text-yellow-500" />;
-    if (streak >= 7) return <Flame className="h-5 w-5 text-orange-500" />;
+    if (streak >= 30) {return <Trophy className="h-5 w-5 text-yellow-500" />;}
+    if (streak >= 7) {return <Flame className="h-5 w-5 text-orange-500" />;}
     return <Calendar className="h-5 w-5 text-blue-500" />;
   };
 
@@ -288,7 +288,7 @@ export default function UserProgressDashboard() {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {progressStats.achievements.map((achievement) => (
+              {progressStats.achievements.map(achievement => (
                 <div
                   key={achievement.id}
                   className="flex items-center space-x-3 p-3 border rounded-lg"

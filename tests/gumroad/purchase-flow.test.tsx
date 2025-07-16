@@ -1,13 +1,12 @@
-import { describe, test, expect, beforeEach, afterEach, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-
-// Mock components and services
-import { TestPurchaseButton } from '../../client/src/components/TestPurchaseButton';
+import { BrowserRouter } from 'react-router-dom';
+import { afterEach, beforeEach, describe, expect, test, vi } from 'vitest';
 import { FreeTierGate } from '../../client/src/components/FreeTierGate';
 import { PremiumUpgradeSuccess } from '../../client/src/components/PremiumUpgradeSuccess';
+// Mock components and services
+import { TestPurchaseButton } from '../../client/src/components/TestPurchaseButton';
 
 // Mock fetch for API calls
 global.fetch = vi.fn();

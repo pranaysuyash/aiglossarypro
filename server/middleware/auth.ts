@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from 'express';
+import type { NextFunction, Request, Response } from 'express';
 import { multiAuthMiddleware } from './multiAuth';
 
 // Export requireAuth as an alias for multiAuthMiddleware to maintain compatibility

@@ -134,7 +134,7 @@ export default function Trending() {
           </div>
         ) : ((recentTerms as ITerm[]) || []).length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {(recentTerms as ITerm[]).slice(0, 6).map((term) => (
+            {(recentTerms as ITerm[]).slice(0, 6).map(term => (
               <div key={term.id} className="relative">
                 <TermCard term={term} isFavorite={false} />
                 {/* New badge */}

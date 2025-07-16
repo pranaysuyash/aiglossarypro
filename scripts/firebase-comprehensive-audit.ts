@@ -150,7 +150,7 @@ class FirebaseVisualAuditor {
         await loginButton.click();
 
         // Wait for redirect after login
-        await page.waitForURL((url) => !url.includes('/login'), { timeout: 10000 });
+        await page.waitForURL(url => !url.includes('/login'), { timeout: 10000 });
 
         console.log(chalk.green(`✅ Successfully authenticated as ${user.displayName}`));
         return true;
@@ -180,7 +180,7 @@ class FirebaseVisualAuditor {
 
     // Listen for console errors
     const consoleErrors: string[] = [];
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       if (msg.type() === 'error') {
         consoleErrors.push(msg.text());
       }
@@ -188,7 +188,7 @@ class FirebaseVisualAuditor {
 
     // Listen for page errors
     const pageErrors: string[] = [];
-    page.on('pageerror', (error) => {
+    page.on('pageerror', error => {
       pageErrors.push(error.message);
     });
 
@@ -385,7 +385,7 @@ class FirebaseVisualAuditor {
       totalTests: 0,
       totalIssues: this.issues.length,
       issues: this.issues,
-      testUsers: this.testUsers.map((u) => ({
+      testUsers: this.testUsers.map(u => ({
         email: u.email,
         role: u.role,
         displayName: u.displayName,

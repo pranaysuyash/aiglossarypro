@@ -1,17 +1,17 @@
 /**
  * Daily Term Rotation Service
- * 
+ *
  * Implements intelligent daily term selection algorithm that picks 50 terms
  * based on various factors like quality, popularity, learning difficulty,
  * and user engagement patterns.
  */
 
-import { subDays, format } from 'date-fns';
-import { eq, and, gte, lte, desc, asc, sql, inArray } from 'drizzle-orm';
-import { db } from '../db';
-import { enhancedTerms, termSections, termViews, userProgress } from '../../shared/enhancedSchema';
-import { log as logger } from '../utils/logger';
+import { format, subDays } from 'date-fns';
+import { and, asc, eq, gte, sql } from 'drizzle-orm';
+import { enhancedTerms, termViews } from '../../shared/enhancedSchema';
 import type { ITerm } from '../../shared/types';
+import { db } from '../db';
+import { log as logger } from '../utils/logger';
 
 interface DailyTermsConfig {
   totalTerms: number;
@@ -59,16 +59,16 @@ export class DailyTermRotationService {
     this.config = {
       totalTerms: 50,
       difficultyDistribution: {
-        beginner: 0.3,    // 30% beginner terms
-        intermediate: 0.4, // 40% intermediate terms  
-        advanced: 0.25,   // 25% advanced terms
-        expert: 0.05      // 5% expert terms
+        beginner: 0.3, // 30% beginner terms
+        intermediate: 0.4, // 40% intermediate terms
+        advanced: 0.25, // 25% advanced terms
+        expert: 0.05, // 5% expert terms
       },
       categoryBalance: true,
       freshnessFactor: 0.2,
       popularityWeight: 0.3,
       qualityThreshold: 60,
-      ...config
+      ...config,
     };
   }
 
@@ -78,7 +78,7 @@ export class DailyTermRotationService {
   async getTodaysTerms(date?: Date): Promise<DailyTermsResponse> {
     const targetDate = date || new Date();
     const dateString = format(targetDate, 'yyyy-MM-dd');
-    
+
     logger.info('Generating daily terms selection', { date: dateString });
 
     try {
@@ -98,23 +98,23 @@ export class DailyTermRotationService {
           algorithm_version: this.algorithmVersion,
           selection_criteria: this.config,
           distribution: this.analyzeDistribution(terms),
-          generated_at: new Date().toISOString()
-        }
+          generated_at: new Date().toISOString(),
+        },
       };
 
       // Cache the selection
       await this.cacheDailyTerms(dateString, response);
 
-      logger.info('Generated new daily terms selection', { 
-        date: dateString, 
-        termCount: terms.length 
+      logger.info('Generated new daily terms selection', {
+        date: dateString,
+        termCount: terms.length,
       });
 
       return response;
     } catch (error) {
-      logger.error('Error generating daily terms', { 
+      logger.error('Error generating daily terms', {
         error: error instanceof Error ? error.message : String(error),
-        date: dateString 
+        date: dateString,
       });
       throw error;
     }
@@ -126,7 +126,7 @@ export class DailyTermRotationService {
   private async generateDailyTerms(date: Date): Promise<ITerm[]> {
     // Step 1: Get all eligible terms
     const allTerms = await this.getEligibleTerms();
-    
+
     if (allTerms.length === 0) {
       throw new Error('No eligible terms found for selection');
     }
@@ -173,7 +173,7 @@ export class DailyTermRotationService {
         difficultyLevel: term.difficultyLevel || 'intermediate',
         hasImplementation: term.hasImplementation || false,
         hasInteractiveElements: term.hasInteractiveElements || false,
-        hasCodeExamples: term.hasCodeExamples || false
+        hasCodeExamples: term.hasCodeExamples || false,
       }));
     } catch (error) {
       logger.error('Error fetching eligible terms', { error });
@@ -204,7 +204,7 @@ export class DailyTermRotationService {
         const engagementScore = this.calculateEngagementScore(recentViews, weeklyViews);
 
         // Weighted composite score
-        const compositeScore = 
+        const compositeScore =
           qualityScore * 0.25 +
           popularityScore * this.config.popularityWeight +
           freshnessScore * this.config.freshnessFactor +
@@ -221,16 +221,16 @@ export class DailyTermRotationService {
             freshness: freshnessScore,
             difficulty: difficultyScore,
             completeness: completenessScore,
-            engagement: engagementScore
-          }
+            engagement: engagementScore,
+          },
         });
       } catch (error) {
-        logger.warn('Error calculating score for term', { 
-          termId: term.id, 
+        logger.warn('Error calculating score for term', {
+          termId: term.id,
           termName: term.name,
-          error: error instanceof Error ? error.message : String(error)
+          error: error instanceof Error ? error.message : String(error),
         });
-        
+
         // Fallback score
         scores.push({
           termId: term.id,
@@ -241,8 +241,8 @@ export class DailyTermRotationService {
             freshness: 0.5,
             difficulty: 0.5,
             completeness: 0.5,
-            engagement: 0.5
-          }
+            engagement: 0.5,
+          },
         });
       }
     }
@@ -254,20 +254,20 @@ export class DailyTermRotationService {
     let score = 0.5; // Base score
 
     // Definition quality
-    if (term.definition && term.definition.length > 200) score += 0.2;
-    if (term.shortDefinition && term.shortDefinition.length > 50) score += 0.1;
+    if (term.definition && term.definition.length > 200) {score += 0.2;}
+    if (term.shortDefinition && term.shortDefinition.length > 50) {score += 0.1;}
 
     // Content richness
-    if ((term as any).hasImplementation) score += 0.1;
-    if ((term as any).hasCodeExamples) score += 0.1;
-    if ((term as any).hasInteractiveElements) score += 0.1;
+    if ((term as any).hasImplementation) {score += 0.1;}
+    if ((term as any).hasCodeExamples) {score += 0.1;}
+    if ((term as any).hasInteractiveElements) {score += 0.1;}
 
     return Math.min(score, 1.0);
   }
 
-  private calculatePopularityScore(term: ITerm, recentViews: number): number {
-    if (recentViews === 0) return 0.3; // Base score for new/unviewed terms
-    
+  private calculatePopularityScore(_term: ITerm, recentViews: number): number {
+    if (recentViews === 0) {return 0.3;} // Base score for new/unviewed terms
+
     // Normalize based on logarithmic scale
     const normalizedViews = Math.log(recentViews + 1) / Math.log(100);
     return Math.min(normalizedViews, 1.0);
@@ -275,53 +275,55 @@ export class DailyTermRotationService {
 
   private calculateFreshnessScore(term: ITerm, currentDate: Date): number {
     const termDate = new Date(term.updatedAt || term.createdAt || currentDate);
-    const daysSinceUpdate = Math.floor((currentDate.getTime() - termDate.getTime()) / (1000 * 60 * 60 * 24));
-    
+    const daysSinceUpdate = Math.floor(
+      (currentDate.getTime() - termDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
+
     // Recent updates get higher scores
-    if (daysSinceUpdate <= 7) return 1.0;
-    if (daysSinceUpdate <= 30) return 0.8;
-    if (daysSinceUpdate <= 90) return 0.6;
-    if (daysSinceUpdate <= 365) return 0.4;
-    
+    if (daysSinceUpdate <= 7) {return 1.0;}
+    if (daysSinceUpdate <= 30) {return 0.8;}
+    if (daysSinceUpdate <= 90) {return 0.6;}
+    if (daysSinceUpdate <= 365) {return 0.4;}
+
     return 0.2; // Older content gets lower freshness score
   }
 
   private calculateDifficultyScore(term: ITerm): number {
     const difficulty = (term as any).difficultyLevel || 'intermediate';
-    
+
     // Boost scores based on target distribution
     const difficultyScores = {
-      'beginner': 0.8,     // Slightly favor beginner terms
-      'intermediate': 1.0, // Highest weight for intermediate
-      'advanced': 0.7,
-      'expert': 0.5
+      beginner: 0.8, // Slightly favor beginner terms
+      intermediate: 1.0, // Highest weight for intermediate
+      advanced: 0.7,
+      expert: 0.5,
     };
-    
+
     return difficultyScores[difficulty as keyof typeof difficultyScores] || 0.6;
   }
 
   private calculateCompletenessScore(term: ITerm): number {
     let score = 0.3; // Base score
-    
+
     // Check for key content elements
-    if (term.definition && term.definition.length > 100) score += 0.2;
-    if (term.shortDefinition) score += 0.1;
-    if (term.category && term.category !== 'General') score += 0.1;
-    if ((term as any).hasImplementation) score += 0.15;
-    if ((term as any).hasCodeExamples) score += 0.15;
-    
+    if (term.definition && term.definition.length > 100) {score += 0.2;}
+    if (term.shortDefinition) {score += 0.1;}
+    if (term.category && term.category !== 'General') {score += 0.1;}
+    if ((term as any).hasImplementation) {score += 0.15;}
+    if ((term as any).hasCodeExamples) {score += 0.15;}
+
     return Math.min(score, 1.0);
   }
 
   private calculateEngagementScore(recentViews: number, weeklyViews: number): number {
-    if (recentViews === 0) return 0.3;
-    
+    if (recentViews === 0) {return 0.3;}
+
     // Calculate engagement velocity (recent views vs weekly average)
     const weeklyAverage = weeklyViews / 7;
     const dailyViews = recentViews / 30;
-    
-    if (weeklyAverage === 0) return Math.min(dailyViews / 5, 1.0);
-    
+
+    if (weeklyAverage === 0) {return Math.min(dailyViews / 5, 1.0);}
+
     const engagementRatio = dailyViews / weeklyAverage;
     return Math.min(engagementRatio / 2, 1.0);
   }
@@ -331,13 +333,8 @@ export class DailyTermRotationService {
       const result = await db
         .select({ count: sql<number>`count(*)` })
         .from(termViews)
-        .where(
-          and(
-            eq(termViews.termId, termId),
-            gte(termViews.viewedAt, since)
-          )
-        );
-      
+        .where(and(eq(termViews.termId, termId), gte(termViews.viewedAt, since)));
+
       return result[0]?.count || 0;
     } catch (error) {
       logger.warn('Error getting recent views', { termId, error });
@@ -348,10 +345,10 @@ export class DailyTermRotationService {
   /**
    * Select terms with intelligent balancing across categories and difficulties
    */
-  private async selectTermsWithBalancing(scoredTerms: TermScore[], date: Date): Promise<ITerm[]> {
+  private async selectTermsWithBalancing(scoredTerms: TermScore[], _date: Date): Promise<ITerm[]> {
     const termMap = new Map<string, ITerm>();
     const allTerms = await this.getEligibleTerms();
-    
+
     allTerms.forEach(term => termMap.set(term.id, term));
 
     const selected: ITerm[] = [];
@@ -361,9 +358,11 @@ export class DailyTermRotationService {
     // Calculate target counts for each difficulty
     const targetCounts = {
       beginner: Math.floor(this.config.totalTerms * this.config.difficultyDistribution.beginner),
-      intermediate: Math.floor(this.config.totalTerms * this.config.difficultyDistribution.intermediate),
+      intermediate: Math.floor(
+        this.config.totalTerms * this.config.difficultyDistribution.intermediate
+      ),
       advanced: Math.floor(this.config.totalTerms * this.config.difficultyDistribution.advanced),
-      expert: Math.floor(this.config.totalTerms * this.config.difficultyDistribution.expert)
+      expert: Math.floor(this.config.totalTerms * this.config.difficultyDistribution.expert),
     };
 
     // Ensure we hit exactly the target number
@@ -375,7 +374,7 @@ export class DailyTermRotationService {
     // Selection algorithm with balancing
     for (const scoredTerm of scoredTerms) {
       const term = termMap.get(scoredTerm.termId);
-      if (!term) continue;
+      if (!term) {continue;}
 
       const difficulty = (term as any).difficultyLevel || 'intermediate';
       const category = term.category || 'General';
@@ -383,7 +382,7 @@ export class DailyTermRotationService {
       // Check difficulty quota
       const currentDifficultyCount = usedDifficulties.get(difficulty) || 0;
       const difficultyTarget = targetCounts[difficulty as keyof typeof targetCounts] || 0;
-      
+
       if (currentDifficultyCount >= difficultyTarget) {
         continue; // Skip if difficulty quota is full
       }
@@ -392,7 +391,7 @@ export class DailyTermRotationService {
       if (this.config.categoryBalance) {
         const categoryCount = usedCategories.get(category) || 0;
         const maxPerCategory = Math.ceil(this.config.totalTerms / 8); // Assuming ~8 major categories
-        
+
         if (categoryCount >= maxPerCategory) {
           continue; // Skip if category is over-represented
         }
@@ -412,13 +411,13 @@ export class DailyTermRotationService {
     if (selected.length < this.config.totalTerms) {
       const remaining = this.config.totalTerms - selected.length;
       const selectedIds = new Set(selected.map(t => t.id));
-      
+
       const additionalTerms = scoredTerms
         .filter(st => !selectedIds.has(st.termId))
         .slice(0, remaining)
         .map(st => termMap.get(st.termId))
         .filter(term => term !== undefined) as ITerm[];
-      
+
       selected.push(...additionalTerms);
     }
 
@@ -426,7 +425,7 @@ export class DailyTermRotationService {
       selectedCount: selected.length,
       targetCount: this.config.totalTerms,
       difficultyDistribution: this.analyzeDifficultyDistribution(selected),
-      categoryDistribution: this.analyzeCategoryDistribution(selected)
+      categoryDistribution: this.analyzeCategoryDistribution(selected),
     });
 
     return selected.slice(0, this.config.totalTerms);
@@ -447,13 +446,13 @@ export class DailyTermRotationService {
     return {
       difficulty: this.analyzeDifficultyDistribution(terms),
       category: this.analyzeCategoryDistribution(terms),
-      quality: this.analyzeQualityDistribution(terms)
+      quality: this.analyzeQualityDistribution(terms),
     };
   }
 
   private analyzeDifficultyDistribution(terms: ITerm[]) {
     const distribution = { beginner: 0, intermediate: 0, advanced: 0, expert: 0 };
-    
+
     terms.forEach(term => {
       const difficulty = (term as any).difficultyLevel || 'intermediate';
       if (difficulty in distribution) {
@@ -466,7 +465,7 @@ export class DailyTermRotationService {
 
   private analyzeCategoryDistribution(terms: ITerm[]) {
     const distribution: Record<string, number> = {};
-    
+
     terms.forEach(term => {
       const category = term.category || 'General';
       distribution[category] = (distribution[category] || 0) + 1;
@@ -481,17 +480,17 @@ export class DailyTermRotationService {
     let hasInteractiveElements = 0;
 
     terms.forEach(term => {
-      if ((term as any).hasImplementation) hasImplementation++;
-      if ((term as any).hasCodeExamples) hasCodeExamples++;
-      if ((term as any).hasInteractiveElements) hasInteractiveElements++;
+      if ((term as any).hasImplementation) {hasImplementation++;}
+      if ((term as any).hasCodeExamples) {hasCodeExamples++;}
+      if ((term as any).hasInteractiveElements) {hasInteractiveElements++;}
     });
 
     return {
       withImplementation: hasImplementation,
       withCodeExamples: hasCodeExamples,
       withInteractiveElements: hasInteractiveElements,
-      averageDefinitionLength: terms.reduce((sum, term) => 
-        sum + (term.definition?.length || 0), 0) / terms.length
+      averageDefinitionLength:
+        terms.reduce((sum, term) => sum + (term.definition?.length || 0), 0) / terms.length,
     };
   }
 
@@ -509,7 +508,7 @@ export class DailyTermRotationService {
 
       const cacheFile = path.join(cacheDir, `${date}.json`);
       fs.writeFileSync(cacheFile, JSON.stringify(response, null, 2));
-      
+
       logger.info('Cached daily terms', { date, cacheFile });
     } catch (error) {
       logger.warn('Failed to cache daily terms', { date, error });
@@ -522,10 +521,10 @@ export class DailyTermRotationService {
   private async getCachedDailyTerms(date: string): Promise<DailyTermsResponse | null> {
     try {
       const cacheFile = path.join(process.cwd(), 'cache', 'daily-terms', `${date}.json`);
-      
+
       if (fs.existsSync(cacheFile)) {
         const cached = JSON.parse(fs.readFileSync(cacheFile, 'utf-8'));
-        
+
         // Validate cache (check if it's from current algorithm version)
         if (cached.metadata?.algorithm_version === this.algorithmVersion) {
           return cached;
@@ -534,21 +533,21 @@ export class DailyTermRotationService {
     } catch (error) {
       logger.warn('Error reading cached daily terms', { date, error });
     }
-    
+
     return null;
   }
 
   /**
    * Get historical performance metrics for algorithm tuning
    */
-  async getSelectionMetrics(days: number = 30): Promise<any> {
+  async getSelectionMetrics(_days = 30): Promise<any> {
     const metrics = {
       totalSelections: 0,
       averageTermsPerDay: 0,
       difficultyDistribution: { beginner: 0, intermediate: 0, advanced: 0, expert: 0 },
       categoryBalance: {},
       algorithmVersions: {},
-      engagementMetrics: {}
+      engagementMetrics: {},
     };
 
     // Implementation would analyze historical selections and engagement

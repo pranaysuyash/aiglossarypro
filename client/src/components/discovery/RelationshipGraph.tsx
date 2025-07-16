@@ -33,7 +33,7 @@ interface RelationshipGraphProps {
   onNodeClick?: (node: GraphNode) => void;
   onFilterChange?: (filters: FilterState) => void;
   selectedFilters?: FilterState;
-  className?: string;
+  className?: string | undefined;
 }
 
 interface FilterState {
@@ -82,7 +82,7 @@ export function RelationshipGraph({
   };
 
   useEffect(() => {
-    if (!svgRef.current || !containerRef.current) return;
+    if (!svgRef.current || !containerRef.current) {return;}
 
     // Update dimensions based on container
     const updateDimensions = () => {
@@ -103,19 +103,19 @@ export function RelationshipGraph({
 
     // Filter data based on selected filters
     const filteredLinks = links.filter(
-      (link) =>
+      link =>
         selectedFilters.relationshipTypes.includes(link.type) &&
         link.strength >= selectedFilters.minStrength
     );
 
     const connectedNodeIds = new Set<string>();
-    filteredLinks.forEach((link) => {
+    filteredLinks.forEach(link => {
       connectedNodeIds.add(typeof link.source === 'string' ? link.source : link.source.id);
       connectedNodeIds.add(typeof link.target === 'string' ? link.target : link.target.id);
     });
 
     const filteredNodes = nodes.filter(
-      (node) =>
+      node =>
         node.id === centralNodeId ||
         (connectedNodeIds.has(node.id) && selectedFilters.nodeTypes.includes(node.type))
     );
@@ -128,7 +128,7 @@ export function RelationshipGraph({
     const zoom = d3
       .zoom<SVGSVGElement, unknown>()
       .scaleExtent([0.1, 4])
-      .on('zoom', (event) => {
+      .on('zoom', event => {
         g.attr('transform', event.transform);
         setZoomLevel(event.transform.k);
       });
@@ -142,9 +142,9 @@ export function RelationshipGraph({
         'link',
         d3
           .forceLink<GraphNode, GraphLink>(filteredLinks)
-          .id((d) => d.id)
-          .distance((d) => 100 / d.strength)
-          .strength((d) => d.strength / 10)
+          .id(d => d.id)
+          .distance(d => 100 / d.strength)
+          .strength(d => d.strength / 10)
       )
       .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(dimensions.width / 2, dimensions.height / 2))
@@ -174,10 +174,10 @@ export function RelationshipGraph({
       .data(filteredLinks)
       .enter()
       .append('line')
-      .attr('stroke', (d) => linkColors[d.type])
-      .attr('stroke-opacity', (d) => 0.3 + (d.strength / 10) * 0.7)
-      .attr('stroke-width', (d) => 1 + d.strength / 5)
-      .attr('marker-end', (d) => `url(#arrow-${d.type})`);
+      .attr('stroke', d => linkColors[d.type])
+      .attr('stroke-opacity', d => 0.3 + (d.strength / 10) * 0.7)
+      .attr('stroke-width', d => 1 + d.strength / 5)
+      .attr('marker-end', d => `url(#arrow-${d.type})`);
 
     // Create link labels
     const linkLabel = g
@@ -189,7 +189,7 @@ export function RelationshipGraph({
       .attr('font-size', 10)
       .attr('fill', '#666')
       .attr('text-anchor', 'middle')
-      .text((d) => d.type);
+      .text(d => d.type);
 
     // Create nodes
     const node = g
@@ -210,10 +210,10 @@ export function RelationshipGraph({
     // Add circles for nodes
     node
       .append('circle')
-      .attr('r', (d) => (d.id === centralNodeId ? 25 : 20))
-      .attr('fill', (d) => nodeColors[d.type])
-      .attr('stroke', (d) => (d.id === centralNodeId ? '#000' : '#fff'))
-      .attr('stroke-width', (d) => (d.id === centralNodeId ? 3 : 2));
+      .attr('r', d => (d.id === centralNodeId ? 25 : 20))
+      .attr('fill', d => nodeColors[d.type])
+      .attr('stroke', d => (d.id === centralNodeId ? '#000' : '#fff'))
+      .attr('stroke-width', d => (d.id === centralNodeId ? 3 : 2));
 
     // Add labels
     node
@@ -221,8 +221,8 @@ export function RelationshipGraph({
       .attr('dy', 35)
       .attr('text-anchor', 'middle')
       .attr('font-size', 12)
-      .attr('font-weight', (d) => (d.id === centralNodeId ? 'bold' : 'normal'))
-      .text((d) => d.name);
+      .attr('font-weight', d => (d.id === centralNodeId ? 'bold' : 'normal'))
+      .text(d => d.name);
 
     // Add hover effects
     node
@@ -234,7 +234,7 @@ export function RelationshipGraph({
           .attr('r', d.id === centralNodeId ? 30 : 25);
 
         // Highlight connected links
-        link.style('stroke-opacity', (l) => {
+        link.style('stroke-opacity', l => {
           const source = typeof l.source === 'object' ? l.source.id : l.source;
           const target = typeof l.target === 'object' ? l.target.id : l.target;
           return source === d.id || target === d.id ? 0.8 : 0.2;
@@ -247,7 +247,7 @@ export function RelationshipGraph({
           .duration(200)
           .attr('r', d.id === centralNodeId ? 25 : 20);
 
-        link.style('stroke-opacity', (l) => 0.3 + (l.strength / 10) * 0.7);
+        link.style('stroke-opacity', l => 0.3 + (l.strength / 10) * 0.7);
       })
       .on('click', (_event, d) => {
         onNodeClick?.(d);
@@ -256,21 +256,21 @@ export function RelationshipGraph({
     // Update positions on tick
     simulation.on('tick', () => {
       link
-        .attr('x1', (d) => (d.source as GraphNode).x!)
-        .attr('y1', (d) => (d.source as GraphNode).y!)
-        .attr('x2', (d) => (d.target as GraphNode).x!)
-        .attr('y2', (d) => (d.target as GraphNode).y!);
+        .attr('x1', d => (d.source as GraphNode).x!)
+        .attr('y1', d => (d.source as GraphNode).y!)
+        .attr('x2', d => (d.target as GraphNode).x!)
+        .attr('y2', d => (d.target as GraphNode).y!);
 
       linkLabel
-        .attr('x', (d) => ((d.source as GraphNode).x! + (d.target as GraphNode).x!) / 2)
-        .attr('y', (d) => ((d.source as GraphNode).y! + (d.target as GraphNode).y!) / 2);
+        .attr('x', d => ((d.source as GraphNode).x! + (d.target as GraphNode).x!) / 2)
+        .attr('y', d => ((d.source as GraphNode).y! + (d.target as GraphNode).y!) / 2);
 
-      node.attr('transform', (d) => `translate(${d.x},${d.y})`);
+      node.attr('transform', d => `translate(${d.x},${d.y})`);
     });
 
     // Drag functions
     function dragstarted(event: any, d: GraphNode) {
-      if (!event.active) simulation.alphaTarget(0.3).restart();
+      if (!event.active) {simulation.alphaTarget(0.3).restart();}
       d.fx = d.x;
       d.fy = d.y;
     }
@@ -281,7 +281,7 @@ export function RelationshipGraph({
     }
 
     function dragended(event: any, d: GraphNode) {
-      if (!event.active) simulation.alphaTarget(0);
+      if (!event.active) {simulation.alphaTarget(0);}
       d.fx = null;
       d.fy = null;
     }

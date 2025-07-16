@@ -42,17 +42,17 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
   const termUrl = useMemo(() => `${window.location.origin}/term/${term.id}`, [term.id]);
 
   const featureIcons = useMemo(() => {
-    if (!enhanced) return [];
+    if (!enhanced) {return [];}
 
     const features = [];
     if (term.hasCodeExamples)
-      features.push({ icon: Code, label: 'Code Examples', color: 'text-blue-500' });
+      {features.push({ icon: Code, label: 'Code Examples', color: 'text-blue-500' });}
     if (term.hasInteractiveElements)
-      features.push({ icon: Play, label: 'Interactive', color: 'text-purple-500' });
+      {features.push({ icon: Play, label: 'Interactive', color: 'text-purple-500' });}
     if (term.hasCaseStudies)
-      features.push({ icon: TestTube, label: 'Case Studies', color: 'text-green-500' });
+      {features.push({ icon: TestTube, label: 'Case Studies', color: 'text-green-500' });}
     if (term.hasImplementation)
-      features.push({ icon: Brain, label: 'Implementation', color: 'text-orange-500' });
+      {features.push({ icon: Brain, label: 'Implementation', color: 'text-orange-500' });}
 
     return features;
   }, [enhanced, term]);
@@ -182,7 +182,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
       <div
         className="absolute inset-0 cursor-pointer"
         onClick={handleNavigateToTerm}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             handleNavigateToTerm();
           }
@@ -245,7 +245,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
             <AIContentFeedback
               termId={term.id}
               termName={term.name}
-              isAiGenerated={true}
+              isAiGenerated
               verificationStatus={term.verificationStatus || 'unverified'}
               onFeedbackSubmitted={() => {
                 // Optionally refresh term data or show updated status
@@ -274,7 +274,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
                 <AIContentFeedback
                   termId={term.id}
                   termName={term.name}
-                  isAiGenerated={true}
+                  isAiGenerated
                   verificationStatus={term.verificationStatus || 'unverified'}
                   section="definition"
                   className="text-sm"
@@ -382,7 +382,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
       <div
         className="absolute inset-0 cursor-pointer"
         onClick={handleNavigateToTerm}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             handleNavigateToTerm();
           }
@@ -516,7 +516,7 @@ const EnhancedTermCard = memo(function EnhancedTermCard({
       <div
         className="absolute inset-0 cursor-pointer"
         onClick={handleNavigateToTerm}
-        onKeyDown={(e) => {
+        onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
             handleNavigateToTerm();
           }

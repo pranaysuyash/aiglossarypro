@@ -375,7 +375,7 @@ async function testTemplateSystem() {
     // Get all templates
     const allTemplates = evaluationTemplateService.getAllTemplates();
     console.log(`📚 Available Templates: ${allTemplates.length}`);
-    allTemplates.forEach((template) => {
+    allTemplates.forEach(template => {
       console.log(`   - ${template.name} (${template.contentType})`);
     });
 
@@ -437,11 +437,11 @@ async function testQualityAnalytics() {
 
   try {
     // Get analytics
-    const analytics = await qualityAnalyticsService.getQualityAnalytics({
-      startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      endDate: new Date(),
-      groupBy: 'day',
-    });
+    const analytics = await qualityAnalyticsService.generateQualityReport(
+      new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+      new Date(),
+      { groupBy: 'category' }
+    );
 
     console.log(`📊 Quality Analytics:`);
     console.log(`   Average Scores:`);
@@ -451,7 +451,7 @@ async function testQualityAnalytics() {
     console.log(`     Completeness: ${analytics.averageScores.completeness.toFixed(1)}/10`);
 
     console.log(`\n📈 Distribution:`);
-    analytics.distribution.forEach((dist) => {
+    analytics.distribution.forEach(dist => {
       console.log(`     ${dist.scoreRange}: ${dist.count} terms (${dist.percentage}%)`);
     });
 
@@ -496,7 +496,7 @@ async function testRealTermEvaluation() {
     console.log(`📚 Found ${terms.length} terms in database. Testing first term...`);
 
     const term = terms[0];
-    const content = `${term.name}\n\n${term.definition || ''}\n\n${term.examples || ''}`;
+    const content = `${term.name}\n\n${term.fullDefinition || ''}`;
 
     if (!content.trim() || content.length < 50) {
       console.log('⚠️  Term content too short. Skipping evaluation.');
@@ -602,7 +602,7 @@ if (require.main === module) {
       console.log('\n🎉 Quality Evaluation System test completed successfully!');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('\n💥 Test failed:', error);
       process.exit(1);
     });

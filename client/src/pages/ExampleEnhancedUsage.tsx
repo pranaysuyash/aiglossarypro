@@ -260,17 +260,17 @@ export default function ExampleEnhancedUsage() {
                   <EnhancedTermCard
                     term={exampleTerm}
                     displayMode="default"
-                    showInteractive={true}
+                    showInteractive
                   />
                   <EnhancedTermCard
                     term={exampleTerm}
                     displayMode="compact"
-                    showInteractive={true}
+                    showInteractive
                   />
                   <EnhancedTermCard
                     term={exampleTerm}
                     displayMode="detailed"
-                    showInteractive={true}
+                    showInteractive
                   />
                 </div>
               </CardContent>
@@ -306,7 +306,7 @@ export default function ExampleEnhancedUsage() {
                   Structured content sections with different display types and layouts.
                 </p>
                 <div className="space-y-4">
-                  {exampleSections.map((section) => (
+                  {exampleSections.map(section => (
                     <SectionDisplay
                       key={section.id}
                       section={section}
@@ -343,7 +343,7 @@ export default function ExampleEnhancedUsage() {
                     language={exampleInteractiveElements[1].elementData.language!}
                     title={exampleInteractiveElements[1].elementData.title}
                     description={exampleInteractiveElements[1].elementData.description}
-                    showLineNumbers={true}
+                    showLineNumbers
                     executable={false}
                   />
                 </CardContent>
@@ -358,9 +358,9 @@ export default function ExampleEnhancedUsage() {
                     questions={exampleInteractiveElements[2].elementData.questions!}
                     title={exampleInteractiveElements[2].elementData.title}
                     description={exampleInteractiveElements[2].elementData.description}
-                    showExplanations={true}
-                    allowRetry={true}
-                    onComplete={(result) => console.log('Quiz completed:', result)}
+                    showExplanations
+                    allowRetry
+                    onComplete={result => console.log('Quiz completed:', result)}
                   />
                 </CardContent>
               </Card>
@@ -379,7 +379,7 @@ export default function ExampleEnhancedUsage() {
                 <UserPersonalizationSettings
                   availableCategories={availableFilters.categories}
                   availableApplications={availableFilters.applicationDomains}
-                  onSettingsChange={(settings) => console.log('Settings changed:', settings)}
+                  onSettingsChange={settings => console.log('Settings changed:', settings)}
                 />
               </CardContent>
             </Card>

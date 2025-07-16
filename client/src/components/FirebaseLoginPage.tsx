@@ -1,6 +1,6 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
-import { useQueryClient } from '@tanstack/react-query';
 import { useLiveRegion } from '@/components/accessibility/LiveRegion';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
@@ -13,6 +13,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useToast } from '@/hooks/use-toast';
 import { api } from '@/lib/api';
 import { signInWithEmail, signInWithProvider } from '@/lib/firebase';
+import type {
+  ApiResponse,
+  AuthResponse,
+  PurchaseVerificationResponse,
+} from '@/types/api-responses';
 
 export default function FirebaseLoginPage() {
   const [, navigate] = useLocation();
@@ -44,7 +49,7 @@ export default function FirebaseLoginPage() {
       announce('Completing authentication...', 'polite');
 
       // Exchange Firebase token for JWT
-      const response = await api.post('/auth/firebase/login', { idToken });
+      const response: ApiResponse = await api.post('/auth/firebase/login', { idToken });
 
       if (response.success && response.data) {
         // Store token in localStorage for API calls
@@ -56,7 +61,7 @@ export default function FirebaseLoginPage() {
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // Check for premium status
-        const userData = (response.data as any).user;
+        const userData = (response.data as any)?.user;
         const userType = userData.lifetimeAccess ? 'Premium' : 'Free';
         const welcomeMessage = userData.lifetimeAccess
           ? `Welcome back, ${userData.email}! Your premium access is active.`
@@ -201,10 +206,10 @@ export default function FirebaseLoginPage() {
       announce('Completing authentication...', 'polite');
 
       // Exchange Firebase token for JWT
-      const response = await api.post('/auth/firebase/login', { idToken });
+      const response: ApiResponse = await api.post('/auth/firebase/login', { idToken });
 
       if (response.success && response.data) {
-        localStorage.setItem('authToken', response.data.token);
+        localStorage.setItem('authToken', response.data?.token);
 
         // Update React Query cache with user data to maintain auth state
         queryClient.setQueryData(['/api/auth/user'], (response.data as any).user);
@@ -212,7 +217,7 @@ export default function FirebaseLoginPage() {
         await new Promise(resolve => setTimeout(resolve, 100));
 
         // Check for premium status
-        const userData = response.data.user;
+        const userData = response.data?.user;
         const userType = userData?.lifetimeAccess ? 'Premium' : 'Free';
         const welcomeMessage = userData?.lifetimeAccess
           ? `Welcome back! Your premium access is active.`
@@ -301,7 +306,7 @@ export default function FirebaseLoginPage() {
       announce('Creating your account...', 'polite');
 
       // Create account in backend (which creates Firebase user)
-      const response = await api.post('/auth/firebase/register', {
+      const response: ApiResponse = await api.post('/auth/firebase/register', {
         email,
         password,
         firstName,
@@ -483,7 +488,7 @@ export default function FirebaseLoginPage() {
                   id="email"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   required
                   disabled={loading}
                   autoComplete="email"
@@ -498,7 +503,7 @@ export default function FirebaseLoginPage() {
                     id="password"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     required
                     disabled={loading}
                     autoComplete="current-password"
@@ -552,7 +557,7 @@ export default function FirebaseLoginPage() {
                   <Input
                     id="firstName"
                     value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
+                    onChange={e => setFirstName(e.target.value)}
                     disabled={loading}
                     autoComplete="given-name"
                     aria-describedby={error ? 'register-error' : undefined}
@@ -564,7 +569,7 @@ export default function FirebaseLoginPage() {
                   <Input
                     id="lastName"
                     value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
+                    onChange={e => setLastName(e.target.value)}
                     disabled={loading}
                     autoComplete="family-name"
                     aria-describedby={error ? 'register-error' : undefined}
@@ -578,7 +583,7 @@ export default function FirebaseLoginPage() {
                   id="registerEmail"
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={e => setEmail(e.target.value)}
                   required
                   disabled={loading}
                   autoComplete="email"
@@ -593,7 +598,7 @@ export default function FirebaseLoginPage() {
                     id="registerPassword"
                     type={showPassword ? 'text' : 'password'}
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     required
                     minLength={6}
                     disabled={loading}
@@ -684,7 +689,7 @@ export default function FirebaseLoginPage() {
                           firstName: 'Test',
                           lastName: 'User',
                         });
-                      } catch (error) {
+                      } catch (error: any) {
                         // User already exists or other error - continue with login
                       }
 
@@ -737,7 +742,7 @@ export default function FirebaseLoginPage() {
                           firstName: 'Premium',
                           lastName: 'User',
                         });
-                      } catch (error) {
+                      } catch (error: any) {
                         // User already exists or other error - continue with login
                       }
 
@@ -788,7 +793,7 @@ export default function FirebaseLoginPage() {
                           firstName: 'Admin',
                           lastName: 'User',
                         });
-                      } catch (error) {
+                      } catch (error: any) {
                         // User already exists or other error - continue with login
                       }
 

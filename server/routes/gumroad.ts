@@ -119,12 +119,12 @@ export function registerGumroadRoutes(app: Express): void {
           },
         });
         return;
-      } else {
+      } 
         log.warn('Invalid webhook data - missing sale or email', {
           hasSale: !!data.sale,
           hasEmail: !!data.sale?.email,
         });
-      }
+      
 
       // If we get here, the webhook was valid but didn't contain sale data
       res.status(HTTP_STATUS.OK).json({

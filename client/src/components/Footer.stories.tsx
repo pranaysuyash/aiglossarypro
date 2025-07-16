@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import Footer from './Footer';
 
@@ -15,7 +14,7 @@ const meta: Meta<typeof Footer> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-screen flex flex-col">
         <div className="flex-1 bg-gray-50 p-8">
           <div className="text-center text-gray-600">Page content goes here</div>
@@ -92,7 +91,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-screen flex flex-col dark">
         <div className="flex-1 bg-gray-900 p-8">
           <div className="text-center text-gray-400">Page content goes here</div>
@@ -113,7 +112,7 @@ export const WithLongContent: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-screen flex flex-col">
         <div className="flex-1 bg-gray-50 p-8">
           <div className="space-y-4">

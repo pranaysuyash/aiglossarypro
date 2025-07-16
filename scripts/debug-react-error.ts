@@ -27,7 +27,7 @@ class ReactErrorDebugger {
 
     // Capture all console messages
     const logs: Array<{ type: string; message: string }> = [];
-    page.on('console', (msg) => {
+    page.on('console', msg => {
       logs.push({
         type: msg.type(),
         message: msg.text(),
@@ -41,13 +41,13 @@ class ReactErrorDebugger {
     });
 
     // Capture page errors
-    page.on('pageerror', (error) => {
+    page.on('pageerror', error => {
       console.log(chalk.red(`❌ Page Error: ${error.message}`));
       console.log(chalk.gray(`Stack: ${error.stack}`));
     });
 
     // Capture network failures
-    page.on('requestfailed', (request) => {
+    page.on('requestfailed', request => {
       console.log(chalk.red(`❌ Network Failed: ${request.method()} ${request.url()}`));
       console.log(chalk.gray(`Failure: ${request.failure()?.errorText}`));
     });
@@ -99,8 +99,8 @@ class ReactErrorDebugger {
     // Summary
     console.log(chalk.blue('\n📊 Debug Summary:'));
     console.log(chalk.gray(`Total console messages: ${logs.length}`));
-    console.log(chalk.gray(`Errors: ${logs.filter((l) => l.type === 'error').length}`));
-    console.log(chalk.gray(`Warnings: ${logs.filter((l) => l.type === 'warn').length}`));
+    console.log(chalk.gray(`Errors: ${logs.filter(l => l.type === 'error').length}`));
+    console.log(chalk.gray(`Warnings: ${logs.filter(l => l.type === 'warn').length}`));
 
     await page.close();
   }

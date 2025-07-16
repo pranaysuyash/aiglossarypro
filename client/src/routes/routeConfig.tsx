@@ -32,6 +32,7 @@ const UserProgressDashboard = lazy(() => import('@/pages/UserProgressDashboard')
 // Admin pages
 const Admin = lazy(() => import('@/pages/Admin'));
 const AnalyticsDashboard = lazy(() => import('@/pages/AnalyticsDashboard'));
+const AdminSupportCenter = lazy(() => import('@/components/admin/AdminSupportCenter'));
 
 // AI/ML features
 const AITools = lazy(() => import('@/pages/AITools'));
@@ -103,7 +104,7 @@ export const routes: RouteConfig[] = [
       title: 'Lifetime Access',
     },
   },
-  
+
   // Content routes
   {
     path: '/terms',
@@ -166,7 +167,7 @@ export const routes: RouteConfig[] = [
       title: 'Trending Terms',
     },
   },
-  
+
   // Sample terms for SEO discovery
   {
     path: '/sample',
@@ -175,7 +176,8 @@ export const routes: RouteConfig[] = [
     preload: true,
     meta: {
       title: 'Free AI/ML Sample Terms | AI Glossary Pro',
-      description: 'Explore our curated collection of AI and Machine Learning definitions. Free sample terms from our comprehensive 10,000+ term glossary.',
+      description:
+        'Explore our curated collection of AI and Machine Learning definitions. Free sample terms from our comprehensive 10,000+ term glossary.',
     },
   },
   {
@@ -188,7 +190,7 @@ export const routes: RouteConfig[] = [
       description: 'Learn AI and ML concepts with detailed definitions, examples, and use cases.',
     },
   },
-  
+
   // Protected routes
   {
     path: '/dashboard',
@@ -235,7 +237,7 @@ export const routes: RouteConfig[] = [
       title: 'My Progress',
     },
   },
-  
+
   // Admin routes
   {
     path: '/admin',
@@ -257,7 +259,17 @@ export const routes: RouteConfig[] = [
       title: 'Analytics',
     },
   },
-  
+  {
+    path: '/admin/support',
+    component: AdminSupportCenter,
+    exact: true,
+    protected: true,
+    roles: ['admin'],
+    meta: {
+      title: 'Support Center',
+    },
+  },
+
   // AI/ML features
   {
     path: '/ai-tools',
@@ -299,7 +311,7 @@ export const routes: RouteConfig[] = [
       title: 'Surprise Me',
     },
   },
-  
+
   // Learning features
   {
     path: '/learning-paths',
@@ -324,7 +336,7 @@ export const routes: RouteConfig[] = [
       title: 'Code Examples',
     },
   },
-  
+
   // Heavy features (lazy load only when needed)
   {
     path: '/3d-visualization',
@@ -335,7 +347,7 @@ export const routes: RouteConfig[] = [
       title: '3D Visualization',
     },
   },
-  
+
   // Legal pages
   {
     path: '/about',
@@ -361,7 +373,7 @@ export const routes: RouteConfig[] = [
       title: 'Terms of Service',
     },
   },
-  
+
   // 404 - must be last
   {
     path: '*',
@@ -375,24 +387,18 @@ export const routes: RouteConfig[] = [
 // Preload strategies
 export const preloadStrategies = {
   // Preload on app start
-  immediate: [
-    () => import('@/pages/Home'),
-    () => import('@/components/FirebaseLoginPage'),
-  ],
-  
+  immediate: [() => import('@/pages/Home'), () => import('@/components/FirebaseLoginPage')],
+
   // Preload when user is authenticated
   authenticated: [
     () => import('@/pages/Dashboard'),
     () => import('@/pages/Favorites'),
     () => import('@/pages/UserProgressDashboard'),
   ],
-  
+
   // Preload for admin users
-  admin: [
-    () => import('@/pages/Admin'),
-    () => import('@/pages/AnalyticsDashboard'),
-  ],
-  
+  admin: [() => import('@/pages/Admin'), () => import('@/pages/AnalyticsDashboard')],
+
   // Preload on idle
   idle: [
     () => import('@/pages/Terms'),
@@ -412,7 +418,7 @@ export interface RouteConfig {
   preload?: boolean | 'hover' | 'idle';
   alias?: string;
   meta?: {
-    title?: string;
-    description?: string;
+    title?: string | undefined;
+    description?: string | undefined;
   };
 }

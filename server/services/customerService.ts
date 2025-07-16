@@ -1,23 +1,23 @@
 import { and, desc, eq, ilike, inArray, or, sql } from 'drizzle-orm';
-import { db } from '../db';
 import {
   customerFeedback,
   customerServiceMetrics,
-  InsertCustomerFeedback,
-  InsertKnowledgeBaseArticle,
-  InsertRefundRequest,
-  InsertSupportTicket,
-  InsertTicketMessage,
+  type InsertCustomerFeedback,
+  type InsertKnowledgeBaseArticle,
+  type InsertRefundRequest,
+  type InsertSupportTicket,
+  type InsertTicketMessage,
   knowledgeBaseArticles,
   purchases,
-  refundRequests,
   ResponseTemplate,
+  refundRequests,
   responseTemplates,
   supportTickets,
   ticketAttachments,
   ticketMessages,
   users,
 } from '../../shared/schema';
+import { db } from '../db';
 import { log as logger } from '../utils/logger';
 import { emailService } from './emailService';
 
@@ -26,19 +26,24 @@ export async function generateTicketNumber(): Promise<string> {
   try {
     const year = new Date().getFullYear();
     const yearStr = year.toString();
-    
+
     // Get count of tickets for this year
     const result = await db
       .select({ count: sql<number>`count(*)` })
       .from(supportTickets)
       .where(ilike(supportTickets.ticketNumber, `TICK-${yearStr}-%`));
-    
+
     const count = result[0]?.count || 0;
     const nextNum = (count + 1).toString().padStart(3, '0');
-    
+
     return `TICK-${yearStr}-${nextNum}`;
   } catch (error) {
-    logger.error('Error generating ticket number:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+    logger.error(
+      'Error generating ticket number:',
+      error instanceof Error
+        ? { error: error.message, stack: error.stack }
+        : { error: String(error) }
+    );
     // Fallback to timestamp-based number
     const timestamp = Date.now().toString().slice(-6);
     return `TICK-${new Date().getFullYear()}-${timestamp}`;
@@ -50,7 +55,7 @@ export class SupportTicketService {
   static async createTicket(ticketData: InsertSupportTicket & { initialMessage?: string }) {
     try {
       const ticketNumber = await generateTicketNumber();
-      
+
       const [ticket] = await db
         .insert(supportTickets)
         .values({
@@ -73,13 +78,18 @@ export class SupportTicketService {
       }
 
       // Auto-send welcome email based on ticket type
-      await this.triggerAutoResponse(ticket.id, 'ticket_created');
+      await SupportTicketService.triggerAutoResponse(ticket.id, 'ticket_created');
 
       // Send email notification
       try {
         await emailService.sendTicketCreatedNotification(ticket);
       } catch (error) {
-        logger.error('Error sending ticket created email:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+        logger.error(
+          'Error sending ticket created email:',
+          error instanceof Error
+            ? { error: error.message, stack: error.stack }
+            : { error: String(error) }
+        );
         // Don't fail ticket creation if email fails
       }
 
@@ -92,7 +102,12 @@ export class SupportTicketService {
 
       return ticket;
     } catch (error) {
-      logger.error('Error creating support ticket:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error creating support ticket:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to create support ticket');
     }
   }
@@ -110,7 +125,7 @@ export class SupportTicketService {
       }
 
       const ticketData = ticket[0];
-      
+
       if (includeMessages) {
         const messages = await db
           .select()
@@ -133,7 +148,12 @@ export class SupportTicketService {
 
       return ticketData;
     } catch (error) {
-      logger.error('Error fetching ticket:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error fetching ticket:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to fetch ticket');
     }
   }
@@ -141,7 +161,7 @@ export class SupportTicketService {
   static async getTicketsByUser(userId: string, page = 1, limit = 10) {
     try {
       const offset = (page - 1) * limit;
-      
+
       const tickets = await db
         .select()
         .from(supportTickets)
@@ -163,7 +183,12 @@ export class SupportTicketService {
         totalPages: Math.ceil((totalCount[0]?.count || 0) / limit),
       };
     } catch (error) {
-      logger.error('Error fetching user tickets:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error fetching user tickets:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to fetch user tickets');
     }
   }
@@ -171,7 +196,7 @@ export class SupportTicketService {
   static async getTicketsByEmail(email: string, page = 1, limit = 10) {
     try {
       const offset = (page - 1) * limit;
-      
+
       const tickets = await db
         .select()
         .from(supportTickets)
@@ -193,24 +218,29 @@ export class SupportTicketService {
         totalPages: Math.ceil((totalCount[0]?.count || 0) / limit),
       };
     } catch (error) {
-      logger.error('Error fetching tickets by email:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error fetching tickets by email:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to fetch tickets by email');
     }
   }
 
   static async updateTicketStatus(
-    ticketId: string, 
-    status: string, 
+    ticketId: string,
+    status: string,
     updatedBy?: string,
     internalNote?: string
   ) {
     try {
       // Get current ticket for email notification
-      const currentTicket = await this.getTicketById(ticketId, false);
+      const currentTicket = await SupportTicketService.getTicketById(ticketId, false);
       const oldStatus = currentTicket?.status;
 
       const updateData: any = { status };
-      
+
       if (status === 'resolved') {
         updateData.resolvedAt = new Date();
       } else if (status === 'closed') {
@@ -236,14 +266,19 @@ export class SupportTicketService {
       }
 
       // Trigger auto-response for status changes
-      await this.triggerAutoResponse(ticketId, 'status_changed');
+      await SupportTicketService.triggerAutoResponse(ticketId, 'status_changed');
 
       // Send email notification if status changed
       if (oldStatus && oldStatus !== status) {
         try {
           await emailService.sendTicketStatusUpdateNotification(updatedTicket, oldStatus);
         } catch (error) {
-          logger.error('Error sending status update email:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+          logger.error(
+            'Error sending status update email:',
+            error instanceof Error
+              ? { error: error.message, stack: error.stack }
+              : { error: String(error) }
+          );
           // Don't fail status update if email fails
         }
       }
@@ -256,17 +291,19 @@ export class SupportTicketService {
 
       return updatedTicket;
     } catch (error) {
-      logger.error('Error updating ticket status:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error updating ticket status:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to update ticket status');
     }
   }
 
   static async addMessage(messageData: InsertTicketMessage) {
     try {
-      const [message] = await db
-        .insert(ticketMessages)
-        .values(messageData)
-        .returning();
+      const [message] = await db.insert(ticketMessages).values(messageData).returning();
 
       // Update ticket's last response time
       await db
@@ -280,12 +317,17 @@ export class SupportTicketService {
       // Send email notification if message is from support team
       if (messageData.senderType === 'agent' && !messageData.isInternal) {
         try {
-          const ticket = await this.getTicketById(messageData.ticketId, false);
+          const ticket = await SupportTicketService.getTicketById(messageData.ticketId, false);
           if (ticket) {
             await emailService.sendNewMessageNotification(ticket, message, true);
           }
         } catch (error) {
-          logger.error('Error sending message notification email:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+          logger.error(
+            'Error sending message notification email:',
+            error instanceof Error
+              ? { error: error.message, stack: error.stack }
+              : { error: String(error) }
+          );
           // Don't fail message creation if email fails
         }
       }
@@ -298,13 +340,18 @@ export class SupportTicketService {
 
       return message;
     } catch (error) {
-      logger.error('Error adding message:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error adding message:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to add message');
     }
   }
 
   static async searchTickets(
-    query: string, 
+    query: string,
     filters: {
       status?: string[];
       type?: string[];
@@ -395,15 +442,20 @@ export class SupportTicketService {
         totalPages: Math.ceil((totalCount[0]?.count || 0) / limit),
       };
     } catch (error) {
-      logger.error('Error searching tickets:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error searching tickets:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to search tickets');
     }
   }
 
   static async triggerAutoResponse(ticketId: string, triggerType: string) {
     try {
-      const ticket = await this.getTicketById(ticketId, false);
-      if (!ticket) return;
+      const ticket = await SupportTicketService.getTicketById(ticketId, false);
+      if (!ticket) {return;}
 
       // Find matching auto-response templates
       const templates = await db
@@ -419,7 +471,7 @@ export class SupportTicketService {
 
       for (const template of templates) {
         // Check if template applies to this ticket type
-        if (!template.ticketTypes?.includes(ticket.type)) continue;
+        if (!template.ticketTypes?.includes(ticket.type)) {continue;}
 
         // Replace template variables
         let content = template.content;
@@ -429,7 +481,7 @@ export class SupportTicketService {
         subject = subject.replace(/\{\{ticket_number\}\}/g, ticket.ticketNumber);
 
         // Send auto-response message
-        await this.addMessage({
+        await SupportTicketService.addMessage({
           ticketId: ticket.id,
           senderType: 'system',
           senderEmail: 'noreply@aiglossary.pro',
@@ -446,7 +498,12 @@ export class SupportTicketService {
           .where(eq(responseTemplates.id, template.id));
       }
     } catch (error) {
-      logger.error('Error triggering auto-response:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error triggering auto-response:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       // Don't throw - auto-responses shouldn't break the main flow
     }
   }
@@ -456,10 +513,7 @@ export class SupportTicketService {
 export class RefundService {
   static async createRefundRequest(refundData: InsertRefundRequest) {
     try {
-      const [refundRequest] = await db
-        .insert(refundRequests)
-        .values(refundData)
-        .returning();
+      const [refundRequest] = await db.insert(refundRequests).values(refundData).returning();
 
       // Send email notification
       try {
@@ -473,7 +527,7 @@ export class RefundService {
             .from(purchases)
             .where(eq(purchases.id, refundData.purchaseId))
             .limit(1);
-          
+
           if (purchase) {
             const purchaseData = purchase.purchaseData as Record<string, unknown> | null;
             customerEmail = (purchaseData?.email as string) || '';
@@ -487,7 +541,7 @@ export class RefundService {
             .from(users)
             .where(eq(users.id, refundData.userId))
             .limit(1);
-          
+
           if (user) {
             customerEmail = user.email || '';
             customerName = `${user.firstName || ''} ${user.lastName || ''}`.trim();
@@ -504,7 +558,12 @@ export class RefundService {
           );
         }
       } catch (error) {
-        logger.error('Error sending refund request email:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+        logger.error(
+          'Error sending refund request email:',
+          error instanceof Error
+            ? { error: error.message, stack: error.stack }
+            : { error: String(error) }
+        );
         // Don't fail refund creation if email fails
       }
 
@@ -516,20 +575,25 @@ export class RefundService {
 
       return refundRequest;
     } catch (error) {
-      logger.error('Error creating refund request:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error creating refund request:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to create refund request');
     }
   }
 
   static async updateRefundStatus(
-    refundId: string, 
-    status: string, 
+    refundId: string,
+    status: string,
     adminNotes?: string,
     gumroadRefundId?: string
   ) {
     try {
       const updateData: any = { status, adminNotes };
-      
+
       if (status === 'approved') {
         updateData.approvedAt = new Date();
       } else if (status === 'rejected') {
@@ -555,7 +619,12 @@ export class RefundService {
 
       return refundRequest;
     } catch (error) {
-      logger.error('Error updating refund status:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error updating refund status:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to update refund status');
     }
   }
@@ -568,7 +637,12 @@ export class RefundService {
         .where(eq(refundRequests.userId, userId))
         .orderBy(desc(refundRequests.createdAt));
     } catch (error) {
-      logger.error('Error fetching user refunds:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error fetching user refunds:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to fetch user refunds');
     }
   }
@@ -578,10 +652,7 @@ export class RefundService {
 export class KnowledgeBaseService {
   static async createArticle(articleData: InsertKnowledgeBaseArticle) {
     try {
-      const [article] = await db
-        .insert(knowledgeBaseArticles)
-        .values(articleData)
-        .returning();
+      const [article] = await db.insert(knowledgeBaseArticles).values(articleData).returning();
 
       logger.info('Knowledge base article created:', {
         articleId: article.id,
@@ -591,7 +662,12 @@ export class KnowledgeBaseService {
 
       return article;
     } catch (error) {
-      logger.error('Error creating knowledge base article:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error creating knowledge base article:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to create knowledge base article');
     }
   }
@@ -631,7 +707,12 @@ export class KnowledgeBaseService {
 
       return articles;
     } catch (error) {
-      logger.error('Error searching knowledge base articles:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error searching knowledge base articles:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to search knowledge base articles');
     }
   }
@@ -654,14 +735,19 @@ export class KnowledgeBaseService {
 
       return article;
     } catch (error) {
-      logger.error('Error fetching knowledge base article:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error fetching knowledge base article:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to fetch knowledge base article');
     }
   }
 
   static async voteOnArticle(articleId: string, helpful: boolean) {
     try {
-      const updateData = helpful 
+      const updateData = helpful
         ? { helpfulVotes: sql`${knowledgeBaseArticles.helpfulVotes} + 1` }
         : { notHelpfulVotes: sql`${knowledgeBaseArticles.notHelpfulVotes} + 1` };
 
@@ -672,7 +758,12 @@ export class KnowledgeBaseService {
 
       logger.info('Article vote recorded:', { articleId, helpful });
     } catch (error) {
-      logger.error('Error recording article vote:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error recording article vote:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to record article vote');
     }
   }
@@ -682,10 +773,7 @@ export class KnowledgeBaseService {
 export class CustomerFeedbackService {
   static async submitFeedback(feedbackData: InsertCustomerFeedback) {
     try {
-      const [feedback] = await db
-        .insert(customerFeedback)
-        .values(feedbackData)
-        .returning();
+      const [feedback] = await db.insert(customerFeedback).values(feedbackData).returning();
 
       logger.info('Customer feedback submitted:', {
         feedbackId: feedback.id,
@@ -696,7 +784,12 @@ export class CustomerFeedbackService {
 
       return feedback;
     } catch (error) {
-      logger.error('Error submitting customer feedback:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error submitting customer feedback:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to submit customer feedback');
     }
   }
@@ -709,7 +802,12 @@ export class CustomerFeedbackService {
         .where(eq(customerFeedback.ticketId, ticketId))
         .orderBy(desc(customerFeedback.createdAt));
     } catch (error) {
-      logger.error('Error fetching ticket feedback:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error fetching ticket feedback:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to fetch ticket feedback');
     }
   }
@@ -721,7 +819,7 @@ export class MetricsService {
     try {
       const startOfDay = new Date(date);
       startOfDay.setHours(0, 0, 0, 0);
-      
+
       const endOfDay = new Date(date);
       endOfDay.setHours(23, 59, 59, 999);
 
@@ -799,7 +897,12 @@ export class MetricsService {
 
       return metrics;
     } catch (error) {
-      logger.error('Error calculating daily metrics:', error instanceof Error ? { error: error.message, stack: error.stack } : { error: String(error) });
+      logger.error(
+        'Error calculating daily metrics:',
+        error instanceof Error
+          ? { error: error.message, stack: error.stack }
+          : { error: String(error) }
+      );
       throw new Error('Failed to calculate daily metrics');
     }
   }

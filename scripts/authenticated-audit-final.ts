@@ -325,7 +325,7 @@ async function runAuthenticatedAudit() {
 
       addSection({
         name: 'Admin Features',
-        status: details.some((d) => d.includes('✅')) ? 'pass' : 'fail',
+        status: details.some(d => d.includes('✅')) ? 'pass' : 'fail',
         details,
         errors,
         screenshots: ['final-audit-admin-dashboard.png'],
@@ -398,7 +398,7 @@ async function runAuthenticatedAudit() {
 
       addSection({
         name: 'Complete User Flow',
-        status: details.filter((d) => d.includes('✅')).length >= 3 ? 'pass' : 'warning',
+        status: details.filter(d => d.includes('✅')).length >= 3 ? 'pass' : 'warning',
         details,
         errors,
         screenshots: ['final-audit-user-flow.png'],
@@ -449,16 +449,16 @@ Duration: ${(report.duration / 1000).toFixed(2)}s
 ## 📋 Detailed Test Results
 
 ${report.sections
-  .map((section) => {
+  .map(section => {
     const icon = section.status === 'pass' ? '✅' : section.status === 'fail' ? '❌' : '⚠️';
     return `### ${icon} ${section.name}
 
 **Status**: ${section.status.toUpperCase()}
 
 **Details**:
-${section.details.map((d) => `- ${d}`).join('\n')}
+${section.details.map(d => `- ${d}`).join('\n')}
 
-${section.errors && section.errors.length > 0 ? `**Errors**:\n${section.errors.map((e) => `- ${e}`).join('\n')}` : ''}
+${section.errors && section.errors.length > 0 ? `**Errors**:\n${section.errors.map(e => `- ${e}`).join('\n')}` : ''}
 
 ${section.screenshots && section.screenshots.length > 0 ? `**Screenshots**: ${section.screenshots.join(', ')}` : ''}
 `;

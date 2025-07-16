@@ -159,7 +159,7 @@ context('Spies, Stubs, and Clock', () => {
      * Returns true if the given number is even
      * @param {number} x
      */
-    const isEven = (x) => x % 2 === 0;
+    const isEven = x => x % 2 === 0;
 
     // expect the value to pass a custom predicate function
     // the second argument to "sinon.match(predicate, message)" is
@@ -171,14 +171,14 @@ context('Spies, Stubs, and Clock', () => {
      * @param {number} limit
      * @returns {(x: number) => boolean}
      */
-    const isGreaterThan = (limit) => (x) => x > limit;
+    const isGreaterThan = limit => x => x > limit;
 
     /**
      * Returns a function that checks if a given number is less than the limit
      * @param {number} limit
      * @returns {(x: number) => boolean}
      */
-    const isLessThan = (limit) => (x) => x < limit;
+    const isLessThan = limit => x => x < limit;
 
     // you can combine several matchers using "and", "or"
     expect(spy).to.be.calledWith(

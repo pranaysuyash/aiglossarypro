@@ -152,7 +152,7 @@ class CIPerformanceChecker {
       });
 
       // Wait for app to start
-      await new Promise((resolve) => setTimeout(resolve, 10000));
+      await new Promise(resolve => setTimeout(resolve, 10000));
 
       // Run React Scan analysis
       const scanResult = await this.runReactScanAnalysis();
@@ -373,14 +373,14 @@ class CIPerformanceChecker {
 
     if (result.violations.length > 0) {
       console.log('\n❌ Violations:');
-      result.violations.forEach((violation) => {
+      result.violations.forEach(violation => {
         console.log(`  • ${violation}`);
       });
     }
 
     if (result.recommendations.length > 0) {
       console.log('\n💡 Recommendations:');
-      result.recommendations.forEach((rec) => {
+      result.recommendations.forEach(rec => {
         console.log(`  • ${rec}`);
       });
     }

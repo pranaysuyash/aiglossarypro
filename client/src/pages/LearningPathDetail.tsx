@@ -72,14 +72,14 @@ const LearningPathDetail: React.FC = () => {
     if (id) {
       fetchLearningPath();
     }
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (user && path) {
       interval = setInterval(() => {
-        setTimeSpent((prev) => prev + 1);
+        setTimeSpent(prev => prev + 1);
       }, 60000); // Track time in minutes
     }
     return () => clearInterval(interval);
@@ -88,7 +88,7 @@ const LearningPathDetail: React.FC = () => {
   const fetchLearningPath = async () => {
     try {
       const response = await fetch(`/api/learning-paths/${id}`);
-      if (!response.ok) throw new Error('Failed to fetch learning path');
+      if (!response.ok) {throw new Error('Failed to fetch learning path');}
       const data = await response.json();
       setPath(data.data);
     } catch (err) {
@@ -99,7 +99,7 @@ const LearningPathDetail: React.FC = () => {
   };
 
   const completeStep = async (stepId: string) => {
-    if (!user || !path) return;
+    if (!user || !path) {return;}
 
     try {
       const response = await fetch(`/api/learning-paths/${path.id}/steps/${stepId}/complete`, {
@@ -114,7 +114,7 @@ const LearningPathDetail: React.FC = () => {
         }),
       });
 
-      if (!response.ok) throw new Error('Failed to complete step');
+      if (!response.ok) {throw new Error('Failed to complete step');}
 
       const data = await response.json();
       setCompletedSteps([
@@ -133,11 +133,11 @@ const LearningPathDetail: React.FC = () => {
   };
 
   const isStepCompleted = (stepId: string) => {
-    return completedSteps.some((completion) => completion.step_id === stepId);
+    return completedSteps.some(completion => completion.step_id === stepId);
   };
 
   const getCompletionPercentage = () => {
-    if (!path) return 0;
+    if (!path) {return 0;}
     return Math.round((completedSteps.length / path.steps.length) * 100);
   };
 
@@ -357,7 +357,7 @@ const LearningPathDetail: React.FC = () => {
                         <Textarea
                           placeholder="Add notes about this step (optional)"
                           value={notes}
-                          onChange={(e) => setNotes(e.target.value)}
+                          onChange={e => setNotes(e.target.value)}
                           className="mb-2"
                         />
                       </div>
@@ -379,10 +379,10 @@ const LearningPathDetail: React.FC = () => {
                       <CheckCircle className="w-5 h-5 mr-2" />
                       <span className="font-medium">Completed</span>
                     </div>
-                    {completedSteps.find((c) => c.step_id === step.id)?.notes && (
+                    {completedSteps.find(c => c.step_id === step.id)?.notes && (
                       <p className="text-sm text-green-700 mt-1">
                         <strong>Notes:</strong>{' '}
-                        {completedSteps.find((c) => c.step_id === step.id)?.notes}
+                        {completedSteps.find(c => c.step_id === step.id)?.notes}
                       </p>
                     )}
                   </div>

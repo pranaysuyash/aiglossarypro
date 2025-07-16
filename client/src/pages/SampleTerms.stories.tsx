@@ -8,7 +8,8 @@ const meta: Meta<typeof SampleTerms> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Sample terms index page showcasing all available free AI/ML definitions for SEO discovery',
+        component:
+          'Sample terms index page showcasing all available free AI/ML definitions for SEO discovery',
       },
     },
   },

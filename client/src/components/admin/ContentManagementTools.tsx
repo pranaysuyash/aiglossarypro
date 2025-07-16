@@ -1,17 +1,32 @@
 /**
  * Content Management Tools
- * 
+ *
  * Admin interface for bulk content operations, quality validation,
  * and AI-assisted content generation.
  */
 
-import React, { useState, useEffect } from 'react';
-import { 
-  Upload, Download, RefreshCw, Check, X, AlertCircle, 
-  FileText, Code, Zap, Settings, Play, Pause, Eye,
-  BarChart3, TrendingUp, Target, Users 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  AlertCircle,
+  BarChart3,
+  Check,
+  Code,
+  Download,
+  Eye,
+  FileText,
+  Pause,
+  Play,
+  RefreshCw,
+  Settings,
+  Target,
+  TrendingUp,
+  Upload,
+  Users,
+  X,
+  Zap,
 } from 'lucide-react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 
 interface ContentStats {
   totalTerms: number;
@@ -49,7 +64,9 @@ interface ContentValidationResult {
 }
 
 const ContentManagementTools: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'bulk-ops' | 'validation' | 'generation'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'bulk-ops' | 'validation' | 'generation'>(
+    'overview'
+  );
   const [bulkOperations, setBulkOperations] = useState<BulkOperation[]>([]);
   const [validationResults, setValidationResults] = useState<ContentValidationResult[]>([]);
 
@@ -60,11 +77,11 @@ const ContentManagementTools: React.FC = () => {
     queryKey: ['contentStats'],
     queryFn: async () => {
       const response = await fetch('/api/admin/content/stats');
-      if (!response.ok) throw new Error('Failed to fetch content stats');
+      if (!response.ok) {throw new Error('Failed to fetch content stats');}
       const result = await response.json();
       return result.data;
     },
-    refetchInterval: 30000 // Refresh every 30 seconds
+    refetchInterval: 30000, // Refresh every 30 seconds
   });
 
   // Bulk operation mutations
@@ -73,14 +90,14 @@ const ContentManagementTools: React.FC = () => {
       const response = await fetch('/api/admin/content/bulk-operations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ type, options })
+        body: JSON.stringify({ type, options }),
       });
-      if (!response.ok) throw new Error('Failed to start bulk operation');
+      if (!response.ok) {throw new Error('Failed to start bulk operation');}
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       setBulkOperations(prev => [...prev, data.data]);
-    }
+    },
   });
 
   const validateContent = useMutation({
@@ -88,31 +105,31 @@ const ContentManagementTools: React.FC = () => {
       const response = await fetch('/api/admin/content/validate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(options)
+        body: JSON.stringify(options),
       });
-      if (!response.ok) throw new Error('Failed to validate content');
+      if (!response.ok) {throw new Error('Failed to validate content');}
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       setValidationResults(data.data.results);
-    }
+    },
   });
 
   // Poll for bulk operation status updates
   useEffect(() => {
     const interval = setInterval(async () => {
       const runningOps = bulkOperations.filter(op => op.status === 'running');
-      
+
       for (const op of runningOps) {
         try {
           const response = await fetch(`/api/admin/content/bulk-operations/${op.id}`);
           if (response.ok) {
             const result = await response.json();
-            setBulkOperations(prev => 
-              prev.map(prevOp => prevOp.id === op.id ? result.data : prevOp)
+            setBulkOperations(prev =>
+              prev.map(prevOp => (prevOp.id === op.id ? result.data : prevOp))
             );
           }
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error polling operation status:', error);
         }
       }
@@ -134,7 +151,7 @@ const ContentManagementTools: React.FC = () => {
       'generate-definitions': FileText,
       'enhance-content': RefreshCw,
       'validate-quality': Check,
-      'categorize-terms': Target
+      'categorize-terms': Target,
     };
     const Icon = icons[type as keyof typeof icons] || FileText;
     return <Icon className="w-4 h-4" />;
@@ -145,7 +162,7 @@ const ContentManagementTools: React.FC = () => {
       pending: 'text-yellow-600 bg-yellow-100',
       running: 'text-blue-600 bg-blue-100',
       completed: 'text-green-600 bg-green-100',
-      failed: 'text-red-600 bg-red-100'
+      failed: 'text-red-600 bg-red-100',
     };
     return colors[status as keyof typeof colors] || 'text-gray-600 bg-gray-100';
   };
@@ -154,7 +171,7 @@ const ContentManagementTools: React.FC = () => {
     const colors = {
       low: 'text-green-600 bg-green-100',
       medium: 'text-yellow-600 bg-yellow-100',
-      high: 'text-red-600 bg-red-100'
+      high: 'text-red-600 bg-red-100',
     };
     return colors[severity as keyof typeof colors] || 'text-gray-600 bg-gray-100';
   };
@@ -163,9 +180,7 @@ const ContentManagementTools: React.FC = () => {
     <div className="max-w-7xl mx-auto p-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Content Management Tools
-        </h1>
+        <h1 className="text-3xl font-bold text-gray-900 mb-2">Content Management Tools</h1>
         <p className="text-gray-600">
           Manage and enhance your AI/ML glossary content with powerful automation tools
         </p>
@@ -178,7 +193,7 @@ const ContentManagementTools: React.FC = () => {
             { id: 'overview', label: 'Overview', icon: BarChart3 },
             { id: 'bulk-ops', label: 'Bulk Operations', icon: Settings },
             { id: 'validation', label: 'Quality Validation', icon: Check },
-            { id: 'generation', label: 'AI Generation', icon: Zap }
+            { id: 'generation', label: 'AI Generation', icon: Zap },
           ].map(tab => {
             const Icon = tab.icon;
             return (
@@ -206,7 +221,10 @@ const ContentManagementTools: React.FC = () => {
           {statsLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div key={i} className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse">
+                <div
+                  key={i}
+                  className="bg-white border border-gray-200 rounded-lg p-4 animate-pulse"
+                >
                   <div className="h-4 bg-gray-200 rounded mb-2"></div>
                   <div className="h-8 bg-gray-200 rounded"></div>
                 </div>
@@ -239,7 +257,9 @@ const ContentManagementTools: React.FC = () => {
                     <AlertCircle className="w-5 h-5 text-orange-600" />
                     <span className="text-sm font-medium text-gray-700">Missing Definitions</span>
                   </div>
-                  <p className="text-2xl font-bold text-orange-900">{contentStats.missingDefinitions}</p>
+                  <p className="text-2xl font-bold text-orange-900">
+                    {contentStats.missingDefinitions}
+                  </p>
                 </div>
 
                 <div className="bg-white border border-gray-200 rounded-lg p-4">
@@ -257,7 +277,9 @@ const ContentManagementTools: React.FC = () => {
                     <X className="w-5 h-5 text-red-600" />
                     <span className="text-sm font-medium text-gray-700">Uncategorized</span>
                   </div>
-                  <p className="text-2xl font-bold text-red-900">{contentStats.uncategorizedTerms}</p>
+                  <p className="text-2xl font-bold text-red-900">
+                    {contentStats.uncategorizedTerms}
+                  </p>
                 </div>
 
                 <div className="bg-white border border-gray-200 rounded-lg p-4">
@@ -265,7 +287,9 @@ const ContentManagementTools: React.FC = () => {
                     <Code className="w-5 h-5 text-green-600" />
                     <span className="text-sm font-medium text-gray-700">With Code</span>
                   </div>
-                  <p className="text-2xl font-bold text-green-900">{contentStats.termsWithCodeExamples}</p>
+                  <p className="text-2xl font-bold text-green-900">
+                    {contentStats.termsWithCodeExamples}
+                  </p>
                 </div>
 
                 <div className="bg-white border border-gray-200 rounded-lg p-4">
@@ -273,7 +297,9 @@ const ContentManagementTools: React.FC = () => {
                     <Zap className="w-5 h-5 text-purple-600" />
                     <span className="text-sm font-medium text-gray-700">Interactive</span>
                   </div>
-                  <p className="text-2xl font-bold text-purple-900">{contentStats.termsWithInteractiveElements}</p>
+                  <p className="text-2xl font-bold text-purple-900">
+                    {contentStats.termsWithInteractiveElements}
+                  </p>
                 </div>
 
                 <div className="bg-white border border-gray-200 rounded-lg p-4">
@@ -281,7 +307,9 @@ const ContentManagementTools: React.FC = () => {
                     <AlertCircle className="w-5 h-5 text-yellow-600" />
                     <span className="text-sm font-medium text-gray-700">Low Quality</span>
                   </div>
-                  <p className="text-2xl font-bold text-yellow-900">{contentStats.lowQualityTerms}</p>
+                  <p className="text-2xl font-bold text-yellow-900">
+                    {contentStats.lowQualityTerms}
+                  </p>
                 </div>
               </div>
 
@@ -291,10 +319,12 @@ const ContentManagementTools: React.FC = () => {
                 <div className="space-y-3">
                   {Object.entries(contentStats.qualityDistribution).map(([quality, count]) => (
                     <div key={quality} className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-gray-700 capitalize">{quality}</span>
+                      <span className="text-sm font-medium text-gray-700 capitalize">
+                        {quality}
+                      </span>
                       <div className="flex items-center space-x-3">
                         <div className="w-32 bg-gray-200 rounded-full h-2">
-                          <div 
+                          <div
                             className="bg-blue-600 h-2 rounded-full"
                             style={{ width: `${(count / contentStats.totalTerms) * 100}%` }}
                           ></div>
@@ -353,7 +383,9 @@ const ContentManagementTools: React.FC = () => {
                 <Target className="w-6 h-6 text-purple-600" />
                 <div className="text-left">
                   <h4 className="font-medium text-gray-900">Categorize Terms</h4>
-                  <p className="text-sm text-gray-600">Auto-assign categories to uncategorized terms</p>
+                  <p className="text-sm text-gray-600">
+                    Auto-assign categories to uncategorized terms
+                  </p>
                 </div>
               </button>
 
@@ -386,7 +418,9 @@ const ContentManagementTools: React.FC = () => {
                         <span className="font-medium text-gray-900 capitalize">
                           {operation.type.replace('-', ' ')}
                         </span>
-                        <span className={`text-xs px-2 py-1 rounded-full ${getStatusColor(operation.status)}`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${getStatusColor(operation.status)}`}
+                        >
                           {operation.status}
                         </span>
                       </div>
@@ -394,16 +428,16 @@ const ContentManagementTools: React.FC = () => {
                         {operation.processedItems}/{operation.totalItems}
                       </span>
                     </div>
-                    
+
                     {operation.status === 'running' && (
                       <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                        <div 
+                        <div
                           className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                           style={{ width: `${operation.progress}%` }}
                         ></div>
                       </div>
                     )}
-                    
+
                     {operation.errors && operation.errors.length > 0 && (
                       <div className="text-sm text-red-600 mt-2">
                         <p>Errors: {operation.errors.length}</p>
@@ -436,7 +470,7 @@ const ContentManagementTools: React.FC = () => {
                 )}
                 Validate Sample (50 terms)
               </button>
-              
+
               <button
                 onClick={() => handleValidateContent('all')}
                 disabled={validateContent.isPending}
@@ -459,7 +493,9 @@ const ContentManagementTools: React.FC = () => {
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-medium text-gray-900">{result.termName}</h4>
                       <div className="flex items-center space-x-2">
-                        <span className={`text-xs px-2 py-1 rounded-full ${getSeverityColor(result.severity)}`}>
+                        <span
+                          className={`text-xs px-2 py-1 rounded-full ${getSeverityColor(result.severity)}`}
+                        >
                           {result.severity}
                         </span>
                         <span className="text-sm text-gray-600">
@@ -467,7 +503,7 @@ const ContentManagementTools: React.FC = () => {
                         </span>
                       </div>
                     </div>
-                    
+
                     {result.issues.length > 0 && (
                       <div className="mb-3">
                         <h5 className="text-sm font-medium text-gray-700 mb-1">Issues:</h5>
@@ -478,7 +514,7 @@ const ContentManagementTools: React.FC = () => {
                         </ul>
                       </div>
                     )}
-                    
+
                     {result.suggestions.length > 0 && (
                       <div>
                         <h5 className="text-sm font-medium text-gray-700 mb-1">Suggestions:</h5>
@@ -501,15 +537,17 @@ const ContentManagementTools: React.FC = () => {
       {activeTab === 'generation' && (
         <div className="space-y-6">
           <div className="bg-white border border-gray-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">AI-Assisted Content Generation</h3>
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">
+              AI-Assisted Content Generation
+            </h3>
             <p className="text-gray-600 mb-6">
               Use AI to automatically generate high-quality content for your terms.
             </p>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-4">
                 <h4 className="font-medium text-gray-900">Generation Options</h4>
-                
+
                 <div className="space-y-3">
                   <label className="flex items-center">
                     <input type="checkbox" className="mr-2" defaultChecked />
@@ -529,10 +567,10 @@ const ContentManagementTools: React.FC = () => {
                   </label>
                 </div>
               </div>
-              
+
               <div className="space-y-4">
                 <h4 className="font-medium text-gray-900">Quality Settings</h4>
-                
+
                 <div className="space-y-3">
                   <div>
                     <label className="block text-sm text-gray-700 mb-1">Quality Threshold</label>
@@ -542,7 +580,7 @@ const ContentManagementTools: React.FC = () => {
                       <option value="80">Premium (80%)</option>
                     </select>
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm text-gray-700 mb-1">Batch Size</label>
                     <select className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
@@ -555,7 +593,7 @@ const ContentManagementTools: React.FC = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="mt-6 pt-6 border-t border-gray-200">
               <button className="bg-purple-600 text-white px-6 py-3 rounded-md hover:bg-purple-700 transition-colors">
                 <Zap className="w-4 h-4 mr-2 inline" />

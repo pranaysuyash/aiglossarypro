@@ -62,7 +62,8 @@ export function transformUserForAdmin(user: UserForTransformation): Partial<IAdm
         : undefined),
     lastLoginAt:
       user.lastLoginAt ||
-      (user.last_login_at && (typeof user.last_login_at === 'string' || user.last_login_at instanceof Date)
+      (user.last_login_at &&
+      (typeof user.last_login_at === 'string' || user.last_login_at instanceof Date)
         ? (user.last_login_at as Date | string)
         : undefined),
     termsViewed:
@@ -112,16 +113,16 @@ export function extractUserFromRequest(req: Request): Partial<IUser> | null {
  * Check if user has access to premium features
  */
 export function hasUserAccess(user: UserForTransformation): boolean {
-  if (!user) return false;
+  if (!user) {return false;}
 
   // Admin always has access
-  if (user.isAdmin || user.role === 'admin') return true;
+  if (user.isAdmin || user.role === 'admin') {return true;}
 
   // Check lifetime access
-  if (user.lifetimeAccess || user.lifetime_access) return true;
+  if (user.lifetimeAccess || user.lifetime_access) {return true;}
 
   // Check active subscription
-  if (user.subscriptionTier && user.subscriptionTier !== 'free') return true;
+  if (user.subscriptionTier && user.subscriptionTier !== 'free') {return true;}
 
   // Check purchase date (if within trial period)
   if (user.purchaseDate || user.purchase_date) {
@@ -131,7 +132,7 @@ export function hasUserAccess(user: UserForTransformation): boolean {
     // Use time constants for trial period calculation (7 days)
     const trialEndDate = new Date(purchaseDate.getTime() + 7 * TIME_CONSTANTS.MILLISECONDS_IN_DAY);
 
-    if (new Date() <= trialEndDate) return true;
+    if (new Date() <= trialEndDate) {return true;}
   }
 
   return false;

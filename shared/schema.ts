@@ -22,7 +22,7 @@ export const sessions = pgTable(
     sess: jsonb('sess').notNull(),
     expire: timestamp('expire').notNull(),
   },
-  (table) => [index('IDX_session_expire').on(table.expire)]
+  table => [index('IDX_session_expire').on(table.expire)]
 );
 
 // User storage table for authentication
@@ -68,7 +68,7 @@ export const purchases = pgTable(
     purchaseData: jsonb('purchase_data'),
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userIdx: index('purchases_user_idx').on(table.userId),
     orderIdx: index('purchases_order_idx').on(table.gumroadOrderId),
     statusIdx: index('purchases_status_idx').on(table.status),
@@ -88,7 +88,7 @@ export const categories = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     nameIdx: index('categories_name_idx').on(table.name),
   })
 );
@@ -114,7 +114,7 @@ export const subcategories = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => {
+  table => {
     return {
       nameIdIdx: index('subcategory_name_category_id_idx').on(table.name, table.categoryId),
     };
@@ -149,7 +149,7 @@ export const terms = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     nameIdx: index('terms_name_idx').on(table.name),
     categoryIdx: index('terms_category_idx').on(table.categoryId),
     viewCountIdx: index('terms_view_count_idx').on(table.viewCount),
@@ -181,7 +181,7 @@ export const termSubcategories = pgTable(
       .notNull()
       .references(() => subcategories.id, { onDelete: 'cascade' }),
   },
-  (table) => ({
+  table => ({
     pk: primaryKey(table.termId, table.subcategoryId),
     termIdx: index('term_subcategories_term_idx').on(table.termId),
     subcategoryIdx: index('term_subcategories_subcategory_idx').on(table.subcategoryId),
@@ -201,7 +201,7 @@ export const favorites = pgTable(
       .references(() => terms.id, { onDelete: 'cascade' }),
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userTermIdx: index('favorites_user_term_idx').on(table.userId, table.termId),
   })
 );
@@ -219,7 +219,7 @@ export const userProgress = pgTable(
       .references(() => terms.id, { onDelete: 'cascade' }),
     learnedAt: timestamp('learned_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userTermIdx: index('progress_user_term_idx').on(table.userId, table.termId),
   })
 );
@@ -235,7 +235,7 @@ export const termViews = pgTable(
       .references(() => terms.id, { onDelete: 'cascade' }),
     viewedAt: timestamp('viewed_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userTermIdx: index('views_user_term_idx').on(table.userId, table.termId),
     viewedAtIdx: index('views_viewed_at_idx').on(table.viewedAt),
   })
@@ -267,7 +267,7 @@ export const newsletterSubscriptions = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     unsubscribedAt: timestamp('unsubscribed_at'),
   },
-  (table) => ({
+  table => ({
     emailIdx: index('newsletter_email_idx').on(table.email),
     statusIdx: index('newsletter_status_idx').on(table.status),
     createdAtIdx: index('newsletter_created_at_idx').on(table.createdAt),
@@ -312,7 +312,7 @@ export const contactSubmissions = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     emailIdx: index('contact_email_idx').on(table.email),
     statusIdx: index('contact_status_idx').on(table.status),
     createdAtIdx: index('contact_created_at_idx').on(table.createdAt),
@@ -362,7 +362,7 @@ export const earlyBirdCustomers = pgTable(
     countryCode: varchar('country_code', { length: 2 }),
     ipAddress: varchar('ip_address', { length: 64 }), // Hashed IP for privacy
   },
-  (table) => ({
+  table => ({
     emailIdx: index('early_bird_customers_email_idx').on(table.email),
     statusIdx: index('early_bird_customers_status_idx').on(table.status),
     registeredAtIdx: index('early_bird_customers_registered_at_idx').on(table.registeredAt),
@@ -391,7 +391,7 @@ export const userInteractions = pgTable(
     metadata: jsonb('metadata').default({}), // Additional interaction data
     timestamp: timestamp('timestamp').defaultNow().notNull(),
   },
-  (table) => ({
+  table => ({
     userIdIdx: index('user_interactions_user_id_idx').on(table.userId),
     termIdIdx: index('user_interactions_term_id_idx').on(table.termId),
     interactionTypeIdx: index('user_interactions_type_idx').on(table.interactionType),
@@ -424,7 +424,7 @@ export const termAnalytics = pgTable(
     lastCalculated: timestamp('last_calculated').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termIdIdx: index('term_analytics_term_id_idx').on(table.termId),
     viewCountIdx: index('term_analytics_view_count_idx').on(table.viewCount),
     lastCalculatedIdx: index('term_analytics_last_calculated_idx').on(table.lastCalculated),
@@ -459,7 +459,7 @@ export const userProfiles = pgTable(
     lastCalculated: timestamp('last_calculated').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userIdIdx: index('user_profiles_user_id_idx').on(table.userId),
     skillLevelIdx: index('user_profiles_skill_level_idx').on(table.skillLevel),
     engagementScoreIdx: index('user_profiles_engagement_score_idx').on(table.engagementScore),
@@ -510,7 +510,7 @@ export const learningPaths = pgTable(
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     nameIdx: index('learning_paths_name_idx').on(table.name),
     categoryIdx: index('learning_paths_category_idx').on(table.category_id),
     difficultyIdx: index('learning_paths_difficulty_idx').on(table.difficulty_level),
@@ -535,7 +535,7 @@ export const learningPathSteps = pgTable(
     content: jsonb('content'), // additional step-specific content
     created_at: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     pathIdx: index('learning_path_steps_path_idx').on(table.learning_path_id),
     orderIdx: index('learning_path_steps_order_idx').on(table.learning_path_id, table.step_order),
   })
@@ -558,7 +558,7 @@ export const userLearningProgress = pgTable(
     last_accessed_at: timestamp('last_accessed_at').defaultNow(),
     time_spent: integer('time_spent').default(0), // in minutes
   },
-  (table) => ({
+  table => ({
     userPathIdx: index('user_learning_progress_user_path_idx').on(
       table.user_id,
       table.learning_path_id
@@ -584,7 +584,7 @@ export const stepCompletions = pgTable(
     time_spent: integer('time_spent'), // in minutes
     notes: text('notes'), // user notes for this step
   },
-  (table) => ({
+  table => ({
     pk: primaryKey(table.user_id, table.step_id),
     userIdx: index('step_completions_user_idx').on(table.user_id),
     stepIdx: index('step_completions_step_idx').on(table.step_id),
@@ -614,7 +614,7 @@ export const codeExamples = pgTable(
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termIdx: index('code_examples_term_idx').on(table.term_id),
     languageIdx: index('code_examples_language_idx').on(table.language),
     difficultyIdx: index('code_examples_difficulty_idx').on(table.difficulty_level),
@@ -636,7 +636,7 @@ export const codeExampleRuns = pgTable(
     error_message: text('error_message'),
     timestamp: timestamp('timestamp').defaultNow(),
   },
-  (table) => ({
+  table => ({
     exampleIdx: index('code_example_runs_example_idx').on(table.example_id),
     userIdx: index('code_example_runs_user_idx').on(table.user_id),
     timestampIdx: index('code_example_runs_timestamp_idx').on(table.timestamp),
@@ -676,7 +676,7 @@ export const userBehaviorEvents = pgTable(
     ip_address: varchar('ip_address', { length: 64 }), // Hashed for privacy
     created_at: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userEventIdx: index('user_behavior_events_user_idx').on(table.user_id),
     eventTypeIdx: index('user_behavior_events_event_type_idx').on(table.event_type),
     entityIdx: index('user_behavior_events_entity_idx').on(table.entity_type, table.entity_id),
@@ -698,7 +698,7 @@ export const userInteractionPatterns = pgTable(
     last_updated: timestamp('last_updated').defaultNow(),
     created_at: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userPatternIdx: index('user_interaction_patterns_user_idx').on(table.user_id),
     patternTypeIdx: index('user_interaction_patterns_type_idx').on(table.pattern_type),
     confidenceIdx: index('user_interaction_patterns_confidence_idx').on(table.confidence_score),
@@ -725,7 +725,7 @@ export const userRecommendations = pgTable(
     expires_at: timestamp('expires_at'), // When this recommendation expires
     created_at: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userRecommendationIdx: index('user_recommendations_user_idx').on(table.user_id),
     typeIdx: index('user_recommendations_type_idx').on(table.recommendation_type),
     scoreIdx: index('user_recommendations_score_idx').on(table.score),
@@ -752,7 +752,7 @@ export const userLearningProfile = pgTable(
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     learningStyleIdx: index('user_learning_profile_style_idx').on(table.learning_style),
     complexityIdx: index('user_learning_profile_complexity_idx').on(table.preferred_complexity),
     updatedIdx: index('user_learning_profile_updated_idx').on(table.updated_at),
@@ -771,7 +771,7 @@ export const personalizationMetrics = pgTable(
     algorithm_version: varchar('algorithm_version', { length: 50 }),
     created_at: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userMetricIdx: index('personalization_metrics_user_idx').on(table.user_id),
     metricTypeIdx: index('personalization_metrics_type_idx').on(table.metric_type),
     createdAtIdx: index('personalization_metrics_created_at_idx').on(table.created_at),
@@ -790,7 +790,7 @@ export const contentRecommendationCache = pgTable(
     expires_at: timestamp('expires_at').notNull(),
     hit_count: integer('hit_count').default(0),
   },
-  (table) => ({
+  table => ({
     userCacheIdx: index('content_recommendation_cache_user_idx').on(table.user_id),
     expiresIdx: index('content_recommendation_cache_expires_idx').on(table.expires_at),
     hitCountIdx: index('content_recommendation_cache_hits_idx').on(table.hit_count),
@@ -827,7 +827,7 @@ export const discoverySessions = pgTable(
     relevance_rating: integer('relevance_rating'), // 1-5 scale for how relevant the discovery was
     created_at: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userSessionIdx: index('discovery_sessions_user_idx').on(table.user_id),
     sessionIdx: index('discovery_sessions_session_idx').on(table.session_id),
     modeIdx: index('discovery_sessions_mode_idx').on(table.discovery_mode),
@@ -852,7 +852,7 @@ export const discoveryPreferences = pgTable(
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     difficultyIdx: index('discovery_preferences_difficulty_idx').on(table.difficulty_preference),
     frequencyIdx: index('discovery_preferences_frequency_idx').on(table.exploration_frequency),
     updatedIdx: index('discovery_preferences_updated_idx').on(table.updated_at),
@@ -876,7 +876,7 @@ export const surpriseMetrics = pgTable(
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termIdx: index('surprise_metrics_term_idx').on(table.term_id),
     discoveryCountIdx: index('surprise_metrics_discovery_count_idx').on(table.discovery_count),
     serendipityIdx: index('surprise_metrics_serendipity_idx').on(table.serendipity_score),
@@ -908,7 +908,7 @@ export const codeExampleVotes = pgTable(
     created_at: timestamp('created_at').defaultNow(),
     updated_at: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userExampleIdx: index('code_example_votes_user_example_idx').on(
       table.user_id,
       table.code_example_id
@@ -941,7 +941,7 @@ export const cacheMetrics = pgTable(
     metadata: jsonb('metadata'), // Additional metrics like hot keys, cold keys, etc.
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     timestampIdx: index('cache_metrics_timestamp_idx').on(table.timestamp),
     cacheTypeIdx: index('cache_metrics_cache_type_idx').on(table.cacheType),
     createdAtIdx: index('cache_metrics_created_at_idx').on(table.createdAt),
@@ -957,8 +957,21 @@ export type InsertCacheMetric = typeof cacheMetrics.$inferInsert;
 
 // Support ticket priorities and statuses
 export const TICKET_PRIORITIES = ['low', 'medium', 'high', 'urgent'] as const;
-export const TICKET_STATUSES = ['open', 'in_progress', 'waiting_for_customer', 'resolved', 'closed'] as const;
-export const TICKET_TYPES = ['general', 'technical', 'billing', 'refund', 'feature_request', 'bug_report'] as const;
+export const TICKET_STATUSES = [
+  'open',
+  'in_progress',
+  'waiting_for_customer',
+  'resolved',
+  'closed',
+] as const;
+export const TICKET_TYPES = [
+  'general',
+  'technical',
+  'billing',
+  'refund',
+  'feature_request',
+  'bug_report',
+] as const;
 
 // Support tickets table
 export const supportTickets = pgTable(
@@ -968,38 +981,38 @@ export const supportTickets = pgTable(
     ticketNumber: varchar('ticket_number', { length: 20 }).unique().notNull(), // e.g., "TICK-2025-001"
     userId: varchar('user_id').references(() => users.id, { onDelete: 'cascade' }),
     assignedToId: varchar('assigned_to_id').references(() => users.id, { onDelete: 'set null' }),
-    
+
     // Customer information (in case ticket created without user account)
     customerEmail: varchar('customer_email', { length: 255 }).notNull(),
     customerName: varchar('customer_name', { length: 100 }),
-    
+
     // Ticket details
     subject: varchar('subject', { length: 255 }).notNull(),
     description: text('description').notNull(),
     type: varchar('type', { length: 20 }).notNull().default('general'), // TICKET_TYPES
     priority: varchar('priority', { length: 10 }).notNull().default('medium'), // TICKET_PRIORITIES
     status: varchar('status', { length: 20 }).notNull().default('open'), // TICKET_STATUSES
-    
+
     // Related information
     purchaseId: uuid('purchase_id').references(() => purchases.id, { onDelete: 'set null' }),
     gumroadOrderId: varchar('gumroad_order_id'), // For linking to Gumroad orders
-    
+
     // Metadata
     tags: text('tags').array(), // searchable tags
     metadata: jsonb('metadata').default({}), // Additional context data
     customerContext: jsonb('customer_context').default({}), // Browser, OS, etc.
-    
+
     // Timestamps
     firstResponseAt: timestamp('first_response_at'),
     lastResponseAt: timestamp('last_response_at'),
     resolvedAt: timestamp('resolved_at'),
     closedAt: timestamp('closed_at'),
     dueDate: timestamp('due_date'),
-    
+
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     ticketNumberIdx: index('support_tickets_ticket_number_idx').on(table.ticketNumber),
     userIdIdx: index('support_tickets_user_id_idx').on(table.userId),
     assignedToIdx: index('support_tickets_assigned_to_idx').on(table.assignedToId),
@@ -1025,19 +1038,19 @@ export const ticketMessages = pgTable(
     senderType: varchar('sender_type', { length: 20 }).notNull(), // 'customer', 'agent', 'system'
     senderEmail: varchar('sender_email', { length: 255 }),
     senderName: varchar('sender_name', { length: 100 }),
-    
+
     content: text('content').notNull(),
     contentType: varchar('content_type', { length: 20 }).default('text'), // text, html, markdown
     isInternal: boolean('is_internal').default(false), // Internal notes only visible to agents
     isAutoResponse: boolean('is_auto_response').default(false),
-    
+
     // Metadata
     metadata: jsonb('metadata').default({}),
-    
+
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     ticketIdIdx: index('ticket_messages_ticket_id_idx').on(table.ticketId),
     senderIdIdx: index('ticket_messages_sender_id_idx').on(table.senderId),
     senderTypeIdx: index('ticket_messages_sender_type_idx').on(table.senderType),
@@ -1055,18 +1068,18 @@ export const ticketAttachments = pgTable(
       .notNull()
       .references(() => supportTickets.id, { onDelete: 'cascade' }),
     messageId: uuid('message_id').references(() => ticketMessages.id, { onDelete: 'cascade' }),
-    
+
     fileName: varchar('file_name', { length: 255 }).notNull(),
     originalFileName: varchar('original_file_name', { length: 255 }).notNull(),
     fileSize: integer('file_size').notNull(), // in bytes
     mimeType: varchar('mime_type', { length: 100 }).notNull(),
     fileUrl: text('file_url').notNull(), // S3 or other storage URL
-    
+
     uploadedById: varchar('uploaded_by_id').references(() => users.id, { onDelete: 'set null' }),
-    
+
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     ticketIdIdx: index('ticket_attachments_ticket_id_idx').on(table.ticketId),
     messageIdIdx: index('ticket_attachments_message_id_idx').on(table.messageId),
     uploadedByIdx: index('ticket_attachments_uploaded_by_idx').on(table.uploadedById),
@@ -1083,29 +1096,29 @@ export const knowledgeBaseArticles = pgTable(
     title: varchar('title', { length: 255 }).notNull(),
     content: text('content').notNull(),
     excerpt: text('excerpt'),
-    
+
     // Organization
     categoryId: uuid('category_id').references(() => categories.id, { onDelete: 'set null' }),
     tags: text('tags').array(),
-    
+
     // Publishing
     isPublished: boolean('is_published').default(false),
     publishedAt: timestamp('published_at'),
     authorId: varchar('author_id').references(() => users.id, { onDelete: 'set null' }),
-    
+
     // Analytics
     viewCount: integer('view_count').default(0),
     helpfulVotes: integer('helpful_votes').default(0),
     notHelpfulVotes: integer('not_helpful_votes').default(0),
-    
+
     // SEO
     metaTitle: varchar('meta_title', { length: 255 }),
     metaDescription: text('meta_description'),
-    
+
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     slugIdx: index('knowledge_base_articles_slug_idx').on(table.slug),
     titleIdx: index('knowledge_base_articles_title_idx').on(table.title),
     categoryIdIdx: index('knowledge_base_articles_category_id_idx').on(table.categoryId),
@@ -1124,24 +1137,24 @@ export const responseTemplates = pgTable(
     name: varchar('name', { length: 255 }).notNull(),
     subject: varchar('subject', { length: 255 }),
     content: text('content').notNull(),
-    
+
     // Trigger conditions
     triggerType: varchar('trigger_type', { length: 50 }).notNull(), // 'ticket_created', 'status_changed', 'manual'
     triggerConditions: jsonb('trigger_conditions').default({}), // JSON conditions for auto-triggers
-    
+
     // Configuration
     isActive: boolean('is_active').default(true),
     isAutoResponse: boolean('is_auto_response').default(false),
     ticketTypes: text('ticket_types').array(), // Which ticket types this applies to
-    
+
     // Metadata
     createdById: varchar('created_by_id').references(() => users.id, { onDelete: 'set null' }),
     usageCount: integer('usage_count').default(0),
-    
+
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     nameIdx: index('response_templates_name_idx').on(table.name),
     triggerTypeIdx: index('response_templates_trigger_type_idx').on(table.triggerType),
     isActiveIdx: index('response_templates_is_active_idx').on(table.isActive),
@@ -1157,31 +1170,31 @@ export const refundRequests = pgTable(
     ticketId: uuid('ticket_id').references(() => supportTickets.id, { onDelete: 'cascade' }),
     purchaseId: uuid('purchase_id').references(() => purchases.id, { onDelete: 'cascade' }),
     userId: varchar('user_id').references(() => users.id, { onDelete: 'cascade' }),
-    
+
     // Gumroad integration
     gumroadOrderId: varchar('gumroad_order_id').notNull(),
     gumroadRefundId: varchar('gumroad_refund_id'), // Set when processed
-    
+
     // Request details
     reason: text('reason').notNull(),
     refundType: varchar('refund_type', { length: 20 }).notNull(), // 'full', 'partial'
     requestedAmount: integer('requested_amount').notNull(), // in cents
     refundedAmount: integer('refunded_amount'), // actual refunded amount
-    
+
     // Status tracking
     status: varchar('status', { length: 20 }).notNull().default('pending'), // pending, approved, rejected, processed, failed
     adminNotes: text('admin_notes'),
     customerNotification: text('customer_notification'),
-    
+
     // Timestamps
     processedAt: timestamp('processed_at'),
     approvedAt: timestamp('approved_at'),
     rejectedAt: timestamp('rejected_at'),
-    
+
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     ticketIdIdx: index('refund_requests_ticket_id_idx').on(table.ticketId),
     purchaseIdIdx: index('refund_requests_purchase_id_idx').on(table.purchaseId),
     userIdIdx: index('refund_requests_user_id_idx').on(table.userId),
@@ -1199,7 +1212,7 @@ export const customerServiceMetrics = pgTable(
     metricType: varchar('metric_type', { length: 50 }).notNull(), // 'response_time', 'resolution_time', 'satisfaction', 'volume'
     metricPeriod: varchar('metric_period', { length: 20 }).notNull(), // 'daily', 'weekly', 'monthly'
     metricDate: timestamp('metric_date').notNull(),
-    
+
     // Metric values
     totalTickets: integer('total_tickets').default(0),
     openTickets: integer('open_tickets').default(0),
@@ -1209,17 +1222,17 @@ export const customerServiceMetrics = pgTable(
     firstResponseSla: integer('first_response_sla'), // percentage met
     resolutionSla: integer('resolution_sla'), // percentage met
     customerSatisfaction: integer('customer_satisfaction'), // average rating * 100
-    
+
     // Agent performance
     agentId: varchar('agent_id').references(() => users.id, { onDelete: 'cascade' }),
     agentTicketsHandled: integer('agent_tickets_handled').default(0),
     agentAvgResponseTime: integer('agent_avg_response_time'), // in hours
-    
+
     metadata: jsonb('metadata').default({}),
-    
+
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     metricTypeIdx: index('customer_service_metrics_type_idx').on(table.metricType),
     metricPeriodIdx: index('customer_service_metrics_period_idx').on(table.metricPeriod),
     metricDateIdx: index('customer_service_metrics_date_idx').on(table.metricDate),
@@ -1237,19 +1250,19 @@ export const customerFeedback = pgTable(
       .notNull()
       .references(() => supportTickets.id, { onDelete: 'cascade' }),
     userId: varchar('user_id').references(() => users.id, { onDelete: 'set null' }),
-    
+
     // Feedback details
     rating: integer('rating').notNull(), // 1-5 scale
     comment: text('comment'),
     feedbackType: varchar('feedback_type', { length: 20 }).default('resolution'), // resolution, response_time, agent_quality
-    
+
     // Context
     agentId: varchar('agent_id').references(() => users.id, { onDelete: 'set null' }),
     metadata: jsonb('metadata').default({}),
-    
+
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     ticketIdIdx: index('customer_feedback_ticket_id_idx').on(table.ticketId),
     userIdIdx: index('customer_feedback_user_id_idx').on(table.userId),
     ratingIdx: index('customer_feedback_rating_idx').on(table.rating),
@@ -1337,7 +1350,7 @@ export const referralPayouts = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     referrerIdx: index('referral_payouts_referrer_idx').on(table.referrerId),
     referredUserIdx: index('referral_payouts_referred_user_idx').on(table.referredUserId),
     gumroadOrderIdx: index('referral_payouts_gumroad_order_idx').on(table.gumroadOrderId),
@@ -1361,7 +1374,7 @@ export const referralLinks = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userIdx: index('referral_links_user_idx').on(table.userId),
     codeIdx: index('referral_links_code_idx').on(table.referralCode),
     activeIdx: index('referral_links_active_idx').on(table.isActive),
@@ -1388,7 +1401,7 @@ export const referralClicks = pgTable(
     metadata: jsonb('metadata').default({}),
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     linkIdx: index('referral_clicks_link_idx').on(table.referralLinkId),
     codeIdx: index('referral_clicks_code_idx').on(table.referralCode),
     convertedIdx: index('referral_clicks_converted_idx').on(table.converted),

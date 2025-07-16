@@ -157,11 +157,11 @@ export default function FilePreview({
   }, []);
 
   const processCSVPreview = async (content: string): Promise<PreviewData> => {
-    const lines = content.split('\n').filter((line) => line.trim());
-    const headers = lines[0]?.split(',').map((h) => h.trim().replace(/"/g, '')) || [];
+    const lines = content.split('\n').filter(line => line.trim());
+    const headers = lines[0]?.split(',').map(h => h.trim().replace(/"/g, '')) || [];
     const rows = lines
       .slice(1, 11)
-      .map((line) => line.split(',').map((cell) => cell.trim().replace(/"/g, '')));
+      .map(line => line.split(',').map(cell => cell.trim().replace(/"/g, '')));
 
     return {
       type: 'csv',
@@ -221,9 +221,9 @@ export default function FilePreview({
   };
 
   const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    if (bytes < 1024) {return `${bytes} B`;}
+    if (bytes < 1024 * 1024) {return `${(bytes / 1024).toFixed(1)} KB`;}
+    if (bytes < 1024 * 1024 * 1024) {return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;}
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
   };
 
@@ -245,7 +245,7 @@ export default function FilePreview({
   };
 
   const getFileTypeBadge = () => {
-    if (!previewData) return null;
+    if (!previewData) {return null;}
 
     const badgeMap = {
       excel: { color: 'bg-green-100 text-green-800', label: 'Excel' },

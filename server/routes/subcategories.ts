@@ -22,7 +22,7 @@ export function registerSubcategoryRoutes(app: Express): void {
       const pageNum = parseInt(page as string);
       const limitNum = Math.min(parseInt(limit as string), 500); // Max 500 items per page
       const offset = (pageNum - 1) * limitNum;
-      const fieldList = (fields as string).split(',').map((f) => f.trim());
+      const fieldList = (fields as string).split(',').map(f => f.trim());
 
       // Get subcategories with basic query first to test
       const subcategories = await storage.getSubcategoriesOptimized({
@@ -118,7 +118,7 @@ export function registerSubcategoryRoutes(app: Express): void {
       const pageNum = parseInt(page as string);
       const limitNum = Math.min(parseInt(limit as string), 100); // Max 100 items per page
       const offset = (pageNum - 1) * limitNum;
-      const fieldList = (fields as string).split(',').map((f) => f.trim());
+      const fieldList = (fields as string).split(',').map(f => f.trim());
 
       // Use optimized database query with field selection
       const result = await storage.getTermsBySubcategory(id, {
@@ -169,7 +169,7 @@ export function registerSubcategoryRoutes(app: Express): void {
       const pageNum = parseInt(page as string);
       const limitNum = Math.min(parseInt(limit as string), 500);
       const offset = (pageNum - 1) * limitNum;
-      const fieldList = (fields as string).split(',').map((f) => f.trim());
+      const fieldList = (fields as string).split(',').map(f => f.trim());
 
       const subcategories = await storage.getSubcategoriesOptimized({
         offset,

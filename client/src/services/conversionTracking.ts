@@ -3,7 +3,12 @@
  */
 
 export interface ConversionEvent {
-  eventType: 'guest_view' | 'guest_cta_click' | 'guest_signup_attempt' | 'guest_signup_success' | 'guest_to_premium';
+  eventType:
+    | 'guest_view'
+    | 'guest_cta_click'
+    | 'guest_signup_attempt'
+    | 'guest_signup_success'
+    | 'guest_to_premium';
   termId?: string;
   ctaType?: string;
   conversionValue?: number;
@@ -15,7 +20,13 @@ export interface ConversionEvent {
 }
 
 export interface ConversionFunnelStep {
-  step: 'landing' | 'preview' | 'limit_reached' | 'signup_initiated' | 'signup_completed' | 'premium_purchase';
+  step:
+    | 'landing'
+    | 'preview'
+    | 'limit_reached'
+    | 'signup_initiated'
+    | 'signup_completed'
+    | 'premium_purchase';
   timestamp: number;
   duration?: number; // Time spent in this step
   metadata?: Record<string, any>;
@@ -67,7 +78,7 @@ export function getConversionSession(): ConversionSession {
 function createNewConversionSession(): ConversionSession {
   const sessionId = `conv_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
   const now = Date.now();
-  
+
   // Extract UTM parameters and referrer info
   const urlParams = new URLSearchParams(window.location.search);
   const source = urlParams.get('utm_source') || document.referrer || 'direct';
@@ -77,10 +88,12 @@ function createNewConversionSession(): ConversionSession {
   const session: ConversionSession = {
     sessionId,
     isConverted: false,
-    funnelSteps: [{
-      step: 'landing',
-      timestamp: now,
-    }],
+    funnelSteps: [
+      {
+        step: 'landing',
+        timestamp: now,
+      },
+    ],
     totalEvents: 0,
     firstTouch: now,
     lastTouch: now,
@@ -107,9 +120,11 @@ export function saveConversionSession(session: ConversionSession): void {
 /**
  * Track conversion event
  */
-export function trackConversionEvent(event: Omit<ConversionEvent, 'sessionId' | 'timestamp' | 'userAgent' | 'referrer'>): void {
+export function trackConversionEvent(
+  event: Omit<ConversionEvent, 'sessionId' | 'timestamp' | 'userAgent' | 'referrer'>
+): void {
   const session = getConversionSession();
-  
+
   const conversionEvent: ConversionEvent = {
     ...event,
     sessionId: session.sessionId,
@@ -268,19 +283,21 @@ export function getConversionFunnelAnalytics(): {
   const currentStep = session.funnelSteps[session.funnelSteps.length - 1]?.step || 'landing';
   const completedSteps = session.funnelSteps.map(s => s.step);
   const timeInFunnel = Date.now() - session.firstTouch;
-  
+
   // Calculate dropoff risk based on time and behavior
   let dropoffRisk: 'low' | 'medium' | 'high' = 'low';
-  
-  if (timeInFunnel > 30 * 60 * 1000) { // 30 minutes
+
+  if (timeInFunnel > 30 * 60 * 1000) {
+    // 30 minutes
     dropoffRisk = 'high';
-  } else if (timeInFunnel > 10 * 60 * 1000 && session.totalEvents < 3) { // 10 minutes with low engagement
+  } else if (timeInFunnel > 10 * 60 * 1000 && session.totalEvents < 3) {
+    // 10 minutes with low engagement
     dropoffRisk = 'medium';
   }
 
   // Determine next best action
   let nextBestAction = 'Continue exploring';
-  
+
   if (currentStep === 'preview' && !completedSteps.includes('limit_reached')) {
     nextBestAction = 'View more terms to see full value';
   } else if (currentStep === 'limit_reached') {
@@ -303,9 +320,13 @@ export function getConversionFunnelAnalytics(): {
 /**
  * Mark conversion as completed
  */
-export function markConversionCompleted(type: 'free_signup' | 'premium_purchase', value?: number, userId?: string): void {
+export function markConversionCompleted(
+  type: 'free_signup' | 'premium_purchase',
+  value?: number,
+  userId?: string
+): void {
   const eventType = type === 'free_signup' ? 'guest_signup_success' : 'guest_to_premium';
-  
+
   trackConversionEvent({
     eventType,
     conversionValue: value,
@@ -330,22 +351,22 @@ export function getConversionSessionAnalytics(): {
 
   // Calculate conversion likelihood score (0-100)
   let score = 0;
-  
+
   // Time-based scoring
-  if (sessionDuration > 2 * 60 * 1000) score += 20; // 2+ minutes
-  if (sessionDuration > 5 * 60 * 1000) score += 20; // 5+ minutes
-  
+  if (sessionDuration > 2 * 60 * 1000) {score += 20;} // 2+ minutes
+  if (sessionDuration > 5 * 60 * 1000) {score += 20;} // 5+ minutes
+
   // Engagement-based scoring
-  if (pageViews >= 1) score += 20;
-  if (pageViews >= 2) score += 20;
-  if (ctaClicks >= 1) score += 10;
-  if (ctaClicks >= 3) score += 10;
+  if (pageViews >= 1) {score += 20;}
+  if (pageViews >= 2) {score += 20;}
+  if (ctaClicks >= 1) {score += 10;}
+  if (ctaClicks >= 3) {score += 10;}
 
   const conversionLikelihood = Math.min(100, score);
 
   // Segment users based on behavior
   let segmentType: 'high_intent' | 'medium_intent' | 'low_intent' | 'browser' = 'browser';
-  
+
   if (conversionLikelihood >= 70) {
     segmentType = 'high_intent';
   } else if (conversionLikelihood >= 40) {

@@ -12,6 +12,7 @@ import {
   parseLimit,
   parsePaginationParams,
 } from '../utils/pagination';
+import { cacheConfigs, invalidateCache, invalidationPatterns } from '../middleware/cacheMiddleware';
 
 // Import AuthenticatedRequest from shared types
 // (Removed duplicate interface definition)
@@ -124,7 +125,7 @@ export function registerTermRoutes(app: Express): void {
    *               $ref: '#/components/schemas/ErrorResponse'
    */
   // Get all terms with optimized pagination and field selection
-  app.get('/api/terms', async (req, res) => {
+  app.get('/api/terms', cacheConfigs.termsList, async (req, res) => {
     try {
       // Parse pagination parameters with increased limits for better data access
       const { page, limit, offset } = parsePaginationParams({
@@ -143,10 +144,10 @@ export function registerTermRoutes(app: Express): void {
       const fields =
         (req.query.fields as string) ||
         'id,name,shortDefinition,definition,viewCount,categoryId,category';
-      const fieldList = fields.split(',').map((f) => f.trim());
+      const fieldList = fields.split(',').map(f => f.trim());
 
       // Use optimized storage method with field selection
-      let result;
+      let result: { terms: ITerm[]; total: number };
       try {
         result = await storage.getAllTerms({
           limit,
@@ -463,18 +464,7 @@ export function registerTermRoutes(app: Express): void {
         });
       }
 
-      // For now, return empty array since we may not have this method implemented
-      // You can implement storage.getRecentlyViewedTerms later
-      const recentlyViewed: ITerm[] = [];
-
-      try {
-        // Try to get recently viewed terms if method exists
-        // const recentlyViewed = await storage.getRecentlyViewedTerms(userId, parseInt(limit as string));
-      } catch (error) {
-        logger.warn('Recently viewed terms method not implemented yet', {
-          error: error instanceof Error ? error.message : String(error),
-        });
-      }
+      const recentlyViewed = await storage.getRecentlyViewedTerms(userId);
 
       const response: ApiResponse<ITerm[]> = {
         success: true,
@@ -741,7 +731,7 @@ export function registerTermRoutes(app: Express): void {
         maxLimit: 50,
       });
 
-      const fieldList = (fields as string).split(',').map((f) => f.trim());
+      const fieldList = (fields as string).split(',').map(f => f.trim());
 
       // Use optimized search with database-level pagination
       const searchResults = await storage.searchTermsOptimized({
@@ -903,12 +893,11 @@ export function registerTermRoutes(app: Express): void {
           const previewTerm = {
             ...term,
             definition: term.definition ? `${term.definition.substring(0, 150)}...` : '',
-            longDefinition: term.longDefinition
-              ? `${term.longDefinition.substring(0, 250)}...`
-              : '',
+            // longDefinition removed as it's not part of ITerm interface
             isPreview: true,
             requiresAuth: true,
-            previewMessage: 'Sign in to view the complete definition, examples, and all 42 content sections',
+            previewMessage:
+              'Sign in to view the complete definition, examples, and all 42 content sections',
           };
 
           const response: ApiResponse<any> = {

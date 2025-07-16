@@ -209,18 +209,18 @@ class ABTestingService {
   // Get device type
   private getDeviceType(): string {
     const width = window.innerWidth;
-    if (width < 768) return 'mobile';
-    if (width < 1024) return 'tablet';
+    if (width < 768) {return 'mobile';}
+    if (width < 1024) {return 'tablet';}
     return 'desktop';
   }
 
   // Get browser info
   private getBrowserInfo(): string {
     const userAgent = navigator.userAgent;
-    if (userAgent.indexOf('Chrome') > -1) return 'Chrome';
-    if (userAgent.indexOf('Safari') > -1) return 'Safari';
-    if (userAgent.indexOf('Firefox') > -1) return 'Firefox';
-    if (userAgent.indexOf('Edge') > -1) return 'Edge';
+    if (userAgent.indexOf('Chrome') > -1) {return 'Chrome';}
+    if (userAgent.indexOf('Safari') > -1) {return 'Safari';}
+    if (userAgent.indexOf('Firefox') > -1) {return 'Firefox';}
+    if (userAgent.indexOf('Edge') > -1) {return 'Edge';}
     return 'Other';
   }
 
@@ -247,7 +247,7 @@ class ABTestingService {
   // Calculate time to conversion
   private getTimeToConversion(): number {
     const sessionStart = parseInt(sessionStorage.getItem('ab_test_start_time') || '0');
-    if (!sessionStart) return 0;
+    if (!sessionStart) {return 0;}
 
     return Math.floor((Date.now() - sessionStart) / 1000); // Return in seconds
   }
@@ -255,7 +255,7 @@ class ABTestingService {
   // Get session duration
   private getSessionDuration(): number {
     const sessionStart = parseInt(sessionStorage.getItem('session_start_time') || '0');
-    if (!sessionStart) return 0;
+    if (!sessionStart) {return 0;}
 
     return Math.floor((Date.now() - sessionStart) / 1000); // Return in seconds
   }
@@ -330,7 +330,7 @@ class ABTestingService {
     const sessionData = this.getSessionData();
     const variantData = sessionData.variants[variant];
 
-    if (!variantData) return;
+    if (!variantData) {return;}
 
     try {
       const response = await fetch('/api/ab-tests/sync', {

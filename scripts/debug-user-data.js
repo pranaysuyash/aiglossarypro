@@ -28,7 +28,7 @@ async function debugUserData() {
     ];
 
     for (const email of testUsers) {
-      const user = users.data.find((u) => u.email === email);
+      const user = users.data.find(u => u.email === email);
 
       if (user) {
         console.log(`✅ ${email}:`);
@@ -63,7 +63,7 @@ debugUserData()
     console.log('\n✅ Debug complete');
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('❌ Debug failed:', error);
     process.exit(1);
   });

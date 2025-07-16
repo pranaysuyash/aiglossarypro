@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AIContentFeedback } from './AIContentFeedback';
@@ -25,7 +24,7 @@ const meta: Meta<typeof AIContentFeedback> = {
   title: 'AI Components/AIContentFeedback',
   component: AIContentFeedback,
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="max-w-4xl mx-auto p-6 bg-white min-h-[600px]">
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
@@ -491,7 +490,7 @@ export const MobileView: Story = {
     onFeedbackSubmitted: action('feedback-submitted'),
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="max-w-sm mx-auto p-4 bg-white min-h-[600px]">
           <div className="mb-4 p-3 bg-gray-50 rounded-lg">
@@ -529,7 +528,7 @@ export const TabletView: Story = {
     onFeedbackSubmitted: action('feedback-submitted'),
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="max-w-2xl mx-auto p-4 bg-white min-h-[600px]">
           <div className="mb-4 p-4 bg-gray-50 rounded-lg">
@@ -568,7 +567,7 @@ export const DarkMode: Story = {
     onFeedbackSubmitted: action('feedback-submitted'),
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="dark bg-gray-900 text-white min-h-[600px] p-6">
           <div className="max-w-4xl mx-auto">

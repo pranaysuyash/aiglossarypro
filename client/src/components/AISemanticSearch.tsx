@@ -23,7 +23,7 @@ interface SemanticSearchResult {
 interface AISemanticSearchProps {
   placeholder?: string;
   onResultClick?: (termId: string) => void;
-  className?: string;
+  className?: string | undefined;
 }
 
 export function AISemanticSearch({
@@ -37,41 +37,45 @@ export function AISemanticSearch({
   const [hasSearched, setHasSearched] = useState(false);
   const { toast } = useToast();
 
-  const performSearch = useCallback(async (searchQuery: string) => {
-    if (!searchQuery.trim()) return;
+  const performSearch = useCallback(
+    async (searchQuery: string) => {
+      if (!searchQuery.trim()) {return;}
 
-    setIsSearching(true);
-    setHasSearched(true);
+      setIsSearching(true);
+      setHasSearched(true);
 
-    try {
-      const response = await fetch(
-        `/api/ai/semantic-search?q=${encodeURIComponent(searchQuery)}&limit=8`
-      );
+      try {
+        const response = await fetch(
+          `/api/ai/semantic-search?q=${encodeURIComponent(searchQuery)}&limit=8`
+        );
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Search failed');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Search failed');
+        }
+
+        const result = await response.json();
+
+        if (result.success) {
+          setResults(result.data.matches || []);
+        } else {
+          throw new Error(result.error || 'Search failed');
+        }
+      } catch (error: any) {
+        console.error('Semantic search error:', error);
+        toast({
+          title: 'Search Error',
+          description:
+            error instanceof Error ? error?.message : 'Failed to perform semantic search',
+          variant: 'destructive',
+        });
+        setResults([]);
+      } finally {
+        setIsSearching(false);
       }
-
-      const result = await response.json();
-
-      if (result.success) {
-        setResults(result.data.matches || []);
-      } else {
-        throw new Error(result.error || 'Search failed');
-      }
-    } catch (error) {
-      console.error('Semantic search error:', error);
-      toast({
-        title: 'Search Error',
-        description: error instanceof Error ? error.message : 'Failed to perform semantic search',
-        variant: 'destructive',
-      });
-      setResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [toast]);
+    },
+    [toast]
+  );
 
   // Debounced search
   useEffect(() => {
@@ -93,14 +97,14 @@ export function AISemanticSearch({
   };
 
   const getScoreColor = (score: number) => {
-    if (score >= 0.8) return 'bg-green-100 text-green-800';
-    if (score >= 0.6) return 'bg-yellow-100 text-yellow-800';
+    if (score >= 0.8) {return 'bg-green-100 text-green-800';}
+    if (score >= 0.6) {return 'bg-yellow-100 text-yellow-800';}
     return 'bg-gray-100 text-gray-800';
   };
 
   const getScoreLabel = (score: number) => {
-    if (score >= 0.8) return 'High Relevance';
-    if (score >= 0.6) return 'Medium Relevance';
+    if (score >= 0.8) {return 'High Relevance';}
+    if (score >= 0.6) {return 'Medium Relevance';}
     return 'Low Relevance';
   };
 
@@ -118,7 +122,7 @@ export function AISemanticSearch({
           type="text"
           placeholder={placeholder}
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={e => setQuery(e.target.value)}
           className="pl-10 pr-4"
           disabled={isSearching}
         />
@@ -148,7 +152,7 @@ export function AISemanticSearch({
       )}
 
       <div className="space-y-3">
-        {results.map((result) => (
+        {results.map(result => (
           <Card key={result.termId} className="hover:shadow-md transition-shadow cursor-pointer">
             <CardContent className="p-4">
               <div className="flex items-start justify-between mb-2">

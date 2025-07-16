@@ -188,10 +188,10 @@ export const HierarchicalNavigatorDemo: React.FC = () => {
             currentPath={currentPath}
             onNodeClick={handleNodeClick}
             userProgress={mockUserProgress}
-            searchable={true}
-            collapsible={true}
-            showProgress={true}
-            showInteractiveElements={true}
+            searchable
+            collapsible
+            showProgress
+            showInteractiveElements
             className="sticky top-6"
           />
         </div>

@@ -68,7 +68,7 @@ export function AIAdminDashboard() {
     queryKey: ['ai-status'],
     queryFn: async () => {
       const response = await fetch('/api/ai/status');
-      if (!response.ok) throw new Error('Failed to fetch AI status');
+      if (!response.ok) {throw new Error('Failed to fetch AI status');}
       const result = await response.json();
       return result.data;
     },
@@ -80,7 +80,7 @@ export function AIAdminDashboard() {
     queryKey: ['ai-content-suggestions'],
     queryFn: async () => {
       const response = await fetch('/api/ai/content-suggestions');
-      if (!response.ok) throw new Error('Failed to fetch content suggestions');
+      if (!response.ok) {throw new Error('Failed to fetch content suggestions');}
       const result = await response.json();
       return result.data;
     },
@@ -92,7 +92,7 @@ export function AIAdminDashboard() {
       const response = await fetch('/api/ai/cache', {
         method: 'DELETE',
       });
-      if (!response.ok) throw new Error('Failed to clear cache');
+      if (!response.ok) {throw new Error('Failed to clear cache');}
       return response.json();
     },
     onSuccess: () => {
@@ -102,10 +102,10 @@ export function AIAdminDashboard() {
       });
       refetchStatus();
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to clear cache',
+        description: error instanceof Error ? error?.message : 'Failed to clear cache',
         variant: 'destructive',
       });
     },
@@ -116,7 +116,7 @@ export function AIAdminDashboard() {
   };
 
   const calculateCacheHitRate = () => {
-    if (!aiStatus?.cache.stats) return 0;
+    if (!aiStatus?.cache.stats) {return 0;}
     const { hits, misses } = aiStatus.cache.stats;
     const total = hits + misses;
     return total > 0 ? Math.round((hits / total) * 100) : 0;
@@ -127,8 +127,8 @@ export function AIAdminDashboard() {
   };
 
   const getRateLimitColor = (percentage: number) => {
-    if (percentage >= 80) return 'text-red-600';
-    if (percentage >= 60) return 'text-yellow-600';
+    if (percentage >= 80) {return 'text-red-600';}
+    if (percentage >= 60) {return 'text-yellow-600';}
     return 'text-green-600';
   };
 

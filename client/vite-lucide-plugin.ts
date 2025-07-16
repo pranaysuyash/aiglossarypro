@@ -1,9 +1,9 @@
 /**
  * Vite Plugin for Lucide React Tree Shaking
- * 
+ *
  * This plugin automatically transforms lucide-react imports to enable better tree shaking.
  * It converts named imports to individual module imports, significantly reducing bundle size.
- * 
+ *
  * Example transformation:
  * Before: import { Search, Menu, User } from 'lucide-react'
  * After:  import Search from 'lucide-react/dist/esm/icons/search'
@@ -44,7 +44,7 @@ export function lucideTreeShakePlugin(): Plugin {
                 .toLowerCase()
                 .replace(/^-/, '')
                 .replace(/(\d+)/, '-$1');
-              
+
               if (alias) {
                 return `import ${alias} from 'lucide-react/dist/esm/icons/${iconFileName}';`;
               } else {
@@ -60,12 +60,12 @@ export function lucideTreeShakePlugin(): Plugin {
       if (transformedCode !== code) {
         return {
           code: transformedCode,
-          map: null // Simple transformation, source map not critical for this use case
+          map: null, // Simple transformation, source map not critical for this use case
         };
       }
 
       return null;
-    }
+    },
   };
 }
 
@@ -92,18 +92,18 @@ export function lucideOptimizeConfig() {
         'lucide-react/dist/esm/icons/arrow-right',
         'lucide-react/dist/esm/icons/arrow-left',
         'lucide-react/dist/esm/icons/chevron-down',
-        'lucide-react/dist/esm/icons/loader-2'
-      ]
+        'lucide-react/dist/esm/icons/loader-2',
+      ],
     },
     build: {
       rollupOptions: {
         output: {
           manualChunks: {
             // Group lucide icons into a separate chunk for better caching
-            'lucide-icons': ['lucide-react']
-          }
-        }
-      }
-    }
+            'lucide-icons': ['lucide-react'],
+          },
+        },
+      },
+    },
   };
 }

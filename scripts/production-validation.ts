@@ -180,14 +180,14 @@ class ProductionValidator {
       client.release();
       await pool.end();
 
-      const missingTables = tableResults.filter((t) => !t.exists);
+      const missingTables = tableResults.filter(t => !t.exists);
 
       if (missingTables.length > 0) {
         return {
           service: 'Database',
           test: 'Schema Validation',
           status: 'FAIL',
-          message: `Missing tables: ${missingTables.map((t) => t.table).join(', ')}`,
+          message: `Missing tables: ${missingTables.map(t => t.table).join(', ')}`,
           duration: 0,
           details: { tables: tableResults },
         };
@@ -475,7 +475,7 @@ class ProductionValidator {
 
       // Capture test exception
       const testError = new Error('Production validation test error');
-      Sentry.withScope((scope) => {
+      Sentry.withScope(scope => {
         scope.setTag('test_event', 'true');
         scope.setContext('test_context', {
           validator: 'production_validator',
@@ -486,7 +486,7 @@ class ProductionValidator {
       });
 
       // Wait for event to be sent
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       return {
         service: 'Sentry',
@@ -730,9 +730,9 @@ class ProductionValidator {
 
     // Summary statistics
     const totalTests = this.results.length;
-    const passed = this.results.filter((r) => r.status === 'PASS').length;
-    const failed = this.results.filter((r) => r.status === 'FAIL').length;
-    const skipped = this.results.filter((r) => r.status === 'SKIP').length;
+    const passed = this.results.filter(r => r.status === 'PASS').length;
+    const failed = this.results.filter(r => r.status === 'FAIL').length;
+    const skipped = this.results.filter(r => r.status === 'SKIP').length;
     const avgDuration = this.results.reduce((sum, r) => sum + r.duration, 0) / totalTests;
 
     this.log(`\n${'='.repeat(60)}`, 'info');

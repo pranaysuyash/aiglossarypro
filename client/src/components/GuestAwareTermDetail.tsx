@@ -1,13 +1,13 @@
+import { ExternalLink, Info } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRoute } from 'wouter';
 import { useAuth } from '@/hooks/useAuth';
-import { useGuestPreview, useGuestPageTracking } from '@/hooks/useGuestPreview';
-import { GuestPreviewBanner } from './GuestPreviewBanner';
-import { FreeTierGate } from './FreeTierGate';
+import { useGuestPageTracking, useGuestPreview } from '@/hooks/useGuestPreview';
 import EnhancedTermDetail from '@/pages/EnhancedTermDetail';
-import { Alert, AlertDescription } from './ui/alert';
-import { Info, ExternalLink } from 'lucide-react';
+import { FreeTierGate } from './FreeTierGate';
+import { GuestPreviewBanner } from './GuestPreviewBanner';
 import { GuestUpgradeModal } from './modals/GuestUpgradeModal';
+import { Alert, AlertDescription } from './ui/alert';
 
 /**
  * Wrapper component that handles guest preview functionality for term details
@@ -16,12 +16,12 @@ export default function GuestAwareTermDetail() {
   // Support both route patterns: /term/:id and /enhanced/terms/:id
   const [_matchBasic, paramsBasic] = useRoute('/term/:id');
   const [_matchEnhanced, paramsEnhanced] = useRoute('/enhanced/terms/:id');
-  
+
   const termId = paramsBasic?.id || paramsEnhanced?.id;
   const { isAuthenticated } = useAuth();
   const guestPreview = useGuestPreview();
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
-  
+
   // Track page views for guests
   useGuestPageTracking();
 
@@ -48,9 +48,7 @@ export default function GuestAwareTermDetail() {
       <div className="container mx-auto px-4 py-8">
         <Alert>
           <Info className="h-4 w-4" />
-          <AlertDescription>
-            Term ID not found in the URL.
-          </AlertDescription>
+          <AlertDescription>Term ID not found in the URL.</AlertDescription>
         </Alert>
       </div>
     );
@@ -77,7 +75,7 @@ export default function GuestAwareTermDetail() {
         {/* Guest preview gate wrapper */}
         <FreeTierGate
           termId={termId}
-          showPreview={true}
+          showPreview
           guestPreviewLength={500} // More generous preview for guests
           fallback={<GuestFallbackContent termId={termId} />}
         >
@@ -87,15 +85,17 @@ export default function GuestAwareTermDetail() {
               <Alert className="bg-blue-50 border-blue-200">
                 <Info className="h-4 w-4 text-blue-600" />
                 <AlertDescription className="text-blue-800">
-                  <strong>Preview Mode:</strong> You're viewing a limited preview of this term. 
+                  <strong>Preview Mode:</strong> You're viewing a limited preview of this term.
                   {guestPreview.previewsRemaining > 0 && (
                     <span className="ml-1">
-                      {guestPreview.previewsRemaining} preview{guestPreview.previewsRemaining === 1 ? '' : 's'} remaining.
+                      {guestPreview.previewsRemaining} preview
+                      {guestPreview.previewsRemaining === 1 ? '' : 's'} remaining.
                     </span>
                   )}
                   <br />
                   <span className="text-sm">
-                    Sign up for free to access the complete definition, examples, and interactive features.
+                    Sign up for free to access the complete definition, examples, and interactive
+                    features.
                   </span>
                 </AlertDescription>
               </Alert>
@@ -111,8 +111,8 @@ export default function GuestAwareTermDetail() {
                   Ready to unlock the complete AI/ML glossary?
                 </h3>
                 <p className="mb-4">
-                  Get unlimited access to all {10372} terms with detailed explanations, 
-                  interactive examples, and progress tracking.
+                  Get unlimited access to all {10372} terms with detailed explanations, interactive
+                  examples, and progress tracking.
                 </p>
                 <div className="flex gap-3">
                   <button
@@ -177,14 +177,12 @@ function GuestFallbackContent({ termId }: { termId: string }) {
         <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto">
           <Info className="h-8 w-8 text-blue-600" />
         </div>
-        
-        <h2 className="text-2xl font-bold text-gray-900">
-          Preview Limit Reached
-        </h2>
-        
+
+        <h2 className="text-2xl font-bold text-gray-900">Preview Limit Reached</h2>
+
         <p className="text-gray-600 max-w-md mx-auto">
-          You've explored {guestPreview.previewsUsed} terms in preview mode. 
-          Create your free account to continue learning with unlimited access.
+          You've explored {guestPreview.previewsUsed} terms in preview mode. Create your free
+          account to continue learning with unlimited access.
         </p>
 
         <div className="bg-gray-50 rounded-lg p-4 space-y-2">
@@ -219,7 +217,10 @@ function GuestFallbackContent({ termId }: { termId: string }) {
         </div>
 
         <p className="text-xs text-gray-500">
-          Already have an account? <a href="/login" className="text-blue-600 hover:underline">Sign in here</a>
+          Already have an account?{' '}
+          <a href="/login" className="text-blue-600 hover:underline">
+            Sign in here
+          </a>
         </p>
       </div>
 

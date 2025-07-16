@@ -67,6 +67,39 @@ export interface QualityReport {
     shortTerm: string[];
     longTerm: string[];
   };
+  // Additional properties for enhanced analytics
+  averageScores: {
+    overall: number;
+    accuracy: number;
+    clarity: number;
+    completeness: number;
+    relevance: number;
+    style: number;
+    engagement: number;
+  };
+  distribution: Array<{
+    scoreRange: string;
+    count: number;
+    percentage: number;
+  }>;
+  categoryBreakdown?: Array<{
+    category: string;
+    averageScore: number;
+    termCount: number;
+    topIssues: string[];
+  }>;
+  userEngagement?: {
+    viewsPerTerm: number;
+    feedbackPerTerm: number;
+    shareRate: number;
+    bookmarkRate: number;
+  };
+  performanceMetrics?: {
+    averageLoadTime: number;
+    searchResponseTime: number;
+    cacheHitRate: number;
+    errorRate: number;
+  };
 }
 
 export interface QualityTrendAnalysis {

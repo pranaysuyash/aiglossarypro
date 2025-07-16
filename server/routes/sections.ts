@@ -82,7 +82,7 @@ export function registerSectionRoutes(app: Express): void {
       const userId = req.user?.claims?.sub;
 
       // Get section data and items
-      const section: ISection | null = await storage.getSectionById(sectionId);
+      const section: ISection | null = await storage.getSectionById(String(sectionId));
       const items: ISectionItem[] = []; // TODO: Implement when section items are ready
       const userProgress: IUserProgress | undefined = userId
         ? await storage.getUserProgressSummary(userId)
@@ -121,7 +121,7 @@ export function registerSectionRoutes(app: Express): void {
         const progressUpdate: IProgressUpdate = req.body;
 
         // Update user progress using the new method
-        await storage.updateUserProgress(userId, String(termId), sectionId, progressUpdate);
+        await storage.updateUserProgress(userId, String(termId), String(sectionId), progressUpdate);
 
         res.json({
           success: true,

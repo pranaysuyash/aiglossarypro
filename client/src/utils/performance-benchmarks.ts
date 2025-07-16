@@ -30,9 +30,9 @@ export interface BenchmarkResult {
 }
 
 export class PerformanceBenchmark {
-  private startTime: number = 0;
+  private startTime = 0;
   private measurements: Map<string, number> = new Map();
-  private memoryBaseline: number = 0;
+  private memoryBaseline = 0;
 
   constructor() {
     this.memoryBaseline = this.getMemoryUsage();
@@ -125,7 +125,7 @@ export const withPerformanceTracking = <P extends object>(
 export const benchmarkSearch = async (
   searchFunction: (query: string) => Promise<unknown[]> | unknown[],
   queries: string[],
-  iterations: number = 5
+  iterations = 5
 ): Promise<{
   averageTime: number;
   results: Array<{ query: string; time: number; resultCount: number }>;
@@ -156,7 +156,7 @@ export const benchmarkSearch = async (
 // Render performance testing
 export const benchmarkRender = (
   renderFunction: () => void,
-  iterations: number = 10
+  iterations = 10
 ): { averageTime: number; times: number[] } => {
   const times: number[] = [];
 
@@ -174,10 +174,10 @@ export const benchmarkRender = (
 // Scroll performance testing
 export const benchmarkScrolling = (
   container: HTMLElement,
-  scrollDistance: number = 1000,
-  duration: number = 2000
+  scrollDistance = 1000,
+  duration = 2000
 ): Promise<{ frameRate: number; scrollJank: number }> => {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     let _frameCount = 0;
     let lastTimestamp = 0;
     const frameTimes: number[] = [];
@@ -197,7 +197,7 @@ export const benchmarkScrolling = (
         const averageFrameTime =
           frameTimes.reduce((sum, time) => sum + time, 0) / frameTimes.length;
         const frameRate = 1000 / averageFrameTime;
-        const scrollJank = frameTimes.filter((time) => time > 16.67).length / frameTimes.length;
+        const scrollJank = frameTimes.filter(time => time > 16.67).length / frameTimes.length;
 
         resolve({ frameRate, scrollJank });
       }
@@ -228,7 +228,7 @@ export const benchmarkScrolling = (
 // Memory leak detection
 export const detectMemoryLeaks = async (
   operation: () => Promise<void> | void,
-  iterations: number = 50
+  iterations = 50
 ): Promise<{
   initialMemory: number;
   finalMemory: number;
@@ -259,7 +259,7 @@ export const detectMemoryLeaks = async (
     window.gc();
   }
 
-  await new Promise((resolve) => setTimeout(resolve, 100)); // Allow GC to complete
+  await new Promise(resolve => setTimeout(resolve, 100)); // Allow GC to complete
 
   const finalMemory = performanceWithMemory.memory?.usedJSHeapSize || 0;
   const memoryGrowth = finalMemory - initialMemory;
@@ -316,7 +316,7 @@ export const runComprehensiveBenchmark = async (
     }, 0);
   };
 
-  const getMaxDepth = (sections: TestDataSection[], currentDepth: number = 0): number => {
+  const getMaxDepth = (sections: TestDataSection[], currentDepth = 0): number => {
     return sections.reduce((maxDepth, section) => {
       const depth = currentDepth + 1;
       if (section.subsections) {
@@ -395,7 +395,7 @@ export const usePerformanceMonitoring = (_componentName: string) => {
 
   const endOperation = React.useCallback((operation: string) => {
     const time = benchmark.current.endTiming(operation);
-    setMetrics((prev) => ({ ...prev, [operation]: time }));
+    setMetrics(prev => ({ ...prev, [operation]: time }));
     return time;
   }, []);
 

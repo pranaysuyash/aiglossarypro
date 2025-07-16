@@ -1,11 +1,11 @@
 #!/usr/bin/env tsx
 
 import { performance } from 'node:perf_hooks';
-import { db } from '../server/db';
-import { terms, categories } from '../shared/schema';
 import { eq, sql } from 'drizzle-orm';
-import { writeFile, mkdir } from 'fs/promises';
+import { mkdir, writeFile } from 'fs/promises';
 import { join } from 'path';
+import { db } from '../server/db';
+import { categories, terms } from '../shared/schema';
 
 interface QualityReport {
   totalTerms: number;
@@ -13,9 +13,9 @@ interface QualityReport {
   averageContentLength: number;
   qualityScores: {
     excellent: number; // 9-10
-    good: number;      // 7-8
-    average: number;   // 5-6
-    poor: number;      // 0-4
+    good: number; // 7-8
+    average: number; // 5-6
+    poor: number; // 0-4
   };
   completionByCategory: Record<string, number>;
   missingContent: string[];
@@ -25,9 +25,9 @@ interface QualityReport {
 
 async function generateQualityReport(): Promise<QualityReport> {
   console.log('🔍 Generating Content Quality Report...');
-  
+
   const startTime = performance.now();
-  
+
   // Get all terms with their categories
   const allTerms = await db
     .select({
@@ -37,7 +37,7 @@ async function generateQualityReport(): Promise<QualityReport> {
       shortDefinition: terms.shortDefinition,
       characteristics: terms.characteristics,
       applications: terms.applications,
-      categoryName: categories.name
+      categoryName: categories.name,
     })
     .from(terms)
     .leftJoin(categories, eq(terms.categoryId, categories.id));
@@ -50,7 +50,7 @@ async function generateQualityReport(): Promise<QualityReport> {
     completionByCategory: {},
     missingContent: [],
     recommendations: [],
-    generatedAt: new Date().toISOString()
+    generatedAt: new Date().toISOString(),
   };
 
   let totalContentLength = 0;
@@ -109,15 +109,21 @@ async function generateQualityReport(): Promise<QualityReport> {
 
   // Generate recommendations
   if (report.qualityScores.poor > 0) {
-    report.recommendations.push(`${report.qualityScores.poor} terms need immediate content improvement`);
+    report.recommendations.push(
+      `${report.qualityScores.poor} terms need immediate content improvement`
+    );
   }
   if (report.totalTerms === 0) {
     report.recommendations.push('No terms found in database - start content generation');
   } else if (report.termsWithContent / report.totalTerms < 0.8) {
-    report.recommendations.push('Content completion rate below 80% - prioritize content generation');
+    report.recommendations.push(
+      'Content completion rate below 80% - prioritize content generation'
+    );
   }
   if (report.averageContentLength < 500) {
-    report.recommendations.push('Average content length is low - consider expanding definitions and examples');
+    report.recommendations.push(
+      'Average content length is low - consider expanding definitions and examples'
+    );
   }
 
   const duration = performance.now() - startTime;
@@ -131,11 +137,13 @@ function printQualityReport(report: QualityReport): void {
   console.log('═══════════════════════════');
   console.log(`Generated: ${new Date(report.generatedAt).toLocaleString()}`);
   console.log(`Total Terms: ${report.totalTerms}`);
-  
+
   if (report.totalTerms > 0) {
-    console.log(`Terms with Content: ${report.termsWithContent} (${((report.termsWithContent / report.totalTerms) * 100).toFixed(1)}%)`);
+    console.log(
+      `Terms with Content: ${report.termsWithContent} (${((report.termsWithContent / report.totalTerms) * 100).toFixed(1)}%)`
+    );
     console.log(`Average Content Length: ${report.averageContentLength} characters`);
-    
+
     console.log('\n📈 Quality Distribution:');
     console.log(`  Excellent (90-100%): ${report.qualityScores.excellent}`);
     console.log(`  Good (70-89%): ${report.qualityScores.good}`);
@@ -168,14 +176,14 @@ async function saveReportToFile(report: QualityReport): Promise<string> {
   try {
     // Ensure reports directory exists
     await mkdir('reports', { recursive: true });
-    
+
     const reportDate = new Date().toISOString().split('T')[0];
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const fileName = `quality-report-${reportDate}-${timestamp}.json`;
     const filePath = join('reports', fileName);
-    
+
     await writeFile(filePath, JSON.stringify(report, null, 2));
-    
+
     return filePath;
   } catch (error) {
     console.error('❌ Error saving report to file:', error);
@@ -187,11 +195,11 @@ async function main() {
   try {
     const report = await generateQualityReport();
     printQualityReport(report);
-    
+
     // Save report to file
     const filePath = await saveReportToFile(report);
     console.log(`\n📄 Report saved to ${filePath}`);
-    
+
     // Exit with appropriate code based on quality
     if (report.totalTerms === 0) {
       console.log('\n⚠️  No terms found - database may need initialization');

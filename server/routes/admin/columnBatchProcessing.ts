@@ -30,11 +30,11 @@ const columnBatchRequestSchema = z.object({
       verificationStatus: z.enum(['verified', 'unverified', 'needs_review']).optional(),
       lastUpdatedBefore: z
         .string()
-        .transform((str) => new Date(str))
+        .transform(str => new Date(str))
         .optional(),
       lastUpdatedAfter: z
         .string()
-        .transform((str) => new Date(str))
+        .transform(str => new Date(str))
         .optional(),
     })
     .optional(),
@@ -74,11 +74,11 @@ const costEstimationRequestSchema = z.object({
       verificationStatus: z.enum(['verified', 'unverified', 'needs_review']).optional(),
       lastUpdatedBefore: z
         .string()
-        .transform((str) => new Date(str))
+        .transform(str => new Date(str))
         .optional(),
       lastUpdatedAfter: z
         .string()
-        .transform((str) => new Date(str))
+        .transform(str => new Date(str))
         .optional(),
     })
     .optional(),
@@ -271,7 +271,7 @@ router.get('/operations', async (req: Request, res: Response) => {
 
     // Filter by status if provided
     if (status && typeof status === 'string') {
-      operations = operations.filter((op) => op.status === status);
+      operations = operations.filter(op => op.status === status);
     }
 
     // Apply pagination
@@ -311,7 +311,7 @@ router.get('/operations/active', async (_req: Request, res: Response) => {
     const activeOperations = columnBatchProcessorService.getActiveOperations();
 
     // Enhance with current progress data
-    const enhancedOperations = activeOperations.map((op) => {
+    const enhancedOperations = activeOperations.map(op => {
       const currentProgress = batchProgressTrackingService.getCurrentProgress(op.id);
       return {
         ...op,

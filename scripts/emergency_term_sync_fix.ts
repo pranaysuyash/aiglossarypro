@@ -162,7 +162,7 @@ async function emergencyTermSyncFix() {
       WHERE term_name = 'Characteristic Function' AND sync_status = 'synced';
     `);
 
-    verificationResults.rows.forEach((row) => {
+    verificationResults.rows.forEach(row => {
       console.log(`   ${row.metric}: ${row.count}`);
     });
 
@@ -218,7 +218,7 @@ async function emergencyTermSyncFix() {
     );
 
     console.log('Test Results:');
-    testResults.rows.forEach((row) => {
+    testResults.rows.forEach(row => {
       console.log(`   Name: ${row.name}`);
       console.log(`   Basic ID: ${row.basic_id}`);
       console.log(`   Enhanced ID: ${row.enhanced_id}`);

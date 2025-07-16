@@ -45,8 +45,8 @@ export async function migrateTermsToEnhanced() {
             // If parsing fails, split by comma
             relatedConcepts = (term.characteristics as string)
               .split(',')
-              .map((s) => s.trim())
-              .filter((s) => s);
+              .map(s => s.trim())
+              .filter(s => s);
           }
         }
 
@@ -80,8 +80,8 @@ export async function migrateTermsToEnhanced() {
             // If parsing fails, convert to string and split
             applicationDomains = String(term.applications)
               .split(',')
-              .map((s) => s.trim())
-              .filter((s) => s);
+              .map(s => s.trim())
+              .filter(s => s);
           }
         }
 
@@ -98,8 +98,8 @@ export async function migrateTermsToEnhanced() {
             // If parsing fails, split by comma
             keywords = String(term.references)
               .split(',')
-              .map((s) => s.trim())
-              .filter((s) => s);
+              .map(s => s.trim())
+              .filter(s => s);
           }
         }
 
@@ -165,11 +165,11 @@ export async function migrateTermsToEnhanced() {
 // Run migration if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   migrateTermsToEnhanced()
-    .then((result) => {
+    .then(result => {
       console.log('Migration completed successfully:', result);
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Migration failed:', error);
       process.exit(1);
     });

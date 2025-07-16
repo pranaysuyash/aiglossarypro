@@ -1,179 +1,166 @@
 /**
  * Centralized Icon Library
- * 
+ *
  * This file consolidates all lucide-react icon imports to enable better tree-shaking
  * and reduce bundle size. Import icons from this file instead of directly from lucide-react.
- * 
+ *
  * Benefits:
  * - Better tree-shaking (only used icons are bundled)
- * - Consistent icon imports across the application  
+ * - Consistent icon imports across the application
  * - Easy icon replacement/theming
  * - Bundle size optimization
  */
 
 // All Icons - Consolidated Export
+// Additional Icons - Not already exported above
 export {
+  Activity,
+  // Status & Alerts
+  AlertCircle,
+  AlertTriangle,
   // Core UI Icons
   ArrowLeft,
   ArrowRight,
   ArrowUpDown,
+  // Analytics & Charts
+  BarChart3,
+  Bell,
+  Bold,
+  Book,
+  Bookmark,
+  BookOpen,
+  // Additional missing icons
+  Bot,
+  Brain,
+  Calendar,
+  Check,
+  CheckCircle,
+  CheckCircle as SuccessIcon,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
   ChevronUp,
-  Check,
-  CheckCircle,
-  X,
-  XCircle,
-  Plus,
-  Menu,
-  MoreHorizontal,
-  MoreVertical,
-  Search,
-  Settings,
-  Home,
-  User,
-  Users,
-  Bell,
-  Info,
-  HelpCircle,
-  ExternalLink,
-  Link,
+  Circle,
+  Clock,
+  CloudOff,
+  Code,
+  Cookie,
   Copy,
-  Share,
-  Share2,
+  Cpu,
+  // Business & Commerce
+  CreditCard,
+  Crown,
+  Database,
+  DollarSign as DollarSignIcon,
+  Dot,
   Download,
-  Upload,
   Edit,
   Edit3,
-  Trash2,
-  Save,
-  Loader2,
-  RefreshCw,
-  Calendar,
-  Clock,
-  Star,
-  Heart,
-  BookOpen,
-  Book,
-  Bookmark,
+  ExternalLink,
   Eye,
   EyeOff,
-  Lock,
-  Mail,
-  Globe,
-  Shield,
-  ShieldAlert,
-  Target,
-  Trophy,
-  Zap,
-  Sparkles,
-  Gift,
-  Crown,
-  Circle,
-  Square,
-  Dot,
-  
-  // Navigation Icons
-  PanelLeft,
-  Sidebar as SidebarIcon,
-  Grid3x3,
-  List,
-  Layers,
-  Route,
-  Network,
-  
+  // Social & External
+  Facebook,
+  FileSpreadsheet,
   // Content Icons
   FileText,
-  FileSpreadsheet,
+  Filter,
+  Flag,
   Folder,
   FolderOpen,
-  Code,
-  Quote,
-  Bold,
-  Italic,
-  Underline,
-  Link as LinkIcon,
-  
-  // Media Icons
-  Play,
-  Pause,
-  SkipForward,
-  SkipBack,
-  Volume2,
-  VolumeX,
-  Mic,
-  
-  // Analytics & Charts
-  BarChart3,
-  TrendingUp,
-  TrendingDown,
-  Activity,
-  Database,
-  Cpu,
-  Brain,
-  TestTube,
-  Flag,
-  
-  // Status & Alerts
-  AlertCircle,
-  AlertTriangle,
-  CheckCircle as SuccessIcon,
-  XCircle as ErrorIcon,
+  Gift,
+  Gift as GiftIcon,
+  // Development & Tools
+  GitBranch,
+  Github,
+  Globe,
+  Grid3x3,
+  GripVertical,
+  Heart,
+  HelpCircle,
+  History,
+  Home,
+  Info,
   Info as InfoIcon,
-  Wifi,
-  WifiOff,
-  CloudOff,
-  
-  // User Actions
-  UserCheck,
-  UserPlus,
-  MessageCircle,
-  MessageSquare,
-  Filter,
-  SortAsc,
-  SortDesc,
-  SlidersHorizontal,
-  GripVertical
-} from 'lucide-react';
-
-// Additional Icons - Not already exported above
-export {
+  Italic,
+  Layers,
+  Lightbulb,
+  Link,
+  Link as LinkIcon,
+  Linkedin,
+  List,
+  Loader2,
+  Lock,
+  Mail,
   // Navigation & Layout
   Maximize,
   Maximize2,
+  Menu,
+  MessageCircle,
+  MessageSquare,
+  Mic,
   Minimize,
   Minimize2,
+  MoreHorizontal,
+  MoreVertical,
+  Network,
+  // Navigation Icons
+  PanelLeft,
+  Pause,
+  // Media Icons
+  Play,
+  Plus,
+  Quote,
+  RefreshCw,
   Repeat,
   RotateCcw,
-  
-  // Social & External
-  Facebook,
-  Twitter,
-  Linkedin,
-  Github,
+  Route,
+  Save,
+  Search,
+  Settings,
+  Share,
   Share as ShareIcon,
-  
-  // Business & Commerce
-  CreditCard,
-  Gift as GiftIcon,
-  DollarSign as DollarSignIcon,
+  Share2,
+  Shield,
+  ShieldAlert,
+  Sidebar as SidebarIcon,
+  SkipBack,
+  SkipForward,
+  SlidersHorizontal,
   Smartphone as SmartphoneIcon,
-  
-  // Development & Tools  
-  GitBranch,
-  Cookie,
+  SortAsc,
+  SortDesc,
+  Sparkles,
+  Square,
+  Star,
+  Target,
+  TestTube,
+  Trash2,
+  TrendingDown,
+  TrendingUp,
+  Trophy,
+  Twitter,
+  Underline,
+  Upload,
+  User,
+  // User Actions
+  UserCheck,
+  UserPlus,
+  Users,
+  Volume2,
+  VolumeX,
   Wand2,
-  Lightbulb,
-  History,
-  
-  // Additional missing icons
-  Bot
+  Wifi,
+  WifiOff,
+  X,
+  XCircle,
+  XCircle as ErrorIcon,
+  Zap,
 } from 'lucide-react';
 
 // Icon type for consistent usage
 export type IconComponent = React.ComponentType<{
-  className?: string;
+  className?: string | undefined;
   size?: number | string;
   strokeWidth?: number;
 }>;
@@ -221,6 +208,9 @@ export function getIconSize(size: keyof typeof ICON_SIZES): number {
 /**
  * Helper function to get icon class names
  */
-export function getIconClasses(variant: keyof typeof ICON_CLASSES, additionalClasses?: string): string {
+export function getIconClasses(
+  variant: keyof typeof ICON_CLASSES,
+  additionalClasses?: string
+): string {
   return `${ICON_CLASSES[variant]} ${additionalClasses || ''}`.trim();
 }

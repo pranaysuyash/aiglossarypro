@@ -262,7 +262,7 @@ describe('Authentication System', () => {
 
       const responses = await Promise.all(requests);
 
-      responses.forEach((response) => {
+      responses.forEach(response => {
         expect(response.status).toBe(200);
       });
     });

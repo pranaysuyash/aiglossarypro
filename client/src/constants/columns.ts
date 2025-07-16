@@ -321,9 +321,10 @@ export const getColumnCategories = (): string[] => {
 
 export const searchColumns = (query: string): ColumnDefinition[] => {
   const lowerQuery = query.toLowerCase();
-  return ALL_COLUMNS.filter(col => 
-    col.name.toLowerCase().includes(lowerQuery) ||
-    col.description.toLowerCase().includes(lowerQuery) ||
-    col.category.toLowerCase().includes(lowerQuery)
+  return ALL_COLUMNS.filter(
+    col =>
+      col.name.toLowerCase().includes(lowerQuery) ||
+      col.description.toLowerCase().includes(lowerQuery) ||
+      col.category.toLowerCase().includes(lowerQuery)
   );
 };

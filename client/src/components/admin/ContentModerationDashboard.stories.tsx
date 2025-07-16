@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -7,13 +6,14 @@ const queryClient = new QueryClient({
     queries: { retry: false, staleTime: Infinity },
   },
 });
+
 import ContentModerationDashboard from './ContentModerationDashboard';
 
 const meta: Meta<typeof ContentModerationDashboard> = {
   title: 'Admin/ContentModerationDashboard',
   component: ContentModerationDashboard,
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <Story />
       </QueryClientProvider>
@@ -23,9 +23,9 @@ const meta: Meta<typeof ContentModerationDashboard> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Administrative dashboard component for the AIGlossaryPro application.'
-      }
-    }
+        component: 'Administrative dashboard component for the AIGlossaryPro application.',
+      },
+    },
   },
   tags: ['autodocs'],
   argTypes: {
@@ -37,51 +37,49 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  
   parameters: {
     docs: {
       description: {
-        story: 'Default ContentModerationDashboard component state.'
-      }
-    }
-  }
+        story: 'Default ContentModerationDashboard component state.',
+      },
+    },
+  },
 };
 
 export const Loading: Story = {
   args: {
-  "loading": true,
-  "isLoading": true
-},
+    loading: true,
+    isLoading: true,
+  },
   parameters: {
     docs: {
       description: {
-        story: 'ContentModerationDashboard in loading state.'
-      }
-    }
-  }
+        story: 'ContentModerationDashboard in loading state.',
+      },
+    },
+  },
 };
 
 export const Error: Story = {
   args: {
-  "error": "Something went wrong",
-  "hasError": true
-},
+    error: 'Something went wrong',
+    hasError: true,
+  },
   parameters: {
     docs: {
       description: {
-        story: 'ContentModerationDashboard displaying error state.'
-      }
-    }
-  }
+        story: 'ContentModerationDashboard displaying error state.',
+      },
+    },
+  },
 };
 
 export const WithPermissions: Story = {
-  
   parameters: {
     docs: {
       description: {
-        story: 'ContentModerationDashboard with full admin permissions.'
-      }
-    }
-  }
+        story: 'ContentModerationDashboard with full admin permissions.',
+      },
+    },
+  },
 };

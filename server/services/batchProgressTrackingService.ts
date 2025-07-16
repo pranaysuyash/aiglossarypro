@@ -233,7 +233,7 @@ export class BatchProgressTrackingService extends EventEmitter {
    */
   getStatusReports(operationId: string, reportType?: string): StatusReport[] {
     const reports = this.statusReports.get(operationId) || [];
-    return reportType ? reports.filter((r) => r.reportType === reportType) : reports;
+    return reportType ? reports.filter(r => r.reportType === reportType) : reports;
   }
 
   /**
@@ -245,7 +245,7 @@ export class BatchProgressTrackingService extends EventEmitter {
     const queueStats = await jobQueueManager.getAllQueueStats();
 
     // Calculate active operations data
-    const activeOpsData = activeOperations.map((op) => {
+    const activeOpsData = activeOperations.map(op => {
       const _currentProgress = this.getCurrentProgress(op.id);
       const health = this.calculateOperationHealth(op.id);
 
@@ -310,7 +310,7 @@ export class BatchProgressTrackingService extends EventEmitter {
     const totalDuration = endTime - startTime;
 
     // Calculate processing rates
-    const processingRates = snapshots.map((s) => s.processingRate).filter((r) => r > 0);
+    const processingRates = snapshots.map(s => s.processingRate).filter(r => r > 0);
     const averageProcessingRate =
       processingRates.length > 0
         ? processingRates.reduce((sum, rate) => sum + rate, 0) / processingRates.length
@@ -415,7 +415,7 @@ export class BatchProgressTrackingService extends EventEmitter {
     for (const milestone of milestones) {
       if (currentSnapshot.completionPercentage >= milestone) {
         const reports = this.getStatusReports(operationId, 'milestone');
-        const alreadyReported = reports.some((r) => r.milestoneReached?.percentage === milestone);
+        const alreadyReported = reports.some(r => r.milestoneReached?.percentage === milestone);
 
         if (!alreadyReported) {
           await this.generateMilestoneReport(operationId, milestone, currentSnapshot);
@@ -436,7 +436,7 @@ export class BatchProgressTrackingService extends EventEmitter {
     snapshot: ProgressSnapshot
   ): Promise<void> {
     const operation = columnBatchProcessorService.getOperationStatus(operationId);
-    if (!operation) return;
+    if (!operation) {return;}
 
     const report: StatusReport = {
       operationId,
@@ -567,26 +567,26 @@ export class BatchProgressTrackingService extends EventEmitter {
    */
   private calculateOperationHealth(operationId: string): 'healthy' | 'warning' | 'critical' {
     const snapshot = this.getCurrentProgress(operationId);
-    if (!snapshot) return 'critical';
+    if (!snapshot) {return 'critical';}
 
     let score = 100;
 
     // Deduct points for high error rate
-    if (snapshot.errorRate > 0.1) score -= 30;
-    else if (snapshot.errorRate > 0.05) score -= 15;
+    if (snapshot.errorRate > 0.1) {score -= 30;}
+    else if (snapshot.errorRate > 0.05) {score -= 15;}
 
     // Deduct points for slow processing
-    if (snapshot.processingRate > 0 && snapshot.processingRate < 5) score -= 20;
+    if (snapshot.processingRate > 0 && snapshot.processingRate < 5) {score -= 20;}
 
     // Deduct points for cost overrun
-    if (snapshot.currentCost > snapshot.estimatedCost * 1.2) score -= 25;
+    if (snapshot.currentCost > snapshot.estimatedCost * 1.2) {score -= 25;}
 
     // Deduct points for stale progress
     const timeSinceUpdate = Date.now() - snapshot.timestamp.getTime();
-    if (timeSinceUpdate > this.alertThresholds.staleTime) score -= 20;
+    if (timeSinceUpdate > this.alertThresholds.staleTime) {score -= 20;}
 
-    if (score >= 80) return 'healthy';
-    if (score >= 60) return 'warning';
+    if (score >= 80) {return 'healthy';}
+    if (score >= 60) {return 'warning';}
     return 'critical';
   }
 
@@ -690,13 +690,13 @@ export class BatchProgressTrackingService extends EventEmitter {
   private async calculateAverageCompletionTime(): Promise<number> {
     const history = columnBatchProcessorService.getOperationHistory(100);
     const completedOps = history.filter(
-      (op) => op.status === 'completed' && op.timing.startedAt && op.timing.actualCompletion
+      op => op.status === 'completed' && op.timing.startedAt && op.timing.actualCompletion
     );
 
-    if (completedOps.length === 0) return 0;
+    if (completedOps.length === 0) {return 0;}
 
     const totalTime = completedOps.reduce((sum, op) => {
-      if (!op.timing.actualCompletion || !op.timing.startedAt) return sum;
+      if (!op.timing.actualCompletion || !op.timing.startedAt) {return sum;}
       const duration = op.timing.actualCompletion.getTime() - op.timing.startedAt.getTime();
       return sum + duration;
     }, 0);
@@ -709,7 +709,7 @@ export class BatchProgressTrackingService extends EventEmitter {
    */
   private calculateSystemHealthScore(): number {
     const activeOps = columnBatchProcessorService.getActiveOperations();
-    if (activeOps.length === 0) return 100;
+    if (activeOps.length === 0) {return 100;}
 
     let totalScore = 0;
     for (const op of activeOps) {
@@ -819,14 +819,14 @@ export class BatchProgressTrackingService extends EventEmitter {
     const cutoffDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000); // 7 days ago
 
     for (const [operationId, snapshots] of this.progressSnapshots.entries()) {
-      const filteredSnapshots = snapshots.filter((s) => s.timestamp > cutoffDate);
+      const filteredSnapshots = snapshots.filter(s => s.timestamp > cutoffDate);
       if (filteredSnapshots.length !== snapshots.length) {
         this.progressSnapshots.set(operationId, filteredSnapshots);
       }
     }
 
     for (const [operationId, reports] of this.statusReports.entries()) {
-      const filteredReports = reports.filter((r) => r.timestamp > cutoffDate);
+      const filteredReports = reports.filter(r => r.timestamp > cutoffDate);
       if (filteredReports.length !== reports.length) {
         this.statusReports.set(operationId, filteredReports);
       }

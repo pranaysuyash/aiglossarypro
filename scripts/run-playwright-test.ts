@@ -14,15 +14,15 @@ console.log(`Running Playwright command: ${command}`);
 
 const child = exec(command, { cwd: path.resolve(__dirname, '..') });
 
-child.stdout.on('data', (data) => {
+child.stdout.on('data', data => {
   process.stdout.write(data);
 });
 
-child.stderr.on('data', (data) => {
+child.stderr.on('data', data => {
   process.stderr.write(data);
 });
 
-child.on('close', (code) => {
+child.on('close', code => {
   if (code !== 0) {
     console.error(`Playwright process exited with code ${code}`);
     process.exit(code);

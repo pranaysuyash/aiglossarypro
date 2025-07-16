@@ -60,7 +60,7 @@ export default function CookieConsentBanner({
           // Don't show banner if consent already given
           return;
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error parsing cookie consent:', error);
       }
     }
@@ -127,14 +127,14 @@ export default function CookieConsentBanner({
   };
 
   const updateConsent = (type: keyof CookieConsent, value: boolean) => {
-    if (type === 'essential') return; // Essential cookies cannot be disabled
-    setConsent((prev) => ({
+    if (type === 'essential') {return;} // Essential cookies cannot be disabled
+    setConsent(prev => ({
       ...prev,
       [type]: value,
     }));
   };
 
-  if (!isVisible) return null;
+  if (!isVisible) {return null;}
 
   return (
     <div
@@ -177,7 +177,7 @@ export default function CookieConsentBanner({
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Switch checked={true} disabled />
+                      <Switch checked disabled />
                       <span className="text-xs text-gray-500">Always On</span>
                     </div>
                   </div>
@@ -192,7 +192,7 @@ export default function CookieConsentBanner({
                     </div>
                     <Switch
                       checked={consent.analytics}
-                      onCheckedChange={(checked) => updateConsent('analytics', checked)}
+                      onCheckedChange={checked => updateConsent('analytics', checked)}
                     />
                   </div>
 
@@ -206,7 +206,7 @@ export default function CookieConsentBanner({
                     </div>
                     <Switch
                       checked={consent.preferences}
-                      onCheckedChange={(checked) => updateConsent('preferences', checked)}
+                      onCheckedChange={checked => updateConsent('preferences', checked)}
                     />
                   </div>
                 </div>
@@ -330,7 +330,7 @@ export function useCookieConsent() {
         try {
           const parsed = JSON.parse(savedConsent);
           setConsent(parsed.consent);
-        } catch (error) {
+        } catch (error: any) {
           console.error('Error parsing cookie consent:', error);
         }
       }
@@ -357,11 +357,11 @@ export function useCookieConsent() {
 export function isCookieAllowed(type: keyof CookieConsent): boolean {
   try {
     const savedConsent = localStorage.getItem(COOKIE_CONSENT_KEY);
-    if (!savedConsent) return false;
+    if (!savedConsent) {return false;}
 
     const parsed = JSON.parse(savedConsent);
     return parsed.consent?.[type] ?? false;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error checking cookie consent:', error);
     return false;
   }

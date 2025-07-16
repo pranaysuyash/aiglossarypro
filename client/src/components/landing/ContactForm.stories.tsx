@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { ContactForm } from './ContactForm';
 
@@ -9,7 +8,8 @@ const meta: Meta<typeof ContactForm> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Contact form component for the landing page with form validation, UTM tracking, and responsive design.',
+        component:
+          'Contact form component for the landing page with form validation, UTM tracking, and responsive design.',
       },
     },
   },
@@ -29,30 +29,32 @@ type Story = StoryObj<typeof ContactForm>;
 const mockFetch = (url: string, options: any) => {
   if (url.includes('/api/newsletter/contact')) {
     const body = JSON.parse(options.body);
-    
+
     // Simulate different responses based on email
     if (body.email === 'error@example.com') {
       return Promise.resolve({
         ok: false,
-        json: () => Promise.resolve({
-          success: false,
-          message: 'Failed to send message. Please try again.'
-        })
+        json: () =>
+          Promise.resolve({
+            success: false,
+            message: 'Failed to send message. Please try again.',
+          }),
       });
     }
-    
+
     return Promise.resolve({
       ok: true,
-      json: () => Promise.resolve({
-        success: true,
-        message: 'Thank you for your message! We\'ll get back to you within 24 hours.'
-      })
+      json: () =>
+        Promise.resolve({
+          success: true,
+          message: "Thank you for your message! We'll get back to you within 24 hours.",
+        }),
     });
   }
-  
+
   return Promise.resolve({
     ok: true,
-    json: () => Promise.resolve({})
+    json: () => Promise.resolve({}),
   });
 };
 
@@ -118,7 +120,8 @@ export const InteractiveDemo: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Interactive demo showing form validation and submission. Try submitting with different email addresses.',
+        story:
+          'Interactive demo showing form validation and submission. Try submitting with different email addresses.',
       },
     },
   },

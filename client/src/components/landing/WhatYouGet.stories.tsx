@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { WhatYouGet } from './WhatYouGet';
 
@@ -9,12 +8,13 @@ const meta: Meta<typeof WhatYouGet> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'What You Get section showcasing all the features and benefits of the AI/ML Glossary Pro with lifetime access messaging.',
+        component:
+          'What You Get section showcasing all the features and benefits of the AI/ML Glossary Pro with lifetime access messaging.',
       },
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-screen bg-gray-50">
         <Story />
       </div>
@@ -77,9 +77,12 @@ export const Desktop: Story = {
 
 export const WithDarkBackground: Story = {
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-screen bg-gray-900">
-        <div className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8" style={{ backgroundColor: '#1f2937' }}>
+        <div
+          className="py-16 sm:py-20 lg:py-24 px-4 sm:px-6 lg:px-8"
+          style={{ backgroundColor: '#1f2937' }}
+        >
           <div className="max-w-7xl mx-auto">
             <div className="text-center mb-16">
               <div className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-purple-100 text-purple-800 border border-purple-200 mb-4">
@@ -95,7 +98,7 @@ export const WithDarkBackground: Story = {
                 </span>
               </p>
             </div>
-            
+
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               <div className="bg-gray-800 border border-gray-700 p-6 rounded-lg">
                 <h3 className="text-white font-bold mb-2">Complete AI/ML Reference</h3>
@@ -126,18 +129,14 @@ export const WithDarkBackground: Story = {
 
 export const CompactVersion: Story = {
   decorators: [
-    (Story) => (
+    Story => (
       <div className="bg-white py-12">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Everything You Need
-            </h2>
-            <p className="text-gray-600">
-              Comprehensive AI/ML reference with lifetime access
-            </p>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">Everything You Need</h2>
+            <p className="text-gray-600">Comprehensive AI/ML reference with lifetime access</p>
           </div>
-          
+
           <div className="grid md:grid-cols-2 gap-6">
             <div className="flex items-start gap-4 p-4 border rounded-lg">
               <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -148,7 +147,7 @@ export const CompactVersion: Story = {
                 <p className="text-sm text-gray-600">Complete coverage of AI/ML concepts</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-4 p-4 border rounded-lg">
               <div className="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center">
                 <div className="w-5 h-5 bg-green-600 rounded"></div>
@@ -158,7 +157,7 @@ export const CompactVersion: Story = {
                 <p className="text-sm text-gray-600">Practical implementations</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-4 p-4 border rounded-lg">
               <div className="w-10 h-10 bg-purple-100 rounded-lg flex items-center justify-center">
                 <div className="w-5 h-5 bg-purple-600 rounded"></div>
@@ -168,7 +167,7 @@ export const CompactVersion: Story = {
                 <p className="text-sm text-gray-600">Always current content</p>
               </div>
             </div>
-            
+
             <div className="flex items-start gap-4 p-4 border rounded-lg">
               <div className="w-10 h-10 bg-orange-100 rounded-lg flex items-center justify-center">
                 <div className="w-5 h-5 bg-orange-600 rounded"></div>
@@ -186,7 +185,8 @@ export const CompactVersion: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Compact version of What You Get with simplified layout and fewer features highlighted.',
+        story:
+          'Compact version of What You Get with simplified layout and fewer features highlighted.',
       },
     },
   },
@@ -194,7 +194,7 @@ export const CompactVersion: Story = {
 
 export const WithPricing: Story = {
   decorators: [
-    (Story) => (
+    Story => (
       <div className="bg-gradient-to-br from-purple-50 to-blue-50 py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -209,7 +209,7 @@ export const WithPricing: Story = {
               Compare to $400+ annual subscriptions elsewhere
             </p>
           </div>
-          
+
           <Story />
         </div>
       </div>
@@ -226,7 +226,7 @@ export const WithPricing: Story = {
 
 export const FeatureHighlight: Story = {
   decorators: [
-    (Story) => (
+    Story => (
       <div className="bg-white py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
@@ -237,7 +237,7 @@ export const FeatureHighlight: Story = {
               The most comprehensive AI/ML reference available
             </p>
           </div>
-          
+
           <div className="grid lg:grid-cols-3 gap-8 mb-16">
             <div className="text-center p-6 bg-blue-50 rounded-xl border border-blue-200">
               <div className="w-12 h-12 bg-blue-600 rounded-full mx-auto mb-4 flex items-center justify-center">
@@ -248,7 +248,7 @@ export const FeatureHighlight: Story = {
                 10,000+ terms covering every aspect of AI and Machine Learning
               </p>
             </div>
-            
+
             <div className="text-center p-6 bg-green-50 rounded-xl border border-green-200">
               <div className="w-12 h-12 bg-green-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <div className="w-6 h-6 bg-white rounded"></div>
@@ -258,7 +258,7 @@ export const FeatureHighlight: Story = {
                 Real code examples and implementations you can use immediately
               </p>
             </div>
-            
+
             <div className="text-center p-6 bg-purple-50 rounded-xl border border-purple-200">
               <div className="w-12 h-12 bg-purple-600 rounded-full mx-auto mb-4 flex items-center justify-center">
                 <div className="w-6 h-6 bg-white rounded"></div>
@@ -276,7 +276,8 @@ export const FeatureHighlight: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Feature highlight version emphasizing the key selling points with enhanced visual design.',
+        story:
+          'Feature highlight version emphasizing the key selling points with enhanced visual design.',
       },
     },
   },

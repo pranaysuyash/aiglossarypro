@@ -1,4 +1,13 @@
-import { Activity, AlertTriangle, CheckCircle, Flag, TrendingUp, Users, Shield, ShieldAlert } from 'lucide-react';
+import {
+  Activity,
+  AlertTriangle,
+  CheckCircle,
+  Flag,
+  Shield,
+  ShieldAlert,
+  TrendingUp,
+  Users,
+} from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
 import { useToast } from '../hooks/use-toast';
 import { useAdminAuth } from '../hooks/useAdminAuth';
@@ -54,7 +63,12 @@ export function AIFeedbackDashboard() {
   const [reviewNotes, setReviewNotes] = useState('');
   const [newStatus, setNewStatus] = useState<string>('');
   const { toast } = useToast();
-  const { isAuthorized, isLoading: authLoading, error: authError, redirectToLogin } = useAdminAuth();
+  const {
+    isAuthorized,
+    isLoading: authLoading,
+    error: authError,
+    redirectToLogin,
+  } = useAdminAuth();
 
   const loadDashboardData = useCallback(async () => {
     setLoading(true);
@@ -132,8 +146,10 @@ export function AIFeedbackDashboard() {
         console.error('Error fetching verification stats:', verificationError);
         // Fallback to calculation based on current data
         const totalTerms = analytics?.totalRequests || 1000;
-        const flaggedFromFeedback = feedbackList.filter(f => f.severity === 'high' || f.severity === 'critical').length;
-        
+        const flaggedFromFeedback = feedbackList.filter(
+          f => f.severity === 'high' || f.severity === 'critical'
+        ).length;
+
         setVerificationStats({
           total: totalTerms,
           unverified: Math.floor(totalTerms * 0.15),
@@ -142,14 +158,14 @@ export function AIFeedbackDashboard() {
           needsReview: Math.floor(totalTerms * 0.05),
           expertReviewed: Math.floor(totalTerms * 0.05),
         });
-        
+
         toast({
           title: 'Warning',
           description: 'Using fallback verification stats. Some data may not be current.',
           variant: 'destructive',
         });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error loading dashboard data:', error);
       toast({
         title: 'Error',
@@ -178,8 +194,8 @@ export function AIFeedbackDashboard() {
       }
 
       // Update local state
-      setFeedbackList((prev) =>
-        prev.map((feedback) =>
+      setFeedbackList(prev =>
+        prev.map(feedback =>
           feedback.id === feedbackId
             ? {
                 ...feedback,
@@ -199,7 +215,7 @@ export function AIFeedbackDashboard() {
       setSelectedFeedback(null);
       setReviewNotes('');
       setNewStatus('');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error updating feedback:', error);
       toast({
         title: 'Error',
@@ -263,7 +279,7 @@ export function AIFeedbackDashboard() {
             </p>
           </div>
         </div>
-        
+
         <Button onClick={redirectToLogin} variant="outline">
           <Shield className="h-4 w-4 mr-2" />
           Log In as Admin
@@ -308,7 +324,7 @@ export function AIFeedbackDashboard() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {feedbackList.filter((f) => f.status === 'pending').length}
+                  {feedbackList.filter(f => f.status === 'pending').length}
                 </div>
                 <p className="text-xs text-muted-foreground">Requires review</p>
               </CardContent>
@@ -361,7 +377,7 @@ export function AIFeedbackDashboard() {
                 <Flag className="h-6 w-6" />
                 <span>Review Flagged Content</span>
                 <span className="text-xs text-muted-foreground">
-                  {feedbackList.filter((f) => f.status === 'pending').length} pending
+                  {feedbackList.filter(f => f.status === 'pending').length} pending
                 </span>
               </Button>
               <Button variant="outline" className="h-auto p-4 flex flex-col items-center space-y-2">
@@ -392,7 +408,7 @@ export function AIFeedbackDashboard() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {feedbackList.map((feedback) => (
+                {feedbackList.map(feedback => (
                   <div key={feedback.id} className="border rounded-lg p-4 space-y-3">
                     <div className="flex items-start justify-between">
                       <div className="space-y-2">
@@ -468,7 +484,7 @@ export function AIFeedbackDashboard() {
                   <Textarea
                     placeholder="Add notes about your review decision..."
                     value={reviewNotes}
-                    onChange={(e) => setReviewNotes(e.target.value)}
+                    onChange={e => setReviewNotes(e.target.value)}
                     rows={3}
                   />
                 </div>

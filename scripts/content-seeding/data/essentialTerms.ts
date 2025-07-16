@@ -743,7 +743,7 @@ export function getEssentialTermsForCategory(categoryName: string): EssentialTer
  * Get terms by priority level
  */
 export function getTermsByPriority(priority: 'high' | 'medium' | 'low'): EssentialTerm[] {
-  return getAllEssentialTerms().filter((term) => term.priority === priority);
+  return getAllEssentialTerms().filter(term => term.priority === priority);
 }
 
 /**
@@ -752,7 +752,7 @@ export function getTermsByPriority(priority: 'high' | 'medium' | 'low'): Essenti
 export function getTermsByComplexity(
   complexity: 'beginner' | 'intermediate' | 'advanced'
 ): EssentialTerm[] {
-  return getAllEssentialTerms().filter((term) => term.complexity === complexity);
+  return getAllEssentialTerms().filter(term => term.complexity === complexity);
 }
 
 /**
@@ -768,9 +768,9 @@ export function getCategoryStatistics(): {
   for (const [category, terms] of Object.entries(ESSENTIAL_AI_TERMS)) {
     stats[category] = {
       total: terms.length,
-      high: terms.filter((t) => t.priority === 'high').length,
-      medium: terms.filter((t) => t.priority === 'medium').length,
-      low: terms.filter((t) => t.priority === 'low').length,
+      high: terms.filter(t => t.priority === 'high').length,
+      medium: terms.filter(t => t.priority === 'medium').length,
+      low: terms.filter(t => t.priority === 'low').length,
     };
   }
 
@@ -783,9 +783,9 @@ export function getCategoryStatistics(): {
 export function searchTerms(query: string): EssentialTerm[] {
   const normalizedQuery = query.toLowerCase();
   return getAllEssentialTerms().filter(
-    (term) =>
+    term =>
       term.name.toLowerCase().includes(normalizedQuery) ||
-      term.aliases?.some((alias) => alias.toLowerCase().includes(normalizedQuery))
+      term.aliases?.some(alias => alias.toLowerCase().includes(normalizedQuery))
   );
 }
 

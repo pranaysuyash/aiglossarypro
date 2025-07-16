@@ -20,7 +20,7 @@ interface EarlyBirdStatus {
 }
 
 interface PricingCountdownProps {
-  className?: string;
+  className?: string | undefined;
   compact?: boolean;
 }
 
@@ -113,9 +113,9 @@ export function PricingCountdown({ className = '', compact = false }: PricingCou
 
   // Determine urgency level
   const getUrgencyLevel = () => {
-    if (status.remainingSlots <= 50) return 'critical';
-    if (status.remainingSlots <= 100) return 'high';
-    if (status.remainingSlots <= 200) return 'medium';
+    if (status.remainingSlots <= 50) {return 'critical';}
+    if (status.remainingSlots <= 100) {return 'high';}
+    if (status.remainingSlots <= 200) {return 'medium';}
     return 'low';
   };
 

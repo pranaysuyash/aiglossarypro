@@ -29,7 +29,7 @@ async function completeTermsImport() {
     console.log('\n📋 Creating enhanced terms from regular terms...');
     const allTerms = await db.select().from(terms);
 
-    const enhancedData = allTerms.map((term) => ({
+    const enhancedData = allTerms.map(term => ({
       name: term.name,
       slug: term.name
         .toLowerCase()
@@ -81,7 +81,7 @@ completeTermsImport()
     console.log('\n✅ Terms import completion successful!');
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('\n❌ Terms import completion failed:', error);
     process.exit(1);
   });

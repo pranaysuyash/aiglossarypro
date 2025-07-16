@@ -1,5 +1,4 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import MobileOptimizedLayout from './MobileOptimizedLayout';
 
 const meta = {
@@ -14,12 +13,12 @@ type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
   args: {
-    children: <div>Layout content</div>
+    children: <div>Layout content</div>,
   },
 };
 
 export const WithProps: Story = {
   args: {
-    children: "Main content"
+    children: 'Main content',
   },
 };

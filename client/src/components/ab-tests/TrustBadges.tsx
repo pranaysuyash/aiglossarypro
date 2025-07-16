@@ -1,7 +1,7 @@
+import { Award, CheckCircle, HeartHandshake, Lock, RefreshCw, Shield } from 'lucide-react';
 import React from 'react';
-import { Shield, Lock, Award, CheckCircle, RefreshCw, HeartHandshake } from 'lucide-react';
-import { useExperiment } from '@/services/posthogExperiments';
 import { trackUserAction } from '@/lib/analytics';
+import { useExperiment } from '@/services/posthogExperiments';
 
 interface TrustBadge {
   icon: React.ReactNode;
@@ -12,34 +12,34 @@ interface TrustBadge {
 const TRUST_BADGES: TrustBadge[] = [
   {
     icon: <Shield className="w-8 h-8" />,
-    title: "SSL Secured",
-    description: "256-bit encryption"
+    title: 'SSL Secured',
+    description: '256-bit encryption',
   },
   {
     icon: <Lock className="w-8 h-8" />,
-    title: "Privacy First",
-    description: "Your data is safe"
+    title: 'Privacy First',
+    description: 'Your data is safe',
   },
   {
     icon: <Award className="w-8 h-8" />,
-    title: "Top Rated",
-    description: "4.9/5 star rating"
+    title: 'Top Rated',
+    description: '4.9/5 star rating',
   },
   {
     icon: <CheckCircle className="w-8 h-8" />,
-    title: "Verified Content",
-    description: "Expert reviewed"
+    title: 'Verified Content',
+    description: 'Expert reviewed',
   },
   {
     icon: <RefreshCw className="w-8 h-8" />,
-    title: "30-Day Guarantee",
-    description: "Money back promise"
+    title: '30-Day Guarantee',
+    description: 'Money back promise',
   },
   {
     icon: <HeartHandshake className="w-8 h-8" />,
-    title: "24/7 Support",
-    description: "Always here to help"
-  }
+    title: '24/7 Support',
+    description: 'Always here to help',
+  },
 ];
 
 interface TrustBadgesProps {
@@ -48,25 +48,19 @@ interface TrustBadgesProps {
 }
 
 export function TrustBadges({ placement = 'inline', variant: propVariant }: TrustBadgesProps) {
-  const { variant, trackFeatureUsage } = useExperiment(
-    'trustBadgeStyle',
-    propVariant || 'minimal'
-  );
+  const { variant, trackFeatureUsage } = useExperiment('trustBadgeStyle', propVariant || 'minimal');
 
-  const { variant: placementVariant } = useExperiment(
-    'trustBadgePlacement',
-    placement
-  );
+  const { variant: placementVariant } = useExperiment('trustBadgePlacement', placement);
 
   React.useEffect(() => {
     trackFeatureUsage('trust_badges_viewed', { variant, placement: placementVariant });
   }, [variant, placementVariant, trackFeatureUsage]);
 
   const handleBadgeClick = (badge: TrustBadge) => {
-    trackUserAction('trust_badge_clicked', { 
+    trackUserAction('trust_badge_clicked', {
       badge: badge.title,
       variant,
-      placement: placementVariant 
+      placement: placementVariant,
     });
   };
 
@@ -77,21 +71,21 @@ export function TrustBadges({ placement = 'inline', variant: propVariant }: Trus
   return <InlineTrustBadges variant={variant} onClick={handleBadgeClick} />;
 }
 
-function InlineTrustBadges({ 
-  variant, 
-  onClick 
-}: { 
-  variant: string; 
+function InlineTrustBadges({
+  variant,
+  onClick,
+}: {
+  variant: string;
   onClick: (badge: TrustBadge) => void;
 }) {
-  const selectedBadges = variant === 'minimal' 
-    ? TRUST_BADGES.slice(0, 3) 
-    : TRUST_BADGES;
+  const selectedBadges = variant === 'minimal' ? TRUST_BADGES.slice(0, 3) : TRUST_BADGES;
 
   return (
     <div className="bg-gray-50 py-8 px-4">
       <div className="max-w-7xl mx-auto">
-        <div className={`grid ${variant === 'minimal' ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6'} gap-4`}>
+        <div
+          className={`grid ${variant === 'minimal' ? 'grid-cols-3' : 'grid-cols-2 sm:grid-cols-3 lg:grid-cols-6'} gap-4`}
+        >
           {selectedBadges.map((badge, index) => (
             <button
               key={index}
@@ -101,20 +95,22 @@ function InlineTrustBadges({
                 ${variant === 'animated' ? 'transform transition-all hover:scale-105' : ''}
               `}
             >
-              <div className={`
+              <div
+                className={`
                 flex flex-col items-center text-center p-4 rounded-lg
                 ${variant === 'detailed' ? 'bg-white shadow-md' : ''}
                 ${variant === 'animated' ? 'hover:bg-white hover:shadow-lg' : ''}
-              `}>
-                <div className={`
+              `}
+              >
+                <div
+                  className={`
                   text-blue-600 mb-2
                   ${variant === 'animated' ? 'group-hover:text-blue-700 transition-colors' : ''}
-                `}>
+                `}
+                >
                   {badge.icon}
                 </div>
-                <h3 className="font-semibold text-gray-900 text-sm mb-1">
-                  {badge.title}
-                </h3>
+                <h3 className="font-semibold text-gray-900 text-sm mb-1">{badge.title}</h3>
                 {(variant === 'detailed' || variant === 'animated') && (
                   <p className="text-xs text-gray-600">{badge.description}</p>
                 )}
@@ -127,11 +123,11 @@ function InlineTrustBadges({
   );
 }
 
-function FloatingTrustBadges({ 
-  variant, 
-  onClick 
-}: { 
-  variant: string; 
+function FloatingTrustBadges({
+  variant,
+  onClick,
+}: {
+  variant: string;
   onClick: (badge: TrustBadge) => void;
 }) {
   const [isExpanded, setIsExpanded] = React.useState(false);
@@ -147,16 +143,18 @@ function FloatingTrustBadges({
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  if (!isVisible) return null;
+  if (!isVisible) {return null;}
 
   const badges = variant === 'minimal' ? TRUST_BADGES.slice(0, 3) : TRUST_BADGES.slice(0, 4);
 
   return (
-    <div className={`
+    <div
+      className={`
       fixed bottom-4 right-4 z-40
       transition-all duration-300 ease-out
       ${isExpanded ? 'w-72' : 'w-16'}
-    `}>
+    `}
+    >
       {/* Toggle button */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}

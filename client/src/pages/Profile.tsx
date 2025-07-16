@@ -80,7 +80,7 @@ export default function Profile() {
   };
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [field]: value,
     }));
@@ -166,7 +166,7 @@ export default function Profile() {
                       <Input
                         id="firstName"
                         value={formData.firstName}
-                        onChange={(e) => handleInputChange('firstName', e.target.value)}
+                        onChange={e => handleInputChange('firstName', e.target.value)}
                         placeholder="Enter your first name"
                         autoComplete="given-name"
                       />
@@ -176,7 +176,7 @@ export default function Profile() {
                       <Input
                         id="lastName"
                         value={formData.lastName}
-                        onChange={(e) => handleInputChange('lastName', e.target.value)}
+                        onChange={e => handleInputChange('lastName', e.target.value)}
                         placeholder="Enter your last name"
                         autoComplete="family-name"
                       />
@@ -188,7 +188,7 @@ export default function Profile() {
                       id="email"
                       type="email"
                       value={formData.email}
-                      onChange={(e) => handleInputChange('email', e.target.value)}
+                      onChange={e => handleInputChange('email', e.target.value)}
                       placeholder="Enter your email"
                       autoComplete="email"
                     />

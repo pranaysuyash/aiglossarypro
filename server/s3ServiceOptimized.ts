@@ -85,7 +85,7 @@ class OptimizedS3Client {
           `${operationName} attempt ${attempt} failed, retrying in ${delay}ms:`,
           lastError.message
         );
-        await new Promise((resolve) => setTimeout(resolve, delay));
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
 
@@ -125,7 +125,7 @@ class OptimizedS3Client {
 
   // Enhanced file listing with pagination and filtering
   async listFiles(
-    prefix: string = '',
+    prefix = '',
     options?: {
       maxKeys?: number;
       continuationToken?: string;
@@ -157,7 +157,7 @@ class OptimizedS3Client {
       const response = await this.s3Client.send(command);
 
       let files =
-        response.Contents?.map((item) => ({
+        response.Contents?.map(item => ({
           key: item.Key!,
           size: item.Size || 0,
           lastModified: item.LastModified || new Date(),
@@ -167,8 +167,8 @@ class OptimizedS3Client {
 
       // Filter by file types if specified
       if (fileTypes && fileTypes.length > 0) {
-        files = files.filter((file) =>
-          fileTypes.some((type) => file.key.toLowerCase().endsWith(type.toLowerCase()))
+        files = files.filter(file =>
+          fileTypes.some(type => file.key.toLowerCase().endsWith(type.toLowerCase()))
         );
       }
 
@@ -255,7 +255,7 @@ class OptimizedS3Client {
           const chunks: Buffer[] = [];
           const gzip = createGzip({ level: 6 }); // Balanced compression
 
-          gzip.on('data', (chunk) => chunks.push(chunk));
+          gzip.on('data', chunk => chunks.push(chunk));
           gzip.on('end', () => resolve(Buffer.concat(chunks)));
           gzip.on('error', reject);
 
@@ -297,7 +297,7 @@ class OptimizedS3Client {
       });
 
       // Track upload progress
-      upload.on('httpUploadProgress', (progress) => {
+      upload.on('httpUploadProgress', progress => {
         if (progress.loaded && progress.total) {
           progressTracker(progress.loaded, progress.total, 'uploading');
         }
@@ -406,14 +406,14 @@ class OptimizedS3Client {
       // Handle abort signal
       if (abortSignal) {
         abortSignal.addEventListener('abort', () => {
-          streams.forEach((stream) => {
-            if (stream.destroy) stream.destroy();
+          streams.forEach(stream => {
+            if (stream.destroy) {stream.destroy();}
           });
         });
       }
 
       await pipeline(...(streams as [any, ...any[]]));
-      progressTracker(totalSize, totalSize);
+      progressTracker(totalSize, 'complete');
 
       return destinationPath;
     }, 'downloadFile');
@@ -423,7 +423,7 @@ class OptimizedS3Client {
   async generatePresignedUrl(
     key: string,
     operation: 'getObject' | 'putObject' = 'getObject',
-    expiresIn: number = 3600
+    expiresIn = 3600
   ): Promise<string> {
     const command =
       operation === 'getObject'
@@ -456,7 +456,7 @@ class OptimizedS3Client {
         const command = new DeleteObjectsCommand({
           Bucket: this.config.bucketName,
           Delete: {
-            Objects: batch.map((key) => ({ Key: key })),
+            Objects: batch.map(key => ({ Key: key })),
             Quiet: false,
           },
         });
@@ -464,12 +464,12 @@ class OptimizedS3Client {
         const response = await this.s3Client.send(command);
 
         if (response.Deleted) {
-          deleted.push(...response.Deleted.map((obj) => obj.Key!));
+          deleted.push(...response.Deleted.map(obj => obj.Key!));
         }
 
         if (response.Errors) {
           errors.push(
-            ...response.Errors.map((err) => ({
+            ...response.Errors.map(err => ({
               key: err.Key!,
               error: `${err.Code}: ${err.Message}`,
             }))
@@ -477,7 +477,7 @@ class OptimizedS3Client {
         }
       } catch (error) {
         errors.push(
-          ...batch.map((key) => ({
+          ...batch.map(key => ({
             key,
             error: error instanceof Error ? error.message : 'Unknown error',
           }))
@@ -612,7 +612,7 @@ class OptimizedS3Client {
     // Group files by base name (without timestamp)
     const fileGroups = new Map<string, S3FileMetadata[]>();
 
-    files.forEach((file) => {
+    files.forEach(file => {
       const baseName = file.key.replace(/_\d{4}-\d{2}-\d{2}T\d{2}-\d{2}-\d{2}.*$/, '');
       if (!fileGroups.has(baseName)) {
         fileGroups.set(baseName, []);
@@ -633,12 +633,12 @@ class OptimizedS3Client {
 
       // Also delete files older than cutoff date
       const oldFiles = groupFiles.filter(
-        (file) => file.lastModified < cutoffDate && !filesToDeleteFromGroup.includes(file)
+        file => file.lastModified < cutoffDate && !filesToDeleteFromGroup.includes(file)
       );
 
       const deleteList = [...filesToDeleteFromGroup, ...oldFiles];
 
-      deleteList.forEach((file) => {
+      deleteList.forEach(file => {
         filesToDelete.push(file.key);
         totalSize += file.size;
       });

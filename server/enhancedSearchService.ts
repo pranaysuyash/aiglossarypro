@@ -177,7 +177,7 @@ export async function enhancedSearch(options: SearchOptions): Promise<SearchResp
 /**
  * Get popular search terms
  */
-export async function getPopularTerms(limit: number = 10): Promise<SearchResult[]> {
+export async function getPopularTerms(limit = 10): Promise<SearchResult[]> {
   try {
     const results = await db
       .select({
@@ -225,7 +225,7 @@ export async function getPopularTerms(limit: number = 10): Promise<SearchResult[
 /**
  * Get search suggestions based on partial query
  */
-export async function getSearchSuggestions(query: string, limit: number = 5): Promise<string[]> {
+export async function getSearchSuggestions(query: string, limit = 5): Promise<string[]> {
   if (!query || query.length < 2) {
     return [];
   }

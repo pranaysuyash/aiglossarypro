@@ -1,7 +1,6 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import Sidebar from './Sidebar';
+import Sidebar from './sidebar';
 
 // Mock function for actions
 const fn = () => () => {};

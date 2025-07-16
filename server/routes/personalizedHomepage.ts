@@ -15,6 +15,7 @@ import {
   type UserProfile,
 } from '../services/userProfilingService';
 import { ErrorCode, handleDatabaseError, sendErrorResponse } from '../utils/errorHandler';
+import { log as logger } from '../utils/logger';
 
 interface PersonalizedHomepageData {
   userProfile: UserProfile;
@@ -62,19 +63,19 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
         // Create personalized sections
         const personalizedSections = {
           recentActivity: await getRecentActivity(user.id),
-          recommendedForYou: recommendations.filter((r) => r.relevanceScore > 70),
+          recommendedForYou: recommendations.filter(r => r.relevanceScore > 70),
           continuelearning: await getContinueLearning(user.id),
-          exploreNew: recommendations.filter((r) => r.reason.includes('Explore')),
-          trending: recommendations.filter((r) => r.reason.includes('Trending')),
+          exploreNew: recommendations.filter(r => r.reason.includes('Explore')),
+          trending: recommendations.filter(r => r.reason.includes('Trending')),
         };
 
         // Create adaptive navigation suggestions
         const adaptiveNavigation = {
-          priorityCategories: userProfile.interests.slice(0, 3).map((i) => i.categoryId),
+          priorityCategories: userProfile.interests.slice(0, 3).map(i => i.categoryId),
           suggestedPaths: recommendations
-            .filter((r) => r.type === 'learning_path')
+            .filter(r => r.type === 'learning_path')
             .slice(0, 3)
-            .map((r) => r.id),
+            .map(r => r.id),
           recentTopics: userProfile.recentTopics,
         };
 
@@ -91,7 +92,10 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
           message: 'Personalized homepage data generated successfully',
         });
       } catch (error) {
-        console.error('Get personalized homepage error:', error);
+        logger.error('Get personalized homepage error', {
+          error: error instanceof Error ? error.message : String(error),
+          userId: (req as any).user?.id,
+        });
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -129,7 +133,10 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
         message: 'User profile retrieved successfully',
       });
     } catch (error) {
-      console.error('Get user profile error:', error);
+      logger.error('Get user profile error', {
+        error: error instanceof Error ? error.message : String(error),
+        userId: (req as any).user?.id,
+      });
       const dbError = handleDatabaseError(error);
       sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
     }
@@ -159,7 +166,10 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
           message: 'User profile regenerated successfully',
         });
       } catch (error) {
-        console.error('Regenerate user profile error:', error);
+        logger.error('Regenerate user profile error', {
+          error: error instanceof Error ? error.message : String(error),
+          userId: (req as any).user?.id,
+        });
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -195,7 +205,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
 
         // Filter by type if specified
         if (type !== 'all') {
-          recommendations = recommendations.filter((r) => r.type === type);
+          recommendations = recommendations.filter(r => r.type === type);
         }
 
         res.json({
@@ -210,7 +220,10 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
           },
         });
       } catch (error) {
-        console.error('Get personalized recommendations error:', error);
+        logger.error('Get personalized recommendations error', {
+          error: error instanceof Error ? error.message : String(error),
+          userId: (req as any).user?.id,
+        });
         const dbError = handleDatabaseError(error);
         sendErrorResponse(res, dbError.code, dbError.message, dbError.details);
       }
@@ -244,7 +257,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
 
         if (preferredCategories) {
           // Boost specified categories in interests
-          updatedProfile.interests = updatedProfile.interests.map((interest) => {
+          updatedProfile.interests = updatedProfile.interests.map(interest => {
             if (preferredCategories.includes(interest.categoryId)) {
               return { ...interest, interestScore: Math.min(interest.interestScore * 1.5, 100) };
             }
@@ -285,7 +298,7 @@ export function registerPersonalizedHomepageRoutes(app: Express): void {
 
         // Record feedback for improving personalization
         // This would typically go to a personalization_feedback table
-        console.log('Personalization feedback recorded:', {
+        logger.info('Personalization feedback recorded', {
           userId: user.id,
           recommendationId,
           recommendationType,

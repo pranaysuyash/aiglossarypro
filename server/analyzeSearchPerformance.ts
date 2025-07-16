@@ -58,7 +58,7 @@ async function analyzeQueryPerformance() {
     `);
 
     console.log('Plan:');
-    explainResult.rows.forEach((row) => {
+    explainResult.rows.forEach(row => {
       console.log(`  ${row['QUERY PLAN']}`);
     });
   }

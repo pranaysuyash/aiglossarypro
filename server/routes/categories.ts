@@ -21,7 +21,7 @@ export function registerCategoryRoutes(app: Express): void {
       const pageNum = parseInt(page as string);
       const limitNum = Math.min(parseInt(limit as string), 500); // Max 500 items per page
       const offset = (pageNum - 1) * limitNum;
-      const fieldList = (fields as string).split(',').map((f) => f.trim());
+      const fieldList = (fields as string).split(',').map(f => f.trim());
 
       // Get categories with optimized field selection
       let categories: any[] = [];
@@ -148,7 +148,7 @@ export function registerCategoryRoutes(app: Express): void {
       const pageNum = parseInt(page as string);
       const limitNum = Math.min(parseInt(limit as string), 100); // Max 100 items per page
       const offset = (pageNum - 1) * limitNum;
-      const fieldList = (fields as string).split(',').map((f) => f.trim());
+      const fieldList = (fields as string).split(',').map(f => f.trim());
 
       // Use optimized database query with field selection
       let result = { data: [], total: 0 };

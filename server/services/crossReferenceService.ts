@@ -6,6 +6,7 @@
 import { and, eq, ilike, or, sql } from 'drizzle-orm';
 import { terms } from '../../shared/schema';
 import { db } from '../db';
+import { log as logger } from '../utils/logger';
 
 export interface CrossReference {
   termId: string;
@@ -50,7 +51,7 @@ class CrossReferenceService {
 
       this.termCache.clear();
 
-      allTerms.forEach((term) => {
+      allTerms.forEach(term => {
         // Store by exact name (case-insensitive key)
         const key = term.name.toLowerCase();
         this.termCache.set(key, {
@@ -61,7 +62,7 @@ class CrossReferenceService {
 
         // Also store common variations
         const variations = this.generateTermVariations(term.name);
-        variations.forEach((variation) => {
+        variations.forEach(variation => {
           if (!this.termCache.has(variation.toLowerCase())) {
             this.termCache.set(variation.toLowerCase(), {
               id: term.id,
@@ -73,9 +74,15 @@ class CrossReferenceService {
       });
 
       this.lastCacheUpdate = new Date();
-      console.log(`📚 Cached ${this.termCache.size} term variations for cross-referencing`);
+      logger.info('Term cache initialized', {
+        cachedTerms: this.termCache.size,
+        type: 'cross_reference_cache',
+      });
     } catch (error) {
-      console.error('❌ Error initializing term cache:', error);
+      logger.error('Error initializing term cache', {
+        error: error instanceof Error ? error.message : String(error),
+        type: 'cross_reference_cache_error',
+      });
     }
   }
 
@@ -99,7 +106,7 @@ class CrossReferenceService {
     const words = termName.split(' ');
     if (words.length > 1) {
       const acronym = words
-        .map((word) => word[0])
+        .map(word => word[0])
         .join('')
         .toUpperCase();
       if (acronym.length >= 2 && acronym.length <= 5) {
@@ -185,7 +192,7 @@ class CrossReferenceService {
 
         // Check if this position is already linked
         const isAlreadyLinked = linkedPositions.some(
-          (pos) => (start >= pos.start && start < pos.end) || (end > pos.start && end <= pos.end)
+          pos => (start >= pos.start && start < pos.end) || (end > pos.start && end <= pos.end)
         );
 
         if (!isAlreadyLinked) {
@@ -216,7 +223,7 @@ class CrossReferenceService {
           });
 
           // Track this link
-          if (!linksFound.some((l) => l.termId === termData.id)) {
+          if (!linksFound.some(l => l.termId === termData.id)) {
             linksFound.push({
               termName: termData.name,
               termId: termData.id,
@@ -340,7 +347,11 @@ class CrossReferenceService {
 
       return crossReferences;
     } catch (error) {
-      console.error('❌ Error finding cross-references:', error);
+      logger.error('Error finding cross-references', {
+        termId,
+        error: error instanceof Error ? error.message : String(error),
+        type: 'cross_reference_search_error',
+      });
       return [];
     }
   }
@@ -352,7 +363,7 @@ class CrossReferenceService {
     text: string,
     position: number,
     termLength: number,
-    contextLength: number = 100
+    contextLength = 100
   ): string {
     const start = Math.max(0, position - contextLength);
     const end = Math.min(text.length, position + termLength + contextLength);
@@ -360,8 +371,8 @@ class CrossReferenceService {
     let context = text.substring(start, end);
 
     // Add ellipsis if truncated
-    if (start > 0) context = `...${context}`;
-    if (end < text.length) context = `${context}...`;
+    if (start > 0) {context = `...${context}`;}
+    if (end < text.length) {context = `${context}...`;}
 
     return context.trim();
   }
@@ -381,7 +392,11 @@ class CrossReferenceService {
           results.set(termId, linkingResult);
         }
       } catch (error) {
-        console.error(`❌ Error processing term ${termId}:`, error);
+        logger.error('Error processing term for cross-references', {
+          termId,
+          error: error instanceof Error ? error.message : String(error),
+          type: 'cross_reference_bulk_process_error',
+        });
       }
     }
 
@@ -410,13 +425,22 @@ class CrossReferenceService {
           })
           .where(eq(terms.id, termId));
 
-        console.log(`✅ Added ${linkingResult.linksAdded} links to term: ${term[0].name}`);
+        logger.info('Added cross-reference links to term', {
+          termId,
+          termName: term[0].name,
+          linksAdded: linkingResult.linksAdded,
+          type: 'cross_reference_update',
+        });
         return true;
       }
 
       return false;
     } catch (error) {
-      console.error(`❌ Error updating term ${termId} with links:`, error);
+      logger.error('Error updating term with links', {
+        termId,
+        error: error instanceof Error ? error.message : String(error),
+        type: 'cross_reference_update_error',
+      });
       return false;
     }
   }

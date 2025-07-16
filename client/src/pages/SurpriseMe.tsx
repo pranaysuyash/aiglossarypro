@@ -12,7 +12,7 @@ export default function SurpriseMePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <SurpriseMe
-        showModeSelector={true}
+        showModeSelector
         compact={false}
         onTermSelect={handleTermSelect}
         maxResults={3}

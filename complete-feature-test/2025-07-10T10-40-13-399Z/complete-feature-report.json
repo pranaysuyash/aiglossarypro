@@ -151,9 +151,7 @@
           "details": {
             "currentUrl": "http://localhost:5173/login",
             "loginSuccess": false,
-            "errorMessages": [
-              "Route not found"
-            ]
+            "errorMessages": ["Route not found"]
           }
         }
       ],
@@ -435,9 +433,7 @@
       "details": {
         "currentUrl": "http://localhost:5173/login",
         "loginSuccess": false,
-        "errorMessages": [
-          "Route not found"
-        ]
+        "errorMessages": ["Route not found"]
       }
     },
     {

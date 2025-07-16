@@ -32,9 +32,9 @@ export class ProductionEmailService {
   private fromName: string;
 
   constructor() {
-    this.fromEmail = process.env.EMAIL_FROM || 'noreply@aiglossary.pro';
+    this.fromEmail = process.env.EMAIL_FROM || 'noreply@aiglossarypro.com';
     this.fromName = process.env.EMAIL_FROM_NAME || 'AI Glossary Pro';
-    
+
     this.initializeServices();
   }
 
@@ -169,7 +169,10 @@ export class ProductionEmailService {
   }
 
   private stripHtml(html: string): string {
-    return html.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    return html
+      .replace(/<[^>]*>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
   }
 
   /**
@@ -352,7 +355,7 @@ The AI Glossary Pro Team`,
   }
 
   async sendPremiumWelcomeEmail(
-    to: string, 
+    to: string,
     data: { userName?: string; orderNumber?: string }
   ): Promise<boolean> {
     const template = this.getPremiumWelcomeTemplate(data);

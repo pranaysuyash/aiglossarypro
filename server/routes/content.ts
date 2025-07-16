@@ -78,7 +78,7 @@ export function registerContentRoutes(app: Express): void {
                 await storage.getTermById(id);
               return term ? { id: term.id, name: term.name, definition: term.definition } : null;
             })
-          ).then((results) =>
+          ).then(results =>
             results.filter(
               (term): term is { id: string; name: string; definition: string } => term !== null
             )
@@ -102,7 +102,7 @@ export function registerContentRoutes(app: Express): void {
 
         // Generate summary report
         const report = generateAccessibilityReport(
-          results.map((r) => ({ score: r.accessibilityScore, termName: r.termName }))
+          results.map(r => ({ score: r.accessibilityScore, termName: r.termName }))
         );
 
         const response: ApiResponse<any> = {
@@ -112,7 +112,7 @@ export function registerContentRoutes(app: Express): void {
             report,
             analyzedCount: results.length,
             summary: {
-              needsImprovement: results.filter((r) => r.needsImprovement).length,
+              needsImprovement: results.filter(r => r.needsImprovement).length,
               averageScore: Math.round(
                 results.reduce((sum, r) => sum + r.accessibilityScore.score, 0) / results.length
               ),
@@ -272,15 +272,15 @@ export function registerContentRoutes(app: Express): void {
 
         const results = await processTermsForAccessibility(termsData);
         const report = generateAccessibilityReport(
-          results.map((r) => ({ score: r.accessibilityScore, termName: r.termName }))
+          results.map(r => ({ score: r.accessibilityScore, termName: r.termName }))
         );
 
         // Get top terms needing improvement
         const termsNeedingImprovement = results
-          .filter((r) => r.needsImprovement)
+          .filter(r => r.needsImprovement)
           .sort((a, b) => a.accessibilityScore.score - b.accessibilityScore.score)
           .slice(0, 20)
-          .map((r) => ({
+          .map(r => ({
             termId: r.termId,
             termName: r.termName,
             score: r.accessibilityScore.score,
@@ -345,21 +345,21 @@ export function registerContentRoutes(app: Express): void {
         let filteredTerms = termsWithScores;
 
         if (level) {
-          filteredTerms = filteredTerms.filter((term) => term.accessibilityScore.level === level);
+          filteredTerms = filteredTerms.filter(term => term.accessibilityScore.level === level);
         }
 
         if (minScore !== undefined) {
-          filteredTerms = filteredTerms.filter((term) => term.accessibilityScore.score >= minScore);
+          filteredTerms = filteredTerms.filter(term => term.accessibilityScore.score >= minScore);
         }
 
         if (maxScore !== undefined) {
-          filteredTerms = filteredTerms.filter((term) => term.accessibilityScore.score <= maxScore);
+          filteredTerms = filteredTerms.filter(term => term.accessibilityScore.score <= maxScore);
         }
 
         if (needsImprovement !== undefined) {
           const needsFilter = needsImprovement;
           filteredTerms = filteredTerms.filter(
-            (term) => term.accessibilityScore.score < 70 === needsFilter
+            term => term.accessibilityScore.score < 70 === needsFilter
           );
         }
 
@@ -371,7 +371,7 @@ export function registerContentRoutes(app: Express): void {
         const response: ApiResponse<any> = {
           success: true,
           data: {
-            terms: paginatedTerms.map((term) => ({
+            terms: paginatedTerms.map(term => ({
               id: term.id,
               name: term.name,
               definition: `${term.definition.substring(0, 200)}...`,

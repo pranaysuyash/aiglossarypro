@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { BarChart } from './chart';
 
@@ -9,9 +8,9 @@ const meta: Meta<typeof BarChart> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Reusable UI component for the AIGlossaryPro application.'
-      }
-    }
+        component: 'Reusable UI component for the AIGlossaryPro application.',
+      },
+    },
   },
   tags: ['autodocs'],
   argTypes: {
@@ -46,10 +45,10 @@ export const Default: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Default BarChart component state.'
-      }
-    }
-  }
+        story: 'Default BarChart component state.',
+      },
+    },
+  },
 };
 
 export const Loading: Story = {
@@ -61,10 +60,10 @@ export const Loading: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'BarChart in loading state.'
-      }
-    }
-  }
+        story: 'BarChart in loading state.',
+      },
+    },
+  },
 };
 
 export const Error: Story = {
@@ -79,10 +78,10 @@ export const Error: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'BarChart displaying error state.'
-      }
-    }
-  }
+        story: 'BarChart displaying error state.',
+      },
+    },
+  },
 };
 
 export const Disabled: Story = {
@@ -108,10 +107,10 @@ export const Disabled: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'BarChart in disabled state.'
-      }
-    }
-  }
+        story: 'BarChart in disabled state.',
+      },
+    },
+  },
 };
 
 export const Small: Story = {
@@ -137,10 +136,10 @@ export const Small: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Small variant of BarChart.'
-      }
-    }
-  }
+        story: 'Small variant of BarChart.',
+      },
+    },
+  },
 };
 
 export const Large: Story = {
@@ -171,8 +170,8 @@ export const Large: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Large variant of BarChart.'
-      }
-    }
-  }
+        story: 'Large variant of BarChart.',
+      },
+    },
+  },
 };

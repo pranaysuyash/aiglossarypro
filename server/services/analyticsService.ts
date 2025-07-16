@@ -356,7 +356,7 @@ export class AnalyticsService {
   }
 
   private async flushSearchAnalytics(): Promise<void> {
-    if (this.searchQueries.length === 0) return;
+    if (this.searchQueries.length === 0) {return;}
 
     try {
       const queries = [...this.searchQueries];
@@ -389,7 +389,7 @@ export class AnalyticsService {
   }
 
   private async flushPageViewAnalytics(): Promise<void> {
-    if (this.pageViews.length === 0) return;
+    if (this.pageViews.length === 0) {return;}
 
     try {
       const pageViews = [...this.pageViews];
@@ -428,7 +428,7 @@ export class AnalyticsService {
   }
 
   private async flushPerformanceAnalytics(): Promise<void> {
-    if (this.performanceMetrics.length === 0) return;
+    if (this.performanceMetrics.length === 0) {return;}
 
     try {
       const metrics = [...this.performanceMetrics];
@@ -464,7 +464,7 @@ export class AnalyticsService {
   }
 
   private async flushUserInteractionAnalytics(): Promise<void> {
-    if (this.userInteractions.length === 0) return;
+    if (this.userInteractions.length === 0) {return;}
 
     try {
       const interactions = [...this.userInteractions];

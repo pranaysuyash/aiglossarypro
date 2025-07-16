@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import S3FileManagerDashboard from './S3FileManagerDashboard';
@@ -14,7 +13,7 @@ const meta: Meta<typeof S3FileManagerDashboard> = {
   title: 'Admin/S3FileManagerDashboard',
   component: S3FileManagerDashboard,
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen bg-gray-50">
           <Story />
@@ -197,7 +196,7 @@ export const BulkOperations: Story = {
 
 export const SearchAndFilter: Story = {
   args: {
-    files: mockFiles.filter((f) => f.type.includes('csv') || f.name.includes('analysis')),
+    files: mockFiles.filter(f => f.type.includes('csv') || f.name.includes('analysis')),
     folders: mockFolders,
     storageStats: mockStorageStats,
     currentPath: '',
@@ -279,7 +278,7 @@ export const StorageAnalytics: Story = {
 
 export const AccessManagement: Story = {
   args: {
-    files: mockFiles.map((file) => ({
+    files: mockFiles.map(file => ({
       ...file,
       permissions: {
         owner: 'admin@example.com',
@@ -331,7 +330,7 @@ export const BackupAndSync: Story = {
 
 export const CDNManagement: Story = {
   args: {
-    files: mockFiles.map((file) => ({
+    files: mockFiles.map(file => ({
       ...file,
       cdn: {
         isEnabled: file.type.startsWith('image/') || file.type.includes('svg'),

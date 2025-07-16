@@ -167,7 +167,7 @@ export class BatchSafetyControlsService extends EventEmitter {
 
     // Check user concurrent operations
     const userActiveOps = activeOperations.filter(
-      (op) => op.configuration.metadata?.initiatedBy === userId
+      op => op.configuration.metadata?.initiatedBy === userId
     );
     if (userActiveOps.length >= this.safetyLimits.global.maxOperationsPerUser) {
       return {
@@ -352,12 +352,12 @@ export class BatchSafetyControlsService extends EventEmitter {
   }> {
     const systemHealth = await this.performHealthCheck();
     const recentViolations = Array.from(this.violations.values())
-      .filter((v) => Date.now() - v.triggeredAt.getTime() < 24 * 60 * 60 * 1000) // Last 24 hours
+      .filter(v => Date.now() - v.triggeredAt.getTime() < 24 * 60 * 60 * 1000) // Last 24 hours
       .sort((a, b) => b.triggeredAt.getTime() - a.triggeredAt.getTime());
 
     const blockedUsers = Array.from(this.userLimitStatus.values())
-      .filter((status) => status.status === 'blocked')
-      .map((status) => status.userId);
+      .filter(status => status.status === 'blocked')
+      .map(status => status.userId);
 
     return {
       systemHealth,
@@ -408,21 +408,21 @@ export class BatchSafetyControlsService extends EventEmitter {
 
     const activeOps = columnBatchProcessorService.getActiveOperations();
     status.currentLimits.activeOperations = activeOps.filter(
-      (op) => op.configuration.metadata?.initiatedBy === userId
+      op => op.configuration.metadata?.initiatedBy === userId
     ).length;
 
     // Check for recent violations
     const recentViolations = Array.from(this.violations.values()).filter(
-      (v) => v.userId === userId && Date.now() - v.triggeredAt.getTime() < 60 * 60 * 1000
+      v => v.userId === userId && Date.now() - v.triggeredAt.getTime() < 60 * 60 * 1000
     );
 
     status.violations = recentViolations;
 
     // Update status based on violations
-    if (recentViolations.some((v) => v.severity === 'emergency')) {
+    if (recentViolations.some(v => v.severity === 'emergency')) {
       status.status = 'blocked';
       status.nextAllowedOperation = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hour block
-    } else if (recentViolations.some((v) => v.severity === 'critical')) {
+    } else if (recentViolations.some(v => v.severity === 'critical')) {
       status.status = 'throttled';
       status.nextAllowedOperation = new Date(Date.now() + 60 * 60 * 1000); // 1 hour throttle
     } else {
@@ -437,7 +437,7 @@ export class BatchSafetyControlsService extends EventEmitter {
    * Clear user violations (admin function)
    */
   async clearUserViolations(userId: string, clearedBy: string): Promise<void> {
-    const violations = Array.from(this.violations.values()).filter((v) => v.userId === userId);
+    const violations = Array.from(this.violations.values()).filter(v => v.userId === userId);
 
     for (const violation of violations) {
       this.violations.delete(violation.id);
@@ -467,15 +467,15 @@ export class BatchSafetyControlsService extends EventEmitter {
 
     // Clean old requests
     const validRequests = userRequests.filter(
-      (req) => now.getTime() - req.timestamp.getTime() < 60 * 60 * 1000 // Last hour
+      req => now.getTime() - req.timestamp.getTime() < 60 * 60 * 1000 // Last hour
     );
 
     // Count requests in last minute and hour
     const lastMinute = new Date(now.getTime() - 60 * 1000);
     const lastHour = new Date(now.getTime() - 60 * 60 * 1000);
 
-    const requestsLastMinute = validRequests.filter((req) => req.timestamp > lastMinute).length;
-    const requestsLastHour = validRequests.filter((req) => req.timestamp > lastHour).length;
+    const requestsLastMinute = validRequests.filter(req => req.timestamp > lastMinute).length;
+    const requestsLastHour = validRequests.filter(req => req.timestamp > lastHour).length;
 
     // Check limits
     if (requestsLastMinute >= this.safetyLimits.api.maxRequestsPerMinute) {
@@ -601,7 +601,7 @@ export class BatchSafetyControlsService extends EventEmitter {
       );
     }
 
-    const healthy = alerts.length === 0 || !alerts.some((a) => a.severity === 'critical');
+    const healthy = alerts.length === 0 || !alerts.some(a => a.severity === 'critical');
 
     return {
       timestamp,
@@ -618,7 +618,7 @@ export class BatchSafetyControlsService extends EventEmitter {
   private async getUserDailyOperations(userId: string, date: Date): Promise<number> {
     const history = columnBatchProcessorService.getOperationHistory(1000);
     const userOpsToday = history.filter(
-      (op) =>
+      op =>
         op.configuration.metadata?.initiatedBy === userId &&
         op.timing.startedAt &&
         op.timing.startedAt >= date
@@ -632,7 +632,7 @@ export class BatchSafetyControlsService extends EventEmitter {
   private async getUserDailyCost(userId: string, date: Date): Promise<number> {
     const history = columnBatchProcessorService.getOperationHistory(1000);
     const userOpsToday = history.filter(
-      (op) =>
+      op =>
         op.configuration.metadata?.initiatedBy === userId &&
         op.timing.startedAt &&
         op.timing.startedAt >= date
@@ -646,7 +646,7 @@ export class BatchSafetyControlsService extends EventEmitter {
   private async getUserOperationsSince(userId: string, since: Date): Promise<number> {
     const history = columnBatchProcessorService.getOperationHistory(1000);
     const userOpsSince = history.filter(
-      (op) =>
+      op =>
         op.configuration.metadata?.initiatedBy === userId &&
         op.timing.startedAt &&
         op.timing.startedAt >= since
@@ -724,10 +724,10 @@ export class BatchSafetyControlsService extends EventEmitter {
         }
 
         // Auto-trigger emergency stop if critical
-        const criticalAlerts = healthCheck.alerts.filter((a) => a.severity === 'critical');
+        const criticalAlerts = healthCheck.alerts.filter(a => a.severity === 'critical');
         if (criticalAlerts.length > 0 && !this.emergencyControls.emergencyStopActive) {
           await this.activateEmergencyStop(
-            `Auto-triggered due to critical health alerts: ${criticalAlerts.map((a) => a.message).join(', ')}`,
+            `Auto-triggered due to critical health alerts: ${criticalAlerts.map(a => a.message).join(', ')}`,
             'system'
           );
         }
@@ -763,7 +763,7 @@ export class BatchSafetyControlsService extends EventEmitter {
     // Cleanup old request counts
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     for (const [userId, requests] of this.requestCounts.entries()) {
-      const validRequests = requests.filter((req) => req.timestamp > oneHourAgo);
+      const validRequests = requests.filter(req => req.timestamp > oneHourAgo);
       if (validRequests.length === 0) {
         this.requestCounts.delete(userId);
       } else {

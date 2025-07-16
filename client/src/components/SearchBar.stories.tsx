@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -29,7 +28,7 @@ const meta: Meta<typeof SearchBar> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="w-full max-w-2xl p-4">
           <Story />
@@ -155,7 +154,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="w-full max-w-2xl p-4 dark">
           <Story />

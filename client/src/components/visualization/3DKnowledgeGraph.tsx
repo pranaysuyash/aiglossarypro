@@ -40,7 +40,7 @@ interface GraphEdge {
 }
 
 interface ThreeDKnowledgeGraphProps {
-  className?: string;
+  className?: string | undefined;
   onNodeSelect?: (node: GraphNode) => void;
   initialNodes?: GraphNode[];
   initialEdges?: GraphEdge[];
@@ -63,7 +63,7 @@ function Node({
   const meshRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
 
-  useFrame((state) => {
+  useFrame(state => {
     if (meshRef.current) {
       // Gentle floating animation
       meshRef.current.position.y = node.position[1] + Math.sin(state.clock.elapsedTime * 2) * 0.1;
@@ -80,9 +80,9 @@ function Node({
   });
 
   const nodeColor = useMemo(() => {
-    if (isSelected) return '#3b82f6'; // Blue for selected
-    if (isHighlighted) return '#10b981'; // Green for highlighted
-    if (hovered) return '#f59e0b'; // Yellow for hovered
+    if (isSelected) {return '#3b82f6';} // Blue for selected
+    if (isHighlighted) {return '#10b981';} // Green for highlighted
+    if (hovered) {return '#f59e0b';} // Yellow for hovered
     return node.color;
   }, [isSelected, isHighlighted, hovered, node.color]);
 
@@ -201,7 +201,7 @@ function ConnectionLine({
         <bufferAttribute
           attach="attributes-position"
           count={points.length}
-          array={new Float32Array(points.flatMap((p) => [p.x, p.y, p.z]))}
+          array={new Float32Array(points.flatMap(p => [p.x, p.y, p.z]))}
           itemSize={3}
         />
       </bufferGeometry>
@@ -232,7 +232,7 @@ function Scene({
   const { camera } = useThree();
 
   // Auto-rotate camera
-  useFrame((state) => {
+  useFrame(state => {
     if (animationSpeed > 0) {
       camera.position.x = Math.cos(state.clock.elapsedTime * animationSpeed * 0.1) * 15;
       camera.position.z = Math.sin(state.clock.elapsedTime * animationSpeed * 0.1) * 15;
@@ -241,18 +241,16 @@ function Scene({
   });
 
   const activeConnections = useMemo(() => {
-    if (!showConnections) return [];
+    if (!showConnections) {return [];}
 
     if (selectedNode) {
       return edges.filter(
-        (edge) => edge.source === selectedNode.id || edge.target === selectedNode.id
+        edge => edge.source === selectedNode.id || edge.target === selectedNode.id
       );
     }
 
     if (hoveredNode) {
-      return edges.filter(
-        (edge) => edge.source === hoveredNode.id || edge.target === hoveredNode.id
-      );
+      return edges.filter(edge => edge.source === hoveredNode.id || edge.target === hoveredNode.id);
     }
 
     return edges;
@@ -265,7 +263,7 @@ function Scene({
       <pointLight position={[10, 10, 10]} intensity={1} />
 
       {/* Nodes */}
-      {nodes.map((node) => (
+      {nodes.map(node => (
         <Node
           key={node.id}
           node={node}
@@ -277,11 +275,11 @@ function Scene({
       ))}
 
       {/* Connections */}
-      {activeConnections.map((edge) => {
-        const sourceNode = nodes.find((n) => n.id === edge.source);
-        const targetNode = nodes.find((n) => n.id === edge.target);
+      {activeConnections.map(edge => {
+        const sourceNode = nodes.find(n => n.id === edge.source);
+        const targetNode = nodes.find(n => n.id === edge.target);
 
-        if (!sourceNode || !targetNode) return null;
+        if (!sourceNode || !targetNode) {return null;}
 
         return (
           <ConnectionLine
@@ -302,9 +300,9 @@ function Scene({
 
       {/* Controls */}
       <OrbitControls
-        enablePan={true}
-        enableZoom={true}
-        enableRotate={true}
+        enablePan
+        enableZoom
+        enableRotate
         minDistance={5}
         maxDistance={50}
       />
@@ -336,7 +334,6 @@ const ThreeDKnowledgeGraph: React.FC<ThreeDKnowledgeGraphProps> = ({
     if (initialNodes.length === 0) {
       generateSampleGraph();
     }
-     
   }, [initialNodes]);
 
   const generateSampleGraph = () => {
@@ -530,23 +527,23 @@ const ThreeDKnowledgeGraph: React.FC<ThreeDKnowledgeGraphProps> = ({
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (!canvasRef.current?.contains(document.activeElement)) return;
+      if (!canvasRef.current?.contains(document.activeElement)) {return;}
 
       const visibleNodes = filteredNodes;
-      if (visibleNodes.length === 0) return;
+      if (visibleNodes.length === 0) {return;}
 
       switch (event.key) {
         case 'ArrowRight':
         case 'd':
         case 'D':
           event.preventDefault();
-          setFocusedNodeIndex((prev) => (prev + 1) % visibleNodes.length);
+          setFocusedNodeIndex(prev => (prev + 1) % visibleNodes.length);
           break;
         case 'ArrowLeft':
         case 'a':
         case 'A':
           event.preventDefault();
-          setFocusedNodeIndex((prev) => (prev - 1 + visibleNodes.length) % visibleNodes.length);
+          setFocusedNodeIndex(prev => (prev - 1 + visibleNodes.length) % visibleNodes.length);
           break;
         case 'ArrowUp':
         case 'w':
@@ -554,7 +551,7 @@ const ThreeDKnowledgeGraph: React.FC<ThreeDKnowledgeGraphProps> = ({
           event.preventDefault();
           // Navigate to connected nodes
           if (selectedNode) {
-            const connectedNodes = visibleNodes.filter((node) =>
+            const connectedNodes = visibleNodes.filter(node =>
               selectedNode.connections.includes(node.id)
             );
             if (connectedNodes.length > 0) {
@@ -568,7 +565,7 @@ const ThreeDKnowledgeGraph: React.FC<ThreeDKnowledgeGraphProps> = ({
           event.preventDefault();
           // Navigate to parent nodes (nodes that connect to current)
           if (selectedNode) {
-            const parentNodes = visibleNodes.filter((node) =>
+            const parentNodes = visibleNodes.filter(node =>
               node.connections.includes(selectedNode.id)
             );
             if (parentNodes.length > 0) {
@@ -617,12 +614,12 @@ Escape: Reset view
   }, [focusedNodeIndex, selectedNode]);
 
   const filteredNodes = useMemo(() => {
-    if (filterByCategory.length === 0) return nodes;
-    return nodes.filter((node) => filterByCategory.includes(node.category));
+    if (filterByCategory.length === 0) {return nodes;}
+    return nodes.filter(node => filterByCategory.includes(node.category));
   }, [nodes, filterByCategory]);
 
   const categories = useMemo(() => {
-    return [...new Set(nodes.map((node) => node.category))];
+    return [...new Set(nodes.map(node => node.category))];
   }, [nodes]);
 
   return (
@@ -765,7 +762,7 @@ Escape: Reset view
                   <Checkbox
                     id="show-connections"
                     checked={showConnections}
-                    onCheckedChange={(checked) => setShowConnections(!!checked)}
+                    onCheckedChange={checked => setShowConnections(!!checked)}
                   />
                   <Label htmlFor="show-connections" className="text-xs">
                     Show connections
@@ -780,16 +777,16 @@ Escape: Reset view
                 <CardTitle className="text-sm">Categories</CardTitle>
               </CardHeader>
               <CardContent className="space-y-2">
-                {categories.map((category) => (
+                {categories.map(category => (
                   <div key={category} className="flex items-center space-x-2">
                     <Checkbox
                       id={`category-${category}`}
                       checked={filterByCategory.includes(category)}
-                      onCheckedChange={(checked) => {
+                      onCheckedChange={checked => {
                         if (checked) {
                           setFilterByCategory([...filterByCategory, category]);
                         } else {
-                          setFilterByCategory(filterByCategory.filter((c) => c !== category));
+                          setFilterByCategory(filterByCategory.filter(c => c !== category));
                         }
                       }}
                     />

@@ -28,7 +28,7 @@ interface InlineContentEditorProps {
   metadata?: Record<string, any>;
   onSave: (content: string) => Promise<void>;
   onRegenerate?: () => Promise<void>;
-  className?: string;
+  className?: string | undefined;
 }
 
 export function InlineContentEditor({
@@ -104,7 +104,7 @@ export function InlineContentEditor({
       setVersions([newVersion, ...versions.slice(0, 9)]); // Keep last 10 versions
 
       toast({ title: 'Success', description: 'Content saved successfully' });
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving content:', error);
       toast({ title: 'Error', description: 'Failed to save content', variant: 'destructive' });
     } finally {
@@ -131,10 +131,10 @@ export function InlineContentEditor({
   };
 
   const getQualityBadgeColor = (score?: number) => {
-    if (!score) return 'default';
-    if (score >= 8) return 'green';
-    if (score >= 6) return 'yellow';
-    if (score >= 4) return 'orange';
+    if (!score) {return 'default';}
+    if (score >= 8) {return 'green';}
+    if (score >= 6) {return 'yellow';}
+    if (score >= 4) {return 'orange';}
     return 'red';
   };
 
@@ -223,7 +223,7 @@ export function InlineContentEditor({
           <div className="mb-4 p-4 bg-muted rounded-lg space-y-2">
             <h4 className="font-medium text-sm">Version History</h4>
             <div className="space-y-1">
-              {versions.map((version) => (
+              {versions.map(version => (
                 <div key={version.id} className="flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">
                     {new Date(version.editedAt).toLocaleString()}
@@ -245,7 +245,7 @@ export function InlineContentEditor({
               <Textarea
                 ref={textareaRef}
                 value={content}
-                onChange={(e) => {
+                onChange={e => {
                   setContent(e.target.value);
                   autoResizeTextarea();
                 }}

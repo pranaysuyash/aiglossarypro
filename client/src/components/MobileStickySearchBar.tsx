@@ -1,23 +1,24 @@
 import { Search } from 'lucide-react';
 import { useState } from 'react';
-import { Button } from './ui/button';
 import { MobileSearchOverlay } from './MobileSearchOverlay';
+import { Button } from './ui/button';
 
 interface MobileStickySearchBarProps {
-  className?: string;
+  className?: string | undefined;
   placeholder?: string;
   showOnlyOnMobile?: boolean;
 }
 
 export function MobileStickySearchBar({
-  className = "",
-  placeholder = "Search AI/ML terms...",
+  className = '',
+  placeholder = 'Search AI/ML terms...',
   showOnlyOnMobile = true,
 }: MobileStickySearchBarProps) {
   const [isOverlayOpen, setIsOverlayOpen] = useState(false);
 
-  const baseClasses = "fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg";
-  const mobileOnlyClasses = showOnlyOnMobile ? "sm:hidden" : "";
+  const baseClasses =
+    'fixed bottom-0 left-0 right-0 z-40 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 shadow-lg';
+  const mobileOnlyClasses = showOnlyOnMobile ? 'sm:hidden' : '';
   const finalClasses = `${baseClasses} ${mobileOnlyClasses} ${className}`;
 
   const handleSearchBarClick = () => {
@@ -62,16 +63,12 @@ export function MobileStickySearchBar({
         onResultClick={handleResultClick}
         onFavoriteToggle={handleFavoriteToggle}
         placeholder={placeholder}
-        showVoiceSearch={true}
+        showVoiceSearch
       />
 
       {/* Bottom padding to prevent content from being hidden behind sticky bar */}
-      {showOnlyOnMobile && (
-        <div className="h-20 sm:hidden" />
-      )}
-      {!showOnlyOnMobile && (
-        <div className="h-20" />
-      )}
+      {showOnlyOnMobile && <div className="h-20 sm:hidden" />}
+      {!showOnlyOnMobile && <div className="h-20" />}
     </>
   );
 }

@@ -48,7 +48,7 @@ async function investigateDatabase() {
 
         console.log(`\nCategory: "${badCat.name}"`);
         console.log(`Affected terms (${affectedTerms.length} shown):`);
-        affectedTerms.forEach((term) => {
+        affectedTerms.forEach(term => {
           console.log(`  - ${term.name} (${term.category})`);
         });
       }
@@ -82,7 +82,7 @@ async function investigateDatabase() {
 
       console.log(`\n🔍 Searching for "${termName}":`);
       if (foundTerms.length > 0) {
-        foundTerms.forEach((term) => {
+        foundTerms.forEach(term => {
           console.log(`  ✅ ID: ${term.id}`);
           console.log(`     Name: "${term.name}"`);
           console.log(`     Category: "${term.category}"`);

@@ -1,134 +1,158 @@
 {
-  "categories": [
-    {
-      "name": "Machine Learning",
-      "subcategories": ["Supervised Learning", "Unsupervised Learning", "Reinforcement Learning"]
-    },
-    {
-      "name": "Deep Learning",
-      "subcategories": ["Neural Networks", "Convolutional Networks", "Recurrent Networks"]
-    },
-    {
-      "name": "Natural Language Processing",
-      "subcategories": ["Text Analysis", "Sentiment Analysis", "Machine Translation"]
-    }
-  ],
-  "terms": [
-    {
-      "name": "Neural Network",
-      "shortDefinition": "A computational model inspired by the human brain.",
-      "definition": "Neural networks are computational systems inspired by the biological neural networks that constitute animal brains. Such systems learn to perform tasks by considering examples, generally without being programmed with task-specific rules.",
-      "category": "Deep Learning",
-      "subcategories": ["Neural Networks"],
-      "characteristics": ["Layered architecture", "Activation functions", "Backpropagation"],
-      "types": [
-        {
-          "name": "Feedforward Neural Network",
-          "description": "The simplest type of neural network where information moves in only one direction—forward—from input nodes, through hidden nodes, to output nodes."
-        },
-        {
-          "name": "Recurrent Neural Network",
-          "description": "A class of neural networks where connections between nodes form a directed graph along a temporal sequence, allowing the network to exhibit temporal dynamic behavior."
-        }
-      ],
-      "visualUrl": "https://example.com/neural_network.png",
-      "visualCaption": "Representation of a neural network with multiple layers",
-      "mathFormulation": "y = f(∑(w_i * x_i) + b)",
-      "applications": [
-        {
-          "name": "Image Recognition",
-          "description": "Used for identifying objects, persons, places, and actions in images.",
-          "icon": "image"
-        },
-        {
-          "name": "Speech Recognition",
-          "description": "Converting spoken language into text.",
-          "icon": "mic"
-        }
-      ],
-      "references": [
-        "Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep Learning. MIT Press.",
-        "LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. Nature, 521(7553), 436-444."
-      ]
-    },
-    {
-      "name": "Support Vector Machine",
-      "shortDefinition": "A supervised learning model for classification and regression.",
-      "definition": "Support Vector Machines (SVMs) are supervised learning models that analyze data for classification and regression analysis. Given a set of training examples, each marked as belonging to one or other of two categories, an SVM training algorithm builds a model that assigns new examples to one category or the other.",
-      "category": "Machine Learning",
-      "subcategories": ["Supervised Learning"],
-      "characteristics": ["Margin maximization", "Kernel trick", "Support vectors"],
-      "types": [
-        {
-          "name": "Linear SVM",
-          "description": "Uses a linear kernel to separate data with a hyperplane."
-        },
-        {
-          "name": "Non-linear SVM",
-          "description": "Uses a non-linear kernel to handle data that is not linearly separable."
-        }
-      ],
-      "mathFormulation": "min_{w,b} ||w||^2 subject to y_i(w^T x_i + b) ≥ 1",
-      "applications": [
-        {
-          "name": "Text Categorization",
-          "description": "Classifying documents into categories.",
-          "icon": "file-text"
-        },
-        {
-          "name": "Image Classification",
-          "description": "Identifying what category an image belongs to.",
-          "icon": "image"
-        }
-      ],
-      "references": [
-        "Cortes, C., & Vapnik, V. (1995). Support-vector networks. Machine Learning, 20(3), 273-297.",
-        "Cristianini, N., & Shawe-Taylor, J. (2000). An Introduction to Support Vector Machines and Other Kernel-based Learning Methods. Cambridge University Press."
-      ]
-    },
-    {
-      "name": "Transformer",
-      "shortDefinition": "A neural network architecture based on self-attention mechanisms.",
-      "definition": "Transformers are a type of neural network architecture that use self-attention mechanisms to process sequential data. Unlike recurrent neural networks, which process data sequentially, transformers can process all of the data simultaneously, allowing for more parallelization and therefore faster training.",
-      "category": "Deep Learning",
-      "subcategories": ["Neural Networks"],
-      "characteristics": ["Self-attention", "Positional encoding", "Encoder-decoder structure"],
-      "types": [
-        {
-          "name": "Encoder-only",
-          "description": "Models like BERT that use only the encoder part of the transformer architecture."
-        },
-        {
-          "name": "Decoder-only",
-          "description": "Models like GPT that use only the decoder part of the transformer architecture."
-        },
-        {
-          "name": "Encoder-decoder",
-          "description": "Models like T5 that use both encoder and decoder parts of the transformer architecture."
-        }
-      ],
-      "visualUrl": "https://example.com/transformer.png",
-      "visualCaption": "Transformer architecture with attention mechanism",
-      "applications": [
-        {
-          "name": "Machine Translation",
-          "description": "Translating text from one language to another.",
-          "icon": "globe"
-        },
-        {
-          "name": "Text Generation",
-          "description": "Creating coherent and contextually relevant text.",
-          "icon": "edit"
-        },
-        {
-          "name": "Question Answering",
-          "description": "Answering questions based on a given context.",
-          "icon": "help-circle"
-        }
-      ],
-      "references": [
-        "Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., ... & Polosukhin, I. (2017). Attention is all you need. Advances in neural information processing systems, 30."
-      ]
-    }
-  ]
+	"categories": [
+		{
+			"name": "Machine Learning",
+			"subcategories": [
+				"Supervised Learning",
+				"Unsupervised Learning",
+				"Reinforcement Learning"
+			]
+		},
+		{
+			"name": "Deep Learning",
+			"subcategories": [
+				"Neural Networks",
+				"Convolutional Networks",
+				"Recurrent Networks"
+			]
+		},
+		{
+			"name": "Natural Language Processing",
+			"subcategories": [
+				"Text Analysis",
+				"Sentiment Analysis",
+				"Machine Translation"
+			]
+		}
+	],
+	"terms": [
+		{
+			"name": "Neural Network",
+			"shortDefinition": "A computational model inspired by the human brain.",
+			"definition": "Neural networks are computational systems inspired by the biological neural networks that constitute animal brains. Such systems learn to perform tasks by considering examples, generally without being programmed with task-specific rules.",
+			"category": "Deep Learning",
+			"subcategories": ["Neural Networks"],
+			"characteristics": [
+				"Layered architecture",
+				"Activation functions",
+				"Backpropagation"
+			],
+			"types": [
+				{
+					"name": "Feedforward Neural Network",
+					"description": "The simplest type of neural network where information moves in only one direction—forward—from input nodes, through hidden nodes, to output nodes."
+				},
+				{
+					"name": "Recurrent Neural Network",
+					"description": "A class of neural networks where connections between nodes form a directed graph along a temporal sequence, allowing the network to exhibit temporal dynamic behavior."
+				}
+			],
+			"visualUrl": "https://example.com/neural_network.png",
+			"visualCaption": "Representation of a neural network with multiple layers",
+			"mathFormulation": "y = f(∑(w_i * x_i) + b)",
+			"applications": [
+				{
+					"name": "Image Recognition",
+					"description": "Used for identifying objects, persons, places, and actions in images.",
+					"icon": "image"
+				},
+				{
+					"name": "Speech Recognition",
+					"description": "Converting spoken language into text.",
+					"icon": "mic"
+				}
+			],
+			"references": [
+				"Goodfellow, I., Bengio, Y., & Courville, A. (2016). Deep Learning. MIT Press.",
+				"LeCun, Y., Bengio, Y., & Hinton, G. (2015). Deep learning. Nature, 521(7553), 436-444."
+			]
+		},
+		{
+			"name": "Support Vector Machine",
+			"shortDefinition": "A supervised learning model for classification and regression.",
+			"definition": "Support Vector Machines (SVMs) are supervised learning models that analyze data for classification and regression analysis. Given a set of training examples, each marked as belonging to one or other of two categories, an SVM training algorithm builds a model that assigns new examples to one category or the other.",
+			"category": "Machine Learning",
+			"subcategories": ["Supervised Learning"],
+			"characteristics": [
+				"Margin maximization",
+				"Kernel trick",
+				"Support vectors"
+			],
+			"types": [
+				{
+					"name": "Linear SVM",
+					"description": "Uses a linear kernel to separate data with a hyperplane."
+				},
+				{
+					"name": "Non-linear SVM",
+					"description": "Uses a non-linear kernel to handle data that is not linearly separable."
+				}
+			],
+			"mathFormulation": "min_{w,b} ||w||^2 subject to y_i(w^T x_i + b) ≥ 1",
+			"applications": [
+				{
+					"name": "Text Categorization",
+					"description": "Classifying documents into categories.",
+					"icon": "file-text"
+				},
+				{
+					"name": "Image Classification",
+					"description": "Identifying what category an image belongs to.",
+					"icon": "image"
+				}
+			],
+			"references": [
+				"Cortes, C., & Vapnik, V. (1995). Support-vector networks. Machine Learning, 20(3), 273-297.",
+				"Cristianini, N., & Shawe-Taylor, J. (2000). An Introduction to Support Vector Machines and Other Kernel-based Learning Methods. Cambridge University Press."
+			]
+		},
+		{
+			"name": "Transformer",
+			"shortDefinition": "A neural network architecture based on self-attention mechanisms.",
+			"definition": "Transformers are a type of neural network architecture that use self-attention mechanisms to process sequential data. Unlike recurrent neural networks, which process data sequentially, transformers can process all of the data simultaneously, allowing for more parallelization and therefore faster training.",
+			"category": "Deep Learning",
+			"subcategories": ["Neural Networks"],
+			"characteristics": [
+				"Self-attention",
+				"Positional encoding",
+				"Encoder-decoder structure"
+			],
+			"types": [
+				{
+					"name": "Encoder-only",
+					"description": "Models like BERT that use only the encoder part of the transformer architecture."
+				},
+				{
+					"name": "Decoder-only",
+					"description": "Models like GPT that use only the decoder part of the transformer architecture."
+				},
+				{
+					"name": "Encoder-decoder",
+					"description": "Models like T5 that use both encoder and decoder parts of the transformer architecture."
+				}
+			],
+			"visualUrl": "https://example.com/transformer.png",
+			"visualCaption": "Transformer architecture with attention mechanism",
+			"applications": [
+				{
+					"name": "Machine Translation",
+					"description": "Translating text from one language to another.",
+					"icon": "globe"
+				},
+				{
+					"name": "Text Generation",
+					"description": "Creating coherent and contextually relevant text.",
+					"icon": "edit"
+				},
+				{
+					"name": "Question Answering",
+					"description": "Answering questions based on a given context.",
+					"icon": "help-circle"
+				}
+			],
+			"references": [
+				"Vaswani, A., Shazeer, N., Parmar, N., Uszkoreit, J., Jones, L., Gomez, A. N., ... & Polosukhin, I. (2017). Attention is all you need. Advances in neural information processing systems, 30."
+			]
+		}
+	]
 }

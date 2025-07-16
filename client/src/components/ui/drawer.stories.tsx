@@ -1,9 +1,8 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { Drawer } from './Drawer';
+import type { Meta, StoryObj } from '@storybook/react';
+import { Drawer } from './drawer';
 
 const meta = {
-  title: 'UI/Drawer',
+  title: 'U./drawer',
   component: Drawer,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

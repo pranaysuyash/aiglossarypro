@@ -1,7 +1,6 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import type { DateRange } from 'react-day-picker';
 import { Calendar, type CalendarProps } from './calendar';
 
@@ -238,7 +237,7 @@ export const BookingCalendar: Story = {
     ]);
 
     const isBooked = (date: Date) => {
-      return bookedDates.some((bookedDate) => bookedDate.toDateString() === date.toDateString());
+      return bookedDates.some(bookedDate => bookedDate.toDateString() === date.toDateString());
     };
 
     return (
@@ -280,7 +279,7 @@ export const EventCalendar: Story = {
     ]);
 
     const _hasEvent = (date: Date) => {
-      return events.some((event) => event.date.toDateString() === date.toDateString());
+      return events.some(event => event.date.toDateString() === date.toDateString());
     };
 
     return (
@@ -296,7 +295,7 @@ export const EventCalendar: Story = {
             }
           }
           modifiers={{
-            hasEvent: events.map((event) => event.date),
+            hasEvent: events.map(event => event.date),
           }}
           modifiersClassNames={{
             hasEvent:
@@ -307,7 +306,7 @@ export const EventCalendar: Story = {
           <div className="mt-4 p-3 bg-gray-50 rounded-md">
             <h4 className="font-medium mb-2">Selected: {date.toDateString()}</h4>
             {events
-              .filter((event) => event.date.toDateString() === date.toDateString())
+              .filter(event => event.date.toDateString() === date.toDateString())
               .map((event, index) => (
                 <div key={index} className="text-sm text-green-600">
                   📅 {event.title}

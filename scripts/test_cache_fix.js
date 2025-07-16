@@ -149,7 +149,7 @@ function cleanup() {
     'test2_processed_data.json',
   ];
 
-  testFiles.forEach((file) => {
+  testFiles.forEach(file => {
     const filePath = path.join(cacheDir, file);
     if (fs.existsSync(filePath)) {
       fs.unlinkSync(filePath);

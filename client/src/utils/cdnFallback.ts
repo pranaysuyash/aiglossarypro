@@ -147,8 +147,8 @@ class CDNFallbackManager {
    * Preload critical assets with fallback
    */
   public async preloadCriticalAssets(assets: string[]): Promise<void> {
-    const promises = assets.map((asset) =>
-      this.loadAsset(asset).catch((error) => {
+    const promises = assets.map(asset =>
+      this.loadAsset(asset).catch(error => {
         console.warn(`Failed to preload critical asset: ${asset}`, error);
         return null;
       })
@@ -161,7 +161,7 @@ class CDNFallbackManager {
    * Check CDN health and update fallback status
    */
   public async checkCDNHealth(): Promise<boolean> {
-    if (!this.config.enabled) return true;
+    if (!this.config.enabled) {return true;}
 
     try {
       const healthCheckUrl = `${this.config.baseUrl}/health`;
@@ -218,8 +218,8 @@ class CDNFallbackManager {
       return { status: 'unknown', message: 'No load attempts recorded' };
     }
 
-    const successRate = recentMetrics.filter((m) => m.success).length / recentMetrics.length;
-    const fallbackRate = recentMetrics.filter((m) => m.fallbackUsed).length / recentMetrics.length;
+    const successRate = recentMetrics.filter(m => m.success).length / recentMetrics.length;
+    const fallbackRate = recentMetrics.filter(m => m.fallbackUsed).length / recentMetrics.length;
     const avgLoadTime =
       recentMetrics.reduce((sum, m) => sum + m.loadTime, 0) / recentMetrics.length;
 
@@ -255,7 +255,7 @@ class CDNFallbackManager {
     // Handle script loading errors
     window.addEventListener(
       'error',
-      (event) => {
+      event => {
         if (event.target && (event.target as any).tagName) {
           const element = event.target as HTMLElement;
           const url = (element as any).src || (element as any).href;
@@ -272,7 +272,7 @@ class CDNFallbackManager {
     // Handle CSS loading errors
     window.addEventListener(
       'error',
-      (event) => {
+      event => {
         if (event.target && (event.target as HTMLLinkElement).rel === 'stylesheet') {
           const link = event.target as HTMLLinkElement;
           if (this.isCDNUrl(link.href)) {
@@ -301,10 +301,10 @@ class CDNFallbackManager {
   }
 
   private setupPerformanceMonitoring(): void {
-    if (!this.options.enableMetrics) return;
+    if (!this.options.enableMetrics) {return;}
 
     // Monitor Resource Timing API
-    const observer = new PerformanceObserver((list) => {
+    const observer = new PerformanceObserver(list => {
       for (const entry of list.getEntries()) {
         if (entry.name && this.isCDNUrl(entry.name)) {
           this.trackMetrics({
@@ -441,7 +441,7 @@ class CDNFallbackManager {
   }
 
   private trackMetrics(metric: AssetLoadMetrics): void {
-    if (!this.options.enableMetrics) return;
+    if (!this.options.enableMetrics) {return;}
 
     this.metrics.push(metric);
 
@@ -459,7 +459,7 @@ class CDNFallbackManager {
   }
 
   private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 

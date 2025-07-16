@@ -74,13 +74,13 @@ async function cleanupMalformedData() {
       SELECT id, name FROM categories 
       WHERE name IN (${standardCategories.map((_, i) => `$${i + 1}`).join(', ')})
     `,
-      standardCategories.map((c) => c.name)
+      standardCategories.map(c => c.name)
     );
 
     console.log(`Created/verified ${standardCatIds.rows.length} standard categories`);
 
     // 5. Reassign terms with malformed categories to "Machine Learning" default
-    const mlCategoryId = standardCatIds.rows.find((row) => row.name === 'Machine Learning')?.id;
+    const mlCategoryId = standardCatIds.rows.find(row => row.name === 'Machine Learning')?.id;
 
     if (mlCategoryId) {
       const reassignResult = await client.query(

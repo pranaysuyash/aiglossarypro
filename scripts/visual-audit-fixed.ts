@@ -128,13 +128,13 @@ class FixedVisualAuditor {
 
       try {
         // Enable request/response logging
-        page.on('request', (request) => {
+        page.on('request', request => {
           if (request.url().includes('api')) {
             console.log(chalk.blue(`    🔗 API Request: ${request.url()}`));
           }
         });
 
-        page.on('response', (response) => {
+        page.on('response', response => {
           if (response.url().includes('api')) {
             console.log(
               chalk.blue(`    📡 API Response: ${response.url()} - ${response.status()}`)
@@ -260,9 +260,9 @@ ${await this.listScreenshots()}
   async listScreenshots(): Promise<string> {
     try {
       const files = await fs.readdir(this.outputDir);
-      const screenshots = files.filter((f) => f.endsWith('.png'));
+      const screenshots = files.filter(f => f.endsWith('.png'));
 
-      return screenshots.map((f) => `- ${f}`).join('\n');
+      return screenshots.map(f => `- ${f}`).join('\n');
     } catch (_error) {
       return 'Error listing screenshots';
     }

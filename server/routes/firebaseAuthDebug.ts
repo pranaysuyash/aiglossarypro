@@ -21,7 +21,7 @@ export function registerFirebaseAuthRoutesDebug(app: Express): void {
   // Check authentication providers
   app.get('/api/auth/providers', (req: Request, res: Response) => {
     console.log('🔍 Providers route hit');
-    
+
     const firebaseConfigured = !!(
       process.env.FIREBASE_PROJECT_ID &&
       process.env.FIREBASE_CLIENT_EMAIL &&
@@ -40,16 +40,16 @@ export function registerFirebaseAuthRoutesDebug(app: Express): void {
         projectId: process.env.FIREBASE_PROJECT_ID ? 'set' : 'missing',
         clientEmail: process.env.FIREBASE_CLIENT_EMAIL ? 'set' : 'missing',
         privateKey: process.env.FIREBASE_PRIVATE_KEY_BASE64 ? 'set' : 'missing',
-      }
+      },
     });
   });
 
   // Authentication check route
   app.get('/api/auth/check', (req: Request, res: Response) => {
     console.log('🔍 Auth check route hit');
-    
+
     const authHeader = req.headers.authorization;
-    const token = authHeader?.startsWith('Bearer ') 
+    const token = authHeader?.startsWith('Bearer ')
       ? authHeader.substring(7)
       : req.cookies?.authToken || req.cookies?.auth_token;
 
@@ -59,7 +59,7 @@ export function registerFirebaseAuthRoutesDebug(app: Express): void {
         data: {
           isAuthenticated: false,
           user: null,
-          debug: 'No token provided'
+          debug: 'No token provided',
         },
       });
     }
@@ -70,7 +70,7 @@ export function registerFirebaseAuthRoutesDebug(app: Express): void {
       data: {
         isAuthenticated: false,
         user: null,
-        debug: 'Token verification not implemented in debug version'
+        debug: 'Token verification not implemented in debug version',
       },
     });
   });
@@ -79,7 +79,7 @@ export function registerFirebaseAuthRoutesDebug(app: Express): void {
   app.post('/api/auth/firebase/login', (req: Request, res: Response) => {
     console.log('🔍 Firebase login route hit');
     console.log('Request body:', req.body);
-    
+
     const { idToken } = req.body;
 
     if (!idToken) {

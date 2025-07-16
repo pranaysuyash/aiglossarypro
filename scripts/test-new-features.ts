@@ -43,7 +43,7 @@ function testDatabaseSchema() {
       'stepCompletions',
     ];
 
-    learningPathsTables.forEach((table) => {
+    learningPathsTables.forEach(table => {
       if (schemaContent.includes(`export const ${table} = pgTable`)) {
         results.push({ feature: `${table} table`, status: 'PASS', details: 'Schema defined' });
       } else {
@@ -54,7 +54,7 @@ function testDatabaseSchema() {
     // Check for Code Examples tables
     const codeExamplesTables = ['codeExamples', 'codeExampleRuns'];
 
-    codeExamplesTables.forEach((table) => {
+    codeExamplesTables.forEach(table => {
       if (schemaContent.includes(`export const ${table} = pgTable`)) {
         results.push({ feature: `${table} table`, status: 'PASS', details: 'Schema defined' });
       } else {
@@ -65,7 +65,7 @@ function testDatabaseSchema() {
     // Check for type exports
     const types = ['LearningPath', 'InsertLearningPath', 'CodeExample', 'InsertCodeExample'];
 
-    types.forEach((type) => {
+    types.forEach(type => {
       if (schemaContent.includes(`export type ${type} =`)) {
         results.push({ feature: `${type} type export`, status: 'PASS', details: 'Type exported' });
       } else {
@@ -95,7 +95,7 @@ function testAPIRoutes() {
       '/api/learning-paths/recommended',
     ];
 
-    endpoints.forEach((endpoint) => {
+    endpoints.forEach(endpoint => {
       if (content.includes(endpoint)) {
         results.push({
           feature: `Learning Paths ${endpoint}`,
@@ -127,7 +127,7 @@ function testAPIRoutes() {
       '/api/code-examples/:id/run',
     ];
 
-    endpoints.forEach((endpoint) => {
+    endpoints.forEach(endpoint => {
       if (content.includes(endpoint)) {
         results.push({
           feature: `Code Examples ${endpoint}`,
@@ -191,7 +191,7 @@ function testFrontendComponents() {
     { name: 'CodeExamples.tsx', path: '../client/src/pages/CodeExamples.tsx' },
   ];
 
-  components.forEach((component) => {
+  components.forEach(component => {
     const fullPath = join(__dirname, component.path);
     if (existsSync(fullPath)) {
       const content = readFileSync(fullPath, 'utf-8');
@@ -275,10 +275,10 @@ function runTests() {
   console.log('\n📊 Test Results Summary:');
   console.log('========================\n');
 
-  const passed = results.filter((r) => r.status === 'PASS').length;
-  const failed = results.filter((r) => r.status === 'FAIL').length;
+  const passed = results.filter(r => r.status === 'PASS').length;
+  const failed = results.filter(r => r.status === 'FAIL').length;
 
-  results.forEach((result) => {
+  results.forEach(result => {
     const icon = result.status === 'PASS' ? '✅' : '❌';
     console.log(`${icon} ${result.feature}: ${result.details}`);
   });

@@ -11,12 +11,12 @@ interface OptimizedImageProps extends React.ImgHTMLAttributes<HTMLImageElement> 
   alt: string;
   width?: number;
   height?: number;
-  className?: string;
+  className?: string | undefined;
   lazy?: boolean;
   quality?: number;
   blur?: boolean;
   priority?: boolean;
-  fallback?: string;
+  fallback?: string | undefined;
   onLoad?: () => void;
   onError?: () => void;
 }
@@ -48,7 +48,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Intersection Observer for lazy loading
   useEffect(() => {
-    if (!lazy || priority || isInView) return;
+    if (!lazy || priority || isInView) {return;}
 
     const observer = new IntersectionObserver(
       ([entry]) => {
@@ -72,7 +72,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Generate optimized source URLs using the optimization service
   const generateOptimizedSrc = (originalSrc: string, format?: string) => {
-    if (!originalSrc) return '';
+    if (!originalSrc) {return '';}
 
     const params = {
       width,
@@ -94,7 +94,7 @@ export const OptimizedImage: React.FC<OptimizedImageProps> = ({
 
   // Generate optimized source based on optimal format
   useEffect(() => {
-    if (!isInView) return;
+    if (!isInView) {return;}
 
     const optimizedSrc = generateOptimizedSrc(src, optimalFormat);
     setCurrentSrc(optimizedSrc);
@@ -223,7 +223,7 @@ export const useImagePreload = (
   params?: { width?: number; height?: number; quality?: number }
 ) => {
   useEffect(() => {
-    if (!priority || !src) return;
+    if (!priority || !src) {return;}
 
     // Use the optimization service for preloading
     const preloadImage = async () => {
@@ -233,7 +233,7 @@ export const useImagePreload = (
           format: optimalFormat,
           ...params,
         });
-      } catch (error) {
+      } catch (error: any) {
         console.warn('Failed to preload image:', src, error);
       }
     };

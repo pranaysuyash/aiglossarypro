@@ -94,7 +94,7 @@ Examples:
       process.exit(0);
     } else {
       console.error(`❌ Import failed!`);
-      result.errors.forEach((error) => console.error(`   ❌ ${error}`));
+      result.errors.forEach(error => console.error(`   ❌ ${error}`));
       process.exit(1);
     }
   } catch (error) {

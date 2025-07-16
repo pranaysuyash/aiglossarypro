@@ -1,5 +1,5 @@
-import type { Meta, StoryObj } from '@storybook/react';
 import React from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { Button } from '@/components/ui/button';
 import { LiveRegion, useLiveRegion } from './LiveRegion';
 
@@ -124,7 +124,7 @@ export const InteractiveDemo: Story = {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {announcements.map((announcement) => (
+          {announcements.map(announcement => (
             <Button
               key={announcement.id}
               variant={announcement.level === 'assertive' ? 'destructive' : 'outline'}
@@ -280,7 +280,7 @@ export const FormFeedback: Story = {
               id="name"
               type="text"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={e => setFormData({ ...formData, name: e.target.value })}
               className={`w-full px-3 py-2 border rounded-md ${
                 errors.name ? 'border-red-500' : 'border-gray-300'
               }`}
@@ -301,7 +301,7 @@ export const FormFeedback: Story = {
               id="email"
               type="email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={e => setFormData({ ...formData, email: e.target.value })}
               className={`w-full px-3 py-2 border rounded-md ${
                 errors.email ? 'border-red-500' : 'border-gray-300'
               }`}
@@ -353,7 +353,7 @@ export const LoadingStates: Story = {
       setCurrentMessage('Loading data...');
 
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Randomly succeed or fail
       const success = Math.random() > 0.3;

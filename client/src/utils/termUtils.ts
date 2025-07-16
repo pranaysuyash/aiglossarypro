@@ -19,7 +19,7 @@ export const getProgressPercentage = (
   userSettings?: IEnhancedUserSettings,
   term?: IEnhancedTerm | ITerm
 ): number => {
-  if (!userSettings || !term) return 0;
+  if (!userSettings || !term) {return 0;}
 
   const userLevel = userSettings.experienceLevel || 'intermediate';
   const termLevel =
@@ -31,21 +31,21 @@ export const getProgressPercentage = (
   const userIndex = levels.indexOf(userLevel);
   const termIndex = levels.indexOf(termLevel);
 
-  if (userIndex >= termIndex) return 100;
-  if (userIndex === termIndex - 1) return 75;
-  if (userIndex === termIndex - 2) return 50;
+  if (userIndex >= termIndex) {return 100;}
+  if (userIndex === termIndex - 1) {return 75;}
+  if (userIndex === termIndex - 2) {return 50;}
   return 25;
 };
 
 export const formatDate = (dateString?: string): string => {
-  if (!dateString) return 'N/A';
+  if (!dateString) {return 'N/A';}
   return new Date(dateString).toLocaleDateString();
 };
 
 export const formatViewCount = (count?: number): string => {
-  if (!count) return '0';
-  if (count < 1000) return count.toString();
-  if (count < 1000000) return `${(count / 1000).toFixed(1)}k`;
+  if (!count) {return '0';}
+  if (count < 1000) {return count.toString();}
+  if (count < 1000000) {return `${(count / 1000).toFixed(1)}k`;}
   return `${(count / 1000000).toFixed(1)}m`;
 };
 
@@ -56,18 +56,18 @@ export const isEnhancedTerm = (term: IEnhancedTerm | ITerm): term is IEnhancedTe
 
 // Helper to safely get main categories from any term
 export const getMainCategories = (term?: IEnhancedTerm | ITerm): string[] => {
-  if (!term) return [];
+  if (!term) {return [];}
   return isEnhancedTerm(term) ? term.mainCategories : [];
 };
 
 // Helper to safely get difficulty level from any term
 export const getDifficultyLevel = (term?: IEnhancedTerm | ITerm): string | undefined => {
-  if (!term) return undefined;
+  if (!term) {return undefined;}
   return isEnhancedTerm(term) ? term.difficultyLevel : undefined;
 };
 
 // Helper to safely get short definition from any term
 export const getShortDefinition = (term?: IEnhancedTerm | ITerm): string | undefined => {
-  if (!term) return undefined;
+  if (!term) {return undefined;}
   return isEnhancedTerm(term) ? term.shortDefinition : term.shortDefinition;
 };

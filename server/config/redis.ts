@@ -83,7 +83,7 @@ class MockRedisClient implements RedisClient {
 
   async get(key: string): Promise<string | null> {
     const entry = this.cache.get(key);
-    if (!entry) return null;
+    if (!entry) {return null;}
 
     if (entry.expires && Date.now() > entry.expires) {
       this.cache.delete(key);
@@ -107,7 +107,7 @@ class MockRedisClient implements RedisClient {
 
   async exists(key: string): Promise<boolean> {
     const entry = this.cache.get(key);
-    if (!entry) return false;
+    if (!entry) {return false;}
 
     if (entry.expires && Date.now() > entry.expires) {
       this.cache.delete(key);
@@ -126,8 +126,8 @@ class MockRedisClient implements RedisClient {
 
   async ttl(key: string): Promise<number> {
     const entry = this.cache.get(key);
-    if (!entry || !entry.expires) return -1;
-    
+    if (!entry?.expires) {return -1;}
+
     const remaining = Math.floor((entry.expires - Date.now()) / 1000);
     return remaining > 0 ? remaining : -2;
   }
@@ -159,6 +159,16 @@ const redisConfig: RedisConfig = {
   enableOfflineQueue: false,
 };
 
+// Production Redis configuration with additional settings
+const productionRedisConfig: RedisConfig = {
+  ...redisConfig,
+  retryDelayOnFailover: 1000,
+  maxRetriesPerRequest: 5,
+  connectTimeout: 30000,
+  commandTimeout: 15000,
+  enableOfflineQueue: true,
+};
+
 // Create Redis client
 let redisClient: RedisClient;
 
@@ -181,14 +191,46 @@ const createRedisClient = (): RedisClient => {
         .then(({ default: Redis }) => {
           console.log('[Redis] Initializing real Redis client');
 
+          const configToUse =
+            process.env.NODE_ENV === 'production' ? productionRedisConfig : redisConfig;
+
           const client = process.env.REDIS_URL
-            ? new Redis(process.env.REDIS_URL)
-            : new Redis(redisConfig);
+            ? new Redis(process.env.REDIS_URL, {
+                ...configToUse,
+                lazyConnect: true,
+                maxRetriesPerRequest: configToUse.maxRetriesPerRequest,
+                retryDelayOnFailover: configToUse.retryDelayOnFailover,
+                connectTimeout: configToUse.connectTimeout,
+                commandTimeout: configToUse.commandTimeout,
+                enableOfflineQueue: configToUse.enableOfflineQueue,
+              })
+            : new Redis(configToUse);
+
+          // Add connection event listeners
+          client.on('connect', () => {
+            console.log('[Redis] Connected to Redis server');
+          });
+
+          client.on('ready', () => {
+            console.log('[Redis] Redis client ready');
+          });
+
+          client.on('error', error => {
+            console.error('[Redis] Redis client error:', error);
+          });
+
+          client.on('close', () => {
+            console.log('[Redis] Redis connection closed');
+          });
+
+          client.on('reconnecting', () => {
+            console.log('[Redis] Redis reconnecting...');
+          });
 
           // Replace the global client with the real one
           redisClient = new ProductionRedisClient(client);
         })
-        .catch((error) => {
+        .catch(error => {
           console.error('[Redis] Failed to dynamically import ioredis:', error);
         });
 
@@ -233,7 +275,7 @@ export class RedisCache {
   async get<T>(key: string): Promise<T | null> {
     try {
       const value = await redisClient.get(this.getKey(key));
-      if (!value) return null;
+      if (!value) {return null;}
 
       return JSON.parse(value) as T;
     } catch (error) {
@@ -242,7 +284,7 @@ export class RedisCache {
     }
   }
 
-  async set<T>(key: string, value: T, ttl: number = 300): Promise<void> {
+  async set<T>(key: string, value: T, ttl = 300): Promise<void> {
     try {
       const serialized = JSON.stringify(value);
       await redisClient.set(this.getKey(key), serialized, ttl);
@@ -268,50 +310,49 @@ export class RedisCache {
     try {
       const cacheKey = this.getKey(key);
       const staleKey = this.getStaleKey(key);
-      
+
       // Try to get fresh data
       const cachedValue = await redisClient.get(cacheKey);
       if (cachedValue) {
         const entry: StaleWhileRevalidateEntry<T> = JSON.parse(cachedValue);
-        
+
         // Check if we should trigger background revalidation
         const now = Date.now();
         const age = now - entry.timestamp;
         const revalidateThreshold = options.revalidateThreshold || 0.8;
-        const shouldRevalidate = age > (options.ttl * 1000 * revalidateThreshold);
-        
+        const shouldRevalidate = age > options.ttl * 1000 * revalidateThreshold;
+
         if (shouldRevalidate && !this.revalidationJobs.has(key)) {
           // Start background revalidation
           this.startBackgroundRevalidation(key, revalidateFn, options);
         }
-        
+
         return entry.data;
       }
-      
+
       // Try to get stale data
       const staleValue = await redisClient.get(staleKey);
       if (staleValue) {
         const staleEntry: StaleWhileRevalidateEntry<T> = JSON.parse(staleValue);
-        
+
         // Start revalidation if not already running
         if (!this.revalidationJobs.has(key)) {
           this.startBackgroundRevalidation(key, revalidateFn, options);
         }
-        
+
         console.log(`[RedisCache] Serving stale data for key: ${key}`);
         return staleEntry.data;
       }
-      
+
       // No cached data available, fetch fresh
       console.log(`[RedisCache] No cached data for key: ${key}, fetching fresh`);
       const freshData = await revalidateFn();
       await this.setStaleWhileRevalidate(key, freshData, options);
-      
+
       return freshData;
-      
     } catch (error) {
       console.error('[RedisCache] Stale-while-revalidate error:', error);
-      
+
       // Fallback: try to execute revalidate function
       try {
         return await revalidateFn();
@@ -331,7 +372,7 @@ export class RedisCache {
     if (this.revalidationJobs.has(key)) {
       return;
     }
-    
+
     const revalidationPromise = (async () => {
       try {
         console.log(`[RedisCache] Starting background revalidation for key: ${key}`);
@@ -344,7 +385,7 @@ export class RedisCache {
         this.revalidationJobs.delete(key);
       }
     })();
-    
+
     this.revalidationJobs.set(key, revalidationPromise);
   }
 
@@ -358,19 +399,18 @@ export class RedisCache {
       const entry: StaleWhileRevalidateEntry<T> = {
         data: value,
         timestamp: now,
-        staleTimestamp: now + (options.ttl * 1000)
+        staleTimestamp: now + options.ttl * 1000,
       };
-      
+
       const serialized = JSON.stringify(entry);
       const cacheKey = this.getKey(key);
       const staleKey = this.getStaleKey(key);
-      
+
       // Set fresh cache
       await redisClient.set(cacheKey, serialized, options.ttl);
-      
+
       // Set stale cache with longer TTL
       await redisClient.set(staleKey, serialized, options.staleTtl);
-      
     } catch (error) {
       console.error('[RedisCache] Set stale-while-revalidate error:', error);
     }
@@ -448,28 +488,28 @@ export const CacheKeys = {
   SHORT_CACHE_TTL: 5 * 60, // 5 minutes
   MEDIUM_CACHE_TTL: 30 * 60, // 30 minutes
   LONG_CACHE_TTL: 60 * 60, // 1 hour
-  
+
   // Stale-while-revalidate configurations
   SWR_CONFIG: {
     // High-frequency data (search results, trending)
     HIGH_FREQUENCY: {
       ttl: 2 * 60, // 2 minutes fresh
       staleTtl: 10 * 60, // 10 minutes stale
-      revalidateThreshold: 0.7 // Revalidate after 70% of TTL
+      revalidateThreshold: 0.7, // Revalidate after 70% of TTL
     },
     // Medium-frequency data (term content, user preferences)
     MEDIUM_FREQUENCY: {
       ttl: 15 * 60, // 15 minutes fresh
       staleTtl: 60 * 60, // 1 hour stale
-      revalidateThreshold: 0.8 // Revalidate after 80% of TTL
+      revalidateThreshold: 0.8, // Revalidate after 80% of TTL
     },
     // Low-frequency data (admin stats, system metrics)
     LOW_FREQUENCY: {
       ttl: 60 * 60, // 1 hour fresh
       staleTtl: 4 * 60 * 60, // 4 hours stale
-      revalidateThreshold: 0.9 // Revalidate after 90% of TTL
-    }
-  }
+      revalidateThreshold: 0.9, // Revalidate after 90% of TTL
+    },
+  },
 };
 
 export default redis;

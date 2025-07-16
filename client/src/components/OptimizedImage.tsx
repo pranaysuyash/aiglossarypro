@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, ImgHTMLAttributes } from 'react';
+import { type ImgHTMLAttributes, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
 interface OptimizedImageProps extends Omit<ImgHTMLAttributes<HTMLImageElement>, 'src'> {
@@ -37,7 +37,7 @@ export function OptimizedImage({
     const widths = [320, 640, 768, 1024, 1280, 1536, 1920];
     return widths
       .map(w => {
-        const url = baseSrc.includes('?') 
+        const url = baseSrc.includes('?')
           ? `${baseSrc}&w=${w}&q=${quality}`
           : `${baseSrc}?w=${w}&q=${quality}`;
         return `${url} ${w}w`;
@@ -56,8 +56,8 @@ export function OptimizedImage({
     }
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             setIsInView(true);
             observer.disconnect();
@@ -66,7 +66,7 @@ export function OptimizedImage({
       },
       {
         rootMargin: '50px',
-        threshold: 0.01
+        threshold: 0.01,
       }
     );
 
@@ -81,10 +81,11 @@ export function OptimizedImage({
 
   // Determine which source to use based on browser support
   useEffect(() => {
-    if (!isInView) return;
+    if (!isInView) {return;}
 
     const checkWebPSupport = async () => {
-      const webpData = 'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA=';
+      const webpData =
+        'data:image/webp;base64,UklGRh4AAABXRUJQVlA4TBEAAAAvAAAAAAfQ//73v/+BiOh/AAA=';
       const blob = await fetch(webpData).then(r => r.blob());
       const isWebPSupported = blob.type === 'image/webp';
 
@@ -117,26 +118,22 @@ export function OptimizedImage({
       return undefined;
     }
 
-    return blurDataURL || 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIyMCIgLz48L2ZpbHRlcj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2VlZSIgZmlsdGVyPSJ1cmwoI2JsdXIpIiAvPjwvc3ZnPg==';
+    return (
+      blurDataURL ||
+      'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjQwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48ZmlsdGVyIGlkPSJibHVyIj48ZmVHYXVzc2lhbkJsdXIgc3RkRGV2aWF0aW9uPSIyMCIgLz48L2ZpbHRlcj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2VlZSIgZmlsdGVyPSJ1cmwoI2JsdXIpIiAvPjwvc3ZnPg=='
+    );
   };
 
   return (
     <picture className={cn('relative block', className)}>
       {/* WebP source */}
       {isInView && webpSrc && (
-        <source
-          type="image/webp"
-          srcSet={generateSrcSet(webpSrc)}
-          sizes={defaultSizes}
-        />
+        <source type="image/webp" srcSet={generateSrcSet(webpSrc)} sizes={defaultSizes} />
       )}
 
       {/* Original format source */}
       {isInView && currentSrc && (
-        <source
-          srcSet={generateSrcSet(currentSrc)}
-          sizes={defaultSizes}
-        />
+        <source srcSet={generateSrcSet(currentSrc)} sizes={defaultSizes} />
       )}
 
       {/* Placeholder background */}
@@ -194,12 +191,12 @@ export function getOptimizedImageUrl(
   } = {}
 ) {
   const params = new URLSearchParams();
-  
-  if (options.width) params.append('w', options.width.toString());
-  if (options.height) params.append('h', options.height.toString());
-  if (options.quality) params.append('q', options.quality.toString());
-  if (options.format) params.append('fm', options.format);
-  
+
+  if (options.width) {params.append('w', options.width.toString());}
+  if (options.height) {params.append('h', options.height.toString());}
+  if (options.quality) {params.append('q', options.quality.toString());}
+  if (options.format) {params.append('fm', options.format);}
+
   const separator = src.includes('?') ? '&' : '?';
   return `${src}${separator}${params.toString()}`;
 }

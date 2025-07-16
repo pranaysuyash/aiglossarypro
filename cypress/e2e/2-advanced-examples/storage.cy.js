@@ -60,7 +60,7 @@ context('Local Storage / Session Storage', () => {
     cy.get('.ls-btn').click();
 
     // getAllLocalStorage() yields a map of origins to localStorage values
-    cy.getAllLocalStorage().should((storageMap) => {
+    cy.getAllLocalStorage().should(storageMap => {
       expect(storageMap).to.deep.equal({
         // other origins will also be present if localStorage is set on them
         'https://example.cypress.io': {
@@ -90,7 +90,7 @@ context('Local Storage / Session Storage', () => {
     cy.get('.ls-btn').click();
 
     // getAllSessionStorage() yields a map of origins to sessionStorage values
-    cy.getAllSessionStorage().should((storageMap) => {
+    cy.getAllSessionStorage().should(storageMap => {
       expect(storageMap).to.deep.equal({
         // other origins will also be present if sessionStorage is set on them
         'https://example.cypress.io': {

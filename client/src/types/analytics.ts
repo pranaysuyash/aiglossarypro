@@ -21,12 +21,47 @@ export interface AnalyticsEvent {
   item_category?: string;
   quantity?: number;
   price?: number;
+  // Enhanced user experience properties
+  user_id?: string;
+  session_id?: string;
+  user_type?: 'guest' | 'free' | 'premium' | 'admin';
+  engagement_time?: number;
+  interaction_type?: 'click' | 'scroll' | 'hover' | 'swipe' | 'keyboard';
+  // Performance monitoring
+  page_load_time?: number;
+  api_response_time?: number;
+  render_time?: number;
+  time_to_interactive?: number;
+  // Content tracking
+  content_id?: string;
+  content_type?: 'term' | 'category' | 'learning-path' | 'quiz' | 'tutorial';
+  content_category?: string;
+  search_query?: string;
+  search_results_count?: number;
+  // Error tracking
+  error_type?: string;
+  error_message?: string;
+  error_stack?: string;
+  // A/B testing
+  experiment_id?: string;
+  variant_id?: string;
+  // Device and environment
+  device_type?: 'mobile' | 'tablet' | 'desktop';
+  browser?: string;
+  os?: string;
+  screen_resolution?: string;
+  viewport_size?: string;
+  connection_type?: string;
+  // Custom dimensions for admin features
+  admin_action?: string;
+  bulk_action_count?: number;
+  filter_criteria?: Record<string, any>;
 }
 
 // Legacy trackEvent function (now uses GA4)
 export const trackEvent = (eventName: string, parameters?: AnalyticsEvent): void => {
   if (typeof window !== 'undefined' && window.gtag) {
-    window.gtag('event', eventName, parameters);
+    window.gtag('event', eventName, parameters as Record<string, unknown>);
   }
 
   // Also track with GA4 for comprehensive coverage
@@ -123,14 +158,14 @@ export interface PurchaseItem {
 export const trackPurchase = (
   transactionId: string,
   value: number,
-  currency: string = 'USD',
+  currency = 'USD',
   items: PurchaseItem[]
 ): void => {
   ga4Analytics.trackPurchase(transactionId, value, currency, items);
 };
 
 // Upgrade specific tracking
-export const trackUpgradeClick = (source: string, tier: string = 'lifetime'): void => {
+export const trackUpgradeClick = (source: string, tier = 'lifetime'): void => {
   trackEvent('upgrade_click', {
     event_category: 'upgrade',
     event_label: `${source}_to_${tier}`,

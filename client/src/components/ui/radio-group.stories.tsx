@@ -1,7 +1,6 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { RadioGroup, RadioGroupItem } from './radio-group';
+import type { Meta, StoryObj } from '@storybook/react';
 import { Label } from './label';
+import { RadioGroup, RadioGroupItem } from './radio-group';
 
 const meta = {
   title: 'UI/RadioGroup',
@@ -45,7 +44,9 @@ export const WithDisabledOption: Story = {
       </div>
       <div className="flex items-center space-x-2">
         <RadioGroupItem value="compact" id="r3" disabled />
-        <Label htmlFor="r3" className="opacity-50">Compact (Disabled)</Label>
+        <Label htmlFor="r3" className="opacity-50">
+          Compact (Disabled)
+        </Label>
       </div>
     </RadioGroup>
   ),

@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
 import { Button } from '@/components/ui/button';
 import { ErrorBoundary } from './ErrorBoundary';
 
@@ -60,7 +59,7 @@ const meta: Meta<typeof ErrorBoundary> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-2xl">
         <Story />
       </div>
@@ -332,7 +331,7 @@ export const ErrorRecovery: Story = {
 
       React.useEffect(() => {
         if (shouldError) {
-          setErrorCount((prev) => prev + 1);
+          setErrorCount(prev => prev + 1);
           setShouldError(false);
         }
       }, [shouldError]);
@@ -402,7 +401,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-2xl dark">
         <Story />
       </div>

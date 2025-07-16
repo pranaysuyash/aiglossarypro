@@ -50,7 +50,7 @@ export class CacheMonitoringService extends EventEmitter {
   private startHealthChecks(): void {
     // Run health checks every minute
     this.healthCheckInterval = setInterval(() => {
-      this.runHealthChecks().catch((error) => {
+      this.runHealthChecks().catch(error => {
         console.error('Error running cache health checks:', error);
       });
     }, 60000);
@@ -262,11 +262,11 @@ export class CacheMonitoringService extends EventEmitter {
     }
   }
 
-  async getAlertHistory(hours: number = 24): Promise<CacheAlert[]> {
+  async getAlertHistory(hours = 24): Promise<CacheAlert[]> {
     const cutoff = new Date();
     cutoff.setHours(cutoff.getHours() - hours);
 
-    return this.alertHistory.filter((alert) => alert.timestamp > cutoff);
+    return this.alertHistory.filter(alert => alert.timestamp > cutoff);
   }
 
   async generateHealthReport(): Promise<any> {
@@ -299,12 +299,12 @@ export class CacheMonitoringService extends EventEmitter {
   }
 
   private calculateOverallHealth(checks: CacheHealthCheck[]): string {
-    const unhealthyCount = checks.filter((c) => c.status === 'unhealthy').length;
-    const degradedCount = checks.filter((c) => c.status === 'degraded').length;
+    const unhealthyCount = checks.filter(c => c.status === 'unhealthy').length;
+    const degradedCount = checks.filter(c => c.status === 'degraded').length;
 
-    if (unhealthyCount > 0) return 'unhealthy';
-    if (degradedCount > 1) return 'degraded';
-    if (degradedCount === 1) return 'warning';
+    if (unhealthyCount > 0) {return 'unhealthy';}
+    if (degradedCount > 1) {return 'degraded';}
+    if (degradedCount === 1) {return 'warning';}
     return 'healthy';
   }
 
@@ -314,7 +314,7 @@ export class CacheMonitoringService extends EventEmitter {
     }
 
     // Analyze hit rate trend
-    const hitRates = metrics.map((m) => m.hitRate / 100); // Convert from stored format
+    const hitRates = metrics.map(m => m.hitRate / 100); // Convert from stored format
     const avgHitRate = hitRates.reduce((a, b) => a + b, 0) / hitRates.length;
     const recentHitRate = hitRates.slice(0, 10).reduce((a, b) => a + b, 0) / 10;
 

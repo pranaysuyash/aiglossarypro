@@ -119,7 +119,7 @@ export const EmergencyStopControls: React.FC = () => {
   // Simulate real-time updates
   useEffect(() => {
     const interval = setInterval(() => {
-      setMetrics((prev) => ({
+      setMetrics(prev => ({
         ...prev,
         dailySpend: prev.dailySpend + Math.random() * 0.5,
         lastUpdated: new Date().toISOString(),
@@ -142,11 +142,11 @@ export const EmergencyStopControls: React.FC = () => {
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      setLimits((prev) => ({ ...prev, emergencyStopActive: true }));
-      setSystemStatus((prev) => ({ ...prev, emergencyStopActive: true, status: 'emergency' }));
-      setMetrics((prev) => ({ ...prev, activeOperations: 0, queueSize: 0 }));
+      setLimits(prev => ({ ...prev, emergencyStopActive: true }));
+      setSystemStatus(prev => ({ ...prev, emergencyStopActive: true, status: 'emergency' }));
+      setMetrics(prev => ({ ...prev, activeOperations: 0, queueSize: 0 }));
 
       toast({
         title: 'Emergency Stop Activated',
@@ -170,10 +170,10 @@ export const EmergencyStopControls: React.FC = () => {
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      setLimits((prev) => ({ ...prev, emergencyStopActive: false }));
-      setSystemStatus((prev) => ({ ...prev, emergencyStopActive: false, status: 'healthy' }));
+      setLimits(prev => ({ ...prev, emergencyStopActive: false }));
+      setSystemStatus(prev => ({ ...prev, emergencyStopActive: false, status: 'healthy' }));
 
       toast({
         title: 'Operations Resumed',
@@ -192,8 +192,8 @@ export const EmergencyStopControls: React.FC = () => {
   };
 
   const handleAcknowledgeAlert = async (alertId: string) => {
-    setAlerts((prev) =>
-      prev.map((alert) => (alert.id === alertId ? { ...alert, acknowledged: true } : alert))
+    setAlerts(prev =>
+      prev.map(alert => (alert.id === alertId ? { ...alert, acknowledged: true } : alert))
     );
     toast({
       title: 'Alert Acknowledged',
@@ -206,7 +206,7 @@ export const EmergencyStopControls: React.FC = () => {
     setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       toast({
         title: 'Limits Updated',
@@ -269,7 +269,7 @@ export const EmergencyStopControls: React.FC = () => {
     }
   };
 
-  const activeAlerts = alerts.filter((alert) => !alert.acknowledged);
+  const activeAlerts = alerts.filter(alert => !alert.acknowledged);
 
   return (
     <div className="space-y-6">
@@ -336,7 +336,7 @@ export const EmergencyStopControls: React.FC = () => {
                   id="emergency-reason"
                   placeholder="Enter reason for emergency stop..."
                   value={emergencyReason}
-                  onChange={(e) => setEmergencyReason(e.target.value)}
+                  onChange={e => setEmergencyReason(e.target.value)}
                 />
               </div>
             </div>
@@ -459,7 +459,7 @@ export const EmergencyStopControls: React.FC = () => {
                 <div className="text-center py-8 text-gray-500">No active alerts</div>
               ) : (
                 <div className="space-y-3">
-                  {activeAlerts.map((alert) => (
+                  {activeAlerts.map(alert => (
                     <Alert key={alert.id}>
                       <AlertTriangle className="h-4 w-4" />
                       <AlertDescription className="flex items-center justify-between">
@@ -504,8 +504,8 @@ export const EmergencyStopControls: React.FC = () => {
                     id="daily-limit"
                     type="number"
                     value={limits.dailyCostLimit}
-                    onChange={(e) =>
-                      setLimits((prev) => ({ ...prev, dailyCostLimit: parseFloat(e.target.value) }))
+                    onChange={e =>
+                      setLimits(prev => ({ ...prev, dailyCostLimit: parseFloat(e.target.value) }))
                     }
                   />
                 </div>
@@ -515,8 +515,8 @@ export const EmergencyStopControls: React.FC = () => {
                     id="monthly-limit"
                     type="number"
                     value={limits.monthlyCostLimit}
-                    onChange={(e) =>
-                      setLimits((prev) => ({
+                    onChange={e =>
+                      setLimits(prev => ({
                         ...prev,
                         monthlyCostLimit: parseFloat(e.target.value),
                       }))
@@ -529,8 +529,8 @@ export const EmergencyStopControls: React.FC = () => {
                     id="max-concurrent"
                     type="number"
                     value={limits.maxConcurrentOperations}
-                    onChange={(e) =>
-                      setLimits((prev) => ({
+                    onChange={e =>
+                      setLimits(prev => ({
                         ...prev,
                         maxConcurrentOperations: parseInt(e.target.value),
                       }))
@@ -543,8 +543,8 @@ export const EmergencyStopControls: React.FC = () => {
                     id="max-batch"
                     type="number"
                     value={limits.maxTermsPerBatch}
-                    onChange={(e) =>
-                      setLimits((prev) => ({ ...prev, maxTermsPerBatch: parseInt(e.target.value) }))
+                    onChange={e =>
+                      setLimits(prev => ({ ...prev, maxTermsPerBatch: parseInt(e.target.value) }))
                     }
                   />
                 </div>
@@ -555,8 +555,8 @@ export const EmergencyStopControls: React.FC = () => {
                     type="number"
                     step="0.1"
                     value={limits.minQualityThreshold}
-                    onChange={(e) =>
-                      setLimits((prev) => ({
+                    onChange={e =>
+                      setLimits(prev => ({
                         ...prev,
                         minQualityThreshold: parseFloat(e.target.value),
                       }))
@@ -570,8 +570,8 @@ export const EmergencyStopControls: React.FC = () => {
                     type="number"
                     step="0.01"
                     value={limits.maxFailureRate * 100}
-                    onChange={(e) =>
-                      setLimits((prev) => ({
+                    onChange={e =>
+                      setLimits(prev => ({
                         ...prev,
                         maxFailureRate: parseFloat(e.target.value) / 100,
                       }))

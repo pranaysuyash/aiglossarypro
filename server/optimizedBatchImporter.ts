@@ -225,7 +225,7 @@ export class OptimizedBatchImporter {
       // Bulk insert in smaller chunks
       if (validCategories.length > 0) {
         if (this.options.useTransactions) {
-          await db.transaction(async (tx) => {
+          await db.transaction(async tx => {
             for (let j = 0; j < validCategories.length; j += bulkInsertSize) {
               const chunk = validCategories.slice(j, j + bulkInsertSize);
               const inserted = await tx
@@ -235,7 +235,7 @@ export class OptimizedBatchImporter {
 
               // Update ID mapping
               for (const cat of inserted) {
-                const original = chunk.find((c) => c.name === cat.name);
+                const original = chunk.find(c => c.name === cat.name);
                 if (original) {
                   categoryIdMap.set(cat.name, cat.id);
                 }
@@ -254,7 +254,7 @@ export class OptimizedBatchImporter {
               .returning({ id: categories.id, name: categories.name });
 
             for (const cat of inserted) {
-              const original = chunk.find((c) => c.name === cat.name);
+              const original = chunk.find(c => c.name === cat.name);
               if (original) {
                 categoryIdMap.set(cat.name, cat.id);
               }
@@ -330,7 +330,7 @@ export class OptimizedBatchImporter {
       // Bulk insert subcategories
       if (validSubcategories.length > 0) {
         if (this.options.useTransactions) {
-          await db.transaction(async (tx) => {
+          await db.transaction(async tx => {
             for (let j = 0; j < validSubcategories.length; j += bulkInsertSize) {
               const chunk = validSubcategories.slice(j, j + bulkInsertSize);
               const inserted = await tx
@@ -339,7 +339,7 @@ export class OptimizedBatchImporter {
                 .returning({ id: subcategories.id, name: subcategories.name });
 
               for (const sub of inserted) {
-                const original = chunk.find((s) => s.name === sub.name);
+                const original = chunk.find(s => s.name === sub.name);
                 if (original) {
                   subcategoryIdMap.set(sub.name, sub.id);
                 }
@@ -357,7 +357,7 @@ export class OptimizedBatchImporter {
               .returning({ id: subcategories.id, name: subcategories.name });
 
             for (const sub of inserted) {
-              const original = chunk.find((s) => s.name === sub.name);
+              const original = chunk.find(s => s.name === sub.name);
               if (original) {
                 subcategoryIdMap.set(sub.name, sub.id);
               }
@@ -440,7 +440,7 @@ export class OptimizedBatchImporter {
       // Bulk insert terms and relationships in transaction
       if (validTerms.length > 0) {
         if (this.options.useTransactions) {
-          await db.transaction(async (tx) => {
+          await db.transaction(async tx => {
             // Insert terms in chunks
             for (let j = 0; j < validTerms.length; j += bulkInsertSize) {
               const chunk = validTerms.slice(j, j + bulkInsertSize);

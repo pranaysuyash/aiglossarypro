@@ -1,7 +1,6 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { BrowserRouter } from 'react-router-dom';
+import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter } from 'react-router-dom';
 
 // Mock App component for Storybook
 const AppDemo = () => {
@@ -14,21 +13,25 @@ const AppDemo = () => {
               <h1 className="text-2xl font-bold text-gray-900">AI Glossary Pro</h1>
             </div>
             <nav className="flex space-x-8">
-              <a href="#" className="text-gray-500 hover:text-gray-900">Home</a>
-              <a href="#" className="text-gray-500 hover:text-gray-900">Terms</a>
-              <a href="#" className="text-gray-500 hover:text-gray-900">Categories</a>
+              <a href="#" className="text-gray-500 hover:text-gray-900">
+                Home
+              </a>
+              <a href="#" className="text-gray-500 hover:text-gray-900">
+                Terms
+              </a>
+              <a href="#" className="text-gray-500 hover:text-gray-900">
+                Categories
+              </a>
             </nav>
           </div>
         </div>
       </header>
-      
+
       <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
         <div className="px-4 py-6 sm:px-0">
           <div className="border-4 border-dashed border-gray-200 rounded-lg h-96 flex items-center justify-center">
             <div className="text-center">
-              <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                Welcome to AI Glossary Pro
-              </h2>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome to AI Glossary Pro</h2>
               <p className="text-gray-600 mb-8 max-w-md">
                 Your comprehensive guide to artificial intelligence terminology and concepts.
               </p>
@@ -54,7 +57,7 @@ const meta = {
   parameters: { layout: 'fullscreen' },
   tags: ['autodocs'],
   decorators: [
-    (Story) => {
+    Story => {
       const queryClient = new QueryClient({
         defaultOptions: {
           queries: { retry: false },

@@ -1,6 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import EnhancedTable, { TableColumn, TableData } from './enhanced-table';
+import EnhancedTable, { type TableColumn, type TableData } from './enhanced-table';
 
 const meta: Meta<typeof EnhancedTable> = {
   title: 'UI/EnhancedTable',
@@ -9,7 +8,8 @@ const meta: Meta<typeof EnhancedTable> = {
     layout: 'padded',
     docs: {
       description: {
-        component: 'An advanced data table component with sorting, filtering, search, and export capabilities.',
+        component:
+          'An advanced data table component with sorting, filtering, search, and export capabilities.',
       },
     },
   },
@@ -25,7 +25,13 @@ const mlAlgorithmsColumns: TableColumn[] = [
   { key: 'type', label: 'Type', sortable: true, filterable: true, type: 'badge' },
   { key: 'complexity', label: 'Time Complexity', sortable: true, type: 'text', align: 'center' },
   { key: 'accuracy', label: 'Accuracy (%)', sortable: true, type: 'number', align: 'right' },
-  { key: 'interpretable', label: 'Interpretable', sortable: true, type: 'boolean', align: 'center' },
+  {
+    key: 'interpretable',
+    label: 'Interpretable',
+    sortable: true,
+    type: 'boolean',
+    align: 'center',
+  },
   { key: 'lastUpdated', label: 'Last Updated', sortable: true, type: 'date' },
 ];
 
@@ -91,12 +97,54 @@ const datasetsColumns: TableColumn[] = [
 ];
 
 const datasetsData: TableData[] = [
-  { name: 'MNIST', domain: 'Computer Vision', samples: 70000, features: 784, size: 52.4, license: 'Public Domain' },
-  { name: 'IMDB Reviews', domain: 'NLP', samples: 50000, features: 5000, size: 84.1, license: 'Academic Use' },
-  { name: 'Iris', domain: 'Classification', samples: 150, features: 4, size: 0.01, license: 'Public Domain' },
-  { name: 'CIFAR-10', domain: 'Computer Vision', samples: 60000, features: 3072, size: 162.5, license: 'MIT' },
-  { name: 'Boston Housing', domain: 'Regression', samples: 506, features: 13, size: 0.05, license: 'MIT' },
-  { name: 'WikiText-103', domain: 'NLP', samples: 28595, features: 267735, size: 1100.2, license: 'Creative Commons' },
+  {
+    name: 'MNIST',
+    domain: 'Computer Vision',
+    samples: 70000,
+    features: 784,
+    size: 52.4,
+    license: 'Public Domain',
+  },
+  {
+    name: 'IMDB Reviews',
+    domain: 'NLP',
+    samples: 50000,
+    features: 5000,
+    size: 84.1,
+    license: 'Academic Use',
+  },
+  {
+    name: 'Iris',
+    domain: 'Classification',
+    samples: 150,
+    features: 4,
+    size: 0.01,
+    license: 'Public Domain',
+  },
+  {
+    name: 'CIFAR-10',
+    domain: 'Computer Vision',
+    samples: 60000,
+    features: 3072,
+    size: 162.5,
+    license: 'MIT',
+  },
+  {
+    name: 'Boston Housing',
+    domain: 'Regression',
+    samples: 506,
+    features: 13,
+    size: 0.05,
+    license: 'MIT',
+  },
+  {
+    name: 'WikiText-103',
+    domain: 'NLP',
+    samples: 28595,
+    features: 267735,
+    size: 1100.2,
+    license: 'Creative Commons',
+  },
 ];
 
 export const MLAlgorithmsComparison: Story = {
@@ -135,7 +183,7 @@ export const SimpleTable: Story = {
       { metric: 'Accuracy', value: 0.95, status: 'verified' },
       { metric: 'Precision', value: 0.92, status: 'pending' },
       { metric: 'Recall', value: 0.89, status: 'verified' },
-      { metric: 'F1-Score', value: 0.90, status: 'verified' },
+      { metric: 'F1-Score', value: 0.9, status: 'verified' },
     ],
     title: 'Model Performance Metrics',
     searchable: false,
@@ -153,7 +201,11 @@ export const LargeDataset: Story = {
       complexity: ['O(n)', 'O(n log n)', 'O(n²)', 'O(n³)'][i % 4],
       accuracy: Math.round((Math.random() * 20 + 80) * 10) / 10,
       interpretable: Math.random() > 0.5,
-      lastUpdated: new Date(2024, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1),
+      lastUpdated: new Date(
+        2024,
+        Math.floor(Math.random() * 12),
+        Math.floor(Math.random() * 28) + 1
+      ),
     })),
     title: 'Large Algorithm Database',
     description: 'Demonstrating pagination with 50+ algorithms',

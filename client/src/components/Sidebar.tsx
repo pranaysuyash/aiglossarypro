@@ -7,6 +7,7 @@ import {
   FolderOpen,
   Home,
   TrendingUp,
+  HelpCircle,
 } from 'lucide-react';
 import { useState } from 'react';
 import { Link, useLocation } from 'wouter';
@@ -15,7 +16,6 @@ import { Progress } from '@/components/ui/progress';
 import { useAuth } from '@/hooks/useAuth';
 import type {
   ICategory,
-  ICategoryWithSubcategories,
   ISubcategory,
   IUserProgress,
 } from '@/interfaces/interfaces';
@@ -24,62 +24,6 @@ export default function Sidebar() {
   const [, navigate] = useLocation();
   const { isAuthenticated } = useAuth();
 
-  // Temporary hardcoded proper AI/ML categories until backend is fixed
-  const defaultCategories: ICategoryWithSubcategories[] = [
-    {
-      id: 'machine-learning',
-      name: 'Machine Learning',
-      subcategories: [
-        { id: 'supervised-learning', name: 'Supervised Learning', categoryId: 'machine-learning' },
-        {
-          id: 'unsupervised-learning',
-          name: 'Unsupervised Learning',
-          categoryId: 'machine-learning',
-        },
-        {
-          id: 'reinforcement-learning',
-          name: 'Reinforcement Learning',
-          categoryId: 'machine-learning',
-        },
-      ],
-    },
-    {
-      id: 'deep-learning',
-      name: 'Deep Learning',
-      subcategories: [
-        { id: 'neural-networks', name: 'Neural Networks', categoryId: 'deep-learning' },
-        { id: 'cnns', name: 'Convolutional Neural Networks', categoryId: 'deep-learning' },
-        { id: 'rnns', name: 'Recurrent Neural Networks', categoryId: 'deep-learning' },
-      ],
-    },
-    {
-      id: 'computer-vision',
-      name: 'Computer Vision',
-      subcategories: [
-        { id: 'image-processing', name: 'Image Processing', categoryId: 'computer-vision' },
-        { id: 'object-detection', name: 'Object Detection', categoryId: 'computer-vision' },
-        { id: 'image-classification', name: 'Image Classification', categoryId: 'computer-vision' },
-      ],
-    },
-    {
-      id: 'nlp',
-      name: 'Natural Language Processing',
-      subcategories: [
-        { id: 'text-processing', name: 'Text Processing', categoryId: 'nlp' },
-        { id: 'language-models', name: 'Language Models', categoryId: 'nlp' },
-        { id: 'sentiment-analysis', name: 'Sentiment Analysis', categoryId: 'nlp' },
-      ],
-    },
-    {
-      id: 'data-science',
-      name: 'Data Science',
-      subcategories: [
-        { id: 'statistics', name: 'Statistics', categoryId: 'data-science' },
-        { id: 'data-mining', name: 'Data Mining', categoryId: 'data-science' },
-        { id: 'feature-engineering', name: 'Feature Engineering', categoryId: 'data-science' },
-      ],
-    },
-  ];
 
   // Fetch categories from API
   const { data: categoriesData, isLoading: categoriesLoading } = useQuery({
@@ -93,14 +37,14 @@ export default function Sidebar() {
     refetchOnWindowFocus: false,
   });
 
-  const categories = (categoriesData as any)?.data || defaultCategories;
+  const categories = (categoriesData as any)?.data || [];
   const topSubcategories = ((subcategoriesData as any)?.data || []).slice(0, 10);
 
   // Expanded categories state
   const [expandedCategories, setExpandedCategories] = useState<Record<string, boolean>>({});
 
   const toggleCategory = (categoryId: string) => {
-    setExpandedCategories((prev) => ({
+    setExpandedCategories(prev => ({
       ...prev,
       [categoryId]: !prev[categoryId],
     }));
@@ -112,23 +56,22 @@ export default function Sidebar() {
     enabled: isAuthenticated,
   });
 
-  if (categoriesLoading) {
-    return (
-      <aside className="hidden md:block md:w-64 lg:w-72 shrink-0">
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4 sticky top-24">
-          <div className="h-8 w-32 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-4"></div>
-          <div className="space-y-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div
-                key={i}
-                className="h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
-              ></div>
-            ))}
-          </div>
+  // Render skeleton loader while loading
+  const renderCategorySkeleton = () => (
+    <div className="space-y-1">
+      {[1, 2, 3, 4, 5].map(i => (
+        <div key={i} className="px-3 py-2">
+          <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mb-1"></div>
+          {i % 2 === 0 && (
+            <div className="ml-4 space-y-1 mt-2">
+              <div className="h-4 bg-gray-100 dark:bg-gray-600 rounded animate-pulse"></div>
+              <div className="h-4 bg-gray-100 dark:bg-gray-600 rounded animate-pulse w-4/5"></div>
+            </div>
+          )}
         </div>
-      </aside>
-    );
-  }
+      ))}
+    </div>
+  );
 
   return (
     <aside className="hidden md:block md:w-64 lg:w-72 shrink-0">
@@ -189,6 +132,16 @@ export default function Sidebar() {
                 Trending
               </Button>
             </Link>
+            <Link href="/support">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="w-full justify-start min-h-[40px] text-left"
+              >
+                <HelpCircle className="w-4 h-4 mr-2" />
+                Support
+              </Button>
+            </Link>
           </nav>
         </div>
 
@@ -208,26 +161,29 @@ export default function Sidebar() {
           </div>
 
           <nav aria-labelledby="categories-heading">
-            <ul className="space-y-1">
-              {Array.isArray(categories) &&
-                categories.slice(0, 5).map((category: ICategory) => (
-                  <li key={category.id}>
-                    <div
-                      className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
-                      onClick={() => toggleCategory(category.id)}
-                    >
-                      <Link href={`/category/${category.id}`} className="flex-1">
-                        <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">
-                          {category.name}
-                        </span>
-                      </Link>
-                      {(category as any).subcategoryCount > 0 &&
-                        (expandedCategories[category.id] ? (
-                          <ChevronUp className="h-3 w-3 text-gray-500" />
-                        ) : (
-                          <ChevronDown className="h-3 w-3 text-gray-500" />
-                        ))}
-                    </div>
+            {categoriesLoading ? (
+              renderCategorySkeleton()
+            ) : (
+              <ul className="space-y-1">
+                {Array.isArray(categories) && categories.length > 0 ? (
+                  categories.slice(0, 5).map((category: ICategory) => (
+                    <li key={category.id}>
+                      <div
+                        className="flex items-center justify-between px-3 py-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                        onClick={() => toggleCategory(category.id)}
+                      >
+                        <Link href={`/category/${category.id}`} className="flex-1">
+                          <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">
+                            {category.name}
+                          </span>
+                        </Link>
+                        {(category as any).subcategoryCount > 0 &&
+                          (expandedCategories[category.id] ? (
+                            <ChevronUp className="h-3 w-3 text-gray-500" />
+                          ) : (
+                            <ChevronDown className="h-3 w-3 text-gray-500" />
+                          ))}
+                      </div>
 
                     {expandedCategories[category.id] && (
                       <div className="ml-4 mt-1 space-y-1">
@@ -244,8 +200,14 @@ export default function Sidebar() {
                       </div>
                     )}
                   </li>
-                ))}
-            </ul>
+                ))
+                ) : (
+                  <div className="px-3 py-4 text-center">
+                    <p className="text-sm text-gray-500 dark:text-gray-400">No categories available</p>
+                  </div>
+                )}
+              </ul>
+            )}
           </nav>
         </div>
 

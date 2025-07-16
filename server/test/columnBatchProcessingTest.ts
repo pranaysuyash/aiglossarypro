@@ -139,8 +139,8 @@ describe('Column Batch Processing System', () => {
       );
 
       const results = await Promise.all(rapidRequests);
-      const allowedCount = results.filter((r) => r.allowed).length;
-      const deniedCount = results.filter((r) => !r.allowed).length;
+      const allowedCount = results.filter(r => r.allowed).length;
+      const deniedCount = results.filter(r => !r.allowed).length;
 
       expect(deniedCount).toBeGreaterThan(0); // Some should be denied due to rate limits
       expect(allowedCount).toBeLessThan(20); // Not all should be allowed
@@ -249,7 +249,7 @@ describe('Column Batch Processing System', () => {
       testOperationId = await columnBatchProcessorService.startBatchOperation(request);
 
       // Wait a bit for operation to start
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       // Pause operation
       const pauseResult = await columnBatchProcessorService.pauseBatchOperation(testOperationId);
@@ -322,7 +322,7 @@ describe('Column Batch Processing System', () => {
       await batchProgressTrackingService.startMonitoring(testOperationId);
 
       // Wait for some progress
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Check progress snapshot
       const progress = batchProgressTrackingService.getCurrentProgress(testOperationId);
@@ -361,7 +361,7 @@ describe('Column Batch Processing System', () => {
       });
 
       // Wait for completion
-      await new Promise((resolve) => setTimeout(resolve, 5000));
+      await new Promise(resolve => setTimeout(resolve, 5000));
 
       // Check for reports
       const reports = batchProgressTrackingService.getStatusReports(testOperationId);
@@ -496,11 +496,11 @@ describe('Column Batch Processing System', () => {
       }));
 
       const operationIds = await Promise.all(
-        requests.map((req) => columnBatchProcessorService.startBatchOperation(req))
+        requests.map(req => columnBatchProcessorService.startBatchOperation(req))
       );
 
       expect(operationIds.length).toBe(3);
-      expect(operationIds.every((id) => id.startsWith('col-batch-'))).toBe(true);
+      expect(operationIds.every(id => id.startsWith('col-batch-'))).toBe(true);
 
       // Check that all operations are tracked
       const activeOps = columnBatchProcessorService.getActiveOperations();
@@ -508,7 +508,7 @@ describe('Column Batch Processing System', () => {
 
       // Cleanup
       await Promise.all(
-        operationIds.map((id) => columnBatchProcessorService.cancelBatchOperation(id))
+        operationIds.map(id => columnBatchProcessorService.cancelBatchOperation(id))
       );
     });
 
@@ -540,7 +540,7 @@ describe('Column Batch Processing System', () => {
       await batchProgressTrackingService.startMonitoring(testOperationId);
 
       // Wait for some progress
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       // Check system state consistency
       const operation = columnBatchProcessorService.getOperationStatus(testOperationId);
@@ -665,13 +665,13 @@ describe('Column Batch Processing System', () => {
 
       const startTime = Date.now();
       const estimates = await Promise.all(
-        concurrentRequests.map((req) => columnBatchProcessorService.estimateBatchCosts(req))
+        concurrentRequests.map(req => columnBatchProcessorService.estimateBatchCosts(req))
       );
       const totalTime = Date.now() - startTime;
 
       expect(estimates.length).toBe(10);
       expect(totalTime).toBeLessThan(10000); // Should complete within 10 seconds
-      expect(estimates.every((est) => est.totalTerms > 0)).toBe(true);
+      expect(estimates.every(est => est.totalTerms > 0)).toBe(true);
     });
   });
 });
@@ -701,7 +701,7 @@ export const testHelpers = {
     return await columnBatchProcessorService.startBatchOperation(defaultRequest);
   },
 
-  waitForOperationCompletion: async (operationId: string, timeout: number = 10000) => {
+  waitForOperationCompletion: async (operationId: string, timeout = 10000) => {
     const startTime = Date.now();
 
     while (Date.now() - startTime < timeout) {
@@ -714,7 +714,7 @@ export const testHelpers = {
       ) {
         return operation;
       }
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
     }
 
     throw new Error(`Operation ${operationId} did not complete within ${timeout}ms`);

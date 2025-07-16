@@ -1,5 +1,10 @@
 import { AlertCircle, CheckCircle, Loader2, TestTube, Zap } from 'lucide-react';
 import { useState } from 'react';
+import type {
+  ApiResponse,
+  AuthResponse,
+  PurchaseVerificationResponse,
+} from '@/types/api-responses';
 import { api } from '../lib/api';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
@@ -9,7 +14,7 @@ import { Input } from './ui/input';
 
 interface TestPurchaseButtonProps {
   onPurchaseComplete?: () => void;
-  className?: string;
+  className?: string | undefined;
 }
 
 interface TestPurchaseResult {
@@ -61,14 +66,16 @@ export function TestPurchaseButton({
     setResult(null);
 
     try {
-      const response = await api.post('/gumroad/test-purchase', { email: email.trim() });
+      const response: ApiResponse = await api.post('/gumroad/test-purchase', {
+        email: email.trim(),
+      });
 
-      if (response.data.success) {
+      if (response.data?.success) {
         setResult({
           success: true,
-          message: response.data.message,
-          user: response.data.user,
-          testData: response.data.testData,
+          message: response.data?.message,
+          user: response.data?.user,
+          testData: response.data?.testData,
         });
 
         // Call onPurchaseComplete callback if provided
@@ -83,7 +90,7 @@ export function TestPurchaseButton({
       } else {
         setResult({
           success: false,
-          message: response.data.error || 'Test purchase failed',
+          message: response.data?.error || 'Test purchase failed',
         });
       }
     } catch (err: any) {
@@ -210,7 +217,7 @@ export function TestPurchaseButton({
                 type="email"
                 placeholder="dev@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
                 disabled={isPurchasing}
                 required
                 className="border-yellow-300 focus:border-yellow-500"

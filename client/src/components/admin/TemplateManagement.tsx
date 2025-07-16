@@ -135,7 +135,7 @@ export function TemplateManagement() {
     queryKey: ['prompt-templates'],
     queryFn: async () => {
       const response = await fetch('/api/admin/templates');
-      if (!response.ok) throw new Error('Failed to fetch templates');
+      if (!response.ok) {throw new Error('Failed to fetch templates');}
       return response.json();
     },
   });
@@ -148,7 +148,7 @@ export function TemplateManagement() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(templateData),
       });
-      if (!response.ok) throw new Error('Failed to create template');
+      if (!response.ok) {throw new Error('Failed to create template');}
       return response.json();
     },
     onSuccess: () => {
@@ -157,10 +157,10 @@ export function TemplateManagement() {
       resetForm();
       toast({ title: 'Success', description: 'Template created successfully' });
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to create template',
+        description: error instanceof Error ? error?.message : 'Failed to create template',
         variant: 'destructive',
       });
     },
@@ -174,7 +174,7 @@ export function TemplateManagement() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(templateData),
       });
-      if (!response.ok) throw new Error('Failed to update template');
+      if (!response.ok) {throw new Error('Failed to update template');}
       return response.json();
     },
     onSuccess: () => {
@@ -191,7 +191,7 @@ export function TemplateManagement() {
       const response = await fetch(`/api/admin/templates/${id}`, {
         method: 'DELETE',
       });
-      if (!response.ok) throw new Error('Failed to delete template');
+      if (!response.ok) {throw new Error('Failed to delete template');}
       return response.json();
     },
     onSuccess: () => {
@@ -208,7 +208,7 @@ export function TemplateManagement() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ templateId, termName }),
       });
-      if (!response.ok) throw new Error('Failed to test template');
+      if (!response.ok) {throw new Error('Failed to test template');}
       return response.json();
     },
     onSuccess: (data: TestResult) => {
@@ -254,7 +254,7 @@ export function TemplateManagement() {
   };
 
   const _handleUpdateTemplate = () => {
-    if (!selectedTemplate) return;
+    if (!selectedTemplate) {return;}
 
     updateTemplateMutation.mutate({
       id: selectedTemplate.id,
@@ -525,7 +525,7 @@ export function TemplateManagement() {
                 <Input
                   id="template-name"
                   value={formData.name}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                  onChange={e => setFormData(prev => ({ ...prev, name: e.target.value }))}
                   placeholder="Enter template name..."
                 />
               </div>
@@ -533,15 +533,13 @@ export function TemplateManagement() {
                 <Label htmlFor="section-type">Section Type</Label>
                 <Select
                   value={formData.sectionType}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, sectionType: value }))
-                  }
+                  onValueChange={value => setFormData(prev => ({ ...prev, sectionType: value }))}
                 >
                   <SelectTrigger id="section-type">
                     <SelectValue placeholder="Select section type..." />
                   </SelectTrigger>
                   <SelectContent>
-                    {SECTION_TYPES.map((type) => (
+                    {SECTION_TYPES.map(type => (
                       <SelectItem key={type} value={type}>
                         {type.replace('_', ' ')}
                       </SelectItem>
@@ -556,7 +554,7 @@ export function TemplateManagement() {
               <Input
                 id="template-description"
                 value={formData.description}
-                onChange={(e) => setFormData((prev) => ({ ...prev, description: e.target.value }))}
+                onChange={e => setFormData(prev => ({ ...prev, description: e.target.value }))}
                 placeholder="Enter template description..."
               />
             </div>
@@ -567,14 +565,14 @@ export function TemplateManagement() {
                 <Select
                   value={formData.complexity}
                   onValueChange={(value: any) =>
-                    setFormData((prev) => ({ ...prev, complexity: value }))
+                    setFormData(prev => ({ ...prev, complexity: value }))
                   }
                 >
                   <SelectTrigger id="complexity">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {COMPLEXITY_LEVELS.map((level) => (
+                    {COMPLEXITY_LEVELS.map(level => (
                       <SelectItem key={level.value} value={level.value}>
                         <div>
                           <div>{level.label}</div>
@@ -589,15 +587,15 @@ export function TemplateManagement() {
                 <Label htmlFor="recommended-model">Recommended Model</Label>
                 <Select
                   value={formData.recommendedModel}
-                  onValueChange={(value) =>
-                    setFormData((prev) => ({ ...prev, recommendedModel: value }))
+                  onValueChange={value =>
+                    setFormData(prev => ({ ...prev, recommendedModel: value }))
                   }
                 >
                   <SelectTrigger id="recommended-model">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    {RECOMMENDED_MODELS.map((model) => (
+                    {RECOMMENDED_MODELS.map(model => (
                       <SelectItem key={model.value} value={model.value}>
                         <div>
                           <div>{model.label}</div>
@@ -617,9 +615,7 @@ export function TemplateManagement() {
               <Textarea
                 id="generative-prompt"
                 value={formData.generativePrompt}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, generativePrompt: e.target.value }))
-                }
+                onChange={e => setFormData(prev => ({ ...prev, generativePrompt: e.target.value }))}
                 placeholder="Enter the generative prompt..."
                 className="min-h-[100px]"
               />
@@ -630,9 +626,7 @@ export function TemplateManagement() {
               <Textarea
                 id="evaluative-prompt"
                 value={formData.evaluativePrompt}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, evaluativePrompt: e.target.value }))
-                }
+                onChange={e => setFormData(prev => ({ ...prev, evaluativePrompt: e.target.value }))}
                 placeholder="Enter the evaluative prompt..."
                 className="min-h-[100px]"
               />
@@ -643,8 +637,8 @@ export function TemplateManagement() {
               <Textarea
                 id="improvement-prompt"
                 value={formData.improvementPrompt}
-                onChange={(e) =>
-                  setFormData((prev) => ({ ...prev, improvementPrompt: e.target.value }))
+                onChange={e =>
+                  setFormData(prev => ({ ...prev, improvementPrompt: e.target.value }))
                 }
                 placeholder="Enter the improvement prompt..."
                 className="min-h-[100px]"
@@ -689,7 +683,7 @@ export function TemplateManagement() {
               <Input
                 id="test-term"
                 value={testTerm}
-                onChange={(e) => setTestTerm(e.target.value)}
+                onChange={e => setTestTerm(e.target.value)}
                 placeholder="Enter a term name to test with..."
               />
             </div>

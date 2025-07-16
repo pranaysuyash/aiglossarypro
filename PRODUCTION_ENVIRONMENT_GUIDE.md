@@ -118,7 +118,7 @@ OPENAI_API_KEY=sk-proj-your-openai-api-key-here
 OPENAI_API_URL=https://api.openai.com/v1
 
 # File Storage (Optional)
-AWS_ACCESS_KEY_ID=AKIA2SSKQWTVLHT3HPCS
+AWS_ACCESS_KEY_ID=your-aws-access-key-id
 AWS_SECRET_ACCESS_KEY=your-aws-secret-key
 AWS_REGION=us-east-1
 S3_BUCKET_NAME=your-s3-bucket

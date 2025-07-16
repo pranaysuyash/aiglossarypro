@@ -1,14 +1,26 @@
 /**
  * Daily Terms Component
- * 
+ *
  * Displays "Today's 50 Terms" with intelligent categorization, filtering,
  * and interactive learning features.
  */
 
-import React, { useState, useEffect, useMemo } from 'react';
-import { format } from 'date-fns';
-import { Calendar, RefreshCw, Filter, Grid, List, Clock, Target, BookOpen, Code, Zap } from 'lucide-react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { format } from 'date-fns';
+import {
+  BookOpen,
+  Calendar,
+  Clock,
+  Code,
+  Filter,
+  Grid,
+  List,
+  RefreshCw,
+  Target,
+  Zap,
+} from 'lucide-react';
+import type React from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { ITerm } from '../../../shared/types';
 
 interface DailyTermsResponse {
@@ -47,7 +59,7 @@ const DailyTerms: React.FC = () => {
     category: [],
     hasCodeExamples: null,
     hasInteractiveElements: null,
-    searchQuery: ''
+    searchQuery: '',
   });
   const [showFilters, setShowFilters] = useState(false);
 
@@ -58,7 +70,7 @@ const DailyTerms: React.FC = () => {
     data: dailyTermsData,
     isLoading,
     error,
-    refetch
+    refetch,
   } = useQuery<DailyTermsResponse>({
     queryKey: ['dailyTerms', format(selectedDate, 'yyyy-MM-dd')],
     queryFn: async () => {
@@ -71,45 +83,45 @@ const DailyTerms: React.FC = () => {
       return result.data;
     },
     staleTime: 60 * 60 * 1000, // 1 hour
-    retry: 2
+    retry: 2,
   });
 
   // Filter terms based on current filters
   const filteredTerms = useMemo(() => {
-    if (!dailyTermsData?.terms) return [];
+    if (!dailyTermsData?.terms) {return [];}
 
     return dailyTermsData.terms.filter(term => {
       // Search query filter
       if (filters.searchQuery) {
         const query = filters.searchQuery.toLowerCase();
-        const matchesSearch = 
+        const matchesSearch =
           term.name.toLowerCase().includes(query) ||
           term.definition?.toLowerCase().includes(query) ||
           term.shortDefinition?.toLowerCase().includes(query);
-        if (!matchesSearch) return false;
+        if (!matchesSearch) {return false;}
       }
 
       // Difficulty filter
       if (filters.difficulty.length > 0) {
         const termDifficulty = (term as any).difficultyLevel || 'intermediate';
-        if (!filters.difficulty.includes(termDifficulty)) return false;
+        if (!filters.difficulty.includes(termDifficulty)) {return false;}
       }
 
       // Category filter
       if (filters.category.length > 0) {
-        if (!filters.category.includes(term.category || 'General')) return false;
+        if (!filters.category.includes(term.category || 'General')) {return false;}
       }
 
       // Code examples filter
       if (filters.hasCodeExamples !== null) {
         const hasCode = (term as any).hasCodeExamples || false;
-        if (filters.hasCodeExamples !== hasCode) return false;
+        if (filters.hasCodeExamples !== hasCode) {return false;}
       }
 
       // Interactive elements filter
       if (filters.hasInteractiveElements !== null) {
         const hasInteractive = (term as any).hasInteractiveElements || false;
-        if (filters.hasInteractiveElements !== hasInteractive) return false;
+        if (filters.hasInteractiveElements !== hasInteractive) {return false;}
       }
 
       return true;
@@ -118,19 +130,17 @@ const DailyTerms: React.FC = () => {
 
   // Extract unique values for filter options
   const filterOptions = useMemo(() => {
-    if (!dailyTermsData?.terms) return { difficulties: [], categories: [] };
+    if (!dailyTermsData?.terms) {return { difficulties: [], categories: [] };}
 
-    const difficulties = [...new Set(dailyTermsData.terms.map(term => 
-      (term as any).difficultyLevel || 'intermediate'
-    ))];
-    
-    const categories = [...new Set(dailyTermsData.terms.map(term => 
-      term.category || 'General'
-    ))];
+    const difficulties = [
+      ...new Set(dailyTermsData.terms.map(term => (term as any).difficultyLevel || 'intermediate')),
+    ];
+
+    const categories = [...new Set(dailyTermsData.terms.map(term => term.category || 'General'))];
 
     return {
       difficulties: difficulties.sort(),
-      categories: categories.sort()
+      categories: categories.sort(),
     };
   }, [dailyTermsData?.terms]);
 
@@ -145,7 +155,7 @@ const DailyTerms: React.FC = () => {
       category: [],
       hasCodeExamples: null,
       hasInteractiveElements: null,
-      searchQuery: ''
+      searchQuery: '',
     });
   };
 
@@ -154,7 +164,7 @@ const DailyTerms: React.FC = () => {
       beginner: 'bg-green-100 text-green-800',
       intermediate: 'bg-blue-100 text-blue-800',
       advanced: 'bg-orange-100 text-orange-800',
-      expert: 'bg-red-100 text-red-800'
+      expert: 'bg-red-100 text-red-800',
     };
     return colors[difficulty as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
@@ -169,11 +179,9 @@ const DailyTerms: React.FC = () => {
     return (
       <div className="max-w-6xl mx-auto p-6">
         <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-          <h3 className="text-lg font-semibold text-red-800 mb-2">
-            Failed to Load Daily Terms
-          </h3>
+          <h3 className="text-lg font-semibold text-red-800 mb-2">Failed to Load Daily Terms</h3>
           <p className="text-red-600 mb-4">
-            {error instanceof Error ? error.message : 'An unexpected error occurred'}
+            {error instanceof Error ? error?.message : 'An unexpected error occurred'}
           </p>
           <button
             onClick={handleRefresh}
@@ -192,14 +200,15 @@ const DailyTerms: React.FC = () => {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Today's AI/ML Terms
-            </h1>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Today's AI/ML Terms</h1>
             <p className="text-gray-600">
-              {dailyTermsData ? `${dailyTermsData.terms.length} intelligently selected terms` : 'Loading...'} for {format(selectedDate, 'EEEE, MMMM d, yyyy')}
+              {dailyTermsData
+                ? `${dailyTermsData.terms.length} intelligently selected terms`
+                : 'Loading...'}{' '}
+              for {format(selectedDate, 'EEEE, MMMM d, yyyy')}
             </p>
           </div>
-          
+
           <div className="flex items-center space-x-4">
             {/* Date Selector */}
             <div className="flex items-center space-x-2">
@@ -207,7 +216,7 @@ const DailyTerms: React.FC = () => {
               <input
                 type="date"
                 value={format(selectedDate, 'yyyy-MM-dd')}
-                onChange={(e) => setSelectedDate(new Date(e.target.value))}
+                onChange={e => setSelectedDate(new Date(e.target.value))}
                 className="border border-gray-300 rounded-md px-3 py-2 text-sm"
               />
             </div>
@@ -232,9 +241,7 @@ const DailyTerms: React.FC = () => {
                 <Target className="w-5 h-5 text-blue-600" />
                 <span className="text-sm font-medium text-blue-800">Total Terms</span>
               </div>
-              <p className="text-2xl font-bold text-blue-900 mt-1">
-                {dailyTermsData.terms.length}
-              </p>
+              <p className="text-2xl font-bold text-blue-900 mt-1">{dailyTermsData.terms.length}</p>
             </div>
 
             <div className="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -278,28 +285,33 @@ const DailyTerms: React.FC = () => {
             type="text"
             placeholder="Search terms..."
             value={filters.searchQuery}
-            onChange={(e) => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
+            onChange={e => setFilters(prev => ({ ...prev, searchQuery: e.target.value }))}
             className="border border-gray-300 rounded-md px-3 py-2 text-sm w-64"
           />
-          
+
           <button
             onClick={() => setShowFilters(!showFilters)}
             className="flex items-center space-x-2 border border-gray-300 rounded-md px-3 py-2 text-sm hover:bg-gray-50 transition-colors"
           >
             <Filter className="w-4 h-4" />
             <span>Filters</span>
-            {(filters.difficulty.length > 0 || filters.category.length > 0 || 
-              filters.hasCodeExamples !== null || filters.hasInteractiveElements !== null) && (
+            {(filters.difficulty.length > 0 ||
+              filters.category.length > 0 ||
+              filters.hasCodeExamples !== null ||
+              filters.hasInteractiveElements !== null) && (
               <span className="bg-blue-600 text-white text-xs rounded-full px-2 py-1">
-                {filters.difficulty.length + filters.category.length + 
-                 (filters.hasCodeExamples !== null ? 1 : 0) + 
-                 (filters.hasInteractiveElements !== null ? 1 : 0)}
+                {filters.difficulty.length +
+                  filters.category.length +
+                  (filters.hasCodeExamples !== null ? 1 : 0) +
+                  (filters.hasInteractiveElements !== null ? 1 : 0)}
               </span>
             )}
           </button>
 
-          {(filters.difficulty.length > 0 || filters.category.length > 0 || 
-            filters.hasCodeExamples !== null || filters.hasInteractiveElements !== null ||
+          {(filters.difficulty.length > 0 ||
+            filters.category.length > 0 ||
+            filters.hasCodeExamples !== null ||
+            filters.hasInteractiveElements !== null ||
             filters.searchQuery) && (
             <button
               onClick={clearFilters}
@@ -315,8 +327,8 @@ const DailyTerms: React.FC = () => {
           <button
             onClick={() => setViewMode('grid')}
             className={`p-2 rounded-md transition-colors ${
-              viewMode === 'grid' 
-                ? 'bg-blue-600 text-white' 
+              viewMode === 'grid'
+                ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -325,8 +337,8 @@ const DailyTerms: React.FC = () => {
           <button
             onClick={() => setViewMode('list')}
             className={`p-2 rounded-md transition-colors ${
-              viewMode === 'list' 
-                ? 'bg-blue-600 text-white' 
+              viewMode === 'list'
+                ? 'bg-blue-600 text-white'
                 : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
             }`}
           >
@@ -350,22 +362,24 @@ const DailyTerms: React.FC = () => {
                     <input
                       type="checkbox"
                       checked={filters.difficulty.includes(difficulty)}
-                      onChange={(e) => {
+                      onChange={e => {
                         if (e.target.checked) {
-                          setFilters(prev => ({ 
-                            ...prev, 
-                            difficulty: [...prev.difficulty, difficulty] 
+                          setFilters(prev => ({
+                            ...prev,
+                            difficulty: [...prev.difficulty, difficulty],
                           }));
                         } else {
-                          setFilters(prev => ({ 
-                            ...prev, 
-                            difficulty: prev.difficulty.filter(d => d !== difficulty) 
+                          setFilters(prev => ({
+                            ...prev,
+                            difficulty: prev.difficulty.filter(d => d !== difficulty),
                           }));
                         }
                       }}
                       className="mr-2"
                     />
-                    <span className={`text-xs px-2 py-1 rounded-full ${getDifficultyColor(difficulty)}`}>
+                    <span
+                      className={`text-xs px-2 py-1 rounded-full ${getDifficultyColor(difficulty)}`}
+                    >
                       {difficulty}
                     </span>
                   </label>
@@ -375,25 +389,23 @@ const DailyTerms: React.FC = () => {
 
             {/* Category Filter */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Category
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
               <div className="space-y-2 max-h-32 overflow-y-auto">
                 {filterOptions.categories.map(category => (
                   <label key={category} className="flex items-center">
                     <input
                       type="checkbox"
                       checked={filters.category.includes(category)}
-                      onChange={(e) => {
+                      onChange={e => {
                         if (e.target.checked) {
-                          setFilters(prev => ({ 
-                            ...prev, 
-                            category: [...prev.category, category] 
+                          setFilters(prev => ({
+                            ...prev,
+                            category: [...prev.category, category],
                           }));
                         } else {
-                          setFilters(prev => ({ 
-                            ...prev, 
-                            category: prev.category.filter(c => c !== category) 
+                          setFilters(prev => ({
+                            ...prev,
+                            category: prev.category.filter(c => c !== category),
                           }));
                         }
                       }}
@@ -415,10 +427,10 @@ const DailyTerms: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={filters.hasCodeExamples === true}
-                    onChange={(e) => {
-                      setFilters(prev => ({ 
-                        ...prev, 
-                        hasCodeExamples: e.target.checked ? true : null 
+                    onChange={e => {
+                      setFilters(prev => ({
+                        ...prev,
+                        hasCodeExamples: e.target.checked ? true : null,
                       }));
                     }}
                     className="mr-2"
@@ -429,10 +441,10 @@ const DailyTerms: React.FC = () => {
                   <input
                     type="checkbox"
                     checked={filters.hasInteractiveElements === true}
-                    onChange={(e) => {
-                      setFilters(prev => ({ 
-                        ...prev, 
-                        hasInteractiveElements: e.target.checked ? true : null 
+                    onChange={e => {
+                      setFilters(prev => ({
+                        ...prev,
+                        hasInteractiveElements: e.target.checked ? true : null,
                       }));
                     }}
                     className="mr-2"
@@ -445,11 +457,12 @@ const DailyTerms: React.FC = () => {
             {/* Quick Stats */}
             {dailyTermsData && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Distribution
-                </label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Distribution</label>
                 <div className="text-xs text-gray-600 space-y-1">
-                  <div>Difficulty: {formatDistribution(dailyTermsData.metadata.distribution.difficulty)}</div>
+                  <div>
+                    Difficulty:{' '}
+                    {formatDistribution(dailyTermsData.metadata.distribution.difficulty)}
+                  </div>
                   <div>Algorithm: v{dailyTermsData.metadata.algorithm_version}</div>
                 </div>
               </div>
@@ -485,7 +498,9 @@ const DailyTerms: React.FC = () => {
               ? 'Try adjusting your filters or search query.'
               : 'No daily terms available for this date.'}
           </p>
-          {(filters.searchQuery || filters.difficulty.length > 0 || filters.category.length > 0) && (
+          {(filters.searchQuery ||
+            filters.difficulty.length > 0 ||
+            filters.category.length > 0) && (
             <button
               onClick={clearFilters}
               className="text-blue-600 hover:text-blue-800 transition-colors"
@@ -495,12 +510,14 @@ const DailyTerms: React.FC = () => {
           )}
         </div>
       ) : (
-        <div className={
-          viewMode === 'grid' 
-            ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
-            : 'space-y-4'
-        }>
-          {filteredTerms.map((term) => (
+        <div
+          className={
+            viewMode === 'grid'
+              ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4'
+              : 'space-y-4'
+          }
+        >
+          {filteredTerms.map(term => (
             <TermCard key={term.id} term={term} viewMode={viewMode} />
           ))}
         </div>
@@ -525,7 +542,7 @@ const TermCard: React.FC<TermCardProps> = ({ term, viewMode }) => {
       beginner: 'bg-green-100 text-green-800',
       intermediate: 'bg-blue-100 text-blue-800',
       advanced: 'bg-orange-100 text-orange-800',
-      expert: 'bg-red-100 text-red-800'
+      expert: 'bg-red-100 text-red-800',
     };
     return colors[difficulty as keyof typeof colors] || 'bg-gray-100 text-gray-800';
   };
@@ -544,7 +561,7 @@ const TermCard: React.FC<TermCardProps> = ({ term, viewMode }) => {
               </span>
             </div>
             <p className="text-gray-600 text-sm mb-2 line-clamp-2">
-              {term.shortDefinition || term.definition?.substring(0, 150) + '...'}
+              {term.shortDefinition || `${term.definition?.substring(0, 150)  }...`}
             </p>
             <div className="flex items-center space-x-4 text-xs text-gray-500">
               <span>{term.category}</span>
@@ -573,15 +590,17 @@ const TermCard: React.FC<TermCardProps> = ({ term, viewMode }) => {
         <h3 className="text-lg font-semibold text-gray-900 hover:text-blue-600 cursor-pointer line-clamp-2">
           {term.name}
         </h3>
-        <span className={`text-xs px-2 py-1 rounded-full ${getDifficultyColor(difficulty)} ml-2 flex-shrink-0`}>
+        <span
+          className={`text-xs px-2 py-1 rounded-full ${getDifficultyColor(difficulty)} ml-2 flex-shrink-0`}
+        >
           {difficulty}
         </span>
       </div>
-      
+
       <p className="text-gray-600 text-sm mb-3 line-clamp-3">
-        {term.shortDefinition || term.definition?.substring(0, 120) + '...'}
+        {term.shortDefinition || `${term.definition?.substring(0, 120)  }...`}
       </p>
-      
+
       <div className="flex items-center justify-between">
         <span className="text-xs text-gray-500">{term.category}</span>
         <div className="flex items-center space-x-2">

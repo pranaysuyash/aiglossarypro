@@ -1,6 +1,5 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { StrictMode } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
+import React, { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 // Demo component to showcase the main entry point
@@ -11,7 +10,7 @@ const MainDemo = () => {
       <p className="text-gray-600 mb-4">
         The main.tsx file is the entry point for the AI Glossary Pro React application.
       </p>
-      
+
       <div className="bg-gray-100 p-4 rounded mb-4">
         <h4 className="font-semibold mb-2">Application Bootstrap:</h4>
         <pre className="text-sm bg-white p-3 rounded overflow-x-auto">
@@ -27,7 +26,7 @@ createRoot(document.getElementById('root')!).render(
 )`}
         </pre>
       </div>
-      
+
       <div className="bg-blue-50 p-4 rounded">
         <h4 className="font-semibold mb-2">Key Features:</h4>
         <ul className="text-sm space-y-1">

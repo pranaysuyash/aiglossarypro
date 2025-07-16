@@ -30,7 +30,7 @@ export const useCrossReferenceAnalytics = (options: UseCrossReferenceAnalyticsOp
       queryFn: async (): Promise<CrossReferenceMetrics[]> => {
         const params = new URLSearchParams();
         if (termIds && termIds.length > 0) {
-          termIds.forEach((id) => params.append('termIds', id));
+          termIds.forEach(id => params.append('termIds', id));
         }
 
         const response = await fetch(`/api/cross-reference/analytics/metrics?${params}`);
@@ -73,7 +73,7 @@ export const useCrossReferenceAnalytics = (options: UseCrossReferenceAnalyticsOp
   };
 
   // Get learning pathways
-  const useLearningPathways = (minFrequency: number = 5) => {
+  const useLearningPathways = (minFrequency = 5) => {
     return useQuery({
       queryKey: ['learningPathways', minFrequency],
       queryFn: async (): Promise<LearningPathway[]> => {
@@ -113,40 +113,40 @@ export const useCrossReferenceAnalytics = (options: UseCrossReferenceAnalyticsOp
   };
 
   // Utility functions
-  const getHubTerms = useCallback((metrics: CrossReferenceMetrics[], threshold: number = 0.7) => {
-    return metrics.filter((m) => m.hubScore >= threshold).sort((a, b) => b.hubScore - a.hubScore);
+  const getHubTerms = useCallback((metrics: CrossReferenceMetrics[], threshold = 0.7) => {
+    return metrics.filter(m => m.hubScore >= threshold).sort((a, b) => b.hubScore - a.hubScore);
   }, []);
 
   const getBridgeTerms = useCallback(
-    (metrics: CrossReferenceMetrics[], threshold: number = 0.6) => {
+    (metrics: CrossReferenceMetrics[], threshold = 0.6) => {
       return metrics
-        .filter((m) => m.bridgeScore >= threshold)
+        .filter(m => m.bridgeScore >= threshold)
         .sort((a, b) => b.bridgeScore - a.bridgeScore);
     },
     []
   );
 
-  const getStrongConnections = useCallback((flows: ReferenceFlow[], minCount: number = 10) => {
-    return flows.filter((f) => f.flowCount >= minCount);
+  const getStrongConnections = useCallback((flows: ReferenceFlow[], minCount = 10) => {
+    return flows.filter(f => f.flowCount >= minCount);
   }, []);
 
   const getCategoryBridges = useCallback((flows: ReferenceFlow[]) => {
-    return flows.filter((f) => f.categoryBridge);
+    return flows.filter(f => f.categoryBridge);
   }, []);
 
   const getEffectivePathways = useCallback(
-    (pathways: LearningPathway[], minEffectiveness: number = 0.7) => {
-      return pathways.filter((p) => p.learningEffectiveness >= minEffectiveness);
+    (pathways: LearningPathway[], minEffectiveness = 0.7) => {
+      return pathways.filter(p => p.learningEffectiveness >= minEffectiveness);
     },
     []
   );
 
   const getRecommendedSequences = useCallback(
-    (pathways: LearningPathway[], minScore: number = 0.8) => {
+    (pathways: LearningPathway[], minScore = 0.8) => {
       return pathways
-        .filter((p) => p.recommendationScore >= minScore)
+        .filter(p => p.recommendationScore >= minScore)
         .sort((a, b) => b.recommendationScore - a.recommendationScore)
-        .map((p) => p.termNames);
+        .map(p => p.termNames);
     },
     []
   );

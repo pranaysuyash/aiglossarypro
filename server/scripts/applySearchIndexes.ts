@@ -37,14 +37,14 @@ async function main() {
     // Split SQL content into individual statements
     const statements = sqlContent
       .split(';')
-      .map((stmt) => stmt.trim())
-      .filter((stmt) => {
+      .map(stmt => stmt.trim())
+      .filter(stmt => {
         // Filter out comments and empty statements
-        if (stmt.length === 0) return false;
-        if (stmt.startsWith('--')) return false;
-        if (stmt.toLowerCase().startsWith('create extension')) return true;
-        if (stmt.toLowerCase().startsWith('create index')) return true;
-        if (stmt.toLowerCase().startsWith('analyze')) return true;
+        if (stmt.length === 0) {return false;}
+        if (stmt.startsWith('--')) {return false;}
+        if (stmt.toLowerCase().startsWith('create extension')) {return true;}
+        if (stmt.toLowerCase().startsWith('create index')) {return true;}
+        if (stmt.toLowerCase().startsWith('analyze')) {return true;}
         return false;
       });
 

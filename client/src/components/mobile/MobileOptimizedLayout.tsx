@@ -11,8 +11,8 @@ interface MobileOptimizedLayoutProps {
   sidebar?: React.ReactNode;
   searchComponent?: React.ReactNode;
   filterComponent?: React.ReactNode;
-  title?: string;
-  className?: string;
+  title?: string | undefined;
+  className?: string | undefined;
 }
 
 export default function MobileOptimizedLayout({
@@ -31,7 +31,7 @@ export default function MobileOptimizedLayout({
 
   // Handle scroll for sticky header
   useEffect(() => {
-    if (!isMobile) return;
+    if (!isMobile) {return;}
 
     const handleScroll = () => {
       const scrollTop = window.scrollY;
@@ -155,8 +155,8 @@ export const useResponsiveCardLayout = () => {
   }, []);
 
   const getGridCols = (itemCount: number) => {
-    if (isMobile) return 'grid-cols-1';
-    if (isTablet) return itemCount > 2 ? 'grid-cols-2' : 'grid-cols-1';
+    if (isMobile) {return 'grid-cols-1';}
+    if (isTablet) {return itemCount > 2 ? 'grid-cols-2' : 'grid-cols-1';}
     return itemCount > 6 ? 'grid-cols-3' : itemCount > 3 ? 'grid-cols-2' : 'grid-cols-1';
   };
 
@@ -185,7 +185,7 @@ export const ResponsiveText = ({
   desktopSize = 'text-base',
 }: {
   children: React.ReactNode;
-  className?: string;
+  className?: string | undefined;
   mobileSize?: string;
   desktopSize?: string;
 }) => {
@@ -202,7 +202,7 @@ export const ResponsiveContainer = ({
   desktopPadding = 'p-6',
 }: {
   children: React.ReactNode;
-  className?: string;
+  className?: string | undefined;
   mobilePadding?: string;
   desktopPadding?: string;
 }) => {

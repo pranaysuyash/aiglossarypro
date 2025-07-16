@@ -146,7 +146,7 @@ export default function Favorites() {
             type="text"
             placeholder="Search favorites..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
             className="pl-10"
           />
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -155,7 +155,7 @@ export default function Favorites() {
         <div className="flex gap-2">
           <Select
             value={categoryFilter || 'all'}
-            onValueChange={(value) => setCategoryFilter(value === 'all' ? null : value)}
+            onValueChange={value => setCategoryFilter(value === 'all' ? null : value)}
           >
             <SelectTrigger className="w-[180px]">
               <SelectValue placeholder="All Categories" />
@@ -208,7 +208,7 @@ export default function Favorites() {
       {/* Favorites list */}
       {isLoading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {[1, 2, 3, 4, 5, 6].map((i) => (
+          {[1, 2, 3, 4, 5, 6].map(i => (
             <Card
               key={`skeleton-${i}`}
               className="h-56 animate-pulse bg-gray-200 dark:bg-gray-700"
@@ -218,7 +218,7 @@ export default function Favorites() {
       ) : sortedFavorites.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {sortedFavorites.map((term: ITerm) => (
-            <TermCard key={term.id} term={term} isFavorite={true} />
+            <TermCard key={term.id} term={term} isFavorite />
           ))}
         </div>
       ) : (

@@ -121,8 +121,8 @@ export interface IInteractiveElement {
   elementType: 'mermaid' | 'quiz' | 'demo' | 'code' | 'simulation';
   elementData: {
     // Common properties (moved to top to avoid duplicates)
-    title?: string;
-    description?: string;
+    title?: string | undefined;
+    description?: string | undefined;
     difficulty?: string;
 
     // For mermaid diagrams

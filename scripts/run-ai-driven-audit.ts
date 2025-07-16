@@ -2,7 +2,7 @@
 
 /**
  * AI-DRIVEN AUDIT ORCHESTRATOR
- * 
+ *
  * This script orchestrates the complete AI-driven end-to-end audit workflow:
  * 1. Validates Storybook coverage (prerequisite)
  * 2. Executes enhanced functional tests with step-by-step capture
@@ -10,12 +10,12 @@
  * 4. Generates AI analysis prompt with context
  * 5. Executes AI analysis (if API key provided)
  * 6. Generates structured audit report
- * 
+ *
  * Usage:
  * npm run audit:ai-driven
  * tsx scripts/run-ai-driven-audit.ts
  * tsx scripts/run-ai-driven-audit.ts --skip-coverage --full-capture --ai-analysis
- * 
+ *
  * Flags:
  * --skip-coverage: Skip Storybook coverage validation
  * --full-capture: Enable all capture options (screenshots, video, accessibility)
@@ -23,10 +23,10 @@
  * --fix-stories: Auto-generate missing Storybook stories
  */
 
+import chalk from 'chalk';
+import { execSync, spawn } from 'child_process';
 import fs from 'fs/promises';
 import path from 'path';
-import { execSync, spawn } from 'child_process';
-import chalk from 'chalk';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -80,12 +80,12 @@ class AIDrivenAuditOrchestrator {
     screenshots: [],
     videos: [],
     accessibilityReports: [],
-    functionalReports: []
+    functionalReports: [],
   };
 
   constructor() {
     this.startTime = Date.now();
-    
+
     // Parse command line flags
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     this.config = {
@@ -94,24 +94,29 @@ class AIDrivenAuditOrchestrator {
       aiAnalysis: process.argv.includes('--ai-analysis'),
       fixStories: process.argv.includes('--fix-stories'),
       outputDir: path.join(projectRoot, 'reports', 'ai-driven-audit', timestamp),
-      timestamp
+      timestamp,
     };
   }
 
   async execute(): Promise<AIDrivenAuditResult> {
     console.log(chalk.bold.blue('🤖 AI-Driven End-to-End Audit Workflow'));
     console.log(chalk.gray('=========================================\\n'));
-    
+
     await this.initializeWorkspace();
-    
-    let result: AIDrivenAuditResult = {
+
+    const result: AIDrivenAuditResult = {
       timestamp: this.config.timestamp,
       status: 'failed',
       coverageValidation: { passed: false, coveragePercentage: 0, missingStories: 0 },
-      functionalTesting: { totalUsers: 0, totalActions: 0, totalScreenshots: 0, accessibilityViolations: 0 },
+      functionalTesting: {
+        totalUsers: 0,
+        totalActions: 0,
+        totalScreenshots: 0,
+        accessibilityViolations: 0,
+      },
       artifacts: this.artifacts,
       reportPath: '',
-      duration: 0
+      duration: 0,
     };
 
     try {
@@ -149,7 +154,6 @@ class AIDrivenAuditOrchestrator {
       console.log(chalk.gray(`⏱️ Duration: ${(result.duration / 1000).toFixed(2)}s`));
 
       return result;
-
     } catch (error) {
       console.error(chalk.red('❌ Workflow failed:'), error.message);
       result.duration = Date.now() - this.startTime;
@@ -160,91 +164,102 @@ class AIDrivenAuditOrchestrator {
 
   private async initializeWorkspace(): Promise<void> {
     console.log(chalk.blue('📁 Initializing workspace...'));
-    
+
     await fs.mkdir(this.config.outputDir, { recursive: true });
     await fs.mkdir(path.join(this.config.outputDir, 'consolidated-artifacts'), { recursive: true });
     await fs.mkdir(path.join(this.config.outputDir, 'ai-analysis'), { recursive: true });
-    
+
     console.log(chalk.gray(`   Workspace: ${this.config.outputDir}`));
     console.log(chalk.gray(`   Full Capture: ${this.config.fullCapture}`));
     console.log(chalk.gray(`   AI Analysis: ${this.config.aiAnalysis}`));
   }
 
-  private async validateStorybookCoverage(): Promise<{ passed: boolean; coveragePercentage: number; missingStories: number }> {
+  private async validateStorybookCoverage(): Promise<{
+    passed: boolean;
+    coveragePercentage: number;
+    missingStories: number;
+  }> {
     console.log(chalk.blue('\\n📚 Step 1: Validating Storybook Coverage...'));
-    
+
     try {
       const coverageScript = path.join(__dirname, 'validate-storybook-coverage.ts');
       const flags = this.config.fixStories ? '--fix' : '';
-      
+
       const result = execSync(`tsx ${coverageScript} ${flags}`, {
         encoding: 'utf-8',
-        cwd: projectRoot
+        cwd: projectRoot,
       });
-      
+
       // Parse coverage results from output
       const coverageMatch = result.match(/Coverage: (\\d+)%/);
       const missingMatch = result.match(/Without Stories: (\\d+)/);
-      
+
       const coveragePercentage = coverageMatch ? parseInt(coverageMatch[1]) : 0;
       const missingStories = missingMatch ? parseInt(missingMatch[1]) : 0;
       const passed = coveragePercentage === 100;
-      
+
       if (passed) {
         console.log(chalk.green('✅ Storybook coverage validation passed'));
       } else {
-        console.log(chalk.yellow(`⚠️ Storybook coverage: ${coveragePercentage}% (${missingStories} missing stories)`));
+        console.log(
+          chalk.yellow(
+            `⚠️ Storybook coverage: ${coveragePercentage}% (${missingStories} missing stories)`
+          )
+        );
         if (this.config.fixStories) {
           console.log(chalk.blue('🔧 Missing story templates generated'));
         }
       }
-      
+
       return { passed, coveragePercentage, missingStories };
-      
     } catch (error) {
       console.log(chalk.red('❌ Storybook coverage validation failed:', error.message));
       return { passed: false, coveragePercentage: 0, missingStories: 999 };
     }
   }
 
-  private async executeEnhancedFunctionalTests(): Promise<{ totalUsers: number; totalActions: number; totalScreenshots: number; accessibilityViolations: number }> {
+  private async executeEnhancedFunctionalTests(): Promise<{
+    totalUsers: number;
+    totalActions: number;
+    totalScreenshots: number;
+    accessibilityViolations: number;
+  }> {
     console.log(chalk.blue('\\n🧪 Step 2: Executing Enhanced Functional Tests...'));
-    
+
     try {
       const functionalScript = path.join(__dirname, 'enhanced-functional-audit.ts');
-      
+
       // Build command with appropriate flags
       const flags = [];
       if (this.config.fullCapture) {
         flags.push('--capture-all', '--record-video', '--interact-all', '--accessibility');
       }
-      
+
       console.log(chalk.gray(`   Running: tsx ${functionalScript} ${flags.join(' ')}`));
-      
+
       const result = execSync(`tsx ${functionalScript} ${flags.join(' ')}`, {
         encoding: 'utf-8',
         cwd: projectRoot,
-        timeout: 600000 // 10 minute timeout
+        timeout: 600000, // 10 minute timeout
       });
-      
+
       // Parse results from output
       const actionsMatch = result.match(/Total Actions: (\\d+)/);
       const screenshotsMatch = result.match(/Screenshots: (\\d+)/);
       const a11yMatch = result.match(/A11y Issues: (\\d+)/);
-      
+
       const totalUsers = 3; // Free, Premium, Admin
       const totalActions = actionsMatch ? parseInt(actionsMatch[1]) : 0;
       const totalScreenshots = screenshotsMatch ? parseInt(screenshotsMatch[1]) : 0;
       const accessibilityViolations = a11yMatch ? parseInt(a11yMatch[1]) : 0;
-      
+
       console.log(chalk.green(`✅ Functional tests completed`));
       console.log(chalk.cyan(`   👥 Users tested: ${totalUsers}`));
       console.log(chalk.cyan(`   🎬 Actions performed: ${totalActions}`));
       console.log(chalk.cyan(`   📸 Screenshots captured: ${totalScreenshots}`));
       console.log(chalk.cyan(`   ♿ Accessibility issues: ${accessibilityViolations}`));
-      
+
       return { totalUsers, totalActions, totalScreenshots, accessibilityViolations };
-      
     } catch (error) {
       console.log(chalk.red('❌ Enhanced functional tests failed:', error.message));
       return { totalUsers: 0, totalActions: 0, totalScreenshots: 0, accessibilityViolations: 0 };
@@ -253,29 +268,33 @@ class AIDrivenAuditOrchestrator {
 
   private async consolidateArtifacts(): Promise<void> {
     console.log(chalk.blue('\\n📦 Step 3: Consolidating Artifacts...'));
-    
+
     try {
       // Find all generated artifact directories
       const reportsDir = path.join(projectRoot, 'reports', 'ai-driven-audit');
       const directories = await fs.readdir(reportsDir);
-      
+
       // Find the most recent artifacts (should be from current run)
       for (const dir of directories) {
         if (dir !== path.basename(this.config.outputDir)) {
           const artifactPath = path.join(reportsDir, dir);
-          
+
           // Copy screenshots
           const screenshotsPath = path.join(artifactPath, 'screenshots');
           if (await this.directoryExists(screenshotsPath)) {
             const screenshots = await fs.readdir(screenshotsPath);
             for (const screenshot of screenshots) {
               const sourcePath = path.join(screenshotsPath, screenshot);
-              const destPath = path.join(this.config.outputDir, 'consolidated-artifacts', screenshot);
+              const destPath = path.join(
+                this.config.outputDir,
+                'consolidated-artifacts',
+                screenshot
+              );
               await fs.copyFile(sourcePath, destPath);
               this.artifacts.screenshots.push(destPath);
             }
           }
-          
+
           // Copy videos
           const videosPath = path.join(artifactPath, 'videos');
           if (await this.directoryExists(videosPath)) {
@@ -287,7 +306,7 @@ class AIDrivenAuditOrchestrator {
               this.artifacts.videos.push(destPath);
             }
           }
-          
+
           // Copy accessibility reports
           const a11yPath = path.join(artifactPath, 'accessibility');
           if (await this.directoryExists(a11yPath)) {
@@ -299,7 +318,7 @@ class AIDrivenAuditOrchestrator {
               this.artifacts.accessibilityReports.push(destPath);
             }
           }
-          
+
           // Copy functional reports
           const reportFiles = await fs.readdir(artifactPath);
           for (const file of reportFiles) {
@@ -312,13 +331,14 @@ class AIDrivenAuditOrchestrator {
           }
         }
       }
-      
+
       console.log(chalk.green('✅ Artifacts consolidated'));
       console.log(chalk.cyan(`   📸 Screenshots: ${this.artifacts.screenshots.length}`));
       console.log(chalk.cyan(`   🎥 Videos: ${this.artifacts.videos.length}`));
       console.log(chalk.cyan(`   ♿ A11y Reports: ${this.artifacts.accessibilityReports.length}`));
-      console.log(chalk.cyan(`   📊 Functional Reports: ${this.artifacts.functionalReports.length}`));
-      
+      console.log(
+        chalk.cyan(`   📊 Functional Reports: ${this.artifacts.functionalReports.length}`)
+      );
     } catch (error) {
       console.log(chalk.yellow('⚠️ Artifact consolidation had issues:', error.message));
     }
@@ -326,10 +346,14 @@ class AIDrivenAuditOrchestrator {
 
   private async generateAIAnalysisPrompt(): Promise<boolean> {
     console.log(chalk.blue('\\n🧠 Step 4: Generating AI Analysis Prompt...'));
-    
+
     try {
-      const promptPath = path.join(this.config.outputDir, 'ai-analysis', 'claude-analysis-prompt.md');
-      
+      const promptPath = path.join(
+        this.config.outputDir,
+        'ai-analysis',
+        'claude-analysis-prompt.md'
+      );
+
       const prompt = `# AI-Driven UI/UX Quality Analysis
 
 ## Your Role
@@ -419,21 +443,24 @@ Begin your analysis with a high-level summary, then proceed with detailed issue 
 `;
 
       await fs.writeFile(promptPath, prompt);
-      
+
       console.log(chalk.green('✅ AI analysis prompt generated'));
       console.log(chalk.gray(`   📄 Prompt file: ${promptPath}`));
-      
+
       return true;
-      
     } catch (error) {
       console.log(chalk.red('❌ Failed to generate AI analysis prompt:', error.message));
       return false;
     }
   }
 
-  private async executeAIAnalysis(): Promise<{ executed: boolean; promptGenerated: boolean; reportGenerated: boolean }> {
+  private async executeAIAnalysis(): Promise<{
+    executed: boolean;
+    promptGenerated: boolean;
+    reportGenerated: boolean;
+  }> {
     console.log(chalk.blue('\\n🤖 Step 5: Executing AI Analysis...'));
-    
+
     // For now, this is a placeholder for future AI integration
     // In a real implementation, this would:
     // 1. Read the generated prompt
@@ -441,23 +468,23 @@ Begin your analysis with a high-level summary, then proceed with detailed issue 
     // 3. Send to AI API (Claude, GPT-4, etc.)
     // 4. Parse the response
     // 5. Generate structured findings
-    
+
     console.log(chalk.yellow('⚠️ AI Analysis integration not yet implemented'));
     console.log(chalk.gray('   This would integrate with Claude/GPT-4 APIs to analyze artifacts'));
     console.log(chalk.gray('   For now, the prompt has been generated for manual analysis'));
-    
+
     return {
       executed: false,
       promptGenerated: true,
-      reportGenerated: false
+      reportGenerated: false,
     };
   }
 
   private async generateFinalReport(result: AIDrivenAuditResult): Promise<string> {
     console.log(chalk.blue('\\n📊 Step 6: Generating Final Report...'));
-    
+
     const reportPath = path.join(this.config.outputDir, 'ai-driven-audit-report.json');
-    
+
     const report = {
       ...result,
       configuration: this.config,
@@ -465,39 +492,43 @@ Begin your analysis with a high-level summary, then proceed with detailed issue 
         steps: [
           'Storybook Coverage Validation',
           'Enhanced Functional Testing',
-          'Artifact Consolidation', 
+          'Artifact Consolidation',
           'AI Analysis Prompt Generation',
           'AI Analysis Execution',
-          'Report Generation'
+          'Report Generation',
         ],
-        completedSteps: result.status === 'success' ? 6 : 4
+        completedSteps: result.status === 'success' ? 6 : 4,
       },
       nextSteps: [
         'Review generated AI analysis prompt',
         'Manually run AI analysis with provided artifacts',
         'Implement fixes based on findings',
-        'Re-run audit to verify improvements'
-      ]
+        'Re-run audit to verify improvements',
+      ],
     };
-    
+
     await fs.writeFile(reportPath, JSON.stringify(report, null, 2));
-    
+
     // Also generate a human-readable summary
     const summaryPath = path.join(this.config.outputDir, 'AUDIT_SUMMARY.md');
     const summary = this.generateMarkdownSummary(result);
     await fs.writeFile(summaryPath, summary);
-    
+
     console.log(chalk.green('✅ Final report generated'));
     console.log(chalk.gray(`   📄 JSON Report: ${reportPath}`));
     console.log(chalk.gray(`   📄 Summary: ${summaryPath}`));
-    
+
     return reportPath;
   }
 
   private generateMarkdownSummary(result: AIDrivenAuditResult): string {
-    const status = result.status === 'success' ? '✅ SUCCESS' : 
-                  result.status === 'partial' ? '⚠️ PARTIAL' : '❌ FAILED';
-    
+    const status =
+      result.status === 'success'
+        ? '✅ SUCCESS'
+        : result.status === 'partial'
+          ? '⚠️ PARTIAL'
+          : '❌ FAILED';
+
     return `# AI-Driven Audit Report Summary
 
 **Status**: ${status}  
@@ -543,15 +574,15 @@ Begin your analysis with a high-level summary, then proceed with detailed issue 
     if (!result.coverageValidation.passed) {
       return 'partial';
     }
-    
+
     if (result.functionalTesting.totalActions === 0) {
       return 'failed';
     }
-    
+
     if (result.functionalTesting.accessibilityViolations > 20) {
       return 'partial';
     }
-    
+
     return 'success';
   }
 
@@ -570,16 +601,15 @@ async function main() {
   try {
     const orchestrator = new AIDrivenAuditOrchestrator();
     const result = await orchestrator.execute();
-    
+
     // Exit with appropriate code
     if (result.status === 'failed') {
       process.exit(1);
     } else if (result.status === 'partial') {
       process.exit(2); // Partial success
     }
-    
+
     process.exit(0); // Success
-    
   } catch (error) {
     console.error(chalk.red('💥 AI-Driven Audit Orchestrator failed:'), error);
     process.exit(1);
@@ -590,4 +620,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-export { AIDrivenAuditOrchestrator, AIDrivenAuditResult, WorkflowConfig };
+export { AIDrivenAuditOrchestrator, type AIDrivenAuditResult, type WorkflowConfig };

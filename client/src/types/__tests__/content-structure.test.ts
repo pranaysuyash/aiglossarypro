@@ -260,7 +260,7 @@ describe('Content Structure Helper Functions', () => {
       expect(result[0].node).toBe(mockSectionsArray[0]);
 
       // Check we have nested items
-      const nestedItems = result.filter((item) => item.depth > 0);
+      const nestedItems = result.filter(item => item.depth > 0);
       expect(nestedItems.length).toBeGreaterThan(0);
     });
 
@@ -268,11 +268,11 @@ describe('Content Structure Helper Functions', () => {
       const result = flattenStructure(mockSectionsArray);
 
       // Check nested items
-      const nestedItems = result.filter((item) => item.depth > 0);
+      const nestedItems = result.filter(item => item.depth > 0);
       expect(nestedItems.length).toBeGreaterThan(0);
 
       // Check paths for nested items from first section
-      const aiSubsections = nestedItems.filter((item) => item.path.startsWith('0.'));
+      const aiSubsections = nestedItems.filter(item => item.path.startsWith('0.'));
       expect(aiSubsections.length).toBeGreaterThan(0);
 
       if (aiSubsections.length > 0) {

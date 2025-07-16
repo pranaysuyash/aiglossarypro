@@ -19,20 +19,20 @@ const middlewareReplacements = [
   // Add tokenMiddleware to routes that don't have it
   {
     search: /authMiddleware as any,\s*parseId\(\) as any,/g,
-    replace: 'authMiddleware as any,\n    tokenMiddleware,\n    parseId() as any,'
+    replace: 'authMiddleware as any,\n    tokenMiddleware,\n    parseId() as any,',
   },
   {
     search: /authMiddleware as any,\s*parsePagination/g,
-    replace: 'authMiddleware as any,\n    tokenMiddleware,\n    parsePagination'
+    replace: 'authMiddleware as any,\n    tokenMiddleware,\n    parsePagination',
   },
   {
     search: /authMiddleware as any,\s*parseNumericQuery/g,
-    replace: 'authMiddleware as any,\n    tokenMiddleware,\n    parseNumericQuery'
+    replace: 'authMiddleware as any,\n    tokenMiddleware,\n    parseNumericQuery',
   },
   {
     search: /authMiddleware as any,\s*async \(req: AuthenticatedRequest/g,
-    replace: 'authMiddleware as any,\n    tokenMiddleware,\n    async (req: AuthenticatedRequest'
-  }
+    replace: 'authMiddleware as any,\n    tokenMiddleware,\n    async (req: AuthenticatedRequest',
+  },
 ];
 
 // Apply middleware replacements
@@ -51,8 +51,8 @@ const userIdReplacements = [
             message: 'Authentication required',
           });
         }
-        const userId = userInfo.id;`
-  }
+        const userId = userInfo.id;`,
+  },
 ];
 
 // Apply user ID replacements

@@ -1,6 +1,5 @@
-import React from 'react';
-import type { Meta, StoryObj } from '@storybook/react';
 import { zodResolver } from '@hookform/resolvers/zod';
+import type { Meta, StoryObj } from '@storybook/react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { Button } from './button';
@@ -25,7 +24,8 @@ const meta: Meta<typeof Form> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Form component built with react-hook-form and Zod validation, providing accessible form controls with error handling.',
+        component:
+          'Form component built with react-hook-form and Zod validation, providing accessible form controls with error handling.',
       },
     },
   },
@@ -104,9 +104,7 @@ function BasicForm() {
               <FormControl>
                 <Input placeholder="Enter your name" {...field} />
               </FormControl>
-              <FormDescription>
-                This is your public display name.
-              </FormDescription>
+              <FormDescription>This is your public display name.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -120,9 +118,7 @@ function BasicForm() {
               <FormControl>
                 <Input type="email" placeholder="Enter your email" {...field} />
               </FormControl>
-              <FormDescription>
-                We'll never share your email with anyone else.
-              </FormDescription>
+              <FormDescription>We'll never share your email with anyone else.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -134,16 +130,14 @@ function BasicForm() {
             <FormItem>
               <FormLabel>Age</FormLabel>
               <FormControl>
-                <Input 
-                  type="number" 
-                  placeholder="Enter your age" 
+                <Input
+                  type="number"
+                  placeholder="Enter your age"
                   {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  onChange={e => field.onChange(parseInt(e.target.value))}
                 />
               </FormControl>
-              <FormDescription>
-                Your age helps us customize your experience.
-              </FormDescription>
+              <FormDescription>Your age helps us customize your experience.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -233,18 +227,11 @@ function ProfileForm() {
             render={({ field }) => (
               <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
                 <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>
-                    Email notifications
-                  </FormLabel>
-                  <FormDescription>
-                    Receive emails about your account activity.
-                  </FormDescription>
+                  <FormLabel>Email notifications</FormLabel>
+                  <FormDescription>Receive emails about your account activity.</FormDescription>
                 </div>
               </FormItem>
             )}
@@ -255,15 +242,10 @@ function ProfileForm() {
             render={({ field }) => (
               <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
                 <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>
-                    Marketing emails
-                  </FormLabel>
+                  <FormLabel>Marketing emails</FormLabel>
                   <FormDescription>
                     Receive emails about new products, features, and more.
                   </FormDescription>
@@ -277,18 +259,11 @@ function ProfileForm() {
             render={({ field }) => (
               <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-4">
                 <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>
-                    Security emails
-                  </FormLabel>
-                  <FormDescription>
-                    Receive emails about your account security.
-                  </FormDescription>
+                  <FormLabel>Security emails</FormLabel>
+                  <FormDescription>Receive emails about your account security.</FormDescription>
                 </div>
               </FormItem>
             )}
@@ -337,9 +312,7 @@ function SettingsForm() {
                   <SelectItem value="system">System</SelectItem>
                 </SelectContent>
               </Select>
-              <FormDescription>
-                Choose your preferred theme for the interface.
-              </FormDescription>
+              <FormDescription>Choose your preferred theme for the interface.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -363,9 +336,7 @@ function SettingsForm() {
                   <SelectItem value="de">German</SelectItem>
                 </SelectContent>
               </Select>
-              <FormDescription>
-                This will be used as your default language.
-              </FormDescription>
+              <FormDescription>This will be used as your default language.</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -397,18 +368,11 @@ function SettingsForm() {
             render={({ field }) => (
               <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                 <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>
-                    Push notifications
-                  </FormLabel>
-                  <FormDescription>
-                    Receive push notifications on your device.
-                  </FormDescription>
+                  <FormLabel>Push notifications</FormLabel>
+                  <FormDescription>Receive push notifications on your device.</FormDescription>
                 </div>
               </FormItem>
             )}
@@ -419,18 +383,11 @@ function SettingsForm() {
             render={({ field }) => (
               <FormItem className="flex flex-row items-center space-x-3 space-y-0">
                 <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
+                  <Checkbox checked={field.value} onCheckedChange={field.onChange} />
                 </FormControl>
                 <div className="space-y-1 leading-none">
-                  <FormLabel>
-                    Newsletter
-                  </FormLabel>
-                  <FormDescription>
-                    Subscribe to our weekly newsletter.
-                  </FormDescription>
+                  <FormLabel>Newsletter</FormLabel>
+                  <FormDescription>Subscribe to our weekly newsletter.</FormDescription>
                 </div>
               </FormItem>
             )}
@@ -502,9 +459,7 @@ export const ValidationStates: Story = {
                 <FormControl>
                   <Input {...field} />
                 </FormControl>
-                <FormDescription>
-                  This field meets the validation requirements.
-                </FormDescription>
+                <FormDescription>This field meets the validation requirements.</FormDescription>
                 <FormMessage />
               </FormItem>
             )}
@@ -555,7 +510,10 @@ export const CompactForm: Story = {
 
     return (
       <Form {...form}>
-        <form onSubmit={form.handleSubmit((values) => alert(JSON.stringify(values)))} className="space-y-4">
+        <form
+          onSubmit={form.handleSubmit(values => alert(JSON.stringify(values)))}
+          className="space-y-4"
+        >
           <FormField
             control={form.control}
             name="name"
@@ -582,7 +540,9 @@ export const CompactForm: Story = {
               </FormItem>
             )}
           />
-          <Button type="submit" className="w-full">Submit</Button>
+          <Button type="submit" className="w-full">
+            Submit
+          </Button>
         </form>
       </Form>
     );

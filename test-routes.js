@@ -16,13 +16,13 @@ const testData = {
   firebase_login: {
     url: 'http://localhost:3001/api/auth/firebase/login',
     method: 'POST',
-    data: { idToken: 'test-token' }
+    data: { idToken: 'test-token' },
   },
   firebase_register: {
-    url: 'http://localhost:3001/api/auth/firebase/register', 
+    url: 'http://localhost:3001/api/auth/firebase/register',
     method: 'POST',
-    data: { email: 'test@example.com', password: 'testpass123' }
-  }
+    data: { email: 'test@example.com', password: 'testpass123' },
+  },
 };
 
 async function testGet(url) {
@@ -47,7 +47,7 @@ async function testPost(name, config) {
     const response = await fetch(config.url, {
       method: config.method,
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(config.data)
+      body: JSON.stringify(config.data),
     });
     const data = await response.text();
     console.log(`POST ${config.url} (${name})`);
@@ -66,12 +66,12 @@ async function main() {
   for (const url of testUrls) {
     await testGet(url);
   }
-  
+
   // Test POST routes
   for (const [name, config] of Object.entries(testData)) {
     await testPost(name, config);
   }
-  
+
   console.log('\n✅ Route testing complete');
 }
 

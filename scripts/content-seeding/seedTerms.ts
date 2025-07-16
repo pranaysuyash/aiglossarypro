@@ -131,7 +131,7 @@ async function seedTerms(): Promise<void> {
           stats.categoriesProcessed.push(config.category);
         }
       } catch (error) {
-        logger.error(`Error generating term for ${config.category}:`, error);
+        logger.error(`Error generating term for ${config.category}:`, error as Record<string, unknown>);
         stats.errors++;
       }
     }
@@ -148,7 +148,7 @@ async function seedTerms(): Promise<void> {
 
     reportResults(stats);
   } catch (error) {
-    logger.error('Fatal error in seeding process:', error);
+    logger.error('Fatal error in seeding process:', error as Record<string, unknown>);
     process.exit(1);
   }
 }
@@ -165,11 +165,11 @@ async function determineTermsToGenerate(
   const configs: TermGenerationConfig[] = [];
 
   // Get existing term names for deduplication
-  const existingTermNames = new Set(existingTerms.map((t) => t.name.toLowerCase()));
+  const existingTermNames = new Set(existingTerms.map(t => t.name.toLowerCase()));
 
   // Filter categories
   const categoriesToProcess = targetCategory
-    ? existingCategories.filter((cat) =>
+    ? existingCategories.filter(cat =>
         cat.name.toLowerCase().includes(targetCategory.toLowerCase())
       )
     : existingCategories;
@@ -184,7 +184,7 @@ async function determineTermsToGenerate(
 
     // Filter out terms that already exist
     const missingTerms = categoryTerms.filter(
-      (term) => !existingTermNames.has(term.name.toLowerCase())
+      term => !existingTermNames.has(term.name.toLowerCase())
     );
 
     // Add configurations for missing terms
@@ -204,7 +204,7 @@ async function determineTermsToGenerate(
   if (configs.length < count) {
     const remainingCount = count - configs.length;
     const additionalConfigs = await generateTermSuggestions(
-      existingTerms.map((t) => t.name),
+      existingTerms.map(t => t.name),
       existingCategories,
       remainingCount,
       targetCategory
@@ -231,14 +231,14 @@ async function generateTermSuggestions(
       focusCategory
     );
 
-    return suggestions.suggestions.slice(0, count).map((suggestion) => ({
+    return suggestions.suggestions.slice(0, count).map(suggestion => ({
       category: suggestion.category,
       priority: 'medium' as const,
       complexity: 'intermediate' as const,
       focusAreas: [suggestion.term],
     }));
   } catch (error) {
-    logger.error('Error generating term suggestions:', error);
+    logger.error('Error generating term suggestions:', error as Record<string, unknown>);
     return [];
   }
 }
@@ -253,7 +253,7 @@ async function generateSingleTerm(
   try {
     // First, generate the basic term definition
     const termSuggestion = await aiService.generateTermSuggestions(
-      existingTerms.map((t) => t.name),
+      existingTerms.map(t => t.name),
       [{ name: config.category, id: 'temp' }],
       config.category
     );
@@ -287,7 +287,7 @@ async function generateSingleTerm(
     logger.info(`✅ Generated term: ${newTerm.name}`);
     return newTerm;
   } catch (error) {
-    logger.error(`Error generating term for ${config.category}:`, error);
+    logger.error(`Error generating term for ${config.category}:`, error as Record<string, unknown>);
     return null;
   }
 }
@@ -321,7 +321,7 @@ async function saveTerm(termData: any, config: TermGenerationConfig): Promise<vo
 
     logger.info(`💾 Saved term: ${termData.name} (ID: ${insertedTerm[0].id})`);
   } catch (error) {
-    logger.error(`Error saving term ${termData.name}:`, error);
+    logger.error(`Error saving term ${termData.name}:`, error as Record<string, unknown>);
     throw error;
   }
 }
@@ -361,19 +361,19 @@ async function generateComprehensiveContent(newTermCount: number): Promise<void>
             // For now, we'll log this content. In a full implementation,
             // you'd want to store this in a sections table or extend the terms table
           } catch (error) {
-            logger.error(`  ❌ Failed to generate ${sectionName}:`, error);
+            logger.error(`  ❌ Failed to generate ${sectionName}:`, error as Record<string, unknown>);
           }
         }
 
         processedCount++;
       } catch (error) {
-        logger.error(`Error generating content for ${term.name}:`, error);
+        logger.error(`Error generating content for ${term.name}:`, error as Record<string, unknown>);
       }
     }
 
     logger.info(`📊 Generated comprehensive content for ${processedCount}/${newTermCount} terms`);
   } catch (error) {
-    logger.error('Error in comprehensive content generation:', error);
+    logger.error('Error in comprehensive content generation:', error as Record<string, unknown>);
   }
 }
 
@@ -408,7 +408,7 @@ async function validateExistingTerms(existingTerms: any[]): Promise<void> {
 
   if (issues.length > 0) {
     logger.warn(`Top issues:`);
-    issues.slice(0, 10).forEach((issue) => logger.warn(`  - ${issue}`));
+    issues.slice(0, 10).forEach(issue => logger.warn(`  - ${issue}`));
   }
 }
 
@@ -510,7 +510,7 @@ function reportResults(stats: GenerationStats): void {
  * Main execution
  */
 if (require.main === module) {
-  seedTerms().catch((error) => {
+  seedTerms().catch(error => {
     logger.error('Seeding failed:', error);
     process.exit(1);
   });

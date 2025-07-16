@@ -19,7 +19,7 @@ export function validateRequest<T>(schema: z.ZodSchema<T>) {
         return res.status(400).json({
           success: false,
           message: 'Validation error',
-          errors: error.errors.map((err) => ({
+          errors: error.errors.map(err => ({
             field: err.path.join('.'),
             message: err.message,
           })),
@@ -52,7 +52,7 @@ export function validateQuery<T>(schema: z.ZodSchema<T>) {
         return res.status(400).json({
           success: false,
           message: 'Query validation error',
-          errors: error.errors.map((err) => ({
+          errors: error.errors.map(err => ({
             field: err.path.join('.'),
             message: err.message,
           })),
@@ -85,7 +85,7 @@ export function validateParams<T>(schema: z.ZodSchema<T>) {
         return res.status(400).json({
           success: false,
           message: 'Parameter validation error',
-          errors: error.errors.map((err) => ({
+          errors: error.errors.map(err => ({
             field: err.path.join('.'),
             message: err.message,
           })),
@@ -134,7 +134,7 @@ export function validateInput(options: {
         return res.status(400).json({
           success: false,
           message: 'Validation error',
-          errors: error.errors.map((err) => ({
+          errors: error.errors.map(err => ({
             field: err.path.join('.'),
             message: err.message,
           })),

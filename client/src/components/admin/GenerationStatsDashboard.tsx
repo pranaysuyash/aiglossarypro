@@ -157,7 +157,7 @@ export function GenerationStatsDashboard() {
         ...(selectedModel !== 'all' && { model: selectedModel }),
       });
       const response = await fetch(`/api/admin/generation/stats?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch generation statistics');
+      if (!response.ok) {throw new Error('Failed to fetch generation statistics');}
       return response.json();
     },
     refetchInterval: 60000, // Refetch every minute
@@ -182,9 +182,9 @@ export function GenerationStatsDashboard() {
   };
 
   const getQualityColor = (score: number) => {
-    if (score >= 9) return 'text-green-600';
-    if (score >= 7) return 'text-blue-600';
-    if (score >= 5) return 'text-yellow-600';
+    if (score >= 9) {return 'text-green-600';}
+    if (score >= 7) {return 'text-blue-600';}
+    if (score >= 5) {return 'text-yellow-600';}
     return 'text-red-600';
   };
 
@@ -193,8 +193,8 @@ export function GenerationStatsDashboard() {
   };
 
   const _getTrendIcon = (current: number, previous: number) => {
-    if (current > previous) return <TrendingUp className="w-4 h-4 text-green-600" />;
-    if (current < previous) return <TrendingDown className="w-4 h-4 text-red-600" />;
+    if (current > previous) {return <TrendingUp className="w-4 h-4 text-green-600" />;}
+    if (current < previous) {return <TrendingDown className="w-4 h-4 text-red-600" />;}
     return <Activity className="w-4 h-4 text-gray-600" />;
   };
 
@@ -682,7 +682,7 @@ export function GenerationStatsDashboard() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {stats?.recentGenerations?.map((generation) => (
+                    {stats?.recentGenerations?.map(generation => (
                       <TableRow key={generation.id}>
                         <TableCell className="font-medium">{generation.termName}</TableCell>
                         <TableCell>{generation.sectionName.replace('_', ' ')}</TableCell>

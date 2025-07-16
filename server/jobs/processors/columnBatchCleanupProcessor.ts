@@ -57,7 +57,7 @@ export async function columnBatchCleanupProcessor(
     const operationsToRemove: string[] = [];
 
     // First, filter by age and status
-    const ageFilteredOps = allOperations.filter((op) => {
+    const ageFilteredOps = allOperations.filter(op => {
       const isOldEnough = op.timing.startedAt && op.timing.startedAt < cutoffDate;
       const isCleanupType = cleanupTypes.includes(op.status as any);
 
@@ -68,17 +68,17 @@ export async function columnBatchCleanupProcessor(
 
     // Sort by date (oldest first) and take operations beyond the maxOperations limit
     const allCompletedOps = allOperations
-      .filter((op) => cleanupTypes.includes(op.status as any))
+      .filter(op => cleanupTypes.includes(op.status as any))
       .sort((a, b) => (a.timing.startedAt?.getTime() || 0) - (b.timing.startedAt?.getTime() || 0));
 
     if (allCompletedOps.length > maxOperations) {
       const excessOps = allCompletedOps.slice(0, allCompletedOps.length - maxOperations);
-      operationsToRemove.push(...excessOps.map((op) => op.id));
+      operationsToRemove.push(...excessOps.map(op => op.id));
       logger.info(`Found ${excessOps.length} operations beyond the ${maxOperations} limit`);
     }
 
     // Add age-filtered operations
-    operationsToRemove.push(...ageFilteredOps.map((op) => op.id));
+    operationsToRemove.push(...ageFilteredOps.map(op => op.id));
 
     // Remove duplicates
     const uniqueOperationsToRemove = [...new Set(operationsToRemove)];
@@ -92,7 +92,7 @@ export async function columnBatchCleanupProcessor(
     // Calculate estimated space savings (rough estimate)
     let _estimatedSpaceFreed = 0;
     for (const operationId of uniqueOperationsToRemove) {
-      const operation = allOperations.find((op) => op.id === operationId);
+      const operation = allOperations.find(op => op.id === operationId);
       if (operation) {
         // Rough estimate: 1KB per operation + 100 bytes per error + 50 bytes per sub-job
         _estimatedSpaceFreed += 1024; // Base operation data
@@ -127,7 +127,7 @@ export async function columnBatchCleanupProcessor(
           // you would need to implement actual data removal methods in the service
 
           // For now, we'll just log what would be removed
-          const operation = allOperations.find((op) => op.id === operationId);
+          const operation = allOperations.find(op => op.id === operationId);
           if (operation) {
             logger.info(
               `Would remove operation ${operationId}: ${operation.sectionName} (${operation.status})`
@@ -149,7 +149,7 @@ export async function columnBatchCleanupProcessor(
 
       // Small delay between batches to prevent overwhelming the system
       if (i + batchSize < uniqueOperationsToRemove.length) {
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100));
       }
     }
 
@@ -163,7 +163,7 @@ export async function columnBatchCleanupProcessor(
     try {
       const allAlerts = costManagementService.getCostAlerts();
       const oldAlerts = allAlerts.filter(
-        (alert) => alert.triggeredAt < cutoffDate && alert.acknowledged
+        alert => alert.triggeredAt < cutoffDate && alert.acknowledged
       );
 
       for (const alert of oldAlerts) {

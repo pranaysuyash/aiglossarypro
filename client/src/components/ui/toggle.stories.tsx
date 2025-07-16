@@ -1,6 +1,5 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { Toggle } from './Toggle';
+import type { Meta, StoryObj } from '@storybook/react';
+import { Toggle } from './toggle';
 
 const meta = {
   title: 'UI/Toggle',

@@ -48,7 +48,7 @@ export const abTests = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     statusIdx: index('ab_tests_status_idx').on(table.status),
     typeIdx: index('ab_tests_type_idx').on(table.testType),
     dateIdx: index('ab_tests_date_idx').on(table.startDate, table.endDate),
@@ -103,7 +103,7 @@ export const abTestMetrics = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     testVariantUnique: unique().on(table.testId, table.variant),
     testIdIdx: index('ab_test_metrics_test_idx').on(table.testId),
     variantIdx: index('ab_test_metrics_variant_idx').on(table.variant),
@@ -143,7 +143,7 @@ export const abTestEvents = pgTable(
 
     timestamp: timestamp('timestamp').defaultNow(),
   },
-  (table) => ({
+  table => ({
     testIdIdx: index('ab_test_events_test_idx').on(table.testId),
     variantIdx: index('ab_test_events_variant_idx').on(table.variant),
     eventTypeIdx: index('ab_test_events_type_idx').on(table.eventType),
@@ -178,7 +178,7 @@ export const abTestReports = pgTable(
 
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     testIdIdx: index('ab_test_reports_test_idx').on(table.testId),
     reportTypeIdx: index('ab_test_reports_type_idx').on(table.reportType),
     reportDateIdx: index('ab_test_reports_date_idx').on(table.reportDate),
@@ -205,7 +205,7 @@ export const abTestSegments = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     testIdIdx: index('ab_test_segments_test_idx').on(table.testId),
     nameIdx: index('ab_test_segments_name_idx').on(table.name),
   })

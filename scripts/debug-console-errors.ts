@@ -12,12 +12,12 @@ async function debugConsoleErrors() {
   const page = await browser.newPage();
 
   // Listen for console messages
-  page.on('console', (msg) => {
+  page.on('console', msg => {
     console.log(`[CONSOLE ${msg.type()}]:`, msg.text());
   });
 
   // Listen for page errors
-  page.on('pageerror', (error) => {
+  page.on('pageerror', error => {
     console.log(`[PAGE ERROR]:`, error.message);
   });
 
@@ -46,9 +46,7 @@ async function debugConsoleErrors() {
     // Check DOM manually
     const contentNavigation = await page.evaluate(() => {
       const headings = Array.from(document.querySelectorAll('h2'));
-      return headings
-        .map((h) => h.textContent)
-        .filter((text) => text?.includes('Content Navigation'));
+      return headings.map(h => h.textContent).filter(text => text?.includes('Content Navigation'));
     });
 
     console.log('📋 Content Navigation headings found:', contentNavigation);
@@ -63,7 +61,7 @@ async function debugConsoleErrors() {
       return {
         cards: cards.length,
         searchInputs: searchInputs.length,
-        allH2s: Array.from(navSections).map((h) => h.textContent),
+        allH2s: Array.from(navSections).map(h => h.textContent),
       };
     });
 

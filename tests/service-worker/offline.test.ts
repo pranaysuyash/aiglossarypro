@@ -135,13 +135,13 @@ describe('Service Worker', () => {
       const activatePromise = mockCaches.keys().then((cacheNames: string[]) => {
         const deletePromises = cacheNames
           .filter(
-            (cacheName) =>
+            cacheName =>
               !cacheName.includes('v1.2.0') && // Keep current version
               (cacheName.includes('static-cache') ||
                 cacheName.includes('dynamic-cache') ||
                 cacheName.includes('image-cache'))
           )
-          .map((cacheName) => mockCaches.delete(cacheName));
+          .map(cacheName => mockCaches.delete(cacheName));
 
         return Promise.all(deletePromises);
       });
@@ -307,11 +307,11 @@ describe('Service Worker', () => {
       // Simulate cache clearing
       const clearResult = await mockCaches
         .keys()
-        .then((names: string[]) => Promise.all(names.map((name) => mockCaches.delete(name))));
+        .then((names: string[]) => Promise.all(names.map(name => mockCaches.delete(name))));
 
       expect(clearResult).toEqual([true, true, true]);
       expect(mockCaches.delete).toHaveBeenCalledTimes(3);
-      cacheNames.forEach((name) => {
+      cacheNames.forEach(name => {
         expect(mockCaches.delete).toHaveBeenCalledWith(name);
       });
     });

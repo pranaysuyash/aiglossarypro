@@ -1,27 +1,27 @@
 import { useQuery } from '@tanstack/react-query';
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'wouter';
+import { MathAwareText } from '@/components/math/MathAwareText';
 import { Button } from '@/components/ui/button';
 import { Brain, Search, X, Zap } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { BaseComponentProps } from '@/types/common-props';
 import { sanitizeHTML } from '@/utils/sanitize';
-import { MathAwareText } from '@/components/math/MathAwareText';
 
 interface SearchBarProps extends BaseComponentProps {
   onSearch: (query: string) => void;
-  placeholder?: string;
-  initialValue?: string;
+  placeholder?: string | undefined;
+  initialValue?: string | undefined;
   iconOnly?: boolean;
 }
 
 interface SearchSuggestion {
   id: string;
   name: string;
-  category?: string;
+  category?: string | undefined;
   type: 'term' | 'category';
-  highlightedName?: string;
+  highlightedName?: string | undefined;
 }
 
 const SearchBar = memo(function SearchBar({
@@ -114,11 +114,11 @@ const SearchBar = memo(function SearchBar({
       switch (e.key) {
         case 'ArrowDown':
           e.preventDefault();
-          setSelectedIndex((prev) => (prev < (suggestions?.length || 0) - 1 ? prev + 1 : -1));
+          setSelectedIndex(prev => (prev < (suggestions?.length || 0) - 1 ? prev + 1 : -1));
           break;
         case 'ArrowUp':
           e.preventDefault();
-          setSelectedIndex((prev) => (prev > -1 ? prev - 1 : (suggestions?.length || 0) - 1));
+          setSelectedIndex(prev => (prev > -1 ? prev - 1 : (suggestions?.length || 0) - 1));
           break;
         case 'Enter':
           e.preventDefault();
@@ -163,7 +163,7 @@ const SearchBar = memo(function SearchBar({
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
         e.preventDefault();
-        setShowSuggestions((prev) => !prev);
+        setShowSuggestions(prev => !prev);
         setTimeout(() => {
           inputRef.current?.focus();
         }, 0);
@@ -277,10 +277,10 @@ const SearchBar = memo(function SearchBar({
                       {suggestion.highlightedName ? (
                         <MathAwareText
                           content={suggestion.highlightedName}
-                          isHTML={true}
+                          isHTML
                           className="search-highlighted"
                           mathClassName="search-result"
-                          allowHTML={true}
+                          allowHTML
                         />
                       ) : (
                         <MathAwareText

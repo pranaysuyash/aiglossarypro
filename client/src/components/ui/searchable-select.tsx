@@ -1,27 +1,34 @@
 import { Check, ChevronDown, Search } from 'lucide-react';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Button } from './button';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from './command';
 import { Input } from './input';
 import { Popover, PopoverContent, PopoverTrigger } from './popover';
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from './command';
 
 interface SearchableSelectProps {
-  value?: string;
+  value?: string | undefined;
   onValueChange: (value: string) => void;
-  placeholder?: string;
-  searchPlaceholder?: string;
+  placeholder?: string | undefined;
+  searchPlaceholder?: string | undefined;
   options: Array<{
     value: string;
     label: string;
-    description?: string;
-    category?: string;
+    description?: string | undefined;
+    category?: string | undefined;
     disabled?: boolean;
   }>;
   groupByCategory?: boolean;
-  className?: string;
+  className?: string | undefined;
   disabled?: boolean;
-  emptyMessage?: string;
+  emptyMessage?: string | undefined;
 }
 
 export function SearchableSelect({
@@ -46,24 +53,28 @@ export function SearchableSelect({
       return;
     }
 
-    const filtered = options.filter(option =>
-      option.label.toLowerCase().includes(search.toLowerCase()) ||
-      option.description?.toLowerCase().includes(search.toLowerCase()) ||
-      option.category?.toLowerCase().includes(search.toLowerCase())
+    const filtered = options.filter(
+      option =>
+        option.label.toLowerCase().includes(search.toLowerCase()) ||
+        option.description?.toLowerCase().includes(search.toLowerCase()) ||
+        option.category?.toLowerCase().includes(search.toLowerCase())
     );
     setFilteredOptions(filtered);
   }, [search, options]);
 
   // Group options by category if requested
   const groupedOptions = groupByCategory
-    ? filteredOptions.reduce((acc, option) => {
-        const category = option.category || 'Other';
-        if (!acc[category]) {
-          acc[category] = [];
-        }
-        acc[category].push(option);
-        return acc;
-      }, {} as Record<string, typeof filteredOptions>)
+    ? filteredOptions.reduce(
+        (acc, option) => {
+          const category = option.category || 'Other';
+          if (!acc[category]) {
+            acc[category] = [];
+          }
+          acc[category].push(option);
+          return acc;
+        },
+        {} as Record<string, typeof filteredOptions>
+      )
     : { All: filteredOptions };
 
   const selectedOption = options.find(option => option.value === value);
@@ -78,26 +89,20 @@ export function SearchableSelect({
           className={cn('w-full justify-between', className)}
           disabled={disabled}
         >
-          <span className="truncate">
-            {selectedOption ? selectedOption.label : placeholder}
-          </span>
+          <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
           <ChevronDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-full p-0" align="start">
         <Command>
-          <CommandInput
-            placeholder={searchPlaceholder}
-            value={search}
-            onValueChange={setSearch}
-          />
+          <CommandInput placeholder={searchPlaceholder} value={search} onValueChange={setSearch} />
           <CommandList>
             {Object.keys(groupedOptions).length === 0 ? (
               <CommandEmpty>{emptyMessage}</CommandEmpty>
             ) : (
               Object.entries(groupedOptions).map(([category, categoryOptions]) => (
                 <CommandGroup key={category} heading={groupByCategory ? category : undefined}>
-                  {categoryOptions.map((option) => (
+                  {categoryOptions.map(option => (
                     <CommandItem
                       key={option.value}
                       value={option.value}

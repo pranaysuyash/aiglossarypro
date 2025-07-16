@@ -210,8 +210,8 @@ async function testCachePerformance(): Promise<PerformanceResult[]> {
 }
 
 function formatPayloadSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes}B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)}KB`;
+  if (bytes < 1024) {return `${bytes}B`;}
+  if (bytes < 1024 * 1024) {return `${(bytes / 1024).toFixed(2)}KB`;}
   return `${(bytes / (1024 * 1024)).toFixed(2)}MB`;
 }
 
@@ -219,16 +219,16 @@ function analyzeResults(results: PerformanceResult[]): void {
   console.log('\n📊 Performance Analysis Results:');
   console.log('═'.repeat(120));
   console.log(
-    'Endpoint'.padEnd(25) +
+    `${'Endpoint'.padEnd(25) +
       'Operation'.padEnd(35) +
       'Duration'.padEnd(12) +
       'Payload'.padEnd(12) +
-      'Count'.padEnd(8) +
-      'Cache'
+      'Count'.padEnd(8) 
+      }Cache`
   );
   console.log('─'.repeat(120));
 
-  results.forEach((result) => {
+  results.forEach(result => {
     const duration = `${result.duration}ms`;
     const payload = formatPayloadSize(result.payloadSize);
     const cache = result.cacheHit ? '✓' : '-';
@@ -248,8 +248,8 @@ function analyzeResults(results: PerformanceResult[]): void {
   // Performance insights
   const avgDuration = results.reduce((sum, r) => sum + r.duration, 0) / results.length;
   const avgPayload = results.reduce((sum, r) => sum + r.payloadSize, 0) / results.length;
-  const maxDuration = Math.max(...results.map((r) => r.duration));
-  const maxPayload = Math.max(...results.map((r) => r.payloadSize));
+  const maxDuration = Math.max(...results.map(r => r.duration));
+  const maxPayload = Math.max(...results.map(r => r.payloadSize));
 
   console.log(`\n📈 Performance Summary:`);
   console.log(`  Average response time: ${avgDuration.toFixed(2)}ms`);
@@ -260,8 +260,8 @@ function analyzeResults(results: PerformanceResult[]): void {
   // Performance recommendations
   console.log(`\n💡 Optimizations Achieved:`);
 
-  const fastResponses = results.filter((r) => r.duration < 100).length;
-  const smallPayloads = results.filter((r) => r.payloadSize < 50 * 1024).length; // < 50KB
+  const fastResponses = results.filter(r => r.duration < 100).length;
+  const smallPayloads = results.filter(r => r.payloadSize < 50 * 1024).length; // < 50KB
 
   console.log(`  ✅ ${fastResponses}/${results.length} responses under 100ms`);
   console.log(`  ✅ ${smallPayloads}/${results.length} payloads under 50KB`);
@@ -312,7 +312,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log('\n🎉 All performance tests completed!');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Performance tests failed:', error);
       process.exit(1);
     });

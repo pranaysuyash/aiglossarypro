@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import GoogleAd from './GoogleAd';
 
@@ -9,7 +8,8 @@ const meta: Meta<typeof GoogleAd> = {
     layout: 'padded',
     docs: {
       description: {
-        component: 'Google AdSense ad component with support for various formats, lazy loading, and premium user exclusion.',
+        component:
+          'Google AdSense ad component with support for various formats, lazy loading, and premium user exclusion.',
       },
     },
   },
@@ -84,7 +84,8 @@ export const Horizontal: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Horizontal banner ad (728x90), typically used in headers or between content sections.',
+        story:
+          'Horizontal banner ad (728x90), typically used in headers or between content sections.',
       },
     },
   },

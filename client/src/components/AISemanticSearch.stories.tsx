@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AISemanticSearch } from './AISemanticSearch';
@@ -14,7 +13,7 @@ const meta: Meta<typeof AISemanticSearch> = {
   title: 'AI/AISemanticSearch',
   component: AISemanticSearch,
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="max-w-4xl mx-auto p-4">
           <Story />

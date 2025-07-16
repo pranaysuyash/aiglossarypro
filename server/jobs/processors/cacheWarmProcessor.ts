@@ -128,7 +128,7 @@ async function warmCacheKey(key: string, ttl: number): Promise<void> {
 async function warmSearchCache(key: string, ttl: number): Promise<void> {
   // Extract search query from key (format: search:query:filters)
   const keyParts = key.split(':');
-  if (keyParts.length < 2) return;
+  if (keyParts.length < 2) {return;}
 
   const query = keyParts[1];
   const filters = keyParts[2] ? JSON.parse(decodeURIComponent(keyParts[2])) : {};
@@ -148,7 +148,7 @@ async function warmSearchCache(key: string, ttl: number): Promise<void> {
 async function warmTermCache(key: string, ttl: number): Promise<void> {
   // Extract term ID from key (format: enhanced_term:id)
   const termId = key.split(':')[1];
-  if (!termId) return;
+  if (!termId) {return;}
 
   const term = await enhancedStorage.getTermById(termId);
   if (term) {
@@ -162,7 +162,7 @@ async function warmTermCache(key: string, ttl: number): Promise<void> {
 async function warmTermSectionsCache(key: string, ttl: number): Promise<void> {
   // Extract term ID from key (format: term_sections:termId)
   const termId = key.split(':')[1];
-  if (!termId) return;
+  if (!termId) {return;}
 
   const sections = await enhancedStorage.getTermSections(termId);
   if (sections) {
@@ -176,7 +176,7 @@ async function warmTermSectionsCache(key: string, ttl: number): Promise<void> {
 async function warmUserPrefsCache(key: string, ttl: number): Promise<void> {
   // Extract user ID from key (format: user_prefs:userId)
   const userId = key.split(':')[1];
-  if (!userId) return;
+  if (!userId) {return;}
 
   // Get user preferences from database
   const userPrefs = await getUserPreferences(userId);
@@ -191,7 +191,7 @@ async function warmUserPrefsCache(key: string, ttl: number): Promise<void> {
 async function warmSearchMetricsCache(key: string, ttl: number): Promise<void> {
   // Extract timeframe from key (format: search_metrics:timeframe)
   const timeframe = key.split(':')[1];
-  if (!timeframe) return;
+  if (!timeframe) {return;}
 
   const metrics = await calculateSearchMetrics(timeframe);
   await redisCache.set(key, metrics, ttl);
@@ -203,7 +203,7 @@ async function warmSearchMetricsCache(key: string, ttl: number): Promise<void> {
 async function warmRecommendationsCache(key: string, ttl: number): Promise<void> {
   // Extract user ID from key (format: recommendations:userId)
   const userId = key.split(':')[1];
-  if (!userId) return;
+  if (!userId) {return;}
 
   const recommendations = await generateUserRecommendations(userId);
   await redisCache.set(key, recommendations, ttl);
@@ -215,7 +215,7 @@ async function warmRecommendationsCache(key: string, ttl: number): Promise<void>
 async function warmRelationshipsCache(key: string, ttl: number): Promise<void> {
   // Extract term ID from key (format: relationships:termId)
   const termId = key.split(':')[1];
-  if (!termId) return;
+  if (!termId) {return;}
 
   const relationships = await findTermRelationships(termId);
   await redisCache.set(key, relationships, ttl);

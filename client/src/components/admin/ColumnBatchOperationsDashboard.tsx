@@ -361,7 +361,7 @@ export function ColumnBatchOperationsDashboard() {
     queryKey: ['batch-operations'],
     queryFn: async () => {
       const response = await fetch('/api/admin/batch-operations');
-      if (!response.ok) throw new Error('Failed to fetch batch operations');
+      if (!response.ok) {throw new Error('Failed to fetch batch operations');}
       return response.json();
     },
     refetchInterval: autoRefresh ? 3000 : false,
@@ -372,7 +372,7 @@ export function ColumnBatchOperationsDashboard() {
     queryKey: ['system-metrics'],
     queryFn: async () => {
       const response = await fetch('/api/admin/system-metrics');
-      if (!response.ok) throw new Error('Failed to fetch system metrics');
+      if (!response.ok) {throw new Error('Failed to fetch system metrics');}
       return response.json();
     },
     refetchInterval: autoRefresh ? 5000 : false,
@@ -386,10 +386,10 @@ export function ColumnBatchOperationsDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config),
       });
-      if (!response.ok) throw new Error('Failed to start batch operation');
+      if (!response.ok) {throw new Error('Failed to start batch operation');}
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast({
         title: 'Batch Operation Started',
         description: `Started processing column: ${data.columnName}`,
@@ -410,7 +410,7 @@ export function ColumnBatchOperationsDashboard() {
       const response = await fetch(`/api/admin/batch-operations/${operationId}/${action}`, {
         method: 'POST',
       });
-      if (!response.ok) throw new Error(`Failed to ${action} operation`);
+      if (!response.ok) {throw new Error(`Failed to ${action} operation`);}
       return response.json();
     },
     onSuccess: (_data, variables) => {
@@ -423,7 +423,7 @@ export function ColumnBatchOperationsDashboard() {
   });
 
   // Filtered and sorted columns
-  const filteredColumns = COLUMN_DEFINITIONS.filter((column) => {
+  const filteredColumns = COLUMN_DEFINITIONS.filter(column => {
     const matchesCategory = filterCategory === 'all' || column.category === filterCategory;
     const matchesSearch =
       searchQuery === '' ||
@@ -482,8 +482,8 @@ export function ColumnBatchOperationsDashboard() {
   };
 
   const handleStartBatchOperation = (columnId: string) => {
-    const column = COLUMN_DEFINITIONS.find((c) => c.id === columnId);
-    if (!column) return;
+    const column = COLUMN_DEFINITIONS.find(c => c.id === columnId);
+    if (!column) {return;}
 
     startBatchOperationMutation.mutate({
       columnId: column.id,
@@ -660,14 +660,14 @@ export function ColumnBatchOperationsDashboard() {
                   Active Batch Operations
                 </div>
                 <Badge variant="outline">
-                  {operations?.filter((op) => op.status === 'running').length || 0} running
+                  {operations?.filter(op => op.status === 'running').length || 0} running
                 </Badge>
               </CardTitle>
             </CardHeader>
             <CardContent>
               {operations && operations.length > 0 ? (
                 <div className="space-y-4">
-                  {operations.map((operation) => (
+                  {operations.map(operation => (
                     <Card key={operation.operationId} className="border">
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-4">
@@ -871,7 +871,7 @@ export function ColumnBatchOperationsDashboard() {
               <Input
                 placeholder="Search columns..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
                 className="w-64"
               />
               <Select value={filterCategory} onValueChange={setFilterCategory}>
@@ -920,8 +920,8 @@ export function ColumnBatchOperationsDashboard() {
                   <Input
                     type="number"
                     value={batchConfig.batchSize}
-                    onChange={(e) =>
-                      setBatchConfig((prev) => ({
+                    onChange={e =>
+                      setBatchConfig(prev => ({
                         ...prev,
                         batchSize: parseInt(e.target.value),
                       }))
@@ -935,8 +935,8 @@ export function ColumnBatchOperationsDashboard() {
                   <Input
                     type="number"
                     value={batchConfig.qualityThreshold}
-                    onChange={(e) =>
-                      setBatchConfig((prev) => ({
+                    onChange={e =>
+                      setBatchConfig(prev => ({
                         ...prev,
                         qualityThreshold: parseFloat(e.target.value),
                       }))
@@ -951,8 +951,8 @@ export function ColumnBatchOperationsDashboard() {
                   <Input
                     type="number"
                     value={batchConfig.budgetLimit}
-                    onChange={(e) =>
-                      setBatchConfig((prev) => ({
+                    onChange={e =>
+                      setBatchConfig(prev => ({
                         ...prev,
                         budgetLimit: parseFloat(e.target.value),
                       }))
@@ -971,8 +971,8 @@ export function ColumnBatchOperationsDashboard() {
                       <Input
                         type="number"
                         value={batchConfig.delayBetweenBatches}
-                        onChange={(e) =>
-                          setBatchConfig((prev) => ({
+                        onChange={e =>
+                          setBatchConfig(prev => ({
                             ...prev,
                             delayBetweenBatches: parseInt(e.target.value),
                           }))
@@ -986,8 +986,8 @@ export function ColumnBatchOperationsDashboard() {
                       <Input
                         type="number"
                         value={batchConfig.maxRetries}
-                        onChange={(e) =>
-                          setBatchConfig((prev) => ({
+                        onChange={e =>
+                          setBatchConfig(prev => ({
                             ...prev,
                             maxRetries: parseInt(e.target.value),
                           }))
@@ -1003,8 +1003,8 @@ export function ColumnBatchOperationsDashboard() {
                       <Switch
                         id="quality-pipeline"
                         checked={batchConfig.enableQualityPipeline}
-                        onCheckedChange={(checked) =>
-                          setBatchConfig((prev) => ({
+                        onCheckedChange={checked =>
+                          setBatchConfig(prev => ({
                             ...prev,
                             enableQualityPipeline: checked,
                           }))
@@ -1016,8 +1016,8 @@ export function ColumnBatchOperationsDashboard() {
                       <Switch
                         id="skip-existing"
                         checked={batchConfig.skipExisting}
-                        onCheckedChange={(checked) =>
-                          setBatchConfig((prev) => ({
+                        onCheckedChange={checked =>
+                          setBatchConfig(prev => ({
                             ...prev,
                             skipExisting: checked,
                           }))
@@ -1037,7 +1037,7 @@ export function ColumnBatchOperationsDashboard() {
               viewMode === 'grid' ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3' : 'grid-cols-1'
             }`}
           >
-            {filteredColumns.map((column) => (
+            {filteredColumns.map(column => (
               <Card key={column.id} className="hover:shadow-md transition-shadow">
                 <CardHeader className="pb-3">
                   <div className="flex items-center justify-between">
@@ -1074,9 +1074,9 @@ export function ColumnBatchOperationsDashboard() {
                       <div>
                         <Label>Dependencies</Label>
                         <div className="flex flex-wrap gap-1 mt-1">
-                          {column.dependencies.map((dep) => (
+                          {column.dependencies.map(dep => (
                             <Badge key={dep} variant="outline" className="text-xs">
-                              {COLUMN_DEFINITIONS.find((c) => c.id === dep)?.displayName || dep}
+                              {COLUMN_DEFINITIONS.find(c => c.id === dep)?.displayName || dep}
                             </Badge>
                           ))}
                         </div>

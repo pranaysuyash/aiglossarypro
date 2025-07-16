@@ -21,6 +21,8 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Skeleton } from './ui/skeleton';
+import { useAuth } from '@/hooks/useAuth';
+import { getIdToken } from 'firebase/auth';
 
 interface PersonalizedRecommendation {
   type: 'term' | 'category' | 'learning_path' | 'trending';
@@ -36,7 +38,7 @@ interface RecommendedForYouProps {
   limit?: number;
   type?: 'all' | 'term' | 'category' | 'learning_path' | 'trending';
   showHeader?: boolean;
-  className?: string;
+  className?: string | undefined;
   onRecommendationClick?: (recommendation: PersonalizedRecommendation) => void;
 }
 
@@ -47,18 +49,32 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
   className = '',
   onRecommendationClick,
 }) => {
+  const { user } = useAuth();
   const [dismissedIds, setDismissedIds] = useState<Set<string>>(new Set());
   const [feedbackGiven, setFeedbackGiven] = useState<Set<string>>(new Set());
 
   const { data, isLoading, refetch, isFetching } = useQuery({
-    queryKey: ['personalized-recommendations', type, limit],
+    queryKey: ['personalized-recommendations', type, limit, user?.uid],
     queryFn: async () => {
+      // Get Firebase ID token if user is authenticated
+      const headers: HeadersInit = {};
+      if (user) {
+        try {
+          const token = await getIdToken(user as any);
+          headers['Authorization'] = `Bearer ${token}`;
+        } catch (error) {
+          console.error('Error getting ID token:', error);
+        }
+      }
+
       const params = new URLSearchParams({
         type,
         limit: limit.toString(),
       });
 
-      const response = await fetch(`/api/personalized/recommendations?${params}`);
+      const response = await fetch(`/api/personalized/recommendations?${params}`, {
+        headers,
+      });
       if (!response.ok) {
         if (response.status === 401) {
           throw new Error('Authentication required');
@@ -69,13 +85,14 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
-      if (error.message === 'Authentication required') return false;
+      if (error?.message === 'Authentication required') {return false;}
       return failureCount < 2;
     },
+    enabled: !!user, // Only run query if user is authenticated
   });
 
   const recommendations: PersonalizedRecommendation[] = data?.data || [];
-  const filteredRecommendations = recommendations.filter((rec) => !dismissedIds.has(rec.id));
+  const filteredRecommendations = recommendations.filter(rec => !dismissedIds.has(rec.id));
 
   const handleRecommendationClick = (recommendation: PersonalizedRecommendation) => {
     if (onRecommendationClick) {
@@ -95,9 +112,21 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
 
   const handleFeedback = async (recommendationId: string, isPositive: boolean) => {
     try {
+      // Get Firebase ID token if user is authenticated
+      const headers: HeadersInit = { 'Content-Type': 'application/json' };
+      if (user) {
+        try {
+          const token = await getIdToken(user as any);
+          headers['Authorization'] = `Bearer ${token}`;
+        } catch (error) {
+          console.error('Error getting ID token:', error);
+          return;
+        }
+      }
+
       await fetch('/api/personalized/feedback', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           recommendationId,
           feedback: isPositive ? 'positive' : 'negative',
@@ -106,14 +135,14 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
         }),
       });
 
-      setFeedbackGiven((prev) => new Set(prev).add(recommendationId));
-    } catch (error) {
+      setFeedbackGiven(prev => new Set(prev).add(recommendationId));
+    } catch (error: any) {
       console.error('Error submitting feedback:', error);
     }
   };
 
   const handleDismiss = (recommendationId: string) => {
-    setDismissedIds((prev) => new Set(prev).add(recommendationId));
+    setDismissedIds(prev => new Set(prev).add(recommendationId));
     handleFeedback(recommendationId, false);
   };
 
@@ -148,8 +177,8 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
   };
 
   const getRelevanceColor = (score: number): string => {
-    if (score >= 80) return 'text-green-600 bg-green-50';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-50';
+    if (score >= 80) {return 'text-green-600 bg-green-50';}
+    if (score >= 60) {return 'text-yellow-600 bg-yellow-50';}
     return 'text-gray-600 bg-gray-50';
   };
 
@@ -300,7 +329,7 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
                         variant="ghost"
                         size="sm"
                         className="h-6 w-6 p-0"
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           handleFeedback(recommendation.id, true);
                         }}
@@ -311,7 +340,7 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
                         variant="ghost"
                         size="sm"
                         className="h-6 w-6 p-0"
-                        onClick={(e) => {
+                        onClick={e => {
                           e.stopPropagation();
                           handleFeedback(recommendation.id, false);
                         }}
@@ -329,7 +358,7 @@ const RecommendedForYou: React.FC<RecommendedForYouProps> = ({
                     variant="ghost"
                     size="sm"
                     className="h-6 w-6 p-0"
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       handleDismiss(recommendation.id);
                     }}

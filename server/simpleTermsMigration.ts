@@ -96,11 +96,11 @@ export async function simpleTermsMigration() {
 // Run migration if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   simpleTermsMigration()
-    .then((result) => {
+    .then(result => {
       console.log('Migration completed successfully:', result);
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Migration failed:', error);
       process.exit(1);
     });

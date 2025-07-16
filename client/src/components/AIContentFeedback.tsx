@@ -14,7 +14,7 @@ interface AIContentFeedbackProps {
   verificationStatus?: 'unverified' | 'verified' | 'flagged' | 'needs_review' | 'expert_reviewed';
   section?: string; // Which part of the content (definition, characteristics, etc.)
   onFeedbackSubmitted?: () => void;
-  className?: string;
+  className?: string | undefined;
 }
 
 interface FeedbackFormData {
@@ -141,11 +141,11 @@ export function AIContentFeedback({
       } else {
         throw new Error(result.error || 'Failed to submit feedback');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting feedback:', error);
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to submit feedback',
+        description: error instanceof Error ? error?.message : 'Failed to submit feedback',
         variant: 'destructive',
       });
     } finally {
@@ -210,15 +210,13 @@ export function AIContentFeedback({
               <label className="text-sm font-medium">Type of Issue</label>
               <Select
                 value={feedbackData.feedbackType}
-                onValueChange={(value) =>
-                  setFeedbackData((prev) => ({ ...prev, feedbackType: value }))
-                }
+                onValueChange={value => setFeedbackData(prev => ({ ...prev, feedbackType: value }))}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select the type of issue" />
                 </SelectTrigger>
                 <SelectContent>
-                  {feedbackTypes.map((type) => (
+                  {feedbackTypes.map(type => (
                     <SelectItem key={type.value} value={type.value}>
                       <div>
                         <div className="font-medium">{type.label}</div>
@@ -236,7 +234,7 @@ export function AIContentFeedback({
               <Select
                 value={feedbackData.severity}
                 onValueChange={(value: 'low' | 'medium' | 'high' | 'critical') =>
-                  setFeedbackData((prev) => ({ ...prev, severity: value }))
+                  setFeedbackData(prev => ({ ...prev, severity: value }))
                 }
               >
                 <SelectTrigger>
@@ -259,9 +257,7 @@ export function AIContentFeedback({
               <Textarea
                 placeholder="Please describe the issue in detail. What is incorrect or problematic? How should it be corrected?"
                 value={feedbackData.description}
-                onChange={(e) =>
-                  setFeedbackData((prev) => ({ ...prev, description: e.target.value }))
-                }
+                onChange={e => setFeedbackData(prev => ({ ...prev, description: e.target.value }))}
                 rows={4}
                 className="resize-none"
               />

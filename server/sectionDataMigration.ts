@@ -97,7 +97,7 @@ async function createBasicSectionItems(termId: string, _term: any) {
       SELECT * FROM enhanced_terms WHERE id = ${termId}
     `);
 
-    if (termData.rows.length === 0) return;
+    if (termData.rows.length === 0) {return;}
 
     const fullTerm = termData.rows[0];
 
@@ -168,10 +168,10 @@ async function createBasicSectionItems(termId: string, _term: any) {
     // Insert section items
     for (const sectionData of sectionItems) {
       const sectionId = sectionMap.get(sectionData.sectionName);
-      if (!sectionId) continue;
+      if (!sectionId) {continue;}
 
       for (const item of sectionData.items) {
-        if (!item.content) continue; // Skip empty content
+        if (!item.content) {continue;} // Skip empty content
 
         await db.execute(sql`
           INSERT INTO section_items (
@@ -199,7 +199,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log('Migration completed successfully');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Migration failed:', error);
       process.exit(1);
     });

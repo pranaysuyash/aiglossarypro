@@ -10,7 +10,7 @@ interface SectionNavigatorProps {
   userProgress: IUserProgress[];
   currentSectionId?: number;
   onSectionClick: (sectionId: number) => void;
-  className?: string;
+  className?: string | undefined;
 }
 
 export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
@@ -21,18 +21,18 @@ export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
   className = '',
 }) => {
   // Create progress map for quick lookup
-  const progressMap = new Map(userProgress.map((p) => [p.sectionId, p]));
+  const progressMap = new Map(userProgress.map(p => [p.sectionId, p]));
 
   // Calculate overall progress
   const completedSections = userProgress.filter(
-    (p) => p.status === 'completed' || p.status === 'mastered'
+    p => p.status === 'completed' || p.status === 'mastered'
   ).length;
   const totalSections = sections.length;
   const overallProgress = totalSections > 0 ? (completedSections / totalSections) * 100 : 0;
 
   const getStatusIcon = (sectionId: number) => {
     const progress = progressMap.get(sectionId);
-    if (!progress) return <Clock className="h-4 w-4 text-gray-400" />;
+    if (!progress) {return <Clock className="h-4 w-4 text-gray-400" />;}
 
     switch (progress.status) {
       case 'completed':
@@ -47,7 +47,7 @@ export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
 
   const getStatusColor = (sectionId: number) => {
     const progress = progressMap.get(sectionId);
-    if (!progress) return 'bg-gray-100 text-gray-600';
+    if (!progress) {return 'bg-gray-100 text-gray-600';}
 
     switch (progress.status) {
       case 'completed':
@@ -83,7 +83,7 @@ export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
             </h4>
             {sections
               .sort((a, b) => a.displayOrder - b.displayOrder)
-              .map((section) => {
+              .map(section => {
                 const progress = progressMap.get(section.id);
                 const isActive = currentSectionId === section.id;
 
@@ -136,7 +136,7 @@ export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
               </div>
               <div className="flex items-center space-x-1 text-blue-600">
                 <BookOpen className="h-3 w-3" />
-                <span>{userProgress.filter((p) => p.status === 'in_progress').length} Active</span>
+                <span>{userProgress.filter(p => p.status === 'in_progress').length} Active</span>
               </div>
             </div>
           </div>

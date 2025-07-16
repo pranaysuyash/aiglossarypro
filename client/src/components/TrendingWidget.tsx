@@ -27,7 +27,7 @@ interface TrendingWidgetProps {
   trendType?: 'velocity' | 'engagement' | 'emerging' | 'popular';
   limit?: number;
   showHeader?: boolean;
-  className?: string;
+  className?: string | undefined;
   onTermClick?: (termId: string) => void;
 }
 
@@ -51,7 +51,7 @@ const TrendingWidget: React.FC<TrendingWidgetProps> = ({
       });
 
       const response = await fetch(`/api/trending/terms?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch trending terms');
+      if (!response.ok) {throw new Error('Failed to fetch trending terms');}
       return response.json();
     },
     refetchInterval: 60000, // Refresh every minute

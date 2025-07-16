@@ -82,16 +82,16 @@ class ServiceWorkerManager {
     // Online/offline detection
     window.addEventListener('online', () => {
       this.isOnline = true;
-      this.onlineListeners.forEach((listener) => listener());
+      this.onlineListeners.forEach(listener => listener());
     });
 
     window.addEventListener('offline', () => {
       this.isOnline = false;
-      this.offlineListeners.forEach((listener) => listener());
+      this.offlineListeners.forEach(listener => listener());
     });
 
     // PWA install prompt
-    window.addEventListener('beforeinstallprompt', (event) => {
+    window.addEventListener('beforeinstallprompt', event => {
       event.preventDefault();
       this.deferredPrompt = event as PWAInstallEvent;
       this.installPromptAvailable = true;
@@ -107,10 +107,10 @@ class ServiceWorkerManager {
   }
 
   private handleUpdateFound() {
-    if (!this.swRegistration) return;
+    if (!this.swRegistration) {return;}
 
     const newWorker = this.swRegistration.installing;
-    if (!newWorker) return;
+    if (!newWorker) {return;}
 
     newWorker.addEventListener('statechange', () => {
       if (newWorker.state === 'installed') {
@@ -142,10 +142,10 @@ class ServiceWorkerManager {
         this.deferredPrompt = null;
         this.installPromptAvailable = false;
         return true;
-      } else {
+      } 
         console.log('User dismissed PWA install');
         return false;
-      }
+      
     } catch (error) {
       console.error('PWA install failed:', error);
       return false;
@@ -153,7 +153,7 @@ class ServiceWorkerManager {
   }
 
   public async updateServiceWorker(): Promise<void> {
-    if (!this.swRegistration || !this.swRegistration.waiting) {
+    if (!this.swRegistration?.waiting) {
       console.log('No service worker update available');
       return;
     }
@@ -211,7 +211,7 @@ class ServiceWorkerManager {
   }
 
   public async getCacheInfo(): Promise<CacheInfo> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (!this.swRegistration) {
         resolve({
           totalCacheSize: 0,
@@ -224,7 +224,7 @@ class ServiceWorkerManager {
 
       const messageChannel = new MessageChannel();
 
-      messageChannel.port1.onmessage = (event) => {
+      messageChannel.port1.onmessage = event => {
         resolve(event.data);
       };
 
@@ -243,7 +243,7 @@ class ServiceWorkerManager {
   }
 
   public async clearCache(): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       if (!this.swRegistration) {
         resolve(false);
         return;
@@ -251,7 +251,7 @@ class ServiceWorkerManager {
 
       const messageChannel = new MessageChannel();
 
-      messageChannel.port1.onmessage = (event) => {
+      messageChannel.port1.onmessage = event => {
         resolve(event.data.success);
       };
 
@@ -282,7 +282,7 @@ class ServiceWorkerManager {
   }
 
   public formatCacheSize(bytes: number): string {
-    if (bytes === 0) return '0 B';
+    if (bytes === 0) {return '0 B';}
 
     const k = 1024;
     const sizes = ['B', 'KB', 'MB', 'GB'];
@@ -336,11 +336,11 @@ class ServiceWorkerManager {
   }
 
   private notifyUpdateListeners(): void {
-    this.updateListeners.forEach((listener) => listener());
+    this.updateListeners.forEach(listener => listener());
   }
 
   private notifyInstallListeners(): void {
-    this.installListeners.forEach((listener) => listener());
+    this.installListeners.forEach(listener => listener());
   }
 
   /**
@@ -367,9 +367,9 @@ class ServiceWorkerManager {
     }
 
     try {
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         const messageChannel = new MessageChannel();
-        messageChannel.port1.onmessage = (event) => {
+        messageChannel.port1.onmessage = event => {
           if (event.data.type === 'REFRESH_COMPLETE') {
             resolve(event.data.count || 0);
           }

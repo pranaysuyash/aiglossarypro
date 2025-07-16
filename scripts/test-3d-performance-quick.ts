@@ -214,7 +214,7 @@ class Quick3DPerformanceTester {
     ];
 
     // Find maximum viable configuration
-    const viableConfigs = this.results.filter((r) => r.success && r.estimatedFPS >= 30);
+    const viableConfigs = this.results.filter(r => r.success && r.estimatedFPS >= 30);
     const maxViable = viableConfigs.sort((a, b) => b.config.nodes - a.config.nodes)[0];
 
     if (maxViable) {
@@ -262,7 +262,7 @@ class Quick3DPerformanceTester {
       if (result.recommendations.length > 0) {
         report.push('');
         report.push('**Recommendations:**');
-        result.recommendations.forEach((rec) => {
+        result.recommendations.forEach(rec => {
           report.push(`- ${rec}`);
         });
       }
@@ -297,10 +297,10 @@ class Quick3DPerformanceTester {
       summary: {
         maxViableNodes:
           this.results
-            .filter((r) => r.success && r.estimatedFPS >= 30)
+            .filter(r => r.success && r.estimatedFPS >= 30)
             .sort((a, b) => b.config.nodes - a.config.nodes)[0]?.config.nodes || 0,
         totalTests: this.results.length,
-        successfulTests: this.results.filter((r) => r.success).length,
+        successfulTests: this.results.filter(r => r.success).length,
       },
     };
 

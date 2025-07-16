@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from 'react';
-import { X, ChevronUp, ChevronDown, Zap, Clock, Tag, TrendingUp } from 'lucide-react';
-import { useExperiment } from '@/services/posthogExperiments';
-import { trackUserAction } from '@/lib/analytics';
+import { ChevronDown, ChevronUp, Clock, Tag, TrendingUp, X, Zap } from 'lucide-react';
+import type React from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'wouter';
+import { trackUserAction } from '@/lib/analytics';
+import { useExperiment } from '@/services/posthogExperiments';
 
 interface WidgetVariant {
   title: string;
@@ -17,37 +18,37 @@ interface WidgetVariant {
 
 const WIDGET_VARIANTS: Record<string, WidgetVariant> = {
   control: {
-    title: "Upgrade to Pro",
-    subtitle: "Unlock all features",
-    price: "$39",
+    title: 'Upgrade to Pro',
+    subtitle: 'Unlock all features',
+    price: '$39',
     icon: <Zap className="w-5 h-5" />,
-    color: "blue"
+    color: 'blue',
   },
   discount_focused: {
-    title: "Limited Time Offer",
-    subtitle: "Save 30% Today",
-    price: "$27",
-    originalPrice: "$39",
-    discount: "30% OFF",
+    title: 'Limited Time Offer',
+    subtitle: 'Save 30% Today',
+    price: '$27',
+    originalPrice: '$39',
+    discount: '30% OFF',
     icon: <Tag className="w-5 h-5" />,
-    color: "green"
+    color: 'green',
   },
   urgency: {
-    title: "Flash Sale Ending",
-    subtitle: "Only 2 hours left!",
-    price: "$29",
-    originalPrice: "$39",
-    urgency: "02:00:00",
+    title: 'Flash Sale Ending',
+    subtitle: 'Only 2 hours left!',
+    price: '$29',
+    originalPrice: '$39',
+    urgency: '02:00:00',
     icon: <Clock className="w-5 h-5" />,
-    color: "red"
+    color: 'red',
   },
   value: {
-    title: "Best Value Plan",
-    subtitle: "Most popular choice",
-    price: "$39",
+    title: 'Best Value Plan',
+    subtitle: 'Most popular choice',
+    price: '$39',
     icon: <TrendingUp className="w-5 h-5" />,
-    color: "purple"
-  }
+    color: 'purple',
+  },
 };
 
 export function FloatingPricingWidget() {
@@ -70,9 +71,9 @@ export function FloatingPricingWidget() {
       const scrollY = window.scrollY;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       const progress = (scrollY / docHeight) * 100;
-      
+
       setScrollProgress(progress);
-      
+
       // Show widget after 20% scroll or 10 seconds
       if (progress > 20 && !isDismissed) {
         setIsVisible(true);
@@ -99,7 +100,7 @@ export function FloatingPricingWidget() {
   useEffect(() => {
     if (variant === 'urgency' && timeRemaining > 0 && isVisible) {
       const timer = setInterval(() => {
-        setTimeRemaining((prev) => Math.max(0, prev - 1));
+        setTimeRemaining(prev => Math.max(0, prev - 1));
       }, 1000);
 
       return () => clearInterval(timer);
@@ -109,9 +110,9 @@ export function FloatingPricingWidget() {
   // Track when widget becomes visible
   useEffect(() => {
     if (isVisible && !isDismissed) {
-      trackFeatureUsage('floating_pricing_shown', { 
+      trackFeatureUsage('floating_pricing_shown', {
         variant,
-        scroll_progress: scrollProgress 
+        scroll_progress: scrollProgress,
       });
     }
   }, [isVisible, isDismissed, variant, scrollProgress, trackFeatureUsage]);
@@ -124,9 +125,9 @@ export function FloatingPricingWidget() {
 
   const handleCTA = () => {
     trackConversion('floating_pricing_clicked');
-    trackUserAction('floating_pricing_cta_clicked', { 
+    trackUserAction('floating_pricing_cta_clicked', {
       variant,
-      expanded: isExpanded 
+      expanded: isExpanded,
     });
   };
 
@@ -137,21 +138,23 @@ export function FloatingPricingWidget() {
     return `${hours.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  if (!isVisible || isDismissed) return null;
+  if (!isVisible || isDismissed) {return null;}
 
   const colorClasses: Record<string, string> = {
     blue: 'from-blue-600 to-purple-600',
     green: 'from-green-600 to-emerald-600',
     red: 'from-red-600 to-pink-600',
-    purple: 'from-purple-600 to-indigo-600'
+    purple: 'from-purple-600 to-indigo-600',
   };
 
   return (
-    <div className={`
+    <div
+      className={`
       fixed bottom-6 right-6 z-40
       transition-all duration-300 ease-out
       ${isExpanded ? 'w-80' : 'w-64'}
-    `}>
+    `}
+    >
       <div className="bg-white rounded-lg shadow-2xl border border-gray-200 overflow-hidden">
         {/* Header */}
         <div className={`bg-gradient-to-r ${colorClasses[currentVariant.color]} p-4 text-white`}>
@@ -175,9 +178,7 @@ export function FloatingPricingWidget() {
         {/* Pricing */}
         <div className="p-4">
           <div className="flex items-baseline gap-2 mb-3">
-            <span className="text-3xl font-bold text-gray-900">
-              {currentVariant.price}
-            </span>
+            <span className="text-3xl font-bold text-gray-900">{currentVariant.price}</span>
             {currentVariant.originalPrice && (
               <span className="text-lg text-gray-500 line-through">
                 {currentVariant.originalPrice}

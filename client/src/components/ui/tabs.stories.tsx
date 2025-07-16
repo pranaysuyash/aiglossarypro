@@ -1,6 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react';
 import { Bell, CreditCard, Settings, Shield, User } from 'lucide-react';
-import React from 'react';
 import { Badge } from './badge';
 import { Button } from './button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './card';
@@ -19,7 +18,7 @@ const meta: Meta<typeof Tabs> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-2xl">
         <Story />
       </div>
@@ -609,7 +608,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-2xl dark">
         <Story />
       </div>

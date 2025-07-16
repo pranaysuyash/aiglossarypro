@@ -17,7 +17,7 @@ interface GeometricShape {
 }
 
 interface GeometricAIBackgroundProps {
-  className?: string;
+  className?: string | undefined;
   opacity?: number;
   shapeCount?: number;
   animationSpeed?: number;
@@ -61,10 +61,10 @@ export function GeometricAIBackground({
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    if (!canvas) {return;}
 
     const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+    if (!ctx) {return;}
 
     const resizeCanvas = () => {
       const rect = canvas.getBoundingClientRect();
@@ -190,7 +190,7 @@ export function GeometricAIBackground({
 
       const shapes = shapesRef.current;
 
-      shapes.forEach((shape) => {
+      shapes.forEach(shape => {
         // Update position if animation is allowed
         if (!isReducedMotion.current) {
           shape.x += shape.vx;

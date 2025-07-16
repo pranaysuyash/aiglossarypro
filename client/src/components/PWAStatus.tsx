@@ -28,7 +28,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from './ui/tabs';
 
 interface PWAStatusProps {
-  className?: string;
+  className?: string | undefined;
   compact?: boolean;
 }
 

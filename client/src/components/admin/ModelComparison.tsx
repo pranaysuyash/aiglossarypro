@@ -119,7 +119,7 @@ export function ModelComparison() {
     queryKey: ['terms'],
     queryFn: async () => {
       const response = await fetch('/api/terms');
-      if (!response.ok) throw new Error('Failed to fetch terms');
+      if (!response.ok) {throw new Error('Failed to fetch terms');}
       return response.json();
     },
   });
@@ -132,11 +132,11 @@ export function ModelComparison() {
   } = useQuery({
     queryKey: ['model-versions', selectedTerm?.id, selectedSection],
     queryFn: async () => {
-      if (!selectedTerm || !selectedSection) return [];
+      if (!selectedTerm || !selectedSection) {return [];}
       const response = await fetch(
         `/api/admin/enhanced-triplet/model-versions/${selectedTerm.id}/${selectedSection}`
       );
-      if (!response.ok) throw new Error('Failed to fetch model versions');
+      if (!response.ok) {throw new Error('Failed to fetch model versions');}
       const result = await response.json();
       return result.data || [];
     },
@@ -157,7 +157,7 @@ export function ModelComparison() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to generate multi-model content');
+      if (!response.ok) {throw new Error('Failed to generate multi-model content');}
       return response.json();
     },
     onSuccess: () => {
@@ -167,10 +167,10 @@ export function ModelComparison() {
       });
       refetchVersions();
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Generation failed',
-        description: error instanceof Error ? error.message : 'Unknown error',
+        description: error instanceof Error ? error?.message : 'Unknown error',
         variant: 'destructive',
       });
     },
@@ -184,7 +184,7 @@ export function ModelComparison() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ versionId }),
       });
-      if (!response.ok) throw new Error('Failed to select model version');
+      if (!response.ok) {throw new Error('Failed to select model version');}
       return response.json();
     },
     onSuccess: () => {
@@ -194,10 +194,10 @@ export function ModelComparison() {
       });
       refetchVersions();
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Selection failed',
-        description: error instanceof Error ? error.message : 'Unknown error',
+        description: error instanceof Error ? error?.message : 'Unknown error',
         variant: 'destructive',
       });
     },
@@ -211,7 +211,7 @@ export function ModelComparison() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(data),
       });
-      if (!response.ok) throw new Error('Failed to rate model version');
+      if (!response.ok) {throw new Error('Failed to rate model version');}
       return response.json();
     },
     onSuccess: () => {
@@ -221,10 +221,10 @@ export function ModelComparison() {
       });
       refetchVersions();
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Rating failed',
-        description: error instanceof Error ? error.message : 'Unknown error',
+        description: error instanceof Error ? error?.message : 'Unknown error',
         variant: 'destructive',
       });
     },
@@ -271,11 +271,11 @@ export function ModelComparison() {
   };
 
   const toggleContentVisibility = (versionId: string) => {
-    setShowContent((prev) => ({ ...prev, [versionId]: !prev[versionId] }));
+    setShowContent(prev => ({ ...prev, [versionId]: !prev[versionId] }));
   };
 
   const getModelInfo = (modelName: string) => {
-    return AVAILABLE_MODELS.find((m) => m.value === modelName) || AVAILABLE_MODELS[0];
+    return AVAILABLE_MODELS.find(m => m.value === modelName) || AVAILABLE_MODELS[0];
   };
 
   const formatCost = (cost: number) => {
@@ -291,16 +291,16 @@ export function ModelComparison() {
   };
 
   const getQualityColor = (score?: number) => {
-    if (!score) return 'bg-gray-100 text-gray-800';
-    if (score >= 8) return 'bg-green-100 text-green-800';
-    if (score >= 6) return 'bg-yellow-100 text-yellow-800';
+    if (!score) {return 'bg-gray-100 text-gray-800';}
+    if (score >= 8) {return 'bg-green-100 text-green-800';}
+    if (score >= 6) {return 'bg-yellow-100 text-yellow-800';}
     return 'bg-red-100 text-red-800';
   };
 
   const renderStarRating = (versionId: string, currentRating?: number) => {
     return (
       <div className="flex items-center space-x-1">
-        {[1, 2, 3, 4, 5].map((star) => (
+        {[1, 2, 3, 4, 5].map(star => (
           <button
             key={star}
             onClick={() => handleRateVersion(versionId, star)}
@@ -353,7 +353,7 @@ export function ModelComparison() {
               <Label htmlFor="term">Term</Label>
               <Select
                 value={selectedTerm?.id || ''}
-                onValueChange={(value) => {
+                onValueChange={value => {
                   const term = termsData?.find((t: Term) => t.id === value);
                   setSelectedTerm(term || null);
                 }}
@@ -379,7 +379,7 @@ export function ModelComparison() {
                   <SelectValue placeholder="Select section" />
                 </SelectTrigger>
                 <SelectContent>
-                  {ESSENTIAL_COLUMNS.map((column) => (
+                  {ESSENTIAL_COLUMNS.map(column => (
                     <SelectItem key={column.id} value={column.id}>
                       {column.name}
                     </SelectItem>
@@ -392,16 +392,16 @@ export function ModelComparison() {
             <div className="space-y-2">
               <Label>Models to Compare</Label>
               <div className="grid grid-cols-2 gap-2">
-                {AVAILABLE_MODELS.map((model) => (
+                {AVAILABLE_MODELS.map(model => (
                   <label key={model.value} className="flex items-center space-x-2 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={selectedModels.includes(model.value)}
-                      onChange={(e) => {
+                      onChange={e => {
                         if (e.target.checked) {
-                          setSelectedModels((prev) => [...prev, model.value]);
+                          setSelectedModels(prev => [...prev, model.value]);
                         } else {
-                          setSelectedModels((prev) => prev.filter((m) => m !== model.value));
+                          setSelectedModels(prev => prev.filter(m => m !== model.value));
                         }
                       }}
                       className="rounded border-gray-300"

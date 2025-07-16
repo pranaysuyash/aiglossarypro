@@ -347,7 +347,7 @@ export class EnhancedTripletProcessor {
       return { success: false, message: 'Another processing operation is already in progress' };
     }
 
-    const column = ENHANCED_COLUMN_DEFINITIONS.find((col) => col.id === columnId);
+    const column = ENHANCED_COLUMN_DEFINITIONS.find(col => col.id === columnId);
     if (!column) {
       return { success: false, message: `Column not found: ${columnId}` };
     }
@@ -395,7 +395,7 @@ export class EnhancedTripletProcessor {
 
       // Start processing pipeline in background
       this.processColumnWithQualityPipeline(column, termsToProcess, options)
-        .catch((error) => {
+        .catch(error => {
           logger.error('Error in column processing pipeline:', error);
           if (this.currentProcessing) {
             this.currentProcessing.status = 'failed';
@@ -490,7 +490,7 @@ export class EnhancedTripletProcessor {
       const batch = terms.slice(i, i + options.batchSize);
 
       await Promise.all(
-        batch.map(async (term) => {
+        batch.map(async term => {
           try {
             const content = await this.generateContentForTerm(term, column);
 
@@ -526,7 +526,7 @@ export class EnhancedTripletProcessor {
 
       // Add delay between batches
       if (i + options.batchSize < terms.length) {
-        await new Promise((resolve) => setTimeout(resolve, options.delayBetweenBatches));
+        await new Promise(resolve => setTimeout(resolve, options.delayBetweenBatches));
       }
     }
 
@@ -545,7 +545,7 @@ export class EnhancedTripletProcessor {
   ): Promise<void> {
     logger.info(`Starting evaluation phase for generated content`);
 
-    const generatedTerms = terms.filter((term) =>
+    const generatedTerms = terms.filter(term =>
       this.contentQualityMap.has(`${term.id}-${column.id}`)
     );
 
@@ -553,7 +553,7 @@ export class EnhancedTripletProcessor {
       const batch = generatedTerms.slice(i, i + options.batchSize);
 
       await Promise.all(
-        batch.map(async (term) => {
+        batch.map(async term => {
           try {
             const qualityKey = `${term.id}-${column.id}`;
             const qualityInfo = this.contentQualityMap.get(qualityKey);
@@ -596,14 +596,14 @@ export class EnhancedTripletProcessor {
 
       // Add delay between batches
       if (i + options.batchSize < generatedTerms.length) {
-        await new Promise((resolve) => setTimeout(resolve, options.delayBetweenBatches));
+        await new Promise(resolve => setTimeout(resolve, options.delayBetweenBatches));
       }
     }
 
     // Calculate average quality score
     const scores = Array.from(this.contentQualityMap.values())
-      .filter((q) => q.evaluationScore > 0)
-      .map((q) => q.evaluationScore);
+      .filter(q => q.evaluationScore > 0)
+      .map(q => q.evaluationScore);
 
     this.currentProcessing!.averageQualityScore =
       scores.length > 0 ? scores.reduce((sum, score) => sum + score, 0) / scores.length : 0;
@@ -623,7 +623,7 @@ export class EnhancedTripletProcessor {
   ): Promise<void> {
     logger.info(`Starting improvement phase for low-quality content`);
 
-    const termsNeedingImprovement = terms.filter((term) => {
+    const termsNeedingImprovement = terms.filter(term => {
       const qualityInfo = this.contentQualityMap.get(`${term.id}-${column.id}`);
       return qualityInfo?.needsImprovement;
     });
@@ -632,7 +632,7 @@ export class EnhancedTripletProcessor {
       const batch = termsNeedingImprovement.slice(i, i + options.batchSize);
 
       await Promise.all(
-        batch.map(async (term) => {
+        batch.map(async term => {
           try {
             const qualityKey = `${term.id}-${column.id}`;
             const qualityInfo = this.contentQualityMap.get(qualityKey);
@@ -667,7 +667,7 @@ export class EnhancedTripletProcessor {
 
       // Add delay between batches
       if (i + options.batchSize < termsNeedingImprovement.length) {
-        await new Promise((resolve) => setTimeout(resolve, options.delayBetweenBatches));
+        await new Promise(resolve => setTimeout(resolve, options.delayBetweenBatches));
       }
     }
 
@@ -874,7 +874,7 @@ export class EnhancedTripletProcessor {
    * Update quality distribution
    */
   private updateQualityDistribution(score: number): void {
-    if (!this.currentProcessing) return;
+    if (!this.currentProcessing) {return;}
 
     if (score >= 9) {
       this.currentProcessing.qualityDistribution.excellent++;
@@ -905,14 +905,14 @@ export class EnhancedTripletProcessor {
     mode: string
   ): number {
     const costs = MODEL_COSTS[column.recommendedModel as keyof typeof MODEL_COSTS];
-    if (!costs) return 0;
+    if (!costs) {return 0;}
 
     const tokensPerTerm = column.estimatedTokens;
     const totalTokens = termCount * tokensPerTerm;
 
     let multiplier = 1;
-    if (mode === 'generate-evaluate') multiplier = 1.5;
-    if (mode === 'full-pipeline') multiplier = 2.0;
+    if (mode === 'generate-evaluate') {multiplier = 1.5;}
+    if (mode === 'full-pipeline') {multiplier = 2.0;}
 
     return (totalTokens / 1000) * costs.output * multiplier;
   }
@@ -922,7 +922,7 @@ export class EnhancedTripletProcessor {
    */
   private calculateCost(model: string, promptTokens: number, completionTokens: number): number {
     const costs = MODEL_COSTS[model as keyof typeof MODEL_COSTS];
-    if (!costs) return 0;
+    if (!costs) {return 0;}
 
     return (promptTokens / 1000) * costs.input + (completionTokens / 1000) * costs.output;
   }

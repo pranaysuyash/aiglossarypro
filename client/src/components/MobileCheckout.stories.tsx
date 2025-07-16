@@ -11,7 +11,8 @@ const meta: Meta<typeof MobileCheckout> = {
     },
     docs: {
       description: {
-        component: 'Mobile-optimized checkout overlay with Gumroad integration, Apple Pay/Google Pay support',
+        component:
+          'Mobile-optimized checkout overlay with Gumroad integration, Apple Pay/Google Pay support',
       },
     },
   },
@@ -59,10 +60,13 @@ export const Success: Story = {
   play: async ({ canvasElement }) => {
     // Simulate successful purchase message
     setTimeout(() => {
-      window.postMessage({
-        type: 'gumroad:purchase_complete',
-        data: { purchaseId: 'test_123' }
-      }, '*');
+      window.postMessage(
+        {
+          type: 'gumroad:purchase_complete',
+          data: { purchaseId: 'test_123' },
+        },
+        '*'
+      );
     }, 1000);
   },
   parameters: {
@@ -84,10 +88,13 @@ export const Error: Story = {
   play: async ({ canvasElement }) => {
     // Simulate failed purchase message
     setTimeout(() => {
-      window.postMessage({
-        type: 'gumroad:purchase_failed',
-        data: { error: 'Payment method declined. Please try a different card.' }
-      }, '*');
+      window.postMessage(
+        {
+          type: 'gumroad:purchase_failed',
+          data: { error: 'Payment method declined. Please try a different card.' },
+        },
+        '*'
+      );
     }, 1000);
   },
   parameters: {

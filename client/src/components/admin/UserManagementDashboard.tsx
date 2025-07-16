@@ -90,7 +90,7 @@ export default function UserManagementDashboard() {
         ...(searchTerm && { search: searchTerm }),
       });
       const response = await fetch(`/api/admin/users?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch users');
+      if (!response.ok) {throw new Error('Failed to fetch users');}
       return response.json();
     },
   });
@@ -103,7 +103,7 @@ export default function UserManagementDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updates),
       });
-      if (!response.ok) throw new Error('Failed to update user');
+      if (!response.ok) {throw new Error('Failed to update user');}
       return response.json();
     },
     onSuccess: () => {
@@ -114,10 +114,10 @@ export default function UserManagementDashboard() {
       });
       setShowPromoteDialog(false);
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Update failed',
-        description: error.message,
+        description: error?.message,
         variant: 'destructive',
       });
     },
@@ -129,7 +129,7 @@ export default function UserManagementDashboard() {
       const response = await fetch(`/api/admin/users/${userId}`, {
         method: 'DELETE',
       });
-      if (!response.ok) throw new Error('Failed to delete user');
+      if (!response.ok) {throw new Error('Failed to delete user');}
       return response.json();
     },
     onSuccess: () => {
@@ -139,10 +139,10 @@ export default function UserManagementDashboard() {
         description: 'User has been deleted successfully.',
       });
     },
-    onError: (error) => {
+    onError: error => {
       toast({
         title: 'Delete failed',
-        description: error.message,
+        description: error?.message,
         variant: 'destructive',
       });
     },
@@ -152,10 +152,10 @@ export default function UserManagementDashboard() {
   const fetchUserActivity = async (userId: string) => {
     try {
       const response = await fetch(`/api/admin/users/${userId}/activity`);
-      if (!response.ok) throw new Error('Failed to fetch user activity');
+      if (!response.ok) {throw new Error('Failed to fetch user activity');}
       const data = await response.json();
       return data.data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching user activity:', error);
       return null;
     }
@@ -178,7 +178,7 @@ export default function UserManagementDashboard() {
   };
 
   const confirmPromoteUser = async () => {
-    if (!selectedUser) return;
+    if (!selectedUser) {return;}
 
     await updateUserMutation.mutateAsync({
       userId: selectedUser.id,
@@ -225,7 +225,7 @@ export default function UserManagementDashboard() {
               <Input
                 placeholder="Search by name or email..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={e => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>

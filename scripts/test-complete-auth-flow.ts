@@ -89,7 +89,7 @@ class CompleteAuthTester {
 
         // Force click the first "Use This Account" button
         await page.evaluate(() => {
-          const buttons = Array.from(document.querySelectorAll('button')).filter((btn) =>
+          const buttons = Array.from(document.querySelectorAll('button')).filter(btn =>
             btn.textContent?.includes('Use This Account')
           );
           if (buttons.length > 0) {
@@ -125,7 +125,7 @@ class CompleteAuthTester {
           console.log(chalk.cyan('📍 Step 7: Clicking Sign In button...'));
 
           // Listen for network requests
-          page.on('response', (response) => {
+          page.on('response', response => {
             if (response.url().includes('/auth/firebase/login')) {
               console.log(chalk.blue(`📡 API Response: ${response.status()} - ${response.url()}`));
             }

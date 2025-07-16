@@ -335,7 +335,7 @@ class VisualAuditor {
         }
         break;
       case 'scroll':
-        await page.evaluate((pixels) => {
+        await page.evaluate(pixels => {
           window.scrollBy(0, pixels as number);
         }, action.value || 100);
         break;
@@ -476,10 +476,10 @@ class VisualAuditor {
 Generated: ${new Date().toISOString()}
 
 ## Summary
-- Total Pages Audited: ${new Set(this.issues.map((i) => i.page)).size}
+- Total Pages Audited: ${new Set(this.issues.map(i => i.page)).size}
 - Total Issues Found: ${this.issues.length}
-- Critical Issues: ${this.issues.filter((i) => i.severity === 'critical').length}
-- High Priority Issues: ${this.issues.filter((i) => i.severity === 'high').length}
+- Critical Issues: ${this.issues.filter(i => i.severity === 'critical').length}
+- High Priority Issues: ${this.issues.filter(i => i.severity === 'high').length}
 
 ## Issues by Page
 
@@ -508,10 +508,10 @@ All screenshots are available in: ${path.relative(process.cwd(), this.screenshot
         {
           timestamp: new Date().toISOString(),
           summary: {
-            pagesAudited: new Set(this.issues.map((i) => i.page)).size,
+            pagesAudited: new Set(this.issues.map(i => i.page)).size,
             totalIssues: this.issues.length,
-            criticalIssues: this.issues.filter((i) => i.severity === 'critical').length,
-            highPriorityIssues: this.issues.filter((i) => i.severity === 'high').length,
+            criticalIssues: this.issues.filter(i => i.severity === 'critical').length,
+            highPriorityIssues: this.issues.filter(i => i.severity === 'high').length,
           },
           issues: this.issues,
           screenshotDirectory: this.screenshotDir,
@@ -530,7 +530,7 @@ All screenshots are available in: ${path.relative(process.cwd(), this.screenshot
         ([page, issues]) => `### ${page}
 ${issues
   .map(
-    (issue) => `- **[${issue.severity.toUpperCase()}]** ${issue.description}
+    issue => `- **[${issue.severity.toUpperCase()}]** ${issue.description}
   - Category: ${issue.category}
   - Fix: ${issue.recommendation}`
   )
@@ -545,7 +545,7 @@ ${issues
     return Object.entries(categoryGroups)
       .map(
         ([category, issues]) => `### ${category}
-${issues.map((issue) => `- **[${issue.severity.toUpperCase()}]** ${issue.description} (${issue.page})`).join('\n')}`
+${issues.map(issue => `- **[${issue.severity.toUpperCase()}]** ${issue.description} (${issue.page})`).join('\n')}`
       )
       .join('\n\n');
   }

@@ -145,7 +145,7 @@ class AuthFlowTester {
               console.log(chalk.green('✅ Sign In button found'));
 
               // Listen for network requests to debug API calls
-              page.on('response', (response) => {
+              page.on('response', response => {
                 if (response.url().includes('/auth/firebase/login')) {
                   console.log(
                     chalk.blue(`📡 API Response: ${response.status()} - ${response.url()}`)

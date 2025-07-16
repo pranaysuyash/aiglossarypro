@@ -1,6 +1,13 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { FocusTrappedDialog, FocusTrappedDialogTrigger, FocusTrappedDialogContent, FocusTrappedDialogHeader, FocusTrappedDialogTitle, FocusTrappedDialogDescription, FocusTrappedDialogFooter } from './focus-trapped-dialog';
+import type { Meta, StoryObj } from '@storybook/react';
+import {
+  FocusTrappedDialog,
+  FocusTrappedDialogContent,
+  FocusTrappedDialogDescription,
+  FocusTrappedDialogFooter,
+  FocusTrappedDialogHeader,
+  FocusTrappedDialogTitle,
+  FocusTrappedDialogTrigger,
+} from './focus-trapped-dialog';
 
 const meta = {
   title: 'UI/FocusTrappedDialog',

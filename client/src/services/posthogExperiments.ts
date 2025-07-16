@@ -1,25 +1,55 @@
-import { posthog } from '@/lib/analytics';
+import { posthog, isAnalyticsDisabled } from '@/lib/analytics';
 
 export interface ExperimentFlags {
   // Landing page experiments
   landingPageVariant: 'control' | 'marketing_sample';
   landingPageBackground: 'control' | 'neural' | 'geometric' | 'fallback';
-  landingPageCTA: 'control' | 'sample' | 'explore' | 'urgency' | 'benefit' | 'social_proof' | 'value' | 'action';
+  landingPageCTA:
+    | 'control'
+    | 'sample'
+    | 'explore'
+    | 'urgency'
+    | 'benefit'
+    | 'social_proof'
+    | 'value'
+    | 'action';
   landingPageMessaging: 'control' | 'focused' | 'technical';
-  landingPageHeadline: 'control' | 'benefit_focused' | 'problem_solution' | 'social_proof' | 'authority' | 'curiosity' | 'value_prop' | 'savings_focused' | 'content_focused' | 'urgency_focused';
-  socialProofPlacement: 'control' | 'above_fold' | 'below_hero' | 'in_features' | 'near_cta' | 'bottom' | 'numbers';
-  urgencyMessaging: 'control' | 'time_limited' | 'quantity_limited' | 'social_pressure' | 'seasonal';
-  
+  landingPageHeadline:
+    | 'control'
+    | 'benefit_focused'
+    | 'problem_solution'
+    | 'social_proof'
+    | 'authority'
+    | 'curiosity'
+    | 'value_prop'
+    | 'savings_focused'
+    | 'content_focused'
+    | 'urgency_focused';
+  socialProofPlacement:
+    | 'control'
+    | 'above_fold'
+    | 'below_hero'
+    | 'in_features'
+    | 'near_cta'
+    | 'bottom'
+    | 'numbers';
+  urgencyMessaging:
+    | 'control'
+    | 'time_limited'
+    | 'quantity_limited'
+    | 'social_pressure'
+    | 'seasonal';
+
   // User experience experiments
   freeUserLimit: 'control' | 'expanded';
   onboardingFlow: 'control' | 'interactive' | 'simplified';
   searchExperience: 'control' | 'enhanced' | 'ai_powered';
-  
+
   // Conversion experiments
   upgradePrompts: 'control' | 'value_focused' | 'urgency';
   paymentFlow: 'control' | 'mobile_optimized' | 'one_click';
   socialProof: 'control' | 'testimonials' | 'usage_stats';
-  
+
   // New A/B test experiments
   exitIntentVariant: 'control' | 'value_focused' | 'urgency' | 'social_proof';
   trustBadgeStyle: 'minimal' | 'detailed' | 'animated';
@@ -28,11 +58,157 @@ export interface ExperimentFlags {
   mediaLogosStyle: 'control' | 'animated' | 'carousel' | 'grid';
   mediaLogosPhrase: 'control' | 'authority' | 'social_proof' | 'credibility';
   mediaLogosPlacement: 'above_fold' | 'below_fold' | 'in_features' | 'near_cta';
-  
+
   // Additional missing experiments
-  pricingDisplay: 'value' | 'fallback' | 'action' | 'inline' | 'control' | 'marketing_sample' | 'neural' | 'geometric' | 'sample' | 'explore' | 'urgency' | 'benefit' | 'social_proof' | 'focused' | 'technical' | 'benefit_focused' | 'problem_solution' | 'authority' | 'curiosity' | 'value_prop' | 'above_fold' | 'below_hero' | 'in_features' | 'near_cta' | 'time_limited' | 'quantity_limited' | 'social_pressure' | 'seasonal' | 'expanded' | 'interactive' | 'simplified' | 'enhanced' | 'ai_powered' | 'value_focused' | 'mobile_optimized' | 'one_click' | 'testimonials' | 'usage_stats' | 'minimal' | 'detailed' | 'animated' | 'floating' | 'discount_focused' | 'carousel' | 'grid' | 'credibility' | 'below_fold' | 'simple' | 'comparison';
-  landingPageCopy: 'value' | 'fallback' | 'action' | 'inline' | 'control' | 'marketing_sample' | 'neural' | 'geometric' | 'sample' | 'explore' | 'urgency' | 'benefit' | 'social_proof' | 'focused' | 'technical' | 'benefit_focused' | 'problem_solution' | 'authority' | 'curiosity' | 'value_prop' | 'above_fold' | 'below_hero' | 'in_features' | 'near_cta' | 'time_limited' | 'quantity_limited' | 'social_pressure' | 'seasonal' | 'expanded' | 'interactive' | 'simplified' | 'enhanced' | 'ai_powered' | 'value_focused' | 'mobile_optimized' | 'one_click' | 'testimonials' | 'usage_stats' | 'minimal' | 'detailed' | 'animated' | 'floating' | 'discount_focused' | 'carousel' | 'grid' | 'credibility' | 'below_fold' | 'pain_focused' | 'solution_focused' | 'urgency_focused';
-  urgencyTactics: 'value' | 'fallback' | 'action' | 'inline' | 'control' | 'marketing_sample' | 'neural' | 'geometric' | 'sample' | 'explore' | 'urgency' | 'benefit' | 'social_proof' | 'focused' | 'technical' | 'benefit_focused' | 'problem_solution' | 'authority' | 'curiosity' | 'value_prop' | 'above_fold' | 'below_hero' | 'in_features' | 'near_cta' | 'time_limited' | 'quantity_limited' | 'social_pressure' | 'seasonal' | 'expanded' | 'interactive' | 'simplified' | 'enhanced' | 'ai_powered' | 'value_focused' | 'mobile_optimized' | 'one_click' | 'testimonials' | 'usage_stats' | 'minimal' | 'detailed' | 'animated' | 'floating' | 'discount_focused' | 'carousel' | 'grid' | 'credibility' | 'below_fold';
+  pricingDisplay:
+    | 'value'
+    | 'fallback'
+    | 'action'
+    | 'inline'
+    | 'control'
+    | 'marketing_sample'
+    | 'neural'
+    | 'geometric'
+    | 'sample'
+    | 'explore'
+    | 'urgency'
+    | 'benefit'
+    | 'social_proof'
+    | 'focused'
+    | 'technical'
+    | 'benefit_focused'
+    | 'problem_solution'
+    | 'authority'
+    | 'curiosity'
+    | 'value_prop'
+    | 'above_fold'
+    | 'below_hero'
+    | 'in_features'
+    | 'near_cta'
+    | 'time_limited'
+    | 'quantity_limited'
+    | 'social_pressure'
+    | 'seasonal'
+    | 'expanded'
+    | 'interactive'
+    | 'simplified'
+    | 'enhanced'
+    | 'ai_powered'
+    | 'value_focused'
+    | 'mobile_optimized'
+    | 'one_click'
+    | 'testimonials'
+    | 'usage_stats'
+    | 'minimal'
+    | 'detailed'
+    | 'animated'
+    | 'floating'
+    | 'discount_focused'
+    | 'carousel'
+    | 'grid'
+    | 'credibility'
+    | 'below_fold'
+    | 'simple'
+    | 'comparison';
+  landingPageCopy:
+    | 'value'
+    | 'fallback'
+    | 'action'
+    | 'inline'
+    | 'control'
+    | 'marketing_sample'
+    | 'neural'
+    | 'geometric'
+    | 'sample'
+    | 'explore'
+    | 'urgency'
+    | 'benefit'
+    | 'social_proof'
+    | 'focused'
+    | 'technical'
+    | 'benefit_focused'
+    | 'problem_solution'
+    | 'authority'
+    | 'curiosity'
+    | 'value_prop'
+    | 'above_fold'
+    | 'below_hero'
+    | 'in_features'
+    | 'near_cta'
+    | 'time_limited'
+    | 'quantity_limited'
+    | 'social_pressure'
+    | 'seasonal'
+    | 'expanded'
+    | 'interactive'
+    | 'simplified'
+    | 'enhanced'
+    | 'ai_powered'
+    | 'value_focused'
+    | 'mobile_optimized'
+    | 'one_click'
+    | 'testimonials'
+    | 'usage_stats'
+    | 'minimal'
+    | 'detailed'
+    | 'animated'
+    | 'floating'
+    | 'discount_focused'
+    | 'carousel'
+    | 'grid'
+    | 'credibility'
+    | 'below_fold'
+    | 'pain_focused'
+    | 'solution_focused'
+    | 'urgency_focused';
+  urgencyTactics:
+    | 'value'
+    | 'fallback'
+    | 'action'
+    | 'inline'
+    | 'control'
+    | 'marketing_sample'
+    | 'neural'
+    | 'geometric'
+    | 'sample'
+    | 'explore'
+    | 'urgency'
+    | 'benefit'
+    | 'social_proof'
+    | 'focused'
+    | 'technical'
+    | 'benefit_focused'
+    | 'problem_solution'
+    | 'authority'
+    | 'curiosity'
+    | 'value_prop'
+    | 'above_fold'
+    | 'below_hero'
+    | 'in_features'
+    | 'near_cta'
+    | 'time_limited'
+    | 'quantity_limited'
+    | 'social_pressure'
+    | 'seasonal'
+    | 'expanded'
+    | 'interactive'
+    | 'simplified'
+    | 'enhanced'
+    | 'ai_powered'
+    | 'value_focused'
+    | 'mobile_optimized'
+    | 'one_click'
+    | 'testimonials'
+    | 'usage_stats'
+    | 'minimal'
+    | 'detailed'
+    | 'animated'
+    | 'floating'
+    | 'discount_focused'
+    | 'carousel'
+    | 'grid'
+    | 'credibility'
+    | 'below_fold';
 }
 
 export interface ExperimentMetrics {
@@ -40,18 +216,18 @@ export interface ExperimentMetrics {
   signupRate: number;
   upgradeRate: number;
   retentionRate: number;
-  
+
   // Engagement metrics
   pageViews: number;
   sessionDuration: number;
   bounceRate: number;
   termViewsPerSession: number;
-  
+
   // Feature usage metrics
   searchUsage: number;
   favoriteUsage: number;
   socialShareUsage: number;
-  
+
   // Revenue metrics
   lifetimeValue: number;
   averageOrderValue: number;
@@ -61,51 +237,64 @@ export interface ExperimentMetrics {
 class PostHogExperimentsService {
   private isInitialized = false;
   private userProperties: Record<string, any> = {};
-  
+  private lastTrackTime: { [key: string]: number } = {};
+  private trackingRateLimit = 1000; // 1 second between same event
+
   // Initialize PostHog feature flags
   async initialize(userId?: string, userProperties?: Record<string, any>) {
-    if (this.isInitialized) return;
-    
+    if (this.isInitialized) {return;}
+
+    // Check if analytics is disabled
+    if (import.meta.env.VITE_DISABLE_ANALYTICS === 'true') {
+      console.log('🧪 PostHog experiments disabled for local development');
+      this.isInitialized = true;
+      return;
+    }
+
     try {
       // Set user properties for targeting
       if (userId) {
         posthog.identify(userId, userProperties);
       }
-      
+
       if (userProperties) {
         this.userProperties = userProperties;
         posthog.setPersonProperties(userProperties);
       }
-      
+
       // Wait for feature flags to load
       await posthog.reloadFeatureFlags();
-      
+
       this.isInitialized = true;
       console.log('🧪 PostHog experiments initialized');
-      
     } catch (error) {
       console.error('Failed to initialize PostHog experiments:', error);
     }
   }
-  
+
   // Get experiment variant for a feature
   getExperimentVariant<K extends keyof ExperimentFlags>(
     flagKey: K,
     defaultValue: ExperimentFlags[K]
   ): ExperimentFlags[K] {
+    // Return default if analytics is disabled
+    if (import.meta.env.VITE_DISABLE_ANALYTICS === 'true') {
+      return defaultValue;
+    }
+
     if (!this.isInitialized) {
       console.warn(`PostHog not initialized, returning default for ${flagKey}`);
       return defaultValue;
     }
-    
+
     const variant = posthog.getFeatureFlag(flagKey) as ExperimentFlags[K];
-    
+
     // Track flag evaluation
     this.trackFlagEvaluation(flagKey, variant || defaultValue);
-    
+
     return variant || defaultValue;
   }
-  
+
   // Check if user is in experiment
   isInExperiment<K extends keyof ExperimentFlags>(
     flagKey: K,
@@ -113,13 +302,15 @@ class PostHogExperimentsService {
   ): boolean {
     return this.getExperimentVariant(flagKey, 'control' as ExperimentFlags[K]) === variant;
   }
-  
+
   // Track experiment exposure
   trackExperimentExposure<K extends keyof ExperimentFlags>(
     flagKey: K,
     variant: ExperimentFlags[K],
     context?: Record<string, any>
   ) {
+    if (import.meta.env.VITE_DISABLE_ANALYTICS === 'true') {return;}
+
     posthog.capture('experiment_exposure', {
       flag_key: flagKey,
       variant,
@@ -128,7 +319,7 @@ class PostHogExperimentsService {
       timestamp: new Date().toISOString(),
     });
   }
-  
+
   // Track experiment conversion
   trackExperimentConversion<K extends keyof ExperimentFlags>(
     flagKey: K,
@@ -137,6 +328,8 @@ class PostHogExperimentsService {
     value?: number,
     properties?: Record<string, any>
   ) {
+    if (import.meta.env.VITE_DISABLE_ANALYTICS === 'true') {return;}
+
     posthog.capture('experiment_conversion', {
       flag_key: flagKey,
       variant,
@@ -147,7 +340,7 @@ class PostHogExperimentsService {
       timestamp: new Date().toISOString(),
     });
   }
-  
+
   // Track feature usage within experiments
   trackFeatureUsage<K extends keyof ExperimentFlags>(
     flagKey: K,
@@ -155,6 +348,8 @@ class PostHogExperimentsService {
     feature: string,
     usage_data?: Record<string, any>
   ) {
+    if (import.meta.env.VITE_DISABLE_ANALYTICS === 'true') {return;}
+
     posthog.capture('experiment_feature_usage', {
       flag_key: flagKey,
       variant,
@@ -164,13 +359,15 @@ class PostHogExperimentsService {
       timestamp: new Date().toISOString(),
     });
   }
-  
+
   // Track experiment metrics
   trackExperimentMetrics<K extends keyof ExperimentFlags>(
     flagKey: K,
     variant: ExperimentFlags[K],
     metrics: Partial<ExperimentMetrics>
   ) {
+    if (import.meta.env.VITE_DISABLE_ANALYTICS === 'true') {return;}
+
     posthog.capture('experiment_metrics', {
       flag_key: flagKey,
       variant,
@@ -179,17 +376,21 @@ class PostHogExperimentsService {
       timestamp: new Date().toISOString(),
     });
   }
-  
+
   // Get all active experiments for user
   getActiveExperiments(): Record<string, string> {
-    const flags = posthog.getFeatureFlags();
+    if (isAnalyticsDisabled()) {
+      return {};
+    }
+
+    const flags = posthog.getFeatureFlags ? posthog.getFeatureFlags() : {};
     const experiments: Record<string, string> = {};
-    
+
     // Filter for experiment flags only
     const experimentKeys: (keyof ExperimentFlags)[] = [
       'landingPageVariant',
       'landingPageBackground',
-      'landingPageCTA', 
+      'landingPageCTA',
       'landingPageMessaging',
       'landingPageHeadline',
       'socialProofPlacement',
@@ -206,18 +407,18 @@ class PostHogExperimentsService {
       'floatingPricingVariant',
       'mediaLogosStyle',
       'mediaLogosPhrase',
-      'mediaLogosPlacement'
+      'mediaLogosPlacement',
     ];
-    
+
     experimentKeys.forEach(key => {
       if (flags[key]) {
         experiments[key] = flags[key];
       }
     });
-    
+
     return experiments;
   }
-  
+
   // Track user journey through experiment funnel
   trackExperimentFunnel<K extends keyof ExperimentFlags>(
     flagKey: K,
@@ -225,6 +426,8 @@ class PostHogExperimentsService {
     funnelStep: string,
     stepData?: Record<string, any>
   ) {
+    if (import.meta.env.VITE_DISABLE_ANALYTICS === 'true') {return;}
+
     posthog.capture('experiment_funnel_step', {
       flag_key: flagKey,
       variant,
@@ -235,19 +438,21 @@ class PostHogExperimentsService {
       timestamp: new Date().toISOString(),
     });
   }
-  
+
   // Set experiment context (device, location, etc.)
   setExperimentContext(context: Record<string, any>) {
+    if (import.meta.env.VITE_DISABLE_ANALYTICS === 'true') {return;}
+
     this.userProperties = {
       ...this.userProperties,
-      experiment_context: context
+      experiment_context: context,
     };
-    
+
     posthog.setPersonProperties({
-      experiment_context: context
+      experiment_context: context,
     });
   }
-  
+
   // Track experiment errors/issues
   trackExperimentError<K extends keyof ExperimentFlags>(
     flagKey: K,
@@ -255,6 +460,8 @@ class PostHogExperimentsService {
     error: string,
     errorContext?: Record<string, any>
   ) {
+    if (import.meta.env.VITE_DISABLE_ANALYTICS === 'true') {return;}
+
     posthog.capture('experiment_error', {
       flag_key: flagKey,
       variant,
@@ -265,33 +472,50 @@ class PostHogExperimentsService {
       timestamp: new Date().toISOString(),
     });
   }
-  
+
   // Helper methods
   private trackFlagEvaluation<K extends keyof ExperimentFlags>(
     flagKey: K,
     variant: ExperimentFlags[K]
   ) {
+    // Check if analytics is disabled
+    if (isAnalyticsDisabled()) {return;}
+
+    // Additional rate limiting in development
+    if (import.meta.env.DEV && !isAnalyticsDisabled()) {
+      // Rate limit tracking to avoid spamming in dev
+      const now = Date.now();
+      const trackKey = `flag_${flagKey}`;
+      if (
+        this.lastTrackTime[trackKey] &&
+        now - this.lastTrackTime[trackKey] < this.trackingRateLimit
+      ) {
+        return;
+      }
+      this.lastTrackTime[trackKey] = now;
+    }
+
     posthog.capture('feature_flag_called', {
       flag_key: flagKey,
       flag_value: variant,
       timestamp: new Date().toISOString(),
     });
   }
-  
+
   private getTimeToConversion(): number {
     const sessionStart = sessionStorage.getItem('session_start_time');
-    if (!sessionStart) return 0;
-    
+    if (!sessionStart) {return 0;}
+
     return Math.floor((Date.now() - parseInt(sessionStart)) / 1000);
   }
-  
+
   private getSessionDuration(): number {
     const sessionStart = sessionStorage.getItem('session_start_time');
-    if (!sessionStart) return 0;
-    
+    if (!sessionStart) {return 0;}
+
     return Math.floor((Date.now() - parseInt(sessionStart)) / 1000);
   }
-  
+
   private getSessionId(): string {
     let sessionId = sessionStorage.getItem('posthog_session_id');
     if (!sessionId) {
@@ -300,7 +524,7 @@ class PostHogExperimentsService {
     }
     return sessionId;
   }
-  
+
   private getFunnelPosition(step: string): number {
     const funnelSteps = [
       'page_view',
@@ -311,9 +535,9 @@ class PostHogExperimentsService {
       'signup_complete',
       'first_usage',
       'upgrade_consideration',
-      'upgrade_complete'
+      'upgrade_complete',
     ];
-    
+
     return funnelSteps.indexOf(step) + 1;
   }
 }
@@ -327,17 +551,23 @@ export function useExperiment<K extends keyof ExperimentFlags>(
   defaultValue: ExperimentFlags[K]
 ) {
   const variant = posthogExperiments.getExperimentVariant(flagKey, defaultValue);
-  
+
   // Track exposure on first render
   React.useEffect(() => {
     posthogExperiments.trackExperimentExposure(flagKey, variant);
   }, [flagKey, variant]);
-  
+
   return {
     variant,
     isVariant: (targetVariant: ExperimentFlags[K]) => variant === targetVariant,
     trackConversion: (conversionType: string, value?: number, properties?: Record<string, any>) =>
-      posthogExperiments.trackExperimentConversion(flagKey, variant, conversionType, value, properties),
+      posthogExperiments.trackExperimentConversion(
+        flagKey,
+        variant,
+        conversionType,
+        value,
+        properties
+      ),
     trackFeatureUsage: (feature: string, usage_data?: Record<string, any>) =>
       posthogExperiments.trackFeatureUsage(flagKey, variant, feature, usage_data),
     trackFunnelStep: (step: string, stepData?: Record<string, any>) =>

@@ -1,4 +1,4 @@
-import { ArrowRight, BookOpen, Code, Users, Search } from 'lucide-react';
+import { ArrowRight, BookOpen, Code, Search, Users } from 'lucide-react';
 import { useEffect } from 'react';
 import { BACKGROUND_COMPONENTS, BackgroundTester } from '@/components/landing/backgrounds';
 import { Badge } from '@/components/ui/badge';
@@ -6,21 +6,21 @@ import { Button } from '@/components/ui/button';
 import { useBackgroundABTest } from '@/hooks/useBackgroundABTest';
 import { useCountryPricing } from '@/hooks/useCountryPricing';
 import { useABTestTracking } from '@/services/abTestingService';
-import { useGA4 } from '@/types/analytics';
 import { useExperiment } from '@/services/posthogExperiments';
+import { useGA4 } from '@/types/analytics';
 
 export function HeroSection() {
   const pricing = useCountryPricing();
   const { currentVariant, trackInteraction, isClient, setVariant } = useBackgroundABTest();
   const { trackPageView, trackConversion, trackEngagement } = useABTestTracking(currentVariant);
   const { trackSectionView, trackCTAClick, trackLandingPageFunnel } = useGA4();
-  
+
   // PostHog experiment for CTA messaging
   const ctaExperiment = useExperiment('landingPageCTA', 'control');
-  
+
   // PostHog experiment for headline variations
   const headlineExperiment = useExperiment('landingPageHeadline', 'control');
-  
+
   // PostHog experiment for social proof placement
   const socialProofExperiment = useExperiment('socialProofPlacement', 'control');
 
@@ -91,7 +91,7 @@ export function HeroSection() {
   const getSubheadlineText = () => {
     switch (headlineExperiment.variant) {
       case 'savings_focused':
-        return 'Don\'t pay monthly subscriptions forever. Get lifetime access to our comprehensive AI/ML reference for less than most courses cost.';
+        return "Don't pay monthly subscriptions forever. Get lifetime access to our comprehensive AI/ML reference for less than most courses cost.";
       case 'content_focused':
         return 'The most comprehensive AI/ML reference with code examples, real-world applications, and expert explanations.';
       case 'urgency_focused':
@@ -264,8 +264,8 @@ export function HeroSection() {
             className="mb-6 px-4 py-2 text-sm sm:text-base font-medium bg-white/10 text-white hover:bg-white/20 mx-auto"
           >
             <Users className="w-4 h-4 mr-2" />
-            {socialProofExperiment.variant === 'numbers' 
-              ? '1,000+ professionals learning AI/ML' 
+            {socialProofExperiment.variant === 'numbers'
+              ? '1,000+ professionals learning AI/ML'
               : 'Join 1,000+ AI/ML professionals'}
           </Badge>
         )}
@@ -345,7 +345,7 @@ export function HeroSection() {
             </span>
           </p>
         </div>
-        
+
         {/* Social proof badge - bottom placement for A/B test */}
         {socialProofExperiment.variant === 'bottom' && (
           <div className="mt-6">

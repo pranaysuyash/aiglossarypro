@@ -1,5 +1,4 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import TermRelationships from './TermRelationships';
 
 const meta = {
@@ -13,7 +12,9 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+    relationships: [],
+  },
 };
 
 export const WithProps: Story = {

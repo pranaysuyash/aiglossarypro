@@ -36,7 +36,7 @@ export function validateBody<T>(schema: ZodSchema<T>) {
           error: 'VALIDATION_ERROR',
           message: 'Invalid request data',
           details: validationError.message,
-          errors: error.errors.map((err) => ({
+          errors: error.errors.map(err => ({
             field: err.path.join('.'),
             message: err.message,
             code: err.code,
@@ -70,7 +70,7 @@ export function validateQuery<T>(schema: ZodSchema<T>) {
           error: 'VALIDATION_ERROR',
           message: 'Invalid query parameters',
           details: validationError.message,
-          errors: error.errors.map((err) => ({
+          errors: error.errors.map(err => ({
             field: err.path.join('.'),
             message: err.message,
             code: err.code,
@@ -104,7 +104,7 @@ export function validateParams<T>(schema: ZodSchema<T>) {
           error: 'VALIDATION_ERROR',
           message: 'Invalid URL parameters',
           details: validationError.message,
-          errors: error.errors.map((err) => ({
+          errors: error.errors.map(err => ({
             field: err.path.join('.'),
             message: err.message,
             code: err.code,

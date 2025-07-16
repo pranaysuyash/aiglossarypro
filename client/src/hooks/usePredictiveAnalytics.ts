@@ -304,16 +304,16 @@ export const usePredictiveAnalytics = (
 
   // Utility functions
   const getScoreColor = useCallback((score: number): string => {
-    if (score >= 0.8) return 'text-green-600';
-    if (score >= 0.6) return 'text-yellow-600';
-    if (score >= 0.4) return 'text-orange-600';
+    if (score >= 0.8) {return 'text-green-600';}
+    if (score >= 0.6) {return 'text-yellow-600';}
+    if (score >= 0.4) {return 'text-orange-600';}
     return 'text-red-600';
   }, []);
 
   const getScoreLabel = useCallback((score: number): string => {
-    if (score >= 0.8) return 'Excellent';
-    if (score >= 0.6) return 'Good';
-    if (score >= 0.4) return 'Fair';
+    if (score >= 0.8) {return 'Excellent';}
+    if (score >= 0.6) {return 'Good';}
+    if (score >= 0.4) {return 'Fair';}
     return 'Needs Improvement';
   }, []);
 

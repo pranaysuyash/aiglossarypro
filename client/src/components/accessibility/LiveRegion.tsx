@@ -4,10 +4,10 @@ import * as React from 'react';
 import { cn } from '@/lib/utils';
 
 interface LiveRegionProps {
-  message?: string;
+  message?: string | undefined;
   level?: 'polite' | 'assertive' | 'off';
   atomic?: boolean;
-  className?: string;
+  className?: string | undefined;
   children?: React.ReactNode;
 }
 
@@ -34,12 +34,12 @@ export function LiveRegion({
       }, 100);
 
       return () => clearTimeout(timer);
-    } else {
+    } 
       setLiveMessage('');
-    }
+    
   }, [message]);
 
-  if (!liveMessage && !children) return null;
+  if (!liveMessage && !children) {return null;}
 
   return (
     <div
@@ -94,14 +94,14 @@ export function useLiveRegion() {
   );
 
   const announceLoading = React.useCallback(
-    (loadingMessage: string = 'Loading...') => {
+    (loadingMessage = 'Loading...') => {
       announce(loadingMessage, 'polite');
     },
     [announce]
   );
 
   const announceComplete = React.useCallback(
-    (completeMessage: string = 'Complete') => {
+    (completeMessage = 'Complete') => {
       announce(completeMessage, 'polite');
     },
     [announce]
@@ -136,7 +136,7 @@ interface StatusAnnouncerProps {
   loadingMessage?: string;
   successMessage?: string;
   errorMessage?: string;
-  className?: string;
+  className?: string | undefined;
 }
 
 export function StatusAnnouncer({
@@ -148,7 +148,7 @@ export function StatusAnnouncer({
   className,
 }: StatusAnnouncerProps) {
   const getCurrentMessage = () => {
-    if (message) return message;
+    if (message) {return message;}
 
     switch (status) {
       case 'loading':
@@ -181,7 +181,7 @@ interface NavigationAnnouncerProps {
   currentPage?: string;
   totalPages?: number;
   currentSection?: string;
-  className?: string;
+  className?: string | undefined;
 }
 
 export function NavigationAnnouncer({

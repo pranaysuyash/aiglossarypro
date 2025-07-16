@@ -9,7 +9,11 @@ interface DailyLimitWarningProps {
   resetTime?: string;
 }
 
-export function DailyLimitWarning({ remainingViews, totalLimit, resetTime = 'tomorrow' }: DailyLimitWarningProps) {
+export function DailyLimitWarning({
+  remainingViews,
+  totalLimit,
+  resetTime = 'tomorrow',
+}: DailyLimitWarningProps) {
   const [isVisible, setIsVisible] = useState(false);
   const percentageUsed = ((totalLimit - remainingViews) / totalLimit) * 100;
 
@@ -25,8 +29,8 @@ export function DailyLimitWarning({ remainingViews, totalLimit, resetTime = 'tom
   }
 
   const getWarningLevel = () => {
-    if (remainingViews <= 5) return 'critical';
-    if (remainingViews <= 10) return 'high';
+    if (remainingViews <= 5) {return 'critical';}
+    if (remainingViews <= 10) {return 'high';}
     return 'medium';
   };
 
@@ -88,9 +92,7 @@ export function DailyLimitWarning({ remainingViews, totalLimit, resetTime = 'tom
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
             <Clock className={`h-4 w-4 ${styles.icon}`} />
-            <span className={`text-sm ${styles.subtext}`}>
-              Resets {resetTime}
-            </span>
+            <span className={`text-sm ${styles.subtext}`}>Resets {resetTime}</span>
           </div>
           <Button
             onClick={() => (window.location.href = '/upgrade')}
@@ -101,7 +103,7 @@ export function DailyLimitWarning({ remainingViews, totalLimit, resetTime = 'tom
             Upgrade for Unlimited
           </Button>
         </div>
-        
+
         {/* Progress bar */}
         <div className="mt-3">
           <div className="flex justify-between text-xs mb-1">
@@ -111,8 +113,11 @@ export function DailyLimitWarning({ remainingViews, totalLimit, resetTime = 'tom
           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
             <div
               className={`h-2 rounded-full transition-all duration-300 ${
-                warningLevel === 'critical' ? 'bg-red-500' : 
-                warningLevel === 'high' ? 'bg-orange-500' : 'bg-yellow-500'
+                warningLevel === 'critical'
+                  ? 'bg-red-500'
+                  : warningLevel === 'high'
+                    ? 'bg-orange-500'
+                    : 'bg-yellow-500'
               }`}
               style={{ width: `${percentageUsed}%` }}
             />

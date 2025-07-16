@@ -1,18 +1,18 @@
+import { and, asc, count, desc, eq, ilike } from 'drizzle-orm';
 import { Router } from 'express';
-import { eq, ilike, and, desc, asc, count } from 'drizzle-orm';
-import { db } from '../../db';
-import { 
-  people, 
-  companies, 
-  entityLinks,
-  insertPersonSchema, 
-  type Person, 
-  type InsertPerson 
-} from '../../../shared/enhancedSchema';
-import { requireAuth } from '../../middleware/auth';
-import { requireAdmin } from '../../middleware/adminAuth';
-import { requireFeature } from '../../../shared/featureFlags';
 import { z } from 'zod';
+import {
+  companies,
+  entityLinks,
+  type InsertPerson,
+  insertPersonSchema,
+  type Person,
+  people,
+} from '../../../shared/enhancedSchema';
+import { requireFeature } from '../../../shared/featureFlags';
+import { db } from '../../db';
+import { requireAdmin } from '../../middleware/adminAuth';
+import { requireAuth } from '../../middleware/auth';
 
 const router = Router();
 
@@ -117,26 +117,25 @@ router.get('/', async (req, res) => {
 
     // Build the query conditions
     const conditions = [];
-    
+
     if (params.q) {
-      conditions.push(
-        ilike(people.name, `%${params.q}%`)
-      );
+      conditions.push(ilike(people.name, `%${params.q}%`));
     }
 
     if (params.expertise) {
       // Note: This is a simplified search. In production, you might want more sophisticated array searching
-      conditions.push(
-        ilike(people.areasOfExpertise, `%${params.expertise}%`)
-      );
+      conditions.push(ilike(people.areasOfExpertise, `%${params.expertise}%`));
     }
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined;
 
     // Determine sort order
-    const sortField = params.sortBy === 'company' ? companies.name : 
-                     params.sortBy === 'createdAt' ? people.createdAt : 
-                     people.name;
+    const sortField =
+      params.sortBy === 'company'
+        ? companies.name
+        : params.sortBy === 'createdAt'
+          ? people.createdAt
+          : people.name;
     const orderFn = params.sortOrder === 'desc' ? desc : asc;
 
     // Get people with company information
@@ -187,9 +186,9 @@ router.get('/', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching people:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to fetch people',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -232,8 +231,8 @@ router.post('/', async (req, res) => {
       .limit(1);
 
     if (existingPerson.length > 0) {
-      return res.status(409).json({ 
-        error: 'Person with this name already exists' 
+      return res.status(409).json({
+        error: 'Person with this name already exists',
       });
     }
 
@@ -246,31 +245,28 @@ router.post('/', async (req, res) => {
         .limit(1);
 
       if (company.length === 0) {
-        return res.status(400).json({ 
-          error: 'Company not found' 
+        return res.status(400).json({
+          error: 'Company not found',
         });
       }
     }
 
-    const [newPerson] = await db
-      .insert(people)
-      .values(personData)
-      .returning();
+    const [newPerson] = await db.insert(people).values(personData).returning();
 
     res.status(201).json(newPerson);
   } catch (error) {
     console.error('Error creating person:', error);
-    
+
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid input data',
-        details: error.errors 
+        details: error.errors,
       });
     }
 
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to create person',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -356,16 +352,16 @@ router.get('/:id', async (req, res) => {
     });
   } catch (error) {
     console.error('Error fetching person:', error);
-    
+
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
-        error: 'Invalid person ID format' 
+      return res.status(400).json({
+        error: 'Invalid person ID format',
       });
     }
 
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to fetch person',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -421,8 +417,8 @@ router.put('/:id', async (req, res) => {
         .limit(1);
 
       if (company.length === 0) {
-        return res.status(400).json({ 
-          error: 'Company not found' 
+        return res.status(400).json({
+          error: 'Company not found',
         });
       }
     }
@@ -443,17 +439,17 @@ router.put('/:id', async (req, res) => {
     res.json(updatedPerson);
   } catch (error) {
     console.error('Error updating person:', error);
-    
+
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid input data',
-        details: error.errors 
+        details: error.errors,
       });
     }
 
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to update person',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -484,10 +480,7 @@ router.delete('/:id', async (req, res) => {
   try {
     const personId = z.string().uuid().parse(req.params.id);
 
-    const [deletedPerson] = await db
-      .delete(people)
-      .where(eq(people.id, personId))
-      .returning();
+    const [deletedPerson] = await db.delete(people).where(eq(people.id, personId)).returning();
 
     if (!deletedPerson) {
       return res.status(404).json({ error: 'Person not found' });
@@ -496,16 +489,16 @@ router.delete('/:id', async (req, res) => {
     res.status(204).send();
   } catch (error) {
     console.error('Error deleting person:', error);
-    
+
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
-        error: 'Invalid person ID format' 
+      return res.status(400).json({
+        error: 'Invalid person ID format',
       });
     }
 
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to delete person',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -562,21 +555,21 @@ router.delete('/:id', async (req, res) => {
 router.post('/:id/link-terms', async (req, res) => {
   try {
     const personId = z.string().uuid().parse(req.params.id);
-    const linksData = z.object({
-      links: z.array(z.object({
-        termId: z.string().uuid(),
-        linkType: z.enum(['created_by', 'contributed_to', 'expert_in', 'researched']),
-        relevanceScore: z.number().min(1).max(10).default(5),
-        description: z.string().optional(),
-      }))
-    }).parse(req.body);
+    const linksData = z
+      .object({
+        links: z.array(
+          z.object({
+            termId: z.string().uuid(),
+            linkType: z.enum(['created_by', 'contributed_to', 'expert_in', 'researched']),
+            relevanceScore: z.number().min(1).max(10).default(5),
+            description: z.string().optional(),
+          })
+        ),
+      })
+      .parse(req.body);
 
     // Verify person exists
-    const person = await db
-      .select()
-      .from(people)
-      .where(eq(people.id, personId))
-      .limit(1);
+    const person = await db.select().from(people).where(eq(people.id, personId)).limit(1);
 
     if (person.length === 0) {
       return res.status(404).json({ error: 'Person not found' });
@@ -593,10 +586,7 @@ router.post('/:id/link-terms', async (req, res) => {
       verificationStatus: 'verified' as const, // Admin-created links are automatically verified
     }));
 
-    const createdLinks = await db
-      .insert(entityLinks)
-      .values(linkInserts)
-      .returning();
+    const createdLinks = await db.insert(entityLinks).values(linkInserts).returning();
 
     res.status(201).json({
       message: 'Links created successfully',
@@ -604,17 +594,17 @@ router.post('/:id/link-terms', async (req, res) => {
     });
   } catch (error) {
     console.error('Error creating person-term links:', error);
-    
+
     if (error instanceof z.ZodError) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         error: 'Invalid input data',
-        details: error.errors 
+        details: error.errors,
       });
     }
 
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Failed to create links',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });

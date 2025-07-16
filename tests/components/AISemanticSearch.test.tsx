@@ -62,7 +62,7 @@ describe('AISemanticSearch', () => {
     // Mock a delayed API response
     (global.fetch as any).mockImplementation(
       () =>
-        new Promise((resolve) =>
+        new Promise(resolve =>
           setTimeout(
             () =>
               resolve({

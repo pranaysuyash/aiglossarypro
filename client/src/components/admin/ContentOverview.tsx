@@ -1,9 +1,18 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Search, Filter, Plus, Command, Eye, Edit, MoreHorizontal, 
-  Sparkles, CheckCircle, AlertCircle, Clock
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  AlertCircle,
+  CheckCircle,
+  Clock,
+  Command,
+  Edit,
+  Eye,
+  Filter,
+  MoreHorizontal,
+  Plus,
+  Search,
+  Sparkles,
 } from 'lucide-react';
+import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 
 interface Term {
@@ -34,25 +43,28 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
 
   // Build query parameters
   const queryParams = new URLSearchParams();
-  if (searchQuery) queryParams.set('search', searchQuery);
-  if (selectedCategory !== 'all') queryParams.set('category', selectedCategory);
-  if (selectedStatus !== 'all') queryParams.set('status', selectedStatus);
+  if (searchQuery) {queryParams.set('search', searchQuery);}
+  if (selectedCategory !== 'all') {queryParams.set('category', selectedCategory);}
+  if (selectedStatus !== 'all') {queryParams.set('status', selectedStatus);}
   queryParams.set('limit', '50'); // Show more terms for admin view
 
   // Fetch terms with filtering
-  const { data: termsData, isLoading } = useQuery<{ terms: Term[], total: number }>({
-    queryKey: ['/api/admin/terms', { search: searchQuery, category: selectedCategory, status: selectedStatus }],
+  const { data: termsData, isLoading } = useQuery<{ terms: Term[]; total: number }>({
+    queryKey: [
+      '/api/admin/terms',
+      { search: searchQuery, category: selectedCategory, status: selectedStatus },
+    ],
     queryFn: async () => {
       const response = await fetch(`/api/admin/terms?${queryParams.toString()}`, {
         headers: {
-          'Authorization': `Bearer ${user?.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch terms');
       }
-      
+
       return response.json();
     },
     enabled: !!user?.token,
@@ -64,14 +76,14 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
     queryFn: async () => {
       const response = await fetch('/api/admin/categories', {
         headers: {
-          'Authorization': `Bearer ${user?.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch categories');
       }
-      
+
       return response.json();
     },
     enabled: !!user?.token,
@@ -83,11 +95,7 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
   };
 
   const handleTermSelect = (termId: string, selected: boolean) => {
-    setSelectedTerms(prev => 
-      selected 
-        ? [...prev, termId]
-        : prev.filter(id => id !== termId)
-    );
+    setSelectedTerms(prev => (selected ? [...prev, termId] : prev.filter(id => id !== termId)));
   };
 
   // Bulk action mutations
@@ -97,15 +105,15 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
         body: JSON.stringify({ termIds }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to verify terms');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -120,15 +128,15 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
         body: JSON.stringify({ termIds }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to flag terms');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -143,15 +151,15 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
         body: JSON.stringify({ termIds }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete terms');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -166,15 +174,15 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${user?.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
         body: JSON.stringify({ termIds }),
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to run quality check');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -184,7 +192,7 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
   });
 
   const handleBulkAction = async (action: string) => {
-    if (selectedTerms.length === 0) return;
+    if (selectedTerms.length === 0) {return;}
 
     try {
       switch (action) {
@@ -195,7 +203,11 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
           await bulkFlagMutation.mutateAsync(selectedTerms);
           break;
         case 'delete':
-          if (confirm(`Are you sure you want to delete ${selectedTerms.length} terms? This action cannot be undone.`)) {
+          if (
+            confirm(
+              `Are you sure you want to delete ${selectedTerms.length} terms? This action cannot be undone.`
+            )
+          ) {
             await bulkDeleteMutation.mutateAsync(selectedTerms);
           }
           break;
@@ -204,7 +216,7 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
           break;
       }
       onBulkAction?.(action, selectedTerms);
-    } catch (error) {
+    } catch (error: any) {
       // Handle bulk action error silently
       // You might want to show a toast notification here
     }
@@ -214,15 +226,15 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
     const badges = {
       verified: 'bg-green-100 text-green-800',
       unverified: 'bg-yellow-100 text-yellow-800',
-      flagged: 'bg-red-100 text-red-800'
+      flagged: 'bg-red-100 text-red-800',
     };
     return badges[status as keyof typeof badges] || 'bg-gray-100 text-gray-800';
   };
 
   const getQualityColor = (quality: number) => {
-    if (quality >= 90) return 'bg-green-500';
-    if (quality >= 80) return 'bg-blue-500';
-    if (quality >= 70) return 'bg-yellow-500';
+    if (quality >= 90) {return 'bg-green-500';}
+    if (quality >= 80) {return 'bg-blue-500';}
+    if (quality >= 70) {return 'bg-yellow-500';}
     return 'bg-red-500';
   };
 
@@ -253,12 +265,14 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
           {selectedTerms.length > 0 && (
             <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-600">{selectedTerms.length} selected</span>
-              <select 
-                onChange={(e) => handleBulkAction(e.target.value)}
+              <select
+                onChange={e => handleBulkAction(e.target.value)}
                 className="text-sm border border-gray-300 rounded px-2 py-1"
                 defaultValue=""
               >
-                <option value="" disabled>Bulk Actions</option>
+                <option value="" disabled>
+                  Bulk Actions
+                </option>
                 <option value="verify">Verify</option>
                 <option value="flag">Flag</option>
                 <option value="delete">Delete</option>
@@ -286,23 +300,25 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               placeholder="Search terms, definitions, or categories..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
             />
           </div>
-          <select 
+          <select
             className="border border-gray-300 rounded-md px-3 py-2"
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={e => setSelectedCategory(e.target.value)}
           >
             <option value="all">All Categories</option>
             {categories?.map(category => (
-              <option key={category} value={category}>{category}</option>
+              <option key={category} value={category}>
+                {category}
+              </option>
             ))}
           </select>
-          <select 
+          <select
             className="border border-gray-300 rounded-md px-3 py-2"
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
+            onChange={e => setSelectedStatus(e.target.value)}
           >
             <option value="all">All Status</option>
             <option value="verified">Verified</option>
@@ -315,7 +331,9 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
       {/* Content Layout */}
       <div className="flex space-x-6">
         {/* Terms Table */}
-        <div className={`bg-white rounded-lg border overflow-hidden ${selectedTerm ? 'flex-1' : 'w-full'}`}>
+        <div
+          className={`bg-white rounded-lg border overflow-hidden ${selectedTerm ? 'flex-1' : 'w-full'}`}
+        >
           <div className="px-6 py-4 border-b bg-gray-50">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Terms ({totalTerms})</h3>
@@ -327,7 +345,7 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
               </div>
             </div>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
@@ -337,9 +355,9 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
                       type="checkbox"
                       className="rounded"
                       checked={selectedTerms.length === filteredTerms.length}
-                      onChange={(e) => setSelectedTerms(
-                        e.target.checked ? filteredTerms.map(t => t.id) : []
-                      )}
+                      onChange={e =>
+                        setSelectedTerms(e.target.checked ? filteredTerms.map(t => t.id) : [])
+                      }
                     />
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -366,18 +384,18 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredTerms.map((term) => (
-                  <tr 
-                    key={term.id} 
+                {filteredTerms.map(term => (
+                  <tr
+                    key={term.id}
                     className={`hover:bg-gray-50 cursor-pointer ${selectedTerm?.id === term.id ? 'bg-blue-50' : ''}`}
                     onClick={() => handleTermClick(term)}
                   >
-                    <td className="px-6 py-4" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-6 py-4" onClick={e => e.stopPropagation()}>
                       <input
                         type="checkbox"
                         className="rounded"
                         checked={selectedTerms.includes(term.id)}
-                        onChange={(e) => handleTermSelect(term.id, e.target.checked)}
+                        onChange={e => handleTermSelect(term.id, e.target.checked)}
                       />
                     </td>
                     <td className="px-6 py-4">
@@ -392,7 +410,9 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(term.status)}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(term.status)}`}
+                      >
                         {term.status === 'verified' && <CheckCircle className="w-3 h-3 mr-1" />}
                         {term.status === 'flagged' && <AlertCircle className="w-3 h-3 mr-1" />}
                         {term.status === 'unverified' && <Clock className="w-3 h-3 mr-1" />}
@@ -422,10 +442,8 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
                         </span>
                       )}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-500">
-                      {term.updated}
-                    </td>
-                    <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-6 py-4 text-sm text-gray-500">{term.updated}</td>
+                    <td className="px-6 py-4 text-right" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center justify-end space-x-2">
                         <button className="text-gray-400 hover:text-blue-600">
                           <Eye className="w-4 h-4" />
@@ -450,30 +468,30 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
           <div className="w-80 bg-white border rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Term Details</h3>
-              <button 
+              <button
                 onClick={() => setSelectedTerm(null)}
                 className="text-gray-400 hover:text-gray-600"
               >
                 ×
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <div className="text-sm font-medium text-gray-700">Name</div>
                 <div className="text-lg font-semibold">{selectedTerm.name}</div>
               </div>
-              
+
               <div>
                 <div className="text-sm font-medium text-gray-700">Definition</div>
                 <div className="text-sm text-gray-600">{selectedTerm.shortDefinition}</div>
               </div>
-              
+
               <div>
                 <div className="text-sm font-medium text-gray-700">Category</div>
                 <div className="text-sm">{selectedTerm.category}</div>
               </div>
-              
+
               <div>
                 <div className="text-sm font-medium text-gray-700">Quality Score</div>
                 <div className="flex items-center mt-1">
@@ -486,14 +504,16 @@ export default function ContentOverview({ onTermSelect, onBulkAction }: ContentO
                   <span className="text-sm font-medium">{selectedTerm.quality}%</span>
                 </div>
               </div>
-              
+
               <div>
                 <div className="text-sm font-medium text-gray-700">Status</div>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(selectedTerm.status)}`}>
+                <span
+                  className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getStatusBadge(selectedTerm.status)}`}
+                >
                   {selectedTerm.status}
                 </span>
               </div>
-              
+
               <div className="flex space-x-2 pt-4">
                 <button className="flex-1 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
                   Edit Content

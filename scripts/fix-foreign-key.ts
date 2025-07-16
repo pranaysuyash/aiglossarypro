@@ -34,7 +34,7 @@ async function fixForeignKey() {
       console.log('✅ No foreign key constraints found on generated_by column');
     } else {
       console.log('⚠️  Remaining constraints:');
-      result.rows.forEach((row) => {
+      result.rows.forEach(row => {
         console.log(`  ${row.constraint_name} on ${row.table_name}.${row.column_name}`);
       });
     }

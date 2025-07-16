@@ -9,7 +9,7 @@ context('Network Requests', () => {
 
   it('cy.request() - make an XHR request', () => {
     // https://on.cypress.io/request
-    cy.request('https://jsonplaceholder.cypress.io/comments').should((response) => {
+    cy.request('https://jsonplaceholder.cypress.io/comments').should(response => {
       expect(response.status).to.eq(200);
       // the server sometimes gets an extra comment posted from another machine
       // which gets returned as 1 extra object
@@ -20,7 +20,7 @@ context('Network Requests', () => {
   });
 
   it('cy.request() - verify response using BDD syntax', () => {
-    cy.request('https://jsonplaceholder.cypress.io/comments').then((response) => {
+    cy.request('https://jsonplaceholder.cypress.io/comments').then(response => {
       // https://on.cypress.io/assertions
       expect(response).property('status').to.equal(200);
       expect(response).property('body').to.have.property('length').and.be.oneOf([500, 501]);
@@ -56,7 +56,7 @@ context('Network Requests', () => {
       // the above two commands its('body').its('0')
       // can be written as its('body.0')
       // if you do not care about TypeScript checks
-      .then((user) => {
+      .then(user => {
         expect(user).property('id').to.be.a('number');
         // make a new post on behalf of the user
         cy.request('POST', 'https://jsonplaceholder.cypress.io/posts', {
@@ -67,7 +67,7 @@ context('Network Requests', () => {
       })
       // note that the value here is the returned value of the 2nd request
       // which is the new post object
-      .then((response) => {
+      .then(response => {
         expect(response).property('status').to.equal(201); // new entity created
         expect(response).property('body').to.contain({
           title: 'Cypress Test Runner',

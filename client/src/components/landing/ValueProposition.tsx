@@ -25,7 +25,7 @@ export function ValueProposition() {
   const getValuePropSubtitle = () => {
     switch (copyExperiment.variant) {
       case 'pain_focused':
-        return 'No more endless googling, incomplete documentation, or expensive subscriptions that don\'t deliver.';
+        return "No more endless googling, incomplete documentation, or expensive subscriptions that don't deliver.";
       case 'benefit_focused':
         return 'Access 10,000+ AI/ML terms, code examples, and real-world applications instantly.';
       case 'solution_focused':
@@ -140,11 +140,11 @@ export function ValueProposition() {
         {/* Call out */}
         <div className="text-center bg-purple-100 border border-purple-200 rounded-xl p-6 sm:p-8">
           <h3 className="text-xl sm:text-2xl font-bold text-purple-900 mb-6">
-            {copyExperiment.variant === 'benefit_focused' 
-              ? 'What You Get Instant Access To:' 
+            {copyExperiment.variant === 'benefit_focused'
+              ? 'What You Get Instant Access To:'
               : copyExperiment.variant === 'solution_focused'
-              ? 'Your Complete AI/ML Learning Solution:'
-              : 'When you join AI/ML Glossary Pro you\'ll find:'}
+                ? 'Your Complete AI/ML Learning Solution:'
+                : "When you join AI/ML Glossary Pro you'll find:"}
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 text-sm sm:text-base">
             <div className="text-purple-800 p-3 sm:p-0">

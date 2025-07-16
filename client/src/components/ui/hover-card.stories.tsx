@@ -1,6 +1,5 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { HoverCard, HoverCardTrigger, HoverCardContent } from './hover-card';
+import type { Meta, StoryObj } from '@storybook/react';
+import { HoverCard, HoverCardContent, HoverCardTrigger } from './hover-card';
 
 const meta = {
   title: 'UI/HoverCard',
@@ -15,20 +14,14 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <HoverCard>
-      <HoverCardTrigger className="underline cursor-pointer">
-        Hover over me
-      </HoverCardTrigger>
+      <HoverCardTrigger className="underline cursor-pointer">Hover over me</HoverCardTrigger>
       <HoverCardContent className="w-80">
         <div className="flex justify-between space-x-4">
           <div className="space-y-1">
             <h4 className="text-sm font-semibold">@nextjs</h4>
-            <p className="text-sm">
-              The React Framework – created and maintained by @vercel.
-            </p>
+            <p className="text-sm">The React Framework – created and maintained by @vercel.</p>
             <div className="flex items-center pt-2">
-              <span className="text-xs text-muted-foreground">
-                Joined December 2021
-              </span>
+              <span className="text-xs text-muted-foreground">Joined December 2021</span>
             </div>
           </div>
         </div>
@@ -51,7 +44,8 @@ export const WithProfile: Story = {
           <div className="space-y-1">
             <h4 className="text-sm font-semibold">GitHub</h4>
             <p className="text-sm">
-              Where the world builds software. Millions of developers use GitHub to build amazing things together.
+              Where the world builds software. Millions of developers use GitHub to build amazing
+              things together.
             </p>
             <div className="flex items-center pt-2">
               <span className="text-xs text-muted-foreground">

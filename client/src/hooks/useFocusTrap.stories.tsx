@@ -1,33 +1,19 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
+import React, { useRef } from 'react';
 import { useFocusTrap } from './useFocusTrap';
-import { useRef } from 'react';
 
 // Demo component to showcase the hook
 const FocusTrapDemo = () => {
   const ref = useRef<HTMLDivElement>(null);
-  useFocusTrap(ref);
+  useFocusTrap(true);
 
   return (
-    <div
-      ref={ref}
-      className="p-4 border-2 border-blue-300 rounded-lg bg-blue-50 max-w-md"
-    >
+    <div ref={ref} className="p-4 border-2 border-blue-300 rounded-lg bg-blue-50 max-w-md">
       <h3 className="text-lg font-semibold mb-4">Focus Trap Demo</h3>
-      <p className="text-sm text-gray-600 mb-4">
-        Tab navigation is trapped within this container
-      </p>
+      <p className="text-sm text-gray-600 mb-4">Tab navigation is trapped within this container</p>
       <div className="space-y-2">
-        <input
-          type="text"
-          placeholder="First input"
-          className="w-full p-2 border rounded"
-        />
-        <input
-          type="text"
-          placeholder="Second input"
-          className="w-full p-2 border rounded"
-        />
+        <input type="text" placeholder="First input" className="w-full p-2 border rounded" />
+        <input type="text" placeholder="Second input" className="w-full p-2 border rounded" />
         <button className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
           Button
         </button>

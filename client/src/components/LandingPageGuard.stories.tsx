@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
-import { LandingPageGuard } from './LandingPageGuard';
 import { posthogExperiments } from '@/services/posthogExperiments';
+import { LandingPageGuard } from './LandingPageGuard';
 
 const meta: Meta<typeof LandingPageGuard> = {
   title: 'Components/LandingPageGuard',
@@ -10,7 +9,8 @@ const meta: Meta<typeof LandingPageGuard> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'A/B test guard component that routes users to different landing page variants based on PostHog experiment flags. Controls the landing page experiment flow.',
+        component:
+          'A/B test guard component that routes users to different landing page variants based on PostHog experiment flags. Controls the landing page experiment flow.',
       },
     },
   },
@@ -30,7 +30,7 @@ const mockExperimentVariant = (variant: string) => {
 
 export const ControlVariant: Story = {
   decorators: [
-    (Story) => {
+    Story => {
       React.useEffect(() => {
         mockExperimentVariant('control');
       }, []);
@@ -40,7 +40,8 @@ export const ControlVariant: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Control variant - Shows the original landing page with standard hero section and CTAs.',
+        story:
+          'Control variant - Shows the original landing page with standard hero section and CTAs.',
       },
     },
   },
@@ -48,7 +49,7 @@ export const ControlVariant: Story = {
 
 export const MarketingSampleVariant: Story = {
   decorators: [
-    (Story) => {
+    Story => {
       React.useEffect(() => {
         mockExperimentVariant('marketing_sample');
       }, []);
@@ -58,7 +59,8 @@ export const MarketingSampleVariant: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Marketing Sample variant - Shows Landing Page A with marketing focus and sample CTA emphasis.',
+        story:
+          'Marketing Sample variant - Shows Landing Page A with marketing focus and sample CTA emphasis.',
       },
     },
   },
@@ -67,12 +69,12 @@ export const MarketingSampleVariant: Story = {
 export const LoadingState: Story = {
   render: () => {
     const [showLoading, setShowLoading] = React.useState(true);
-    
+
     React.useEffect(() => {
       const timer = setTimeout(() => setShowLoading(false), 2000);
       return () => clearTimeout(timer);
     }, []);
-    
+
     if (showLoading) {
       return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-50">
@@ -85,7 +87,7 @@ export const LoadingState: Story = {
         </div>
       );
     }
-    
+
     return <LandingPageGuard />;
   },
   parameters: {
@@ -100,11 +102,11 @@ export const LoadingState: Story = {
 export const VariantComparison: Story = {
   render: () => {
     const [currentVariant, setCurrentVariant] = React.useState('control');
-    
+
     React.useEffect(() => {
       mockExperimentVariant(currentVariant);
     }, [currentVariant]);
-    
+
     return (
       <div>
         <div className="fixed top-4 right-4 z-50 bg-white rounded-lg shadow-lg p-4">
@@ -136,7 +138,7 @@ export const VariantComparison: Story = {
             <p className="text-gray-600">Click to switch variants</p>
           </div>
         </div>
-        
+
         <LandingPageGuard />
       </div>
     );
@@ -144,7 +146,8 @@ export const VariantComparison: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Interactive comparison allowing you to switch between landing page variants to see the differences.',
+        story:
+          'Interactive comparison allowing you to switch between landing page variants to see the differences.',
       },
     },
   },
@@ -157,7 +160,7 @@ export const ExperimentMetrics: Story = {
       marketing_sample: { views: 0, clicks: 0 },
     });
     const [activeVariant, setActiveVariant] = React.useState('control');
-    
+
     React.useEffect(() => {
       mockExperimentVariant(activeVariant);
       setMetrics(prev => ({
@@ -168,7 +171,7 @@ export const ExperimentMetrics: Story = {
         },
       }));
     }, [activeVariant]);
-    
+
     React.useEffect(() => {
       const handleClick = (e: MouseEvent) => {
         const target = e.target as HTMLElement;
@@ -182,23 +185,25 @@ export const ExperimentMetrics: Story = {
           }));
         }
       };
-      
+
       document.addEventListener('click', handleClick);
       return () => document.removeEventListener('click', handleClick);
     }, [activeVariant]);
-    
-    const controlCTR = metrics.control.views > 0 
-      ? ((metrics.control.clicks / metrics.control.views) * 100).toFixed(1)
-      : '0.0';
-    const marketingCTR = metrics.marketing_sample.views > 0
-      ? ((metrics.marketing_sample.clicks / metrics.marketing_sample.views) * 100).toFixed(1)
-      : '0.0';
-    
+
+    const controlCTR =
+      metrics.control.views > 0
+        ? ((metrics.control.clicks / metrics.control.views) * 100).toFixed(1)
+        : '0.0';
+    const marketingCTR =
+      metrics.marketing_sample.views > 0
+        ? ((metrics.marketing_sample.clicks / metrics.marketing_sample.views) * 100).toFixed(1)
+        : '0.0';
+
     return (
       <div>
         <div className="fixed top-4 left-4 right-4 z-50 bg-white rounded-lg shadow-lg p-4 max-w-4xl mx-auto">
           <h3 className="font-bold mb-4">A/B Test Metrics Dashboard</h3>
-          
+
           <div className="grid grid-cols-2 gap-4 mb-4">
             <div className="bg-blue-50 p-3 rounded">
               <h4 className="font-semibold text-blue-700">Control Variant</h4>
@@ -208,7 +213,7 @@ export const ExperimentMetrics: Story = {
                 <p>CTR: {controlCTR}%</p>
               </div>
             </div>
-            
+
             <div className="bg-green-50 p-3 rounded">
               <h4 className="font-semibold text-green-700">Marketing Sample</h4>
               <div className="mt-2 space-y-1 text-sm">
@@ -218,7 +223,7 @@ export const ExperimentMetrics: Story = {
               </div>
             </div>
           </div>
-          
+
           <div className="flex gap-2">
             <button
               onClick={() => setActiveVariant('control')}
@@ -234,7 +239,7 @@ export const ExperimentMetrics: Story = {
             </button>
           </div>
         </div>
-        
+
         <div className="pt-32">
           <LandingPageGuard />
         </div>
@@ -253,11 +258,11 @@ export const ExperimentMetrics: Story = {
 export const MobileComparison: Story = {
   render: () => {
     const [variant, setVariant] = React.useState('control');
-    
+
     React.useEffect(() => {
       mockExperimentVariant(variant);
     }, [variant]);
-    
+
     return (
       <div className="min-h-screen bg-gray-100 p-4">
         <div className="max-w-6xl mx-auto">
@@ -282,7 +287,7 @@ export const MobileComparison: Story = {
               </button>
             </div>
           </div>
-          
+
           <div className="bg-white rounded-lg shadow-lg overflow-hidden">
             <div className="mx-auto" style={{ maxWidth: '375px' }}>
               <div className="border-8 border-gray-800 rounded-3xl overflow-hidden">

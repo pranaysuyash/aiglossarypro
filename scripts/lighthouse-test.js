@@ -40,7 +40,7 @@ const runLighthouse = () => {
     }
   );
 
-  lighthouse.on('close', (code) => {
+  lighthouse.on('close', code => {
     if (code === 0) {
       console.log('✅ Lighthouse audit completed successfully!');
       console.log(`📊 View report: file://${reportPath}`);
@@ -61,7 +61,7 @@ const runLighthouse = () => {
     }
   });
 
-  lighthouse.on('error', (error) => {
+  lighthouse.on('error', error => {
     console.error('❌ Error running Lighthouse:', error.message);
     console.log('💡 Make sure lighthouse is installed: npm install -g lighthouse');
   });
@@ -75,7 +75,7 @@ const checkServer = () => {
     stdio: 'pipe',
   });
 
-  check.on('close', (code) => {
+  check.on('close', code => {
     if (code === 0) {
       console.log('✅ Development server is running');
       runLighthouse();

@@ -5,7 +5,7 @@ interface GoogleAdProps {
   slot: string;
   format?: 'auto' | 'fluid' | 'rectangle' | 'vertical' | 'horizontal';
   responsive?: boolean;
-  className?: string;
+  className?: string | undefined;
   style?: React.CSSProperties;
   lazy?: boolean;
 }
@@ -37,17 +37,17 @@ export function GoogleAd({
   // Don't show ads if AdSense is disabled
   const adsenseClientId = import.meta.env.VITE_ADSENSE_CLIENT_ID;
   const adsenseEnabled = import.meta.env.VITE_ADSENSE_ENABLED === 'true';
-  
+
   if (!adsenseEnabled || !adsenseClientId || !slot) {
     return null;
   }
 
   // Intersection Observer for lazy loading
   useEffect(() => {
-    if (!lazy || isInView) return;
+    if (!lazy || isInView) {return;}
 
     const observer = new IntersectionObserver(
-      (entries) => {
+      entries => {
         const [entry] = entries;
         if (entry.isIntersecting) {
           setIsInView(true);
@@ -69,7 +69,7 @@ export function GoogleAd({
 
   // Load and initialize AdSense
   useEffect(() => {
-    if (!isInView || adLoaded) return;
+    if (!isInView || adLoaded) {return;}
 
     const loadAdSense = async () => {
       try {
@@ -79,7 +79,7 @@ export function GoogleAd({
           script.async = true;
           script.src = `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClientId}`;
           script.crossOrigin = 'anonymous';
-          
+
           await new Promise((resolve, reject) => {
             script.onload = resolve;
             script.onerror = reject;
@@ -95,7 +95,7 @@ export function GoogleAd({
           (window.adsbygoogle as any[]).push({});
           setAdLoaded(true);
         }
-      } catch (error) {
+      } catch (error: any) {
         console.warn('Failed to load AdSense:', error);
       }
     };
@@ -200,7 +200,9 @@ export function GoogleAd({
             textAlign: 'center',
           }}
         >
-          <div style={{ fontSize: '14px', color: '#28a745', fontWeight: 'bold', marginBottom: '4px' }}>
+          <div
+            style={{ fontSize: '14px', color: '#28a745', fontWeight: 'bold', marginBottom: '4px' }}
+          >
             🌟 Ad-Free Experience
           </div>
           <div style={{ fontSize: '12px', color: '#6c757d' }}>

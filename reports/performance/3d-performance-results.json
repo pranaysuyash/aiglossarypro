@@ -59,9 +59,7 @@
       "estimatedFPS": 1640.4984381087786,
       "interactionLatency": 0.007749999999987267,
       "success": true,
-      "recommendations": [
-        "Large dataset detected. Implement progressive loading"
-      ]
+      "recommendations": ["Large dataset detected. Implement progressive loading"]
     }
   ],
   "summary": {

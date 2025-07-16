@@ -3,18 +3,18 @@
  */
 
 import {
-  getConversionSession,
-  trackConversionEvent,
+  clearConversionSession,
   getConversionFunnelAnalytics,
+  getConversionSession,
   getConversionSessionAnalytics,
   markConversionCompleted,
-  clearConversionSession,
+  trackConversionEvent,
 } from '../conversionTracking';
 
 // Mock localStorage
 const mockLocalStorage = (() => {
   let store: Record<string, string> = {};
-  
+
   return {
     getItem: jest.fn((key: string) => store[key] || null),
     setItem: jest.fn((key: string, value: string) => {
@@ -34,17 +34,17 @@ Object.defineProperty(window, 'localStorage', {
 });
 
 // Mock fetch
-global.fetch = jest.fn(() =>
+global.fetch = vi.fn(() =>
   Promise.resolve({
     ok: true,
     json: () => Promise.resolve({}),
   })
-) as jest.Mock;
+) as any;
 
 // Mock analytics functions
-const mockGtag = jest.fn();
-const mockFbq = jest.fn();
-const mockMixpanel = { track: jest.fn() };
+const mockGtag = vi.fn();
+const mockFbq = vi.fn();
+const mockMixpanel = { track: vi.fn() };
 
 Object.defineProperty(window, 'gtag', {
   value: mockGtag,
@@ -85,7 +85,7 @@ describe('Conversion Tracking', () => {
   describe('getConversionSession', () => {
     it('creates a new conversion session when none exists', () => {
       const session = getConversionSession();
-      
+
       expect(session).toBeDefined();
       expect(session.sessionId).toMatch(/^conv_/);
       expect(session.isConverted).toBe(false);
@@ -107,9 +107,9 @@ describe('Conversion Tracking', () => {
         source: 'direct',
         medium: 'organic',
       };
-      
+
       mockLocalStorage.setItem('conversion_session', JSON.stringify(existingSession));
-      
+
       const session = getConversionSession();
       expect(session.sessionId).toBe('existing-session');
       expect(session.lastTouch).toBeGreaterThan(existingSession.lastTouch);
@@ -119,13 +119,13 @@ describe('Conversion Tracking', () => {
   describe('trackConversionEvent', () => {
     it('tracks guest view event and updates funnel', () => {
       clearConversionSession();
-      
+
       trackConversionEvent({
         eventType: 'guest_view',
         termId: 'test-term',
         metadata: { previewNumber: 1 },
       });
-      
+
       const session = getConversionSession();
       expect(session.totalEvents).toBe(1);
       expect(session.funnelSteps).toHaveLength(2);
@@ -135,13 +135,13 @@ describe('Conversion Tracking', () => {
 
     it('tracks CTA clicks', () => {
       clearConversionSession();
-      
+
       trackConversionEvent({
         eventType: 'guest_cta_click',
         ctaType: 'signup_button',
         metadata: { limitReached: true },
       });
-      
+
       const session = getConversionSession();
       expect(session.totalEvents).toBe(1);
       expect(session.funnelSteps).toHaveLength(2);
@@ -150,12 +150,12 @@ describe('Conversion Tracking', () => {
 
     it('marks conversion on successful signup', () => {
       clearConversionSession();
-      
+
       trackConversionEvent({
         eventType: 'guest_signup_success',
         metadata: { userId: 'user123' },
       });
-      
+
       const session = getConversionSession();
       expect(session.isConverted).toBe(true);
       expect(session.conversionType).toBe('free_signup');
@@ -165,13 +165,13 @@ describe('Conversion Tracking', () => {
 
     it('tracks premium conversion with value', () => {
       clearConversionSession();
-      
+
       trackConversionEvent({
         eventType: 'guest_to_premium',
         conversionValue: 249,
         metadata: { userId: 'user123' },
       });
-      
+
       const session = getConversionSession();
       expect(session.isConverted).toBe(true);
       expect(session.conversionType).toBe('premium_purchase');
@@ -184,11 +184,15 @@ describe('Conversion Tracking', () => {
         termId: 'test-term',
         metadata: {},
       });
-      
-      expect(mockGtag).toHaveBeenCalledWith('event', 'guest_view', expect.objectContaining({
-        event_category: 'conversion',
-        event_label: 'test-term',
-      }));
+
+      expect(mockGtag).toHaveBeenCalledWith(
+        'event',
+        'guest_view',
+        expect.objectContaining({
+          event_category: 'conversion',
+          event_label: 'test-term',
+        })
+      );
     });
 
     it('sends conversion events to Facebook Pixel', () => {
@@ -196,12 +200,16 @@ describe('Conversion Tracking', () => {
         eventType: 'guest_signup_success',
         metadata: {},
       });
-      
-      expect(mockFbq).toHaveBeenCalledWith('track', 'CompleteRegistration', expect.objectContaining({
-        content_name: 'AI Glossary Free Signup',
-        value: 0,
-        currency: 'USD',
-      }));
+
+      expect(mockFbq).toHaveBeenCalledWith(
+        'track',
+        'CompleteRegistration',
+        expect.objectContaining({
+          content_name: 'AI Glossary Free Signup',
+          value: 0,
+          currency: 'USD',
+        })
+      );
     });
 
     it('sends data to server', () => {
@@ -210,27 +218,30 @@ describe('Conversion Tracking', () => {
         termId: 'test-term',
         metadata: {},
       });
-      
-      expect(fetch).toHaveBeenCalledWith('/api/analytics/conversion', expect.objectContaining({
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: expect.stringContaining('guest_view'),
-      }));
+
+      expect(fetch).toHaveBeenCalledWith(
+        '/api/analytics/conversion',
+        expect.objectContaining({
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: expect.stringContaining('guest_view'),
+        })
+      );
     });
   });
 
   describe('getConversionFunnelAnalytics', () => {
     it('returns current funnel state', () => {
       clearConversionSession();
-      
+
       trackConversionEvent({
         eventType: 'guest_view',
         termId: 'term1',
         metadata: {},
       });
-      
+
       const analytics = getConversionFunnelAnalytics();
-      
+
       expect(analytics.currentStep).toBe('preview');
       expect(analytics.completedSteps).toContain('landing');
       expect(analytics.completedSteps).toContain('preview');
@@ -240,13 +251,13 @@ describe('Conversion Tracking', () => {
 
     it('calculates dropoff risk correctly', () => {
       clearConversionSession();
-      
+
       // Simulate old session with low engagement
       const session = getConversionSession();
-      session.firstTouch = Date.now() - (35 * 60 * 1000); // 35 minutes ago
+      session.firstTouch = Date.now() - 35 * 60 * 1000; // 35 minutes ago
       session.totalEvents = 1;
       mockLocalStorage.setItem('conversion_session', JSON.stringify(session));
-      
+
       const analytics = getConversionFunnelAnalytics();
       expect(analytics.dropoffRisk).toBe('high');
     });
@@ -255,14 +266,14 @@ describe('Conversion Tracking', () => {
   describe('getConversionSessionAnalytics', () => {
     it('calculates session metrics correctly', () => {
       clearConversionSession();
-      
+
       // Track some events
       trackConversionEvent({ eventType: 'guest_view', termId: 'term1', metadata: {} });
       trackConversionEvent({ eventType: 'guest_view', termId: 'term2', metadata: {} });
       trackConversionEvent({ eventType: 'guest_cta_click', ctaType: 'signup', metadata: {} });
-      
+
       const analytics = getConversionSessionAnalytics();
-      
+
       expect(analytics.pageViews).toBe(2);
       expect(analytics.ctaClicks).toBe(3); // Total events
       expect(analytics.conversionLikelihood).toBeGreaterThan(0);
@@ -271,17 +282,17 @@ describe('Conversion Tracking', () => {
 
     it('segments users correctly', () => {
       clearConversionSession();
-      
+
       // Create high-intent user behavior
       const session = getConversionSession();
-      session.firstTouch = Date.now() - (10 * 60 * 1000); // 10 minutes ago
+      session.firstTouch = Date.now() - 10 * 60 * 1000; // 10 minutes ago
       session.totalEvents = 5;
       session.funnelSteps.push(
-        { step: 'preview', timestamp: Date.now() - (8 * 60 * 1000) },
-        { step: 'preview', timestamp: Date.now() - (6 * 60 * 1000) }
+        { step: 'preview', timestamp: Date.now() - 8 * 60 * 1000 },
+        { step: 'preview', timestamp: Date.now() - 6 * 60 * 1000 }
       );
       mockLocalStorage.setItem('conversion_session', JSON.stringify(session));
-      
+
       const analytics = getConversionSessionAnalytics();
       expect(analytics.segmentType).toBe('high_intent');
       expect(analytics.conversionLikelihood).toBeGreaterThan(60);
@@ -291,9 +302,9 @@ describe('Conversion Tracking', () => {
   describe('markConversionCompleted', () => {
     it('marks free signup conversion', () => {
       clearConversionSession();
-      
+
       markConversionCompleted('free_signup', 0, 'user123');
-      
+
       const session = getConversionSession();
       expect(session.isConverted).toBe(true);
       expect(session.conversionType).toBe('free_signup');
@@ -302,9 +313,9 @@ describe('Conversion Tracking', () => {
 
     it('marks premium conversion with value', () => {
       clearConversionSession();
-      
+
       markConversionCompleted('premium_purchase', 249, 'user123');
-      
+
       const session = getConversionSession();
       expect(session.isConverted).toBe(true);
       expect(session.conversionType).toBe('premium_purchase');
@@ -315,9 +326,9 @@ describe('Conversion Tracking', () => {
   describe('clearConversionSession', () => {
     it('removes session data from localStorage', () => {
       getConversionSession(); // Create session
-      
+
       clearConversionSession();
-      
+
       expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('conversion_session');
       expect(mockLocalStorage.removeItem).toHaveBeenCalledWith('conversion_funnel');
     });
@@ -334,7 +345,7 @@ describe('Conversion Tracking Edge Cases', () => {
     mockLocalStorage.setItem.mockImplementation(() => {
       throw new Error('Storage quota exceeded');
     });
-    
+
     expect(() => {
       trackConversionEvent({
         eventType: 'guest_view',
@@ -347,11 +358,11 @@ describe('Conversion Tracking Edge Cases', () => {
   it('handles missing analytics objects gracefully', () => {
     // @ts-ignore
     delete window.gtag;
-    // @ts-ignore  
+    // @ts-ignore
     delete window.fbq;
     // @ts-ignore
     delete window.mixpanel;
-    
+
     expect(() => {
       trackConversionEvent({
         eventType: 'guest_view',
@@ -363,7 +374,7 @@ describe('Conversion Tracking Edge Cases', () => {
 
   it('handles network errors when sending to server', () => {
     global.fetch = jest.fn(() => Promise.reject(new Error('Network error')));
-    
+
     expect(() => {
       trackConversionEvent({
         eventType: 'guest_view',

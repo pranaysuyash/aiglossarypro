@@ -60,9 +60,9 @@ class ProductionSetupChecker {
   }
 
   private async testHttpEndpoint(url: string, timeout = 5000): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const client = url.startsWith('https') ? https : http;
-      const req = client.request(url, { timeout }, (res) => {
+      const req = client.request(url, { timeout }, res => {
         resolve(res.statusCode === 200 || res.statusCode === 401 || res.statusCode === 403);
       });
 
@@ -648,7 +648,7 @@ class ProductionSetupChecker {
         check: async () => {
           const results = await this.checkEnvironmentVariables();
           this.results.push(...results);
-          const failures = results.filter((r) => r.status === 'FAIL').length;
+          const failures = results.filter(r => r.status === 'FAIL').length;
           return {
             category: 'Environment',
             name: 'Environment Variables',
@@ -791,10 +791,10 @@ class ProductionSetupChecker {
     this.log('='.repeat(50), 'info');
 
     // Group results by category
-    const categories = [...new Set(this.results.map((r) => r.category))];
+    const categories = [...new Set(this.results.map(r => r.category))];
 
     for (const category of categories) {
-      const categoryResults = this.results.filter((r) => r.category === category);
+      const categoryResults = this.results.filter(r => r.category === category);
       this.log(`\n📁 ${category}:`, 'info');
 
       for (const result of categoryResults) {
@@ -809,10 +809,10 @@ class ProductionSetupChecker {
 
     // Summary
     const totalChecks = this.results.length;
-    const passed = this.results.filter((r) => r.status === 'PASS').length;
-    const failed = this.results.filter((r) => r.status === 'FAIL').length;
-    const warnings = this.results.filter((r) => r.status === 'WARN').length;
-    const skipped = this.results.filter((r) => r.status === 'SKIP').length;
+    const passed = this.results.filter(r => r.status === 'PASS').length;
+    const failed = this.results.filter(r => r.status === 'FAIL').length;
+    const warnings = this.results.filter(r => r.status === 'WARN').length;
+    const skipped = this.results.filter(r => r.status === 'SKIP').length;
 
     this.log(`\n${'='.repeat(50)}`, 'info');
     this.log('📈 SUMMARY', 'info');

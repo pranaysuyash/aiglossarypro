@@ -21,7 +21,7 @@ export const STANDARD_SECTIONS = loadStandardSections();
 export async function migrateSectionData() {
   console.log('Starting section data migration...');
 
-  return await db.transaction(async (tx) => {
+  return await db.transaction(async tx => {
     try {
       // Get all existing terms using Drizzle query builder
       const termsResult = await tx
@@ -90,7 +90,7 @@ async function createBasicSectionItems(tx: any, termId: string) {
     // Get the term's full data using Drizzle query builder
     const termData = await tx.select().from(enhancedTerms).where(eq(enhancedTerms.id, termId));
 
-    if (termData.length === 0) return;
+    if (termData.length === 0) {return;}
 
     const fullTerm = termData[0];
 
@@ -166,10 +166,10 @@ async function createBasicSectionItems(tx: any, termId: string) {
     const itemsToInsert = [];
     for (const sectionData of sectionItems) {
       const sectionId = sectionMap.get(sectionData.sectionName);
-      if (!sectionId) continue;
+      if (!sectionId) {continue;}
 
       for (const item of sectionData.items) {
-        if (!item.content) continue; // Skip empty content
+        if (!item.content) {continue;} // Skip empty content
 
         itemsToInsert.push({
           sectionId,

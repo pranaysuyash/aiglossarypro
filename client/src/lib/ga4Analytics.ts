@@ -96,7 +96,7 @@ class GA4AnalyticsService {
 
   // Initialize GA4
   private initialize(): void {
-    if (!this.measurementId || typeof window === 'undefined') return;
+    if (!this.measurementId || typeof window === 'undefined') {return;}
 
     // Load gtag script
     const script = document.createElement('script');
@@ -189,7 +189,7 @@ class GA4AnalyticsService {
 
   // Track page view
   trackPageView(page_title: string, page_location?: string): void {
-    if (!this.hasAnalyticsConsent() || !this.isInitialized()) return;
+    if (!this.hasAnalyticsConsent() || !this.isInitialized()) {return;}
 
     this.pageViewId = this.generatePageViewId();
 
@@ -224,7 +224,7 @@ class GA4AnalyticsService {
 
   // Track conversion events
   trackConversion(event: GA4ConversionEvent): void {
-    if (!this.hasAnalyticsConsent() || !this.isInitialized()) return;
+    if (!this.hasAnalyticsConsent() || !this.isInitialized()) {return;}
 
     const conversionData = {
       ...event,
@@ -267,7 +267,7 @@ class GA4AnalyticsService {
 
   // Track engagement events
   trackEngagement(event: GA4EngagementEvent): void {
-    if (!this.hasAnalyticsConsent() || !this.isInitialized()) return;
+    if (!this.hasAnalyticsConsent() || !this.isInitialized()) {return;}
 
     const engagementData = {
       ...event,
@@ -294,7 +294,7 @@ class GA4AnalyticsService {
 
   // Track business metrics
   trackBusinessEvent(event: GA4BusinessEvent): void {
-    if (!this.hasAnalyticsConsent() || !this.isInitialized()) return;
+    if (!this.hasAnalyticsConsent() || !this.isInitialized()) {return;}
 
     const businessData = {
       ...event,
@@ -442,10 +442,10 @@ class GA4AnalyticsService {
   trackPurchase(
     transaction_id: string,
     value: number,
-    currency: string = 'USD',
+    currency = 'USD',
     items: any[]
   ): void {
-    if (!this.hasAnalyticsConsent() || !this.isInitialized()) return;
+    if (!this.hasAnalyticsConsent() || !this.isInitialized()) {return;}
 
     if (window.gtag) {
       window.gtag('event', 'purchase', {
@@ -480,7 +480,7 @@ class GA4AnalyticsService {
     stepPosition: number,
     value?: number
   ): void {
-    if (!this.hasAnalyticsConsent() || !this.isInitialized()) return;
+    if (!this.hasAnalyticsConsent() || !this.isInitialized()) {return;}
 
     const funnelData = {
       funnel_name: funnelName,
@@ -518,7 +518,7 @@ class GA4AnalyticsService {
     action: string;
     metadata?: Record<string, any>;
   }): void {
-    if (!this.hasAnalyticsConsent() || !this.isInitialized()) return;
+    if (!this.hasAnalyticsConsent() || !this.isInitialized()) {return;}
 
     const journeyData = {
       journey_id: journey.journeyId,
@@ -606,29 +606,29 @@ class GA4AnalyticsService {
 
   private getContentGroup(page_location?: string): string {
     const url = page_location || window.location.pathname;
-    if (url === '/') return 'landing';
-    if (url.startsWith('/app')) return 'application';
-    if (url.startsWith('/admin')) return 'admin';
+    if (url === '/') {return 'landing';}
+    if (url.startsWith('/app')) {return 'application';}
+    if (url.startsWith('/admin')) {return 'admin';}
     return 'other';
   }
 
   private getPageType(page_location?: string): string {
     const url = page_location || window.location.pathname;
-    if (url === '/') return 'marketing';
-    if (url.includes('terms') || url.includes('privacy')) return 'legal';
-    if (url.includes('about')) return 'informational';
+    if (url === '/') {return 'marketing';}
+    if (url.includes('terms') || url.includes('privacy')) {return 'legal';}
+    if (url.includes('about')) {return 'informational';}
     return 'functional';
   }
 
   private getTrafficSource(): string {
     const referrer = document.referrer;
-    if (!referrer) return 'direct';
+    if (!referrer) {return 'direct';}
 
     const hostname = new URL(referrer).hostname;
-    if (hostname.includes('google')) return 'google';
-    if (hostname.includes('facebook')) return 'facebook';
-    if (hostname.includes('twitter')) return 'twitter';
-    if (hostname.includes('linkedin')) return 'linkedin';
+    if (hostname.includes('google')) {return 'google';}
+    if (hostname.includes('facebook')) {return 'facebook';}
+    if (hostname.includes('twitter')) {return 'twitter';}
+    if (hostname.includes('linkedin')) {return 'linkedin';}
 
     return 'referral';
   }

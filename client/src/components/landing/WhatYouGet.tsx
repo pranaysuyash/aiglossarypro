@@ -75,7 +75,7 @@ export function WhatYouGet() {
 
         {/* Features Grid */}
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16">
-          {features.map((feature) => (
+          {features.map(feature => (
             <div
               key={feature.title}
               className="border-2 hover:border-purple-200 transition-colors duration-300 hover:shadow-lg bg-white rounded-lg"

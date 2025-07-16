@@ -1,11 +1,12 @@
 import type { NextFunction, Request, Response } from 'express';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { analyticsService } from '../../services/analyticsService';
 import { performanceTrackingMiddleware } from '../analyticsMiddleware';
 
 // Mock the analytics service
-jest.mock('../../services/analyticsService', () => ({
+vi.mock('../../services/analyticsService', () => ({
   analyticsService: {
-    trackPerformance: jest.fn().mockResolvedValue(undefined),
+    trackPerformance: vi.fn().mockResolvedValue(undefined),
   },
 }));
 
@@ -17,7 +18,7 @@ describe('Analytics Middleware', () => {
 
   beforeEach(() => {
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Create mock request
     mockReq = {
@@ -85,7 +86,7 @@ describe('Analytics Middleware', () => {
         const _result = (mockRes.end as any).call(mockRes);
 
         // Wait for async tracking
-        await new Promise((resolve) => setImmediate(resolve));
+        await new Promise(resolve => setImmediate(resolve));
 
         expect(originalEnd).toHaveBeenCalledWith(undefined, undefined, undefined);
         expect(analyticsService.trackPerformance).toHaveBeenCalled();
@@ -98,7 +99,7 @@ describe('Analytics Middleware', () => {
         const chunk = 'test data';
         const _result = (mockRes.end as any).call(mockRes, chunk);
 
-        await new Promise((resolve) => setImmediate(resolve));
+        await new Promise(resolve => setImmediate(resolve));
 
         expect(originalEnd).toHaveBeenCalledWith(chunk, undefined, undefined);
         expect(analyticsService.trackPerformance).toHaveBeenCalled();
@@ -112,7 +113,7 @@ describe('Analytics Middleware', () => {
         const encoding: BufferEncoding = 'utf8';
         const _result = (mockRes.end as any).call(mockRes, chunk, encoding);
 
-        await new Promise((resolve) => setImmediate(resolve));
+        await new Promise(resolve => setImmediate(resolve));
 
         expect(originalEnd).toHaveBeenCalledWith(chunk, encoding, undefined);
         expect(analyticsService.trackPerformance).toHaveBeenCalled();
@@ -128,7 +129,7 @@ describe('Analytics Middleware', () => {
 
         const _result = (mockRes.end as any).call(mockRes, chunk, encoding, callback);
 
-        await new Promise((resolve) => setImmediate(resolve));
+        await new Promise(resolve => setImmediate(resolve));
 
         expect(originalEnd).toHaveBeenCalledWith(chunk, encoding, callback);
         expect(analyticsService.trackPerformance).toHaveBeenCalled();
@@ -144,7 +145,7 @@ describe('Analytics Middleware', () => {
         // Call end to trigger tracking
         (mockRes.end as any).call(mockRes, 'response data');
 
-        await new Promise((resolve) => setImmediate(resolve));
+        await new Promise(resolve => setImmediate(resolve));
 
         expect(analyticsService.trackPerformance).toHaveBeenCalledWith(
           '/api/test',
@@ -176,7 +177,7 @@ describe('Analytics Middleware', () => {
         // Call end
         (mockRes.end as any).call(mockRes);
 
-        await new Promise((resolve) => setImmediate(resolve));
+        await new Promise(resolve => setImmediate(resolve));
 
         // Should still call original end despite tracking error
         expect(originalEnd).toHaveBeenCalled();

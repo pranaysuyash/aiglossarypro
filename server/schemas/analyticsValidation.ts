@@ -108,7 +108,7 @@ export function validateQuery<T>(schema: z.ZodSchema<T>) {
         return res.status(400).json({
           success: false,
           error: 'Invalid query parameters',
-          details: result.error.errors.map((err) => ({
+          details: result.error.errors.map(err => ({
             field: err.path.join('.'),
             message: err.message,
           })),

@@ -149,8 +149,8 @@ class HealthChecker {
       'GUMROAD_WEBHOOK_SECRET',
     ];
 
-    const missing = required.filter((env) => !process.env[env]);
-    const present = optional.filter((env) => process.env[env]);
+    const missing = required.filter(env => !process.env[env]);
+    const present = optional.filter(env => process.env[env]);
 
     if (missing.length > 0) {
       return {
@@ -349,11 +349,11 @@ class HealthChecker {
   }
 
   getOverallStatus(): 'healthy' | 'warning' | 'unhealthy' {
-    const hasUnhealthy = this.results.some((r) => r.status === 'unhealthy');
-    const hasWarning = this.results.some((r) => r.status === 'warning');
+    const hasUnhealthy = this.results.some(r => r.status === 'unhealthy');
+    const hasWarning = this.results.some(r => r.status === 'warning');
 
-    if (hasUnhealthy) return 'unhealthy';
-    if (hasWarning) return 'warning';
+    if (hasUnhealthy) {return 'unhealthy';}
+    if (hasWarning) {return 'warning';}
     return 'healthy';
   }
 

@@ -174,7 +174,7 @@ class LandingPageAuditor {
                 }
                 break;
               case 'scroll':
-                await page.evaluate((pixels) => {
+                await page.evaluate(pixels => {
                   window.scrollBy(0, pixels as number);
                 }, action.value || 100);
                 break;

@@ -66,7 +66,7 @@ export const usePWA = () => {
     const success = await serviceWorkerManager.installPWA();
 
     if (success) {
-      setPWAState((prev) => ({
+      setPWAState(prev => ({
         ...prev,
         isInstalled: true,
         isInstallable: false,
@@ -89,7 +89,7 @@ export const usePWA = () => {
   const updateServiceWorker = useCallback(async () => {
     await serviceWorkerManager.updateServiceWorker();
 
-    setPWAState((prev) => ({
+    setPWAState(prev => ({
       ...prev,
       isUpdateAvailable: false,
     }));
@@ -99,7 +99,7 @@ export const usePWA = () => {
   const requestNotificationPermission = useCallback(async () => {
     const granted = await serviceWorkerManager.requestNotificationPermission();
 
-    setCapabilities((prev) => ({
+    setCapabilities(prev => ({
       ...prev,
       canNotify: granted,
     }));
@@ -109,7 +109,7 @@ export const usePWA = () => {
 
   // Share content using Web Share API
   const shareContent = useCallback(
-    async (data: { title?: string; text?: string; url?: string }) => {
+    async (data: { title?: string | undefined; text?: string; url?: string }) => {
       return await serviceWorkerManager.shareContent({
         title: data.title || '',
         text: data.text || '',
@@ -177,7 +177,7 @@ export const usePWA = () => {
     setCapabilities(capabilities);
 
     // Set initial state
-    setPWAState((prev) => ({
+    setPWAState(prev => ({
       ...prev,
       isInstalled: serviceWorkerManager.isInstalled,
       isInstallable: serviceWorkerManager.isInstallable,
@@ -188,19 +188,19 @@ export const usePWA = () => {
 
     // Set up event listeners with serviceWorkerManager
     const handleOnline = () => {
-      setPWAState((prev) => ({ ...prev, isOffline: false }));
+      setPWAState(prev => ({ ...prev, isOffline: false }));
     };
 
     const handleOffline = () => {
-      setPWAState((prev) => ({ ...prev, isOffline: true }));
+      setPWAState(prev => ({ ...prev, isOffline: true }));
     };
 
     const handleUpdateAvailable = () => {
-      setPWAState((prev) => ({ ...prev, isUpdateAvailable: true }));
+      setPWAState(prev => ({ ...prev, isUpdateAvailable: true }));
     };
 
     const handleInstallPrompt = () => {
-      setPWAState((prev) => ({ ...prev, isInstallable: true }));
+      setPWAState(prev => ({ ...prev, isInstallable: true }));
     };
 
     // Register event listeners

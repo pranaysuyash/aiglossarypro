@@ -33,7 +33,7 @@ export const createRateLimit = (options: {
     },
     keyGenerator:
       options.keyGenerator ||
-      ((req) => {
+      (req => {
         // Use user ID if authenticated, otherwise IP
         const user = req.user as any;
         return user?.id || user?.claims?.sub || req.ip;
@@ -102,7 +102,7 @@ export const rateLimitConfig = {
 export const corsMiddleware = cors({
   origin: (origin, callback) => {
     // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
+    if (!origin) {return callback(null, true);}
 
     const allowedOrigins = [
       'http://localhost:3000',
@@ -133,13 +133,13 @@ export const corsMiddleware = cors({
 
       if (productionOrigins.includes(origin)) {
         return callback(null, true);
-      } else {
+      } 
         log.warn('CORS blocked origin in production', {
           origin,
           allowedOrigins: productionOrigins,
         });
         return callback(new Error(`Origin ${origin} not allowed by CORS`), false);
-      }
+      
     }
 
     // In development, allow localhost and 127.0.0.1 variants
@@ -303,7 +303,7 @@ export function validateInput<T>(schema: z.ZodSchema<T>) {
         return res.status(400).json({
           success: false,
           message: 'Invalid input data',
-          errors: error.errors.map((err) => ({
+          errors: error.errors.map(err => ({
             field: err.path.join('.'),
             message: err.message,
           })),
@@ -326,7 +326,7 @@ export function validateQuery<T>(schema: z.ZodSchema<T>) {
         return res.status(400).json({
           success: false,
           message: 'Invalid query parameters',
-          errors: error.errors.map((err) => ({
+          errors: error.errors.map(err => ({
             field: err.path.join('.'),
             message: err.message,
           })),
@@ -368,7 +368,7 @@ export function preventSqlInjection(req: Request, res: Response, next: NextFunct
 
   const checkForSqlInjection = (obj: any): boolean => {
     if (typeof obj === 'string') {
-      return suspiciousPatterns.some((pattern) => pattern.test(obj));
+      return suspiciousPatterns.some(pattern => pattern.test(obj));
     }
 
     if (Array.isArray(obj)) {
@@ -427,9 +427,9 @@ export const securityMonitoring = (req: Request, _res: Response, next: NextFunct
   };
 
   // Check request body, query, and params for suspicious patterns
-  if (req.body) checkForSuspiciousActivity(req.body, 'body');
-  if (req.query) checkForSuspiciousActivity(req.query, 'query');
-  if (req.params) checkForSuspiciousActivity(req.params, 'params');
+  if (req.body) {checkForSuspiciousActivity(req.body, 'body');}
+  if (req.query) {checkForSuspiciousActivity(req.query, 'query');}
+  if (req.params) {checkForSuspiciousActivity(req.params, 'params');}
 
   next();
 };
@@ -438,7 +438,7 @@ export const securityMonitoring = (req: Request, _res: Response, next: NextFunct
 export function securityAuditLog(req: Request, _res: Response, next: NextFunction) {
   const logData = {
     timestamp: new Date().toISOString(),
-    ip: req.ip || req.connection.remoteAddress,
+    ip: req.ip || req.socket.remoteAddress,
     userAgent: req.get('User-Agent'),
     method: req.method,
     path: req.path,

@@ -134,7 +134,7 @@ export function optionalAuth(req: Request, _res: Response, next: NextFunction) {
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   const authReq = req as AuthenticatedRequest;
 
-  if (!authReq.user || !authReq.user.isAdmin) {
+  if (!authReq.user?.isAdmin) {
     return res.status(403).json({
       success: false,
       message: 'Admin access required',

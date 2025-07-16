@@ -7,15 +7,8 @@ interface UseInViewOptions {
   triggerOnce?: boolean;
 }
 
-export function useInView<T extends Element = HTMLDivElement>(
-  options: UseInViewOptions = {}
-) {
-  const {
-    threshold = 0,
-    root = null,
-    rootMargin = '0px',
-    triggerOnce = true,
-  } = options;
+export function useInView<T extends Element = HTMLDivElement>(options: UseInViewOptions = {}) {
+  const { threshold = 0, root = null, rootMargin = '0px', triggerOnce = true } = options;
 
   const ref = useRef<T>(null);
   const [isInView, setIsInView] = useState(false);
@@ -23,14 +16,14 @@ export function useInView<T extends Element = HTMLDivElement>(
 
   useEffect(() => {
     const element = ref.current;
-    if (!element || (triggerOnce && hasTriggered)) return;
+    if (!element || (triggerOnce && hasTriggered)) {return;}
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           const inView = entry.isIntersecting;
           setIsInView(inView);
-          
+
           if (inView && triggerOnce) {
             setHasTriggered(true);
             observer.unobserve(entry.target);

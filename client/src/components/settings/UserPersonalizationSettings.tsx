@@ -39,7 +39,7 @@ interface UserPersonalizationSettingsProps {
   availableCategories?: string[];
   availableApplications?: string[];
   availableSections?: string[];
-  className?: string;
+  className?: string | undefined;
 }
 
 const defaultSections = [
@@ -93,7 +93,7 @@ export default function UserPersonalizationSettings({
   }, [currentSettings]);
 
   const handleSettingChange = (key: keyof IEnhancedUserSettings, value: any) => {
-    setSettings((prev) => ({
+    setSettings(prev => ({
       ...prev,
       [key]: value,
     }));
@@ -103,7 +103,7 @@ export default function UserPersonalizationSettings({
   const toggleArrayItem = (key: keyof IEnhancedUserSettings, item: string) => {
     const currentArray = (settings[key] as string[]) || [];
     const newArray = currentArray.includes(item)
-      ? currentArray.filter((i) => i !== item)
+      ? currentArray.filter(i => i !== item)
       : [...currentArray, item];
 
     handleSettingChange(key, newArray);
@@ -173,7 +173,7 @@ export default function UserPersonalizationSettings({
           <Label>Select your AI/ML experience level</Label>
           <Select
             value={settings.experienceLevel}
-            onValueChange={(value) => handleSettingChange('experienceLevel', value)}
+            onValueChange={value => handleSettingChange('experienceLevel', value)}
           >
             <SelectTrigger>
               <SelectValue />
@@ -231,7 +231,7 @@ export default function UserPersonalizationSettings({
             <Switch
               id="math-details"
               checked={settings.showMathematicalDetails}
-              onCheckedChange={(checked) => handleSettingChange('showMathematicalDetails', checked)}
+              onCheckedChange={checked => handleSettingChange('showMathematicalDetails', checked)}
             />
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 ml-6">
@@ -248,7 +248,7 @@ export default function UserPersonalizationSettings({
             <Switch
               id="code-examples"
               checked={settings.showCodeExamples}
-              onCheckedChange={(checked) => handleSettingChange('showCodeExamples', checked)}
+              onCheckedChange={checked => handleSettingChange('showCodeExamples', checked)}
             />
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 ml-6">
@@ -265,7 +265,7 @@ export default function UserPersonalizationSettings({
             <Switch
               id="interactive-elements"
               checked={settings.showInteractiveElements}
-              onCheckedChange={(checked) => handleSettingChange('showInteractiveElements', checked)}
+              onCheckedChange={checked => handleSettingChange('showInteractiveElements', checked)}
             />
           </div>
           <p className="text-sm text-gray-600 dark:text-gray-400 ml-6">
@@ -295,7 +295,7 @@ export default function UserPersonalizationSettings({
           </p>
           <ScrollArea className="h-32 border rounded p-3">
             <div className="grid grid-cols-2 gap-2">
-              {availableSections.map((section) => (
+              {availableSections.map(section => (
                 <div key={section} className="flex items-center space-x-2">
                   <Switch
                     id={`preferred-${section}`}
@@ -323,7 +323,7 @@ export default function UserPersonalizationSettings({
           </p>
           <ScrollArea className="h-32 border rounded p-3">
             <div className="grid grid-cols-2 gap-2">
-              {availableSections.map((section) => (
+              {availableSections.map(section => (
                 <div key={section} className="flex items-center space-x-2">
                   <Switch
                     id={`hidden-${section}`}
@@ -356,7 +356,7 @@ export default function UserPersonalizationSettings({
             Select categories you're most interested in
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {availableCategories.map((category) => (
+            {availableCategories.map(category => (
               <div key={category} className="flex items-center space-x-2">
                 <Switch
                   id={`fav-cat-${category}`}
@@ -384,7 +384,7 @@ export default function UserPersonalizationSettings({
             Select application domains you work with or are interested in
           </p>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            {availableApplications.map((application) => (
+            {availableApplications.map(application => (
               <div key={application} className="flex items-center space-x-2">
                 <Switch
                   id={`fav-app-${application}`}
@@ -421,7 +421,7 @@ export default function UserPersonalizationSettings({
           <Switch
             id="compact-mode"
             checked={settings.compactMode}
-            onCheckedChange={(checked) => handleSettingChange('compactMode', checked)}
+            onCheckedChange={checked => handleSettingChange('compactMode', checked)}
           />
         </div>
 
@@ -435,7 +435,7 @@ export default function UserPersonalizationSettings({
           <Switch
             id="dark-mode"
             checked={settings.darkMode}
-            onCheckedChange={(checked) => handleSettingChange('darkMode', checked)}
+            onCheckedChange={checked => handleSettingChange('darkMode', checked)}
           />
         </div>
       </CardContent>

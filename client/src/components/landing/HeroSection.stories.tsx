@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
 import { setMockCountryPricing } from '@/hooks/__mocks__/useCountryPricing';
 import { posthogExperiments } from '@/services/posthogExperiments';
 import { HeroSection } from './HeroSection';
@@ -113,7 +112,7 @@ export const TabletView: Story = {
 
 export const HighContrastMode: Story = {
   decorators: [
-    (Story) => (
+    Story => (
       <div style={{ filter: 'contrast(150%) brightness(110%)' }}>
         <Story />
       </div>
@@ -498,22 +497,24 @@ export const ComparisonVariants: Story = {
 };
 
 // PostHog Experiment Stories
-const mockExperimentDecorator = (variant: 'control' | 'sample' | 'explore') => (Story: React.ComponentType) => {
-  // Mock the PostHog experiment hook
-  React.useEffect(() => {
-    // Mock the experiment service
-    (posthogExperiments as any).getExperimentVariant = () => variant;
-  }, []);
+const mockExperimentDecorator =
+  (variant: 'control' | 'sample' | 'explore') => (Story: React.ComponentType) => {
+    // Mock the PostHog experiment hook
+    React.useEffect(() => {
+      // Mock the experiment service
+      (posthogExperiments as any).getExperimentVariant = () => variant;
+    }, []);
 
-  return <Story />;
-};
+    return <Story />;
+  };
 
 export const PostHogExperiment_Control: Story = {
   decorators: [mockExperimentDecorator('control')],
   parameters: {
     docs: {
       description: {
-        story: 'PostHog Experiment - Control variant with "Start for Free" CTA leading to signup page.',
+        story:
+          'PostHog Experiment - Control variant with "Start for Free" CTA leading to signup page.',
       },
     },
   },
@@ -524,7 +525,8 @@ export const PostHogExperiment_Sample: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'PostHog Experiment - Sample variant with "Explore Free Samples" CTA leading to /sample page. Includes search icon and different messaging focused on immediate value without signup.',
+        story:
+          'PostHog Experiment - Sample variant with "Explore Free Samples" CTA leading to /sample page. Includes search icon and different messaging focused on immediate value without signup.',
       },
     },
   },
@@ -535,7 +537,8 @@ export const PostHogExperiment_Explore: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'PostHog Experiment - Explore variant with "Start Exploring" CTA and messaging focused on discovery and exploration of the full glossary.',
+        story:
+          'PostHog Experiment - Explore variant with "Start Exploring" CTA and messaging focused on discovery and exploration of the full glossary.',
       },
     },
   },
@@ -553,7 +556,7 @@ export const PostHogExperiment_Comparison: Story = {
           return <HeroSection />;
         })}
       </div>
-      
+
       <div>
         <h3 className="text-lg font-semibold mb-4 px-4 bg-green-100 py-2 rounded">
           Sample: "Explore Free Samples" → /sample (No signup required)
@@ -563,7 +566,7 @@ export const PostHogExperiment_Comparison: Story = {
           return <HeroSection />;
         })}
       </div>
-      
+
       <div>
         <h3 className="text-lg font-semibold mb-4 px-4 bg-purple-100 py-2 rounded">
           Explore: "Start Exploring" → /login (Discovery focused)
@@ -579,7 +582,8 @@ export const PostHogExperiment_Comparison: Story = {
     layout: 'fullscreen',
     docs: {
       description: {
-        story: 'Side-by-side comparison of all PostHog experiment variants to visualize the differences in messaging, icons, and destination pages.',
+        story:
+          'Side-by-side comparison of all PostHog experiment variants to visualize the differences in messaging, icons, and destination pages.',
       },
     },
   },

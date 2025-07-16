@@ -47,7 +47,7 @@ export const initSentry = () => {
       if (event.request?.data) {
         const data = event.request.data;
         if (typeof data === 'object' && data !== null) {
-          Object.keys(data).forEach((key) => {
+          Object.keys(data).forEach(key => {
             if (
               key.toLowerCase().includes('password') ||
               key.toLowerCase().includes('secret') ||
@@ -92,7 +92,7 @@ export const captureUIError = (
     props?: Record<string, unknown>;
   }
 ) => {
-  Sentry.withScope((scope) => {
+  Sentry.withScope(scope => {
     scope.setTag('errorType', 'ui');
     scope.setContext('ui', {
       component: context.component,
@@ -103,7 +103,7 @@ export const captureUIError = (
     if (context.props) {
       // Filter sensitive props
       const sanitizedProps = { ...context.props };
-      Object.keys(sanitizedProps).forEach((key) => {
+      Object.keys(sanitizedProps).forEach(key => {
         if (
           key.toLowerCase().includes('password') ||
           key.toLowerCase().includes('secret') ||
@@ -128,7 +128,7 @@ export const captureAPIError = (
     userId?: string;
   }
 ) => {
-  Sentry.withScope((scope) => {
+  Sentry.withScope(scope => {
     scope.setTag('errorType', 'api');
     scope.setContext('api', {
       endpoint: context.endpoint,

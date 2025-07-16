@@ -441,19 +441,19 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
         {/* Recommended For You */}
         <div>
-          <RecommendedForYou limit={3} showHeader={true} />
+          <RecommendedForYou limit={3} showHeader />
         </div>
 
         {/* Trending Widget */}
         <div>
-          <TrendingWidget limit={5} showHeader={true} />
+          <TrendingWidget limit={5} showHeader />
         </div>
       </div>
 
       {/* Surprise Me Widget */}
       <div className="mb-6">
         <SurpriseMe
-          compact={true}
+          compact
           showModeSelector={false}
           maxResults={1}
           onTermSelect={handleSurpriseTermSelect}
@@ -477,7 +477,7 @@ export default function Dashboard() {
         <TabsContent value="recent" className="pt-4">
           {recentlyViewedLoading ? (
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3].map(i => (
                 <Card
                   key={`skeleton-${i}`}
                   className="h-40 animate-pulse bg-gray-200 dark:bg-gray-700"
@@ -490,7 +490,7 @@ export default function Dashboard() {
                 <TermCard
                   key={term.id}
                   term={term}
-                  isFavorite={favorites?.some((f) => f.id === term.id)}
+                  isFavorite={favorites?.some(f => f.id === term.id)}
                 />
               ))}
             </div>
@@ -521,7 +521,7 @@ export default function Dashboard() {
         <TabsContent value="favorites" className="pt-4">
           {favoritesLoading ? (
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3].map(i => (
                 <Card
                   key={`skeleton-${i}`}
                   className="h-40 animate-pulse bg-gray-200 dark:bg-gray-700"
@@ -531,7 +531,7 @@ export default function Dashboard() {
           ) : favorites && favorites.length > 0 ? (
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {favorites.slice(0, 6).map((term: ITerm) => (
-                <TermCard key={term.id} term={term} isFavorite={true} />
+                <TermCard key={term.id} term={term} isFavorite />
               ))}
             </div>
           ) : (
@@ -561,7 +561,7 @@ export default function Dashboard() {
         <TabsContent value="recommended" className="pt-4">
           {recommendedLoading ? (
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {[1, 2, 3].map((i) => (
+              {[1, 2, 3].map(i => (
                 <Card
                   key={`skeleton-${i}`}
                   className="h-40 animate-pulse bg-gray-200 dark:bg-gray-700"
@@ -574,7 +574,7 @@ export default function Dashboard() {
                 <TermCard
                   key={term.id}
                   term={term}
-                  isFavorite={favorites?.some((f) => f.id === term.id)}
+                  isFavorite={favorites?.some(f => f.id === term.id)}
                 />
               ))}
             </div>

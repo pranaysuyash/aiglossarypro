@@ -1,5 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import type React from 'react';
 import { PriceDisplay } from './PriceDisplay';
 
 // Helper to create mock pricing data
@@ -205,7 +205,7 @@ export const InternationalPricing: Story = {
       <div className="space-y-6">
         <h3 className="text-lg font-semibold text-center mb-6">International Pricing Examples</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {countries.map((country) => (
+          {countries.map(country => (
             <MockPricingWrapper
               key={country.code}
               mockPricing={createMockPricing({
@@ -282,7 +282,7 @@ export const PricingCards: Story = {
 
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-        {plans.map((plan) => (
+        {plans.map(plan => (
           <MockPricingWrapper
             key={plan.name}
             mockPricing={createMockPricing({
@@ -438,7 +438,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="p-6 bg-gray-900 rounded-lg shadow-sm dark">
         <div className="text-white">
           <Story />

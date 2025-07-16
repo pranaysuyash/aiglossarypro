@@ -91,7 +91,7 @@ export default function Subcategories() {
 
   const handleLoadMore = () => {
     if (pagination?.hasMore) {
-      setPage((prev) => prev + 1);
+      setPage(prev => prev + 1);
     }
   };
 
@@ -129,7 +129,7 @@ export default function Subcategories() {
             <Input
               placeholder="Search subcategories..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -142,7 +142,7 @@ export default function Subcategories() {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Categories</SelectItem>
-              {((categories as ICategory[]) || []).map((category) => (
+              {((categories as ICategory[]) || []).map(category => (
                 <SelectItem key={category.id} value={category.id}>
                   {category.name}
                 </SelectItem>

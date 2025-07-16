@@ -1,8 +1,11 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { optionalFirebaseAuth } from '../middleware/firebaseAuth';
-import { validateRequest } from '../middleware/validateRequest';
-import { SurpriseDiscoveryService } from '../services/surpriseDiscoveryService';
+import { validateQuery, validateRequest } from '../middleware/validateRequest';
+import {
+  type SurpriseDiscoveryRequest,
+  SurpriseDiscoveryService,
+} from '../services/surpriseDiscoveryService';
 import logger from '../utils/logger';
 
 const router = Router();
@@ -38,51 +41,51 @@ const preferencesSchema = z.object({
  * GET /api/surprise-discovery
  * Get surprise term discoveries based on mode and user preferences
  */
-router.get(
-  '/',
-  optionalFirebaseAuth,
-  validateRequest({ query: surpriseDiscoverySchema }),
-  async (req, res) => {
-    try {
-      const { mode, currentTermId, excludeRecentlyViewed, maxResults } = req.query as any;
-      const userId = req.user?.uid;
+router.get('/', optionalFirebaseAuth, validateQuery(surpriseDiscoverySchema), async (req, res) => {
+  try {
+    const { mode, currentTermId, excludeRecentlyViewed, maxResults } = req.query as {
+      mode: string;
+      currentTermId?: string;
+      excludeRecentlyViewed?: string;
+      maxResults?: string;
+    };
+    const userId = req.user?.id;
 
-      // Generate session ID for tracking
-      const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    // Generate session ID for tracking
+    const sessionId = `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
-      const discoveryRequest = {
-        userId,
-        sessionId,
-        mode,
-        currentTermId,
-        excludeRecentlyViewed,
-        maxResults,
-      };
+    const discoveryRequest: SurpriseDiscoveryRequest = {
+      userId,
+      sessionId,
+      mode: mode as 'random_adventure' | 'guided_discovery' | 'challenge_mode' | 'connection_quest',
+      currentTermId,
+      excludeRecentlyViewed: excludeRecentlyViewed === 'true',
+      maxResults: maxResults ? parseInt(maxResults, 10) : undefined,
+    };
 
-      const results = await SurpriseDiscoveryService.discoverSurprise(discoveryRequest);
+    const results = await SurpriseDiscoveryService.discoverSurprise(discoveryRequest);
 
-      logger.info(`Surprise discovery completed for user ${userId}`, {
-        mode,
-        resultsCount: results.length,
-        sessionId,
-      });
+    logger.info(`Surprise discovery completed for user ${userId}`, {
+      mode,
+      resultsCount: results.length,
+      sessionId,
+    });
 
-      res.json({
-        success: true,
-        sessionId,
-        mode,
-        results,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      logger.error('Error in surprise discovery endpoint:', error);
-      res.status(500).json({
-        success: false,
-        error: 'Failed to generate surprise discoveries',
-      });
-    }
+    res.json({
+      success: true,
+      sessionId,
+      mode,
+      results,
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    logger.error('Error in surprise discovery endpoint:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Failed to generate surprise discoveries',
+    });
   }
-);
+});
 
 /**
  * POST /api/surprise-discovery/feedback
@@ -91,11 +94,11 @@ router.get(
 router.post(
   '/feedback',
   optionalFirebaseAuth,
-  validateRequest({ body: feedbackSchema }),
+  validateRequest(feedbackSchema),
   async (req, res) => {
     try {
       const { sessionId, termId, surpriseRating, relevanceRating } = req.body;
-      const userId = req.user?.uid;
+      const userId = req.user?.id;
 
       if (!userId) {
         return res.status(401).json({
@@ -140,7 +143,7 @@ router.post(
  */
 router.get('/preferences', optionalFirebaseAuth, async (req, res) => {
   try {
-    const userId = req.user?.uid;
+    const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({
@@ -171,10 +174,10 @@ router.get('/preferences', optionalFirebaseAuth, async (req, res) => {
 router.put(
   '/preferences',
   optionalFirebaseAuth,
-  validateRequest({ body: preferencesSchema }),
+  validateRequest(preferencesSchema),
   async (req, res) => {
     try {
-      const userId = req.user?.uid;
+      const userId = req.user?.id;
       const preferences = req.body;
 
       if (!userId) {
@@ -254,7 +257,7 @@ router.get('/modes', (_req, res) => {
  */
 router.get('/analytics', optionalFirebaseAuth, async (req, res) => {
   try {
-    const userId = req.user?.uid;
+    const userId = req.user?.id;
 
     if (!userId) {
       return res.status(401).json({

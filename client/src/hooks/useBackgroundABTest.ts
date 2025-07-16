@@ -17,7 +17,7 @@ const DEFAULT_CONFIG: ABTestConfig = {
 
 // Check if browser supports advanced features
 const isBrowserSupported = (): boolean => {
-  if (typeof window === 'undefined') return false;
+  if (typeof window === 'undefined') {return false;}
 
   // Check for Canvas support
   const canvas = document.createElement('canvas');
@@ -58,7 +58,7 @@ export function useBackgroundABTest(config: Partial<ABTestConfig> = {}) {
   }, []);
 
   useEffect(() => {
-    if (!isClient || !finalConfig.enabled) return;
+    if (!isClient || !finalConfig.enabled) {return;}
 
     // Check browser compatibility
     const browserSupported = isBrowserSupported();
@@ -84,7 +84,7 @@ export function useBackgroundABTest(config: Partial<ABTestConfig> = {}) {
     // Optional: Set up cycling through variants (for testing purposes)
     if (finalConfig.cycleInterval && process.env.NODE_ENV === 'development') {
       const interval = setInterval(() => {
-        setCurrentVariant((prev) => {
+        setCurrentVariant(prev => {
           const currentIndex = finalConfig.variants.indexOf(prev);
           const nextIndex = (currentIndex + 1) % finalConfig.variants.length;
           const nextVariant = finalConfig.variants[nextIndex];

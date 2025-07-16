@@ -27,7 +27,7 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
     }
 
     const user = userInfo.rows[0] as any;
-    
+
     // Premium users have unlimited access
     if (user.lifetime_access) {
       console.log(`User ${userId} has premium access - unlimited views`);
@@ -41,7 +41,9 @@ export async function trackTermView(userId: string, termId: string): Promise<boo
 
     // Apply rate limiting only to accounts older than grace period
     if (daysSinceCreation <= DEFAULT_CONFIG.gracePeriodDays) {
-      console.log(`User ${userId} is in grace period (${daysSinceCreation}/${DEFAULT_CONFIG.gracePeriodDays} days)`);
+      console.log(
+        `User ${userId} is in grace period (${daysSinceCreation}/${DEFAULT_CONFIG.gracePeriodDays} days)`
+      );
       return true; // Allow unlimited access during grace period
     }
 
@@ -87,7 +89,7 @@ export function rateLimitMiddleware(req: Request, _res: Response, next: NextFunc
   const termId = req.params.id;
 
   trackTermView(userId, termId)
-    .then((allowed) => {
+    .then(allowed => {
       if (!allowed) {
         // Instead of blocking, set a flag to indicate preview mode
         (req as any).previewMode = true;
@@ -101,7 +103,7 @@ export function rateLimitMiddleware(req: Request, _res: Response, next: NextFunc
         next();
       }
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Rate limit middleware error:', error);
       next(); // Fail open
     });

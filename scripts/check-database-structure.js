@@ -80,7 +80,7 @@ async function checkDatabaseStructure() {
     `);
 
     console.log('\nAll tables in database:');
-    allTables.rows.forEach((row) => console.log('-', row.table_name));
+    allTables.rows.forEach(row => console.log('-', row.table_name));
   } catch (error) {
     console.error('Database check failed:', error);
   } finally {

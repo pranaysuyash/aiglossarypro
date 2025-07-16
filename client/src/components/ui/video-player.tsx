@@ -1,4 +1,13 @@
-import { Download, Maximize, Minimize, Pause, Play, RotateCcw, Volume2, VolumeX } from 'lucide-react';
+import {
+  Download,
+  Maximize,
+  Minimize,
+  Pause,
+  Play,
+  RotateCcw,
+  Volume2,
+  VolumeX,
+} from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,14 +16,14 @@ import { useToast } from '@/hooks/use-toast';
 
 interface VideoPlayerProps {
   src: string;
-  title?: string;
-  description?: string;
-  poster?: string;
+  title?: string | undefined;
+  description?: string | undefined;
+  poster?: string | undefined;
   autoplay?: boolean;
   controls?: boolean;
   loop?: boolean;
   muted?: boolean;
-  className?: string;
+  className?: string | undefined;
   subtitles?: {
     src: string;
     language: string;
@@ -47,7 +56,7 @@ export default function VideoPlayer({
 
   useEffect(() => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video) {return;}
 
     const handleLoadedMetadata = () => {
       setDuration(video.duration);
@@ -92,7 +101,7 @@ export default function VideoPlayer({
 
   const togglePlay = () => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video) {return;}
 
     if (isPlaying) {
       video.pause();
@@ -109,7 +118,7 @@ export default function VideoPlayer({
 
   const handleSeek = (value: number[]) => {
     const video = videoRef.current;
-    if (!video || !duration) return;
+    if (!video || !duration) {return;}
 
     const newTime = (value[0] / 100) * duration;
     video.currentTime = newTime;
@@ -118,7 +127,7 @@ export default function VideoPlayer({
 
   const handleVolumeChange = (value: number[]) => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video) {return;}
 
     const newVolume = value[0] / 100;
     video.volume = newVolume;
@@ -128,7 +137,7 @@ export default function VideoPlayer({
 
   const toggleMute = () => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video) {return;}
 
     if (isMuted) {
       video.volume = volume || 0.5;
@@ -141,7 +150,7 @@ export default function VideoPlayer({
 
   const toggleFullscreen = () => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video) {return;}
 
     if (!isFullscreen) {
       video.requestFullscreen().catch(() => {
@@ -158,7 +167,7 @@ export default function VideoPlayer({
 
   const restart = () => {
     const video = videoRef.current;
-    if (!video) return;
+    if (!video) {return;}
 
     video.currentTime = 0;
     setCurrentTime(0);
@@ -184,9 +193,7 @@ export default function VideoPlayer({
   if (error) {
     return (
       <Card className={className}>
-        <CardHeader>
-          {title && <CardTitle>{title}</CardTitle>}
-        </CardHeader>
+        <CardHeader>{title && <CardTitle>{title}</CardTitle>}</CardHeader>
         <CardContent>
           <div className="flex items-center justify-center h-64 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
             <p className="text-red-700 dark:text-red-400">{error}</p>
@@ -220,7 +227,7 @@ export default function VideoPlayer({
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
             </div>
           )}
-          
+
           <video
             ref={videoRef}
             src={src}
@@ -272,7 +279,7 @@ export default function VideoPlayer({
                   >
                     {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                   </Button>
-                  
+
                   <Button
                     variant="ghost"
                     size="icon"
@@ -309,7 +316,11 @@ export default function VideoPlayer({
                   onClick={toggleFullscreen}
                   className="h-8 w-8 text-white hover:bg-white/20"
                 >
-                  {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+                  {isFullscreen ? (
+                    <Minimize className="h-4 w-4" />
+                  ) : (
+                    <Maximize className="h-4 w-4" />
+                  )}
                 </Button>
               </div>
             </div>

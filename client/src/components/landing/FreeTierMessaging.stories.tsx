@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { FreeTierMessaging } from './FreeTierMessaging';
 
@@ -9,9 +8,9 @@ const meta: Meta<typeof FreeTierMessaging> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Landing page marketing component for the AIGlossaryPro application.'
-      }
-    }
+        component: 'Landing page marketing component for the AIGlossaryPro application.',
+      },
+    },
   },
   tags: ['autodocs'],
   argTypes: {
@@ -23,14 +22,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  
   parameters: {
     docs: {
       description: {
-        story: 'Default FreeTierMessaging component state.'
-      }
-    }
-  }
+        story: 'Default FreeTierMessaging component state.',
+      },
+    },
+  },
 };
 
 export const Loading: Story = {
@@ -38,10 +36,10 @@ export const Loading: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'FreeTierMessaging in loading state.'
-      }
-    }
-  }
+        story: 'FreeTierMessaging in loading state.',
+      },
+    },
+  },
 };
 
 export const Error: Story = {
@@ -49,8 +47,8 @@ export const Error: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'FreeTierMessaging displaying error state.'
-      }
-    }
-  }
+        story: 'FreeTierMessaging displaying error state.',
+      },
+    },
+  },
 };

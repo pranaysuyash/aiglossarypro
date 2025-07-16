@@ -15,12 +15,12 @@ let oneLight: any = null;
 interface CodeBlockProps {
   code: string;
   language: string;
-  title?: string;
-  description?: string;
+  title?: string | undefined;
+  description?: string | undefined;
   showLineNumbers?: boolean;
   highlightLines?: number[];
   executable?: boolean;
-  className?: string;
+  className?: string | undefined;
   maxHeight?: string;
 }
 
@@ -60,7 +60,7 @@ export default function CodeBlock({
           oneDark = darkStyle.default;
           oneLight = lightStyle.default;
           syntaxHighlighterLoaded = true;
-        } catch (error) {
+        } catch (error: any) {
           console.error('Failed to load syntax highlighter:', error);
         }
       }
@@ -102,12 +102,12 @@ export default function CodeBlock({
   const customStyle = {
     ...baseStyle,
     'code[class*="language-"]': {
-      ...(baseStyle as any)['code[class*="language-"]'],
+      ...((baseStyle as any)?.['code[class*="language-"]'] || {}),
       lineHeight: '1.5',
       fontSize: '14px',
     },
     'pre[class*="language-"]': {
-      ...(baseStyle as any)['pre[class*="language-"]'],
+      ...((baseStyle as any)?.['pre[class*="language-"]'] || {}),
       padding: '1rem',
       margin: '0',
       borderRadius: '0.5rem',
@@ -147,7 +147,7 @@ export default function CodeBlock({
   };
 
   const handleExecuteCode = async () => {
-    if (!executable) return;
+    if (!executable) {return;}
 
     setIsExecuting(true);
     setOutput('');
@@ -158,7 +158,7 @@ export default function CodeBlock({
       setOutput('// Code execution would happen here\n// This is a demonstration of the UI');
 
       // Simulate execution time
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       toast({
         title: 'Code executed',
@@ -264,7 +264,7 @@ export default function CodeBlock({
               language={language.toLowerCase()}
               style={customStyle}
               showLineNumbers={showLineNumbers}
-              wrapLines={true}
+              wrapLines
               lineProps={(lineNumber: number) => ({
                 style: highlightLines.includes(lineNumber)
                   ? {

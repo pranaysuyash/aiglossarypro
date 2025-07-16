@@ -50,7 +50,7 @@ async function testAPIEndpoints() {
       console.log('');
 
       // Wait between requests to avoid rate limiting
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
     } catch (error) {
       console.log(`❌ Failed to test ${endpoint}:`);
       console.log(`   Error: ${error}`);

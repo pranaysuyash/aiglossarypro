@@ -78,7 +78,7 @@ function calculatePricing(countryCode, countryName) {
 console.log('🌍 Country Pricing & EARLY500 Discount Test\n');
 console.log('='.repeat(80));
 
-testCountries.forEach((country) => {
+testCountries.forEach(country => {
   const pricing = calculatePricing(country.code, country.name);
 
   console.log(`\n${pricing.flag} ${pricing.countryName} (${pricing.countryCode})`);

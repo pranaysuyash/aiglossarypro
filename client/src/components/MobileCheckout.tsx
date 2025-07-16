@@ -25,7 +25,9 @@ export function MobileCheckout({
   productName,
 }: MobileCheckoutProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const [checkoutStep, setCheckoutStep] = useState<'loading' | 'iframe' | 'success' | 'error'>('loading');
+  const [checkoutStep, setCheckoutStep] = useState<'loading' | 'iframe' | 'success' | 'error'>(
+    'loading'
+  );
   const [errorMessage, setErrorMessage] = useState('');
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const { toast } = useToast();
@@ -33,7 +35,9 @@ export function MobileCheckout({
 
   // Detect if user is on mobile device
   const isMobile = () => {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
   };
 
   // Handle iframe load
@@ -62,11 +66,11 @@ export function MobileCheckout({
       switch (type) {
         case 'gumroad:purchase_complete':
           setCheckoutStep('success');
-          
+
           // Refresh user authentication to get updated pro status
           try {
             await refetch();
-            
+
             toast({
               title: '🎉 Purchase Successful!',
               description: 'Welcome to AI Glossary Pro! Your account has been upgraded.',
@@ -78,7 +82,7 @@ export function MobileCheckout({
               onSuccess?.();
               onClose();
             }, 2000);
-          } catch (error) {
+          } catch (error: any) {
             console.error('Failed to refresh auth after purchase:', error);
           }
           break;
@@ -127,7 +131,7 @@ export function MobileCheckout({
 
   const gumroadUrl = buildGumroadUrl();
 
-  if (!isOpen) return null;
+  if (!isOpen) {return null;}
 
   return (
     <AnimatePresence>
@@ -146,12 +150,10 @@ export function MobileCheckout({
                 <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
                   Secure Checkout
                 </h2>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Powered by Gumroad
-                </p>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Powered by Gumroad</p>
               </div>
             </div>
-            
+
             <Button
               variant="ghost"
               size="icon"
@@ -161,7 +163,7 @@ export function MobileCheckout({
               <X className="w-5 h-5" />
             </Button>
           </div>
-          
+
           {/* Mobile Payment Options Badge */}
           {isMobile() && (
             <div className="px-4 pb-3">
@@ -178,12 +180,8 @@ export function MobileCheckout({
           {checkoutStep === 'loading' && (
             <div className="flex flex-col items-center justify-center h-full text-center p-8">
               <Loader2 className="w-12 h-12 text-blue-500 animate-spin mb-4" />
-              <h3 className="text-xl font-semibold text-white mb-2">
-                Loading Secure Checkout
-              </h3>
-              <p className="text-gray-300 mb-4">
-                Setting up your {productName} purchase...
-              </p>
+              <h3 className="text-xl font-semibold text-white mb-2">Loading Secure Checkout</h3>
+              <p className="text-gray-300 mb-4">Setting up your {productName} purchase...</p>
               <div className="flex items-center space-x-4 text-sm text-gray-400">
                 <div className="flex items-center">
                   <Shield className="w-4 h-4 mr-1 text-green-400" />
@@ -225,17 +223,15 @@ export function MobileCheckout({
                   ✓
                 </motion.div>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-2">
-                Welcome to AI Glossary Pro!
-              </h3>
+              <h3 className="text-2xl font-bold text-white mb-2">Welcome to AI Glossary Pro!</h3>
               <p className="text-gray-300 mb-6">
                 Your purchase was successful. You now have unlimited access to all content.
               </p>
               <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
                 <p className="text-white text-sm">
-                  🚀 Unlimited term access<br />
-                  📚 All premium features<br />
-                  💬 Priority support
+                  🚀 Unlimited term access
+                  <br />📚 All premium features
+                  <br />💬 Priority support
                 </p>
               </div>
             </motion.div>
@@ -249,12 +245,8 @@ export function MobileCheckout({
             >
               <Card className="max-w-md w-full bg-white dark:bg-gray-800">
                 <CardHeader>
-                  <CardTitle className="text-red-600 dark:text-red-400">
-                    Checkout Error
-                  </CardTitle>
-                  <CardDescription>
-                    {errorMessage}
-                  </CardDescription>
+                  <CardTitle className="text-red-600 dark:text-red-400">Checkout Error</CardTitle>
+                  <CardDescription>{errorMessage}</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <Button
@@ -270,11 +262,7 @@ export function MobileCheckout({
                   >
                     Try Again
                   </Button>
-                  <Button
-                    variant="outline"
-                    onClick={onClose}
-                    className="w-full"
-                  >
+                  <Button variant="outline" onClick={onClose} className="w-full">
                     Close
                   </Button>
                 </CardContent>

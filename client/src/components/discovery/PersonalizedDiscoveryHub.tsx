@@ -82,11 +82,11 @@ export function PersonalizedDiscoveryHub() {
     queryKey: ['personalized-recommendations', difficultyFilter, categoryFilter],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (difficultyFilter !== 'all') params.append('difficulty', difficultyFilter);
-      if (categoryFilter !== 'all') params.append('category', categoryFilter);
+      if (difficultyFilter !== 'all') {params.append('difficulty', difficultyFilter);}
+      if (categoryFilter !== 'all') {params.append('category', categoryFilter);}
 
       const response = await fetch(`/api/discovery/personalized?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch recommendations');
+      if (!response.ok) {throw new Error('Failed to fetch recommendations');}
       return response.json();
     },
   });
@@ -96,7 +96,7 @@ export function PersonalizedDiscoveryHub() {
     queryKey: ['discovery-paths'],
     queryFn: async () => {
       const response = await fetch('/api/discovery/paths');
-      if (!response.ok) throw new Error('Failed to fetch discovery paths');
+      if (!response.ok) {throw new Error('Failed to fetch discovery paths');}
       return response.json();
     },
   });
@@ -106,7 +106,7 @@ export function PersonalizedDiscoveryHub() {
     queryKey: ['trending-topics'],
     queryFn: async () => {
       const response = await fetch('/api/analytics/trending');
-      if (!response.ok) throw new Error('Failed to fetch trending topics');
+      if (!response.ok) {throw new Error('Failed to fetch trending topics');}
       return response.json();
     },
   });
@@ -116,7 +116,7 @@ export function PersonalizedDiscoveryHub() {
     queryKey: ['user-context'],
     queryFn: async () => {
       const response = await fetch('/api/users/context');
-      if (!response.ok) throw new Error('Failed to fetch user context');
+      if (!response.ok) {throw new Error('Failed to fetch user context');}
       return response.json();
     },
   });
@@ -171,7 +171,7 @@ export function PersonalizedDiscoveryHub() {
   };
 
   const formatTime = (minutes: number) => {
-    if (minutes < 60) return `${minutes}m`;
+    if (minutes < 60) {return `${minutes}m`;}
     return `${Math.floor(minutes / 60)}h ${minutes % 60}m`;
   };
 
@@ -363,7 +363,7 @@ export function PersonalizedDiscoveryHub() {
                         </div>
 
                         <div className="flex flex-wrap gap-1">
-                          {rec.categories.slice(0, 3).map((category) => (
+                          {rec.categories.slice(0, 3).map(category => (
                             <Badge key={category} variant="outline" className="text-xs">
                               {category}
                             </Badge>
@@ -490,7 +490,7 @@ export function PersonalizedDiscoveryHub() {
                         </div>
 
                         <div className="flex flex-wrap gap-1">
-                          {path.tags.slice(0, 3).map((tag) => (
+                          {path.tags.slice(0, 3).map(tag => (
                             <Badge key={tag} variant="outline" className="text-xs">
                               {tag}
                             </Badge>

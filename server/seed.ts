@@ -177,7 +177,7 @@ async function seed() {
   console.log('Database seeding completed successfully!');
 }
 
-seed().catch((error) => {
+seed().catch(error => {
   console.error('Error seeding database:', error);
   process.exit(1);
 });

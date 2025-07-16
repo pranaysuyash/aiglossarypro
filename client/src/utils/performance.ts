@@ -41,7 +41,7 @@ export class PerformanceMonitor {
       this.metrics.set(name, []);
     }
     this.metrics.get(name)!.push(value);
-    
+
     // Log to console in development
     if (import.meta.env.DEV) {
       console.log(`[Performance] ${name}: ${value.toFixed(2)}ms`);
@@ -51,7 +51,7 @@ export class PerformanceMonitor {
   // Get metrics summary
   getMetricsSummary(): Record<string, { avg: number; min: number; max: number; count: number }> {
     const summary: Record<string, { avg: number; min: number; max: number; count: number }> = {};
-    
+
     this.metrics.forEach((values, name) => {
       if (values.length > 0) {
         const sum = values.reduce((a, b) => a + b, 0);
@@ -59,11 +59,11 @@ export class PerformanceMonitor {
           avg: sum / values.length,
           min: Math.min(...values),
           max: Math.max(...values),
-          count: values.length
+          count: values.length,
         };
       }
     });
-    
+
     return summary;
   }
 
@@ -90,7 +90,7 @@ export const reportWebVitals = (onPerfEntry?: (metric: any) => void) => {
 export const preloadCriticalAssets = () => {
   const criticalAssets = [
     { href: '/fonts/inter-var.woff2', as: 'font', type: 'font/woff2' },
-    { href: '/fonts/jetbrains-mono.woff2', as: 'font', type: 'font/woff2' }
+    { href: '/fonts/jetbrains-mono.woff2', as: 'font', type: 'font/woff2' },
   ];
 
   criticalAssets.forEach(({ href, as, type }) => {
@@ -98,19 +98,22 @@ export const preloadCriticalAssets = () => {
     link.rel = 'preload';
     link.href = href;
     link.as = as;
-    if (type) link.type = type;
+    if (type) {link.type = type;}
     link.crossOrigin = 'anonymous';
     document.head.appendChild(link);
   });
 };
 
 // Image optimization helper
-export const getOptimizedImageUrl = (url: string, options: {
-  width?: number;
-  height?: number;
-  quality?: number;
-  format?: 'webp' | 'avif' | 'jpg' | 'png';
-} = {}): string => {
+export const getOptimizedImageUrl = (
+  url: string,
+  options: {
+    width?: number;
+    height?: number;
+    quality?: number;
+    format?: 'webp' | 'avif' | 'jpg' | 'png';
+  } = {}
+): string => {
   // If using a CDN or image optimization service, transform the URL here
   // For now, return the original URL
   return url;
@@ -140,7 +143,7 @@ export const analyzeBundleSize = async () => {
   if (import.meta.env.DEV) {
     const modules = import.meta.glob('/src/**/*.{ts,tsx,js,jsx}');
     const sizes: Record<string, number> = {};
-    
+
     for (const path in modules) {
       try {
         const module = await modules[path]();
@@ -150,16 +153,18 @@ export const analyzeBundleSize = async () => {
         console.error(`Error analyzing ${path}:`, error);
       }
     }
-    
+
     // Sort by size and log top 20
     const sorted = Object.entries(sizes)
       .sort((a, b) => b[1] - a[1])
       .slice(0, 20);
-    
-    console.table(sorted.map(([path, size]) => ({
-      path,
-      size: `${(size / 1024).toFixed(2)} KB`
-    })));
+
+    console.table(
+      sorted.map(([path, size]) => ({
+        path,
+        size: `${(size / 1024).toFixed(2)} KB`,
+      }))
+    );
   }
 };
 
@@ -169,7 +174,7 @@ export const checkPerformanceBudget = () => {
     js: 300 * 1024, // 300KB
     css: 100 * 1024, // 100KB
     images: 500 * 1024, // 500KB
-    total: 1000 * 1024 // 1MB
+    total: 1000 * 1024, // 1MB
   };
 
   if ('performance' in window && 'getEntriesByType' in performance) {
@@ -178,7 +183,7 @@ export const checkPerformanceBudget = () => {
       js: 0,
       css: 0,
       images: 0,
-      total: 0
+      total: 0,
     };
 
     resources.forEach(resource => {

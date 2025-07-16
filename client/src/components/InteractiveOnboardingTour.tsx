@@ -1,4 +1,19 @@
-import { ArrowRight, BookOpen, CheckCircle, Clock, Crown, Heart, Lightbulb, Search, Sparkles, Star, Target, Trophy, X, Zap } from 'lucide-react';
+import {
+  ArrowRight,
+  BookOpen,
+  CheckCircle,
+  Clock,
+  Crown,
+  Heart,
+  Lightbulb,
+  Search,
+  Sparkles,
+  Star,
+  Target,
+  Trophy,
+  X,
+  Zap,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useToast } from '../hooks/use-toast';
@@ -50,12 +65,12 @@ export function InteractiveOnboardingTour({
         '50 terms per day with free account',
         'Access to all content and search',
         'Bookmark your favorite definitions',
-        'Track your learning progress'
+        'Track your learning progress',
       ],
       highlights: [
         'No credit card required',
         'Immediate access to all content',
-        'Upgrade to lifetime access anytime'
+        'Upgrade to lifetime access anytime',
       ],
       actionText: 'Start My Journey',
       actionPath: '/categories',
@@ -65,7 +80,8 @@ export function InteractiveOnboardingTour({
     {
       id: 'explore',
       title: 'Explore 42 AI/ML Categories',
-      description: 'Dive into comprehensive categories covering every aspect of artificial intelligence and machine learning.',
+      description:
+        'Dive into comprehensive categories covering every aspect of artificial intelligence and machine learning.',
       icon: <BookOpen className="w-12 h-12 text-blue-500" />,
       features: [
         'Machine Learning Algorithms',
@@ -73,12 +89,12 @@ export function InteractiveOnboardingTour({
         'Natural Language Processing',
         'Computer Vision & Image Recognition',
         'Reinforcement Learning',
-        'MLOps & Production Systems'
+        'MLOps & Production Systems',
       ],
       highlights: [
         '10,000+ expertly curated definitions',
         'Real-world examples and use cases',
-        'Updated weekly with latest trends'
+        'Updated weekly with latest trends',
       ],
       actionText: 'Browse Categories',
       actionPath: '/categories',
@@ -88,19 +104,20 @@ export function InteractiveOnboardingTour({
     {
       id: 'search',
       title: 'Master Advanced Search',
-      description: 'Find exactly what you need with our powerful semantic search and intelligent filtering system.',
+      description:
+        'Find exactly what you need with our powerful semantic search and intelligent filtering system.',
       icon: <Search className="w-12 h-12 text-purple-500" />,
       features: [
         'Semantic search across all definitions',
         'Filter by complexity and topic',
         'Search by industry or use case',
         'Discover related concepts',
-        'Smart autocomplete suggestions'
+        'Smart autocomplete suggestions',
       ],
       highlights: [
         'AI-powered search results',
         'Instant filtering and sorting',
-        'Save your favorite searches'
+        'Save your favorite searches',
       ],
       actionText: 'Try Search Now',
       actionPath: '/search',
@@ -110,19 +127,20 @@ export function InteractiveOnboardingTour({
     {
       id: 'favorites',
       title: 'Build Your Learning Library',
-      description: 'Save important definitions and track your learning progress across all AI/ML topics.',
+      description:
+        'Save important definitions and track your learning progress across all AI/ML topics.',
       icon: <Heart className="w-12 h-12 text-pink-500" />,
       features: [
         'Bookmark important definitions',
         'Create custom learning collections',
         'Track your reading progress',
         'Export your favorites list',
-        'Share collections with others'
+        'Share collections with others',
       ],
       highlights: [
         'Personal learning dashboard',
         'Progress tracking and insights',
-        'Organized knowledge management'
+        'Organized knowledge management',
       ],
       actionText: 'Start Building Library',
       actionPath: '/favorites',
@@ -132,19 +150,20 @@ export function InteractiveOnboardingTour({
     {
       id: 'progress',
       title: 'Track Your Learning Progress',
-      description: 'Monitor your daily term views and learning progress with our comprehensive tracking dashboard.',
+      description:
+        'Monitor your daily term views and learning progress with our comprehensive tracking dashboard.',
       icon: <Clock className="w-12 h-12 text-green-500" />,
       features: [
         'Track daily term usage (50 per day)',
         'Advanced search and filtering',
         'Progress tracking and analytics',
         'Bookmark and organize favorites',
-        'Access to latest AI terminology'
+        'Access to latest AI terminology',
       ],
       highlights: [
         '50 terms per day with free account',
         'Track your daily usage and progress',
-        'Upgrade anytime for unlimited lifetime access'
+        'Upgrade anytime for unlimited lifetime access',
       ],
       actionText: 'Explore Your Progress',
       actionPath: '/dashboard',
@@ -154,26 +173,27 @@ export function InteractiveOnboardingTour({
     {
       id: 'premium',
       title: 'Ready to Go Premium?',
-      description: 'Join thousands of AI professionals with lifetime access to the most comprehensive AI/ML glossary.',
+      description:
+        'Join thousands of AI professionals with lifetime access to the most comprehensive AI/ML glossary.',
       icon: <Crown className="w-12 h-12 text-yellow-500" />,
       features: [
         'Lifetime access to all content',
         'Priority customer support',
         'Early access to new features',
         'Advanced export capabilities',
-        'Team collaboration tools'
+        'Team collaboration tools',
       ],
       highlights: [
         'One-time payment of $179 (was $249)',
         'No recurring subscriptions',
-        'Money-back guarantee'
+        'Money-back guarantee',
       ],
       actionText: 'Upgrade to Premium',
       actionPath: '/lifetime',
       bgGradient: 'from-yellow-50 to-amber-50 dark:from-yellow-950 dark:to-amber-950',
       iconBg: 'from-yellow-500 to-amber-500',
       actionVariant: 'secondary',
-    }
+    },
   ];
 
   useEffect(() => {
@@ -204,11 +224,11 @@ export function InteractiveOnboardingTour({
       description: `You're ready to explore! Access 50 terms daily or upgrade for unlimited lifetime access.`,
       duration: 6000,
     });
-    
+
     // Mark onboarding as completed in localStorage
     localStorage.setItem('free_user_onboarding_completed', 'true');
     localStorage.setItem('onboarding_completed_date', new Date().toISOString());
-    
+
     if (onComplete) {
       onComplete();
     } else {
@@ -219,13 +239,13 @@ export function InteractiveOnboardingTour({
   const handleSkip = () => {
     localStorage.setItem('free_user_onboarding_completed', 'true');
     localStorage.setItem('onboarding_skipped', 'true');
-    
+
     toast({
       title: 'Onboarding Skipped',
       description: 'You can always take the tour later from your dashboard.',
       duration: 4000,
     });
-    
+
     if (onSkip) {
       onSkip();
     } else {
@@ -248,7 +268,9 @@ export function InteractiveOnboardingTour({
 
   return (
     <div className={containerClass}>
-      <Card className={`${cardClass} border-blue-200 bg-gradient-to-br ${currentStepData.bgGradient}`}>
+      <Card
+        className={`${cardClass} border-blue-200 bg-gradient-to-br ${currentStepData.bgGradient}`}
+      >
         <CardHeader className="text-center pb-4">
           {/* Free User Access Badge */}
           <Badge className="mx-auto mb-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white border-0 px-4 py-2 text-lg">
@@ -280,7 +302,9 @@ export function InteractiveOnboardingTour({
           </div>
 
           {/* Step Icon */}
-          <div className={`mx-auto w-20 h-20 bg-gradient-to-br ${currentStepData.iconBg} rounded-full flex items-center justify-center mb-4`}>
+          <div
+            className={`mx-auto w-20 h-20 bg-gradient-to-br ${currentStepData.iconBg} rounded-full flex items-center justify-center mb-4`}
+          >
             {currentStepData.icon}
           </div>
 
@@ -317,7 +341,10 @@ export function InteractiveOnboardingTour({
             </h4>
             <div className="space-y-2">
               {currentStepData.highlights.map((highlight, index) => (
-                <div key={index} className="flex items-center space-x-3 text-gray-700 dark:text-gray-300">
+                <div
+                  key={index}
+                  className="flex items-center space-x-3 text-gray-700 dark:text-gray-300"
+                >
                   <Star className="w-4 h-4 text-yellow-500 flex-shrink-0" />
                   <span className="font-medium">{highlight}</span>
                 </div>
@@ -397,8 +424,8 @@ export function InteractiveOnboardingTour({
                     index === currentStep
                       ? 'bg-blue-500'
                       : index < currentStep
-                      ? 'bg-blue-300'
-                      : 'bg-gray-300 dark:bg-gray-600'
+                        ? 'bg-blue-300'
+                        : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 />
               ))}

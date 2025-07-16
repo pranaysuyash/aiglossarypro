@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
 import compression from 'compression';
 import { createHash } from 'crypto';
+import type { NextFunction, Request, Response } from 'express';
 import { NodeCache } from 'node-cache';
 
 // Initialize response cache
@@ -23,7 +23,7 @@ export const compressionMiddleware = compression({
     if (req.headers['x-no-compression']) {
       return false;
     }
-    
+
     // Use compression for JSON, HTML, CSS, JS
     return compression.filter(req, res);
   },
@@ -35,7 +35,7 @@ export const compressionMiddleware = compression({
 export function cacheControlMiddleware(req: Request, res: Response, next: NextFunction) {
   // Set appropriate cache headers based on route
   const path = req.path;
-  
+
   // Static assets - long cache
   if (path.match(/\.(js|css|png|jpg|jpeg|gif|ico|svg|woff|woff2|ttf|eot)$/)) {
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable'); // 1 year
@@ -54,7 +54,7 @@ export function cacheControlMiddleware(req: Request, res: Response, next: NextFu
   else {
     res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=300'); // Always revalidate, 5 min CDN
   }
-  
+
   next();
 }
 
@@ -64,29 +64,29 @@ export function etagMiddleware(req: Request, res: Response, next: NextFunction) 
   if (req.method !== 'GET') {
     return next();
   }
-  
+
   // Store original send function
   const originalSend = res.send;
-  
-  res.send = function(data: any) {
+
+  res.send = function (data: any) {
     // Generate ETag from response data
     const hash = createHash('md5').update(JSON.stringify(data)).digest('hex');
     const etag = `"${hash}"`;
-    
+
     // Set ETag header
     res.setHeader('ETag', etag);
-    
+
     // Check if client has matching ETag
     const clientEtag = req.headers['if-none-match'];
     if (clientEtag === etag) {
       res.status(304).end();
       return res;
     }
-    
+
     // Call original send
     return originalSend.call(this, data);
   };
-  
+
   next();
 }
 
@@ -99,40 +99,40 @@ interface CacheOptions {
 
 export function responseCacheMiddleware(options: CacheOptions = {}) {
   const { ttl = 300, key, condition } = options;
-  
+
   return (req: Request, res: Response, next: NextFunction) => {
     // Skip if not GET request
     if (req.method !== 'GET') {
       return next();
     }
-    
+
     // Check condition
     if (condition && !condition(req)) {
       return next();
     }
-    
+
     // Generate cache key
     const cacheKey = key ? key(req) : `${req.path}:${JSON.stringify(req.query)}`;
-    
+
     // Check cache
     const cached = responseCache.get(cacheKey);
     if (cached) {
       res.setHeader('X-Cache', 'HIT');
       return res.json(cached);
     }
-    
+
     // Store original json function
     const originalJson = res.json;
-    
-    res.json = function(data: any) {
+
+    res.json = function (data: any) {
       // Cache the response
       responseCache.set(cacheKey, data, ttl);
       res.setHeader('X-Cache', 'MISS');
-      
+
       // Call original json
       return originalJson.call(this, data);
     };
-    
+
     next();
   };
 }
@@ -145,67 +145,65 @@ export function deduplicationMiddleware(req: Request, res: Response, next: NextF
   if (req.method !== 'GET') {
     return next();
   }
-  
+
   const requestKey = `${req.path}:${JSON.stringify(req.query)}`;
-  
+
   // Check if there's a pending request
   const pending = pendingRequests.get(requestKey);
   if (pending) {
     // Wait for the pending request
-    pending
-      .then(result => res.json(result))
-      .catch(error => next(error));
+    pending.then(result => res.json(result)).catch(error => next(error));
     return;
   }
-  
+
   // Create a promise for this request
   let resolvePromise: (value: any) => void;
   let rejectPromise: (error: any) => void;
-  
+
   const promise = new Promise((resolve, reject) => {
     resolvePromise = resolve;
     rejectPromise = reject;
   });
-  
+
   pendingRequests.set(requestKey, promise);
-  
+
   // Override json to resolve the promise
   const originalJson = res.json;
-  res.json = function(data: any) {
+  res.json = function (data: any) {
     pendingRequests.delete(requestKey);
     resolvePromise(data);
     return originalJson.call(this, data);
   };
-  
+
   // Handle errors
   const originalNext = next;
-  next = function(error?: any) {
+  next = ((error?: any) => {
     if (error) {
       pendingRequests.delete(requestKey);
       rejectPromise(error);
     }
     return originalNext(error);
-  } as NextFunction;
-  
+  }) as NextFunction;
+
   next();
 }
 
 // Performance monitoring middleware
 export function performanceMonitoringMiddleware(req: Request, res: Response, next: NextFunction) {
   const start = Date.now();
-  
+
   // Monitor response time
   res.on('finish', () => {
     const duration = Date.now() - start;
-    
+
     // Log slow requests
     if (duration > 1000) {
       console.warn(`Slow request: ${req.method} ${req.path} took ${duration}ms`);
     }
-    
+
     // Set response time header
     res.setHeader('X-Response-Time', `${duration}ms`);
-    
+
     // Track metrics (integrate with your analytics)
     if (process.env.NODE_ENV === 'production') {
       // Send to analytics service
@@ -218,7 +216,7 @@ export function performanceMonitoringMiddleware(req: Request, res: Response, nex
       });
     }
   });
-  
+
   next();
 }
 
@@ -234,19 +232,19 @@ function trackPerformanceMetric(metric: any) {
 // Clear cache endpoint
 export function clearCacheEndpoint(req: Request, res: Response) {
   const { pattern } = req.query;
-  
+
   if (pattern && typeof pattern === 'string') {
     // Clear specific pattern
     const keys = responseCache.keys();
     let cleared = 0;
-    
+
     keys.forEach(key => {
       if (key.includes(pattern)) {
         responseCache.del(key);
         cleared++;
       }
     });
-    
+
     res.json({ message: `Cleared ${cleared} cache entries matching pattern: ${pattern}` });
   } else {
     // Clear all

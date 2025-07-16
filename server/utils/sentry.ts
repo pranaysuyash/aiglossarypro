@@ -47,7 +47,7 @@ export const initSentry = () => {
         const data = event.request.data;
         // Remove password fields
         if (typeof data === 'object') {
-          Object.keys(data).forEach((key) => {
+          Object.keys(data).forEach(key => {
             if (
               key.toLowerCase().includes('password') ||
               key.toLowerCase().includes('secret') ||
@@ -87,7 +87,7 @@ export const captureAPIError = (
     body?: Record<string, unknown>;
   }
 ) => {
-  Sentry.withScope((scope) => {
+  Sentry.withScope(scope => {
     scope.setTag('errorType', 'api');
     scope.setContext('api', {
       method: context.method,
@@ -99,7 +99,7 @@ export const captureAPIError = (
     if (context.body && typeof context.body === 'object') {
       // Filter sensitive data before logging
       const sanitizedBody = { ...context.body };
-      Object.keys(sanitizedBody).forEach((key) => {
+      Object.keys(sanitizedBody).forEach(key => {
         if (
           key.toLowerCase().includes('password') ||
           key.toLowerCase().includes('secret') ||
@@ -123,7 +123,7 @@ export const captureAuthError = (
     action: string;
   }
 ) => {
-  Sentry.withScope((scope) => {
+  Sentry.withScope(scope => {
     scope.setTag('errorType', 'authentication');
     scope.setContext('auth', {
       email: context.email,
@@ -165,7 +165,7 @@ export const captureDatabaseError = (
     table?: string;
   }
 ) => {
-  Sentry.withScope((scope) => {
+  Sentry.withScope(scope => {
     scope.setTag('errorType', 'database');
     scope.setContext('database', {
       query: context.query?.substring(0, 200), // Truncate long queries

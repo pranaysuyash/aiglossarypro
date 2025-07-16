@@ -1,11 +1,14 @@
 #!/usr/bin/env tsx
 
 import { performance } from 'node:perf_hooks';
-import { mkdir, writeFile } from 'fs/promises';
-import { db } from '../server/db';
-import { terms, categories } from '../shared/schema';
 import { sql } from 'drizzle-orm';
-import { ESSENTIAL_AI_TERMS, type EssentialTerm } from '../scripts/content-seeding/data/essentialTerms';
+import { mkdir, writeFile } from 'fs/promises';
+import {
+  ESSENTIAL_AI_TERMS,
+  type EssentialTerm,
+} from '../scripts/content-seeding/data/essentialTerms';
+import { db } from '../server/db';
+import { categories, terms } from '../shared/schema';
 
 interface ImportConfig {
   batchSize: number;
@@ -46,9 +49,9 @@ const DEFAULT_CONFIG: ImportConfig = {
     'how-it-works',
     'applications',
     'advantages-disadvantages',
-    'best-practices'
+    'best-practices',
   ],
-  dryRun: false
+  dryRun: false,
 };
 
 async function mockAIService() {
@@ -62,19 +65,19 @@ async function mockAIService() {
         characteristics: [
           `Key characteristic 1 of ${termName}`,
           `Key characteristic 2 of ${termName}`,
-          `Key characteristic 3 of ${termName}`
+          `Key characteristic 3 of ${termName}`,
         ],
         applications: [
           `Application 1: ${termName} in real-world scenarios`,
           `Application 2: Industrial use cases for ${termName}`,
-          `Application 3: Academic research applications`
-        ]
+          `Application 3: Academic research applications`,
+        ],
       };
     },
     generateSectionContent: async (termName: string, sectionName: string) => {
       await new Promise(resolve => setTimeout(resolve, 300)); // Simulate API delay
       return `Comprehensive ${sectionName} content for ${termName}. This section provides detailed information about ${sectionName} aspects, including theoretical foundations, practical applications, and real-world examples that demonstrate the importance and utility of ${termName} in modern AI/ML systems.`;
-    }
+    },
   };
 }
 
@@ -103,7 +106,7 @@ async function bulkImportContent(config: ImportConfig = DEFAULT_CONFIG): Promise
     totalSkipped: 0,
     totalErrors: 0,
     totalDuration: 0,
-    results: []
+    results: [],
   };
 
   try {
@@ -121,12 +124,15 @@ async function bulkImportContent(config: ImportConfig = DEFAULT_CONFIG): Promise
 
     for (const [categoryName, categoryTerms] of Object.entries(ESSENTIAL_AI_TERMS)) {
       // Apply category filter
-      if (config.categoryFilter && !categoryName.toLowerCase().includes(config.categoryFilter.toLowerCase())) {
+      if (
+        config.categoryFilter &&
+        !categoryName.toLowerCase().includes(config.categoryFilter.toLowerCase())
+      ) {
         continue;
       }
 
       // Apply priority filter
-      const filteredTerms = config.priorityFilter 
+      const filteredTerms = config.priorityFilter
         ? categoryTerms.filter(term => term.priority === config.priorityFilter)
         : categoryTerms;
 
@@ -140,12 +146,14 @@ async function bulkImportContent(config: ImportConfig = DEFAULT_CONFIG): Promise
     // Process terms in batches
     for (let i = 0; i < termsToProcess.length; i += config.batchSize) {
       const batch = termsToProcess.slice(i, i + config.batchSize);
-      
-      console.log(`\n🔄 Processing batch ${Math.floor(i / config.batchSize) + 1}/${Math.ceil(termsToProcess.length / config.batchSize)}`);
+
+      console.log(
+        `\n🔄 Processing batch ${Math.floor(i / config.batchSize) + 1}/${Math.ceil(termsToProcess.length / config.batchSize)}`
+      );
 
       const batchPromises = batch.map(async ({ categoryName, term }) => {
         const termStartTime = performance.now();
-        
+
         try {
           const categoryId = categoryMap.get(categoryName);
           if (!categoryId) {
@@ -166,7 +174,7 @@ async function bulkImportContent(config: ImportConfig = DEFAULT_CONFIG): Promise
               success: true,
               skipped: true,
               sectionsGenerated: 0,
-              timeTaken: performance.now() - termStartTime
+              timeTaken: performance.now() - termStartTime,
             };
           }
 
@@ -177,7 +185,7 @@ async function bulkImportContent(config: ImportConfig = DEFAULT_CONFIG): Promise
               success: true,
               skipped: false,
               sectionsGenerated: config.targetSections.length,
-              timeTaken: performance.now() - termStartTime
+              timeTaken: performance.now() - termStartTime,
             };
           }
 
@@ -189,33 +197,37 @@ async function bulkImportContent(config: ImportConfig = DEFAULT_CONFIG): Promise
           );
 
           // Create the term
-          const newTerm = await db.insert(terms).values({
-            name: term.name,
-            shortDefinition: definition.shortDefinition,
-            definition: definition.definition,
-            characteristics: definition.characteristics || [],
-            applications: definition.applications || [],
-            categoryId,
-            viewCount: 0
-          }).returning();
+          const newTerm = await db
+            .insert(terms)
+            .values({
+              name: term.name,
+              shortDefinition: definition.shortDefinition,
+              definition: definition.definition,
+              characteristics: definition.characteristics || [],
+              applications: definition.applications || [],
+              categoryId,
+              viewCount: 0,
+            })
+            .returning();
 
           console.log(`    ✅ Created term: ${term.name} (ID: ${newTerm[0].id})`);
 
           // Generate additional sections
           let sectionsGenerated = 1; // Count the main definition as one section
-          
-          for (const sectionName of config.targetSections.slice(1)) { // Skip introduction (already have definition)
+
+          for (const sectionName of config.targetSections.slice(1)) {
+            // Skip introduction (already have definition)
             try {
-              const sectionContent = await aiService.generateSectionContent(
-                term.name,
-                sectionName
-              );
-              
+              const sectionContent = await aiService.generateSectionContent(term.name, sectionName);
+
               // In a full implementation, you'd save this to a sections table
               console.log(`      📝 Generated ${sectionName}: ${sectionContent.length} chars`);
               sectionsGenerated++;
             } catch (sectionError) {
-              console.error(`      ❌ Failed to generate ${sectionName} for ${term.name}:`, sectionError);
+              console.error(
+                `      ❌ Failed to generate ${sectionName} for ${term.name}:`,
+                sectionError
+              );
             }
           }
 
@@ -224,9 +236,8 @@ async function bulkImportContent(config: ImportConfig = DEFAULT_CONFIG): Promise
             success: true,
             skipped: false,
             sectionsGenerated,
-            timeTaken: performance.now() - termStartTime
+            timeTaken: performance.now() - termStartTime,
           };
-          
         } catch (error) {
           console.error(`    ❌ Error processing ${term.name}:`, error);
           return {
@@ -235,22 +246,22 @@ async function bulkImportContent(config: ImportConfig = DEFAULT_CONFIG): Promise
             skipped: false,
             error: error instanceof Error ? error.message : String(error),
             sectionsGenerated: 0,
-            timeTaken: performance.now() - termStartTime
+            timeTaken: performance.now() - termStartTime,
           };
         }
       });
 
       // Wait for batch to complete
       const batchResults = await Promise.allSettled(batchPromises);
-      
+
       // Process results
       batchResults.forEach(result => {
         summary.totalProcessed++;
-        
+
         if (result.status === 'fulfilled') {
           const importResult = result.value;
           summary.results.push(importResult);
-          
+
           if (importResult.success) {
             if (importResult.skipped) {
               summary.totalSkipped++;
@@ -268,7 +279,7 @@ async function bulkImportContent(config: ImportConfig = DEFAULT_CONFIG): Promise
             skipped: false,
             error: result.reason?.message || 'Unknown error',
             sectionsGenerated: 0,
-            timeTaken: 0
+            timeTaken: 0,
           });
         }
       });
@@ -279,7 +290,6 @@ async function bulkImportContent(config: ImportConfig = DEFAULT_CONFIG): Promise
         await new Promise(resolve => setTimeout(resolve, config.delayBetweenBatches));
       }
     }
-
   } catch (error) {
     console.error('❌ Fatal error during bulk import:', error);
     throw error;
@@ -300,12 +310,14 @@ function printImportSummary(summary: ImportSummary, config: ImportConfig): void 
   console.log(`Skipped: ${summary.totalSkipped}`);
   console.log(`Errors: ${summary.totalErrors}`);
   console.log(`Duration: ${duration.toFixed(2)}s`);
-  
+
   if (summary.totalProcessed > 0) {
     console.log(`Average Time per Term: ${(duration / summary.totalProcessed).toFixed(2)}s`);
-    console.log(`Success Rate: ${((summary.totalSuccessful / summary.totalProcessed) * 100).toFixed(1)}%`);
+    console.log(
+      `Success Rate: ${((summary.totalSuccessful / summary.totalProcessed) * 100).toFixed(1)}%`
+    );
   }
-  
+
   // Show error details
   const errors = summary.results.filter(r => !r.success);
   if (errors.length > 0) {
@@ -317,30 +329,32 @@ function printImportSummary(summary: ImportSummary, config: ImportConfig): void 
       console.log(`  ... and ${errors.length - 5} more errors`);
     }
   }
-  
+
   // Success summary
   if (summary.totalSuccessful > 0) {
     const totalSections = summary.results
       .filter(r => r.success && !r.skipped)
       .reduce((sum, r) => sum + r.sectionsGenerated, 0);
-    console.log(`\n✅ Successfully generated ${totalSections} content sections across ${summary.totalSuccessful} terms`);
+    console.log(
+      `\n✅ Successfully generated ${totalSections} content sections across ${summary.totalSuccessful} terms`
+    );
   }
 }
 
 async function saveImportReport(summary: ImportSummary, config: ImportConfig): Promise<string> {
   try {
     await mkdir('reports', { recursive: true });
-    
+
     const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
     const fileName = `bulk-import-${config.dryRun ? 'dry-run-' : ''}${timestamp}.json`;
     const filePath = `reports/${fileName}`;
-    
+
     const report = {
       config,
       summary,
-      generatedAt: new Date().toISOString()
+      generatedAt: new Date().toISOString(),
     };
-    
+
     await writeFile(filePath, JSON.stringify(report, null, 2));
     return filePath;
   } catch (error) {
@@ -409,11 +423,11 @@ Examples:
   try {
     const summary = await bulkImportContent(config);
     printImportSummary(summary, config);
-    
+
     // Save detailed report
     const reportPath = await saveImportReport(summary, config);
     console.log(`\n📄 Detailed report saved to ${reportPath}`);
-    
+
     // Exit with appropriate code
     if (summary.totalErrors > 0) {
       console.log('\n⚠️  Import completed with errors');

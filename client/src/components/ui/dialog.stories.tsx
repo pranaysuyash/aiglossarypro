@@ -1,5 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import type React from 'react';
 import { useState } from 'react';
 import { Button } from './button';
 import {
@@ -89,7 +89,7 @@ export const WithForm: Story = {
               <Input
                 id="name"
                 value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                onChange={e => setFormData({ ...formData, name: e.target.value })}
                 placeholder="Your name"
               />
             </div>
@@ -99,7 +99,7 @@ export const WithForm: Story = {
                 id="email"
                 type="email"
                 value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                onChange={e => setFormData({ ...formData, email: e.target.value })}
                 placeholder="your@email.com"
               />
             </div>
@@ -108,7 +108,7 @@ export const WithForm: Story = {
               <Textarea
                 id="message"
                 value={formData.message}
-                onChange={(e) => setFormData({ ...formData, message: e.target.value })}
+                onChange={e => setFormData({ ...formData, message: e.target.value })}
                 placeholder="Your message..."
                 rows={4}
               />
@@ -253,7 +253,7 @@ export const LoadingDialog: Story = {
     const handleAction = async () => {
       setIsLoading(true);
       // Simulate async action
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
       setIsLoading(false);
       setIsOpen(false);
     };

@@ -378,7 +378,7 @@ export class CDNCacheInvalidator {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            files: paths.map((path) => `${process.env.CLOUDFLARE_CDN_URL}${path}`),
+            files: paths.map(path => `${process.env.CLOUDFLARE_CDN_URL}${path}`),
           }),
         }
       );

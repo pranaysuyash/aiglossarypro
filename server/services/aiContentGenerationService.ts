@@ -355,7 +355,7 @@ export class AIContentGenerationService {
           }
 
           // Add delay between requests to avoid rate limits
-          await new Promise((resolve) => setTimeout(resolve, 200));
+          await new Promise(resolve => setTimeout(resolve, 200));
         } catch (error) {
           failureCount++;
           logger.error(`Error generating content with model ${model}:`, {
@@ -437,7 +437,7 @@ export class AIContentGenerationService {
         }
 
         // Add small delay between requests to avoid rate limits
-        await new Promise((resolve) => setTimeout(resolve, 100));
+        await new Promise(resolve => setTimeout(resolve, 100));
       } catch (error) {
         failureCount++;
         results.push({
@@ -583,7 +583,7 @@ export class AIContentGenerationService {
         .orderBy(modelContentVersions.createdAt)
         .limit(1);
 
-      if (versions.length === 0) return null;
+      if (versions.length === 0) {return null;}
 
       const version = versions[0];
       return {
@@ -591,7 +591,7 @@ export class AIContentGenerationService {
         model: version.model || '',
         content: version.content,
         qualityScore: version.qualityScore ? parseFloat(version.qualityScore) : undefined,
-        cost: parseFloat(version.cost),
+        cost: version.cost ? parseFloat(version.cost) : 0,
         processingTime: version.processingTime || 0,
         promptTokens: version.promptTokens || 0,
         completionTokens: version.completionTokens || 0,
@@ -628,12 +628,12 @@ export class AIContentGenerationService {
         )
         .orderBy(modelContentVersions.createdAt);
 
-      return versions.map((version) => ({
+      return versions.map(version => ({
         id: version.id,
         model: version.model || '',
         content: version.content,
         qualityScore: version.qualityScore ? parseFloat(version.qualityScore) : undefined,
-        cost: parseFloat(version.cost),
+        cost: version.cost ? parseFloat(version.cost) : 0,
         processingTime: version.processingTime || 0,
         promptTokens: version.promptTokens || 0,
         completionTokens: version.completionTokens || 0,
@@ -703,9 +703,9 @@ export class AIContentGenerationService {
         {
           templateUsed: selectedVersion.templateId || 'default',
           model: selectedVersion.model,
-          promptTokens: selectedVersion.promptTokens,
-          completionTokens: selectedVersion.completionTokens,
-          cost: parseFloat(selectedVersion.cost),
+          promptTokens: selectedVersion.promptTokens || 0,
+          completionTokens: selectedVersion.completionTokens || 0,
+          cost: selectedVersion.cost ? parseFloat(selectedVersion.cost) : 0,
           userId,
         }
       );

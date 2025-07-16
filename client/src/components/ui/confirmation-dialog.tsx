@@ -16,10 +16,10 @@ interface ConfirmationDialogProps {
   onConfirm: () => void;
   title: string;
   description: string;
-  confirmText?: string;
-  cancelText?: string;
+  confirmText?: string | undefined;
+  cancelText?: string | undefined;
   variant?: 'default' | 'destructive';
-  details?: string;
+  details?: string | undefined;
 }
 
 export function ConfirmationDialog({
@@ -38,17 +38,13 @@ export function ConfirmationDialog({
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle className="flex items-center gap-2">
-            {variant === 'destructive' && (
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
-            )}
+            {variant === 'destructive' && <AlertTriangle className="h-5 w-5 text-orange-500" />}
             {title}
           </AlertDialogTitle>
           <AlertDialogDescription className="space-y-2">
             <p>{description}</p>
             {details && (
-              <p className="text-sm text-muted-foreground bg-muted p-2 rounded">
-                {details}
-              </p>
+              <p className="text-sm text-muted-foreground bg-muted p-2 rounded">{details}</p>
             )}
           </AlertDialogDescription>
         </AlertDialogHeader>

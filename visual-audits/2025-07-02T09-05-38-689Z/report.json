@@ -16,9 +16,7 @@
       "description": "Ensure the autocomplete attribute is correct and suitable for the form field (1 instances)",
       "recommendation": "autocomplete attribute must be used correctly",
       "wcagViolation": "cat.forms, wcag21aa, wcag135, EN-301-549, EN-9.1.3.5, ACT",
-      "affectedUsers": [
-        "serious"
-      ],
+      "affectedUsers": ["serious"],
       "codeSnippet": "<input type=\"text\" class=\"flex h-10 w-full rounded-md border px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-10 pr-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700\" placeholder=\"Search AI/ML terms...\" aria-label=\"Search AI/ML terms and definitions\" aria-expanded=\"false\" aria-haspopup=\"listbox\" autocomplete=\"search\" role=\"combobox\" value=\"\">"
     },
     {
@@ -28,9 +26,7 @@
       "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds (6 instances)",
       "recommendation": "Elements must meet minimum color contrast ratio thresholds",
       "wcagViolation": "cat.color, wcag2aa, wcag143, TTv5, TT13.c, EN-301-549, EN-9.1.4.3, ACT",
-      "affectedUsers": [
-        "serious"
-      ],
+      "affectedUsers": ["serious"],
       "codeSnippet": "<span class=\"flex h-full w-full items-center justify-center rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300\">DE</span>"
     },
     {
@@ -40,9 +36,7 @@
       "description": "Ensure all ARIA attributes have valid values (1 instances)",
       "recommendation": "ARIA attributes must conform to valid values",
       "wcagViolation": "cat.aria, wcag2a, wcag412, EN-301-549, EN-9.4.1.2",
-      "affectedUsers": [
-        "critical"
-      ],
+      "affectedUsers": ["critical"],
       "codeSnippet": "<div aria-valuemax=\"100\" aria-valuemin=\"0\" aria-valuenow=\"NaN\" role=\"progressbar\" data-state=\"indeterminate\" data-max=\"100\" class=\"relative w-full overflow-hidden rounded-full bg-secondary h-2\" aria-label=\"Learning progress: 0 out of 10382 terms learned\">"
     },
     {
@@ -52,9 +46,7 @@
       "description": "Ensure the autocomplete attribute is correct and suitable for the form field (1 instances)",
       "recommendation": "autocomplete attribute must be used correctly",
       "wcagViolation": "cat.forms, wcag21aa, wcag135, EN-301-549, EN-9.1.3.5, ACT",
-      "affectedUsers": [
-        "serious"
-      ],
+      "affectedUsers": ["serious"],
       "codeSnippet": "<input type=\"text\" class=\"flex h-10 w-full rounded-md border px-3 py-2 text-base ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 md:text-sm pl-10 pr-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700\" placeholder=\"Search AI/ML terms...\" aria-label=\"Search AI/ML terms and definitions\" aria-expanded=\"false\" aria-haspopup=\"listbox\" autocomplete=\"search\" role=\"combobox\" value=\"\">"
     },
     {
@@ -64,9 +56,7 @@
       "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds (17 instances)",
       "recommendation": "Elements must meet minimum color contrast ratio thresholds",
       "wcagViolation": "cat.color, wcag2aa, wcag143, TTv5, TT13.c, EN-301-549, EN-9.1.4.3, ACT",
-      "affectedUsers": [
-        "serious"
-      ],
+      "affectedUsers": ["serious"],
       "codeSnippet": "<span class=\"flex h-full w-full items-center justify-center rounded-full bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300\">DE</span>"
     }
   ],

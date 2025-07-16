@@ -91,7 +91,7 @@ const AdaptiveLearning: React.FC = () => {
     queryKey: ['adaptiveLearningPatterns'],
     queryFn: async () => {
       const response = await fetch('/api/adaptive/learning-patterns');
-      if (!response.ok) throw new Error('Failed to fetch learning patterns');
+      if (!response.ok) {throw new Error('Failed to fetch learning patterns');}
       return response.json();
     },
   });
@@ -104,7 +104,7 @@ const AdaptiveLearning: React.FC = () => {
     queryKey: ['adaptiveRecommendations'],
     queryFn: async () => {
       const response = await fetch('/api/adaptive/recommendations?count=15');
-      if (!response.ok) throw new Error('Failed to fetch recommendations');
+      if (!response.ok) {throw new Error('Failed to fetch recommendations');}
       return response.json();
     },
   });
@@ -117,7 +117,7 @@ const AdaptiveLearning: React.FC = () => {
     queryKey: ['learningInsights'],
     queryFn: async () => {
       const response = await fetch('/api/adaptive/learning-insights');
-      if (!response.ok) throw new Error('Failed to fetch learning insights');
+      if (!response.ok) {throw new Error('Failed to fetch learning insights');}
       return response.json();
     },
   });
@@ -134,7 +134,7 @@ const AdaptiveLearning: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(feedback),
       });
-      if (!response.ok) throw new Error('Failed to submit feedback');
+      if (!response.ok) {throw new Error('Failed to submit feedback');}
       return response.json();
     },
     onSuccess: () => {
@@ -328,7 +328,7 @@ const AdaptiveLearning: React.FC = () => {
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                  {recommendations.data.slice(0, 6).map((rec) => (
+                  {recommendations.data.slice(0, 6).map(rec => (
                     <div
                       key={rec.termId}
                       className="p-4 border rounded-lg hover:shadow-md transition-shadow"
@@ -376,7 +376,7 @@ const AdaptiveLearning: React.FC = () => {
             <CardContent>
               {recommendations?.data ? (
                 <div className="space-y-4">
-                  {recommendations.data.map((rec) => (
+                  {recommendations.data.map(rec => (
                     <div key={rec.termId} className="p-4 border rounded-lg">
                       <div className="flex items-start justify-between mb-3">
                         <div>
@@ -496,7 +496,7 @@ const AdaptiveLearning: React.FC = () => {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {patterns.data.categoryAffinities.map((category) => (
+                    {patterns.data.categoryAffinities.map(category => (
                       <div key={category.categoryId} className="flex items-center justify-between">
                         <div className="flex-1">
                           <h4 className="font-medium">{category.categoryName}</h4>

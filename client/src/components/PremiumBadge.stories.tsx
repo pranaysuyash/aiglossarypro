@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { PremiumBadge } from './PremiumBadge';
 
@@ -9,7 +8,8 @@ const meta: Meta<typeof PremiumBadge> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Badge component showing user premium status with different visual variants and conditional rendering.',
+        component:
+          'Badge component showing user premium status with different visual variants and conditional rendering.',
       },
     },
   },
@@ -45,9 +45,9 @@ export const PremiumDefault: Story = {
     showFreeStatus: false,
   },
   decorators: [
-    (Story) => {
+    Story => {
       // Mock premium access
-      
+
       return <Story />;
     },
   ],
@@ -66,8 +66,7 @@ export const PremiumCompact: Story = {
     showFreeStatus: false,
   },
   decorators: [
-    (Story) => {
-      
+    Story => {
       return <Story />;
     },
   ],
@@ -86,8 +85,7 @@ export const PremiumIconOnly: Story = {
     showFreeStatus: false,
   },
   decorators: [
-    (Story) => {
-      
+    Story => {
       return <Story />;
     },
   ],
@@ -106,9 +104,9 @@ export const FreeUserDefault: Story = {
     showFreeStatus: true,
   },
   decorators: [
-    (Story) => {
+    Story => {
       // Mock free access
-      
+
       return <Story />;
     },
   ],
@@ -127,8 +125,7 @@ export const FreeUserCompact: Story = {
     showFreeStatus: true,
   },
   decorators: [
-    (Story) => {
-      
+    Story => {
       return <Story />;
     },
   ],
@@ -147,8 +144,7 @@ export const FreeUserIconOnly: Story = {
     showFreeStatus: true,
   },
   decorators: [
-    (Story) => {
-      
+    Story => {
       return <Story />;
     },
   ],
@@ -167,17 +163,14 @@ export const FreeUserHidden: Story = {
     showFreeStatus: false,
   },
   decorators: [
-    (Story) => {
-      
+    Story => {
       return (
         <div className="p-4 border border-gray-200 rounded-lg">
           <p className="text-sm text-gray-600 mb-2">
             Free user with showFreeStatus=false (no badge should appear):
           </p>
           <Story />
-          <p className="text-xs text-gray-500 mt-2">
-            Badge is hidden for free users by default
-          </p>
+          <p className="text-xs text-gray-500 mt-2">Badge is hidden for free users by default</p>
         </div>
       );
     },
@@ -197,9 +190,9 @@ export const NoAccessStatus: Story = {
     showFreeStatus: true,
   },
   decorators: [
-    (Story) => {
+    Story => {
       // Mock no access status
-      
+
       return (
         <div className="p-4 border border-gray-200 rounded-lg">
           <p className="text-sm text-gray-600 mb-2">
@@ -224,8 +217,7 @@ export const NoAccessStatus: Story = {
 
 export const AllVariants: Story = {
   decorators: [
-    (Story) => {
-      
+    Story => {
       return (
         <div className="space-y-6">
           <div className="space-y-3">
@@ -236,7 +228,7 @@ export const AllVariants: Story = {
               <PremiumBadge variant="icon-only" />
             </div>
           </div>
-          
+
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">Free User Badges (with showFreeStatus)</h3>
             <div className="flex flex-wrap gap-4 items-center">
@@ -245,7 +237,7 @@ export const AllVariants: Story = {
               <PremiumBadge variant="icon-only" showFreeStatus={true} />
             </div>
           </div>
-          
+
           <div className="space-y-3">
             <h3 className="text-lg font-semibold">Custom Styling</h3>
             <div className="flex flex-wrap gap-4 items-center">
@@ -269,8 +261,7 @@ export const AllVariants: Story = {
 
 export const InContext: Story = {
   decorators: [
-    (Story) => {
-      
+    Story => {
       return (
         <div className="space-y-6">
           {/* In a user profile card */}
@@ -285,7 +276,7 @@ export const InContext: Story = {
               <p className="text-sm text-gray-600">Member since January 2024</p>
             </div>
           </div>
-          
+
           {/* In a header */}
           <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-lg">
             <div className="flex items-center justify-between">
@@ -293,7 +284,7 @@ export const InContext: Story = {
               <PremiumBadge variant="icon-only" className="text-yellow-300" />
             </div>
           </div>
-          
+
           {/* In a list item */}
           <div className="space-y-2">
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded">
@@ -324,8 +315,7 @@ export const DarkMode: Story = {
     showFreeStatus: false,
   },
   decorators: [
-    (Story) => {
-      
+    Story => {
       return (
         <div className="dark bg-gray-900 p-6 rounded-lg">
           <div className="space-y-4">

@@ -32,7 +32,7 @@ async function validateFileContent(filePath: string, declaredMimeType: string): 
     await fd.close();
 
     const signature = FILE_SIGNATURES[declaredMimeType as keyof typeof FILE_SIGNATURES];
-    if (!signature) return false;
+    if (!signature) {return false;}
 
     // Check if file starts with expected signature
     for (let i = 0; i < signature.length; i++) {

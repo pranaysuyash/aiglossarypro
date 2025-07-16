@@ -2,17 +2,13 @@ import { lazy, Suspense } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 
 // Lazy load chart components to reduce initial bundle size
-const LazyBarChart = lazy(() =>
-  import('recharts').then((module) => ({ default: module.BarChart }))
-);
+const LazyBarChart = lazy(() => import('recharts').then(module => ({ default: module.BarChart })));
 const LazyLineChart = lazy(() =>
-  import('recharts').then((module) => ({ default: module.LineChart }))
+  import('recharts').then(module => ({ default: module.LineChart }))
 );
-const LazyPieChart = lazy(() =>
-  import('recharts').then((module) => ({ default: module.PieChart }))
-);
+const LazyPieChart = lazy(() => import('recharts').then(module => ({ default: module.PieChart })));
 const LazyRadarChart = lazy(() =>
-  import('recharts').then((module) => ({ default: module.RadarChart }))
+  import('recharts').then(module => ({ default: module.RadarChart }))
 );
 
 // Chart loading fallback

@@ -95,7 +95,7 @@ export function registerAdaptiveSearchRoutes(app: Express): void {
         const searchResponse = await adaptiveSearch(searchOptions);
 
         // Transform results to include additional AI metadata and sanitize HTML
-        const enhancedResults = searchResponse.results.map((result) => ({
+        const enhancedResults = searchResponse.results.map(result => ({
           ...result,
           // Sanitize HTML content in name and shortDefinition
           name: DOMPurify.sanitize(result.name || ''),
@@ -173,7 +173,7 @@ export function registerAdaptiveSearchRoutes(app: Express): void {
 
       // Transform to suggestion format with AI ranking
       const suggestions = searchResponse.results
-        .filter((result) => result.name.toLowerCase().includes(query.toLowerCase()))
+        .filter(result => result.name.toLowerCase().includes(query.toLowerCase()))
         .sort((a, b) => {
           // AI-powered ranking based on multiple factors
           const scoreA = calculateSuggestionScore(a, query as string);
@@ -181,7 +181,7 @@ export function registerAdaptiveSearchRoutes(app: Express): void {
           return scoreB - scoreA;
         })
         .slice(0, limitNum)
-        .map((result) => ({
+        .map(result => ({
           id: result.id,
           name: result.name,
           type: 'term',
@@ -233,8 +233,8 @@ export function registerAdaptiveSearchRoutes(app: Express): void {
       const searchResponse = await adaptiveSearch(searchOptions);
 
       const relatedConcepts = searchResponse.results
-        .filter((result) => result.id !== termId)
-        .map((result) => ({
+        .filter(result => result.id !== termId)
+        .map(result => ({
           id: result.id,
           name: result.name,
           relationship: calculateRelationshipType(result),
@@ -305,9 +305,9 @@ function generateConceptRelationships(result: any, allResults: any[]): string[] 
   if (result.category?.name) {
     // Find other terms in the same category
     const categoryTerms = allResults
-      .filter((r) => r.category?.name === result.category.name && r.id !== result.id)
+      .filter(r => r.category?.name === result.category.name && r.id !== result.id)
       .slice(0, 3)
-      .map((r) => r.name);
+      .map(r => r.name);
 
     relationships.push(...categoryTerms);
   }
@@ -341,9 +341,9 @@ function generatePrerequisites(result: any, _query: string): string[] {
 
   const lowerName = result.name.toLowerCase();
 
-  if (advancedTerms.some((term) => lowerName.includes(term))) {
+  if (advancedTerms.some(term => lowerName.includes(term))) {
     prerequisites.push('linear algebra', 'calculus', 'statistics');
-  } else if (intermediateTerms.some((term) => lowerName.includes(term))) {
+  } else if (intermediateTerms.some(term => lowerName.includes(term))) {
     prerequisites.push('basic statistics', 'programming fundamentals');
   } else {
     prerequisites.push('basic mathematics');
@@ -364,11 +364,11 @@ function calculateQueryComplexity(query: string): 'basic' | 'intermediate' | 'ad
 
   const lowerQuery = query.toLowerCase();
 
-  if (advancedKeywords.some((keyword) => lowerQuery.includes(keyword))) {
+  if (advancedKeywords.some(keyword => lowerQuery.includes(keyword))) {
     return 'advanced';
   }
 
-  if (intermediateKeywords.some((keyword) => lowerQuery.includes(keyword))) {
+  if (intermediateKeywords.some(keyword => lowerQuery.includes(keyword))) {
     return 'intermediate';
   }
 
@@ -393,7 +393,7 @@ function calculateSuggestionScore(result: any, query: string): number {
 }
 
 function highlightSearchTerms(text: string, query: string): string {
-  if (!text || !query) return text;
+  if (!text || !query) {return text;}
 
   // Sanitize the input text first
   const sanitizedText = DOMPurify.sanitize(text, { ALLOWED_TAGS: [] });
@@ -442,7 +442,7 @@ function analyzeTopicCoverage(query: string): string[] {
   ];
   const lowerQuery = query.toLowerCase();
 
-  return topics.filter((topic) => topic.split(' ').some((word) => lowerQuery.includes(word)));
+  return topics.filter(topic => topic.split(' ').some(word => lowerQuery.includes(word)));
 }
 
 function calculateSearchDifficulty(query: string): 'easy' | 'medium' | 'hard' {

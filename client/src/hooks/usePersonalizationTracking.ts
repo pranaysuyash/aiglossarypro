@@ -33,7 +33,7 @@ export const usePersonalizationTracking = () => {
   // Track basic event
   const trackEvent = useCallback(
     async (event: TrackingEvent) => {
-      if (!isAuthenticated) return;
+      if (!isAuthenticated) {return;}
 
       try {
         await apiRequest('POST', '/api/analytics/behavior', {
@@ -51,7 +51,7 @@ export const usePersonalizationTracking = () => {
   // Track page view
   const trackPageView = useCallback(
     (path: string, additionalContext?: Record<string, any>) => {
-      if (!isAuthenticated) return;
+      if (!isAuthenticated) {return;}
 
       // Update current path
       currentPath.current = path;
@@ -200,7 +200,7 @@ export const usePersonalizationTracking = () => {
 
   // Set up automatic tracking for scroll, time, and interactions
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {return;}
 
     let focusStartTime = Date.now();
 
@@ -351,8 +351,8 @@ function parsePathForTracking(path: string): { entityType: string; entityId?: st
 
 function getDeviceType(): 'mobile' | 'tablet' | 'desktop' {
   const width = window.innerWidth;
-  if (width < 768) return 'mobile';
-  if (width < 1024) return 'tablet';
+  if (width < 768) {return 'mobile';}
+  if (width < 1024) {return 'tablet';}
   return 'desktop';
 }
 

@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import TermHeader from './TermHeader';
@@ -41,7 +40,7 @@ const meta: Meta<typeof TermHeader> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen bg-gray-50 p-4">
           <Story />
@@ -182,7 +181,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen bg-gray-900 p-4 dark">
           <Story />

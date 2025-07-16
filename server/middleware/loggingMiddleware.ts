@@ -155,7 +155,7 @@ export const securityLoggingMiddleware = (req: Request, _res: Response, next: Ne
 
   const checkString = `${req.url} ${JSON.stringify(req.body)} ${JSON.stringify(req.query)}`;
 
-  suspiciousPatterns.forEach((pattern) => {
+  suspiciousPatterns.forEach(pattern => {
     if (pattern.test(checkString)) {
       log.security.suspiciousActivity(
         req.userId || 'anonymous',

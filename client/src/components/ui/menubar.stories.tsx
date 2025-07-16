@@ -1,6 +1,5 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { Menubar } from './Menubar';
+import type { Meta, StoryObj } from '@storybook/react';
+import { Menubar } from './menubar';
 
 const meta = {
   title: 'UI/Menubar',

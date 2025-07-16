@@ -186,7 +186,7 @@ export function AdvancedAnalyticsDashboard() {
       const response = await fetch(
         `/api/admin/enhanced-content-generation/advanced-stats?${params}`
       );
-      if (!response.ok) throw new Error('Failed to fetch analytics data');
+      if (!response.ok) {throw new Error('Failed to fetch analytics data');}
       return response.json();
     },
     refetchInterval: refreshInterval,
@@ -268,16 +268,16 @@ export function AdvancedAnalyticsDashboard() {
   };
 
   const getHealthColor = (health: number) => {
-    if (health >= 95) return 'text-green-500';
-    if (health >= 85) return 'text-yellow-500';
-    if (health >= 70) return 'text-orange-500';
+    if (health >= 95) {return 'text-green-500';}
+    if (health >= 85) {return 'text-yellow-500';}
+    if (health >= 70) {return 'text-orange-500';}
     return 'text-red-500';
   };
 
   const getHealthBadge = (health: number) => {
-    if (health >= 95) return <Badge className="bg-green-500">Excellent</Badge>;
-    if (health >= 85) return <Badge className="bg-yellow-500">Good</Badge>;
-    if (health >= 70) return <Badge className="bg-orange-500">Warning</Badge>;
+    if (health >= 95) {return <Badge className="bg-green-500">Excellent</Badge>;}
+    if (health >= 85) {return <Badge className="bg-yellow-500">Good</Badge>;}
+    if (health >= 70) {return <Badge className="bg-orange-500">Warning</Badge>;}
     return <Badge className="bg-red-500">Critical</Badge>;
   };
 
@@ -297,7 +297,7 @@ export function AdvancedAnalyticsDashboard() {
               <SelectValue placeholder="Time Range" />
             </SelectTrigger>
             <SelectContent>
-              {TIME_RANGES.map((range) => (
+              {TIME_RANGES.map(range => (
                 <SelectItem key={range.value} value={range.value}>
                   {range.label}
                 </SelectItem>
@@ -609,7 +609,7 @@ export function AdvancedAnalyticsDashboard() {
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
-                    <Tooltip formatter={(value) => formatCurrency(value as number)} />
+                    <Tooltip formatter={value => formatCurrency(value as number)} />
                   </RechartsPieChart>
                 </ResponsiveContainer>
               </CardContent>

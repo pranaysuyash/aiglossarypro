@@ -1,13 +1,13 @@
-import { useEffect, useState } from 'react';
 import { AlertTriangle, Shield, Star } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Alert, AlertDescription } from '../ui/alert';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Alert, AlertDescription } from '../ui/alert';
 
 interface AdBlockDetectorProps {
   onDetected?: (isBlocked: boolean) => void;
   showUpgradePrompt?: boolean;
-  className?: string;
+  className?: string | undefined;
 }
 
 export function AdBlockDetector({
@@ -29,19 +29,20 @@ export function AdBlockDetector({
       testAd.style.top = '-10000px';
       testAd.style.width = '1px';
       testAd.style.height = '1px';
-      
+
       document.body.appendChild(testAd);
 
       // Check if the ad element was blocked
       setTimeout(() => {
-        const isBlocked = testAd.offsetHeight === 0 || 
-                         testAd.offsetWidth === 0 || 
-                         testAd.style.display === 'none' ||
-                         testAd.style.visibility === 'hidden';
-        
+        const isBlocked =
+          testAd.offsetHeight === 0 ||
+          testAd.offsetWidth === 0 ||
+          testAd.style.display === 'none' ||
+          testAd.style.visibility === 'hidden';
+
         setIsAdBlocked(isBlocked);
         setShowPrompt(isBlocked && showUpgradePrompt);
-        
+
         if (onDetected) {
           onDetected(isBlocked);
         }
@@ -57,17 +58,17 @@ export function AdBlockDetector({
       const adBlockerSelectors = [
         '[data-adblock="true"]',
         '.adblock-detected',
-        '#adblock-detected'
+        '#adblock-detected',
       ];
 
-      const hasAdBlocker = adBlockerSelectors.some(selector => 
-        document.querySelector(selector) !== null
+      const hasAdBlocker = adBlockerSelectors.some(
+        selector => document.querySelector(selector) !== null
       );
 
       if (hasAdBlocker) {
         setIsAdBlocked(true);
         setShowPrompt(showUpgradePrompt);
-        if (onDetected) onDetected(true);
+        if (onDetected) {onDetected(true);}
       } else {
         detectAdBlock();
       }
@@ -111,7 +112,7 @@ export function AdBlockDetector({
       <Alert className="border-orange-200 bg-orange-50 dark:bg-orange-950 mb-4">
         <AlertTriangle className="h-4 w-4 text-orange-600" />
         <AlertDescription className="text-orange-800 dark:text-orange-200">
-          <strong>Ad Blocker Detected:</strong> We rely on ads to keep our AI glossary free. 
+          <strong>Ad Blocker Detected:</strong> We rely on ads to keep our AI glossary free.
           Consider supporting us by upgrading to Premium for an ad-free experience.
         </AlertDescription>
       </Alert>

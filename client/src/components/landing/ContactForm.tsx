@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 
 interface ContactFormProps {
-  className?: string;
+  className?: string | undefined;
 }
 
 export function ContactForm({ className }: ContactFormProps) {
@@ -64,10 +64,10 @@ export function ContactForm({ className }: ContactFormProps) {
       } else {
         throw new Error(result.message);
       }
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Error sending message',
-        description: error instanceof Error ? error.message : 'Please try again later.',
+        description: error instanceof Error ? error?.message : 'Please try again later.',
         variant: 'destructive',
       });
     } finally {
@@ -76,7 +76,7 @@ export function ContactForm({ className }: ContactFormProps) {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({
+    setFormData(prev => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -89,10 +89,10 @@ export function ContactForm({ className }: ContactFormProps) {
         <p className="text-sm sm:text-base text-gray-600 text-center px-2 sm:px-0">
           Still have questions? We're here to help! Contact us at{' '}
           <a
-            href="mailto:support@aimlglossarypro.com"
+            href="mailto:support@aiglossarypro.com"
             className="text-purple-600 hover:underline break-words"
           >
-            support@aimlglossarypro.com
+            support@aiglossarypro.com
           </a>
         </p>
         <p className="text-sm text-gray-500 text-center">We typically respond within 24 hours.</p>

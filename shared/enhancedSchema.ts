@@ -49,7 +49,7 @@ export const termSections = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termSectionIdx: index('term_section_idx').on(table.termId, table.sectionName),
     displayTypeIdx: index('display_type_idx').on(table.displayType),
   })
@@ -96,7 +96,7 @@ export const enhancedTerms = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     nameIdx: index('enhanced_terms_name_idx').on(table.name),
     slugIdx: index('enhanced_terms_slug_idx').on(table.slug),
     difficultyIdx: index('enhanced_terms_difficulty_idx').on(table.difficultyLevel),
@@ -120,7 +120,7 @@ export const interactiveElements = pgTable(
     isActive: boolean('is_active').default(true),
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termElementIdx: index('interactive_elements_term_idx').on(table.termId),
     typeIdx: index('interactive_elements_type_idx').on(table.elementType),
   })
@@ -141,7 +141,7 @@ export const termRelationships = pgTable(
     strength: integer('strength').default(5), // 1-10 relationship strength
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     fromTermIdx: index('term_relationships_from_idx').on(table.fromTermId),
     toTermIdx: index('term_relationships_to_idx').on(table.toTermId),
     typeIdx: index('term_relationships_type_idx').on(table.relationshipType),
@@ -161,7 +161,7 @@ export const displayConfigs = pgTable(
     isDefault: boolean('is_default').default(false),
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termConfigIdx: index('display_configs_term_idx').on(table.termId, table.configType),
   })
 );
@@ -217,7 +217,7 @@ export const contentAnalytics = pgTable(
     lastUpdated: timestamp('last_updated').defaultNow(),
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termAnalyticsIdx: index('content_analytics_term_idx').on(table.termId),
     sectionAnalyticsIdx: index('content_analytics_section_idx').on(table.sectionName),
   })
@@ -251,7 +251,7 @@ export const aiContentFeedback = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termFeedbackIdx: index('ai_feedback_term_idx').on(table.termId),
     statusIdx: index('ai_feedback_status_idx').on(table.status),
     userFeedbackIdx: index('ai_feedback_user_idx').on(table.userId),
@@ -297,7 +297,7 @@ export const aiContentVerification = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termVerificationIdx: index('ai_verification_term_idx').on(table.termId),
     statusVerificationIdx: index('ai_verification_status_idx').on(table.verificationStatus),
     aiGeneratedIdx: index('ai_verification_generated_idx').on(table.isAiGenerated),
@@ -337,10 +337,11 @@ export const aiUsageAnalytics = pgTable(
     sessionId: varchar('session_id', { length: 100 }),
     ipAddress: varchar('ip_address', { length: 45 }),
     userAgent: text('user_agent'),
+    metadata: jsonb('metadata'), // Additional structured metadata
 
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     operationIdx: index('ai_usage_operation_idx').on(table.operation),
     modelIdx: index('ai_usage_model_idx').on(table.model),
     userUsageIdx: index('ai_usage_user_idx').on(table.userId),
@@ -374,7 +375,7 @@ export const termVersions = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termVersionIdx: index('term_version_term_idx').on(table.termId),
     activeVersionIdx: index('term_version_active_idx').on(table.termId, table.isActive),
     versionIdx: index('term_version_version_idx').on(table.version),
@@ -396,7 +397,7 @@ export const sections = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termNameUnique: unique().on(table.termId, table.name),
     termIdIdx: index('idx_sections_term_id').on(table.termId),
     nameIdx: index('idx_sections_name').on(table.name),
@@ -431,7 +432,7 @@ export const sectionItems = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     sectionIdIdx: index('idx_section_items_section_id').on(table.sectionId),
     contentTypeIdx: index('idx_section_items_content_type').on(table.contentType),
     orderIdx: index('idx_section_items_order').on(table.sectionId, table.displayOrder),
@@ -489,7 +490,7 @@ export const modelContentVersions = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termSectionIdx: index('idx_model_versions_term_section').on(table.termId, table.sectionName),
     modelIdx: index('idx_model_versions_model').on(table.model),
     selectedIdx: index('idx_model_versions_selected').on(table.isSelected),
@@ -640,7 +641,7 @@ export const userTermHistory = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userTermIdx: index('user_term_history_user_term_idx').on(table.userId, table.termId),
     userIdx: index('user_term_history_user_idx').on(table.userId),
     termIdx: index('user_term_history_term_idx').on(table.termId),
@@ -685,7 +686,7 @@ export const userAchievements = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userIdx: index('user_achievements_user_idx').on(table.userId),
     typeIdx: index('user_achievements_type_idx').on(table.achievementType),
     activeIdx: index('user_achievements_active_idx').on(table.isActive),
@@ -733,7 +734,7 @@ export const dailyTermSelections = pgTable(
     metadata: jsonb('metadata'), // Algorithm-specific data, user preferences at time of selection
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userDateIdx: index('daily_term_selections_user_date_idx').on(table.userId, table.selectionDate),
     userIdx: index('daily_term_selections_user_idx').on(table.userId),
     termIdx: index('daily_term_selections_term_idx').on(table.termId),
@@ -785,7 +786,7 @@ export const companies = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     specializationsIdx: index('companies_specializations_idx').on(table.specializations),
     nameIdx: index('companies_name_idx').on(table.name),
   })
@@ -809,7 +810,7 @@ export const people = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     companyIdx: index('people_company_idx').on(table.companyId),
     expertiseIdx: index('people_expertise_idx').on(table.areasOfExpertise),
     nameIdx: index('people_name_idx').on(table.name),
@@ -833,7 +834,7 @@ export const datasets = pgTable(
     metadata: jsonb('metadata').default({}),
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     categoriesIdx: index('datasets_categories_idx').on(table.categories),
     nameIdx: index('datasets_name_idx').on(table.name),
   })
@@ -855,7 +856,7 @@ export const resources = pgTable(
     lastChecked: timestamp('last_checked'),
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     tagsIdx: index('resources_tags_idx').on(table.tags),
     typeIdx: index('resources_type_idx').on(table.resourceType),
     ratingIdx: index('resources_rating_idx').on(table.rating),
@@ -870,27 +871,27 @@ export const entityLinks = pgTable(
     termId: uuid('term_id')
       .notNull()
       .references(() => enhancedTerms.id, { onDelete: 'cascade' }),
-    
+
     // Entity reference (one of these will be populated)
     personId: uuid('person_id').references(() => people.id, { onDelete: 'cascade' }),
     companyId: uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }),
     datasetId: uuid('dataset_id').references(() => datasets.id, { onDelete: 'cascade' }),
     resourceId: uuid('resource_id').references(() => resources.id, { onDelete: 'cascade' }),
-    
+
     // Link metadata
     linkType: varchar('link_type', { length: 50 }).notNull(), // 'created_by', 'works_for', 'uses_dataset', 'recommends_resource', etc.
     relevanceScore: integer('relevance_score').default(5), // 1-10 relevance rating
     description: text('description'), // Optional description of the relationship
-    
+
     // Admin tracking
     createdBy: varchar('created_by').references(() => users.id),
     verifiedBy: varchar('verified_by').references(() => users.id),
     verificationStatus: varchar('verification_status', { length: 20 }).default('unverified'), // 'unverified', 'verified', 'flagged'
-    
+
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     termIdx: index('entity_links_term_idx').on(table.termId),
     personIdx: index('entity_links_person_idx').on(table.personId),
     companyIdx: index('entity_links_company_idx').on(table.companyId),
@@ -909,37 +910,37 @@ export const contributions = pgTable(
     userId: varchar('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    
+
     // Contribution type and target
-    contributionType: varchar('contribution_type', { length: 50 }).notNull(), 
+    contributionType: varchar('contribution_type', { length: 50 }).notNull(),
     // 'term_edit', 'new_person', 'new_company', 'new_dataset', 'new_resource', 'entity_link', 'content_correction'
-    
+
     // Target entity (one of these will be populated)
     termId: uuid('term_id').references(() => enhancedTerms.id, { onDelete: 'cascade' }),
     personId: uuid('person_id').references(() => people.id, { onDelete: 'cascade' }),
     companyId: uuid('company_id').references(() => companies.id, { onDelete: 'cascade' }),
     datasetId: uuid('dataset_id').references(() => datasets.id, { onDelete: 'cascade' }),
     resourceId: uuid('resource_id').references(() => resources.id, { onDelete: 'cascade' }),
-    
+
     // Contribution content
     originalData: jsonb('original_data'), // Original entity data
     proposedData: jsonb('proposed_data').notNull(), // User's proposed changes/additions
     changeDescription: text('change_description').notNull(), // User's explanation
-    
+
     // Moderation workflow
     status: varchar('status', { length: 20 }).default('pending'), // 'pending', 'approved', 'rejected', 'needs_review'
     moderatedBy: varchar('moderated_by').references(() => users.id),
     moderatedAt: timestamp('moderated_at'),
     moderationNotes: text('moderation_notes'),
-    
+
     // Quality tracking
     communityScore: integer('community_score').default(0), // Community upvotes/downvotes
     qualityFlags: text('quality_flags').array().default([]), // 'spam', 'inappropriate', 'inaccurate', etc.
-    
+
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userIdx: index('contributions_user_idx').on(table.userId),
     typeIdx: index('contributions_type_idx').on(table.contributionType),
     statusIdx: index('contributions_status_idx').on(table.status),
@@ -956,31 +957,31 @@ export const userReputation = pgTable(
     userId: varchar('user_id')
       .primaryKey()
       .references(() => users.id, { onDelete: 'cascade' }),
-    
+
     // Reputation scores
     totalScore: integer('total_score').default(0),
     contributionScore: integer('contribution_score').default(0), // From approved contributions
     moderationScore: integer('moderation_score').default(0), // From moderation activities
     communityScore: integer('community_score').default(0), // From community interactions
-    
+
     // Achievement counters
     approvedContributions: integer('approved_contributions').default(0),
     helpfulVotes: integer('helpful_votes').default(0),
     moderationActions: integer('moderation_actions').default(0),
-    
+
     // Badges and levels
     badges: text('badges').array().default([]), // Array of earned badge IDs
-    reputationLevel: varchar('reputation_level', { length: 20 }).default('novice'), 
+    reputationLevel: varchar('reputation_level', { length: 20 }).default('novice'),
     // 'novice', 'contributor', 'expert', 'moderator', 'master'
-    
+
     // Privileges
     canModerate: boolean('can_moderate').default(false),
     canCreateDirectly: boolean('can_create_directly').default(false), // Skip moderation for trusted users
-    
+
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     totalScoreIdx: index('user_reputation_total_score_idx').on(table.totalScore),
     levelIdx: index('user_reputation_level_idx').on(table.reputationLevel),
     contributionScoreIdx: index('user_reputation_contribution_idx').on(table.contributionScore),
@@ -1001,7 +1002,7 @@ export const subscriptionPlans = pgTable(
     isActive: boolean('is_active').default(true),
     createdAt: timestamp('created_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     nameIdx: index('subscription_plans_name_idx').on(table.name),
     activeIdx: index('subscription_plans_active_idx').on(table.isActive),
   })
@@ -1025,7 +1026,7 @@ export const userSubscriptions = pgTable(
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     userIdx: index('user_subscriptions_user_idx').on(table.userId),
     statusIdx: index('user_subscriptions_status_idx').on(table.status),
     planIdx: index('user_subscriptions_plan_idx').on(table.planId),
@@ -1040,20 +1041,20 @@ export const teams = pgTable(
     name: varchar('name', { length: 200 }).notNull(),
     description: text('description'),
     subscriptionId: uuid('subscription_id').references(() => userSubscriptions.id),
-    
+
     // Team settings
     settings: jsonb('settings').default({}),
     maxMembers: integer('max_members').default(10),
-    
+
     // Owner information
     ownerId: varchar('owner_id')
       .notNull()
       .references(() => users.id),
-    
+
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     ownerIdx: index('teams_owner_idx').on(table.ownerId),
     nameIdx: index('teams_name_idx').on(table.name),
   })
@@ -1070,15 +1071,15 @@ export const teamMemberships = pgTable(
     userId: varchar('user_id')
       .notNull()
       .references(() => users.id, { onDelete: 'cascade' }),
-    
+
     role: varchar('role', { length: 20 }).default('member'), // 'member', 'admin', 'owner'
     permissions: text('permissions').array().default([]), // Specific permissions
-    
+
     joinedAt: timestamp('joined_at').defaultNow(),
     invitedBy: varchar('invited_by').references(() => users.id),
     status: varchar('status', { length: 20 }).default('active'), // 'active', 'invited', 'suspended'
   },
-  (table) => ({
+  table => ({
     teamIdx: index('team_memberships_team_idx').on(table.teamId),
     userIdx: index('team_memberships_user_idx').on(table.userId),
     roleIdx: index('team_memberships_role_idx').on(table.role),
@@ -1095,27 +1096,27 @@ export const apiKeys = pgTable(
     name: varchar('name', { length: 100 }).notNull(),
     keyHash: varchar('key_hash', { length: 256 }).notNull().unique(), // Hashed API key
     keyPrefix: varchar('key_prefix', { length: 10 }).notNull(), // First few chars for identification
-    
+
     // Ownership
     userId: varchar('user_id').references(() => users.id, { onDelete: 'cascade' }),
     teamId: uuid('team_id').references(() => teams.id, { onDelete: 'cascade' }),
-    
+
     // Permissions and limits
     permissions: text('permissions').array().default([]), // API endpoints allowed
     rateLimit: integer('rate_limit').default(1000), // Requests per hour
-    
+
     // Usage tracking
     totalRequests: integer('total_requests').default(0),
     lastUsed: timestamp('last_used'),
-    
+
     // Status
     isActive: boolean('is_active').default(true),
     expiresAt: timestamp('expires_at'),
-    
+
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
   },
-  (table) => ({
+  table => ({
     keyHashIdx: index('api_keys_hash_idx').on(table.keyHash),
     userIdx: index('api_keys_user_idx').on(table.userId),
     teamIdx: index('api_keys_team_idx').on(table.teamId),

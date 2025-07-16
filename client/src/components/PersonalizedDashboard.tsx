@@ -93,7 +93,7 @@ const PersonalizedDashboard: React.FC = () => {
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
-      if (error.message === 'Authentication required') return false;
+      if (error?.message === 'Authentication required') {return false;}
       return failureCount < 2;
     },
   });

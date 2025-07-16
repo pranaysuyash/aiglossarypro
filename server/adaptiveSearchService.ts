@@ -38,7 +38,7 @@ async function analyzeQuery(query: string): Promise<{
 
   // Quick heuristics for common generic terms
   const genericTerms = ['learning', 'data', 'model', 'algorithm', 'system', 'method', 'approach'];
-  const isGeneric = genericTerms.some((term) => lowerQuery.includes(term));
+  const isGeneric = genericTerms.some(term => lowerQuery.includes(term));
 
   // For very short queries, use prefix matching
   if (lowerQuery.length <= 3) {
@@ -185,7 +185,7 @@ export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<an
 
           results = filteredResults;
           hasMore = filteredResults.length > limit;
-          if (hasMore) results.pop();
+          if (hasMore) {results.pop();}
 
           total = Math.min(topResults.length, 100); // Cap total for performance
         } else {
@@ -219,7 +219,7 @@ export async function adaptiveSearch(options: AdaptiveSearchOptions): Promise<an
           results = await mainQuery.limit(limit + 1).offset(offset);
 
           hasMore = results.length > limit;
-          if (hasMore) results.pop();
+          if (hasMore) {results.pop();}
           total = (page - 1) * limit + results.length + (hasMore ? 1 : 0);
         }
 

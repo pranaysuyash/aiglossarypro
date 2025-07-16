@@ -117,7 +117,7 @@ export default function SurpriseMe({
 
       return response.json();
     },
-    onSuccess: async (data) => {
+    onSuccess: async data => {
       setCurrentSessionId(data.sessionId);
 
       // Track each discovery
@@ -139,7 +139,7 @@ export default function SurpriseMe({
         description: `Discovered ${data.results.length} amazing terms for you!`,
       });
     },
-    onError: (_error) => {
+    onError: _error => {
       toast({
         title: 'Discovery Failed',
         description: "Couldn't fetch surprises right now. Try again!",
@@ -356,7 +356,7 @@ export default function SurpriseMe({
       {showModeSelector && modes?.modes && (
         <Tabs value={selectedMode} onValueChange={setSelectedMode} className="w-full">
           <TabsList className="grid w-full grid-cols-2 lg:grid-cols-4">
-            {modes.modes.map((mode) => (
+            {modes.modes.map(mode => (
               <TabsTrigger
                 key={mode.id}
                 value={mode.id}
@@ -373,7 +373,7 @@ export default function SurpriseMe({
             ))}
           </TabsList>
 
-          {modes.modes.map((mode) => (
+          {modes.modes.map(mode => (
             <TabsContent key={mode.id} value={mode.id} className="mt-4">
               <Card>
                 <CardContent className="pt-4">

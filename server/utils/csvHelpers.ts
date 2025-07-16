@@ -11,13 +11,13 @@ interface CSVColumn {
  */
 export function generateCSV(data: Record<string, any>[], columns: CSVColumn[]): string {
   // Generate header row
-  const headers = columns.map((col) => escapeCSVValue(col.header)).join(',');
+  const headers = columns.map(col => escapeCSVValue(col.header)).join(',');
 
   // Generate data rows
   const rows = data
-    .map((item) => {
+    .map(item => {
       return columns
-        .map((col) => {
+        .map(col => {
           const value = item[col.key];
           const formattedValue = col.formatter ? col.formatter(value) : value;
           return escapeCSVValue(formattedValue);
@@ -63,19 +63,19 @@ export function sendCSVResponse(res: Response, data: string, filename: string): 
  */
 export const csvFormatters = {
   date: (value: Date | string) => {
-    if (!value) return '';
+    if (!value) {return '';}
     const date = value instanceof Date ? value : new Date(value);
     return date.toISOString().split('T')[0]; // YYYY-MM-DD format
   },
 
   dateTime: (value: Date | string) => {
-    if (!value) return '';
+    if (!value) {return '';}
     const date = value instanceof Date ? value : new Date(value);
     return date.toISOString();
   },
 
-  currency: (value: number, currency: string = 'USD') => {
-    if (value === null || value === undefined) return '';
+  currency: (value: number, currency = 'USD') => {
+    if (value === null || value === undefined) {return '';}
     return `${currency} ${(value / 100).toFixed(2)}`; // Assuming value is in cents
   },
 
@@ -83,13 +83,13 @@ export const csvFormatters = {
     return value ? 'Yes' : 'No';
   },
 
-  number: (value: number, decimals: number = 2) => {
-    if (value === null || value === undefined) return '';
+  number: (value: number, decimals = 2) => {
+    if (value === null || value === undefined) {return '';}
     return value.toFixed(decimals);
   },
 
-  percentage: (value: number, decimals: number = 2) => {
-    if (value === null || value === undefined) return '';
+  percentage: (value: number, decimals = 2) => {
+    if (value === null || value === undefined) {return '';}
     return `${(value * 100).toFixed(decimals)}%`;
   },
 };
@@ -125,7 +125,7 @@ export const csvGenerators = {
       { key: 'gumroadOrderId', header: 'Order ID' },
       { key: 'userId', header: 'User ID' },
       { key: 'userEmail', header: 'Email' },
-      { key: 'amount', header: 'Amount', formatter: (v) => csvFormatters.currency(v, 'USD') },
+      { key: 'amount', header: 'Amount', formatter: v => csvFormatters.currency(v, 'USD') },
       { key: 'currency', header: 'Currency' },
       { key: 'status', header: 'Status' },
       { key: 'country', header: 'Country' },

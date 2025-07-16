@@ -20,15 +20,15 @@ const predictiveAnalyticsQuerySchema = z.object({
   includeInsights: z
     .string()
     .optional()
-    .transform((val) => val === 'true'),
+    .transform(val => val === 'true'),
   includeRecommendations: z
     .string()
     .optional()
-    .transform((val) => val === 'true'),
+    .transform(val => val === 'true'),
   includeMilestones: z
     .string()
     .optional()
-    .transform((val) => val === 'true'),
+    .transform(val => val === 'true'),
   timeframe: z.enum(['7d', '30d', '90d']).optional().default('30d'),
 });
 
@@ -487,11 +487,11 @@ router.get(
 
       // Apply filters
       if (type) {
-        recommendations = recommendations.filter((rec) => rec.type === type);
+        recommendations = recommendations.filter(rec => rec.type === type);
       }
 
       if (priority) {
-        recommendations = recommendations.filter((rec) => rec.priority === priority);
+        recommendations = recommendations.filter(rec => rec.priority === priority);
       }
 
       res.json({
@@ -701,7 +701,7 @@ router.post(
         });
 
         const batchResults = await Promise.all(batchPromises);
-        batchResults.forEach((result) => {
+        batchResults.forEach(result => {
           results[result.userId] = result.data || { error: result.error };
         });
       }

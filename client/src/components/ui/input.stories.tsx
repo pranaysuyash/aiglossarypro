@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { Input } from './input';
 import { Label } from './label';
@@ -18,7 +17,7 @@ const meta: Meta<typeof Input> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-sm p-4">
         <Story />
       </div>
@@ -63,7 +62,7 @@ export const WithValue: Story = {
 };
 
 export const WithLabel: Story = {
-  render: (args) => (
+  render: args => (
     <div className="space-y-2">
       <Label htmlFor="term-name">Term Name</Label>
       <Input id="term-name" {...args} />
@@ -97,7 +96,7 @@ export const Disabled: Story = {
 };
 
 export const Required: Story = {
-  render: (args) => (
+  render: args => (
     <div className="space-y-2">
       <Label htmlFor="required-input">
         Required Field <span className="text-red-500">*</span>
@@ -119,7 +118,7 @@ export const Required: Story = {
 };
 
 export const WithError: Story = {
-  render: (args) => (
+  render: args => (
     <div className="space-y-2">
       <Label htmlFor="error-input">Email Address</Label>
       <Input id="error-input" {...args} className="border-red-500 focus:border-red-500" />
@@ -141,7 +140,7 @@ export const WithError: Story = {
 };
 
 export const Password: Story = {
-  render: (args) => (
+  render: args => (
     <div className="space-y-2">
       <Label htmlFor="password-input">Password</Label>
       <Input id="password-input" {...args} />
@@ -175,7 +174,7 @@ export const Search: Story = {
 };
 
 export const Number: Story = {
-  render: (args) => (
+  render: args => (
     <div className="space-y-2">
       <Label htmlFor="number-input">Term Count</Label>
       <Input id="number-input" {...args} />
@@ -240,7 +239,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-sm p-4 dark">
         <Story />
       </div>

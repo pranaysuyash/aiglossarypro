@@ -1,8 +1,9 @@
 import { Router } from 'express';
-import { z } from 'zod';
-import { requireAuth } from '../middleware/auth';
-import { pool } from '../db';
 import { nanoid } from 'nanoid';
+import { z } from 'zod';
+import { pool } from '../db';
+import { requireAuth } from '../middleware/auth';
+import { log as logger } from '../utils/logger';
 
 const router = Router();
 
@@ -27,8 +28,8 @@ const REFERRAL_CONFIG = {
     { name: 'Starter', minReferrals: 0, rewardMultiplier: 1.0, bonusPercentage: 0 },
     { name: 'Advocate', minReferrals: 5, rewardMultiplier: 1.6, bonusPercentage: 10 },
     { name: 'Champion', minReferrals: 15, rewardMultiplier: 2.4, bonusPercentage: 20 },
-    { name: 'Legend', minReferrals: 50, rewardMultiplier: 4.0, bonusPercentage: 30 }
-  ]
+    { name: 'Legend', minReferrals: 50, rewardMultiplier: 4.0, bonusPercentage: 30 },
+  ],
 };
 
 /**
@@ -37,7 +38,7 @@ const REFERRAL_CONFIG = {
 router.post('/generate-code', requireAuth, async (req, res) => {
   try {
     const { customCode } = generateCodeSchema.parse(req.body);
-    const userId = req.user!.uid;
+    const userId = req.user!.id;
 
     // Check if user already has a referral code
     const existingCode = await pool.query(
@@ -49,42 +50,46 @@ router.post('/generate-code', requireAuth, async (req, res) => {
       return res.json({
         success: true,
         referralCode: existingCode.rows[0].referral_code,
-        message: 'Using existing referral code'
+        message: 'Using existing referral code',
       });
     }
 
     // Generate unique referral code
     let referralCode = customCode || `AI${nanoid(8).toUpperCase()}`;
-    
+
     // Ensure code is unique
     while (true) {
-      const existing = await pool.query(
-        'SELECT id FROM user_referrals WHERE referral_code = $1',
-        [referralCode]
-      );
-      
-      if (existing.rows.length === 0) break;
+      const existing = await pool.query('SELECT id FROM user_referrals WHERE referral_code = $1', [
+        referralCode,
+      ]);
+
+      if (existing.rows.length === 0) {break;}
       referralCode = `AI${nanoid(8).toUpperCase()}`;
     }
 
     // Create referral code record
-    await pool.query(`
+    await pool.query(
+      `
       INSERT INTO user_referrals (user_id, referral_code, is_active, created_at)
       VALUES ($1, $2, true, NOW())
-    `, [userId, referralCode]);
+    `,
+      [userId, referralCode]
+    );
 
     res.json({
       success: true,
       referralCode,
       referralLink: `${process.env.FRONTEND_URL}/?ref=${referralCode}`,
-      message: 'Referral code generated successfully'
+      message: 'Referral code generated successfully',
     });
-
   } catch (error) {
-    console.error('Generate referral code error:', error);
+    logger.error(
+      'Generate referral code error',
+      error instanceof Error ? { message: error.message, stack: error.stack } : { error }
+    );
     res.status(500).json({
       error: 'Failed to generate referral code',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -94,7 +99,7 @@ router.post('/generate-code', requireAuth, async (req, res) => {
  */
 router.get('/stats', requireAuth, async (req, res) => {
   try {
-    const userId = req.user!.uid;
+    const userId = req.user!.id;
 
     // Get user's referral code
     const referralCodeResult = await pool.query(
@@ -111,7 +116,7 @@ router.get('/stats', requireAuth, async (req, res) => {
         availableRewards: 0,
         referralCode: null,
         referralLink: null,
-        recentReferrals: []
+        recentReferrals: [],
       });
     }
 
@@ -163,15 +168,17 @@ router.get('/stats', requireAuth, async (req, res) => {
         status: row.status,
         reward: parseFloat(row.reward_amount),
         createdAt: row.created_at,
-        completedAt: row.completed_at
-      }))
+        completedAt: row.completed_at,
+      })),
     });
-
   } catch (error) {
-    console.error('Get referral stats error:', error);
+    logger.error(
+      'Get referral stats error',
+      error instanceof Error ? { message: error.message, stack: error.stack } : { error }
+    );
     res.status(500).json({
       error: 'Failed to fetch referral statistics',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -191,31 +198,35 @@ router.post('/track', async (req, res) => {
 
     if (referrerResult.rows.length === 0) {
       return res.status(404).json({
-        error: 'Invalid referral code'
+        error: 'Invalid referral code',
       });
     }
 
     const referrerId = referrerResult.rows[0].user_id;
 
     // Calculate current tier and rewards
-    const tierResult = await pool.query(`
+    const tierResult = await pool.query(
+      `
       SELECT COUNT(CASE WHEN status = 'completed' THEN 1 END) as successful_referrals
       FROM referral_tracking 
       WHERE referrer_code = $1
-    `, [referralCode]);
+    `,
+      [referralCode]
+    );
 
     const successfulReferrals = parseInt(tierResult.rows[0].successful_referrals);
-    const currentTier = REFERRAL_CONFIG.TIERS
-      .slice()
-      .reverse()
-      .find(tier => successfulReferrals >= tier.minReferrals) || REFERRAL_CONFIG.TIERS[0];
+    const currentTier =
+      REFERRAL_CONFIG.TIERS.slice()
+        .reverse()
+        .find(tier => successfulReferrals >= tier.minReferrals) || REFERRAL_CONFIG.TIERS[0];
 
     const baseReward = REFERRAL_CONFIG.REWARD_AMOUNT;
     const tierMultiplier = currentTier.rewardMultiplier;
     const rewardAmount = baseReward * tierMultiplier;
 
     // Track the referral action
-    const trackingResult = await pool.query(`
+    const trackingResult = await pool.query(
+      `
       INSERT INTO referral_tracking (
         referrer_user_id,
         referrer_code,
@@ -228,28 +239,37 @@ router.post('/track', async (req, res) => {
         created_at
       ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW())
       RETURNING id
-    `, [
-      referrerId,
-      referralCode,
-      metadata?.email || 'unknown@example.com',
-      action,
-      action === 'purchase' ? 'completed' : 'pending',
-      rewardAmount,
-      currentTier.name,
-      JSON.stringify(metadata || {})
-    ]);
+    `,
+      [
+        referrerId,
+        referralCode,
+        metadata?.email || 'unknown@example.com',
+        action,
+        action === 'purchase' ? 'completed' : 'pending',
+        rewardAmount,
+        currentTier.name,
+        JSON.stringify(metadata || {}),
+      ]
+    );
 
     // If this is a completed purchase, update user rewards
     if (action === 'purchase') {
-      await pool.query(`
+      await pool.query(
+        `
         UPDATE users 
         SET referral_credits = COALESCE(referral_credits, 0) + $1,
             updated_at = NOW()
         WHERE uid = $2
-      `, [rewardAmount, referrerId]);
+      `,
+        [rewardAmount, referrerId]
+      );
 
       // Send notification to referrer (you can implement email/push notifications here)
-      console.log(`Referral reward processed: User ${referrerId} earned $${rewardAmount}`);
+      logger.info('Referral reward processed', {
+        referrerId,
+        rewardAmount,
+        type: 'referral_reward',
+      });
     }
 
     res.json({
@@ -257,16 +277,19 @@ router.post('/track', async (req, res) => {
       trackingId: trackingResult.rows[0].id,
       rewardAmount: action === 'purchase' ? rewardAmount : 0,
       status: action === 'purchase' ? 'completed' : 'pending',
-      message: action === 'purchase' 
-        ? `Referral completed! Reward of $${rewardAmount} added to account.`
-        : 'Referral tracked successfully'
+      message:
+        action === 'purchase'
+          ? `Referral completed! Reward of $${rewardAmount} added to account.`
+          : 'Referral tracked successfully',
     });
-
   } catch (error) {
-    console.error('Track referral error:', error);
+    logger.error(
+      'Track referral error',
+      error instanceof Error ? { message: error.message, stack: error.stack } : { error }
+    );
     res.status(500).json({
       error: 'Failed to track referral',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -278,7 +301,8 @@ router.get('/validate/:code', async (req, res) => {
   try {
     const { code } = req.params;
 
-    const result = await pool.query(`
+    const result = await pool.query(
+      `
       SELECT 
         ur.user_id,
         ur.referral_code,
@@ -287,12 +311,14 @@ router.get('/validate/:code', async (req, res) => {
       FROM user_referrals ur
       JOIN users u ON ur.user_id = u.uid
       WHERE ur.referral_code = $1 AND ur.is_active = true
-    `, [code]);
+    `,
+      [code]
+    );
 
     if (result.rows.length === 0) {
       return res.status(404).json({
         valid: false,
-        error: 'Invalid or expired referral code'
+        error: 'Invalid or expired referral code',
       });
     }
 
@@ -303,14 +329,16 @@ router.get('/validate/:code', async (req, res) => {
       referralCode: referrer.referral_code,
       referrerName: referrer.referrer_name,
       referrerEmail: referrer.referrer_email,
-      bonus: REFERRAL_CONFIG.REFEREE_BONUS
+      bonus: REFERRAL_CONFIG.REFEREE_BONUS,
     });
-
   } catch (error) {
-    console.error('Validate referral code error:', error);
+    logger.error(
+      'Validate referral code error',
+      error instanceof Error ? { message: error.message, stack: error.stack } : { error }
+    );
     res.status(500).json({
       valid: false,
-      error: 'Failed to validate referral code'
+      error: 'Failed to validate referral code',
     });
   }
 });
@@ -347,15 +375,17 @@ router.get('/leaderboard', async (req, res) => {
         name: `${row.first_name} ${row.last_name}`,
         totalReferrals: parseInt(row.total_referrals),
         successfulReferrals: parseInt(row.successful_referrals),
-        totalRewards: parseFloat(row.total_rewards)
-      }))
+        totalRewards: parseFloat(row.total_rewards),
+      })),
     });
-
   } catch (error) {
-    console.error('Get leaderboard error:', error);
+    logger.error(
+      'Get leaderboard error',
+      error instanceof Error ? { message: error.message, stack: error.stack } : { error }
+    );
     res.status(500).json({
       error: 'Failed to fetch leaderboard',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });
@@ -365,7 +395,7 @@ router.get('/leaderboard', async (req, res) => {
  */
 router.post('/claim', requireAuth, async (req, res) => {
   try {
-    const userId = req.user!.uid;
+    const userId = req.user!.id;
 
     // Get user's available rewards
     const rewardsQuery = `
@@ -384,43 +414,51 @@ router.post('/claim', requireAuth, async (req, res) => {
     if (rewardsResult.rows.length === 0) {
       return res.json({
         success: false,
-        message: 'No rewards available to claim'
+        message: 'No rewards available to claim',
       });
     }
 
     const totalRewards = rewardsResult.rows.reduce(
-      (sum, row) => sum + parseFloat(row.reward_amount), 
+      (sum, row) => sum + parseFloat(row.reward_amount),
       0
     );
 
     // Mark rewards as claimed
     const rewardIds = rewardsResult.rows.map(row => row.id);
-    await pool.query(`
+    await pool.query(
+      `
       UPDATE referral_tracking 
       SET claimed = true, claimed_at = NOW()
       WHERE id = ANY($1)
-    `, [rewardIds]);
+    `,
+      [rewardIds]
+    );
 
     // Add credits to user account
-    await pool.query(`
+    await pool.query(
+      `
       UPDATE users 
       SET referral_credits = COALESCE(referral_credits, 0) + $1,
           updated_at = NOW()
       WHERE uid = $2
-    `, [totalRewards, userId]);
+    `,
+      [totalRewards, userId]
+    );
 
     res.json({
       success: true,
       claimedAmount: totalRewards,
       rewardsClaimed: rewardsResult.rows.length,
-      message: `Successfully claimed $${totalRewards} in referral rewards!`
+      message: `Successfully claimed $${totalRewards} in referral rewards!`,
     });
-
   } catch (error) {
-    console.error('Claim rewards error:', error);
+    logger.error(
+      'Claim rewards error',
+      error instanceof Error ? { message: error.message, stack: error.stack } : { error }
+    );
     res.status(500).json({
       error: 'Failed to claim rewards',
-      details: error instanceof Error ? error.message : 'Unknown error'
+      details: error instanceof Error ? error.message : 'Unknown error',
     });
   }
 });

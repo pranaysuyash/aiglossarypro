@@ -2,11 +2,11 @@
 
 /**
  * Storybook Coverage Validation Script
- * 
+ *
  * This script ensures 100% Storybook coverage by scanning for React components
  * and verifying each has a corresponding story file. This enforces complete
  * visual testing coverage as a prerequisite for the AI-driven audit workflow.
- * 
+ *
  * Usage:
  * - npm run validate:storybook-coverage
  * - tsx scripts/validate-storybook-coverage.ts
@@ -14,8 +14,8 @@
  */
 
 import fs from 'fs';
-import path from 'path';
 import { glob } from 'glob';
+import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -50,17 +50,17 @@ class StorybookCoverageValidator {
   async validate(): Promise<ValidationResult> {
     console.log('🔍 Scanning for React components...');
     await this.scanComponents();
-    
+
     console.log('📚 Checking for existing story files...');
     await this.checkStoryCoverage();
-    
+
     const result = this.generateReport();
-    
+
     if (this.shouldFix && result.componentsWithoutStories.length > 0) {
       console.log('🔧 Generating missing story templates...');
       await this.generateMissingStories(result.componentsWithoutStories);
     }
-    
+
     return result;
   }
 
@@ -74,14 +74,14 @@ class StorybookCoverageValidator {
           '**/*.spec.{tsx,jsx}',
           '**/*.stories.{tsx,jsx}',
           '**/index.{tsx,jsx}',
-          '**/*.d.ts'
-        ]
+          '**/*.d.ts',
+        ],
       });
 
       for (const file of componentFiles) {
         const filePath = path.join(componentsPath, file);
         const fileContent = fs.readFileSync(filePath, 'utf-8');
-        
+
         // Check if this is actually a React component file
         if (this.isReactComponent(fileContent)) {
           const componentName = this.extractComponentName(file, fileContent);
@@ -90,7 +90,7 @@ class StorybookCoverageValidator {
               name: componentName,
               filePath,
               relativePath: file,
-              hasStory: false
+              hasStory: false,
             });
           }
         }
@@ -110,17 +110,21 @@ class StorybookCoverageValidator {
       /React\.FC/,
       /FunctionComponent/,
       /JSX\.Element/,
-      /<[A-Z]/  // JSX elements
+      /<[A-Z]/, // JSX elements
     ];
 
-    return reactPatterns.some(pattern => pattern.test(content)) &&
-           (content.includes('import React') || content.includes('from \'react\'') || content.includes('JSX'));
+    return (
+      reactPatterns.some(pattern => pattern.test(content)) &&
+      (content.includes('import React') ||
+        content.includes("from 'react'") ||
+        content.includes('JSX'))
+    );
   }
 
   private extractComponentName(filePath: string, content: string): string | null {
     // Try to extract component name from file name first
     const fileName = path.basename(filePath, path.extname(filePath));
-    
+
     // Skip if it's clearly not a component name (lowercase, etc.)
     if (fileName[0] !== fileName[0].toUpperCase()) {
       return null;
@@ -132,11 +136,11 @@ class StorybookCoverageValidator {
       new RegExp(`export\\s+default\\s+function\\s+${fileName}`),
       new RegExp(`export\\s+const\\s+${fileName}`),
       new RegExp(`export\\s+function\\s+${fileName}`),
-      new RegExp(`export\\s+{[^}]*${fileName}[^}]*}`)
+      new RegExp(`export\\s+{[^}]*${fileName}[^}]*}`),
     ];
 
     const hasExport = exportPatterns.some(pattern => pattern.test(content));
-    
+
     return hasExport ? fileName : null;
   }
 
@@ -144,12 +148,12 @@ class StorybookCoverageValidator {
     try {
       // Find all story files
       const storyFiles = await glob('**/*.stories.{tsx,jsx,ts,js}', {
-        cwd: projectRoot
+        cwd: projectRoot,
       });
 
       // Create a map of story files for quick lookup
       const storyMap = new Map<string, string>();
-      
+
       for (const storyFile of storyFiles) {
         const storyName = this.extractStoryComponentName(storyFile);
         if (storyName) {
@@ -183,9 +187,10 @@ class StorybookCoverageValidator {
   private generateReport(): ValidationResult {
     const componentsWithoutStories = this.components.filter(c => !c.hasStory);
     const componentsWithStories = this.components.filter(c => c.hasStory);
-    const coveragePercentage = this.components.length > 0 
-      ? Math.round((componentsWithStories.length / this.components.length) * 100)
-      : 100;
+    const coveragePercentage =
+      this.components.length > 0
+        ? Math.round((componentsWithStories.length / this.components.length) * 100)
+        : 100;
 
     console.log('\n📊 Coverage Report:');
     console.log(`   Total Components: ${this.components.length}`);
@@ -214,7 +219,7 @@ class StorybookCoverageValidator {
       componentsWithStories: componentsWithStories.length,
       componentsWithoutStories,
       coveragePercentage,
-      success
+      success,
     };
   }
 
@@ -222,13 +227,13 @@ class StorybookCoverageValidator {
     for (const component of missingComponents) {
       const storyTemplate = this.generateStoryTemplate(component);
       const storyPath = this.getStoryPath(component);
-      
+
       // Ensure directory exists
       const storyDir = path.dirname(storyPath);
       if (!fs.existsSync(storyDir)) {
         fs.mkdirSync(storyDir, { recursive: true });
       }
-      
+
       // Write story file
       fs.writeFileSync(storyPath, storyTemplate);
       console.log(`   ✅ Generated: ${path.relative(projectRoot, storyPath)}`);
@@ -243,7 +248,7 @@ class StorybookCoverageValidator {
 
   private generateStoryTemplate(component: ComponentInfo): string {
     const importPath = `./${component.name}`;
-    
+
     return `import type { Meta, StoryObj } from '@storybook/react';
 import { ${component.name} } from '${importPath}';
 
@@ -282,12 +287,12 @@ async function main() {
   try {
     const validator = new StorybookCoverageValidator();
     const result = await validator.validate();
-    
+
     // Exit with error code if coverage is not 100%
     if (!result.success) {
       process.exit(1);
     }
-    
+
     console.log('\n🎉 All components have Storybook coverage!');
   } catch (error) {
     console.error('❌ Validation failed:', error.message);
@@ -299,4 +304,4 @@ if (import.meta.url === `file://${process.argv[1]}`) {
   main();
 }
 
-export { StorybookCoverageValidator, ValidationResult, ComponentInfo };
+export { StorybookCoverageValidator, type ValidationResult, type ComponentInfo };

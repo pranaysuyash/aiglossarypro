@@ -1,5 +1,4 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import ShareMenu from './ShareMenu';
 
 const meta = {
@@ -13,7 +12,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  args: {},
+  args: {
+    isOpen: true,
+    onClose: () => {},
+    title: 'Share this',
+    url: 'https://example.com',
+  },
 };
 
 export const WithProps: Story = {

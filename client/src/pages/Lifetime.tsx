@@ -141,7 +141,8 @@ export default function Lifetime() {
           <h2 className="text-3xl font-bold mb-8">Simple, Fair Pricing</h2>
           <div className="bg-white p-8 rounded-lg shadow-lg">
             <div className="text-5xl font-bold text-blue-600 mb-4">
-              ${pricing.localPrice} <span className="text-2xl text-gray-500 line-through">${pricing.originalPrice}</span>
+              ${pricing.localPrice}{' '}
+              <span className="text-2xl text-gray-500 line-through">${pricing.originalPrice}</span>
             </div>
             <div className="text-xl text-gray-600 dark:text-gray-400 mb-2">
               {pricing.isDiscounted ? 'Special Price for Your Region' : 'One-time Payment'}

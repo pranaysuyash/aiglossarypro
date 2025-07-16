@@ -2,11 +2,13 @@
  * Data Quality Validator
  * Prevents AI processing corruption and ensures data consistency
  */
+import { SECTION_NAMES } from '../utils/constants';
 
 interface ValidationResult {
   isValid: boolean;
   errors: string[];
   warnings: string[];
+  qualityScore?: number;
 }
 
 interface CategoryData {
@@ -20,6 +22,7 @@ interface TermData {
   category?: string;
   mainCategories?: string[];
   subCategories?: string[];
+  sections?: { name: string; content: string }[];
 }
 
 export class DataQualityValidator {
@@ -120,9 +123,9 @@ export class DataQualityValidator {
       const categoryValidation = DataQualityValidator.validateCategoryName(term.category);
       if (!categoryValidation.isValid) {
         result.isValid = false;
-        result.errors.push(...categoryValidation.errors.map((e) => `Category: ${e}`));
+        result.errors.push(...categoryValidation.errors.map(e => `Category: ${e}`));
       }
-      result.warnings.push(...categoryValidation.warnings.map((w) => `Category: ${w}`));
+      result.warnings.push(...categoryValidation.warnings.map(w => `Category: ${w}`));
     }
 
     // Array categories validation
@@ -143,6 +146,12 @@ export class DataQualityValidator {
         }
       }
     }
+    
+    const completeness = this.validateSectionCompleteness(term);
+    result.errors.push(...completeness.errors);
+    result.warnings.push(...completeness.warnings);
+    result.qualityScore = this.calculateQualityScore(term);
+
 
     return result;
   }
@@ -168,7 +177,7 @@ export class DataQualityValidator {
       } else {
         result.errors.push(`Category "${category.name}": ${validation.errors.join(', ')}`);
       }
-      result.warnings.push(...validation.warnings.map((w) => `Category "${category.name}": ${w}`));
+      result.warnings.push(...validation.warnings.map(w => `Category "${category.name}": ${w}`));
     }
 
     // Validate terms
@@ -179,7 +188,7 @@ export class DataQualityValidator {
       } else {
         result.errors.push(`Term "${term.name}": ${validation.errors.join(', ')}`);
       }
-      result.warnings.push(...validation.warnings.map((w) => `Term "${term.name}": ${w}`));
+      result.warnings.push(...validation.warnings.map(w => `Term "${term.name}": ${w}`));
     }
 
     // Overall validation
@@ -232,7 +241,7 @@ export class DataQualityValidator {
     fixed = fixed.trim();
     fixed = fixed
       .split(' ')
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
       .join(' ');
 
     // Truncate if too long
@@ -257,18 +266,88 @@ export class DataQualityValidator {
 
     if (!result.isValid) {
       console.error('❌ Data validation failed:');
-      result.errors.forEach((error) => console.error(`  - ${error}`));
+      result.errors.forEach(error => console.error(`  - ${error}`));
     }
 
     if (result.warnings.length > 0) {
       console.warn('⚠️  Data validation warnings:');
-      result.warnings.slice(0, 10).forEach((warning) => console.warn(`  - ${warning}`));
+      result.warnings.slice(0, 10).forEach(warning => console.warn(`  - ${warning}`));
       if (result.warnings.length > 10) {
         console.warn(`  ... and ${result.warnings.length - 10} more warnings`);
       }
     }
 
     return result;
+  }
+
+  /**
+   * Validates the completeness of the 42-section architecture for a term.
+   * @param term The term data to validate.
+   * @returns A `ValidationResult` object.
+   */
+  static validateSectionCompleteness(term: TermData): ValidationResult {
+    const result: ValidationResult = {
+      isValid: true,
+      errors: [],
+      warnings: [],
+    };
+
+    const expectedSections = Object.values(SECTION_NAMES);
+    const actualSections = term.sections?.map(s => s.name) || [];
+
+    const missingSections = expectedSections.filter(s => !actualSections.includes(s));
+    const extraSections = actualSections.filter(s => !expectedSections.includes(s));
+
+    if (missingSections.length > 0) {
+      result.warnings.push(`Missing ${missingSections.length} sections: ${missingSections.slice(0, 5).join(', ')}${missingSections.length > 5 ? '...' : ''}`);
+    }
+
+    if (extraSections.length > 0) {
+      result.warnings.push(`Found ${extraSections.length} extra sections: ${extraSections.slice(0, 5).join(', ')}${extraSections.length > 5 ? '...' : ''}`);
+    }
+    
+    if(missingSections.length > 21) {
+        result.isValid = false;
+        result.errors.push(`Term is missing more than half of the required sections.`);
+    }
+
+    return result;
+  }
+
+  /**
+   * Calculates a quality score for a term based on various metrics.
+   * @param term The term data to score.
+   * @returns A quality score from 0 to 100.
+   */
+  static calculateQualityScore(term: TermData): number {
+    let score = 0;
+
+    // Definition quality (40 points)
+    if (term.definition) {
+      if (term.definition.length > 200) {
+        score += 25;
+      } else if (term.definition.length > 100) {
+        score += 15;
+      } else if (term.definition.length > 50) {
+        score += 10;
+      }
+    }
+
+    // Categorization (20 points)
+    if (term.mainCategories && term.mainCategories.length > 0) {
+      score += 15;
+    }
+    if (term.subCategories && term.subCategories.length > 0) {
+      score += 5;
+    }
+
+    // Section completeness (40 points)
+    const expectedSections = Object.values(SECTION_NAMES).length;
+    const actualSections = term.sections?.length || 0;
+    const completenessRatio = Math.min(1, actualSections / expectedSections);
+    score += completenessRatio * 40;
+
+    return Math.min(score, 100);
   }
 }
 

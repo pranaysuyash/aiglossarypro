@@ -61,7 +61,7 @@ describe('Performance Regression Tests', () => {
 
       try {
         // Mock API call
-        await new Promise((resolve) => setTimeout(resolve, 10)); // Simulate fast API
+        await new Promise(resolve => setTimeout(resolve, 10)); // Simulate fast API
 
         const responseTime = performance.now() - startTime;
         expect(responseTime).toBeLessThan(1000);
@@ -76,7 +76,7 @@ describe('Performance Regression Tests', () => {
 
       try {
         // Mock search API call
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 50));
 
         const responseTime = performance.now() - startTime;
         expect(responseTime).toBeLessThan(500);
@@ -143,7 +143,7 @@ describe('Performance Regression Tests', () => {
       const items = Array.from({ length: 1000 }, (_, i) => ({ id: i, name: `Item ${i}` }));
 
       // Mock Million.js optimized rendering
-      items.forEach((_item) => {
+      items.forEach(_item => {
         // Simulate optimized render
       });
 

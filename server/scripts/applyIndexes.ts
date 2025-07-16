@@ -39,9 +39,9 @@ async function main() {
     // Split SQL content into individual statements
     const statements = sqlContent
       .split(';')
-      .map((stmt) => stmt.trim())
-      .filter((stmt) => stmt.length > 0 && !stmt.startsWith('--'))
-      .filter((stmt) => !stmt.toLowerCase().includes('select ')); // Skip SELECT statements
+      .map(stmt => stmt.trim())
+      .filter(stmt => stmt.length > 0 && !stmt.startsWith('--'))
+      .filter(stmt => !stmt.toLowerCase().includes('select ')); // Skip SELECT statements
 
     console.log(`📊 Found ${statements.length} SQL statements to execute`);
 

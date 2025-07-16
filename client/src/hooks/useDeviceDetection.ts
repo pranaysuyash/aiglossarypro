@@ -34,11 +34,11 @@ interface DeviceInfo {
 }
 
 const getScreenSize = (width: number): DeviceInfo['screenSize'] => {
-  if (width < 480) return 'xs';
-  if (width < 640) return 'sm';
-  if (width < 768) return 'md';
-  if (width < 1024) return 'lg';
-  if (width < 1280) return 'xl';
+  if (width < 480) {return 'xs';}
+  if (width < 640) {return 'sm';}
+  if (width < 768) {return 'md';}
+  if (width < 1024) {return 'lg';}
+  if (width < 1280) {return 'xl';}
   return '2xl';
 };
 
@@ -52,13 +52,13 @@ const getConnectionType = (): DeviceInfo['connectionType'] => {
   }
 
   const connection = (navigator as any).connection;
-  if (!connection) return 'unknown';
+  if (!connection) {return 'unknown';}
 
   const type = connection.effectiveType || connection.type;
 
-  if (type === 'wifi') return 'wifi';
-  if (['cellular', '2g', '3g', '4g', '5g'].includes(type)) return 'cellular';
-  if (type === 'ethernet') return 'ethernet';
+  if (type === 'wifi') {return 'wifi';}
+  if (['cellular', '2g', '3g', '4g', '5g'].includes(type)) {return 'cellular';}
+  if (type === 'ethernet') {return 'ethernet';}
 
   return 'unknown';
 };
@@ -203,7 +203,7 @@ export const useDeviceDetection = () => {
       updateDeviceInfo();
     };
 
-    mediaQueries.forEach((mq) => {
+    mediaQueries.forEach(mq => {
       if (mq.addEventListener) {
         mq.addEventListener('change', handleMediaChange);
       } else {
@@ -216,7 +216,7 @@ export const useDeviceDetection = () => {
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('orientationchange', handleOrientationChange);
 
-      mediaQueries.forEach((mq) => {
+      mediaQueries.forEach(mq => {
         if (mq.removeEventListener) {
           mq.removeEventListener('change', handleMediaChange);
         } else {
@@ -271,7 +271,7 @@ export const useDeviceDetection = () => {
     }
 
     const connection = (navigator as any).connection;
-    if (!connection) return 'good';
+    if (!connection) {return 'good';}
 
     const effectiveType = connection.effectiveType;
 
@@ -279,9 +279,9 @@ export const useDeviceDetection = () => {
       return 'good';
     } else if (effectiveType === '3g') {
       return 'moderate';
-    } else {
+    } 
       return 'poor';
-    }
+    
   }, [deviceInfo.connectionType, deviceInfo]);
 
   return {

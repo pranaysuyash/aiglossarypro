@@ -1,78 +1,68 @@
 {
-  "timestamp": "2025-07-05T10:39:10.973Z",
-  "summary": {
-    "passed": 10,
-    "total": 10,
-    "percentage": 100
-  },
-  "results": [
-    {
-      "check": "DATABASE_URL",
-      "passed": true,
-      "message": "Database URL is configured"
-    },
-    {
-      "check": "Database Connection",
-      "passed": true,
-      "message": "Successfully connected to database"
-    },
-    {
-      "check": "Dependency: @neondatabase/serverless",
-      "passed": true,
-      "message": "@neondatabase/serverless is available"
-    },
-    {
-      "check": "Dependency: drizzle-orm",
-      "passed": true,
-      "message": "drizzle-orm is available"
-    },
-    {
-      "check": "Dependency: dotenv",
-      "passed": true,
-      "message": "dotenv is available"
-    },
-    {
-      "check": "File: shared/enhancedSchema.ts",
-      "passed": true,
-      "message": "shared/enhancedSchema.ts exists"
-    },
-    {
-      "check": "File: complete_42_sections_config.ts",
-      "passed": true,
-      "message": "complete_42_sections_config.ts exists"
-    },
-    {
-      "check": "File: client/src/data/content-outline.ts",
-      "passed": true,
-      "message": "client/src/data/content-outline.ts exists"
-    },
-    {
-      "check": "File: client/src/types/content-structure.ts",
-      "passed": true,
-      "message": "client/src/types/content-structure.ts exists"
-    },
-    {
-      "check": "TypeScript Path Mappings",
-      "passed": [
-        "./client/src/*"
-      ],
-      "message": "Path mappings are configured correctly",
-      "details": {
-        "hasSharedPath": [
-          "./shared/*"
-        ],
-        "hasClientPath": [
-          "./client/src/*"
-        ],
-        "paths": {
-          "@/*": [
-            "./client/src/*"
-          ],
-          "@shared/*": [
-            "./shared/*"
-          ]
-        }
-      }
-    }
-  ]
+	"timestamp": "2025-07-05T10:39:10.973Z",
+	"summary": {
+		"passed": 10,
+		"total": 10,
+		"percentage": 100
+	},
+	"results": [
+		{
+			"check": "DATABASE_URL",
+			"passed": true,
+			"message": "Database URL is configured"
+		},
+		{
+			"check": "Database Connection",
+			"passed": true,
+			"message": "Successfully connected to database"
+		},
+		{
+			"check": "Dependency: @neondatabase/serverless",
+			"passed": true,
+			"message": "@neondatabase/serverless is available"
+		},
+		{
+			"check": "Dependency: drizzle-orm",
+			"passed": true,
+			"message": "drizzle-orm is available"
+		},
+		{
+			"check": "Dependency: dotenv",
+			"passed": true,
+			"message": "dotenv is available"
+		},
+		{
+			"check": "File: shared/enhancedSchema.ts",
+			"passed": true,
+			"message": "shared/enhancedSchema.ts exists"
+		},
+		{
+			"check": "File: complete_42_sections_config.ts",
+			"passed": true,
+			"message": "complete_42_sections_config.ts exists"
+		},
+		{
+			"check": "File: client/src/data/content-outline.ts",
+			"passed": true,
+			"message": "client/src/data/content-outline.ts exists"
+		},
+		{
+			"check": "File: client/src/types/content-structure.ts",
+			"passed": true,
+			"message": "client/src/types/content-structure.ts exists"
+		},
+		{
+			"check": "TypeScript Path Mappings",
+			"passed": ["./client/src/*"],
+			"message": "Path mappings are configured correctly",
+			"details": {
+				"hasSharedPath": ["./shared/*"],
+				"hasClientPath": ["./client/src/*"],
+				"paths": {
+					"@/*": ["./client/src/*"],
+					"@shared/*": ["./shared/*"]
+				}
+			}
+		}
+	]
 }

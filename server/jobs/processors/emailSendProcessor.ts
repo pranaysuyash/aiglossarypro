@@ -220,7 +220,7 @@ export async function emailSendProcessor(job: Job<EmailSendJobData>): Promise<Em
       subject: processedSubject,
       html: processedHtml,
       text: processedText,
-      attachments: attachments?.map((att) => ({
+      attachments: attachments?.map(att => ({
         filename: att.filename,
         content: att.content,
       })),
@@ -285,10 +285,10 @@ function processTemplate(template: string, data: Record<string, any>): string {
     /{{#each\s+(\w+)}}(.*?){{\/each}}/gs,
     (_match, arrayName, content) => {
       const array = data[arrayName];
-      if (!Array.isArray(array)) return '';
+      if (!Array.isArray(array)) {return '';}
 
       return array
-        .map((item) => {
+        .map(item => {
           let itemContent = content;
           if (typeof item === 'object') {
             Object.entries(item).forEach(([key, value]) => {

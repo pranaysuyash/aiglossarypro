@@ -1,9 +1,9 @@
 import { Pause, Play, RotateCcw, SkipBack, SkipForward, Square } from 'lucide-react';
 import { useCallback, useEffect, useState } from 'react';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Slider } from '@/components/ui/slider';
-import { Badge } from '@/components/ui/badge';
 
 export interface SimulationStep {
   id: string;
@@ -16,7 +16,7 @@ export interface SimulationStep {
 
 export interface SimulationConfig {
   title: string;
-  description?: string;
+  description?: string | undefined;
   steps: SimulationStep[];
   autoPlay?: boolean;
   loop?: boolean;
@@ -27,7 +27,7 @@ interface SimulationPlayerProps {
   config: SimulationConfig;
   onStepChange?: (step: SimulationStep, index: number) => void;
   renderStep?: (step: SimulationStep, index: number) => React.ReactNode;
-  className?: string;
+  className?: string | undefined;
 }
 
 export default function SimulationPlayer({
@@ -44,15 +44,18 @@ export default function SimulationPlayer({
   const { steps } = config;
   const totalSteps = steps.length;
 
-  const goToStep = useCallback((stepIndex: number) => {
-    const newIndex = Math.max(0, Math.min(stepIndex, totalSteps - 1));
-    setCurrentStep(newIndex);
-    setProgress((newIndex / (totalSteps - 1)) * 100);
-    
-    if (onStepChange) {
-      onStepChange(steps[newIndex], newIndex);
-    }
-  }, [steps, totalSteps, onStepChange]);
+  const goToStep = useCallback(
+    (stepIndex: number) => {
+      const newIndex = Math.max(0, Math.min(stepIndex, totalSteps - 1));
+      setCurrentStep(newIndex);
+      setProgress((newIndex / (totalSteps - 1)) * 100);
+
+      if (onStepChange) {
+        onStepChange(steps[newIndex], newIndex);
+      }
+    },
+    [steps, totalSteps, onStepChange]
+  );
 
   const nextStep = useCallback(() => {
     if (currentStep < totalSteps - 1) {
@@ -79,7 +82,7 @@ export default function SimulationPlayer({
 
   // Auto-advance simulation when playing
   useEffect(() => {
-    if (!isPlaying) return;
+    if (!isPlaying) {return;}
 
     const currentStepData = steps[currentStep];
     const stepDuration = (currentStepData?.duration || 2000) / speed;
@@ -125,9 +128,7 @@ export default function SimulationPlayer({
           <div>
             <CardTitle className="text-lg">{config.title}</CardTitle>
             {config.description && (
-              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                {config.description}
-              </p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{config.description}</p>
             )}
           </div>
           <div className="flex items-center space-x-2">
@@ -145,7 +146,9 @@ export default function SimulationPlayer({
       <CardContent>
         {/* Simulation Content */}
         <div className="mb-6">
-          {renderStep ? renderStep(currentStepData, currentStep) : defaultStepRenderer(currentStepData, currentStep)}
+          {renderStep
+            ? renderStep(currentStepData, currentStep)
+            : defaultStepRenderer(currentStepData, currentStep)}
         </div>
 
         {/* Progress Bar */}
@@ -176,7 +179,7 @@ export default function SimulationPlayer({
             >
               <Square className="h-4 w-4" />
             </Button>
-            
+
             <Button
               variant="ghost"
               size="icon"
@@ -187,12 +190,7 @@ export default function SimulationPlayer({
               <SkipBack className="h-4 w-4" />
             </Button>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={togglePlay}
-              className="h-8 w-8"
-            >
+            <Button variant="ghost" size="icon" onClick={togglePlay} className="h-8 w-8">
               {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
             </Button>
 

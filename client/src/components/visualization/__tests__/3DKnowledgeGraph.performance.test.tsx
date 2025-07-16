@@ -190,7 +190,7 @@ describe('3D Knowledge Graph Performance', () => {
       { nodes: 5000, edges: 10000, name: 'Large', maxTime: 500 },
     ];
 
-    benchmarkConfigs.forEach((config) => {
+    benchmarkConfigs.forEach(config => {
       it(`should render ${config.name} dataset within ${config.maxTime}ms`, async () => {
         const testData = generateTestData(config.nodes, config.edges);
         const startTime = performance.now();

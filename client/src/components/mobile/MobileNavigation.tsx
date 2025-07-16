@@ -34,7 +34,7 @@ interface MobileNavItem {
   icon: React.ComponentType<{ className?: string }>;
   badge?: string;
   color?: string;
-  description?: string;
+  description?: string | undefined;
 }
 
 const primaryNavItems: MobileNavItem[] = [
@@ -107,7 +107,7 @@ const secondaryNavItems: MobileNavItem[] = [
 ];
 
 interface MobileNavigationProps {
-  className?: string;
+  className?: string | undefined;
   showGestureHints?: boolean;
 }
 
@@ -136,7 +136,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
   // Get current page info
   const getCurrentPageInfo = () => {
     const currentItem = [...primaryNavItems, ...secondaryNavItems].find(
-      (item) => item.path === location || (item.path !== '/' && location.startsWith(item.path))
+      item => item.path === location || (item.path !== '/' && location.startsWith(item.path))
     );
     return currentItem || primaryNavItems[0];
   };
@@ -162,7 +162,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
   const BottomNavBar = () => (
     <div className="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-40 safe-area-pb">
       <div className="flex items-center justify-around px-2 py-2">
-        {primaryNavItems.slice(0, 4).map((item) => {
+        {primaryNavItems.slice(0, 4).map(item => {
           const isActive =
             location === item.path || (item.path !== '/' && location.startsWith(item.path));
           const Icon = item.icon;
@@ -263,7 +263,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
             Main Navigation
           </h3>
           <div className="space-y-2">
-            {primaryNavItems.map((item) => {
+            {primaryNavItems.map(item => {
               const isActive =
                 location === item.path || (item.path !== '/' && location.startsWith(item.path));
               const Icon = item.icon;
@@ -302,7 +302,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
             Learning & Tools
           </h3>
           <div className="space-y-2">
-            {secondaryNavItems.map((item) => {
+            {secondaryNavItems.map(item => {
               const isActive =
                 location === item.path || (item.path !== '/' && location.startsWith(item.path));
               const Icon = item.icon;
@@ -403,7 +403,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
     </div>
   );
 
-  if (!isMobile) return null;
+  if (!isMobile) {return null;}
 
   return (
     <div className={className}>

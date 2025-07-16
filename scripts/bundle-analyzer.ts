@@ -1,330 +1,264 @@
+#!/usr/bin/env tsx
+
+import chalk from 'chalk';
 import { execSync } from 'child_process';
 import fs from 'fs';
 import path from 'path';
-import chalk from 'chalk';
-import Table from 'cli-table3';
 
-interface BundleInfo {
-  name: string;
+interface BundleStats {
+  file: string;
   size: number;
-  gzipSize: number;
-  brotliSize: number;
-  modules: string[];
+  gzipSize?: number;
+  type: 'js' | 'css' | 'asset';
+}
+
+interface BundleReport {
+  totalSize: number;
+  totalGzipSize: number;
+  jsSize: number;
+  cssSize: number;
+  assetSize: number;
+  chunks: BundleStats[];
+  recommendations: string[];
 }
 
 class BundleAnalyzer {
-  private distPath: string;
-  private statsPath: string;
+  private distPath = path.resolve(process.cwd(), 'dist/public');
+  private budgets = {
+    totalJs: 800 * 1024, // 800KB
+    totalCss: 200 * 1024, // 200KB
+    totalBundle: 800 * 1024, // 800KB
+    initialChunk: 300 * 1024, // 300KB
+    vendorChunk: 500 * 1024, // 500KB
+  };
 
-  constructor() {
-    this.distPath = path.join(process.cwd(), 'dist/public');
-    this.statsPath = path.join(process.cwd(), 'dist/bundle-stats.json');
-  }
+  async analyze(): Promise<BundleReport> {
+    console.log(chalk.blue('🔍 Analyzing bundle...'));
 
-  async analyze() {
-    console.log(chalk.blue('🔍 Analyzing bundle size...\n'));
-
-    // Build with stats
-    console.log(chalk.yellow('Building project with bundle analysis...'));
+    // Build with analysis mode
     try {
-      execSync('npm run build:analyze', { stdio: 'inherit' });
+      execSync('NODE_ENV=analyze npm run build', {
+        stdio: 'inherit',
+        env: { ...process.env, NODE_ENV: 'analyze' },
+      });
     } catch (error) {
-      console.error(chalk.red('Failed to build project'));
-      process.exit(1);
+      console.error(chalk.red('Build failed during analysis'));
+      throw error;
     }
 
-    // Analyze JS bundles
-    const jsFiles = this.getFiles(this.distPath, '.js');
-    const bundles = await this.analyzeBundles(jsFiles);
+    const chunks = this.scanDistDirectory();
+    const report = this.generateReport(chunks);
 
-    // Display results
-    this.displayResults(bundles);
-    
-    // Generate recommendations
-    this.generateRecommendations(bundles);
+    this.printReport(report);
+    this.checkBudgets(report);
+
+    return report;
   }
 
-  private getFiles(dir: string, ext: string): string[] {
-    const files: string[] = [];
-    
-    const walk = (currentDir: string) => {
-      const entries = fs.readdirSync(currentDir, { withFileTypes: true });
-      
-      for (const entry of entries) {
-        const fullPath = path.join(currentDir, entry.name);
-        
-        if (entry.isDirectory()) {
-          walk(fullPath);
-        } else if (entry.name.endsWith(ext)) {
-          files.push(fullPath);
+  private scanDistDirectory(): BundleStats[] {
+    const chunks: BundleStats[] = [];
+
+    if (!fs.existsSync(this.distPath)) {
+      throw new Error('Dist directory not found. Run build first.');
+    }
+
+    const scanDir = (dir: string, prefix = '') => {
+      const files = fs.readdirSync(dir);
+
+      for (const file of files) {
+        const filePath = path.join(dir, file);
+        const stat = fs.statSync(filePath);
+
+        if (stat.isDirectory()) {
+          scanDir(filePath, `${prefix}${file}/`);
+        } else if (this.isRelevantFile(file)) {
+          const size = stat.size;
+          const type = this.getFileType(file);
+
+          chunks.push({
+            file: `${prefix}${file}`,
+            size,
+            type,
+          });
         }
       }
     };
-    
-    if (fs.existsSync(dir)) {
-      walk(dir);
-    }
-    
-    return files;
+
+    scanDir(this.distPath);
+    return chunks.sort((a, b) => b.size - a.size);
   }
 
-  private async analyzeBundles(files: string[]): Promise<BundleInfo[]> {
-    const bundles: BundleInfo[] = [];
-    
-    for (const file of files) {
-      const stats = fs.statSync(file);
-      const content = fs.readFileSync(file);
-      
-      // Calculate sizes
-      const size = stats.size;
-      const gzipSize = await this.getCompressedSize(content, 'gzip');
-      const brotliSize = await this.getCompressedSize(content, 'br');
-      
-      // Extract module info from filename
-      const name = path.basename(file);
-      const modules = this.extractModules(content.toString());
-      
-      bundles.push({
-        name,
-        size,
-        gzipSize,
-        brotliSize,
-        modules,
+  private isRelevantFile(file: string): boolean {
+    return (
+      /\.(js|css|woff2?|ttf|png|jpg|jpeg|svg|webp)$/.test(file) &&
+      !file.includes('.map') &&
+      !file.includes('sw.js') &&
+      !file.includes('workbox')
+    );
+  }
+
+  private getFileType(file: string): 'js' | 'css' | 'asset' {
+    if (file.endsWith('.js')) return 'js';
+    if (file.endsWith('.css')) return 'css';
+    return 'asset';
+  }
+
+  private generateReport(chunks: BundleStats[]): BundleReport {
+    const jsChunks = chunks.filter(c => c.type === 'js');
+    const cssChunks = chunks.filter(c => c.type === 'css');
+    const assetChunks = chunks.filter(c => c.type === 'asset');
+
+    const jsSize = jsChunks.reduce((sum, c) => sum + c.size, 0);
+    const cssSize = cssChunks.reduce((sum, c) => sum + c.size, 0);
+    const assetSize = assetChunks.reduce((sum, c) => sum + c.size, 0);
+    const totalSize = jsSize + cssSize + assetSize;
+
+    const recommendations = this.generateRecommendations(chunks, {
+      jsSize,
+      cssSize,
+      assetSize,
+      totalSize,
+    });
+
+    return {
+      totalSize,
+      totalGzipSize: Math.round(totalSize * 0.7), // Estimate
+      jsSize,
+      cssSize,
+      assetSize,
+      chunks,
+      recommendations,
+    };
+  }
+
+  private generateRecommendations(chunks: BundleStats[], sizes: any): string[] {
+    const recommendations: string[] = [];
+
+    // Check for large JS files
+    const largeJsFiles = chunks
+      .filter(c => c.type === 'js' && c.size > 100 * 1024)
+      .sort((a, b) => b.size - a.size);
+
+    if (largeJsFiles.length > 0) {
+      recommendations.push(
+        `Large JS files detected: ${largeJsFiles
+          .map(f => `${f.file} (${this.formatSize(f.size)})`)
+          .join(', ')}`
+      );
+    }
+
+    // Check for missing vendor chunks
+    const hasVendorChunks = chunks.some(c => c.file.includes('vendor-'));
+    if (!hasVendorChunks) {
+      recommendations.push('Consider implementing vendor chunk splitting for better caching');
+    }
+
+    // Check for large CSS
+    if (sizes.cssSize > this.budgets.totalCss) {
+      recommendations.push(
+        `CSS bundle is large (${this.formatSize(sizes.cssSize)}). Consider CSS code splitting.`
+      );
+    }
+
+    // Check for unoptimized assets
+    const largeAssets = chunks
+      .filter(c => c.type === 'asset' && c.size > 50 * 1024)
+      .filter(c => !c.file.includes('font') && !c.file.includes('KaTeX'));
+
+    if (largeAssets.length > 0) {
+      recommendations.push(
+        `Large assets detected: ${largeAssets
+          .map(f => `${f.file} (${this.formatSize(f.size)})`)
+          .join(', ')}`
+      );
+    }
+
+    return recommendations;
+  }
+
+  private printReport(report: BundleReport): void {
+    console.log('\n' + chalk.green('📊 Bundle Analysis Report'));
+    console.log('═'.repeat(50));
+
+    console.log(chalk.cyan('\n📦 Bundle Sizes:'));
+    console.log(`  Total: ${chalk.bold(this.formatSize(report.totalSize))}`);
+    console.log(`  JavaScript: ${chalk.yellow(this.formatSize(report.jsSize))}`);
+    console.log(`  CSS: ${chalk.blue(this.formatSize(report.cssSize))}`);
+    console.log(`  Assets: ${chalk.magenta(this.formatSize(report.assetSize))}`);
+
+    console.log(chalk.cyan('\n📁 Largest Files:'));
+    report.chunks.slice(0, 10).forEach((chunk, i) => {
+      const icon = chunk.type === 'js' ? '📜' : chunk.type === 'css' ? '🎨' : '🖼️';
+      console.log(`  ${i + 1}. ${icon} ${chunk.file} - ${chalk.bold(this.formatSize(chunk.size))}`);
+    });
+
+    if (report.recommendations.length > 0) {
+      console.log(chalk.yellow('\n💡 Recommendations:'));
+      report.recommendations.forEach((rec, i) => {
+        console.log(`  ${i + 1}. ${rec}`);
       });
     }
-    
-    return bundles.sort((a, b) => b.size - a.size);
   }
 
-  private async getCompressedSize(content: Buffer, type: 'gzip' | 'br'): Promise<number> {
-    const { gzipSync, brotliCompressSync } = await import('zlib');
-    
-    if (type === 'gzip') {
-      return gzipSync(content).length;
-    } else {
-      return brotliCompressSync(content).length;
-    }
-  }
+  private checkBudgets(report: BundleReport): void {
+    console.log(chalk.cyan('\n💰 Performance Budgets:'));
 
-  private extractModules(content: string): string[] {
-    const modules: string[] = [];
-    
-    // Extract common module patterns
-    const patterns = [
-      /from ["']([^"']+)["']/g,
-      /require\(["']([^"']+)["']\)/g,
-      /import\(["']([^"']+)["']\)/g,
+    const checks = [
+      {
+        name: 'Total JS',
+        actual: report.jsSize,
+        budget: this.budgets.totalJs,
+      },
+      {
+        name: 'Total CSS',
+        actual: report.cssSize,
+        budget: this.budgets.totalCss,
+      },
+      {
+        name: 'Total Bundle Size',
+        actual: report.totalSize,
+        budget: this.budgets.totalBundle,
+      },
     ];
-    
-    for (const pattern of patterns) {
-      let match;
-      while ((match = pattern.exec(content)) !== null) {
-        const moduleName = match[1];
-        if (!modules.includes(moduleName) && moduleName.includes('node_modules')) {
-          modules.push(moduleName);
-        }
+
+    let allPassed = true;
+
+    checks.forEach(check => {
+      const passed = check.actual <= check.budget;
+      const icon = passed ? '✅' : '❌';
+      const color = passed ? chalk.green : chalk.red;
+
+      console.log(
+        `  ${icon} ${check.name}: ${color(this.formatSize(check.actual))} / ${this.formatSize(check.budget)}`
+      );
+
+      if (!passed) {
+        allPassed = false;
+        const excess = check.actual - check.budget;
+        console.log(`    ${chalk.red(`Exceeds budget by ${this.formatSize(excess)}`)}`);
       }
+    });
+
+    if (allPassed) {
+      console.log(chalk.green('\n🎉 All performance budgets passed!'));
+    } else {
+      console.log(chalk.red('\n⚠️  Some performance budgets exceeded. Consider optimization.'));
     }
-    
-    return modules.slice(0, 10); // Limit to top 10 for display
   }
 
   private formatSize(bytes: number): string {
-    const kb = bytes / 1024;
-    const mb = kb / 1024;
-    
-    if (mb >= 1) {
-      return `${mb.toFixed(2)} MB`;
-    } else {
-      return `${kb.toFixed(2)} KB`;
-    }
-  }
-
-  private displayResults(bundles: BundleInfo[]) {
-    console.log(chalk.green('\n📊 Bundle Analysis Results:\n'));
-    
-    const table = new Table({
-      head: ['Bundle', 'Size', 'Gzip', 'Brotli', 'Type'],
-      colWidths: [40, 12, 12, 12, 15],
-    });
-    
-    let totalSize = 0;
-    let totalGzip = 0;
-    let totalBrotli = 0;
-    
-    for (const bundle of bundles) {
-      const type = this.getBundleType(bundle.name);
-      const rowColor = this.getRowColor(bundle.size);
-      
-      table.push([
-        chalk[rowColor](bundle.name),
-        chalk[rowColor](this.formatSize(bundle.size)),
-        chalk[rowColor](this.formatSize(bundle.gzipSize)),
-        chalk[rowColor](this.formatSize(bundle.brotliSize)),
-        chalk[rowColor](type),
-      ]);
-      
-      totalSize += bundle.size;
-      totalGzip += bundle.gzipSize;
-      totalBrotli += bundle.brotliSize;
-    }
-    
-    // Add totals row
-    table.push([
-      chalk.bold('TOTAL'),
-      chalk.bold(this.formatSize(totalSize)),
-      chalk.bold(this.formatSize(totalGzip)),
-      chalk.bold(this.formatSize(totalBrotli)),
-      '',
-    ]);
-    
-    console.log(table.toString());
-  }
-
-  private getBundleType(filename: string): string {
-    if (filename.includes('vendor')) return 'Vendor';
-    if (filename.includes('page-')) return 'Page';
-    if (filename.includes('component')) return 'Component';
-    if (filename.includes('main') || filename.includes('index')) return 'Entry';
-    return 'Other';
-  }
-
-  private getRowColor(size: number): string {
-    const kb = size / 1024;
-    
-    if (kb > 500) return 'red';
-    if (kb > 250) return 'yellow';
-    return 'green';
-  }
-
-  private generateRecommendations(bundles: BundleInfo[]) {
-    console.log(chalk.blue('\n💡 Recommendations:\n'));
-    
-    const largeBundles = bundles.filter(b => b.size > 250 * 1024);
-    const vendorBundles = bundles.filter(b => b.name.includes('vendor'));
-    
-    const recommendations = [];
-    
-    // Large bundle recommendations
-    if (largeBundles.length > 0) {
-      recommendations.push({
-        severity: 'high',
-        message: `Found ${largeBundles.length} bundles over 250KB. Consider:`,
-        actions: [
-          'Implement code splitting for large components',
-          'Lazy load heavy dependencies',
-          'Review and remove unused imports',
-        ],
-      });
-    }
-    
-    // Vendor bundle recommendations
-    const totalVendorSize = vendorBundles.reduce((acc, b) => acc + b.size, 0);
-    if (totalVendorSize > 1024 * 1024) {
-      recommendations.push({
-        severity: 'medium',
-        message: `Vendor bundles total ${this.formatSize(totalVendorSize)}. Consider:`,
-        actions: [
-          'Use dynamic imports for heavy libraries',
-          'Implement tree shaking',
-          'Replace heavy dependencies with lighter alternatives',
-        ],
-      });
-    }
-    
-    // Duplicate module detection
-    const allModules = bundles.flatMap(b => b.modules);
-    const duplicates = this.findDuplicates(allModules);
-    if (duplicates.length > 0) {
-      recommendations.push({
-        severity: 'low',
-        message: 'Found potential duplicate modules:',
-        actions: duplicates.map(d => `Review multiple imports of: ${d}`),
-      });
-    }
-    
-    // Display recommendations
-    for (const rec of recommendations) {
-      const color = rec.severity === 'high' ? 'red' : rec.severity === 'medium' ? 'yellow' : 'blue';
-      console.log(chalk[color](`[${rec.severity.toUpperCase()}] ${rec.message}`));
-      
-      for (const action of rec.actions) {
-        console.log(chalk.gray(`  • ${action}`));
-      }
-      console.log();
-    }
-    
-    // Performance budget
-    this.checkPerformanceBudget(bundles);
-  }
-
-  private findDuplicates(arr: string[]): string[] {
-    const counts = new Map<string, number>();
-    
-    for (const item of arr) {
-      counts.set(item, (counts.get(item) || 0) + 1);
-    }
-    
-    return Array.from(counts.entries())
-      .filter(([_, count]) => count > 1)
-      .map(([module]) => module);
-  }
-
-  private checkPerformanceBudget(bundles: BundleInfo[]) {
-    console.log(chalk.blue('\n📏 Performance Budget Check:\n'));
-    
-    const budget = {
-      totalSize: 5 * 1024 * 1024, // 5MB total
-      mainBundle: 500 * 1024, // 500KB for main
-      vendorBundle: 1 * 1024 * 1024, // 1MB for vendors
-      chunkSize: 250 * 1024, // 250KB per chunk
-    };
-    
-    const totalSize = bundles.reduce((acc, b) => acc + b.size, 0);
-    const mainBundle = bundles.find(b => b.name.includes('main') || b.name.includes('index'));
-    const vendorSize = bundles.filter(b => b.name.includes('vendor')).reduce((acc, b) => acc + b.size, 0);
-    
-    const checks = [
-      {
-        name: 'Total Bundle Size',
-        current: totalSize,
-        budget: budget.totalSize,
-        passed: totalSize <= budget.totalSize,
-      },
-      {
-        name: 'Main Bundle Size',
-        current: mainBundle?.size || 0,
-        budget: budget.mainBundle,
-        passed: !mainBundle || mainBundle.size <= budget.mainBundle,
-      },
-      {
-        name: 'Vendor Bundle Size',
-        current: vendorSize,
-        budget: budget.vendorBundle,
-        passed: vendorSize <= budget.vendorBundle,
-      },
-    ];
-    
-    const table = new Table({
-      head: ['Metric', 'Current', 'Budget', 'Status'],
-      colWidths: [25, 15, 15, 10],
-    });
-    
-    for (const check of checks) {
-      const status = check.passed ? chalk.green('✓ PASS') : chalk.red('✗ FAIL');
-      
-      table.push([
-        check.name,
-        this.formatSize(check.current),
-        this.formatSize(check.budget),
-        status,
-      ]);
-    }
-    
-    console.log(table.toString());
+    if (bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / k ** i).toFixed(1))} ${sizes[i]}`;
   }
 }
 
-// Run analyzer
-const analyzer = new BundleAnalyzer();
-analyzer.analyze().catch(console.error);
+// CLI execution
+if (import.meta.url === `file://${process.argv[1]}`) {
+  const analyzer = new BundleAnalyzer();
+  analyzer.analyze().catch(console.error);
+}
+
+export { BundleAnalyzer };

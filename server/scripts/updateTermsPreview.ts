@@ -27,7 +27,7 @@ async function updateTermsPreview() {
     // Show a few examples
     if (result.length > 0) {
       console.log('\n📋 Sample updated terms:');
-      result.slice(0, 5).forEach((term) => {
+      result.slice(0, 5).forEach(term => {
         console.log(`   - ${term.name} (${term.id})`);
       });
       if (result.length > 5) {
@@ -60,7 +60,7 @@ updateTermsPreview()
     console.log('\n✅ Update completed successfully!');
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('\n❌ Update failed:', error);
     process.exit(1);
   });

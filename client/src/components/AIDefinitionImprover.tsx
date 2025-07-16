@@ -10,7 +10,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 interface AIDefinitionImproverProps {
   term: ITerm;
   onImprovementApplied?: (improvedTerm: ITerm) => void;
-  className?: string;
+  className?: string | undefined;
 }
 
 interface AIDefinitionResponse {
@@ -61,11 +61,11 @@ export function AIDefinitionImprover({
       } else {
         throw new Error(result.error || 'Failed to generate improvements');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating improvements:', error);
       toast({
         title: GENERIC_MESSAGES.ERROR.title,
-        description: error instanceof Error ? error.message : 'Failed to generate improvements',
+        description: error instanceof Error ? error?.message : 'Failed to generate improvements',
         variant: 'destructive',
       });
     } finally {
@@ -74,7 +74,7 @@ export function AIDefinitionImprover({
   };
 
   const applyImprovements = async () => {
-    if (!improvements) return;
+    if (!improvements) {return;}
 
     setIsApplying(true);
 
@@ -104,11 +104,11 @@ export function AIDefinitionImprover({
       } else {
         throw new Error(result.error || 'Failed to apply improvements');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error applying improvements:', error);
       toast({
         title: GENERIC_MESSAGES.ERROR.title,
-        description: error instanceof Error ? error.message : 'Failed to apply improvements',
+        description: error instanceof Error ? error?.message : 'Failed to apply improvements',
         variant: 'destructive',
       });
     } finally {
@@ -133,7 +133,7 @@ export function AIDefinitionImprover({
   }) => {
     const hasChanges = JSON.stringify(original) !== JSON.stringify(improved);
 
-    if (!hasChanges && !improved) return null;
+    if (!hasChanges && !improved) {return null;}
 
     return (
       <div className="space-y-3">

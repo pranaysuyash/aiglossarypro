@@ -118,7 +118,7 @@ export default function DragDropUploader({
         return;
       }
 
-      filesArray.forEach((file) => {
+      filesArray.forEach(file => {
         const validationError = validateFile(file);
 
         if (validationError) {
@@ -126,7 +126,7 @@ export default function DragDropUploader({
         } else {
           // Check for duplicates
           const isDuplicate = files.some(
-            (f) => f.file.name === file.name && f.file.size === file.size
+            f => f.file.name === file.name && f.file.size === file.size
           );
           if (!isDuplicate) {
             newFiles.push({
@@ -151,7 +151,7 @@ export default function DragDropUploader({
       }
 
       if (newFiles.length > 0) {
-        setFiles((prev) => [...prev, ...newFiles]);
+        setFiles(prev => [...prev, ...newFiles]);
       }
     },
     [
@@ -207,7 +207,7 @@ export default function DragDropUploader({
 
   // Remove file
   const removeFile = useCallback((id: string) => {
-    setFiles((prev) => prev.filter((f) => f.id !== id));
+    setFiles(prev => prev.filter(f => f.id !== id));
   }, []);
 
   // Clear all files
@@ -218,20 +218,18 @@ export default function DragDropUploader({
 
   // Upload files
   const uploadFiles = useCallback(async () => {
-    if (files.length === 0) return;
+    if (files.length === 0) {return;}
 
     setUploading(true);
     setError(null);
 
     const uploadPromises = files
-      .filter((f) => f.status === 'pending')
-      .map(async (fileUpload) => {
+      .filter(f => f.status === 'pending')
+      .map(async fileUpload => {
         try {
           // Update status to uploading
-          setFiles((prev) =>
-            prev.map((f) =>
-              f.id === fileUpload.id ? { ...f, status: 'uploading', progress: 0 } : f
-            )
+          setFiles(prev =>
+            prev.map(f => (f.id === fileUpload.id ? { ...f, status: 'uploading', progress: 0 } : f))
           );
 
           const formData = new FormData();
@@ -245,12 +243,10 @@ export default function DragDropUploader({
           const xhr = new XMLHttpRequest();
 
           return new Promise((resolve, reject) => {
-            xhr.upload.addEventListener('progress', (e) => {
+            xhr.upload.addEventListener('progress', e => {
               if (e.lengthComputable) {
                 const progress = Math.round((e.loaded / e.total) * 100);
-                setFiles((prev) =>
-                  prev.map((f) => (f.id === fileUpload.id ? { ...f, progress } : f))
-                );
+                setFiles(prev => prev.map(f => (f.id === fileUpload.id ? { ...f, progress } : f)));
               }
             });
 
@@ -258,8 +254,8 @@ export default function DragDropUploader({
               if (xhr.status === 200) {
                 try {
                   const result = JSON.parse(xhr.responseText);
-                  setFiles((prev) =>
-                    prev.map((f) =>
+                  setFiles(prev =>
+                    prev.map(f =>
                       f.id === fileUpload.id
                         ? { ...f, status: 'completed', progress: 100, result }
                         : f
@@ -268,15 +264,15 @@ export default function DragDropUploader({
                   resolve(result);
                 } catch (_e) {
                   const error = 'Failed to parse response';
-                  setFiles((prev) =>
-                    prev.map((f) => (f.id === fileUpload.id ? { ...f, status: 'error', error } : f))
+                  setFiles(prev =>
+                    prev.map(f => (f.id === fileUpload.id ? { ...f, status: 'error', error } : f))
                   );
                   reject(new Error(error));
                 }
               } else {
                 const error = `Upload failed with status ${xhr.status}`;
-                setFiles((prev) =>
-                  prev.map((f) => (f.id === fileUpload.id ? { ...f, status: 'error', error } : f))
+                setFiles(prev =>
+                  prev.map(f => (f.id === fileUpload.id ? { ...f, status: 'error', error } : f))
                 );
                 reject(new Error(error));
               }
@@ -284,8 +280,8 @@ export default function DragDropUploader({
 
             xhr.addEventListener('error', () => {
               const error = 'Network error during upload';
-              setFiles((prev) =>
-                prev.map((f) => (f.id === fileUpload.id ? { ...f, status: 'error', error } : f))
+              setFiles(prev =>
+                prev.map(f => (f.id === fileUpload.id ? { ...f, status: 'error', error } : f))
               );
               reject(new Error(error));
             });
@@ -293,10 +289,10 @@ export default function DragDropUploader({
             xhr.open('POST', '/api/s3/upload');
             xhr.send(formData);
           });
-        } catch (error) {
-          const errorMessage = error instanceof Error ? error.message : 'Upload failed';
-          setFiles((prev) =>
-            prev.map((f) =>
+        } catch (error: any) {
+          const errorMessage = error instanceof Error ? error?.message : 'Upload failed';
+          setFiles(prev =>
+            prev.map(f =>
               f.id === fileUpload.id ? { ...f, status: 'error', error: errorMessage } : f
             )
           );
@@ -307,13 +303,13 @@ export default function DragDropUploader({
     try {
       const results = await Promise.allSettled(uploadPromises);
       const successfulResults = results
-        .filter((r) => r.status === 'fulfilled')
-        .map((r) => (r as PromiseFulfilledResult<any>).value);
+        .filter(r => r.status === 'fulfilled')
+        .map(r => (r as PromiseFulfilledResult<any>).value);
 
-      const failedUploads = results.filter((r) => r.status === 'rejected');
+      const failedUploads = results.filter(r => r.status === 'rejected');
 
       if (failedUploads.length > 0) {
-        const errorMessages = failedUploads.map((r) => (r as PromiseRejectedResult).reason.message);
+        const errorMessages = failedUploads.map(r => (r as PromiseRejectedResult).reason.message);
         setError(`Some uploads failed: ${errorMessages.join(', ')}`);
 
         if (onUploadError) {
@@ -324,8 +320,8 @@ export default function DragDropUploader({
       if (successfulResults.length > 0 && onUploadComplete) {
         onUploadComplete(successfulResults);
       }
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Upload failed';
+    } catch (error: any) {
+      const errorMessage = error instanceof Error ? error?.message : 'Upload failed';
       setError(errorMessage);
 
       if (onUploadError) {
@@ -356,9 +352,9 @@ export default function DragDropUploader({
 
   // Format file size
   const formatFileSize = useCallback((bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    if (bytes < 1024) {return `${bytes} B`;}
+    if (bytes < 1024 * 1024) {return `${(bytes / 1024).toFixed(1)} KB`;}
+    if (bytes < 1024 * 1024 * 1024) {return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;}
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
   }, []);
 
@@ -393,10 +389,10 @@ export default function DragDropUploader({
     }
   }, []);
 
-  const pendingFiles = files.filter((f) => f.status === 'pending');
-  const uploadingFiles = files.filter((f) => f.status === 'uploading');
-  const completedFiles = files.filter((f) => f.status === 'completed');
-  const errorFiles = files.filter((f) => f.status === 'error');
+  const pendingFiles = files.filter(f => f.status === 'pending');
+  const uploadingFiles = files.filter(f => f.status === 'uploading');
+  const completedFiles = files.filter(f => f.status === 'completed');
+  const errorFiles = files.filter(f => f.status === 'error');
 
   return (
     <div id={id} className={cn('space-y-4', className)}>
@@ -506,7 +502,7 @@ export default function DragDropUploader({
 
             {/* File Items */}
             <div className="space-y-2 max-h-64 overflow-y-auto">
-              {files.map((fileUpload) => (
+              {files.map(fileUpload => (
                 <div
                   key={fileUpload.id}
                   className="flex items-center space-x-3 p-3 border rounded-lg"
@@ -566,7 +562,7 @@ export default function DragDropUploader({
                 <input
                   type="checkbox"
                   checked={enableCompression}
-                  onChange={(_e) => {
+                  onChange={_e => {
                     // This would need to be passed from parent component
                     // or managed in state if compression is toggleable
                   }}

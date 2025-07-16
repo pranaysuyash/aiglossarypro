@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { db } from '../db';
-import { purchases, refundRequests } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
+import { purchases, refundRequests } from '../../shared/schema';
+import { db } from '../db';
 import { log as logger } from '../utils/logger';
 import { emailService } from './emailService';
 
@@ -68,10 +68,7 @@ export class GumroadService {
       }
 
       const crypto = require('crypto');
-      const expectedSignature = crypto
-        .createHmac('sha256', secret)
-        .update(payload)
-        .digest('hex');
+      const expectedSignature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
 
       return crypto.timingSafeEqual(
         Buffer.from(signature, 'hex'),
@@ -79,7 +76,7 @@ export class GumroadService {
       );
     } catch (error) {
       logger.error('Error validating webhook signature:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       return false;
     }
@@ -130,7 +127,7 @@ export class GumroadService {
 
       if (existingUser) {
         purchaseData.userId = existingUser.id;
-        
+
         // Update user's subscription status
         await db
           .update(users)
@@ -152,7 +149,7 @@ export class GumroadService {
       });
     } catch (error) {
       logger.error('Error processing Gumroad sale webhook:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -185,10 +182,7 @@ export class GumroadService {
       }
 
       // Update purchase status
-      await db
-        .update(purchases)
-        .set({ status: 'refunded' })
-        .where(eq(purchases.id, purchase.id));
+      await db.update(purchases).set({ status: 'refunded' }).where(eq(purchases.id, purchase.id));
 
       // Find associated refund request
       const [refundRequest] = await db
@@ -229,7 +223,7 @@ export class GumroadService {
       });
     } catch (error) {
       logger.error('Error processing Gumroad refund webhook:', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
       throw error;
     }
@@ -240,15 +234,15 @@ export class GumroadService {
    */
   static async getSaleDetails(saleId: string): Promise<GumroadSale | null> {
     try {
-      if (!this.ACCESS_TOKEN) {
+      if (!GumroadService.ACCESS_TOKEN) {
         throw new Error('Gumroad access token not configured');
       }
 
       const response = await axios.get<GumroadApiResponse<GumroadSale>>(
-        `${this.GUMROAD_API_BASE}/sales/${saleId}`,
+        `${GumroadService.GUMROAD_API_BASE}/sales/${saleId}`,
         {
           headers: {
-            Authorization: `Bearer ${this.ACCESS_TOKEN}`,
+            Authorization: `Bearer ${GumroadService.ACCESS_TOKEN}`,
           },
           timeout: 10000,
         }
@@ -273,12 +267,12 @@ export class GumroadService {
    * Issue refund through Gumroad API
    */
   static async issueRefund(
-    saleId: string, 
+    saleId: string,
     amount?: number,
     reason?: string
   ): Promise<{ success: boolean; refundId?: string; error?: string }> {
     try {
-      if (!this.ACCESS_TOKEN) {
+      if (!GumroadService.ACCESS_TOKEN) {
         throw new Error('Gumroad access token not configured');
       }
 
@@ -291,11 +285,11 @@ export class GumroadService {
       }
 
       const response = await axios.put<GumroadApiResponse<GumroadRefund>>(
-        `${this.GUMROAD_API_BASE}/sales/${saleId}/refund`,
+        `${GumroadService.GUMROAD_API_BASE}/sales/${saleId}/refund`,
         refundData,
         {
           headers: {
-            Authorization: `Bearer ${this.ACCESS_TOKEN}`,
+            Authorization: `Bearer ${GumroadService.ACCESS_TOKEN}`,
             'Content-Type': 'application/json',
           },
           timeout: 30000,
@@ -326,7 +320,7 @@ export class GumroadService {
       };
     } catch (error) {
       logger.error('Error issuing refund through Gumroad:', error);
-      
+
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Unknown error',
@@ -344,7 +338,7 @@ export class GumroadService {
     page = 1
   ): Promise<{ sales: GumroadSale[]; hasMore: boolean } | null> {
     try {
-      if (!this.ACCESS_TOKEN) {
+      if (!GumroadService.ACCESS_TOKEN) {
         throw new Error('Gumroad access token not configured');
       }
 
@@ -353,14 +347,14 @@ export class GumroadService {
         page: page.toString(),
       };
 
-      if (after) params.after = after;
-      if (before) params.before = before;
+      if (after) {params.after = after;}
+      if (before) {params.before = before;}
 
       const response = await axios.get<GumroadApiResponse<{ sales: GumroadSale[] }>>(
-        `${this.GUMROAD_API_BASE}/sales`,
+        `${GumroadService.GUMROAD_API_BASE}/sales`,
         {
           headers: {
-            Authorization: `Bearer ${this.ACCESS_TOKEN}`,
+            Authorization: `Bearer ${GumroadService.ACCESS_TOKEN}`,
           },
           params,
           timeout: 15000,
@@ -390,14 +384,14 @@ export class GumroadService {
    */
   static async validatePurchase(orderId: string, email: string): Promise<boolean> {
     try {
-      const sale = await this.getSaleDetails(orderId);
-      
+      const sale = await GumroadService.getSaleDetails(orderId);
+
       if (!sale) {
         return false;
       }
 
       // Check if the email matches and the sale is valid
-      const isValid = 
+      const isValid =
         sale.email.toLowerCase() === email.toLowerCase() &&
         !sale.refunded &&
         !sale.disputed &&
@@ -444,8 +438,8 @@ export class GumroadService {
 
       while (hasMore) {
         try {
-          const result = await this.getProductSales(productId, after, before, page);
-          
+          const result = await GumroadService.getProductSales(productId, after, before, page);
+
           if (!result || result.sales.length === 0) {
             hasMore = false;
             break;
@@ -453,7 +447,7 @@ export class GumroadService {
 
           for (const sale of result.sales) {
             try {
-              await this.processSaleWebhook(sale);
+              await GumroadService.processSaleWebhook(sale);
               synced++;
             } catch (error) {
               logger.error('Error processing sale during sync:', {
@@ -466,7 +460,7 @@ export class GumroadService {
 
           hasMore = result.hasMore;
           page++;
-          
+
           // Rate limiting - wait between requests
           await new Promise(resolve => setTimeout(resolve, 1000));
         } catch (error) {

@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { Download, Heart, Plus, Search, Settings, Trash2 } from 'lucide-react';
 import { Button } from './button';
@@ -18,7 +17,7 @@ const meta: Meta<typeof Button> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="p-4">
         <Story />
       </div>
@@ -254,7 +253,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="p-4 dark">
         <Story />
       </div>

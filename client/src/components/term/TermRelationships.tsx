@@ -57,18 +57,18 @@ export default function TermRelationships({ relationships }: TermRelationshipsPr
   ];
 
   const getStrengthBadge = (strength: number) => {
-    if (strength >= 8) return { variant: 'default', text: 'Strong' };
-    if (strength >= 6) return { variant: 'secondary', text: 'Moderate' };
+    if (strength >= 8) {return { variant: 'default', text: 'Strong' };}
+    if (strength >= 6) {return { variant: 'secondary', text: 'Moderate' };}
     return { variant: 'outline', text: 'Weak' };
   };
 
   return (
     <div className="space-y-6">
-      {relationshipTypes.map((relType) => {
+      {relationshipTypes.map(relType => {
         const relatedTerms = relationships.filter(
           (rel: any) => rel.relationshipType === relType.key
         );
-        if (relatedTerms.length === 0) return null;
+        if (relatedTerms.length === 0) {return null;}
 
         const IconComponent = relType.icon;
 

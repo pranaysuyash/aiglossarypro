@@ -318,7 +318,7 @@ class PersonalizationService {
         .orderBy(desc(sql`count(*)`))
         .limit(10);
 
-      return recommendations.map((rec) => ({
+      return recommendations.map(rec => ({
         id: rec.termId,
         type: 'term' as const,
         entityId: rec.termId,
@@ -353,10 +353,10 @@ class PersonalizationService {
     try {
       // Analyze user's content preferences from recent behavior
       const viewedCategories = recentBehavior
-        .filter((event) => event.event_type === 'view' && event.entity_type === 'term')
-        .map((event) => event.context as any)
-        .filter((context) => context?.categoryId)
-        .map((context) => context.categoryId);
+        .filter(event => event.event_type === 'view' && event.entity_type === 'term')
+        .map(event => event.context as any)
+        .filter(context => context?.categoryId)
+        .map(context => context.categoryId);
 
       if (viewedCategories.length === 0) {
         return [];
@@ -389,7 +389,7 @@ class PersonalizationService {
         .orderBy(desc(terms.viewCount))
         .limit(15);
 
-      return recommendations.map((rec) => ({
+      return recommendations.map(rec => ({
         id: rec.id,
         type: 'term' as const,
         entityId: rec.id,
@@ -458,7 +458,7 @@ class PersonalizationService {
       });
 
       const aiResponse = completion.choices[0]?.message?.content;
-      if (!aiResponse) return [];
+      if (!aiResponse) {return [];}
 
       const parsed = JSON.parse(aiResponse);
 
@@ -593,7 +593,7 @@ class PersonalizationService {
         .orderBy(desc(terms.viewCount))
         .limit(request.limit);
 
-      return popular.map((term) => ({
+      return popular.map(term => ({
         id: term.id,
         type: 'term' as const,
         entityId: term.id,
@@ -680,13 +680,13 @@ class PersonalizationService {
     return {
       learningStyle: userProfile.learningStyle,
       complexity: userProfile.preferredComplexity,
-      recentTopics: recentBehavior.slice(0, 10).map((e) => e.entity_type),
+      recentTopics: recentBehavior.slice(0, 10).map(e => e.entity_type),
       goals: userProfile.activeGoals,
     };
   }
 
   private convertAIRecommendations(aiRecs: any[]): PersonalizedRecommendation[] {
-    return aiRecs.map((rec) => ({
+    return aiRecs.map(rec => ({
       id: `ai_${rec.topic}`,
       type: 'term' as const,
       entityId: rec.topic,
@@ -726,8 +726,8 @@ class PersonalizationService {
     recommendations: PersonalizedRecommendation[]
   ): PersonalizedRecommendation[] {
     const seen = new Set();
-    return recommendations.filter((rec) => {
-      if (seen.has(rec.entityId)) return false;
+    return recommendations.filter(rec => {
+      if (seen.has(rec.entityId)) {return false;}
       seen.add(rec.entityId);
       return true;
     });

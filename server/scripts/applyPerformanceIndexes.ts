@@ -280,7 +280,7 @@ applyPerformanceIndexes()
   .then(() => {
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('\n💥 Failed to apply performance indexes:', error);
     process.exit(1);
   });

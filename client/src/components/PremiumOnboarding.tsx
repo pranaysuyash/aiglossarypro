@@ -1,4 +1,17 @@
-import { ArrowRight, BookOpen, CheckCircle, Crown, Gift, Lightbulb, Search, Sparkles, Star, TrendingUp, Users, Zap } from 'lucide-react';
+import {
+  ArrowRight,
+  BookOpen,
+  CheckCircle,
+  Crown,
+  Gift,
+  Lightbulb,
+  Search,
+  Sparkles,
+  Star,
+  TrendingUp,
+  Users,
+  Zap,
+} from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useLocation } from 'wouter';
 import { useToast } from '../hooks/use-toast';
@@ -23,10 +36,7 @@ interface OnboardingStep {
   path: string;
 }
 
-export function PremiumOnboarding({
-  onComplete,
-  showAsModal = false,
-}: PremiumOnboardingProps) {
+export function PremiumOnboarding({ onComplete, showAsModal = false }: PremiumOnboardingProps) {
   const { toast } = useToast();
   const { user } = useAuth();
   const [, navigate] = useLocation();
@@ -37,21 +47,23 @@ export function PremiumOnboarding({
     {
       id: 'welcome',
       title: 'Welcome to Premium! 🎉',
-      description: 'You now have unlimited access to all 10,000+ AI/ML definitions and premium features.',
+      description:
+        'You now have unlimited access to all 10,000+ AI/ML definitions and premium features.',
       icon: <Crown className="w-12 h-12 text-yellow-500" />,
       features: [
         'Unlimited daily access to all terms',
         'No ads or upgrade prompts',
         'Priority customer support',
-        'Lifetime access to all updates'
+        'Lifetime access to all updates',
       ],
       cta: 'Start Your Premium Journey',
-      path: '/dashboard'
+      path: '/dashboard',
     },
     {
       id: 'explore',
       title: 'Explore 42 AI/ML Categories',
-      description: 'Dive deep into comprehensive categories covering every aspect of AI and Machine Learning.',
+      description:
+        'Dive deep into comprehensive categories covering every aspect of AI and Machine Learning.',
       icon: <BookOpen className="w-12 h-12 text-blue-500" />,
       features: [
         'Machine Learning Algorithms',
@@ -59,40 +71,42 @@ export function PremiumOnboarding({
         'Natural Language Processing',
         'Computer Vision & Image Processing',
         'Reinforcement Learning',
-        'MLOps & Production Systems'
+        'MLOps & Production Systems',
       ],
       cta: 'Browse Categories',
-      path: '/categories'
+      path: '/categories',
     },
     {
       id: 'search',
       title: 'Advanced Search & Discovery',
-      description: 'Use powerful search features to find exactly what you need across our entire knowledge base.',
+      description:
+        'Use powerful search features to find exactly what you need across our entire knowledge base.',
       icon: <Search className="w-12 h-12 text-purple-500" />,
       features: [
         'Semantic search across all definitions',
         'Filter by complexity level',
         'Search by use case or industry',
         'Related terms and concepts',
-        'Bookmark and organize favorites'
+        'Bookmark and organize favorites',
       ],
       cta: 'Try Advanced Search',
-      path: '/search'
+      path: '/search',
     },
     {
       id: 'features',
       title: 'Premium Features & Tools',
-      description: 'Access exclusive premium tools designed to accelerate your AI/ML learning journey.',
+      description:
+        'Access exclusive premium tools designed to accelerate your AI/ML learning journey.',
       icon: <Sparkles className="w-12 h-12 text-green-500" />,
       features: [
         'AI-powered explanations and examples',
         'Interactive concept visualizations',
         'Learning progress tracking',
         'Personalized recommendations',
-        'Downloadable study guides'
+        'Downloadable study guides',
       ],
       cta: 'Explore Premium Tools',
-      path: '/tools'
+      path: '/tools',
     },
     {
       id: 'community',
@@ -104,11 +118,11 @@ export function PremiumOnboarding({
         'Feature request submission',
         'Early access to new content',
         'Community discussions',
-        'Expert office hours'
+        'Expert office hours',
       ],
       cta: 'Get Support',
-      path: '/support'
-    }
+      path: '/support',
+    },
   ];
 
   useEffect(() => {
@@ -136,13 +150,13 @@ export function PremiumOnboarding({
   const handleComplete = () => {
     toast({
       title: '🚀 Onboarding Complete!',
-      description: 'You\'re all set to explore your premium features. Welcome aboard!',
+      description: "You're all set to explore your premium features. Welcome aboard!",
       duration: 5000,
     });
-    
+
     // Mark onboarding as completed in localStorage
     localStorage.setItem('premium_onboarding_completed', 'true');
-    
+
     if (onComplete) {
       onComplete();
     } else {
@@ -172,12 +186,13 @@ export function PremiumOnboarding({
 
   return (
     <div className={containerClass}>
-      <Card className={`${cardClass} border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950 dark:to-indigo-950`}>
+      <Card
+        className={`${cardClass} border-purple-200 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-950 dark:to-indigo-950`}
+      >
         <CardHeader className="text-center pb-4">
           {/* Premium Badge */}
           <Badge className="mx-auto mb-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 px-4 py-2 text-lg">
-            <Crown className="w-5 h-5 mr-2" />
-            🌟 Pro Member
+            <Crown className="w-5 h-5 mr-2" />🌟 Pro Member
           </Badge>
 
           {/* Progress Bar */}
@@ -294,8 +309,8 @@ export function PremiumOnboarding({
                     index === currentStep
                       ? 'bg-purple-500'
                       : index < currentStep
-                      ? 'bg-purple-300'
-                      : 'bg-gray-300 dark:bg-gray-600'
+                        ? 'bg-purple-300'
+                        : 'bg-gray-300 dark:bg-gray-600'
                   }`}
                 />
               ))}

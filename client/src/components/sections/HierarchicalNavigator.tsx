@@ -25,7 +25,7 @@ interface HierarchicalNavigatorProps {
   sections: ContentNode[];
   currentPath?: string;
   onNodeClick: (path: string, node: ContentNode) => void;
-  className?: string;
+  className?: string | undefined;
   userProgress?: Record<
     string,
     {
@@ -94,18 +94,18 @@ const OutlineNode: React.FC<{
 
     // Get appropriate icon based on content type and metadata
     const getIcon = useMemo(() => {
-      if (isInteractive) return <Play className="h-4 w-4 text-purple-500" />;
-      if (node.contentType === 'code') return <Code className="h-4 w-4 text-green-500" />;
-      if (node.contentType === 'mermaid') return <Target className="h-4 w-4 text-blue-500" />;
+      if (isInteractive) {return <Play className="h-4 w-4 text-purple-500" />;}
+      if (node.contentType === 'code') {return <Code className="h-4 w-4 text-green-500" />;}
+      if (node.contentType === 'mermaid') {return <Target className="h-4 w-4 text-blue-500" />;}
       if (node.metadata?.displayType === 'interactive')
-        return <Play className="h-4 w-4 text-purple-500" />;
+        {return <Play className="h-4 w-4 text-purple-500" />;}
       return <BookOpen className="h-4 w-4 text-gray-500" />;
     }, [isInteractive, node.contentType, node.metadata?.displayType]);
 
     // Get priority styling
     const getPriorityStyle = useMemo(() => {
-      if (node.metadata?.priority === 'high') return 'border-l-2 border-l-blue-500';
-      if (node.metadata?.priority === 'medium') return 'border-l-2 border-l-yellow-500';
+      if (node.metadata?.priority === 'high') {return 'border-l-2 border-l-blue-500';}
+      if (node.metadata?.priority === 'medium') {return 'border-l-2 border-l-yellow-500';}
       return 'border-l-2 border-l-gray-300';
     }, [node.metadata?.priority]);
 
@@ -119,7 +119,7 @@ const OutlineNode: React.FC<{
             depth > 0 && 'ml-4'
           )}
           onClick={() => onNodeClick(path, node)}
-          onKeyDown={(e) => {
+          onKeyDown={e => {
             if (e.key === 'Enter' || e.key === ' ') {
               e.preventDefault();
               onNodeClick(path, node);
@@ -134,7 +134,7 @@ const OutlineNode: React.FC<{
               variant="ghost"
               size="sm"
               className="p-0 h-4 w-4"
-              onClick={(e) => {
+              onClick={e => {
                 e.stopPropagation();
                 onToggle(path);
               }}
@@ -245,9 +245,9 @@ export const HierarchicalNavigator: React.FC<HierarchicalNavigatorProps> = ({
   // Handle node expansion/collapse
   const handleToggle = useCallback(
     (path: string) => {
-      if (!collapsible) return;
+      if (!collapsible) {return;}
 
-      setExpandedNodes((prev) => {
+      setExpandedNodes(prev => {
         const newSet = new Set(prev);
         if (newSet.has(path)) {
           newSet.delete(path);
@@ -262,13 +262,13 @@ export const HierarchicalNavigator: React.FC<HierarchicalNavigatorProps> = ({
 
   // Filter sections based on search
   const filteredSections = useMemo(() => {
-    if (!searchTerm) return sections;
+    if (!searchTerm) {return sections;}
 
     const searchLower = searchTerm.toLowerCase();
     return sections.filter(
-      (section) =>
+      section =>
         section.name.toLowerCase().includes(searchLower) ||
-        section.subsections?.some((sub) => sub.name.toLowerCase().includes(searchLower))
+        section.subsections?.some(sub => sub.name.toLowerCase().includes(searchLower))
     );
   }, [sections, searchTerm]);
 
@@ -276,7 +276,7 @@ export const HierarchicalNavigator: React.FC<HierarchicalNavigatorProps> = ({
   const { totalNodes, completedNodes, overallProgress } = useMemo(() => {
     const flattened = flattenStructure(sections);
     const total = flattened.length;
-    const completed = flattened.filter((item) => userProgress[item.path]?.isCompleted).length;
+    const completed = flattened.filter(item => userProgress[item.path]?.isCompleted).length;
     const progress = total > 0 ? (completed / total) * 100 : 0;
     return {
       totalNodes: total,
@@ -303,7 +303,7 @@ export const HierarchicalNavigator: React.FC<HierarchicalNavigatorProps> = ({
             <Input
               placeholder="Search sections..."
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={e => setSearchTerm(e.target.value)}
               className="pl-10"
             />
           </div>
@@ -393,7 +393,7 @@ export const HierarchicalNavigator: React.FC<HierarchicalNavigatorProps> = ({
                     'bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800'
                 )}
                 onClick={() => onNodeClick(item.path, item.node)}
-                onKeyDown={(e) => {
+                onKeyDown={e => {
                   if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     onNodeClick(item.path, item.node);

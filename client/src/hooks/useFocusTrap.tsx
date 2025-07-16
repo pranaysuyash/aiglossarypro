@@ -4,12 +4,12 @@ import { useEffect, useRef } from 'react';
  * Custom hook for implementing focus trap functionality
  * Ensures keyboard navigation stays within a specific container
  */
-export function useFocusTrap(isActive: boolean = true) {
+export function useFocusTrap(isActive = true) {
   const containerRef = useRef<HTMLElement>(null);
   const lastFocusedElement = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
-    if (!isActive || !containerRef.current) return;
+    if (!isActive || !containerRef.current) {return;}
 
     const container = containerRef.current;
 
@@ -32,7 +32,7 @@ export function useFocusTrap(isActive: boolean = true) {
         '[contenteditable]',
       ].join(',');
 
-      return Array.from(container.querySelectorAll(focusableSelectors)).filter((el) => {
+      return Array.from(container.querySelectorAll(focusableSelectors)).filter(el => {
         const element = el as HTMLElement;
         return (
           element.offsetWidth > 0 || element.offsetHeight > 0 || element === document.activeElement
@@ -41,10 +41,10 @@ export function useFocusTrap(isActive: boolean = true) {
     };
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Tab') return;
+      if (event.key !== 'Tab') {return;}
 
       const focusableElements = getFocusableElements();
-      if (focusableElements.length === 0) return;
+      if (focusableElements.length === 0) {return;}
 
       const firstElement = focusableElements[0];
       const lastElement = focusableElements[focusableElements.length - 1];
@@ -105,9 +105,9 @@ export function useFocusTrap(isActive: boolean = true) {
  * Hook for managing focus lock overlay
  * Prevents interaction with background content when overlay is active
  */
-export function useFocusLock(isActive: boolean = true) {
+export function useFocusLock(isActive = true) {
   useEffect(() => {
-    if (!isActive) return;
+    if (!isActive) {return;}
 
     const originalBodyStyle = document.body.style.overflow;
     const originalBodyPointerEvents = document.body.style.pointerEvents;
@@ -120,7 +120,7 @@ export function useFocusLock(isActive: boolean = true) {
     const header = document.querySelector('header');
     const footer = document.querySelector('footer');
 
-    [mainContent, header, footer].forEach((element) => {
+    [mainContent, header, footer].forEach(element => {
       if (element) {
         element.setAttribute('aria-hidden', 'true');
         element.style.pointerEvents = 'none';
@@ -133,7 +133,7 @@ export function useFocusLock(isActive: boolean = true) {
       document.body.style.pointerEvents = originalBodyPointerEvents;
 
       // Remove aria-hidden from content
-      [mainContent, header, footer].forEach((element) => {
+      [mainContent, header, footer].forEach(element => {
         if (element) {
           element.removeAttribute('aria-hidden');
           element.style.pointerEvents = '';

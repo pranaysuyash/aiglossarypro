@@ -30,7 +30,7 @@ interface HierarchicalNavigationProps {
   enableFilters?: boolean;
   enableProgress?: boolean;
   enableVirtualization?: boolean;
-  className?: string;
+  className?: string | undefined;
 }
 
 // Performance optimized navigation item component
@@ -55,7 +55,7 @@ const NavigationItem = memo<{
     priority === filterType ||
     (filterType === 'interactive' && isInteractive);
 
-  if (!matchesFilter && !node.matchesSearch) return null;
+  if (!matchesFilter && !node.matchesSearch) {return null;}
 
   const handleToggle = useCallback(
     (e: React.MouseEvent) => {
@@ -73,7 +73,7 @@ const NavigationItem = memo<{
 
   // Highlight search matches
   const highlightText = (text: string, query: string) => {
-    if (!query) return text;
+    if (!query) {return text;}
     const regex = new RegExp(`(${query})`, 'gi');
     const parts = text.split(regex);
     return parts.map((part, index) =>
@@ -206,7 +206,7 @@ const NavigationItem = memo<{
 NavigationItem.displayName = 'NavigationItem';
 
 // Virtual scrolling hook for performance with large datasets
-const useVirtualScrolling = (items: NavigationNode[], containerHeight: number = 600) => {
+const useVirtualScrolling = (items: NavigationNode[], containerHeight = 600) => {
   const [scrollTop, setScrollTop] = useState(0);
   const itemHeight = 40; // Approximate height per item
 
@@ -251,8 +251,8 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
 
     const processNode = (
       node: ContentNode,
-      parentPath: string = '',
-      depth: number = 0,
+      parentPath = '',
+      depth = 0,
       parentId?: string
     ): NavigationNode => {
       const id = `${parentPath}-${node.slug || node.name.toLowerCase().replace(/\s+/g, '-')}`;
@@ -270,7 +270,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
       };
 
       if (node.subsections) {
-        processedNode.subsections = node.subsections.map((child) =>
+        processedNode.subsections = node.subsections.map(child =>
           processNode(child, path, depth + 1, id)
         );
       }
@@ -278,7 +278,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
       return processedNode;
     };
 
-    contentStructure.forEach((section) => {
+    contentStructure.forEach(section => {
       nodes.push(processNode(section));
     });
 
@@ -290,7 +290,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
     const flatten = (nodes: NavigationNode[]): NavigationNode[] => {
       const result: NavigationNode[] = [];
 
-      nodes.forEach((node) => {
+      nodes.forEach(node => {
         result.push(node);
         if (node.subsections && node.isExpanded) {
           result.push(...flatten(node.subsections as NavigationNode[]));
@@ -313,10 +313,10 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
         // Auto-expand nodes that contain search matches
         const matchingNodeIds = new Set<string>();
         const findMatches = (nodes: NavigationNode[]) => {
-          nodes.forEach((node) => {
+          nodes.forEach(node => {
             if (node.matchesSearch) {
               matchingNodeIds.add(node.id);
-              if (node.parentId) matchingNodeIds.add(node.parentId);
+              if (node.parentId) {matchingNodeIds.add(node.parentId);}
             }
             if (node.subsections) {
               findMatches(node.subsections as NavigationNode[]);
@@ -332,7 +332,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
   }, [searchQuery, navigationNodes]);
 
   const handleToggle = useCallback((id: string) => {
-    setExpandedNodes((prev) => {
+    setExpandedNodes(prev => {
       const newSet = new Set(prev);
       if (newSet.has(id)) {
         newSet.delete(id);
@@ -391,7 +391,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
               type="text"
               placeholder="Search content... (Ctrl+K)"
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={e => setSearchQuery(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-md 
                          bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100
                          focus:ring-2 focus:ring-blue-500 focus:border-transparent"
@@ -405,11 +405,11 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
             <Filter className="w-4 h-4 text-gray-400" />
             <select
               value={filterType}
-              onChange={(e) => setFilterType(e.target.value)}
+              onChange={e => setFilterType(e.target.value)}
               className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1
                          bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100"
             >
-              {filterOptions.map((option) => (
+              {filterOptions.map(option => (
                 <option key={option.value} value={option.value}>
                   {option.label}
                 </option>
@@ -438,7 +438,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
                   right: 0,
                 }}
               >
-                {virtualScrolling.visibleItems.map((node) => (
+                {virtualScrolling.visibleItems.map(node => (
                   <NavigationItem
                     key={node.id}
                     node={node}
@@ -454,7 +454,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
           </div>
         ) : (
           <div className="h-full overflow-auto p-2">
-            {navigationNodes.map((node) => (
+            {navigationNodes.map(node => (
               <NavigationItem
                 key={node.id}
                 node={node}
@@ -475,9 +475,7 @@ export const HierarchicalNavigation: React.FC<HierarchicalNavigationProps> = ({
           <span>
             {navigationNodes.length} sections, {flattenedNodes.length} total items
           </span>
-          {searchQuery && (
-            <span>{flattenedNodes.filter((n) => n.matchesSearch).length} matches</span>
-          )}
+          {searchQuery && <span>{flattenedNodes.filter(n => n.matchesSearch).length} matches</span>}
         </div>
       </div>
     </div>

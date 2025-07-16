@@ -6,8 +6,8 @@
  */
 
 import chalk from 'chalk';
-import { productionEmailService } from '../server/services/productionEmailService';
 import { enhancedStorage } from '../server/enhancedStorage';
+import { productionEmailService } from '../server/services/productionEmailService';
 
 interface ValidationResult {
   category: string;
@@ -118,7 +118,7 @@ class ProductionConfigValidator {
     try {
       // Test database connection
       const isHealthy = await enhancedStorage.checkDatabaseHealth();
-      
+
       if (isHealthy) {
         checks.push({
           name: 'Database Connection',
@@ -184,11 +184,11 @@ class ProductionConfigValidator {
 
     // Check email service status
     const emailStatus = productionEmailService.getServiceStatus();
-    
+
     checks.push({
       name: 'Email Service',
       status: emailStatus.available ? 'pass' : 'fail',
-      message: emailStatus.available 
+      message: emailStatus.available
         ? `✓ ${emailStatus.service} service available`
         : 'No email service configured',
       required: true,
@@ -197,9 +197,7 @@ class ProductionConfigValidator {
     checks.push({
       name: 'Email Enabled',
       status: emailStatus.configured ? 'pass' : 'warn',
-      message: emailStatus.configured 
-        ? '✓ Email service enabled'
-        : 'Email service disabled',
+      message: emailStatus.configured ? '✓ Email service enabled' : 'Email service disabled',
       required: false,
     });
 
@@ -313,7 +311,7 @@ class ProductionConfigValidator {
     checks.push({
       name: 'Firebase Authentication',
       status: firebaseConfigured ? 'pass' : 'warn',
-      message: firebaseConfigured 
+      message: firebaseConfigured
         ? '✓ Firebase authentication configured'
         : 'Firebase authentication incomplete',
       required: false,
@@ -351,7 +349,7 @@ class ProductionConfigValidator {
     checks.push({
       name: 'Log Level',
       status: logLevel && productionLogLevels.includes(logLevel) ? 'pass' : 'warn',
-      message: logLevel 
+      message: logLevel
         ? `Set to '${logLevel}'${productionLogLevels.includes(logLevel) ? ' ✓' : ' (consider error/warn for production)'}`
         : 'Not configured',
       required: false,
@@ -386,7 +384,9 @@ class ProductionConfigValidator {
     checks.push({
       name: 'Premium Product Configuration',
       status: premiumConfigured ? 'pass' : 'warn',
-      message: premiumConfigured ? '✓ Premium features configured' : 'Premium features not configured',
+      message: premiumConfigured
+        ? '✓ Premium features configured'
+        : 'Premium features not configured',
       required: false,
     });
 
@@ -419,12 +419,13 @@ class ProductionConfigValidator {
 
     for (const result of this.results) {
       console.log(chalk.cyan.bold(`\n${result.category}:`));
-      
+
       for (const check of result.checks) {
         const icon = check.status === 'pass' ? '✅' : check.status === 'warn' ? '⚠️' : '❌';
-        const color = check.status === 'pass' ? 'green' : check.status === 'warn' ? 'yellow' : 'red';
+        const color =
+          check.status === 'pass' ? 'green' : check.status === 'warn' ? 'yellow' : 'red';
         const required = check.required ? ' (Required)' : '';
-        
+
         console.log(`  ${icon} ${chalk[color](check.name)}${required}: ${check.message}`);
       }
     }
@@ -440,7 +441,7 @@ class ProductionConfigValidator {
     for (const result of this.results) {
       for (const check of result.checks) {
         totalChecks++;
-        
+
         switch (check.status) {
           case 'pass':
             passedChecks++;
@@ -465,7 +466,9 @@ class ProductionConfigValidator {
     console.log(chalk.red(`❌ Failed: ${failedChecks}`));
 
     if (criticalFailures > 0) {
-      console.log(chalk.red.bold(`\n🚨 CRITICAL: ${criticalFailures} required configuration(s) missing!`));
+      console.log(
+        chalk.red.bold(`\n🚨 CRITICAL: ${criticalFailures} required configuration(s) missing!`)
+      );
       console.log(chalk.red('❌ NOT READY FOR PRODUCTION DEPLOYMENT'));
       process.exit(1);
     } else if (failedChecks > 0 || warningChecks > 5) {
@@ -488,7 +491,7 @@ class ProductionConfigValidator {
 // Run validation if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
   const validator = new ProductionConfigValidator();
-  validator.runAllValidations().catch((error) => {
+  validator.runAllValidations().catch(error => {
     console.error(chalk.red.bold('\n❌ Validation failed:'), error);
     process.exit(1);
   });

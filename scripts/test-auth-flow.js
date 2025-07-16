@@ -15,7 +15,7 @@ async function testAuthFlow() {
   const page = await context.newPage();
 
   // Enable console logging to see errors
-  page.on('console', (msg) => {
+  page.on('console', msg => {
     if (msg.type() === 'error') {
       console.log('❌ Console Error:', msg.text());
     }

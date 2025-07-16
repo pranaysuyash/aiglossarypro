@@ -41,13 +41,16 @@ export const LazyLandingPageComponent = lazy(() => import('@/pages/LandingPage')
 export const LazyLandingA = lazy(() => import('@/pages/LandingA'));
 export const LazyAbout = lazy(() => import('@/pages/About'));
 export const LazyLearningPaths = lazy(() => import('@/pages/LearningPaths'));
-export const LazyLearningPathDetail = lazy(() => import('@/pages/LearningPathDetail'));
+export const LazyLearningPathDetail = lazy(() => import('@/pages/EnhancedLearningPathDetail'));
 export const LazyCodeExamples = lazy(() => import('@/pages/CodeExamples'));
 export const LazyDiscovery = lazy(() => import('@/pages/Discovery'));
 export const LazySurpriseMe = lazy(() => import('@/pages/SurpriseMe'));
 export const LazyPersonalizedHomepage = lazy(() => import('@/pages/PersonalizedHomepage'));
 export const LazyAISearch = lazy(() => import('@/pages/AISearch'));
 export const LazyThreeDVisualization = lazy(() => import('@/pages/3DVisualization'));
+
+// Support Center
+export const LazySupportCenter = lazy(() => import('@/components/support/SupportCenter').then(module => ({ default: module.SupportCenter })));
 
 // Legal pages
 export const LazyPrivacyPolicy = lazy(() => import('@/pages/PrivacyPolicy'));
@@ -93,6 +96,9 @@ export const LazySurpriseMePage = withLazyLoading(LazySurpriseMe);
 export const LazyPersonalizedHomepagePage = withLazyLoading(LazyPersonalizedHomepage);
 export const LazyAISearchPage = withLazyLoading(LazyAISearch);
 export const LazyThreeDVisualizationPage = withLazyLoading(LazyThreeDVisualization);
+
+// Support
+export const LazySupportCenterPage = withLazyLoading(LazySupportCenter);
 
 // Legal pages
 export const LazyPrivacyPolicyPage = withLazyLoading(LazyPrivacyPolicy);

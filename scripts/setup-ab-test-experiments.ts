@@ -5,6 +5,7 @@
  */
 
 import { config } from 'dotenv';
+
 config();
 
 // PostHog experiment configurations
@@ -17,14 +18,14 @@ const experiments = [
       { key: 'control', name: 'Basic Offer', rollout_percentage: 25 },
       { key: 'value_focused', name: 'Feature Benefits', rollout_percentage: 25 },
       { key: 'urgency', name: 'Time Limited', rollout_percentage: 25 },
-      { key: 'social_proof', name: 'Community Focus', rollout_percentage: 25 }
+      { key: 'social_proof', name: 'Community Focus', rollout_percentage: 25 },
     ],
     metrics: [
       'exit_intent_conversion',
       'exit_intent_cta_clicked',
       'signup_completed',
-      'upgrade_completed'
-    ]
+      'upgrade_completed',
+    ],
   },
   {
     key: 'trustBadgeStyle',
@@ -33,14 +34,9 @@ const experiments = [
     variants: [
       { key: 'minimal', name: 'Minimal Style', rollout_percentage: 33 },
       { key: 'detailed', name: 'Detailed Info', rollout_percentage: 33 },
-      { key: 'animated', name: 'Interactive', rollout_percentage: 34 }
+      { key: 'animated', name: 'Interactive', rollout_percentage: 34 },
     ],
-    metrics: [
-      'trust_badge_clicked',
-      'time_on_page',
-      'bounce_rate',
-      'conversion_rate'
-    ]
+    metrics: ['trust_badge_clicked', 'time_on_page', 'bounce_rate', 'conversion_rate'],
   },
   {
     key: 'trustBadgePlacement',
@@ -48,13 +44,9 @@ const experiments = [
     description: 'Test inline vs floating trust badge placement',
     variants: [
       { key: 'inline', name: 'Inline in Content', rollout_percentage: 50 },
-      { key: 'floating', name: 'Floating Widget', rollout_percentage: 50 }
+      { key: 'floating', name: 'Floating Widget', rollout_percentage: 50 },
     ],
-    metrics: [
-      'trust_badge_clicked',
-      'scroll_depth',
-      'engagement_rate'
-    ]
+    metrics: ['trust_badge_clicked', 'scroll_depth', 'engagement_rate'],
   },
   {
     key: 'floatingPricingVariant',
@@ -64,14 +56,14 @@ const experiments = [
       { key: 'control', name: 'Standard', rollout_percentage: 25 },
       { key: 'discount_focused', name: 'Discount Heavy', rollout_percentage: 25 },
       { key: 'urgency', name: 'Time Pressure', rollout_percentage: 25 },
-      { key: 'value', name: 'Value Focused', rollout_percentage: 25 }
+      { key: 'value', name: 'Value Focused', rollout_percentage: 25 },
     ],
     metrics: [
       'floating_pricing_clicked',
       'floating_pricing_dismissed',
       'pricing_page_visited',
-      'purchase_completed'
-    ]
+      'purchase_completed',
+    ],
   },
   {
     key: 'mediaLogosStyle',
@@ -81,13 +73,9 @@ const experiments = [
       { key: 'control', name: 'Static', rollout_percentage: 25 },
       { key: 'animated', name: 'Animated', rollout_percentage: 25 },
       { key: 'carousel', name: 'Auto-scroll', rollout_percentage: 25 },
-      { key: 'grid', name: 'Grid Layout', rollout_percentage: 25 }
+      { key: 'grid', name: 'Grid Layout', rollout_percentage: 25 },
     ],
-    metrics: [
-      'media_logo_clicked',
-      'section_engagement',
-      'trust_perception_score'
-    ]
+    metrics: ['media_logo_clicked', 'section_engagement', 'trust_perception_score'],
   },
   {
     key: 'mediaLogosPhrase',
@@ -97,13 +85,9 @@ const experiments = [
       { key: 'control', name: 'As Featured In', rollout_percentage: 25 },
       { key: 'authority', name: 'Industry Leaders', rollout_percentage: 25 },
       { key: 'social_proof', name: 'Join 10K+ Users', rollout_percentage: 25 },
-      { key: 'credibility', name: 'Recommended By', rollout_percentage: 25 }
+      { key: 'credibility', name: 'Recommended By', rollout_percentage: 25 },
     ],
-    metrics: [
-      'section_viewed',
-      'scroll_past_rate',
-      'conversion_influence'
-    ]
+    metrics: ['section_viewed', 'scroll_past_rate', 'conversion_influence'],
   },
   {
     key: 'mediaLogosPlacement',
@@ -113,14 +97,10 @@ const experiments = [
       { key: 'above_fold', name: 'Above Fold', rollout_percentage: 25 },
       { key: 'below_fold', name: 'Below Fold', rollout_percentage: 25 },
       { key: 'in_features', name: 'In Features', rollout_percentage: 25 },
-      { key: 'near_cta', name: 'Near CTA', rollout_percentage: 25 }
+      { key: 'near_cta', name: 'Near CTA', rollout_percentage: 25 },
     ],
-    metrics: [
-      'visibility_rate',
-      'interaction_rate',
-      'conversion_attribution'
-    ]
-  }
+    metrics: ['visibility_rate', 'interaction_rate', 'conversion_attribution'],
+  },
 ];
 
 // Conversion goals for each experiment
@@ -129,36 +109,36 @@ const conversionGoals = {
     {
       name: 'Signup Conversion',
       event: 'signup_completed',
-      description: 'User completes registration'
+      description: 'User completes registration',
     },
     {
       name: 'Upgrade Conversion',
       event: 'upgrade_completed',
-      description: 'User upgrades to paid plan'
+      description: 'User upgrades to paid plan',
     },
     {
       name: 'Trial Start',
       event: 'trial_started',
-      description: 'User starts free trial'
-    }
+      description: 'User starts free trial',
+    },
   ],
   secondary: [
     {
       name: 'Pricing Page Visit',
       event: 'pricing_page_viewed',
-      description: 'User visits pricing page'
+      description: 'User visits pricing page',
     },
     {
       name: 'Feature Engagement',
       event: 'feature_explored',
-      description: 'User interacts with key features'
+      description: 'User interacts with key features',
     },
     {
       name: 'Content Engagement',
       event: 'content_engaged',
-      description: 'User engages with content'
-    }
-  ]
+      description: 'User engages with content',
+    },
+  ],
 };
 
 // Sample tracking implementation
@@ -190,7 +170,7 @@ const handleConversion = () => {
 
 // Output experiment setup instructions
 console.log('🧪 A/B Test Experiment Setup Guide\n');
-console.log('=' .repeat(50));
+console.log('='.repeat(50));
 
 experiments.forEach((experiment, index) => {
   console.log(`\n${index + 1}. ${experiment.name}`);
@@ -208,7 +188,7 @@ experiments.forEach((experiment, index) => {
   console.log(generateTrackingCode(experiment));
 });
 
-console.log('\n' + '=' .repeat(50));
+console.log('\n' + '='.repeat(50));
 console.log('\n📊 Conversion Goals\n');
 
 console.log('Primary Goals:');
@@ -223,7 +203,7 @@ conversionGoals.secondary.forEach(goal => {
   console.log(`  ${goal.description}`);
 });
 
-console.log('\n' + '=' .repeat(50));
+console.log('\n' + '='.repeat(50));
 console.log('\n🚀 Implementation Steps:\n');
 console.log('1. Create feature flags in PostHog dashboard');
 console.log('2. Set up experiments with variants and rollout percentages');

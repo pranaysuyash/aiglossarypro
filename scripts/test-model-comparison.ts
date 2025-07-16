@@ -101,7 +101,7 @@ async function testModelComparisonFeature() {
       testTerm.id,
       testSection
     );
-    const selectedVersion = updatedVersions.find((v) => v.isSelected);
+    const selectedVersion = updatedVersions.find(v => v.isSelected);
 
     if (selectedVersion) {
       console.log(`✅ Selected version found:`, {
@@ -127,7 +127,7 @@ testModelComparisonFeature()
     console.log('\n✅ Test script completed');
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('❌ Test script failed:', error);
     process.exit(1);
   });

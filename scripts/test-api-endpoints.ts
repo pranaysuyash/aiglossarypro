@@ -115,7 +115,7 @@ async function runTests() {
   console.log('Endpoint                                          | Method | Status | Result');
   console.log('--------------------------------------------------|--------|--------|--------');
 
-  results.forEach((result) => {
+  results.forEach(result => {
     const endpoint = result.endpoint.padEnd(48);
     const method = result.method.padEnd(6);
     const status = result.status.toString().padEnd(6);
@@ -128,9 +128,9 @@ async function runTests() {
   });
 
   // Summary
-  const successful = results.filter((r) => r.success || r.status === 401).length;
-  const failed = results.filter((r) => !r.success && r.status !== 401).length;
-  const authRequired = results.filter((r) => r.status === 401).length;
+  const successful = results.filter(r => r.success || r.status === 401).length;
+  const failed = results.filter(r => !r.success && r.status !== 401).length;
+  const authRequired = results.filter(r => r.status === 401).length;
 
   console.log('\n📈 Summary:');
   console.log(`Total Endpoints Tested: ${results.length}`);

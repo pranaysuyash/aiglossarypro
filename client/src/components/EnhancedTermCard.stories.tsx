@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { IEnhancedTerm } from '@/interfaces/interfaces';
@@ -55,7 +54,7 @@ const meta: Meta<typeof EnhancedTermCard> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="w-full max-w-md p-4">
           <Story />
@@ -201,7 +200,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="w-full max-w-md p-4 dark">
           <Story />

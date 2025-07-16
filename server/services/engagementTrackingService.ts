@@ -127,40 +127,39 @@ class EngagementTrackingService {
       .where(eq(sql`${userInteractions.metadata}->>'sessionId'`, sessionId))
       .orderBy(desc(userInteractions.timestamp));
 
-    if (interactions.length === 0) return null;
+    if (interactions.length === 0) {return null;}
 
     const startTime = new Date(interactions[interactions.length - 1].timestamp);
     const endTime = new Date(interactions[0].timestamp);
     const totalDuration = (endTime.getTime() - startTime.getTime()) / 1000;
 
     // Calculate various engagement metrics
-    const pageViews = interactions.filter((i) => i.interactionType === 'view').length;
-    const uniqueTermsViewed = new Set(interactions.filter((i) => i.termId).map((i) => i.termId))
-      .size;
+    const pageViews = interactions.filter(i => i.interactionType === 'view').length;
+    const uniqueTermsViewed = new Set(interactions.filter(i => i.termId).map(i => i.termId)).size;
 
     const totalReadTime = interactions
-      .filter((i) => i.duration)
+      .filter(i => i.duration)
       .reduce((sum, i) => sum + (i.duration || 0), 0);
 
     const averageTimePerTerm = uniqueTermsViewed > 0 ? totalReadTime / uniqueTermsViewed : 0;
 
     // Calculate scroll depth (average from content interactions)
     const scrollDepths = interactions
-      .map((i) => i.metadata?.contentInfo?.scrollDepth)
-      .filter((depth) => typeof depth === 'number');
+      .map(i => i.metadata?.contentInfo?.scrollDepth)
+      .filter(depth => typeof depth === 'number');
     const scrollDepth =
       scrollDepths.length > 0
         ? scrollDepths.reduce((sum, depth) => sum + depth, 0) / scrollDepths.length
         : 0;
 
     const interactionCount = interactions.length;
-    const searchQueries = interactions.filter((i) => i.interactionType === 'search').length;
-    const favoritesAdded = interactions.filter((i) => i.interactionType === 'favorite').length;
-    const sharesCount = interactions.filter((i) => i.interactionType === 'share').length;
+    const searchQueries = interactions.filter(i => i.interactionType === 'search').length;
+    const favoritesAdded = interactions.filter(i => i.interactionType === 'favorite').length;
+    const sharesCount = interactions.filter(i => i.interactionType === 'share').length;
 
     // Calculate reading velocity
     const wordsRead = interactions
-      .map((i) => i.metadata?.contentInfo?.wordsRead || 0)
+      .map(i => i.metadata?.contentInfo?.wordsRead || 0)
       .reduce((sum, words) => sum + words, 0);
     const readingVelocity = totalReadTime > 0 ? (wordsRead / totalReadTime) * 60 : 0;
 
@@ -241,12 +240,12 @@ class EngagementTrackingService {
       .groupBy(terms.id, terms.name, categories.name);
 
     if (termIds && termIds.length > 0) {
-      query = query.where(sql`${terms.id} IN (${termIds.map((id) => `'${id}'`).join(',')})`);
+      query = query.where(sql`${terms.id} IN (${termIds.map(id => `'${id}'`).join(',')})`);
     }
 
     const results = await query.limit(100);
 
-    return results.map((result) => {
+    return results.map(result => {
       const averageReadTime =
         result.totalDuration && result.viewCount
           ? Number(result.totalDuration) / Number(result.viewCount)
@@ -340,7 +339,7 @@ class EngagementTrackingService {
     const contentPerformanceMetrics = {
       mostEngaging: sortedContent.slice(0, 5),
       needsImprovement: sortedContent.slice(-5).reverse(),
-      trending: sortedContent.filter((c) => c.popularityTrend === 'rising').slice(0, 5),
+      trending: sortedContent.filter(c => c.popularityTrend === 'rising').slice(0, 5),
     };
 
     return {
@@ -403,7 +402,7 @@ class EngagementTrackingService {
   }
 
   private async isReturnVisitor(userId: string): Promise<boolean> {
-    if (!userId || userId === 'anonymous') return false;
+    if (!userId || userId === 'anonymous') {return false;}
 
     const previousInteractions = await db
       .select({ count: count() })

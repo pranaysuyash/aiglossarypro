@@ -41,7 +41,7 @@ const isValidate = args.includes('--validate');
 const targetTerm = getCLIArg('--term') as string;
 const batchSize = parseInt(getCLIArg('--batch', '5') as string, 10);
 const specificSections = getCLIArg('--sections')
-  ? (getCLIArg('--sections') as string).split(',').map((s) => s.trim())
+  ? (getCLIArg('--sections') as string).split(',').map(s => s.trim())
   : [];
 const priorityLevel = getCLIArg('--priority') as 'high' | 'medium' | 'low' | '';
 
@@ -152,7 +152,7 @@ async function generate42Sections(): Promise<void> {
     const sectionsToGenerate = getSectionsToGenerate(specificSections, priorityLevel);
 
     logger.info(`Will generate ${sectionsToGenerate.length} sections per term`);
-    logger.info(`Sections: ${sectionsToGenerate.map((s) => s.sectionName).join(', ')}`);
+    logger.info(`Sections: ${sectionsToGenerate.map(s => s.sectionName).join(', ')}`);
 
     // Step 3: Generate content for each term
     for (const term of termsToProcess) {
@@ -176,7 +176,7 @@ async function generate42Sections(): Promise<void> {
           `  ✅ Completed ${termStats.sectionsGenerated} sections (${termStats.totalWords} words)`
         );
       } catch (error) {
-        logger.error(`Error processing term ${term.name}:`, error);
+        logger.error(`Error processing term ${term.name}:`, error as Record<string, unknown>);
         stats.errors++;
       }
     }
@@ -189,7 +189,7 @@ async function generate42Sections(): Promise<void> {
 
     reportGenerationStats(stats);
   } catch (error) {
-    logger.error('Fatal error in 42-section generation:', error);
+    logger.error('Fatal error in 42-section generation:', error as Record<string, unknown>);
     process.exit(1);
   }
 }
@@ -227,7 +227,7 @@ function getSectionsToGenerate(
 
   // Filter by specific sections if provided
   if (specificSections.length > 0) {
-    sectionsToGenerate = sectionsToGenerate.filter((section) =>
+    sectionsToGenerate = sectionsToGenerate.filter(section =>
       specificSections.includes(section.sectionName)
     );
   }
@@ -235,7 +235,7 @@ function getSectionsToGenerate(
   // Filter by priority level if provided
   if (priorityLevel && SECTION_PRIORITIES[priorityLevel as keyof typeof SECTION_PRIORITIES]) {
     const prioritySections = SECTION_PRIORITIES[priorityLevel as keyof typeof SECTION_PRIORITIES];
-    sectionsToGenerate = sectionsToGenerate.filter((section) =>
+    sectionsToGenerate = sectionsToGenerate.filter(section =>
       prioritySections.includes(section.sectionName)
     );
   }
@@ -319,7 +319,7 @@ async function generateContentForTerm(
       }
     } catch (error) {
       termStats.errors++;
-      logger.error(`      ❌ Error generating ${section.sectionName}:`, error);
+      logger.error(`      ❌ Error generating ${section.sectionName}:`, error as Record<string, unknown>);
     }
   }
 
@@ -346,7 +346,7 @@ async function generateSectionContent(
 
     return enhancedContent;
   } catch (error) {
-    logger.error(`Error generating content for section ${section.sectionName}:`, error);
+    logger.error(`Error generating content for section ${section.sectionName}:`, error as Record<string, unknown>);
     return null;
   }
 }
@@ -423,7 +423,7 @@ function enhanceStructuredContent(content: string, section: ContentSection): str
  */
 function enhanceListContent(content: string, _section: ContentSection): string {
   // Ensure list format for sections that should be lists
-  const lines = content.split('\n').filter((line) => line.trim());
+  const lines = content.split('\n').filter(line => line.trim());
 
   if (
     lines.length > 1 &&
@@ -446,9 +446,9 @@ function enhanceAIParseContent(content: string, section: ContentSection): string
     // Ensure tag-like format
     const tags = content
       .split(/[,\n]/)
-      .map((tag) => tag.trim())
-      .filter((tag) => tag);
-    return tags.map((tag) => `#${tag.replace(/^#/, '')}`).join(', ');
+      .map(tag => tag.trim())
+      .filter(tag => tag);
+    return tags.map(tag => `#${tag.replace(/^#/, '')}`).join(', ');
   }
 
   return content;
@@ -514,7 +514,7 @@ async function saveGeneratedContent(generatedContent: GeneratedContent): Promise
 
     // Find the section configuration to get display type and priority
     const sectionConfig = COMPLETE_CONTENT_SECTIONS.find(
-      (section) => section.sectionName === generatedContent.sectionName
+      section => section.sectionName === generatedContent.sectionName
     );
 
     if (!sectionConfig) {
@@ -552,7 +552,7 @@ async function saveGeneratedContent(generatedContent: GeneratedContent): Promise
       `✅ Saved section: ${generatedContent.sectionName} (${generatedContent.wordCount} words)`
     );
   } catch (error) {
-    logger.error(`❌ Error saving section ${generatedContent.sectionName}:`, error);
+    logger.error(`❌ Error saving section ${generatedContent.sectionName}:`, error as Record<string, unknown>);
     throw error;
   }
 }
@@ -686,7 +686,7 @@ function reportGenerationStats(stats: GenerationStats): void {
  * Main execution
  */
 if (require.main === module) {
-  generate42Sections().catch((error) => {
+  generate42Sections().catch(error => {
     logger.error('42-section generation failed:', error);
     process.exit(1);
   });

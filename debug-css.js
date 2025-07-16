@@ -9,19 +9,19 @@ async function debugCSS() {
   console.log('🔍 Debugging CSS and rendering...');
 
   // Listen for all requests
-  page.on('request', (request) => {
+  page.on('request', request => {
     console.log(`→ ${request.method()} ${request.url()}`);
   });
 
   // Listen for failed requests
-  page.on('requestfailed', (request) => {
+  page.on('requestfailed', request => {
     console.error(
       `❌ Failed: ${request.method()} ${request.url()} - ${request.failure()?.errorText}`
     );
   });
 
   // Listen for console errors
-  page.on('console', (msg) => {
+  page.on('console', msg => {
     if (msg.type() === 'error') {
       console.error(`🚨 Console Error: ${msg.text()}`);
     }
@@ -39,8 +39,8 @@ async function debugCSS() {
     await page.waitForTimeout(3000);
 
     // Check if CSS is loaded
-    const styles = await page.$$eval('link[rel="stylesheet"], style', (elements) =>
-      elements.map((el) => ({
+    const styles = await page.$$eval('link[rel="stylesheet"], style', elements =>
+      elements.map(el => ({
         type: el.tagName,
         href: el.href || 'inline',
         loaded: el.sheet !== null,
@@ -66,9 +66,9 @@ async function debugCSS() {
     // Check for clipboard icons specifically
     const clipboardElements = await page.$$eval(
       '*',
-      (elements) =>
+      elements =>
         elements.filter(
-          (el) =>
+          el =>
             el.textContent?.includes('📋') ||
             el.innerHTML?.includes('clipboard') ||
             el.className?.includes('clipboard')

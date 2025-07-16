@@ -1,24 +1,30 @@
 import { Search, TrendingUp } from 'lucide-react';
 import { useEffect } from 'react';
 import { Link } from 'wouter';
-import { SAMPLE_TERMS } from '../data/sampleTerms';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../components/ui/card';
+import { SAMPLE_TERMS } from '../data/sampleTerms';
 
 export default function SampleTerms() {
   // Set SEO metadata for the sample terms index page
   useEffect(() => {
     document.title = 'Free AI/ML Sample Terms | AI Glossary Pro';
-    
+
     const metaDescription = document.querySelector('meta[name="description"]');
     if (metaDescription) {
-      metaDescription.setAttribute('content', 'Explore our curated collection of AI and Machine Learning definitions. Free sample terms from our comprehensive 10,000+ term glossary.');
+      metaDescription.setAttribute(
+        'content',
+        'Explore our curated collection of AI and Machine Learning definitions. Free sample terms from our comprehensive 10,000+ term glossary.'
+      );
     }
 
     const metaKeywords = document.querySelector('meta[name="keywords"]');
     if (metaKeywords) {
-      metaKeywords.setAttribute('content', 'AI glossary, machine learning definitions, artificial intelligence terms, free AI dictionary, sample terms');
+      metaKeywords.setAttribute(
+        'content',
+        'AI glossary, machine learning definitions, artificial intelligence terms, free AI dictionary, sample terms'
+      );
     }
   }, []);
 
@@ -35,13 +41,16 @@ export default function SampleTerms() {
     }
   };
 
-  const groupedTerms = SAMPLE_TERMS.reduce((acc, term) => {
-    if (!acc[term.category]) {
-      acc[term.category] = [];
-    }
-    acc[term.category].push(term);
-    return acc;
-  }, {} as Record<string, typeof SAMPLE_TERMS>);
+  const groupedTerms = SAMPLE_TERMS.reduce(
+    (acc, term) => {
+      if (!acc[term.category]) {
+        acc[term.category] = [];
+      }
+      acc[term.category].push(term);
+      return acc;
+    },
+    {} as Record<string, typeof SAMPLE_TERMS>
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900">
@@ -55,7 +64,7 @@ export default function SampleTerms() {
             <p className="text-xl text-gray-600 dark:text-gray-400 mb-6">
               Explore our curated collection of essential AI and Machine Learning definitions
             </p>
-            
+
             {/* Stats */}
             <div className="flex items-center justify-center space-x-8 mb-6">
               <div className="text-center">
@@ -71,9 +80,7 @@ export default function SampleTerms() {
                 <div className="text-sm text-gray-600 dark:text-gray-400">Total Terms</div>
               </div>
               <div className="text-center">
-                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
-                  50
-                </div>
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">50</div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">Daily Free Access</div>
               </div>
             </div>
@@ -84,16 +91,15 @@ export default function SampleTerms() {
                 Want Access to All 10,000+ Terms?
               </h3>
               <p className="text-gray-600 dark:text-gray-400 mb-4">
-                Create a free account to access 50 terms daily, or upgrade for unlimited lifetime access
+                Create a free account to access 50 terms daily, or upgrade for unlimited lifetime
+                access
               </p>
               <div className="flex items-center justify-center space-x-4">
                 <Button className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white">
                   <Search className="w-4 h-4 mr-2" />
                   Start Free Account
                 </Button>
-                <Button variant="outline">
-                  Learn More
-                </Button>
+                <Button variant="outline">Learn More</Button>
               </div>
             </div>
           </div>
@@ -108,35 +114,43 @@ export default function SampleTerms() {
               <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mr-3">
                 {category}
               </h2>
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200">
+              <Badge
+                variant="outline"
+                className="bg-blue-50 text-blue-700 dark:bg-blue-900 dark:text-blue-200"
+              >
                 {terms.length} term{terms.length !== 1 ? 's' : ''}
               </Badge>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {terms.map((term) => (
-                <Card key={term.id} className="border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 hover:shadow-lg">
+              {terms.map(term => (
+                <Card
+                  key={term.id}
+                  className="border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-all duration-200 hover:shadow-lg"
+                >
                   <CardHeader className="pb-3">
                     <div className="flex items-start justify-between">
                       <CardTitle className="text-lg text-gray-900 dark:text-gray-100 leading-tight">
                         {term.title}
                       </CardTitle>
-                      <Badge className={`ml-2 text-xs ${getComplexityColor(term.complexity)} flex-shrink-0`}>
+                      <Badge
+                        className={`ml-2 text-xs ${getComplexityColor(term.complexity)} flex-shrink-0`}
+                      >
                         {term.complexity}
                       </Badge>
                     </div>
                   </CardHeader>
-                  
+
                   <CardContent>
                     <CardDescription className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3">
                       {term.definition.slice(0, 150)}...
                     </CardDescription>
-                    
+
                     {/* Tags */}
                     <div className="flex flex-wrap gap-1 mb-4">
                       {term.tags.slice(0, 3).map((tag, index) => (
-                        <Badge 
-                          key={index} 
+                        <Badge
+                          key={index}
                           variant="secondary"
                           className="text-xs bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300"
                         >
@@ -144,12 +158,15 @@ export default function SampleTerms() {
                         </Badge>
                       ))}
                       {term.tags.length > 3 && (
-                        <Badge variant="secondary" className="text-xs bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400">
+                        <Badge
+                          variant="secondary"
+                          className="text-xs bg-gray-100 text-gray-500 dark:bg-gray-700 dark:text-gray-400"
+                        >
                           +{term.tags.length - 3}
                         </Badge>
                       )}
                     </div>
-                    
+
                     {/* Actions */}
                     <div className="flex items-center justify-between">
                       <Link href={`/sample/${term.slug}`}>
@@ -157,7 +174,7 @@ export default function SampleTerms() {
                           Read Definition
                         </Button>
                       </Link>
-                      
+
                       <div className="flex items-center text-xs text-gray-500 dark:text-gray-400">
                         <TrendingUp className="w-3 h-3 mr-1" />
                         Popular
@@ -176,12 +193,12 @@ export default function SampleTerms() {
             Ready to Explore More?
           </h3>
           <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto">
-            These {SAMPLE_TERMS.length} terms are just a tiny sample of our comprehensive AI/ML glossary. 
-            Get access to 10,000+ definitions, examples, and use cases.
+            These {SAMPLE_TERMS.length} terms are just a tiny sample of our comprehensive AI/ML
+            glossary. Get access to 10,000+ definitions, examples, and use cases.
           </p>
-          
+
           <div className="flex items-center justify-center space-x-4">
-            <Button 
+            <Button
               size="lg"
               className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white"
             >
@@ -192,7 +209,7 @@ export default function SampleTerms() {
               View Pricing
             </Button>
           </div>
-          
+
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-4">
             ✅ 50 terms per day • ✅ No credit card required • ✅ Instant access
           </p>

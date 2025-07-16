@@ -1,5 +1,5 @@
-import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { expect, test } from '@playwright/test';
 
 test.describe('Accessibility Compliance', () => {
   test.beforeEach(async ({ page }) => {
@@ -17,18 +17,12 @@ test.describe('Accessibility Compliance', () => {
     });
 
     test('should pass axe-core scan on key application pages', async ({ page }) => {
-      const keyPages = [
-        '/',
-        '/terms',
-        '/categories',
-        '/search',
-        '/about'
-      ];
+      const keyPages = ['/', '/terms', '/categories', '/search', '/about'];
 
       for (const pagePath of keyPages) {
         await page.goto(pagePath);
         await page.waitForLoadState('networkidle');
-        
+
         const accessibilityScanResults = await new AxeBuilder({ page })
           .withTags(['wcag2a', 'wcag2aa', 'wcag21aa'])
           .exclude('[data-test-exclude-axe]') // Allow excluding problematic third-party content
@@ -48,7 +42,7 @@ test.describe('Accessibility Compliance', () => {
         const criticalViolations = accessibilityScanResults.violations.filter(
           violation => violation.impact === 'critical' || violation.impact === 'serious'
         );
-        
+
         expect(criticalViolations).toEqual([]);
       }
     });
@@ -77,7 +71,7 @@ test.describe('Accessibility Compliance', () => {
       while (attempts < maxAttempts) {
         const focusedElement = page.locator(':focus');
         if ((await focusedElement.count()) > 0) {
-          const tagName = await focusedElement.evaluate((el) => el.tagName);
+          const tagName = await focusedElement.evaluate(el => el.tagName);
           const id = await focusedElement.getAttribute('id');
           const testId = await focusedElement.getAttribute('data-testid');
           const role = await focusedElement.getAttribute('role');
@@ -101,7 +95,7 @@ test.describe('Accessibility Compliance', () => {
 
       // Check for essential navigation elements
       const essentialElements = ['button', 'a', 'input'];
-      const foundEssential = focusableElements.some((el) =>
+      const foundEssential = focusableElements.some(el =>
         essentialElements.includes(el.tagName.toLowerCase())
       );
       expect(foundEssential).toBe(true);
@@ -124,7 +118,7 @@ test.describe('Accessibility Compliance', () => {
           await page.waitForTimeout(500);
 
           // Test Space key (for buttons)
-          if (await element.evaluate((el) => el.tagName === 'BUTTON')) {
+          if (await element.evaluate(el => el.tagName === 'BUTTON')) {
             await element.focus();
             await page.keyboard.press(' ');
             await page.waitForTimeout(500);
@@ -246,7 +240,7 @@ test.describe('Accessibility Compliance', () => {
 
       // Check that headings have meaningful content
       const meaningfulHeadings = headings.filter(
-        (heading) =>
+        heading =>
           heading.trim().length > 2 && !heading.includes('undefined') && !heading.includes('null')
       );
 
@@ -359,7 +353,7 @@ test.describe('Accessibility Compliance', () => {
       // Check that text has proper styling
       const textElements = page.locator('p, span, div').first();
       if ((await textElements.count()) > 0) {
-        const styles = await textElements.evaluate((el) => {
+        const styles = await textElements.evaluate(el => {
           const computed = window.getComputedStyle(el);
           return {
             color: computed.color,
@@ -380,7 +374,7 @@ test.describe('Accessibility Compliance', () => {
       const zoomLevels = [1.5, 2.0];
 
       for (const zoom of zoomLevels) {
-        await page.evaluate((zoomLevel) => {
+        await page.evaluate(zoomLevel => {
           document.body.style.zoom = zoomLevel.toString();
         }, zoom);
 
@@ -451,7 +445,7 @@ test.describe('Accessibility Compliance', () => {
 
           const focusedElement = page.locator(':focus');
           if ((await focusedElement.count()) > 0) {
-            const isInModal = await focusedElement.evaluate((el) => {
+            const isInModal = await focusedElement.evaluate(el => {
               const modal = el.closest('[role="dialog"], .modal, [data-testid*="modal"]');
               return modal !== null;
             });
@@ -479,7 +473,7 @@ test.describe('Accessibility Compliance', () => {
         const focusedElement = page.locator(':focus');
         if ((await focusedElement.count()) > 0) {
           // Check if element has focus styling
-          const styles = await focusedElement.evaluate((el) => {
+          const styles = await focusedElement.evaluate(el => {
             const computed = window.getComputedStyle(el);
             return {
               outline: computed.outline,

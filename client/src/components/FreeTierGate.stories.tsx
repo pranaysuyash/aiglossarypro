@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { FreeTierGate } from './FreeTierGate';
@@ -18,12 +17,13 @@ const meta: Meta<typeof FreeTierGate> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Access control component that shows premium content gates for free tier users with upgrade prompts and usage tracking.',
+        component:
+          'Access control component that shows premium content gates for free tier users with upgrade prompts and usage tracking.',
       },
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="max-w-2xl mx-auto p-6">
           <Story />
@@ -56,10 +56,16 @@ const sampleContent = (
   <div className="space-y-4">
     <h2 className="text-2xl font-bold">Machine Learning</h2>
     <p>
-      Machine Learning is a subset of artificial intelligence (AI) that provides systems the ability to automatically learn and improve from experience without being explicitly programmed. Machine learning focuses on the development of computer programs that can access data and use it to learn for themselves.
+      Machine Learning is a subset of artificial intelligence (AI) that provides systems the ability
+      to automatically learn and improve from experience without being explicitly programmed.
+      Machine learning focuses on the development of computer programs that can access data and use
+      it to learn for themselves.
     </p>
     <p>
-      The process of learning begins with observations or data, such as examples, direct experience, or instruction, in order to look for patterns in data and make better decisions in the future based on the examples that we provide. The primary aim is to allow the computers to learn automatically without human intervention or assistance and adjust actions accordingly.
+      The process of learning begins with observations or data, such as examples, direct experience,
+      or instruction, in order to look for patterns in data and make better decisions in the future
+      based on the examples that we provide. The primary aim is to allow the computers to learn
+      automatically without human intervention or assistance and adjust actions accordingly.
     </p>
     <h3 className="text-xl font-semibold">Key Characteristics</h3>
     <ul className="list-disc list-inside space-y-2">
@@ -209,7 +215,7 @@ export const ShortContent: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Gate with short content that doesn\'t exceed the preview length.',
+        story: "Gate with short content that doesn't exceed the preview length.",
       },
     },
   },
@@ -222,7 +228,7 @@ export const MobileView: Story = {
     showPreview: true,
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="max-w-sm mx-auto p-4">
         <Story />
       </div>

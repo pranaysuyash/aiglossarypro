@@ -17,7 +17,7 @@ interface TermSuggestion {
 interface AITermSuggestionsProps {
   onSuggestionSelect?: (suggestion: TermSuggestion) => void;
   focusCategory?: string;
-  className?: string;
+  className?: string | undefined;
 }
 
 export function AITermSuggestions({
@@ -36,7 +36,7 @@ export function AITermSuggestions({
     queryKey: ['categories'],
     queryFn: async () => {
       const response = await fetch('/api/categories');
-      if (!response.ok) throw new Error('Failed to fetch categories');
+      if (!response.ok) {throw new Error('Failed to fetch categories');}
       return response.json();
     },
   });
@@ -70,11 +70,11 @@ export function AITermSuggestions({
       } else {
         throw new Error(result.error || 'Failed to generate suggestions');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error generating suggestions:', error);
       toast({
         title: 'Error',
-        description: error instanceof Error ? error.message : 'Failed to generate suggestions',
+        description: error instanceof Error ? error?.message : 'Failed to generate suggestions',
         variant: 'destructive',
       });
       setSuggestions([]);
@@ -109,7 +109,7 @@ export function AITermSuggestions({
               <label className="text-sm font-medium">Focus Category (Optional)</label>
               <Select
                 value={selectedCategory || 'all'}
-                onValueChange={(value) => setSelectedCategory(value === 'all' ? '' : value)}
+                onValueChange={value => setSelectedCategory(value === 'all' ? '' : value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="All categories" />

@@ -77,7 +77,7 @@ router.get('/list-files', authMiddleware, tokenMiddleware, adminMiddleware, asyn
 
     res.json({
       success: true,
-      files: files.map((file) => ({
+      files: files.map(file => ({
         key: file.key,
         size: file.size,
         lastModified: file.lastModified?.toISOString() || new Date().toISOString(),

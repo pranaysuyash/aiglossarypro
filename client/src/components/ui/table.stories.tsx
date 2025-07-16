@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
 import { Badge } from './badge';
 import { Button } from './button';
 import { Checkbox } from './checkbox';
@@ -220,13 +219,13 @@ export const WithSelection: Story = {
     const [selectedRows, setSelectedRows] = React.useState<string[]>([]);
 
     const toggleRow = (id: string) => {
-      setSelectedRows((prev) =>
-        prev.includes(id) ? prev.filter((rowId) => rowId !== id) : [...prev, id]
+      setSelectedRows(prev =>
+        prev.includes(id) ? prev.filter(rowId => rowId !== id) : [...prev, id]
       );
     };
 
     const toggleAll = () => {
-      setSelectedRows((prev) => (prev.length === 5 ? [] : ['1', '2', '3', '4', '5']));
+      setSelectedRows(prev => (prev.length === 5 ? [] : ['1', '2', '3', '4', '5']));
     };
 
     return (
@@ -281,7 +280,7 @@ export const WithSelection: Story = {
                 date: '2024-01-11',
                 score: 94,
               },
-            ].map((row) => (
+            ].map(row => (
               <TableRow key={row.id} data-state={selectedRows.includes(row.id) ? 'selected' : ''}>
                 <TableCell>
                   <Checkbox

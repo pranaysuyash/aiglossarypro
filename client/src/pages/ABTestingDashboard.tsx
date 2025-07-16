@@ -96,7 +96,6 @@ export function ABTestingDashboard() {
       const interval = setInterval(fetchActiveTest, 30000); // Refresh every 30 seconds
       return () => clearInterval(interval);
     }
-     
   }, [autoRefresh]);
 
   const fetchActiveTest = async () => {
@@ -106,7 +105,7 @@ export function ABTestingDashboard() {
         const data = await response.json();
         setActiveTest(data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch A/B test data:', error);
     } finally {
       setLoading(false);
@@ -115,12 +114,12 @@ export function ABTestingDashboard() {
 
   // Calculate conversion funnel data
   const getFunnelData = () => {
-    if (!activeTest) return [];
+    if (!activeTest) {return [];}
 
     return activeTest.variants
-      .map((variant) => {
-        const metrics = activeTest.metrics.find((m) => m.variant === variant);
-        if (!metrics) return null;
+      .map(variant => {
+        const metrics = activeTest.metrics.find(m => m.variant === variant);
+        if (!metrics) {return null;}
 
         return {
           variant,
@@ -151,11 +150,11 @@ export function ABTestingDashboard() {
 
   // Calculate device breakdown
   const getDeviceData = () => {
-    if (!activeTest) return [];
+    if (!activeTest) {return [];}
 
     const deviceTotals: Record<string, number> = {};
 
-    activeTest.metrics.forEach((metric) => {
+    activeTest.metrics.forEach(metric => {
       const breakdown = metric.deviceBreakdown as Record<string, number>;
       Object.entries(breakdown).forEach(([device, count]) => {
         deviceTotals[device] = (deviceTotals[device] || 0) + count;
@@ -229,7 +228,7 @@ export function ABTestingDashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            {activeTest.metrics.map((metric) => (
+            {activeTest.metrics.map(metric => (
               <div key={metric.variant} className="space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-medium capitalize">{metric.variant}</span>
@@ -320,7 +319,7 @@ export function ABTestingDashboard() {
                   <YAxis />
                   <Tooltip />
                   <Legend />
-                  {activeTest.variants.map((variant) => (
+                  {activeTest.variants.map(variant => (
                     <Line
                       key={variant}
                       type="monotone"
@@ -372,7 +371,7 @@ export function ABTestingDashboard() {
                 </ResponsiveContainer>
 
                 <div className="space-y-4">
-                  {activeTest.metrics.map((metric) => (
+                  {activeTest.metrics.map(metric => (
                     <div key={metric.variant} className="space-y-2">
                       <h4 className="font-medium capitalize">{metric.variant} Variant</h4>
                       <div className="space-y-1">

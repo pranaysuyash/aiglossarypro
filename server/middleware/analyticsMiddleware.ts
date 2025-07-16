@@ -32,7 +32,6 @@ export function performanceTrackingMiddleware() {
       req.ip ||
       (req.headers['x-forwarded-for'] as string) ||
       (req.headers['x-real-ip'] as string) ||
-      req.connection.remoteAddress ||
       req.socket.remoteAddress ||
       'unknown';
 
@@ -40,7 +39,7 @@ export function performanceTrackingMiddleware() {
     req.sessionId =
       (req.headers['x-session-id'] as string) ||
       (req as any).sessionID ||
-      `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      `session_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`;
 
     // Override res.end to capture response data
     const originalEnd = res.end.bind(res);
@@ -67,7 +66,7 @@ export function performanceTrackingMiddleware() {
       setImmediate(() => {
         analyticsService
           .trackPerformance(endpoint, method, responseTime, statusCode, memoryUsageMb, cpuPercent)
-          .catch((error) => {
+          .catch(error => {
             errorLogger.logError(error, req, ErrorCategory.UNKNOWN, 'medium');
           });
       });
@@ -99,7 +98,7 @@ export function pageViewTrackingMiddleware() {
       setImmediate(() => {
         analyticsService
           .trackPageView(page, termId, req.userIp, referrer, userAgent)
-          .catch((error) => {
+          .catch(error => {
             errorLogger.logError(error, req, ErrorCategory.UNKNOWN, 'medium');
           });
       });
@@ -137,7 +136,7 @@ export function searchTrackingMiddleware() {
           setImmediate(() => {
             analyticsService
               .trackSearch(query, resultsCount, responseTime, req.userIp)
-              .catch((error) => {
+              .catch(error => {
                 errorLogger.logError(error, req, ErrorCategory.UNKNOWN, 'medium');
               });
           });
@@ -162,7 +161,7 @@ export function trackUserInteraction(action: 'favorite' | 'share' | 'feedback' |
     setImmediate(() => {
       analyticsService
         .trackUserInteraction(action, termId, undefined, req.userIp, req.sessionId)
-        .catch((error) => {
+        .catch(error => {
           errorLogger.logError(error, req, ErrorCategory.UNKNOWN, 'medium');
         });
     });

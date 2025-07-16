@@ -21,9 +21,9 @@ const MermaidSkeleton = ({ height = 200 }: { height?: number }) => (
 
 interface LazyMermaidProps {
   diagram: string;
-  title?: string;
-  description?: string;
-  className?: string;
+  title?: string | undefined;
+  description?: string | undefined;
+  className?: string | undefined;
 }
 
 export function LazyMermaid({ diagram, title, description, className }: LazyMermaidProps) {

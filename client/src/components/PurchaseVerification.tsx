@@ -1,5 +1,10 @@
 import { AlertCircle, CheckCircle, Loader2, Mail } from 'lucide-react';
 import { useState } from 'react';
+import type {
+  ApiResponse,
+  AuthResponse,
+  PurchaseVerificationResponse,
+} from '@/types/api-responses';
 import { api } from '../lib/api';
 import { Alert, AlertDescription } from './ui/alert';
 import { Badge } from './ui/badge';
@@ -9,7 +14,7 @@ import { Input } from './ui/input';
 
 interface PurchaseVerificationProps {
   onVerified?: () => void;
-  className?: string;
+  className?: string | undefined;
 }
 
 interface VerificationResult {
@@ -47,13 +52,15 @@ export function PurchaseVerification({ onVerified, className = '' }: PurchaseVer
     setResult(null);
 
     try {
-      const response = await api.post('/gumroad/verify-purchase', { email: email.trim() });
+      const response: ApiResponse = await api.post('/gumroad/verify-purchase', {
+        email: email.trim(),
+      });
 
       if (response.data?.success) {
         setResult({
           success: true,
-          message: response.data.message || 'Verification successful',
-          user: response.data.user,
+          message: response.data?.message || 'Verification successful',
+          user: response.data?.user,
         });
 
         // Call onVerified callback if provided
@@ -173,7 +180,7 @@ export function PurchaseVerification({ onVerified, className = '' }: PurchaseVer
                 type="email"
                 placeholder="your.email@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={e => setEmail(e.target.value)}
                 disabled={isVerifying}
                 required
               />

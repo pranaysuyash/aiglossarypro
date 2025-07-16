@@ -1,8 +1,9 @@
 #!/usr/bin/env tsx
+
 /**
  * Launch Readiness Validation Script
  * Comprehensive security and performance validation for AI Glossary Pro
- * 
+ *
  * This script performs:
  * 1. Security validation (authentication, rate limiting, input sanitization)
  * 2. Performance benchmarks (load times, API response times, database queries)
@@ -10,10 +11,10 @@
  * 4. Final launch readiness report
  */
 
-import { execSync } from 'child_process';
-import { readFileSync, writeFileSync, existsSync } from 'fs';
-import { join } from 'path';
 import axios from 'axios';
+import { execSync } from 'child_process';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
 import { performance } from 'perf_hooks';
 
 interface ValidationResult {
@@ -62,7 +63,7 @@ class LaunchReadinessValidator {
 
   constructor() {
     console.log('🚀 AI Glossary Pro Launch Readiness Validation');
-    console.log('=' .repeat(60));
+    console.log('='.repeat(60));
   }
 
   private addResult(result: ValidationResult) {
@@ -77,7 +78,7 @@ class LaunchReadinessValidator {
   private async startServer(): Promise<boolean> {
     try {
       console.log('🔧 Starting server for validation...');
-      
+
       // Check if server is already running
       try {
         const response = await axios.get(`${this.baseUrl}/api/health`, { timeout: 5000 });
@@ -91,15 +92,15 @@ class LaunchReadinessValidator {
       }
 
       // Start the server in the background
-      const serverProcess = execSync('npm run dev &', { 
+      const serverProcess = execSync('npm run dev &', {
         stdio: 'ignore',
-        detached: true 
+        detached: true,
       });
-      
+
       // Wait for server to be ready
       let attempts = 0;
       const maxAttempts = 30;
-      
+
       while (attempts < maxAttempts) {
         try {
           await new Promise(resolve => setTimeout(resolve, 2000));
@@ -114,7 +115,7 @@ class LaunchReadinessValidator {
           console.log(`⏳ Waiting for server... (${attempts}/${maxAttempts})`);
         }
       }
-      
+
       console.log('❌ Failed to start server');
       return false;
     } catch (error) {
@@ -125,7 +126,7 @@ class LaunchReadinessValidator {
 
   private async validateDependencies(): Promise<void> {
     console.log('\\n📦 Validating Dependencies...');
-    
+
     try {
       // Check package.json exists
       if (!existsSync('package.json')) {
@@ -133,7 +134,7 @@ class LaunchReadinessValidator {
           category: 'Dependencies',
           test: 'Package.json exists',
           status: 'FAIL',
-          details: 'package.json not found'
+          details: 'package.json not found',
         });
         return;
       }
@@ -141,8 +142,15 @@ class LaunchReadinessValidator {
       // Check for critical dependencies
       const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
       const criticalDeps = [
-        'express', 'react', 'react-dom', 'drizzle-orm', 'firebase',
-        'dompurify', 'helmet', 'express-rate-limit', 'axios'
+        'express',
+        'react',
+        'react-dom',
+        'drizzle-orm',
+        'firebase',
+        'dompurify',
+        'helmet',
+        'express-rate-limit',
+        'axios',
       ];
 
       for (const dep of criticalDeps) {
@@ -151,14 +159,14 @@ class LaunchReadinessValidator {
             category: 'Dependencies',
             test: `${dep} installed`,
             status: 'PASS',
-            details: `Version: ${packageJson.dependencies[dep] || packageJson.devDependencies[dep]}`
+            details: `Version: ${packageJson.dependencies[dep] || packageJson.devDependencies[dep]}`,
           });
         } else {
           this.addResult({
             category: 'Dependencies',
             test: `${dep} installed`,
             status: 'FAIL',
-            details: 'Critical dependency missing'
+            details: 'Critical dependency missing',
           });
         }
       }
@@ -167,24 +175,26 @@ class LaunchReadinessValidator {
       try {
         const auditOutput = execSync('npm audit --json', { encoding: 'utf8' });
         const audit = JSON.parse(auditOutput);
-        
+
         if (audit.vulnerabilities && Object.keys(audit.vulnerabilities).length > 0) {
-          const highVulns = Object.values(audit.vulnerabilities).filter((v: any) => v.severity === 'high' || v.severity === 'critical');
-          
+          const highVulns = Object.values(audit.vulnerabilities).filter(
+            (v: any) => v.severity === 'high' || v.severity === 'critical'
+          );
+
           if (highVulns.length > 0) {
             this.addResult({
               category: 'Dependencies',
               test: 'Security vulnerabilities',
               status: 'FAIL',
               details: `Found ${highVulns.length} high/critical vulnerabilities`,
-              recommendations: ['Run npm audit fix', 'Update vulnerable packages']
+              recommendations: ['Run npm audit fix', 'Update vulnerable packages'],
             });
           } else {
             this.addResult({
               category: 'Dependencies',
               test: 'Security vulnerabilities',
               status: 'PASS',
-              details: 'No high/critical vulnerabilities found'
+              details: 'No high/critical vulnerabilities found',
             });
           }
         } else {
@@ -192,7 +202,7 @@ class LaunchReadinessValidator {
             category: 'Dependencies',
             test: 'Security vulnerabilities',
             status: 'PASS',
-            details: 'No vulnerabilities found'
+            details: 'No vulnerabilities found',
           });
         }
       } catch (error) {
@@ -200,39 +210,42 @@ class LaunchReadinessValidator {
           category: 'Dependencies',
           test: 'Security vulnerabilities',
           status: 'WARNING',
-          details: 'Could not run security audit'
+          details: 'Could not run security audit',
         });
       }
-
     } catch (error) {
       this.addResult({
         category: 'Dependencies',
         test: 'Dependency validation',
         status: 'FAIL',
-        details: `Error: ${error.message}`
+        details: `Error: ${error.message}`,
       });
     }
   }
 
   private async validateSecurity(): Promise<void> {
     console.log('\\n🔒 Validating Security...');
-    
+
     if (!this.isServerRunning) {
       this.addResult({
         category: 'Security',
         test: 'Server availability',
         status: 'FAIL',
-        details: 'Server not running - cannot test security'
+        details: 'Server not running - cannot test security',
       });
       return;
     }
 
     // Test authentication endpoints
     try {
-      const authResponse = await axios.post(`${this.baseUrl}/api/auth/login`, {
-        email: 'invalid@test.com',
-        password: 'invalid'
-      }, { timeout: 5000 });
+      const authResponse = await axios.post(
+        `${this.baseUrl}/api/auth/login`,
+        {
+          email: 'invalid@test.com',
+          password: 'invalid',
+        },
+        { timeout: 5000 }
+      );
 
       // Should get 401 or 400 for invalid credentials
       if (authResponse.status === 401 || authResponse.status === 400) {
@@ -240,14 +253,14 @@ class LaunchReadinessValidator {
           category: 'Security',
           test: 'Authentication validation',
           status: 'PASS',
-          details: 'Correctly rejects invalid credentials'
+          details: 'Correctly rejects invalid credentials',
         });
       } else {
         this.addResult({
           category: 'Security',
           test: 'Authentication validation',
           status: 'FAIL',
-          details: 'Authentication system not working correctly'
+          details: 'Authentication system not working correctly',
         });
       }
     } catch (error) {
@@ -256,27 +269,27 @@ class LaunchReadinessValidator {
           category: 'Security',
           test: 'Authentication validation',
           status: 'PASS',
-          details: 'Correctly rejects invalid credentials'
+          details: 'Correctly rejects invalid credentials',
         });
       } else {
         this.addResult({
           category: 'Security',
           test: 'Authentication validation',
           status: 'WARNING',
-          details: 'Could not test authentication endpoint'
+          details: 'Could not test authentication endpoint',
         });
       }
     }
 
     // Test rate limiting
     try {
-      const requests = Array.from({ length: 5 }, (_, i) => 
+      const requests = Array.from({ length: 5 }, (_, i) =>
         axios.get(`${this.baseUrl}/api/terms?page=1&limit=10`, { timeout: 5000 })
       );
-      
+
       const responses = await Promise.allSettled(requests);
-      const rateLimited = responses.some(r => 
-        r.status === 'rejected' && r.reason?.response?.status === 429
+      const rateLimited = responses.some(
+        r => r.status === 'rejected' && r.reason?.response?.status === 429
       );
 
       if (rateLimited) {
@@ -284,14 +297,14 @@ class LaunchReadinessValidator {
           category: 'Security',
           test: 'Rate limiting',
           status: 'PASS',
-          details: 'Rate limiting is active'
+          details: 'Rate limiting is active',
         });
       } else {
         this.addResult({
           category: 'Security',
           test: 'Rate limiting',
           status: 'WARNING',
-          details: 'Rate limiting not detected in basic test'
+          details: 'Rate limiting not detected in basic test',
         });
       }
     } catch (error) {
@@ -299,7 +312,7 @@ class LaunchReadinessValidator {
         category: 'Security',
         test: 'Rate limiting',
         status: 'WARNING',
-        details: 'Could not test rate limiting'
+        details: 'Could not test rate limiting',
       });
     }
 
@@ -307,12 +320,12 @@ class LaunchReadinessValidator {
     try {
       const response = await axios.get(`${this.baseUrl}/`, { timeout: 5000 });
       const headers = response.headers;
-      
+
       const securityHeaders = [
         'x-content-type-options',
         'x-frame-options',
         'x-xss-protection',
-        'strict-transport-security'
+        'strict-transport-security',
       ];
 
       for (const header of securityHeaders) {
@@ -321,14 +334,14 @@ class LaunchReadinessValidator {
             category: 'Security',
             test: `Security header: ${header}`,
             status: 'PASS',
-            details: `Value: ${headers[header]}`
+            details: `Value: ${headers[header]}`,
           });
         } else {
           this.addResult({
             category: 'Security',
             test: `Security header: ${header}`,
             status: 'WARNING',
-            details: 'Header not present'
+            details: 'Header not present',
           });
         }
       }
@@ -337,7 +350,7 @@ class LaunchReadinessValidator {
         category: 'Security',
         test: 'Security headers',
         status: 'WARNING',
-        details: 'Could not test security headers'
+        details: 'Could not test security headers',
       });
     }
 
@@ -346,7 +359,7 @@ class LaunchReadinessValidator {
       const maliciousInput = '<script>alert("xss")</script>';
       const searchResponse = await axios.get(`${this.baseUrl}/api/search`, {
         params: { query: maliciousInput },
-        timeout: 5000
+        timeout: 5000,
       });
 
       if (searchResponse.data && typeof searchResponse.data === 'object') {
@@ -354,14 +367,14 @@ class LaunchReadinessValidator {
           category: 'Security',
           test: 'Input sanitization',
           status: 'PASS',
-          details: 'API handles malicious input safely'
+          details: 'API handles malicious input safely',
         });
       } else {
         this.addResult({
           category: 'Security',
           test: 'Input sanitization',
           status: 'WARNING',
-          details: 'Could not verify input sanitization'
+          details: 'Could not verify input sanitization',
         });
       }
     } catch (error) {
@@ -369,7 +382,7 @@ class LaunchReadinessValidator {
         category: 'Security',
         test: 'Input sanitization',
         status: 'WARNING',
-        details: 'Could not test input sanitization'
+        details: 'Could not test input sanitization',
       });
     }
   }
@@ -381,12 +394,12 @@ class LaunchReadinessValidator {
     bundleSize: number;
   }> {
     console.log('\\n⚡ Validating Performance...');
-    
-    let metrics = {
+
+    const metrics = {
       pageLoadTime: 0,
       apiResponseTime: 0,
       databaseQueryTime: 0,
-      bundleSize: 0
+      bundleSize: 0,
     };
 
     if (!this.isServerRunning) {
@@ -394,7 +407,7 @@ class LaunchReadinessValidator {
         category: 'Performance',
         test: 'Server availability',
         status: 'FAIL',
-        details: 'Server not running - cannot test performance'
+        details: 'Server not running - cannot test performance',
       });
       return metrics;
     }
@@ -411,21 +424,21 @@ class LaunchReadinessValidator {
           category: 'Performance',
           test: 'Page load time',
           status: 'PASS',
-          details: `${metrics.pageLoadTime.toFixed(2)}ms (target: <2000ms)`
+          details: `${metrics.pageLoadTime.toFixed(2)}ms (target: <2000ms)`,
         });
       } else if (metrics.pageLoadTime < 5000) {
         this.addResult({
           category: 'Performance',
           test: 'Page load time',
           status: 'WARNING',
-          details: `${metrics.pageLoadTime.toFixed(2)}ms (target: <2000ms)`
+          details: `${metrics.pageLoadTime.toFixed(2)}ms (target: <2000ms)`,
         });
       } else {
         this.addResult({
           category: 'Performance',
           test: 'Page load time',
           status: 'FAIL',
-          details: `${metrics.pageLoadTime.toFixed(2)}ms (target: <2000ms)`
+          details: `${metrics.pageLoadTime.toFixed(2)}ms (target: <2000ms)`,
         });
       }
     } catch (error) {
@@ -433,7 +446,7 @@ class LaunchReadinessValidator {
         category: 'Performance',
         test: 'Page load time',
         status: 'FAIL',
-        details: 'Could not measure page load time'
+        details: 'Could not measure page load time',
       });
     }
 
@@ -449,21 +462,21 @@ class LaunchReadinessValidator {
           category: 'Performance',
           test: 'API response time',
           status: 'PASS',
-          details: `${metrics.apiResponseTime.toFixed(2)}ms (target: <500ms)`
+          details: `${metrics.apiResponseTime.toFixed(2)}ms (target: <500ms)`,
         });
       } else if (metrics.apiResponseTime < 1000) {
         this.addResult({
           category: 'Performance',
           test: 'API response time',
           status: 'WARNING',
-          details: `${metrics.apiResponseTime.toFixed(2)}ms (target: <500ms)`
+          details: `${metrics.apiResponseTime.toFixed(2)}ms (target: <500ms)`,
         });
       } else {
         this.addResult({
           category: 'Performance',
           test: 'API response time',
           status: 'FAIL',
-          details: `${metrics.apiResponseTime.toFixed(2)}ms (target: <500ms)`
+          details: `${metrics.apiResponseTime.toFixed(2)}ms (target: <500ms)`,
         });
       }
     } catch (error) {
@@ -471,7 +484,7 @@ class LaunchReadinessValidator {
         category: 'Performance',
         test: 'API response time',
         status: 'FAIL',
-        details: 'Could not measure API response time'
+        details: 'Could not measure API response time',
       });
     }
 
@@ -487,21 +500,21 @@ class LaunchReadinessValidator {
           category: 'Performance',
           test: 'Database query time',
           status: 'PASS',
-          details: `${metrics.databaseQueryTime.toFixed(2)}ms (target: <1000ms)`
+          details: `${metrics.databaseQueryTime.toFixed(2)}ms (target: <1000ms)`,
         });
       } else if (metrics.databaseQueryTime < 2000) {
         this.addResult({
           category: 'Performance',
           test: 'Database query time',
           status: 'WARNING',
-          details: `${metrics.databaseQueryTime.toFixed(2)}ms (target: <1000ms)`
+          details: `${metrics.databaseQueryTime.toFixed(2)}ms (target: <1000ms)`,
         });
       } else {
         this.addResult({
           category: 'Performance',
           test: 'Database query time',
           status: 'FAIL',
-          details: `${metrics.databaseQueryTime.toFixed(2)}ms (target: <1000ms)`
+          details: `${metrics.databaseQueryTime.toFixed(2)}ms (target: <1000ms)`,
         });
       }
     } catch (error) {
@@ -509,14 +522,16 @@ class LaunchReadinessValidator {
         category: 'Performance',
         test: 'Database query time',
         status: 'WARNING',
-        details: 'Could not measure database query time'
+        details: 'Could not measure database query time',
       });
     }
 
     // Check bundle size
     try {
       if (existsSync('dist/public')) {
-        const bundleFiles = execSync('find dist/public -name "*.js" -o -name "*.css"', { encoding: 'utf8' })
+        const bundleFiles = execSync('find dist/public -name "*.js" -o -name "*.css"', {
+          encoding: 'utf8',
+        })
           .trim()
           .split('\\n')
           .filter(f => f);
@@ -538,21 +553,21 @@ class LaunchReadinessValidator {
             category: 'Performance',
             test: 'Bundle size',
             status: 'PASS',
-            details: `${metrics.bundleSize.toFixed(2)}MB (target: <5MB)`
+            details: `${metrics.bundleSize.toFixed(2)}MB (target: <5MB)`,
           });
         } else if (metrics.bundleSize < 10) {
           this.addResult({
             category: 'Performance',
             test: 'Bundle size',
             status: 'WARNING',
-            details: `${metrics.bundleSize.toFixed(2)}MB (target: <5MB)`
+            details: `${metrics.bundleSize.toFixed(2)}MB (target: <5MB)`,
           });
         } else {
           this.addResult({
             category: 'Performance',
             test: 'Bundle size',
             status: 'FAIL',
-            details: `${metrics.bundleSize.toFixed(2)}MB (target: <5MB)`
+            details: `${metrics.bundleSize.toFixed(2)}MB (target: <5MB)`,
           });
         }
       } else {
@@ -560,7 +575,7 @@ class LaunchReadinessValidator {
           category: 'Performance',
           test: 'Bundle size',
           status: 'WARNING',
-          details: 'Build not found - run npm run build first'
+          details: 'Build not found - run npm run build first',
         });
       }
     } catch (error) {
@@ -568,7 +583,7 @@ class LaunchReadinessValidator {
         category: 'Performance',
         test: 'Bundle size',
         status: 'WARNING',
-        details: 'Could not measure bundle size'
+        details: 'Could not measure bundle size',
       });
     }
 
@@ -577,13 +592,9 @@ class LaunchReadinessValidator {
 
   private async validateSystemHealth(): Promise<void> {
     console.log('\\n🏥 Validating System Health...');
-    
+
     // Check environment variables
-    const requiredEnvVars = [
-      'DATABASE_URL',
-      'JWT_SECRET',
-      'NODE_ENV'
-    ];
+    const requiredEnvVars = ['DATABASE_URL', 'JWT_SECRET', 'NODE_ENV'];
 
     for (const envVar of requiredEnvVars) {
       if (process.env[envVar]) {
@@ -591,14 +602,14 @@ class LaunchReadinessValidator {
           category: 'System Health',
           test: `Environment variable: ${envVar}`,
           status: 'PASS',
-          details: 'Required environment variable is set'
+          details: 'Required environment variable is set',
         });
       } else {
         this.addResult({
           category: 'System Health',
           test: `Environment variable: ${envVar}`,
           status: 'FAIL',
-          details: 'Required environment variable is missing'
+          details: 'Required environment variable is missing',
         });
       }
     }
@@ -610,14 +621,14 @@ class LaunchReadinessValidator {
         category: 'System Health',
         test: 'Database connection',
         status: 'PASS',
-        details: 'Database connection successful'
+        details: 'Database connection successful',
       });
     } catch (error) {
       this.addResult({
         category: 'System Health',
         test: 'Database connection',
         status: 'FAIL',
-        details: 'Database connection failed'
+        details: 'Database connection failed',
       });
     }
 
@@ -629,14 +640,14 @@ class LaunchReadinessValidator {
         category: 'System Health',
         test: 'File system permissions',
         status: 'PASS',
-        details: 'File system is writable'
+        details: 'File system is writable',
       });
     } catch (error) {
       this.addResult({
         category: 'System Health',
         test: 'File system permissions',
         status: 'FAIL',
-        details: 'File system permission issues'
+        details: 'File system permission issues',
       });
     }
 
@@ -644,27 +655,27 @@ class LaunchReadinessValidator {
     try {
       const memInfo = process.memoryUsage();
       const memUsageMB = memInfo.heapUsed / 1024 / 1024;
-      
+
       if (memUsageMB < 500) {
         this.addResult({
           category: 'System Health',
           test: 'Memory usage',
           status: 'PASS',
-          details: `${memUsageMB.toFixed(2)}MB heap used`
+          details: `${memUsageMB.toFixed(2)}MB heap used`,
         });
       } else if (memUsageMB < 1000) {
         this.addResult({
           category: 'System Health',
           test: 'Memory usage',
           status: 'WARNING',
-          details: `${memUsageMB.toFixed(2)}MB heap used`
+          details: `${memUsageMB.toFixed(2)}MB heap used`,
         });
       } else {
         this.addResult({
           category: 'System Health',
           test: 'Memory usage',
           status: 'FAIL',
-          details: `${memUsageMB.toFixed(2)}MB heap used (high usage)`
+          details: `${memUsageMB.toFixed(2)}MB heap used (high usage)`,
         });
       }
     } catch (error) {
@@ -672,7 +683,7 @@ class LaunchReadinessValidator {
         category: 'System Health',
         test: 'Memory usage',
         status: 'WARNING',
-        details: 'Could not check memory usage'
+        details: 'Could not check memory usage',
       });
     }
   }
@@ -683,10 +694,10 @@ class LaunchReadinessValidator {
     const failResults = this.results.filter(r => r.status === 'FAIL');
 
     const overallScore = Math.round((passResults.length / this.results.length) * 100);
-    
+
     let readinessLevel: 'PRODUCTION_READY' | 'MINOR_ISSUES' | 'MAJOR_ISSUES' | 'NOT_READY';
     let goNoGo: 'GO' | 'NO_GO';
-    
+
     if (failResults.length === 0 && warningResults.length === 0) {
       readinessLevel = 'PRODUCTION_READY';
       goNoGo = 'GO';
@@ -704,7 +715,7 @@ class LaunchReadinessValidator {
     const blockers = failResults.map(r => `${r.category}: ${r.test} - ${r.details}`);
     const recommendations = [
       ...failResults.flatMap(r => r.recommendations || []),
-      ...warningResults.flatMap(r => r.recommendations || [])
+      ...warningResults.flatMap(r => r.recommendations || []),
     ];
 
     return {
@@ -718,22 +729,32 @@ class LaunchReadinessValidator {
         pageLoadTime: 0,
         apiResponseTime: 0,
         databaseQueryTime: 0,
-        bundleSize: 0
+        bundleSize: 0,
       },
       securityValidation: {
-        authenticationTests: this.results.filter(r => r.category === 'Security' && r.test.includes('authentication')),
-        rateLimitingTests: this.results.filter(r => r.category === 'Security' && r.test.includes('rate limiting')),
-        inputSanitizationTests: this.results.filter(r => r.category === 'Security' && r.test.includes('sanitization')),
-        securityHeaders: this.results.filter(r => r.category === 'Security' && r.test.includes('header'))
+        authenticationTests: this.results.filter(
+          r => r.category === 'Security' && r.test.includes('authentication')
+        ),
+        rateLimitingTests: this.results.filter(
+          r => r.category === 'Security' && r.test.includes('rate limiting')
+        ),
+        inputSanitizationTests: this.results.filter(
+          r => r.category === 'Security' && r.test.includes('sanitization')
+        ),
+        securityHeaders: this.results.filter(
+          r => r.category === 'Security' && r.test.includes('header')
+        ),
       },
       systemHealth: {
         dependencies: this.results.filter(r => r.category === 'Dependencies'),
         services: this.results.filter(r => r.category === 'System Health'),
-        configuration: this.results.filter(r => r.category === 'System Health' && r.test.includes('Environment'))
+        configuration: this.results.filter(
+          r => r.category === 'System Health' && r.test.includes('Environment')
+        ),
       },
       goNoGoRecommendation: goNoGo,
       blockers,
-      recommendations
+      recommendations,
     };
   }
 
@@ -741,23 +762,22 @@ class LaunchReadinessValidator {
     try {
       // Start server for testing
       await this.startServer();
-      
+
       // Run all validations
       await this.validateDependencies();
       await this.validateSecurity();
       const performanceMetrics = await this.validatePerformance();
       await this.validateSystemHealth();
-      
+
       // Generate report
       const report = this.generateReport();
       report.performanceMetrics = performanceMetrics;
-      
+
       // Save report
       const reportPath = join(process.cwd(), 'LAUNCH_READINESS_REPORT.md');
       this.saveReport(report, reportPath);
-      
+
       return report;
-      
     } catch (error) {
       console.error('❌ Validation failed:', error);
       throw error;
@@ -773,10 +793,14 @@ class LaunchReadinessValidator {
   private generateMarkdownReport(report: LaunchReadinessReport): string {
     const statusIcon = (status: string) => {
       switch (status) {
-        case 'PASS': return '✅';
-        case 'WARNING': return '⚠️';
-        case 'FAIL': return '❌';
-        default: return '❓';
+        case 'PASS':
+          return '✅';
+        case 'WARNING':
+          return '⚠️';
+        case 'FAIL':
+          return '❌';
+        default:
+          return '❓';
       }
     };
 
@@ -797,10 +821,14 @@ ${report.goNoGoRecommendation === 'GO' ? '✅ **PRODUCTION READY**' : '❌ **NOT
 - **Warnings:** ${report.warningIssues.length}
 - **Critical Issues:** ${report.criticalIssues.length}
 
-${report.blockers.length > 0 ? `
+${
+  report.blockers.length > 0
+    ? `
 ### 🚨 Critical Blockers
 ${report.blockers.map(b => `- ${b}`).join('\\n')}
-` : ''}
+`
+    : ''
+}
 
 ---
 
@@ -865,7 +893,9 @@ ${report.recommendations.length > 0 ? report.recommendations.map(r => `- ${r}`).
 
 ## 🚀 Next Steps
 
-${report.goNoGoRecommendation === 'GO' ? `
+${
+  report.goNoGoRecommendation === 'GO'
+    ? `
 ### Ready for Production Launch ✅
 1. **Deploy to production environment**
 2. **Monitor system performance**
@@ -877,7 +907,8 @@ ${report.goNoGoRecommendation === 'GO' ? `
 - Monitor user behavior and performance
 - Plan for content scaling and updates
 - Regular security audits
-` : `
+`
+    : `
 ### Fix Critical Issues Before Launch ❌
 1. **Address all critical issues listed above**
 2. **Re-run validation tests**
@@ -886,7 +917,8 @@ ${report.goNoGoRecommendation === 'GO' ? `
 
 ### Required Actions
 ${report.blockers.map(b => `- ${b}`).join('\\n')}
-`}
+`
+}
 
 ---
 
@@ -899,10 +931,10 @@ ${report.blockers.map(b => `- ${b}`).join('\\n')}
 // Main execution
 async function main() {
   const validator = new LaunchReadinessValidator();
-  
+
   try {
     const report = await validator.runValidation();
-    
+
     console.log('\\n' + '='.repeat(60));
     console.log('🎯 LAUNCH READINESS SUMMARY');
     console.log('='.repeat(60));
@@ -912,13 +944,12 @@ async function main() {
     console.log(`Critical Issues: ${report.criticalIssues.length}`);
     console.log(`Warning Issues: ${report.warningIssues.length}`);
     console.log(`Passing Tests: ${report.passingTests.length}`);
-    
+
     if (report.goNoGoRecommendation === 'GO') {
       console.log('\\n🚀 RECOMMENDATION: PROCEED WITH LAUNCH');
     } else {
       console.log('\\n🛑 RECOMMENDATION: FIX CRITICAL ISSUES BEFORE LAUNCH');
     }
-    
   } catch (error) {
     console.error('\\n❌ Launch readiness validation failed:', error);
     process.exit(1);

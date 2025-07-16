@@ -83,7 +83,7 @@ function getDriveClient(auth: GoogleDriveAuth, credentials: DriveCredentials) {
 export async function listFiles(
   auth: GoogleDriveAuth,
   credentials: DriveCredentials,
-  query: string = "mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'"
+  query = "mimeType='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'"
 ) {
   const drive = getDriveClient(auth, credentials);
 
@@ -121,7 +121,7 @@ export async function downloadFile(
 
     drive.files
       .get({ fileId, alt: 'media' }, { responseType: 'stream' })
-      .then((res) => {
+      .then(res => {
         const stream = res.data as unknown as Readable;
 
         stream
@@ -129,13 +129,13 @@ export async function downloadFile(
             console.log('File downloaded successfully');
             resolve(destinationPath);
           })
-          .on('error', (err) => {
+          .on('error', err => {
             console.error('Error downloading file:', err);
             reject(err);
           })
           .pipe(dest);
       })
-      .catch((error) => {
+      .catch(error => {
         console.error('Error getting file:', error);
         reject(error);
       });

@@ -205,7 +205,7 @@ export function registerAdaptiveContentRoutes(app: Express): void {
             res,
             ErrorCode.VALIDATION_ERROR,
             'Invalid query parameters',
-            error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
+            error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
           );
         }
 
@@ -490,7 +490,7 @@ export function registerAdaptiveContentRoutes(app: Express): void {
           res,
           ErrorCode.VALIDATION_ERROR,
           'Invalid feedback data',
-          error.errors.map((e) => `${e.path.join('.')}: ${e.message}`).join(', ')
+          error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
         );
       }
 

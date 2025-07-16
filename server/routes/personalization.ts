@@ -422,9 +422,9 @@ export function registerPersonalizationRoutes(app: Express): void {
 // Helper functions
 function determineTimeOfDay(): 'morning' | 'afternoon' | 'evening' | 'night' {
   const hour = new Date().getHours();
-  if (hour >= 5 && hour < 12) return 'morning';
-  if (hour >= 12 && hour < 17) return 'afternoon';
-  if (hour >= 17 && hour < 21) return 'evening';
+  if (hour >= 5 && hour < 12) {return 'morning';}
+  if (hour >= 12 && hour < 17) {return 'afternoon';}
+  if (hour >= 17 && hour < 21) {return 'evening';}
   return 'night';
 }
 
@@ -459,9 +459,9 @@ async function buildPersonalizedHomepage(params: {
 
       case 'recommended_for_you':
         homepage.recommendedForYou = recommendations
-          .filter((r) => r.type === 'term')
+          .filter(r => r.type === 'term')
           .slice(0, 6)
-          .map((r) => ({
+          .map(r => ({
             ...r,
             displayPriority: 'high',
           }));
@@ -469,25 +469,23 @@ async function buildPersonalizedHomepage(params: {
 
       case 'continue_learning':
         homepage.continueLearning = recommendations
-          .filter((r) => r.metadata.algorithm === 'content_based')
+          .filter(r => r.metadata.algorithm === 'content_based')
           .slice(0, 3);
         break;
 
       case 'trending_topics':
         homepage.trendingTopics = recommendations
-          .filter((r) => r.metadata.popularity > 100)
+          .filter(r => r.metadata.popularity > 100)
           .slice(0, 4);
         break;
 
       case 'explore_categories':
-        homepage.exploreCategories = recommendations
-          .filter((r) => r.type === 'category')
-          .slice(0, 6);
+        homepage.exploreCategories = recommendations.filter(r => r.type === 'category').slice(0, 6);
         break;
 
       case 'learning_paths':
         homepage.learningPaths = recommendations
-          .filter((r) => r.type === 'learning_path')
+          .filter(r => r.type === 'learning_path')
           .slice(0, 3);
         break;
 
@@ -543,14 +541,14 @@ function calculatePersonalizationLevel(
   // Calculate how personalized the experience is based on available data
   let score = 0;
 
-  if (userProfile.interestCategories.length > 0) score += 20;
+  if (userProfile.interestCategories.length > 0) {score += 20;}
   if (userProfile.engagementPatterns && Object.keys(userProfile.engagementPatterns).length > 0)
-    score += 20;
-  if (userProfile.skillLevel && Object.keys(userProfile.skillLevel).length > 0) score += 20;
-  if (userProfile.activeGoals.length > 0) score += 20;
-  if (recommendationCount > 10) score += 20;
+    {score += 20;}
+  if (userProfile.skillLevel && Object.keys(userProfile.skillLevel).length > 0) {score += 20;}
+  if (userProfile.activeGoals.length > 0) {score += 20;}
+  if (recommendationCount > 10) {score += 20;}
 
-  if (score >= 80) return 'high';
-  if (score >= 50) return 'medium';
+  if (score >= 80) {return 'high';}
+  if (score >= 50) {return 'medium';}
   return 'low';
 }

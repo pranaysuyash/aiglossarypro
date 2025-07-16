@@ -45,8 +45,8 @@ class ProductionPerformanceMonitor {
   private setupPerformanceObserver() {
     if ('PerformanceObserver' in window) {
       // Track navigation timing
-      const navObserver = new PerformanceObserver((list) => {
-        list.getEntries().forEach((entry) => {
+      const navObserver = new PerformanceObserver(list => {
+        list.getEntries().forEach(entry => {
           if (entry.entryType === 'navigation') {
             const navEntry = entry as PerformanceNavigationTiming;
             this.recordCustomMetric('page-load', navEntry.loadEventEnd - navEntry.loadEventStart);
@@ -64,8 +64,8 @@ class ProductionPerformanceMonitor {
       navObserver.observe({ entryTypes: ['navigation'] });
 
       // Track resource timing for API calls
-      const resourceObserver = new PerformanceObserver((list) => {
-        list.getEntries().forEach((entry) => {
+      const resourceObserver = new PerformanceObserver(list => {
+        list.getEntries().forEach(entry => {
           if (entry.name.includes('/api/')) {
             this.recordCustomMetric('api-response-time', entry.duration);
           }
@@ -116,7 +116,7 @@ class ProductionPerformanceMonitor {
   }
 
   private async flush() {
-    if (this.metrics.length === 0) return;
+    if (this.metrics.length === 0) {return;}
 
     const metricsToSend = [...this.metrics];
     this.metrics = [];

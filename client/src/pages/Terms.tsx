@@ -5,6 +5,7 @@ import { useLocation } from 'wouter';
 import { useLiveRegion } from '@/components/accessibility/LiveRegion';
 import SurpriseMe from '@/components/SurpriseMe';
 import { TermCardSkeleton } from '@/components/ui/skeleton';
+import { GoogleAd } from '../components/ads/GoogleAd';
 import SearchBar from '../components/SearchBar';
 import TermCard from '../components/TermCard';
 import { Badge } from '../components/ui/badge';
@@ -17,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '../components/ui/select';
-import { GoogleAd } from '../components/ads/GoogleAd';
 import { useAuth } from '../hooks/useAuth';
 import type { ApiResponse, IEnhancedTerm, PaginatedResponse } from '../interfaces/interfaces';
 
@@ -66,7 +66,7 @@ export function Terms() {
     queryKey: ['categories'],
     queryFn: async () => {
       const response = await fetch('/api/categories?limit=500');
-      if (!response.ok) throw new Error('Failed to fetch categories');
+      if (!response.ok) {throw new Error('Failed to fetch categories');}
       const data: ApiResponse<any[]> = await response.json();
       return data;
     },
@@ -114,7 +114,7 @@ export function Terms() {
       }
 
       const response = await fetch(`/api/enhanced/search?${params}`);
-      if (!response.ok) throw new Error('Enhanced search failed');
+      if (!response.ok) {throw new Error('Enhanced search failed');}
 
       const data = await response.json();
       // Transform enhanced search response to match expected format
@@ -178,7 +178,7 @@ export function Terms() {
       }
 
       const response = await fetch(`/api/terms?${params}`);
-      if (!response.ok) throw new Error('Failed to fetch terms');
+      if (!response.ok) {throw new Error('Failed to fetch terms');}
 
       return response.json();
     },
@@ -197,8 +197,8 @@ export function Terms() {
   useEffect(() => {
     if (!isLoading && termsData) {
       const filterInfo = [];
-      if (debouncedSearch) filterInfo.push(`search "${debouncedSearch}"`);
-      if (selectedCategory) filterInfo.push(`category filter`);
+      if (debouncedSearch) {filterInfo.push(`search "${debouncedSearch}"`);}
+      if (selectedCategory) {filterInfo.push(`category filter`);}
 
       const filterText = filterInfo.length > 0 ? ` with ${filterInfo.join(' and ')}` : '';
       const pageText = totalPages > 1 ? ` on page ${currentPage} of ${totalPages}` : '';
@@ -284,11 +284,7 @@ export function Terms() {
     terms.forEach((term, index) => {
       // Add term card
       items.push(
-        <TermCard
-          key={term.id}
-          term={term}
-          onTermClick={() => setLocation(`/term/${term.slug}`)}
-        />
+        <TermCard key={term.id} term={term} onTermClick={() => setLocation(`/term/${term.slug}`)} />
       );
 
       // Add ad after every 8 terms (but not for premium users)
@@ -298,7 +294,7 @@ export function Terms() {
             <GoogleAd
               slot="8765432109"
               format="horizontal"
-              responsive={true}
+              responsive
               className="w-full h-24 flex items-center justify-center bg-gray-50 rounded-lg border-2 border-dashed border-gray-200"
             />
           </div>
@@ -388,7 +384,7 @@ export function Terms() {
                   </label>
                   <Select
                     value={selectedDifficulty || 'all'}
-                    onValueChange={(value) => setSelectedDifficulty(value === 'all' ? '' : value)}
+                    onValueChange={value => setSelectedDifficulty(value === 'all' ? '' : value)}
                   >
                     <SelectTrigger id="difficulty-select">
                       <SelectValue placeholder="All levels" />
@@ -406,7 +402,7 @@ export function Terms() {
                   <label htmlFor="sort-by-select" className="block text-sm font-medium mb-2">
                     Sort by
                   </label>
-                  <Select value={sortBy} onValueChange={(value) => handleSortChange(value)}>
+                  <Select value={sortBy} onValueChange={value => handleSortChange(value)}>
                     <SelectTrigger id="sort-by-select">
                       <SelectValue placeholder="Sort by" />
                     </SelectTrigger>
@@ -432,7 +428,7 @@ export function Terms() {
                     <input
                       type="checkbox"
                       checked={onlyWithVisuals}
-                      onChange={(e) => setOnlyWithVisuals(e.target.checked)}
+                      onChange={e => setOnlyWithVisuals(e.target.checked)}
                       className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">
@@ -444,7 +440,7 @@ export function Terms() {
                     <input
                       type="checkbox"
                       checked={onlyWithMath}
-                      onChange={(e) => setOnlyWithMath(e.target.checked)}
+                      onChange={e => setOnlyWithMath(e.target.checked)}
                       className="rounded border-gray-300 dark:border-gray-600 text-primary focus:ring-primary"
                     />
                     <span className="text-sm text-gray-700 dark:text-gray-300">
@@ -485,7 +481,7 @@ export function Terms() {
             {/* Surprise Me Fallback */}
             <div className="max-w-md mx-auto">
               <SurpriseMe
-                compact={true}
+                compact
                 showModeSelector={false}
                 maxResults={3}
                 onTermSelect={handleSurpriseTermSelect}

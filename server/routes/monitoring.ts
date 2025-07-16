@@ -246,8 +246,8 @@ export function registerMonitoringRoutes(app: Express): void {
    */
   app.get('/api/monitoring/services', requireAdmin, async (_req: Request, res: Response) => {
     try {
-      const services = {};
-      const responseTimes = {};
+      const services: Record<string, any> = {};
+      const responseTimes: Record<string, number> = {};
 
       // Check all external services in parallel
       const [s3Health, openaiHealth] = await Promise.allSettled([
@@ -558,9 +558,9 @@ function formatUptime(seconds: number): string {
   const minutes = Math.floor((seconds % 3600) / 60);
 
   const parts = [];
-  if (days > 0) parts.push(`${days}d`);
-  if (hours > 0) parts.push(`${hours}h`);
-  if (minutes > 0) parts.push(`${minutes}m`);
+  if (days > 0) {parts.push(`${days}d`);}
+  if (hours > 0) {parts.push(`${hours}h`);}
+  if (minutes > 0) {parts.push(`${minutes}m`);}
 
   return parts.join(' ') || '< 1m';
 }

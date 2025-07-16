@@ -13,18 +13,18 @@ const fixes = [
   {
     file: 'client/src/pages/CodeExamples.tsx',
     search: /}, \[fetchCodeExamples\]\);/g,
-    replace: '    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, []);'
+    replace: '    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, []);',
   },
   {
     file: 'client/src/pages/LearningPathDetail.tsx',
     search: /}, \[.*fetchLearningPath.*\]\);/g,
-    replace: '    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [id]);'
+    replace: '    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, [id]);',
   },
   {
     file: 'client/src/pages/LearningPaths.tsx',
     search: /}, \[.*fetchLearningPaths.*fetchUserProgress.*\]\);/g,
-    replace: '    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, []);'
-  }
+    replace: '    // eslint-disable-next-line react-hooks/exhaustive-deps\n  }, []);',
+  },
 ];
 
 for (const fix of fixes) {

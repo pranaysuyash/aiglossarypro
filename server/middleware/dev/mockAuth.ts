@@ -14,7 +14,7 @@
 import type { NextFunction, Request, Response } from 'express';
 
 // SECURITY: All mock authentication functions are disabled
-export const mockIsAuthenticated = (req: Request, res: Response, next: NextFunction) => {
+export const mockIsAuthenticated = (_req: Request, res: Response, _next: NextFunction) => {
   console.error('🚨 SECURITY ERROR: Mock authentication is DISABLED');
   console.error('🚨 Use proper Firebase authentication instead');
   res.status(500).json({
@@ -24,7 +24,7 @@ export const mockIsAuthenticated = (req: Request, res: Response, next: NextFunct
   });
 };
 
-export const mockAuthenticateToken = (req: Request, res: Response, next: NextFunction) => {
+export const mockAuthenticateToken = (_req: Request, res: Response, _next: NextFunction) => {
   console.error('🚨 SECURITY ERROR: Mock authentication is DISABLED');
   console.error('🚨 Use proper Firebase authentication instead');
   res.status(500).json({
@@ -35,9 +35,9 @@ export const mockAuthenticateToken = (req: Request, res: Response, next: NextFun
 };
 
 export async function mockRequireAdmin(
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  _next: NextFunction
 ): Promise<void> {
   console.error('🚨 SECURITY ERROR: Mock admin authentication is DISABLED');
   console.error('🚨 Use proper Firebase authentication instead');
@@ -48,7 +48,7 @@ export async function mockRequireAdmin(
   });
 }
 
-export function setupMockAuth(app: any) {
+export function setupMockAuth(_app: any) {
   console.error('🚨 SECURITY ERROR: Mock authentication setup is DISABLED');
   console.error('🚨 This function will not set up any mock endpoints');
   console.error('🚨 Use proper Firebase authentication instead');
@@ -57,7 +57,7 @@ export function setupMockAuth(app: any) {
   return;
 }
 
-export function setMockLogoutState(loggedOut: boolean) {
+export function setMockLogoutState(_loggedOut: boolean) {
   console.error('🚨 SECURITY ERROR: Mock authentication is DISABLED');
   console.error('🚨 Mock logout state cannot be modified');
 }

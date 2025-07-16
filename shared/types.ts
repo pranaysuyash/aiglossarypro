@@ -54,6 +54,7 @@ export interface ITerm {
   visualCaption?: string;
   mathFormulation?: string;
   relatedTerms?: ITerm[];
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
   // AI Content Management
   isAiGenerated?: boolean;
   verificationStatus?: 'unverified' | 'verified' | 'flagged' | 'needs_review' | 'expert_reviewed';
@@ -96,6 +97,7 @@ export interface SearchResult {
   page: number;
   limit: number;
   hasMore: boolean;
+  query?: string;
 }
 
 export interface AdvancedSearchOptions {

@@ -52,7 +52,7 @@ class CSVStreamingProcessor {
     return new Promise((resolve, reject) => {
       const parser = parse({
         delimiter: ',',
-        columns: (headers) => {
+        columns: headers => {
           this.headers = headers;
           console.log(`✅ Found ${headers.length} columns`);
           if (headers.length < 200) {
@@ -103,7 +103,7 @@ class CSVStreamingProcessor {
         }
       });
 
-      parser.on('error', (err) => {
+      parser.on('error', err => {
         console.error('❌ CSV parsing error:', err);
         reject(err);
       });
@@ -366,7 +366,7 @@ main()
     console.log('\n✅ Processing completed');
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('\n💥 Processing failed:', error);
     process.exit(1);
   });

@@ -90,9 +90,9 @@ const READING_LEVELS = {
  * Calculate accessibility score for content
  */
 export function calculateAccessibilityScore(content: string): AccessibilityScore {
-  const sentences = content.split(/[.!?]+/).filter((s) => s.trim().length > 0);
-  const paragraphs = content.split(/\n\s*\n/).filter((p) => p.trim().length > 0);
-  const words = content.split(/\s+/).filter((w) => w.length > 0);
+  const sentences = content.split(/[.!?]+/).filter(s => s.trim().length > 0);
+  const paragraphs = content.split(/\n\s*\n/).filter(p => p.trim().length > 0);
+  const words = content.split(/\s+/).filter(w => w.length > 0);
 
   // Calculate basic metrics
   const averageWordsPerSentence = words.length / sentences.length;
@@ -137,10 +137,10 @@ export function calculateAccessibilityScore(content: string): AccessibilityScore
 
   // Determine accessibility level
   let level: 'beginner' | 'intermediate' | 'advanced' | 'expert';
-  if (score >= 80) level = 'beginner';
-  else if (score >= 60) level = 'intermediate';
-  else if (score >= 40) level = 'advanced';
-  else level = 'expert';
+  if (score >= 80) {level = 'beginner';}
+  else if (score >= 60) {level = 'intermediate';}
+  else if (score >= 40) {level = 'advanced';}
+  else {level = 'expert';}
 
   // Generate improvement suggestions
   const improvements: string[] = [];
@@ -197,15 +197,13 @@ export function generateSimplificationSuggestion(content: string): Simplificatio
 
   // Break down long sentences
   const sentences = simplifiedText.split(/[.!?]+/);
-  const improvedSentences = sentences.map((sentence) => {
+  const improvedSentences = sentences.map(sentence => {
     const words = sentence.trim().split(/\s+/);
     if (words.length > 20) {
       // Try to split at conjunctions
       const conjunctions = ['and', 'but', 'or', 'because', 'since', 'while', 'although'];
       for (const conjunction of conjunctions) {
-        const conjunctionIndex = words.findIndex((word) =>
-          word.toLowerCase().includes(conjunction)
-        );
+        const conjunctionIndex = words.findIndex(word => word.toLowerCase().includes(conjunction));
         if (conjunctionIndex > 5 && conjunctionIndex < words.length - 5) {
           const firstPart = words.slice(0, conjunctionIndex).join(' ');
           const secondPart = words.slice(conjunctionIndex).join(' ');
@@ -219,7 +217,7 @@ export function generateSimplificationSuggestion(content: string): Simplificatio
   simplifiedText = improvedSentences.join('. ').replace(/\. \./g, '.');
 
   // Add explanations for technical terms
-  technicalTerms.forEach((term) => {
+  technicalTerms.forEach(term => {
     if (COMPLEX_TERMS[term]) {
       simplifiedText += `\n\n**${term}**: ${COMPLEX_TERMS[term].explanation}`;
     }
@@ -367,7 +365,7 @@ export function generateAccessibilityReport(
   terms.forEach(({ score }) => {
     levelCounts[score.level]++;
     totalScore += score.score;
-    score.improvements.forEach((improvement) => improvements.add(improvement));
+    score.improvements.forEach(improvement => improvements.add(improvement));
   });
 
   const averageScore = Math.round(totalScore / totalTerms);
@@ -387,9 +385,9 @@ export function generateAccessibilityReport(
       currentGap: Math.max(0, 60 - beginnerPercentage),
     },
     metrics: {
-      termsNeedingImprovement: terms.filter((t) => t.score.score < 70).length,
-      highComplexityTerms: terms.filter((t) => t.score.level === 'expert').length,
-      wellOptimizedTerms: terms.filter((t) => t.score.score >= 80).length,
+      termsNeedingImprovement: terms.filter(t => t.score.score < 70).length,
+      highComplexityTerms: terms.filter(t => t.score.level === 'expert').length,
+      wellOptimizedTerms: terms.filter(t => t.score.score >= 80).length,
     },
   };
 }

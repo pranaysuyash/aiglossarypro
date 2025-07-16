@@ -1,17 +1,28 @@
-import React, { useState } from 'react';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { 
-  Search, Plus, Edit, Trash2, Eye, ThumbsUp, ThumbsDown,
-  Code, Play, ExternalLink, CheckCircle, Clock,
-  Languages, BarChart3
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  BarChart3,
+  CheckCircle,
+  Clock,
+  Code,
+  Edit,
+  ExternalLink,
+  Eye,
+  Languages,
+  Play,
+  Plus,
+  Search,
+  ThumbsDown,
+  ThumbsUp,
+  Trash2,
 } from 'lucide-react';
+import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 
 interface CodeExample {
   id: string;
   term_id: string;
   title: string;
-  description?: string;
+  description?: string | undefined;
   language: string;
   code: string;
   expected_output?: string;
@@ -38,7 +49,7 @@ interface CodeExamplesManagementProps {
 export default function CodeExamplesManagement({ onExampleSelect }: CodeExamplesManagementProps) {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  
+
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
@@ -49,25 +60,28 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
 
   // Build query parameters
   const queryParams = new URLSearchParams();
-  if (selectedLanguage !== 'all') queryParams.set('language', selectedLanguage);
-  if (selectedDifficulty !== 'all') queryParams.set('difficulty', selectedDifficulty);
-  if (selectedType !== 'all') queryParams.set('type', selectedType);
+  if (selectedLanguage !== 'all') {queryParams.set('language', selectedLanguage);}
+  if (selectedDifficulty !== 'all') {queryParams.set('difficulty', selectedDifficulty);}
+  if (selectedType !== 'all') {queryParams.set('type', selectedType);}
   queryParams.set('limit', '50');
 
   // Fetch code examples
-  const { data: examplesData, isLoading } = useQuery<{ data: CodeExample[], pagination: any }>({
-    queryKey: ['/api/code-examples', { language: selectedLanguage, difficulty: selectedDifficulty, type: selectedType }],
+  const { data: examplesData, isLoading } = useQuery<{ data: CodeExample[]; pagination: any }>({
+    queryKey: [
+      '/api/code-examples',
+      { language: selectedLanguage, difficulty: selectedDifficulty, type: selectedType },
+    ],
     queryFn: async () => {
       const response = await fetch(`/api/code-examples?${queryParams.toString()}`, {
         headers: {
-          'Authorization': `Bearer ${user?.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch code examples');
       }
-      
+
       return response.json();
     },
     enabled: !!user?.token,
@@ -79,14 +93,14 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
       const response = await fetch(`/api/code-examples/${exampleId}`, {
         method: 'DELETE',
         headers: {
-          'Authorization': `Bearer ${user?.token}`,
+          Authorization: `Bearer ${user?.token}`,
         },
       });
-      
+
       if (!response.ok) {
         throw new Error('Failed to delete code example');
       }
-      
+
       return response.json();
     },
     onSuccess: () => {
@@ -101,10 +115,14 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
   };
 
   const handleDeleteExample = async (exampleId: string) => {
-    if (window.confirm('Are you sure you want to delete this code example? This action cannot be undone.')) {
+    if (
+      window.confirm(
+        'Are you sure you want to delete this code example? This action cannot be undone.'
+      )
+    ) {
       try {
         await deleteMutation.mutateAsync(exampleId);
-      } catch (error) {
+      } catch (error: any) {
         // Handle delete error silently
       }
     }
@@ -113,7 +131,7 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
   const getLanguageColor = (language: string) => {
     const colors = {
       python: 'bg-blue-100 text-blue-800',
-      javascript: 'bg-yellow-100 text-yellow-800', 
+      javascript: 'bg-yellow-100 text-yellow-800',
       typescript: 'bg-blue-100 text-blue-800',
       r: 'bg-green-100 text-green-800',
       sql: 'bg-purple-100 text-purple-800',
@@ -140,18 +158,21 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
     return <Clock className="w-4 h-4 text-yellow-600" />;
   };
 
-  const filteredExamples = examplesData?.data?.filter(example => {
-    const matchesSearch = !searchQuery || 
-      example.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      example.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      example.term?.name.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = selectedStatus === 'all' || 
-      (selectedStatus === 'verified' && example.is_verified) ||
-      (selectedStatus === 'unverified' && !example.is_verified);
-    
-    return matchesSearch && matchesStatus;
-  }) || [];
+  const filteredExamples =
+    examplesData?.data?.filter(example => {
+      const matchesSearch =
+        !searchQuery ||
+        example.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        example.description?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        example.term?.name.toLowerCase().includes(searchQuery.toLowerCase());
+
+      const matchesStatus =
+        selectedStatus === 'all' ||
+        (selectedStatus === 'verified' && example.is_verified) ||
+        (selectedStatus === 'unverified' && !example.is_verified);
+
+      return matchesSearch && matchesStatus;
+    }) || [];
 
   if (isLoading) {
     return (
@@ -178,7 +199,7 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
             <BarChart3 className="w-4 h-4 mr-2" />
             Analytics
           </button>
-          <button 
+          <button
             onClick={() => setShowCreateModal(true)}
             className="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700"
           >
@@ -198,15 +219,15 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 placeholder="Search examples, terms, or descriptions..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={e => setSearchQuery(e.target.value)}
               />
             </div>
           </div>
-          
-          <select 
+
+          <select
             className="border border-gray-300 rounded-md px-3 py-2"
             value={selectedLanguage}
-            onChange={(e) => setSelectedLanguage(e.target.value)}
+            onChange={e => setSelectedLanguage(e.target.value)}
           >
             <option value="all">All Languages</option>
             <option value="python">Python</option>
@@ -219,10 +240,10 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
             <option value="go">Go</option>
           </select>
 
-          <select 
+          <select
             className="border border-gray-300 rounded-md px-3 py-2"
             value={selectedDifficulty}
-            onChange={(e) => setSelectedDifficulty(e.target.value)}
+            onChange={e => setSelectedDifficulty(e.target.value)}
           >
             <option value="all">All Levels</option>
             <option value="beginner">Beginner</option>
@@ -230,10 +251,10 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
             <option value="advanced">Advanced</option>
           </select>
 
-          <select 
+          <select
             className="border border-gray-300 rounded-md px-3 py-2"
             value={selectedType}
-            onChange={(e) => setSelectedType(e.target.value)}
+            onChange={e => setSelectedType(e.target.value)}
           >
             <option value="all">All Types</option>
             <option value="implementation">Implementation</option>
@@ -242,10 +263,10 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
             <option value="full_project">Full Project</option>
           </select>
 
-          <select 
+          <select
             className="border border-gray-300 rounded-md px-3 py-2"
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
+            onChange={e => setSelectedStatus(e.target.value)}
           >
             <option value="all">All Status</option>
             <option value="verified">Verified</option>
@@ -257,13 +278,15 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
       {/* Content Layout */}
       <div className="flex space-x-6">
         {/* Examples Table */}
-        <div className={`bg-white rounded-lg border overflow-hidden ${selectedExample ? 'flex-1' : 'w-full'}`}>
+        <div
+          className={`bg-white rounded-lg border overflow-hidden ${selectedExample ? 'flex-1' : 'w-full'}`}
+        >
           <div className="px-6 py-4 border-b bg-gray-50">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Code Examples ({filteredExamples.length})</h3>
             </div>
           </div>
-          
+
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead className="bg-gray-50 border-b">
@@ -292,9 +315,9 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {filteredExamples.map((example) => (
-                  <tr 
-                    key={example.id} 
+                {filteredExamples.map(example => (
+                  <tr
+                    key={example.id}
                     className={`hover:bg-gray-50 cursor-pointer ${selectedExample?.id === example.id ? 'bg-blue-50' : ''}`}
                     onClick={() => handleExampleClick(example)}
                   >
@@ -326,19 +349,25 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <div className="text-sm font-medium text-gray-900">{example.term?.name || 'N/A'}</div>
+                      <div className="text-sm font-medium text-gray-900">
+                        {example.term?.name || 'N/A'}
+                      </div>
                       <div className="text-sm text-gray-500 truncate max-w-xs">
                         {example.term?.shortDefinition}
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLanguageColor(example.language)}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLanguageColor(example.language)}`}
+                      >
                         <Languages className="w-3 h-3 mr-1" />
                         {example.language}
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(example.difficulty_level)}`}>
+                      <span
+                        className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(example.difficulty_level)}`}
+                      >
                         {example.difficulty_level}
                       </span>
                     </td>
@@ -362,7 +391,7 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                    <td className="px-6 py-4 text-right" onClick={e => e.stopPropagation()}>
                       <div className="flex items-center justify-end space-x-2">
                         <button className="text-gray-400 hover:text-blue-600">
                           <Eye className="w-4 h-4" />
@@ -370,7 +399,7 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
                         <button className="text-gray-400 hover:text-blue-600">
                           <Edit className="w-4 h-4" />
                         </button>
-                        <button 
+                        <button
                           onClick={() => handleDeleteExample(example.id)}
                           className="text-gray-400 hover:text-red-600"
                         >
@@ -390,40 +419,46 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
           <div className="w-96 bg-white border rounded-lg p-6">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold">Example Details</h3>
-              <button 
+              <button
                 onClick={() => setSelectedExample(null)}
                 className="text-gray-400 hover:text-gray-600"
               >
                 ×
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <div className="text-sm font-medium text-gray-700">Title</div>
                 <div className="text-lg font-semibold">{selectedExample.title}</div>
               </div>
-              
+
               <div>
                 <div className="text-sm font-medium text-gray-700">Description</div>
-                <div className="text-sm text-gray-600">{selectedExample.description || 'No description'}</div>
+                <div className="text-sm text-gray-600">
+                  {selectedExample.description || 'No description'}
+                </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium text-gray-700">Language</div>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLanguageColor(selectedExample.language)}`}>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLanguageColor(selectedExample.language)}`}
+                  >
                     {selectedExample.language}
                   </span>
                 </div>
                 <div>
                   <div className="text-sm font-medium text-gray-700">Difficulty</div>
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(selectedExample.difficulty_level)}`}>
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getDifficultyColor(selectedExample.difficulty_level)}`}
+                  >
                     {selectedExample.difficulty_level}
                   </span>
                 </div>
               </div>
-              
+
               <div>
                 <div className="text-sm font-medium text-gray-700">Code Preview</div>
                 <div className="bg-gray-50 rounded p-3 text-xs font-mono max-h-32 overflow-y-auto">
@@ -431,7 +466,7 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
                   {selectedExample.code.length > 200 && '...'}
                 </div>
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <div className="text-sm font-medium text-gray-700">Upvotes</div>
@@ -448,7 +483,7 @@ export default function CodeExamplesManagement({ onExampleSelect }: CodeExamples
                   </div>
                 </div>
               </div>
-              
+
               <div className="flex space-x-2 pt-4">
                 <button className="flex-1 bg-blue-600 text-white px-4 py-2 rounded text-sm hover:bg-blue-700">
                   Edit Example

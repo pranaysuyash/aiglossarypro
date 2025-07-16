@@ -2,13 +2,13 @@
 
 /**
  * Google Search Console Sitemap Submission Script
- * 
+ *
  * This script submits the updated sitemap to Google Search Console
  * for improved SEO indexing of the sample terms pages.
  */
 
-import { google } from 'googleapis';
 import { promises as fs } from 'fs';
+import { google } from 'googleapis';
 import { join } from 'path';
 
 interface SitemapSubmissionConfig {
@@ -69,7 +69,9 @@ class GoogleSearchConsoleSubmitter {
 
       return auth.getClient();
     } else {
-      throw new Error('No authentication method provided. Set GOOGLE_SERVICE_ACCOUNT_JSON environment variable or provide serviceAccountPath');
+      throw new Error(
+        'No authentication method provided. Set GOOGLE_SERVICE_ACCOUNT_JSON environment variable or provide serviceAccountPath'
+      );
     }
   }
 
@@ -203,7 +205,7 @@ class GoogleSearchConsoleSubmitter {
 
     try {
       const sitemaps = await this.listSitemaps();
-      
+
       console.log(`\n📊 Current Sitemaps in GSC (${sitemaps.length}):`);
       sitemaps.forEach((sitemap, index) => {
         console.log(`${index + 1}. ${sitemap.feedpath}`);
@@ -219,7 +221,6 @@ class GoogleSearchConsoleSubmitter {
       for (const sitemapUrl of this.config.sitemapUrls) {
         await this.verifySitemapAccessibility(sitemapUrl);
       }
-
     } catch (error) {
       console.error('❌ Failed to generate report:', error);
     }
@@ -271,18 +272,17 @@ async function main() {
   try {
     const submitter = new GoogleSearchConsoleSubmitter(config);
     await submitter.initialize();
-    
+
     // Generate a pre-submission report
     await submitter.generateReport();
-    
+
     // Submit all sitemaps
     await submitter.submitAllSitemaps();
-    
+
     // Generate a post-submission report
     console.log('\n' + '='.repeat(60));
     console.log('📋 Post-Submission Report');
     await submitter.generateReport();
-
   } catch (error) {
     console.error('❌ Sitemap submission failed:', error);
     process.exit(1);
@@ -290,7 +290,7 @@ async function main() {
 }
 
 // Export for use as a module
-export { GoogleSearchConsoleSubmitter, SitemapSubmissionConfig };
+export { GoogleSearchConsoleSubmitter, type SitemapSubmissionConfig };
 
 // Run if called directly
 if (require.main === module) {

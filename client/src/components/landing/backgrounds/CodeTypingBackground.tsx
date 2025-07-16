@@ -12,7 +12,7 @@ interface CodeLine {
 }
 
 interface CodeTypingBackgroundProps {
-  className?: string;
+  className?: string | undefined;
   opacity?: number;
   linesCount?: number;
   typingSpeed?: number;
@@ -100,7 +100,7 @@ export function CodeTypingBackground({
 
   useEffect(() => {
     const container = containerRef.current;
-    if (!container) return;
+    if (!container) {return;}
 
     const initializeLines = () => {
       const containerRect = container.getBoundingClientRect();
@@ -125,8 +125,8 @@ export function CodeTypingBackground({
     };
 
     const animate = () => {
-      setLines((prevLines) =>
-        prevLines.map((line) => {
+      setLines(prevLines =>
+        prevLines.map(line => {
           if (line.delay > 0) {
             return { ...line, delay: line.delay - 16 };
           }

@@ -79,12 +79,12 @@ export function registerUserProgressRoutes(app: Express): void {
             lastActive: learningStreak.lastActivityDate.toISOString(),
           },
           achievements: userStats.achievements
-            .map((achievement) => ({
-              id: achievement.toLowerCase().replace(/\s+/g, '-'),
-              name: achievement,
-              description: `Achievement: ${achievement}`,
-              unlockedAt: userStats.lastActivity.toISOString(),
-              icon: '🏆',
+            .map(achievement => ({
+              id: achievement.id || achievement.name.toLowerCase().replace(/\s+/g, '-'),
+              name: achievement.name,
+              description: achievement.description || `Achievement: ${achievement.name}`,
+              unlockedAt: achievement.unlockedAt?.toISOString() || userStats.lastActivity?.toISOString(),
+              icon: achievement.icon || '🏆',
             }))
             .concat([
               {
@@ -187,18 +187,18 @@ export function registerUserProgressRoutes(app: Express): void {
         });
 
         // Transform to API format
-        const apiResponse = sectionProgress.map((progress) => ({
+        const apiResponse = sectionProgress.map(progress => ({
           termId: progress.termId,
           termName: progress.termId
             .split('-')
-            .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+            .map(w => w.charAt(0).toUpperCase() + w.slice(1))
             .join(' '), // Convert ID to readable name
           sectionId: progress.sectionId,
           sectionName:
             progress.sectionTitle ||
             progress.sectionId
               .split('-')
-              .map((w) => w.charAt(0).toUpperCase() + w.slice(1))
+              .map(w => w.charAt(0).toUpperCase() + w.slice(1))
               .join(' '),
           status: progress.status,
           completionPercentage: progress.completionPercentage,
@@ -277,7 +277,7 @@ export function registerUserProgressRoutes(app: Express): void {
 
         // 1. Recommend terms in categories where user is active but not complete
         const activeCategories = categoryProgress
-          .filter((cat) => cat.completionPercentage > 0 && cat.completionPercentage < 80)
+          .filter(cat => cat.completionPercentage > 0 && cat.completionPercentage < 80)
           .sort((a, b) => b.completionPercentage - a.completionPercentage)
           .slice(0, 2);
 
@@ -294,7 +294,7 @@ export function registerUserProgressRoutes(app: Express): void {
 
         // 2. Recommend next sections for partially completed terms
         const inProgressSections = sectionProgress.filter(
-          (section) => section.status === 'in_progress'
+          section => section.status === 'in_progress'
         );
         for (const section of inProgressSections.slice(0, 2)) {
           recommendations.push({

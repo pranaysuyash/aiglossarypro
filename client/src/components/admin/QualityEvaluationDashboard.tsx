@@ -310,7 +310,7 @@ const QUALITY_TEMPLATES: QualityTemplate[] = [
     name: 'Technical Accuracy Focus',
     description: 'Emphasizes technical accuracy and depth',
     category: 'specialized',
-    metrics: QUALITY_METRICS.map((m) =>
+    metrics: QUALITY_METRICS.map(m =>
       m.id === 'accuracy'
         ? { ...m, weight: 0.4 }
         : m.id === 'technicalDepth'
@@ -330,7 +330,7 @@ const QUALITY_TEMPLATES: QualityTemplate[] = [
     name: 'Readability & Clarity Focus',
     description: 'Emphasizes clear communication and readability',
     category: 'specialized',
-    metrics: QUALITY_METRICS.map((m) =>
+    metrics: QUALITY_METRICS.map(m =>
       m.id === 'clarity'
         ? { ...m, weight: 0.35 }
         : m.id === 'readability'
@@ -372,7 +372,7 @@ export function QualityEvaluationDashboard() {
     queryKey: ['quality-analytics'],
     queryFn: async () => {
       const response = await fetch('/api/admin/quality/analytics');
-      if (!response.ok) throw new Error('Failed to fetch quality analytics');
+      if (!response.ok) {throw new Error('Failed to fetch quality analytics');}
       return response.json();
     },
     refetchInterval: 30000,
@@ -383,13 +383,13 @@ export function QualityEvaluationDashboard() {
     queryKey: ['quality-samples', filterSection, filterScore, filterStatus, searchQuery],
     queryFn: async () => {
       const params = new URLSearchParams();
-      if (filterSection !== 'all') params.append('section', filterSection);
-      if (filterScore !== 'all') params.append('score', filterScore);
-      if (filterStatus !== 'all') params.append('status', filterStatus);
-      if (searchQuery) params.append('search', searchQuery);
+      if (filterSection !== 'all') {params.append('section', filterSection);}
+      if (filterScore !== 'all') {params.append('score', filterScore);}
+      if (filterStatus !== 'all') {params.append('status', filterStatus);}
+      if (searchQuery) {params.append('search', searchQuery);}
 
       const response = await fetch(`/api/admin/quality/samples?${params.toString()}`);
-      if (!response.ok) throw new Error('Failed to fetch content samples');
+      if (!response.ok) {throw new Error('Failed to fetch content samples');}
       return response.json();
     },
   });
@@ -399,7 +399,7 @@ export function QualityEvaluationDashboard() {
     queryKey: ['quality-evaluations'],
     queryFn: async () => {
       const response = await fetch('/api/admin/quality/evaluations?limit=20');
-      if (!response.ok) throw new Error('Failed to fetch evaluations');
+      if (!response.ok) {throw new Error('Failed to fetch evaluations');}
       return response.json();
     },
     refetchInterval: 15000,
@@ -417,10 +417,10 @@ export function QualityEvaluationDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
       });
-      if (!response.ok) throw new Error('Failed to evaluate content');
+      if (!response.ok) {throw new Error('Failed to evaluate content');}
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast({
         title: 'Evaluation Completed',
         description: `Quality score: ${data.score}/10 (${data.grade})`,
@@ -444,10 +444,10 @@ export function QualityEvaluationDashboard() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(params),
       });
-      if (!response.ok) throw new Error('Failed to start batch evaluation');
+      if (!response.ok) {throw new Error('Failed to start batch evaluation');}
       return response.json();
     },
-    onSuccess: (data) => {
+    onSuccess: data => {
       toast({
         title: 'Batch Evaluation Started',
         description: `Evaluating ${data.totalItems} content pieces`,
@@ -458,9 +458,9 @@ export function QualityEvaluationDashboard() {
 
   // Helper functions
   const getScoreColor = (score: number) => {
-    if (score >= 9) return 'text-green-600';
-    if (score >= 7) return 'text-blue-600';
-    if (score >= 5) return 'text-yellow-600';
+    if (score >= 9) {return 'text-green-600';}
+    if (score >= 7) {return 'text-blue-600';}
+    if (score >= 5) {return 'text-yellow-600';}
     return 'text-red-600';
   };
 
@@ -660,7 +660,7 @@ export function QualityEvaluationDashboard() {
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {QUALITY_TEMPLATES.map((template) => (
+                        {QUALITY_TEMPLATES.map(template => (
                           <SelectItem key={template.id} value={template.id}>
                             <div className="flex flex-col">
                               <span>{template.name}</span>
@@ -678,7 +678,7 @@ export function QualityEvaluationDashboard() {
                   <div>
                     <Label>Evaluator Type</Label>
                     <div className="grid grid-cols-3 gap-2 mt-2">
-                      {['ai', 'human', 'hybrid'].map((type) => (
+                      {['ai', 'human', 'hybrid'].map(type => (
                         <Button
                           key={type}
                           variant={evaluationMode === type ? 'default' : 'outline'}
@@ -699,7 +699,7 @@ export function QualityEvaluationDashboard() {
                     <Label>Quality Threshold: {qualityThreshold}/10</Label>
                     <Slider
                       value={[qualityThreshold]}
-                      onValueChange={(value) => setQualityThreshold(value[0])}
+                      onValueChange={value => setQualityThreshold(value[0])}
                       max={10}
                       min={1}
                       step={0.5}
@@ -838,14 +838,14 @@ export function QualityEvaluationDashboard() {
                   <CardHeader>
                     <CardTitle className="flex items-center justify-between">
                       <span>
-                        Template: {QUALITY_TEMPLATES.find((t) => t.id === selectedTemplate)?.name}
+                        Template: {QUALITY_TEMPLATES.find(t => t.id === selectedTemplate)?.name}
                       </span>
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => {
                           setEditingTemplate(
-                            QUALITY_TEMPLATES.find((t) => t.id === selectedTemplate) || null
+                            QUALITY_TEMPLATES.find(t => t.id === selectedTemplate) || null
                           );
                           setShowTemplateEditor(true);
                         }}
@@ -858,28 +858,28 @@ export function QualityEvaluationDashboard() {
                   <CardContent>
                     <div className="space-y-4">
                       <p className="text-sm text-muted-foreground">
-                        {QUALITY_TEMPLATES.find((t) => t.id === selectedTemplate)?.description}
+                        {QUALITY_TEMPLATES.find(t => t.id === selectedTemplate)?.description}
                       </p>
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                         <div>
                           <Label>Usage Count</Label>
                           <p className="font-mono">
-                            {QUALITY_TEMPLATES.find((t) => t.id === selectedTemplate)?.usageCount}
+                            {QUALITY_TEMPLATES.find(t => t.id === selectedTemplate)?.usageCount}
                           </p>
                         </div>
                         <div>
                           <Label>Average Score</Label>
                           <p className="font-mono">
                             {QUALITY_TEMPLATES.find(
-                              (t) => t.id === selectedTemplate
+                              t => t.id === selectedTemplate
                             )?.averageScore.toFixed(1)}
                           </p>
                         </div>
                         <div>
                           <Label>Category</Label>
                           <Badge variant="outline">
-                            {QUALITY_TEMPLATES.find((t) => t.id === selectedTemplate)?.category}
+                            {QUALITY_TEMPLATES.find(t => t.id === selectedTemplate)?.category}
                           </Badge>
                         </div>
                         <div>
@@ -891,7 +891,7 @@ export function QualityEvaluationDashboard() {
                       <div>
                         <Label>Quality Metrics</Label>
                         <div className="mt-2 space-y-2">
-                          {QUALITY_METRICS.map((metric) => (
+                          {QUALITY_METRICS.map(metric => (
                             <div
                               key={metric.id}
                               className="flex items-center justify-between p-2 bg-muted rounded"
@@ -928,11 +928,11 @@ export function QualityEvaluationDashboard() {
                     <Input
                       placeholder="Search content..."
                       value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
+                      onChange={e => setSearchQuery(e.target.value)}
                     />
 
                     <div className="space-y-2 max-h-96 overflow-y-auto">
-                      {samples?.slice(0, 10).map((sample) => (
+                      {samples?.slice(0, 10).map(sample => (
                         <Card
                           key={sample.id}
                           className={`cursor-pointer transition-all hover:shadow-md ${
@@ -987,7 +987,7 @@ export function QualityEvaluationDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {evaluations?.slice(0, 5).map((evaluation) => (
+                    {evaluations?.slice(0, 5).map(evaluation => (
                       <div
                         key={evaluation.id}
                         className="flex items-center justify-between p-2 bg-muted rounded"

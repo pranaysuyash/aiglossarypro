@@ -1,11 +1,11 @@
-import { captureException, withScope } from '@sentry/react';
+import { captureException, withScope, SeverityLevel } from '@sentry/react';
 
 // Error severity levels
 export enum ErrorSeverity {
   LOW = 'low',
   MEDIUM = 'medium',
   HIGH = 'high',
-  CRITICAL = 'critical'
+  CRITICAL = 'critical',
 }
 
 // Error categories
@@ -17,7 +17,7 @@ export enum ErrorCategory {
   UI = 'ui',
   NETWORK = 'network',
   VALIDATION = 'validation',
-  UNKNOWN = 'unknown'
+  UNKNOWN = 'unknown',
 }
 
 interface ErrorContext {
@@ -25,10 +25,55 @@ interface ErrorContext {
     id?: string;
     email?: string;
     type?: 'free' | 'premium' | 'guest';
+    subscription?: {
+      plan: 'free' | 'premium' | 'lifetime';
+      expiresAt?: Date;
+      trialEndsAt?: Date;
+    };
+    sessionId?: string;
+    deviceId?: string;
   };
   page?: string;
   action?: string;
+  severity?: ErrorSeverity;
+  category?: ErrorCategory;
   metadata?: Record<string, any>;
+  // Performance monitoring
+  performance?: {
+    pageLoadTime?: number;
+    apiResponseTime?: number;
+    renderTime?: number;
+    memoryUsage?: number;
+  };
+  // Analytics tracking
+  analytics?: {
+    sessionDuration?: number;
+    pageViews?: number;
+    lastInteraction?: string;
+    referrer?: string;
+  };
+  // Content management
+  content?: {
+    termId?: string;
+    categoryId?: string;
+    searchQuery?: string;
+    contentType?: 'term' | 'category' | 'learning-path';
+  };
+  // Admin features
+  adminAction?: {
+    type: 'create' | 'update' | 'delete' | 'bulk-action';
+    entityType: string;
+    entityId?: string;
+    changes?: Record<string, any>;
+  };
+  // Device and browser info
+  device?: {
+    type: 'mobile' | 'tablet' | 'desktop';
+    os?: string;
+    browser?: string;
+    screenResolution?: string;
+    connectionType?: string;
+  };
 }
 
 class ErrorTracker {
@@ -42,7 +87,7 @@ class ErrorTracker {
       this.isOnline = true;
       this.flushErrorQueue();
     });
-    
+
     window.addEventListener('offline', () => {
       this.isOnline = false;
     });
@@ -63,7 +108,7 @@ class ErrorTracker {
     context?: ErrorContext
   ): void {
     const errorObj = typeof error === 'string' ? new Error(error) : error;
-    
+
     // Enhanced error object with additional metadata
     const enhancedError = {
       ...errorObj,
@@ -72,7 +117,7 @@ class ErrorTracker {
       timestamp: new Date().toISOString(),
       userAgent: navigator.userAgent,
       url: window.location.href,
-      ...context
+      ...context,
     };
 
     // Log to console in development
@@ -82,25 +127,25 @@ class ErrorTracker {
         stack: errorObj.stack,
         severity,
         category,
-        context
+        context,
       });
     }
 
     // Send to Sentry if available
     if (window.Sentry) {
-      withScope((scope) => {
+      withScope(scope => {
         scope.setLevel(this.mapSeverityToSentryLevel(severity));
         scope.setTag('category', category);
         scope.setContext('error_details', enhancedError);
-        
+
         if (context?.user) {
           scope.setUser({
             id: context.user.id,
             email: context.user.email,
-            type: context.user.type
+            type: context.user.type,
           });
         }
-        
+
         captureException(errorObj);
       });
     }
@@ -110,7 +155,7 @@ class ErrorTracker {
       this.errorQueue.push({
         error: errorObj,
         context: { ...context, severity, category },
-        timestamp: Date.now()
+        timestamp: Date.now(),
       });
     }
 
@@ -128,7 +173,7 @@ class ErrorTracker {
     const apiError = new Error(
       `API Error: ${endpoint} returned ${statusCode} - ${typeof error === 'string' ? error : error.message}`
     );
-    
+
     this.trackError(
       apiError,
       statusCode >= 500 ? ErrorSeverity.HIGH : ErrorSeverity.MEDIUM,
@@ -138,8 +183,8 @@ class ErrorTracker {
         metadata: {
           ...context?.metadata,
           endpoint,
-          statusCode
-        }
+          statusCode,
+        },
       }
     );
   }
@@ -155,26 +200,21 @@ class ErrorTracker {
       const perfError = new Error(
         `Performance threshold exceeded: ${metric} took ${value}ms (threshold: ${threshold}ms)`
       );
-      
-      this.trackError(
-        perfError,
-        ErrorSeverity.LOW,
-        ErrorCategory.PERFORMANCE,
-        {
-          ...context,
-          metadata: {
-            ...context?.metadata,
-            metric,
-            value,
-            threshold
-          }
-        }
-      );
+
+      this.trackError(perfError, ErrorSeverity.LOW, ErrorCategory.PERFORMANCE, {
+        ...context,
+        metadata: {
+          ...context?.metadata,
+          metric,
+          value,
+          threshold,
+        },
+      });
     }
   }
 
   // Map internal severity to Sentry levels
-  private mapSeverityToSentryLevel(severity: ErrorSeverity): string {
+  private mapSeverityToSentryLevel(severity: ErrorSeverity): SeverityLevel {
     switch (severity) {
       case ErrorSeverity.LOW:
         return 'info';
@@ -197,9 +237,9 @@ class ErrorTracker {
         await fetch('/api/errors/track', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify(error)
+          body: JSON.stringify(error),
         });
       }
     } catch (err) {
@@ -212,7 +252,7 @@ class ErrorTracker {
   private flushErrorQueue(): void {
     while (this.errorQueue.length > 0) {
       const { error, context, timestamp } = this.errorQueue.shift()!;
-      
+
       // Only send if error is less than 1 hour old
       if (Date.now() - timestamp < 3600000) {
         this.trackError(error, context.severity, context.category, context);
@@ -229,8 +269,14 @@ class ErrorTracker {
     // This would typically fetch from your analytics backend
     return {
       total: 0,
-      byCategory: Object.values(ErrorCategory).reduce((acc, cat) => ({ ...acc, [cat]: 0 }), {}) as Record<ErrorCategory, number>,
-      bySeverity: Object.values(ErrorSeverity).reduce((acc, sev) => ({ ...acc, [sev]: 0 }), {}) as Record<ErrorSeverity, number>
+      byCategory: Object.values(ErrorCategory).reduce(
+        (acc, cat) => ({ ...acc, [cat]: 0 }),
+        {}
+      ) as Record<ErrorCategory, number>,
+      bySeverity: Object.values(ErrorSeverity).reduce(
+        (acc, sev) => ({ ...acc, [sev]: 0 }),
+        {}
+      ) as Record<ErrorSeverity, number>,
     };
   }
 }
@@ -240,22 +286,17 @@ export const errorTracker = ErrorTracker.getInstance();
 
 // React Error Boundary error handler
 export const handleErrorBoundary = (error: Error, errorInfo: { componentStack: string }) => {
-  errorTracker.trackError(
-    error,
-    ErrorSeverity.HIGH,
-    ErrorCategory.UI,
-    {
-      metadata: {
-        componentStack: errorInfo.componentStack
-      }
-    }
-  );
+  errorTracker.trackError(error, ErrorSeverity.HIGH, ErrorCategory.UI, {
+    metadata: {
+      componentStack: errorInfo.componentStack,
+    },
+  });
 };
 
 // Global error handler
 export const setupGlobalErrorHandlers = () => {
   // Unhandled promise rejections
-  window.addEventListener('unhandledrejection', (event) => {
+  window.addEventListener('unhandledrejection', event => {
     errorTracker.trackError(
       new Error(`Unhandled Promise Rejection: ${event.reason}`),
       ErrorSeverity.HIGH,
@@ -263,14 +304,14 @@ export const setupGlobalErrorHandlers = () => {
       {
         metadata: {
           reason: event.reason,
-          promise: event.promise
-        }
+          promise: event.promise,
+        },
       }
     );
   });
 
   // Global error handler
-  window.addEventListener('error', (event) => {
+  window.addEventListener('error', event => {
     errorTracker.trackError(
       event.error || new Error(event.message),
       ErrorSeverity.HIGH,
@@ -279,8 +320,8 @@ export const setupGlobalErrorHandlers = () => {
         metadata: {
           filename: event.filename,
           lineno: event.lineno,
-          colno: event.colno
-        }
+          colno: event.colno,
+        },
       }
     );
   });

@@ -26,7 +26,7 @@ const XRExploration: React.FC = () => {
       try {
         const report = await generateCompatibilityReport();
         setCompatibilityReport(report);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Failed to generate compatibility report:', error);
         setError('Failed to check device compatibility');
       }
@@ -367,7 +367,7 @@ const XRExploration: React.FC = () => {
           Exit VR
         </button>
         <VRConceptSpace
-          onConceptSelect={(conceptId) => console.log('VR Concept selected:', conceptId)}
+          onConceptSelect={conceptId => console.log('VR Concept selected:', conceptId)}
           onError={handleError}
         />
       </div>
@@ -387,7 +387,7 @@ const XRExploration: React.FC = () => {
           onConceptPlace={(concept, position) =>
             console.log('AR Concept placed:', concept.name, 'at', position)
           }
-          onConceptSelect={(conceptId) => console.log('AR Concept selected:', conceptId)}
+          onConceptSelect={conceptId => console.log('AR Concept selected:', conceptId)}
           onError={handleError}
         />
       </div>

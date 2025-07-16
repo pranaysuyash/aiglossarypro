@@ -76,7 +76,7 @@ async function loadCSV(filename) {
   try {
     log('info', `Loading CSV file: ${filename}`);
     const content = await fs.readFile(filename, 'utf-8');
-    const lines = content.split('\n').filter((line) => line.trim());
+    const lines = content.split('\n').filter(line => line.trim());
 
     if (lines.length < 2) {
       throw new Error('CSV file appears to be empty or has no data rows');
@@ -89,7 +89,7 @@ async function loadCSV(filename) {
     const chunkSize = 1000;
     for (let i = 1; i < lines.length; i += chunkSize) {
       const chunk = lines.slice(i, i + chunkSize);
-      const parsedChunk = chunk.map((line) => parseCSVLine(line));
+      const parsedChunk = chunk.map(line => parseCSVLine(line));
       rows.push(...parsedChunk);
 
       if (i % 10000 === 0) {
@@ -317,7 +317,7 @@ Integration with Existing Processors:
 
   try {
     // Get input file
-    const inputFile = args.find((arg) => !arg.startsWith('--'));
+    const inputFile = args.find(arg => !arg.startsWith('--'));
     if (!inputFile) {
       throw new Error('Please specify an input file (CSV)');
     }

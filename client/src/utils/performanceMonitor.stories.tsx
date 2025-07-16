@@ -1,11 +1,10 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { useEffect, useState } from 'react';
+import type { Meta, StoryObj } from '@storybook/react';
+import React, { useEffect, useState } from 'react';
 
 // Demo component to showcase the performance monitor
 const PerformanceMonitorDemo = () => {
   const [metrics, setMetrics] = useState<any>({});
-  
+
   useEffect(() => {
     // Simulate performance metrics
     const performanceData = {
@@ -13,9 +12,9 @@ const PerformanceMonitorDemo = () => {
       firstContentfulPaint: '0.8s',
       largestContentfulPaint: '1.5s',
       cumulativeLayoutShift: '0.1',
-      firstInputDelay: '12ms'
+      firstInputDelay: '12ms',
     };
-    
+
     setMetrics(performanceData);
   }, []);
 
@@ -30,15 +29,21 @@ const PerformanceMonitorDemo = () => {
           </div>
           <div className="bg-white p-3 rounded shadow-sm">
             <div className="text-xs text-gray-500">FCP</div>
-            <div className="text-lg font-semibold text-blue-600">{metrics.firstContentfulPaint}</div>
+            <div className="text-lg font-semibold text-blue-600">
+              {metrics.firstContentfulPaint}
+            </div>
           </div>
           <div className="bg-white p-3 rounded shadow-sm">
             <div className="text-xs text-gray-500">LCP</div>
-            <div className="text-lg font-semibold text-orange-600">{metrics.largestContentfulPaint}</div>
+            <div className="text-lg font-semibold text-orange-600">
+              {metrics.largestContentfulPaint}
+            </div>
           </div>
           <div className="bg-white p-3 rounded shadow-sm">
             <div className="text-xs text-gray-500">CLS</div>
-            <div className="text-lg font-semibold text-purple-600">{metrics.cumulativeLayoutShift}</div>
+            <div className="text-lg font-semibold text-purple-600">
+              {metrics.cumulativeLayoutShift}
+            </div>
           </div>
         </div>
         <div className="bg-white p-3 rounded shadow-sm">
@@ -74,10 +79,18 @@ export const Documentation: Story = {
       <div className="bg-gray-100 p-4 rounded">
         <h4 className="font-semibold mb-2">Key Metrics:</h4>
         <ul className="text-sm space-y-1">
-          <li>• <strong>FCP</strong>: First Contentful Paint</li>
-          <li>• <strong>LCP</strong>: Largest Contentful Paint</li>
-          <li>• <strong>CLS</strong>: Cumulative Layout Shift</li>
-          <li>• <strong>FID</strong>: First Input Delay</li>
+          <li>
+            • <strong>FCP</strong>: First Contentful Paint
+          </li>
+          <li>
+            • <strong>LCP</strong>: Largest Contentful Paint
+          </li>
+          <li>
+            • <strong>CLS</strong>: Cumulative Layout Shift
+          </li>
+          <li>
+            • <strong>FID</strong>: First Input Delay
+          </li>
         </ul>
       </div>
     </div>

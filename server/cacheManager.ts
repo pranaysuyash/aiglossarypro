@@ -30,7 +30,7 @@ export class CacheManager {
   private cacheDir: string;
   private cacheVersion = '1.0.0';
 
-  constructor(cacheDir: string = './cache') {
+  constructor(cacheDir = './cache') {
     this.cacheDir = cacheDir;
     this.ensureCacheDirectory();
   }
@@ -298,7 +298,7 @@ export class CacheManager {
       }
 
       const files = fs.readdirSync(this.cacheDir);
-      const metadataFiles = files.filter((f) => f.endsWith('_metadata.json'));
+      const metadataFiles = files.filter(f => f.endsWith('_metadata.json'));
 
       const cacheEntries: CacheMetadata[] = [];
 

@@ -1,12 +1,13 @@
 import type { NextFunction, Request, Response } from 'express';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { log } from '../../utils/logger';
 import { rateLimitLoggingMiddleware } from '../loggingMiddleware';
 
 // Mock the logger
-jest.mock('../../utils/logger', () => ({
+vi.mock('../../utils/logger', () => ({
   log: {
     security: {
-      rateLimitExceeded: jest.fn(),
+      rateLimitExceeded: vi.fn(),
     },
   },
 }));
@@ -19,7 +20,7 @@ describe('Logging Middleware', () => {
 
   beforeEach(() => {
     // Reset mocks
-    jest.clearAllMocks();
+    vi.clearAllMocks();
 
     // Create mock request
     mockReq = {

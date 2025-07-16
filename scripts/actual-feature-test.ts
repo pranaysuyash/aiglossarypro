@@ -215,14 +215,14 @@ class ActualFeatureTester {
     console.log('\n📋 ACTUAL FEATURE STATUS REPORT');
     console.log('=' * 50);
 
-    const workingFeatures = this.results.filter((r) => r.working);
-    const brokenFeatures = this.results.filter((r) => !r.working);
+    const workingFeatures = this.results.filter(r => r.working);
+    const brokenFeatures = this.results.filter(r => !r.working);
 
     console.log(`\n✅ WORKING FEATURES (${workingFeatures.length}):`);
-    workingFeatures.forEach((f) => console.log(`  - ${f.feature}`));
+    workingFeatures.forEach(f => console.log(`  - ${f.feature}`));
 
     console.log(`\n❌ NOT WORKING/MISSING (${brokenFeatures.length}):`);
-    brokenFeatures.forEach((f) => console.log(`  - ${f.feature}: ${f.details}`));
+    brokenFeatures.forEach(f => console.log(`  - ${f.feature}: ${f.details}`));
 
     const completionRate = Math.round((workingFeatures.length / this.results.length) * 100);
     console.log(`\n📊 OVERALL COMPLETION: ${completionRate}%`);

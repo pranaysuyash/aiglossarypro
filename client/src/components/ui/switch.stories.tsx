@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
 import { Label } from './label';
 import { Switch } from './switch';
 
@@ -209,7 +208,7 @@ export const FormExample: Story = {
     });
 
     const handleChange = (key: keyof typeof formData) => (checked: boolean) => {
-      setFormData((prev) => ({ ...prev, [key]: checked }));
+      setFormData(prev => ({ ...prev, [key]: checked }));
     };
 
     return (
@@ -268,7 +267,7 @@ export const FormExample: Story = {
           <ul className="mt-1 space-y-1">
             {Object.entries(formData).map(([key, value]) => (
               <li key={key}>
-                {key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}:{' '}
+                {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}:{' '}
                 <span className={value ? 'text-green-600' : 'text-red-600'}>
                   {value ? 'On' : 'Off'}
                 </span>
@@ -419,7 +418,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="p-4 dark">
         <Story />
       </div>

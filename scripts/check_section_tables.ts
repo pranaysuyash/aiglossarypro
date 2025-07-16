@@ -65,7 +65,7 @@ async function checkSectionTables() {
         `);
         console.log(
           '✓ Sample section names:',
-          sampleSections.rows.map((r) => r.name)
+          sampleSections.rows.map(r => r.name)
         );
       }
     }

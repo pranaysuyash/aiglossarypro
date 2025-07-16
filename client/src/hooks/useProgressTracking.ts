@@ -32,7 +32,7 @@ export function useProgressTracking(): UseProgressTrackingReturn {
     async (
       termId: string,
       sectionsViewed: string[] = [],
-      timeSpentSeconds: number = 0,
+      timeSpentSeconds = 0,
       options: ProgressTrackingOptions = {}
     ) => {
       if (!user) {
@@ -134,9 +134,9 @@ export function useProgressTracking(): UseProgressTrackingReturn {
 
           onSuccess?.();
           return { success: true, bookmarkCount: data.bookmarkCount };
-        } else {
+        } 
           throw new Error(data.message || 'Failed to toggle bookmark');
-        }
+        
       } catch (error) {
         const errorObj = error instanceof Error ? error : new Error('Unknown error');
 

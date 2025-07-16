@@ -43,7 +43,7 @@ async function runDirectMigration() {
       `);
 
       console.log('📋 Table structure:');
-      columnsResult.rows.forEach((row) => {
+      columnsResult.rows.forEach(row => {
         console.log(
           `  ${row.column_name}: ${row.data_type} ${row.is_nullable === 'NO' ? 'NOT NULL' : 'NULL'}`
         );

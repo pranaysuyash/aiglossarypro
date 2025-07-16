@@ -93,10 +93,10 @@ async function testFirebaseConfig() {
 
 // Run the test
 testFirebaseConfig()
-  .then((success) => {
+  .then(success => {
     process.exit(success ? 0 : 1);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error(chalk.red('❌ Test failed:'), error);
     process.exit(1);
   });

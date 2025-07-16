@@ -8,9 +8,9 @@ const generateMockProgress = (): { isCompleted: boolean; progress: number } => {
     return { isCompleted: true, progress: 100 };
   } else if (random < 0.6) {
     return { isCompleted: false, progress: Math.floor(Math.random() * 100) };
-  } else {
+  } 
     return { isCompleted: false, progress: 0 };
-  }
+  
 };
 
 // Add mock content to nodes
@@ -97,11 +97,11 @@ export const performanceTestData = {
     sections: contentOutline.sections.map(addMockContent),
   },
   deeplyNestedDataset: {
-    sections: contentOutline.sections.map((section) => ({
+    sections: contentOutline.sections.map(section => ({
       ...addMockContent(section),
-      subsections: section.subsections?.map((sub) => ({
+      subsections: section.subsections?.map(sub => ({
         ...addMockContent(sub),
-        subsections: sub.subsections?.map((deepSub) => ({
+        subsections: sub.subsections?.map(deepSub => ({
           ...addMockContent(deepSub),
           subsections: Array.from({ length: 10 }, (_, i) => ({
             name: `Deep Nested Item ${i + 1}`,
@@ -125,7 +125,7 @@ export const performanceTestData = {
 
 // Interactive elements test data
 export const interactiveElementsData = contentOutline.sections
-  .flatMap((section) => section.subsections?.filter((sub) => sub.metadata?.isInteractive))
+  .flatMap(section => section.subsections?.filter(sub => sub.metadata?.isInteractive))
   .filter((item): item is NonNullable<typeof item> => Boolean(item))
   .map(addMockContent);
 
@@ -173,7 +173,7 @@ export const filterTestScenarios = [
 ];
 
 // Performance benchmarking utilities
-export const createLargeDataset = (multiplier: number = 10): ContentOutline => {
+export const createLargeDataset = (multiplier = 10): ContentOutline => {
   const baseOutline = createTestDataset();
   const enlargedSections: ContentNode[] = [];
 

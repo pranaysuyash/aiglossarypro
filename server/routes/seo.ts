@@ -5,11 +5,11 @@
 
 import { eq, sql } from 'drizzle-orm';
 import { type Request, type Response, Router } from 'express';
+import { sampleTermsSeoUtils } from '../../client/src/utils/sampleTermsSitemap';
 import { categories, terms } from '../../shared/schema';
 import type { ApiResponse } from '../../shared/types';
 import { db } from '../db';
 import { log as logger } from '../utils/logger';
-import { sampleTermsSeoUtils } from '../../client/src/utils/sampleTermsSitemap';
 
 const seoRouter = Router();
 
@@ -77,7 +77,7 @@ seoRouter.get('/sitemap.xml', async (_req: Request, res: Response) => {
 `;
 
     // Add category pages
-    allCategories.forEach((category) => {
+    allCategories.forEach(category => {
       const categorySlug = category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       sitemap += `
   <url>
@@ -89,7 +89,7 @@ seoRouter.get('/sitemap.xml', async (_req: Request, res: Response) => {
     });
 
     // Add term pages
-    allTerms.forEach((term) => {
+    allTerms.forEach(term => {
       const termSlug = term.name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
       sitemap += `
   <url>
@@ -102,7 +102,7 @@ seoRouter.get('/sitemap.xml', async (_req: Request, res: Response) => {
 
     // Add sample term pages
     const sampleTerms = sampleTermsSeoUtils.generateSitemap(baseUrl);
-    sampleTerms.forEach((sampleTerm) => {
+    sampleTerms.forEach(sampleTerm => {
       // Skip the main /sample page as it's already added above
       if (!sampleTerm.url.endsWith('/sample')) {
         sitemap += `
@@ -133,16 +133,16 @@ seoRouter.get('/sitemap.xml', async (_req: Request, res: Response) => {
 seoRouter.get('/sitemap-sample-terms.xml', async (_req: Request, res: Response) => {
   try {
     const baseUrl = process.env.BASE_URL || 'https://aiglossarypro.com';
-    
+
     // Generate XML sitemap specifically for sample terms
     const sampleTermsXml = sampleTermsSeoUtils.generateXmlSitemap(baseUrl);
-    
+
     res.setHeader('Content-Type', 'application/xml');
     res.send(sampleTermsXml);
-    
+
     logger.info('Sample terms sitemap generated successfully', {
       termCount: sampleTermsSeoUtils.getSampleTermsCount(),
-      baseUrl
+      baseUrl,
     });
   } catch (error) {
     logger.error('Sample terms sitemap generation error:', {
@@ -150,7 +150,9 @@ seoRouter.get('/sitemap-sample-terms.xml', async (_req: Request, res: Response) 
     });
     res
       .status(500)
-      .send('<?xml version="1.0" encoding="UTF-8"?><error>Sample terms sitemap generation failed</error>');
+      .send(
+        '<?xml version="1.0" encoding="UTF-8"?><error>Sample terms sitemap generation failed</error>'
+      );
   }
 });
 
@@ -327,7 +329,7 @@ seoRouter.get(
           description: term.definition,
           category: term.categoryName,
           properties:
-            term.characteristics?.map((char) => ({
+            term.characteristics?.map(char => ({
               '@type': 'PropertyValue',
               name: 'characteristic',
               value: char,
@@ -428,7 +430,7 @@ seoRouter.get('/analytics', async (_req: Request, res: Response<ApiResponse<any>
       SELECT COUNT(*) as count FROM terms
     `);
 
-    const analytics = {
+    const analytics: any = {
       totalTerms: Number((totalTerms.rows[0] as any)?.count || 0),
       seoIssues: {
         missingShortDescriptions: Number((termsWithoutShortDesc.rows[0] as any)?.count || 0),

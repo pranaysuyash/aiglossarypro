@@ -20,7 +20,7 @@ export function FAQ() {
     {
       question: 'Do you offer refunds?',
       answer:
-        'We do not offer refunds for premium purchases. However, you can use the free tier (50 terms daily) forever to evaluate the platform before deciding to upgrade. If you have questions, contact us at support@aimlglossarypro.com.',
+        'We do not offer refunds for premium purchases. However, you can use the free tier (50 terms daily) forever to evaluate the platform before deciding to upgrade. If you have questions, contact us at support@aiglossarypro.com.',
     },
     {
       question: 'How often is the content updated?',
@@ -106,10 +106,10 @@ export function FAQ() {
             <p className="text-purple-700 mb-6 text-sm sm:text-base">
               We're here to help! Contact us at{' '}
               <a
-                href="mailto:support@aimlglossarypro.com"
+                href="mailto:support@aiglossarypro.com"
                 className="underline hover:no-underline break-words"
               >
-                support@aimlglossarypro.com
+                support@aiglossarypro.com
               </a>
             </p>
             <div className="text-sm text-purple-600">We typically respond within 24 hours.</div>

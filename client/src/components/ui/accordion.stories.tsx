@@ -1,5 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
+import type React from 'react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from './accordion';
 
 // Define the props type for the Accordion component

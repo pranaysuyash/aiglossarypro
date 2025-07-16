@@ -438,8 +438,8 @@ export async function streamingImportLatestProcessedFile(
   // Find the latest processed file
   const processedFiles = fs
     .readdirSync(tempDir)
-    .filter((f) => f.includes('processed_chunked_') && f.endsWith('.json'))
-    .map((f) => ({
+    .filter(f => f.includes('processed_chunked_') && f.endsWith('.json'))
+    .map(f => ({
       name: f,
       path: path.join(tempDir, f),
       stats: fs.statSync(path.join(tempDir, f)),

@@ -216,7 +216,7 @@ export class UserService {
     try {
       const user = await storage.getUserByEmail(email);
 
-      if (!user || !user.lifetimeAccess) {
+      if (!user?.lifetimeAccess) {
         return { hasAccess: false };
       }
 

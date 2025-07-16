@@ -89,7 +89,7 @@ class PerformanceReporter {
 
     try {
       const files = await fs.readdir(this.reportsDir);
-      const jsonFiles = files.filter((file) => file.endsWith('.json'));
+      const jsonFiles = files.filter(file => file.endsWith('.json'));
 
       for (const file of jsonFiles) {
         const filePath = path.join(this.reportsDir, file);
@@ -120,7 +120,7 @@ class PerformanceReporter {
     };
 
     const rangeMs = timeRanges[this.config.timeRange];
-    return data.filter((item) => now - item.timestamp <= rangeMs);
+    return data.filter(item => now - item.timestamp <= rangeMs);
   }
 
   private async generateJSONReport(data: PerformanceData[]): Promise<void> {
@@ -220,7 +220,7 @@ class PerformanceReporter {
                 <tbody>
                     ${componentStats
                       .map(
-                        (stat) => `
+                        stat => `
                         <tr>
                             <td>${stat.component}</td>
                             <td>${stat.renderCount}</td>
@@ -255,7 +255,7 @@ class PerformanceReporter {
 
   private async generateCSVReport(data: PerformanceData[]): Promise<void> {
     const headers = ['timestamp', 'component', 'renderTime', 'renderCount', 'memoryUsage'];
-    const rows = data.map((item) => [
+    const rows = data.map(item => [
       new Date(item.timestamp).toISOString(),
       item.component,
       item.renderTime,
@@ -263,7 +263,7 @@ class PerformanceReporter {
       item.memoryUsage,
     ]);
 
-    const csv = [headers, ...rows].map((row) => row.join(',')).join('\n');
+    const csv = [headers, ...rows].map(row => row.join(',')).join('\n');
 
     const filename = `performance-report-${Date.now()}.csv`;
     const filepath = path.join(this.config.outputDir, filename);
@@ -296,7 +296,7 @@ class PerformanceReporter {
 |-----------|---------|----------|----------|--------------|
 ${componentStats
   .map(
-    (stat) =>
+    stat =>
       `| ${stat.component} | ${stat.renderCount} | ${stat.avgRenderTime.toFixed(2)}ms | ${stat.maxRenderTime.toFixed(2)}ms | ${stat.avgMemoryUsage.toFixed(2)}MB |`
   )
   .join('\n')}
@@ -317,8 +317,8 @@ ${this.generateInsights(summary, componentStats)}
     const totalRenders = data.length;
     const totalRenderTime = data.reduce((sum, item) => sum + item.renderTime, 0);
     const averageRenderTime = totalRenderTime / totalRenders;
-    const uniqueComponents = new Set(data.map((item) => item.component)).size;
-    const slowRenders = data.filter((item) => item.renderTime > 50).length;
+    const uniqueComponents = new Set(data.map(item => item.component)).size;
+    const slowRenders = data.filter(item => item.renderTime > 50).length;
 
     return {
       totalRenders,
@@ -331,7 +331,7 @@ ${this.generateInsights(summary, componentStats)}
   private generateComponentStats(data: PerformanceData[]) {
     const componentMap = new Map<string, PerformanceData[]>();
 
-    data.forEach((item) => {
+    data.forEach(item => {
       if (!componentMap.has(item.component)) {
         componentMap.set(item.component, []);
       }
@@ -343,7 +343,7 @@ ${this.generateInsights(summary, componentStats)}
         component,
         renderCount: items.length,
         avgRenderTime: items.reduce((sum, item) => sum + item.renderTime, 0) / items.length,
-        maxRenderTime: Math.max(...items.map((item) => item.renderTime)),
+        maxRenderTime: Math.max(...items.map(item => item.renderTime)),
         avgMemoryUsage: items.reduce((sum, item) => sum + item.memoryUsage, 0) / items.length,
       }))
       .sort((a, b) => b.avgRenderTime - a.avgRenderTime);

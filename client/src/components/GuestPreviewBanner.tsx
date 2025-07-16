@@ -1,7 +1,7 @@
-import { AlertCircle, Eye, UserPlus, Zap, X } from 'lucide-react';
+import { AlertCircle, Eye, UserPlus, X, Zap } from 'lucide-react';
 import { useState } from 'react';
-import { useGuestPreview, useGuestConversion } from '../hooks/useGuestPreview';
 import { useAuth } from '../hooks/useAuth';
+import { useGuestConversion, useGuestPreview } from '../hooks/useGuestPreview';
 import { Button } from './ui/button';
 import { Card, CardContent } from './ui/card';
 
@@ -69,19 +69,20 @@ export function GuestPreviewBanner({
       return {
         icon: <AlertCircle className="h-5 w-5 text-orange-600" />,
         title: "You've reached your preview limit!",
-        description: "Sign up for free to unlock unlimited access to all AI/ML terms and features.",
-        bgColor: "bg-gradient-to-r from-orange-50 to-red-50 border-orange-200",
+        description: 'Sign up for free to unlock unlimited access to all AI/ML terms and features.',
+        bgColor: 'bg-gradient-to-r from-orange-50 to-red-50 border-orange-200',
         urgent: true,
       };
-    } else {
+    } 
       return {
         icon: <Eye className="h-5 w-5 text-blue-600" />,
         title: `${guestPreview.previewsRemaining} free preview${guestPreview.previewsRemaining === 1 ? '' : 's'} remaining`,
-        description: "No sign up required for preview. Create a free account to track your progress.",
-        bgColor: "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200",
+        description:
+          'No sign up required for preview. Create a free account to track your progress.',
+        bgColor: 'bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200',
         urgent: false,
       };
-    }
+    
   };
 
   const content = getBannerContent();
@@ -126,12 +127,8 @@ export function GuestPreviewBanner({
           <div className="flex items-start gap-3 flex-1">
             {content.icon}
             <div className="flex-1">
-              <h3 className="font-semibold text-gray-900 mb-1">
-                {content.title}
-              </h3>
-              <p className="text-sm text-gray-700 mb-3">
-                {content.description}
-              </p>
+              <h3 className="font-semibold text-gray-900 mb-1">{content.title}</h3>
+              <p className="text-sm text-gray-700 mb-3">{content.description}</p>
 
               {/* Progress indicator */}
               {showProgress && !guestPreview.hasReachedLimit && (
@@ -198,11 +195,9 @@ export function GuestPreviewBanner({
 
               {/* Additional info */}
               <div className="mt-2 text-xs text-gray-600">
-                {guestPreview.hasReachedLimit ? (
-                  "Free account includes progress tracking • Premium unlocks everything"
-                ) : (
-                  "Continue browsing without signing up"
-                )}
+                {guestPreview.hasReachedLimit
+                  ? 'Free account includes progress tracking • Premium unlocks everything'
+                  : 'Continue browsing without signing up'}
               </div>
             </div>
           </div>
@@ -239,7 +234,7 @@ export function GuestConversionFab() {
 
   const shouldShow = guestConversion.shouldShowAggresiveCta || guestPreview.hasReachedLimit;
 
-  if (!shouldShow) return null;
+  if (!shouldShow) {return null;}
 
   const handleSignupClick = () => {
     guestPreview.recordCta('fab_signup');
@@ -258,19 +253,18 @@ export function GuestConversionFab() {
           <CardContent className="p-4">
             <div className="flex justify-between items-start mb-3">
               <h3 className="font-semibold">
-                {guestPreview.hasReachedLimit ? "Unlock Full Access!" : "Join Thousands of AI Learners"}
+                {guestPreview.hasReachedLimit
+                  ? 'Unlock Full Access!'
+                  : 'Join Thousands of AI Learners'}
               </h3>
-              <button
-                onClick={handleDismiss}
-                className="text-white/80 hover:text-white"
-              >
+              <button onClick={handleDismiss} className="text-white/80 hover:text-white">
                 <X className="h-4 w-4" />
               </button>
             </div>
             <p className="text-sm mb-4 text-white/90">
               {guestPreview.hasReachedLimit
                 ? "You've used all your previews. Sign up now for unlimited access!"
-                : "Create your free account to unlock progress tracking and premium features."}
+                : 'Create your free account to unlock progress tracking and premium features.'}
             </p>
             <div className="flex gap-2">
               <Button

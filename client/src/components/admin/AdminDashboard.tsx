@@ -1,13 +1,29 @@
-import React from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-  PieChart, Pie, Cell
-} from 'recharts';
 import {
-  FileText, CheckCircle, Bot, DollarSign, TrendingUp, TrendingDown,
-  Plus, BarChart3, Layers, Sparkles, Clock
+  DollarSign,
+  TrendingUp,
+  FileText,
+  CheckCircle,
+  Sparkles,
+  Bot,
+  TrendingDown,
+  Plus,
+  Layers,
+  BarChart3,
 } from 'lucide-react';
+import React from 'react';
+import {
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from 'recharts';
 
 interface DashboardMetrics {
   totalTerms: number;
@@ -53,10 +69,10 @@ export default function AdminDashboard({ onQuickAction }: AdminDashboardProps) {
           termsGrowth: 12,
           qualityGrowth: 5,
           aiGeneratedThisMonth: 428,
-          costChange: -10
-        }
+          costChange: -10,
+        },
       };
-    }
+    },
   });
 
   // Fetch trend data
@@ -65,12 +81,12 @@ export default function AdminDashboard({ onQuickAction }: AdminDashboardProps) {
     queryFn: async () => {
       // Mock trend data
       return [
-        { month: 'Oct', generated: 245, cost: 12.50 },
-        { month: 'Nov', generated: 312, cost: 15.80 },
-        { month: 'Dec', generated: 428, cost: 21.40 },
-        { month: 'Jan', generated: 385, cost: 19.25 }
+        { month: 'Oct', generated: 245, cost: 12.5 },
+        { month: 'Nov', generated: 312, cost: 15.8 },
+        { month: 'Dec', generated: 428, cost: 21.4 },
+        { month: 'Jan', generated: 385, cost: 19.25 },
       ];
-    }
+    },
   });
 
   // Fetch quality distribution
@@ -82,16 +98,16 @@ export default function AdminDashboard({ onQuickAction }: AdminDashboardProps) {
         { name: 'Excellent (90-100)', value: 35, color: '#10B981' },
         { name: 'Good (80-89)', value: 42, color: '#3B82F6' },
         { name: 'Average (70-79)', value: 18, color: '#F59E0B' },
-        { name: 'Poor (<70)', value: 5, color: '#EF4444' }
+        { name: 'Poor (<70)', value: 5, color: '#EF4444' },
       ];
-    }
+    },
   });
 
   if (metricsLoading || trendLoading || qualityLoading) {
     return (
       <div className="space-y-6">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          {[1, 2, 3, 4].map((i) => (
+          {[1, 2, 3, 4].map(i => (
             <div key={i} className="bg-white rounded-lg border p-6 animate-pulse">
               <div className="h-20 bg-gray-200 rounded"></div>
             </div>
@@ -115,8 +131,7 @@ export default function AdminDashboard({ onQuickAction }: AdminDashboardProps) {
               <div className="text-blue-100 text-sm">Total Terms</div>
               <div className="text-3xl font-bold">{metrics.totalTerms.toLocaleString()}</div>
               <div className="text-blue-100 text-sm flex items-center mt-1">
-                <TrendingUp className="w-4 h-4 mr-1" />
-                +{metrics.trends.termsGrowth}% this month
+                <TrendingUp className="w-4 h-4 mr-1" />+{metrics.trends.termsGrowth}% this month
               </div>
             </div>
             <FileText className="w-8 h-8 text-blue-200" />
@@ -129,8 +144,7 @@ export default function AdminDashboard({ onQuickAction }: AdminDashboardProps) {
               <div className="text-green-100 text-sm">Content Quality</div>
               <div className="text-3xl font-bold">{metrics.contentQuality}%</div>
               <div className="text-green-100 text-sm flex items-center mt-1">
-                <TrendingUp className="w-4 h-4 mr-1" />
-                +{metrics.trends.qualityGrowth}% this week
+                <TrendingUp className="w-4 h-4 mr-1" />+{metrics.trends.qualityGrowth}% this week
               </div>
             </div>
             <CheckCircle className="w-8 h-8 text-green-200" />
@@ -176,10 +190,10 @@ export default function AdminDashboard({ onQuickAction }: AdminDashboardProps) {
               <XAxis dataKey="month" />
               <YAxis />
               <Tooltip />
-              <Line 
-                type="monotone" 
-                dataKey="generated" 
-                stroke="#3B82F6" 
+              <Line
+                type="monotone"
+                dataKey="generated"
+                stroke="#3B82F6"
                 strokeWidth={2}
                 name="Content Generated"
               />
@@ -210,11 +224,13 @@ export default function AdminDashboard({ onQuickAction }: AdminDashboardProps) {
           <div className="mt-4 grid grid-cols-2 gap-2">
             {quality.map((item, index) => (
               <div key={index} className="flex items-center text-sm">
-                <div 
-                  className="w-3 h-3 rounded-full mr-2" 
+                <div
+                  className="w-3 h-3 rounded-full mr-2"
                   style={{ backgroundColor: item.color }}
                 />
-                <span className="text-gray-600">{item.name}: {item.value}%</span>
+                <span className="text-gray-600">
+                  {item.name}: {item.value}%
+                </span>
               </div>
             ))}
           </div>
@@ -225,43 +241,51 @@ export default function AdminDashboard({ onQuickAction }: AdminDashboardProps) {
       <div className="bg-white rounded-lg border p-6">
         <h3 className="text-lg font-semibold mb-4">Quick Actions</h3>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <button 
+          <button
             onClick={() => onQuickAction('add-term')}
             className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-colors group"
           >
             <div className="text-center">
               <Plus className="w-6 h-6 mx-auto mb-2 text-gray-400 group-hover:text-blue-500" />
-              <div className="text-sm font-medium text-gray-600 group-hover:text-blue-600">Add Term</div>
+              <div className="text-sm font-medium text-gray-600 group-hover:text-blue-600">
+                Add Term
+              </div>
             </div>
           </button>
-          
-          <button 
+
+          <button
             onClick={() => onQuickAction('generate-content')}
             className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-purple-500 hover:bg-purple-50 transition-colors group"
           >
             <div className="text-center">
               <Bot className="w-6 h-6 mx-auto mb-2 text-gray-400 group-hover:text-purple-500" />
-              <div className="text-sm font-medium text-gray-600 group-hover:text-purple-600">Generate Content</div>
+              <div className="text-sm font-medium text-gray-600 group-hover:text-purple-600">
+                Generate Content
+              </div>
             </div>
           </button>
-          
-          <button 
+
+          <button
             onClick={() => onQuickAction('batch-operations')}
             className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-green-500 hover:bg-green-50 transition-colors group"
           >
             <div className="text-center">
               <Layers className="w-6 h-6 mx-auto mb-2 text-gray-400 group-hover:text-green-500" />
-              <div className="text-sm font-medium text-gray-600 group-hover:text-green-600">Batch Operations</div>
+              <div className="text-sm font-medium text-gray-600 group-hover:text-green-600">
+                Batch Operations
+              </div>
             </div>
           </button>
-          
-          <button 
+
+          <button
             onClick={() => onQuickAction('view-analytics')}
             className="flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-orange-500 hover:bg-orange-50 transition-colors group"
           >
             <div className="text-center">
               <BarChart3 className="w-6 h-6 mx-auto mb-2 text-gray-400 group-hover:text-orange-500" />
-              <div className="text-sm font-medium text-gray-600 group-hover:text-orange-600">View Analytics</div>
+              <div className="text-sm font-medium text-gray-600 group-hover:text-orange-600">
+                View Analytics
+              </div>
             </div>
           </button>
         </div>

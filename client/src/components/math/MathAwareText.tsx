@@ -13,7 +13,7 @@ interface MathAwareTextProps {
   /** Whether the content is already sanitized HTML */
   isHTML?: boolean;
   /** CSS class for the container */
-  className?: string;
+  className?: string | undefined;
   /** CSS class for mathematical expressions */
   mathClassName?: string;
   /** Whether to allow HTML tags (for highlighted search results) */
@@ -21,7 +21,7 @@ interface MathAwareTextProps {
 }
 
 /**
- * Safely renders text that may contain both HTML (from search highlighting) 
+ * Safely renders text that may contain both HTML (from search highlighting)
  * and mathematical expressions (LaTeX notation)
  */
 export const MathAwareText: React.FC<MathAwareTextProps> = ({
@@ -40,26 +40,22 @@ export const MathAwareText: React.FC<MathAwareTextProps> = ({
     });
 
     // Check if the sanitized content contains mathematical expressions
-    const hasMath = /\$[^$]+\$|\$\$[\s\S]+?\$\$|\\begin\{[\s\S]*?\\end\{[^}]+\}|\\\\[\s\S]*?\\\\/.test(sanitizedHTML);
+    const hasMath =
+      /\$[^$]+\$|\$\$[\s\S]+?\$\$|\\begin\{[\s\S]*?\\end\{[^}]+\}|\\\\[\s\S]*?\\\\/.test(
+        sanitizedHTML
+      );
 
     if (hasMath) {
       // For content with both HTML and math, we need to parse more carefully
       return (
         <span className={className}>
-          <MathText mathClassName={mathClassName}>
-            {sanitizedHTML}
-          </MathText>
+          <MathText mathClassName={mathClassName}>{sanitizedHTML}</MathText>
         </span>
       );
-    } else {
+    } 
       // No math detected, just render the sanitized HTML
-      return (
-        <span 
-          className={className}
-          dangerouslySetInnerHTML={{ __html: sanitizedHTML }}
-        />
-      );
-    }
+      return <span className={className} dangerouslySetInnerHTML={{ __html: sanitizedHTML }} />;
+    
   }
 
   // For plain text that might contain math
@@ -75,26 +71,32 @@ export const MathAwareText: React.FC<MathAwareTextProps> = ({
  */
 export const useHasMath = (content: string): boolean => {
   return React.useMemo(() => {
-    return /\$[^$]+\$|\$\$[\s\S]+?\$\$|\\begin\{[\s\S]*?\\end\{[^}]+\}|\\\\[\s\S]*?\\\\/.test(content);
+    return /\$[^$]+\$|\$\$[\s\S]+?\$\$|\\begin\{[\s\S]*?\\end\{[^}]+\}|\\\\[\s\S]*?\\\\/.test(
+      content
+    );
   }, [content]);
 };
 
 /**
  * Utility function to extract mathematical expressions from text
  */
-export const extractMathExpressions = (text: string): Array<{
+export const extractMathExpressions = (
+  text: string
+): Array<{
   type: 'text' | 'math';
   content: string;
   displayMode?: boolean;
 }> => {
   const segments: Array<{ type: 'text' | 'math'; content: string; displayMode?: boolean }> = [];
-  
+
   // Split text by LaTeX delimiters
-  const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^$]+?\$|\\begin\{[\s\S]*?\\end\{[^}]+\}|\\\\[\s\S]*?\\\\)/);
-  
-  parts.forEach((part) => {
-    if (!part) return;
-    
+  const parts = text.split(
+    /(\$\$[\s\S]*?\$\$|\$[^$]+?\$|\\begin\{[\s\S]*?\\end\{[^}]+\}|\\\\[\s\S]*?\\\\)/
+  );
+
+  parts.forEach(part => {
+    if (!part) {return;}
+
     // Display math ($$...$$)
     if (part.startsWith('$$') && part.endsWith('$$')) {
       segments.push({
@@ -135,7 +137,7 @@ export const extractMathExpressions = (text: string): Array<{
       });
     }
   });
-  
+
   return segments;
 };
 

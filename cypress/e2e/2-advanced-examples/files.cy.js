@@ -48,7 +48,7 @@ context('Files', () => {
 
     // You can read a file and yield its contents
     // The filePath is relative to your project's root.
-    cy.readFile(Cypress.config('configFile')).then((config) => {
+    cy.readFile(Cypress.config('configFile')).then(config => {
       expect(config).to.be.an('string');
     });
   });
@@ -60,11 +60,11 @@ context('Files', () => {
 
     // Use a response from a request to automatically
     // generate a fixture file for use later
-    cy.request('https://jsonplaceholder.cypress.io/users').then((response) => {
+    cy.request('https://jsonplaceholder.cypress.io/users').then(response => {
       cy.writeFile('cypress/fixtures/users.json', response.body);
     });
 
-    cy.fixture('users').should((users) => {
+    cy.fixture('users').should(users => {
       expect(users[0].name).to.exist;
     });
 
@@ -76,7 +76,7 @@ context('Files', () => {
       email: 'jane@example.com',
     });
 
-    cy.fixture('profile').should((profile) => {
+    cy.fixture('profile').should(profile => {
       expect(profile.name).to.eq('Jane');
     });
   });

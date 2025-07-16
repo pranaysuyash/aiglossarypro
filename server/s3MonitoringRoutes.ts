@@ -230,11 +230,11 @@ router.get('/metrics/realtime', mockIsAuthenticated, async (_req, res) => {
 
     const realtimeData = {
       currentTime: new Date().toISOString(),
-      activeOperations: recentLogs.filter((log) => log.status === 'started').length,
+      activeOperations: recentLogs.filter(log => log.status === 'started').length,
       recentActivity: {
         lastHour: recentLogs.length,
-        successful: recentLogs.filter((log) => log.status === 'success').length,
-        failed: recentLogs.filter((log) => log.status === 'error').length,
+        successful: recentLogs.filter(log => log.status === 'success').length,
+        failed: recentLogs.filter(log => log.status === 'error').length,
       },
       systemHealth: {
         errorRate: metrics.errors.errorRate,
@@ -288,7 +288,7 @@ router.get('/analytics/performance', mockIsAuthenticated, async (req, res) => {
       }
     > = {};
 
-    logs.forEach((log) => {
+    logs.forEach(log => {
       const date = log.timestamp.toISOString().split('T')[0];
 
       if (!dailyPerformance[date]) {
@@ -331,7 +331,7 @@ router.get('/analytics/performance', mockIsAuthenticated, async (req, res) => {
         totalDataTransferred: logs.reduce((sum, log) => sum + (log.fileSize || 0), 0),
         overallErrorRate:
           logs.length > 0
-            ? (logs.filter((log) => log.status === 'error').length / logs.length) * 100
+            ? (logs.filter(log => log.status === 'error').length / logs.length) * 100
             : 0,
       },
     });
@@ -384,16 +384,16 @@ router.get('/analytics/usage', mockIsAuthenticated, async (req, res) => {
       ),
 
       fileSizeDistribution: {
-        small: logs.filter((log) => (log.fileSize || 0) < 1024 * 1024).length, // < 1MB
-        medium: logs.filter((log) => {
+        small: logs.filter(log => (log.fileSize || 0) < 1024 * 1024).length, // < 1MB
+        medium: logs.filter(log => {
           const size = log.fileSize || 0;
           return size >= 1024 * 1024 && size < 10 * 1024 * 1024;
         }).length, // 1MB - 10MB
-        large: logs.filter((log) => {
+        large: logs.filter(log => {
           const size = log.fileSize || 0;
           return size >= 10 * 1024 * 1024 && size < 100 * 1024 * 1024;
         }).length, // 10MB - 100MB
-        xlarge: logs.filter((log) => (log.fileSize || 0) >= 100 * 1024 * 1024).length, // > 100MB
+        xlarge: logs.filter(log => (log.fileSize || 0) >= 100 * 1024 * 1024).length, // > 100MB
       },
 
       topUsers: logs.reduce(

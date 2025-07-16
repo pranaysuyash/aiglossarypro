@@ -43,25 +43,25 @@ export function initializeSentry(): void {
       dsn: config.dsn,
       environment: config.environment,
       release: config.release,
-      
+
       // Performance monitoring
       tracesSampleRate: config.tracesSampleRate,
       profilesSampleRate: config.profilesSampleRate,
-      
+
       // Integrations
       integrations: [
         // Node.js performance profiling
         nodeProfilingIntegration(),
-        
+
         // HTTP integration for Express
         new Sentry.Integrations.Http({ tracing: true }),
-        
+
         // Express integration
         new Sentry.Integrations.Express({ app: undefined }),
-        
+
         // Console integration
         new Sentry.Integrations.Console(),
-        
+
         // Local variables in stack traces
         new Sentry.Integrations.LocalVariables({
           captureAllExceptions: false,
@@ -84,9 +84,11 @@ export function initializeSentry(): void {
           }
 
           // Skip client disconnect errors
-          if (error.message.includes('ECONNRESET') || 
-              error.message.includes('EPIPE') ||
-              error.message.includes('Client disconnected')) {
+          if (
+            error.message.includes('ECONNRESET') ||
+            error.message.includes('EPIPE') ||
+            error.message.includes('Client disconnected')
+          ) {
             return null;
           }
 
@@ -107,8 +109,7 @@ export function initializeSentry(): void {
         }
 
         // Filter out health check transactions
-        if (event.transaction?.includes('/health') || 
-            event.transaction?.includes('/monitoring')) {
+        if (event.transaction?.includes('/health') || event.transaction?.includes('/monitoring')) {
           return null;
         }
 
@@ -173,7 +174,7 @@ export function captureException(
     return undefined;
   }
 
-  return Sentry.withScope((scope) => {
+  return Sentry.withScope(scope => {
     if (context?.user) {
       scope.setUser(context.user);
     }
@@ -215,7 +216,7 @@ export function captureMessage(
     return undefined;
   }
 
-  return Sentry.withScope((scope) => {
+  return Sentry.withScope(scope => {
     if (context?.user) {
       scope.setUser(context.user);
     }
@@ -261,7 +262,7 @@ export function startTransaction(
  */
 export function addBreadcrumb(
   message: string,
-  category: string = 'default',
+  category = 'default',
   level: 'fatal' | 'error' | 'warning' | 'info' | 'debug' = 'info',
   data?: Record<string, any>
 ): void {
@@ -316,7 +317,7 @@ export function isSentryEnabled(): boolean {
 /**
  * Flush Sentry data (useful for serverless or before shutdown)
  */
-export async function flushSentry(timeout: number = 2000): Promise<boolean> {
+export async function flushSentry(timeout = 2000): Promise<boolean> {
   if (!isSentryEnabled()) {
     return true;
   }

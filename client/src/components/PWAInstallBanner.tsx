@@ -51,14 +51,18 @@ export function PWAInstallBanner({
     // Check mobile visits
     const visits = parseInt(localStorage.getItem('mobile_visits') || '0');
     const isOfflineCapable = 'serviceWorker' in navigator;
-    const isMobile = showOnlyOnMobile ? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) : true;
+    const isMobile = showOnlyOnMobile
+      ? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      : true;
 
     return isMobile && isOfflineCapable && (visits >= 3 || deferredPrompt);
   };
 
   // Track mobile visits
   useEffect(() => {
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
     if (isMobile) {
       const visits = parseInt(localStorage.getItem('mobile_visits') || '0') + 1;
       localStorage.setItem('mobile_visits', visits.toString());
@@ -74,7 +78,22 @@ export function PWAInstallBanner({
       setDeferredPrompt(event);
       setInstallType('prompt');
       
-      if (checkInstallConditions()) {
+      // Check install conditions after setting the prompt
+      // Don't check for deferredPrompt in conditions since we just set it
+      const dismissed = localStorage.getItem('pwa_install_dismissed');
+      if (dismissed) {
+        const dismissedDate = new Date(dismissed);
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        if (dismissedDate > weekAgo) {
+          return;
+        }
+      }
+      
+      const isMobile = showOnlyOnMobile
+        ? /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+        : true;
+        
+      if (isMobile && !window.matchMedia('(display-mode: standalone)').matches) {
         setIsVisible(true);
       }
     };
@@ -84,7 +103,7 @@ export function PWAInstallBanner({
     return () => {
       window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
     };
-  }, []);
+  }, [showOnlyOnMobile]);
 
   // Listen for offline events to trigger PWA promotion
   useEffect(() => {
@@ -114,28 +133,28 @@ export function PWAInstallBanner({
   const handleInstall = async () => {
     if (deferredPrompt) {
       setIsInstalling(true);
-      
+
       try {
         await deferredPrompt.prompt();
         const choiceResult = await deferredPrompt.userChoice;
-        
+
         if (choiceResult.outcome === 'accepted') {
           toast({
             title: '🎉 App Installed!',
             description: 'AI Glossary Pro has been added to your home screen.',
             duration: 5000,
           });
-          
+
           // Track successful install
           localStorage.setItem('pwa_installed', 'true');
           localStorage.setItem('pwa_install_date', new Date().toISOString());
-          
+
           onInstall?.();
         }
-        
+
         setDeferredPrompt(null);
         setIsVisible(false);
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error during PWA installation:', error);
         toast({
           title: 'Installation Failed',
@@ -152,7 +171,7 @@ export function PWAInstallBanner({
         description: 'Please use your browser\'s "Add to Home Screen" option.',
         duration: 6000,
       });
-      
+
       setIsVisible(false);
       onInstall?.();
     }
@@ -171,7 +190,11 @@ export function PWAInstallBanner({
           icon: <WifiOff className="w-6 h-6 text-orange-500" />,
           title: 'Stay Connected Offline',
           description: 'Install AI Glossary to access your saved terms even without internet',
-          benefits: ['📱 Read saved terms offline', '⚡ Instant app loading', '🔄 Auto-sync when online'],
+          benefits: [
+            '📱 Read saved terms offline',
+            '⚡ Instant app loading',
+            '🔄 Auto-sync when online',
+          ],
         };
       case 'prompt':
         return {
@@ -215,7 +238,7 @@ export function PWAInstallBanner({
                     </CardDescription>
                   </div>
                 </div>
-                
+
                 <Button
                   variant="ghost"
                   size="icon"
@@ -226,7 +249,7 @@ export function PWAInstallBanner({
                 </Button>
               </div>
             </CardHeader>
-            
+
             <CardContent className="pt-0">
               {/* Benefits */}
               <div className="space-y-1 mb-4">
@@ -236,7 +259,7 @@ export function PWAInstallBanner({
                   </div>
                 ))}
               </div>
-              
+
               {/* Action Buttons */}
               <div className="flex space-x-2">
                 <Button
@@ -260,7 +283,7 @@ export function PWAInstallBanner({
                     </>
                   )}
                 </Button>
-                
+
                 <Button
                   variant="outline"
                   onClick={handleDismiss}
@@ -269,7 +292,7 @@ export function PWAInstallBanner({
                   Later
                 </Button>
               </div>
-              
+
               {/* App Store Info */}
               <div className="mt-3 text-center">
                 <p className="text-xs text-gray-500 dark:text-gray-400">

@@ -148,13 +148,13 @@ async function createPerformanceIndexes() {
 
   console.log(`\n📊 Index Creation Summary:`);
   console.log(`Total time: ${duration}ms`);
-  console.log(`Successful indexes: ${results.filter((r) => r.status === 'success').length}`);
-  console.log(`Failed indexes: ${results.filter((r) => r.status === 'error').length}`);
+  console.log(`Successful indexes: ${results.filter(r => r.status === 'success').length}`);
+  console.log(`Failed indexes: ${results.filter(r => r.status === 'error').length}`);
 
-  const failed = results.filter((r) => r.status === 'error');
+  const failed = results.filter(r => r.status === 'error');
   if (failed.length > 0) {
     console.log(`\n❌ Failed indexes:`);
-    failed.forEach((f) => console.log(`  - ${f.name}: ${f.error}`));
+    failed.forEach(f => console.log(`  - ${f.name}: ${f.error}`));
   }
 
   console.log('\n🎯 Performance optimization complete!');
@@ -169,7 +169,7 @@ if (import.meta.url === `file://${process.argv[1]}`) {
       console.log('Index creation completed successfully');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       console.error('Index creation failed:', error);
       process.exit(1);
     });

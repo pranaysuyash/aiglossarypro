@@ -8,7 +8,8 @@ const meta: Meta<typeof UserInterviewBanner> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'User research recruitment banner that appears to 1 in 10 new users, offering $20 voucher for 20-minute interview',
+        component:
+          'User research recruitment banner that appears to 1 in 10 new users, offering $20 voucher for 20-minute interview',
       },
     },
   },
@@ -17,21 +18,24 @@ const meta: Meta<typeof UserInterviewBanner> = {
     onDecline: { action: 'interview declined' },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-900 p-4">
         <div className="max-w-4xl mx-auto space-y-4">
           <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">AI Glossary Pro</h1>
           <p className="text-gray-600 dark:text-gray-400">
             The user interview banner will appear in the bottom-right corner after a few seconds.
           </p>
-          
+
           {/* Sample content */}
           {Array.from({ length: 15 }, (_, i) => (
-            <div key={i} className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
+            <div
+              key={i}
+              className="p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700"
+            >
               <h3 className="font-semibold text-gray-900 dark:text-gray-100">AI Term {i + 1}</h3>
               <p className="text-gray-600 dark:text-gray-400 mt-1">
-                This is a sample AI/ML term definition that demonstrates the content structure.
-                The interview banner should appear for eligible users.
+                This is a sample AI/ML term definition that demonstrates the content structure. The
+                interview banner should appear for eligible users.
               </p>
             </div>
           ))}

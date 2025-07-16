@@ -2,9 +2,9 @@ import React, { Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import App from './App';
 import './index.css';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { initAnalytics, initReactScanIntegration } from './lib/analytics';
 import { setupGlobalErrorHandlers } from './utils/errorTracking';
-import { ErrorBoundary } from './components/ErrorBoundary';
 
 // Performance monitoring
 const startTime = performance.now();

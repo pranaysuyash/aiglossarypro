@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import type { ITerm } from '../../../shared/types';
@@ -15,7 +14,7 @@ const meta: Meta<typeof VirtualizedTermList> = {
   title: 'Components/VirtualizedTermList',
   component: VirtualizedTermList,
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="h-96 w-full border rounded-lg">
           <Story />

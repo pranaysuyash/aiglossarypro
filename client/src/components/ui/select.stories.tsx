@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
 import { Label } from './label';
 import {
   Select,
@@ -24,7 +23,7 @@ const meta: Meta<typeof Select> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-sm">
         <Story />
       </div>
@@ -300,7 +299,7 @@ export const FormExample: Story = {
           <Label htmlFor="category">Category</Label>
           <Select
             value={formData.category}
-            onValueChange={(value) => setFormData((prev) => ({ ...prev, category: value }))}
+            onValueChange={value => setFormData(prev => ({ ...prev, category: value }))}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select category" />
@@ -318,7 +317,7 @@ export const FormExample: Story = {
           <Label htmlFor="priority">Priority</Label>
           <Select
             value={formData.priority}
-            onValueChange={(value) => setFormData((prev) => ({ ...prev, priority: value }))}
+            onValueChange={value => setFormData(prev => ({ ...prev, priority: value }))}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select priority" />
@@ -336,7 +335,7 @@ export const FormExample: Story = {
           <Label htmlFor="status">Status</Label>
           <Select
             value={formData.status}
-            onValueChange={(value) => setFormData((prev) => ({ ...prev, status: value }))}
+            onValueChange={value => setFormData(prev => ({ ...prev, status: value }))}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select status" />
@@ -354,7 +353,7 @@ export const FormExample: Story = {
           <Label htmlFor="assignee">Assignee</Label>
           <Select
             value={formData.assignee}
-            onValueChange={(value) => setFormData((prev) => ({ ...prev, assignee: value }))}
+            onValueChange={value => setFormData(prev => ({ ...prev, assignee: value }))}
           >
             <SelectTrigger>
               <SelectValue placeholder="Select assignee" />
@@ -551,7 +550,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-sm dark">
         <Story />
       </div>

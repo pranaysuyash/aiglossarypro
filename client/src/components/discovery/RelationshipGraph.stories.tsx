@@ -1,5 +1,4 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
+import type { Meta, StoryObj } from '@storybook/react';
 import { RelationshipGraph } from './RelationshipGraph';
 
 const meta = {
@@ -43,7 +42,7 @@ export const WithProps: Story = {
       { source: 'deep-learning', target: 'cnn', type: 'related', strength: 0.8 },
       { source: 'deep-learning', target: 'rnn', type: 'related', strength: 0.8 },
     ],
-    onNodeClick: (node) => console.log('Node clicked:', node),
+    onNodeClick: node => console.log('Node clicked:', node),
     selectedFilters: {
       relationshipTypes: ['extends', 'related'],
       nodeTypes: ['term'],

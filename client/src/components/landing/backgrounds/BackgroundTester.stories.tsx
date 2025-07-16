@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { BackgroundTester } from './BackgroundTester';
 
@@ -9,9 +8,9 @@ const meta: Meta<typeof BackgroundTester> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Landing page marketing component for the AIGlossaryPro application.'
-      }
-    }
+        component: 'Landing page marketing component for the AIGlossaryPro application.',
+      },
+    },
   },
   tags: ['autodocs'],
   argTypes: {
@@ -23,14 +22,13 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-  
   parameters: {
     docs: {
       description: {
-        story: 'Default BackgroundTester component state.'
-      }
-    }
-  }
+        story: 'Default BackgroundTester component state.',
+      },
+    },
+  },
 };
 
 export const Loading: Story = {
@@ -40,21 +38,23 @@ export const Loading: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'BackgroundTester in loading state.'
-      }
-    }
-  }
+        story: 'BackgroundTester in loading state.',
+      },
+    },
+  },
 };
 
 export const Error: Story = {
   args: {
-    onVariantChange: () => { /* throw new Error('Something went wrong'); */ },
+    onVariantChange: () => {
+      /* throw new Error('Something went wrong'); */
+    },
   },
   parameters: {
     docs: {
       description: {
-        story: 'BackgroundTester displaying error state.'
-      }
-    }
-  }
+        story: 'BackgroundTester displaying error state.',
+      },
+    },
+  },
 };

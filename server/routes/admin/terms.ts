@@ -825,7 +825,7 @@ export function registerAdminTermsRoutes(app: Express): void {
               avgQualityScore: Math.round(Number(totalStats.avgQualityScore || 0) * 10) / 10,
               avgRating: Math.round(Number(totalStats.avgRating || 0) * 10) / 10,
             },
-            categoryBreakdown: categoryStats.map((cat) => ({
+            categoryBreakdown: categoryStats.map(cat => ({
               category: cat.category,
               count: Number(cat.count),
               withImplementation: Number(cat.withImplementation),
@@ -898,7 +898,7 @@ export function registerAdminTermsRoutes(app: Express): void {
             'Updated At',
           ];
 
-          const csvRows = terms.map((term) => [
+          const csvRows = terms.map(term => [
             term.id,
             `"${term.name}"`,
             `"${term.shortDefinition || ''}"`,
@@ -916,7 +916,7 @@ export function registerAdminTermsRoutes(app: Express): void {
             term.updatedAt?.toISOString() || '',
           ]);
 
-          const csvContent = [csvHeaders.join(','), ...csvRows.map((row) => row.join(','))].join(
+          const csvContent = [csvHeaders.join(','), ...csvRows.map(row => row.join(','))].join(
             '\n'
           );
 
@@ -1034,7 +1034,12 @@ export function registerAdminTermsRoutes(app: Express): void {
 
         const { name, shortDefinition, fullDefinition, mainCategories, useAI } = req.body;
 
-        if (!name || !mainCategories || !Array.isArray(mainCategories) || mainCategories.length === 0) {
+        if (
+          !name ||
+          !mainCategories ||
+          !Array.isArray(mainCategories) ||
+          mainCategories.length === 0
+        ) {
           return res.status(400).json({
             success: false,
             error: 'Name and at least one main category are required',
@@ -1048,7 +1053,11 @@ export function registerAdminTermsRoutes(app: Express): void {
         const termData: any = {
           id: termId,
           name,
-          slug: name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, ''),
+          slug: name
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, ''),
           shortDefinition: shortDefinition || `A concise definition of ${name}`,
           fullDefinition: fullDefinition || `${name} is a term in ${mainCategories[0]} that...`,
           mainCategories,

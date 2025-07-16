@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AIAdminDashboard } from './AIAdminDashboard';
@@ -14,7 +13,7 @@ const meta: Meta<typeof AIAdminDashboard> = {
   title: 'Admin/AIAdminDashboard',
   component: AIAdminDashboard,
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen bg-gray-50">
           <Story />

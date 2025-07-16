@@ -53,7 +53,7 @@ function calculateTrendingScore(
   timeSpentAvg: number,
   shareCount: number,
   bookmarkCount: number,
-  velocityMultiplier: number = 1
+  velocityMultiplier = 1
 ): number {
   const viewsWeight = 0.3;
   const velocityWeight = 0.3;
@@ -121,13 +121,13 @@ async function getTrendingTerms(filters: TrendingFilters): Promise<TrendingTerm[
 
   // Add category filter if specified
   if (category) {
-    query = query.where(eq(terms.categoryId, category));
+    query = query.where(eq(terms.categoryId, category)) as typeof query;
   }
 
   const results = await query.limit(limit * 2).offset(offset); // Get more to filter by trend type
 
   // Calculate trending metrics for each term
-  const trendingTerms: TrendingTerm[] = results.map((term) => {
+  const trendingTerms: TrendingTerm[] = results.map(term => {
     const recentViews = Number(term.recentViews);
     const previousViews = Number(term.previousViews);
     const totalViews = Number(term.viewCount);
@@ -157,14 +157,14 @@ async function getTrendingTerms(filters: TrendingFilters): Promise<TrendingTerm[
           ? 100
           : 0;
 
-    if (percentageChange > 10) trendDirection = 'up';
-    else if (percentageChange < -10) trendDirection = 'down';
+    if (percentageChange > 10) {trendDirection = 'up';}
+    else if (percentageChange < -10) {trendDirection = 'down';}
 
     return {
       id: term.id,
       name: term.name,
       definition: term.definition,
-      shortDefinition: term.shortDefinition,
+      shortDefinition: term.shortDefinition || '',
       categoryId: term.categoryId,
       categoryName: term.categoryName || 'Uncategorized',
       viewCount: totalViews,
@@ -185,19 +185,19 @@ async function getTrendingTerms(filters: TrendingFilters): Promise<TrendingTerm[
   switch (trendType) {
     case 'velocity':
       filteredTerms = trendingTerms
-        .filter((term) => term.velocityScore > 0)
+        .filter(term => term.velocityScore > 0)
         .sort((a, b) => b.velocityScore - a.velocityScore);
       break;
 
     case 'engagement':
       filteredTerms = trendingTerms
-        .filter((term) => term.engagementScore > 10)
+        .filter(term => term.engagementScore > 10)
         .sort((a, b) => b.engagementScore - a.engagementScore);
       break;
 
     case 'emerging':
       filteredTerms = trendingTerms
-        .filter((term) => term.viewCount < 100 && term.recentViews > 5)
+        .filter(term => term.viewCount < 100 && term.recentViews > 5)
         .sort((a, b) => b.percentageChange - a.percentageChange);
       break;
 
@@ -214,13 +214,13 @@ async function getTrendingTerms(filters: TrendingFilters): Promise<TrendingTerm[
  */
 async function getTrendingAnalytics(timeRange: string): Promise<TrendingAnalytics> {
   const now = new Date();
-  const timeRangeHours =
-    {
-      hour: 1,
-      day: 24,
-      week: 168,
-      month: 720,
-    }[timeRange as keyof typeof timeRangeHours] || 24;
+  const timeRangeMap = {
+    hour: 1,
+    day: 24,
+    week: 168,
+    month: 720,
+  } as const;
+  const timeRangeHours = timeRangeMap[timeRange as keyof typeof timeRangeMap] || 24;
 
   const startTime = new Date(now.getTime() - timeRangeHours * 60 * 60 * 1000);
 
@@ -248,7 +248,7 @@ async function getTrendingAnalytics(timeRange: string): Promise<TrendingAnalytic
   return {
     totalTrendingTerms: totalTrendingResult[0]?.count || 0,
     averageVelocityScore: 0, // Calculate if needed
-    topCategories: topCategoriesResult.map((cat) => ({
+    topCategories: topCategoriesResult.map(cat => ({
       categoryId: cat.categoryId || '',
       name: cat.categoryName || 'Uncategorized',
       trendingCount: cat.trendingCount,
@@ -302,7 +302,7 @@ export function registerTrendingRoutes(app: Express): void {
             offset: filters.offset,
             total: freshTerms.length,
           },
-          cacheStatus: 'miss'
+          cacheStatus: 'miss',
         });
         return;
       }
@@ -316,7 +316,7 @@ export function registerTrendingRoutes(app: Express): void {
           offset: filters.offset,
           total: trendingTerms.length,
         },
-        cacheStatus: 'hit'
+        cacheStatus: 'hit',
       });
     } catch (error) {
       console.error('Get trending terms error:', error);
@@ -355,13 +355,13 @@ export function registerTrendingRoutes(app: Express): void {
     try {
       const { timeRange = 'day', limit = '10' } = req.query;
 
-      const timeRangeHours =
-        {
-          hour: 1,
-          day: 24,
-          week: 168,
-          month: 720,
-        }[timeRange as keyof typeof timeRangeHours] || 24;
+      const timeRangeMap = {
+        hour: 1,
+        day: 24,
+        week: 168,
+        month: 720,
+      } as const;
+      const timeRangeHours = timeRangeMap[timeRange as keyof typeof timeRangeMap] || 24;
 
       const now = new Date();
       const startTime = new Date(now.getTime() - timeRangeHours * 60 * 60 * 1000);
@@ -379,10 +379,7 @@ export function registerTrendingRoutes(app: Express): void {
         .leftJoin(terms, eq(categories.id, terms.categoryId))
         .leftJoin(
           termViews,
-          and(
-            eq(terms.id, termViews.termId),
-            gte(termViews.viewedAt, startTime)
-          )
+          and(eq(terms.id, termViews.termId), gte(termViews.viewedAt, startTime))
         )
         .groupBy(categories.id, categories.name, categories.description)
         .having(sql`COUNT(${termViews.id}) > 0`)

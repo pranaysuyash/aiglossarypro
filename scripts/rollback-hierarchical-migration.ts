@@ -162,7 +162,7 @@ class HierarchicalRollback {
     console.log('🔍 Validating backup table integrity...');
 
     const requiredTables = ['sections', 'section_items', 'user_progress'];
-    const foundTables = [...new Set(backupTables.map((bt) => bt.tableName))];
+    const foundTables = [...new Set(backupTables.map(bt => bt.tableName))];
 
     for (const requiredTable of requiredTables) {
       if (!foundTables.includes(requiredTable)) {
@@ -171,8 +171,8 @@ class HierarchicalRollback {
     }
 
     // Check for orphaned section_items in backup
-    const sectionsBackup = backupTables.find((bt) => bt.tableName === 'sections');
-    const sectionItemsBackup = backupTables.find((bt) => bt.tableName === 'section_items');
+    const sectionsBackup = backupTables.find(bt => bt.tableName === 'sections');
+    const sectionItemsBackup = backupTables.find(bt => bt.tableName === 'section_items');
 
     if (sectionsBackup && sectionItemsBackup) {
       const orphanedItems = await this.db.execute(
@@ -469,9 +469,9 @@ class HierarchicalRollback {
       timestamp: new Date().toISOString(),
       isDryRun: this.isDryRun,
       totalLogs: this.rollbackLog.length,
-      successCount: this.rollbackLog.filter((l) => l.type === 'success').length,
-      warningCount: this.rollbackLog.filter((l) => l.type === 'warning').length,
-      errorCount: this.rollbackLog.filter((l) => l.type === 'error').length,
+      successCount: this.rollbackLog.filter(l => l.type === 'success').length,
+      warningCount: this.rollbackLog.filter(l => l.type === 'warning').length,
+      errorCount: this.rollbackLog.filter(l => l.type === 'error').length,
       logs: this.rollbackLog,
     };
 
@@ -493,7 +493,7 @@ async function main() {
   const skipConfirmation = args.includes('--yes');
   const listBackups = args.includes('--list-backups');
 
-  const timestampIndex = args.findIndex((arg) => arg === '--timestamp');
+  const timestampIndex = args.findIndex(arg => arg === '--timestamp');
   const backupTimestamp =
     timestampIndex !== -1 && args[timestampIndex + 1] ? args[timestampIndex + 1] : undefined;
 
@@ -523,7 +523,7 @@ async function main() {
       output: process.stdout,
     });
 
-    const answer = await new Promise<string>((resolve) => {
+    const answer = await new Promise<string>(resolve => {
       readline.question('Do you want to continue with the rollback? (yes/no): ', resolve);
     });
 
@@ -540,7 +540,7 @@ async function main() {
 
 // Run if called directly
 if (require.main === module) {
-  main().catch((error) => {
+  main().catch(error => {
     console.error('Fatal error:', error);
     process.exit(1);
   });

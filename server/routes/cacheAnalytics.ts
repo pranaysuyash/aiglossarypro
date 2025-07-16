@@ -193,7 +193,7 @@ router.post('/clear', async (req, res) => {
 
 // Helper functions
 function calculateAverage(metrics: any[], field: string): number {
-  if (metrics.length === 0) return 0;
+  if (metrics.length === 0) {return 0;}
   const sum = metrics.reduce((acc, m) => acc + (m[field] || 0), 0);
   return sum / metrics.length;
 }
@@ -203,7 +203,7 @@ function sumValues(metrics: any[], field: string): number {
 }
 
 function analyzeTrends(metrics: any[]): any {
-  if (metrics.length < 2) return { improving: false, degrading: false };
+  if (metrics.length < 2) {return { improving: false, degrading: false };}
 
   const firstHalf = metrics.slice(0, Math.floor(metrics.length / 2));
   const secondHalf = metrics.slice(Math.floor(metrics.length / 2));

@@ -1,9 +1,9 @@
-import { describe, test, expect, beforeEach, vi } from 'vitest';
-import request from 'supertest';
-import express from 'express';
 import crypto from 'node:crypto';
+import express from 'express';
 import fs from 'fs-extra';
 import path from 'path';
+import request from 'supertest';
+import { beforeEach, describe, expect, test, vi } from 'vitest';
 
 // Import the Gumroad routes and related services
 import { registerGumroadRoutes } from '../../server/routes/gumroad';
@@ -24,11 +24,9 @@ describe('Production Readiness Testing', () => {
       process.env.GUMROAD_WEBHOOK_SECRET = 'production_secret';
 
       const payload = { sale: { email: 'test@example.com' } };
-      
+
       // Test without signature
-      const response = await request(app)
-        .post('/api/gumroad/webhook')
-        .send(payload);
+      const response = await request(app).post('/api/gumroad/webhook').send(payload);
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Invalid signature');
@@ -37,28 +35,22 @@ describe('Production Readiness Testing', () => {
     test('should validate webhook signature timing safety', () => {
       const secret = 'test_secret';
       const payload = JSON.stringify({ test: 'data' });
-      
-      const validSignature = crypto
-        .createHmac('sha256', secret)
-        .update(payload)
-        .digest('hex');
+
+      const validSignature = crypto.createHmac('sha256', secret).update(payload).digest('hex');
 
       const invalidSignature = 'invalid_signature';
 
       // Test timing-safe comparison
       const start1 = performance.now();
       const isValid = crypto.timingSafeEqual(
-        Buffer.from(validSignature), 
+        Buffer.from(validSignature),
         Buffer.from(validSignature)
       );
       const end1 = performance.now();
 
       const start2 = performance.now();
       try {
-        crypto.timingSafeEqual(
-          Buffer.from(validSignature), 
-          Buffer.from(invalidSignature)
-        );
+        crypto.timingSafeEqual(Buffer.from(validSignature), Buffer.from(invalidSignature));
       } catch (error) {
         // Expected - different lengths
       }
@@ -66,7 +58,7 @@ describe('Production Readiness Testing', () => {
 
       expect(isValid).toBe(true);
       // Timing should be consistent (within reasonable variance)
-      const timeDiff = Math.abs((end1 - start1) - (end2 - start2));
+      const timeDiff = Math.abs(end1 - start1 - (end2 - start2));
       expect(timeDiff).toBeLessThan(10); // 10ms variance allowance
     });
 
@@ -76,7 +68,7 @@ describe('Production Readiness Testing', () => {
         'DATABASE_URL',
         'EMAIL_SERVICE',
         'EMAIL_USER',
-        'SENTRY_DSN'
+        'SENTRY_DSN',
       ];
 
       for (const envVar of requiredEnvVars) {
@@ -108,9 +100,15 @@ describe('Production Readiness Testing', () => {
         'invalid json',
         null,
         undefined,
-        { /* missing sale */ },
+        {
+          /* missing sale */
+        },
         { sale: null },
-        { sale: { /* missing email */ } }
+        {
+          sale: {
+            /* missing email */
+          },
+        },
       ];
 
       for (const payload of malformedPayloads) {
@@ -138,16 +136,18 @@ describe('Production Readiness Testing', () => {
       // Mock database failure
       vi.doMock('../../server/services/userService', () => ({
         UserService: {
-          grantLifetimeAccess: vi.fn().mockRejectedValue(new Error('Database connection failed'))
-        }
+          grantLifetimeAccess: vi.fn().mockRejectedValue(new Error('Database connection failed')),
+        },
       }));
 
       process.env.GUMROAD_WEBHOOK_SECRET = 'test_secret';
 
-      const payload = { sale: { 
-        email: 'db-fail@example.com',
-        order_id: 'DB-FAIL-123'
-      }};
+      const payload = {
+        sale: {
+          email: 'db-fail@example.com',
+          order_id: 'DB-FAIL-123',
+        },
+      };
 
       const signature = crypto
         .createHmac('sha256', 'test_secret')
@@ -169,10 +169,12 @@ describe('Production Readiness Testing', () => {
 
       const concurrentRequests = 50;
       const promises = Array.from({ length: concurrentRequests }, (_, i) => {
-        const payload = { sale: { 
-          email: `concurrent${i}@example.com`,
-          order_id: `CONCURRENT-${i}`
-        }};
+        const payload = {
+          sale: {
+            email: `concurrent${i}@example.com`,
+            order_id: `CONCURRENT-${i}`,
+          },
+        };
 
         const signature = crypto
           .createHmac('sha256', 'test_secret')
@@ -191,7 +193,7 @@ describe('Production Readiness Testing', () => {
 
       // All requests should complete
       expect(responses).toHaveLength(concurrentRequests);
-      
+
       // Should handle load efficiently (under 5 seconds for 50 requests)
       expect(end - start).toBeLessThan(5000);
 
@@ -204,7 +206,7 @@ describe('Production Readiness Testing', () => {
   describe('Monitoring and Observability', () => {
     test('should log critical events with proper structure', () => {
       const logEntries: any[] = [];
-      
+
       // Mock logger to capture log entries
       vi.doMock('../../server/utils/logger', () => ({
         log: {
@@ -216,8 +218,8 @@ describe('Production Readiness Testing', () => {
           }),
           warn: vi.fn((message: string, meta: any) => {
             logEntries.push({ level: 'warn', message, meta });
-          })
-        }
+          }),
+        },
       }));
 
       // Simulate webhook processing
@@ -225,7 +227,7 @@ describe('Production Readiness Testing', () => {
         email: 'test***',
         orderId: 'TEST-123',
         amount: 24900,
-        currency: 'USD'
+        currency: 'USD',
       };
 
       // Should log with structured data
@@ -241,14 +243,14 @@ describe('Production Readiness Testing', () => {
       vi.doMock('../../server/utils/sentry', () => ({
         captureAPIError: vi.fn((error: Error, context: any) => {
           sentryEvents.push({ error, context });
-        })
+        }),
       }));
 
       const testError = new Error('Test error');
       const context = {
         method: 'POST',
         path: '/api/gumroad/webhook',
-        body: { email: 'filtered' }
+        body: { email: 'filtered' },
       };
 
       // Simulate error capture
@@ -268,8 +270,8 @@ describe('Production Readiness Testing', () => {
           services: {
             database: 'connected',
             email: 'configured',
-            gumroad: 'ready'
-          }
+            gumroad: 'ready',
+          },
         });
       });
 
@@ -285,12 +287,14 @@ describe('Production Readiness Testing', () => {
     test('should process webhooks within acceptable time limits', async () => {
       process.env.GUMROAD_WEBHOOK_SECRET = 'test_secret';
 
-      const payload = { sale: { 
-        email: 'perf@example.com',
-        order_id: 'PERF-123',
-        amount_cents: 24900,
-        currency: 'USD'
-      }};
+      const payload = {
+        sale: {
+          email: 'perf@example.com',
+          order_id: 'PERF-123',
+          amount_cents: 24900,
+          currency: 'USD',
+        },
+      };
 
       const signature = crypto
         .createHmac('sha256', 'test_secret')
@@ -318,9 +322,9 @@ describe('Production Readiness Testing', () => {
           email: 'memory@example.com',
           order_id: 'MEMORY-123',
           metadata: {
-            largeData: 'x'.repeat(100000) // 100KB of data
-          }
-        }
+            largeData: 'x'.repeat(100000), // 100KB of data
+          },
+        },
       };
 
       // Process multiple large payloads
@@ -340,7 +344,7 @@ describe('Production Readiness Testing', () => {
   describe('Deployment Validation', () => {
     test('should validate production build assets exist', () => {
       const distPath = path.resolve(__dirname, '../../dist');
-      
+
       if (fs.existsSync(distPath)) {
         const publicPath = path.join(distPath, 'public');
         const serverPath = path.join(distPath, 'index.js');
@@ -367,7 +371,7 @@ describe('Production Readiness Testing', () => {
         hasWebhookSecret: !!process.env.GUMROAD_WEBHOOK_SECRET,
         hasDatabaseUrl: !!process.env.DATABASE_URL,
         hasEmailConfig: !!(process.env.EMAIL_SERVICE && process.env.EMAIL_USER),
-        hasSentryDsn: !!process.env.SENTRY_DSN
+        hasSentryDsn: !!process.env.SENTRY_DSN,
       };
 
       if (process.env.NODE_ENV === 'production') {
@@ -417,12 +421,14 @@ describe('Production Readiness Testing', () => {
     test('should handle webhook replay scenarios', async () => {
       process.env.GUMROAD_WEBHOOK_SECRET = 'test_secret';
 
-      const payload = { sale: { 
-        email: 'replay@example.com',
-        order_id: 'REPLAY-123',
-        amount_cents: 24900,
-        currency: 'USD'
-      }};
+      const payload = {
+        sale: {
+          email: 'replay@example.com',
+          order_id: 'REPLAY-123',
+          amount_cents: 24900,
+          currency: 'USD',
+        },
+      };
 
       const signature = crypto
         .createHmac('sha256', 'test_secret')
@@ -450,7 +456,7 @@ describe('Production Readiness Testing', () => {
         email: 'integrity@example.com',
         orderId: 'INTEGRITY-123',
         amount: 24900,
-        currency: 'USD'
+        currency: 'USD',
       };
 
       // Basic data validation
@@ -473,7 +479,7 @@ describe('Production Readiness Testing', () => {
         currency: 'USD',
         userEmail: 'audit@example.com',
         ipAddress: '192.168.1.1',
-        userAgent: 'Mozilla/5.0...'
+        userAgent: 'Mozilla/5.0...',
       };
 
       auditLog.push(transaction);
@@ -492,8 +498,8 @@ describe('Production Readiness Testing', () => {
         consent: {
           marketing: true,
           analytics: false,
-          timestamp: new Date()
-        }
+          timestamp: new Date(),
+        },
       };
 
       // Should respect consent settings

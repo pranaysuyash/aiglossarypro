@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { BookOpen, Clock, Heart, Share } from 'lucide-react';
 import { Badge } from './badge';
@@ -17,7 +16,7 @@ const meta: Meta<typeof Card> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-md p-4">
         <Story />
       </div>
@@ -314,7 +313,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-md p-4 dark">
         <Story />
       </div>

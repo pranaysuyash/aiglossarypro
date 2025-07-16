@@ -1,16 +1,19 @@
 #!/usr/bin/env tsx
 
-import { db } from '../server/db';
-import { log as logger } from '../server/utils/logger';
 import fs from 'fs';
 import path from 'path';
+import { db } from '../server/db';
+import { log as logger } from '../server/utils/logger';
 
 async function runCustomerServiceMigration() {
   try {
     logger.info('🚀 Starting customer service migration...');
 
     // Read the migration SQL file
-    const migrationPath = path.join(__dirname, '../migrations/0017_add_customer_service_tables.sql');
+    const migrationPath = path.join(
+      __dirname,
+      '../migrations/0017_add_customer_service_tables.sql'
+    );
     const migrationSQL = fs.readFileSync(migrationPath, 'utf8');
 
     // Split into individual statements and execute
@@ -47,7 +50,7 @@ async function runCustomerServiceMigration() {
     // Check if tables exist and can be queried
     const testQueries = [
       'SELECT COUNT(*) FROM support_tickets',
-      'SELECT COUNT(*) FROM ticket_messages', 
+      'SELECT COUNT(*) FROM ticket_messages',
       'SELECT COUNT(*) FROM ticket_attachments',
       'SELECT COUNT(*) FROM knowledge_base_articles',
       'SELECT COUNT(*) FROM response_templates',
@@ -74,12 +77,13 @@ async function runCustomerServiceMigration() {
     logger.info(`📧 Found ${templateCount} response templates`);
 
     // Verify the knowledge base categories and articles
-    const articlesResult = await db.execute('SELECT COUNT(*) as count FROM knowledge_base_articles WHERE is_published = true');
+    const articlesResult = await db.execute(
+      'SELECT COUNT(*) as count FROM knowledge_base_articles WHERE is_published = true'
+    );
     const articleCount = articlesResult.rows[0]?.count || 0;
     logger.info(`📚 Found ${articleCount} published knowledge base articles`);
 
     logger.info('✨ Customer service system is ready for use!');
-
   } catch (error) {
     logger.error('💥 Migration failed:', error);
     process.exit(1);
@@ -93,7 +97,7 @@ if (require.main === module) {
       logger.info('🏁 Migration script completed');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       logger.error('💥 Migration script failed:', error);
       process.exit(1);
     });

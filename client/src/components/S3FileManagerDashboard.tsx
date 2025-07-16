@@ -92,18 +92,18 @@ export default function S3FileManagerDashboard() {
 
     wsRef.current = new WebSocket(wsUrl);
 
-    wsRef.current.onmessage = (event) => {
+    wsRef.current.onmessage = event => {
       const data = JSON.parse(event.data);
 
       if (data.type === 'upload-progress' || data.type === 'bulk-upload-progress') {
-        setUploadProgress((prev) => ({
+        setUploadProgress(prev => ({
           ...prev,
           [data.data.key || `file-${data.data.fileIndex}`]: data.data,
         }));
       }
     };
 
-    wsRef.current.onerror = (error) => {
+    wsRef.current.onerror = error => {
       console.error('WebSocket error:', error);
     };
 
@@ -126,14 +126,14 @@ export default function S3FileManagerDashboard() {
 
     // Search filter
     if (searchQuery) {
-      filtered = filtered.filter((file) =>
+      filtered = filtered.filter(file =>
         file.key.toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
     // File type filter
     if (fileTypeFilter !== 'all') {
-      filtered = filtered.filter((file) => {
+      filtered = filtered.filter(file => {
         const extension = file.key.split('.').pop()?.toLowerCase();
         switch (fileTypeFilter) {
           case 'excel':
@@ -199,7 +199,7 @@ export default function S3FileManagerDashboard() {
 
   const handleFileUpload = useCallback(
     async (files: FileList) => {
-      if (!files.length) return;
+      if (!files.length) {return;}
 
       setUploading(true);
       setUploadProgress({});
@@ -266,7 +266,7 @@ export default function S3FileManagerDashboard() {
   );
 
   const handleFileSelect = useCallback((key: string, selected: boolean) => {
-    setSelectedFiles((prev) => {
+    setSelectedFiles(prev => {
       const newSet = new Set(prev);
       if (selected) {
         newSet.add(key);
@@ -280,7 +280,7 @@ export default function S3FileManagerDashboard() {
   const handleSelectAll = useCallback(
     (selected: boolean) => {
       if (selected) {
-        setSelectedFiles(new Set(filteredFiles.map((f) => f.key)));
+        setSelectedFiles(new Set(filteredFiles.map(f => f.key)));
       } else {
         setSelectedFiles(new Set());
       }
@@ -289,7 +289,7 @@ export default function S3FileManagerDashboard() {
   );
 
   const handleBulkDelete = useCallback(async () => {
-    if (selectedFiles.size === 0) return;
+    if (selectedFiles.size === 0) {return;}
 
     if (!confirm(`Are you sure you want to delete ${selectedFiles.size} files?`)) {
       return;
@@ -321,7 +321,7 @@ export default function S3FileManagerDashboard() {
   }, [selectedFiles, loadFiles]);
 
   const handleCreateArchive = useCallback(async () => {
-    if (selectedFiles.size === 0) return;
+    if (selectedFiles.size === 0) {return;}
 
     try {
       const response = await fetch('/api/s3/archive', {
@@ -371,7 +371,7 @@ export default function S3FileManagerDashboard() {
       const result = await response.json();
 
       if (result.success) {
-        setValidationResults((prev) => ({
+        setValidationResults(prev => ({
           ...prev,
           [key]: result.validation,
         }));
@@ -382,9 +382,9 @@ export default function S3FileManagerDashboard() {
   }, []);
 
   const formatFileSize = useCallback((bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    if (bytes < 1024) {return `${bytes} B`;}
+    if (bytes < 1024 * 1024) {return `${(bytes / 1024).toFixed(1)} KB`;}
+    if (bytes < 1024 * 1024 * 1024) {return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;}
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
   }, []);
 
@@ -411,7 +411,7 @@ export default function S3FileManagerDashboard() {
   }, []);
 
   const getSecurityBadge = useCallback((validation?: FileValidation) => {
-    if (!validation) return null;
+    if (!validation) {return null;}
 
     switch (validation.securityCheck) {
       case 'safe':
@@ -445,7 +445,7 @@ export default function S3FileManagerDashboard() {
     const totalFiles = files.length;
     const totalSize = files.reduce((sum, file) => sum + file.size, 0);
     const selectedSize = Array.from(selectedFiles).reduce((sum, key) => {
-      const file = files.find((f) => f.key === key);
+      const file = files.find(f => f.key === key);
       return sum + (file?.size || 0);
     }, 0);
 
@@ -557,7 +557,7 @@ export default function S3FileManagerDashboard() {
                 <Input
                   placeholder="Search files..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={e => setSearchQuery(e.target.value)}
                   className="pl-8"
                 />
               </div>
@@ -576,7 +576,7 @@ export default function S3FileManagerDashboard() {
               </SelectContent>
             </Select>
 
-            <Select value={sortBy} onValueChange={(value) => setSortBy(value as any)}>
+            <Select value={sortBy} onValueChange={value => setSortBy(value as any)}>
               <SelectTrigger className="w-[180px]">
                 <SelectValue placeholder="Sort by" />
               </SelectTrigger>
@@ -587,7 +587,7 @@ export default function S3FileManagerDashboard() {
               </SelectContent>
             </Select>
 
-            <Select value={sortOrder} onValueChange={(value) => setSortOrder(value as any)}>
+            <Select value={sortOrder} onValueChange={value => setSortOrder(value as any)}>
               <SelectTrigger className="w-[120px]">
                 <SelectValue placeholder="Order" />
               </SelectTrigger>
@@ -667,12 +667,12 @@ export default function S3FileManagerDashboard() {
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {filteredFiles.map((file) => (
+                      {filteredFiles.map(file => (
                         <tr key={file.key} className="hover:bg-gray-50">
                           <td className="py-3 px-4">
                             <Checkbox
                               checked={selectedFiles.has(file.key)}
-                              onCheckedChange={(checked) =>
+                              onCheckedChange={checked =>
                                 handleFileSelect(file.key, checked as boolean)
                               }
                             />
@@ -748,7 +748,7 @@ export default function S3FileManagerDashboard() {
                   type="file"
                   multiple
                   accept=".xlsx,.xls,.csv,.json"
-                  onChange={(e) => e.target.files && handleFileUpload(e.target.files)}
+                  onChange={e => e.target.files && handleFileUpload(e.target.files)}
                   className="hidden"
                 />
 
@@ -775,7 +775,7 @@ export default function S3FileManagerDashboard() {
                     <Checkbox
                       id="compression"
                       checked={compressionEnabled}
-                      onCheckedChange={(checked) => setCompressionEnabled(checked === true)}
+                      onCheckedChange={checked => setCompressionEnabled(checked === true)}
                     />
                     <Label htmlFor="compression">Enable compression</Label>
                   </div>

@@ -61,7 +61,7 @@ export function getS3BucketName(): string {
 /**
  * List files in S3 bucket
  */
-export async function listFiles(bucketName: string, prefix: string = '') {
+export async function listFiles(bucketName: string, prefix = '') {
   const monitoringService = getS3MonitoringService();
   const logId = monitoringService.logOperationStart('list', prefix || 'root');
   const startTime = Date.now();
@@ -78,7 +78,7 @@ export async function listFiles(bucketName: string, prefix: string = '') {
 
     // Return all files
     const files =
-      response.Contents?.map((item) => ({
+      response.Contents?.map(item => ({
         key: item.Key,
         size: item.Size,
         lastModified: item.LastModified,
@@ -269,7 +269,7 @@ export async function getFileSizeFromS3(bucketName: string, key: string): Promis
       throw new Error(`File not found: s3://${bucketName}/${key}`);
     }
 
-    const file = response.Contents.find((item) => item.Key === key);
+    const file = response.Contents.find(item => item.Key === key);
     return file?.Size || 0;
   } catch (error) {
     console.error('Error getting file size from S3:', error);

@@ -82,14 +82,14 @@ class ImageOptimizationService {
 
     const transformations: string[] = [];
 
-    if (params.width) transformations.push(`w_${params.width}`);
-    if (params.height) transformations.push(`h_${params.height}`);
-    if (params.quality) transformations.push(`q_${params.quality}`);
-    if (params.format) transformations.push(`f_${params.format}`);
-    if (params.fit) transformations.push(`c_${params.fit}`);
-    if (params.blur) transformations.push(`e_blur:${params.blur}`);
-    if (params.sharpen) transformations.push('e_sharpen');
-    if (params.progressive) transformations.push('fl_progressive');
+    if (params.width) {transformations.push(`w_${params.width}`);}
+    if (params.height) {transformations.push(`h_${params.height}`);}
+    if (params.quality) {transformations.push(`q_${params.quality}`);}
+    if (params.format) {transformations.push(`f_${params.format}`);}
+    if (params.fit) {transformations.push(`c_${params.fit}`);}
+    if (params.blur) {transformations.push(`e_blur:${params.blur}`);}
+    if (params.sharpen) {transformations.push('e_sharpen');}
+    if (params.progressive) {transformations.push('fl_progressive');}
 
     const transformationString = transformations.join(',');
     return `${baseUrl}/${transformationString}/${encodeURIComponent(src)}`;
@@ -104,14 +104,14 @@ class ImageOptimizationService {
 
     const transformations: string[] = [];
 
-    if (params.width) transformations.push(`w-${params.width}`);
-    if (params.height) transformations.push(`h-${params.height}`);
-    if (params.quality) transformations.push(`q-${params.quality}`);
-    if (params.format) transformations.push(`f-${params.format}`);
-    if (params.fit) transformations.push(`c-${params.fit}`);
-    if (params.blur) transformations.push(`bl-${params.blur}`);
-    if (params.sharpen) transformations.push('e-sharpen');
-    if (params.progressive) transformations.push('pr-true');
+    if (params.width) {transformations.push(`w-${params.width}`);}
+    if (params.height) {transformations.push(`h-${params.height}`);}
+    if (params.quality) {transformations.push(`q-${params.quality}`);}
+    if (params.format) {transformations.push(`f-${params.format}`);}
+    if (params.fit) {transformations.push(`c-${params.fit}`);}
+    if (params.blur) {transformations.push(`bl-${params.blur}`);}
+    if (params.sharpen) {transformations.push('e-sharpen');}
+    if (params.progressive) {transformations.push('pr-true');}
 
     const transformationString = transformations.join(',');
     return `${baseUrl}/tr:${transformationString}/${src.replace(/^\//, '')}`;
@@ -125,14 +125,14 @@ class ImageOptimizationService {
     const url = new URL(endpoint);
 
     url.searchParams.set('src', src);
-    if (params.width) url.searchParams.set('w', params.width.toString());
-    if (params.height) url.searchParams.set('h', params.height.toString());
-    if (params.quality) url.searchParams.set('q', params.quality.toString());
-    if (params.format) url.searchParams.set('f', params.format);
-    if (params.fit) url.searchParams.set('fit', params.fit);
-    if (params.blur) url.searchParams.set('blur', params.blur.toString());
-    if (params.sharpen) url.searchParams.set('sharpen', 'true');
-    if (params.progressive) url.searchParams.set('progressive', 'true');
+    if (params.width) {url.searchParams.set('w', params.width.toString());}
+    if (params.height) {url.searchParams.set('h', params.height.toString());}
+    if (params.quality) {url.searchParams.set('q', params.quality.toString());}
+    if (params.format) {url.searchParams.set('f', params.format);}
+    if (params.fit) {url.searchParams.set('fit', params.fit);}
+    if (params.blur) {url.searchParams.set('blur', params.blur.toString());}
+    if (params.sharpen) {url.searchParams.set('sharpen', 'true');}
+    if (params.progressive) {url.searchParams.set('progressive', 'true');}
 
     return url.toString();
   }
@@ -147,11 +147,11 @@ class ImageOptimizationService {
     const url = new URL(baseUrl, window.location.origin);
 
     url.searchParams.set('src', src);
-    if (params.width) url.searchParams.set('w', params.width.toString());
-    if (params.height) url.searchParams.set('h', params.height.toString());
-    if (params.quality) url.searchParams.set('q', params.quality.toString());
-    if (params.format) url.searchParams.set('f', params.format);
-    if (params.fit) url.searchParams.set('fit', params.fit);
+    if (params.width) {url.searchParams.set('w', params.width.toString());}
+    if (params.height) {url.searchParams.set('h', params.height.toString());}
+    if (params.quality) {url.searchParams.set('q', params.quality.toString());}
+    if (params.format) {url.searchParams.set('f', params.format);}
+    if (params.fit) {url.searchParams.set('fit', params.fit);}
 
     return url.toString();
   }
@@ -175,11 +175,11 @@ class ImageOptimizationService {
    * Check if format is supported by browser
    */
   static isFormatSupported(format: string): Promise<boolean> {
-    return new Promise((resolve) => {
+    return new Promise(resolve => {
       const canvas = document.createElement('canvas');
       canvas.width = 1;
       canvas.height = 1;
-      canvas.toBlob((blob) => {
+      canvas.toBlob(blob => {
         resolve(blob !== null);
       }, `image/${format}`);
     });
@@ -189,8 +189,8 @@ class ImageOptimizationService {
    * Get optimal format for browser
    */
   static async getOptimalFormat(): Promise<'avif' | 'webp' | 'jpeg'> {
-    if (await ImageOptimizationService.isFormatSupported('avif')) return 'avif';
-    if (await ImageOptimizationService.isFormatSupported('webp')) return 'webp';
+    if (await ImageOptimizationService.isFormatSupported('avif')) {return 'avif';}
+    if (await ImageOptimizationService.isFormatSupported('webp')) {return 'webp';}
     return 'jpeg';
   }
 
@@ -203,7 +203,7 @@ class ImageOptimizationService {
     params: Omit<ImageOptimizationParams, 'width'> = {}
   ): string {
     return widths
-      .map((width) => {
+      .map(width => {
         const url = this.generateOptimizedUrl(src, { ...params, width });
         return `${url} ${width}w`;
       })

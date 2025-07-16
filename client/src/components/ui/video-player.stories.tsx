@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import VideoPlayer from './video-player';
 
@@ -9,7 +8,8 @@ const meta: Meta<typeof VideoPlayer> = {
     layout: 'padded',
     docs: {
       description: {
-        component: 'A customizable video player component with advanced controls, subtitles support, and download functionality.',
+        component:
+          'A customizable video player component with advanced controls, subtitles support, and download functionality.',
       },
     },
   },
@@ -20,8 +20,10 @@ export default meta;
 type Story = StoryObj<typeof VideoPlayer>;
 
 // Sample video URLs (using placeholder videos for demo)
-const SAMPLE_VIDEO = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
-const SAMPLE_POSTER = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg';
+const SAMPLE_VIDEO =
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4';
+const SAMPLE_POSTER =
+  'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/images/BigBuckBunny.jpg';
 
 export const BasicVideo: Story = {
   args: {
@@ -67,7 +69,7 @@ export const WithSubtitles: Story = {
         label: 'English',
       },
       {
-        src: '/subtitles/es.vtt', 
+        src: '/subtitles/es.vtt',
         language: 'es',
         label: 'Español',
       },
@@ -116,7 +118,8 @@ export const TutorialVideo: Story = {
   args: {
     src: SAMPLE_VIDEO,
     title: 'Hands-on Tutorial: Building Your First Neural Network',
-    description: 'Follow along as we build a neural network from scratch using Python and TensorFlow',
+    description:
+      'Follow along as we build a neural network from scratch using Python and TensorFlow',
     poster: SAMPLE_POSTER,
     controls: true,
   },

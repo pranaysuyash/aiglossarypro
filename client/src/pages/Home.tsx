@@ -2,14 +2,14 @@ import { useQuery } from '@tanstack/react-query';
 import { BarChart3, TrendingUp } from 'lucide-react';
 import { useMemo } from 'react';
 import { Link } from 'wouter';
-import CategoryCard from '@/components/CategoryCard';
 import GoogleAd from '@/components/ads/GoogleAd';
+import CategoryCard from '@/components/CategoryCard';
 import Sidebar from '@/components/Sidebar';
 import TermCard from '@/components/TermCard';
 import { Button } from '@/components/ui/button';
 import { CategoryCardSkeleton, TermCardSkeleton } from '@/components/ui/skeleton';
-import { useAuth } from '@/hooks/useAuth';
 import { useAdPlacement } from '@/hooks/useAdSense';
+import { useAuth } from '@/hooks/useAuth';
 import type { ICategory, ITerm } from '@/interfaces/interfaces';
 
 export default function Home() {
@@ -42,7 +42,7 @@ export default function Home() {
 
   // Optimize favorites map computation with useMemo
   const currentFavoritesMap = useMemo(() => {
-    if (!favorites || !Array.isArray(favorites)) return {};
+    if (!favorites || !Array.isArray(favorites)) {return {};}
     return (favorites as ITerm[]).reduce((acc: Record<string, boolean>, term: ITerm) => {
       acc[term.id] = true;
       return acc;
@@ -137,7 +137,7 @@ export default function Home() {
               <GoogleAd
                 slot={homepageAdSlot}
                 format="rectangle"
-                responsive={true}
+                responsive
                 className="flex justify-center"
               />
             </div>

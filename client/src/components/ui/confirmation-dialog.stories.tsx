@@ -1,6 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { Button } from './button';
 import { ConfirmationDialog } from './confirmation-dialog';
 
@@ -11,7 +10,8 @@ const meta: Meta<typeof ConfirmationDialog> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Confirmation dialog component for user actions with customizable styling and content.',
+        component:
+          'Confirmation dialog component for user actions with customizable styling and content.',
       },
     },
   },
@@ -53,14 +53,14 @@ export default meta;
 type Story = StoryObj<typeof ConfirmationDialog>;
 
 // Wrapper component for interactive stories
-function DialogWrapper({ 
-  title, 
-  description, 
-  confirmText, 
-  cancelText, 
-  variant, 
+function DialogWrapper({
+  title,
+  description,
+  confirmText,
+  cancelText,
+  variant,
   details,
-  triggerText = 'Open Dialog'
+  triggerText = 'Open Dialog',
 }: {
   title: string;
   description: string;
@@ -74,7 +74,10 @@ function DialogWrapper({
 
   return (
     <div className="space-y-4">
-      <Button onClick={() => setOpen(true)} variant={variant === 'destructive' ? 'destructive' : 'default'}>
+      <Button
+        onClick={() => setOpen(true)}
+        variant={variant === 'destructive' ? 'destructive' : 'default'}
+      >
         {triggerText}
       </Button>
       <ConfirmationDialog

@@ -110,7 +110,7 @@ export function validateParamsMiddleware<T>(schema: z.ZodSchema<T>) {
 }
 
 // Safe integer parsing utility
-export function safeParseInt(value: string | unknown, fallback: number = 0): number {
+export function safeParseInt(value: string | unknown, fallback = 0): number {
   if (typeof value === 'string') {
     const parsed = parseInt(value, 10);
     return Number.isNaN(parsed) ? fallback : parsed;

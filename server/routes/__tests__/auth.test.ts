@@ -1,10 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import request from 'supertest';
 import express from 'express';
-import { authRouter } from '../auth';
-import { verifyIdToken } from '../../config/firebase-admin';
-import { db } from '../../config/database';
 import jwt from 'jsonwebtoken';
+import request from 'supertest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { db } from '../../config/database';
+import { verifyIdToken } from '../../config/firebase-admin';
+import { authRouter } from '../auth';
 
 // Mock dependencies
 vi.mock('../../config/firebase-admin', () => ({
@@ -112,9 +112,7 @@ describe('Auth Routes', () => {
     });
 
     it('should handle missing token', async () => {
-      const response = await request(app)
-        .post('/auth/firebase/login')
-        .send({});
+      const response = await request(app).post('/auth/firebase/login').send({});
 
       expect(response.status).toBe(400);
       expect(response.body.success).toBe(false);
@@ -147,8 +145,7 @@ describe('Auth Routes', () => {
     });
 
     it('should return 401 for unauthenticated request', async () => {
-      const response = await request(app)
-        .get('/auth/user');
+      const response = await request(app).get('/auth/user');
 
       expect(response.status).toBe(401);
       expect(response.body.success).toBe(false);
@@ -157,8 +154,7 @@ describe('Auth Routes', () => {
 
   describe('POST /auth/logout', () => {
     it('should clear auth cookie on logout', async () => {
-      const response = await request(app)
-        .post('/auth/logout');
+      const response = await request(app).post('/auth/logout');
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -183,8 +179,7 @@ describe('Auth Routes', () => {
 
       (db.returning as any).mockResolvedValueOnce([mockTestUser]);
 
-      const response = await request(app)
-        .post('/auth/purchase/test');
+      const response = await request(app).post('/auth/purchase/test');
 
       expect(response.status).toBe(200);
       expect(response.body.success).toBe(true);
@@ -195,8 +190,7 @@ describe('Auth Routes', () => {
     it('should reject test purchase in production', async () => {
       process.env.NODE_ENV = 'production';
 
-      const response = await request(app)
-        .post('/auth/purchase/test');
+      const response = await request(app).post('/auth/purchase/test');
 
       expect(response.status).toBe(403);
       expect(response.body.success).toBe(false);

@@ -205,7 +205,7 @@ export class SurpriseDiscoveryService {
         .orderBy(desc(sql`COUNT(*)`))
         .limit(3);
 
-      favoriteCategories = categoryViews.map((cv) => cv.categoryId).filter(Boolean) as string[];
+      favoriteCategories = categoryViews.map(cv => cv.categoryId).filter(Boolean) as string[];
     }
 
     // Find terms in user's interest areas but that they haven't seen
@@ -494,8 +494,8 @@ export class SurpriseDiscoveryService {
       .limit(1);
 
     return {
-      recentlyViewedTerms: recentViews.map((rv) => rv.termId).filter(Boolean) as string[],
-      favoriteCategories: favCategories.map((fc) => fc.categoryId).filter(Boolean) as string[],
+      recentlyViewedTerms: recentViews.map(rv => rv.termId).filter(Boolean) as string[],
+      favoriteCategories: favCategories.map(fc => fc.categoryId).filter(Boolean) as string[],
       skillLevel: profile[0]?.preferred_complexity || 'beginner',
       learningGoals: (profile[0]?.active_learning_goals as string[]) || [],
       explorationHistory: [], // Could be populated from behavior events
@@ -540,16 +540,16 @@ export class SurpriseDiscoveryService {
    * Extract key terms from definition for connection analysis
    */
   private static extractKeywords(definition: string): string[] {
-    if (!definition) return [];
+    if (!definition) {return [];}
 
     // Simple keyword extraction - can be enhanced with NLP
     const words = definition
       .toLowerCase()
       .replace(/[^\w\s]/g, ' ')
       .split(/\s+/)
-      .filter((word) => word.length > 4) // Only longer words
+      .filter(word => word.length > 4) // Only longer words
       .filter(
-        (word) =>
+        word =>
           ![
             'that',
             'with',
@@ -582,7 +582,7 @@ export class SurpriseDiscoveryService {
     // Definition similarity (simplified)
     const keywords1 = SurpriseDiscoveryService.extractKeywords(term1.definition);
     const keywords2 = SurpriseDiscoveryService.extractKeywords(term2.definition);
-    const commonKeywords = keywords1.filter((k) => keywords2.includes(k));
+    const commonKeywords = keywords1.filter(k => keywords2.includes(k));
     strength += Math.min(commonKeywords.length * 10, 30);
 
     // Name similarity
@@ -634,9 +634,9 @@ export class SurpriseDiscoveryService {
         .update(discoveryPreferences)
         .set({ ...preferences, updated_at: new Date() })
         .where(eq(discoveryPreferences.user_id, userId));
-    } else {
+    } 
       return await db.insert(discoveryPreferences).values({ user_id: userId, ...preferences });
-    }
+    
   }
 
   /**
@@ -690,8 +690,7 @@ export class SurpriseDiscoveryService {
           newDiscoveryCount
       );
       const newAvgRelevance = Math.round(
-        ((current.average_relevance_rating || 0) * currentDiscoveryCount +
-          relevanceRating * 100) /
+        ((current.average_relevance_rating || 0) * currentDiscoveryCount + relevanceRating * 100) /
           newDiscoveryCount
       );
 

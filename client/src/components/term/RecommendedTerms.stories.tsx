@@ -1,5 +1,4 @@
 import type { Meta, StoryObj } from '@storybook/react';
-import React from 'react';
 import type { ITerm } from '../../../../shared/types';
 import RecommendedTerms from './RecommendedTerms';
 
@@ -183,7 +182,7 @@ export const ManyTerms: Story = {
 
 export const WithFavorites: Story = {
   args: {
-    recommended: sampleTerms.filter((term) => term.isFavorite),
+    recommended: sampleTerms.filter(term => term.isFavorite),
   },
   parameters: {
     docs: {
@@ -324,7 +323,7 @@ export const InteractiveDemo: Story = {
     const filteredTerms =
       selectedCategory === 'all'
         ? sampleTerms
-        : sampleTerms.filter((term) => term.category === selectedCategory);
+        : sampleTerms.filter(term => term.category === selectedCategory);
 
     return (
       <div className="space-y-6">
@@ -332,10 +331,10 @@ export const InteractiveDemo: Story = {
           <label className="font-medium">Filter by category:</label>
           <select
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={e => setSelectedCategory(e.target.value)}
             className="px-3 py-2 border rounded-lg"
           >
-            {categories.map((cat) => (
+            {categories.map(cat => (
               <option key={cat} value={cat}>
                 {cat === 'all' ? 'All Categories' : cat}
               </option>
@@ -520,7 +519,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-6xl dark">
         <Story />
       </div>

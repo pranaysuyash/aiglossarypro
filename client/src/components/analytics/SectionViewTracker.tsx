@@ -9,7 +9,7 @@ interface SectionViewTrackerProps {
   /** Children to render (optional - can be used as wrapper or standalone) */
   children?: React.ReactNode;
   /** CSS class name for the wrapper element */
-  className?: string;
+  className?: string | undefined;
   /** Threshold for intersection (0-1, default 0.5 = 50% visible) */
   threshold?: number;
   /** Root margin for intersection observer */
@@ -33,11 +33,11 @@ export default function SectionViewTracker({
 
   useEffect(() => {
     const element = elementRef.current;
-    if (!element) return;
+    if (!element) {return;}
 
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             // Track section view if not already tracked (when trackOnce is true)
             if (!trackOnce || !hasTracked.current) {
@@ -93,7 +93,7 @@ export function useSectionViewTracking() {
 
   const createSectionObserver = (
     sectionName: string,
-    position: number = 0,
+    position = 0,
     options: {
       threshold?: number;
       rootMargin?: string;
@@ -105,8 +105,8 @@ export function useSectionViewTracking() {
     let hasTracked = false;
 
     return new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             if (!trackOnce || !hasTracked) {
               trackSectionView(sectionName, position);

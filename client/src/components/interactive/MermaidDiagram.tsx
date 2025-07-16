@@ -10,9 +10,9 @@ let mermaidModule: typeof import('mermaid') | null = null;
 
 interface MermaidDiagramProps {
   diagram: string;
-  title?: string;
-  description?: string;
-  className?: string;
+  title?: string | undefined;
+  description?: string | undefined;
+  className?: string | undefined;
 }
 
 export default function MermaidDiagram({
@@ -86,7 +86,7 @@ export default function MermaidDiagram({
   };
 
   const handleDownloadSvg = () => {
-    if (!diagramSvg) return;
+    if (!diagramSvg) {return;}
 
     const blob = new Blob([diagramSvg], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
@@ -100,11 +100,11 @@ export default function MermaidDiagram({
   };
 
   const handleZoomIn = () => {
-    setZoom((prev) => Math.min(prev + 0.25, 3));
+    setZoom(prev => Math.min(prev + 0.25, 3));
   };
 
   const handleZoomOut = () => {
-    setZoom((prev) => Math.max(prev - 0.25, 0.5));
+    setZoom(prev => Math.max(prev - 0.25, 0.5));
   };
 
   const resetZoom = () => {

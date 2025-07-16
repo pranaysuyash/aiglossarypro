@@ -8,9 +8,12 @@ test.describe('Performance and Load Testing', () => {
   });
 
   test.describe('Lighthouse Performance Audits', () => {
-    test('should meet Lighthouse performance thresholds for homepage', async ({ page, browser }) => {
+    test('should meet Lighthouse performance thresholds for homepage', async ({
+      page,
+      browser,
+    }) => {
       await page.goto('/');
-      
+
       const results = await playAudit({
         page,
         reports: {
@@ -19,14 +22,14 @@ test.describe('Performance and Load Testing', () => {
             html: true,
           },
           name: 'homepage-lighthouse-report',
-          directory: 'reports/audit-suite/lighthouse'
+          directory: 'reports/audit-suite/lighthouse',
         },
         thresholds: {
           performance: 90,
           accessibility: 90,
           'best-practices': 80,
           seo: 80,
-        }
+        },
       });
 
       console.log('Lighthouse scores:', {
@@ -45,7 +48,7 @@ test.describe('Performance and Load Testing', () => {
       const keyPages = [
         { path: '/terms', name: 'terms-page' },
         { path: '/categories', name: 'categories-page' },
-        { path: '/search', name: 'search-page' }
+        { path: '/search', name: 'search-page' },
       ];
 
       for (const pageInfo of keyPages) {
@@ -57,35 +60,35 @@ test.describe('Performance and Load Testing', () => {
           reports: {
             formats: { json: true },
             name: `${pageInfo.name}-lighthouse`,
-            directory: 'reports/audit-suite/lighthouse'
+            directory: 'reports/audit-suite/lighthouse',
           },
           thresholds: {
             performance: 85, // Slightly lower threshold for complex pages
             accessibility: 90,
-          }
+          },
         });
 
         const performanceScore = results.lhr.categories.performance.score * 100;
         console.log(`${pageInfo.path} performance score: ${performanceScore}`);
-        
+
         expect(performanceScore).toBeGreaterThanOrEqual(85);
       }
     });
 
     test('should analyze Core Web Vitals', async ({ page }) => {
       await page.goto('/');
-      
+
       const results = await playAudit({
         page,
         config: {
           settings: {
             onlyCategories: ['performance'],
-          }
-        }
+          },
+        },
       });
 
       const audits = results.lhr.audits;
-      
+
       // Check Core Web Vitals
       const coreWebVitals = {
         lcp: audits['largest-contentful-paint']?.numericValue,
@@ -124,16 +127,17 @@ test.describe('Performance and Load Testing', () => {
 
       // Check for Core Web Vitals
       const performanceMetrics = await page.evaluate(() => {
-        return new Promise((resolve) => {
-          new PerformanceObserver((list) => {
+        return new Promise(resolve => {
+          new PerformanceObserver(list => {
             const entries = list.getEntries();
-            const metrics = {};
+            const metrics: any = {};
 
-            entries.forEach((entry) => {
+            entries.forEach(entry => {
               if (entry.entryType === 'navigation') {
+                const navEntry = entry as PerformanceNavigationTiming;
                 metrics.domContentLoaded =
-                  entry.domContentLoadedEventEnd - entry.domContentLoadedEventStart;
-                metrics.loadComplete = entry.loadEventEnd - entry.loadEventStart;
+                  navEntry.domContentLoadedEventEnd - navEntry.domContentLoadedEventStart;
+                metrics.loadComplete = navEntry.loadEventEnd - navEntry.loadEventStart;
               }
 
               if (entry.entryType === 'largest-contentful-paint') {
@@ -141,11 +145,13 @@ test.describe('Performance and Load Testing', () => {
               }
 
               if (entry.entryType === 'first-input') {
-                metrics.fid = entry.processingStart - entry.startTime;
+                const inputEntry = entry as PerformanceEventTiming;
+                metrics.fid = inputEntry.processingStart - entry.startTime;
               }
 
               if (entry.entryType === 'layout-shift') {
-                metrics.cls = (metrics.cls || 0) + entry.value;
+                const layoutEntry = entry as any; // LayoutShift interface not available in standard types
+                metrics.cls = (metrics.cls || 0) + layoutEntry.value;
               }
             });
 
@@ -227,7 +233,7 @@ test.describe('Performance and Load Testing', () => {
       const jsRequests = [];
       const cssRequests = [];
 
-      page.on('request', (request) => {
+      page.on('request', request => {
         const url = request.url();
         if (url.match(/\.(jpg|jpeg|png|gif|svg|webp)$/)) {
           imageRequests.push(url);
@@ -251,7 +257,7 @@ test.describe('Performance and Load Testing', () => {
 
       // Check for modern image formats
       const modernFormats = imageRequests.filter(
-        (url) => url.includes('.webp') || url.includes('.avif')
+        url => url.includes('.webp') || url.includes('.avif')
       );
       console.log(`Modern image formats: ${modernFormats.length}/${imageRequests.length}`);
     });
@@ -264,7 +270,7 @@ test.describe('Performance and Load Testing', () => {
       // Second visit to test caching
       const cachedRequests = [];
 
-      page.on('response', (response) => {
+      page.on('response', response => {
         const cacheHeader = response.headers()['cache-control'];
         if (cacheHeader && (cacheHeader.includes('max-age') || cacheHeader.includes('public'))) {
           cachedRequests.push(response.url());
@@ -282,7 +288,7 @@ test.describe('Performance and Load Testing', () => {
     test('should minimize bundle sizes', async ({ page }) => {
       const bundleSizes = [];
 
-      page.on('response', async (response) => {
+      page.on('response', async response => {
         const url = response.url();
         if (url.includes('.js') && !url.includes('node_modules')) {
           try {
@@ -302,7 +308,7 @@ test.describe('Performance and Load Testing', () => {
       await page.goto('/', { waitUntil: 'networkidle' });
 
       // Check bundle sizes
-      const largeBundles = bundleSizes.filter((bundle) => bundle.size > 500000); // 500KB
+      const largeBundles = bundleSizes.filter(bundle => bundle.size > 500000); // 500KB
 
       console.log(`Total bundles: ${bundleSizes.length}`);
       console.log(`Large bundles (>500KB): ${largeBundles.length}`);
@@ -525,7 +531,7 @@ test.describe('Performance and Load Testing', () => {
       await page.waitForTimeout(1000);
 
       // Simulate network failure
-      await page.route('**/*', (route) => route.abort());
+      await page.route('**/*', route => route.abort());
 
       // Try to navigate or perform action
       const searchInput = page.locator('[data-testid="search-input"], input[type="text"]').first();
@@ -566,12 +572,12 @@ test.describe('Performance and Load Testing', () => {
 
       // Measure rendering performance
       const renderingMetrics = await page.evaluate(() => {
-        return new Promise((resolve) => {
-          const observer = new PerformanceObserver((list) => {
+        return new Promise(resolve => {
+          const observer = new PerformanceObserver(list => {
             const entries = list.getEntries();
             const paintMetrics = {};
 
-            entries.forEach((entry) => {
+            entries.forEach(entry => {
               if (entry.entryType === 'paint') {
                 paintMetrics[entry.name] = entry.startTime;
               }
@@ -593,10 +599,10 @@ test.describe('Performance and Load Testing', () => {
 
       // Check for layout shifts
       const layoutShifts = await page.evaluate(() => {
-        return new Promise((resolve) => {
+        return new Promise(resolve => {
           let cumulativeLayoutShift = 0;
 
-          const observer = new PerformanceObserver((list) => {
+          const observer = new PerformanceObserver(list => {
             for (const entry of list.getEntries()) {
               if (entry.entryType === 'layout-shift' && !entry.hadRecentInput) {
                 cumulativeLayoutShift += entry.value;
@@ -658,7 +664,7 @@ test.describe('Performance and Load Testing', () => {
 
       // Execute operations concurrently
       const startTime = Date.now();
-      await Promise.all(operations.map((op) => op().catch(console.error)));
+      await Promise.all(operations.map(op => op().catch(console.error)));
       const executionTime = Date.now() - startTime;
 
       console.log(`Concurrent operations completed in: ${executionTime}ms`);

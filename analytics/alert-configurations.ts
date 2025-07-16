@@ -1,6 +1,6 @@
 /**
  * Alert Configurations for AI Glossary Pro A/B Testing
- * 
+ *
  * Defines alert thresholds, templates, and monitoring procedures
  * for A/B test monitoring and result detection.
  */
@@ -58,7 +58,7 @@ export const alertConfigs: AlertConfig[] = [
       metric: 'statistical_significance',
       operator: '>=',
       value: 0.95,
-      duration: 60 // Must maintain for 1 hour
+      duration: 60, // Must maintain for 1 hour
     },
     severity: 'success',
     channels: [
@@ -67,20 +67,21 @@ export const alertConfigs: AlertConfig[] = [
         config: {
           to: ['product@aiglossarypro.com', 'marketing@aiglossarypro.com'],
           subject: '🎯 A/B Test Winner: {{test_name}}',
-          template: 'test_winner'
-        }
+          template: 'test_winner',
+        },
       },
       {
         type: 'slack',
         config: {
           channel: '#product-updates',
-          message: ':tada: *{{test_name}}* has a winner! {{winning_variant}} shows {{lift}}% improvement with {{confidence}}% confidence.'
-        }
-      }
+          message:
+            ':tada: *{{test_name}}* has a winner! {{winning_variant}} shows {{lift}}% improvement with {{confidence}}% confidence.',
+        },
+      },
     ],
-    cooldown: 1440 // 24 hours
+    cooldown: 1440, // 24 hours
   },
-  
+
   // Sample Ratio Mismatch
   {
     id: 'sample_ratio_mismatch',
@@ -91,7 +92,7 @@ export const alertConfigs: AlertConfig[] = [
       metric: 'sample_ratio_deviation',
       operator: '>',
       value: 0.05,
-      duration: 30
+      duration: 30,
     },
     severity: 'critical',
     channels: [
@@ -100,20 +101,20 @@ export const alertConfigs: AlertConfig[] = [
         config: {
           to: ['engineering@aiglossarypro.com'],
           subject: '🚨 CRITICAL: Sample Ratio Mismatch in {{test_name}}',
-          template: 'sample_ratio_alert'
-        }
+          template: 'sample_ratio_alert',
+        },
       },
       {
         type: 'pagerduty',
         config: {
           service_key: process.env.PAGERDUTY_SERVICE_KEY,
-          severity: 'error'
-        }
-      }
+          severity: 'error',
+        },
+      },
     ],
-    cooldown: 60
+    cooldown: 60,
   },
-  
+
   // Low Sample Collection
   {
     id: 'low_sample_collection',
@@ -125,7 +126,7 @@ export const alertConfigs: AlertConfig[] = [
       operator: '<',
       value: 0.5, // 50% of expected
       aggregation: 'avg',
-      duration: 120 // 2 hours
+      duration: 120, // 2 hours
     },
     severity: 'warning',
     channels: [
@@ -133,13 +134,14 @@ export const alertConfigs: AlertConfig[] = [
         type: 'slack',
         config: {
           channel: '#analytics-alerts',
-          message: ':warning: Low sample collection for *{{test_name}}*. Current rate: {{current_rate}}/day (expected: {{expected_rate}}/day)'
-        }
-      }
+          message:
+            ':warning: Low sample collection for *{{test_name}}*. Current rate: {{current_rate}}/day (expected: {{expected_rate}}/day)',
+        },
+      },
     ],
-    cooldown: 360 // 6 hours
+    cooldown: 360, // 6 hours
   },
-  
+
   // Performance Degradation
   {
     id: 'performance_degradation',
@@ -150,7 +152,7 @@ export const alertConfigs: AlertConfig[] = [
       metric: 'performance_composite',
       operator: '<',
       value: -0.1, // 10% degradation
-      duration: 60
+      duration: 60,
     },
     severity: 'critical',
     channels: [
@@ -159,8 +161,8 @@ export const alertConfigs: AlertConfig[] = [
         config: {
           to: ['product@aiglossarypro.com', 'engineering@aiglossarypro.com'],
           subject: '⚠️ Performance Issue: {{variant}} in {{test_name}}',
-          template: 'performance_alert'
-        }
+          template: 'performance_alert',
+        },
       },
       {
         type: 'webhook',
@@ -168,14 +170,14 @@ export const alertConfigs: AlertConfig[] = [
           url: process.env.MONITORING_WEBHOOK_URL,
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json'
-          }
-        }
-      }
+            'Content-Type': 'application/json',
+          },
+        },
+      },
     ],
-    cooldown: 120
+    cooldown: 120,
   },
-  
+
   // Test Completion
   {
     id: 'test_completion',
@@ -185,7 +187,7 @@ export const alertConfigs: AlertConfig[] = [
       type: 'threshold',
       metric: 'test_completion_percentage',
       operator: '>=',
-      value: 100
+      value: 100,
     },
     severity: 'info',
     channels: [
@@ -194,19 +196,19 @@ export const alertConfigs: AlertConfig[] = [
         config: {
           to: ['product@aiglossarypro.com'],
           subject: '✅ A/B Test Completed: {{test_name}}',
-          template: 'test_completion'
-        }
+          template: 'test_completion',
+        },
       },
       {
         type: 'dashboard',
         config: {
           dashboard_id: 'ab_test_overview',
-          widget_id: 'completed_tests'
-        }
-      }
-    ]
+          widget_id: 'completed_tests',
+        },
+      },
+    ],
   },
-  
+
   // Anomaly Detection
   {
     id: 'metric_anomaly',
@@ -217,7 +219,7 @@ export const alertConfigs: AlertConfig[] = [
       metric: 'conversion_rate',
       operator: 'outside',
       value: [0.02, 0.98], // 2nd to 98th percentile
-      duration: 30
+      duration: 30,
     },
     severity: 'warning',
     channels: [
@@ -225,17 +227,18 @@ export const alertConfigs: AlertConfig[] = [
         type: 'slack',
         config: {
           channel: '#analytics-alerts',
-          message: ':chart_with_downwards_trend: Anomaly detected in *{{test_name}}*: {{metric}} is {{value}} (expected range: {{expected_range}})'
-        }
-      }
+          message:
+            ':chart_with_downwards_trend: Anomaly detected in *{{test_name}}*: {{metric}} is {{value}} (expected range: {{expected_range}})',
+        },
+      },
     ],
     cooldown: 240,
     grouping: {
       by: ['test_id', 'metric'],
       window: 60,
-      threshold: 3
-    }
-  }
+      threshold: 3,
+    },
+  },
 ];
 
 // Alert Templates
@@ -267,9 +270,9 @@ export const alertTemplates = {
       </ol>
       
       <a href="{{dashboard_url}}" style="display: inline-block; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px;">View Full Results</a>
-    `
+    `,
   },
-  
+
   sample_ratio_alert: {
     subject: '🚨 CRITICAL: Sample Ratio Mismatch in {{test_name}}',
     body: `
@@ -301,9 +304,9 @@ export const alertTemplates = {
       </ol>
       
       <p>This issue can invalidate test results. Please investigate immediately.</p>
-    `
+    `,
   },
-  
+
   performance_alert: {
     subject: '⚠️ Performance Issue: {{variant}} in {{test_name}}',
     body: `
@@ -336,8 +339,8 @@ export const alertTemplates = {
       <p>Revenue impact: {{revenue_impact}}</p>
       
       <a href="{{performance_dashboard}}" style="display: inline-block; padding: 10px 20px; background: #dc3545; color: white; text-decoration: none; border-radius: 5px;">View Performance Dashboard</a>
-    `
-  }
+    `,
+  },
 };
 
 // Alert Monitoring Procedures
@@ -352,13 +355,13 @@ export const monitoringProcedures = {
         'Implement mitigation if needed',
         'Investigate root cause',
         'Document findings',
-        'Implement permanent fix'
+        'Implement permanent fix',
       ],
       sla: {
         acknowledgment: 15, // minutes
         mitigation: 60,
-        resolution: 240
-      }
+        resolution: 240,
+      },
     },
     warning: {
       name: 'Warning Alert Response',
@@ -366,26 +369,26 @@ export const monitoringProcedures = {
         'Review alert details',
         'Monitor for escalation',
         'Investigate during business hours',
-        'Document if action needed'
+        'Document if action needed',
       ],
       sla: {
         acknowledgment: 60,
-        resolution: 480
-      }
+        resolution: 480,
+      },
     },
     info: {
       name: 'Informational Alert Response',
       steps: [
         'Review during daily standup',
         'Update documentation if needed',
-        'Archive for future reference'
+        'Archive for future reference',
       ],
       sla: {
-        review: 1440 // 24 hours
-      }
-    }
+        review: 1440, // 24 hours
+      },
+    },
   },
-  
+
   // Escalation matrix
   escalation: {
     levels: [
@@ -393,46 +396,46 @@ export const monitoringProcedures = {
         level: 1,
         conditions: ['single_critical', 'multiple_warnings'],
         contacts: ['on_call_engineer'],
-        timeframe: 15
+        timeframe: 15,
       },
       {
         level: 2,
         conditions: ['unacknowledged_critical', 'multiple_criticals'],
         contacts: ['engineering_lead', 'product_manager'],
-        timeframe: 30
+        timeframe: 30,
       },
       {
         level: 3,
         conditions: ['unresolved_critical', 'revenue_impact'],
         contacts: ['cto', 'head_of_product'],
-        timeframe: 60
-      }
-    ]
+        timeframe: 60,
+      },
+    ],
   },
-  
+
   // Alert fatigue prevention
   fatiguePrevention: {
     deduplication: {
       enabled: true,
       window: 300, // 5 minutes
-      groupBy: ['test_id', 'alert_type']
+      groupBy: ['test_id', 'alert_type'],
     },
     suppression: {
       maintenance_windows: [
         {
           name: 'Weekly Deployment',
           schedule: 'CRON:0 2 * * 3', // Wednesdays at 2 AM
-          duration: 120 // minutes
-        }
+          duration: 120, // minutes
+        },
       ],
-      known_issues: []
+      known_issues: [],
     },
     tuning: {
       review_frequency: 'weekly',
       metrics: ['alert_count', 'false_positive_rate', 'response_time'],
-      auto_adjust: true
-    }
-  }
+      auto_adjust: true,
+    },
+  },
 };
 
 // Alert Analytics
@@ -442,20 +445,20 @@ export const alertAnalytics = {
     mean_time_to_acknowledge: 'avg(acknowledged_at - created_at)',
     mean_time_to_resolve: 'avg(resolved_at - created_at)',
     false_positive_rate: 'count(false_positives) / count(total_alerts)',
-    alert_volume: 'count(alerts) by severity, time_bucket'
+    alert_volume: 'count(alerts) by severity, time_bucket',
   },
-  
+
   // Alert quality scoring
   qualityScore: (alert: any) => {
     const factors = {
       accuracy: alert.false_positives === 0 ? 1 : 0.5,
       actionability: alert.resulted_in_action ? 1 : 0.3,
       timeliness: alert.detected_within_sla ? 1 : 0.7,
-      clarity: alert.required_clarification ? 0.8 : 1
+      clarity: alert.required_clarification ? 0.8 : 1,
     };
-    
+
     return Object.values(factors).reduce((a, b) => a + b) / Object.keys(factors).length;
-  }
+  },
 };
 
 // Helper function to create PostHog alert
@@ -468,17 +471,17 @@ export const createPostHogAlert = (config: AlertConfig) => {
         {
           id: config.condition.metric,
           type: 'events',
-          properties: []
-        }
-      ]
+          properties: [],
+        },
+      ],
     },
     threshold: {
       type: config.condition.operator,
-      value: config.condition.value
+      value: config.condition.value,
     },
     notification_targets: config.channels.map(channel => ({
       type: channel.type,
-      value: channel.config
-    }))
+      value: channel.config,
+    })),
   };
 };

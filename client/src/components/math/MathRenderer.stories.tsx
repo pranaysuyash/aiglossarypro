@@ -8,7 +8,8 @@ const meta: Meta<typeof MathRenderer> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'A component for rendering mathematical expressions using KaTeX. Supports both inline and display mode with AI/ML specific macros.',
+        component:
+          'A component for rendering mathematical expressions using KaTeX. Supports both inline and display mode with AI/ML specific macros.',
       },
     },
   },
@@ -158,8 +159,8 @@ export const InlineExample: Story = {
       <p className="text-base leading-relaxed">
         The <MathRenderer math="\\sigma" /> function, also known as the{' '}
         <MathRenderer math="\\sigmoid" /> function, is defined as{' '}
-        <MathRenderer math="\\sigma(x) = \\frac{1}{1 + e^{-x}}" />. This function is commonly
-        used in neural networks because it maps any real number to a value between 0 and 1.
+        <MathRenderer math="\\sigma(x) = \\frac{1}{1 + e^{-x}}" />. This function is commonly used
+        in neural networks because it maps any real number to a value between 0 and 1.
       </p>
     </div>
   ),
@@ -177,22 +178,29 @@ export const MathTextExample: Story = {
   render: () => (
     <div className="max-w-2xl space-y-4">
       <MathText className="text-base leading-relaxed">
-        {"The loss function $\\\\loss(\\\\params) = \\\\frac{1}{m} \\\\sum_{i=1}^{m} (f_\\\\params(x^{(i)}) - y^{(i)})^2$ measures prediction errors in supervised learning."}
+        {
+          'The loss function $\\\\loss(\\\\params) = \\\\frac{1}{m} \\\\sum_{i=1}^{m} (f_\\\\params(x^{(i)}) - y^{(i)})^2$ measures prediction errors in supervised learning.'
+        }
       </MathText>
-      
+
       <MathText className="text-base leading-relaxed">
-        {"In deep learning, we often use the ReLU activation function: $$\\\\ReLU(x) = \\\\max(0, x)$$ which helps with the vanishing gradient problem."}
+        {
+          'In deep learning, we often use the ReLU activation function: $$\\\\ReLU(x) = \\\\max(0, x)$$ which helps with the vanishing gradient problem.'
+        }
       </MathText>
-      
+
       <MathText className="text-base leading-relaxed">
-        {"The gradient descent update rule is $\\\\params := \\\\params - \\\\alpha \\\\gradient \\\\loss$ where $\\\\alpha$ is the learning rate."}
+        {
+          'The gradient descent update rule is $\\\\params := \\\\params - \\\\alpha \\\\gradient \\\\loss$ where $\\\\alpha$ is the learning rate.'
+        }
       </MathText>
     </div>
   ),
   parameters: {
     docs: {
       description: {
-        story: 'Example of the MathText component that automatically parses and renders embedded mathematical expressions.',
+        story:
+          'Example of the MathText component that automatically parses and renders embedded mathematical expressions.',
       },
     },
   },

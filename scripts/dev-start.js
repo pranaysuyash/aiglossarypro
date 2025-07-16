@@ -22,16 +22,16 @@ const log = (message, color = 'white') => {
   console.log(`${colors[color]}${message}${colors.reset}`);
 };
 
-const logSection = (title) => {
+const logSection = title => {
   console.log(`\n${'='.repeat(60)}`);
   log(`  ${title}`, 'cyan');
   console.log('='.repeat(60));
 };
 
-const logSuccess = (message) => log(`✅ ${message}`, 'green');
-const logError = (message) => log(`❌ ${message}`, 'red');
-const logWarning = (message) => log(`⚠️  ${message}`, 'yellow');
-const logInfo = (message) => log(`ℹ️  ${message}`, 'blue');
+const logSuccess = message => log(`✅ ${message}`, 'green');
+const logError = message => log(`❌ ${message}`, 'red');
+const logWarning = message => log(`⚠️  ${message}`, 'yellow');
+const logInfo = message => log(`ℹ️  ${message}`, 'blue');
 
 async function killProcessOnPort(port) {
   try {
@@ -42,7 +42,7 @@ async function killProcessOnPort(port) {
     const pids = stdout
       .trim()
       .split('\n')
-      .filter((pid) => pid);
+      .filter(pid => pid);
 
     if (pids.length > 0) {
       logWarning(`Found ${pids.length} process(es) on port ${port}: ${pids.join(', ')}`);
@@ -58,7 +58,7 @@ async function killProcessOnPort(port) {
       }
 
       // Wait a moment for processes to fully terminate
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
     } else {
       logInfo(`No processes found on port ${port}`);
     }
@@ -101,23 +101,23 @@ function spawnWithLogging(command, args, options = {}) {
   });
 
   // Handle stdout with prefixes
-  child.stdout.on('data', (data) => {
+  child.stdout.on('data', data => {
     const lines = data
       .toString()
       .split('\n')
-      .filter((line) => line.trim());
-    lines.forEach((line) => {
+      .filter(line => line.trim());
+    lines.forEach(line => {
       console.log(`${colors.blue}[${options.prefix || 'dev'}]${colors.reset} ${line}`);
     });
   });
 
   // Handle stderr with prefixes
-  child.stderr.on('data', (data) => {
+  child.stderr.on('data', data => {
     const lines = data
       .toString()
       .split('\n')
-      .filter((line) => line.trim());
-    lines.forEach((line) => {
+      .filter(line => line.trim());
+    lines.forEach(line => {
       console.log(`${colors.red}[${options.prefix || 'dev'}]${colors.reset} ${line}`);
     });
   });
@@ -136,7 +136,7 @@ async function waitForServer(url, maxAttempts = 30, interval = 1000) {
       // Server not ready yet
     }
 
-    await new Promise((resolve) => setTimeout(resolve, interval));
+    await new Promise(resolve => setTimeout(resolve, interval));
   }
   return false;
 }
@@ -207,7 +207,7 @@ async function startDevelopmentServers() {
     serverProcess.kill('SIGTERM');
 
     // Give processes time to cleanup
-    await new Promise((resolve) => setTimeout(resolve, 2000));
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
     // Force kill if still running
     try {
@@ -228,22 +228,22 @@ async function startDevelopmentServers() {
   process.on('SIGUSR2', cleanup);
 
   // Handle process errors
-  serverProcess.on('error', (error) => {
+  serverProcess.on('error', error => {
     logError(`Backend server error: ${error.message}`);
   });
 
-  clientProcess.on('error', (error) => {
+  clientProcess.on('error', error => {
     logError(`Frontend server error: ${error.message}`);
   });
 
   // Handle process exits
-  serverProcess.on('exit', (code) => {
+  serverProcess.on('exit', code => {
     if (code !== 0) {
       logError(`Backend server exited with code ${code}`);
     }
   });
 
-  clientProcess.on('exit', (code) => {
+  clientProcess.on('exit', code => {
     if (code !== 0) {
       logError(`Frontend server exited with code ${code}`);
     }
@@ -251,7 +251,7 @@ async function startDevelopmentServers() {
 }
 
 // Start the development environment
-startDevelopmentServers().catch((error) => {
+startDevelopmentServers().catch(error => {
   logError(`Failed to start development servers: ${error.message}`);
   process.exit(1);
 });

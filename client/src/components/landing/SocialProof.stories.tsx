@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { SocialProof } from './SocialProof';
 
@@ -9,12 +8,13 @@ const meta: Meta<typeof SocialProof> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Social proof section showcasing user statistics, testimonials, and company trust indicators for the landing page.',
+        component:
+          'Social proof section showcasing user statistics, testimonials, and company trust indicators for the landing page.',
       },
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-screen bg-gray-50">
         <Story />
       </div>
@@ -77,10 +77,10 @@ export const Desktop: Story = {
 
 export const HighNumbers: Story = {
   decorators: [
-    (Story) => {
+    Story => {
       // Mock higher numbers for this story
       const originalComponent = SocialProof;
-      
+
       // Create a modified version with higher stats
       const ModifiedSocialProof = () => {
         const stats = [
@@ -109,10 +109,10 @@ export const HighNumbers: Story = {
             description: 'Monthly searches and downloads',
           },
         ];
-        
+
         return <SocialProof />;
       };
-      
+
       return <ModifiedSocialProof />;
     },
   ],
@@ -127,7 +127,7 @@ export const HighNumbers: Story = {
 
 export const WithAnimation: Story = {
   decorators: [
-    (Story) => (
+    Story => (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50">
         <Story />
       </div>
@@ -136,7 +136,8 @@ export const WithAnimation: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Social proof section with animated background gradient to demonstrate visual appeal.',
+        story:
+          'Social proof section with animated background gradient to demonstrate visual appeal.',
       },
     },
   },
@@ -144,7 +145,7 @@ export const WithAnimation: Story = {
 
 export const MinimalVersion: Story = {
   decorators: [
-    (Story) => (
+    Story => (
       <div className="bg-white py-16">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center">
@@ -185,18 +186,14 @@ export const MinimalVersion: Story = {
 
 export const WithCustomTestimonials: Story = {
   decorators: [
-    (Story) => (
+    Story => (
       <div className="bg-gray-50 py-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              What Our Users Say
-            </h2>
-            <p className="text-xl text-gray-600">
-              Real feedback from AI/ML professionals
-            </p>
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">What Our Users Say</h2>
+            <p className="text-xl text-gray-600">Real feedback from AI/ML professionals</p>
           </div>
-          
+
           <div className="grid md:grid-cols-3 gap-8">
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <div className="flex gap-1 mb-4">
@@ -205,7 +202,8 @@ export const WithCustomTestimonials: Story = {
                 ))}
               </div>
               <p className="text-gray-700 mb-4 italic">
-                "This platform has become my go-to resource for AI/ML concepts. The explanations are clear and the examples are practical."
+                "This platform has become my go-to resource for AI/ML concepts. The explanations are
+                clear and the examples are practical."
               </p>
               <div className="border-t pt-4">
                 <div className="font-semibold">Alex Thompson</div>
@@ -213,7 +211,7 @@ export const WithCustomTestimonials: Story = {
                 <div className="text-sm text-purple-600">Google</div>
               </div>
             </div>
-            
+
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
@@ -221,7 +219,8 @@ export const WithCustomTestimonials: Story = {
                 ))}
               </div>
               <p className="text-gray-700 mb-4 italic">
-                "Incredible value for money. I've saved hours of research time and the lifetime access is perfect for my needs."
+                "Incredible value for money. I've saved hours of research time and the lifetime
+                access is perfect for my needs."
               </p>
               <div className="border-t pt-4">
                 <div className="font-semibold">Maria Rodriguez</div>
@@ -229,7 +228,7 @@ export const WithCustomTestimonials: Story = {
                 <div className="text-sm text-purple-600">Microsoft</div>
               </div>
             </div>
-            
+
             <div className="bg-white p-6 rounded-lg shadow-sm border">
               <div className="flex gap-1 mb-4">
                 {[...Array(5)].map((_, i) => (
@@ -237,7 +236,8 @@ export const WithCustomTestimonials: Story = {
                 ))}
               </div>
               <p className="text-gray-700 mb-4 italic">
-                "The comprehensive coverage and practical examples make this an essential tool for anyone working in AI/ML."
+                "The comprehensive coverage and practical examples make this an essential tool for
+                anyone working in AI/ML."
               </p>
               <div className="border-t pt-4">
                 <div className="font-semibold">David Chen</div>

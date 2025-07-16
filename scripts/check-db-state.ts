@@ -28,7 +28,7 @@ async function checkDatabaseState() {
     }
 
     // Check for "Characteristic Function" specifically
-    const charFuncTerm = enhancedTermsCount.find((t) => t.name === 'Characteristic Function');
+    const charFuncTerm = enhancedTermsCount.find(t => t.name === 'Characteristic Function');
     if (charFuncTerm) {
       console.log(`\n🎯 Found "Characteristic Function" term:`);
       console.log(`  ID: ${charFuncTerm.id}`);
@@ -37,11 +37,11 @@ async function checkDatabaseState() {
       console.log(`  Related Concepts: ${charFuncTerm.relatedConcepts?.join(', ') || 'None'}`);
 
       // Check sections for this term
-      const termSectionsForChar = sectionsCount.filter((s) => s.termId === charFuncTerm.id);
+      const termSectionsForChar = sectionsCount.filter(s => s.termId === charFuncTerm.id);
       console.log(`  Sections count: ${termSectionsForChar.length}`);
 
       if (termSectionsForChar.length > 0) {
-        console.log(`  Section types: ${termSectionsForChar.map((s) => s.sectionName).join(', ')}`);
+        console.log(`  Section types: ${termSectionsForChar.map(s => s.sectionName).join(', ')}`);
       }
     }
 

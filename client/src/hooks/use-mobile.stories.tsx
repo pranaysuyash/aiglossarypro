@@ -1,10 +1,9 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { useMobile } from './use-mobile';
+import type { Meta, StoryObj } from '@storybook/react';
+import { useIsMobile } from './use-mobile';
 
 // Demo component to showcase the hook
 const MobileDetectionDemo = () => {
-  const isMobile = useMobile();
+  const isMobile = useIsMobile();
 
   return (
     <div className="p-6 border rounded-lg bg-gray-50 max-w-md">
@@ -12,9 +11,7 @@ const MobileDetectionDemo = () => {
       <div className="space-y-3">
         <div className="flex items-center space-x-2">
           <div className={`w-3 h-3 rounded-full ${isMobile ? 'bg-green-500' : 'bg-red-500'}`} />
-          <span className="text-sm">
-            Currently {isMobile ? 'Mobile' : 'Desktop'} viewport
-          </span>
+          <span className="text-sm">Currently {isMobile ? 'Mobile' : 'Desktop'} viewport</span>
         </div>
         <div className="text-xs text-gray-600">
           <p>Screen width: {typeof window !== 'undefined' ? window.innerWidth : 'N/A'}px</p>

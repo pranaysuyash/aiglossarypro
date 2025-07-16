@@ -101,11 +101,11 @@ class S3MonitoringService {
     try {
       if (fs.existsSync(this.logFilePath)) {
         const logContent = fs.readFileSync(this.logFilePath, 'utf8');
-        const logLines = logContent.split('\n').filter((line) => line.trim());
+        const logLines = logContent.split('\n').filter(line => line.trim());
 
         this.logs = logLines
           .slice(-this.maxLogsInMemory) // Only keep recent logs in memory
-          .map((line) => {
+          .map(line => {
             try {
               const log = JSON.parse(line);
               return {
@@ -116,7 +116,7 @@ class S3MonitoringService {
               return null;
             }
           })
-          .filter((log) => log !== null) as S3OperationLog[];
+          .filter(log => log !== null) as S3OperationLog[];
       }
     } catch (error) {
       console.error('Error loading existing logs:', error);
@@ -206,7 +206,7 @@ class S3MonitoringService {
     error?: string,
     additionalMetadata?: Record<string, any>
   ) {
-    const existingLogIndex = this.logs.findIndex((log) => log.id === logId);
+    const existingLogIndex = this.logs.findIndex(log => log.id === logId);
 
     if (existingLogIndex !== -1) {
       const updatedLog: S3OperationLog = {
@@ -255,11 +255,11 @@ class S3MonitoringService {
   }
 
   // Get recent logs
-  public getRecentLogs(limit: number = 100, operation?: string): S3OperationLog[] {
+  public getRecentLogs(limit = 100, operation?: string): S3OperationLog[] {
     let filteredLogs = this.logs;
 
     if (operation) {
-      filteredLogs = this.logs.filter((log) => log.operation === operation);
+      filteredLogs = this.logs.filter(log => log.operation === operation);
     }
 
     return filteredLogs
@@ -269,7 +269,7 @@ class S3MonitoringService {
 
   // Get logs by date range
   public getLogsByDateRange(startDate: Date, endDate: Date): S3OperationLog[] {
-    return this.logs.filter((log) => log.timestamp >= startDate && log.timestamp <= endDate);
+    return this.logs.filter(log => log.timestamp >= startDate && log.timestamp <= endDate);
   }
 
   // Generate comprehensive metrics
@@ -290,17 +290,17 @@ class S3MonitoringService {
     // Operations metrics
     const operations = {
       total: recentLogs.length,
-      successful: recentLogs.filter((log) => log.status === 'success').length,
-      failed: recentLogs.filter((log) => log.status === 'error').length,
+      successful: recentLogs.filter(log => log.status === 'success').length,
+      failed: recentLogs.filter(log => log.status === 'error').length,
       byOperation: this.groupBy(recentLogs, 'operation'),
       byStatus: this.groupBy(recentLogs, 'status'),
     };
 
     // Files metrics
-    const successfulOps = recentLogs.filter((log) => log.status === 'success');
-    const uploadedFiles = successfulOps.filter((log) => log.operation === 'upload');
-    const downloadedFiles = successfulOps.filter((log) => log.operation === 'download');
-    const deletedFiles = successfulOps.filter((log) => log.operation === 'delete');
+    const successfulOps = recentLogs.filter(log => log.status === 'success');
+    const uploadedFiles = successfulOps.filter(log => log.operation === 'upload');
+    const downloadedFiles = successfulOps.filter(log => log.operation === 'download');
+    const deletedFiles = successfulOps.filter(log => log.operation === 'delete');
 
     const totalSize = uploadedFiles.reduce((sum, log) => sum + (log.fileSize || 0), 0);
 
@@ -313,7 +313,7 @@ class S3MonitoringService {
     };
 
     // Performance metrics
-    const completedOps = recentLogs.filter((log) => log.duration && log.status !== 'started');
+    const completedOps = recentLogs.filter(log => log.duration && log.status !== 'started');
     const _averageDuration =
       completedOps.length > 0
         ? completedOps.reduce((sum, log) => sum + (log.duration || 0), 0) / completedOps.length
@@ -331,7 +331,7 @@ class S3MonitoringService {
     };
 
     // Error metrics
-    const errorLogs = recentLogs.filter((log) => log.status === 'error');
+    const errorLogs = recentLogs.filter(log => log.status === 'error');
     const errors = {
       recent: errorLogs.slice(0, 20),
       byType: this.groupBy(errorLogs, 'operation'),
@@ -375,10 +375,10 @@ class S3MonitoringService {
 
   private getAverageOperationTime(logs: S3OperationLog[], operation: string): number {
     const operationLogs = logs.filter(
-      (log) => log.operation === operation && log.duration && log.status === 'success'
+      log => log.operation === operation && log.duration && log.status === 'success'
     );
 
-    if (operationLogs.length === 0) return 0;
+    if (operationLogs.length === 0) {return 0;}
 
     return operationLogs.reduce((sum, log) => sum + (log.duration || 0), 0) / operationLogs.length;
   }
@@ -386,7 +386,7 @@ class S3MonitoringService {
   private getOperationsPerHour(logs: S3OperationLog[]): Record<string, number> {
     const hourCounts: Record<string, number> = {};
 
-    logs.forEach((log) => {
+    logs.forEach(log => {
       const hour = log.timestamp.getHours().toString().padStart(2, '0');
       hourCounts[hour] = (hourCounts[hour] || 0) + 1;
     });
@@ -408,7 +408,7 @@ class S3MonitoringService {
   ): Record<string, { operations: number; dataTransferred: number }> {
     const dailyStats: Record<string, { operations: number; dataTransferred: number }> = {};
 
-    logs.forEach((log) => {
+    logs.forEach(log => {
       const date = log.timestamp.toISOString().split('T')[0];
 
       if (!dailyStats[date]) {
@@ -429,8 +429,8 @@ class S3MonitoringService {
   // Alert checking
   private checkAlerts(log: S3OperationLog) {
     this.alerts
-      .filter((alert) => alert.enabled)
-      .forEach((alert) => {
+      .filter(alert => alert.enabled)
+      .forEach(alert => {
         this.evaluateAlert(alert, log);
       });
   }
@@ -446,7 +446,7 @@ class S3MonitoringService {
     switch (alert.type) {
       case 'error_rate': {
         const totalOps = recentLogs.length;
-        const errorOps = recentLogs.filter((l) => l.status === 'error').length;
+        const errorOps = recentLogs.filter(l => l.status === 'error').length;
         const errorRate = totalOps > 0 ? (errorOps / totalOps) * 100 : 0;
 
         if (errorRate > alert.threshold) {
@@ -503,7 +503,7 @@ class S3MonitoringService {
 
     alert.lastTriggered = new Date();
 
-    alert.actions.forEach((action) => {
+    alert.actions.forEach(action => {
       switch (action) {
         case 'log':
           console.warn(`[S3 ALERT] ${alert.name}: ${message}`);
@@ -557,9 +557,9 @@ class S3MonitoringService {
   }
 
   private formatBytes(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+    if (bytes < 1024) {return `${bytes} B`;}
+    if (bytes < 1024 * 1024) {return `${(bytes / 1024).toFixed(1)} KB`;}
+    if (bytes < 1024 * 1024 * 1024) {return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;}
     return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`;
   }
 
@@ -568,7 +568,7 @@ class S3MonitoringService {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
 
     // Remove old logs from memory
-    this.logs = this.logs.filter((log) => log.timestamp > sevenDaysAgo);
+    this.logs = this.logs.filter(log => log.timestamp > sevenDaysAgo);
 
     // Archive old log files (implementation depends on your archival strategy)
     this.archiveOldLogFiles();
@@ -591,7 +591,7 @@ class S3MonitoringService {
   }
 
   public updateAlert(id: string, updates: Partial<AlertRule>): boolean {
-    const alertIndex = this.alerts.findIndex((alert) => alert.id === id);
+    const alertIndex = this.alerts.findIndex(alert => alert.id === id);
 
     if (alertIndex !== -1) {
       this.alerts[alertIndex] = { ...this.alerts[alertIndex], ...updates };
@@ -602,7 +602,7 @@ class S3MonitoringService {
   }
 
   public deleteAlert(id: string): boolean {
-    const alertIndex = this.alerts.findIndex((alert) => alert.id === id);
+    const alertIndex = this.alerts.findIndex(alert => alert.id === id);
 
     if (alertIndex !== -1) {
       this.alerts.splice(alertIndex, 1);
@@ -644,7 +644,7 @@ class S3MonitoringService {
 
       const csvRows = [
         headers.join(','),
-        ...logsToExport.map((log) =>
+        ...logsToExport.map(log =>
           [
             log.id,
             log.timestamp.toISOString(),
@@ -658,7 +658,7 @@ class S3MonitoringService {
             log.userId || '',
             log.sessionId || '',
           ]
-            .map((field) => `"${field}"`)
+            .map(field => `"${field}"`)
             .join(',')
         ),
       ];

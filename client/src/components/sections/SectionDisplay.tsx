@@ -133,7 +133,11 @@ export default function SectionDisplay({
       );
     }
 
-    if ((sectionData as any).type === 'table' && (sectionData as any).headers && (sectionData as any).rows) {
+    if (
+      (sectionData as any).type === 'table' &&
+      (sectionData as any).headers &&
+      (sectionData as any).rows
+    ) {
       return (
         <div className="overflow-x-auto">
           <table className="w-full border-collapse border border-gray-200 dark:border-gray-700">
@@ -214,7 +218,7 @@ export default function SectionDisplay({
 
   // Check if section should be hidden based on user settings
   const isHidden = userSettings?.hiddenSections?.includes(section.sectionName);
-  if (isHidden) return null;
+  if (isHidden) {return null;}
 
   return (
     <div className={getContainerClassName()}>

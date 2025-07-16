@@ -303,8 +303,8 @@ router.get('/download/:key(*)', async (req, res) => {
 
     // Clean up temp file after sending
     fileStream.on('end', () => {
-      fs.unlink(downloadedPath, (err) => {
-        if (err) console.warn('Failed to cleanup temp file:', err);
+      fs.unlink(downloadedPath, err => {
+        if (err) {console.warn('Failed to cleanup temp file:', err);}
       });
     });
   } catch (error) {
@@ -436,8 +436,8 @@ router.post('/archive', async (req, res) => {
 
     // Clean up temp file after sending
     fileStream.on('end', () => {
-      fs.unlink(archivePath, (err) => {
-        if (err) console.warn('Failed to cleanup archive file:', err);
+      fs.unlink(archivePath, err => {
+        if (err) {console.warn('Failed to cleanup archive file:', err);}
       });
     });
   } catch (error) {

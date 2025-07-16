@@ -1,5 +1,5 @@
 interface FallbackBackgroundProps {
-  className?: string;
+  className?: string | undefined;
 }
 
 export function FallbackBackground({ className = '' }: FallbackBackgroundProps) {

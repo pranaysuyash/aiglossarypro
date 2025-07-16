@@ -52,14 +52,14 @@ const criticalPatterns = [
 // Find files matching critical patterns
 for (const { pattern, priority } of criticalPatterns) {
   const matchingFiles = await glob(pattern);
-  matchingFiles.forEach((file) => {
+  matchingFiles.forEach(file => {
     criticalModules.push({ file, priority });
   });
 }
 
 // Check which files have tests
 const testedFiles = new Set();
-testFiles.forEach((testFile) => {
+testFiles.forEach(testFile => {
   const content = fs.readFileSync(testFile, 'utf8');
 
   // Extract import paths from test files
@@ -76,7 +76,7 @@ testFiles.forEach((testFile) => {
 console.log('🎯 CRITICAL MODULES REQUIRING 80%+ COVERAGE');
 console.log('===========================================');
 criticalModules.forEach(({ file, priority }) => {
-  const hasTest = Array.from(testedFiles).some((testPath) =>
+  const hasTest = Array.from(testedFiles).some(testPath =>
     testPath.includes(path.basename(file, path.extname(file)))
   );
 
@@ -133,7 +133,7 @@ const suggestedTests = [
   'tests/integration/auth-flow.test.ts',
 ];
 
-suggestedTests.forEach((test) => {
+suggestedTests.forEach(test => {
   console.log(`   - ${test}`);
 });
 

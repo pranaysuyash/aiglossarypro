@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Header from './Header';
@@ -25,7 +24,7 @@ const meta: Meta<typeof Header> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen bg-gray-50">
           <Story />
@@ -127,7 +126,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <QueryClientProvider client={queryClient}>
         <div className="min-h-screen bg-gray-900 dark">
           <Story />

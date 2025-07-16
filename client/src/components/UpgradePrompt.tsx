@@ -10,14 +10,14 @@ import {
   Zap,
 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { PRICING_CONFIG } from '@/config/pricing';
 import { useAccess } from '../hooks/useAccess';
 import { useAuth } from '../hooks/useAuth';
-import { PRICING_CONFIG } from '@/config/pricing';
+import { MiniSuccessStories } from './SuccessStories';
+import { TrustBadge } from './TrustBuilding';
 import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import { MiniSuccessStories } from './SuccessStories';
-import { TrustBadge } from './TrustBuilding';
 
 interface UpgradePromptTrigger {
   type:
@@ -43,7 +43,7 @@ interface ProgressStats {
 
 interface UpgradePromptProps {
   variant?: 'modal' | 'banner' | 'card' | 'smart' | 'inline' | 'enhanced';
-  className?: string;
+  className?: string | undefined;
   onClose?: () => void;
   trigger?: UpgradePromptTrigger;
   progressStats?: ProgressStats;
@@ -74,7 +74,7 @@ export function UpgradePrompt({
     if (user && !progressStats && (variant === 'smart' || trigger)) {
       fetchProgressStats();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+     
   }, [user, progressStats, variant, trigger]);
 
   const fetchProgressStats = async () => {
@@ -91,7 +91,7 @@ export function UpgradePrompt({
         const data = await response.json();
         setStats(data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch progress stats:', error);
     } finally {
       setLoading(false);
@@ -211,8 +211,12 @@ export function UpgradePrompt({
 
           <div className="border rounded-lg p-3 bg-gradient-to-r from-blue-50 to-purple-50">
             <div className="text-center">
-              <div className="text-sm text-gray-500 line-through">${PRICING_CONFIG.ORIGINAL_PRICE}</div>
-              <div className="text-2xl font-bold text-blue-600">${PRICING_CONFIG.LAUNCH_DISCOUNT_PRICE}</div>
+              <div className="text-sm text-gray-500 line-through">
+                ${PRICING_CONFIG.ORIGINAL_PRICE}
+              </div>
+              <div className="text-2xl font-bold text-blue-600">
+                ${PRICING_CONFIG.LAUNCH_DISCOUNT_PRICE}
+              </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">One-time payment</div>
               <div className="text-xs text-green-600 font-medium mt-1">
                 Auto-adjusted for your region
@@ -325,8 +329,12 @@ export function UpgradePrompt({
 
             <div className="border rounded-lg p-3 bg-gradient-to-r from-blue-50 to-purple-50">
               <div className="text-center">
-                <div className="text-sm text-gray-500 line-through">${PRICING_CONFIG.ORIGINAL_PRICE}</div>
-                <div className="text-2xl font-bold text-blue-600">${PRICING_CONFIG.LAUNCH_DISCOUNT_PRICE}</div>
+                <div className="text-sm text-gray-500 line-through">
+                  ${PRICING_CONFIG.ORIGINAL_PRICE}
+                </div>
+                <div className="text-2xl font-bold text-blue-600">
+                  ${PRICING_CONFIG.LAUNCH_DISCOUNT_PRICE}
+                </div>
                 <div className="text-sm text-gray-600 dark:text-gray-400">One-time payment</div>
                 <div className="text-xs text-green-600 font-medium mt-1">
                   Auto-adjusted for your region
@@ -364,7 +372,8 @@ export function UpgradePrompt({
           return {
             icon: <Bookmark className="h-5 w-5 text-blue-500" />,
             title: `Unlock ${contentTitle || 'this section'}`,
-            description: 'Get unlimited access to detailed explanations, examples, and advanced content.',
+            description:
+              'Get unlimited access to detailed explanations, examples, and advanced content.',
             cta: 'Unlock All Sections',
           };
         case 'feature':
@@ -387,7 +396,9 @@ export function UpgradePrompt({
     const content = getInlineContent();
 
     return (
-      <div className={`bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 my-4 ${className}`}>
+      <div
+        className={`bg-gradient-to-br from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4 my-4 ${className}`}
+      >
         <div className="flex items-start gap-3">
           <div className="flex-shrink-0 w-10 h-10 bg-white rounded-full flex items-center justify-center shadow-sm">
             {content.icon}
@@ -436,7 +447,8 @@ export function UpgradePrompt({
             </div>
             <CardTitle className="text-xl">Ready to Unlock Everything?</CardTitle>
             <CardDescription>
-              You've used {viewsUsed} of {dailyLimit} free terms today. Join thousands who upgraded for lifetime access.
+              You've used {viewsUsed} of {dailyLimit} free terms today. Join thousands who upgraded
+              for lifetime access.
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
@@ -445,15 +457,19 @@ export function UpgradePrompt({
               <div className="space-y-4">
                 <div className="border rounded-lg p-4 bg-gradient-to-r from-blue-50 to-purple-50">
                   <div className="text-center">
-                    <div className="text-sm text-gray-500 line-through">${PRICING_CONFIG.ORIGINAL_PRICE}</div>
-                    <div className="text-3xl font-bold text-blue-600">${PRICING_CONFIG.LAUNCH_DISCOUNT_PRICE}</div>
+                    <div className="text-sm text-gray-500 line-through">
+                      ${PRICING_CONFIG.ORIGINAL_PRICE}
+                    </div>
+                    <div className="text-3xl font-bold text-blue-600">
+                      ${PRICING_CONFIG.LAUNCH_DISCOUNT_PRICE}
+                    </div>
                     <div className="text-sm text-gray-600 dark:text-gray-400">One-time payment</div>
                     <div className="text-xs text-green-600 font-medium mt-1">
                       Auto-adjusted for your region
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <Zap className="h-4 w-4 text-yellow-500" />
@@ -473,13 +489,13 @@ export function UpgradePrompt({
                   </div>
                 </div>
               </div>
-              
+
               {/* Right side - Success Stories */}
               <div>
                 <MiniSuccessStories />
               </div>
             </div>
-            
+
             <div className="flex gap-3">
               <Button
                 onClick={handleUpgrade}
@@ -494,7 +510,7 @@ export function UpgradePrompt({
                 </Button>
               )}
             </div>
-            
+
             <p className="text-xs text-center text-gray-500 dark:text-gray-400">
               No subscription • One-time payment • 7-day money-back guarantee
             </p>

@@ -1,6 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import SimulationPlayer, { SimulationConfig } from './SimulationPlayer';
+import SimulationPlayer, { type SimulationConfig } from './SimulationPlayer';
 
 const meta: Meta<typeof SimulationPlayer> = {
   title: 'Interactive/SimulationPlayer',
@@ -9,7 +8,8 @@ const meta: Meta<typeof SimulationPlayer> = {
     layout: 'padded',
     docs: {
       description: {
-        component: 'An interactive simulation player for demonstrating algorithms and step-by-step processes.',
+        component:
+          'An interactive simulation player for demonstrating algorithms and step-by-step processes.',
       },
     },
   },
@@ -79,7 +79,8 @@ const bubbleSortConfig: SimulationConfig = {
     {
       id: 'pass1',
       title: 'First Pass Complete',
-      description: 'Largest element (90) is now in its correct position. Continue with remaining elements.',
+      description:
+        'Largest element (90) is now in its correct position. Continue with remaining elements.',
       data: { array: [34, 25, 12, 22, 11, 64, 90], comparisons: 6, swaps: 5, sorted: [6] },
       duration: 3000,
     },
@@ -165,13 +166,13 @@ const bstInsertionConfig: SimulationConfig = {
       id: 'insert30',
       title: 'Insert 30',
       description: '30 < 50, so insert to the left of root',
-      data: { 
-        tree: { 
-          value: 50, 
-          left: { value: 30, left: null, right: null }, 
-          right: null 
-        }, 
-        inserting: 30 
+      data: {
+        tree: {
+          value: 50,
+          left: { value: 30, left: null, right: null },
+          right: null,
+        },
+        inserting: 30,
       },
       duration: 2500,
     },
@@ -179,13 +180,13 @@ const bstInsertionConfig: SimulationConfig = {
       id: 'insert70',
       title: 'Insert 70',
       description: '70 > 50, so insert to the right of root',
-      data: { 
-        tree: { 
-          value: 50, 
-          left: { value: 30, left: null, right: null }, 
-          right: { value: 70, left: null, right: null }
-        }, 
-        inserting: 70 
+      data: {
+        tree: {
+          value: 50,
+          left: { value: 30, left: null, right: null },
+          right: { value: 70, left: null, right: null },
+        },
+        inserting: 70,
       },
       duration: 2500,
     },
@@ -193,17 +194,17 @@ const bstInsertionConfig: SimulationConfig = {
       id: 'insert20',
       title: 'Insert 20',
       description: '20 < 50, go left. 20 < 30, insert to left of 30',
-      data: { 
-        tree: { 
-          value: 50, 
-          left: { 
-            value: 30, 
-            left: { value: 20, left: null, right: null }, 
-            right: null 
-          }, 
-          right: { value: 70, left: null, right: null }
-        }, 
-        inserting: 20 
+      data: {
+        tree: {
+          value: 50,
+          left: {
+            value: 30,
+            left: { value: 20, left: null, right: null },
+            right: null,
+          },
+          right: { value: 70, left: null, right: null },
+        },
+        inserting: 20,
       },
       duration: 3000,
     },
@@ -222,11 +223,12 @@ export const BubbleSort: Story = {
                 key={i}
                 className={`
                   w-12 h-12 flex items-center justify-center rounded border-2 font-bold text-sm
-                  ${step.data.highlight?.includes(i) 
-                    ? 'bg-yellow-200 border-yellow-400 text-yellow-800' 
-                    : step.data.sorted?.includes(i)
-                      ? 'bg-green-200 border-green-400 text-green-800'
-                      : 'bg-blue-100 border-blue-300 text-blue-800'
+                  ${
+                    step.data.highlight?.includes(i)
+                      ? 'bg-yellow-200 border-yellow-400 text-yellow-800'
+                      : step.data.sorted?.includes(i)
+                        ? 'bg-green-200 border-green-400 text-green-800'
+                        : 'bg-blue-100 border-blue-300 text-blue-800'
                   }
                 `}
               >
@@ -258,13 +260,14 @@ export const LinearSearch: Story = {
                 key={i}
                 className={`
                   w-12 h-12 flex items-center justify-center rounded border-2 font-bold text-sm
-                  ${i === step.data.current && step.data.found
-                    ? 'bg-green-200 border-green-400 text-green-800'
-                    : i === step.data.current
-                      ? 'bg-yellow-200 border-yellow-400 text-yellow-800'
-                      : i < step.data.current
-                        ? 'bg-red-100 border-red-300 text-red-600'
-                        : 'bg-blue-100 border-blue-300 text-blue-800'
+                  ${
+                    i === step.data.current && step.data.found
+                      ? 'bg-green-200 border-green-400 text-green-800'
+                      : i === step.data.current
+                        ? 'bg-yellow-200 border-yellow-400 text-yellow-800'
+                        : i < step.data.current
+                          ? 'bg-red-100 border-red-300 text-red-600'
+                          : 'bg-blue-100 border-blue-300 text-blue-800'
                   }
                 `}
               >
@@ -275,7 +278,9 @@ export const LinearSearch: Story = {
         </div>
         <div className="text-center text-sm">
           {step.data.found ? (
-            <span className="text-green-600 font-semibold">Found at index {step.data.current}!</span>
+            <span className="text-green-600 font-semibold">
+              Found at index {step.data.current}!
+            </span>
           ) : step.data.current >= 0 ? (
             <span className="text-gray-600">Checking index {step.data.current}</span>
           ) : (
@@ -293,26 +298,25 @@ export const BinarySearchTree: Story = {
     renderStep: (step, index) => {
       const renderTree = (node: any, level = 0) => {
         if (!node) return null;
-        
+
         return (
           <div className="flex flex-col items-center">
-            <div className={`
+            <div
+              className={`
               w-12 h-12 flex items-center justify-center rounded-full border-2 font-bold text-sm mb-2
-              ${node.value === step.data.inserting 
-                ? 'bg-green-200 border-green-400 text-green-800' 
-                : 'bg-blue-100 border-blue-300 text-blue-800'
+              ${
+                node.value === step.data.inserting
+                  ? 'bg-green-200 border-green-400 text-green-800'
+                  : 'bg-blue-100 border-blue-300 text-blue-800'
               }
-            `}>
+            `}
+            >
               {node.value}
             </div>
             {(node.left || node.right) && (
               <div className="flex space-x-8">
-                <div className="text-center">
-                  {node.left && renderTree(node.left, level + 1)}
-                </div>
-                <div className="text-center">
-                  {node.right && renderTree(node.right, level + 1)}
-                </div>
+                <div className="text-center">{node.left && renderTree(node.left, level + 1)}</div>
+                <div className="text-center">{node.right && renderTree(node.right, level + 1)}</div>
               </div>
             )}
           </div>
@@ -321,7 +325,9 @@ export const BinarySearchTree: Story = {
 
       return (
         <div className="p-6 bg-white dark:bg-gray-800 rounded-lg min-h-[300px] flex items-center justify-center">
-          {step.data.tree ? renderTree(step.data.tree) : (
+          {step.data.tree ? (
+            renderTree(step.data.tree)
+          ) : (
             <div className="text-gray-400 text-center">
               <div className="w-16 h-16 border-2 border-dashed border-gray-300 rounded-full mb-2"></div>
               <span>Empty Tree</span>

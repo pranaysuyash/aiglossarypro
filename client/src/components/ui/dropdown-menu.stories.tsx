@@ -1,22 +1,21 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { 
-  Calendar, 
-  ChevronRight, 
-  Cloud, 
-  CreditCard, 
-  Github, 
-  Keyboard, 
-  LifeBuoy, 
-  LogOut, 
-  Mail, 
-  MessageSquare, 
-  Plus, 
-  PlusCircle, 
-  Settings, 
-  User, 
-  UserPlus, 
-  Users 
+import {
+  Calendar,
+  ChevronRight,
+  Cloud,
+  CreditCard,
+  Github,
+  Keyboard,
+  LifeBuoy,
+  LogOut,
+  Mail,
+  MessageSquare,
+  Plus,
+  PlusCircle,
+  Settings,
+  User,
+  UserPlus,
+  Users,
 } from 'lucide-react';
 import { Button } from './button';
 import {
@@ -44,7 +43,8 @@ const meta: Meta<typeof DropdownMenu> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Dropdown menu component built with Radix UI primitives, featuring various menu item types and customization options.',
+        component:
+          'Dropdown menu component built with Radix UI primitives, featuring various menu item types and customization options.',
       },
     },
   },
@@ -184,17 +184,13 @@ export const WithCheckboxes: Story = {
       <DropdownMenuContent className="w-56">
         <DropdownMenuLabel>Appearance</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuCheckboxItem checked>
-          Status Bar
-        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem checked>Status Bar</DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>Activity Bar</DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>Panel</DropdownMenuCheckboxItem>
         <DropdownMenuSeparator />
         <DropdownMenuLabel>Display</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuCheckboxItem checked>
-          Show Bookmarks
-        </DropdownMenuCheckboxItem>
+        <DropdownMenuCheckboxItem checked>Show Bookmarks</DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>Show Full URLs</DropdownMenuCheckboxItem>
         <DropdownMenuCheckboxItem>Show Toolbar</DropdownMenuCheckboxItem>
       </DropdownMenuContent>

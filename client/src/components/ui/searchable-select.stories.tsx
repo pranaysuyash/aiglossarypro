@@ -1,6 +1,5 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { SearchableSelect } from './searchable-select';
 
 const meta: Meta<typeof SearchableSelect> = {
@@ -10,7 +9,8 @@ const meta: Meta<typeof SearchableSelect> = {
     layout: 'centered',
     docs: {
       description: {
-        component: 'Searchable select component with filtering, categorization, and flexible option display built on top of Command and Popover components.',
+        component:
+          'Searchable select component with filtering, categorization, and flexible option display built on top of Command and Popover components.',
       },
     },
   },
@@ -59,83 +59,83 @@ const basicOptions = [
 ];
 
 const aiMlTerms = [
-  { 
-    value: 'machine-learning', 
-    label: 'Machine Learning', 
+  {
+    value: 'machine-learning',
+    label: 'Machine Learning',
     description: 'Algorithms that learn patterns from data',
-    category: 'Core AI'
+    category: 'Core AI',
   },
-  { 
-    value: 'deep-learning', 
-    label: 'Deep Learning', 
+  {
+    value: 'deep-learning',
+    label: 'Deep Learning',
     description: 'Neural networks with multiple layers',
-    category: 'Core AI'
+    category: 'Core AI',
   },
-  { 
-    value: 'neural-network', 
-    label: 'Neural Network', 
+  {
+    value: 'neural-network',
+    label: 'Neural Network',
     description: 'Computing system inspired by biological neural networks',
-    category: 'Core AI'
+    category: 'Core AI',
   },
-  { 
-    value: 'reinforcement-learning', 
-    label: 'Reinforcement Learning', 
+  {
+    value: 'reinforcement-learning',
+    label: 'Reinforcement Learning',
     description: 'Learning through interaction with environment',
-    category: 'Learning Types'
+    category: 'Learning Types',
   },
-  { 
-    value: 'supervised-learning', 
-    label: 'Supervised Learning', 
+  {
+    value: 'supervised-learning',
+    label: 'Supervised Learning',
     description: 'Learning with labeled training data',
-    category: 'Learning Types'
+    category: 'Learning Types',
   },
-  { 
-    value: 'unsupervised-learning', 
-    label: 'Unsupervised Learning', 
+  {
+    value: 'unsupervised-learning',
+    label: 'Unsupervised Learning',
     description: 'Learning patterns from unlabeled data',
-    category: 'Learning Types'
+    category: 'Learning Types',
   },
-  { 
-    value: 'cnn', 
-    label: 'Convolutional Neural Network', 
+  {
+    value: 'cnn',
+    label: 'Convolutional Neural Network',
     description: 'Neural network designed for image processing',
-    category: 'Neural Networks'
+    category: 'Neural Networks',
   },
-  { 
-    value: 'rnn', 
-    label: 'Recurrent Neural Network', 
+  {
+    value: 'rnn',
+    label: 'Recurrent Neural Network',
     description: 'Neural network for sequential data',
-    category: 'Neural Networks'
+    category: 'Neural Networks',
   },
-  { 
-    value: 'transformer', 
-    label: 'Transformer', 
+  {
+    value: 'transformer',
+    label: 'Transformer',
     description: 'Architecture using self-attention mechanism',
-    category: 'Neural Networks'
+    category: 'Neural Networks',
   },
-  { 
-    value: 'gradient-descent', 
-    label: 'Gradient Descent', 
+  {
+    value: 'gradient-descent',
+    label: 'Gradient Descent',
     description: 'Optimization algorithm for finding minimum',
-    category: 'Optimization'
+    category: 'Optimization',
   },
-  { 
-    value: 'backpropagation', 
-    label: 'Backpropagation', 
+  {
+    value: 'backpropagation',
+    label: 'Backpropagation',
     description: 'Algorithm for training neural networks',
-    category: 'Optimization'
+    category: 'Optimization',
   },
-  { 
-    value: 'overfitting', 
-    label: 'Overfitting', 
+  {
+    value: 'overfitting',
+    label: 'Overfitting',
     description: 'Model performs well on training but poorly on new data',
-    category: 'Model Issues'
+    category: 'Model Issues',
   },
-  { 
-    value: 'underfitting', 
-    label: 'Underfitting', 
+  {
+    value: 'underfitting',
+    label: 'Underfitting',
     description: 'Model is too simple to capture underlying patterns',
-    category: 'Model Issues'
+    category: 'Model Issues',
   },
 ];
 
@@ -159,15 +159,10 @@ const countriesOptions = [
 // Interactive wrapper for stories
 function SelectWrapper({ options, ...props }: any) {
   const [value, setValue] = useState<string>('');
-  
+
   return (
     <div className="w-80 space-y-2">
-      <SearchableSelect
-        value={value}
-        onValueChange={setValue}
-        options={options}
-        {...props}
-      />
+      <SearchableSelect value={value} onValueChange={setValue} options={options} {...props} />
       {value && (
         <p className="text-sm text-muted-foreground">
           Selected: {options.find((opt: any) => opt.value === value)?.label}
@@ -355,7 +350,7 @@ export const LongOptionsList: Story = {
 export const PreselectedValue: Story = {
   render: () => {
     const [value, setValue] = useState<string>('machine-learning');
-    
+
     return (
       <div className="w-80 space-y-2">
         <SearchableSelect
@@ -369,10 +364,7 @@ export const PreselectedValue: Story = {
         <p className="text-sm text-muted-foreground">
           Selected: {aiMlTerms.find(opt => opt.value === value)?.label}
         </p>
-        <button 
-          onClick={() => setValue('')}
-          className="text-sm text-blue-600 hover:text-blue-800"
-        >
+        <button onClick={() => setValue('')} className="text-sm text-blue-600 hover:text-blue-800">
           Clear selection
         </button>
       </div>
@@ -390,11 +382,7 @@ export const PreselectedValue: Story = {
 export const CompactWidth: Story = {
   render: () => (
     <div className="w-48">
-      <SelectWrapper
-        options={basicOptions}
-        placeholder="Select..."
-        searchPlaceholder="Search..."
-      />
+      <SelectWrapper options={basicOptions} placeholder="Select..." searchPlaceholder="Search..." />
     </div>
   ),
   parameters: {
@@ -429,7 +417,7 @@ export const AIGlossaryExample: Story = {
   render: () => {
     const [selectedTerm, setSelectedTerm] = useState<string>('');
     const [selectedCategory, setSelectedCategory] = useState<string>('');
-    
+
     const categories = [
       { value: 'core-ai', label: 'Core AI' },
       { value: 'learning-types', label: 'Learning Types' },
@@ -437,7 +425,7 @@ export const AIGlossaryExample: Story = {
       { value: 'optimization', label: 'Optimization' },
       { value: 'model-issues', label: 'Model Issues' },
     ];
-    
+
     return (
       <div className="space-y-6 max-w-md">
         <div className="space-y-2">
@@ -446,7 +434,7 @@ export const AIGlossaryExample: Story = {
             Example of how searchable select might be used in the glossary.
           </p>
         </div>
-        
+
         <div className="space-y-4">
           <div className="space-y-2">
             <label className="text-sm font-medium">Select Category</label>
@@ -458,7 +446,7 @@ export const AIGlossaryExample: Story = {
               searchPlaceholder="Search categories..."
             />
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Select Term</label>
             <SearchableSelect
@@ -471,7 +459,7 @@ export const AIGlossaryExample: Story = {
               emptyMessage="No terms found. Try a different search."
             />
           </div>
-          
+
           {selectedTerm && (
             <div className="p-3 bg-blue-50 rounded-lg">
               <p className="text-sm font-medium text-blue-900">
@@ -509,7 +497,7 @@ export const AllVariants: Story = {
               searchPlaceholder="Search..."
             />
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">With Categories</label>
             <SelectWrapper
@@ -521,7 +509,7 @@ export const AllVariants: Story = {
           </div>
         </div>
       </div>
-      
+
       <div className="space-y-4">
         <h3 className="text-lg font-semibold">Advanced Features</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -533,7 +521,7 @@ export const AllVariants: Story = {
               searchPlaceholder="Search..."
             />
           </div>
-          
+
           <div className="space-y-2">
             <label className="text-sm font-medium">Disabled State</label>
             <SelectWrapper

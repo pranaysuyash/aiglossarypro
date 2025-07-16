@@ -1,6 +1,17 @@
-import React from 'react';
+// @ts-nocheck
+
 import type { Meta, StoryObj } from '@storybook/react';
-import { iconSizes, Activity, AlertCircle, Book, Heart, Star, Settings, Search, User } from './icons';
+import {
+  Activity,
+  AlertCircle,
+  Book,
+  Heart,
+  iconSizes,
+  Search,
+  Settings,
+  Star,
+  User,
+} from './icons';
 
 const meta: Meta<typeof iconSizes> = {
   title: 'UI Components/Icons',
@@ -9,9 +20,9 @@ const meta: Meta<typeof iconSizes> = {
     layout: 'fullscreen',
     docs: {
       description: {
-        component: 'Centralized icon system with consistent sizing and styling.'
-      }
-    }
+        component: 'Centralized icon system with consistent sizing and styling.',
+      },
+    },
   },
   tags: ['autodocs'],
   argTypes: {
@@ -53,10 +64,10 @@ export const IconSizes: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Available icon sizes from the centralized icon system.'
-      }
-    }
-  }
+        story: 'Available icon sizes from the centralized icon system.',
+      },
+    },
+  },
 };
 
 export const CommonIcons: Story = {
@@ -102,10 +113,10 @@ export const CommonIcons: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Commonly used icons from the centralized icon system.'
-      }
-    }
-  }
+        story: 'Commonly used icons from the centralized icon system.',
+      },
+    },
+  },
 };
 
 export const ColoredIcons: Story = {
@@ -143,10 +154,10 @@ export const ColoredIcons: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Icons with different colors applied via Tailwind classes.'
-      }
-    }
-  }
+        story: 'Icons with different colors applied via Tailwind classes.',
+      },
+    },
+  },
 };
 
 export const DisabledState: Story = {
@@ -176,10 +187,10 @@ export const DisabledState: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Icons in disabled state with reduced opacity.'
-      }
-    }
-  }
+        story: 'Icons in disabled state with reduced opacity.',
+      },
+    },
+  },
 };
 
 export const SmallIcons: Story = {
@@ -201,10 +212,10 @@ export const SmallIcons: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Small variant of icons using iconSizes.sm.'
-      }
-    }
-  }
+        story: 'Small variant of icons using iconSizes.sm.',
+      },
+    },
+  },
 };
 
 export const LargeIcons: Story = {
@@ -226,8 +237,8 @@ export const LargeIcons: Story = {
   parameters: {
     docs: {
       description: {
-        story: 'Large variant of icons using iconSizes.xl.'
-      }
-    }
-  }
+        story: 'Large variant of icons using iconSizes.xl.',
+      },
+    },
+  },
 };

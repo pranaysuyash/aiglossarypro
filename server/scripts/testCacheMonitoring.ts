@@ -80,7 +80,7 @@ async function simulateCacheOperations() {
   console.log('🏥 Test 4: Running health checks...');
   const healthChecks = await cacheMonitor.runHealthChecks();
 
-  healthChecks.forEach((check) => {
+  healthChecks.forEach(check => {
     const icon = check.status === 'healthy' ? '✅' : check.status === 'degraded' ? '⚠️' : '❌';
     console.log(`${icon} ${check.name}: ${check.message}`);
   });
@@ -94,8 +94,8 @@ async function simulateCacheOperations() {
     totalHits: snapshot.hits,
     totalMisses: snapshot.misses,
     hitRate: `${(snapshot.hitRate * 100).toFixed(1)}%`,
-    hotKeys: snapshot.hotKeys.slice(0, 3).map((k) => k.key),
-    coldKeys: snapshot.coldKeys.slice(0, 3).map((k) => k.key),
+    hotKeys: snapshot.hotKeys.slice(0, 3).map(k => k.key),
+    coldKeys: snapshot.coldKeys.slice(0, 3).map(k => k.key),
   });
   console.log('');
 
@@ -146,7 +146,7 @@ async function simulateCacheOperations() {
 }
 
 // Set up alert listener
-cacheMonitor.on('alert', (alert) => {
+cacheMonitor.on('alert', alert => {
   console.log(`\n🚨 ALERT [${alert.level}]: ${alert.message}`);
 });
 

@@ -1,8 +1,12 @@
 #!/usr/bin/env tsx
 
-import { log as logger } from '../server/utils/logger';
-import { SupportTicketService, KnowledgeBaseService, MetricsService } from '../server/services/customerService';
+import {
+  KnowledgeBaseService,
+  MetricsService,
+  SupportTicketService,
+} from '../server/services/customerService';
 import { emailService } from '../server/services/emailService';
+import { log as logger } from '../server/utils/logger';
 
 async function testCustomerServiceSystem() {
   try {
@@ -30,7 +34,9 @@ async function testCustomerServiceSystem() {
     logger.info('🔍 Testing ticket retrieval...');
     const retrievedTicket = await SupportTicketService.getTicketById(testTicket.id, true);
     if (retrievedTicket) {
-      logger.info(`✅ Ticket retrieved successfully with ${retrievedTicket.messages?.length || 0} messages`);
+      logger.info(
+        `✅ Ticket retrieved successfully with ${retrievedTicket.messages?.length || 0} messages`
+      );
     } else {
       logger.error('❌ Failed to retrieve test ticket');
     }
@@ -109,7 +115,6 @@ async function testCustomerServiceSystem() {
     logger.info('  ✅ Cleanup operations');
 
     logger.info('🚀 Customer Service System is ready for production!');
-
   } catch (error) {
     logger.error('💥 Customer service test failed:', error);
     throw error;
@@ -149,19 +154,18 @@ async function testAPIEndpoints() {
   for (const testCase of testCases) {
     try {
       logger.info(`🧪 Testing ${testCase.name}...`);
-      
+
       // Note: In a real test, you would use your actual server URL
       const baseUrl = process.env.CLIENT_URL || 'http://localhost:3000';
       const url = `${baseUrl}${testCase.endpoint}`;
-      
+
       logger.info(`📍 Endpoint: ${testCase.method} ${testCase.endpoint}`);
-      
+
       if (testCase.body) {
         logger.info(`📦 Request body: ${JSON.stringify(testCase.body, null, 2)}`);
       }
-      
+
       logger.info(`✅ ${testCase.name} endpoint configuration valid`);
-      
     } catch (error) {
       logger.error(`❌ ${testCase.name} test failed:`, error);
     }
@@ -170,15 +174,12 @@ async function testAPIEndpoints() {
 
 // Run tests if this script is executed directly
 if (require.main === module) {
-  Promise.all([
-    testCustomerServiceSystem(),
-    testAPIEndpoints(),
-  ])
+  Promise.all([testCustomerServiceSystem(), testAPIEndpoints()])
     .then(() => {
       logger.info('🏁 All tests completed successfully');
       process.exit(0);
     })
-    .catch((error) => {
+    .catch(error => {
       logger.error('💥 Tests failed:', error);
       process.exit(1);
     });

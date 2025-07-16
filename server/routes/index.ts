@@ -11,6 +11,7 @@ import { log as logger } from '../utils/logger';
 import abTestRoutes from './abTestsSimplified';
 import { registerAdaptiveContentRoutes } from './adaptiveContent';
 import { registerAdaptiveSearchRoutes } from './adaptiveSearch';
+import { registerContentManagementRoutes } from './admin/contentManagement';
 import { registerAdminRoutes } from './admin/index';
 import { registerAnalyticsRoutes } from './analytics';
 // Import modular route handlers
@@ -23,9 +24,11 @@ import { registerCodeExamplesRoutes } from './codeExamples';
 import { registerContentRoutes } from './content';
 import { registerCrossReferenceRoutes } from './crossReference';
 import customerServiceRoutes from './customerService';
+import { registerDailyTermsRoutes } from './dailyTerms';
 import { registerEarlyBirdRoutes } from './earlyBird';
 import { registerEngagementRoutes } from './engagement';
 import { registerFeedbackRoutes } from './feedback';
+import { registerGuestPreviewRoutes } from './guestPreview';
 import { registerGumroadRoutes } from './gumroad';
 import gumroadWebhookRoutes from './gumroadWebhooks';
 import { registerJobRoutes } from './jobs';
@@ -40,6 +43,8 @@ import predictiveAnalyticsRoutes from './predictiveAnalytics';
 import { registerProgressRoutes } from './progress';
 // Import quality evaluation routes
 import qualityEvaluationRoutes from './qualityEvaluation';
+import { referralRoutes } from './referral';
+import referralsRoutes from './referrals';
 import { registerRelationshipRoutes } from './relationships';
 import { registerSearchRoutes } from './search';
 import { registerSectionRoutes } from './sections';
@@ -48,14 +53,10 @@ import { registerSubcategoryRoutes } from './subcategories';
 // Import surprise discovery routes
 import surpriseDiscoveryRoutes from './surpriseDiscovery';
 import { registerTermRoutes } from './terms';
-import { registerDailyTermsRoutes } from './dailyTerms';
-import { registerContentManagementRoutes } from './admin/contentManagement';
-import { registerGuestPreviewRoutes } from './guestPreview';
 import { registerTrendingRoutes } from './trending';
-import referralsRoutes from './referrals';
 import { registerUserRoutes } from './user';
 import { registerUserProgressRoutes } from './user/progress';
-import { referralRoutes } from './referral';
+import { setupSupportRoutes } from './support';
 
 /**
  * Main route registration function
@@ -91,6 +92,10 @@ export async function registerRoutes(app: Express): Promise<void> {
     registerUserProgressRoutes(app);
     registerProgressRoutes(app);
     logger.info('✅ Progress tracking routes registered');
+
+    // Register support routes
+    setupSupportRoutes(app);
+    logger.info('✅ Support ticket system routes registered');
 
     // Register admin routes (with proper role checking in production)
     registerAdminRoutes(app);

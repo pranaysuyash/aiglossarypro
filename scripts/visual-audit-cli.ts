@@ -104,7 +104,7 @@ program
   .option('--pages <pages>', 'Test multiple pages: all, critical, or comma-separated list')
   .option('--headless <bool>', 'Run in headless mode', 'true')
   .option('--ai', 'Enable AI-powered analysis')
-  .action(async (options) => {
+  .action(async options => {
     const spinner = ora('Initializing visual testing...').start();
 
     try {
@@ -138,12 +138,12 @@ program
   .action(async (name, options) => {
     console.log(chalk.blue(`Testing component: ${name}`));
 
-    const component = config.COMPONENTS.find((c) => c.name.toLowerCase() === name.toLowerCase());
+    const component = config.COMPONENTS.find(c => c.name.toLowerCase() === name.toLowerCase());
 
     if (!component) {
       console.error(chalk.red(`Component "${name}" not found`));
       console.log('\nAvailable components:');
-      config.COMPONENTS.forEach((c) => console.log(`  - ${c.name}`));
+      config.COMPONENTS.forEach(c => console.log(`  - ${c.name}`));
       process.exit(1);
     }
 
@@ -159,7 +159,7 @@ program
         table.push([state, chalk.green('✓'), 'No issues found']);
       }
     } else {
-      component.states.forEach((state) => {
+      component.states.forEach(state => {
         table.push([state, chalk.green('✓'), 'No issues found']);
       });
     }
@@ -174,12 +174,12 @@ program
   .option('-v, --verbose', 'Show detailed output')
   .option('-s, --screenshot', 'Take screenshots at each step')
   .action(async (name, options) => {
-    const flow = config.CRITICAL_USER_FLOWS.find((f) => f.name === name);
+    const flow = config.CRITICAL_USER_FLOWS.find(f => f.name === name);
 
     if (!flow) {
       console.error(chalk.red(`Flow "${name}" not found`));
       console.log('\nAvailable flows:');
-      config.CRITICAL_USER_FLOWS.forEach((f) => console.log(`  - ${f.name}`));
+      config.CRITICAL_USER_FLOWS.forEach(f => console.log(`  - ${f.name}`));
       process.exit(1);
     }
 
@@ -199,7 +199,7 @@ program
         spinner.start();
       }
 
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
 
     spinner.succeed('Flow completed successfully!');
@@ -217,7 +217,7 @@ program
 
     try {
       // Simulate AI analysis
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2000));
 
       const analysis = {
         issues: [
@@ -280,7 +280,7 @@ program
 
     try {
       // Simulate comparison
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
       const difference = 0.8; // Mock difference percentage
 
@@ -305,13 +305,13 @@ program
   .description('Generate a visual audit report from latest test run')
   .option('-f, --format <format>', 'Report format: html, markdown, json', 'html')
   .option('-o, --output <dir>', 'Output directory')
-  .action(async (options) => {
+  .action(async options => {
     console.log(chalk.blue(`Generating ${options.format.toUpperCase()} report...`));
 
     const spinner = ora('Creating report...').start();
 
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
       spinner.succeed('Report generated successfully!');
       console.log(
@@ -337,11 +337,11 @@ program
 program
   .command('list <type>')
   .description('List available tests, components, flows, or breakpoints')
-  .action((type) => {
+  .action(type => {
     switch (type) {
       case 'components':
         console.log(chalk.blue('Available Components:'));
-        config.COMPONENTS.forEach((c) => {
+        config.COMPONENTS.forEach(c => {
           console.log(`\n  ${chalk.yellow(c.name)}`);
           console.log(`    Selector: ${c.selector}`);
           console.log(`    States: ${c.states.join(', ')}`);
@@ -351,7 +351,7 @@ program
 
       case 'flows':
         console.log(chalk.blue('Available User Flows:'));
-        config.CRITICAL_USER_FLOWS.forEach((f) => {
+        config.CRITICAL_USER_FLOWS.forEach(f => {
           console.log(`\n  ${chalk.yellow(f.name)}`);
           console.log(`    Steps: ${f.steps.length}`);
           f.steps.forEach((step, i) => {
@@ -366,7 +366,7 @@ program
           head: ['Name', 'Width', 'Height'],
           colWidths: [20, 10, 10],
         });
-        config.BREAKPOINTS.forEach((b) => {
+        config.BREAKPOINTS.forEach(b => {
           table.push([b.name, `${b.width}px`, `${b.height}px`]);
         });
         console.log(table.toString());

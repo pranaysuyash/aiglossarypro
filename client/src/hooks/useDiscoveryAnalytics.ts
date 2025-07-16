@@ -91,7 +91,7 @@ export function useDiscoveryAnalytics(userId?: string) {
       const changes: Record<string, any> = {};
 
       // Detect which filters changed
-      Object.keys(filters).forEach((key) => {
+      Object.keys(filters).forEach(key => {
         if (JSON.stringify(filters[key]) !== JSON.stringify(previousFilters[key])) {
           changes[key] = {
             from: previousFilters[key],

@@ -313,7 +313,7 @@ async function getTopSearchQueries(
   limit: number
 ): Promise<any[]> {
   const queries = ['machine learning', 'neural networks', 'deep learning', 'AI', 'NLP'];
-  return queries.slice(0, limit).map((query) => ({
+  return queries.slice(0, limit).map(query => ({
     query,
     count: Math.floor(Math.random() * 1000),
     percentage: Math.random() * 20,
@@ -336,7 +336,7 @@ async function getSearchCategoryDistribution(_timeRange: {
   end: Date;
 }): Promise<any[]> {
   const categories = ['machine-learning', 'deep-learning', 'nlp', 'computer-vision', 'robotics'];
-  return categories.map((category) => ({
+  return categories.map(category => ({
     category,
     count: Math.floor(Math.random() * 500),
     percentage: Math.random() * 20,
@@ -404,7 +404,7 @@ async function getUserRetention(_timeRange: { start: Date; end: Date }): Promise
 
 async function getFeatureUsage(_timeRange: { start: Date; end: Date }): Promise<any[]> {
   const features = ['search', 'browse', 'import', 'export', 'ai-generate'];
-  return features.map((feature) => ({
+  return features.map(feature => ({
     feature,
     usage: Math.floor(Math.random() * 1000),
     uniqueUsers: Math.floor(Math.random() * 500),

@@ -46,7 +46,7 @@ export function useFormTracking({
   }, [formType, formLocation, trackFormSubmissionGA4]);
 
   const trackFieldInteraction = useCallback(
-    (fieldName: string, fieldType: string = 'input') => {
+    (fieldName: string, fieldType = 'input') => {
       // Track individual field interactions for funnel analysis
       if (typeof window !== 'undefined' && window.gtag) {
         window.gtag('event', 'form_field_interaction', {
@@ -137,7 +137,7 @@ export function useFormTracking({
         }
 
         onTrackingComplete?.();
-      } catch (error) {
+      } catch (error: any) {
         console.error('Error tracking form submission:', error);
       }
     },
@@ -238,11 +238,11 @@ export default function FormSubmissionTracker({
 
   return (
     <div
-      onFocusCapture={(_e) => {
+      onFocusCapture={_e => {
         // Track when user first interacts with form
         trackFormStart();
       }}
-      onSubmit={(e) => {
+      onSubmit={e => {
         // Track form submission attempt
         const form = e.target as HTMLFormElement;
         const formData = new FormData(form);

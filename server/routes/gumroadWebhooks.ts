@@ -1,13 +1,13 @@
-import { Router, Request, Response } from 'express';
-import { z } from 'zod';
-import GumroadService from '../services/gumroadService';
-import { RefundService } from '../services/customerService';
-import { ReferralService } from '../services/referralService';
-import { validateRequest } from '../middleware/validation';
-import { log as logger } from '../utils/logger';
-import { db } from '../db';
-import { purchases, supportTickets } from '../../shared/schema';
 import { eq } from 'drizzle-orm';
+import { type Request, type Response, Router } from 'express';
+import { z } from 'zod';
+import { purchases, supportTickets } from '../../shared/schema';
+import { db } from '../db';
+import { validateRequest } from '../middleware/validation';
+import { RefundService } from '../services/customerService';
+import GumroadService from '../services/gumroadService';
+import { ReferralService } from '../services/referralService';
+import { log as logger } from '../utils/logger';
 
 const router = Router();
 
@@ -82,7 +82,7 @@ const validateGumroadWebhook = (req: any, res: any, next: any) => {
   } catch (error) {
     logger.error('Error validating Gumroad webhook signature:', {
       error: error instanceof Error ? error.message : String(error),
-      stack: error instanceof Error ? error.stack : undefined
+      stack: error instanceof Error ? error.stack : undefined,
     });
     return res.status(500).json({
       success: false,
@@ -92,7 +92,8 @@ const validateGumroadWebhook = (req: any, res: any, next: any) => {
 };
 
 // Sale webhook endpoint
-router.post('/sale', 
+router.post(
+  '/sale',
   validateGumroadWebhook,
   validateRequest({ body: gumroadSaleSchema }),
   async (req: Request, res: Response) => {
@@ -139,7 +140,7 @@ router.post('/sale',
     } catch (error) {
       logger.error('Error processing Gumroad sale webhook:', {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       });
       res.status(500).json({
         success: false,
@@ -150,7 +151,8 @@ router.post('/sale',
 );
 
 // Refund webhook endpoint
-router.post('/refund',
+router.post(
+  '/refund',
   validateGumroadWebhook,
   validateRequest({ body: gumroadRefundSchema }),
   async (req: Request, res: Response) => {
@@ -172,7 +174,7 @@ router.post('/refund',
     } catch (error) {
       logger.error('Error processing Gumroad refund webhook:', {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       });
       res.status(500).json({
         success: false,
@@ -183,137 +185,130 @@ router.post('/refund',
 );
 
 // Dispute webhook endpoint
-router.post('/dispute',
-  validateGumroadWebhook,
-  async (req: Request, res: Response) => {
-    try {
-      const disputeData = req.body;
+router.post('/dispute', validateGumroadWebhook, async (req: Request, res: Response) => {
+  try {
+    const disputeData = req.body;
 
-      logger.info('Received Gumroad dispute webhook:', {
-        saleId: disputeData.sale_id,
-        disputeReason: disputeData.dispute_reason,
-        disputeWon: disputeData.dispute_won,
-      });
+    logger.info('Received Gumroad dispute webhook:', {
+      saleId: disputeData.sale_id,
+      disputeReason: disputeData.dispute_reason,
+      disputeWon: disputeData.dispute_won,
+    });
 
-      // Find the purchase record
-      const [purchase] = await db
-        .select()
-        .from(purchases)
-        .where(eq(purchases.gumroadOrderId, disputeData.sale_id))
-        .limit(1);
+    // Find the purchase record
+    const [purchase] = await db
+      .select()
+      .from(purchases)
+      .where(eq(purchases.gumroadOrderId, disputeData.sale_id))
+      .limit(1);
 
-      if (purchase) {
-        // Update purchase status
-        await db
-          .update(purchases)
-          .set({ 
-            status: disputeData.dispute_won ? 'completed' : 'disputed'
-          })
-          .where(eq(purchases.id, purchase.id));
+    if (purchase) {
+      // Update purchase status
+      await db
+        .update(purchases)
+        .set({
+          status: disputeData.dispute_won ? 'completed' : 'disputed',
+        })
+        .where(eq(purchases.id, purchase.id));
 
-        // Create a support ticket for disputes
-        if (!disputeData.dispute_won) {
-          const { SupportTicketService } = await import('../services/customerService');
-          
-          await SupportTicketService.createTicket({
-            customerEmail: purchase.purchaseData?.email || 'unknown@example.com',
-            customerName: purchase.purchaseData?.fullName || 'Unknown Customer',
-            subject: `Payment Dispute - Order ${disputeData.sale_id}`,
-            description: `A payment dispute has been filed for this order.\n\nDispute Reason: ${disputeData.dispute_reason}\nOrder ID: ${disputeData.sale_id}\n\nThis ticket was automatically created to track the dispute resolution.`,
-            type: 'billing',
-            priority: 'high',
-            gumroadOrderId: disputeData.sale_id,
-            purchaseId: purchase.id,
-          });
-        }
-      }
-
-      res.status(200).json({
-        success: true,
-        message: 'Dispute processed successfully',
-      });
-    } catch (error) {
-      logger.error('Error processing Gumroad dispute webhook:', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to process dispute',
-      });
-    }
-  }
-);
-
-// Cancellation webhook endpoint (for subscription products)
-router.post('/cancellation',
-  validateGumroadWebhook,
-  async (req: Request, res: Response) => {
-    try {
-      const cancellationData = req.body;
-
-      logger.info('Received Gumroad cancellation webhook:', {
-        saleId: cancellationData.sale_id,
-        productId: cancellationData.product_id,
-      });
-
-      // Find the purchase record
-      const [purchase] = await db
-        .select()
-        .from(purchases)
-        .where(eq(purchases.gumroadOrderId, cancellationData.sale_id))
-        .limit(1);
-
-      if (purchase) {
-        // Update purchase status
-        await db
-          .update(purchases)
-          .set({ status: 'cancelled' })
-          .where(eq(purchases.id, purchase.id));
-
-        // Update user's subscription status
-        if (purchase.userId) {
-          const { users } = await import('../../shared/schema');
-          await db
-            .update(users)
-            .set({
-              subscriptionTier: 'free',
-              lifetimeAccess: false,
-            })
-            .where(eq(users.id, purchase.userId));
-        }
-
-        // Create a support ticket for cancellation follow-up
+      // Create a support ticket for disputes
+      if (!disputeData.dispute_won) {
         const { SupportTicketService } = await import('../services/customerService');
-        
+
+        const purchaseData = purchase.purchaseData as { email?: string; fullName?: string } | null;
         await SupportTicketService.createTicket({
-          customerEmail: purchase.purchaseData?.email || 'unknown@example.com',
-          customerName: purchase.purchaseData?.fullName || 'Unknown Customer',
-          subject: `Subscription Cancelled - Order ${cancellationData.sale_id}`,
-          description: `Your subscription has been cancelled.\n\nOrder ID: ${cancellationData.sale_id}\n\nIf you have any questions or would like to reactivate your subscription, please let us know. We're here to help!`,
+          customerEmail: purchaseData?.email || 'unknown@example.com',
+          customerName: purchaseData?.fullName || 'Unknown Customer',
+          subject: `Payment Dispute - Order ${disputeData.sale_id}`,
+          description: `A payment dispute has been filed for this order.\n\nDispute Reason: ${disputeData.dispute_reason}\nOrder ID: ${disputeData.sale_id}\n\nThis ticket was automatically created to track the dispute resolution.`,
           type: 'billing',
-          priority: 'medium',
-          gumroadOrderId: cancellationData.sale_id,
+          priority: 'high',
+          gumroadOrderId: disputeData.sale_id,
           purchaseId: purchase.id,
         });
       }
+    }
 
-      res.status(200).json({
-        success: true,
-        message: 'Cancellation processed successfully',
-      });
-    } catch (error) {
-      logger.error('Error processing Gumroad cancellation webhook:', {
-        error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
-      });
-      res.status(500).json({
-        success: false,
-        error: 'Failed to process cancellation',
+    res.status(200).json({
+      success: true,
+      message: 'Dispute processed successfully',
+    });
+  } catch (error) {
+    logger.error('Error processing Gumroad dispute webhook:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process dispute',
+    });
+  }
+});
+
+// Cancellation webhook endpoint (for subscription products)
+router.post('/cancellation', validateGumroadWebhook, async (req: Request, res: Response) => {
+  try {
+    const cancellationData = req.body;
+
+    logger.info('Received Gumroad cancellation webhook:', {
+      saleId: cancellationData.sale_id,
+      productId: cancellationData.product_id,
+    });
+
+    // Find the purchase record
+    const [purchase] = await db
+      .select()
+      .from(purchases)
+      .where(eq(purchases.gumroadOrderId, cancellationData.sale_id))
+      .limit(1);
+
+    if (purchase) {
+      // Update purchase status
+      await db.update(purchases).set({ status: 'cancelled' }).where(eq(purchases.id, purchase.id));
+
+      // Update user's subscription status
+      if (purchase.userId) {
+        const { users } = await import('../../shared/schema');
+        await db
+          .update(users)
+          .set({
+            subscriptionTier: 'free',
+            lifetimeAccess: false,
+          })
+          .where(eq(users.id, purchase.userId));
+      }
+
+      // Create a support ticket for cancellation follow-up
+      const { SupportTicketService } = await import('../services/customerService');
+
+      const purchaseData = purchase.purchaseData as { email?: string; fullName?: string } | null;
+      await SupportTicketService.createTicket({
+        customerEmail: purchaseData?.email || 'unknown@example.com',
+        customerName: purchaseData?.fullName || 'Unknown Customer',
+        subject: `Subscription Cancelled - Order ${cancellationData.sale_id}`,
+        description: `Your subscription has been cancelled.\n\nOrder ID: ${cancellationData.sale_id}\n\nIf you have any questions or would like to reactivate your subscription, please let us know. We're here to help!`,
+        type: 'billing',
+        priority: 'medium',
+        gumroadOrderId: cancellationData.sale_id,
+        purchaseId: purchase.id,
       });
     }
+
+    res.status(200).json({
+      success: true,
+      message: 'Cancellation processed successfully',
+    });
+  } catch (error) {
+    logger.error('Error processing Gumroad cancellation webhook:', {
+      error: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+    res.status(500).json({
+      success: false,
+      error: 'Failed to process cancellation',
+    });
   }
-);
+});
 
 // Webhook health check endpoint
 router.get('/health', (req, res) => {
@@ -372,7 +367,7 @@ if (process.env.NODE_ENV === 'development') {
     } catch (error) {
       logger.error('Error processing test sale:', {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       });
       res.status(500).json({
         success: false,
@@ -402,7 +397,7 @@ if (process.env.NODE_ENV === 'development') {
     } catch (error) {
       logger.error('Error processing test refund:', {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       });
       res.status(500).json({
         success: false,

@@ -1,19 +1,20 @@
 /**
  * Admin Content Management Routes
- * 
+ *
  * Backend API for content management tools, bulk operations,
  * and quality validation.
  */
 
+import { and, eq, ilike, isNull, or, sql } from 'drizzle-orm';
 import type { Express, Request, Response } from 'express';
-import { eq, sql, and, or, ilike, isNull } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { db } from '../../db';
-import { enhancedTerms, termSections } from '../../../shared/enhancedSchema';
-import { log as logger } from '../../utils/logger';
-import type { ApiResponse } from '../../../shared/types';
-import ContentPopulator from '../../../scripts/content-population';
 import ContentGapAnalyzer from '../../../scripts/content-gap-analysis';
+import ContentPopulator from '../../../scripts/content-population';
+import { enhancedTerms, termSections } from '../../../shared/enhancedSchema';
+import type { ApiResponse } from '../../../shared/types';
+import { db } from '../../db';
+import { log as logger } from '../../utils/logger';
+import { DataQualityValidator } from '../../validators/dataQualityValidator';
 
 interface BulkOperation {
   id: string;
@@ -43,7 +44,6 @@ const contentPopulator = new ContentPopulator();
 const gapAnalyzer = new ContentGapAnalyzer();
 
 export function registerContentManagementRoutes(app: Express): void {
-
   /**
    * @openapi
    * /api/admin/content/stats:
@@ -145,7 +145,7 @@ export function registerContentManagementRoutes(app: Express): void {
           mainCategories: enhancedTerms.mainCategories,
           hasCodeExamples: enhancedTerms.hasCodeExamples,
           hasInteractiveElements: enhancedTerms.hasInteractiveElements,
-          difficultyLevel: enhancedTerms.difficultyLevel
+          difficultyLevel: enhancedTerms.difficultyLevel,
         })
         .from(enhancedTerms);
 
@@ -155,7 +155,7 @@ export function registerContentManagementRoutes(app: Express): void {
       const qualityDistribution = { excellent: 0, good: 0, fair: 0, poor: 0 };
 
       allTerms.forEach(term => {
-        const qualityScore = calculateTermQuality(term);
+        const qualityScore = DataQualityValidator.calculateQualityScore(term);
         totalCompleteness += qualityScore;
 
         if (qualityScore >= 80) {
@@ -184,24 +184,24 @@ export function registerContentManagementRoutes(app: Express): void {
         termsWithCodeExamples,
         termsWithInteractiveElements,
         averageCompleteness: Math.round(averageCompleteness * 10) / 10,
-        qualityDistribution
+        qualityDistribution,
       };
 
       const response: ApiResponse<typeof stats> = {
         success: true,
-        data: stats
+        data: stats,
       };
 
       res.json(response);
     } catch (error) {
       logger.error('Error fetching content stats', {
         error: error instanceof Error ? error.message : String(error),
-        stack: error instanceof Error ? error.stack : undefined
+        stack: error instanceof Error ? error.stack : undefined,
       });
 
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch content statistics'
+        error: 'Failed to fetch content statistics',
       });
     }
   });
@@ -237,11 +237,16 @@ export function registerContentManagementRoutes(app: Express): void {
     try {
       const { type, options = {} } = req.body;
 
-      const validTypes = ['generate-definitions', 'enhance-content', 'validate-quality', 'categorize-terms'];
+      const validTypes = [
+        'generate-definitions',
+        'enhance-content',
+        'validate-quality',
+        'categorize-terms',
+      ];
       if (!validTypes.includes(type)) {
         return res.status(400).json({
           success: false,
-          error: 'Invalid operation type'
+          error: 'Invalid operation type',
         });
       }
 
@@ -254,7 +259,7 @@ export function registerContentManagementRoutes(app: Express): void {
         totalItems: 0,
         processedItems: 0,
         startedAt: new Date().toISOString(),
-        errors: []
+        errors: [],
       };
 
       bulkOperations.set(operationId, operation);
@@ -272,18 +277,18 @@ export function registerContentManagementRoutes(app: Express): void {
 
       const response: ApiResponse<BulkOperation> = {
         success: true,
-        data: operation
+        data: operation,
       };
 
       res.json(response);
     } catch (error) {
       logger.error('Error starting bulk operation', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
 
       res.status(500).json({
         success: false,
-        error: 'Failed to start bulk operation'
+        error: 'Failed to start bulk operation',
       });
     }
   });
@@ -317,24 +322,24 @@ export function registerContentManagementRoutes(app: Express): void {
       if (!operation) {
         return res.status(404).json({
           success: false,
-          error: 'Operation not found'
+          error: 'Operation not found',
         });
       }
 
       const response: ApiResponse<BulkOperation> = {
         success: true,
-        data: operation
+        data: operation,
       };
 
       res.json(response);
     } catch (error) {
       logger.error('Error fetching operation status', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
 
       res.status(500).json({
         success: false,
-        error: 'Failed to fetch operation status'
+        error: 'Failed to fetch operation status',
       });
     }
   });
@@ -370,7 +375,7 @@ export function registerContentManagementRoutes(app: Express): void {
       const { scope = 'sample', sampleSize = 50 } = req.body;
 
       let query = db.select().from(enhancedTerms);
-      
+
       if (scope === 'sample') {
         query = query.limit(Math.min(sampleSize, 1000));
       }
@@ -387,7 +392,7 @@ export function registerContentManagementRoutes(app: Express): void {
       results.sort((a, b) => {
         const severityOrder = { high: 3, medium: 2, low: 1 };
         const severityDiff = severityOrder[b.severity] - severityOrder[a.severity];
-        if (severityDiff !== 0) return severityDiff;
+        if (severityDiff !== 0) {return severityDiff;}
         return a.qualityScore - b.qualityScore;
       });
 
@@ -397,36 +402,40 @@ export function registerContentManagementRoutes(app: Express): void {
         mediumSeverityIssues: results.filter(r => r.severity === 'medium').length,
         lowSeverityIssues: results.filter(r => r.severity === 'low').length,
         averageQualityScore: results.reduce((sum, r) => sum + r.qualityScore, 0) / results.length,
-        results: results.slice(0, 100) // Limit results for performance
+        results: results.slice(0, 100), // Limit results for performance
       };
 
       const response: ApiResponse<typeof validationSummary> = {
         success: true,
-        data: validationSummary
+        data: validationSummary,
       };
 
       res.json(response);
     } catch (error) {
       logger.error('Error validating content', {
-        error: error instanceof Error ? error.message : String(error)
+        error: error instanceof Error ? error.message : String(error),
       });
 
       res.status(500).json({
         success: false,
-        error: 'Failed to validate content'
+        error: 'Failed to validate content',
       });
     }
   });
 }
 
 // Helper function to process bulk operations
-async function processBulkOperation(operationId: string, type: string, options: any): Promise<void> {
+async function processBulkOperation(
+  operationId: string,
+  type: string,
+  options: any
+): Promise<void> {
   const operation = bulkOperations.get(operationId);
-  if (!operation) return;
+  if (!operation) {return;}
 
   try {
     operation.status = 'running';
-    
+
     switch (type) {
       case 'generate-definitions':
         await processGenerateDefinitions(operation, options);
@@ -460,10 +469,7 @@ async function processGenerateDefinitions(operation: BulkOperation, options: any
     .select()
     .from(enhancedTerms)
     .where(
-      or(
-        isNull(enhancedTerms.fullDefinition),
-        sql`length(${enhancedTerms.fullDefinition}) < 100`
-      )
+      or(isNull(enhancedTerms.fullDefinition), sql`length(${enhancedTerms.fullDefinition}) < 100`)
     )
     .limit(options.batchSize || 50);
 
@@ -471,18 +477,18 @@ async function processGenerateDefinitions(operation: BulkOperation, options: any
 
   for (let i = 0; i < terms.length; i++) {
     const term = terms[i];
-    
+
     try {
       // Use content populator to enhance term
       const enhanced = await contentPopulator.enhanceTerm(term);
-      
+
       // Update term in database
       await db
         .update(enhancedTerms)
         .set({
           fullDefinition: enhanced.definition,
           shortDefinition: enhanced.shortDefinition,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(enhancedTerms.id, term.id));
 
@@ -505,14 +511,14 @@ async function processEnhanceContent(operation: BulkOperation, options: any): Pr
 
   for (let i = 0; i < terms.length; i++) {
     const term = terms[i];
-    
+
     try {
-      const qualityScore = calculateTermQuality(term);
-      
+      const qualityScore = DataQualityValidator.calculateQualityScore(term);
+
       if (qualityScore < 70) {
         // Enhance the term
         const enhanced = await contentPopulator.enhanceTerm(term);
-        
+
         await db
           .update(enhancedTerms)
           .set({
@@ -520,7 +526,7 @@ async function processEnhanceContent(operation: BulkOperation, options: any): Pr
             shortDefinition: enhanced.shortDefinition,
             mainCategories: enhanced.mainCategory ? [enhanced.mainCategory] : undefined,
             subCategories: enhanced.subCategory ? [enhanced.subCategory] : undefined,
-            updatedAt: new Date()
+            updatedAt: new Date(),
           })
           .where(eq(enhancedTerms.id, term.id));
       }
@@ -550,18 +556,18 @@ async function processCategorizeTerms(operation: BulkOperation, options: any): P
 
   for (let i = 0; i < terms.length; i++) {
     const term = terms[i];
-    
+
     try {
       // Simple categorization logic (in production, use AI/ML)
       const category = inferCategory(term.name, term.fullDefinition);
       const subCategory = inferSubCategory(term.name, term.fullDefinition);
-      
+
       await db
         .update(enhancedTerms)
         .set({
           mainCategories: [category],
           subCategories: subCategory ? [subCategory] : undefined,
-          updatedAt: new Date()
+          updatedAt: new Date(),
         })
         .where(eq(enhancedTerms.id, term.id));
 
@@ -584,7 +590,7 @@ async function processValidateQuality(operation: BulkOperation, options: any): P
 
   for (let i = 0; i < terms.length; i++) {
     const term = terms[i];
-    
+
     try {
       const validation = validateTermQuality(term);
       results.push(validation);
@@ -599,7 +605,7 @@ async function processValidateQuality(operation: BulkOperation, options: any): P
   operation.results = {
     totalValidated: results.length,
     issuesFound: results.filter(r => r.issues.length > 0).length,
-    averageQualityScore: results.reduce((sum, r) => sum + r.qualityScore, 0) / results.length
+    averageQualityScore: results.reduce((sum, r) => sum + r.qualityScore, 0) / results.length,
   };
 }
 
@@ -609,25 +615,25 @@ function calculateTermQuality(term: any): number {
 
   // Definition quality (40 points)
   if (term.fullDefinition) {
-    if (term.fullDefinition.length > 200) score += 25;
-    else if (term.fullDefinition.length > 100) score += 15;
-    else if (term.fullDefinition.length > 50) score += 10;
+    if (term.fullDefinition.length > 200) {score += 25;}
+    else if (term.fullDefinition.length > 100) {score += 15;}
+    else if (term.fullDefinition.length > 50) {score += 10;}
   }
 
-  if (term.shortDefinition && term.shortDefinition.length > 50) score += 15;
+  if (term.shortDefinition && term.shortDefinition.length > 50) {score += 15;}
 
   // Categorization (20 points)
-  if (term.mainCategories && term.mainCategories.length > 0) score += 15;
-  if (term.subCategories && term.subCategories.length > 0) score += 5;
+  if (term.mainCategories && term.mainCategories.length > 0) {score += 15;}
+  if (term.subCategories && term.subCategories.length > 0) {score += 5;}
 
   // Content richness (30 points)
-  if (term.hasCodeExamples) score += 10;
-  if (term.hasInteractiveElements) score += 10;
-  if (term.difficultyLevel) score += 5;
-  if (term.keywords && term.keywords.length > 0) score += 5;
+  if (term.hasCodeExamples) {score += 10;}
+  if (term.hasInteractiveElements) {score += 10;}
+  if (term.difficultyLevel) {score += 5;}
+  if (term.keywords && term.keywords.length > 0) {score += 5;}
 
   // Completeness (10 points)
-  if (term.searchText && term.searchText.length > 100) score += 10;
+  if (term.searchText && term.searchText.length > 100) {score += 10;}
 
   return Math.min(score, 100);
 }
@@ -645,20 +651,20 @@ function validateTermQuality(term: any): ContentValidationResult {
   } else if (term.fullDefinition.length < 100) {
     issues.push('Definition is too short');
     suggestions.push('Expand definition to provide more context');
-    if (severity === 'low') severity = 'medium';
+    if (severity === 'low') {severity = 'medium';}
   }
 
   if (!term.shortDefinition || term.shortDefinition.length < 30) {
     issues.push('Missing short definition');
     suggestions.push('Add a concise summary (50-150 characters)');
-    if (severity === 'low') severity = 'medium';
+    if (severity === 'low') {severity = 'medium';}
   }
 
   // Check categorization
   if (!term.mainCategories || term.mainCategories.length === 0) {
     issues.push('No main category assigned');
     suggestions.push('Assign appropriate main category');
-    if (severity === 'low') severity = 'medium';
+    if (severity === 'low') {severity = 'medium';}
   }
 
   // Check content richness
@@ -679,19 +685,25 @@ function validateTermQuality(term: any): ContentValidationResult {
     issues,
     severity,
     suggestions,
-    qualityScore
+    qualityScore,
   };
 }
 
 function isTechnicalTerm(termName: string): boolean {
   const technicalKeywords = [
-    'algorithm', 'network', 'model', 'learning', 'neural', 'deep',
-    'classification', 'regression', 'clustering', 'optimization'
+    'algorithm',
+    'network',
+    'model',
+    'learning',
+    'neural',
+    'deep',
+    'classification',
+    'regression',
+    'clustering',
+    'optimization',
   ];
-  
-  return technicalKeywords.some(keyword => 
-    termName.toLowerCase().includes(keyword)
-  );
+
+  return technicalKeywords.some(keyword => termName.toLowerCase().includes(keyword));
 }
 
 function inferCategory(termName: string, definition?: string): string {
@@ -713,7 +725,7 @@ function inferCategory(termName: string, definition?: string): string {
   if (name.includes('data') || def.includes('data')) {
     return 'Data Science and Analytics';
   }
-  
+
   return 'Fundamental Concepts';
 }
 
@@ -721,12 +733,13 @@ function inferSubCategory(termName: string, definition?: string): string {
   const name = termName.toLowerCase();
   const def = definition?.toLowerCase() || '';
 
-  if (name.includes('supervised') || def.includes('supervised')) return 'Supervised Learning';
-  if (name.includes('unsupervised') || def.includes('unsupervised')) return 'Unsupervised Learning';
-  if (name.includes('reinforcement') || def.includes('reinforcement')) return 'Reinforcement Learning';
-  if (name.includes('deep') || name.includes('neural')) return 'Deep Learning';
-  if (name.includes('nlp') || name.includes('language')) return 'Natural Language Processing';
-  if (name.includes('vision') || name.includes('image')) return 'Computer Vision';
-  
+  if (name.includes('supervised') || def.includes('supervised')) {return 'Supervised Learning';}
+  if (name.includes('unsupervised') || def.includes('unsupervised')) {return 'Unsupervised Learning';}
+  if (name.includes('reinforcement') || def.includes('reinforcement'))
+    {return 'Reinforcement Learning';}
+  if (name.includes('deep') || name.includes('neural')) {return 'Deep Learning';}
+  if (name.includes('nlp') || name.includes('language')) {return 'Natural Language Processing';}
+  if (name.includes('vision') || name.includes('image')) {return 'Computer Vision';}
+
   return 'General AI/ML';
 }

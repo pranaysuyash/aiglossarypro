@@ -1,8 +1,7 @@
-
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 import { execSync } from 'child_process';
-import path from 'path';
 import fs from 'fs';
+import path from 'path';
 
 // Define the Storybook URL
 const STORYBOOK_URL = 'http://localhost:6007';
@@ -39,16 +38,16 @@ test.describe('Storybook Visual Regression', () => {
     await page.waitForTimeout(3000);
 
     let storyLinks = [];
-    
+
     // Method 1: Try to find sidebar with multiple possible selectors
     const sidebarSelectors = [
       '[data-testid="sidebar-panel"]',
       '.sidebar-container',
       '#storybook-explorer-tree',
       '.sb-bar',
-      '.sidebar'
+      '.sidebar',
     ];
-    
+
     let sidebarFound = false;
     for (const selector of sidebarSelectors) {
       try {
@@ -60,41 +59,52 @@ test.describe('Storybook Visual Regression', () => {
         console.log(`Selector ${selector} failed`);
       }
     }
-    
+
     if (!sidebarFound) {
       console.log('No sidebar found, trying to extract stories directly from page');
     }
 
     // Method 2: Try different ways to get story links
     const extractMethods = [
-      () => page.$$eval('a[data-item-id]', (links) => 
-        links.map(link => ({
-          id: link.getAttribute('data-item-id') || '',
-          name: link.textContent?.trim() || '',
-          href: link.getAttribute('href') || '',
-        })).filter(story => story.id && story.id.includes('--'))
-      ),
-      () => page.$$eval('[data-nodetype="story"] a, .sidebar-item a', (links) => 
-        links.map(link => ({
-          id: link.getAttribute('data-item-id') || link.id || '',
-          name: link.textContent?.trim() || '',
-          href: link.getAttribute('href') || '',
-        })).filter(story => story.id || story.href)
-      ),
-      () => page.$$eval('a[href*="path="]', (links) => 
-        links.map(link => ({
-          id: link.getAttribute('href')?.split('path=')[1]?.split('&')[0] || '',
-          name: link.textContent?.trim() || '',
-          href: link.getAttribute('href') || '',
-        })).filter(story => story.id)
-      )
+      () =>
+        page.$$eval('a[data-item-id]', links =>
+          links
+            .map(link => ({
+              id: link.getAttribute('data-item-id') || '',
+              name: link.textContent?.trim() || '',
+              href: link.getAttribute('href') || '',
+            }))
+            .filter(story => story.id && story.id.includes('--'))
+        ),
+      () =>
+        page.$$eval('[data-nodetype="story"] a, .sidebar-item a', links =>
+          links
+            .map(link => ({
+              id: link.getAttribute('data-item-id') || link.id || '',
+              name: link.textContent?.trim() || '',
+              href: link.getAttribute('href') || '',
+            }))
+            .filter(story => story.id || story.href)
+        ),
+      () =>
+        page.$$eval('a[href*="path="]', links =>
+          links
+            .map(link => ({
+              id: link.getAttribute('href')?.split('path=')[1]?.split('&')[0] || '',
+              name: link.textContent?.trim() || '',
+              href: link.getAttribute('href') || '',
+            }))
+            .filter(story => story.id)
+        ),
     ];
 
     for (const method of extractMethods) {
       try {
         storyLinks = await method();
         if (storyLinks.length > 0) {
-          console.log(`Found ${storyLinks.length} stories using method ${extractMethods.indexOf(method) + 1}`);
+          console.log(
+            `Found ${storyLinks.length} stories using method ${extractMethods.indexOf(method) + 1}`
+          );
           break;
         }
       } catch (error) {
@@ -107,15 +117,15 @@ test.describe('Storybook Visual Regression', () => {
       console.log('No stories found via selectors, using file-based approach');
       const storyFiles = [
         'button--primary',
-        'header--logged-in', 
+        'header--logged-in',
         'header--logged-out',
-        'page--logged-in'
+        'page--logged-in',
       ];
-      
+
       storyLinks = storyFiles.map(id => ({
         id,
         name: id.replace('--', ' - '),
-        href: `/?path=/story/${id}`
+        href: `/?path=/story/${id}`,
       }));
     }
 
@@ -133,7 +143,7 @@ test.describe('Storybook Visual Regression', () => {
       } else {
         continue;
       }
-      
+
       const storyId = story.id || story.href.replace(/[^a-zA-Z0-9]/g, '-');
       const screenshotPath = path.join(screenshotsDir, `${storyId}.png`);
 

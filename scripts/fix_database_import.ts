@@ -50,7 +50,7 @@ async function fixDatabaseImport(): Promise<ImportStats> {
     console.log('📂 Importing categories...');
     const categoryFiles = fs
       .readdirSync(chunksDir)
-      .filter((f) => f.startsWith('categories_chunk_'))
+      .filter(f => f.startsWith('categories_chunk_'))
       .sort((a, b) => {
         const aNum = parseInt(a.match(/categories_chunk_(\d+)\.json/)?.[1] || '0');
         const bNum = parseInt(b.match(/categories_chunk_(\d+)\.json/)?.[1] || '0');
@@ -73,7 +73,7 @@ async function fixDatabaseImport(): Promise<ImportStats> {
     console.log('📋 Importing subcategories...');
     const subcategoryFiles = fs
       .readdirSync(chunksDir)
-      .filter((f) => f.startsWith('subcategories_chunk_'))
+      .filter(f => f.startsWith('subcategories_chunk_'))
       .sort((a, b) => {
         const aNum = parseInt(a.match(/subcategories_chunk_(\d+)\.json/)?.[1] || '0');
         const bNum = parseInt(b.match(/subcategories_chunk_(\d+)\.json/)?.[1] || '0');
@@ -96,7 +96,7 @@ async function fixDatabaseImport(): Promise<ImportStats> {
     console.log('📄 Importing terms...');
     const termFiles = fs
       .readdirSync(chunksDir)
-      .filter((f) => f.startsWith('terms_chunk_'))
+      .filter(f => f.startsWith('terms_chunk_'))
       .sort((a, b) => {
         const aNum = parseInt(a.match(/terms_chunk_(\d+)\.json/)?.[1] || '0');
         const bNum = parseInt(b.match(/terms_chunk_(\d+)\.json/)?.[1] || '0');
@@ -122,7 +122,7 @@ async function fixDatabaseImport(): Promise<ImportStats> {
           const insertedTerms = await db
             .insert(terms)
             .values(
-              batch.map((term) => ({
+              batch.map(term => ({
                 name: term.name,
                 definition: term.definition,
                 categoryId: term.categoryId,
@@ -167,7 +167,7 @@ async function fixDatabaseImport(): Promise<ImportStats> {
     console.log('✨ Creating enhanced terms from imported terms...');
     const allTerms = await db.select().from(terms);
 
-    const enhancedData = allTerms.map((term) => ({
+    const enhancedData = allTerms.map(term => ({
       name: term.name,
       slug: term.name
         .toLowerCase()
@@ -219,11 +219,11 @@ async function fixDatabaseImport(): Promise<ImportStats> {
 
 // Run the fix
 fixDatabaseImport()
-  .then((_stats) => {
+  .then(_stats => {
     console.log('\n✅ Database fix completed successfully!');
     process.exit(0);
   })
-  .catch((error) => {
+  .catch(error => {
     console.error('\n❌ Database fix failed:', error);
     process.exit(1);
   });

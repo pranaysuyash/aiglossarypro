@@ -6,7 +6,7 @@ interface PriceDisplayProps {
   showComparison?: boolean;
   showSavings?: boolean;
   size?: 'sm' | 'md' | 'lg' | 'xl';
-  className?: string;
+  className?: string | undefined;
 }
 
 export function PriceDisplay({

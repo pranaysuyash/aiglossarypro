@@ -4,23 +4,29 @@
  */
 
 const { initializeFirebaseAdmin, verifyFirebaseToken } = require('./server/config/firebase');
+const { log: logger } = require('./server/utils/logger');
 
-console.log('🔍 Testing Firebase configuration...\n');
+logger.info('Testing Firebase configuration...');
 
 // Test environment variables
-console.log('Environment Variables:');
-console.log('- FIREBASE_PROJECT_ID:', process.env.FIREBASE_PROJECT_ID ? '✅ Set' : '❌ Missing');
-console.log('- FIREBASE_CLIENT_EMAIL:', process.env.FIREBASE_CLIENT_EMAIL ? '✅ Set' : '❌ Missing');
-console.log('- FIREBASE_PRIVATE_KEY_BASE64:', process.env.FIREBASE_PRIVATE_KEY_BASE64 ? '✅ Set' : '❌ Missing');
+const envVars = {
+  FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID ? 'Set' : 'Missing',
+  FIREBASE_CLIENT_EMAIL: process.env.FIREBASE_CLIENT_EMAIL ? 'Set' : 'Missing',
+  FIREBASE_PRIVATE_KEY_BASE64: process.env.FIREBASE_PRIVATE_KEY_BASE64 ? 'Set' : 'Missing',
+};
+
+logger.info('Environment Variables check', envVars);
 
 // Test Firebase initialization
 try {
-  console.log('\n🔥 Initializing Firebase Admin...');
+  logger.info('Initializing Firebase Admin...');
   initializeFirebaseAdmin();
-  console.log('✅ Firebase Admin initialized successfully');
+  logger.info('Firebase Admin initialized successfully');
 } catch (error) {
-  console.error('❌ Firebase Admin initialization failed:', error.message);
-  console.error('Stack:', error.stack);
+  logger.error('Firebase Admin initialization failed', {
+    message: error.message,
+    stack: error.stack,
+  });
 }
 
-console.log('\n🔍 Firebase configuration test complete');
+logger.info('Firebase configuration test complete');

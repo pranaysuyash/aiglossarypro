@@ -16,6 +16,7 @@ import { Badge } from './ui/badge';
 import { Button } from './ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 import { Progress } from './ui/progress';
+import { getIdToken } from 'firebase/auth';
 
 interface UserProgressStats {
   totalTermsViewed: number;
@@ -63,7 +64,7 @@ interface UpgradePromptTrigger {
 }
 
 interface ProgressVisualizationProps {
-  className?: string;
+  className?: string | undefined;
   showUpgradePrompts?: boolean;
   onUpgradeClick?: () => void;
 }
@@ -81,9 +82,25 @@ export function ProgressVisualization({
   const fetchProgressStats = async () => {
     try {
       setLoading(true);
+      
+      // Get Firebase ID token
+      let token = null;
+      if (user) {
+        try {
+          token = await getIdToken(user as any);
+        } catch (tokenError) {
+          console.error('Error getting ID token:', tokenError);
+          throw new Error('Authentication failed');
+        }
+      }
+      
+      if (!token) {
+        throw new Error('No authentication token');
+      }
+      
       const response = await fetch('/api/progress/stats', {
         headers: {
-          Authorization: `Bearer ${user?.token}`,
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -98,7 +115,7 @@ export function ProgressVisualization({
           timeSpentMinutes: 0,
           achievements: [],
           dailyStats: [],
-          upgradePromptTriggers: []
+          upgradePromptTriggers: [],
         });
         return;
       }
@@ -170,10 +187,10 @@ export function ProgressVisualization({
 
   // Calculate streak status
   const getStreakStatus = () => {
-    if (stats.currentStreak >= 30) return { color: 'text-purple-600', label: 'Legendary' };
-    if (stats.currentStreak >= 14) return { color: 'text-orange-600', label: 'Amazing' };
-    if (stats.currentStreak >= 7) return { color: 'text-green-600', label: 'Strong' };
-    if (stats.currentStreak >= 3) return { color: 'text-blue-600', label: 'Building' };
+    if (stats.currentStreak >= 30) {return { color: 'text-purple-600', label: 'Legendary' };}
+    if (stats.currentStreak >= 14) {return { color: 'text-orange-600', label: 'Amazing' };}
+    if (stats.currentStreak >= 7) {return { color: 'text-green-600', label: 'Strong' };}
+    if (stats.currentStreak >= 3) {return { color: 'text-blue-600', label: 'Building' };}
     return { color: 'text-gray-600', label: 'Starting' };
   };
 
@@ -207,7 +224,7 @@ export function ProgressVisualization({
       case 'categories_explored':
         return 'Categories Mastered';
       default:
-        return type.replace('_', ' ').replace(/\b\w/g, (l) => l.toUpperCase());
+        return type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase());
     }
   };
 
@@ -370,7 +387,7 @@ export function ProgressVisualization({
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {stats.achievements.map((achievement) => (
+              {stats.achievements.map(achievement => (
                 <div
                   key={achievement.id}
                   className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg"

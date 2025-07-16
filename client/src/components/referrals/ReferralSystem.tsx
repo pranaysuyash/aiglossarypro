@@ -1,11 +1,11 @@
-import { useState, useEffect, useCallback } from 'react';
-import { Copy, Check, Share2, Gift, Users, Star, Sparkles } from 'lucide-react';
+import { Check, Copy, Gift, Share2, Sparkles, Star, Users } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { useToast } from '../../hooks/use-toast';
 import { useAuth } from '../../hooks/useAuth';
+import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { Badge } from '../ui/badge';
 import { Input } from '../ui/input';
-import { useToast } from '../../hooks/use-toast';
 
 interface ReferralStats {
   totalReferrals: number;
@@ -45,7 +45,7 @@ const REFERRAL_TIERS: ReferralTier[] = [
     bonusPercentage: 0,
     icon: '🌱',
     color: 'text-green-600',
-    perks: ['$5 credit per successful referral', 'Basic referral tracking']
+    perks: ['$5 credit per successful referral', 'Basic referral tracking'],
   },
   {
     name: 'Advocate',
@@ -54,7 +54,7 @@ const REFERRAL_TIERS: ReferralTier[] = [
     bonusPercentage: 10,
     icon: '⭐',
     color: 'text-blue-600',
-    perks: ['$8 credit per referral', '10% bonus on all rewards', 'Priority support']
+    perks: ['$8 credit per referral', '10% bonus on all rewards', 'Priority support'],
   },
   {
     name: 'Champion',
@@ -63,7 +63,7 @@ const REFERRAL_TIERS: ReferralTier[] = [
     bonusPercentage: 20,
     icon: '🏆',
     color: 'text-purple-600',
-    perks: ['$12 credit per referral', '20% bonus rewards', 'Exclusive features early access']
+    perks: ['$12 credit per referral', '20% bonus rewards', 'Exclusive features early access'],
   },
   {
     name: 'Legend',
@@ -72,8 +72,13 @@ const REFERRAL_TIERS: ReferralTier[] = [
     bonusPercentage: 30,
     icon: '👑',
     color: 'text-yellow-600',
-    perks: ['$20 credit per referral', '30% bonus rewards', 'Personal account manager', 'Co-marketing opportunities']
-  }
+    perks: [
+      '$20 credit per referral',
+      '30% bonus rewards',
+      'Personal account manager',
+      'Co-marketing opportunities',
+    ],
+  },
 ];
 
 export function ReferralSystem() {
@@ -85,13 +90,13 @@ export function ReferralSystem() {
 
   // Fetch referral stats
   const fetchReferralStats = useCallback(async () => {
-    if (!user) return;
+    if (!user) {return;}
 
     try {
       setLoading(true);
       const response = await fetch('/api/referrals/stats', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
         },
       });
 
@@ -99,7 +104,7 @@ export function ReferralSystem() {
         const data = await response.json();
         setStats(data);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch referral stats:', error);
       toast({
         title: 'Error',
@@ -127,7 +132,7 @@ export function ReferralSystem() {
       const response = await fetch('/api/referrals/generate-code', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           'Content-Type': 'application/json',
         },
       });
@@ -135,14 +140,14 @@ export function ReferralSystem() {
       if (response.ok) {
         fetchReferralStats();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to generate referral code:', error);
     }
   };
 
   // Copy referral link to clipboard
   const copyReferralLink = async () => {
-    if (!stats?.referralLink) return;
+    if (!stats?.referralLink) {return;}
 
     try {
       await navigator.clipboard.writeText(stats.referralLink);
@@ -153,7 +158,7 @@ export function ReferralSystem() {
       });
 
       setTimeout(() => setCopied(false), 2000);
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: 'Error',
         description: 'Failed to copy referral link',
@@ -164,7 +169,7 @@ export function ReferralSystem() {
 
   // Share referral link
   const shareReferralLink = async () => {
-    if (!stats?.referralLink) return;
+    if (!stats?.referralLink) {return;}
 
     const shareData = {
       title: 'AI/ML Glossary Pro - Get Lifetime Access',
@@ -179,25 +184,26 @@ export function ReferralSystem() {
         // Fallback to copying
         await copyReferralLink();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to share:', error);
     }
   };
 
   // Calculate current tier
   const getCurrentTier = () => {
-    if (!stats) return REFERRAL_TIERS[0];
-    
-    return REFERRAL_TIERS
-      .slice()
-      .reverse()
-      .find(tier => stats.successfulReferrals >= tier.referralsRequired) || REFERRAL_TIERS[0];
+    if (!stats) {return REFERRAL_TIERS[0];}
+
+    return (
+      REFERRAL_TIERS.slice()
+        .reverse()
+        .find(tier => stats.successfulReferrals >= tier.referralsRequired) || REFERRAL_TIERS[0]
+    );
   };
 
   // Calculate next tier
   const getNextTier = () => {
-    if (!stats) return REFERRAL_TIERS[1];
-    
+    if (!stats) {return REFERRAL_TIERS[1];}
+
     const currentTier = getCurrentTier();
     const currentIndex = REFERRAL_TIERS.indexOf(currentTier);
     return REFERRAL_TIERS[currentIndex + 1] || null;
@@ -211,14 +217,10 @@ export function ReferralSystem() {
             <Users className="h-5 w-5" />
             Referral Program
           </CardTitle>
-          <CardDescription>
-            Sign in to start earning rewards by referring friends!
-          </CardDescription>
+          <CardDescription>Sign in to start earning rewards by referring friends!</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button onClick={() => window.location.href = '/login'}>
-            Sign In to Get Started
-          </Button>
+          <Button onClick={() => (window.location.href = '/login')}>Sign In to Get Started</Button>
         </CardContent>
       </Card>
     );
@@ -243,8 +245,10 @@ export function ReferralSystem() {
 
   const currentTier = getCurrentTier();
   const nextTier = getNextTier();
-  const progressToNext = nextTier 
-    ? ((stats?.successfulReferrals || 0) - currentTier.referralsRequired) / (nextTier.referralsRequired - currentTier.referralsRequired) * 100
+  const progressToNext = nextTier
+    ? (((stats?.successfulReferrals || 0) - currentTier.referralsRequired) /
+        (nextTier.referralsRequired - currentTier.referralsRequired)) *
+      100
     : 100;
 
   return (
@@ -272,9 +276,7 @@ export function ReferralSystem() {
             <div className="flex items-center gap-2 mb-2">
               <span className="text-2xl">{currentTier.icon}</span>
               <div>
-                <div className={`font-semibold ${currentTier.color}`}>
-                  {currentTier.name}
-                </div>
+                <div className={`font-semibold ${currentTier.color}`}>{currentTier.name}</div>
                 <div className="text-sm text-gray-500">
                   ${currentTier.rewardAmount} per referral
                 </div>
@@ -284,7 +286,9 @@ export function ReferralSystem() {
               <div className="mt-3">
                 <div className="flex justify-between text-sm mb-1">
                   <span>Progress to {nextTier.name}</span>
-                  <span>{stats?.successfulReferrals}/{nextTier.referralsRequired}</span>
+                  <span>
+                    {stats?.successfulReferrals}/{nextTier.referralsRequired}
+                  </span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
@@ -315,9 +319,7 @@ export function ReferralSystem() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-green-600">${stats?.totalRewards || 0}</div>
-            <div className="text-sm text-gray-500">
-              ${stats?.availableRewards || 0} available
-            </div>
+            <div className="text-sm text-gray-500">${stats?.availableRewards || 0} available</div>
           </CardContent>
         </Card>
       </div>
@@ -329,17 +331,11 @@ export function ReferralSystem() {
             <Share2 className="h-5 w-5" />
             Your Referral Link
           </CardTitle>
-          <CardDescription>
-            Share this link with friends to start earning rewards
-          </CardDescription>
+          <CardDescription>Share this link with friends to start earning rewards</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
-            <Input
-              value={stats?.referralLink || ''}
-              readOnly
-              className="flex-1"
-            />
+            <Input value={stats?.referralLink || ''} readOnly className="flex-1" />
             <Button
               variant="outline"
               onClick={copyReferralLink}
@@ -355,7 +351,8 @@ export function ReferralSystem() {
           </div>
 
           <div className="text-sm text-gray-600">
-            Your referral code: <code className="bg-gray-100 px-2 py-1 rounded">{stats?.referralCode}</code>
+            Your referral code:{' '}
+            <code className="bg-gray-100 px-2 py-1 rounded">{stats?.referralCode}</code>
           </div>
         </CardContent>
       </Card>
@@ -405,9 +402,7 @@ export function ReferralSystem() {
             <Star className="h-5 w-5" />
             Tier Benefits
           </CardTitle>
-          <CardDescription>
-            Unlock higher rewards as you refer more friends
-          </CardDescription>
+          <CardDescription>Unlock higher rewards as you refer more friends</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -415,20 +410,14 @@ export function ReferralSystem() {
               <div
                 key={tier.name}
                 className={`p-4 rounded-lg border ${
-                  tier.name === currentTier.name
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-gray-200'
+                  tier.name === currentTier.name ? 'border-blue-500 bg-blue-50' : 'border-gray-200'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
                   <span className="text-xl">{tier.icon}</span>
                   <div>
-                    <div className={`font-semibold ${tier.color}`}>
-                      {tier.name}
-                    </div>
-                    <div className="text-sm text-gray-500">
-                      {tier.referralsRequired}+ referrals
-                    </div>
+                    <div className={`font-semibold ${tier.color}`}>{tier.name}</div>
+                    <div className="text-sm text-gray-500">{tier.referralsRequired}+ referrals</div>
                   </div>
                   {tier.name === currentTier.name && (
                     <Badge variant="secondary" className="ml-auto">
@@ -458,7 +447,7 @@ export function ReferralSystem() {
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
-              {stats.recentReferrals.map((referral) => (
+              {stats.recentReferrals.map(referral => (
                 <div
                   key={referral.id}
                   className="flex items-center justify-between p-3 border rounded-lg"
@@ -481,9 +470,7 @@ export function ReferralSystem() {
                     >
                       {referral.status}
                     </Badge>
-                    <div className="text-sm font-medium">
-                      ${referral.reward}
-                    </div>
+                    <div className="text-sm font-medium">${referral.reward}</div>
                   </div>
                 </div>
               ))}

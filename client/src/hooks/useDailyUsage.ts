@@ -19,7 +19,7 @@ export function useDailyUsage() {
     queryFn: async (): Promise<DailyUsageData> => {
       const response = await fetch('/api/user/daily-usage', {
         headers: {
-          'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+          Authorization: `Bearer ${localStorage.getItem('authToken')}`,
         },
       });
 

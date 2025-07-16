@@ -537,7 +537,7 @@ export class EvaluationTemplateService {
    */
   getTemplatesByContentType(contentType: string): EvaluationTemplate[] {
     return Array.from(this.templates.values()).filter(
-      (template) => template.contentType === contentType
+      template => template.contentType === contentType
     );
   }
 
@@ -545,7 +545,7 @@ export class EvaluationTemplateService {
    * Get templates by target audience
    */
   getTemplatesByAudience(audience: string): EvaluationTemplate[] {
-    return Array.from(this.templates.values()).filter((template) =>
+    return Array.from(this.templates.values()).filter(template =>
       template.targetAudience.includes(audience)
     );
   }
@@ -561,11 +561,11 @@ export class EvaluationTemplateService {
     let candidates = this.getTemplatesByContentType(contentType);
 
     if (targetAudience) {
-      candidates = candidates.filter((t) => t.targetAudience.includes(targetAudience));
+      candidates = candidates.filter(t => t.targetAudience.includes(targetAudience));
     }
 
     if (tags && tags.length > 0) {
-      candidates = candidates.filter((t) => tags.some((tag) => t.metadata.tags.includes(tag)));
+      candidates = candidates.filter(t => tags.some(tag => t.metadata.tags.includes(tag)));
     }
 
     // Return the first matching template or the most general one

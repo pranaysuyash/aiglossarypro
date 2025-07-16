@@ -48,7 +48,7 @@ export default function AdvancedSearch({
   }, [filters, onSearch]);
 
   const updateFilter = (key: keyof ISearchFilters, value: any) => {
-    setFilters((prev) => ({
+    setFilters(prev => ({
       ...prev,
       [key]: value,
     }));
@@ -58,19 +58,19 @@ export default function AdvancedSearch({
     const currentArray = (filters[key] as string[]) || [];
     const newArray = checked
       ? [...currentArray, value]
-      : currentArray.filter((item) => item !== value);
+      : currentArray.filter(item => item !== value);
 
     updateFilter(key, newArray.length > 0 ? newArray : undefined);
   };
 
   const clearFilters = () => {
-    setFilters({ query: filters.query }); // Keep only the search query
+    setFilters({ query: filters.query || undefined }); // Keep only the search query
   };
 
   const getActiveFilterCount = () => {
     const activeFilters = Object.entries(filters).filter(([key, value]) => {
-      if (key === 'query') return false;
-      if (Array.isArray(value)) return value.length > 0;
+      if (key === 'query') {return false;}
+      if (Array.isArray(value)) {return value.length > 0;}
       return value !== undefined && value !== null && value !== '';
     });
     return activeFilters.length;
@@ -110,12 +110,12 @@ export default function AdvancedSearch({
         </CollapsibleTrigger>
         <CollapsibleContent>
           <div className="pl-4 pr-2 pb-2 space-y-2 max-h-48 overflow-y-auto">
-            {items.map((item) => (
+            {items.map(item => (
               <div key={item} className="flex items-center space-x-2">
                 <Checkbox
                   id={`${filterKey}-${item}`}
                   checked={selectedItems.includes(item)}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={checked =>
                     updateArrayFilter(filterKey, item, checked as boolean)
                   }
                 />
@@ -139,7 +139,7 @@ export default function AdvancedSearch({
         <Switch
           id="has-implementation"
           checked={filters.hasImplementation || false}
-          onCheckedChange={(checked) => updateFilter('hasImplementation', checked || undefined)}
+          onCheckedChange={checked => updateFilter('hasImplementation', checked || undefined)}
         />
       </div>
       <div className="flex items-center justify-between">
@@ -149,9 +149,7 @@ export default function AdvancedSearch({
         <Switch
           id="has-interactive"
           checked={filters.hasInteractiveElements || false}
-          onCheckedChange={(checked) =>
-            updateFilter('hasInteractiveElements', checked || undefined)
-          }
+          onCheckedChange={checked => updateFilter('hasInteractiveElements', checked || undefined)}
         />
       </div>
       <div className="flex items-center justify-between">
@@ -161,7 +159,7 @@ export default function AdvancedSearch({
         <Switch
           id="has-case-studies"
           checked={filters.hasCaseStudies || false}
-          onCheckedChange={(checked) => updateFilter('hasCaseStudies', checked || undefined)}
+          onCheckedChange={checked => updateFilter('hasCaseStudies', checked || undefined)}
         />
       </div>
       <div className="flex items-center justify-between">
@@ -171,7 +169,7 @@ export default function AdvancedSearch({
         <Switch
           id="has-code"
           checked={filters.hasCodeExamples || false}
-          onCheckedChange={(checked) => updateFilter('hasCodeExamples', checked || undefined)}
+          onCheckedChange={checked => updateFilter('hasCodeExamples', checked || undefined)}
         />
       </div>
     </div>
@@ -183,7 +181,7 @@ export default function AdvancedSearch({
         <Label className="text-sm font-medium">Sort By</Label>
         <Select
           value={filters.sortBy || 'relevance'}
-          onValueChange={(value) => updateFilter('sortBy', value)}
+          onValueChange={value => updateFilter('sortBy', value)}
         >
           <SelectTrigger>
             <SelectValue />
@@ -277,7 +275,7 @@ export default function AdvancedSearch({
               useAISearch ? 'AI-powered semantic search...' : 'Search terms, definitions...'
             }
             value={filters.query || ''}
-            onChange={(e) => updateFilter('query', e.target.value)}
+            onChange={e => updateFilter('query', e.target.value)}
             className="pl-10"
           />
           {useAISearch && (
@@ -289,10 +287,10 @@ export default function AdvancedSearch({
         {getActiveFilterCount() > 0 && (
           <div className="flex flex-wrap gap-2">
             {Object.entries(filters).map(([key, value]) => {
-              if (key === 'query' || !value) return null;
+              if (key === 'query' || !value) {return null;}
 
               if (Array.isArray(value) && value.length > 0) {
-                return value.map((item) => (
+                return value.map(item => (
                   <Badge key={`${key}-${item}`} variant="secondary" className="text-xs">
                     {item}
                     <Button
@@ -310,7 +308,7 @@ export default function AdvancedSearch({
               if (typeof value === 'boolean' && value) {
                 return (
                   <Badge key={key} variant="secondary" className="text-xs">
-                    {key.replace(/([A-Z])/g, ' $1').replace(/^./, (str) => str.toUpperCase())}
+                    {key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase())}
                     <Button
                       variant="ghost"
                       size="sm"

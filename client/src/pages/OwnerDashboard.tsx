@@ -65,7 +65,7 @@ export default function OwnerDashboard() {
         setMetrics(data);
         setLastUpdated(new Date());
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to fetch metrics:', error);
     } finally {
       setLoading(false);

@@ -1,5 +1,5 @@
 import { SESClient, SendEmailCommand } from '@aws-sdk/client-ses';
-import { SupportTicket, TicketMessage, ResponseTemplate } from '../../shared/schema';
+import type { ResponseTemplate, SupportTicket, TicketMessage } from '../../shared/schema';
 import { log as logger } from '../utils/logger';
 
 interface EmailConfig {
@@ -25,7 +25,7 @@ export class EmailService {
       region: process.env.AWS_SES_REGION || 'us-east-1',
       accessKeyId: process.env.AWS_ACCESS_KEY_ID,
       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-      fromEmail: process.env.SUPPORT_FROM_EMAIL || 'support@aiglossary.pro',
+      fromEmail: process.env.SUPPORT_FROM_EMAIL || 'support@aiglossarypro.com',
       fromName: process.env.SUPPORT_FROM_NAME || 'AI Glossary Pro Support',
     };
 
@@ -82,7 +82,7 @@ export class EmailService {
       });
 
       const result = await this.sesClient.send(command);
-      
+
       logger.info('Email sent successfully:', {
         to,
         subject,
@@ -299,16 +299,11 @@ AI Glossary Pro Support Team`;
         const htmlBody = this.generateHtmlEmail(subject, content, ticket);
         const textBody = this.generateTextEmail(content);
 
-        return await this.sendEmail(
-          ticket.customerEmail,
-          subject,
-          htmlBody,
-          textBody
-        );
+        return await this.sendEmail(ticket.customerEmail, subject, htmlBody, textBody);
       }
 
       const emailTemplate = this.generateTemplate(template, ticket);
-      
+
       return await this.sendEmail(
         ticket.customerEmail,
         emailTemplate.subject,
@@ -343,9 +338,10 @@ Ticket Details:
 - Previous Status: ${oldStatus.replace('_', ' ')}
 - Current Status: ${ticket.status.replace('_', ' ')}
 
-${ticket.status === 'resolved' 
-  ? 'Your ticket has been resolved. If you need further assistance, please reply to this email and we will reopen your ticket.'
-  : 'We will continue working on your ticket and provide updates as needed.'
+${
+  ticket.status === 'resolved'
+    ? 'Your ticket has been resolved. If you need further assistance, please reply to this email and we will reopen your ticket.'
+    : 'We will continue working on your ticket and provide updates as needed.'
 }
 
 You can view your ticket and add replies in our Support Center.
@@ -356,12 +352,7 @@ AI Glossary Pro Support Team`;
         const htmlBody = this.generateHtmlEmail(subject, content, ticket);
         const textBody = this.generateTextEmail(content);
 
-        return await this.sendEmail(
-          ticket.customerEmail,
-          subject,
-          htmlBody,
-          textBody
-        );
+        return await this.sendEmail(ticket.customerEmail, subject, htmlBody, textBody);
       }
 
       const emailTemplate = this.generateTemplate(template, ticket, {
@@ -386,7 +377,7 @@ AI Glossary Pro Support Team`;
   async sendNewMessageNotification(
     ticket: SupportTicket,
     message: TicketMessage,
-    isFromSupport: boolean = true
+    isFromSupport = true
   ): Promise<boolean> {
     try {
       if (!isFromSupport) {
@@ -412,12 +403,7 @@ AI Glossary Pro Support Team`;
       const htmlBody = this.generateHtmlEmail(subject, content, ticket);
       const textBody = this.generateTextEmail(content);
 
-      return await this.sendEmail(
-        ticket.customerEmail,
-        subject,
-        htmlBody,
-        textBody
-      );
+      return await this.sendEmail(ticket.customerEmail, subject, htmlBody, textBody);
     } catch (error) {
       logger.error('Error sending new message notification:', error);
       return false;
@@ -494,7 +480,7 @@ AI Glossary Pro Support Team`;
   ): Promise<boolean> {
     try {
       const subject = `Refund ${status === 'processed' ? 'Processed' : 'Status Update'} - AI Glossary Pro`;
-      
+
       let content = `Hello ${customerName || 'Valued Customer'},
 
 Your refund request status has been updated.
@@ -510,14 +496,15 @@ Refund Details:
 
       content += `
 
-${status === 'processed' 
-        ? 'Your refund has been processed and will appear in your account within 3-5 business days.'
-        : status === 'approved'
-        ? 'Your refund request has been approved and will be processed shortly.'
-        : status === 'rejected'
+${
+  status === 'processed'
+    ? 'Your refund has been processed and will appear in your account within 3-5 business days.'
+    : status === 'approved'
+      ? 'Your refund request has been approved and will be processed shortly.'
+      : status === 'rejected'
         ? 'Your refund request has been reviewed and unfortunately cannot be approved at this time. Please contact support if you have questions.'
         : 'We will continue processing your refund request.'
-      }
+}
 
 If you have any questions, please contact our support team.
 
@@ -566,7 +553,7 @@ AI Glossary Pro Support Team`;
       const testEmail = 'test@example.com';
       const subject = 'Test Email - AI Glossary Pro';
       const content = 'This is a test email to verify email configuration.';
-      
+
       // Don't actually send test emails, just verify configuration
       logger.info('Email configuration test - SES client is configured');
       return true;

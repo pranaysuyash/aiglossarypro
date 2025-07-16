@@ -90,7 +90,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
 
         // Navigate to app home page after successful logout
         window.location.assign('/app');
-      } catch (error) {
+      } catch (error: any) {
         console.error('Logout error:', error);
         // Fallback: force navigation to app home page even if logout fails
         window.location.assign('/app');
@@ -226,9 +226,9 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
             {/* Surprise Me Button - More responsive */}
             <Link href="/surprise-me">
               <Button
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="hidden md:flex bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white font-medium px-2 lg:px-3 py-2 text-xs lg:text-sm"
+                className="hidden md:flex font-medium px-2 lg:px-3 py-2 text-xs lg:text-sm"
                 title="Discover amazing AI/ML terms you never knew existed!"
               >
                 <Sparkles className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
@@ -253,7 +253,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                   <Button
                     variant="default"
                     size="sm"
-                    className="hidden 2xl:flex bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-3 py-2 text-xs"
+                    className="hidden 2xl:flex font-medium px-3 py-2 text-xs"
                   >
                     Get Lifetime Access
                   </Button>
@@ -262,7 +262,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                   <Button
                     variant="default"
                     size="sm"
-                    className="hidden xl:flex 2xl:hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-2 py-2 text-xs"
+                    className="hidden xl:flex 2xl:hidden font-medium px-2 py-2 text-xs"
                   >
                     Get Access
                   </Button>
@@ -271,7 +271,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                   <Button
                     variant="default"
                     size="sm"
-                    className="hidden lg:flex xl:hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-2 py-1 text-xs"
+                    className="hidden lg:flex xl:hidden font-medium px-2 py-1 text-xs"
                   >
                     Upgrade
                   </Button>
@@ -334,8 +334,10 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                       </Avatar>
                       {/* Daily limit warning indicator */}
                       {shouldShowWarning && (
-                        <div className="absolute -top-1 -right-1 h-3 w-3 bg-orange-500 rounded-full animate-pulse" 
-                             title={`${usage?.remainingViews || 0} views remaining today`} />
+                        <div
+                          className="absolute -top-1 -right-1 h-3 w-3 bg-orange-500 rounded-full animate-pulse"
+                          title={`${usage?.remainingViews || 0} views remaining today`}
+                        />
                       )}
                       <ChevronDown className="ml-0.5 lg:ml-1 h-3 w-3 lg:h-4 lg:w-4 text-gray-500 dark:text-gray-400" />
                     </Button>
@@ -358,15 +360,20 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                         <div className="px-2 py-1.5 text-xs text-gray-600 dark:text-gray-400">
                           <div className="flex justify-between items-center">
                             <span>Daily usage</span>
-                            <span className={`font-medium ${usage.remainingViews <= 10 ? 'text-orange-600 dark:text-orange-400' : ''}`}>
+                            <span
+                              className={`font-medium ${usage.remainingViews <= 10 ? 'text-orange-600 dark:text-orange-400' : ''}`}
+                            >
                               {usage.todayViews}/{usage.dailyLimit}
                             </span>
                           </div>
                           <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-1.5 mt-1">
                             <div
                               className={`h-1.5 rounded-full transition-all duration-300 ${
-                                usage.percentageUsed >= 90 ? 'bg-red-500' : 
-                                usage.percentageUsed >= 80 ? 'bg-orange-500' : 'bg-blue-500'
+                                usage.percentageUsed >= 90
+                                  ? 'bg-red-500'
+                                  : usage.percentageUsed >= 80
+                                    ? 'bg-orange-500'
+                                    : 'bg-blue-500'
                               }`}
                               style={{ width: `${Math.min(usage.percentageUsed, 100)}%` }}
                             />
@@ -532,12 +539,12 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
               aria-modal="true"
               aria-label="Mobile navigation menu"
               style={{ overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}
-              onClick={(e) => {
+              onClick={e => {
                 // Prevent clicks inside the menu from bubbling to the backdrop
                 e.stopPropagation();
                 console.log('Menu panel clicked');
               }}
-              onKeyDown={(e) => {
+              onKeyDown={e => {
                 // Handle keyboard events for accessibility
                 if (e.key === 'Escape') {
                   e.preventDefault();
@@ -597,7 +604,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                   <div className="space-y-1">
                     <Link
                       href="/"
-                      onClick={(_e) => {
+                      onClick={_e => {
                         console.log('Home clicked');
                         handleMobileMenuClose();
                       }}
@@ -607,7 +614,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                     </Link>
                     <Link
                       href="/dashboard"
-                      onClick={(_e) => {
+                      onClick={_e => {
                         console.log('Dashboard clicked');
                         handleMobileMenuClose();
                       }}
@@ -618,7 +625,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                     </Link>
                     <Link
                       href="/categories"
-                      onClick={(_e) => {
+                      onClick={_e => {
                         console.log('Categories clicked');
                         handleMobileMenuClose();
                       }}
@@ -629,7 +636,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                     </Link>
                     <Link
                       href="/learning-paths"
-                      onClick={(_e) => {
+                      onClick={_e => {
                         console.log('Learning Paths clicked');
                         handleMobileMenuClose();
                       }}
@@ -639,7 +646,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                     </Link>
                     <Link
                       href="/discovery"
-                      onClick={(_e) => {
+                      onClick={_e => {
                         console.log('Discovery clicked');
                         handleMobileMenuClose();
                       }}
@@ -649,7 +656,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                     </Link>
                     <Link
                       href="/surprise-me"
-                      onClick={(_e) => {
+                      onClick={_e => {
                         console.log('Surprise Me clicked');
                         handleMobileMenuClose();
                       }}
@@ -659,7 +666,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                     </Link>
                     <Link
                       href="/code-examples"
-                      onClick={(_e) => {
+                      onClick={_e => {
                         console.log('Code Examples clicked');
                         handleMobileMenuClose();
                       }}
@@ -669,7 +676,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                     </Link>
                     <Link
                       href="/trending"
-                      onClick={(_e) => {
+                      onClick={_e => {
                         console.log('Trending clicked');
                         handleMobileMenuClose();
                       }}
@@ -721,7 +728,7 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                     <button
                       type="button"
                       className="mobile-nav-item w-full flex items-center py-3 px-3 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors min-h-[44px] text-left cursor-pointer"
-                      onClick={(e) => {
+                      onClick={e => {
                         e.preventDefault();
                         e.stopPropagation();
                         console.log('Theme toggle clicked');

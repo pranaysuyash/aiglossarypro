@@ -1,9 +1,8 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { Label } from './Label';
+import type { Meta, StoryObj } from '@storybook/react';
+import { Label } from './label';
 
 const meta = {
-  title: 'UI/Label',
+  title: 'U./label',
   component: Label,
   parameters: { layout: 'centered' },
   tags: ['autodocs'],

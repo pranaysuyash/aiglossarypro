@@ -2,7 +2,7 @@
 
 /**
  * Test script for guest preview functionality
- * 
+ *
  * This script tests the complete guest-to-premium conversion funnel:
  * 1. Guest visits site
  * 2. Views 1-2 terms in preview mode
@@ -58,7 +58,7 @@ class GuestPreviewTester {
   async testServerHealth(): Promise<boolean> {
     try {
       const result = await this.makeRequest('/api/health');
-      
+
       if (result.status === 200 && result.data.success) {
         this.addResult('Server Health', true, 'Server is running and healthy');
         return true;
@@ -75,7 +75,7 @@ class GuestPreviewTester {
   async testGuestSessionCreation(): Promise<boolean> {
     try {
       const result = await this.makeRequest('/api/guest/session-status');
-      
+
       if (result.status === 200 && result.data.success) {
         this.addResult('Guest Session', true, 'Guest session created successfully');
         return true;
@@ -93,7 +93,7 @@ class GuestPreviewTester {
     try {
       // Try to get a list of terms first
       const termsResult = await this.makeRequest('/api/terms?limit=1');
-      
+
       if (termsResult.status !== 200 || !termsResult.data.data?.length) {
         this.addResult('First Preview', false, 'No terms available for testing');
         return false;
@@ -101,7 +101,7 @@ class GuestPreviewTester {
 
       const termId = termsResult.data.data[0].id;
       const result = await this.makeRequest(`/api/terms/${termId}/preview`);
-      
+
       if (result.status === 200 && result.data.success) {
         this.addResult('First Preview', true, `Successfully previewed term: ${termId}`);
         return true;
@@ -119,7 +119,7 @@ class GuestPreviewTester {
     try {
       // Get a different term for the second preview
       const termsResult = await this.makeRequest('/api/terms?limit=2&offset=1');
-      
+
       if (termsResult.status !== 200 || !termsResult.data.data?.length) {
         this.addResult('Second Preview', false, 'No second term available for testing');
         return false;
@@ -127,7 +127,7 @@ class GuestPreviewTester {
 
       const termId = termsResult.data.data[0].id;
       const result = await this.makeRequest(`/api/terms/${termId}/preview`);
-      
+
       if (result.status === 200 && result.data.success) {
         this.addResult('Second Preview', true, `Successfully previewed second term: ${termId}`);
         return true;
@@ -145,7 +145,7 @@ class GuestPreviewTester {
     try {
       // Try to preview a third term - should be blocked
       const termsResult = await this.makeRequest('/api/terms?limit=1&offset=2');
-      
+
       if (termsResult.status !== 200 || !termsResult.data.data?.length) {
         this.addResult('Limit Test', false, 'No third term available for testing');
         return false;
@@ -153,7 +153,7 @@ class GuestPreviewTester {
 
       const termId = termsResult.data.data[0].id;
       const result = await this.makeRequest(`/api/terms/${termId}/preview`);
-      
+
       if (result.status === 403 && result.data.previewLimitReached) {
         this.addResult('Limit Test', true, 'Preview limit correctly enforced');
         return true;
@@ -170,10 +170,10 @@ class GuestPreviewTester {
   async testGuestSessionStats(): Promise<boolean> {
     try {
       const result = await this.makeRequest('/api/guest/session-status');
-      
+
       if (result.status === 200 && result.data.success) {
         const stats = result.data.data;
-        
+
         if (stats.previewsUsed === 2 && stats.previewsRemaining === 0) {
           this.addResult('Session Stats', true, 'Guest session stats are correct');
           return true;
@@ -194,7 +194,7 @@ class GuestPreviewTester {
   async testGuestSearchPreview(): Promise<boolean> {
     try {
       const result = await this.makeRequest('/api/search/preview?q=machine+learning');
-      
+
       if (result.status === 200 && result.data.success) {
         this.addResult('Search Preview', true, 'Guest search preview works');
         return true;
@@ -211,7 +211,7 @@ class GuestPreviewTester {
   async testCategoriesPreview(): Promise<boolean> {
     try {
       const result = await this.makeRequest('/api/categories/preview');
-      
+
       if (result.status === 200 && result.data.success) {
         this.addResult('Categories Preview', true, 'Guest categories preview works');
         return true;
@@ -266,7 +266,7 @@ class GuestPreviewTester {
     const passRate = ((passed / total) * 100).toFixed(1);
 
     console.log(`Passed: ${passed}/${total} (${passRate}%)`);
-    
+
     if (passed === total) {
       console.log('\n🎉 All tests passed! Guest preview functionality is working correctly.');
       console.log('\nNext steps to test manually:');
@@ -277,7 +277,7 @@ class GuestPreviewTester {
       console.log('5. Verify signup flow integration');
     } else {
       console.log('\n⚠️  Some tests failed. Please check the implementation.');
-      
+
       const failed = this.results.filter(r => !r.success);
       console.log('\nFailed tests:');
       failed.forEach(result => {
@@ -290,7 +290,7 @@ class GuestPreviewTester {
 // Run tests if this script is executed directly
 if (require.main === module) {
   const tester = new GuestPreviewTester();
-  
+
   tester.runAllTests().catch(error => {
     console.error('Test execution failed:', error);
     process.exit(1);

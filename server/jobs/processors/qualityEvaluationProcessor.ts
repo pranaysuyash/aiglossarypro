@@ -3,9 +3,9 @@ import { and, eq, lte, or } from 'drizzle-orm';
 import { enhancedTerms, sectionItems, sections } from '../../../shared/enhancedSchema';
 import { db } from '../../db';
 import { aiQualityEvaluationService } from '../../services/aiQualityEvaluationService';
+import { emailService as email } from '../../services/emailService';
 import { qualityAnalyticsService } from '../../services/qualityAnalyticsService';
 import { log as logger } from '../../utils/logger';
-import { emailService as email } from '../../services/emailService';
 
 export interface QualityEvaluationJobData {
   type: 'single' | 'batch' | 'scheduled-audit' | 'auto-evaluation';
@@ -109,7 +109,7 @@ async function processSingleEvaluation(job: Job<QualityEvaluationJobData>) {
         .from(sectionItems)
         .where(eq(sectionItems.sectionId, section[0].id));
 
-      content = items.map((item) => item.content).join('\n\n');
+      content = items.map(item => item.content).join('\n\n');
       contentType = mapSectionToContentType(sectionName);
     }
   } else {
@@ -122,7 +122,13 @@ async function processSingleEvaluation(job: Job<QualityEvaluationJobData>) {
     termId,
     sectionName,
     content,
-    contentType: contentType as 'definition' | 'example' | 'tutorial' | 'theory' | 'application' | 'general',
+    contentType: contentType as
+      | 'definition'
+      | 'example'
+      | 'tutorial'
+      | 'theory'
+      | 'application'
+      | 'general',
     model: options?.model,
   });
 

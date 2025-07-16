@@ -99,7 +99,7 @@ class QuickVisualAuditor {
       const issues = [];
 
       // Check for console errors
-      page.on('console', (msg) => {
+      page.on('console', msg => {
         if (msg.type() === 'error') {
           issues.push({
             type: 'console-error',
@@ -109,14 +109,14 @@ class QuickVisualAuditor {
       });
 
       // Check for broken images
-      const images = await page.$$eval('img', (imgs) =>
-        imgs.map((img) => ({
+      const images = await page.$$eval('img', imgs =>
+        imgs.map(img => ({
           src: img.src,
           loaded: img.complete && img.naturalHeight !== 0,
         }))
       );
 
-      const brokenImages = images.filter((img) => !img.loaded);
+      const brokenImages = images.filter(img => !img.loaded);
       if (brokenImages.length > 0) {
         issues.push({
           type: 'broken-images',
@@ -155,7 +155,7 @@ class QuickVisualAuditor {
     const issues = [];
 
     // Check for missing alt text
-    const imagesWithoutAlt = await page.$$eval('img:not([alt])', (imgs) => imgs.length);
+    const imagesWithoutAlt = await page.$$eval('img:not([alt])', imgs => imgs.length);
     if (imagesWithoutAlt > 0) {
       issues.push({
         rule: 'images-alt',
@@ -167,8 +167,8 @@ class QuickVisualAuditor {
     // Check for buttons without accessible text
     const buttonsWithoutText = await page.$$eval(
       'button',
-      (buttons) =>
-        buttons.filter((btn) => !btn.textContent?.trim() && !btn.getAttribute('aria-label')).length
+      buttons =>
+        buttons.filter(btn => !btn.textContent?.trim() && !btn.getAttribute('aria-label')).length
     );
     if (buttonsWithoutText > 0) {
       issues.push({
@@ -181,8 +181,8 @@ class QuickVisualAuditor {
     // Check for form labels
     const inputsWithoutLabels = await page.$$eval(
       'input:not([type="hidden"])',
-      (inputs) =>
-        inputs.filter((input) => {
+      inputs =>
+        inputs.filter(input => {
           const id = input.id;
           if (!id) return true;
           return !document.querySelector(`label[for="${id}"]`);
@@ -368,8 +368,8 @@ class QuickVisualAuditor {
         'select[name="category"], [data-testid="category-filter"]'
       );
       if (categoryFilter) {
-        const options = await page.$$eval('select[name="category"] option', (opts) =>
-          opts.map((opt) => opt.value)
+        const options = await page.$$eval('select[name="category"] option', opts =>
+          opts.map(opt => (opt as HTMLOptionElement).value)
         );
         if (options.length > 1) {
           await categoryFilter.selectOption(options[1]);
@@ -481,9 +481,9 @@ class QuickVisualAuditor {
       },
       summary: {
         total: this.results.length,
-        successful: this.results.filter((r) => !r.error).length,
-        failed: this.results.filter((r) => r.error).length,
-        withIssues: this.results.filter((r) => r.issues && r.issues.length > 0).length,
+        successful: this.results.filter(r => !r.error).length,
+        failed: this.results.filter(r => r.error).length,
+        withIssues: this.results.filter(r => r.issues && r.issues.length > 0).length,
       },
       results: this.results,
     };
@@ -575,28 +575,28 @@ class QuickVisualAuditor {
       <div class="result-item">
         <div class="result-header">
           <h3>${page}</h3>
-          <span>${(pageResults as any[]).filter((r) => !r.error).length} / ${(pageResults as any[]).length} passed</span>
+          <span>${(pageResults as any[]).filter(r => !r.error).length} / ${(pageResults as any[]).length} passed</span>
         </div>
         ${
-          (pageResults as any[]).some((r) => r.error)
+          (pageResults as any[]).some(r => r.error)
             ? `
           <div class="error">
             ${(pageResults as any[])
-              .filter((r) => r.error)
-              .map((r) => `${r.breakpoint || 'Test'}: ${r.error}`)
+              .filter(r => r.error)
+              .map(r => `${r.breakpoint || 'Test'}: ${r.error}`)
               .join('<br>')}
           </div>
         `
             : ''
         }
         ${
-          (pageResults as any[]).some((r) => r.issues && r.issues.length > 0)
+          (pageResults as any[]).some(r => r.issues && r.issues.length > 0)
             ? `
           <div class="issues">
             <strong>Issues found:</strong><br>
             ${(pageResults as any[])
-              .filter((r) => r.issues)
-              .map((r) =>
+              .filter(r => r.issues)
+              .map(r =>
                 r.issues
                   .map(
                     (issue: any) =>

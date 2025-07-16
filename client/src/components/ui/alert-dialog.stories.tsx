@@ -1,6 +1,15 @@
-import React from 'react';
-import { Meta, StoryObj } from '@storybook/react';
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogAction, AlertDialogCancel } from './alert-dialog';
+import type { Meta, StoryObj } from '@storybook/react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from './alert-dialog';
 
 const meta = {
   title: 'UI/AlertDialog',
@@ -15,7 +24,9 @@ type Story = StoryObj<typeof meta>;
 export const Default: Story = {
   render: () => (
     <AlertDialog>
-      <AlertDialogTrigger className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">Delete Item</AlertDialogTrigger>
+      <AlertDialogTrigger className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700">
+        Delete Item
+      </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -35,7 +46,9 @@ export const Default: Story = {
 export const WithCustomAction: Story = {
   render: () => (
     <AlertDialog>
-      <AlertDialogTrigger className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">Archive Item</AlertDialogTrigger>
+      <AlertDialogTrigger className="px-4 py-2 bg-orange-600 text-white rounded hover:bg-orange-700">
+        Archive Item
+      </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Archive this item?</AlertDialogTitle>
@@ -45,7 +58,9 @@ export const WithCustomAction: Story = {
         </AlertDialogHeader>
         <AlertDialogFooter>
           <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction className="bg-orange-600 hover:bg-orange-700">Archive</AlertDialogAction>
+          <AlertDialogAction className="bg-orange-600 hover:bg-orange-700">
+            Archive
+          </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

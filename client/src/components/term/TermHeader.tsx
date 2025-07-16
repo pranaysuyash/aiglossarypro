@@ -78,7 +78,7 @@ export default function TermHeader({
   const totalContent = [
     term?.definition,
     enhancedTerm?.fullDefinition,
-    enhancedTerm?.sections?.map((s) => JSON.stringify(s.sectionData)).join(' '),
+    enhancedTerm?.sections?.map(s => JSON.stringify(s.sectionData)).join(' '),
   ]
     .filter(Boolean)
     .join(' ');

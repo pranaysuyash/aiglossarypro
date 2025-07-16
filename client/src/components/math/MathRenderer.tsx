@@ -10,7 +10,7 @@ import React, { useEffect, useRef } from 'react';
 interface MathRendererProps {
   math: string;
   displayMode?: boolean;
-  className?: string;
+  className?: string | undefined;
   errorColor?: string;
   macros?: Record<string, string>;
 }
@@ -67,7 +67,7 @@ const MathRenderer: React.FC<MathRendererProps> = ({
           trust: true,
           strict: false,
         });
-      } catch (error) {
+      } catch (error: any) {
         console.warn('KaTeX rendering error:', error);
         if (containerRef.current) {
           containerRef.current.textContent = math;
@@ -97,13 +97,15 @@ const MathRenderer: React.FC<MathRendererProps> = ({
 export const useMathParsing = (text: string) => {
   return React.useMemo(() => {
     const segments: Array<{ type: 'text' | 'math'; content: string; displayMode?: boolean }> = [];
-    
+
     // Split text by LaTeX delimiters
-    const parts = text.split(/(\$\$[\s\S]*?\$\$|\$[^$]+?\$|\\begin\{[\s\S]*?\\end\{[^}]+\}|\\\\[\s\S]*?\\\\)/);
-    
-    parts.forEach((part) => {
-      if (!part) return;
-      
+    const parts = text.split(
+      /(\$\$[\s\S]*?\$\$|\$[^$]+?\$|\\begin\{[\s\S]*?\\end\{[^}]+\}|\\\\[\s\S]*?\\\\)/
+    );
+
+    parts.forEach(part => {
+      if (!part) {return;}
+
       // Display math ($$...$$)
       if (part.startsWith('$$') && part.endsWith('$$')) {
         segments.push({
@@ -144,7 +146,7 @@ export const useMathParsing = (text: string) => {
         });
       }
     });
-    
+
     return segments;
   }, [text]);
 };
@@ -154,7 +156,7 @@ export const useMathParsing = (text: string) => {
  */
 export const MathText: React.FC<{
   children: string;
-  className?: string;
+  className?: string | undefined;
   mathClassName?: string;
 }> = ({ children, className = '', mathClassName = '' }) => {
   const segments = useMathParsing(children);
@@ -167,12 +169,17 @@ export const MathText: React.FC<{
             <MathRenderer
               key={index}
               math={segment.content}
-              displayMode={segment.displayMode}
+              {...(segment.displayMode !== undefined && { displayMode: segment.displayMode })}
               className={mathClassName}
             />
           );
-        }
-        return <span key={index}>{segment.content}</span>;
+        } 
+          return (
+            <span key={index} className={className}>
+              {segment.content}
+            </span>
+          );
+        
       })}
     </span>
   );

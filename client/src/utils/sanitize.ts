@@ -83,7 +83,7 @@ export function sanitizeHTML(dirty: string, options?: Config): string {
     tempDiv.innerHTML = clean;
 
     // Add security attributes to all external links
-    tempDiv.querySelectorAll('a[href^="http"]').forEach((link) => {
+    tempDiv.querySelectorAll('a[href^="http"]').forEach(link => {
       link.setAttribute('target', '_blank');
       link.setAttribute('rel', 'noopener noreferrer');
     });

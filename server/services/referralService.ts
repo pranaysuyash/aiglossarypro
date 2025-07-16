@@ -1,16 +1,16 @@
-import { db } from '../db';
-import {
-  users,
-  referralPayouts,
-  referralLinks,
-  referralClicks,
-  type InsertReferralPayout,
-  type InsertReferralLink,
-  type InsertReferralClick,
-} from '../../shared/schema';
-import { eq, and, desc, count, sum, sql } from 'drizzle-orm';
-import { log as logger } from '../utils/logger';
 import crypto from 'crypto';
+import { and, count, desc, eq, sql, sum } from 'drizzle-orm';
+import {
+  type InsertReferralClick,
+  type InsertReferralLink,
+  type InsertReferralPayout,
+  referralClicks,
+  referralLinks,
+  referralPayouts,
+  users,
+} from '../../shared/schema';
+import { db } from '../db';
+import { log as logger } from '../utils/logger';
 
 export interface GumroadSaleData {
   sale_id: string;
@@ -111,7 +111,7 @@ export class ReferralService {
       // Calculate payout amount
       const purchaseAmountCents = Math.round(saleData.price * 100);
       const payoutAmountCents = Math.round(
-        purchaseAmountCents * (this.REFERRAL_PERCENTAGE / 100)
+        purchaseAmountCents * (ReferralService.REFERRAL_PERCENTAGE / 100)
       );
 
       // Create referral payout record
@@ -122,18 +122,18 @@ export class ReferralService {
           referredUserId: referredUser.id,
           gumroadOrderId: saleData.sale_id,
           purchaseAmountCents,
-          referralPercentage: this.REFERRAL_PERCENTAGE,
+          referralPercentage: ReferralService.REFERRAL_PERCENTAGE,
           payoutAmountCents,
           status: 'pending',
         })
         .returning();
 
       // Update referral link conversion count if applicable
-      await this.updateReferralLinkConversion(referredUser.id);
+      await ReferralService.updateReferralLinkConversion(referredUser.id);
 
       // Process the actual payout if it meets minimum threshold
-      if (payoutAmountCents >= this.MIN_PAYOUT_AMOUNT) {
-        await this.processGumroadPayout(newPayout.id, {
+      if (payoutAmountCents >= ReferralService.MIN_PAYOUT_AMOUNT) {
+        await ReferralService.processGumroadPayout(newPayout.id, {
           referrerId: referredUser.referrerId,
           payoutAmountCents,
           orderId: saleData.sale_id,
@@ -228,12 +228,7 @@ export class ReferralService {
       const [referralLink] = await db
         .select()
         .from(referralLinks)
-        .where(
-          and(
-            eq(referralLinks.referralCode, referralCode),
-            eq(referralLinks.isActive, true)
-          )
-        )
+        .where(and(eq(referralLinks.referralCode, referralCode), eq(referralLinks.isActive, true)))
         .limit(1);
 
       if (!referralLink) {
@@ -293,12 +288,7 @@ export class ReferralService {
           referrerId: referralLinks.userId,
         })
         .from(referralLinks)
-        .where(
-          and(
-            eq(referralLinks.referralCode, referralCode),
-            eq(referralLinks.isActive, true)
-          )
-        )
+        .where(and(eq(referralLinks.referralCode, referralCode), eq(referralLinks.isActive, true)))
         .limit(1);
 
       if (!referralLink) {
@@ -368,9 +358,7 @@ export class ReferralService {
         .select({
           totalClicks: sum(referralLinks.clickCount),
           totalConversions: sum(referralLinks.conversionCount),
-          activeLinks: count(
-            sql`CASE WHEN ${referralLinks.isActive} = true THEN 1 END`
-          ),
+          activeLinks: count(sql`CASE WHEN ${referralLinks.isActive} = true THEN 1 END`),
         })
         .from(referralLinks)
         .where(eq(referralLinks.userId, userId));
@@ -467,11 +455,11 @@ export class ReferralService {
         .orderBy(desc(referralClicks.createdAt))
         .limit(10);
 
-      if (recentClicks.length === 0) return;
+      if (recentClicks.length === 0) {return;}
 
       // Mark the most recent click as converted
       const latestClick = recentClicks[0];
-      
+
       await db
         .update(referralClicks)
         .set({
@@ -516,7 +504,7 @@ export class ReferralService {
     try {
       // TODO: Implement actual Gumroad API call for affiliate payout
       // This would use Gumroad's affiliate/partner API
-      
+
       logger.info('Gumroad payout API call needed', {
         payoutId,
         ...options,
@@ -571,8 +559,8 @@ export class ReferralService {
         .limit(50);
 
       for (const payout of failedPayouts) {
-        if (payout.payoutAmountCents >= this.MIN_PAYOUT_AMOUNT) {
-          await this.processGumroadPayout(payout.id, {
+        if (payout.payoutAmountCents >= ReferralService.MIN_PAYOUT_AMOUNT) {
+          await ReferralService.processGumroadPayout(payout.id, {
             referrerId: payout.referrerId,
             payoutAmountCents: payout.payoutAmountCents,
             orderId: payout.gumroadOrderId,

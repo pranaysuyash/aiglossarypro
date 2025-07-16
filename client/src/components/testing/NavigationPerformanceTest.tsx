@@ -78,7 +78,7 @@ const NavigationPerformanceTest: React.FC = () => {
   const handleToggleExpand = useCallback(
     (nodeId: string) => {
       startOperation('expand_collapse');
-      setExpandedNodes((prev) => {
+      setExpandedNodes(prev => {
         const newSet = new Set(prev);
         if (newSet.has(nodeId)) {
           newSet.delete(nodeId);
@@ -95,12 +95,12 @@ const NavigationPerformanceTest: React.FC = () => {
   // Mock search function
   const mockSearch = useCallback(
     async (query: string): Promise<any[]> => {
-      return new Promise((resolve) => {
+      return new Promise(resolve => {
         setTimeout(() => {
           // Simple mock search - filter nodes by name
           const results: any[] = [];
           const searchInNodes = (nodes: ContentNode[]) => {
-            nodes.forEach((node) => {
+            nodes.forEach(node => {
               if (node.name.toLowerCase().includes(query.toLowerCase())) {
                 results.push(node);
               }
@@ -111,7 +111,7 @@ const NavigationPerformanceTest: React.FC = () => {
           };
 
           if (currentTest) {
-            const scenario = testScenarios.find((s) => s.name === currentTest);
+            const scenario = testScenarios.find(s => s.name === currentTest);
             if (scenario?.dataset.sections) {
               searchInNodes(scenario.dataset.sections);
             }
@@ -133,7 +133,7 @@ const NavigationPerformanceTest: React.FC = () => {
       startOperation('full_benchmark');
 
       // Wait for component to render
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 100));
 
       const operations = {
         render: () => {
@@ -152,10 +152,10 @@ const NavigationPerformanceTest: React.FC = () => {
           operations
         );
 
-        setResults((prev) => [...prev, result]);
+        setResults(prev => [...prev, result]);
         endOperation('full_benchmark');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Benchmark failed:', error);
     } finally {
       setIsRunning(false);
@@ -168,7 +168,7 @@ const NavigationPerformanceTest: React.FC = () => {
     for (const scenario of testScenarios) {
       await runBenchmark(scenario);
       // Small delay between tests
-      await new Promise((resolve) => setTimeout(resolve, 500));
+      await new Promise(resolve => setTimeout(resolve, 500));
     }
   };
 
@@ -192,7 +192,7 @@ const NavigationPerformanceTest: React.FC = () => {
 
   // Generate performance summary
   const generateSummary = () => {
-    if (results.length === 0) return null;
+    if (results.length === 0) {return null;}
 
     const avgRenderTime =
       results.reduce((sum, r) => sum + r.metrics.renderTime, 0) / results.length;
@@ -221,18 +221,18 @@ const NavigationPerformanceTest: React.FC = () => {
 
   // Performance status indicator
   const getPerformanceStatus = (actual: number, expected: number): 'good' | 'warning' | 'poor' => {
-    if (actual <= expected) return 'good';
-    if (actual <= expected * 1.5) return 'warning';
+    if (actual <= expected) {return 'good';}
+    if (actual <= expected * 1.5) {return 'warning';}
     return 'poor';
   };
 
   const formatMemory = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    if (bytes < 1024) {return `${bytes} B`;}
+    if (bytes < 1024 * 1024) {return `${(bytes / 1024).toFixed(1)} KB`;}
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  const currentScenario = testScenarios.find((s) => s.name === currentTest);
+  const currentScenario = testScenarios.find(s => s.name === currentTest);
 
   return (
     <div className="max-w-6xl mx-auto p-6 space-y-6">
@@ -291,7 +291,7 @@ const NavigationPerformanceTest: React.FC = () => {
           <h2 className="text-xl font-semibold mb-4">Test Scenarios</h2>
           <div className="space-y-3">
             {testScenarios.map((scenario, _index) => {
-              const result = results.find((r) => r.testName.includes(scenario.name));
+              const result = results.find(r => r.testName.includes(scenario.name));
               const isRunning = currentTest === scenario.name;
 
               return (
@@ -397,9 +397,9 @@ const NavigationPerformanceTest: React.FC = () => {
                   contentStructure={currentScenario.dataset.sections || []}
                   currentPath={selectedPath}
                   onNavigate={handleNavigate}
-                  enableSearch={true}
-                  enableFilters={true}
-                  enableProgress={true}
+                  enableSearch
+                  enableFilters
+                  enableProgress
                   enableVirtualization={currentScenario.dataset.sections?.length > 100}
                 />
               )}

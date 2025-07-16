@@ -66,7 +66,7 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
 
   // Initialize session
   const initializeSession = useCallback(() => {
-    if (!config.trackingEnabled) return;
+    if (!config.trackingEnabled) {return;}
 
     const newSession: EngagementSession = {
       sessionId: generateSessionId(),
@@ -97,7 +97,6 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
     location,
     device,
     generateSessionId, // Track initial page view
-     
   ]);
 
   // Track interaction
@@ -117,7 +116,7 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
         };
       }
     ) => {
-      if (!config.trackingEnabled || !session) return;
+      if (!config.trackingEnabled || !session) {return;}
 
       try {
         const payload = {
@@ -147,7 +146,7 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
         });
 
         // Update session interaction count
-        setSession((prev) =>
+        setSession(prev =>
           prev
             ? {
                 ...prev,
@@ -165,7 +164,7 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
 
   // Track reading progress
   const trackReadingProgress = useCallback(async () => {
-    if (!config.trackingEnabled || !session || !readingMetrics || !termId) return;
+    if (!config.trackingEnabled || !session || !readingMetrics || !termId) {return;}
 
     try {
       const currentTime = new Date();
@@ -200,23 +199,23 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
 
   // Calculate reading velocity
   const calculateReadingVelocity = useCallback((wordsRead: number, timeSpent: number) => {
-    if (timeSpent === 0) return 0;
+    if (timeSpent === 0) {return 0;}
     return (wordsRead / timeSpent) * 60; // words per minute
   }, []);
 
   // Handle scroll events
   const handleScroll = useCallback(() => {
-    if (!config.autoTrackScroll || !session) return;
+    if (!config.autoTrackScroll || !session) {return;}
 
     const currentTime = Date.now();
     const currentScrollY = window.scrollY;
     const documentHeight = document.documentElement.scrollHeight - window.innerHeight;
 
     // Throttle scroll events
-    if (currentTime - lastScrollTimeRef.current < 100) return;
+    if (currentTime - lastScrollTimeRef.current < 100) {return;}
 
     const scrollDelta = Math.abs(currentScrollY - scrollPositionRef.current);
-    if (scrollDelta < config.scrollThreshold) return;
+    if (scrollDelta < config.scrollThreshold) {return;}
 
     scrollPositionRef.current = currentScrollY;
     totalHeightRef.current = documentHeight;
@@ -231,7 +230,7 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
       const timeSpent = (currentTime - readingMetrics.startTime.getTime()) / 1000;
       const readingVelocity = calculateReadingVelocity(wordsRead, timeSpent);
 
-      setReadingMetrics((prev) =>
+      setReadingMetrics(prev =>
         prev
           ? {
               ...prev,
@@ -273,7 +272,7 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
 
   // Initialize reading metrics
   const startReadingTracking = useCallback(() => {
-    if (!config.autoTrackReading || !termId) return;
+    if (!config.autoTrackReading || !termId) {return;}
 
     const metrics: ReadingMetrics = {
       startTime: new Date(),
@@ -290,7 +289,7 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
 
   // Set up heartbeat for progress tracking
   useEffect(() => {
-    if (!config.trackingEnabled || !session) return;
+    if (!config.trackingEnabled || !session) {return;}
 
     heartbeatIntervalRef.current = setInterval(() => {
       if (readingMetrics && termId) {
@@ -314,7 +313,7 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
 
   // Set up scroll listener
   useEffect(() => {
-    if (!config.autoTrackScroll) return;
+    if (!config.autoTrackScroll) {return;}
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
@@ -380,7 +379,7 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
   );
 
   const getEngagementSummary = useCallback(() => {
-    if (!session || !readingMetrics) return null;
+    if (!session || !readingMetrics) {return null;}
 
     const currentTime = new Date();
     const totalSessionTime = (currentTime.getTime() - session.startTime.getTime()) / 1000;
@@ -400,7 +399,6 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
         readingMetrics.readingVelocity
       ),
     };
-     
   }, [session, readingMetrics]);
 
   // Calculate engagement level
@@ -417,8 +415,8 @@ export const useEngagementTracking = (termId?: string, options: EngagementHookOp
 
     const overallScore = (timeScore + interactionScore + scrollScore + velocityScore) / 4;
 
-    if (overallScore >= 0.7) return 'high';
-    if (overallScore >= 0.4) return 'medium';
+    if (overallScore >= 0.7) {return 'high';}
+    if (overallScore >= 0.4) {return 'medium';}
     return 'low';
   };
 

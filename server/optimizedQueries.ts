@@ -1,7 +1,8 @@
-import { db } from './db';
-import { terms, categories, userProgress, codeExamples } from '../shared/schema.js';
-import { eq, and, desc, sql, inArray, like, or, gt, lt } from 'drizzle-orm';
+import { and, desc, eq, gt, inArray, like, lt, or, sql } from 'drizzle-orm';
 import { Redis } from 'ioredis';
+import { categories, codeExamples, terms, userProgress } from '../shared/schema.js';
+import { db } from './db';
+
 import NodeCache = require('node-cache');
 
 // Initialize caches
@@ -40,21 +41,17 @@ const CACHE_TTL = {
 // Optimized query helpers
 export class OptimizedQueries {
   // Get paginated terms with caching
-  static async getTermsPaginated(
-    page: number = 1,
-    limit: number = 20,
-    categoryId?: string
-  ) {
+  static async getTermsPaginated(page = 1, limit = 20, categoryId?: string) {
     const cacheKey = `${CACHE_KEYS.TERMS_LIST}:${page}:${limit}:${categoryId || 'all'}`;
-    
+
     // Try cache first
-    const cached = await this.getCached(cacheKey);
-    if (cached) return cached;
+    const cached = await OptimizedQueries.getCached(cacheKey);
+    if (cached) {return cached;}
 
     // Build query
     const offset = (page - 1) * limit;
     const conditions = categoryId ? [eq(terms.categoryId, categoryId)] : [];
-    
+
     const [items, totalCount] = await Promise.all([
       db
         .select({
@@ -72,7 +69,7 @@ export class OptimizedQueries {
         .orderBy(desc(terms.createdAt))
         .limit(limit)
         .offset(offset),
-      
+
       db
         .select({ count: sql<number>`count(*)` })
         .from(terms)
@@ -91,18 +88,18 @@ export class OptimizedQueries {
     };
 
     // Cache result
-    await this.setCached(cacheKey, result, CACHE_TTL.MEDIUM);
-    
+    await OptimizedQueries.setCached(cacheKey, result, CACHE_TTL.MEDIUM);
+
     return result;
   }
 
   // Get term details with related data
   static async getTermDetail(termId: string, userId?: string) {
     const cacheKey = `${CACHE_KEYS.TERM_DETAIL}:${termId}:${userId || 'guest'}`;
-    
+
     // Try cache first
-    const cached = await this.getCached(cacheKey);
-    if (cached) return cached;
+    const cached = await OptimizedQueries.getCached(cacheKey);
+    if (cached) {return cached;}
 
     // Fetch term with all related data in parallel
     const [termData, sections, examples, relatedTerms, userProgressData] = await Promise.all([
@@ -123,17 +120,17 @@ export class OptimizedQueries {
         .where(eq(terms.id, termId))
         .limit(1)
         .then(results => results[0]),
-      
+
       // Term sections - placeholder for future implementation
       Promise.resolve([]),
-      
+
       // Code examples
       db
         .select()
         .from(codeExamples)
         .where(eq(codeExamples.term_id, termId))
         .orderBy(desc(codeExamples.upvotes)),
-      
+
       // Related terms (same category)
       db
         .select({
@@ -149,18 +146,13 @@ export class OptimizedQueries {
           )
         )
         .limit(5),
-      
+
       // User progress (if authenticated)
       userId
         ? db
             .select()
             .from(userProgress)
-            .where(
-              and(
-                eq(userProgress.userId, userId),
-                eq(userProgress.termId, termId)
-              )
-            )
+            .where(and(eq(userProgress.userId, userId), eq(userProgress.termId, termId)))
             .limit(1)
             .then(results => results[0])
         : null,
@@ -171,7 +163,7 @@ export class OptimizedQueries {
     }
 
     // Increment views asynchronously
-    this.incrementTermViews(termId);
+    OptimizedQueries.incrementTermViews(termId);
 
     const result = {
       ...termData,
@@ -182,8 +174,8 @@ export class OptimizedQueries {
     };
 
     // Cache result
-    await this.setCached(cacheKey, result, CACHE_TTL.SHORT);
-    
+    await OptimizedQueries.setCached(cacheKey, result, CACHE_TTL.SHORT);
+
     return result;
   }
 
@@ -198,10 +190,10 @@ export class OptimizedQueries {
   ) {
     const { limit = 20, categoryId, includeDefinitions = true } = options;
     const cacheKey = `${CACHE_KEYS.SEARCH_RESULTS}:${query}:${categoryId || 'all'}:${limit}`;
-    
+
     // Try cache first
-    const cached = await this.getCached(cacheKey);
-    if (cached) return cached;
+    const cached = await OptimizedQueries.getCached(cacheKey);
+    if (cached) {return cached;}
 
     // Build search conditions
     const searchPattern = `%${query}%`;
@@ -211,7 +203,7 @@ export class OptimizedQueries {
         includeDefinitions ? like(terms.definition, searchPattern) : undefined
       )!,
     ];
-    
+
     if (categoryId) {
       conditions.push(eq(terms.categoryId, categoryId));
     }
@@ -227,9 +219,9 @@ export class OptimizedQueries {
         relevance: sql<number>`
           CASE 
             WHEN LOWER(${terms.name}) = LOWER(${query}) THEN 100
-            WHEN LOWER(${terms.name}) LIKE LOWER(${query + '%'}) THEN 80
-            WHEN LOWER(${terms.name}) LIKE LOWER(${'%' + query + '%'}) THEN 60
-            WHEN LOWER(${terms.definition}) LIKE LOWER(${'%' + query + '%'}) THEN 40
+            WHEN LOWER(${terms.name}) LIKE LOWER(${`${query  }%`}) THEN 80
+            WHEN LOWER(${terms.name}) LIKE LOWER(${`%${  query  }%`}) THEN 60
+            WHEN LOWER(${terms.definition}) LIKE LOWER(${`%${  query  }%`}) THEN 40
             ELSE 20
           END
         `,
@@ -241,18 +233,18 @@ export class OptimizedQueries {
       .limit(limit);
 
     // Cache result
-    await this.setCached(cacheKey, results, CACHE_TTL.SHORT);
-    
+    await OptimizedQueries.setCached(cacheKey, results, CACHE_TTL.SHORT);
+
     return results;
   }
 
   // Get trending terms with caching
-  static async getTrendingTerms(limit: number = 10) {
+  static async getTrendingTerms(limit = 10) {
     const cacheKey = `${CACHE_KEYS.TRENDING}:${limit}`;
-    
+
     // Try cache first
-    const cached = await this.getCached(cacheKey);
-    if (cached) return cached;
+    const cached = await OptimizedQueries.getCached(cacheKey);
+    if (cached) {return cached;}
 
     // Calculate trending score based on views and recency
     const results = await db
@@ -274,14 +266,14 @@ export class OptimizedQueries {
       .limit(limit);
 
     // Cache result
-    await this.setCached(cacheKey, results, CACHE_TTL.MEDIUM);
-    
+    await OptimizedQueries.setCached(cacheKey, results, CACHE_TTL.MEDIUM);
+
     return results;
   }
 
   // Batch fetch terms by IDs
   static async getTermsByIds(termIds: string[]) {
-    if (termIds.length === 0) return [];
+    if (termIds.length === 0) {return [];}
 
     // Check cache for each term
     const cached: any[] = [];
@@ -289,8 +281,8 @@ export class OptimizedQueries {
 
     for (const id of termIds) {
       const cacheKey = `${CACHE_KEYS.TERM_DETAIL}:${id}:basic`;
-      const cachedTerm = await this.getCached(cacheKey);
-      
+      const cachedTerm = await OptimizedQueries.getCached(cacheKey);
+
       if (cachedTerm) {
         cached.push(cachedTerm);
       } else {
@@ -315,7 +307,7 @@ export class OptimizedQueries {
       // Cache individual terms
       for (const term of results) {
         const cacheKey = `${CACHE_KEYS.TERM_DETAIL}:${term.id}:basic`;
-        await this.setCached(cacheKey, term, CACHE_TTL.LONG);
+        await OptimizedQueries.setCached(cacheKey, term, CACHE_TTL.LONG);
       }
 
       cached.push(...results);
@@ -329,7 +321,7 @@ export class OptimizedQueries {
   private static async getCached(key: string): Promise<any> {
     // Try memory cache first
     const memCached = memoryCache.get(key);
-    if (memCached) return memCached;
+    if (memCached) {return memCached;}
 
     // Try Redis
     try {
@@ -364,12 +356,12 @@ export class OptimizedQueries {
     try {
       await db
         .update(terms)
-        .set({ 
+        .set({
           viewCount: sql`${terms.viewCount} + 1`,
           updatedAt: new Date(),
         })
         .where(eq(terms.id, termId));
-      
+
       // Invalidate related caches
       const pattern = `${CACHE_KEYS.TERM_DETAIL}:${termId}:*`;
       const keys = await redis.keys(pattern);
@@ -416,14 +408,14 @@ export class OptimizedQueries {
 // Export cache warming function
 export async function warmCache() {
   console.log('Warming cache...');
-  
+
   try {
     // Warm trending terms
     await OptimizedQueries.getTrendingTerms();
-    
+
     // Warm first page of terms
     await OptimizedQueries.getTermsPaginated(1, 20);
-    
+
     // Warm categories
     const categoriesData = await db.select().from(categories).limit(50);
     const allCategories = await db.select().from(categories).limit(50);
@@ -433,7 +425,7 @@ export async function warmCache() {
     } catch (error) {
       console.error('Redis cache error:', error);
     }
-    
+
     console.log('Cache warming complete');
   } catch (error) {
     console.error('Error warming cache:', error);

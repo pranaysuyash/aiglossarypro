@@ -194,7 +194,7 @@ async function checkDatabaseStatus(): Promise<DatabaseStatus> {
   }
 
   // Add bulk import recommendations
-  if (status.tables.find((t) => t.name === 'enhanced_terms' && t.rowCount === 0)) {
+  if (status.tables.find(t => t.name === 'enhanced_terms' && t.rowCount === 0)) {
     status.recommendations.push(
       'Database is empty. For bulk imports:',
       '1. Use CSV streaming for files > 100MB',
@@ -218,13 +218,13 @@ async function main() {
 
   if (status.errors.length > 0) {
     console.log('❌ ERRORS:');
-    status.errors.forEach((error) => console.log(`  - ${error}`));
+    status.errors.forEach(error => console.log(`  - ${error}`));
     console.log();
   }
 
   if (status.warnings.length > 0) {
     console.log('⚠️  WARNINGS:');
-    status.warnings.forEach((warning) => console.log(`  - ${warning}`));
+    status.warnings.forEach(warning => console.log(`  - ${warning}`));
     console.log();
   }
 
@@ -233,7 +233,7 @@ async function main() {
   console.log(`${'Table Name'.padEnd(30) + 'Exists'.padEnd(10) + 'Rows'.padEnd(15)}Indexes`);
   console.log('─'.repeat(80));
 
-  status.tables.forEach((table) => {
+  status.tables.forEach(table => {
     const exists = table.exists ? '✓' : '✗';
     const rows = table.exists ? table.rowCount.toString() : '-';
     const indexes = table.exists ? `${table.indexCount} indexes` : '-';
@@ -243,22 +243,22 @@ async function main() {
   console.log('─'.repeat(80));
 
   // Summary statistics
-  const existingTables = status.tables.filter((t) => t.exists).length;
+  const existingTables = status.tables.filter(t => t.exists).length;
   const totalRows = status.tables.reduce((sum, t) => sum + t.rowCount, 0);
 
   console.log(`\n📈 SUMMARY:`);
   console.log(`  - Tables: ${existingTables}/${status.tables.length} exist`);
   console.log(`  - Total Rows: ${totalRows.toLocaleString()}`);
   console.log(
-    `  - Enhanced Terms: ${status.tables.find((t) => t.name === 'enhanced_terms')?.rowCount || 0} terms`
+    `  - Enhanced Terms: ${status.tables.find(t => t.name === 'enhanced_terms')?.rowCount || 0} terms`
   );
   console.log(
-    `  - Original Terms: ${status.tables.find((t) => t.name === 'terms')?.rowCount || 0} terms`
+    `  - Original Terms: ${status.tables.find(t => t.name === 'terms')?.rowCount || 0} terms`
   );
 
   if (status.recommendations.length > 0) {
     console.log('\n💡 RECOMMENDATIONS:');
-    status.recommendations.forEach((rec) => console.log(`  - ${rec}`));
+    status.recommendations.forEach(rec => console.log(`  - ${rec}`));
   }
 
   // Exit with appropriate code
@@ -276,7 +276,7 @@ async function main() {
 
 // Error handling
 main()
-  .catch((error) => {
+  .catch(error => {
     console.error('Fatal error during database check:', error);
     process.exit(1);
   })

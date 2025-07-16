@@ -1,4 +1,3 @@
-import React from 'react';
 import type { Meta, StoryObj } from '@storybook/react';
 import { AlertTriangle, CheckCircle, Info, XCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from './alert';
@@ -15,7 +14,7 @@ const meta: Meta<typeof Alert> = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-2xl">
         <Story />
       </div>
@@ -265,7 +264,7 @@ export const DarkMode: Story = {
     },
   },
   decorators: [
-    (Story) => (
+    Story => (
       <div className="w-full max-w-2xl dark">
         <Story />
       </div>

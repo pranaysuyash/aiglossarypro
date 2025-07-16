@@ -1,5 +1,7 @@
+import { ArrowRight, Lock, Star, Users, Zap } from 'lucide-react';
 import React from 'react';
-import { ArrowRight, Star, Zap, Lock, Users } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card } from '@/components/ui/card';
 import {
   Dialog,
   DialogContent,
@@ -7,8 +9,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { useGuestConversion } from '@/hooks/useGuestPreview';
 
 interface GuestUpgradeModalProps {
@@ -46,7 +46,7 @@ export function GuestUpgradeModal({
 
   const getTitle = () => {
     if (isLimitReached) {
-      return "Unlock All 10,000+ AI/ML Terms";
+      return 'Unlock All 10,000+ AI/ML Terms';
     }
     return "You're exploring like a pro!";
   };
@@ -71,9 +71,7 @@ export function GuestUpgradeModal({
               <Star className="h-6 w-6 text-purple-600" />
             )}
           </div>
-          <DialogTitle className="text-xl font-bold">
-            {getTitle()}
-          </DialogTitle>
+          <DialogTitle className="text-xl font-bold">{getTitle()}</DialogTitle>
           <DialogDescription className="text-base text-gray-600">
             {getDescription()}
           </DialogDescription>
@@ -85,10 +83,12 @@ export function GuestUpgradeModal({
             <div className="bg-gray-50 rounded-lg p-4">
               <div className="flex items-center justify-between text-sm text-gray-600 mb-2">
                 <span>Free previews used</span>
-                <span>{previewsUsed} of {maxPreviews}</span>
+                <span>
+                  {previewsUsed} of {maxPreviews}
+                </span>
               </div>
               <div className="w-full bg-gray-200 rounded-full h-2">
-                <div 
+                <div
                   className="bg-gradient-to-r from-purple-500 to-pink-500 h-2 rounded-full transition-all duration-300"
                   style={{ width: `${(previewsUsed / maxPreviews) * 100}%` }}
                 />

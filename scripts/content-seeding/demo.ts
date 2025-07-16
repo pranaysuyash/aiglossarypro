@@ -52,7 +52,7 @@ async function runDemo(): Promise<void> {
     logger.info('4. Import bulk content: npm run import:bulk');
     logger.info('\n📖 See docs/CONTENT_POPULATION_SYSTEM.md for complete guide');
   } catch (error) {
-    logger.error('Demo failed:', error);
+    logger.error('Demo failed:', error as Record<string, unknown>);
     process.exit(1);
   }
 }
@@ -81,7 +81,7 @@ async function demonstrateEssentialTerms(): Promise<void> {
   // Show sample terms from Machine Learning category
   const mlTerms = ESSENTIAL_AI_TERMS['Machine Learning'] || [];
   logger.info('\n📝 Sample ML Terms:');
-  mlTerms.slice(0, 5).forEach((term) => {
+  mlTerms.slice(0, 5).forEach(term => {
     logger.info(`  • ${term.name} (${term.priority}/${term.complexity})`);
   });
 }
@@ -239,7 +239,7 @@ function _showSystemCapabilities(): void {
     '📈 Progress Monitoring',
   ];
 
-  capabilities.forEach((capability) => {
+  capabilities.forEach(capability => {
     logger.info(`  ${capability}`);
   });
 }
@@ -248,7 +248,7 @@ function _showSystemCapabilities(): void {
  * Main execution
  */
 if (require.main === module) {
-  runDemo().catch((error) => {
+  runDemo().catch(error => {
     logger.error('Demo execution failed:', error);
     process.exit(1);
   });

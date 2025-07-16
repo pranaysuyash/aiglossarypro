@@ -46,7 +46,7 @@ export default function Categories() {
   });
 
   // Filter categories based on search
-  const filteredCategories = ((categories as ICategory[]) || []).filter((category) => {
+  const filteredCategories = ((categories as ICategory[]) || []).filter(category => {
     return category.name.toLowerCase().includes(searchTerm.toLowerCase());
   });
 
@@ -175,7 +175,7 @@ export default function Categories() {
           </div>
         ) : ((categoryTerms as ITerm[]) || []).length > 0 ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 xs:gap-4 sm:gap-6">
-            {(categoryTerms as ITerm[]).map((term) => (
+            {(categoryTerms as ITerm[]).map(term => (
               <TermCard key={term.id} term={term} variant="compact" />
             ))}
           </div>
@@ -232,7 +232,7 @@ export default function Categories() {
           <Input
             placeholder="Search categories..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
             className="pl-10"
           />
         </div>
@@ -265,7 +265,7 @@ export default function Categories() {
         </div>
       ) : sortedCategories.length > 0 ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 xs:gap-4 sm:gap-6">
-          {sortedCategories.map((category) => (
+          {sortedCategories.map(category => (
             <CategoryCard key={category.id} category={category} />
           ))}
         </div>
@@ -310,7 +310,7 @@ export default function Categories() {
             </div>
             <div>
               <div className="text-2xl font-bold text-primary">
-                {sortedCategories.filter((cat) => (cat.termCount || 0) > 0).length}
+                {sortedCategories.filter(cat => (cat.termCount || 0) > 0).length}
               </div>
               <div className="text-sm text-gray-600 dark:text-gray-400">Active Categories</div>
             </div>

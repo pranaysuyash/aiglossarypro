@@ -83,10 +83,10 @@ export function getRelativeTime(date: Date): string {
   } else if (diffInSeconds < TIME_CONSTANTS.SECONDS_IN_YEAR) {
     const months = Math.floor(diffInSeconds / TIME_CONSTANTS.SECONDS_IN_MONTH);
     return `${months} month${months > 1 ? 's' : ''} ago`;
-  } else {
+  } 
     const years = Math.floor(diffInSeconds / TIME_CONSTANTS.SECONDS_IN_YEAR);
     return `${years} year${years > 1 ? 's' : ''} ago`;
-  }
+  
 }
 
 /**

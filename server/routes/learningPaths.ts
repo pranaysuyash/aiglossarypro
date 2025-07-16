@@ -127,18 +127,24 @@ export function registerLearningPathsRoutes(app: Express): void {
 
       // Check if the id is a UUID or a slug
       const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-      
+
       // Get the learning path - try by ID first, then by slug (if name matches)
       let path;
       if (isUuid) {
         path = await db.select().from(learningPaths).where(eq(learningPaths.id, id)).limit(1);
       } else {
         // If not UUID, try to find by name (slug-like)
-        path = await db.select().from(learningPaths).where(eq(learningPaths.name, id.replace(/-/g, ' '))).limit(1);
-        
+        path = await db
+          .select()
+          .from(learningPaths)
+          .where(eq(learningPaths.name, id.replace(/-/g, ' ')))
+          .limit(1);
+
         // If still not found, try exact match with slug formatting
         if (!path || path.length === 0) {
-          path = await db.select().from(learningPaths)
+          path = await db
+            .select()
+            .from(learningPaths)
             .where(sql`LOWER(REPLACE(${learningPaths.name}, ' ', '-')) = LOWER(${id})`)
             .limit(1);
         }
@@ -286,17 +292,23 @@ export function registerLearningPathsRoutes(app: Express): void {
 
         // Check if path exists - handle both UUID and slug
         const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
-        
+
         let path;
         if (isUuid) {
           path = await db.select().from(learningPaths).where(eq(learningPaths.id, id)).limit(1);
         } else {
           // If not UUID, try to find by name (slug-like)
-          path = await db.select().from(learningPaths).where(eq(learningPaths.name, id.replace(/-/g, ' '))).limit(1);
-          
+          path = await db
+            .select()
+            .from(learningPaths)
+            .where(eq(learningPaths.name, id.replace(/-/g, ' ')))
+            .limit(1);
+
           // If still not found, try exact match with slug formatting
           if (!path || path.length === 0) {
-            path = await db.select().from(learningPaths)
+            path = await db
+              .select()
+              .from(learningPaths)
               .where(sql`LOWER(REPLACE(${learningPaths.name}, ' ', '-')) = LOWER(${id})`)
               .limit(1);
           }
@@ -672,14 +684,14 @@ export function registerLearningPathsRoutes(app: Express): void {
         updated_at: new Date(),
       };
 
-      if (name !== undefined) updateData.name = name;
-      if (description !== undefined) updateData.description = description;
-      if (difficulty_level !== undefined) updateData.difficulty_level = difficulty_level;
-      if (estimated_duration !== undefined) updateData.estimated_duration = estimated_duration;
-      if (category_id !== undefined) updateData.category_id = category_id;
-      if (prerequisites !== undefined) updateData.prerequisites = prerequisites;
-      if (learning_objectives !== undefined) updateData.learning_objectives = learning_objectives;
-      if (is_published !== undefined) updateData.is_published = is_published;
+      if (name !== undefined) {updateData.name = name;}
+      if (description !== undefined) {updateData.description = description;}
+      if (difficulty_level !== undefined) {updateData.difficulty_level = difficulty_level;}
+      if (estimated_duration !== undefined) {updateData.estimated_duration = estimated_duration;}
+      if (category_id !== undefined) {updateData.category_id = category_id;}
+      if (prerequisites !== undefined) {updateData.prerequisites = prerequisites;}
+      if (learning_objectives !== undefined) {updateData.learning_objectives = learning_objectives;}
+      if (is_published !== undefined) {updateData.is_published = is_published;}
 
       const [updatedPath] = await db
         .update(learningPaths)
@@ -920,12 +932,12 @@ export function registerLearningPathsRoutes(app: Express): void {
 
         // Prepare update data
         const updateData: Partial<InsertLearningPathStep> = {};
-        if (term_id !== undefined) updateData.term_id = term_id;
-        if (step_order !== undefined) updateData.step_order = step_order;
-        if (is_optional !== undefined) updateData.is_optional = is_optional;
-        if (estimated_time !== undefined) updateData.estimated_time = estimated_time;
-        if (step_type !== undefined) updateData.step_type = step_type;
-        if (content !== undefined) updateData.content = content;
+        if (term_id !== undefined) {updateData.term_id = term_id;}
+        if (step_order !== undefined) {updateData.step_order = step_order;}
+        if (is_optional !== undefined) {updateData.is_optional = is_optional;}
+        if (estimated_time !== undefined) {updateData.estimated_time = estimated_time;}
+        if (step_type !== undefined) {updateData.step_type = step_type;}
+        if (content !== undefined) {updateData.content = content;}
 
         const [updatedStep] = await db
           .update(learningPathSteps)

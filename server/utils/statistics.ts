@@ -15,7 +15,7 @@ export function calculateZScore(
 
   const standardError = Math.sqrt(pooledP * (1 - pooledP) * (1 / controlTotal + 1 / variantTotal));
 
-  if (standardError === 0) return 0;
+  if (standardError === 0) {return 0;}
 
   return (p2 - p1) / standardError;
 }
@@ -47,7 +47,7 @@ export function calculatePValue(zScore: number): number {
 export function calculateConfidenceInterval(
   conversions: number,
   total: number,
-  confidenceLevel: number = 0.95
+  confidenceLevel = 0.95
 ): { lower: number; upper: number } {
   const p = conversions / total;
   const z = confidenceLevel === 0.95 ? 1.96 : confidenceLevel === 0.99 ? 2.576 : 1.645;
@@ -97,8 +97,8 @@ export function calculateStatisticalSignificance(
 export function calculateSampleSize(
   baselineConversionRate: number,
   minimumDetectableEffect: number,
-  power: number = 0.8,
-  significanceLevel: number = 0.05
+  power = 0.8,
+  significanceLevel = 0.05
 ): number {
   const p1 = baselineConversionRate;
   const p2 = baselineConversionRate * (1 + minimumDetectableEffect);
@@ -120,14 +120,14 @@ export function determineWinner(
   results: Array<{ variant: string; conversionRate: number }>,
   _metric: string
 ): { variant: string; improvement: number; confidence: number } | null {
-  if (results.length < 2) return null;
+  if (results.length < 2) {return null;}
 
   // Sort by conversion rate
   const sorted = [...results].sort((a, b) => b.conversionRate - a.conversionRate);
   const best = sorted[0];
-  const control = results.find((r) => r.variant === 'default') || sorted[1];
+  const control = results.find(r => r.variant === 'default') || sorted[1];
 
-  if (best.variant === control.variant) return null;
+  if (best.variant === control.variant) {return null;}
 
   const improvement =
     ((best.conversionRate - control.conversionRate) / control.conversionRate) * 100;
@@ -153,7 +153,7 @@ export function calculateBayesianProbability(
   const wins = new Array(variants.length).fill(0);
 
   for (let i = 0; i < samples; i++) {
-    const draws = variants.map((v) => {
+    const draws = variants.map(v => {
       // Beta distribution with uniform prior (1, 1)
       const alpha = v.conversions + 1;
       const beta = v.total - v.conversions + 1;
@@ -164,7 +164,7 @@ export function calculateBayesianProbability(
     wins[maxIndex]++;
   }
 
-  return wins.map((w) => w / samples);
+  return wins.map(w => w / samples);
 }
 
 /**
@@ -204,7 +204,7 @@ function sampleGamma(shape: number): number {
 function gaussianRandom(): number {
   let u = 0,
     v = 0;
-  while (u === 0) u = Math.random();
-  while (v === 0) v = Math.random();
+  while (u === 0) {u = Math.random();}
+  while (v === 0) {v = Math.random();}
   return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
 }

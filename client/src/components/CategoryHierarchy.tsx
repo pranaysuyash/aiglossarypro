@@ -11,7 +11,7 @@ interface BreadcrumbItem {
 
 interface CategoryHierarchyProps {
   items: BreadcrumbItem[];
-  className?: string;
+  className?: string | undefined;
   showIcons?: boolean;
   variant?: 'default' | 'compact';
 }
@@ -24,16 +24,16 @@ const CategoryHierarchy = memo(function CategoryHierarchy({
 }: CategoryHierarchyProps) {
   // Default icons based on common breadcrumb patterns
   const getDefaultIcon = (index: number, item: BreadcrumbItem) => {
-    if (item.icon) return item.icon;
+    if (item.icon) {return item.icon;}
 
-    if (index === 0) return <Home className="w-4 h-4" />;
-    if (item.label.toLowerCase().includes('categories')) return <FolderOpen className="w-4 h-4" />;
+    if (index === 0) {return <Home className="w-4 h-4" />;}
+    if (item.label.toLowerCase().includes('categories')) {return <FolderOpen className="w-4 h-4" />;}
     if (
       item.label.toLowerCase().includes('subcategories') ||
       item.label.toLowerCase().includes('subcategory')
     )
-      return <Folder className="w-4 h-4" />;
-    if (item.label.toLowerCase().includes('term')) return <BookOpen className="w-4 h-4" />;
+      {return <Folder className="w-4 h-4" />;}
+    if (item.label.toLowerCase().includes('term')) {return <BookOpen className="w-4 h-4" />;}
 
     return <Folder className="w-4 h-4" />;
   };

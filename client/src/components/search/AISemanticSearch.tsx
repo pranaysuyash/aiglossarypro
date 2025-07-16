@@ -23,6 +23,8 @@ import {
 } from 'lucide-react';
 import type React from 'react';
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAdPlacement } from '../../hooks/useAdSense';
+import { GoogleAd } from '../ads/GoogleAd';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
@@ -31,8 +33,6 @@ import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Slider } from '../ui/slider';
 import { Tabs, TabsList, TabsTrigger } from '../ui/tabs';
-import { GoogleAd } from '../ads/GoogleAd';
-import { useAdPlacement } from '../../hooks/useAdSense';
 
 interface SemanticSearchResult {
   id: string;
@@ -72,7 +72,7 @@ interface SemanticSearchResponse {
 }
 
 interface AISemanticSearchProps {
-  className?: string;
+  className?: string | undefined;
   onResultSelect?: (result: SemanticSearchResult) => void;
 }
 
@@ -162,7 +162,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({ className = '', onR
     queryKey: ['categories'],
     queryFn: async () => {
       const response = await fetch('/api/categories');
-      if (!response.ok) throw new Error('Failed to fetch categories');
+      if (!response.ok) {throw new Error('Failed to fetch categories');}
       return response.json();
     },
     staleTime: 300000, // 5 minutes
@@ -172,12 +172,12 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({ className = '', onR
   const { data: suggestions = [] } = useQuery({
     queryKey: ['search-suggestions', debouncedQuery],
     queryFn: async () => {
-      if (debouncedQuery.length < 2) return [];
+      if (debouncedQuery.length < 2) {return [];}
 
       const response = await fetch(
         `/api/search/suggestions?q=${encodeURIComponent(debouncedQuery)}&limit=5`
       );
-      if (!response.ok) return [];
+      if (!response.ok) {return [];}
 
       return response.json();
     },
@@ -204,8 +204,8 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({ className = '', onR
   );
 
   const handleCategoryToggle = useCallback((categoryId: string) => {
-    setSelectedCategories((prev) =>
-      prev.includes(categoryId) ? prev.filter((id) => id !== categoryId) : [...prev, categoryId]
+    setSelectedCategories(prev =>
+      prev.includes(categoryId) ? prev.filter(id => id !== categoryId) : [...prev, categoryId]
     );
     setPage(1);
   }, []);
@@ -219,13 +219,13 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({ className = '', onR
 
   const loadMoreResults = useCallback(() => {
     if (searchResults?.hasMore) {
-      setPage((prev) => prev + 1);
+      setPage(prev => prev + 1);
     }
   }, [searchResults?.hasMore]);
 
   // Memoized search strategy info
   const searchInfo = useMemo(() => {
-    if (!searchResults) return null;
+    if (!searchResults) {return null;}
 
     return {
       strategy: searchResults.strategy,
@@ -275,7 +275,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({ className = '', onR
                 type="text"
                 placeholder="Search AI/ML concepts with natural language..."
                 value={query}
-                onChange={(e) => setQuery(e.target.value)}
+                onChange={e => setQuery(e.target.value)}
                 className="pl-10 pr-12 text-lg"
                 autoFocus
                 aria-describedby="search-instructions"
@@ -424,7 +424,7 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({ className = '', onR
                     <Checkbox
                       id="include-definition"
                       checked={includeDefinition}
-                      onCheckedChange={(checked) => setIncludeDefinition(!!checked)}
+                      onCheckedChange={checked => setIncludeDefinition(!!checked)}
                     />
                     <Label htmlFor="include-definition" className="text-sm cursor-pointer">
                       Include full definitions
@@ -522,66 +522,69 @@ const AISemanticSearch: React.FC<AISemanticSearchProps> = ({ className = '', onR
                       className="border rounded-lg p-4 hover:shadow-md transition-shadow cursor-pointer"
                       onClick={() => handleResultClick(result)}
                     >
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <h3 className="font-semibold text-gray-900 hover:text-blue-600">
-                            {result.name}
-                          </h3>
-                          <Badge variant="outline" className="text-xs">
-                            Score: {result.relevanceScore.toFixed(1)}
-                          </Badge>
-                        </div>
-
-                        <p className="text-gray-600 text-sm mb-2">
-                          {result.shortDefinition || `${result.definition?.substring(0, 200)}...`}
-                        </p>
-
-                        <div className="flex items-center gap-4 text-xs text-gray-500">
-                          {result.category && (
-                            <span className="flex items-center">
-                              <Map className="h-3 w-3 mr-1" />
-                              {result.category.name}
-                            </span>
-                          )}
-                          <span className="flex items-center">
-                            <BarChart className="h-3 w-3 mr-1" />
-                            {result.viewCount} views
-                          </span>
-                          {result.semanticSimilarity && (
-                            <span className="flex items-center">
-                              <Network className="h-3 w-3 mr-1" />
-                              {(result.semanticSimilarity * 100).toFixed(0)}% similar
-                            </span>
-                          )}
-                        </div>
-
-                        {/* Concept Relationships */}
-                        {result.conceptRelationships && result.conceptRelationships.length > 0 && (
-                          <div className="mt-2">
-                            <Label className="text-xs text-gray-500">Related concepts:</Label>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                              {result.conceptRelationships.slice(0, 3).map((concept, i) => (
-                                <Badge key={i} variant="secondary" className="text-xs">
-                                  {concept}
-                                </Badge>
-                              ))}
-                            </div>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-2">
+                            <h3 className="font-semibold text-gray-900 hover:text-blue-600">
+                              {result.name}
+                            </h3>
+                            <Badge variant="outline" className="text-xs">
+                              Score: {result.relevanceScore.toFixed(1)}
+                            </Badge>
                           </div>
-                        )}
-                      </div>
 
-                      <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0 ml-2" />
-                    </div>
+                          <p className="text-gray-600 text-sm mb-2">
+                            {result.shortDefinition || `${result.definition?.substring(0, 200)}...`}
+                          </p>
+
+                          <div className="flex items-center gap-4 text-xs text-gray-500">
+                            {result.category && (
+                              <span className="flex items-center">
+                                <Map className="h-3 w-3 mr-1" />
+                                {result.category.name}
+                              </span>
+                            )}
+                            <span className="flex items-center">
+                              <BarChart className="h-3 w-3 mr-1" />
+                              {result.viewCount} views
+                            </span>
+                            {result.semanticSimilarity && (
+                              <span className="flex items-center">
+                                <Network className="h-3 w-3 mr-1" />
+                                {(result.semanticSimilarity * 100).toFixed(0)}% similar
+                              </span>
+                            )}
+                          </div>
+
+                          {/* Concept Relationships */}
+                          {result.conceptRelationships &&
+                            result.conceptRelationships.length > 0 && (
+                              <div className="mt-2">
+                                <Label className="text-xs text-gray-500">Related concepts:</Label>
+                                <div className="flex flex-wrap gap-1 mt-1">
+                                  {result.conceptRelationships.slice(0, 3).map((concept, i) => (
+                                    <Badge key={i} variant="secondary" className="text-xs">
+                                      {concept}
+                                    </Badge>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                        </div>
+
+                        <ArrowRight className="h-4 w-4 text-gray-400 flex-shrink-0 ml-2" />
+                      </div>
                     </div>
                     {/* Show ad every 8th result for free users */}
-                    {index > 0 && (index + 1) % 8 === 0 && useAdPlacement('searchResults').canShowAd && (
-                      <GoogleAd
-                        slot={import.meta.env.VITE_AD_SLOT_SEARCH_RESULTS || ''}
-                        format="horizontal"
-                        className="my-6"
-                      />
-                    )}
+                    {index > 0 &&
+                      (index + 1) % 8 === 0 &&
+                      useAdPlacement('searchResults').canShowAd && (
+                        <GoogleAd
+                          slot={import.meta.env.VITE_AD_SLOT_SEARCH_RESULTS || ''}
+                          format="horizontal"
+                          className="my-6"
+                        />
+                      )}
                   </>
                 ))}
 

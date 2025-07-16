@@ -1,7 +1,7 @@
 import { cn } from '@/lib/utils';
 
 interface SkipLinksProps {
-  className?: string;
+  className?: string | undefined;
 }
 
 export function SkipLinks({ className }: SkipLinksProps) {

@@ -39,7 +39,7 @@ class QueryCache {
   }
 
   get<T>(key: string): T | undefined {
-    if (!this.enabled) return undefined;
+    if (!this.enabled) {return undefined;}
 
     const startTime = Date.now();
     const entry = this.cache.get(key);
@@ -90,7 +90,7 @@ class QueryCache {
   }
 
   set<T>(key: string, value: T, ttlMs?: number): void {
-    if (!this.enabled) return;
+    if (!this.enabled) {return;}
 
     // Evict oldest if at capacity
     if (this.cache.size >= this.maxItems) {
@@ -126,7 +126,7 @@ class QueryCache {
   }
 
   invalidate(pattern: string): number {
-    if (!this.enabled) return 0;
+    if (!this.enabled) {return 0;}
 
     let deletedCount = 0;
     for (const key of this.cache.keys()) {
@@ -245,15 +245,15 @@ export async function cached<T>(
 // Cache key generators with better granularity
 export const CacheKeys = {
   term: (id: string) => `term:${id}`,
-  termsByCategory: (categoryId: string, page: number = 1) => `terms:cat:${categoryId}:page:${page}`,
-  termSearch: (query: string, limit: number = 20) => `search:${query}:${limit}`,
+  termsByCategory: (categoryId: string, page = 1) => `terms:cat:${categoryId}:page:${page}`,
+  termSearch: (query: string, limit = 20) => `search:${query}:${limit}`,
   categoryTree: () => 'categories:tree',
   userFavorites: (userId: string) => `user:${userId}:favorites`,
   termSections: (termId: string) => `term:${termId}:sections`,
   analytics: (type: string, date: string) => `analytics:${type}:${date}`,
-  popularTerms: (timeframe: string = 'week') => `popular:${timeframe}`,
-  recentTerms: (limit: number = 10) => `recent:${limit}`,
-  searchOptimized: (query: string, categoryId?: string, page: number = 1) =>
+  popularTerms: (timeframe = 'week') => `popular:${timeframe}`,
+  recentTerms: (limit = 10) => `recent:${limit}`,
+  searchOptimized: (query: string, categoryId?: string, page = 1) =>
     `search-opt:${query}:${categoryId || 'all'}:${page}`,
   categoriesPaginated: (page: number, limit: number, fields: string) =>
     `categories:page:${page}:limit:${limit}:fields:${fields}`,
@@ -379,11 +379,11 @@ export const CacheWarming = {
       const fieldList = fields.split(',');
       const selectObj: any = {};
 
-      if (fieldList.includes('id')) selectObj.id = terms.id;
-      if (fieldList.includes('name')) selectObj.name = terms.name;
-      if (fieldList.includes('shortDefinition')) selectObj.shortDefinition = terms.shortDefinition;
-      if (fieldList.includes('viewCount')) selectObj.viewCount = terms.viewCount;
-      if (fieldList.includes('category')) selectObj.category = categories.name;
+      if (fieldList.includes('id')) {selectObj.id = terms.id;}
+      if (fieldList.includes('name')) {selectObj.name = terms.name;}
+      if (fieldList.includes('shortDefinition')) {selectObj.shortDefinition = terms.shortDefinition;}
+      if (fieldList.includes('viewCount')) {selectObj.viewCount = terms.viewCount;}
+      if (fieldList.includes('category')) {selectObj.category = categories.name;}
 
       const result = await db
         .select(selectObj)
@@ -464,7 +464,7 @@ setInterval(
 setInterval(
   () => {
     if (process.env.NODE_ENV === 'production') {
-      CacheWarming.warmAll().catch((error) => {
+      CacheWarming.warmAll().catch(error => {
         console.error('Cache warming failed:', error);
       });
     }
@@ -475,7 +475,7 @@ setInterval(
 // Initial cache warming on startup (delayed to allow app to fully initialize)
 setTimeout(() => {
   if (process.env.NODE_ENV === 'production') {
-    CacheWarming.warmAll().catch((error) => {
+    CacheWarming.warmAll().catch(error => {
       console.error('Initial cache warming failed:', error);
     });
   }

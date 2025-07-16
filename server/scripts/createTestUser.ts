@@ -85,7 +85,7 @@ async function createTestUsers() {
 if (import.meta.url === `file://${process.argv[1]}`) {
   createTestUsers()
     .then(() => process.exit(0))
-    .catch((error) => {
+    .catch(error => {
       console.error('Script failed:', error);
       process.exit(1);
     });

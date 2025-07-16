@@ -198,7 +198,7 @@ describe('AISemanticSearch', () => {
     // Simulate slow response
     mockFetch.mockImplementationOnce(
       () =>
-        new Promise((resolve) =>
+        new Promise(resolve =>
           setTimeout(
             () =>
               resolve({
@@ -259,7 +259,7 @@ describe('AISemanticSearch', () => {
   it('filters results by category when specified', async () => {
     const filteredResults = {
       ...mockSearchResults,
-      results: mockSearchResults.results.filter((r) => r.category === 'Deep Learning'),
+      results: mockSearchResults.results.filter(r => r.category === 'Deep Learning'),
     };
 
     mockFetch.mockResolvedValueOnce({

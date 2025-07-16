@@ -171,18 +171,18 @@ app.use(responseLoggingMiddleware);
     try {
       const { createSecureServer } = await import('node:http2');
       const fs = await import('node:fs');
-      
+
       // Check if SSL certificates exist for HTTP/2
       const sslKeyPath = process.env.SSL_KEY_PATH;
       const sslCertPath = process.env.SSL_CERT_PATH;
-      
+
       if (sslKeyPath && sslCertPath && fs.existsSync(sslKeyPath) && fs.existsSync(sslCertPath)) {
         const options = {
           key: fs.readFileSync(sslKeyPath),
           cert: fs.readFileSync(sslCertPath),
-          allowHTTP1: true // Enable HTTP/1.1 fallback
+          allowHTTP1: true, // Enable HTTP/1.1 fallback
         };
-        
+
         server = createSecureServer(options, app);
         logger.info('✅ HTTP/2 server with TLS enabled');
       } else {
@@ -190,7 +190,9 @@ app.use(responseLoggingMiddleware);
         const { createServer } = await import('node:http');
         server = createServer(app);
         logger.warn('⚠️ SSL certificates not found, falling back to HTTP/1.1');
-        logger.info('💡 To enable HTTP/2, set SSL_KEY_PATH and SSL_CERT_PATH environment variables');
+        logger.info(
+          '💡 To enable HTTP/2, set SSL_KEY_PATH and SSL_CERT_PATH environment variables'
+        );
       }
     } catch (error) {
       // Fallback to HTTP/1.1 if HTTP/2 setup fails
@@ -231,7 +233,9 @@ app.use(responseLoggingMiddleware);
       process.exit(1);
     }
   } else {
-    logger.info('🔧 Development mode: Backend serves API only, frontend runs on separate Vite server');
+    logger.info(
+      '🔧 Development mode: Backend serves API only, frontend runs on separate Vite server'
+    );
   }
 
   // Add logging error handler
@@ -278,7 +282,7 @@ app.use(responseLoggingMiddleware);
   // Setup graceful shutdown
   gracefulShutdown(server);
 
-  server.on('error', (err) => {
+  server.on('error', err => {
     logger.error('❌ Server error', { error: err.message, stack: err.stack });
   });
 

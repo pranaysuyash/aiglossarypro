@@ -41,13 +41,13 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
     const handleOnline = () => {
       setIsOnline(true);
       setIsVisible(false);
-      
+
       toast({
         title: '🌐 Back Online!',
         description: 'Syncing your progress...',
         duration: 3000,
       });
-      
+
       // Auto-sync when coming back online
       handleSync();
     };
@@ -55,10 +55,10 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
     const handleOffline = () => {
       setIsOnline(false);
       setIsVisible(true);
-      
+
       toast({
-        title: '📱 You\'re Offline',
-        description: 'Don\'t worry - your saved terms are still available!',
+        title: "📱 You're Offline",
+        description: "Don't worry - your saved terms are still available!",
         duration: 5000,
       });
     };
@@ -92,7 +92,7 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
       if (cached) {
         setCachedTerms(JSON.parse(cached));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load cached terms:', error);
     }
   };
@@ -103,7 +103,7 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
       if (queue) {
         setSyncQueue(JSON.parse(queue));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load sync queue:', error);
     }
   };
@@ -147,11 +147,11 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
       });
 
       onSync?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error('Sync failed:', error);
       toast({
         title: 'Sync Failed',
-        description: 'Some changes couldn\'t be synced. Will retry automatically.',
+        description: "Some changes couldn't be synced. Will retry automatically.",
         variant: 'destructive',
       });
     } finally {
@@ -162,7 +162,7 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
   const processSyncItem = async (item: SyncQueueItem) => {
     // Simulate API calls to sync data
     console.log('Syncing item:', item);
-    
+
     switch (item.type) {
       case 'favorite':
         // Sync favorite status
@@ -184,15 +184,15 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
   };
 
   const formatLastSync = () => {
-    if (!lastSyncTime) return 'Never';
-    
+    if (!lastSyncTime) {return 'Never';}
+
     const syncDate = new Date(lastSyncTime);
     const now = new Date();
     const diffMinutes = Math.floor((now.getTime() - syncDate.getTime()) / (1000 * 60));
-    
-    if (diffMinutes < 1) return 'Just now';
-    if (diffMinutes < 60) return `${diffMinutes}m ago`;
-    if (diffMinutes < 1440) return `${Math.floor(diffMinutes / 60)}h ago`;
+
+    if (diffMinutes < 1) {return 'Just now';}
+    if (diffMinutes < 60) {return `${diffMinutes}m ago`;}
+    if (diffMinutes < 1440) {return `${Math.floor(diffMinutes / 60)}h ago`;}
     return syncDate.toLocaleDateString();
   };
 
@@ -203,16 +203,12 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
         <Badge
           variant={isOnline ? 'default' : 'destructive'}
           className={`transition-all duration-300 ${
-            isOnline 
-              ? 'bg-green-500 hover:bg-green-600 text-white' 
+            isOnline
+              ? 'bg-green-500 hover:bg-green-600 text-white'
               : 'bg-red-500 hover:bg-red-600 text-white animate-pulse'
           }`}
         >
-          {isOnline ? (
-            <Wifi className="w-3 h-3 mr-1" />
-          ) : (
-            <WifiOff className="w-3 h-3 mr-1" />
-          )}
+          {isOnline ? <Wifi className="w-3 h-3 mr-1" /> : <WifiOff className="w-3 h-3 mr-1" />}
           {isOnline ? 'Online' : 'Offline'}
         </Badge>
       </div>
@@ -233,14 +229,13 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
                   <div>
                     <div className="font-medium">You're offline</div>
                     <div className="text-sm opacity-90">
-                      {cachedTerms.length > 0 
+                      {cachedTerms.length > 0
                         ? `${cachedTerms.length} terms available offline`
-                        : 'Limited functionality available'
-                      }
+                        : 'Limited functionality available'}
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center space-x-2">
                   {syncQueue.length > 0 && (
                     <Badge variant="secondary" className="bg-white/20 text-white">
@@ -275,16 +270,14 @@ export function OfflineStatus({ onSync, showSyncButton = true }: OfflineStatusPr
                 <RefreshCw className="w-4 h-4 mr-2" />
                 Sync Required
               </CardTitle>
-              <CardDescription>
-                {syncQueue.length} changes waiting to sync
-              </CardDescription>
+              <CardDescription>{syncQueue.length} changes waiting to sync</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 <div className="text-xs text-gray-600 dark:text-gray-400">
                   Last sync: {formatLastSync()}
                 </div>
-                
+
                 {showSyncButton && (
                   <Button
                     onClick={handleSync}
@@ -345,7 +338,7 @@ export function useOfflineData() {
       if (cached) {
         setCachedTerms(JSON.parse(cached));
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to load cached terms:', error);
     }
   };
@@ -356,7 +349,7 @@ export function useOfflineData() {
       const recentTerms = terms.slice(0, 30);
       localStorage.setItem('cached_terms', JSON.stringify(recentTerms));
       setCachedTerms(recentTerms);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to cache terms:', error);
     }
   };
@@ -369,10 +362,10 @@ export function useOfflineData() {
         id: crypto.randomUUID(),
         timestamp: new Date().toISOString(),
       };
-      
+
       queue.push(newItem);
       localStorage.setItem('sync_queue', JSON.stringify(queue));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to add to sync queue:', error);
     }
   };

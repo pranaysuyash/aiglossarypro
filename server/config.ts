@@ -120,7 +120,7 @@ function validateEnvironment(): EnvironmentConfig {
 
   if (errors.length > 0) {
     console.error('Environment validation failed:');
-    errors.forEach((error) => console.error(`  - ${error}`));
+    errors.forEach(error => console.error(`  - ${error}`));
     throw new Error(`Environment validation failed: ${errors.join(', ')}`);
   }
 
@@ -158,7 +158,7 @@ export function getRequiredEnvVar(name: string): string {
   return value;
 }
 
-export function getOptionalEnvVar(name: string, defaultValue: string = ''): string {
+export function getOptionalEnvVar(name: string, defaultValue = ''): string {
   return process.env[name] || defaultValue;
 }
 
@@ -216,8 +216,8 @@ export function getServerConfig() {
 
 // Security utility to redact sensitive information from logs
 function redactSensitiveInfo(value: string): string {
-  if (!value) return 'Not set';
-  if (value.length <= 8) return '***';
+  if (!value) {return 'Not set';}
+  if (value.length <= 8) {return '***';}
   return `${value.substring(0, 4)}${'*'.repeat(value.length - 8)}${value.substring(value.length - 4)}`;
 }
 
@@ -252,7 +252,7 @@ export function logConfigStatus() {
 
 // Security helper to check if any sensitive data might be logged
 export function sanitizeLogData(data: any): any {
-  if (typeof data !== 'object' || data === null) return data;
+  if (typeof data !== 'object' || data === null) {return data;}
 
   const sensitiveKeys = [
     'password',
@@ -271,7 +271,7 @@ export function sanitizeLogData(data: any): any {
 
   for (const key of Object.keys(sanitized)) {
     const lowerKey = key.toLowerCase();
-    if (sensitiveKeys.some((sensitive) => lowerKey.includes(sensitive))) {
+    if (sensitiveKeys.some(sensitive => lowerKey.includes(sensitive))) {
       sanitized[key] = redactSensitiveInfo(String(sanitized[key] || ''));
     } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
       sanitized[key] = sanitizeLogData(sanitized[key]);

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { useAuth } from './useAuth';
 import { useToast } from './use-toast';
+import { useAuth } from './useAuth';
 
 interface AdminAuthState {
   isAdmin: boolean;
@@ -39,7 +39,7 @@ export function useAdminAuth() {
       try {
         const response = await fetch('/api/admin/health', {
           headers: {
-            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+            Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
           },
         });
 
@@ -50,7 +50,7 @@ export function useAdminAuth() {
             error: 'Authentication expired. Please log in again.',
             isAuthorized: false,
           });
-          
+
           toast({
             title: 'Authentication Required',
             description: 'Please log in to access admin features',
@@ -66,7 +66,7 @@ export function useAdminAuth() {
             error: 'Admin access required',
             isAuthorized: false,
           });
-          
+
           toast({
             title: 'Access Denied',
             description: 'You do not have admin privileges',
@@ -93,7 +93,7 @@ export function useAdminAuth() {
           error: 'Failed to verify admin access',
           isAuthorized: false,
         });
-        
+
         toast({
           title: 'Auth Check Failed',
           description: 'Unable to verify admin access. Please try again.',

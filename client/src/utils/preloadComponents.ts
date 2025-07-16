@@ -40,7 +40,7 @@ export async function preloadComponent(key: string): Promise<void> {
 
 // Preload multiple components
 export async function preloadComponents(keys: string[]): Promise<void> {
-  const promises = keys.map((key) => preloadComponent(key));
+  const promises = keys.map(key => preloadComponent(key));
   await Promise.allSettled(promises);
 }
 
@@ -96,8 +96,8 @@ export function preloadOnIntersection(
 ): void {
   if ('IntersectionObserver' in window) {
     const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
+      entries => {
+        entries.forEach(entry => {
           if (entry.isIntersecting) {
             preloadComponent(componentKey);
             observer.unobserve(element);

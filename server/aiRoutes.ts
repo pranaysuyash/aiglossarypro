@@ -632,7 +632,7 @@ export function registerAIRoutes(app: Express): void {
             },
             {} as Record<string, any>
           ),
-          timeline: timeline.map((item) => ({
+          timeline: timeline.map(item => ({
             date: item.date,
             requests: Number(item.requests),
             cost: Number(item.cost || 0),

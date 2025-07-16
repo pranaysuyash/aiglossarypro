@@ -45,24 +45,24 @@ export default function AnalyticsDashboard() {
 
   // Prepare chart data
   const prepareUserActivityData = () => {
-    if (!analytics?.userActivity) return [];
-    return analytics.userActivity.map((item) => ({
+    if (!analytics?.userActivity) {return [];}
+    return analytics.userActivity.map(item => ({
       date: item.date,
       count: item.count,
     }));
   };
 
   const prepareTopTermsData = () => {
-    if (!analytics?.topTerms) return [];
-    return analytics.topTerms.map((term) => ({
+    if (!analytics?.topTerms) {return [];}
+    return analytics.topTerms.map(term => ({
       name: term.name,
       views: term.views,
     }));
   };
 
   const prepareCategoryDistributionData = () => {
-    if (!analytics?.categoriesDistribution) return [];
-    return analytics.categoriesDistribution.map((cat) => ({
+    if (!analytics?.categoriesDistribution) {return [];}
+    return analytics.categoriesDistribution.map(cat => ({
       name: cat.name,
       count: cat.count,
     }));
@@ -104,7 +104,7 @@ export default function AnalyticsDashboard() {
 
       {isLoading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          {[1, 2, 3, 4].map((i) => (
+          {[1, 2, 3, 4].map(i => (
             <Card key={i} className="animate-pulse">
               <CardHeader className="pb-2">
                 <div className="h-5 bg-gray-200 dark:bg-gray-700 rounded w-1/2 mb-2"></div>

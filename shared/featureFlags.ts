@@ -1,6 +1,6 @@
 /**
  * Feature Flags Configuration
- * 
+ *
  * Controls which features are enabled/disabled for different environments
  * and launch phases.
  */
@@ -14,7 +14,7 @@ export interface FeatureFlags {
   papers: boolean;
   sites: boolean;
   resources: boolean;
-  
+
   // Core features - enabled for initial launch
   terms: boolean;
   categories: boolean;
@@ -22,12 +22,12 @@ export interface FeatureFlags {
   codeExamples: boolean;
   search: boolean;
   favorites: boolean;
-  
+
   // Premium features
   advancedSearch: boolean;
   bulkExport: boolean;
   apiAccess: boolean;
-  
+
   // Admin features
   adminPanel: boolean;
   contentManagement: boolean;
@@ -45,7 +45,7 @@ export const defaultFeatureFlags: FeatureFlags = {
   papers: false,
   sites: false,
   resources: false,
-  
+
   // Core features - ENABLED for initial launch
   terms: true,
   categories: true,
@@ -53,12 +53,12 @@ export const defaultFeatureFlags: FeatureFlags = {
   codeExamples: true,
   search: true,
   favorites: true,
-  
+
   // Premium features - ENABLED
   advancedSearch: true,
   bulkExport: true,
   apiAccess: false, // May be enabled later
-  
+
   // Admin features - ENABLED
   adminPanel: true,
   contentManagement: true,
@@ -92,15 +92,15 @@ export const productionFeatureFlags: Partial<FeatureFlags> = {
  */
 export function getFeatureFlags(): FeatureFlags {
   const env = process.env.NODE_ENV || 'development';
-  
+
   let flags = { ...defaultFeatureFlags };
-  
+
   if (env === 'development') {
     flags = { ...flags, ...developmentFeatureFlags };
   } else if (env === 'production') {
     flags = { ...flags, ...productionFeatureFlags };
   }
-  
+
   // Allow environment variable overrides
   Object.keys(flags).forEach(key => {
     const envKey = `FEATURE_${key.toUpperCase()}`;
@@ -109,7 +109,7 @@ export function getFeatureFlags(): FeatureFlags {
       flags[key as keyof FeatureFlags] = envValue === 'true';
     }
   });
-  
+
   return flags;
 }
 
@@ -126,9 +126,9 @@ export function isFeatureEnabled(feature: keyof FeatureFlags): boolean {
 export function requireFeature(feature: keyof FeatureFlags) {
   return (req: any, res: any, next: any) => {
     if (!isFeatureEnabled(feature)) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         error: 'Feature not available',
-        message: `The ${feature} feature is not enabled in this environment.`
+        message: `The ${feature} feature is not enabled in this environment.`,
       });
     }
     next();

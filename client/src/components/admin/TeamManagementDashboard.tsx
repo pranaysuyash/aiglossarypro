@@ -1,14 +1,32 @@
-import { Calendar, CheckCircle, Crown, Mail, MoreVertical, Plus, Settings, Shield, Trash2, UserPlus, Users, XCircle } from 'lucide-react';
+import {
+  Calendar,
+  CheckCircle,
+  Crown,
+  Mail,
+  MoreVertical,
+  Plus,
+  Settings,
+  Shield,
+  Trash2,
+  UserPlus,
+  Users,
+  XCircle,
+} from 'lucide-react';
 import { useState } from 'react';
+import { useToast } from '../../hooks/use-toast';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/card';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '../ui/dropdown-menu';
 import { Input } from '../ui/input';
 import { Label } from '../ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../ui/table';
-import { useToast } from '../../hooks/use-toast';
 
 interface TeamMember {
   id: string;
@@ -130,7 +148,11 @@ export function TeamManagementDashboard() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'active':
-        return <Badge variant="default" className="bg-green-100 text-green-800">Active</Badge>;
+        return (
+          <Badge variant="default" className="bg-green-100 text-green-800">
+            Active
+          </Badge>
+        );
       case 'pending':
         return <Badge variant="secondary">Pending</Badge>;
       case 'suspended':
@@ -258,13 +280,16 @@ export function TeamManagementDashboard() {
                     type="email"
                     placeholder="member@company.com"
                     value={newInviteEmail}
-                    onChange={(e) => setNewInviteEmail(e.target.value)}
+                    onChange={e => setNewInviteEmail(e.target.value)}
                   />
                 </div>
 
                 <div className="space-y-2">
                   <Label htmlFor="invite-role">Role</Label>
-                  <Select value={newInviteRole} onValueChange={(value: 'admin' | 'member') => setNewInviteRole(value)}>
+                  <Select
+                    value={newInviteRole}
+                    onValueChange={(value: 'admin' | 'member') => setNewInviteRole(value)}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -289,9 +314,7 @@ export function TeamManagementDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Team Members</CardTitle>
-              <CardDescription>
-                Manage existing team members and their permissions
-              </CardDescription>
+              <CardDescription>Manage existing team members and their permissions</CardDescription>
             </CardHeader>
             <CardContent>
               <Table>
@@ -306,7 +329,7 @@ export function TeamManagementDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {teamMembers.map((member) => (
+                  {teamMembers.map(member => (
                     <TableRow key={member.id}>
                       <TableCell>
                         <div>
@@ -366,9 +389,7 @@ export function TeamManagementDashboard() {
         <Card>
           <CardHeader>
             <CardTitle>Pending Invitations</CardTitle>
-            <CardDescription>
-              Manage pending team invitations and resend if needed
-            </CardDescription>
+            <CardDescription>Manage pending team invitations and resend if needed</CardDescription>
           </CardHeader>
           <CardContent>
             {pendingInvites.length === 0 ? (
@@ -394,7 +415,7 @@ export function TeamManagementDashboard() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {pendingInvites.map((invite) => (
+                  {pendingInvites.map(invite => (
                     <TableRow key={invite.id}>
                       <TableCell className="font-medium">{invite.email}</TableCell>
                       <TableCell>
@@ -442,9 +463,7 @@ export function TeamManagementDashboard() {
           <Card>
             <CardHeader>
               <CardTitle>Team Settings</CardTitle>
-              <CardDescription>
-                Configure team-wide settings and permissions
-              </CardDescription>
+              <CardDescription>Configure team-wide settings and permissions</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="space-y-4">
@@ -485,9 +504,7 @@ export function TeamManagementDashboard() {
               </div>
 
               <div className="pt-4 border-t border-gray-200 dark:border-gray-800">
-                <Button>
-                  Save Settings
-                </Button>
+                <Button>Save Settings</Button>
               </div>
             </CardContent>
           </Card>

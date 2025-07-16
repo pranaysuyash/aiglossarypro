@@ -10,7 +10,6 @@ import {
   supportCannedResponses,
   supportMessages,
   supportTickets,
-  supportTicketHistory,
 } from '../db/support-schema';
 import { productionEmailService } from './productionEmailService';
 import { log } from '../utils/logger';

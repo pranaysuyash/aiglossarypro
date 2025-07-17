@@ -597,8 +597,10 @@ export function BulkTermEditor({ terms: initialTerms, onTermsUpdated }: Props) {
                               handleTermChange(term.id, 'verificationStatus', value)
                             }
                           >
-                            <SelectTrigger className="border-0 bg-transparent p-0 h-auto">
-                              <SelectValue />
+                            <SelectTrigger className={`border-0 bg-transparent p-0 h-auto font-medium`}>
+                              <Badge className={`${getStatusColor(term.verificationStatus)}`}>
+                                <SelectValue />
+                              </Badge>
                             </SelectTrigger>
                             <SelectContent>
                               {statuses.map(status => (

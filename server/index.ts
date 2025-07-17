@@ -73,7 +73,10 @@ import { log as logger } from './utils/logger';
 import { serveStatic, setupVite } from './vite';
 
 const app = express();
-const _wsInstance = expressWs(app);
+const wsInstance = expressWs(app);
+
+// Export app for testing
+export { app };
 
 // Sentry request handling (must be first)
 app.use(sentryRequestHandler());
@@ -183,7 +186,7 @@ app.use(responseLoggingMiddleware);
           allowHTTP1: true, // Enable HTTP/1.1 fallback
         };
 
-        server = createSecureServer(options, app);
+        server = createSecureServer(options, app as any);
         logger.info('✅ HTTP/2 server with TLS enabled');
       } else {
         // Fallback to HTTP/1.1 if no SSL certificates
@@ -198,7 +201,9 @@ app.use(responseLoggingMiddleware);
       // Fallback to HTTP/1.1 if HTTP/2 setup fails
       const { createServer } = await import('node:http');
       server = createServer(app);
-      logger.warn('⚠️ HTTP/2 setup failed, falling back to HTTP/1.1', { error: error.message });
+      logger.warn('⚠️ HTTP/2 setup failed, falling back to HTTP/1.1', {
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   } else {
     // Use HTTP/1.1 in development for better debugging
@@ -282,7 +287,7 @@ app.use(responseLoggingMiddleware);
   // Setup graceful shutdown
   gracefulShutdown(server);
 
-  server.on('error', err => {
+  server.on('error', (err: Error) => {
     logger.error('❌ Server error', { error: err.message, stack: err.stack });
   });
 

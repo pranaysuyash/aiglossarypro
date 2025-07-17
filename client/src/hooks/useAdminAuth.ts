@@ -105,9 +105,11 @@ export function useAdminAuth() {
     checkAdminStatus();
   }, [isAuthenticated, authLoading, toast]);
 
+  const { navigate } = useAuth();
+
   const redirectToLogin = () => {
     // Redirect to login page or show login modal
-    window.location.href = '/login';
+    navigate('/login');
   };
 
   const redirectToHome = () => {

@@ -7,18 +7,24 @@
 
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
-import { isAuthenticated } from '../../server/auth/firebaseAuth';
 import { features } from '../../server/config';
 import { app } from '../../server/index';
 import { requireAdmin } from '../../server/middleware/adminAuth';
 import { mockIsAuthenticated } from '../../server/middleware/dev/mockAuth';
+import { isAuthenticated } from '../../server/middleware/firebaseAuth';
 
 // Mock Express request/response for middleware testing
-const mockRequest = (overrides = {}) => ({
+const mockRequest = (overrides = {}): any => ({
   user: null,
   isAuthenticated: () => false,
   session: {},
   headers: {},
+  get: vi.fn(),
+  header: vi.fn(),
+  accepts: vi.fn(),
+  acceptsCharsets: vi.fn(),
+  acceptsEncodings: vi.fn(),
+  acceptsLanguages: vi.fn(),
   ...overrides,
 });
 
@@ -32,7 +38,7 @@ const mockResponse = () => {
   return res;
 };
 
-const _mockNext = vi.fn();
+// Removed unused _mockNext variable
 
 describe('Authentication System', () => {
   beforeAll(() => {

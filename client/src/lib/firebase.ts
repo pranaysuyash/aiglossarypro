@@ -154,7 +154,21 @@ export async function signOutUser() {
     if (!auth) {
       throw new Error('Firebase authentication is not initialized');
     }
+    
+    // Clear Firebase auth state completely
     await signOut(auth);
+    
+    // Clear any Firebase-related localStorage keys
+    const firebaseKeys = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && (key.startsWith('firebase:') || key.includes('firebase') || key.includes('authUser'))) {
+        firebaseKeys.push(key);
+      }
+    }
+    firebaseKeys.forEach(key => localStorage.removeItem(key));
+    
+    console.log('✅ Firebase signout and cleanup completed');
   } catch (error) {
     console.error('Error signing out:', error);
     throw error;

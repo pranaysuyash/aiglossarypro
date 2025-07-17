@@ -57,6 +57,8 @@ import { registerTrendingRoutes } from './trending';
 import { registerUserRoutes } from './user';
 import { registerUserProgressRoutes } from './user/progress';
 import { setupSupportRoutes } from './support';
+// Import enhanced 295-column routes
+import enhanced295Routes from './enhanced295Routes';
 
 /**
  * Main route registration function
@@ -179,6 +181,10 @@ export async function registerRoutes(app: Express): Promise<void> {
     registerEnhancedRoutes(app);
     registerEnhancedDemoRoutes(app);
     logger.info('✅ Enhanced routes registered');
+
+    // Register 295-column content generation routes
+    app.use('/api/enhanced-295', enhanced295Routes);
+    logger.info('✅ Enhanced 295-column content generation routes registered');
 
     // Register cache management routes
     app.use('/api/cache', cacheRoutes);

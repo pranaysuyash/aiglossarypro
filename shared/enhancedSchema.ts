@@ -413,6 +413,9 @@ export const sectionItems = pgTable(
     sectionId: integer('section_id')
       .notNull()
       .references(() => sections.id, { onDelete: 'cascade' }),
+    termId: uuid('term_id')
+      .references(() => enhancedTerms.id, { onDelete: 'cascade' }), // Link to specific term for 295-column structure
+    columnId: varchar('column_id', { length: 100 }), // ID from 295-column structure
     label: varchar('label', { length: 200 }).notNull(),
     content: text('content'),
     contentType: varchar('content_type', { length: 50 }).default('markdown'),
@@ -428,6 +431,7 @@ export const sectionItems = pgTable(
     processingPhase: varchar('processing_phase', { length: 20 }).default('generated'), // 'generated', 'evaluated', 'improved', 'final'
     promptVersion: varchar('prompt_version', { length: 20 }).default('v1.0'), // Track prompt template version
     generationCost: decimal('generation_cost', { precision: 10, scale: 6 }).default('0'), // Cost for generating this content
+    qualityScore: integer('quality_score').default(0), // Overall quality score for 295-column content
 
     createdAt: timestamp('created_at').defaultNow(),
     updatedAt: timestamp('updated_at').defaultNow(),
@@ -439,6 +443,9 @@ export const sectionItems = pgTable(
     verificationIdx: index('idx_section_items_verification').on(table.verificationStatus),
     evaluationScoreIdx: index('idx_section_items_evaluation_score').on(table.evaluationScore),
     processingPhaseIdx: index('idx_section_items_processing_phase').on(table.processingPhase),
+    termColumnIdx: index('idx_section_items_term_column').on(table.termId, table.columnId),
+    termIdIdx: index('idx_section_items_term_id').on(table.termId),
+    columnIdIdx: index('idx_section_items_column_id').on(table.columnId),
   })
 );
 

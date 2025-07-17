@@ -113,6 +113,12 @@ const categoryLabels = {
   other: 'Other',
 };
 
+interface AdminUser {
+  id: string;
+  name: string;
+  email: string;
+}
+
 export function AdminSupportCenter() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -129,6 +135,25 @@ export function AdminSupportCenter() {
   const [replyMessage, setReplyMessage] = useState('');
   const [isInternalNote, setIsInternalNote] = useState(false);
   const [showTicketDetail, setShowTicketDetail] = useState(false);
+
+  // Fetch admin users for assignment
+  const { data: adminUsers } = useQuery<AdminUser[]>({
+    queryKey: ['admin-users'],
+    queryFn: async () => {
+      const token = await getIdToken(user as any);
+      const response = await fetch('/api/admin/people', {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Failed to fetch admin users');
+      }
+      const result = await response.json();
+      return result.people;
+    },
+    enabled: !!user,
+  });
 
   // Fetch ticket statistics
   const { data: stats } = useQuery<TicketStats>({
@@ -537,6 +562,23 @@ export function AdminSupportCenter() {
                 </div>
                 
                 <div className="flex items-center space-x-2">
+                  <Select
+                    value={ticket.assignedTo || ''}
+                    onValueChange={(value: string) => handleAssignTicket(ticket.id, value)}
+                  >
+                    <SelectTrigger className="w-40">
+                      <SelectValue placeholder="Assign to..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="">Unassigned</SelectItem>
+                      {adminUsers?.map(admin => (
+                        <SelectItem key={admin.id} value={admin.id}>
+                          {admin.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+
                   <Select
                     value={ticket.status}
                     onValueChange={(value: string) => handleStatusChange(ticket.id, value)}

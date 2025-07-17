@@ -542,7 +542,7 @@ export function ColumnBatchOperationsDashboard() {
           <div className="flex items-center space-x-2">
             <Switch
               id="emergency-mode"
-              checked={emergencyMode}
+              checked={!!emergencyMode}
               onCheckedChange={setEmergencyMode}
             />
             <Label htmlFor="emergency-mode" className="text-sm">
@@ -552,7 +552,7 @@ export function ColumnBatchOperationsDashboard() {
 
           {/* Auto Refresh Toggle */}
           <div className="flex items-center space-x-2">
-            <Switch id="auto-refresh" checked={autoRefresh} onCheckedChange={setAutoRefresh} />
+            <Switch id="auto-refresh" checked={!!autoRefresh} onCheckedChange={setAutoRefresh} />
             <Label htmlFor="auto-refresh" className="text-sm">
               Auto Refresh
             </Label>
@@ -566,7 +566,18 @@ export function ColumnBatchOperationsDashboard() {
       </div>
 
       {/* System Metrics Dashboard */}
-      {metrics && (
+      {isLoadingMetrics ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <div className="h-8 bg-gray-200 rounded w-3/4 mb-2 animate-pulse"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2 animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      ) : metrics && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
             <CardContent className="p-4">
@@ -665,7 +676,12 @@ export function ColumnBatchOperationsDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              {operations && operations.length > 0 ? (
+              {isLoadingOperations ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  <RefreshCw className="w-12 h-12 mx-auto mb-4 animate-spin" />
+                  <p>Loading operations...</p>
+                </div>
+              ) : operations && operations.length > 0 ? (
                 <div className="space-y-4">
                   {operations.map(operation => (
                     <Card key={operation.operationId} className="border">
@@ -1015,7 +1031,7 @@ export function ColumnBatchOperationsDashboard() {
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="skip-existing"
-                        checked={batchConfig.skipExisting}
+                        checked={batchConfig.skipExisting ?? false}
                         onCheckedChange={checked =>
                           setBatchConfig(prev => ({
                             ...prev,

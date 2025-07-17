@@ -1,5 +1,5 @@
-node_modules
-dist
+node_modules/
+dist/
 .DS_Store
 server/public
 vite.config.ts.*
@@ -47,7 +47,8 @@ __pycache__/
 *.swo
 
 # OS files
-Thumbs.dbtemp/processed_*.json
+Thumbs.db
+temp/processed_*.json
 cache/
 temp/*.json
 
@@ -196,3 +197,41 @@ storybook-static
 checkpoint.json
 *.log
 server/config/secrets/
+
+# Added by Gemini
+test-outputs/
+visual-audit/
+visual-audit-quick/
+visual-audit-results/
+visual-audits/
+auth-test-results/
+complete-feature-test/
+comprehensive-audit/
+content-analysis/
+content-generation-reports/
+content-generation-tests/
+enhanced-test-results/
+firebase-audit/
+functional-audit/
+landing-audit-results/
+performance-analysis/
+performance-reports/
+quick-test/
+reports/
+uploads/
+ai_cache.json
+gemini-validation-summary.json
+user-flow-test-summary.json
+upgrade-flow-validation-summary.json
+actual-feature-test-results.json
+Screenshot*.png
+*.webp
+*.txt
+debug-*.js
+firebase-auth-error-*.png
+apikey-aiglossarypro.txt
+audit-*.png
+landing-page-*.png
+debug-login-page.png
+debug-terms-page.png
+auth-flow-final.png

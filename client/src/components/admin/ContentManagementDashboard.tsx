@@ -97,7 +97,7 @@ export function ContentManagementDashboard() {
   });
 
   // Fetch sections for selected term
-  const { data: termSections = [] } = useQuery({
+  const { data: termSections = [] } = useQuery({ // eslint-disable-line @typescript-eslint/no-unused-vars
     queryKey: ['term-sections', selectedTerm?.id],
     queryFn: async () => {
       if (!selectedTerm) {return [];}

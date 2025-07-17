@@ -238,8 +238,9 @@ export function registerFirebaseAuthRoutes(app: Express): void {
    * POST /api/auth/logout
    */
   app.post('/api/auth/logout', (_req: Request, res: Response) => {
-    // Clear auth cookie
+    // Clear auth cookies (all possible names)
     res.clearCookie('authToken');
+    res.clearCookie('auth_token');
     res.clearCookie('firebaseToken');
 
     // Set mock logout state for development

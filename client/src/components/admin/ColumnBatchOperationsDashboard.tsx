@@ -1018,7 +1018,7 @@ export function ColumnBatchOperationsDashboard() {
                     <div className="flex items-center space-x-2">
                       <Switch
                         id="quality-pipeline"
-                        checked={batchConfig.enableQualityPipeline}
+                        checked={batchConfig.enableQualityPipeline ?? false}
                         onCheckedChange={checked =>
                           setBatchConfig(prev => ({
                             ...prev,

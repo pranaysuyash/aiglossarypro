@@ -82,7 +82,7 @@ export function useAuth() {
       
       // Step 8: Force navigation to login page to prevent any auto-redirect
       navigate('/login');
-      window.location.reload(true);
+      window.location.reload();
       
       console.log('✅ Logout process completed successfully');
       

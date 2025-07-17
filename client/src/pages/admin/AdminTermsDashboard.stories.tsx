@@ -7,7 +7,7 @@ const queryClient = new QueryClient({
   },
 });
 
-import { AdminTermsDashboard } from './AdminTermsDashboard';
+import AdminTermsDashboard from './AdminTermsDashboard';
 
 const meta: Meta<typeof AdminTermsDashboard> = {
   title: 'Admin/AdminTermsDashboard',

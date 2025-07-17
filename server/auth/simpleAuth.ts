@@ -323,7 +323,10 @@ export function setupSimpleAuth(app: Express) {
 
   // Logout
   app.post('/api/auth/logout', (_req: Request, res: Response) => {
+    // Clear all possible auth cookies
     res.clearCookie('auth_token');
+    res.clearCookie('authToken');
+    res.clearCookie('firebaseToken');
     res.json({ success: true, message: 'Logged out successfully' });
   });
 

@@ -1,566 +1,226 @@
-/**
- * Error Monitoring and System Health Routes
- * Provides endpoints for monitoring application health and errors
- */
+import { Router } from 'express';
+import { monitoringService } from '../monitoring/monitoringService';
+import { log } from '../utils/logger';
 
-import fs from 'node:fs';
-import path from 'node:path';
-import { HeadBucketCommand, S3Client } from '@aws-sdk/client-s3';
-import type { Express, Request, Response } from 'express';
-import OpenAI from 'openai';
-import { enhancedStorage as storage } from '../enhancedStorage';
-import { requireAdmin } from '../middleware/adminAuth';
-import { ErrorCategory, errorLogger } from '../middleware/errorHandler';
-import { analyticsService } from '../services/analyticsService';
+const router = Router();
 
 /**
- * Health check helper functions
+ * Get current system health status
  */
-async function checkS3Health(): Promise<{
-  healthy: boolean;
-  message: string;
-  responseTime?: number;
-}> {
-  const start = Date.now();
-
+router.get('/health', async (req, res) => {
   try {
-    if (!process.env.AWS_S3_BUCKET_NAME || !process.env.AWS_REGION) {
-      return {
-        healthy: false,
-        message: 'S3 configuration missing (bucket name or region)',
-      };
-    }
+    const health = monitoringService.getHealthStatus();
+    const metrics = await monitoringService.getCurrentMetrics();
 
-    const s3Client = new S3Client({
-      region: process.env.AWS_REGION,
-      credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
+    res.json({
+      ...health,
+      timestamp: new Date(),
+      metrics: {
+        memory: metrics.memory,
+        api: metrics.api,
+        database: metrics.database,
       },
     });
-
-    // Test bucket access
-    await s3Client.send(
-      new HeadBucketCommand({
-        Bucket: process.env.AWS_S3_BUCKET_NAME,
-      })
-    );
-
-    const responseTime = Date.now() - start;
-    return {
-      healthy: true,
-      message: 'S3 bucket accessible',
-      responseTime,
-    };
   } catch (error) {
-    const responseTime = Date.now() - start;
-    return {
-      healthy: false,
-      message: `S3 health check failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-      responseTime,
-    };
+    log.error('Failed to get health status', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({ error: 'Failed to get health status' });
   }
-}
-
-async function checkOpenAIHealth(): Promise<{
-  healthy: boolean;
-  message: string;
-  responseTime?: number;
-}> {
-  const start = Date.now();
-
-  try {
-    if (!process.env.OPENAI_API_KEY) {
-      return {
-        healthy: false,
-        message: 'OpenAI API key not configured',
-      };
-    }
-
-    const openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY,
-    });
-
-    // Test with a minimal request to check API connectivity
-    await openai.models.list();
-
-    const responseTime = Date.now() - start;
-    return {
-      healthy: true,
-      message: 'OpenAI API accessible',
-      responseTime,
-    };
-  } catch (error) {
-    const responseTime = Date.now() - start;
-    let message = 'OpenAI API check failed';
-
-    if (error instanceof Error) {
-      if (error.message.includes('401')) {
-        message = 'OpenAI API key invalid or unauthorized';
-      } else if (error.message.includes('429')) {
-        message = 'OpenAI API rate limit exceeded';
-      } else if (error.message.includes('timeout')) {
-        message = 'OpenAI API timeout';
-      } else {
-        message = `OpenAI API error: ${error.message}`;
-      }
-    }
-
-    return {
-      healthy: false,
-      message,
-      responseTime,
-    };
-  }
-}
-
-export function registerMonitoringRoutes(app: Express): void {
-  /**
-   * Get system health status
-   * GET /api/monitoring/health?extended=true
-   */
-  app.get('/api/monitoring/health', async (req: Request, res: Response) => {
-    try {
-      const { extended } = req.query;
-      const includeExtended = extended === 'true';
-
-      const healthChecks = {
-        database: false,
-        filesystem: false,
-        memory: false,
-        uptime: process.uptime(),
-        timestamp: new Date().toISOString(),
-      };
-
-      const externalServices: Record<string, any> = {};
-      const responseTimes: Record<string, number> = {};
-
-      // Check database connectivity
-      try {
-        const dbStart = Date.now();
-        healthChecks.database = await storage.checkDatabaseHealth();
-        responseTimes.database = Date.now() - dbStart;
-      } catch (dbError) {
-        console.error('Database health check failed:', dbError);
-        responseTimes.database = -1;
-      }
-
-      // Check filesystem
-      try {
-        const fsStart = Date.now();
-        const logDir = path.join(process.cwd(), 'logs');
-        fs.accessSync(logDir, fs.constants.R_OK | fs.constants.W_OK);
-        healthChecks.filesystem = true;
-        responseTimes.filesystem = Date.now() - fsStart;
-      } catch (fsError) {
-        console.error('Filesystem health check failed:', fsError);
-        responseTimes.filesystem = -1;
-      }
-
-      // Check memory usage
-      const memUsage = process.memoryUsage();
-      const memUsageMB = {
-        rss: Math.round(memUsage.rss / 1024 / 1024),
-        heapTotal: Math.round(memUsage.heapTotal / 1024 / 1024),
-        heapUsed: Math.round(memUsage.heapUsed / 1024 / 1024),
-        external: Math.round(memUsage.external / 1024 / 1024),
-      };
-
-      // Consider memory healthy if heap usage is under 500MB
-      healthChecks.memory = memUsageMB.heapUsed < 500;
-
-      // Extended health checks (S3 and AI services)
-      if (includeExtended) {
-        // Check S3 connectivity
-        try {
-          const s3Health = await checkS3Health();
-          externalServices.s3 = s3Health;
-          if (s3Health.responseTime) {
-            responseTimes.s3 = s3Health.responseTime;
-          }
-        } catch (s3Error) {
-          console.error('S3 health check failed:', s3Error);
-          externalServices.s3 = {
-            healthy: false,
-            message: 'S3 health check error',
-          };
-        }
-
-        // Check OpenAI connectivity
-        try {
-          const openaiHealth = await checkOpenAIHealth();
-          externalServices.openai = openaiHealth;
-          if (openaiHealth.responseTime) {
-            responseTimes.openai = openaiHealth.responseTime;
-          }
-        } catch (aiError) {
-          console.error('OpenAI health check failed:', aiError);
-          externalServices.openai = {
-            healthy: false,
-            message: 'OpenAI health check error',
-          };
-        }
-      }
-
-      const coreHealth = healthChecks.database && healthChecks.filesystem && healthChecks.memory;
-
-      // Overall health includes external services if extended check
-      let overallHealth = coreHealth;
-      if (includeExtended && Object.keys(externalServices).length > 0) {
-        const externalHealthy = Object.values(externalServices).every(
-          (service: any) => service.healthy
-        );
-        overallHealth = coreHealth && externalHealthy;
-      }
-
-      const response: any = {
-        success: true,
-        healthy: overallHealth,
-        checks: healthChecks,
-        memory: memUsageMB,
-        responseTimes,
-        nodeVersion: process.version,
-        platform: process.platform,
-        environment: process.env.NODE_ENV || 'development',
-      };
-
-      if (includeExtended) {
-        response.externalServices = externalServices;
-        response.extendedCheck = true;
-      }
-
-      res.json(response);
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        healthy: false,
-        message: 'Health check failed',
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  });
-
-  /**
-   * Get external services health status (admin only)
-   * GET /api/monitoring/services
-   */
-  app.get('/api/monitoring/services', requireAdmin, async (_req: Request, res: Response) => {
-    try {
-      const services: Record<string, any> = {};
-      const responseTimes: Record<string, number> = {};
-
-      // Check all external services in parallel
-      const [s3Health, openaiHealth] = await Promise.allSettled([
-        checkS3Health(),
-        checkOpenAIHealth(),
-      ]);
-
-      // Process S3 results
-      if (s3Health.status === 'fulfilled') {
-        services.s3 = s3Health.value;
-        if (s3Health.value.responseTime) {
-          responseTimes.s3 = s3Health.value.responseTime;
-        }
-      } else {
-        services.s3 = {
-          healthy: false,
-          message: 'S3 health check failed to execute',
-        };
-      }
-
-      // Process OpenAI results
-      if (openaiHealth.status === 'fulfilled') {
-        services.openai = openaiHealth.value;
-        if (openaiHealth.value.responseTime) {
-          responseTimes.openai = openaiHealth.value.responseTime;
-        }
-      } else {
-        services.openai = {
-          healthy: false,
-          message: 'OpenAI health check failed to execute',
-        };
-      }
-
-      const allHealthy = Object.values(services).every((service: any) => service.healthy);
-
-      res.json({
-        success: true,
-        healthy: allHealthy,
-        services,
-        responseTimes,
-        timestamp: new Date().toISOString(),
-      });
-    } catch (error) {
-      res.status(500).json({
-        success: false,
-        healthy: false,
-        message: 'Services health check failed',
-        error: error instanceof Error ? error.message : 'Unknown error',
-      });
-    }
-  });
-
-  /**
-   * Get recent errors (admin only)
-   * GET /api/monitoring/errors?limit=50&category=DATABASE
-   */
-  app.get('/api/monitoring/errors', requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const { limit = 50, category } = req.query;
-      const limitNum = Math.min(parseInt(limit as string) || 50, 100);
-
-      let errors;
-      if (category && Object.values(ErrorCategory).includes(category as ErrorCategory)) {
-        errors = errorLogger.getErrorsByCategory(category as ErrorCategory, limitNum);
-      } else {
-        errors = errorLogger.getRecentErrors(limitNum);
-      }
-
-      const errorStats = errorLogger.getErrorStats();
-
-      res.json({
-        success: true,
-        data: {
-          errors,
-          stats: errorStats,
-          total: errors.length,
-          categories: Object.values(ErrorCategory),
-        },
-      });
-    } catch (error) {
-      console.error('Error fetching monitoring data:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch error data',
-      });
-    }
-  });
-
-  /**
-   * Get database performance metrics
-   * GET /api/monitoring/database
-   */
-  app.get('/api/monitoring/database', requireAdmin, async (_req: Request, res: Response) => {
-    try {
-      // Get comprehensive database metrics using enhanced storage
-      const metrics = await storage.getDatabaseMetrics();
-      const { tableStats, indexStats, connectionStats, queryPerformance } = metrics;
-
-      res.json({
-        success: true,
-        data: {
-          tableStats,
-          indexStats,
-          connectionStats,
-          queryPerformance,
-          timestamp: new Date().toISOString(),
-        },
-      });
-    } catch (error) {
-      console.error('Database monitoring error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch database metrics',
-      });
-    }
-  });
-
-  /**
-   * Get application metrics
-   * GET /api/monitoring/metrics
-   */
-  app.get('/api/monitoring/metrics', requireAdmin, async (_req: Request, res: Response) => {
-    try {
-      // Get term and category counts using storage layer
-      const contentMetrics = await storage.getContentMetrics();
-
-      const termCount = contentMetrics.totalTerms;
-      const categoryCount = contentMetrics.totalCategories;
-
-      // Get search metrics using enhanced storage
-      const searchMetrics = await storage.getSearchMetrics('week');
-
-      // Application metrics
-      const metrics = {
-        content: {
-          total_terms: termCount,
-          total_categories: categoryCount,
-        },
-        system: {
-          uptime_seconds: Math.floor(process.uptime()),
-          uptime_readable: formatUptime(process.uptime()),
-          memory_usage_mb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
-          cpu_usage: process.cpuUsage(),
-          node_version: process.version,
-          environment: process.env.NODE_ENV || 'development',
-        },
-        search: searchMetrics,
-        timestamp: new Date().toISOString(),
-      };
-
-      res.json({
-        success: true,
-        data: metrics,
-      });
-    } catch (error) {
-      console.error('Metrics error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to fetch application metrics',
-      });
-    }
-  });
-
-  /**
-   * Clear old error logs (admin only)
-   * DELETE /api/monitoring/errors?days=30
-   */
-  app.delete('/api/monitoring/errors', requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const { days = 30 } = req.query;
-      const daysNum = parseInt(days as string) || 30;
-
-      // Clear log files older than specified days
-      const logDir = path.join(process.cwd(), 'logs');
-      const cutoffDate = new Date();
-      cutoffDate.setDate(cutoffDate.getDate() - daysNum);
-
-      let deletedFiles = 0;
-
-      if (fs.existsSync(logDir)) {
-        const files = fs.readdirSync(logDir);
-
-        for (const file of files) {
-          if (file.startsWith('errors_') && file.endsWith('.log')) {
-            const filePath = path.join(logDir, file);
-            const stats = fs.statSync(filePath);
-
-            if (stats.mtime < cutoffDate) {
-              fs.unlinkSync(filePath);
-              deletedFiles++;
-            }
-          }
-        }
-      }
-
-      res.json({
-        success: true,
-        message: `Cleared ${deletedFiles} old log files`,
-        deleted_files: deletedFiles,
-        cutoff_date: cutoffDate.toISOString(),
-      });
-    } catch (error) {
-      console.error('Error clearing logs:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to clear old logs',
-      });
-    }
-  });
-
-  /**
-   * Get comprehensive analytics dashboard
-   * GET /api/monitoring/analytics/dashboard?timeframe=week
-   */
-  app.get(
-    '/api/monitoring/analytics/dashboard',
-    requireAdmin,
-    async (req: Request, res: Response) => {
-      try {
-        const timeframe = (req.query.timeframe as 'day' | 'week' | 'month' | 'year') || 'week';
-        const dashboardData = await analyticsService.getDashboardData(timeframe);
-
-        res.json({
-          success: true,
-          data: dashboardData,
-        });
-      } catch (error) {
-        errorLogger.logError(error as Error, req, ErrorCategory.API_ERROR, 'medium');
-        res.status(500).json({
-          success: false,
-          message: 'Failed to retrieve analytics dashboard',
-        });
-      }
-    }
-  );
-
-  /**
-   * Get search insights and optimization suggestions
-   * GET /api/monitoring/analytics/search-insights
-   */
-  app.get(
-    '/api/monitoring/analytics/search-insights',
-    requireAdmin,
-    async (req: Request, res: Response) => {
-      try {
-        const insights = await analyticsService.getSearchInsights();
-
-        res.json({
-          success: true,
-          data: insights,
-        });
-      } catch (error) {
-        errorLogger.logError(error as Error, req, ErrorCategory.API_ERROR, 'medium');
-        res.status(500).json({
-          success: false,
-          message: 'Failed to retrieve search insights',
-        });
-      }
-    }
-  );
-
-  /**
-   * Get real-time system metrics
-   * GET /api/monitoring/metrics/realtime
-   */
-  app.get('/api/monitoring/metrics/realtime', requireAdmin, async (req: Request, res: Response) => {
-    try {
-      const memoryUsage = process.memoryUsage();
-      const cpuUsage = process.cpuUsage();
-
-      const metrics = {
-        timestamp: new Date().toISOString(),
-        memory: {
-          heap_used_mb: Math.round(memoryUsage.heapUsed / 1024 / 1024),
-          heap_total_mb: Math.round(memoryUsage.heapTotal / 1024 / 1024),
-          external_mb: Math.round(memoryUsage.external / 1024 / 1024),
-          rss_mb: Math.round(memoryUsage.rss / 1024 / 1024),
-        },
-        cpu: {
-          user_ms: cpuUsage.user / 1000,
-          system_ms: cpuUsage.system / 1000,
-        },
-        uptime_seconds: process.uptime(),
-        pid: process.pid,
-        node_version: process.version,
-      };
-
-      res.json({
-        success: true,
-        data: metrics,
-      });
-    } catch (error) {
-      errorLogger.logError(error as Error, req, ErrorCategory.API_ERROR, 'medium');
-      res.status(500).json({
-        success: false,
-        message: 'Failed to retrieve real-time metrics',
-      });
-    }
-  });
-}
+});
 
 /**
- * Helper function to format uptime in readable format
+ * Get current system metrics
  */
-function formatUptime(seconds: number): string {
-  const days = Math.floor(seconds / 86400);
-  const hours = Math.floor((seconds % 86400) / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
+router.get('/metrics', async (req, res) => {
+  try {
+    const metrics = await monitoringService.getCurrentMetrics();
+    res.json(metrics);
+  } catch (error) {
+    log.error('Failed to get current metrics', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({ error: 'Failed to get metrics' });
+  }
+});
 
-  const parts = [];
-  if (days > 0) {parts.push(`${days}d`);}
-  if (hours > 0) {parts.push(`${hours}h`);}
-  if (minutes > 0) {parts.push(`${minutes}m`);}
+/**
+ * Get historical metrics
+ */
+router.get('/metrics/history', (req, res) => {
+  try {
+    const hours = parseInt(req.query.hours as string) || 24;
+    const metrics = monitoringService.getHistoricalMetrics(hours);
 
-  return parts.join(' ') || '< 1m';
+    res.json({
+      metrics,
+      period: `${hours} hours`,
+      count: metrics.length,
+    });
+  } catch (error) {
+    log.error('Failed to get historical metrics', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({ error: 'Failed to get historical metrics' });
+  }
+});
+
+/**
+ * Get active alerts
+ */
+router.get('/alerts', (req, res) => {
+  try {
+    const activeOnly = req.query.active === 'true';
+    const hours = parseInt(req.query.hours as string) || 24;
+
+    const alerts = activeOnly
+      ? monitoringService.getActiveAlerts()
+      : monitoringService.getAllAlerts(hours);
+
+    res.json({
+      alerts,
+      count: alerts.length,
+      active: alerts.filter(a => !a.resolved).length,
+    });
+  } catch (error) {
+    log.error('Failed to get alerts', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({ error: 'Failed to get alerts' });
+  }
+});
+
+/**
+ * Get monitoring dashboard data
+ */
+router.get('/dashboard', async (req, res) => {
+  try {
+    const health = monitoringService.getHealthStatus();
+    const currentMetrics = await monitoringService.getCurrentMetrics();
+    const historicalMetrics = monitoringService.getHistoricalMetrics(24);
+    const activeAlerts = monitoringService.getActiveAlerts();
+
+    // Calculate trends
+    const trends = calculateTrends(historicalMetrics);
+
+    res.json({
+      health,
+      currentMetrics,
+      trends,
+      alerts: {
+        active: activeAlerts,
+        count: activeAlerts.length,
+        bySeverity: activeAlerts.reduce((acc, alert) => {
+          acc[alert.config.severity] = (acc[alert.config.severity] || 0) + 1;
+          return acc;
+        }, {} as Record<string, number>),
+      },
+      uptime: process.uptime(),
+      timestamp: new Date(),
+    });
+  } catch (error) {
+    log.error('Failed to get dashboard data', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({ error: 'Failed to get dashboard data' });
+  }
+});
+
+/**
+ * Resolve an alert
+ */
+router.post('/alerts/:alertId/resolve', (req, res) => {
+  try {
+    const { alertId } = req.params;
+    const alerts = monitoringService.getAllAlerts();
+    const alert = alerts.find(a => a.id === alertId);
+
+    if (!alert) {
+      return res.status(404).json({ error: 'Alert not found' });
+    }
+
+    if (alert.resolved) {
+      return res.status(400).json({ error: 'Alert already resolved' });
+    }
+
+    alert.resolved = true;
+    alert.resolvedAt = new Date();
+
+    log.info('Alert resolved', { alertId, name: alert.config.name });
+
+    res.json({ message: 'Alert resolved', alert });
+  } catch (error) {
+    log.error('Failed to resolve alert', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({ error: 'Failed to resolve alert' });
+  }
+});
+
+/**
+ * Get performance metrics for specific endpoints
+ */
+router.get('/performance/:endpoint', (req, res) => {
+  try {
+    const { endpoint } = req.params;
+    const hours = parseInt(req.query.hours as string) || 24;
+
+    // In a real implementation, you'd filter metrics by endpoint
+    const metrics = monitoringService.getHistoricalMetrics(hours);
+
+    const performanceData = {
+      endpoint,
+      period: `${hours} hours`,
+      averageResponseTime: metrics.reduce((sum, m) => sum + m.api.averageResponseTime, 0) / metrics.length,
+      errorRate: metrics.reduce((sum, m) => sum + m.api.errorRate, 0) / metrics.length,
+      requestCount: metrics.reduce((sum, m) => sum + m.api.requestCount, 0),
+      trends: calculateAPITrends(metrics),
+    };
+
+    res.json(performanceData);
+  } catch (error) {
+    log.error('Failed to get performance metrics', { error: error instanceof Error ? error.message : error });
+    res.status(500).json({ error: 'Failed to get performance metrics' });
+  }
+});
+
+// Helper functions
+
+function calculateTrends(metrics: any[]) {
+  if (metrics.length < 2) {
+    return {
+      memory: 'stable',
+      api: 'stable',
+      errors: 'stable',
+    };
+  }
+
+  const recent = metrics.slice(-6); // Last 6 data points
+  const older = metrics.slice(-12, -6); // Previous 6 data points
+
+  const recentAvg = {
+    memory: recent.reduce((sum, m) => sum + m.memory.percentage, 0) / recent.length,
+    apiResponse: recent.reduce((sum, m) => sum + m.api.averageResponseTime, 0) / recent.length,
+    errors: recent.reduce((sum, m) => sum + m.errors.total, 0) / recent.length,
+  };
+
+  const olderAvg = {
+    memory: older.reduce((sum, m) => sum + m.memory.percentage, 0) / older.length,
+    apiResponse: older.reduce((sum, m) => sum + m.api.averageResponseTime, 0) / older.length,
+    errors: older.reduce((sum, m) => sum + m.errors.total, 0) / older.length,
+  };
+
+  return {
+    memory: getTrend(recentAvg.memory, olderAvg.memory),
+    api: getTrend(olderAvg.apiResponse, recentAvg.apiResponse), // Lower is better for response time
+    errors: getTrend(olderAvg.errors, recentAvg.errors), // Lower is better for errors
+  };
 }
+
+function calculateAPITrends(metrics: any[]) {
+  if (metrics.length < 2) return [];
+
+  return metrics.map((metric, index) => ({
+    timestamp: metric.timestamp,
+    responseTime: metric.api.averageResponseTime,
+    errorRate: metric.api.errorRate,
+    requestCount: metric.api.requestCount,
+  }));
+}
+
+function getTrend(current: number, previous: number): 'improving' | 'stable' | 'degrading' {
+  const change = ((current - previous) / previous) * 100;
+
+  if (Math.abs(change) < 5) return 'stable';
+  return change > 0 ? 'degrading' : 'improving';
+}
+
+export default router;

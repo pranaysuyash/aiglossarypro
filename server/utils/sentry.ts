@@ -177,21 +177,109 @@ export const captureDatabaseError = (
   });
 };
 
-// Performance monitoring
+// Performance monitoring with enhanced metrics
 export const startTransaction = (name: string, operation: string) => {
+  return Sentry.startTransaction({
+    name,
+    op: operation,
+    tags: {
+      environment: process.env.NODE_ENV || 'development',
+      service: 'ai-glossary-pro',
+    },
+  });
+};
+
+// Performance monitoring for API endpoints
+export const monitorAPIPerformance = (
+  name: string,
+  operation: () => Promise<any>,
+  context?: {
+    userId?: string;
+    endpoint?: string;
+    method?: string;
+  }
+) => {
   return Sentry.startSpan(
     {
       name,
-      op: operation,
+      op: 'api.request',
+      tags: {
+        endpoint: context?.endpoint,
+        method: context?.method,
+      },
     },
-    () => {
-      // Return a span-like object for compatibility
-      return {
-        setData: (key: string, value: Record<string, unknown> | null) =>
-          Sentry.setContext(key, value),
-        setTag: (key: string, value: string) => Sentry.setTag(key, value),
-        finish: () => {}, // No-op for compatibility
-      };
+    async (span) => {
+      const startTime = Date.now();
+
+      try {
+        const result = await operation();
+
+        const duration = Date.now() - startTime;
+        span?.setData('duration', duration);
+        span?.setData('success', true);
+
+        // Track slow operations
+        if (duration > 5000) {
+          Sentry.addBreadcrumb({
+            message: `Slow operation detected: ${name}`,
+            level: 'warning',
+            data: { duration, endpoint: context?.endpoint },
+          });
+        }
+
+        return result;
+      } catch (error) {
+        span?.setData('success', false);
+        span?.setData('error', error instanceof Error ? error.message : 'Unknown error');
+        throw error;
+      }
+    }
+  );
+};
+
+// Database query performance monitoring
+export const monitorDatabaseQuery = async (
+  queryName: string,
+  query: () => Promise<any>,
+  context?: {
+    table?: string;
+    operation?: string;
+  }
+) => {
+  return Sentry.startSpan(
+    {
+      name: `db.${queryName}`,
+      op: 'db.query',
+      tags: {
+        table: context?.table,
+        operation: context?.operation,
+      },
+    },
+    async (span) => {
+      const startTime = Date.now();
+
+      try {
+        const result = await query();
+        const duration = Date.now() - startTime;
+
+        span?.setData('duration', duration);
+        span?.setData('success', true);
+
+        // Alert on slow queries
+        if (duration > 2000) {
+          Sentry.addBreadcrumb({
+            message: `Slow database query: ${queryName}`,
+            level: 'warning',
+            data: { duration, table: context?.table },
+          });
+        }
+
+        return result;
+      } catch (error) {
+        span?.setData('success', false);
+        span?.setData('error', error instanceof Error ? error.message : 'Unknown error');
+        throw error;
+      }
     }
   );
 };

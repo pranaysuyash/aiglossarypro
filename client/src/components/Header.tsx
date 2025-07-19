@@ -194,15 +194,16 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
             </Link>
           </div>
 
-          {/* Search Bars for different screen sizes */}
-          <div className="hidden lg:flex flex-1 max-w-xl mx-8" data-testid="search-input">
-            <SearchBar onSearch={handleSearch} />
-          </div>
-          <div className="hidden md:flex lg:hidden flex-1 max-w-md mx-4">
-            <SearchBar onSearch={handleSearch} placeholder="Search..." />
-          </div>
-          <div className="hidden sm:flex md:hidden flex-1 max-w-sm mx-3">
-            <SearchBar onSearch={handleSearch} iconOnly />
+          {/* Search Bar - More prominent and visible on more screen sizes */}
+          <div className="hidden sm:flex flex-1 max-w-xl mx-4 lg:mx-8" data-testid="search-input">
+            <div className="relative w-full group">
+              <div className="absolute -inset-0.5 bg-gradient-to-r from-primary/20 to-accent/20 rounded-lg blur opacity-0 group-hover:opacity-100 transition duration-200"></div>
+              <SearchBar 
+                onSearch={handleSearch} 
+                className="relative w-full" 
+                placeholder="Search 10,000+ AI/ML terms..." 
+              />
+            </div>
           </div>
 
           {/* Right-side action icons */}
@@ -237,8 +238,8 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
               </Button>
             </Link>
 
-            {/* Premium Status or Upgrade Button */}
-            {user?.lifetimeAccess ? (
+            {/* Premium Status or Upgrade Button - Only show for authenticated users */}
+            {isAuthenticated && user?.lifetimeAccess && (
               <Badge
                 variant="secondary"
                 className="hidden xl:flex bg-gradient-to-r from-yellow-400 to-orange-500 text-white border-0 px-3 lg:px-4 py-1 lg:py-2 font-medium text-xs lg:text-sm"
@@ -247,54 +248,30 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                 <span className="hidden lg:inline">Premium</span>
                 <span className="lg:hidden">Pro</span>
               </Badge>
-            ) : (
-              <>
-                <Link href="/lifetime">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="hidden 2xl:flex font-medium px-3 py-2 text-xs"
-                  >
-                    Get Lifetime Access
-                  </Button>
-                </Link>
-                <Link href="/lifetime">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="hidden xl:flex 2xl:hidden font-medium px-2 py-2 text-xs"
-                  >
-                    Get Access
-                  </Button>
-                </Link>
-                <Link href="/lifetime">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="hidden lg:flex xl:hidden font-medium px-2 py-1 text-xs"
-                  >
-                    Upgrade
-                  </Button>
-                </Link>
-                <Link href="/lifetime">
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="hidden md:flex lg:hidden bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-medium px-1.5 py-1 text-xs"
-                  >
-                    Pro
-                  </Button>
-                </Link>
-              </>
+            )}
+            
+            {/* Upgrade Button - Only for authenticated free users */}
+            {isAuthenticated && !user?.lifetimeAccess && (
+              <Link href="/lifetime">
+                <Button
+                  variant="default"
+                  size="sm"
+                  className="hidden md:flex font-medium px-2 lg:px-3 py-1 lg:py-2 text-xs lg:text-sm bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
+                >
+                  <Crown className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-1.5" />
+                  <span className="hidden lg:inline">Upgrade to Premium</span>
+                  <span className="lg:hidden">Upgrade</span>
+                </Button>
+              </Link>
             )}
 
-            {/* Mobile Search Toggle - Show on mobile and small tablets */}
+            {/* Mobile Search Toggle - More prominent on mobile */}
             <button
               type="button"
-              className={`md:hidden h-10 w-10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center ${
+              className={`sm:hidden h-10 w-10 rounded-lg transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary flex items-center justify-center shadow-sm ${
                 mobileSearchOpen
-                  ? 'bg-primary text-primary-foreground'
-                  : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600'
+                  ? 'bg-primary text-primary-foreground shadow-md'
+                  : 'bg-primary/10 hover:bg-primary/20 border border-primary/20'
               }`}
               onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
               aria-label={mobileSearchOpen ? 'Close search' : 'Open search'}
@@ -304,14 +281,14 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                 className={`h-5 w-5 transition-transform duration-200 ${
                   mobileSearchOpen
                     ? 'text-primary-foreground scale-110'
-                    : 'text-gray-500 dark:text-gray-300'
+                    : 'text-primary'
                 }`}
               />
             </button>
 
-            {/* User Dropdown or Sign In Button - More responsive */}
+            {/* User Dropdown or Sign In Button - Show on desktop */}
             {isAuthenticated ? (
-              <div className="hidden lg:flex">
+              <div className="hidden md:flex">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -463,11 +440,10 @@ export default function Header({ className, onSearch, onLogout, onLogin }: Heade
                   handleLogin();
                   handleMobileMenuClose();
                 }}
-                className="hidden lg:flex text-xs px-2 py-1"
+                className="hidden md:flex text-xs lg:text-sm px-3 lg:px-4 py-1.5 lg:py-2 font-medium"
               >
-                <User className="mr-1 lg:mr-2 h-3 w-3 lg:h-4 lg:w-4" />
-                <span className="hidden xl:inline">Sign In</span>
-                <span className="xl:hidden">Login</span>
+                <User className="mr-1.5 lg:mr-2 h-3.5 w-3.5 lg:h-4 lg:w-4" />
+                <span>Sign In</span>
               </Button>
             )}
 

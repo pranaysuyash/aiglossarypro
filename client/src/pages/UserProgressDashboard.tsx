@@ -97,7 +97,7 @@ export default function UserProgressDashboard() {
             Please sign in to view your learning progress
           </p>
           <Button asChild>
-            <Link href="/auth/login">Sign In</Link>
+            <Link href="/login">Sign In</Link>
           </Button>
         </div>
       </div>

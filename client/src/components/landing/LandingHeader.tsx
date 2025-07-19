@@ -61,7 +61,7 @@ export function LandingHeader() {
           <div className="flex items-center space-x-3">
             {/* Desktop: Show both buttons */}
             <div className="hidden md:flex items-center space-x-3">
-              <Link href="/app">
+              <Link href="/login">
                 <Button variant="ghost" className="text-gray-600 hover:text-purple-600 px-4">
                   Sign In
                 </Button>

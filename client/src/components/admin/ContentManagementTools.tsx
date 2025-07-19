@@ -7,23 +7,7 @@
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
-  AlertCircle,
-  BarChart3,
-  Check,
-  Code,
-  Download,
-  Eye,
-  FileText,
-  Pause,
-  Play,
-  RefreshCw,
-  Settings,
-  Target,
-  TrendingUp,
-  Upload,
-  Users,
-  X,
-  Zap,
+  import { HardDriveDownload, HardDriveUpload, Play, Pause, Users, FileUp, FileDown, Server, Database, BrainCircuit } from 'lucide-react';
 } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
@@ -63,14 +47,8 @@ interface ContentValidationResult {
   qualityScore: number;
 }
 
-const ContentManagementTools: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'overview' | 'bulk-ops' | 'validation' | 'generation'>(
-    'overview'
-  );
-  const [bulkOperations, setBulkOperations] = useState<BulkOperation[]>([]);
-  const [validationResults, setValidationResults] = useState<ContentValidationResult[]>([]);
-
-  const queryClient = useQueryClient();
+export function ContentManagementTools() {
+  const { toast } = useToast();
 
   // Fetch content statistics
   const { data: contentStats, isLoading: statsLoading } = useQuery<ContentStats>({
@@ -143,7 +121,11 @@ const ContentManagementTools: React.FC = () => {
   };
 
   const handleValidateContent = (scope: 'all' | 'sample', sampleSize?: number) => {
-    validateContent.mutate({ scope, sampleSize });
+    const params: { scope: 'all' | 'sample'; sampleSize?: number } = { scope };
+    if (sampleSize) {
+      params.sampleSize = sampleSize;
+    }
+    validateContent.mutate(params);
   };
 
   const getOperationIcon = (type: string) => {

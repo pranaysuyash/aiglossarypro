@@ -80,7 +80,7 @@ export default function AnalyticsDashboard() {
             <div className="flex justify-center">
               <button
                 className="px-4 py-2 bg-primary text-white rounded-lg"
-                onClick={() => (window.location.href = '/api/login')}
+                onClick={() => (window.location.href = '/login')}
               >
                 Sign In
               </button>

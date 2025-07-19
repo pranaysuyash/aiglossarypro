@@ -59,13 +59,42 @@ export function useAuth() {
 
       // Step 5: Call backend logout endpoint
       try {
-        await fetch('/api/auth/logout', {
+        const response = await fetch('/api/auth/logout', {
           method: 'POST',
           credentials: 'include',
         });
-        console.log('✅ Backend logout completed');
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log('✅ Backend logout completed', data);
+          
+          // Handle client actions from server response
+          if (data.clientActions?.clearIndexedDB) {
+            for (const dbName of data.clientActions.clearIndexedDB) {
+              try {
+                await indexedDB.deleteDatabase(dbName);
+                console.log(`✅ Deleted IndexedDB: ${dbName}`);
+              } catch (e) {
+                console.warn(`⚠️ Failed to delete IndexedDB ${dbName}:`, e);
+              }
+            }
+          }
+        }
       } catch (backendError) {
         console.warn('⚠️ Backend logout error (continuing anyway):', backendError);
+      }
+      
+      // Step 5.5: Clear all Firebase-related IndexedDB databases
+      try {
+        const databases = await indexedDB.databases();
+        for (const db of databases) {
+          if (db.name && (db.name.includes('firebase') || db.name.includes('firebaseLocalStorageDb'))) {
+            await indexedDB.deleteDatabase(db.name);
+            console.log(`✅ Deleted Firebase IndexedDB: ${db.name}`);
+          }
+        }
+      } catch (e) {
+        console.warn('⚠️ Failed to clear Firebase IndexedDB:', e);
       }
 
       // Step 6: Clear ALL queries and invalidate auth
@@ -82,7 +111,11 @@ export function useAuth() {
       
       // Step 8: Force navigation to login page to prevent any auto-redirect
       navigate('/login');
-      window.location.reload();
+      
+      // Add a small delay before reload to ensure navigation completes
+      setTimeout(() => {
+        window.location.reload();
+      }, 100);
       
       console.log('✅ Logout process completed successfully');
       

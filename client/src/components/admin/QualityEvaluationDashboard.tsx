@@ -511,7 +511,12 @@ export function QualityEvaluationDashboard() {
           </p>
         </div>
         <div className="flex items-center space-x-4">
-          {analytics && (
+          {isLoadingAnalytics ? (
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading Analytics...
+            </div>
+          ) : analytics && (
             <div className="flex items-center space-x-6 text-sm">
               <div className="text-center">
                 <div className="font-bold text-2xl text-blue-600">
@@ -932,7 +937,12 @@ export function QualityEvaluationDashboard() {
                     />
 
                     <div className="space-y-2 max-h-96 overflow-y-auto">
-                      {samples?.slice(0, 10).map(sample => (
+                      {isLoadingSamples ? (
+                        <div className="text-center py-4 text-muted-foreground">
+                          <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+                          Loading samples...
+                        </div>
+                      ) : samples?.slice(0, 10).map(sample => (
                         <Card
                           key={sample.id}
                           className={`cursor-pointer transition-all hover:shadow-md ${
@@ -987,7 +997,12 @@ export function QualityEvaluationDashboard() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-3">
-                    {evaluations?.slice(0, 5).map(evaluation => (
+                    {isLoadingEvaluations ? (
+                      <div className="text-center py-4 text-muted-foreground">
+                        <Loader2 className="w-5 h-5 animate-spin mx-auto mb-2" />
+                        Loading evaluations...
+                      </div>
+                    ) : evaluations?.slice(0, 5).map(evaluation => (
                       <div
                         key={evaluation.id}
                         className="flex items-center justify-between p-2 bg-muted rounded"

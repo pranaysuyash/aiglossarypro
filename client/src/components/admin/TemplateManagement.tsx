@@ -253,14 +253,7 @@ export function TemplateManagement() {
     createTemplateMutation.mutate(formData);
   };
 
-  const _handleUpdateTemplate = () => {
-    if (!selectedTemplate) {return;}
-
-    updateTemplateMutation.mutate({
-      id: selectedTemplate.id,
-      ...formData,
-    });
-  };
+  
 
   const handleEditTemplate = (template: PromptTemplate) => {
     setSelectedTemplate(template);

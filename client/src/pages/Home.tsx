@@ -54,7 +54,7 @@ export default function Home() {
       <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
         <Sidebar />
 
-        <main className="flex-1">
+        <div className="flex-1">
           {/* Welcome Banner */}
           <div className="bg-gradient-to-r from-primary-500 to-primary-600 rounded-lg shadow-sm mb-6 p-4 sm:p-6 text-white">
             <h1 className="text-xl sm:text-2xl font-bold mb-2">AI/ML Glossary</h1>
@@ -242,7 +242,7 @@ export default function Home() {
               </div>
             </div>
           )}
-        </main>
+        </div>
       </div>
     </div>
   );

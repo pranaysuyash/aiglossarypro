@@ -40,6 +40,7 @@ export default function CookieConsentBanner({
 }: CookieConsentBannerProps = {}) {
   const [isVisible, setIsVisible] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const [consent, setConsent] = useState<CookieConsent>({
     essential: true, // Always true, cannot be disabled
     analytics: false,
@@ -47,6 +48,18 @@ export default function CookieConsentBanner({
     marketing: false,
     timestamp: Date.now(),
   });
+
+  // Check for mobile device
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Check if user has already given consent
   useEffect(() => {
@@ -136,6 +149,54 @@ export default function CookieConsentBanner({
 
   if (!isVisible) {return null;}
 
+  // Mobile compact view
+  if (isMobile && !showDetails) {
+    return (
+      <div
+        className={cn(
+          'fixed bottom-0 left-0 right-0 z-50 p-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 shadow-lg',
+          className
+        )}
+      >
+        <div className="flex items-center justify-between gap-2 px-2">
+          <div className="flex items-center gap-2 flex-1">
+            <Cookie className="h-4 w-4 text-amber-600 flex-shrink-0" />
+            <p className="text-xs text-gray-600 dark:text-gray-400">
+              We use cookies to enhance your experience
+            </p>
+          </div>
+          <div className="flex items-center gap-2 flex-shrink-0">
+            <Button 
+              onClick={handleAcceptAll} 
+              size="sm" 
+              className="text-xs px-2 py-1"
+            >
+              Accept
+            </Button>
+            <Button 
+              onClick={() => setShowDetails(true)} 
+              variant="ghost" 
+              size="sm"
+              className="text-xs px-2 py-1"
+            >
+              Options
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleAcceptEssential}
+              className="p-1"
+              aria-label="Close (Accept Essential Only)"
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Full desktop view
   return (
     <div
       className={cn(

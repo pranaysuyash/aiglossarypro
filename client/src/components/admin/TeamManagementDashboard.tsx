@@ -1,17 +1,4 @@
-import {
-  Calendar,
-  CheckCircle,
-  Crown,
-  Mail,
-  MoreVertical,
-  Plus,
-  Settings,
-  Shield,
-  Trash2,
-  UserPlus,
-  Users,
-  XCircle,
-} from 'lucide-react';
+import { AlertCircle, CheckCircle, Edit, Loader2, Mail, RefreshCw, Trash2, User, UserPlus, XCircle, } from 'lucide-react';
 import { useState } from 'react';
 import { useToast } from '../../hooks/use-toast';
 import { Badge } from '../ui/badge';
@@ -118,7 +105,11 @@ export function TeamManagementDashboard() {
     setNewInviteEmail('');
   };
 
-  const handleRemoveMember = (memberId: string, memberName: string) => {
+  const handleRemoveMember = async (member: TeamMember) => {
+    if (!member) {return;}
+    setIsConfirmRemoveOpen(true);
+    setMemberToRemove(member);
+  };
     // Would make API call here
     toast({
       title: 'Member Removed',
@@ -126,11 +117,12 @@ export function TeamManagementDashboard() {
     });
   };
 
-  const handleRevokeInvite = (inviteId: string, email: string) => {
+  const handleCancelInvite = async (invite: TeamInvite) => {
+    if (!invite) {return;}
     // Would make API call here
     toast({
       title: 'Invitation Revoked',
-      description: `Invitation to ${email} has been revoked.`,
+      description: `Invitation to ${invite.email} has been revoked.`,
     });
   };
 

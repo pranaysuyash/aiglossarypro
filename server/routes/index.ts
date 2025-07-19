@@ -34,7 +34,7 @@ import gumroadWebhookRoutes from './gumroadWebhooks';
 import { registerJobRoutes } from './jobs';
 import { registerLearningPathsRoutes } from './learningPaths';
 import { registerMediaRoutes } from './media';
-import { registerMonitoringRoutes } from './monitoring';
+import monitoringRoutes from './monitoring';
 // Import newsletter routes
 import newsletterRoutes from './newsletter';
 import { registerPersonalizationRoutes } from './personalization';
@@ -103,7 +103,7 @@ export async function registerRoutes(app: Express): Promise<void> {
     registerAdminRoutes(app);
 
     // Register monitoring routes (for error tracking and system health)
-    registerMonitoringRoutes(app);
+    app.use('/api/monitoring', monitoringRoutes);
     logger.info('✅ Monitoring routes registered');
 
     // Register feedback routes (for user feedback and suggestions)

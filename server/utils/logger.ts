@@ -1,12 +1,33 @@
 import { existsSync, mkdirSync } from 'node:fs';
 import path from 'node:path';
 import winston from 'winston';
+import DailyRotateFile from 'winston-daily-rotate-file';
 
 // Ensure logs directory exists
 const logsDir = path.join(process.cwd(), 'logs');
 if (!existsSync(logsDir)) {
   mkdirSync(logsDir, { recursive: true });
 }
+
+// Log levels with priorities
+const logLevels = {
+  error: 0,
+  warn: 1,
+  info: 2,
+  http: 3,
+  debug: 4,
+};
+
+// Colors for console output
+const logColors = {
+  error: 'red',
+  warn: 'yellow',
+  info: 'green',
+  http: 'magenta',
+  debug: 'blue',
+};
+
+winston.addColors(logColors);
 
 // Custom format for better readability
 const customFormat = winston.format.combine(
@@ -39,30 +60,63 @@ const logger = winston.createLogger({
     environment: process.env.NODE_ENV || 'development',
   },
   transports: [
-    // Error log file
-    new winston.transports.File({
-      filename: path.join(logsDir, 'error.log'),
+    // Error log file with daily rotation
+    new DailyRotateFile({
+      filename: path.join(logsDir, 'error-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
       level: 'error',
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-      format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+      maxSize: '20m',
+      maxFiles: '30d', // Keep for 30 days
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.errors({ stack: true }),
+        winston.format.json()
+      ),
+      auditFile: path.join(logsDir, 'error-audit.json'),
     }),
 
-    // Combined log file
-    new winston.transports.File({
-      filename: path.join(logsDir, 'combined.log'),
-      maxsize: 5242880, // 5MB
-      maxFiles: 5,
-      format: winston.format.combine(winston.format.timestamp(), winston.format.json()),
+    // Combined log file with daily rotation
+    new DailyRotateFile({
+      filename: path.join(logsDir, 'combined-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      maxSize: '20m',
+      maxFiles: '14d', // Keep for 14 days
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.errors({ stack: true }),
+        winston.format.json()
+      ),
+      auditFile: path.join(logsDir, 'combined-audit.json'),
+    }),
+
+    // HTTP access log with daily rotation
+    new DailyRotateFile({
+      filename: path.join(logsDir, 'access-%DATE%.log'),
+      datePattern: 'YYYY-MM-DD',
+      level: 'http',
+      maxSize: '20m',
+      maxFiles: '7d', // Keep for 7 days
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        winston.format.json()
+      ),
+      auditFile: path.join(logsDir, 'access-audit.json'),
     }),
 
     // Console output (only in development)
     ...(process.env.NODE_ENV !== 'production'
       ? [
-          new winston.transports.Console({
-            format: winston.format.combine(winston.format.colorize(), winston.format.simple()),
-          }),
-        ]
+        new winston.transports.Console({
+          format: winston.format.combine(
+            winston.format.colorize(),
+            winston.format.timestamp({ format: 'HH:mm:ss' }),
+            winston.format.printf(({ timestamp, level, message, ...meta }) => {
+              const metaStr = Object.keys(meta).length ? ` ${JSON.stringify(meta)}` : '';
+              return `${timestamp} [${level}]: ${message}${metaStr}`;
+            })
+          ),
+        }),
+      ]
       : []),
   ],
 

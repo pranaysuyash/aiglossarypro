@@ -1,174 +1,102 @@
-import { AlertTriangle, Home, Mail, RefreshCw } from 'lucide-react';
-import type React from 'react';
-import { Component, type ErrorInfo, type ReactNode } from 'react';
-import { ERROR_MESSAGES } from '@/constants/messages';
-import { cn } from '@/lib/utils';
-import type { BaseComponentProps } from '@/types/common-props';
-import { ErrorCategory, ErrorSeverity, handleErrorBoundary } from '@/utils/errorTracking';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Component, ErrorInfo, ReactNode } from 'react';
+import { createReactError, errorManager, type EnhancedError } from '../../../shared/errorManager';
 import { Button } from './ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
 
-interface Props extends BaseComponentProps {
+interface Props {
+  children: ReactNode;
   fallback?: ReactNode;
   onError?: (error: Error, errorInfo: ErrorInfo) => void;
+  errorBoundaryName?: string;
 }
 
 interface State {
   hasError: boolean;
   error?: Error;
-  errorId: string;
+  errorInfo?: ErrorInfo;
+  enhancedError?: EnhancedError;
 }
 
 export class ErrorBoundary extends Component<Props, State> {
-  private retryCount = 0;
-  private maxRetries = 3;
-
   constructor(props: Props) {
     super(props);
-    this.state = {
-      hasError: false,
-      errorId: '',
-    };
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(error: Error): State {
-    const errorId = Date.now().toString(36) + Math.random().toString(36).substr(2);
-    return {
-      hasError: true,
-      error,
-      errorId,
-    };
+    return { hasError: true, error };
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('Error caught by boundary:', error, errorInfo);
+    // Create enhanced error with React context
+    const enhancedError = createReactError(error, errorInfo, {
+      errorBoundary: this.props.errorBoundaryName || 'ErrorBoundary',
+      url: window.location.href,
+      userAgent: navigator.userAgent,
+    });
 
-    // Send to error tracking service
-    handleErrorBoundary(error, { componentStack: errorInfo.componentStack || '' });
+    this.setState({
+      errorInfo,
+      enhancedError
+    });
 
-    // Log to external service in production
-    if (process.env.NODE_ENV === 'production') {
-      // Send to error tracking service
-      this.logError(error, errorInfo);
-    }
+    // Handle through centralized error manager
+    errorManager.handleError(enhancedError);
 
+    // Call custom error handler if provided
     this.props.onError?.(error, errorInfo);
   }
 
-  private logError(error: Error, errorInfo: ErrorInfo) {
-    // Implementation for external error logging
-    // Could send to Sentry, LogRocket, etc.
-    const errorData = {
-      message: error?.message,
-      stack: error.stack,
-      componentStack: errorInfo.componentStack,
-      errorId: this.state.errorId,
-      timestamp: new Date().toISOString(),
-      userAgent: navigator.userAgent,
-      url: window.location.href,
-    };
-
-    // Example: send to analytics
-    console.log('Error logged:', errorData);
-  }
-
-  private handleRetry = () => {
-    if (this.retryCount < this.maxRetries) {
-      this.retryCount++;
-      this.setState({ hasError: false, error: undefined, errorId: '' });
-    }
+  handleRetry = () => {
+    this.setState({
+      hasError: false
+    });
   };
 
-  private handleReload = () => {
-    window.location.reload();
-  };
-
-  private handleGoHome = () => {
-    window.location.href = '/';
-  };
-
-  public render() {
+  render() {
     if (this.state.hasError) {
+      // Custom fallback UI
       if (this.props.fallback) {
         return this.props.fallback;
       }
 
-      const canRetry = this.retryCount < this.maxRetries;
-      const isNetworkError =
-        this.state.error?.message.includes('fetch') ||
-        this.state.error?.message.includes('network');
-
+      // Default error UI
       return (
-        <div
-          id={this.props.id}
-          className={cn('min-h-[400px] flex items-center justify-center p-4', this.props.className)}
-        >
+        <div className="min-h-[400px] flex items-center justify-center p-4">
           <Card className="w-full max-w-md">
             <CardHeader className="text-center">
-              <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-red-100 dark:bg-red-900/20 flex items-center justify-center">
-                <AlertTriangle className="h-6 w-6 text-red-600 dark:text-red-400" />
+              <div className="mx-auto w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <AlertTriangle className="w-6 h-6 text-red-600" />
               </div>
-              <CardTitle className="text-lg">
-                {isNetworkError ? ERROR_MESSAGES.NETWORK_ERROR.title : 'Something went wrong'}
-              </CardTitle>
+              <CardTitle className="text-red-900">Something went wrong</CardTitle>
+              <CardDescription>
+                {this.state.enhancedError?.userMessage || 'We encountered an unexpected error. Please try refreshing the page.'}
+              </CardDescription>
             </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">
-                {isNetworkError
-                  ? ERROR_MESSAGES.NETWORK_ERROR.description
-                  : 'An unexpected error occurred while loading this content.'}
-              </p>
+            <CardContent className="space-y-4">
+              <Button
+                onClick={this.handleRetry}
+                className="w-full"
+                variant="outline"
+              >
+                <RefreshCw className="w-4 h-4 mr-2" />
+                Try Again
+              </Button>
 
-              {process.env.NODE_ENV === 'development' && this.state.error && (
-                <details className="text-left">
-                  <summary className="cursor-pointer text-xs text-gray-500 hover:text-gray-700">
-                    Error Details (Dev Mode)
+              {import.meta.env.DEV && this.state.error && (
+                <details className="mt-4 p-3 bg-gray-50 rounded-md text-sm">
+                  <summary className="cursor-pointer font-medium text-gray-700 mb-2">
+                    Error Details (Development)
                   </summary>
-                  <pre className="mt-2 text-xs bg-gray-100 dark:bg-gray-800 p-2 rounded overflow-auto max-h-32">
-                    {this.state.error?.message}
+                  <pre className="whitespace-pre-wrap text-xs text-gray-600 overflow-auto">
+                    {this.state.error.toString()}
+                    {this.state.errorInfo?.componentStack}
                   </pre>
                 </details>
               )}
-
-              <div className="text-xs text-gray-500">Error ID: {this.state.errorId}</div>
-
-              <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                {canRetry && (
-                  <Button
-                    onClick={this.handleRetry}
-                    variant="outline"
-                    size="sm"
-                    className="flex items-center gap-2"
-                  >
-                    <RefreshCw className="h-4 w-4" />
-                    Try Again ({this.maxRetries - this.retryCount} left)
-                  </Button>
-                )}
-
-                <Button
-                  onClick={this.handleReload}
-                  variant="outline"
-                  size="sm"
-                  className="flex items-center gap-2"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                  Reload Page
-                </Button>
-
-                <Button onClick={this.handleGoHome} size="sm" className="flex items-center gap-2">
-                  <Home className="h-4 w-4" />
-                  Go Home
-                </Button>
-              </div>
-
-              <p className="text-xs text-muted-foreground">
-                {isNetworkError
-                  ? ERROR_MESSAGES.NETWORK_ERROR.action
-                  : 'If this problem persists, please contact support.'}
-              </p>
             </CardContent>
           </Card>
-          {this.props.children}
         </div>
       );
     }
@@ -177,16 +105,19 @@ export class ErrorBoundary extends Component<Props, State> {
   }
 }
 
-// Higher-order component for easier usage
-export function withErrorBoundary<P extends object>(
-  Component: React.ComponentType<P>,
-  errorFallback?: ReactNode
-) {
-  return function WrappedComponent(props: P) {
-    return (
-      <ErrorBoundary fallback={errorFallback}>
-        <Component {...props} />
-      </ErrorBoundary>
-    );
+// Hook version for functional components
+export function useErrorHandler() {
+  return (error: Error, errorInfo?: ErrorInfo) => {
+    if (errorInfo) {
+      // React error with component stack
+      const enhancedError = createReactError(error, errorInfo, {
+        url: window.location.href,
+        userAgent: navigator.userAgent,
+      });
+      errorManager.handleError(enhancedError);
+    } else {
+      // Generic error
+      errorManager.handleError(error);
+    }
   };
 }

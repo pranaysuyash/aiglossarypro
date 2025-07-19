@@ -44,6 +44,7 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import { StickyUrgencyBar, UrgencyBanner } from '@/components/UrgencyIndicators';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import { PageTransitionLoader } from '@/components/PageTransitionLoader';
 import { useAuth } from '@/hooks/useAuth';
 import Home from '@/pages/Home';
 import NotFound from '@/pages/not-found';
@@ -234,6 +235,7 @@ function Router() {
 
   return (
     <div className="flex flex-col min-h-screen">
+      <PageTransitionLoader />
       <SkipLinks />
 
       {/* Urgency banner - show on landing page only */}

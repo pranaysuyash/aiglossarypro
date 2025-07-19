@@ -1,27 +1,11 @@
-import {
-  AlertCircle,
-  Calendar,
-  CheckCircle,
-  Clock,
-  Download,
-  Eye,
-  Filter,
-  Mail,
-  MessageSquare,
-  Plus,
-  RefreshCw,
-  Search,
-  TrendingUp,
-  Users,
-  XCircle,
-} from 'lucide-react';
+import { AlertCircle, CheckCircle, Clock, Edit, FileText, Loader2, Mail, MessageSquare, Plus, RefreshCw, Search, Send, Settings, Tag, Trash2, User, XCircle, } from 'lucide-react';
 import type React from 'react';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Badge } from '../ui/badge';
 import { Button } from '../ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '../ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '../ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, } from '@/components/ui/dialog';
 import { Input } from '../ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
@@ -115,10 +99,10 @@ export const SupportDashboard: React.FC = () => {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [priorityFilter, setPriorityFilter] = useState<string>('all');
-  const [typeFilter, setTypeFilter] = useState<string>('all');
-  const [assignedFilter, setAssignedFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [priorityFilter, setPriorityFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
+  const [assignedFilter, _setAssignedFilter] = useState('all');
   const [selectedTicket, setSelectedTicket] = useState<SupportTicket | null>(null);
   const [showTicketDialog, setShowTicketDialog] = useState(false);
   const [newMessage, setNewMessage] = useState('');

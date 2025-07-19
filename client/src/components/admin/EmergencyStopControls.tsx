@@ -239,20 +239,7 @@ export const EmergencyStopControls: React.FC = () => {
     }
   };
 
-  const _getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'healthy':
-        return <CheckCircle className="w-4 h-4" />;
-      case 'warning':
-        return <AlertTriangle className="w-4 h-4" />;
-      case 'critical':
-        return <XCircle className="w-4 h-4" />;
-      case 'emergency':
-        return <AlertCircle className="w-4 h-4" />;
-      default:
-        return <Activity className="w-4 h-4" />;
-    }
-  };
+  
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {

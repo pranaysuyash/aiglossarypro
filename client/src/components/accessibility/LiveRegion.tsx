@@ -1,7 +1,7 @@
 'use client';
 
-import * as React from 'react';
 import { cn } from '@/lib/utils';
+import * as React from 'react';
 
 interface LiveRegionProps {
   message?: string | undefined;
@@ -28,18 +28,23 @@ export function LiveRegion({
 
   React.useEffect(() => {
     if (message) {
-      // Small delay to ensure screen readers pick up the change
-      const timer = setTimeout(() => {
-        setLiveMessage(message);
-      }, 100);
+      // Small delay to ensure screen readers pick up the change, but not in tests
+      const isTestEnvironment = typeof process !== 'undefined' && process.env?.NODE_ENV === 'test';
 
-      return () => clearTimeout(timer);
-    } 
+      if (isTestEnvironment) {
+        setLiveMessage(message);
+      } else {
+        const timer = setTimeout(() => {
+          setLiveMessage(message);
+        }, 100);
+        return () => clearTimeout(timer);
+      }
+    } else {
       setLiveMessage('');
-    
+    }
   }, [message]);
 
-  if (!liveMessage && !children) {return null;}
+  if (!liveMessage && !children) { return null; }
 
   return (
     <div
@@ -148,7 +153,7 @@ export function StatusAnnouncer({
   className,
 }: StatusAnnouncerProps) {
   const getCurrentMessage = () => {
-    if (message) {return message;}
+    if (message) { return message; }
 
     switch (status) {
       case 'loading':

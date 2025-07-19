@@ -42,12 +42,27 @@ interface ValidationResult {
 class StorybookCoverageValidator {
   private components: ComponentInfo[] = [];
   private shouldFix: boolean = false;
+  private timeout: number = 30000; // 30 seconds timeout
+  private batchSize: number = 50; // Process components in batches
 
   constructor() {
     this.shouldFix = process.argv.includes('--fix');
+    
+    // Allow custom timeout via command line argument
+    const timeoutArg = process.argv.find(arg => arg.startsWith('--timeout='));
+    if (timeoutArg) {
+      this.timeout = parseInt(timeoutArg.split('=')[1]) * 1000;
+    }
   }
 
   async validate(): Promise<ValidationResult> {
+    return Promise.race([
+      this.performValidation(),
+      this.createTimeoutPromise()
+    ]);
+  }
+
+  private async performValidation(): Promise<ValidationResult> {
     console.log('🔍 Scanning for React components...');
     await this.scanComponents();
 
@@ -64,6 +79,14 @@ class StorybookCoverageValidator {
     return result;
   }
 
+  private createTimeoutPromise(): Promise<ValidationResult> {
+    return new Promise((_, reject) => {
+      setTimeout(() => {
+        reject(new Error(`Validation timed out after ${this.timeout / 1000} seconds. Try increasing timeout with --timeout=60 or reducing component count.`));
+      }, this.timeout);
+    });
+  }
+
   private async scanComponents(): Promise<void> {
     try {
       // Find all React component files
@@ -78,21 +101,38 @@ class StorybookCoverageValidator {
         ],
       });
 
-      for (const file of componentFiles) {
-        const filePath = path.join(componentsPath, file);
-        const fileContent = fs.readFileSync(filePath, 'utf-8');
+      console.log(`   Processing ${componentFiles.length} files in batches of ${this.batchSize}...`);
 
-        // Check if this is actually a React component file
-        if (this.isReactComponent(fileContent)) {
-          const componentName = this.extractComponentName(file, fileContent);
-          if (componentName) {
-            this.components.push({
-              name: componentName,
-              filePath,
-              relativePath: file,
-              hasStory: false,
-            });
+      // Process files in batches to avoid timeout
+      for (let i = 0; i < componentFiles.length; i += this.batchSize) {
+        const batch = componentFiles.slice(i, i + this.batchSize);
+        
+        for (const file of batch) {
+          const filePath = path.join(componentsPath, file);
+          
+          try {
+            const fileContent = fs.readFileSync(filePath, 'utf-8');
+
+            // Check if this is actually a React component file
+            if (this.isReactComponent(fileContent)) {
+              const componentName = this.extractComponentName(file, fileContent);
+              if (componentName) {
+                this.components.push({
+                  name: componentName,
+                  filePath,
+                  relativePath: file,
+                  hasStory: false,
+                });
+              }
+            }
+          } catch (fileError) {
+            console.warn(`   ⚠️  Skipping file ${file}: ${fileError.message}`);
           }
+        }
+        
+        // Small delay between batches to prevent overwhelming the system
+        if (i + this.batchSize < componentFiles.length) {
+          await new Promise(resolve => setTimeout(resolve, 10));
         }
       }
 
@@ -224,19 +264,35 @@ class StorybookCoverageValidator {
   }
 
   private async generateMissingStories(missingComponents: ComponentInfo[]): Promise<void> {
-    for (const component of missingComponents) {
-      const storyTemplate = this.generateStoryTemplate(component);
-      const storyPath = this.getStoryPath(component);
+    console.log(`   Generating ${missingComponents.length} missing story files...`);
+    
+    // Process story generation in batches to avoid timeout
+    for (let i = 0; i < missingComponents.length; i += this.batchSize) {
+      const batch = missingComponents.slice(i, i + this.batchSize);
+      
+      for (const component of batch) {
+        try {
+          const storyTemplate = this.generateStoryTemplate(component);
+          const storyPath = this.getStoryPath(component);
 
-      // Ensure directory exists
-      const storyDir = path.dirname(storyPath);
-      if (!fs.existsSync(storyDir)) {
-        fs.mkdirSync(storyDir, { recursive: true });
+          // Ensure directory exists
+          const storyDir = path.dirname(storyPath);
+          if (!fs.existsSync(storyDir)) {
+            fs.mkdirSync(storyDir, { recursive: true });
+          }
+
+          // Write story file
+          fs.writeFileSync(storyPath, storyTemplate);
+          console.log(`   ✅ Generated: ${path.relative(projectRoot, storyPath)}`);
+        } catch (error) {
+          console.warn(`   ⚠️  Failed to generate story for ${component.name}: ${error.message}`);
+        }
       }
-
-      // Write story file
-      fs.writeFileSync(storyPath, storyTemplate);
-      console.log(`   ✅ Generated: ${path.relative(projectRoot, storyPath)}`);
+      
+      // Small delay between batches
+      if (i + this.batchSize < missingComponents.length) {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      }
     }
   }
 

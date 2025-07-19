@@ -26,31 +26,7 @@ interface Term {
   difficultyLevel?: string;
 }
 
-interface Section {
-  id: number;
-  name: string;
-  displayOrder: number;
-  isCompleted: boolean;
-}
 
-interface SectionItem {
-  id: number;
-  sectionId: number;
-  label: string;
-  content?: string;
-  contentType?: string;
-  isAiGenerated: boolean;
-  verificationStatus?: string;
-  metadata?: any;
-}
-
-interface ContentMetrics {
-  totalTerms: number;
-  termsWithContent: number;
-  sectionsGenerated: number;
-  averageQualityScore: number;
-  lastGeneratedAt?: string;
-}
 
 // Section definitions from the 42-section architecture
 const SECTION_DEFINITIONS = [
@@ -96,8 +72,8 @@ export function ContentManagementDashboard() {
     },
   });
 
-  // Fetch sections for selected term
-  const { data: termSections = [] } = useQuery({ // eslint-disable-line @typescript-eslint/no-unused-vars
+  // Fetch sections for selected term to warm the cache
+  useQuery({
     queryKey: ['term-sections', selectedTerm?.id],
     queryFn: async () => {
       if (!selectedTerm) {return [];}
@@ -177,21 +153,21 @@ export function ContentManagementDashboard() {
     },
   });
 
-  const handleGenerateContent = async () => {
+  const handleGenerateContent = async (termId: string) => {
     if (!selectedTerm) {return;}
 
     await generateContent.mutateAsync({
-      termId: selectedTerm.id,
+      termId: termId,
       sectionName: selectedSection,
       regenerate: true,
     });
   };
 
-  const handleSaveContent = async (content: string) => {
+  const handleSaveContent = async (termId: string, content: string) => {
     if (!selectedTerm) {return;}
 
     await saveContent.mutateAsync({
-      termId: selectedTerm.id,
+      termId: termId,
       sectionName: selectedSection,
       content,
     });
@@ -378,7 +354,7 @@ export function ContentManagementDashboard() {
                 {!sectionContent && (
                   <div className="flex justify-center pt-4">
                     <Button
-                      onClick={handleGenerateContent}
+                      onClick={() => handleGenerateContent(selectedTerm.id)}
                       disabled={generateContent.isPending}
                       size="lg"
                     >

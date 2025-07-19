@@ -6,6 +6,7 @@ import { verifyToken } from '../auth/simpleAuth';
 import { storage } from '../storage';
 import { log } from '../utils/logger';
 import { captureAuthEvent } from '../utils/sentry';
+import { isTokenBlacklisted } from '../utils/tokenBlacklist';
 
 // OAuth provider configurations
 interface OAuthConfig {
@@ -251,9 +252,21 @@ export async function setupMultiAuth(app: Express) {
 // Enhanced authentication middleware that works with all providers
 export const multiAuthMiddleware: RequestHandler = async (req, res, next) => {
   // First check for JWT token authentication
-  const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.auth_token;
+  const token = req.headers.authorization?.replace('Bearer ', '') || req.cookies?.auth_token || req.cookies?.authToken;
 
   if (token) {
+    // Check if token is blacklisted
+    if (isTokenBlacklisted(token)) {
+      return res.status(401).json({
+        success: false,
+        message: 'Token has been invalidated',
+        availableProviders: {
+          google: !!process.env.GOOGLE_CLIENT_ID,
+          github: !!process.env.GITHUB_CLIENT_ID,
+        },
+      });
+    }
+
     const decoded = verifyToken(token);
     if (decoded) {
       // Set user on request from JWT token

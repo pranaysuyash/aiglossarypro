@@ -180,7 +180,7 @@ export default function Settings() {
           <CardContent>
             <p className="text-center mb-4">Please sign in to access your settings.</p>
             <div className="flex justify-center">
-              <Button onClick={() => (window.location.href = '/api/login')}>Sign In</Button>
+              <Button onClick={() => (window.location.href = '/login')}>Sign In</Button>
             </div>
           </CardContent>
         </Card>

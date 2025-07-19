@@ -319,7 +319,7 @@ export default function Sidebar() {
             </p>
             <button
               className="px-4 py-2 bg-primary hover:bg-primary/90 text-white rounded-lg text-sm min-h-[36px]"
-              onClick={() => navigate('/api/login')}
+              onClick={() => navigate('/login')}
               aria-label="Sign in to track your learning progress"
             >
               Sign In

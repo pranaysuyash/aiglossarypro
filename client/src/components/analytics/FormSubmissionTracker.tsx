@@ -224,10 +224,7 @@ export default function FormSubmissionTracker({
 }) {
   const {
     trackFormStart,
-    trackFieldInteraction,
     trackFormSubmission,
-    trackFormAbandon,
-    trackFormError,
   } = useFormTracking({
     formType,
     formLocation,
@@ -252,14 +249,34 @@ export default function FormSubmissionTracker({
           data[key] = value;
         });
 
-        trackFormSubmission({
+        const trackerConfig: FormSubmissionTrackerProps = {
           formType,
           formLocation,
-          formId,
+        };
+        if (formId) {
+          trackerConfig.formId = formId;
+        }
+        if (metadata) {
+          trackerConfig.metadata = metadata;
+        }
+        if (onTrackingComplete) {
+          trackerConfig.onTrackingComplete = onTrackingComplete;
+        }
+
+        const submissionData: FormTrackingData = {
+          formType,
+          formLocation,
           success: true, // Will be updated based on actual result
           formData: data,
-          metadata,
-        });
+        };
+        if (formId) {
+          submissionData.formId = formId;
+        }
+        if (metadata) {
+          submissionData.metadata = metadata;
+        }
+
+        trackFormSubmission(submissionData);
       }}
       {...trackerProps}
     >

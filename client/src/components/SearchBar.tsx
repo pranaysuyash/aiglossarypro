@@ -198,7 +198,7 @@ const SearchBar = memo(function SearchBar({
     <div id="search" className={cn('relative w-full max-w-md', className)}>
       <div className="relative">
         <Search
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-300 h-4 w-4"
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 text-primary dark:text-primary h-5 w-5"
           aria-hidden="true"
         />
         <Input
@@ -210,7 +210,7 @@ const SearchBar = memo(function SearchBar({
           onKeyDown={handleKeyDown}
           onFocus={handleFocus}
           onBlur={handleBlur}
-          className="pl-10 pr-10 bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-700"
+          className="pl-10 pr-10 h-11 text-base bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-600 focus:border-primary focus:ring-2 focus:ring-primary/20 shadow-sm hover:shadow-md transition-all duration-200"
           aria-label="Search AI/ML terms and definitions"
           aria-expanded={showSuggestions}
           aria-haspopup="listbox"

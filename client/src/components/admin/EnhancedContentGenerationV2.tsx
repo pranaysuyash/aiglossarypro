@@ -335,22 +335,7 @@ export function EnhancedContentGenerationV2() {
     },
   });
 
-  // Mutation for template management
-  const _saveTemplateMutation = useMutation({
-    mutationFn: async (template: Partial<ContentTemplate>) => {
-      const response = await fetch('/api/admin/templates', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(template),
-      });
-      if (!response.ok) {throw new Error('Failed to save template');}
-      return response.json();
-    },
-    onSuccess: () => {
-      toast({ title: 'Template Saved', description: 'Template saved successfully' });
-      queryClient.invalidateQueries({ queryKey: ['content-templates'] });
-    },
-  });
+  
 
   const handleGenerateContent = () => {
     if (!selectedTerm || !selectedSection) {
@@ -412,7 +397,12 @@ export function EnhancedContentGenerationV2() {
           </p>
         </div>
         <div className="flex items-center space-x-4">
-          {analytics && (
+          {isLoadingAnalytics ? (
+            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Loading Analytics...
+            </div>
+          ) : analytics && (
             <div className="flex items-center space-x-4 text-sm">
               <div className="text-center">
                 <div className="font-bold text-lg text-green-600">{analytics.totalGenerations}</div>
@@ -492,11 +482,17 @@ export function EnhancedContentGenerationV2() {
                           <SelectValue placeholder="Choose a term..." />
                         </SelectTrigger>
                         <SelectContent>
-                          {termsData?.data?.slice(0, 100).map((term: any) => (
-                            <SelectItem key={term.id} value={term.id}>
-                              {term.name}
+                          {isLoadingTerms ? (
+                            <SelectItem value="loading" disabled>
+                              Loading terms...
                             </SelectItem>
-                          ))}
+                          ) : (
+                            termsData?.data?.slice(0, 100).map((term: any) => (
+                              <SelectItem key={term.id} value={term.id}>
+                                {term.name}
+                              </SelectItem>
+                            ))
+                          )}
                         </SelectContent>
                       </Select>
                     </div>
@@ -562,16 +558,22 @@ export function EnhancedContentGenerationV2() {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="">No template</SelectItem>
-                        {templatesData?.data?.map((template: ContentTemplate) => (
-                          <SelectItem key={template.id} value={template.id}>
-                            <div className="flex flex-col">
-                              <span>{template.name}</span>
-                              <span className="text-xs text-muted-foreground">
-                                {template.description}
-                              </span>
-                            </div>
+                        {isLoadingTemplates ? (
+                          <SelectItem value="loading" disabled>
+                            Loading templates...
                           </SelectItem>
-                        ))}
+                        ) : (
+                          templatesData?.data?.map((template: ContentTemplate) => (
+                            <SelectItem key={template.id} value={template.id}>
+                              <div className="flex flex-col">
+                                <span>{template.name}</span>
+                                <span className="text-xs text-muted-foreground">
+                                  {template.description}
+                                </span>
+                              </div>
+                            </SelectItem>
+                          ))
+                        )}
                       </SelectContent>
                     </Select>
                   </div>
@@ -678,7 +680,13 @@ export function EnhancedContentGenerationV2() {
                   )}
 
                   {/* Cost Estimate */}
-                  {costEstimate?.data && (
+                  {isLoadingCost ? (
+                    <Alert>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      <AlertTitle>Calculating Cost...</AlertTitle>
+                      <AlertDescription>Estimating token usage and cost.</AlertDescription>
+                    </Alert>
+                  ) : costEstimate?.data && (
                     <Alert>
                       <DollarSign className="h-4 w-4" />
                       <AlertTitle>Cost Estimate</AlertTitle>

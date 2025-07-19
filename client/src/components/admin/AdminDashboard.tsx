@@ -1,17 +1,16 @@
 import { useQuery } from '@tanstack/react-query';
 import {
-  DollarSign,
-  TrendingUp,
-  FileText,
-  CheckCircle,
-  Sparkles,
-  Bot,
-  TrendingDown,
-  Plus,
-  Layers,
   BarChart3,
+  Bot,
+  CheckCircle,
+  DollarSign,
+  FileText,
+  Layers,
+  Plus,
+  Sparkles,
+  TrendingDown,
+  TrendingUp,
 } from 'lucide-react';
-import React from 'react';
 import {
   CartesianGrid,
   Cell,

@@ -11,6 +11,7 @@ import { createFirebaseUser, verifyFirebaseToken } from '../config/firebase';
 import { optimizedStorage as storage } from '../optimizedStorage';
 import { sendWelcomeEmail } from '../utils/email';
 import { log as logger } from '../utils/logger';
+import { blacklistToken, isTokenBlacklisted } from '../utils/tokenBlacklist';
 
 export function registerFirebaseAuthRoutes(app: Express): void {
   /**
@@ -234,14 +235,43 @@ export function registerFirebaseAuthRoutes(app: Express): void {
   });
 
   /**
-   * Logout - clear session
+   * Logout - clear session and invalidate token
    * POST /api/auth/logout
    */
-  app.post('/api/auth/logout', (_req: Request, res: Response) => {
-    // Clear auth cookies (all possible names)
+  app.post('/api/auth/logout', (req: Request, res: Response) => {
+    // Get token from various sources
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.startsWith('Bearer ')
+      ? authHeader.substring(7)
+      : req.cookies?.authToken || req.cookies?.auth_token;
+
+    // Blacklist the token if it exists
+    if (token) {
+      blacklistToken(token);
+      logger.info('Token blacklisted on logout', { userId: req.user?.id });
+    }
+
+    // Clear auth cookies with the same options they were set with
+    const cookieOptions = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax' as const,
+      path: '/',
+      domain: undefined, // Clear for current domain
+    };
+
+    // Clear all possible cookie names
+    res.clearCookie('authToken', cookieOptions);
+    res.clearCookie('auth_token', cookieOptions);
+    res.clearCookie('firebaseToken', cookieOptions);
+    res.clearCookie('session', cookieOptions);
+    res.clearCookie('connect.sid', cookieOptions);
+    
+    // Also try clearing without options for backward compatibility
     res.clearCookie('authToken');
     res.clearCookie('auth_token');
     res.clearCookie('firebaseToken');
+    res.clearCookie('connect.sid');
 
     // Set mock logout state for development
     if (process.env.NODE_ENV === 'development') {
@@ -254,9 +284,16 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       }
     }
 
+    // Send response with instructions for client-side cleanup
     res.json({
       success: true,
       message: 'Logged out successfully',
+      clientActions: {
+        clearLocalStorage: true,
+        clearSessionStorage: true,
+        clearIndexedDB: ['firebaseLocalStorageDb'],
+        redirectTo: '/login'
+      }
     });
   });
 
@@ -327,12 +364,20 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       const authHeader = req.headers.authorization;
       const token = authHeader?.startsWith('Bearer ')
         ? authHeader.substring(7)
-        : req.cookies?.authToken;
+        : req.cookies?.authToken || req.cookies?.auth_token;
 
       if (!token) {
         return res.status(401).json({
           success: false,
           message: 'Not authenticated',
+        });
+      }
+
+      // Check if token is blacklisted
+      if (isTokenBlacklisted(token)) {
+        return res.status(401).json({
+          success: false,
+          message: 'Token has been invalidated',
         });
       }
 
@@ -450,7 +495,7 @@ export function registerFirebaseAuthRoutes(app: Express): void {
       const authHeader = req.headers.authorization;
       const token = authHeader?.startsWith('Bearer ')
         ? authHeader.substring(7)
-        : req.cookies?.authToken;
+        : req.cookies?.authToken || req.cookies?.auth_token;
 
       if (!token) {
         return res.status(401).json({

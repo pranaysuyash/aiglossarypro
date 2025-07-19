@@ -23,12 +23,11 @@ interface InlineContentEditorProps {
   sectionName: string;
   sectionLabel: string;
   content: string;
-  isAiGenerated?: boolean;
+  isAiGenerated: boolean;
   qualityScore?: number;
-  metadata?: Record<string, any>;
-  onSave: (content: string) => Promise<void>;
-  onRegenerate?: () => Promise<void>;
-  className?: string | undefined;
+  metadata?: any;
+  onSave: (termId: string, content: string) => void;
+  onRegenerate: (termId: string) => void;
 }
 
 export function InlineContentEditor({
@@ -87,7 +86,7 @@ export function InlineContentEditor({
 
     setIsSaving(true);
     try {
-      await onSave(content);
+      await onSave(termId, content);
       setOriginalContent(content);
       setIsEditing(false);
       setHasChanges(false);
@@ -118,7 +117,7 @@ export function InlineContentEditor({
         'Are you sure you want to regenerate this content? Current content will be replaced.'
       );
       if (confirmed) {
-        await onRegenerate();
+        await onRegenerate(termId);
       }
     }
   };

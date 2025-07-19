@@ -10,10 +10,11 @@ const Progress = React.forwardRef<
   React.ComponentPropsWithoutRef<typeof ProgressPrimitive.Root> & {
     'aria-label'?: string;
     'aria-labelledby'?: string;
+    indicatorClassName?: string;
   }
 >(
   (
-    { className, value, 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy, ...props },
+    { className, value, 'aria-label': ariaLabel, 'aria-labelledby': ariaLabelledBy, indicatorClassName, ...props },
     ref
   ) => (
     <ProgressPrimitive.Root
@@ -27,7 +28,7 @@ const Progress = React.forwardRef<
       {...props}
     >
       <ProgressPrimitive.Indicator
-        className="h-full w-full flex-1 bg-primary transition-all"
+        className={cn("h-full w-full flex-1 bg-primary transition-all", indicatorClassName)}
         style={{ transform: `translateX(-${100 - (value || 0)}%)` }}
       />
     </ProgressPrimitive.Root>

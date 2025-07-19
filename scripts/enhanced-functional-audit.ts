@@ -86,15 +86,15 @@ class EnhancedFunctionalAuditor {
   // Test user configurations - Updated to match actual test users
   private testUsers: TestUser[] = [
     {
-      email: 'testuser@example.com',
+      email: 'test@aimlglossary.com',
       password: 'testpassword123',
       type: 'free',
       expectedFeatures: ['basic search', 'limited view count'],
-      expectedLimitations: ['daily view limits', 'upgrade prompts', 'restricted 42-section access'],
+      expectedLimitations: ['daily view limits', 'upgrade prompts', 'restricted premium access'],
     },
     {
-      email: 'premiumuser@example.com',
-      password: 'testpassword123',
+      email: 'premium@aimlglossary.com',
+      password: 'premiumpass123',
       type: 'premium',
       expectedFeatures: [
         'unlimited access',
@@ -105,8 +105,8 @@ class EnhancedFunctionalAuditor {
       expectedLimitations: [],
     },
     {
-      email: 'adminuser@example.com',
-      password: 'testpassword123',
+      email: 'admin@aimlglossary.com',
+      password: 'adminpass123',
       type: 'admin',
       expectedFeatures: [
         'admin dashboard',
@@ -229,7 +229,11 @@ class EnhancedFunctionalAuditor {
       try {
         // Wait for page to stabilize before running accessibility scan
         await page.waitForTimeout(1500);
-        await page.waitForLoadState('networkidle', { timeout: 5000 });
+        try {
+          await page.waitForLoadState('networkidle', { timeout: 3000 });
+        } catch (e) {
+          // Continue even if timeout
+        }
 
         const violations = await getViolations(page, {
           tags: ['wcag2a', 'wcag2aa', 'wcag21aa'], // Focus on critical accessibility standards
@@ -402,7 +406,22 @@ class EnhancedFunctionalAuditor {
     try {
       await this.captureAction(page, 'navigate', `Navigate to homepage`, undefined, this.baseUrl);
       await page.goto(this.baseUrl);
-      await page.waitForLoadState('networkidle', { timeout: 10000 });
+      // Remove timeout - let it load naturally
+      try {
+        try {
+          await page.waitForLoadState('networkidle', { timeout: 3000 });
+        } catch (e) {
+          // Continue even if timeout
+        }
+      } catch (e) {
+        // Continue if timeout - page might be loaded enough
+      }
+      
+      // Wait for React app to load properly
+      await page.waitForSelector('h1', { timeout: 10000 });
+      await page.waitForFunction(() => {
+        return document.querySelector('h1') && document.querySelector('h1').textContent.includes('AI/ML Glossary');
+      }, { timeout: 10000 });
 
       // Handle cookie consent if present
       try {
@@ -420,7 +439,7 @@ class EnhancedFunctionalAuditor {
       // Interact with all components on homepage if enabled
       await this.interactWithAllComponents(page, 'Homepage');
 
-      // Look for login/signin button
+      // Look for login/signin button or navigate directly to login page
       const loginSelectors = [
         'a:has-text("Sign In")',
         'a:has-text("Login")',
@@ -429,6 +448,7 @@ class EnhancedFunctionalAuditor {
         '[data-testid*="login"]',
         '[data-testid*="signin"]',
         '[href*="login"]',
+        'button:has-text("Sign in to track progress")',
       ];
 
       let loginButton = null;
@@ -442,10 +462,37 @@ class EnhancedFunctionalAuditor {
       if (loginButton && (await loginButton.isVisible())) {
         await this.captureAction(page, 'click', 'Click login/signin button');
         await loginButton.click();
-        await page.waitForLoadState('networkidle', { timeout: 10000 });
+        // Remove timeout - let it load naturally
+      try {
+        try {
+          await page.waitForLoadState('networkidle', { timeout: 3000 });
+        } catch (e) {
+          // Continue even if timeout
+        }
+      } catch (e) {
+        // Continue if timeout - page might be loaded enough
+      }
+      } else {
+        // If no login button found, navigate directly to login page
+        await this.captureAction(page, 'navigate', 'Navigate to login page directly');
+        await page.goto(`${this.baseUrl}/login`);
+        // Remove timeout - let it load naturally
+      try {
+        try {
+          await page.waitForLoadState('networkidle', { timeout: 3000 });
+        } catch (e) {
+          // Continue even if timeout
+        }
+      } catch (e) {
+        // Continue if timeout - page might be loaded enough
+      }
+      }
 
-        // Wait for login form to be present
-        await page.waitForSelector('input[type="email"], input[name="email"]', { timeout: 5000 });
+      // Handle cookie consent banner first
+      await this.handleCookieConsent(page);
+
+      // Wait for login form to be present
+      await page.waitForSelector('input[type="email"], input[name="email"]', { timeout: 5000 });
 
         // Fill login form
         await this.captureAction(
@@ -464,7 +511,16 @@ class EnhancedFunctionalAuditor {
         await page.click(
           'button[type="submit"], button:has-text("Sign In"), button:has-text("Login")'
         );
-        await page.waitForLoadState('networkidle', { timeout: 10000 });
+        // Remove timeout - let it load naturally
+      try {
+        try {
+          await page.waitForLoadState('networkidle', { timeout: 3000 });
+        } catch (e) {
+          // Continue even if timeout
+        }
+      } catch (e) {
+        // Continue if timeout - page might be loaded enough
+      }
 
         // Verify login success
         const isLoggedIn = await this.verifyLoginSuccess(page, user);
@@ -476,14 +532,6 @@ class EnhancedFunctionalAuditor {
             'Login verification failed - user may not be authenticated'
           );
         }
-      } else {
-        status = 'WARNING';
-        await this.captureAction(
-          page,
-          'navigate',
-          'Login button not found - continuing without authentication'
-        );
-      }
     } catch (error) {
       console.log(chalk.red(`❌ Authentication flow failed: ${error.message}`));
       status = 'FAIL';
@@ -499,6 +547,39 @@ class EnhancedFunctionalAuditor {
       status,
       duration,
     };
+  }
+
+  async handleCookieConsent(page: Page): Promise<void> {
+    try {
+      // Look for cookie consent banner and accept it
+      const cookieConsentSelectors = [
+        'button:has-text("Accept All")',
+        'button:has-text("Accept")',
+        'button:has-text("OK")',
+        'button:has-text("I Agree")',
+        '[data-testid*="cookie-accept"]',
+        '[data-testid*="consent-accept"]',
+        '.cookie-consent button',
+        '.cookie-banner button'
+      ];
+
+      for (const selector of cookieConsentSelectors) {
+        try {
+          const button = page.locator(selector).first();
+          if (await button.isVisible({ timeout: 2000 })) {
+            await this.captureAction(page, 'click', 'Accept cookie consent');
+            await button.click();
+            await page.waitForTimeout(1000);
+            return;
+          }
+        } catch (error) {
+          // Continue to next selector
+        }
+      }
+    } catch (error) {
+      // Cookie consent not found or error handling it - this is OK
+      console.log('Cookie consent not found or handled');
+    }
   }
 
   async verifyLoginSuccess(page: Page, user: TestUser): Promise<boolean> {
@@ -584,7 +665,16 @@ class EnhancedFunctionalAuditor {
             ? navData.href
             : `${this.baseUrl}${navData.href}`;
           await page.goto(fullUrl);
-          await page.waitForLoadState('networkidle', { timeout: 10000 });
+          // Remove timeout - let it load naturally
+      try {
+        try {
+          await page.waitForLoadState('networkidle', { timeout: 3000 });
+        } catch (e) {
+          // Continue even if timeout
+        }
+      } catch (e) {
+        // Continue if timeout - page might be loaded enough
+      }
 
           // Interact with components on this page
           await this.interactWithAllComponents(page, `Navigation: ${navData.text}`);

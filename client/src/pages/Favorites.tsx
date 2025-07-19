@@ -82,7 +82,7 @@ export default function Favorites() {
               Please sign in to view and manage your favorite terms.
             </p>
             <div className="flex justify-center">
-              <Button onClick={() => (window.location.href = '/api/login')}>Sign In</Button>
+              <Button onClick={() => (window.location.href = '/login')}>Sign In</Button>
             </div>
           </CardContent>
         </Card>

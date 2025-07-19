@@ -192,11 +192,7 @@ export function GenerationStatsDashboard() {
     return status === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
   };
 
-  const _getTrendIcon = (current: number, previous: number) => {
-    if (current > previous) {return <TrendingUp className="w-4 h-4 text-green-600" />;}
-    if (current < previous) {return <TrendingDown className="w-4 h-4 text-red-600" />;}
-    return <Activity className="w-4 h-4 text-gray-600" />;
-  };
+  
 
   const getComplexityColor = (complexity: string) => {
     switch (complexity) {

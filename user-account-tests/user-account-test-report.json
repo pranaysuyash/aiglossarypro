@@ -1,0 +1,85 @@
+[
+  {
+    "user": {
+      "email": "test@aimlglossary.com",
+      "password": "testpassword123",
+      "type": "free",
+      "expectedFeatures": [
+        "search",
+        "basic-terms",
+        "categories"
+      ],
+      "restrictedFeatures": [
+        "premium-features",
+        "advanced-search",
+        "admin-panel"
+      ]
+    },
+    "success": false,
+    "loginSuccessful": false,
+    "logoutSuccessful": false,
+    "featuresAccessible": [],
+    "featuresRestricted": [],
+    "errors": [
+      "Login failed"
+    ],
+    "screenshots": [
+      "/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/user-account-tests/free-01-login-page.png"
+    ]
+  },
+  {
+    "user": {
+      "email": "premium@aimlglossary.com",
+      "password": "premiumpass123",
+      "type": "premium",
+      "expectedFeatures": [
+        "search",
+        "basic-terms",
+        "categories",
+        "premium-features",
+        "advanced-search"
+      ],
+      "restrictedFeatures": [
+        "admin-panel"
+      ]
+    },
+    "success": false,
+    "loginSuccessful": false,
+    "logoutSuccessful": false,
+    "featuresAccessible": [],
+    "featuresRestricted": [],
+    "errors": [
+      "Login failed"
+    ],
+    "screenshots": [
+      "/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/user-account-tests/premium-01-login-page.png"
+    ]
+  },
+  {
+    "user": {
+      "email": "admin@aimlglossary.com",
+      "password": "adminpass123",
+      "type": "admin",
+      "expectedFeatures": [
+        "search",
+        "basic-terms",
+        "categories",
+        "premium-features",
+        "advanced-search",
+        "admin-panel"
+      ],
+      "restrictedFeatures": []
+    },
+    "success": false,
+    "loginSuccessful": false,
+    "logoutSuccessful": false,
+    "featuresAccessible": [],
+    "featuresRestricted": [],
+    "errors": [
+      "Login failed"
+    ],
+    "screenshots": [
+      "/Users/pranay/Projects/AIMLGlossary/AIGlossaryPro/user-account-tests/admin-01-login-page.png"
+    ]
+  }
+]

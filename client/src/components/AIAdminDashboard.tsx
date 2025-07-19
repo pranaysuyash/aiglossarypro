@@ -55,9 +55,7 @@ interface ContentSuggestionsData {
 }
 
 export function AIAdminDashboard() {
-  const [_isClearingCache, _setIsClearingCache] = useState(false);
   const { toast } = useToast();
-  const _queryClient = useQueryClient();
 
   // Fetch AI service status
   const {

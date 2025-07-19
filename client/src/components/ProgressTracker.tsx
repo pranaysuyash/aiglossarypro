@@ -26,7 +26,7 @@ export default function ProgressTracker({
         ...PROGRESS_MESSAGES.AUTH_REQUIRED,
         variant: 'destructive',
       });
-      window.location.href = '/api/login';
+      window.location.href = '/login';
       return;
     }
 

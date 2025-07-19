@@ -105,7 +105,6 @@ const ESSENTIAL_COLUMNS = [
 
 export function ModelComparison() {
   const { toast } = useToast();
-  const _queryClient = useQueryClient();
 
   const [selectedTerm, setSelectedTerm] = useState<Term | null>(null);
   const [selectedSection, setSelectedSection] = useState<string>('');
@@ -259,7 +258,11 @@ export function ModelComparison() {
   };
 
   const handleRateVersion = (versionId: string, rating: number, notes?: string) => {
-    rateVersionMutation.mutate({ versionId, rating, notes });
+    const params: { versionId: string; rating: number; notes?: string } = { versionId, rating };
+    if (notes) {
+      params.notes = notes;
+    }
+    rateVersionMutation.mutate(params);
   };
 
   const copyToClipboard = (text: string) => {
@@ -354,7 +357,7 @@ export function ModelComparison() {
               <Select
                 value={selectedTerm?.id || ''}
                 onValueChange={value => {
-                  const term = termsData?.find((t: Term) => t.id === value);
+                  const term = termsData?.data?.find((t: Term) => t.id === value);
                   setSelectedTerm(term || null);
                 }}
               >
@@ -362,11 +365,17 @@ export function ModelComparison() {
                   <SelectValue placeholder="Select term" />
                 </SelectTrigger>
                 <SelectContent>
-                  {termsData?.map((term: Term) => (
-                    <SelectItem key={term.id} value={term.id}>
-                      {term.name}
+                  {isLoadingTerms ? (
+                    <SelectItem value="loading" disabled>
+                      Loading terms...
                     </SelectItem>
-                  ))}
+                  ) : (
+                    termsData?.data?.map((term: Term) => (
+                      <SelectItem key={term.id} value={term.id}>
+                        {term.name}
+                      </SelectItem>
+                    ))
+                  )}
                 </SelectContent>
               </Select>
             </div>

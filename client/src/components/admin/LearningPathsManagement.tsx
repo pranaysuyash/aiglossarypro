@@ -56,16 +56,20 @@ interface LearningPathsManagementProps {
   onPathSelect?: (path: LearningPath) => void;
 }
 
-export default function LearningPathsManagement({ onPathSelect }: LearningPathsManagementProps) {
-  const { user } = useAuth();
+export function LearningPathsManagement() {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
-  const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedStatus, setSelectedStatus] = useState('all');
+  // State for modals and forms
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [selectedPath, setSelectedPath] = useState<LearningPath | null>(null);
-  const [showCreateModal, setShowCreateModal] = useState(false);
+  const [isConfirmDeleteOpen, setIsConfirmDeleteOpen] = useState(false);
+
+  // State for filters and search
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
 
   // Build query parameters
   const queryParams = new URLSearchParams();

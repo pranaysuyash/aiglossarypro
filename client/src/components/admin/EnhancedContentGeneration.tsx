@@ -40,9 +40,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import {
   ALL_COLUMNS,
   COLUMN_CATEGORIES,
-  type ColumnDefinition,
   getColumnCategories,
-  getColumnsByCategory,
   getEssentialColumns,
   searchColumns,
 } from '@/constants/columns';
@@ -476,7 +474,20 @@ export function EnhancedContentGeneration() {
 
                       {showAdvancedColumns && (
                         <div>
-                          <Label htmlFor="category-filter" className="text-sm">
+                          <Label htmlFor="column-search" className="text-sm">
+                            Search Columns
+                          </Label>
+                          <Input
+                            id="column-search"
+                            placeholder="Search by name or description..."
+                            value={columnSearchQuery}
+                            onChange={e => setColumnSearchQuery(e.target.value)}
+                          />
+                        </div>
+
+                        <div>
+                          <Label htmlFor="category-filter" className="text-sm flex items-center gap-2">
+                            <Filter className="w-4 h-4" />
                             Filter by Category
                           </Label>
                           <Select value={selectedCategory} onValueChange={setSelectedCategory}>
@@ -485,9 +496,9 @@ export function EnhancedContentGeneration() {
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="">All categories</SelectItem>
-                              {getColumnCategories().map(category => (
-                                <SelectItem key={category} value={category}>
-                                  {category}
+                              {Object.entries(COLUMN_CATEGORIES).map(([key, value]) => (
+                                <SelectItem key={key} value={key}>
+                                  {value.label}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -637,7 +648,19 @@ export function EnhancedContentGeneration() {
 
         <TabsContent value="column-processing" className="space-y-4">
           {/* Current Processing Status */}
-          {currentStatus && (
+          {isLoadingStatus ? (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Loading Status...
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="h-24 bg-gray-200 rounded-lg animate-pulse"></div>
+              </CardContent>
+            </Card>
+          ) : currentStatus && (
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center">

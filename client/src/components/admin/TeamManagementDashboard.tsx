@@ -35,7 +35,7 @@ interface TeamInvite {
   status: 'pending' | 'accepted' | 'expired';
 }
 
-export function TeamManagementDashboard() {
+function TeamManagementDashboard() {
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState<'members' | 'invites' | 'settings'>('members');
   const [newInviteEmail, setNewInviteEmail] = useState('');

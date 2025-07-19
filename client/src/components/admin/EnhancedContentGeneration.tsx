@@ -473,19 +473,20 @@ export function EnhancedContentGeneration() {
                       </div>
 
                       {showAdvancedColumns && (
-                        <div>
-                          <Label htmlFor="column-search" className="text-sm">
-                            Search Columns
-                          </Label>
-                          <Input
-                            id="column-search"
-                            placeholder="Search by name or description..."
-                            value={columnSearchQuery}
-                            onChange={e => setColumnSearchQuery(e.target.value)}
-                          />
-                        </div>
+                        <>
+                          <div>
+                            <Label htmlFor="column-search" className="text-sm">
+                              Search Columns
+                            </Label>
+                            <Input
+                              id="column-search"
+                              placeholder="Search by name or description..."
+                              value={columnSearchQuery}
+                              onChange={e => setColumnSearchQuery(e.target.value)}
+                            />
+                          </div>
 
-                        <div>
+                          <div>
                           <Label htmlFor="category-filter" className="text-sm flex items-center gap-2">
                             <Filter className="w-4 h-4" />
                             Filter by Category
@@ -504,6 +505,7 @@ export function EnhancedContentGeneration() {
                             </SelectContent>
                           </Select>
                         </div>
+                        </>
                       )}
                     </div>
                   )}
